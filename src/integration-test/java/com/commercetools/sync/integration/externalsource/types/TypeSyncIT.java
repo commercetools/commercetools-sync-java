@@ -1,7 +1,5 @@
 package com.commercetools.sync.integration.externalsource.types;
 
-
-import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
 import com.commercetools.sync.types.TypeSync;
 import com.commercetools.sync.types.TypeSyncOptions;
 import com.commercetools.sync.types.TypeSyncOptionsBuilder;
@@ -38,6 +36,7 @@ import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.FIELD_DEFINITION_1;
@@ -113,7 +112,7 @@ public class TypeSyncIT {
                 .join();
 
         //assertions
-        AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(typeSyncStatistics).hasValues(1, 0, 1, 0);
 
 
         final Optional<Type> oldTypeAfter = getTypeByKey(CTP_TARGET_CLIENT, TYPE_KEY_1);
@@ -150,7 +149,7 @@ public class TypeSyncIT {
                 .join();
 
         //assertions
-        AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(1, 1, 0, 0);
+        assertThat(typeSyncStatistics).hasValues(1, 1, 0, 0);
 
         final Optional<Type> oldTypeAfter = getTypeByKey(CTP_TARGET_CLIENT, TYPE_KEY_2);
 
@@ -187,7 +186,7 @@ public class TypeSyncIT {
                 .join();
 
         //assertions
-        AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(typeSyncStatistics).hasValues(1, 0, 1, 0);
 
         final Optional<Type> oldTypeAfter = getTypeByKey(CTP_TARGET_CLIENT, TYPE_KEY_1);
 
@@ -224,7 +223,7 @@ public class TypeSyncIT {
                 .sync(singletonList(newTypeDraft))
                 .toCompletableFuture().join();
 
-        AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(typeSyncStatistics).hasValues(1, 0, 1, 0);
 
         final Optional<Type> oldTypeAfter = getTypeByKey(CTP_TARGET_CLIENT, TYPE_KEY_1);
 
@@ -256,7 +255,7 @@ public class TypeSyncIT {
                 .toCompletableFuture().join();
 
         //assertions
-        AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(typeSyncStatistics).hasValues(1, 0, 1, 0);
 
         final Optional<Type> oldTypeAfter = getTypeByKey(CTP_TARGET_CLIENT, TYPE_KEY_1);
 
@@ -295,7 +294,7 @@ public class TypeSyncIT {
                 .toCompletableFuture().join();
 
         //assertions
-        AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(typeSyncStatistics).hasValues(1, 0, 1, 0);
 
         final Optional<Type> oldTypeAfter = getTypeByKey(CTP_TARGET_CLIENT, TYPE_KEY_1);
 
@@ -344,7 +343,7 @@ public class TypeSyncIT {
             .hasSize(1)
             .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable).isNull());
 
-        AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(typeSyncStatistics).hasValues(1, 0, 0, 1);
     }
 
     @Test
@@ -381,7 +380,7 @@ public class TypeSyncIT {
             .hasSize(1)
             .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable).isNull());
 
-        AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(typeSyncStatistics).hasValues(1, 0, 0, 1);
     }
 
     @Test
@@ -430,7 +429,7 @@ public class TypeSyncIT {
                 assertThat(throwable).hasMessageContaining("Missing required value");
             });
 
-        AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(typeSyncStatistics).hasValues(1, 0, 0, 1);
     }
 
     @Test
@@ -485,7 +484,7 @@ public class TypeSyncIT {
                 assertThat(throwable).hasMessageContaining("Missing required value");
             });
 
-        AssertionsForStatistics.assertThat(typeSyncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(typeSyncStatistics).hasValues(1, 0, 0, 1);
     }
 
     @Test
@@ -516,7 +515,7 @@ public class TypeSyncIT {
                 .join();
 
         //assertion
-        AssertionsForStatistics.assertThat(typeSyncStatistics)
+        assertThat(typeSyncStatistics)
                 .hasValues(100, 100, 0, 0);
     }
 
@@ -607,7 +606,7 @@ public class TypeSyncIT {
                                                       .join();
 
         // Test and assertion
-        AssertionsForStatistics.assertThat(statistics).hasValues(1, 0, 0, 1);
+        assertThat(statistics).hasValues(1, 0, 0, 1);
         assertThat(errorMessages).hasSize(1);
         assertThat(errors).hasSize(1);
 
@@ -652,7 +651,7 @@ public class TypeSyncIT {
                                                               .join();
 
         // Test and assertion
-        AssertionsForStatistics.assertThat(statistics).hasValues(1, 0, 1, 0);
+        assertThat(statistics).hasValues(1, 0, 1, 0);
         assertThat(errorMessages).isEmpty();
         assertThat(errors).isEmpty();
     }
@@ -695,7 +694,7 @@ public class TypeSyncIT {
                                                       .join();
 
         // Test and assertion
-        AssertionsForStatistics.assertThat(statistics).hasValues(1, 0, 0, 1);
+        assertThat(statistics).hasValues(1, 0, 0, 1);
         assertThat(errorMessages).hasSize(2);
         assertThat(errors).hasSize(2);
 
