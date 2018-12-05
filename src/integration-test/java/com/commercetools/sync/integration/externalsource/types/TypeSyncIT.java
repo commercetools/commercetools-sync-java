@@ -12,6 +12,7 @@ import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.models.LocalizedEnumValue;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.TextInputHint;
+import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.types.EnumFieldType;
 import io.sphere.sdk.types.FieldDefinition;
 import io.sphere.sdk.types.LocalizedEnumFieldType;
@@ -20,9 +21,9 @@ import io.sphere.sdk.types.StringFieldType;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
 import io.sphere.sdk.types.TypeDraftBuilder;
+import io.sphere.sdk.types.commands.TypeCreateCommand;
 import io.sphere.sdk.types.commands.TypeUpdateCommand;
 import io.sphere.sdk.types.queries.TypeQuery;
-import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -52,6 +54,7 @@ import static com.commercetools.sync.integration.commons.utils.TypeITUtils.TYPE_
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.TYPE_NAME_2;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.getTypeByKey;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.populateTargetProject;
+import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -416,7 +419,7 @@ public class TypeSyncIT {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).contains("Failed to update type with key 'key_1'.")
+                assertThat(message).contains("Failed to update type with key: 'key_1'.")
             );
 
         assertThat(exceptions)
@@ -471,7 +474,7 @@ public class TypeSyncIT {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).contains("Failed to update type with key 'key_1'.")
+                assertThat(message).contains("Failed to update type with key: 'key_1'.")
             );
 
         assertThat(exceptions)
@@ -572,11 +575,72 @@ public class TypeSyncIT {
     }
 
     @Test
-    public void sync_WithChangedTypeButBadGatewayException_ShouldFailUpdateType() {
-        // Mock sphere client to return BadGatewayException on the first update request.
+    public void sync_WithConcurrentModificationException_ShouldRetryToUpdateNewTypeWithSuccess() {
+        // Preparation
+        final SphereClient spyClient = buildClientWithConcurrentModificationUpdate();
+
+        final TypeDraft typeDraft = TypeDraftBuilder
+            .of("typeKey", LocalizedString.ofEnglish( "typeName"), ResourceTypeIdsSetBuilder.of().addChannels())
+            .build();
+
+        CTP_TARGET_CLIENT.execute(TypeCreateCommand.of(typeDraft))
+                         .toCompletableFuture()
+                         .join();
+
+        final LocalizedString newTypeName = TYPE_NAME_2;
+        final TypeDraft updatedDraft = TypeDraftBuilder.of(typeDraft).name(newTypeName).build();
+
+        final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(spyClient).build();
+        final TypeSync typeSync = new TypeSync(typeSyncOptions);
+
+        //test
+        final TypeSyncStatistics statistics = typeSync.sync(Collections.singletonList(updatedDraft))
+                                                              .toCompletableFuture()
+                                                              .join();
+
+        // assertion
+        assertThat(statistics).hasValues(1, 0, 1, 0);
+
+        // Assert CTP state.
+        final PagedQueryResult<Type> queryResult =
+            CTP_TARGET_CLIENT.execute(TypeQuery.of().plusPredicates(queryModel ->
+                queryModel.key().is(typeDraft.getKey())))
+                             .toCompletableFuture()
+                             .join();
+
+        assertThat(queryResult.head()).hasValueSatisfying(type ->
+            assertThat(type.getName()).isEqualTo(newTypeName));
+    }
+
+    @Nonnull
+    private SphereClient buildClientWithConcurrentModificationUpdate() {
+
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(TypeUpdateCommand.class)))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture( new BadGatewayException()));
+
+        final TypeUpdateCommand anyTypeUpdate = any(TypeUpdateCommand.class);
+
+        when(spyClient.execute(anyTypeUpdate))
+            .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
+            .thenCallRealMethod();
+
+        return spyClient;
+    }
+
+    @Test
+    public void sync_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
+        //preparation
+        final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
+
+        final TypeDraft typeDraft = TypeDraftBuilder
+            .of("typeKey", LocalizedString.ofEnglish( "typeName"), ResourceTypeIdsSetBuilder.of().addChannels())
+            .build();
+
+        CTP_TARGET_CLIENT.execute(TypeCreateCommand.of(typeDraft))
+                         .toCompletableFuture()
+                         .join();
+
+        final LocalizedString newTypeName = LocalizedString.ofEnglish( "typeName_updated");
+        final TypeDraft updatedDraft = TypeDraftBuilder.of(typeDraft).name(newTypeName).build();
 
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> errors = new ArrayList<>();
@@ -589,82 +653,58 @@ public class TypeSyncIT {
                                   })
                                   .build();
 
-        final TypeDraft typeDraft = TypeDraftBuilder.of(
-            TYPE_KEY_1,
-            TYPE_NAME_2,
-            ResourceTypeIdsSetBuilder.of().addCategories().build())
-                                                    .description(TYPE_DESCRIPTION_2)
-                                                    .fieldDefinitions(singletonList(FIELD_DEFINITION_1))
-                                                    .build();
-
         final TypeSync typeSync = new TypeSync(typeSyncOptions);
-        final TypeSyncStatistics statistics = typeSync.sync(Collections.singletonList(typeDraft))
+
+        //test
+        final TypeSyncStatistics statistics = typeSync.sync(Collections.singletonList(updatedDraft))
                                                       .toCompletableFuture()
                                                       .join();
 
-        // Test and assertion
+        //assertion
         assertThat(statistics).hasValues(1, 0, 0, 1);
+
         assertThat(errorMessages).hasSize(1);
         assertThat(errors).hasSize(1);
 
         assertThat(errors.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);
+        assertThat(errorMessages.get(0)).contains(
+            format("Failed to update type with key: '%s'. Reason: Failed to fetch from CTP while retrying "
+                + "after concurrency modification.", typeDraft.getKey()));
 
-        assertThat(errorMessages.get(0))
-            .contains(format("Failed to update type with key: '%s'. Reason: %s",
-                typeDraft.getKey(), errors.get(0)));
     }
 
-    @Test
-    public void sync_WithChangedTypeButConcurrentModificationException_ShouldRetryToUpdateNewTypeWithSuccess() {
+    @Nonnull
+    private SphereClient buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry() {
 
-        // Mock sphere client to return ConcurrentModification on the first update request.
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(TypeUpdateCommand.class)))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()))
-            .thenCallRealMethod();
-
-        final List<String> errorMessages = new ArrayList<>();
-        final List<Throwable> errors = new ArrayList<>();
-
-        final TypeSyncOptions typeSyncOptions =
-            TypeSyncOptionsBuilder.of(spyClient)
-                                      .errorCallback((errorMessage, error) -> {
-                                          errorMessages.add(errorMessage);
-                                          errors.add(error);
-                                      })
-                                      .build();
-
-        final TypeDraft typeDraft = TypeDraftBuilder.of(
-            TYPE_KEY_1,
-            TYPE_NAME_2,
-            ResourceTypeIdsSetBuilder.of().addCategories().build())
-                                                    .description(TYPE_DESCRIPTION_2)
-                                                    .fieldDefinitions(singletonList(FIELD_DEFINITION_1))
-                                                    .build();
-
-        final TypeSync typeSync = new TypeSync(typeSyncOptions);
-        final TypeSyncStatistics statistics = typeSync.sync(Collections.singletonList(typeDraft))
-                                                              .toCompletableFuture()
-                                                              .join();
-
-        // Test and assertion
-        assertThat(statistics).hasValues(1, 0, 1, 0);
-        assertThat(errorMessages).isEmpty();
-        assertThat(errors).isEmpty();
-    }
-
-    @Test
-    public void sync_WithChangedTypeButBadGatewayException_ShouldFailToReFetchAndUpdate() {
-        // Mock sphere client to return ConcurrentModification on the first update request.
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(TypeUpdateCommand.class)))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture( new ConcurrentModificationException()))
-            .thenCallRealMethod();
-
         when(spyClient.execute(any(TypeQuery.class)))
-            .thenCallRealMethod() // fetchMatchingTypesByKeys
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
+            .thenCallRealMethod() // Call real fetch on fetching matching types
+            .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()));
 
+        final TypeUpdateCommand anyTypeUpdate = any(TypeUpdateCommand.class);
+
+        when(spyClient.execute(anyTypeUpdate))
+            .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
+            .thenCallRealMethod();
+
+        return spyClient;
+    }
+
+    @Test
+    public void sync__WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
+        //preparation
+        final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
+
+        final TypeDraft typeDraft = TypeDraftBuilder
+            .of("typeKey", LocalizedString.ofEnglish( "typeName"), ResourceTypeIdsSetBuilder.of().addChannels())
+            .build();
+
+        CTP_TARGET_CLIENT.execute(TypeCreateCommand.of(typeDraft))
+                         .toCompletableFuture()
+                         .join();
+
+        final LocalizedString newTypeName = LocalizedString.ofEnglish( "typeName_updated");
+        final TypeDraft updatedDraft = TypeDraftBuilder.of(typeDraft).name(newTypeName).build();
 
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> errors = new ArrayList<>();
@@ -677,32 +717,41 @@ public class TypeSyncIT {
                                   })
                                   .build();
 
-        final TypeDraft typeDraft = TypeDraftBuilder.of(
-            TYPE_KEY_1,
-            TYPE_NAME_2,
-            ResourceTypeIdsSetBuilder.of().addCategories().build())
-                                                    .description(TYPE_DESCRIPTION_2)
-                                                    .fieldDefinitions(singletonList(FIELD_DEFINITION_1))
-                                                    .build();
-
         final TypeSync typeSync = new TypeSync(typeSyncOptions);
-        final TypeSyncStatistics statistics = typeSync.sync(Collections.singletonList(typeDraft))
+        //test
+        final TypeSyncStatistics statistics = typeSync.sync(Collections.singletonList(updatedDraft))
                                                       .toCompletableFuture()
                                                       .join();
 
-        // Test and assertion
+        // Assertion
         assertThat(statistics).hasValues(1, 0, 0, 1);
-        assertThat(errorMessages).hasSize(2);
-        assertThat(errors).hasSize(2);
 
-        assertThat(errors.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);
-        assertThat(errorMessages.get(0))
-            .contains(format("Failed to fetch types with keys: '%s'. Reason: %s",
-                typeDraft.getKey(), errors.get(0)));
+        assertThat(errorMessages).hasSize(1);
+        assertThat(errors).hasSize(1);
+        assertThat(errorMessages.get(0)).contains(
+            format("Failed to update type with key: '%s'. Reason: Not found when attempting to fetch while "
+                + "retrying after concurrency modification.", typeDraft.getKey()));
 
-        assertThat(errorMessages.get(1))
-            .contains(format("Failed to update type with key: '%s'. Reason: Failed to fetch type on retry.",
-                typeDraft.getKey()));
+    }
+
+    @Nonnull
+    private SphereClient buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry() {
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final TypeQuery anyTypeQuery = any(TypeQuery.class);
+
+        when(spyClient.execute(anyTypeQuery))
+            .thenCallRealMethod() // Call real fetch on fetching matching types
+            .thenReturn(CompletableFuture.completedFuture(PagedQueryResult.empty()));
+
+
+        final TypeUpdateCommand anyTypeUpdate = any(TypeUpdateCommand.class);
+
+        when(spyClient.execute(anyTypeUpdate))
+            .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
+            .thenCallRealMethod();
+
+
+        return spyClient;
     }
 
 }

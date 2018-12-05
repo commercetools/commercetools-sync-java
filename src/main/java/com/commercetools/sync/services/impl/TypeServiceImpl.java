@@ -4,7 +4,6 @@ import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.queries.PagedResult;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
 import io.sphere.sdk.types.commands.TypeCreateCommand;
@@ -25,6 +24,7 @@ import java.util.function.Function;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.http.util.TextUtils.isBlank;
 
 /**
@@ -71,18 +71,24 @@ public final class TypeServiceImpl extends BaseService<TypeDraft, Type, BaseSync
     @Nonnull
     @Override
     public CompletionStage<Optional<Type>> fetchType(@Nullable final String key) {
+
         if (isBlank(key)) {
             return CompletableFuture.completedFuture(Optional.empty());
         }
 
-        return syncOptions.getCtpClient()
-                          .execute(TypeQuery.of().plusPredicates(typeQueryModel -> typeQueryModel.key().is(key)))
-                          .thenApply(PagedResult::head)
-                          .exceptionally(sphereException -> {
-                              syncOptions.applyErrorCallback(format(FETCH_FAILED, key, sphereException),
-                                  sphereException);
-                              return Optional.empty();
-                          });
+        final TypeQuery typeQuery =
+            TypeQuery.of().plusPredicates(queryModel -> queryModel.key().is(key));
+
+        return syncOptions
+            .getCtpClient()
+            .execute(typeQuery)
+            .thenApply(typePagedQueryResult ->
+                typePagedQueryResult
+                    .head()
+                    .map(type -> {
+                        keyToIdCache.put(type.getKey(), type.getId());
+                        return type;
+                    }));
     }
 
     @Nonnull
@@ -101,11 +107,20 @@ public final class TypeServiceImpl extends BaseService<TypeDraft, Type, BaseSync
 
     @Nonnull
     private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
-        final Consumer<List<Type>> typePageConsumer = typesPage ->
-            typesPage.forEach(type -> keyToIdCache.put(type.getKey(), type.getId()));
+
+        final Consumer<List<Type>> typePageConsumer = typePage ->
+            typePage.forEach(type -> {
+                final String fetchedTypeKey = type.getKey();
+                final String id = type.getId();
+                if (isNotBlank(fetchedTypeKey)) {
+                    keyToIdCache.put(fetchedTypeKey, id);
+                } else {
+                    syncOptions.applyWarningCallback(format("Type with id: '%s' has no key set. Keys are"
+                        + " required for type matching.", id));
+                }
+            });
 
         return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), TypeQuery.of(), typePageConsumer)
-                            .thenAccept(result -> isCached = true)
                             .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
     }
 }

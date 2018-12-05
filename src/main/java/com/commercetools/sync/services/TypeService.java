@@ -59,14 +59,22 @@ public interface TypeService {
     CompletionStage<Optional<Type>> fetchType(@Nullable final String key);
 
     /**
-     * Given a {@link TypeDraft}, this method creates a {@link Type} based on it in the CTP project defined in an
-     * injected {@link io.sphere.sdk.client.SphereClient}. The created type's id and key are also
-     * cached. This method returns {@link CompletionStage}&lt;{@link Type}&gt; in which the result of it's
-     * completion contains an instance of the {@link Type} which was created in the CTP project.
+     * Given a resource draft of type {@link TypeDraft}, this method attempts to create a resource
+     * {@link Type} based on it in the CTP project defined by the sync options.
      *
-     * @param typeDraft the {@link TypeDraft} to create a {@link Type} based off of.
-     * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion contains an
-     *         {@link Optional} that contains the matching {@link Type} if exists, otherwise empty.
+     * <p>A completion stage containing an empty option and the error callback will be triggered in those cases:
+     * <ul>
+     *     <li>the draft has a blank key</li>
+     *     <li>the create request fails on CTP</li>
+     * </ul>
+     *
+     * <p>On the other hand, if the resource gets created successfully on CTP, then the created resource's id and
+     * key are cached and the method returns a {@link CompletionStage} in which the result of it's completion
+     * contains an instance {@link Optional} of the resource which was created.
+     *
+     * @param typeDraft the resource draft to create a resource based off of.
+     * @return a {@link CompletionStage} containing an optional with the created resource if successful otherwise an
+     *         empty optional.
      */
     @Nonnull
     CompletionStage<Optional<Type>> createType(@Nonnull final TypeDraft typeDraft);

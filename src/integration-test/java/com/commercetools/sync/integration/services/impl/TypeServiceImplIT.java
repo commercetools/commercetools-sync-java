@@ -6,13 +6,14 @@ import com.commercetools.sync.services.impl.TypeServiceImpl;
 import com.commercetools.sync.types.TypeSyncOptions;
 import com.commercetools.sync.types.TypeSyncOptionsBuilder;
 import io.sphere.sdk.client.BadGatewayException;
+import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.errors.DuplicateFieldError;
 import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
 import io.sphere.sdk.types.TypeDraftBuilder;
-import io.sphere.sdk.types.commands.TypeCreateCommand;
 import io.sphere.sdk.types.commands.updateactions.ChangeKey;
 import io.sphere.sdk.types.commands.updateactions.ChangeName;
 import io.sphere.sdk.types.queries.TypeQuery;
@@ -38,12 +39,14 @@ import static com.commercetools.sync.integration.commons.utils.TypeITUtils.TYPE_
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.TYPE_NAME_1;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.deleteTypes;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
-import static java.lang.String.format;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class TypeServiceImplIT {
@@ -101,25 +104,6 @@ public class TypeServiceImplIT {
         assertThat(typeId).isNotEmpty();
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
-    }
-
-    @Test
-    public void fetchCachedTypeId_WithNewlyCreatedTypeAfterCaching_ShouldNotFetchNewType() {
-        // Fetch any type to populate cache
-        typeService.fetchCachedTypeId("anyTypeKey").toCompletableFuture().join();
-
-        // Create new type
-        final String newTypeKey = "new_type_key";
-        final TypeDraft draft = TypeDraftBuilder
-                .of(newTypeKey, LocalizedString.of(Locale.ENGLISH, "typeName"),
-                        ResourceTypeIdsSetBuilder.of().addChannels())
-                .build();
-        CTP_TARGET_CLIENT.execute(TypeCreateCommand.of(draft)).toCompletableFuture().join();
-
-        final Optional<String> newTypeId =
-                typeService.fetchCachedTypeId(newTypeKey).toCompletableFuture().join();
-
-        assertThat(newTypeId).isEmpty();
     }
 
     @Test
@@ -226,7 +210,7 @@ public class TypeServiceImplIT {
     }
 
     @Test
-    public void createType_WithValidType_ShouldCreateType() {
+    public void createType_WithValidType_ShouldCreateTypeAndCacheId() {
         final TypeDraft newTypeDraft = TypeDraftBuilder.of(
                 TYPE_KEY_1,
                 TYPE_NAME_1,
@@ -235,43 +219,121 @@ public class TypeServiceImplIT {
                                                        .fieldDefinitions(singletonList(FIELD_DEFINITION_1))
                                                        .build();
 
-        final Optional<Type> createdType = typeService.createType(newTypeDraft)
-                                            .toCompletableFuture().join();
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final TypeSyncOptions spyOptions = TypeSyncOptionsBuilder
+            .of(spyClient)
+            .errorCallback((errorMessage, exception) -> {
+                errorCallBackMessages.add(errorMessage);
+                errorCallBackExceptions.add(exception);
+            })
+            .build();
 
-        assertThat(createdType).isNotNull();
+        final TypeService spyTypeService = new TypeServiceImpl(spyOptions);
 
-        final Optional<Type> fetchedType = CTP_TARGET_CLIENT
-            .execute(TypeQuery.of()
-                              .withPredicates(typeQueryModel ->
-                                  typeQueryModel.key().is(createdType.get().getKey())))
+        //test
+        final Optional<Type> createdType = spyTypeService
+            .createType(newTypeDraft)
+            .toCompletableFuture().join();
+
+        final Optional<Type> queriedOptional = CTP_TARGET_CLIENT
+            .execute(TypeQuery.of().withPredicates(typeQueryModel ->
+                typeQueryModel.key().is(TYPE_KEY_1)))
             .toCompletableFuture().join().head();
 
-        assertThat(fetchedType).hasValueSatisfying(oldType ->
-            assertThat(createdType).hasValueSatisfying(newType -> {
-                assertThat(newType.getKey()).isEqualTo(newTypeDraft.getKey());
-                assertThat(newType.getDescription()).isEqualTo(oldType.getDescription());
-                assertThat(newType.getName()).isEqualTo(oldType.getName());
-                assertThat(newType.getFieldDefinitions()).isEqualTo(oldType.getFieldDefinitions());
+        assertThat(queriedOptional).hasValueSatisfying(queried ->
+            assertThat(createdType).hasValueSatisfying(created -> {
+                assertThat(created.getKey()).isEqualTo(queried.getKey());
+                assertThat(created.getDescription()).isEqualTo(queried.getDescription());
+                assertThat(created.getName()).isEqualTo(queried.getName());
+                assertThat(created.getFieldDefinitions()).isEqualTo(queried.getFieldDefinitions());
             }));
+
+        // Assert that the created type is cached
+        final Optional<String> typeId =
+            spyTypeService.fetchCachedTypeId(TYPE_KEY_1).toCompletableFuture().join();
+        assertThat(typeId).isPresent();
+        verify(spyClient, times(0)).execute(any(TypeQuery.class));
     }
 
     @Test
-    public void createType_WithInvalidType_ShouldCompleteExceptionally() {
+    public void createType_WithInvalidType_ShouldHaveEmptyOptionalAsAResult() {
+        //preparation
         final TypeDraft newTypeDraft = TypeDraftBuilder.of(
-                TYPE_KEY_1,
-                null,
+                "",
+                TYPE_NAME_1,
                 ResourceTypeIdsSetBuilder.of().addCategories().build())
                                                        .description(TYPE_DESCRIPTION_1)
                                                        .fieldDefinitions(singletonList(FIELD_DEFINITION_1))
                                                        .build();
 
-        typeService.createType(newTypeDraft)
-                   .exceptionally(exception -> {
-                       assertThat(exception).isNotNull();
-                       assertThat(exception.getMessage()).contains("Request body does not contain valid JSON.");
-                       return null;
-                   })
-                   .toCompletableFuture().join();
+        final TypeSyncOptions options = TypeSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .errorCallback((errorMessage, exception) -> {
+                errorCallBackMessages.add(errorMessage);
+                errorCallBackExceptions.add(exception);
+            })
+            .build();
+
+        final TypeService typeService = new TypeServiceImpl(options);
+
+        // test
+        final Optional<Type> result =
+            typeService.createType(newTypeDraft).toCompletableFuture().join();
+
+        // assertion
+        assertThat(result).isEmpty();
+        assertThat(errorCallBackMessages)
+            .containsExactly("Failed to create draft with key: ''. Reason: Draft key is blank!");
+
+    }
+
+    @Test
+    public void createProductType_WithDuplicateKey_ShouldHaveEmptyOptionalAsAResult() {
+        //preparation
+        final TypeDraft newTypeDraft = TypeDraftBuilder.of(
+            OLD_TYPE_KEY,
+            TYPE_NAME_1,
+            ResourceTypeIdsSetBuilder.of().addCategories().build())
+                                                       .description(TYPE_DESCRIPTION_1)
+                                                       .fieldDefinitions(singletonList(FIELD_DEFINITION_1))
+                                                       .build();
+
+        final TypeSyncOptions options = TypeSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .errorCallback((errorMessage, exception) -> {
+                errorCallBackMessages.add(errorMessage);
+                errorCallBackExceptions.add(exception);
+            })
+            .build();
+
+        final TypeService typeService = new TypeServiceImpl(options);
+
+        // test
+        final Optional<Type> result =
+            typeService.createType(newTypeDraft).toCompletableFuture().join();
+
+        // assertion
+        assertThat(result).isEmpty();
+        assertThat(errorCallBackMessages)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(msg -> assertThat(msg).contains("A duplicate value"));
+
+        assertThat(errorCallBackExceptions)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(exception -> {
+                assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class);
+                final ErrorResponseException errorResponseException = (ErrorResponseException) exception;
+
+                final List<DuplicateFieldError> fieldErrors = errorResponseException
+                    .getErrors()
+                    .stream()
+                    .map(sphereError -> {
+                        assertThat(sphereError.getCode()).isEqualTo(DuplicateFieldError.CODE);
+                        return sphereError.as(DuplicateFieldError.class);
+                    })
+                    .collect(toList());
+                assertThat(fieldErrors).hasSize(1);
+            });
     }
 
     @Test
@@ -344,35 +406,6 @@ public class TypeServiceImplIT {
         final Optional<Type> fetchedTypeOptional =
             executeBlocking(typeService.fetchType(null));
         assertThat(fetchedTypeOptional).isEmpty();
-    }
-
-    @Test
-    public void fetchType_WithBadGateWayExceptionAlways_ShouldFail() {
-        // Mock sphere client to return BadeGatewayException on any request.
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(TypeQuery.class)))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
-            .thenCallRealMethod();
-        final TypeSyncOptions spyOptions = TypeSyncOptionsBuilder.of(spyClient)
-                                                                         .errorCallback(
-                                                                             (errorMessage, exception) -> {
-                                                                                 errorCallBackMessages
-                                                                                     .add(errorMessage);
-                                                                                 errorCallBackExceptions
-                                                                                     .add(exception);
-                                                                             })
-                                                                         .build();
-        final TypeService spyTypeService = new TypeServiceImpl(spyOptions);
-
-        final Optional<Type> fetchedTypeOptional =
-            executeBlocking(spyTypeService.fetchType(OLD_TYPE_KEY));
-        assertThat(fetchedTypeOptional).isEmpty();
-        assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);
-        assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0))
-            .isEqualToIgnoringCase(format("Failed to fetch types with keys: '%s'. Reason: %s",
-                OLD_TYPE_KEY, errorCallBackExceptions.get(0)));
     }
 
 }

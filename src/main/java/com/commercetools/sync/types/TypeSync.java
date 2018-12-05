@@ -4,8 +4,8 @@ import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import com.commercetools.sync.types.helpers.TypeSyncStatistics;
+import com.commercetools.sync.types.utils.TypeSyncUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
@@ -15,12 +15,12 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
-import static com.commercetools.sync.types.utils.TypeSyncUtils.buildActions;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -34,18 +34,15 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  */
 public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOptions> {
 
-    private static final String CTP_TYPE_FETCH_FAILED = "Failed to fetch existing types of keys '%s'.";
+    private static final String CTP_TYPE_FETCH_FAILED = "Failed to fetch existing types with keys: '%s'.";
     private static final String CTP_TYPE_UPDATE_FAILED = "Failed to update type with key: '%s'. Reason: %s" ;
-    private static final String CTP_TYPE_CREATE_FAILED = "Failed to create type of key '%s'.";
     private static final String TYPE_DRAFT_HAS_NO_KEY = "Failed to process type draft without key.";
     private static final String TYPE_DRAFT_IS_NULL = "Failed to process null type draft.";
-    private static final String FETCH_ON_RETRY = "Failed to fetch type on retry.";
 
     private final TypeService typeService;
 
     public TypeSync(@Nonnull final TypeSyncOptions typeSyncOptions) {
-        super(new TypeSyncStatistics(), typeSyncOptions);
-        this.typeService = new TypeServiceImpl(typeSyncOptions);
+        this(typeSyncOptions, new TypeServiceImpl(typeSyncOptions));
     }
 
     /**
@@ -60,7 +57,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      * @param typeService     the type service which is responsible for fetching/caching the Types from the CTP
      *                        project.
      */
-     TypeSync(@Nonnull final TypeSyncOptions typeSyncOptions, @Nonnull final TypeService typeService) {
+    TypeSync(@Nonnull final TypeSyncOptions typeSyncOptions, @Nonnull final TypeService typeService) {
         super(new TypeSyncStatistics(), typeSyncOptions);
         this.typeService = typeService;
     }
@@ -120,7 +117,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
                         final String errorMessage = format(CTP_TYPE_FETCH_FAILED, keys);
                         handleError(errorMessage, exception, keys.size());
                         return CompletableFuture.completedFuture(null);
-                        } else {
+                    } else {
                         return syncBatch(fetchedTypes, validTypeDrafts);
                     }
                 })
@@ -175,6 +172,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      * @param newTypes drafts that need to be synced.
      * @return a {@link CompletionStage} which contains an empty result after execution of the update
      */
+    @Nonnull
     private CompletionStage<Void> syncBatch(
             @Nonnull final Set<Type> oldTypes,
             @Nonnull final Set<TypeDraft> newTypes) {
@@ -187,102 +185,133 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
                     final Type oldType = oldTypeMap.get(newType.getKey());
 
                     return ofNullable(oldType)
-                        .map(type -> updateType(oldType, newType))
-                        .orElseGet(() -> createType(newType));
+                        .map(type -> buildActionsAndUpdate(oldType, newType))
+                        .orElseGet(() -> applyCallbackAndCreate(newType));
                 })
                 .map(CompletionStage::toCompletableFuture)
                 .toArray(CompletableFuture[]::new));
     }
 
     /**
-     * Given a type draft, issues a request to the CTP project to create a corresponding Type.
-     *
-     * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried
-     * out successfully or not. If an exception was thrown on executing the request to CTP, the error handling method
-     * is called.
+     * Given a type draft, this method applies the beforeCreateCallback and then issues a create request to the
+     * CTP project to create the corresponding Type.
      *
      * @param typeDraft the type draft to create the type from.
      * @return a {@link CompletionStage} which contains an empty result after execution of the create.
      */
-    private CompletionStage<Void> createType(@Nonnull final TypeDraft typeDraft) {
-        return syncOptions.applyBeforeCreateCallBack(typeDraft)
-                .map(typeService::createType)
-                .map(creationFuture -> creationFuture
-                        .thenAccept(createdType -> statistics.incrementCreated())
-                        .exceptionally(exception -> {
-                            final String errorMessage = format(CTP_TYPE_CREATE_FAILED,
-                                    typeDraft.getKey());
-                            handleError(errorMessage, exception, 1);
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
+    @Nonnull
+    private CompletionStage<Optional<Type>> applyCallbackAndCreate(
+        @Nonnull final TypeDraft typeDraft) {
 
-                            return null;
-                        }))
-                .orElseGet(() -> CompletableFuture.completedFuture(null));
+        return syncOptions
+            .applyBeforeCreateCallBack(typeDraft)
+            .map(draft -> typeService
+                .createType(draft)
+                .thenApply(typeOptional -> {
+                    if (typeOptional.isPresent()) {
+                        statistics.incrementCreated();
+                    } else {
+                        statistics.incrementFailed();
+                    }
+                    return typeOptional;
+                })
+            )
+            .orElse(CompletableFuture.completedFuture(Optional.empty()));
+    }
+
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
+    @Nonnull
+    private CompletionStage<Optional<Type>> buildActionsAndUpdate(
+        @Nonnull final Type oldType,
+        @Nonnull final TypeDraft newType) {
+
+        final List<UpdateAction<Type>> updateActions = TypeSyncUtils.buildActions(oldType, newType, syncOptions);
+
+        final List<UpdateAction<Type>> updateActionsAfterCallback =
+            syncOptions.applyBeforeUpdateCallBack(updateActions, newType, oldType);
+
+        if (!updateActionsAfterCallback.isEmpty()) {
+            return updateType(oldType, newType, updateActionsAfterCallback);
+        }
+
+        return completedFuture(null);
     }
 
     /**
      * Given an existing {@link Type} and a new {@link TypeDraft}, the method calculates all the
      * update actions required to synchronize the existing type to be the same as the new one. If there are
      * update actions found, a request is made to CTP to update the existing type, otherwise it doesn't issue a
-     * request.  If the update request failed due to a {@link ConcurrentModificationException}, the method recalculates
-     * the update actions required for syncing the {@link Type} and reissues the update request.
+     * request.
      *
      * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried
-     * out successfully or not. If an exception was thrown on executing the request to CTP,
-     * the optional error callback specified in the {@code syncOptions} is called.
+     * out successfully or not. If an exception was thrown on executing the request to CTP,the error handling method
+     * is called.
      *
-     * @param oldType existing type that could be updated.
-     * @param newType draft containing data that could differ from data in {@code oldType}.
+     * @param oldType       existing type that could be updated.
+     * @param newType       draft containing data that could differ from data in {@code oldType}.
+     * @param updateActions the update actions to update the {@link Type} with.
      * @return a {@link CompletionStage} which contains an empty result after execution of the update.
      */
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
-    private CompletionStage<Void> updateType(@Nonnull final Type oldType,
-                                             @Nonnull final TypeDraft newType) {
+    @Nonnull
+    private CompletionStage<Optional<Type>> updateType(
+        @Nonnull final Type oldType,
+        @Nonnull final TypeDraft newType,
+        @Nonnull final List<UpdateAction<Type>> updateActions) {
 
-        final List<UpdateAction<Type>> updateActions = buildActions(oldType, newType, syncOptions);
-
-        final List<UpdateAction<Type>> updateActionsAfterCallback = syncOptions.applyBeforeUpdateCallBack(
-            updateActions,
-            newType,
-            oldType
-        );
-
-        if (!updateActionsAfterCallback.isEmpty()) {
-            return typeService.updateType(oldType, updateActionsAfterCallback)
-                              .handle((updatedType, sphereException) -> sphereException)
-                              .thenCompose(sphereException -> {
-                                  if (sphereException != null) {
-                                      return executeSupplierIfConcurrentModificationException(
-                                          sphereException,
-                                          () -> fetchAndUpdate(oldType, newType),
-                                          () -> {
-                                              final String errorMessage = format(CTP_TYPE_UPDATE_FAILED,
-                                                  newType.getKey(), sphereException);
-                                              handleError(errorMessage, sphereException, 1);
-
-                                              return completedFuture(null);
-                                          });
-                                  } else {
-                                      statistics.incrementUpdated();
-                                      return completedFuture(null);
-                                  }
-                              });
-        }
-
-        return completedFuture(null);
+        return typeService
+            .updateType(oldType, updateActions)
+            .handle(ImmutablePair::new)
+            .thenCompose(updateResponse -> {
+                final Type updatedType = updateResponse.getKey();
+                final Throwable sphereException = updateResponse.getValue();
+                if (sphereException != null) {
+                    return executeSupplierIfConcurrentModificationException(
+                        sphereException,
+                        () -> fetchAndUpdate(oldType, newType),
+                        () -> {
+                            final String errorMessage =
+                                format(CTP_TYPE_UPDATE_FAILED, newType.getKey(),
+                                    sphereException.getMessage());
+                            handleError(errorMessage, sphereException, 1);
+                            return CompletableFuture.completedFuture(Optional.empty());
+                        });
+                } else {
+                    statistics.incrementUpdated();
+                    return CompletableFuture.completedFuture(Optional.of(updatedType));
+                }
+            });
     }
 
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION")
-    private CompletionStage<Void> fetchAndUpdate(@Nonnull final Type oldType,
-                                                 @Nonnull final TypeDraft newType) {
+    private CompletionStage<Optional<Type>> fetchAndUpdate(
+        @Nonnull final Type oldType,
+        @Nonnull final TypeDraft newType) {
 
         final String key = oldType.getKey();
-        return typeService.fetchType(key)
-                          .thenCompose(typeOptional ->
-                              typeOptional
-                                  .map(fetchedType -> updateType(fetchedType, newType))
-                                  .orElseGet(() -> {
-                                      handleError(format(CTP_TYPE_UPDATE_FAILED, key, FETCH_ON_RETRY), null, 1);
-                                      return CompletableFuture.completedFuture(null);
-                                  }));
+        return typeService
+            .fetchType(key)
+            .handle(ImmutablePair::new)
+            .thenCompose(fetchResponse -> {
+                final Optional<Type> fetchedTypeOptional = fetchResponse.getKey();
+                final Throwable exception = fetchResponse.getValue();
+
+                if (exception != null) {
+                    final String errorMessage = format(CTP_TYPE_UPDATE_FAILED, key,
+                        "Failed to fetch from CTP while retrying after concurrency modification.");
+                    handleError(errorMessage, exception, 1);
+                    return CompletableFuture.completedFuture(null);
+                }
+
+                return fetchedTypeOptional
+                    .map(fetchedType -> buildActionsAndUpdate(fetchedType, newType))
+                    .orElseGet(() -> {
+                        final String errorMessage =
+                            format(CTP_TYPE_UPDATE_FAILED, key,
+                                "Not found when attempting to fetch while retrying "
+                                    + "after concurrency modification.");
+                        handleError(errorMessage, null, 1);
+                        return CompletableFuture.completedFuture(null);
+                    });
+            });
     }
 }
