@@ -14,6 +14,7 @@ import io.sphere.sdk.producttypes.queries.ProductTypeQueryBuilder;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public final class ProductTypeServiceImpl
     extends BaseService<ProductTypeDraft, ProductType, BaseSyncOptions> implements ProductTypeService {
@@ -141,5 +143,28 @@ public final class ProductTypeServiceImpl
             @Nonnull final ProductType productType, @Nonnull final List<UpdateAction<ProductType>> updateActions) {
 
         return updateResource(productType, ProductTypeUpdateCommand::of, updateActions);
+    }
+
+    @Nonnull
+    @Override
+    public CompletionStage<Optional<ProductType>> fetchProductType(@Nullable final String key) {
+
+        if (isBlank(key)) {
+            return CompletableFuture.completedFuture(Optional.empty());
+        }
+
+        final ProductTypeQuery productTypeQuery =
+            ProductTypeQuery.of().plusPredicates(queryModel -> queryModel.key().is(key));
+
+        return syncOptions
+            .getCtpClient()
+            .execute(productTypeQuery)
+            .thenApply(productTypePagedQueryResult ->
+                productTypePagedQueryResult
+                    .head()
+                    .map(productType -> {
+                        keyToIdCache.put(productType.getKey(), productType.getId());
+                        return productType;
+                    }));
     }
 }

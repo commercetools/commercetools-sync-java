@@ -16,7 +16,7 @@ import java.util.concurrent.CompletionStage;
 public interface CategoryService {
 
     /**
-     * If not already done once before, it fetches all the category keys from the CTP project defined in a potentially
+     * If not already done once before, it fetches all the category keys from the CTP project defined in an
      * injected {@link io.sphere.sdk.client.SphereClient} and stores a mapping for every category to id in {@link Map}
      * and returns this cached map.
      *
@@ -28,7 +28,7 @@ public interface CategoryService {
 
     /**
      * Given a {@link Set} of category keys, this method fetches a set of all the categories, matching this given set of
-     * keys in the CTP project, defined in a potentially injected {@link io.sphere.sdk.client.SphereClient}. A mapping
+     * keys in the CTP project, defined in an injected {@link io.sphere.sdk.client.SphereClient}. A mapping
      * of the key to the id of the fetched categories is persisted in an in-memory map.
      *
      * @param categoryKeys set of category keys to fetch matching categories by.
