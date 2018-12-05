@@ -191,14 +191,9 @@ public class TypeSyncIT {
 
         final Optional<Type> oldTypeAfter = getTypeByKey(CTP_TARGET_CLIENT, TYPE_KEY_1);
 
-        assertThat(oldTypeAfter).hasValueSatisfying(type -> {
+        assertThat(oldTypeAfter).hasValueSatisfying(type ->
             assertFieldDefinitionsAreEqual(type.getFieldDefinitions(),
-                asList(
-                    FIELD_DEFINITION_1,
-                    FIELD_DEFINITION_2,
-                    FIELD_DEFINITION_3
-                ));
-        });
+                asList(FIELD_DEFINITION_1, FIELD_DEFINITION_2, FIELD_DEFINITION_3)));
     }
 
     @Test
