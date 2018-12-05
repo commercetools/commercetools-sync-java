@@ -18,12 +18,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import static java.lang.String.format;
@@ -36,8 +34,6 @@ import static org.apache.http.util.TextUtils.isBlank;
  */
 public final class TypeServiceImpl extends BaseService<Type, TypeDraft> implements TypeService {
     private static final String FETCH_FAILED = "Failed to fetch types with keys: '%s'. Reason: %s";
-    private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
-    private boolean isCached = false;
 
     public TypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
         super(syncOptions);
