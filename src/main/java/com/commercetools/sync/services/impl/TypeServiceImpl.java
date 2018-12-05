@@ -22,9 +22,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.http.util.TextUtils.isBlank;
 
 /**
@@ -46,6 +44,16 @@ public final class TypeServiceImpl extends BaseService<TypeDraft, Type, BaseSync
             return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
         }
         return fetchAndCache(key);
+    }
+
+    @Nonnull
+    private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
+
+        final Consumer<List<Type>> typePageConsumer = typePage ->
+            typePage.forEach(type -> keyToIdCache.put(type.getKey(), type.getId()));
+
+        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), TypeQuery.of(), typePageConsumer)
+                            .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
     }
 
     @Nonnull
@@ -103,24 +111,5 @@ public final class TypeServiceImpl extends BaseService<TypeDraft, Type, BaseSync
                                             @Nonnull final List<UpdateAction<Type>> updateActions) {
 
         return updateResource(type, TypeUpdateCommand::of, updateActions);
-    }
-
-    @Nonnull
-    private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
-
-        final Consumer<List<Type>> typePageConsumer = typePage ->
-            typePage.forEach(type -> {
-                final String fetchedTypeKey = type.getKey();
-                final String id = type.getId();
-                if (isNotBlank(fetchedTypeKey)) {
-                    keyToIdCache.put(fetchedTypeKey, id);
-                } else {
-                    syncOptions.applyWarningCallback(format("Type with id: '%s' has no key set. Keys are"
-                        + " required for type matching.", id));
-                }
-            });
-
-        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), TypeQuery.of(), typePageConsumer)
-                            .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
     }
 }
