@@ -30,7 +30,6 @@ import static org.apache.http.util.TextUtils.isBlank;
  * TODO: USE graphQL to get only keys. GITHUB ISSUE#84
  */
 public final class TypeServiceImpl extends BaseService<TypeDraft, Type, BaseSyncOptions> implements TypeService {
-    private static final String FETCH_FAILED = "Failed to fetch types with keys: '%s'. Reason: %s";
 
     public TypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
         super(syncOptions);
@@ -107,9 +106,9 @@ public final class TypeServiceImpl extends BaseService<TypeDraft, Type, BaseSync
 
     @Nonnull
     @Override
-    public CompletionStage<Type> updateType(@Nonnull final Type type,
-                                            @Nonnull final List<UpdateAction<Type>> updateActions) {
-
+    public CompletionStage<Type> updateType(
+        @Nonnull final Type type,
+        @Nonnull final List<UpdateAction<Type>> updateActions) {
         return updateResource(type, TypeUpdateCommand::of, updateActions);
     }
 }
