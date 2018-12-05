@@ -60,8 +60,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      * @param typeService     the type service which is responsible for fetching/caching the Types from the CTP
      *                        project.
      */
-     TypeSync(@Nonnull final TypeSyncOptions typeSyncOptions,
-                    @Nonnull final TypeService typeService) {
+     TypeSync(@Nonnull final TypeSyncOptions typeSyncOptions, @Nonnull final TypeService typeService) {
         super(new TypeSyncStatistics(), typeSyncOptions);
         this.typeService = typeService;
     }
@@ -110,24 +109,25 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
         } else {
             final Set<String> keys = validTypeDrafts.stream().map(TypeDraft::getKey).collect(toSet());
 
-            return typeService.fetchMatchingTypesByKeys(keys)
-                              .handle(ImmutablePair::new)
-                              .thenCompose(fetchResponse -> {
-                                  final Set<Type> fetchedTypes = fetchResponse.getKey();
-                                  final Throwable exception = fetchResponse.getValue();
+            return typeService
+                .fetchMatchingTypesByKeys(keys)
+                .handle(ImmutablePair::new)
+                .thenCompose(fetchResponse -> {
+                    final Set<Type> fetchedTypes = fetchResponse.getKey();
+                    final Throwable exception = fetchResponse.getValue();
 
-                                  if (exception != null) {
-                                      final String errorMessage = format(CTP_TYPE_FETCH_FAILED, keys);
-                                      handleError(errorMessage, exception, keys.size());
-                                      return CompletableFuture.completedFuture(null);
-                                  } else {
-                                      return syncBatch(fetchedTypes, validTypeDrafts);
-                                  }
-                              })
-                              .thenApply(ignored -> {
-                                  statistics.incrementProcessed(batch.size());
-                                  return statistics;
-                              });
+                    if (exception != null) {
+                        final String errorMessage = format(CTP_TYPE_FETCH_FAILED, keys);
+                        handleError(errorMessage, exception, keys.size());
+                        return CompletableFuture.completedFuture(null);
+                        } else {
+                        return syncBatch(fetchedTypes, validTypeDrafts);
+                    }
+                })
+                .thenApply(ignored -> {
+                    statistics.incrementProcessed(batch.size());
+                    return statistics;
+                });
         }
     }
 
