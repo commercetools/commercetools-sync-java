@@ -67,8 +67,8 @@ import static org.mockito.Mockito.when;
 public class TypeSyncIT {
 
     /**
-     * Deletes types from source and target CTP projects.
-     * Populates source and target CTP projects with test data.
+     * Deletes types from the target CTP projects.
+     * Populates the target CTP project with test data.
      */
     @Before
     public void setup() {
