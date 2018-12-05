@@ -58,7 +58,7 @@
     - **Product Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
     - **Category Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
     - **Inventory Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
-    - **ProductType Sync** - Added `ProductTypeSyncBenchmark` to benchmark the product type sync, to be able to compare the performance of the sync with the future releases. [#301](https://github.com/commercetools/commercetools-sync-java/issues/301)
+    - **ProductType Sync** - Added benchmarks for the `productType` sync to be able to compare the performance of the sync with the future releases. [#301](https://github.com/commercetools/commercetools-sync-java/issues/301)
     - **Commons** - Bumped commercetools-jvm-sdk to version [1.37.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_37_0).
     - **Commons** - Bumped `mockito` to 2.23.4.
     - **Commons** - Bumped `com.adarshr.test-logger` to 1.6.0.
@@ -69,7 +69,7 @@
     - **Commons** - Bumped `com.adarshr.test-logger` to 1.6.0.
     - **Commons** - Bumped `org.ajoberstar.grgit` to 3.0.0.
     - **Commons** - Bumped gradle to version [gradle-5.0](https://docs.gradle.org/5.0/release-notes.html)
-    - **Type Sync** - Added `TypeSyncBenchmark` to benchmark the type sync, to be able to compare the performance of the sync with the future releases. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
+    - **Type Sync** - Added benchmarks for the `type` sync to be able to compare the performance of the sync with the future releases. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
     
 - 🚧 **Breaking Changes** (11) 
     - **Product Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
