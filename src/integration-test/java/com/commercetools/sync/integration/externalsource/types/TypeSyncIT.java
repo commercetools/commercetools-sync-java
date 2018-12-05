@@ -574,15 +574,14 @@ public class TypeSyncIT {
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdate();
 
         final TypeDraft typeDraft = TypeDraftBuilder
-            .of("typeKey", LocalizedString.ofEnglish( "typeName"), ResourceTypeIdsSetBuilder.of().addChannels())
+            .of(TYPE_KEY_2, TYPE_NAME_2, ResourceTypeIdsSetBuilder.of().addChannels())
             .build();
 
         CTP_TARGET_CLIENT.execute(TypeCreateCommand.of(typeDraft))
                          .toCompletableFuture()
                          .join();
 
-        final LocalizedString newTypeName = TYPE_NAME_2;
-        final TypeDraft updatedDraft = TypeDraftBuilder.of(typeDraft).name(newTypeName).build();
+        final TypeDraft updatedDraft = TypeDraftBuilder.of(typeDraft).name(TYPE_NAME_1).build();
 
         final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(spyClient).build();
         final TypeSync typeSync = new TypeSync(typeSyncOptions);
@@ -603,7 +602,7 @@ public class TypeSyncIT {
                              .join();
 
         assertThat(queryResult.head()).hasValueSatisfying(type ->
-            assertThat(type.getName()).isEqualTo(newTypeName));
+            assertThat(type.getName()).isEqualTo(TYPE_NAME_1));
     }
 
     @Nonnull
