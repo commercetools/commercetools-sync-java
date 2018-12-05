@@ -32,7 +32,7 @@ import static org.apache.http.util.TextUtils.isBlank;
  * Implementation of TypeService interface.
  * TODO: USE graphQL to get only keys. GITHUB ISSUE#84
  */
-public final class TypeServiceImpl extends BaseService<Type, TypeDraft> implements TypeService {
+public final class TypeServiceImpl extends BaseService<TypeDraft, Type, BaseSyncOptions> implements TypeService {
     private static final String FETCH_FAILED = "Failed to fetch types with keys: '%s'. Reason: %s";
 
     public TypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
@@ -91,7 +91,7 @@ public final class TypeServiceImpl extends BaseService<Type, TypeDraft> implemen
     @Nonnull
     @Override
     public CompletionStage<Optional<Type>> createType(@Nonnull final TypeDraft typeDraft) {
-        return applyCallbackAndCreate(typeDraft, typeDraft.getKey(), TypeCreateCommand::of);
+        return createResource(typeDraft, TypeDraft::getKey, TypeCreateCommand::of);
     }
 
     @Nonnull
