@@ -60,7 +60,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      * @param typeService     the type service which is responsible for fetching/caching the Types from the CTP
      *                        project.
      */
-    public TypeSync(@Nonnull final TypeSyncOptions typeSyncOptions,
+     TypeSync(@Nonnull final TypeSyncOptions typeSyncOptions,
                     @Nonnull final TypeService typeService) {
         super(new TypeSyncStatistics(), typeSyncOptions);
         this.typeService = typeService;
