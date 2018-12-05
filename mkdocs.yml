@@ -49,6 +49,7 @@ nav:
       - Quick Start: usage/QUICK_START.md
       - Product Sync: usage/PRODUCT_SYNC.md
       - ProductType Sync: usage/PRODUCT_TYPE_SYNC.md
+      - Type Sync: usage/TYPE_SYNC.md
       - Category Sync: usage/CATEGORY_SYNC.md
       - InventoryEntry Sync: usage/INVENTORY_SYNC.md
       - Advanced:

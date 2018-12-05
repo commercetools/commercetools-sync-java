@@ -26,8 +26,8 @@ against a [ProductTypeDraft](https://docs.commercetools.com/http-api-projects-pr
 
 #### Prerequisites
 
-1. The sync expects a list of `ProductTypeDrafts`s that have their `key` fields set to be matched with
-product types  in the target CTP project. Also, the product types  in the target project are expected to have the `key`
+1. The sync expects a list of `ProductTypeDraft`s that have their `key` fields set to be matched with
+product types in the target CTP project. Also, the product types in the target project are expected to have the `key`
 fields set, otherwise they won't be matched.
 
 2. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
@@ -65,7 +65,10 @@ __Note__ The statistics object contains the processing time of the last batch on
  1. The sync processing time should not take into account the time between supplying batches to the sync.
  2. It is not known by the sync which batch is going to be the last one supplied.
 
-More examples of how to use the sync can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/producttypes/ProductTypeSyncIT.java).
+##### More examples of how to use the sync
+ 
+ 1. [Sync from another CTP project as a source](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/producttypes/ProductTypeSyncIT.java).
+ 2. [Sync from an external source](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/producttypes/ProductTypeSyncIT.java).
 
 *Make sure to read the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md) for optimal performance.*
 
@@ -88,3 +91,4 @@ More examples of those utils for different fields can be found [here](https://gi
 
 ## Caveats    
 1. Syncing product types with an attribute of type [NestedType](https://docs.commercetools.com/http-api-projects-productTypes.html#nestedtype) is not supported yet.
+2. Currently the sync would handle changes to Enum or LocalizedEnum Types but not [Set](https://docs.commercetools.com/http-api-projects-types.html#settype) of either. [#313](https://github.com/commercetools/commercetools-sync-java/issues/313)
