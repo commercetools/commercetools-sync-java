@@ -41,7 +41,7 @@ public interface TypeService {
      *
      * @param keys set of Type keys to fetch matching Type by.
      * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of its completion contains a {@link Set}
-     *          of all matching Type.
+     *          of all matching Types.
      */
     @Nonnull
     CompletionStage<Set<Type>> fetchMatchingTypesByKeys(@Nonnull final Set<String> keys);
