@@ -496,4 +496,41 @@ public class BuildFieldDefinitionUpdateActionsTest {
             RemoveFieldDefinition.of(oldFieldDefinition.getName()),
             AddFieldDefinition.of(newFieldDefinition));
     }
+
+    @Test
+    public void buildFieldDefinitionsUpdateActions_WithDefinitionWithNullType_ShouldBuildChangeFieldDefinitionOrderAction() {
+        // preparation
+        final Type oldType = mock(Type.class);
+        final FieldDefinition oldFieldDefinition = FieldDefinition.of(
+            LocalizedEnumFieldType.of(emptyList()),
+            "field_1",
+            LocalizedString.ofEnglish("label1"),
+            false,
+            TextInputHint.SINGLE_LINE);
+
+
+        when(oldType.getFieldDefinitions()).thenReturn(singletonList(oldFieldDefinition));
+
+        final FieldDefinition newFieldDefinition = FieldDefinition.of(
+            null,
+            "field_1",
+            LocalizedString.ofEnglish("label2"),
+            false,
+            TextInputHint.SINGLE_LINE);
+
+        final TypeDraft typeDraft = TypeDraftBuilder
+            .of("key", LocalizedString.ofEnglish("label"), emptySet())
+            .fieldDefinitions(asList(null, newFieldDefinition))
+            .build();
+
+        // test
+        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
+            oldType,
+            typeDraft,
+            SYNC_OPTIONS
+        );
+
+        // assertion
+        assertThat(updateActions).isEmpty();
+    }
 }
