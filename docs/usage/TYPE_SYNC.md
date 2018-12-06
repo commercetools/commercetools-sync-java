@@ -12,6 +12,8 @@ against a [TypeDraft](https://docs.commercetools.com/http-api-projects-types.htm
   - [Sync list of type drafts](#sync-list-of-type-drafts)
     - [Prerequisites](#prerequisites)
     - [Running the sync](#running-the-sync)
+    - [Important to Note](#important-to-note)
+    - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)
   - [Build all update actions](#build-all-update-actions)
   - [Build particular update action(s)](#build-particular-update-actions)
 - [Caveats](#caveats)
@@ -62,7 +64,11 @@ __Note__ The statistics object contains the processing time of the last batch on
  1. The sync processing time should not take into account the time between supplying batches to the sync.
  2. It is not known by the sync which batch is going to be the last one supplied.
  
-##### More examples of how to use the sync
+#### Important to Note
+1. If two matching `fieldDefinition`s on the matching `type`s have a different `FieldType`, the sync will
+**remove** the existing `fieldDefinition` and then **add** a new `fieldDefinition` with the new `FieldType`.
+ 
+#### More examples of how to use the sync
  
  1. [Sync from another CTP project as a source](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/types/TypeSyncIT.java).
  2. [Sync from an external source](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/types/TypeSyncIT.java).
