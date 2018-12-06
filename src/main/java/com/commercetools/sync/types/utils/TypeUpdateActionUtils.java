@@ -63,15 +63,15 @@ public final class TypeUpdateActionUtils {
      * a list of field definitions in which a duplicate name exists, the error callback is triggered and an empty list
      * is returned.
      *
-     * <p>
-     *  Note: Currently this util doesn't support the following:
+     *
+     * <p>Note: Currently this util doesn't support the following:
      *  <ul>
      *      <li>updating the inputHint of a FieldDefinition</li>
      *      <li>removing the EnumValue/LocalizedEnumValue of a FieldDefinition</li>
      *      <li>updating the label of a EnumValue/LocalizedEnumValue of a FieldDefinition</li>
      *  </ul>
      *  TODO: Check GITHUB ISSUE#339 for missing FieldDefinition update actions.
-     * </p>
+     *
      *
      * @param oldType        the type which should be updated.
      * @param newType        the type draft where we get the key.

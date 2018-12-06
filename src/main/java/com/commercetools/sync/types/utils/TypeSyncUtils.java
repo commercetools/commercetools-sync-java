@@ -23,14 +23,14 @@ public final class TypeSyncUtils {
      * result. If no update actions are needed, for example in case where both the {@link Type} and the
      * {@link TypeDraft} have the same fields, an empty {@link List} is returned.
      *
-     * <p>
-     *  Note: Currently this util doesn't support the following:
+     *
+     * <p>Note: Currently this util doesn't support the following:
      *  <ul>
      *      <li>updating the inputHint of a FieldDefinition</li>
      *      <li>removing the EnumValue/LocalizedEnumValue of a FieldDefinition</li>
      *      <li>updating the label of a EnumValue/LocalizedEnumValue of a FieldDefinition</li>
      *  </ul>
-     * </p>
+     *
      *
      * @param oldType       the {@link Type} which should be updated.
      * @param newType       the {@link TypeDraft} where we get the new data.
