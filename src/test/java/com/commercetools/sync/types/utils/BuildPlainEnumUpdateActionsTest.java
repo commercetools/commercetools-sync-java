@@ -1,4 +1,4 @@
-package com.commercetools.sync.types.utils.typeactionutils;
+package com.commercetools.sync.types.utils;
 
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.types.Type;

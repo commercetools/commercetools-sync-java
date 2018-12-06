@@ -1,4 +1,4 @@
-package com.commercetools.sync.types.utils.typeactionutils;
+package com.commercetools.sync.types.utils;
 
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import com.commercetools.sync.types.utils.LocalizedEnumValueUpdateActionUtils;
