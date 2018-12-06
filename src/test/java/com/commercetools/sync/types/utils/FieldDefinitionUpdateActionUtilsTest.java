@@ -18,7 +18,7 @@ import org.junit.Test;
 import java.util.List;
 import java.util.Optional;
 
-import static com.commercetools.sync.types.FieldDefinitionTestHelper.stringFieldDefinition;
+import static com.commercetools.sync.types.utils.FieldDefinitionFixtures.stringFieldDefinition;
 import static com.commercetools.sync.types.utils.FieldDefinitionUpdateActionUtils.buildActions;
 import static com.commercetools.sync.types.utils.FieldDefinitionUpdateActionUtils.buildChangeLabelUpdateAction;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;

@@ -23,8 +23,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.commercetools.sync.types.FieldDefinitionTestHelper.localizedStringFieldDefinition;
-import static com.commercetools.sync.types.FieldDefinitionTestHelper.stringFieldDefinition;
+import static com.commercetools.sync.types.utils.FieldDefinitionFixtures.*;
 import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildFieldDefinitionsUpdateActions;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.util.Arrays.asList;
@@ -36,53 +35,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class BuildFieldDefinitionUpdateActionsTest {
-    private static final String RES_ROOT =
-        "com/commercetools/sync/types/utils/updatefielddefinitions/fields/";
-
-    private static final String TYPE_WITH_FIELDS_AB =
-        RES_ROOT + "type-with-field-definitions-ab.json";
-    private static final String TYPE_WITH_FIELDS_ABB =
-        RES_ROOT + "type-with-field-definitions-abb.json";
-    private static final String TYPE_WITH_FIELDS_ABC =
-        RES_ROOT + "type-with-field-definitions-abc.json";
-    private static final String TYPE_WITH_FIELDS_ABCD =
-        RES_ROOT + "type-with-field-definitions-abcd.json";
-    private static final String TYPE_WITH_FIELDS_ABD =
-        RES_ROOT + "type-with-field-definitions-abd.json";
-    private static final String TYPE_WITH_FIELDS_CAB =
-        RES_ROOT + "type-with-field-definitions-cab.json";
-    private static final String TYPE_WITH_FIELDS_CB =
-        RES_ROOT + "type-with-field-definitions-cb.json";
-    private static final String TYPE_WITH_FIELDS_ACBD =
-        RES_ROOT + "type-with-field-definitions-acbd.json";
-    private static final String TYPE_WITH_FIELDS_ADBC =
-        RES_ROOT + "type-with-field-definitions-adbc.json";
-    private static final String TYPE_WITH_FIELDS_CBD =
-        RES_ROOT + "type-with-field-definitions-cbd.json";
-    private static final String TYPE_WITH_FIELDS_ABC_WITH_DIFFERENT_TYPE =
-        RES_ROOT + "type-with-field-definitions-abc-with-different-type.json";
-
-    private static final TypeSyncOptions SYNC_OPTIONS = TypeSyncOptionsBuilder
-        .of(mock(SphereClient.class))
-        .build();
-
-    private static final String FIELD_A = "a";
-    private static final String FIELD_B = "b";
-    private static final String FIELD_C = "c";
-    private static final String FIELD_D = "d";
-    private static final String LABEL_EN = "label_en";
-
-    private static final FieldDefinition FIELD_DEFINITION_A =
-            stringFieldDefinition(FIELD_A, LABEL_EN, false, TextInputHint.SINGLE_LINE);
-    private static final FieldDefinition FIELD_DEFINITION_A_LOCALIZED_TYPE =
-            localizedStringFieldDefinition(FIELD_A, LABEL_EN, false, TextInputHint.SINGLE_LINE);
-    private static final FieldDefinition FIELD_DEFINITION_B =
-            stringFieldDefinition(FIELD_B, LABEL_EN, false, TextInputHint.SINGLE_LINE);
-    private static final FieldDefinition FIELD_DEFINITION_C =
-            stringFieldDefinition(FIELD_C, LABEL_EN, false, TextInputHint.SINGLE_LINE);
-    private static final FieldDefinition FIELD_DEFINITION_D =
-            stringFieldDefinition(FIELD_D, LABEL_EN, false, TextInputHint.SINGLE_LINE);
-
     private static final String TYPE_KEY = "key";
     private static final LocalizedString TYPE_NAME = LocalizedString.ofEnglish("name");
     private static final LocalizedString TYPE_DESCRIPTION = LocalizedString.ofEnglish("description");
@@ -93,6 +45,10 @@ public class BuildFieldDefinitionUpdateActionsTest {
             ResourceTypeIdsSetBuilder.of().addCategories().build())
             .description(TYPE_DESCRIPTION)
             .build();
+
+    private static final TypeSyncOptions SYNC_OPTIONS = TypeSyncOptionsBuilder
+        .of(mock(SphereClient.class))
+        .build();
 
     @Test
     public void buildFieldDefinitionsUpdateActions_WithNullNewFieldDefinitionsAndExistingFieldDefinitions_ShouldBuild3RemoveActions() {
