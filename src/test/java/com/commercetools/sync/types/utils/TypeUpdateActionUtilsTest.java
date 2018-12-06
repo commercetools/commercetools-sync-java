@@ -74,7 +74,6 @@ public class TypeUpdateActionUtilsTest {
     public void buildChangeNameAction_WithDifferentValues_ShouldReturnAction() {
         final Optional<UpdateAction<Type>> result = buildChangeNameUpdateAction(old, newDifferent);
 
-        assertThat(result).containsInstanceOf(ChangeName.class);
         assertThat(result).contains(ChangeName.of(newDifferent.getName()));
     }
 
@@ -89,7 +88,6 @@ public class TypeUpdateActionUtilsTest {
     public void buildSetDescriptionAction_WithDifferentValues_ShouldReturnAction() {
         final Optional<UpdateAction<Type>> result = buildSetDescriptionUpdateAction(old, newDifferent);
 
-        assertThat(result).containsInstanceOf(SetDescription.class);
         assertThat(result).contains(SetDescription.of(newDifferent.getDescription()));
     }
 
