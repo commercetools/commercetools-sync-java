@@ -1,5 +1,6 @@
 package com.commercetools.sync.types.utils;
 
+import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.models.LocalizedEnumValue;
@@ -26,7 +27,7 @@ import static com.commercetools.sync.types.utils.PlainEnumValueUpdateActionUtils
 final class FieldDefinitionUpdateActionUtils {
 
     /**
-     * Compares all the fields of old {@link FieldDefinition} with new {@link FieldDefinition} and returns
+     * Compares all the fields of an old {@link FieldDefinition} with a new {@link FieldDefinition} and returns
      * a list of {@link UpdateAction}&lt;{@link Type}&gt; as a result. If both the {@link FieldDefinition}
      * and the {@link FieldDefinition} have identical fields, then no update action is needed and hence an
      * empty {@link List} is returned.
@@ -34,6 +35,8 @@ final class FieldDefinitionUpdateActionUtils {
      * @param oldFieldDefinition the old field definition which should be updated.
      * @param newFieldDefinition the new field definition where we get the new fields.
      * @return A list with the update actions or an empty list if the field definition fields are identical.
+     *
+     * @throws DuplicateKeyException in case there are localized enum values with duplicate keys.
      */
     @Nonnull
     static List<UpdateAction<Type>> buildActions(
@@ -56,6 +59,8 @@ final class FieldDefinitionUpdateActionUtils {
      * @param oldFieldDefinition the old field definition which should be updated.
      * @param newFieldDefinition the new field definition where we get the new fields.
      * @return A list with the update actions or an empty list if the field definition enums are identical.
+     *
+     * @throws DuplicateKeyException in case there are localized enum values with duplicate keys.
      */
     @Nonnull
     static List<UpdateAction<Type>> buildEnumUpdateActions(
