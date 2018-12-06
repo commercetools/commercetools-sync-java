@@ -282,6 +282,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
             });
     }
 
+    @Nonnull
     private CompletionStage<Optional<Type>> fetchAndUpdate(
         @Nonnull final Type oldType,
         @Nonnull final TypeDraft newType) {
