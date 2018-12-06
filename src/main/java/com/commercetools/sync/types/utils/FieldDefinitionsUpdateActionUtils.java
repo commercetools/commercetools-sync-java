@@ -118,7 +118,7 @@ final class FieldDefinitionsUpdateActionUtils {
      * Otherwise, if the field definition still exists in the new field definition, then compare the field definition
      * fields (label, etc..), and add the computed actions to the list of update actions.
      *
-     * <p>Note: If the field type field changes, the old field definition is removed and the new field
+     * <p>Note: If the field type field is different, the old field definition is removed and the new field
      *     definition is added with the new field type.
      *
      * @param oldFieldDefinitions the list of old {@link FieldDefinition}s.
@@ -238,7 +238,7 @@ final class FieldDefinitionsUpdateActionUtils {
 
     /**
      * Checks if there are any new field definition drafts which are not existing in the
-     * {@code oldFieldDefinitionNameMap}. If there are, then "add" field definition update actions are built.
+     * {@code oldFieldDefinitions}. If there are, then "add" field definition update actions are built.
      * Otherwise, if there are no new field definitions, then an empty list is returned.
      *
      * @param oldFieldDefinitions the list of old {@link FieldDefinition}s.
