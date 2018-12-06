@@ -25,7 +25,7 @@ import java.util.List;
 
 import static com.commercetools.sync.types.FieldDefinitionTestHelper.localizedStringFieldDefinition;
 import static com.commercetools.sync.types.FieldDefinitionTestHelper.stringFieldDefinition;
-import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildFieldDefinitionUpdateActions;
+import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildFieldDefinitionsUpdateActions;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -98,7 +98,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
     public void buildUpdateActions_WithNullNewFieldDefinitionsAndExistingFieldDefinitions_ShouldBuild3RemoveActions() {
         final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionUpdateActions(
+        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
             oldType,
             TYPE_DRAFT,
             SYNC_OPTIONS
@@ -117,7 +117,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
         when(oldType.getFieldDefinitions()).thenReturn(emptyList());
         when(oldType.getKey()).thenReturn("type_key_1");
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionUpdateActions(
+        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
             oldType,
             TYPE_DRAFT,
             SYNC_OPTIONS
@@ -137,7 +137,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
             TypeDraft.class
         );
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionUpdateActions(
+        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
             oldType,
             newTypeDraft,
             SYNC_OPTIONS
@@ -159,7 +159,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
                 TypeDraft.class
         );
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionUpdateActions(
+        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
                 oldType,
                 newTypeDraft,
                 SYNC_OPTIONS
@@ -186,7 +186,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
             })
             .build();
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionUpdateActions(
+        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
             oldType,
             newTypeDraft,
             syncOptions
@@ -215,7 +215,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
                 TypeDraft.class
         );
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionUpdateActions(
+        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
                 oldType,
                 newTypeDraft,
                 SYNC_OPTIONS
@@ -233,7 +233,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
                 TypeDraft.class
         );
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionUpdateActions(
+        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
                 oldType,
                 newTypeDraft,
                 SYNC_OPTIONS
@@ -253,7 +253,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
                 TypeDraft.class
         );
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionUpdateActions(
+        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
                 oldType,
                 newTypeDraft,
                 SYNC_OPTIONS
@@ -274,7 +274,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
                 TypeDraft.class
         );
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionUpdateActions(
+        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
                 oldType,
                 newTypeDraft,
                 SYNC_OPTIONS
@@ -300,7 +300,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
                 TypeDraft.class
         );
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionUpdateActions(
+        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
                 oldType,
                 newTypeDraft,
                 SYNC_OPTIONS
@@ -326,7 +326,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
                 TypeDraft.class
         );
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionUpdateActions(
+        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
                 oldType,
                 newTypeDraft,
                 SYNC_OPTIONS
@@ -354,7 +354,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
                 TypeDraft.class
         );
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionUpdateActions(
+        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
                 oldType,
                 newTypeDraft,
                 SYNC_OPTIONS
@@ -382,7 +382,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
                 TypeDraft.class
         );
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionUpdateActions(
+        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
                 oldType,
                 newTypeDraft,
                 SYNC_OPTIONS
@@ -408,7 +408,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
                 TYPE_WITH_FIELDS_ABC_WITH_DIFFERENT_TYPE,
                 TypeDraft.class
         );
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionUpdateActions(
+        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
                 oldType,
                 newTypeDraft,
                 SYNC_OPTIONS
@@ -447,7 +447,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
             .build();
 
         // test
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionUpdateActions(
+        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
             oldType,
             typeDraft,
             SYNC_OPTIONS

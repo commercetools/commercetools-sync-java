@@ -10,14 +10,14 @@ import java.util.List;
 
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildChangeNameUpdateAction;
-import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildFieldDefinitionUpdateActions;
+import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildFieldDefinitionsUpdateActions;
 import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildSetDescriptionUpdateAction;
 
 public final class TypeSyncUtils {
 
     /**
      * Compares all the fields (including the field definitions see
-     * {@link TypeUpdateActionUtils#buildFieldDefinitionUpdateActions(Type, TypeDraft, TypeSyncOptions)})
+     * {@link TypeUpdateActionUtils#buildFieldDefinitionsUpdateActions(Type, TypeDraft, TypeSyncOptions)})
      * of a {@link Type} and a {@link TypeDraft}.
      * It returns a {@link List} of {@link UpdateAction}&lt;{@link Type}&gt; as a
      * result. If no update actions are needed, for example in case where both the {@link Type} and the
@@ -52,7 +52,7 @@ public final class TypeSyncUtils {
                 buildSetDescriptionUpdateAction(oldType, newType)
             );
 
-        updateActions.addAll(buildFieldDefinitionUpdateActions(oldType, newType, syncOptions));
+        updateActions.addAll(buildFieldDefinitionsUpdateActions(oldType, newType, syncOptions));
 
         return updateActions;
     }

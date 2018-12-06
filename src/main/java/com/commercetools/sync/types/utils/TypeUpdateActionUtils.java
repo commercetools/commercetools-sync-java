@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
-import static com.commercetools.sync.types.utils.FieldDefinitionsUpdateActionUtils.buildFieldDefinitionsUpdateActions;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 
@@ -53,6 +52,7 @@ public final class TypeUpdateActionUtils {
     public static Optional<UpdateAction<Type>> buildSetDescriptionUpdateAction(
         @Nonnull final Type oldType,
         @Nonnull final TypeDraft newType) {
+
         return buildUpdateAction(oldType.getDescription(), newType.getDescription(),
             () -> SetDescription.of(newType.getDescription()));
     }
@@ -75,12 +75,13 @@ public final class TypeUpdateActionUtils {
      * @return A list with the update actions or an empty list if the field definitions are identical.
      */
     @Nonnull
-    public static List<UpdateAction<Type>> buildFieldDefinitionUpdateActions(
+    public static List<UpdateAction<Type>> buildFieldDefinitionsUpdateActions(
         @Nonnull final Type oldType,
         @Nonnull final TypeDraft newType,
         @Nonnull final TypeSyncOptions syncOptions) {
+
         try {
-            return buildFieldDefinitionsUpdateActions(
+            return FieldDefinitionsUpdateActionUtils.buildFieldDefinitionsUpdateActions(
                 oldType.getFieldDefinitions(),
                 newType.getFieldDefinitions()
             );
