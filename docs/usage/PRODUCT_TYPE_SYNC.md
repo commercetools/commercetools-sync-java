@@ -68,8 +68,11 @@ __Note__ The statistics object contains the processing time of the last batch on
  2. It is not known by the sync which batch is going to be the last one supplied.
  
 #### Important to Note
-1. If two matching `attributeDefinition`s on the matching `productType`s have a different `AttributeType`, the sync will
-**remove** the existing `attributeDefinition` and then **add** a new `attributeDefinition` with the new `AttributeType`. 
+
+1. If two matching `attributeDefinition`s (old and new) on the matching `productType`s (old and new) have a different `AttributeType`, the sync will
+**remove** the existing `attributeDefinition` and then **add** a new `attributeDefinition` with the new `AttributeType`.
+
+2. The `attributeDefinition` for which the `AttributeType` is not defined (`null`) will not be synced. 
 
 #### More examples of how to use the sync
  

@@ -65,8 +65,10 @@ __Note__ The statistics object contains the processing time of the last batch on
  2. It is not known by the sync which batch is going to be the last one supplied.
  
 #### Important to Note
-1. If two matching `fieldDefinition`s on the matching `type`s have a different `FieldType`, the sync will
+1. If two matching `fieldDefinition`s (old and new) on the matching `type`s (old and new) have a different `FieldType`, the sync will
 **remove** the existing `fieldDefinition` and then **add** a new `fieldDefinition` with the new `FieldType`.
+
+2. The `fieldDefinition` for which the `fieldType` is not defined (`null`) will not be synced.
  
 #### More examples of how to use the sync
  
