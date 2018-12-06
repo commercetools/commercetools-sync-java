@@ -58,6 +58,7 @@ public final class TypeServiceImpl extends BaseService<TypeDraft, Type, BaseSync
     @Nonnull
     @Override
     public CompletionStage<Set<Type>> fetchMatchingTypesByKeys(@Nonnull final Set<String> keys) {
+
         if (keys.isEmpty()) {
             return CompletableFuture.completedFuture(Collections.emptySet());
         }
@@ -84,7 +85,7 @@ public final class TypeServiceImpl extends BaseService<TypeDraft, Type, BaseSync
         }
 
         final TypeQuery typeQuery =
-            TypeQuery.of().plusPredicates(queryModel -> queryModel.key().is(key));
+            TypeQueryBuilder.of().plusPredicates(queryModel -> queryModel.key().is(key)).build();
 
         return syncOptions
             .getCtpClient()
