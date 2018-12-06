@@ -235,7 +235,7 @@ public class TypeSyncIT {
                 TYPE_NAME_1,
                 ResourceTypeIdsSetBuilder.of().addCategories().build())
                 .description(TYPE_DESCRIPTION_1)
-                .fieldDefinitions(asList(FIELD_DEFINITION_2, FIELD_DEFINITION_1))
+                .fieldDefinitions(asList(FIELD_DEFINITION_2, FIELD_DEFINITION_3, FIELD_DEFINITION_1))
                 .build();
 
         final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
@@ -256,7 +256,7 @@ public class TypeSyncIT {
 
         assertThat(oldTypeAfter).hasValueSatisfying(type ->
             assertFieldDefinitionsAreEqual(type.getFieldDefinitions(),
-                asList(FIELD_DEFINITION_2, FIELD_DEFINITION_1)));
+                asList(FIELD_DEFINITION_2, FIELD_DEFINITION_3, FIELD_DEFINITION_1)));
     }
 
     @Test
