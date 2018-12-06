@@ -68,18 +68,23 @@ final class FieldDefinitionUpdateActionUtils {
         @Nonnull final FieldDefinition newFieldDefinition) {
 
         final List<UpdateAction<Type>> updateActions = new ArrayList<>();
+
         if (isPlainEnumField(oldFieldDefinition)) {
+
             updateActions.addAll(buildEnumValuesUpdateActions(
                 oldFieldDefinition.getName(),
                 ((EnumFieldType) oldFieldDefinition.getType()).getValues(),
                 ((EnumFieldType) newFieldDefinition.getType()).getValues()
             ));
+
         } else if (isLocalizedEnumField(oldFieldDefinition)) {
+
             updateActions.addAll(buildLocalizedEnumValuesUpdateActions(
                 oldFieldDefinition.getName(),
                 ((LocalizedEnumFieldType) oldFieldDefinition.getType()).getValues(),
                 ((LocalizedEnumFieldType) newFieldDefinition.getType()).getValues()
             ));
+
         }
         return updateActions;
     }

@@ -75,6 +75,7 @@ final class AttributeDefinitionUpdateActionUtils {
         @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft) {
 
         final List<UpdateAction<ProductType>> updateActions = new ArrayList<>();
+
         if (isPlainEnumAttribute(oldAttributeDefinition)) {
             updateActions.addAll(buildEnumValuesUpdateActions(
                 oldAttributeDefinition.getName(),
