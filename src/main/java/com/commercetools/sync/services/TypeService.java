@@ -52,7 +52,7 @@ public interface TypeService {
      * returned in the returned future.
      *
      * @param key the key of the type to fetch.
-     * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion contains an
+     * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of its completion contains an
      *         {@link Optional} that contains the matching {@link Type} if exists, otherwise empty.
      */
     @Nonnull
@@ -62,14 +62,14 @@ public interface TypeService {
      * Given a resource draft of type {@link TypeDraft}, this method attempts to create a resource
      * {@link Type} based on it in the CTP project defined by the sync options.
      *
-     * <p>A completion stage containing an empty option and the error callback will be triggered in those cases:
+     * <p>A completion stage containing an empty optional and the error callback will be triggered in those cases:
      * <ul>
      *     <li>the draft has a blank key</li>
      *     <li>the create request fails on CTP</li>
      * </ul>
      *
      * <p>On the other hand, if the resource gets created successfully on CTP, then the created resource's id and
-     * key are cached and the method returns a {@link CompletionStage} in which the result of it's completion
+     * key are cached and the method returns a {@link CompletionStage} in which the result of its completion
      * contains an instance {@link Optional} of the resource which was created.
      *
      * @param typeDraft the resource draft to create a resource based off of.
@@ -83,7 +83,7 @@ public interface TypeService {
      * Given a {@link Type} and a {@link List}&lt;{@link UpdateAction}&lt;{@link Type}&gt;&gt;, this method
      * issues an update request with these update actions on this {@link Type} in the CTP project defined in an
      * injected {@link io.sphere.sdk.client.SphereClient}. This method returns
-     * {@link CompletionStage}&lt;{@link Type}&gt; in which the result of it's completion contains an instance of
+     * {@link CompletionStage}&lt;{@link Type}&gt; in which the result of its completion contains an instance of
      * the {@link Type} which was updated in the CTP project.
      *
      * @param type          the {@link Type} to update.
