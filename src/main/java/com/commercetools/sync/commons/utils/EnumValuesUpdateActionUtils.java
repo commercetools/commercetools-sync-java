@@ -62,7 +62,7 @@ public final class EnumValuesUpdateActionUtils {
         @Nullable final BiFunction<String, List<T>, UpdateAction<U>> changeOrderEnumCallback,
         @Nullable final BiFunction<String, List<String>, UpdateAction<U>> changeOrderWithKeysEnumCallback) {
 
-        if (newEnumValues != null && !newEnumValues.isEmpty()) {
+        if (newEnumValues != null) {
             return buildUpdateActions(definitionName,
                     oldEnumValues,
                     newEnumValues,
@@ -76,11 +76,10 @@ public final class EnumValuesUpdateActionUtils {
             return buildRemoveEnumValuesUpdateAction(
                     definitionName,
                     oldEnumValues,
-                    newEnumValues,
+                    null,
                     removeEnumCallback)
                     .map(Collections::singletonList)
                     .orElse(emptyList());
-
         }
 
         return emptyList();
