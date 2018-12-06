@@ -26,6 +26,9 @@ import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
 
+/**
+ * This class is only meant for the internal use of the commercetools-sync-java library.
+ */
 public final class EnumValuesUpdateActionUtils {
 
     /**

@@ -41,9 +41,6 @@
     - **Type Sync** - Support for syncing types. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300) For more info how to use it please refer to [Type usage doc](/docs/usage/TYPE_SYNC.md). 
     - **Type Sync** - Exposed `TypeSyncUtils#buildActions` which calculates all needed update actions after comparing a `Type` and a `TypeDraft`. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
     - **Type Sync** - Exposed `TypeUpdateActionUtils` which contains utils for calculating needed update actions after comparing individual fields of a `Type` and a `TypeDraft`. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
-    - **Type Sync** - Exposed `LocalizedEnumValueUpdateActionUtils` which contains utils for calculating needed update actions after comparing two lists of `LocalizedEnumValue`s. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
-    - **Type Sync** - Exposed `PlainEnumValueUpdateActionUtils` which contains utils for calculating needed update actions after comparing two lists of `EnumValue`s. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
-    - **Commons** - Exposed `EnumValuesUpdateActionUtils` which contains generic utilities for calculating needed update actions after comparing two lists of `EnumValue`s or `LocalizedEnumValue`s. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
 
 - 📋 **Documentation** (4)
     - **Commons** - Added the documentation github pages. https://commercetools.github.io/commercetools-sync-java 
