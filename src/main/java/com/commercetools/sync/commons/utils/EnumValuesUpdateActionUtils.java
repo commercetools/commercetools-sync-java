@@ -27,7 +27,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
 
 /**
- * This class is only meant for the internal use of the commercetools-sync-java library.
+ * The utils in this class are only meant for the internal use of the commercetools-sync-java library.
  */
 public final class EnumValuesUpdateActionUtils {
 
@@ -222,7 +222,7 @@ public final class EnumValuesUpdateActionUtils {
      *         Otherwise, if the enum values order is identical, an empty optional is returned.
      */
     @Nonnull
-    public static <T extends WithKey, U> Optional<UpdateAction<U>> buildChangeEnumValuesOrderUpdateAction(
+    static <T extends WithKey, U> Optional<UpdateAction<U>> buildChangeEnumValuesOrderUpdateAction(
         @Nonnull final String definitionName,
         @Nonnull final List<T> oldEnumValues,
         @Nonnull final List<T> newEnumValues,
@@ -250,7 +250,7 @@ public final class EnumValuesUpdateActionUtils {
      *         Otherwise, if the enum values order is identical, an empty optional is returned.
      */
     @Nonnull
-    public static <T extends WithKey, U> Optional<UpdateAction<U>> buildChangeEnumValuesWithKeysOrderUpdateAction(
+    private static <T extends WithKey, U> Optional<UpdateAction<U>> buildChangeEnumValuesWithKeysOrderUpdateAction(
         @Nonnull final String definitionName,
         @Nonnull final List<T> oldEnumValues,
         @Nonnull final List<T> newEnumValues,
@@ -306,7 +306,7 @@ public final class EnumValuesUpdateActionUtils {
      *         Otherwise, if the enum values are identical, an empty optional is returned.
      */
     @Nonnull
-    public static <T extends WithKey, U> List<UpdateAction<U>> buildAddEnumValuesUpdateActions(
+    static <T extends WithKey, U> List<UpdateAction<U>> buildAddEnumValuesUpdateActions(
         @Nonnull final String definitionName,
         @Nonnull final List<T> oldEnumValues,
         @Nonnull final List<T> newEnumValues,
@@ -344,7 +344,7 @@ public final class EnumValuesUpdateActionUtils {
      *         Otherwise, if the enum values are identical, an empty optional is returned.
      */
     @Nonnull
-    public static <T extends WithKey, U> Optional<UpdateAction<U>> buildRemoveEnumValuesUpdateAction(
+    static <T extends WithKey, U> Optional<UpdateAction<U>> buildRemoveEnumValuesUpdateAction(
         @Nonnull final String definitionName,
         @Nonnull final List<T> oldEnumValues,
         @Nullable final List<T> newEnumValues,
@@ -383,7 +383,7 @@ public final class EnumValuesUpdateActionUtils {
      *         is returned.
      */
     @Nonnull
-    public static <T extends WithKey, U> List<UpdateAction<U>> buildMatchingEnumValuesUpdateActions(
+    static <T extends WithKey, U> List<UpdateAction<U>> buildMatchingEnumValuesUpdateActions(
         @Nonnull final String definitionName,
         @Nonnull final List<T> oldEnumValues,
         @Nonnull final List<T> newEnumValues,
