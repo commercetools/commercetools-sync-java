@@ -135,17 +135,14 @@ final class FieldDefinitionsUpdateActionUtils {
             @Nonnull final List<FieldDefinition> newFieldDefinitions) {
 
         final Map<String, FieldDefinition> newFieldDefinitionsNameMap =
-                newFieldDefinitions
-                        .stream().collect(
-                        toMap(FieldDefinition::getName, fieldDefinition -> fieldDefinition,
-                                (fieldDefinitionA, fieldDefinitionB) -> {
-                                    throw new DuplicateNameException(format("Field definitions have duplicated names. "
-                                                    + "Duplicated field definition name: '%s'. "
-                                                    + "Field definitions names are expected "
-                                                    + "to be unique inside their type.",
-                                            fieldDefinitionA.getName()));
-                                }
-                        ));
+            newFieldDefinitions
+                .stream().collect(
+                    toMap(FieldDefinition::getName, fieldDefinition -> fieldDefinition,
+                        (fieldDefinitionA, fieldDefinitionB) -> {
+                        throw new DuplicateNameException(format("Field definitions have duplicated names. "
+                            + "Duplicated field definition name: '%s'. Field definitions names are "
+                            + "expected to be unique inside their type.", fieldDefinitionA.getName()));
+                    }));
 
         return oldFieldDefinitions
             .stream()
