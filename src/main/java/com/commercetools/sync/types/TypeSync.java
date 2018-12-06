@@ -199,7 +199,6 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      * @param typeDraft the type draft to create the type from.
      * @return a {@link CompletionStage} which contains an empty result after execution of the create.
      */
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
     private CompletionStage<Optional<Type>> applyCallbackAndCreate(
         @Nonnull final TypeDraft typeDraft) {
