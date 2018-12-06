@@ -59,11 +59,17 @@ public final class TypeUpdateActionUtils {
 
     /**
      * Compares the field definitions of a {@link Type} and a {@link TypeDraft} and returns a list of
-     * {@link UpdateAction}&lt;{@link Type}&gt; as a result in an {@link Optional} of update action
-     * if values are different.  In case, the new type draft has a list of field definitions in which a
-     * duplicate name exists, the error callback is triggered and an empty list is returned.
+     * {@link UpdateAction}&lt;{@link Type}&gt; as a result if the values are different. In case, the new type draft has
+     * a list of field definitions in which a duplicate name exists, the error callback is triggered and an empty list
+     * is returned.
      *
      * <p>
+     *  Note: Currently this util doesn't support the following:
+     *  <ul>
+     *      <li>updating the inputHint of a FieldDefinition</li>
+     *      <li>removing the EnumValue/LocalizedEnumValue of a FieldDefinition</li>
+     *      <li>updating the label of a EnumValue/LocalizedEnumValue of a FieldDefinition</li>
+     *  </ul>
      *  TODO: Check GITHUB ISSUE#339 for missing FieldDefinition update actions.
      * </p>
      *
