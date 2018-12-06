@@ -95,7 +95,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
             .build();
 
     @Test
-    public void buildUpdateActions_WithNullNewFieldDefinitionsAndExistingFieldDefinitions_ShouldBuild3RemoveActions() {
+    public void buildFieldDefinitionsUpdateActions_WithNullNewFieldDefinitionsAndExistingFieldDefinitions_ShouldBuild3RemoveActions() {
         final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
 
         final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
@@ -112,7 +112,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildUpdateActions_WithNullNewFieldDefinitionsAndNoOldFieldDefinitions_ShouldNotBuildActions() {
+    public void buildFieldDefinitionsUpdateActions_WithNullNewFieldDefinitionsAndNoOldFieldDefinitions_ShouldNotBuildActions() {
         final Type oldType = mock(Type.class);
         when(oldType.getFieldDefinitions()).thenReturn(emptyList());
         when(oldType.getKey()).thenReturn("type_key_1");
@@ -127,7 +127,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildUpdateActions_WithNewFieldDefinitionsAndNoOldFieldDefinitions_ShouldBuild3AddActions() {
+    public void buildFieldDefinitionsUpdateActions_WithNewFieldDefinitionsAndNoOldFieldDefinitions_ShouldBuild3AddActions() {
         final Type oldType = mock(Type.class);
         when(oldType.getFieldDefinitions()).thenReturn(emptyList());
         when(oldType.getKey()).thenReturn("type_key_1");
@@ -151,7 +151,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildUpdateActions_WithIdenticalFieldDefinitions_ShouldNotBuildUpdateActions() {
+    public void buildFieldDefinitionsUpdateActions_WithIdenticalFieldDefinitions_ShouldNotBuildUpdateActions() {
         final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
 
         final TypeDraft newTypeDraft = readObjectFromResource(
@@ -169,7 +169,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildUpdateActions_WithDuplicateFieldDefinitionNames_ShouldNotBuildActionsAndTriggerErrorCb() {
+    public void buildFieldDefinitionsUpdateActions_WithDuplicateFieldDefinitionNames_ShouldNotBuildActionsAndTriggerErrorCb() {
         final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
 
         final TypeDraft newTypeDraft = readObjectFromResource(
@@ -207,7 +207,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildUpdateActions_WithOneMissingFieldDefinition_ShouldBuildRemoveFieldDefinitionAction() {
+    public void buildFieldDefinitionsUpdateActions_WithOneMissingFieldDefinition_ShouldBuildRemoveFieldDefinitionAction() {
         final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
 
         final TypeDraft newTypeDraft = readObjectFromResource(
@@ -225,7 +225,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildUpdateActions_WithOneExtraFieldDefinition_ShouldBuildAddFieldDefinitionAction() {
+    public void buildFieldDefinitionsUpdateActions_WithOneExtraFieldDefinition_ShouldBuildAddFieldDefinitionAction() {
         final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
 
         final TypeDraft newTypeDraft = readObjectFromResource(
@@ -245,7 +245,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildUpdateActions_WithOneFieldDefinitionSwitch_ShouldBuildRemoveAndAddFieldDefinitionsActions() {
+    public void buildFieldDefinitionsUpdateActions_WithOneFieldDefinitionSwitch_ShouldBuildRemoveAndAddFieldDefinitionsActions() {
         final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
 
         final TypeDraft newTypeDraft = readObjectFromResource(
@@ -266,7 +266,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildUpdateActions_WithDifferent_ShouldBuildChangeFieldDefinitionOrderAction() {
+    public void buildFieldDefinitionsUpdateActions_WithDifferent_ShouldBuildChangeFieldDefinitionOrderAction() {
         final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
 
         final TypeDraft newTypeDraft = readObjectFromResource(
@@ -292,7 +292,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildUpdateActions_WithRemovedAndDifferentOrder_ShouldBuildChangeOrderAndRemoveActions() {
+    public void buildFieldDefinitionsUpdateActions_WithRemovedAndDifferentOrder_ShouldBuildChangeOrderAndRemoveActions() {
         final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
 
         final TypeDraft newTypeDraft = readObjectFromResource(
@@ -318,7 +318,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildUpdateActions_WithAddedAndDifferentOrder_ShouldBuildChangeOrderAndAddActions() {
+    public void buildFieldDefinitionsUpdateActions_WithAddedAndDifferentOrder_ShouldBuildChangeOrderAndAddActions() {
         final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
 
         final TypeDraft newTypeDraft = readObjectFromResource(
@@ -346,7 +346,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildUpdateActions_WithAddedFieldDefinitionInBetween_ShouldBuildChangeOrderAndAddActions() {
+    public void buildFieldDefinitionsUpdateActions_WithAddedFieldDefinitionInBetween_ShouldBuildChangeOrderAndAddActions() {
         final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
 
         final TypeDraft newTypeDraft = readObjectFromResource(
@@ -374,7 +374,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildUpdateActions_WithAddedRemovedAndDifOrder_ShouldBuildAllThreeMoveFieldDefinitionActions() {
+    public void buildFieldDefinitionsUpdateActions_WithAddedRemovedAndDifOrder_ShouldBuildAllThreeMoveFieldDefinitionActions() {
         final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
 
         final TypeDraft newTypeDraft = readObjectFromResource(
@@ -401,7 +401,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildUpdateActions_WithDifferentType_ShouldRemoveOldFieldDefinitionAndAddNewFieldDefinition() {
+    public void buildFieldDefinitionsUpdateActions_WithDifferentType_ShouldRemoveOldFieldDefinitionAndAddNewFieldDefinition() {
         final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
 
         final TypeDraft newTypeDraft = readObjectFromResource(
@@ -421,7 +421,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildUpdateActions_WithNullNewFieldDefinition_ShouldSkipNullFieldDefinitions() {
+    public void buildFieldDefinitionsUpdateActions_WithNullNewFieldDefinition_ShouldSkipNullFieldDefinitions() {
         // preparation
         final Type oldType = mock(Type.class);
         final FieldDefinition oldFieldDefinition = FieldDefinition.of(
@@ -459,7 +459,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildUpdateActions_WithDefinitionWithNullName_ShouldBuildChangeFieldDefinitionOrderAction() {
+    public void buildFieldDefinitionsUpdateActions_WithDefinitionWithNullName_ShouldBuildChangeFieldDefinitionOrderAction() {
         // preparation
         final Type oldType = mock(Type.class);
         final FieldDefinition oldFieldDefinition = FieldDefinition.of(
