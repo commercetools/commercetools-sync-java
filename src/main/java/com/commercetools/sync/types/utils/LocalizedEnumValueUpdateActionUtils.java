@@ -13,7 +13,10 @@ import java.util.List;
 
 import static com.commercetools.sync.commons.utils.EnumValuesUpdateActionUtils.buildActions;
 
-public final class LocalizedEnumValueUpdateActionUtils {
+/**
+ * This class is only meant for the internal use of the commercetools-sync-java library.
+ */
+final class LocalizedEnumValueUpdateActionUtils {
     /**
      * Compares a list of old {@link LocalizedEnumValue}s with a list of new {@link LocalizedEnumValue}s for a given
      * field definition and builds required update actions (e.g addLocalizedEnumValue, changeLocalizedEnumValueOrder).
@@ -21,6 +24,11 @@ public final class LocalizedEnumValueUpdateActionUtils {
      * an empty {@link List} is returned.
      *
      * <p>
+     *  Note: Currently this util doesn't support the following:
+     *  <ul>
+     *      <li>removing the EnumValue/LocalizedEnumValue of a FieldDefinition</li>
+     *      <li>updating the label of a EnumValue/LocalizedEnumValue of a FieldDefinition</li>
+     *  </ul>
      *  TODO: Check GITHUB ISSUE#339 for missing FieldDefinition update actions.
      * </p>
      *
@@ -32,7 +40,7 @@ public final class LocalizedEnumValueUpdateActionUtils {
      * @throws DuplicateKeyException in case there are localized enum values with duplicate keys.
      */
     @Nonnull
-    public static List<UpdateAction<Type>> buildLocalizedEnumValuesUpdateActions(
+    static List<UpdateAction<Type>> buildLocalizedEnumValuesUpdateActions(
         @Nonnull final String fieldDefinitionName,
         @Nonnull final List<LocalizedEnumValue> oldEnumValues,
         @Nullable final List<LocalizedEnumValue> newEnumValues) {

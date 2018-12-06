@@ -4,7 +4,6 @@ import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import com.commercetools.sync.types.helpers.TypeSyncStatistics;
-import com.commercetools.sync.types.utils.TypeSyncUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.types.Type;
@@ -21,6 +20,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
+import static com.commercetools.sync.types.utils.TypeSyncUtils.buildActions;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -199,7 +199,6 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      * @param typeDraft the type draft to create the type from.
      * @return a {@link CompletionStage} which contains an empty result after execution of the create.
      */
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
     private CompletionStage<Optional<Type>> applyCallbackAndCreate(
         @Nonnull final TypeDraft typeDraft) {
@@ -226,7 +225,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
         @Nonnull final Type oldType,
         @Nonnull final TypeDraft newType) {
 
-        final List<UpdateAction<Type>> updateActions = TypeSyncUtils.buildActions(oldType, newType, syncOptions);
+        final List<UpdateAction<Type>> updateActions = buildActions(oldType, newType, syncOptions);
 
         final List<UpdateAction<Type>> updateActionsAfterCallback =
             syncOptions.applyBeforeUpdateCallBack(updateActions, newType, oldType);
@@ -283,6 +282,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
             });
     }
 
+    @Nonnull
     private CompletionStage<Optional<Type>> fetchAndUpdate(
         @Nonnull final Type oldType,
         @Nonnull final TypeDraft newType) {

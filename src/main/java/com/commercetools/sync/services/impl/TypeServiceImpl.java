@@ -22,9 +22,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.http.util.TextUtils.isBlank;
 
 /**
@@ -32,7 +30,6 @@ import static org.apache.http.util.TextUtils.isBlank;
  * TODO: USE graphQL to get only keys. GITHUB ISSUE#84
  */
 public final class TypeServiceImpl extends BaseService<TypeDraft, Type, BaseSyncOptions> implements TypeService {
-    private static final String FETCH_FAILED = "Failed to fetch types with keys: '%s'. Reason: %s";
 
     public TypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
         super(syncOptions);
@@ -49,8 +46,19 @@ public final class TypeServiceImpl extends BaseService<TypeDraft, Type, BaseSync
     }
 
     @Nonnull
+    private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
+
+        final Consumer<List<Type>> typePageConsumer = typePage ->
+            typePage.forEach(type -> keyToIdCache.put(type.getKey(), type.getId()));
+
+        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), TypeQuery.of(), typePageConsumer)
+                            .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
+    }
+
+    @Nonnull
     @Override
     public CompletionStage<Set<Type>> fetchMatchingTypesByKeys(@Nonnull final Set<String> keys) {
+
         if (keys.isEmpty()) {
             return CompletableFuture.completedFuture(Collections.emptySet());
         }
@@ -77,7 +85,7 @@ public final class TypeServiceImpl extends BaseService<TypeDraft, Type, BaseSync
         }
 
         final TypeQuery typeQuery =
-            TypeQuery.of().plusPredicates(queryModel -> queryModel.key().is(key));
+            TypeQueryBuilder.of().plusPredicates(queryModel -> queryModel.key().is(key)).build();
 
         return syncOptions
             .getCtpClient()
@@ -99,28 +107,9 @@ public final class TypeServiceImpl extends BaseService<TypeDraft, Type, BaseSync
 
     @Nonnull
     @Override
-    public CompletionStage<Type> updateType(@Nonnull final Type type,
-                                            @Nonnull final List<UpdateAction<Type>> updateActions) {
-
+    public CompletionStage<Type> updateType(
+        @Nonnull final Type type,
+        @Nonnull final List<UpdateAction<Type>> updateActions) {
         return updateResource(type, TypeUpdateCommand::of, updateActions);
-    }
-
-    @Nonnull
-    private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
-
-        final Consumer<List<Type>> typePageConsumer = typePage ->
-            typePage.forEach(type -> {
-                final String fetchedTypeKey = type.getKey();
-                final String id = type.getId();
-                if (isNotBlank(fetchedTypeKey)) {
-                    keyToIdCache.put(fetchedTypeKey, id);
-                } else {
-                    syncOptions.applyWarningCallback(format("Type with id: '%s' has no key set. Keys are"
-                        + " required for type matching.", id));
-                }
-            });
-
-        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), TypeQuery.of(), typePageConsumer)
-                            .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
     }
 }

@@ -12,6 +12,8 @@ against a [ProductTypeDraft](https://docs.commercetools.com/http-api-projects-pr
   - [Sync list of product type drafts](#sync-list-of-product-type-drafts)
     - [Prerequisites](#prerequisites)
     - [Running the sync](#running-the-sync)
+    - [Important to Note](#important-to-note)
+    - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)
   - [Build all update actions](#build-all-update-actions)
   - [Build particular update action(s)](#build-particular-update-actions)
 - [Caveats](#caveats)
@@ -64,8 +66,15 @@ __Note__ The statistics object contains the processing time of the last batch on
  
  1. The sync processing time should not take into account the time between supplying batches to the sync.
  2. It is not known by the sync which batch is going to be the last one supplied.
+ 
+#### Important to Note
 
-##### More examples of how to use the sync
+1. If two matching `attributeDefinition`s (old and new) on the matching `productType`s (old and new) have a different `AttributeType`, the sync will
+**remove** the existing `attributeDefinition` and then **add** a new `attributeDefinition` with the new `AttributeType`.
+
+2. The `attributeDefinition` for which the `AttributeType` is not defined (`null`) will not be synced. 
+
+#### More examples of how to use the sync
  
  1. [Sync from another CTP project as a source](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/producttypes/ProductTypeSyncIT.java).
  2. [Sync from an external source](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/producttypes/ProductTypeSyncIT.java).

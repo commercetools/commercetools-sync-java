@@ -1,10 +1,13 @@
-package com.commercetools.sync.types.utils.typeactionutils;
+package com.commercetools.sync.types.utils;
 
+import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.commands.updateactions.AddEnumValue;
 import io.sphere.sdk.types.commands.updateactions.ChangeEnumValueOrder;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.util.List;
 
@@ -17,8 +20,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class BuildPlainEnumUpdateActionsTest {
     private static final String FIELD_NAME_1 = "field1";
 
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
+
     @Test
-    public void buildPlainEnumUpdateActions_WithEmptyPlainEnumValuesAndNoOlEnumValues_ShouldNotBuildActions() {
+    public void buildPlainEnumUpdateActions_WithEmptyPlainEnumValuesAndNoOldEnumValues_ShouldNotBuildActions() {
         final List<UpdateAction<Type>> updateActions = buildEnumValuesUpdateActions(
             FIELD_NAME_1,
             emptyList(),
@@ -68,7 +74,7 @@ public class BuildPlainEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildPlainEnumUpdateActions_WithOneEnumValueSwitch_ShouldBuildRemoveAndAddEnumValueActions() {
+    public void buildPlainEnumUpdateActions_WithOneEnumValueSwitch_ShouldBuildAddEnumValueActions() {
         final List<UpdateAction<Type>> updateActions = buildEnumValuesUpdateActions(
             FIELD_NAME_1,
             ENUM_VALUES_ABC,
@@ -81,7 +87,7 @@ public class BuildPlainEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildPlainEnumUpdateActions_WithDifferent_ShouldBuildChangeEnumValueOrderAction() {
+    public void buildPlainEnumUpdateActions_WithDifferentOrder_ShouldBuildChangeEnumValueOrderAction() {
         final List<UpdateAction<Type>> updateActions = buildEnumValuesUpdateActions(
             FIELD_NAME_1,
             ENUM_VALUES_ABC,
@@ -98,7 +104,7 @@ public class BuildPlainEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildPlainEnumUpdateActions_WithRemovedAndDifferentOrder_ShouldBuildChangeOrderAndRemoveActions() {
+    public void buildPlainEnumUpdateActions_WithRemovedAndDifferentOrder_ShouldBuildChangeOrderAction() {
         final List<UpdateAction<Type>> updateActions = buildEnumValuesUpdateActions(
             FIELD_NAME_1,
             ENUM_VALUES_ABC,
@@ -152,7 +158,7 @@ public class BuildPlainEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildPlainEnumUpdateActions_WithAddedRemovedAndDifOrder_ShouldBuildAllThreeMoveEnumValueActions() {
+    public void buildPlainEnumUpdateActions_WithAddedRemovedAndDifOrder_ShouldBuildAddAndChangeOrderActions() {
         final List<UpdateAction<Type>> updateActions = buildEnumValuesUpdateActions(
             FIELD_NAME_1,
             ENUM_VALUES_ABC,
@@ -166,6 +172,20 @@ public class BuildPlainEnumUpdateActionsTest {
                 ENUM_VALUE_B.getKey(),
                 ENUM_VALUE_D.getKey()
             ))
+        );
+    }
+
+    @Test
+    public void buildLocalizedEnumUpdateActions_WithDuplicateEnumValues_ShouldTriggerDuplicateKeyError() {
+        expectedException.expect(DuplicateKeyException.class);
+        expectedException.expectMessage("Enum Values have duplicated keys. Definition name: "
+            + "'field_definition_name', Duplicated enum value: 'b'. Enum Values are expected to be unique inside "
+            + "their definition.");
+
+        buildEnumValuesUpdateActions(
+            "field_definition_name",
+            ENUM_VALUES_ABC,
+            ENUM_VALUES_ABB
         );
     }
 }

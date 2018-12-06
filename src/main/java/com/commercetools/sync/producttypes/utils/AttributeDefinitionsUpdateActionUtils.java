@@ -53,7 +53,8 @@ final class AttributeDefinitionsUpdateActionUtils {
      * @param newAttributeDefinitionsDrafts the new list of attribute definitions drafts.
      * @return a list of attribute definitions update actions if the list of attribute definitions are not identical.
      *         Otherwise, if the attribute definitions are identical, an empty list is returned.
-     * @throws DuplicateNameException in case there are attribute definitions drafts with duplicate names.
+     * @throws BuildUpdateActionException in case there are attribute definitions drafts with duplicate names or enums
+     *         duplicate keys.
      */
     @Nonnull
     static List<UpdateAction<ProductType>> buildAttributeDefinitionsUpdateActions(

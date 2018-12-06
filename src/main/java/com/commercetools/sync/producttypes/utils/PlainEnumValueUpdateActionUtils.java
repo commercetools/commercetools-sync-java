@@ -1,5 +1,6 @@
 package com.commercetools.sync.producttypes.utils;
 
+import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import com.commercetools.sync.commons.utils.EnumValuesUpdateActionUtils;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.EnumValue;
@@ -34,6 +35,7 @@ public final class PlainEnumValueUpdateActionUtils {
      * @param newEnumValues           the new list of plain enum values.
      * @return a list of plain enum values update actions if the list of plain enum values is not identical.
      *         Otherwise, if the plain enum values are identical, an empty list is returned.
+     * @throws DuplicateKeyException in case there are localized enum values with duplicate keys.
      */
     @Nonnull
     public static List<UpdateAction<ProductType>> buildEnumValuesUpdateActions(

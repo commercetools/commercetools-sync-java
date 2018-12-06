@@ -41,11 +41,6 @@
     - **Type Sync** - Support for syncing types. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300) For more info how to use it please refer to [Type usage doc](/docs/usage/TYPE_SYNC.md). 
     - **Type Sync** - Exposed `TypeSyncUtils#buildActions` which calculates all needed update actions after comparing a `Type` and a `TypeDraft`. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
     - **Type Sync** - Exposed `TypeUpdateActionUtils` which contains utils for calculating needed update actions after comparing individual fields of a `Type` and a `TypeDraft`. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
-    - **Type Sync** - Exposed `LocalizedEnumValueUpdateActionUtils` which contains utils for calculating needed update actions after comparing two lists of `LocalizedEnumValue`s. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
-    - **Type Sync** - Exposed `PlainEnumValueUpdateActionUtils` which contains utils for calculating needed update actions after comparing two lists of `EnumValue`s. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
-    - **Type Sync** - Exposed `FieldDefinitionsUpdateActionUtils` which contains utils for calculating needed update actions after comparing a list of `FieldDefinition`s and a list of `FieldDefinition`s. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
-    - **Type Sync** - Exposed `FieldDefinitionUpdateActionUtils` which contains utils for calculating needed update actions after comparing a `FieldDefinition` and a `FieldDefinition`. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
-    - **Commons** - Exposed `EnumValuesUpdateActionUtils` which contains generic utilities for calculating needed update actions after comparing two lists of `EnumValue`s or `LocalizedEnumValue`s. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
 
 - 📋 **Documentation** (4)
     - **Commons** - Added the documentation github pages. https://commercetools.github.io/commercetools-sync-java 
@@ -60,7 +55,7 @@
     - **Product Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
     - **Category Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
     - **Inventory Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
-    - **ProductType Sync** - Added `ProductTypeSyncBenchmark` to benchmark the product type sync, to be able to compare the performance of the sync with the future releases. [#301](https://github.com/commercetools/commercetools-sync-java/issues/301)
+    - **ProductType Sync** - Added benchmarks for the `productType` sync to be able to compare the performance of the sync with the future releases. [#301](https://github.com/commercetools/commercetools-sync-java/issues/301)
     - **Commons** - Bumped commercetools-jvm-sdk to version [1.37.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_37_0).
     - **Commons** - Bumped `mockito` to 2.23.4.
     - **Commons** - Bumped `com.adarshr.test-logger` to 1.6.0.
@@ -71,7 +66,7 @@
     - **Commons** - Bumped `com.adarshr.test-logger` to 1.6.0.
     - **Commons** - Bumped `org.ajoberstar.grgit` to 3.0.0.
     - **Commons** - Bumped gradle to version [gradle-5.0](https://docs.gradle.org/5.0/release-notes.html)
-    - **Type Sync** - Added `TypeSyncBenchmark` to benchmark the type sync, to be able to compare the performance of the sync with the future releases. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
+    - **Type Sync** - Added benchmarks for the `type` sync to be able to compare the performance of the sync with the future releases. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
     
 - 🚧 **Breaking Changes** (11) 
     - **Product Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 

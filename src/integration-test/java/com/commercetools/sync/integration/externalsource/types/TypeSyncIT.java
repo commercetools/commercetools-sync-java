@@ -67,8 +67,8 @@ import static org.mockito.Mockito.when;
 public class TypeSyncIT {
 
     /**
-     * Deletes types from source and target CTP projects.
-     * Populates source and target CTP projects with test data.
+     * Deletes types from the target CTP projects.
+     * Populates the target CTP project with test data.
      */
     @Before
     public void setup() {
@@ -191,14 +191,9 @@ public class TypeSyncIT {
 
         final Optional<Type> oldTypeAfter = getTypeByKey(CTP_TARGET_CLIENT, TYPE_KEY_1);
 
-        assertThat(oldTypeAfter).hasValueSatisfying(type -> {
+        assertThat(oldTypeAfter).hasValueSatisfying(type ->
             assertFieldDefinitionsAreEqual(type.getFieldDefinitions(),
-                asList(
-                    FIELD_DEFINITION_1,
-                    FIELD_DEFINITION_2,
-                    FIELD_DEFINITION_3
-                ));
-        });
+                asList(FIELD_DEFINITION_1, FIELD_DEFINITION_2, FIELD_DEFINITION_3)));
     }
 
     @Test
@@ -228,9 +223,8 @@ public class TypeSyncIT {
 
         final Optional<Type> oldTypeAfter = getTypeByKey(CTP_TARGET_CLIENT, TYPE_KEY_1);
 
-        assertThat(oldTypeAfter).isNotEmpty();
-        assertFieldDefinitionsAreEqual(oldTypeAfter.get().getFieldDefinitions(),
-                singletonList(FIELD_DEFINITION_1));
+        assertThat(oldTypeAfter).hasValueSatisfying(type ->
+            assertFieldDefinitionsAreEqual(type.getFieldDefinitions(), singletonList(FIELD_DEFINITION_1)));
     }
 
     @Test
@@ -241,7 +235,7 @@ public class TypeSyncIT {
                 TYPE_NAME_1,
                 ResourceTypeIdsSetBuilder.of().addCategories().build())
                 .description(TYPE_DESCRIPTION_1)
-                .fieldDefinitions(asList(FIELD_DEFINITION_2, FIELD_DEFINITION_1))
+                .fieldDefinitions(asList(FIELD_DEFINITION_2, FIELD_DEFINITION_3, FIELD_DEFINITION_1))
                 .build();
 
         final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
@@ -262,7 +256,7 @@ public class TypeSyncIT {
 
         assertThat(oldTypeAfter).hasValueSatisfying(type ->
             assertFieldDefinitionsAreEqual(type.getFieldDefinitions(),
-                asList(FIELD_DEFINITION_2, FIELD_DEFINITION_1)));
+                asList(FIELD_DEFINITION_2, FIELD_DEFINITION_3, FIELD_DEFINITION_1)));
     }
 
     @Test
@@ -580,15 +574,14 @@ public class TypeSyncIT {
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdate();
 
         final TypeDraft typeDraft = TypeDraftBuilder
-            .of("typeKey", LocalizedString.ofEnglish( "typeName"), ResourceTypeIdsSetBuilder.of().addChannels())
+            .of(TYPE_KEY_2, TYPE_NAME_2, ResourceTypeIdsSetBuilder.of().addChannels())
             .build();
 
         CTP_TARGET_CLIENT.execute(TypeCreateCommand.of(typeDraft))
                          .toCompletableFuture()
                          .join();
 
-        final LocalizedString newTypeName = TYPE_NAME_2;
-        final TypeDraft updatedDraft = TypeDraftBuilder.of(typeDraft).name(newTypeName).build();
+        final TypeDraft updatedDraft = TypeDraftBuilder.of(typeDraft).name(TYPE_NAME_1).build();
 
         final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(spyClient).build();
         final TypeSync typeSync = new TypeSync(typeSyncOptions);
@@ -609,7 +602,7 @@ public class TypeSyncIT {
                              .join();
 
         assertThat(queryResult.head()).hasValueSatisfying(type ->
-            assertThat(type.getName()).isEqualTo(newTypeName));
+            assertThat(type.getName()).isEqualTo(TYPE_NAME_1));
     }
 
     @Nonnull
@@ -731,11 +724,11 @@ public class TypeSyncIT {
         assertThat(errorMessages.get(0)).contains(
             format("Failed to update type with key: '%s'. Reason: Not found when attempting to fetch while "
                 + "retrying after concurrency modification.", typeDraft.getKey()));
-
     }
 
     @Nonnull
     private SphereClient buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry() {
+
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         final TypeQuery anyTypeQuery = any(TypeQuery.class);
 
@@ -743,13 +736,11 @@ public class TypeSyncIT {
             .thenCallRealMethod() // Call real fetch on fetching matching types
             .thenReturn(CompletableFuture.completedFuture(PagedQueryResult.empty()));
 
-
         final TypeUpdateCommand anyTypeUpdate = any(TypeUpdateCommand.class);
 
         when(spyClient.execute(anyTypeUpdate))
             .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
             .thenCallRealMethod();
-
 
         return spyClient;
     }

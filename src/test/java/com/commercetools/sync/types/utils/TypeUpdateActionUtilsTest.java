@@ -2,7 +2,6 @@ package com.commercetools.sync.types.utils;
 
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.types.FieldDefinition;
 import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
@@ -12,14 +11,9 @@ import io.sphere.sdk.types.commands.updateactions.SetDescription;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static com.commercetools.sync.types.FieldDefinitionTestHelper.imageUrlFieldDefinition;
-import static com.commercetools.sync.types.FieldDefinitionTestHelper.relatedCategoriesFieldDefinition;
-import static com.commercetools.sync.types.FieldDefinitionTestHelper.stateFieldDefinition;
 import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildChangeNameUpdateAction;
 import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildSetDescriptionUpdateAction;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,21 +38,13 @@ public class TypeUpdateActionUtilsTest {
                 .addCategories()
                 .build();
 
-        final List<FieldDefinition> fieldDefinitions =
-                Arrays.asList(stateFieldDefinition(),
-                        imageUrlFieldDefinition(),
-                        relatedCategoriesFieldDefinition());
-
-
         old = mock(Type.class);
         when(old.getKey()).thenReturn(key);
         when(old.getName()).thenReturn(name);
         when(old.getDescription()).thenReturn(desc);
-        when(old.getFieldDefinitions()).thenReturn(fieldDefinitions);
 
         newSame = TypeDraftBuilder.of(key, name, resourceTypeIds)
                 .description(desc)
-                .fieldDefinitions(fieldDefinitions)
                 .build();
 
 
@@ -66,7 +52,6 @@ public class TypeUpdateActionUtilsTest {
                 LocalizedString.ofEnglish("type for standard categories 2"),
                 resourceTypeIds)
                 .description(LocalizedString.ofEnglish("description for category custom type 2"))
-                .fieldDefinitions(fieldDefinitions)
                 .build();
     }
 
@@ -74,7 +59,6 @@ public class TypeUpdateActionUtilsTest {
     public void buildChangeNameAction_WithDifferentValues_ShouldReturnAction() {
         final Optional<UpdateAction<Type>> result = buildChangeNameUpdateAction(old, newDifferent);
 
-        assertThat(result).containsInstanceOf(ChangeName.class);
         assertThat(result).contains(ChangeName.of(newDifferent.getName()));
     }
 
@@ -89,7 +73,6 @@ public class TypeUpdateActionUtilsTest {
     public void buildSetDescriptionAction_WithDifferentValues_ShouldReturnAction() {
         final Optional<UpdateAction<Type>> result = buildSetDescriptionUpdateAction(old, newDifferent);
 
-        assertThat(result).containsInstanceOf(SetDescription.class);
         assertThat(result).contains(SetDescription.of(newDifferent.getDescription()));
     }
 

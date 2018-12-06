@@ -19,6 +19,8 @@ public final class PlainEnumValueFixtures {
         unmodifiableList(asList(ENUM_VALUE_A, ENUM_VALUE_B, ENUM_VALUE_C));
     public static final List<EnumValue> ENUM_VALUES_AB =
         unmodifiableList(asList(ENUM_VALUE_A, ENUM_VALUE_B));
+    public static final List<EnumValue> ENUM_VALUES_BAC =
+        unmodifiableList(asList(ENUM_VALUE_B, ENUM_VALUE_A, ENUM_VALUE_C));
     public static final List<EnumValue> ENUM_VALUES_AB_WITH_DIFFERENT_LABEL =
         unmodifiableList(asList(ENUM_VALUE_A_DIFFERENT_LABEL, ENUM_VALUE_B));
     public static final List<EnumValue> ENUM_VALUES_ABB =

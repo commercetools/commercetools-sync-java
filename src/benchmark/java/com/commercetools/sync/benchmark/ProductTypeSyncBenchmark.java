@@ -1,6 +1,5 @@
 package com.commercetools.sync.benchmark;
 
-import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
 import com.commercetools.sync.commons.utils.SyncSolutionInfo;
 import com.commercetools.sync.producttypes.ProductTypeSync;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
@@ -36,6 +35,7 @@ import static com.commercetools.sync.benchmark.BenchmarkUtils.THRESHOLD;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.calculateDiff;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.saveNewResult;
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_1;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
@@ -111,9 +111,7 @@ public class ProductTypeSyncBenchmark {
         assertThat(totalNumberOfProductTypes).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
 
 
-        AssertionsForStatistics
-                .assertThat(syncStatistics)
-                .hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, NUMBER_OF_RESOURCE_UNDER_TEST, 0, 0);
+        assertThat(syncStatistics).hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, NUMBER_OF_RESOURCE_UNDER_TEST, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -144,7 +142,7 @@ public class ProductTypeSyncBenchmark {
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
         // Calculate time taken for benchmark and assert it lies within threshold
-        final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, PRODUCT_TYPE_SYNC, CREATES_ONLY, totalTime);
+        final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, PRODUCT_TYPE_SYNC, UPDATES_ONLY, totalTime);
         assertThat(diff)
                 .withFailMessage(format("Diff of benchmark '%e' is longer than expected threshold of '%d'.",
                         diff, THRESHOLD))
@@ -172,9 +170,7 @@ public class ProductTypeSyncBenchmark {
         assertThat(totalNumberOfProductTypes).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
 
         // Assert statistics
-        AssertionsForStatistics
-                .assertThat(syncStatistics)
-                .hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, 0, NUMBER_OF_RESOURCE_UNDER_TEST, 0);
+        assertThat(syncStatistics).hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, 0, NUMBER_OF_RESOURCE_UNDER_TEST, 0);
 
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
@@ -207,7 +203,9 @@ public class ProductTypeSyncBenchmark {
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
         // Calculate time taken for benchmark and assert it lies within threshold
-        final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, PRODUCT_TYPE_SYNC, CREATES_ONLY, totalTime);
+        final double diff =
+            calculateDiff(SyncSolutionInfo.LIB_VERSION, PRODUCT_TYPE_SYNC, CREATES_AND_UPDATES, totalTime);
+
         assertThat(diff)
                 .withFailMessage(format("Diff of benchmark '%e' is longer than expected threshold of '%d'.",
                         diff, THRESHOLD))
@@ -235,9 +233,7 @@ public class ProductTypeSyncBenchmark {
         assertThat(totalNumberOfProductTypes).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
 
         // Assert statistics
-        AssertionsForStatistics
-                .assertThat(syncStatistics)
-                .hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, halfNumberOfDrafts, halfNumberOfDrafts, 0);
+        assertThat(syncStatistics).hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, halfNumberOfDrafts, halfNumberOfDrafts, 0);
 
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();

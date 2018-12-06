@@ -122,8 +122,6 @@ public class TypeSyncTest {
             .of(mock(SphereClient.class))
             .build();
 
-
-
         final Type mockedExistingType = mock(Type.class);
         when(mockedExistingType.getKey()).thenReturn(newTypeDraft.getKey());
 

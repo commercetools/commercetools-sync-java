@@ -1,6 +1,5 @@
 package com.commercetools.sync.benchmark;
 
-import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
 import com.commercetools.sync.commons.utils.SyncSolutionInfo;
 import com.commercetools.sync.types.TypeSync;
 import com.commercetools.sync.types.TypeSyncOptions;
@@ -38,7 +37,7 @@ import static com.commercetools.sync.benchmark.BenchmarkUtils.TYPE_SYNC;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.calculateDiff;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.saveNewResult;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.FIELD_DEFINITION_1;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.FIELD_DEFINITION_NAME_1;
@@ -57,7 +56,7 @@ public class TypeSyncBenchmark {
 
     @BeforeClass
     public static void setup() {
-        deleteTypesFromTargetAndSource();
+        deleteTypes(CTP_TARGET_CLIENT);
     }
 
     @AfterClass
@@ -120,9 +119,7 @@ public class TypeSyncBenchmark {
         assertThat(totalNumberOfTypes).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
 
 
-        AssertionsForStatistics
-                .assertThat(syncStatistics)
-                .hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, NUMBER_OF_RESOURCE_UNDER_TEST, 0, 0);
+        assertThat(syncStatistics).hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, NUMBER_OF_RESOURCE_UNDER_TEST, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -152,7 +149,7 @@ public class TypeSyncBenchmark {
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
         // Calculate time taken for benchmark and assert it lies within threshold
-        final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, TYPE_SYNC, CREATES_ONLY, totalTime);
+        final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, TYPE_SYNC, UPDATES_ONLY, totalTime);
         assertThat(diff)
                 .withFailMessage(format("Diff of benchmark '%e' is longer than expected threshold of '%d'.",
                         diff, THRESHOLD))
@@ -180,9 +177,7 @@ public class TypeSyncBenchmark {
         assertThat(totalNumberOfTypes).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
 
         // Assert statistics
-        AssertionsForStatistics
-                .assertThat(syncStatistics)
-                .hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, 0, NUMBER_OF_RESOURCE_UNDER_TEST, 0);
+        assertThat(syncStatistics).hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, 0, NUMBER_OF_RESOURCE_UNDER_TEST, 0);
 
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
@@ -215,14 +210,14 @@ public class TypeSyncBenchmark {
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
         // Calculate time taken for benchmark and assert it lies within threshold
-        final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, TYPE_SYNC, CREATES_ONLY, totalTime);
+        final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, TYPE_SYNC, CREATES_AND_UPDATES, totalTime);
         assertThat(diff)
                 .withFailMessage(format("Diff of benchmark '%e' is longer than expected threshold of '%d'.",
                         diff, THRESHOLD))
                 .isLessThanOrEqualTo(THRESHOLD);
 
         // Assert actual state of CTP project (number of updated types)
-        final CompletableFuture<Integer> totalNumberOfUpdatedTypesWithOldFielDefinitionName =
+        final CompletableFuture<Integer> totalNumberOfUpdatedTypesWithOldFieldDefinitionName =
                 CTP_TARGET_CLIENT.execute(TypeQuery.of()
                                                    .withPredicates(p -> p.fieldDefinitions().name().is(
                                                            FIELD_DEFINITION_NAME_1 + "_old")))
@@ -230,8 +225,8 @@ public class TypeSyncBenchmark {
                                  .thenApply(Long::intValue)
                                  .toCompletableFuture();
 
-        executeBlocking(totalNumberOfUpdatedTypesWithOldFielDefinitionName);
-        assertThat(totalNumberOfUpdatedTypesWithOldFielDefinitionName).isCompletedWithValue(0);
+        executeBlocking(totalNumberOfUpdatedTypesWithOldFieldDefinitionName);
+        assertThat(totalNumberOfUpdatedTypesWithOldFieldDefinitionName).isCompletedWithValue(0);
 
         // Assert actual state of CTP project (total number of existing types)
         final CompletableFuture<Integer> totalNumberOfTypes =
@@ -243,9 +238,7 @@ public class TypeSyncBenchmark {
         assertThat(totalNumberOfTypes).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
 
         // Assert statistics
-        AssertionsForStatistics
-                .assertThat(syncStatistics)
-                .hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, halfNumberOfDrafts, halfNumberOfDrafts, 0);
+        assertThat(syncStatistics).hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, halfNumberOfDrafts, halfNumberOfDrafts, 0);
 
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();

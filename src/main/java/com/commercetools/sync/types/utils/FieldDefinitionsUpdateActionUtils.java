@@ -53,7 +53,8 @@ final class FieldDefinitionsUpdateActionUtils {
      * @param newFieldDefinitions the new list of field definitions.
      * @return a list of field definitions update actions if the list of field definitions is not identical.
      *         Otherwise, if the field definitions are identical, an empty list is returned.
-     * @throws DuplicateNameException in case there are field definitions with duplicate names.
+     * @throws BuildUpdateActionException in case there are field definitions with duplicate names or enums
+     *         duplicate keys.
      */
     @Nonnull
     static List<UpdateAction<Type>> buildFieldDefinitionsUpdateActions(
@@ -118,7 +119,7 @@ final class FieldDefinitionsUpdateActionUtils {
      * Otherwise, if the field definition still exists in the new field definition, then compare the field definition
      * fields (label, etc..), and add the computed actions to the list of update actions.
      *
-     * <p>Note: If the field type field changes, the old field definition is removed and the new field
+     * <p>Note: If the field type field is different, the old field definition is removed and the new field
      *     definition is added with the new field type.
      *
      * @param oldFieldDefinitions the list of old {@link FieldDefinition}s.
@@ -128,6 +129,7 @@ final class FieldDefinitionsUpdateActionUtils {
      *         definition fields (name, label, etc..), and add the computed actions to the list of update actions.
      *         Otherwise, if the field definitions are identical, an empty optional is returned.
      * @throws DuplicateNameException in case there are field definitions drafts with duplicate names.
+     * @throws DuplicateKeyException in case there are enum values with duplicate keys.
      */
     @Nonnull
     private static List<UpdateAction<Type>> buildRemoveFieldDefinitionOrFieldDefinitionUpdateActions(
@@ -135,17 +137,14 @@ final class FieldDefinitionsUpdateActionUtils {
             @Nonnull final List<FieldDefinition> newFieldDefinitions) {
 
         final Map<String, FieldDefinition> newFieldDefinitionsNameMap =
-                newFieldDefinitions
-                        .stream().collect(
-                        toMap(FieldDefinition::getName, fieldDefinition -> fieldDefinition,
-                                (fieldDefinitionA, fieldDefinitionB) -> {
-                                    throw new DuplicateNameException(format("Field definitions have duplicated names. "
-                                                    + "Duplicated field definition name: '%s'. "
-                                                    + "Field definitions names are expected "
-                                                    + "to be unique inside their type.",
-                                            fieldDefinitionA.getName()));
-                                }
-                        ));
+            newFieldDefinitions
+                .stream().collect(
+                toMap(FieldDefinition::getName, fieldDefinition -> fieldDefinition,
+                    (fieldDefinitionA, fieldDefinitionB) -> {
+                        throw new DuplicateNameException(format("Field definitions have duplicated names. "
+                            + "Duplicated field definition name: '%s'. Field definitions names are "
+                            + "expected to be unique inside their type.", fieldDefinitionA.getName()));
+                    }));
 
         return oldFieldDefinitions
             .stream()
@@ -241,7 +240,7 @@ final class FieldDefinitionsUpdateActionUtils {
 
     /**
      * Checks if there are any new field definition drafts which are not existing in the
-     * {@code oldFieldDefinitionNameMap}. If there are, then "add" field definition update actions are built.
+     * {@code oldFieldDefinitions}. If there are, then "add" field definition update actions are built.
      * Otherwise, if there are no new field definitions, then an empty list is returned.
      *
      * @param oldFieldDefinitions the list of old {@link FieldDefinition}s.

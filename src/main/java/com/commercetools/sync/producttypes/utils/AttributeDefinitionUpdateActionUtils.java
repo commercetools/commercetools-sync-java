@@ -1,5 +1,6 @@
 package com.commercetools.sync.producttypes.utils;
 
+import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.models.LocalizedEnumValue;
@@ -38,6 +39,8 @@ final class AttributeDefinitionUpdateActionUtils {
      * @param oldAttributeDefinition      the old attribute definition which should be updated.
      * @param newAttributeDefinitionDraft the new attribute definition draft where we get the new fields.
      * @return A list with the update actions or an empty list if the attribute definition fields are identical.
+     *
+     * @throws DuplicateKeyException in case there are localized enum values with duplicate keys.
      */
     @Nonnull
     static List<UpdateAction<ProductType>> buildActions(
@@ -72,6 +75,7 @@ final class AttributeDefinitionUpdateActionUtils {
         @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft) {
 
         final List<UpdateAction<ProductType>> updateActions = new ArrayList<>();
+
         if (isPlainEnumAttribute(oldAttributeDefinition)) {
             updateActions.addAll(buildEnumValuesUpdateActions(
                 oldAttributeDefinition.getName(),

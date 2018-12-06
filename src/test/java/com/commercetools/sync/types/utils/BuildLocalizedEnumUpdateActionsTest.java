@@ -1,7 +1,6 @@
-package com.commercetools.sync.types.utils.typeactionutils;
+package com.commercetools.sync.types.utils;
 
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
-import com.commercetools.sync.types.utils.LocalizedEnumValueUpdateActionUtils;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.commands.updateactions.AddLocalizedEnumValue;
@@ -25,7 +24,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     public ExpectedException expectedException = ExpectedException.none();
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithEmptyPlainEnumValuesAndNoOlEnumValues_ShouldNotBuildActions() {
+    public void buildLocalizedEnumUpdateActions_WithEmptyPlainEnumValuesAndNoOldEnumValues_ShouldNotBuildActions() {
         final List<UpdateAction<Type>> updateActions = buildLocalizedEnumValuesUpdateActions(
             FIELD_NAME_1,
             emptyList(),
@@ -179,7 +178,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithDuplicatePlainEnumValues_ShouldTriggerDuplicateKeyError() {
+    public void buildLocalizedEnumUpdateActions_WithDuplicateEnumValues_ShouldTriggerDuplicateKeyError() {
         expectedException.expect(DuplicateKeyException.class);
         expectedException.expectMessage("Enum Values have duplicated keys. Definition name: "
                 + "'field_definition_name', Duplicated enum value: 'b'. Enum Values are expected to be unique inside "

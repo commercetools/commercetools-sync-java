@@ -7,27 +7,30 @@ import io.sphere.sdk.types.TypeDraft;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
 
+import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildChangeNameUpdateAction;
-import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildFieldDefinitionUpdateActions;
+import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildFieldDefinitionsUpdateActions;
 import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildSetDescriptionUpdateAction;
-import static java.util.stream.Collectors.toList;
 
 public final class TypeSyncUtils {
 
     /**
      * Compares all the fields (including the field definitions see
-     * {@link TypeUpdateActionUtils#buildFieldDefinitionUpdateActions(Type, TypeDraft, TypeSyncOptions)})
+     * {@link TypeUpdateActionUtils#buildFieldDefinitionsUpdateActions(Type, TypeDraft, TypeSyncOptions)})
      * of a {@link Type} and a {@link TypeDraft}.
      * It returns a {@link List} of {@link UpdateAction}&lt;{@link Type}&gt; as a
      * result. If no update actions are needed, for example in case where both the {@link Type} and the
      * {@link TypeDraft} have the same fields, an empty {@link List} is returned.
      *
-     * <p>
-     *  TODO: Check GITHUB ISSUE#339 for missing FieldDefinition update actions.
-     * </p>
+     *
+     * <p>Note: Currently this util doesn't support the following:
+     *  <ul>
+     *      <li>updating the inputHint of a FieldDefinition</li>
+     *      <li>removing the EnumValue/LocalizedEnumValue of a FieldDefinition</li>
+     *      <li>updating the label of a EnumValue/LocalizedEnumValue of a FieldDefinition</li>
+     *  </ul>
+     *
      *
      * @param oldType       the {@link Type} which should be updated.
      * @param newType       the {@link TypeDraft} where we get the new data.
@@ -43,15 +46,13 @@ public final class TypeSyncUtils {
             @Nonnull final TypeDraft newType,
             @Nonnull final TypeSyncOptions syncOptions) {
 
-        final List<UpdateAction<Type>> updateActions = Stream.of(
+        final List<UpdateAction<Type>> updateActions =
+            filterEmptyOptionals(
                 buildChangeNameUpdateAction(oldType, newType),
                 buildSetDescriptionUpdateAction(oldType, newType)
-        )
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(toList());
+            );
 
-        updateActions.addAll(buildFieldDefinitionUpdateActions(oldType, newType, syncOptions));
+        updateActions.addAll(buildFieldDefinitionsUpdateActions(oldType, newType, syncOptions));
 
         return updateActions;
     }

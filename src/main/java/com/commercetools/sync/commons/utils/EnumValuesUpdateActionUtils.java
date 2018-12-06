@@ -26,6 +26,9 @@ import static java.util.Optional.of;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toMap;
 
+/**
+ * The utils in this class are only meant for the internal use of the commercetools-sync-java library.
+ */
 public final class EnumValuesUpdateActionUtils {
 
     /**
@@ -59,7 +62,7 @@ public final class EnumValuesUpdateActionUtils {
         @Nullable final BiFunction<String, List<T>, UpdateAction<U>> changeOrderEnumCallback,
         @Nullable final BiFunction<String, List<String>, UpdateAction<U>> changeOrderWithKeysEnumCallback) {
 
-        if (newEnumValues != null && !newEnumValues.isEmpty()) {
+        if (newEnumValues != null) {
             return buildUpdateActions(definitionName,
                     oldEnumValues,
                     newEnumValues,
@@ -73,11 +76,10 @@ public final class EnumValuesUpdateActionUtils {
             return buildRemoveEnumValuesUpdateAction(
                     definitionName,
                     oldEnumValues,
-                    newEnumValues,
+                    null,
                     removeEnumCallback)
                     .map(Collections::singletonList)
                     .orElse(emptyList());
-
         }
 
         return emptyList();
@@ -94,8 +96,8 @@ public final class EnumValuesUpdateActionUtils {
         @Nullable final BiFunction<String, List<T>, UpdateAction<U>> changeOrderEnumCallback,
         @Nullable final BiFunction<String, List<String>, UpdateAction<U>> changeOrderWithKeysEnumCallback) {
 
-        final List<UpdateAction<U>> removeEnumValuesUpdateActions =
-                getRemoveEnumValuesUpdateActions(definitionName, oldEnumValues, newEnumValues,
+        final Optional<UpdateAction<U>> removeEnumValuesUpdateAction =
+                getRemoveEnumValuesUpdateAction(definitionName, oldEnumValues, newEnumValues,
                         removeEnumValuesUpdateActionCallback);
 
         final List<UpdateAction<U>> matchingEnumValuesUpdateActions = getMatchingEnumValuesUpdateActions(
@@ -104,56 +106,55 @@ public final class EnumValuesUpdateActionUtils {
         final List<UpdateAction<U>> addEnumValuesUpdateActions = getAddEnumValuesUpdateActions(definitionName,
                 oldEnumValues, newEnumValues, addEnumCallback);
 
-        final List<UpdateAction<U>> changeEnumValuesOrderUpdateActions = getChangeEnumValuesOrderUpdateActions(
+        final Optional<UpdateAction<U>> changeEnumValuesOrderUpdateAction = getChangeEnumValuesOrderUpdateAction(
                 definitionName, oldEnumValues, newEnumValues, changeOrderEnumCallback);
 
-        final List<UpdateAction<U>> changeEnumValuesWithKeysOrderUpdateActions =
-                getChangeEnumValuesWithKeysOrderUpdateActions(
+        final Optional<UpdateAction<U>> changeEnumValuesWithKeysOrderUpdateActions =
+            getChangeEnumValuesWithKeysOrderUpdateAction(
                         definitionName, oldEnumValues, newEnumValues,
                         changeOrderWithKeysEnumCallback);
 
-        return Stream.of(removeEnumValuesUpdateActions,
+        return Stream
+            .of(
+                removeEnumValuesUpdateAction.map(Collections::singletonList).orElse(emptyList()),
                 matchingEnumValuesUpdateActions,
                 addEnumValuesUpdateActions,
-                changeEnumValuesOrderUpdateActions,
-                changeEnumValuesWithKeysOrderUpdateActions)
-                     .flatMap(Collection::stream)
-                     .collect(Collectors.toList());
+                changeEnumValuesOrderUpdateAction.map(Collections::singletonList).orElse(emptyList()),
+                changeEnumValuesWithKeysOrderUpdateActions.map(Collections::singletonList).orElse(emptyList()))
+            .flatMap(Collection::stream)
+            .collect(Collectors.toList());
     }
 
     @Nonnull
-    private static <T extends WithKey, U> List<UpdateAction<U>> getChangeEnumValuesWithKeysOrderUpdateActions(
+    private static <T extends WithKey, U> Optional<UpdateAction<U>> getChangeEnumValuesWithKeysOrderUpdateAction(
         @Nonnull final String definitionName,
         @Nonnull final List<T> oldEnumValues,
         @Nonnull final List<T> newEnumValues,
         @Nullable final BiFunction<String, List<String>, UpdateAction<U>> changeOrderWithKeysEnumCallback) {
 
-        return changeOrderWithKeysEnumCallback == null ? emptyList() :
+        return changeOrderWithKeysEnumCallback == null ? Optional.empty() :
                 buildChangeEnumValuesWithKeysOrderUpdateAction(
                         definitionName,
                         oldEnumValues,
                         newEnumValues,
                         changeOrderWithKeysEnumCallback
-                ).map(Collections::singletonList)
-                 .orElse(emptyList());
+                );
     }
 
     @Nonnull
-    private static <T extends WithKey, U> List<UpdateAction<U>> getChangeEnumValuesOrderUpdateActions(
+    private static <T extends WithKey, U> Optional<UpdateAction<U>> getChangeEnumValuesOrderUpdateAction(
         @Nonnull final String definitionName,
         @Nonnull final List<T> oldEnumValues,
         @Nonnull final List<T> newEnumValues,
         @Nullable final BiFunction<String, List<T>, UpdateAction<U>> changeOrderEnumCallback) {
 
-        return changeOrderEnumCallback == null ? emptyList() :
+        return changeOrderEnumCallback == null ? Optional.empty() :
                 buildChangeEnumValuesOrderUpdateAction(
-                        definitionName,
-                        oldEnumValues,
-                        newEnumValues,
-                        changeOrderEnumCallback
-                )
-                        .map(Collections::singletonList)
-                        .orElse(emptyList());
+                    definitionName,
+                    oldEnumValues,
+                    newEnumValues,
+                    changeOrderEnumCallback
+                );
     }
 
     @Nonnull
@@ -188,20 +189,18 @@ public final class EnumValuesUpdateActionUtils {
     }
 
     @Nonnull
-    private static <T extends WithKey, U> List<UpdateAction<U>> getRemoveEnumValuesUpdateActions(
+    private static <T extends WithKey, U> Optional<UpdateAction<U>> getRemoveEnumValuesUpdateAction(
         @Nonnull final String definitionName,
         @Nonnull final List<T> oldEnumValues,
         @Nonnull final List<T> newEnumValues,
         @Nullable final BiFunction<String, List<String>, UpdateAction<U>> removeEnumValuesUpdateActionCallback) {
 
-        return removeEnumValuesUpdateActionCallback == null ? emptyList() :
+        return removeEnumValuesUpdateActionCallback == null ? Optional.empty() :
                 buildRemoveEnumValuesUpdateAction(
                         definitionName,
                         oldEnumValues,
                         newEnumValues,
-                        removeEnumValuesUpdateActionCallback)
-                        .map(Collections::singletonList)
-                        .orElse(emptyList());
+                        removeEnumValuesUpdateActionCallback);
     }
 
     /**
@@ -219,7 +218,7 @@ public final class EnumValuesUpdateActionUtils {
      *         Otherwise, if the enum values order is identical, an empty optional is returned.
      */
     @Nonnull
-    public static <T extends WithKey, U> Optional<UpdateAction<U>> buildChangeEnumValuesOrderUpdateAction(
+    static <T extends WithKey, U> Optional<UpdateAction<U>> buildChangeEnumValuesOrderUpdateAction(
         @Nonnull final String definitionName,
         @Nonnull final List<T> oldEnumValues,
         @Nonnull final List<T> newEnumValues,
@@ -247,7 +246,7 @@ public final class EnumValuesUpdateActionUtils {
      *         Otherwise, if the enum values order is identical, an empty optional is returned.
      */
     @Nonnull
-    public static <T extends WithKey, U> Optional<UpdateAction<U>> buildChangeEnumValuesWithKeysOrderUpdateAction(
+    private static <T extends WithKey, U> Optional<UpdateAction<U>> buildChangeEnumValuesWithKeysOrderUpdateAction(
         @Nonnull final String definitionName,
         @Nonnull final List<T> oldEnumValues,
         @Nonnull final List<T> newEnumValues,
@@ -303,7 +302,7 @@ public final class EnumValuesUpdateActionUtils {
      *         Otherwise, if the enum values are identical, an empty optional is returned.
      */
     @Nonnull
-    public static <T extends WithKey, U> List<UpdateAction<U>> buildAddEnumValuesUpdateActions(
+    static <T extends WithKey, U> List<UpdateAction<U>> buildAddEnumValuesUpdateActions(
         @Nonnull final String definitionName,
         @Nonnull final List<T> oldEnumValues,
         @Nonnull final List<T> newEnumValues,
@@ -341,7 +340,7 @@ public final class EnumValuesUpdateActionUtils {
      *         Otherwise, if the enum values are identical, an empty optional is returned.
      */
     @Nonnull
-    public static <T extends WithKey, U> Optional<UpdateAction<U>> buildRemoveEnumValuesUpdateAction(
+    static <T extends WithKey, U> Optional<UpdateAction<U>> buildRemoveEnumValuesUpdateAction(
         @Nonnull final String definitionName,
         @Nonnull final List<T> oldEnumValues,
         @Nullable final List<T> newEnumValues,
@@ -380,7 +379,7 @@ public final class EnumValuesUpdateActionUtils {
      *         is returned.
      */
     @Nonnull
-    public static <T extends WithKey, U> List<UpdateAction<U>> buildMatchingEnumValuesUpdateActions(
+    static <T extends WithKey, U> List<UpdateAction<U>> buildMatchingEnumValuesUpdateActions(
         @Nonnull final String definitionName,
         @Nonnull final List<T> oldEnumValues,
         @Nonnull final List<T> newEnumValues,
