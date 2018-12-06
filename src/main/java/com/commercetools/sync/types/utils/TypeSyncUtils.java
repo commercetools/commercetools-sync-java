@@ -7,13 +7,11 @@ import io.sphere.sdk.types.TypeDraft;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Stream;
 
+import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildChangeNameUpdateAction;
 import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildFieldDefinitionUpdateActions;
 import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildSetDescriptionUpdateAction;
-import static java.util.stream.Collectors.toList;
 
 public final class TypeSyncUtils {
 
@@ -26,7 +24,12 @@ public final class TypeSyncUtils {
      * {@link TypeDraft} have the same fields, an empty {@link List} is returned.
      *
      * <p>
-     *  TODO: Check GITHUB ISSUE#339 for missing FieldDefinition update actions.
+     *  Note: Currently this util doesn't support the following:
+     *  <ul>
+     *      <li>updating the inputHint of a FieldDefinition</li>
+     *      <li>removing the EnumValue/LocalizedEnumValue of a FieldDefinition</li>
+     *      <li>updating the label of a EnumValue/LocalizedEnumValue of a FieldDefinition</li>
+     *  </ul>
      * </p>
      *
      * @param oldType       the {@link Type} which should be updated.
@@ -43,13 +46,11 @@ public final class TypeSyncUtils {
             @Nonnull final TypeDraft newType,
             @Nonnull final TypeSyncOptions syncOptions) {
 
-        final List<UpdateAction<Type>> updateActions = Stream.of(
+        final List<UpdateAction<Type>> updateActions =
+            filterEmptyOptionals(
                 buildChangeNameUpdateAction(oldType, newType),
                 buildSetDescriptionUpdateAction(oldType, newType)
-        )
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(toList());
+            );
 
         updateActions.addAll(buildFieldDefinitionUpdateActions(oldType, newType, syncOptions));
 
