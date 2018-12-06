@@ -161,6 +161,25 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
+    public void buildPlainEnumUpdateActions_WithMixedCase_ShouldBuildChangeEnumValueOrderAction() {
+        final String attributeDefinitionName = "attribute_definition_name_1";
+        final List<UpdateAction<ProductType>> updateActions = buildLocalizedEnumValuesUpdateActions(
+            attributeDefinitionName,
+            ENUM_VALUES_BAC,
+            ENUM_VALUES_AB_WITH_DIFFERENT_LABEL
+        );
+
+        assertThat(updateActions).containsExactly(
+            RemoveEnumValues.of(attributeDefinitionName, ENUM_VALUE_C.getKey()),
+            ChangeLocalizedEnumValueLabel.of(attributeDefinitionName, ENUM_VALUE_A_DIFFERENT_LABEL),
+            ChangeLocalizedEnumValueOrder.of(attributeDefinitionName, asList(
+                ENUM_VALUE_A_DIFFERENT_LABEL,
+                ENUM_VALUE_B
+            ))
+        );
+    }
+
+    @Test
     public void buildLocalizedEnumUpdateActions_WithRemovedAndDifferentOrder_ShouldBuildChangeOrderAndRemoveActions() {
         final List<UpdateAction<ProductType>> updateActions = buildLocalizedEnumValuesUpdateActions(
             "attribute_definition_name_1",

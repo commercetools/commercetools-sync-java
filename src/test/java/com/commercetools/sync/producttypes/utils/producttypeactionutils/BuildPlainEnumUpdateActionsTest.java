@@ -89,7 +89,6 @@ public class BuildPlainEnumUpdateActionsTest {
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
-
     @Test
     public void buildPlainEnumUpdateActions_WithDuplicatePlainEnumValues_ShouldTriggerDuplicateKeyError() {
         expectedException.expect(DuplicateKeyException.class);
@@ -103,7 +102,6 @@ public class BuildPlainEnumUpdateActionsTest {
             ENUM_VALUES_ABB
         );
     }
-
 
     @Test
     public void buildPlainEnumUpdateActions_WithOneMissingPlainEnumValue_ShouldBuildRemoveEnumValueAction() {
@@ -157,6 +155,25 @@ public class BuildPlainEnumUpdateActionsTest {
             ChangeEnumValueOrder.of("attribute_definition_name_1", asList(
                 ENUM_VALUE_C,
                 ENUM_VALUE_A,
+                ENUM_VALUE_B
+            ))
+        );
+    }
+
+    @Test
+    public void buildPlainEnumUpdateActions_WithMixedCase_ShouldBuildChangeEnumValueOrderAction() {
+        final String attributeDefinitionName = "attribute_definition_name_1";
+        final List<UpdateAction<ProductType>> updateActions = buildEnumValuesUpdateActions(
+            attributeDefinitionName,
+            ENUM_VALUES_BAC,
+            ENUM_VALUES_AB_WITH_DIFFERENT_LABEL
+        );
+
+        assertThat(updateActions).containsExactly(
+            RemoveEnumValues.of(attributeDefinitionName, ENUM_VALUE_C.getKey()),
+            ChangePlainEnumValueLabel.of(attributeDefinitionName, ENUM_VALUE_A_DIFFERENT_LABEL),
+            ChangeEnumValueOrder.of(attributeDefinitionName, asList(
+                ENUM_VALUE_A_DIFFERENT_LABEL,
                 ENUM_VALUE_B
             ))
         );
@@ -249,7 +266,6 @@ public class BuildPlainEnumUpdateActionsTest {
         );
     }
 
-
     @Test
     public void buildPlainEnumUpdateActions_WithSameLabels_ShouldNotReturnChangeLabelAction() {
         final List<UpdateAction<ProductType>> updateActions = buildEnumValueUpdateActions(
@@ -262,6 +278,4 @@ public class BuildPlainEnumUpdateActionsTest {
             ChangePlainEnumValueLabel.of("attribute_definition_name_1", ENUM_VALUE_A)
         );
     }
-
-
 }
