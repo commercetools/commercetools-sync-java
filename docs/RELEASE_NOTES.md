@@ -9,9 +9,9 @@
 3. link to Javadoc of release.
 4. link to Jar of release.
 
-4. Add a summary of the release that is not too detailed or technical.
+5. Add a summary of the release that is not too detailed or technical.
 
-5. Depending on the contents of the release use the subtitles below to 
+6. Depending on the contents of the release use the subtitles below to 
   document the new changes in the release accordingly. Please always include
   a link to the releated issue number. 
    **New Features** (n) 🎉 
@@ -24,7 +24,7 @@
    - **Category Sync** - Sync now supports product variant images syncing. [#114](https://github.com/commercetools/commercetools-sync-java/issues/114)
    - **Build Tools** - Convinient handelling of env vars for integration tests.
 
-6. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
+7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 
 -->
 
@@ -40,6 +40,8 @@
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M14...v1.0.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0)
+
+
 
 - 🎉 **New Features** (4)
     - **Type Sync** - Support for syncing types. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300) For more info how to use it please refer to [Type usage doc](/docs/usage/TYPE_SYNC.md).
