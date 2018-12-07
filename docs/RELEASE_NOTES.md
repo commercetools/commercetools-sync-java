@@ -29,17 +29,17 @@
 -->
 
 <!--
-### v1.0.0 -  Dec 10, 2018
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M14...v1.1.0) |
+### 1.1.0 -  Dec 10, 2018
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M14...1.1.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.1.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.1.0)
 
 !-->
 
-### v1.0.0 -  Dec 10, 2018
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M14...v1.0.0) |
-[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0/) | 
-[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0)
+### 1.0.0 -  Dec 10, 2018
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M14...1.0.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.0.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.0.0)
 
 ##### The Beta is Over 🎉
 

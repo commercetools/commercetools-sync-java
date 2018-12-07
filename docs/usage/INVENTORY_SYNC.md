@@ -35,7 +35,7 @@ against a [InventoryEntryDraft](https://docs.commercetools.com/http-api-projects
    reference would return its `key`. 
      
         **Note**: This library provides you with a utility method 
-         [`replaceInventoriesReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0/com/commercetools/sync/inventories/utils/InventoryReferenceReplacementUtils.html#replaceInventoriesReferenceIdsWithKeys-java.util.List-)
+         [`replaceInventoriesReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/1.0.0/com/commercetools/sync/inventories/utils/InventoryReferenceReplacementUtils.html#replaceInventoriesReferenceIdsWithKeys-java.util.List-)
          that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
          ````java
          // Puts the keys in the reference id fields to prepare for reference resolution
