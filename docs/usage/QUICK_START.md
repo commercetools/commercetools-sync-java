@@ -37,7 +37,7 @@
 <dependency>
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
-  <version>v1.0.0-M14</version>
+  <version>v1.0.0</version>
 </dependency>
 ````
 - For Gradle users:
