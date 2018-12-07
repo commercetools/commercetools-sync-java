@@ -11,7 +11,7 @@
 
 5. Add a summary of the release that is not too detailed or technical.
 
-6. Depending on the contents of the release use the subtitles below to 
+6. Depending on the contents of the release use the subitems below to 
   document the new changes in the release accordingly. Please always include
   a link to the releated issue number. 
    **New Features** (n) 🎉 
