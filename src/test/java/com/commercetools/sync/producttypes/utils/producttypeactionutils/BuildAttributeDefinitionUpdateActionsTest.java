@@ -451,7 +451,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithANullAttributeDefinitonDraft_ShouldSkipNullAttributes() {
+    public void buildAttributesUpdateActions_WithANullAttributeDefinitionDraft_ShouldSkipNullAttributes() {
         // preparation
         final ProductType oldProductType = mock(ProductType.class);
         final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder

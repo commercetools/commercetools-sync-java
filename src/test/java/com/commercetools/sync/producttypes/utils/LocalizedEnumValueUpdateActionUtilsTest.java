@@ -9,7 +9,8 @@ import org.junit.Test;
 
 import java.util.Optional;
 
-import static com.commercetools.sync.producttypes.utils.LocalizedEnumUpdateActionUtils.buildChangeLabelAction;
+
+import static com.commercetools.sync.producttypes.utils.LocalizedEnumValueUpdateActionUtils.buildChangeLabelAction;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class LocalizedEnumValueUpdateActionUtilsTest {

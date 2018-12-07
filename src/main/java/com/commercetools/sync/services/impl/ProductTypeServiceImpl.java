@@ -154,7 +154,7 @@ public final class ProductTypeServiceImpl
         }
 
         final ProductTypeQuery productTypeQuery =
-            ProductTypeQuery.of().plusPredicates(queryModel -> queryModel.key().is(key));
+            ProductTypeQueryBuilder.of().plusPredicates(queryModel -> queryModel.key().is(key)).build();
 
         return syncOptions
             .getCtpClient()

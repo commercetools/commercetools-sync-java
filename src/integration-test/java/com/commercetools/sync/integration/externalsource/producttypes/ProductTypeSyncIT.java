@@ -69,7 +69,7 @@ import static org.mockito.Mockito.when;
 public class ProductTypeSyncIT {
 
     /**
-     * Deletes product types from target CTP project.
+     * Deletes product types from the target CTP project.
      * Populates target CTP project with test data.
      */
     @Before

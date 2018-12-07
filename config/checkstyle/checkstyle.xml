@@ -70,7 +70,10 @@
         </module>
         <module name="AvoidStarImport">
             <property name="excludes" value="com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures,
-            com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceFixtures"/>
+            com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceFixtures,
+            com.commercetools.sync.commons.utils.LocalizedEnumValueFixtures,
+            com.commercetools.sync.commons.utils.PlainEnumValueFixtures,
+            com.commercetools.sync.types.utils.FieldDefinitionFixtures"/>
             <property name="allowClassImports" value="false"/>
             <property name="allowStaticMemberImports" value="false"/>
         </module>

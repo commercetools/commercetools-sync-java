@@ -1,6 +1,9 @@
 package com.commercetools.sync.producttypes.utils;
 
+import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.EnumValue;
+import io.sphere.sdk.models.LocalizedEnumValue;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
@@ -14,13 +17,14 @@ import io.sphere.sdk.producttypes.commands.updateactions.ChangeIsSearchable;
 import io.sphere.sdk.producttypes.commands.updateactions.SetInputTip;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
-import static com.commercetools.sync.producttypes.utils.LocalizedEnumsUpdateActionUtils.buildLocalizedEnumValuesUpdateActions;
-import static com.commercetools.sync.producttypes.utils.PlainEnumsUpdateActionUtils.buildEnumValuesUpdateActions;
+import static com.commercetools.sync.producttypes.utils.LocalizedEnumValueUpdateActionUtils.buildLocalizedEnumValuesUpdateActions;
+import static com.commercetools.sync.producttypes.utils.PlainEnumValueUpdateActionUtils.buildEnumValuesUpdateActions;
 
 /**
  * This class is only meant for the internal use of the commercetools-sync-java library.
@@ -35,6 +39,8 @@ final class AttributeDefinitionUpdateActionUtils {
      * @param oldAttributeDefinition      the old attribute definition which should be updated.
      * @param newAttributeDefinitionDraft the new attribute definition draft where we get the new fields.
      * @return A list with the update actions or an empty list if the attribute definition fields are identical.
+     *
+     * @throws DuplicateKeyException in case there are localized enum values with duplicate keys.
      */
     @Nonnull
     static List<UpdateAction<ProductType>> buildActions(
@@ -42,12 +48,33 @@ final class AttributeDefinitionUpdateActionUtils {
         @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft) {
 
         final List<UpdateAction<ProductType>> updateActions = filterEmptyOptionals(
-            buildChangeLabelUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
-            buildSetInputTipUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
-            buildChangeIsSearchableUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
-            buildChangeInputHintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
-            buildChangeAttributeConstraintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft)
+                buildChangeLabelUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+                buildSetInputTipUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+                buildChangeIsSearchableUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+                buildChangeInputHintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft),
+                buildChangeAttributeConstraintUpdateAction(oldAttributeDefinition, newAttributeDefinitionDraft)
         );
+
+        updateActions.addAll(buildEnumUpdateActions(oldAttributeDefinition, newAttributeDefinitionDraft));
+        return updateActions;
+    }
+
+    /**
+     * Compares all the {@link EnumValue} and {@link LocalizedEnumValue} values of an {@link AttributeDefinition} and
+     * an {@link AttributeDefinitionDraft} and returns a list of {@link UpdateAction}&lt;{@link ProductType}&gt; as a
+     * result. If both the {@link AttributeDefinition} and the {@link AttributeDefinitionDraft} have identical
+     * enum values, then no update action is needed and hence an empty {@link List} is returned.
+     *
+     * @param oldAttributeDefinition      the attribute definition which should be updated.
+     * @param newAttributeDefinitionDraft the new attribute definition draft where we get the new fields.
+     * @return A list with the update actions or an empty list if the attribute definition enums are identical.
+     */
+    @Nonnull
+    private static List<UpdateAction<ProductType>> buildEnumUpdateActions(
+        @Nonnull final AttributeDefinition oldAttributeDefinition,
+        @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft) {
+
+        final List<UpdateAction<ProductType>> updateActions = new ArrayList<>();
 
         if (isPlainEnumAttribute(oldAttributeDefinition)) {
             updateActions.addAll(buildEnumValuesUpdateActions(

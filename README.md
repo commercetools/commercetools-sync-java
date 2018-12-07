@@ -17,6 +17,7 @@ Currently this library supports synchronising the following entities in commerce
  - [Products](/docs/usage/PRODUCT_SYNC.md)
  - [InventoryEntries](/docs/usage/INVENTORY_SYNC.md)
  - [ProductTypes](/docs/usage/PRODUCT_TYPE_SYNC.md)
+ - [Types](/docs/usage/TYPE_SYNC.md)
 
 ![commercetools-java-sync-final 001](https://user-images.githubusercontent.com/9512131/31230702-0f2255a6-a9e5-11e7-9412-04ed52641dde.png)
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->

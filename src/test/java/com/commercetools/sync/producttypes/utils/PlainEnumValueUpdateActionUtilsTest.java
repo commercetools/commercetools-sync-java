@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import java.util.Optional;
 
-import static com.commercetools.sync.producttypes.utils.PlainEnumUpdateActionUtils.buildChangeLabelAction;
+import static com.commercetools.sync.producttypes.utils.PlainEnumValueUpdateActionUtils.buildChangeLabelAction;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class PlainEnumValueUpdateActionUtilsTest {

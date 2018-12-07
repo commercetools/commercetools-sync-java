@@ -66,13 +66,6 @@ public interface ProductTypeService {
      * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a {@link Set}
      *          of all matching ProductType.
      */
-    /**
-     * Queries existing {@link ProductType}'s against set of keys.
-     *
-     * @param keys {@link Set} of sku values, used in search predicate
-     * @return {@link CompletionStage} of matching {@link ProductType}s or empty set when there is no product type with
-     *         corresponding {@code keys}.
-     */
     @Nonnull
     CompletionStage<Set<ProductType>> fetchMatchingProductTypesByKeys(@Nonnull final Set<String> keys);
 
@@ -80,7 +73,7 @@ public interface ProductTypeService {
      * Given a resource draft of type {@link ProductTypeDraft}, this method attempts to create a resource
      * {@link ProductType} based on it in the CTP project defined by the sync options.
      *
-     * <p>A completion stage containing an empty option and the error callback will be triggered in those cases:
+     * <p>A completion stage containing an empty optional and the error callback will be triggered in those cases:
      * <ul>
      *     <li>the draft has a blank key</li>
      *     <li>the create request fails on CTP</li>

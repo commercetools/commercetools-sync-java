@@ -35,6 +35,7 @@ public class BenchmarkUtils {
     static final String PRODUCT_SYNC = "productSync";
     static final String INVENTORY_SYNC = "inventorySync";
     static final String CATEGORY_SYNC = "categorySync";
+    static final String TYPE_SYNC = "typeSync";
     static final String PRODUCT_TYPE_SYNC = "productTypeSync";
     static final String CREATES_ONLY = "createsOnly";
     static final String UPDATES_ONLY = "updatesOnly";
@@ -107,9 +108,9 @@ public class BenchmarkUtils {
     }
 
     private static ObjectNode createVersionNode(@Nonnull final ObjectNode rootNode, @Nonnull final String version) {
-        final ObjectNode newVersionNode = createSyncNode(
+        final ObjectNode newVersionNode = createSyncNode(createSyncNode(createSyncNode(
             createSyncNode(createSyncNode(JsonNodeFactory.instance.objectNode(),
-                PRODUCT_SYNC), INVENTORY_SYNC), CATEGORY_SYNC);
+                PRODUCT_SYNC), INVENTORY_SYNC), CATEGORY_SYNC), PRODUCT_TYPE_SYNC), TYPE_SYNC);
         return (ObjectNode) rootNode.set(version, newVersionNode);
     }
 

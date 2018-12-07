@@ -158,7 +158,7 @@ public class ProductSyncBenchmark {
 
 
         // Calculate time taken for benchmark and assert it lies within threshold
-        final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, PRODUCT_SYNC, CREATES_ONLY, totalTime);
+        final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, PRODUCT_SYNC, UPDATES_ONLY, totalTime);
         assertThat(diff)
             .withFailMessage(format("Diff of benchmark '%e' is longer than expected threshold of '%d'.", diff,
                 THRESHOLD))
@@ -222,7 +222,7 @@ public class ProductSyncBenchmark {
 
 
         // Calculate time taken for benchmark and assert it lies within threshold
-        final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, PRODUCT_SYNC, CREATES_ONLY, totalTime);
+        final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, PRODUCT_SYNC, CREATES_AND_UPDATES, totalTime);
         assertThat(diff)
             .withFailMessage(format("Diff of benchmark '%e' is longer than expected threshold of '%d'.", diff,
                 THRESHOLD))

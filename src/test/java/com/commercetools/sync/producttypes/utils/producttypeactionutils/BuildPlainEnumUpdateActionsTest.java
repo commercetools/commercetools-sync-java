@@ -2,10 +2,10 @@ package com.commercetools.sync.producttypes.utils.producttypeactionutils;
 
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.commands.updateactions.AddEnumValue;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeEnumValueOrder;
+import io.sphere.sdk.producttypes.commands.updateactions.ChangePlainEnumValueLabel;
 import io.sphere.sdk.producttypes.commands.updateactions.RemoveEnumValues;
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,43 +14,14 @@ import org.junit.rules.ExpectedException;
 import java.util.Collections;
 import java.util.List;
 
-import static com.commercetools.sync.producttypes.utils.PlainEnumsUpdateActionUtils.buildEnumValuesUpdateActions;
+import static com.commercetools.sync.commons.utils.PlainEnumValueFixtures.*;
+import static com.commercetools.sync.producttypes.utils.PlainEnumValueUpdateActionUtils.buildEnumValueUpdateActions;
+import static com.commercetools.sync.producttypes.utils.PlainEnumValueUpdateActionUtils.buildEnumValuesUpdateActions;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class BuildPlainEnumUpdateActionsTest {
-
-    private static final EnumValue ENUM_VALUE_A = EnumValue.of("a", "label_a");
-    private static final EnumValue ENUM_VALUE_B = EnumValue.of("b", "label_b");
-    private static final EnumValue ENUM_VALUE_C = EnumValue.of("c", "label_c");
-    private static final EnumValue ENUM_VALUE_D = EnumValue.of("d", "label_d");
-
-    private static final List<EnumValue> ENUM_VALUES_ABC = asList(ENUM_VALUE_A, ENUM_VALUE_B, ENUM_VALUE_C);
-    private static final List<EnumValue> ENUM_VALUES_AB = asList(ENUM_VALUE_A, ENUM_VALUE_B);
-    private static final List<EnumValue> ENUM_VALUES_ABB = asList(ENUM_VALUE_A, ENUM_VALUE_B, ENUM_VALUE_B);
-    private static final List<EnumValue> ENUM_VALUES_ABD = asList(ENUM_VALUE_A, ENUM_VALUE_B, ENUM_VALUE_D);
-    private static final List<EnumValue> ENUM_VALUES_ABCD = asList(
-        ENUM_VALUE_A,
-        ENUM_VALUE_B,
-        ENUM_VALUE_C,
-        ENUM_VALUE_D
-    );
-    private static final List<EnumValue> ENUM_VALUES_CAB = asList(ENUM_VALUE_C, ENUM_VALUE_A, ENUM_VALUE_B);
-    private static final List<EnumValue> ENUM_VALUES_CB = asList(ENUM_VALUE_C, ENUM_VALUE_B);
-    private static final List<EnumValue> ENUM_VALUES_ACBD = asList(
-        ENUM_VALUE_A,
-        ENUM_VALUE_C,
-        ENUM_VALUE_B,
-        ENUM_VALUE_D
-    );
-    private static final List<EnumValue> ENUM_VALUES_ADBC = asList(
-        ENUM_VALUE_A,
-        ENUM_VALUE_D,
-        ENUM_VALUE_B,
-        ENUM_VALUE_C
-    );
-    private static final List<EnumValue> ENUM_VALUES_CBD = asList(ENUM_VALUE_C, ENUM_VALUE_B, ENUM_VALUE_D);
 
     @Test
     public void buildPlainEnumUpdateActions_WithNullNewEnumValuesAndExistingEnumValues_ShouldBuildRemoveAction() {
@@ -118,13 +89,12 @@ public class BuildPlainEnumUpdateActionsTest {
     @Rule
     public ExpectedException expectedException = ExpectedException.none();
 
-
     @Test
     public void buildPlainEnumUpdateActions_WithDuplicatePlainEnumValues_ShouldTriggerDuplicateKeyError() {
         expectedException.expect(DuplicateKeyException.class);
-        expectedException.expectMessage("Enum Values have duplicated keys. Attribute definition name: "
+        expectedException.expectMessage("Enum Values have duplicated keys. Definition name: "
             + "'attribute_definition_name_1', Duplicated enum value: 'b'. Enum Values are expected to be unique inside "
-            + "their attribute definition.");
+            + "their definition.");
 
         buildEnumValuesUpdateActions(
             "attribute_definition_name_1",
@@ -132,7 +102,6 @@ public class BuildPlainEnumUpdateActionsTest {
             ENUM_VALUES_ABB
         );
     }
-
 
     @Test
     public void buildPlainEnumUpdateActions_WithOneMissingPlainEnumValue_ShouldBuildRemoveEnumValueAction() {
@@ -186,6 +155,25 @@ public class BuildPlainEnumUpdateActionsTest {
             ChangeEnumValueOrder.of("attribute_definition_name_1", asList(
                 ENUM_VALUE_C,
                 ENUM_VALUE_A,
+                ENUM_VALUE_B
+            ))
+        );
+    }
+
+    @Test
+    public void buildPlainEnumUpdateActions_WithMixedCase_ShouldBuildChangeEnumValueOrderAction() {
+        final String attributeDefinitionName = "attribute_definition_name_1";
+        final List<UpdateAction<ProductType>> updateActions = buildEnumValuesUpdateActions(
+            attributeDefinitionName,
+            ENUM_VALUES_BAC,
+            ENUM_VALUES_AB_WITH_DIFFERENT_LABEL
+        );
+
+        assertThat(updateActions).containsExactly(
+            RemoveEnumValues.of(attributeDefinitionName, ENUM_VALUE_C.getKey()),
+            ChangePlainEnumValueLabel.of(attributeDefinitionName, ENUM_VALUE_A_DIFFERENT_LABEL),
+            ChangeEnumValueOrder.of(attributeDefinitionName, asList(
+                ENUM_VALUE_A_DIFFERENT_LABEL,
                 ENUM_VALUE_B
             ))
         );
@@ -262,6 +250,32 @@ public class BuildPlainEnumUpdateActionsTest {
                 ENUM_VALUE_B,
                 ENUM_VALUE_D
             ))
+        );
+    }
+
+    @Test
+    public void buildPlainEnumUpdateActions_WithDifferentLabels_ShouldReturnChangeLabelAction() {
+        final List<UpdateAction<ProductType>> updateActions = buildEnumValueUpdateActions(
+            "attribute_definition_name_1",
+            ENUM_VALUE_A,
+            ENUM_VALUE_A_DIFFERENT_LABEL
+        );
+
+        assertThat(updateActions).containsAnyOf(
+            ChangePlainEnumValueLabel.of("attribute_definition_name_1", ENUM_VALUE_A_DIFFERENT_LABEL)
+        );
+    }
+
+    @Test
+    public void buildPlainEnumUpdateActions_WithSameLabels_ShouldNotReturnChangeLabelAction() {
+        final List<UpdateAction<ProductType>> updateActions = buildEnumValueUpdateActions(
+            "attribute_definition_name_1",
+            ENUM_VALUE_A,
+            ENUM_VALUE_A
+        );
+
+        assertThat(updateActions).doesNotContain(
+            ChangePlainEnumValueLabel.of("attribute_definition_name_1", ENUM_VALUE_A)
         );
     }
 }
