@@ -41,7 +41,18 @@
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0)
 
+##### The Beta is Over 🎉
 
+We're happy to announce that the commercetools-sync-java is finally out of beta! Big thanks to all the bold users 
+who were using it when it was still in beta. Your feedback was definitely valuable for us to reach the current state of 
+the library. `1.0.0` is here for you to use with all new features, enhancements and bug fixes including:
+
+- The library now supports importing/syncing [`types`](https://docs.commercetools.com/http-api-projects-types.html) into a CTP project from an external feed or another CTP project. [Read more](https://commercetools.github.io/commercetools-sync-java/doc/usage/TYPE_SYNC/).
+- The library now handles concurrency modification exceptions for the `productType` sync.
+- All new documentation pages including a [quick start guide](https://commercetools.github.io/commercetools-sync-java/doc/usage/QUICK_START/).
+- Many more improvements and bug fixes. 
+
+##### Full Release Notes
 
 - 🎉 **New Features** (4)
     - **Type Sync** - Support for syncing types. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300) For more info how to use it please refer to [Type usage doc](/docs/usage/TYPE_SYNC.md).
@@ -91,7 +102,7 @@
     
 - 📋 **Documentation** (4)
     - **Commons** - Added the documentation github pages. https://commercetools.github.io/commercetools-sync-java 
-    - **Commons** - Added a [Quick Start Guide](/docs/usage/QUICK_START.md) for a convinient entry into the library.
+    - **Commons** - Added a [Quick Start Guide](/docs/usage/QUICK_START.md) for a convenient entry into the library.
     - **Commons** - Moved documentation of sync options to a separate [doc](/docs/usage/SYNC_OPTIONS.md).
     - **Commons** - Added a the earliest compatible version of the commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) as a prerequisite for using the library.
 
