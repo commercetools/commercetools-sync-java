@@ -25,7 +25,8 @@ as resources are obtained from the target CTP project in batches for better perf
 in a single request. Playing with this option can slightly improve or reduce processing speed.
 
 #### `syncFilter` (Only for Product Sync Options)
- represents either a blacklist or a whitelist for filtering certain update action groups. 
+represents either a blacklist or a whitelist for filtering certain update action groups. 
+  
   - __Blacklisting__ an update action group means that everything in products will be synced except for any group 
   in the blacklist. A typical use case is to blacklist prices when syncing products. In other words, syncing everything 
   in products except prices. 
