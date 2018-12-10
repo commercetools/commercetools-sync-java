@@ -40,7 +40,7 @@ order for the sync to resolve the actual ids of those references, those `key`s h
     reference would return its `key`. 
      
         **Note**: This library provides you with a utility method 
-         [`replaceProductsReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/com/commercetools/sync/products/utils/ProductReferenceReplacementUtils.html#replaceProductsReferenceIdsWithKeys-java.util.List-)
+         [`replaceProductsReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/1.0.0/com/commercetools/sync/products/utils/ProductReferenceReplacementUtils.html#replaceProductsReferenceIdsWithKeys-java.util.List-)
          that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
          ````java
          // Puts the keys in the reference id fields to prepare for reference resolution
