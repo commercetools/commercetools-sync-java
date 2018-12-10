@@ -153,8 +153,9 @@ public class BenchmarkUtils {
                                                   .get(benchmark)
                                                   .get(AVERAGE))
             .map(latestAverageNode -> average - latestAverageNode.asDouble())
-            // if there is no latest version - the current average is the diff.
-            .orElse(average);
+            // if there is no latest version (meaning this is the first benchmark for this module)
+            // then return a 0 diff.
+            .orElse(0.0);
     }
 
     private static Optional<String> getLatestVersionName(@Nonnull final JsonNode originalRoot,
