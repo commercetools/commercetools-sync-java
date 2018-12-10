@@ -2,76 +2,87 @@
 
 window.chartColors = {
     red: 'rgb(255, 99, 132)',
-    orange: 'rgb(255, 159, 64)',
-    yellow: 'rgb(255, 205, 86)',
-    green: 'rgb(75, 192, 192)',
-    blue: 'rgb(54, 162, 235)',
+    orange: 'rgb(242, 121, 35)',
+    yellow: 'rgb(245, 167, 48)',
+    green: 'rgb(32, 173, 146)',
+    blue: 'rgb(42, 65, 72)',
+    skyBlue: 'rgb(13, 157, 248)',
     purple: 'rgb(153, 102, 255)',
-    grey: 'rgb(201, 203, 207)'
+    lightGrey: 'rgb(208, 209, 209)',
+    mediumGrey: 'rgb(129, 129, 133)'
 };
 
 
 var color = Chart.helpers.color;
+// yellow
 var productSyncCreatesOnly = {
     label: 'Product Sync (creates only)',
-    backgroundColor: color(window.chartColors.yellow).alpha(0.5).rgbString(),
-    borderColor: window.chartColors.yellow,
+    backgroundColor: color(window.chartColors.yellow).alpha(0.2).rgbString(),
+    borderColor: color(window.chartColors.yellow).alpha(0.2).rgbString(),
     borderWidth: 1,
     data: []
 }
 var productSyncUpdatesOnly = {
     label: 'Product Sync (updates only)',
-    backgroundColor: color(window.chartColors.green).alpha(0.5).rgbString(),
-    borderColor: window.chartColors.green,
+    backgroundColor: color(window.chartColors.yellow).alpha(0.4).rgbString(),
+    borderColor: color(window.chartColors.yellow).alpha(0.4).rgbString(),
     borderWidth: 1,
     data: []
 }
 var productSyncCreatesUpdates = {
     label: 'Product Sync (creates and updates)',
-    backgroundColor: color(window.chartColors.orange).alpha(0.5).rgbString(),
-    borderColor: window.chartColors.orange,
+    backgroundColor: color(window.chartColors.yellow).alpha(0.6).rgbString(),
+    borderColor: color(window.chartColors.yellow).alpha(0.6).rgbString(),
     borderWidth: 1,
     data: []
 }
+
+// red
 var categorySyncCreatesOnly = {
     label: 'Category Sync (creates only)',
-    backgroundColor: color(window.chartColors.red).alpha(0.5).rgbString(),
-    borderColor: window.chartColors.red,
+    backgroundColor: color(window.chartColors.red).alpha(0.2).rgbString(),
+    borderColor: color(window.chartColors.red).alpha(0.2).rgbString(),
     borderWidth: 1,
     data: []
 }
 var categorySyncUpdatesOnly = {
     label: 'Category Sync (updates only)',
-    backgroundColor: color(window.chartColors.blue).alpha(0.5).rgbString(),
-    borderColor: window.chartColors.blue,
+    backgroundColor: color(window.chartColors.red).alpha(0.4).rgbString(),
+    borderColor: color(window.chartColors.red).alpha(0.4).rgbString(),
     borderWidth: 1,
     data: []
 }
 var categorySyncCreatesUpdates = {
     label: 'Category Sync (creates and updates)',
-    backgroundColor: color(window.chartColors.grey).alpha(0.5).rgbString(),
-    borderColor: window.chartColors.grey,
+    backgroundColor: color(window.chartColors.red).alpha(0.6).rgbString(),
+    borderColor: color(window.chartColors.red).alpha(0.6).rgbString(),
     borderWidth: 1,
     data: []
 }
+
+// blue
 var inventorySyncCreatesOnly = {
     label: 'Inventory Sync (creates only)',
-    backgroundColor: color(window.chartColors.purple).alpha(0.5).rgbString(),
-    borderColor: window.chartColors.purple,
+    backgroundColor: color(window.chartColors.blue).alpha(0.2).rgbString(),
+    borderColor: color(window.chartColors.blue).alpha(0.2).rgbString(),
     borderWidth: 1,
     data: []
 }
 var inventorySyncUpdatesOnly = {
     label: 'Inventory Sync (updates only)',
-    backgroundColor: color(window.chartColors.orange).alpha(0.9).rgbString(),
-    borderColor: window.chartColors.orange,
+    backgroundColor: color(window.chartColors.blue).alpha(0.4).rgbString(),
+    borderColor: color(window.chartColors.blue).alpha(0.4).rgbString(),
     borderWidth: 1,
     data: []
 }
 var inventorySyncCreatesUpdates = {
     label: 'Inventory Sync (creates and updates)',
-    backgroundColor: color(window.chartColors.red).alpha(0.9).rgbString(),
-    borderColor: window.chartColors.red,
+    backgroundColor: color(window.chartColors.blue).alpha(0.6).rgbString(),
+    borderColor: color(window.chartColors.blue).alpha(0.6).rgbString(),
+    borderWidth: 1,
+    data: [],
+}
+
 // skyBlue
 var productTypeSyncCreatesOnly = {
     label: 'ProductType Sync (creates only)',
@@ -156,29 +167,29 @@ window.onload = function () {
             responsive: true,
             legend: {
                 labels: {
-                    fontColor: 'white'
+                    fontColor: 'black'
                 }
             },
             title: {
                 display: true,
                 text: 'commercetools-sync-java Benchmarks',
-                fontColor: 'white',
+                fontColor: 'black',
                 fontSize: 20
             },
             scales: {
                 yAxes: [{
                     ticks : {
-                        fontColor: 'white'
+                        fontColor: 'black'
                     },
                     scaleLabel: {
                         display: true,
                         labelString: 'Time to sync 10000 resources (in seconds)',
-                        fontColor: 'white'
+                        fontColor: 'black'
                     }
                 }],
                 xAxes: [{
                     ticks : {
-                        fontColor: 'white'
+                        fontColor: 'black'
                     }
                 }]
             }
