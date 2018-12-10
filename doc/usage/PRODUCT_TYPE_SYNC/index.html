@@ -360,6 +360,20 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#important-to-note" title="Important to Note" class="md-nav__link">
+    Important to Note
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#more-examples-of-how-to-use-the-sync" title="More examples of how to use the sync" class="md-nav__link">
+    More examples of how to use the sync
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -408,6 +422,18 @@
 
 
   <li class="md-nav__item">
+    <a href="../TYPE_SYNC/" title="Type Sync" class="md-nav__link">
+      Type Sync
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
     <a href="../CATEGORY_SYNC/" title="Category Sync" class="md-nav__link">
       Category Sync
     </a>
@@ -433,13 +459,13 @@
 
   <li class="md-nav__item md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-6" type="checkbox" id="nav-2-6">
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-7" type="checkbox" id="nav-2-7">
     
-    <label class="md-nav__link" for="nav-2-6">
+    <label class="md-nav__link" for="nav-2-7">
       Advanced
     </label>
     <nav class="md-nav" data-md-component="collapsible" data-md-level="2">
-      <label class="md-nav__title" for="nav-2-6">
+      <label class="md-nav__title" for="nav-2-7">
         Advanced
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
@@ -485,7 +511,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.0.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -589,6 +615,20 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#important-to-note" title="Important to Note" class="md-nav__link">
+    Important to Note
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#more-examples-of-how-to-use-the-sync" title="More examples of how to use the sync" class="md-nav__link">
+    More examples of how to use the sync
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -652,6 +692,8 @@ against a <a href="https://docs.commercetools.com/http-api-projects-productTypes
 <li><a href="#sync-list-of-product-type-drafts">Sync list of product type drafts</a><ul>
 <li><a href="#prerequisites">Prerequisites</a></li>
 <li><a href="#running-the-sync">Running the sync</a></li>
+<li><a href="#important-to-note">Important to Note</a></li>
+<li><a href="#more-examples-of-how-to-use-the-sync">More examples of how to use the sync</a></li>
 </ul>
 </li>
 <li><a href="#build-all-update-actions">Build all update actions</a></li>
@@ -667,8 +709,8 @@ against a <a href="https://docs.commercetools.com/http-api-projects-productTypes
 <h4 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h4>
 <ol>
 <li>
-<p>The sync expects a list of <code>ProductTypeDrafts</code>s that have their <code>key</code> fields set to be matched with
-product types  in the target CTP project. Also, the product types  in the target project are expected to have the <code>key</code>
+<p>The sync expects a list of <code>ProductTypeDraft</code>s that have their <code>key</code> fields set to be matched with
+product types in the target CTP project. Also, the product types in the target project are expected to have the <code>key</code>
 fields set, otherwise they won't be matched.</p>
 </li>
 <li>
@@ -704,7 +746,21 @@ human-readable format.</p>
 <li>The sync processing time should not take into account the time between supplying batches to the sync.</li>
 <li>It is not known by the sync which batch is going to be the last one supplied.</li>
 </ol>
-<p>More examples of how to use the sync can be found <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/producttypes/ProductTypeSyncIT.java">here</a>.</p>
+<h4 id="important-to-note">Important to Note<a class="headerlink" href="#important-to-note" title="Permanent link">&para;</a></h4>
+<ol>
+<li>
+<p>If two matching <code>attributeDefinition</code>s (old and new) on the matching <code>productType</code>s (old and new) have a different <code>AttributeType</code>, the sync will
+<strong>remove</strong> the existing <code>attributeDefinition</code> and then <strong>add</strong> a new <code>attributeDefinition</code> with the new <code>AttributeType</code>.</p>
+</li>
+<li>
+<p>The <code>attributeDefinition</code> for which the <code>AttributeType</code> is not defined (<code>null</code>) will not be synced. </p>
+</li>
+</ol>
+<h4 id="more-examples-of-how-to-use-the-sync">More examples of how to use the sync<a class="headerlink" href="#more-examples-of-how-to-use-the-sync" title="Permanent link">&para;</a></h4>
+<ol>
+<li><a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/producttypes/ProductTypeSyncIT.java">Sync from another CTP project as a source</a>.</li>
+<li><a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/producttypes/ProductTypeSyncIT.java">Sync from an external source</a>.</li>
+</ol>
 <p><em>Make sure to read the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a> for optimal performance.</em></p>
 <h3 id="build-all-update-actions">Build all update actions<a class="headerlink" href="#build-all-update-actions" title="Permanent link">&para;</a></h3>
 <p>A utility method provided by the library to compare a ProductType with a new ProductTypeDraft and results in a list of product type update actions.
@@ -719,6 +775,7 @@ More examples of those utils for different fields can be found <a href="https://
 <h2 id="caveats">Caveats<a class="headerlink" href="#caveats" title="Permanent link">&para;</a></h2>
 <ol>
 <li>Syncing product types with an attribute of type <a href="https://docs.commercetools.com/http-api-projects-productTypes.html#nestedtype">NestedType</a> is not supported yet.</li>
+<li>Currently the sync would handle changes to Enum or LocalizedEnum Types but not <a href="https://docs.commercetools.com/http-api-projects-types.html#settype">Set</a> of either. <a href="https://github.com/commercetools/commercetools-sync-java/issues/313">#313</a></li>
 </ol>
                 
                   
@@ -755,13 +812,13 @@ More examples of those utils for different fields can be found <a href="https://
           </a>
         
         
-          <a href="../CATEGORY_SYNC/" title="Category Sync" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
+          <a href="../TYPE_SYNC/" title="Type Sync" class="md-flex md-footer-nav__link md-footer-nav__link--next" rel="next">
             <div class="md-flex__cell md-flex__cell--stretch md-footer-nav__title">
               <span class="md-flex__ellipsis">
                 <span class="md-footer-nav__direction">
                   Next
                 </span>
-                Category Sync
+                Type Sync
               </span>
             </div>
             <div class="md-flex__cell md-flex__cell--shrink">

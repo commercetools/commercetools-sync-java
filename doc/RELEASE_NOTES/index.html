@@ -314,6 +314,18 @@
 
 
   <li class="md-nav__item">
+    <a href="../usage/TYPE_SYNC/" title="Type Sync" class="md-nav__link">
+      Type Sync
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
     <a href="../usage/CATEGORY_SYNC/" title="Category Sync" class="md-nav__link">
       Category Sync
     </a>
@@ -339,13 +351,13 @@
 
   <li class="md-nav__item md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-6" type="checkbox" id="nav-2-6">
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-7" type="checkbox" id="nav-2-7">
     
-    <label class="md-nav__link" for="nav-2-6">
+    <label class="md-nav__link" for="nav-2-7">
       Advanced
     </label>
     <nav class="md-nav" data-md-component="collapsible" data-md-level="2">
-      <label class="md-nav__title" for="nav-2-6">
+      <label class="md-nav__title" for="nav-2-7">
         Advanced
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
@@ -391,7 +403,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.0.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -428,6 +440,33 @@
   
     <label class="md-nav__title" for="__toc">Table of contents</label>
     <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#100-dec-10-2018" title="1.0.0 -  Dec 10, 2018" class="md-nav__link">
+    1.0.0 -  Dec 10, 2018
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-beta-is-over" title="The Beta is Over 🎉" class="md-nav__link">
+    The Beta is Over 🎉
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#full-release-notes" title="Full Release Notes" class="md-nav__link">
+    Full Release Notes
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#v100-m14-oct-5-2018" title="v1.0.0-M14 -  Oct 5, 2018" class="md-nav__link">
@@ -602,6 +641,33 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#100-dec-10-2018" title="1.0.0 -  Dec 10, 2018" class="md-nav__link">
+    1.0.0 -  Dec 10, 2018
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-beta-is-over" title="The Beta is Over 🎉" class="md-nav__link">
+    The Beta is Over 🎉
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#full-release-notes" title="Full Release Notes" class="md-nav__link">
+    Full Release Notes
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#v100-m14-oct-5-2018" title="v1.0.0-M14 -  Oct 5, 2018" class="md-nav__link">
     v1.0.0-M14 -  Oct 5, 2018
   </a>
@@ -735,9 +801,9 @@
 3. link to Javadoc of release.
 4. link to Jar of release.
 
-4. Add a summary of the release that is not too detailed or technical.
+5. Add a summary of the release that is not too detailed or technical.
 
-5. Depending on the contents of the release use the subtitles below to 
+6. Depending on the contents of the release use the subitems below to 
   document the new changes in the release accordingly. Please always include
   a link to the releated issue number. 
    **New Features** (n) 🎉 
@@ -750,59 +816,102 @@
    - **Category Sync** - Sync now supports product variant images syncing. [#114](https://github.com/commercetools/commercetools-sync-java/issues/114)
    - **Build Tools** - Convinient handelling of env vars for integration tests.
 
-6. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
+7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 
 -->
 
 <!--
-### v1.0.0-M15 -  Oct 20, 2018
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M14...v1.0.0-M15) |
-[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M15/) | 
-[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.0.0-M15)
+### 1.1.0 -  Dec 10, 2018
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M14...1.1.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.1.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.1.0)
 
-**New Features** (1) 🎉
-- **Commons** - Added `OptionalUtils#filterEmptyOptionals` which are utility methods that filter out the 
-empty optionals in a supplied list (with a varargs variation) returning a list of the contents of the non-empty 
-optionals. [#255](https://github.com/commercetools/commercetools-sync-java/issues/255)
+!-->
 
-**Documentation** (3) 📋
-- **Commons** - Added a [Quick Start Guide](/docs/usage/QUICK_START.md) for a convinient entry into the library.
-- **Commons** - Moved documentation of sync options to a separate [doc](/docs/usage/SYNC_OPTIONS.md).
-- **Commons** - Added a the earliest compatible version of the commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) as a prerequisite for using the library.
-
-**Enhancements** (11) 🛠️
-- **ProductType Sync** - Added `ProductTypeSyncBenchmark` to benchmark the product type sync, to be able to compare the performance of the sync with the future releases. [#301](https://github.com/commercetools/commercetools-sync-java/issues/301)
-- **Product Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
-- **Category Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
-- **Inventory Sync** - Reference keys are not validated if they are in UUID format anymore. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166)
-- **Commons** - Bumped commercetools-jvm-sdk to version [1.37.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_37_0).
-- **Commons** - Bumped `mockito` to 2.23.4.
-- **Commons** - Bumped `com.adarshr.test-logger` to 1.6.0.
-- **Commons** - Bumped `org.junit.jupiter:junit-jupiter-api` to 5.3.2.
-- **Commons** - Bumped `org.junit.jupiter:junit-jupiter-engine` to 5.3.2.
-- **Commons** - Bumped `org.junit.jupiter:junit-jupiter-params` to 5.3.2.
-- **Commons** - Bumped `org.ajoberstar.git-publish` to 2.0.0.
-- **Commons** - Bumped `com.adarshr.test-logger` to 1.6.0.
-- **Commons** - Bumped `org.ajoberstar.grgit` to 3.0.0.
-- **Commons** - Bumped gradle to version [gradle-5.0](https://docs.gradle.org/5.0/release-notes.html)
-
-**Breaking Changes** (11) 🚧
-- **Product Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
-- **Category Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
-- **Inventory Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
-- **ProductType Sync** - `allowUuid` option is now removed. [#166](https://github.com/commercetools/commercetools-sync-java/issues/166) 
-- **ProductType Sync** - Renamed `ProductTypeUpdateAttributeDefinitionActionUtils` to `AttributeDefinitionsUpdateActionUtils`. It is also now meant to be **only used internally** by the library. 
-Its  behaviour is not guaranteed if used externally. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
-- **ProductType Sync** - `AttributeDefinitionUpdateActionUtils` is now meant to be **only used internally** by the library. 
-Its  behaviour is not guaranteed if used externally. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
-- **ProductType Sync** - `EnumsUpdateActionUtils` is now meant to be **only used internally** by the library. 
-Its  behaviour is not guaranteed if used externally. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
-- **ProductType Sync** - Renamed `ProductTypeUpdateLocalizedEnumActionUtils` to `LocalizedEnumsUpdateActionUtils.` [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
-- **ProductType Sync** - Renamed `ProductTypeUpdatePlainEnumActionUtils` to `PlainEnumsUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
-- **ProductType Sync** - Renamed `LocalizedEnumUpdateActionsUtils` to `LocalizedEnumUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
-- **ProductType Sync** - Renamed `PlainEnumUpdateActionsUtils` to `PlainEnumUpdateActionUtils`. [#302](https://github.com/commercetools/commercetools-sync-java/issues/302)
--->
-
+<h3 id="100-dec-10-2018">1.0.0 -  Dec 10, 2018<a class="headerlink" href="#100-dec-10-2018" title="Permanent link">&para;</a></h3>
+<p><a href="https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M14...1.0.0">Commits</a> |
+<a href="https://commercetools.github.io/commercetools-sync-java/v/1.0.0/">Javadoc</a> | 
+<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/1.0.0">Jar</a></p>
+<h5 id="the-beta-is-over">The Beta is Over 🎉<a class="headerlink" href="#the-beta-is-over" title="Permanent link">&para;</a></h5>
+<p>We're happy to announce that the commercetools-sync-java is finally out of beta! Big thanks to all the users 
+who were using it when it was still in beta. Your feedback was definitely valuable for us to reach the current state of 
+the library. <code>1.0.0</code> is here for you to use with all new features, enhancements and bug fixes including:</p>
+<ul>
+<li>The library now supports importing/syncing <a href="https://docs.commercetools.com/http-api-projects-types.html"><code>types</code></a> into a CTP project from an external feed or another CTP project. <a href="https://commercetools.github.io/commercetools-sync-java/doc/usage/TYPE_SYNC/">Read more</a>.</li>
+<li>The library now handles concurrency modification exceptions for the <code>productType</code> sync.</li>
+<li>All new documentation pages including a <a href="https://commercetools.github.io/commercetools-sync-java/doc/usage/QUICK_START/">quick start guide</a>.</li>
+<li>Many more improvements and bug fixes. </li>
+</ul>
+<h5 id="full-release-notes">Full Release Notes<a class="headerlink" href="#full-release-notes" title="Permanent link">&para;</a></h5>
+<ul>
+<li>
+<p>🎉 <strong>New Features</strong> (4)</p>
+<ul>
+<li><strong>Type Sync</strong> - Support for syncing types. <a href="https://github.com/commercetools/commercetools-sync-java/issues/300">#300</a> For more info how to use it please refer to <a href="/docs/usage/TYPE_SYNC.md">Type usage doc</a>.</li>
+<li><strong>Type Sync</strong> - Exposed <code>TypeSyncUtils#buildActions</code> which calculates all needed update actions after comparing a <code>Type</code> and a <code>TypeDraft</code>. <a href="https://github.com/commercetools/commercetools-sync-java/issues/300">#300</a></li>
+<li><strong>Type Sync</strong> - Exposed <code>TypeUpdateActionUtils</code> which contains utils for calculating needed update actions after comparing individual fields of a <code>Type</code> and a <code>TypeDraft</code>. <a href="https://github.com/commercetools/commercetools-sync-java/issues/300">#300</a></li>
+<li><strong>Commons</strong> - Added <code>OptionalUtils#filterEmptyOptionals</code> which are utility methods that filter out the empty optionals in a supplied list (with a varargs variation) returning a list of the contents of the non-empty 
+optionals. <a href="https://github.com/commercetools/commercetools-sync-java/issues/255">#255</a></li>
+</ul>
+</li>
+<li>
+<p>🛠️ <strong>Enhancements</strong> (17)</p>
+<ul>
+<li><strong>ProductType Sync</strong> - Added concurrency modification exception handling. <a href="https://github.com/commercetools/commercetools-sync-java/issues/325">#325</a></li>
+<li><strong>Commons</strong> - <code>ProductSyncUtils#buildActions</code>, <code>CategorySyncUtils#buildActions</code>, <code>InventorySyncUtils#buildActions</code> and <code>ProductTypeSyncUtils#buildActions</code> now don't apply the <code>beforeUpdateCallback</code> implicitly. 
+If you want, you can apply it explicitly on the result of the <code>..#buildActions</code> method. <a href="https://github.com/commercetools/commercetools-sync-java/issues/302">#302</a></li>
+<li><strong>Product Sync</strong> - Reference keys are not validated if they are in UUID format anymore. <a href="https://github.com/commercetools/commercetools-sync-java/issues/166">#166</a></li>
+<li><strong>Category Sync</strong> - Reference keys are not validated if they are in UUID format anymore. <a href="https://github.com/commercetools/commercetools-sync-java/issues/166">#166</a></li>
+<li><strong>Inventory Sync</strong> - Reference keys are not validated if they are in UUID format anymore. <a href="https://github.com/commercetools/commercetools-sync-java/issues/166">#166</a></li>
+<li><strong>ProductType Sync</strong> - Added benchmarks for the <code>productType</code> sync to be able to compare the performance of the sync with the future releases. <a href="https://github.com/commercetools/commercetools-sync-java/issues/301">#301</a></li>
+<li><strong>Commons</strong> - Bumped commercetools-jvm-sdk to version <a href="http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_37_0">1.37.0</a>.</li>
+<li><strong>Commons</strong> - Bumped <code>mockito</code> to 2.23.4.</li>
+<li><strong>Commons</strong> - Bumped <code>com.adarshr.test-logger</code> to 1.6.0.</li>
+<li><strong>Commons</strong> - Bumped <code>org.junit.jupiter:junit-jupiter-api</code> to 5.3.2.</li>
+<li><strong>Commons</strong> - Bumped <code>org.junit.jupiter:junit-jupiter-engine</code> to 5.3.2.</li>
+<li><strong>Commons</strong> - Bumped <code>org.junit.jupiter:junit-jupiter-params</code> to 5.3.2.</li>
+<li><strong>Commons</strong> - Bumped <code>org.ajoberstar.git-publish</code> to 2.0.0.</li>
+<li><strong>Commons</strong> - Bumped <code>com.adarshr.test-logger</code> to 1.6.0.</li>
+<li><strong>Commons</strong> - Bumped <code>org.ajoberstar.grgit</code> to 3.0.0.</li>
+<li><strong>Commons</strong> - Bumped gradle to version <a href="https://docs.gradle.org/5.0/release-notes.html">gradle-5.0</a></li>
+<li><strong>Type Sync</strong> - Added benchmarks for the <code>type</code> sync to be able to compare the performance of the sync with the future releases. <a href="https://github.com/commercetools/commercetools-sync-java/issues/300">#300</a></li>
+</ul>
+</li>
+<li>
+<p>🚧 <strong>Breaking Changes</strong> (9) </p>
+<ul>
+<li><strong>Product Sync</strong> - <code>allowUuid</code> option is now removed. <a href="https://github.com/commercetools/commercetools-sync-java/issues/166">#166</a> </li>
+<li><strong>Category Sync</strong> - <code>allowUuid</code> option is now removed. <a href="https://github.com/commercetools/commercetools-sync-java/issues/166">#166</a> </li>
+<li><strong>Inventory Sync</strong> - <code>allowUuid</code> option is now removed. <a href="https://github.com/commercetools/commercetools-sync-java/issues/166">#166</a> </li>
+<li><strong>ProductType Sync</strong> - <code>allowUuid</code> option is now removed. <a href="https://github.com/commercetools/commercetools-sync-java/issues/166">#166</a> </li>
+<li><strong>ProductType Sync</strong> - Renamed <code>ProductTypeUpdateAttributeDefinitionActionUtils</code> to <code>AttributeDefinitionsUpdateActionUtils</code>. It is also now meant to be <strong>only used internally</strong> by the library. 
+Its  behaviour is not guaranteed if used externally. <a href="https://github.com/commercetools/commercetools-sync-java/issues/302">#302</a></li>
+<li><strong>ProductType Sync</strong> - <code>AttributeDefinitionUpdateActionUtils</code> is now meant to be <strong>only used internally</strong> by the library. 
+Its  behaviour is not guaranteed if used externally. <a href="https://github.com/commercetools/commercetools-sync-java/issues/302">#302</a></li>
+<li><strong>ProductType Sync</strong> - <code>EnumsUpdateActionUtils</code> is now <code>EnumValuesUpdateActionUtils</code> and is meant to be <strong>only used internally</strong> by the library. 
+Its  behaviour is not guaranteed if used externally. <a href="https://github.com/commercetools/commercetools-sync-java/issues/300">#300</a></li>
+<li><strong>ProductType Sync</strong> - Utils that were in <code>ProductTypeUpdateLocalizedEnumActionUtils</code> and <code>LocalizedEnumsUpdateActionUtils.</code> are moved to <code>LocalizedEnumValueUpdateActionUtils</code>. <a href="https://github.com/commercetools/commercetools-sync-java/issues/300">#300</a></li>
+<li><strong>ProductType Sync</strong> - Utils that were in <code>ProductTypeUpdatePlainEnumActionUtils</code> and <code>PlainEnumUpdateActionsUtils.</code> are moved to <code>PlainEnumValueUpdateActionUtils</code>. <a href="https://github.com/commercetools/commercetools-sync-java/issues/300">#300</a></li>
+</ul>
+</li>
+<li>
+<p>🐞 <strong>Bug Fixes</strong> (3)</p>
+<ul>
+<li><strong>Product Sync</strong> - Fixed a bug that caused the statistics not to be updated correctly on fetch failure. <a href="https://github.com/commercetools/commercetools-sync-java/issues/331">#331</a></li>
+<li><strong>Category Sync</strong> - Fixed a bug that caused the statistics not to be updated correctly on fetch failure. <a href="https://github.com/commercetools/commercetools-sync-java/issues/331">#331</a></li>
+<li><strong>ProductType Sync</strong> - Fixed a bug that caused the sync process to continue after failed fetch. <a href="https://github.com/commercetools/commercetools-sync-java/issues/331">#331</a></li>
+</ul>
+</li>
+<li>
+<p>📋 <strong>Documentation</strong> (4)</p>
+<ul>
+<li><strong>Commons</strong> - Added the documentation github pages. <a href="https://commercetools.github.io/commercetools-sync-java">https://commercetools.github.io/commercetools-sync-java</a> </li>
+<li><strong>Commons</strong> - Added a <a href="/docs/usage/QUICK_START.md">Quick Start Guide</a> for a convenient entry into the library.</li>
+<li><strong>Commons</strong> - Moved documentation of sync options to a separate <a href="/docs/usage/SYNC_OPTIONS.md">doc</a>.</li>
+<li><strong>Commons</strong> - Added a the earliest compatible version of the commercetools-jvm-sdk](<a href="https://github.com/commercetools/commercetools-jvm-sdk">https://github.com/commercetools/commercetools-jvm-sdk</a>) as a prerequisite for using the library.</li>
+</ul>
+</li>
+</ul>
 <h3 id="v100-m14-oct-5-2018">v1.0.0-M14 -  Oct 5, 2018<a class="headerlink" href="#v100-m14-oct-5-2018" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M13...v1.0.0-M14">Commits</a> |
 <a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/">Javadoc</a> | 

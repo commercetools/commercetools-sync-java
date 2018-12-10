@@ -316,6 +316,18 @@
 
 
   <li class="md-nav__item">
+    <a href="../TYPE_SYNC/" title="Type Sync" class="md-nav__link">
+      Type Sync
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
     <a href="../CATEGORY_SYNC/" title="Category Sync" class="md-nav__link">
       Category Sync
     </a>
@@ -343,13 +355,13 @@
 
   <li class="md-nav__item md-nav__item--active md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-6" type="checkbox" id="nav-2-6" checked>
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-7" type="checkbox" id="nav-2-7" checked>
     
-    <label class="md-nav__link" for="nav-2-6">
+    <label class="md-nav__link" for="nav-2-7">
       Advanced
     </label>
     <nav class="md-nav" data-md-component="collapsible" data-md-level="2">
-      <label class="md-nav__title" for="nav-2-6">
+      <label class="md-nav__title" for="nav-2-7">
         Advanced
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
@@ -523,7 +535,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/v1.0.0-M14/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.0.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -734,11 +746,13 @@ as resources are obtained from the target CTP project in batches for better perf
 <code>batchSize</code> resources from the input list, then fetches the corresponding resources from the target CTP project
 in a single request. Playing with this option can slightly improve or reduce processing speed.</p>
 <h4 id="syncfilter-only-for-product-sync-options"><code>syncFilter</code> (Only for Product Sync Options)<a class="headerlink" href="#syncfilter-only-for-product-sync-options" title="Permanent link">&para;</a></h4>
-<p>represents either a blacklist or a whitelist for filtering certain update action groups. 
-  - <strong>Blacklisting</strong> an update action group means that everything in products will be synced except for any group 
+<p>represents either a blacklist or a whitelist for filtering certain update action groups. </p>
+<ul>
+<li>
+<p><strong>Blacklisting</strong> an update action group means that everything in products will be synced except for any group 
   in the blacklist. A typical use case is to blacklist prices when syncing products. In other words, syncing everything 
   in products except prices. </p>
-<ul>
+</li>
 <li>
 <p><strong>Whitelisting</strong> an update action group means that the groups in this whitelist will be the <em>only</em> group synced in 
   products. One use case could be to whitelist prices when syncing products. In other words, syncing prices only in 
@@ -764,7 +778,7 @@ If it fails to create the supply channel, the inventory entry/product won't sync
                                                                         <span class="o">.</span><span class="na">build</span><span class="o">();</span>
 </pre></div>
 
-<h4 id="2-using-beforeupdatecallback-for-syncing-a-single-locale">2. <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/products/templates/beforeupdatecallback/KeepOtherVariantsSync.java">Using <code>beforeUpdateCallback</code> for syncing a single locale</a>.<a class="headerlink" href="#2-using-beforeupdatecallback-for-syncing-a-single-locale" title="Permanent link">&para;</a></h4>
+<h4 id="2-using-beforeupdatecallback-for-syncing-a-single-locale">2. <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/SyncSingleLocaleIT.java">Using <code>beforeUpdateCallback</code> for syncing a single locale</a>.<a class="headerlink" href="#2-using-beforeupdatecallback-for-syncing-a-single-locale" title="Permanent link">&para;</a></h4>
 <h4 id="3-using-beforeupdatecallback-for-keeping-other-variants">3. <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/products/templates/beforeupdatecallback/SyncSingleLocale.java">Using <code>beforeUpdateCallback</code> for keeping other variants</a>.<a class="headerlink" href="#3-using-beforeupdatecallback-for-keeping-other-variants" title="Permanent link">&para;</a></h4>
 <h4 id="4-using-syncfilter-for-blacklisting-product-categories-while-syncing-products">4. <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java#L142-L143">Using <code>syncFilter</code> for blacklisting product categories while syncing products</a>.<a class="headerlink" href="#4-using-syncfilter-for-blacklisting-product-categories-while-syncing-products" title="Permanent link">&para;</a></h4>
 <h4 id="5-using-syncfilter-for-whitelisting-product-names-while-syncing-products">5. <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java#L173">Using <code>syncFilter</code> for whitelisting product names while syncing products</a>.<a class="headerlink" href="#5-using-syncfilter-for-whitelisting-product-names-while-syncing-products" title="Permanent link">&para;</a></h4>
