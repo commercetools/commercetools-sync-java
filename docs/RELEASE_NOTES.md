@@ -43,7 +43,7 @@
 
 ##### The Beta is Over 🎉
 
-We're happy to announce that the commercetools-sync-java is finally out of beta! Big thanks to all the bold users 
+We're happy to announce that the commercetools-sync-java is finally out of beta! Big thanks to all the users 
 who were using it when it was still in beta. Your feedback was definitely valuable for us to reach the current state of 
 the library. `1.0.0` is here for you to use with all new features, enhancements and bug fixes including:
 
