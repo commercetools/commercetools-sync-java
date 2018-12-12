@@ -38,8 +38,9 @@ Currently this library supports synchronising the following entities in commerce
  
  - Make sure you have `JDK 8` installed.
  - a target CTP project to which your source of data would be synced to.
- - [commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) as a dependency in your JVM-based 
-  application. (Make sure to use a version `>= 1.35.0`).
+  - If you already have a [commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) dependency in your JVM-based 
+   application, then make sure it has a version `>= 1.35.0` or remove it at all and depend on the 
+   one transitively installed with the `commercetools-sync-java` dependency.
 
 
 ### Installation
