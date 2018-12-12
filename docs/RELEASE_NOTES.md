@@ -27,12 +27,15 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 
 -->
-
 <!--
-### 1.1.0 -  Dec 10, 2018
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M14...1.1.0) |
-[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.1.0/) | 
-[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.1.0)
+### 1.1.0 -  Dec 20, 2018
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.0.0...1.1.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.1.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.1.0)
+
+- 📋 **Documentation** (2)
+    - *Commons* - Removed the dependency on the commercetools-jvm-sdk from the Quickstart guide.
+    - *Commons* - Reword the prerequisite of the commercetools-jvm-sdk dependency in the Readmes.
 
 !-->
 
