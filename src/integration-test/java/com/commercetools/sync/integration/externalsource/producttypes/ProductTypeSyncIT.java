@@ -60,6 +60,7 @@ import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedF
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static java.util.Optional.ofNullable;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.util.Lists.emptyList;
 import static org.mockito.ArgumentMatchers.any;
@@ -807,13 +808,24 @@ public class ProductTypeSyncIT {
                      final AttributeDefinitionDraft attributeDraft = attributesDrafts.get(index);
 
                      assertThat(attribute.getName()).isEqualTo(attributeDraft.getName());
+
                      assertThat(attribute.getLabel()).isEqualTo(attributeDraft.getLabel());
+
                      assertThat(attribute.getAttributeType()).isEqualTo(attributeDraft.getAttributeType());
-                     assertThat(attribute.getInputHint()).isEqualTo(attributeDraft.getInputHint());
+
+                     assertThat(attribute.getInputHint())
+                         .isEqualTo(ofNullable(attributeDraft.getInputHint()).orElse(TextInputHint.SINGLE_LINE));
+
                      assertThat(attribute.getInputTip()).isEqualTo(attributeDraft.getInputTip());
+
                      assertThat(attribute.isRequired()).isEqualTo(attributeDraft.isRequired());
-                     assertThat(attribute.isSearchable()).isEqualTo(attributeDraft.isSearchable());
-                     assertThat(attribute.getAttributeConstraint()).isEqualTo(attributeDraft.getAttributeConstraint());
+
+                     assertThat(attribute.isSearchable())
+                         .isEqualTo(ofNullable(attributeDraft.isSearchable()).orElse(true));
+
+                     assertThat(attribute.getAttributeConstraint())
+                         .isEqualTo(ofNullable(attributeDraft.getAttributeConstraint())
+                             .orElse(AttributeConstraint.NONE));
 
                      if (attribute.getAttributeType().getClass() == EnumAttributeType.class) {
                          assertPlainEnumsValuesAreEqual(
