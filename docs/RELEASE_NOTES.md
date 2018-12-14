@@ -29,10 +29,17 @@
 -->
 
 <!--
-### 1.1.0 -  Dec 10, 2018
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M14...1.1.0) |
-[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.1.0/) | 
-[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.1.0)
+### 1.1.0 -  Dec 20, 2018
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.0.0...1.1.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.1.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.1.0)
+
+- 🐞 **Bug Fixes** (2)
+    - **ProductType Sync** - Fixed a bug in the `productType` sync which would try to unset `isSearchable`, `inputHint` 
+    and `attributeConstraint` values to `null` instead of their default values. [#354](https://github.com/commercetools/commercetools-sync-java/issues/354)
+    - **ProductType Sync** - `ProductTypeSyncUtils#buildActions`, `ProductTypeUpdateActionUtils#buildAttributesUpdateActions`  
+    treat the values of the optional fields `isSearchable`, `inputHint` and `attributeConstraint` 
+    as (`true`, `SingleLine` and `None` respectivley) if they are not passed/`null`. [#354](https://github.com/commercetools/commercetools-sync-java/issues/354)
 
 !-->
 
