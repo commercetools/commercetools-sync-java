@@ -406,7 +406,11 @@ public class BuildAttributeDefinitionUpdateActionsTest {
             AddAttributeDefinition.of(AttributeDefinitionDraftBuilder
                 .of(ATTRIBUTE_DEFINITION_D.getAttributeType(),
                     ATTRIBUTE_DEFINITION_D.getName(), ATTRIBUTE_DEFINITION_D.getLabel(),
-                    ATTRIBUTE_DEFINITION_D.isRequired()).isSearchable(true).build()),
+                    ATTRIBUTE_DEFINITION_D.isRequired())
+                .isSearchable(true)
+                .inputHint(TextInputHint.SINGLE_LINE)
+                .attributeConstraint(AttributeConstraint.NONE)
+                .build()),
             ChangeAttributeOrder
                 .of(asList(
                         ATTRIBUTE_DEFINITION_A,
