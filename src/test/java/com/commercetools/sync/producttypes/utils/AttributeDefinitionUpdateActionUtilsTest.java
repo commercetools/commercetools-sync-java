@@ -3,7 +3,6 @@ package com.commercetools.sync.producttypes.utils;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.models.LocalizedEnumValue;
-import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.TextInputHint;
 import io.sphere.sdk.products.attributes.AttributeConstraint;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
@@ -27,7 +26,6 @@ import io.sphere.sdk.producttypes.commands.updateactions.SetInputTip;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,6 +36,8 @@ import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdat
 import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionUtils.buildChangeLabelUpdateAction;
 import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionUtils.buildSetInputTipUpdateAction;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class AttributeDefinitionUpdateActionUtilsTest {
@@ -59,16 +59,16 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     @BeforeClass
     public static void setup() {
         old = AttributeDefinitionBuilder
-            .of("attributeName1", LocalizedString.ofEnglish("label1"), StringAttributeType.of())
+            .of("attributeName1", ofEnglish("label1"), StringAttributeType.of())
             .isRequired(false)
             .attributeConstraint(AttributeConstraint.NONE)
-            .inputTip(LocalizedString.ofEnglish("inputTip1"))
+            .inputTip(ofEnglish("inputTip1"))
             .inputHint(TextInputHint.SINGLE_LINE)
             .isSearchable(false)
             .build();
 
         oldNullValues = AttributeDefinitionBuilder
-            .of("attributeName1", LocalizedString.ofEnglish("label1"), StringAttributeType.of())
+            .of("attributeName1", ofEnglish("label1"), StringAttributeType.of())
             .isRequired(false)
             .attributeConstraint(null)
             .inputTip(null)
@@ -81,9 +81,9 @@ public class AttributeDefinitionUpdateActionUtilsTest {
             .build();
 
         newDifferent = AttributeDefinitionDraftBuilder
-            .of(StringAttributeType.of(), "attributeName1", LocalizedString.ofEnglish("label2"), true)
+            .of(StringAttributeType.of(), "attributeName1", ofEnglish("label2"), true)
             .attributeConstraint(AttributeConstraint.SAME_FOR_ALL)
-            .inputTip(LocalizedString.ofEnglish("inputTip2"))
+            .inputTip(ofEnglish("inputTip2"))
             .inputHint(TextInputHint.MULTI_LINE)
             .isSearchable(true)
             .build();
@@ -255,7 +255,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
             .of(
                 EnumAttributeType.of(ENUM_VALUE_A, ENUM_VALUE_B),
                 "attributeName1",
-                LocalizedString.ofEnglish("label1"),
+                ofEnglish("label1"),
                 false
             )
             .attributeConstraint(AttributeConstraint.NONE)
@@ -284,9 +284,9 @@ public class AttributeDefinitionUpdateActionUtilsTest {
 
         final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
             .of(
-                EnumAttributeType.of(Collections.emptyList()),
+                EnumAttributeType.of(emptyList()),
                 "attributeName1",
-                LocalizedString.ofEnglish("label1"),
+                ofEnglish("label1"),
                 false
             )
             .attributeConstraint(AttributeConstraint.NONE)
@@ -318,7 +318,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
             .of(
                 EnumAttributeType.of(enumValueDiffLabel),
                 "attributeName1",
-                LocalizedString.ofEnglish("label1"),
+                ofEnglish("label1"),
                 false
             )
             .attributeConstraint(AttributeConstraint.NONE)
@@ -338,7 +338,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
         final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
             .of(
                 "attributeName1",
-                LocalizedString.ofEnglish("label1"),
+                ofEnglish("label1"),
                 LocalizedEnumAttributeType.of(LOCALIZED_ENUM_VALUE_A)
             )
             .isRequired(false)
@@ -353,7 +353,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
             .of(
                 LocalizedEnumAttributeType.of(LOCALIZED_ENUM_VALUE_A, LOCALIZED_ENUM_VALUE_B),
                 "attributeName1",
-                LocalizedString.ofEnglish("label1"),
+                ofEnglish("label1"),
                 false
             )
             .attributeConstraint(AttributeConstraint.NONE)
@@ -373,7 +373,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
         final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
             .of(
                 "attributeName1",
-                LocalizedString.ofEnglish("label1"),
+                ofEnglish("label1"),
                 LocalizedEnumAttributeType.of(LOCALIZED_ENUM_VALUE_A))
             .isRequired(false)
             .attributeConstraint(AttributeConstraint.NONE)
@@ -385,9 +385,9 @@ public class AttributeDefinitionUpdateActionUtilsTest {
 
         final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
             .of(
-                LocalizedEnumAttributeType.of(Collections.emptyList()),
+                LocalizedEnumAttributeType.of(emptyList()),
                 "attributeName1",
-                LocalizedString.ofEnglish("label1"),
+                ofEnglish("label1"),
                 false
             )
             .attributeConstraint(AttributeConstraint.NONE)
@@ -405,7 +405,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     @Test
     public void buildActions_WithDifferentLocalizedEnumValueLabel_ShouldReturnChangeLocalizedEnumValueLabelAction() {
         final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
-            .of("attributeName1", LocalizedString.ofEnglish("label1"),
+            .of("attributeName1", ofEnglish("label1"),
                 LocalizedEnumAttributeType.of(LOCALIZED_ENUM_VALUE_A))
             .isRequired(false)
             .attributeConstraint(AttributeConstraint.NONE)
@@ -420,7 +420,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
             .of(
                 LocalizedEnumAttributeType.of(localizedEnumValueDiffLabel),
                 "attributeName1",
-                LocalizedString.ofEnglish("label1"),
+                ofEnglish("label1"),
                 false
             )
             .attributeConstraint(AttributeConstraint.NONE)
