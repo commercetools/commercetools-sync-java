@@ -3,7 +3,6 @@ package com.commercetools.sync.producttypes.utils;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.models.LocalizedEnumValue;
-import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.TextInputHint;
 import io.sphere.sdk.products.attributes.AttributeConstraint;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
@@ -12,6 +11,7 @@ import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
 import io.sphere.sdk.products.attributes.EnumAttributeType;
 import io.sphere.sdk.products.attributes.LocalizedEnumAttributeType;
+import io.sphere.sdk.products.attributes.SetAttributeType;
 import io.sphere.sdk.products.attributes.StringAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.commands.updateactions.AddEnumValue;
@@ -35,9 +35,11 @@ import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdat
 import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionUtils.buildChangeInputHintUpdateAction;
 import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionUtils.buildChangeIsSearchableUpdateAction;
 import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionUtils.buildChangeLabelUpdateAction;
+import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionUtils.buildEnumUpdateActions;
 import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionUtils.buildSetInputTipUpdateAction;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class AttributeDefinitionUpdateActionUtilsTest {
@@ -496,14 +498,178 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
+    public void buildActions_WithStringAttributeTypesWithLabelChanges_ShouldBuildChangeLabelAction() {
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("attributeName1", ofEnglish("label1"), StringAttributeType.of())
+            .build();
+
+        final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
+            .of(StringAttributeType.of(), "attributeName1", ofEnglish("label2"), false)
+            .build();
+
+        final List<UpdateAction<ProductType>> result =
+            buildActions(attributeDefinition, attributeDefinitionDraft);
+
+        assertThat(result).containsExactly(
+            ChangeAttributeDefinitionLabel.of("attributeName1", attributeDefinitionDraft.getLabel()));
+    }
+
+    @Test
+    public void buildActions_WithSetOfStringAttributeTypesWithDefinitionLabelChanges_ShouldBuildChangeLabelAction() {
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("attributeName1", ofEnglish("label1"), SetAttributeType.of(StringAttributeType.of()))
+            .build();
+
+        final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
+            .of(SetAttributeType.of(StringAttributeType.of()), "attributeName1", ofEnglish("label2"), false)
+            .build();
+
+        final List<UpdateAction<ProductType>> result =
+            buildActions(attributeDefinition, attributeDefinitionDraft);
+
+        assertThat(result).containsExactly(
+            ChangeAttributeDefinitionLabel.of("attributeName1", attributeDefinitionDraft.getLabel()));
+    }
+
+    @Test
+    public void buildActions_WithSetOfSetOfStringAttributeTypesWithDefLabelChanges_ShouldBuildChangeLabelAction() {
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("attributeName1", ofEnglish("label1"), SetAttributeType.of(StringAttributeType.of()))
+            .build();
+
+        final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
+            .of(SetAttributeType.of(SetAttributeType.of(StringAttributeType.of())), "attributeName1", ofEnglish("label2"), false)
+            .build();
+
+        final List<UpdateAction<ProductType>> result =
+            buildActions(attributeDefinition, attributeDefinitionDraft);
+
+        assertThat(result).containsExactly(
+            ChangeAttributeDefinitionLabel.of("attributeName1", attributeDefinitionDraft.getLabel()));
+    }
+
+    @Test
+    public void buildActions_WithSameSetOfEnumsAttributeTypesWithDefLabelChanges_ShouldBuildChangeLabelAction() {
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("attributeName1", ofEnglish("label1"), SetAttributeType.of(
+                EnumAttributeType.of(emptyList())))
+            .build();
+
+        final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
+            .of(SetAttributeType.of(
+                EnumAttributeType.of(emptyList())), "attributeName1", ofEnglish("label2"), false)
+            .build();
+
+        final List<UpdateAction<ProductType>> result =
+            buildActions(attributeDefinition, attributeDefinitionDraft);
+
+        assertThat(result).containsExactly(
+            ChangeAttributeDefinitionLabel.of("attributeName1", attributeDefinitionDraft.getLabel()));
+    }
+
+    @Test
+    public void buildActions_WithChangedSetOfEnumAttributeTypes_ShouldBuildEnumActions() {
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("attributeName1", ofEnglish("label1"), SetAttributeType.of(
+                EnumAttributeType.of(emptyList())))
+            .build();
+
+        final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
+            .of(SetAttributeType.of(
+                EnumAttributeType.of(singletonList(ENUM_VALUE_A))),
+                "attributeName1", ofEnglish("label1"), false)
+            .build();
+
+        final List<UpdateAction<ProductType>> result =
+            buildActions(attributeDefinition, attributeDefinitionDraft);
+
+        assertThat(result).containsExactly(
+            AddEnumValue.of("attributeName1", ENUM_VALUE_A));
+    }
+
+    @Test
+    public void buildActions_WithChangedSetOfSetOfEnumAttributeTypes_ShouldBuildEnumActions() {
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("attributeName1", ofEnglish("label1"), SetAttributeType.of(SetAttributeType.of(
+                EnumAttributeType.of(emptyList()))))
+            .build();
+
+        final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
+            .of(SetAttributeType.of(SetAttributeType.of(
+                EnumAttributeType.of(singletonList(ENUM_VALUE_A)))),
+                "attributeName1", ofEnglish("label1"), false)
+            .build();
+
+        final List<UpdateAction<ProductType>> result =
+            buildActions(attributeDefinition, attributeDefinitionDraft);
+
+        assertThat(result).containsExactly(
+            AddEnumValue.of("attributeName1", ENUM_VALUE_A));
+    }
+
+    @Test
+    public void buildActions_WithSameSetOfLEnumAttributeTypesWithDefLabelChanges_ShouldBuildChangeLabelAction() {
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("attributeName1", ofEnglish("label1"), SetAttributeType.of(
+                LocalizedEnumAttributeType.of(emptyList())))
+            .build();
+
+        final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
+            .of(SetAttributeType.of(
+                LocalizedEnumAttributeType.of(emptyList())), "attributeName1", ofEnglish("label2"), false)
+            .build();
+
+        final List<UpdateAction<ProductType>> result =
+            buildActions(attributeDefinition, attributeDefinitionDraft);
+
+        assertThat(result).containsExactly(
+            ChangeAttributeDefinitionLabel.of("attributeName1", attributeDefinitionDraft.getLabel()));
+    }
+
+    @Test
+    public void buildActions_WithChangedSetOfLocalizedEnumAttributeTypes_ShouldBuildEnumActions() {
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("attributeName1", ofEnglish("label1"), SetAttributeType.of(
+                LocalizedEnumAttributeType.of(emptyList())))
+            .build();
+
+        final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
+            .of(SetAttributeType.of(
+                LocalizedEnumAttributeType.of(singletonList(LOCALIZED_ENUM_VALUE_A))),
+                "attributeName1", ofEnglish("label1"), false)
+            .build();
+
+        final List<UpdateAction<ProductType>> result =
+            buildActions(attributeDefinition, attributeDefinitionDraft);
+
+        assertThat(result).containsExactly(
+            AddLocalizedEnumValue.of("attributeName1", LOCALIZED_ENUM_VALUE_A));
+    }
+
+    @Test
+    public void buildActions_WithChangedSetOfSetOfLocalizedEnumAttributeTypes_ShouldBuildEnumActions() {
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("attributeName1", ofEnglish("label1"), SetAttributeType.of(SetAttributeType.of(
+                LocalizedEnumAttributeType.of(emptyList()))))
+            .build();
+
+        final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
+            .of(SetAttributeType.of(SetAttributeType.of(
+                LocalizedEnumAttributeType.of(singletonList(LOCALIZED_ENUM_VALUE_A)))),
+                "attributeName1", ofEnglish("label1"), false)
+            .build();
+
+        final List<UpdateAction<ProductType>> result =
+            buildActions(attributeDefinition, attributeDefinitionDraft);
+
+        assertThat(result).containsExactly(
+            AddLocalizedEnumValue.of("attributeName1", LOCALIZED_ENUM_VALUE_A));
+    }
+
+    @Test
     public void buildActions_WithNewPlainEnum_ShouldReturnAddEnumValueAction() {
         final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
-            .of("attributeName1", LocalizedString.ofEnglish("label1"), EnumAttributeType.of(ENUM_VALUE_A))
-            .isRequired(false)
-            .attributeConstraint(AttributeConstraint.NONE)
-            .inputTip(LocalizedString.ofEnglish("inputTip1"))
-            .inputHint(TextInputHint.SINGLE_LINE)
-            .isSearchable(false)
+            .of("attributeName1", ofEnglish("label1"), EnumAttributeType.of(ENUM_VALUE_A))
             .build();
 
 
@@ -514,14 +680,11 @@ public class AttributeDefinitionUpdateActionUtilsTest {
                 ofEnglish("label1"),
                 false
             )
-            .attributeConstraint(AttributeConstraint.NONE)
-            .inputTip(LocalizedString.ofEnglish("inputTip1"))
-            .inputHint(TextInputHint.SINGLE_LINE)
-            .isSearchable(false)
             .build();
 
 
-        final List<UpdateAction<ProductType>> result = buildActions(attributeDefinition, attributeDefinitionDraft);
+        final List<UpdateAction<ProductType>> result =
+            buildEnumUpdateActions(attributeDefinition, attributeDefinitionDraft);
 
         assertThat(result).containsExactly(AddEnumValue.of("attributeName1", ENUM_VALUE_B));
     }
@@ -529,12 +692,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     @Test
     public void buildActions_WithoutOldPlainEnum_ShouldReturnRemoveEnumValueAction() {
         final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
-            .of("attributeName1", LocalizedString.ofEnglish("label1"), EnumAttributeType.of(ENUM_VALUE_A))
-            .isRequired(false)
-            .attributeConstraint(AttributeConstraint.NONE)
-            .inputTip(LocalizedString.ofEnglish("inputTip1"))
-            .inputHint(TextInputHint.SINGLE_LINE)
-            .isSearchable(false)
+            .of("attributeName1", ofEnglish("label1"), EnumAttributeType.of(ENUM_VALUE_A))
             .build();
 
 
@@ -545,14 +703,10 @@ public class AttributeDefinitionUpdateActionUtilsTest {
                 ofEnglish("label1"),
                 false
             )
-            .attributeConstraint(AttributeConstraint.NONE)
-            .inputTip(LocalizedString.ofEnglish("inputTip1"))
-            .inputHint(TextInputHint.SINGLE_LINE)
-            .isSearchable(false)
             .build();
 
 
-        final List<UpdateAction<ProductType>> result = buildActions(attributeDefinition, attributeDefinitionDraft);
+        final List<UpdateAction<ProductType>> result = buildEnumUpdateActions(attributeDefinition, attributeDefinitionDraft);
 
         assertThat(result).containsExactly(RemoveEnumValues.of("attributeName1", "a"));
     }
@@ -560,12 +714,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     @Test
     public void buildActions_WitDifferentPlainEnumValueLabel_ShouldReturnChangeEnumValueLabelAction() {
         final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
-            .of("attributeName1", LocalizedString.ofEnglish("label1"), EnumAttributeType.of(ENUM_VALUE_A))
-            .isRequired(false)
-            .attributeConstraint(AttributeConstraint.NONE)
-            .inputTip(LocalizedString.ofEnglish("inputTip1"))
-            .inputHint(TextInputHint.SINGLE_LINE)
-            .isSearchable(false)
+            .of("attributeName1", ofEnglish("label1"), EnumAttributeType.of(ENUM_VALUE_A))
             .build();
 
         final EnumValue enumValueDiffLabel = EnumValue.of("a", "label_a_different");
@@ -577,14 +726,10 @@ public class AttributeDefinitionUpdateActionUtilsTest {
                 ofEnglish("label1"),
                 false
             )
-            .attributeConstraint(AttributeConstraint.NONE)
-            .inputTip(LocalizedString.ofEnglish("inputTip1"))
-            .inputHint(TextInputHint.SINGLE_LINE)
-            .isSearchable(false)
             .build();
 
 
-        final List<UpdateAction<ProductType>> result = buildActions(attributeDefinition, attributeDefinitionDraft);
+        final List<UpdateAction<ProductType>> result = buildEnumUpdateActions(attributeDefinition, attributeDefinitionDraft);
 
         assertThat(result).containsExactly(ChangePlainEnumValueLabel.of("attributeName1", enumValueDiffLabel));
     }
@@ -597,11 +742,6 @@ public class AttributeDefinitionUpdateActionUtilsTest {
                 ofEnglish("label1"),
                 LocalizedEnumAttributeType.of(LOCALIZED_ENUM_VALUE_A)
             )
-            .isRequired(false)
-            .attributeConstraint(AttributeConstraint.NONE)
-            .inputTip(LocalizedString.ofEnglish("inputTip1"))
-            .inputHint(TextInputHint.SINGLE_LINE)
-            .isSearchable(false)
             .build();
 
 
@@ -612,14 +752,10 @@ public class AttributeDefinitionUpdateActionUtilsTest {
                 ofEnglish("label1"),
                 false
             )
-            .attributeConstraint(AttributeConstraint.NONE)
-            .inputTip(LocalizedString.ofEnglish("inputTip1"))
-            .inputHint(TextInputHint.SINGLE_LINE)
-            .isSearchable(false)
             .build();
 
 
-        final List<UpdateAction<ProductType>> result = buildActions(attributeDefinition, attributeDefinitionDraft);
+        final List<UpdateAction<ProductType>> result = buildEnumUpdateActions(attributeDefinition, attributeDefinitionDraft);
 
         assertThat(result).containsExactly(AddLocalizedEnumValue.of("attributeName1", LOCALIZED_ENUM_VALUE_B));
     }
@@ -631,11 +767,6 @@ public class AttributeDefinitionUpdateActionUtilsTest {
                 "attributeName1",
                 ofEnglish("label1"),
                 LocalizedEnumAttributeType.of(LOCALIZED_ENUM_VALUE_A))
-            .isRequired(false)
-            .attributeConstraint(AttributeConstraint.NONE)
-            .inputTip(LocalizedString.ofEnglish("inputTip1"))
-            .inputHint(TextInputHint.SINGLE_LINE)
-            .isSearchable(false)
             .build();
 
 
@@ -646,14 +777,10 @@ public class AttributeDefinitionUpdateActionUtilsTest {
                 ofEnglish("label1"),
                 false
             )
-            .attributeConstraint(AttributeConstraint.NONE)
-            .inputTip(LocalizedString.ofEnglish("inputTip1"))
-            .inputHint(TextInputHint.SINGLE_LINE)
-            .isSearchable(false)
             .build();
 
 
-        final List<UpdateAction<ProductType>> result = buildActions(attributeDefinition, attributeDefinitionDraft);
+        final List<UpdateAction<ProductType>> result = buildEnumUpdateActions(attributeDefinition, attributeDefinitionDraft);
 
         assertThat(result).containsExactly(RemoveEnumValues.of("attributeName1", "a"));
     }
@@ -663,11 +790,6 @@ public class AttributeDefinitionUpdateActionUtilsTest {
         final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
             .of("attributeName1", ofEnglish("label1"),
                 LocalizedEnumAttributeType.of(LOCALIZED_ENUM_VALUE_A))
-            .isRequired(false)
-            .attributeConstraint(AttributeConstraint.NONE)
-            .inputTip(LocalizedString.ofEnglish("inputTip1"))
-            .inputHint(TextInputHint.SINGLE_LINE)
-            .isSearchable(false)
             .build();
 
         final LocalizedEnumValue localizedEnumValueDiffLabel = LocalizedEnumValue.of("a", ofEnglish("label_a_diff"));
@@ -679,17 +801,11 @@ public class AttributeDefinitionUpdateActionUtilsTest {
                 ofEnglish("label1"),
                 false
             )
-            .attributeConstraint(AttributeConstraint.NONE)
-            .inputTip(ofEnglish("inputTip1"))
-            .inputHint(TextInputHint.SINGLE_LINE)
-            .isSearchable(false)
             .build();
 
-
-        final List<UpdateAction<ProductType>> result = buildActions(attributeDefinition, attributeDefinitionDraft);
+        final List<UpdateAction<ProductType>> result = buildEnumUpdateActions(attributeDefinition, attributeDefinitionDraft);
 
         assertThat(result)
             .containsExactly(ChangeLocalizedEnumValueLabel.of("attributeName1", localizedEnumValueDiffLabel));
     }
-
 }
