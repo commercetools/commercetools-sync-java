@@ -3,6 +3,7 @@ package com.commercetools.sync.producttypes.utils;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.models.LocalizedEnumValue;
+import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.TextInputHint;
 import io.sphere.sdk.products.attributes.AttributeConstraint;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
@@ -37,7 +38,6 @@ import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdat
 import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionUtils.buildSetInputTipUpdateAction;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class AttributeDefinitionUpdateActionUtilsTest {
@@ -655,7 +655,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
                 false
             )
             .attributeConstraint(AttributeConstraint.NONE)
-            .inputTip(LocalizedString.ofEnglish("inputTip1"))
+            .inputTip(ofEnglish("inputTip1"))
             .inputHint(TextInputHint.SINGLE_LINE)
             .isSearchable(false)
             .build();
