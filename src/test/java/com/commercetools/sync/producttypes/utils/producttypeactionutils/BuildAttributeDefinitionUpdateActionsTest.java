@@ -739,7 +739,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithSetOfLEnumsChangesAndDefinitionLabelChange_ShouldBuildCorrectActions() {
+    public void buildAttributesUpdateActions_WithSetOfLEnumsChangesAndDefLabelChange_ShouldBuildCorrectActions() {
         // preparation
         final SetAttributeType newSetOfLenumType = SetAttributeType.of(
             LocalizedEnumAttributeType.of(singletonList(LocalizedEnumValue.of("foo", ofEnglish("bar")))));

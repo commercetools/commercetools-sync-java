@@ -539,7 +539,8 @@ public class AttributeDefinitionUpdateActionUtilsTest {
             .build();
 
         final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
-            .of(SetAttributeType.of(SetAttributeType.of(StringAttributeType.of())), "attributeName1", ofEnglish("label2"), false)
+            .of(SetAttributeType.of(SetAttributeType.of(StringAttributeType.of())),
+                "attributeName1", ofEnglish("label2"), false)
             .build();
 
         final List<UpdateAction<ProductType>> result =
@@ -666,8 +667,8 @@ public class AttributeDefinitionUpdateActionUtilsTest {
             )
             .build();
 
-
-        final List<UpdateAction<ProductType>> result = buildEnumUpdateActions(attributeDefinition, attributeDefinitionDraft);
+        final List<UpdateAction<ProductType>> result =
+            buildEnumUpdateActions(attributeDefinition, attributeDefinitionDraft);
 
         assertThat(result).containsExactly(RemoveEnumValues.of("attributeName1", "a"));
     }
@@ -689,8 +690,8 @@ public class AttributeDefinitionUpdateActionUtilsTest {
             )
             .build();
 
-
-        final List<UpdateAction<ProductType>> result = buildEnumUpdateActions(attributeDefinition, attributeDefinitionDraft);
+        final List<UpdateAction<ProductType>> result =
+            buildEnumUpdateActions(attributeDefinition, attributeDefinitionDraft);
 
         assertThat(result).containsExactly(ChangePlainEnumValueLabel.of("attributeName1", enumValueDiffLabel));
     }
@@ -715,8 +716,8 @@ public class AttributeDefinitionUpdateActionUtilsTest {
             )
             .build();
 
-
-        final List<UpdateAction<ProductType>> result = buildEnumUpdateActions(attributeDefinition, attributeDefinitionDraft);
+        final List<UpdateAction<ProductType>> result =
+            buildEnumUpdateActions(attributeDefinition, attributeDefinitionDraft);
 
         assertThat(result).containsExactly(AddLocalizedEnumValue.of("attributeName1", LOCALIZED_ENUM_VALUE_B));
     }
@@ -740,8 +741,8 @@ public class AttributeDefinitionUpdateActionUtilsTest {
             )
             .build();
 
-
-        final List<UpdateAction<ProductType>> result = buildEnumUpdateActions(attributeDefinition, attributeDefinitionDraft);
+        final List<UpdateAction<ProductType>> result =
+            buildEnumUpdateActions(attributeDefinition, attributeDefinitionDraft);
 
         assertThat(result).containsExactly(RemoveEnumValues.of("attributeName1", "a"));
     }
@@ -764,7 +765,8 @@ public class AttributeDefinitionUpdateActionUtilsTest {
             )
             .build();
 
-        final List<UpdateAction<ProductType>> result = buildEnumUpdateActions(attributeDefinition, attributeDefinitionDraft);
+        final List<UpdateAction<ProductType>> result =
+            buildEnumUpdateActions(attributeDefinition, attributeDefinitionDraft);
 
         assertThat(result)
             .containsExactly(ChangeLocalizedEnumValueLabel.of("attributeName1", localizedEnumValueDiffLabel));
