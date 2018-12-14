@@ -39,7 +39,7 @@
     and `attributeConstraint` values to `null` instead of their default values. [#354](https://github.com/commercetools/commercetools-sync-java/issues/354)
     - **ProductType Sync** - `ProductTypeSyncUtils#buildActions`, `ProductTypeUpdateActionUtils#buildAttributesUpdateActions`  
     now treat the values of the optional fields `isSearchable`, `inputHint` and `attributeConstraint` 
-    as (`true`, `SingleLine` and `None` respectivley) if they are not passed/`null`. [#354](https://github.com/commercetools/commercetools-sync-java/issues/354)
+    as (`true`, `SingleLine` and `None` respectivley) if they are `null` or not passed. [#354](https://github.com/commercetools/commercetools-sync-java/issues/354)
 
 !-->
 
