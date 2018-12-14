@@ -229,22 +229,6 @@ public class FieldDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithChangedSetOfSetOfEnumFieldTypes_ShouldBuildEnumActions() {
-        final FieldDefinition oldFieldDefinition = FieldDefinition.of(
-            SetFieldType.of(SetFieldType.of(EnumFieldType.of(emptyList()))),
-            "fieldName1", ofEnglish("label1"), false);
-
-        final FieldDefinition newFieldDefinition = FieldDefinition.of(
-            SetFieldType.of(SetFieldType.of(EnumFieldType.of(singletonList(ENUM_VALUE_A)))),
-            "fieldName1", ofEnglish("label1"), false);
-
-        final List<UpdateAction<Type>> result =
-            buildActions(oldFieldDefinition, newFieldDefinition);
-
-        assertThat(result).containsExactly(AddEnumValue.of("fieldName1", ENUM_VALUE_A));
-    }
-
-    @Test
     public void buildActions_WithSameSetOfLEnumFieldTypesWithDefLabelChanges_ShouldBuildChangeLabelAction() {
         // preparation
         final FieldDefinition oldFieldDefinition = FieldDefinition.of(
@@ -273,25 +257,6 @@ public class FieldDefinitionUpdateActionUtilsTest {
 
         final FieldDefinition newFieldDefinition = FieldDefinition.of(
             SetFieldType.of(LocalizedEnumFieldType.of(singletonList(LOCALIZED_ENUM_VALUE_A))),
-            "fieldName1", ofEnglish("label1"), false);
-
-        // test
-        final List<UpdateAction<Type>> result =
-            buildActions(oldFieldDefinition, newFieldDefinition);
-
-        // assertion
-        assertThat(result).containsExactly(AddLocalizedEnumValue.of("fieldName1", LOCALIZED_ENUM_VALUE_A));
-    }
-
-    @Test
-    public void buildActions_WithChangedSetOfSetOfLocalizedEnumFieldTypes_ShouldBuildEnumActions() {
-        // preparation
-        final FieldDefinition oldFieldDefinition = FieldDefinition.of(
-            SetFieldType.of(SetFieldType.of(LocalizedEnumFieldType.of(emptyList()))),
-            "fieldName1", ofEnglish("label1"), false);
-
-        final FieldDefinition newFieldDefinition = FieldDefinition.of(
-            SetFieldType.of(SetFieldType.of(LocalizedEnumFieldType.of(singletonList(LOCALIZED_ENUM_VALUE_A)))),
             "fieldName1", ofEnglish("label1"), false);
 
         // test

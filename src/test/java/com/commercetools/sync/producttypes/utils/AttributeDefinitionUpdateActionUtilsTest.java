@@ -589,26 +589,6 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithChangedSetOfSetOfEnumAttributeTypes_ShouldBuildEnumActions() {
-        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
-            .of("attributeName1", ofEnglish("label1"), SetAttributeType.of(SetAttributeType.of(
-                EnumAttributeType.of(emptyList()))))
-            .build();
-
-        final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
-            .of(SetAttributeType.of(SetAttributeType.of(
-                EnumAttributeType.of(singletonList(ENUM_VALUE_A)))),
-                "attributeName1", ofEnglish("label1"), false)
-            .build();
-
-        final List<UpdateAction<ProductType>> result =
-            buildActions(attributeDefinition, attributeDefinitionDraft);
-
-        assertThat(result).containsExactly(
-            AddEnumValue.of("attributeName1", ENUM_VALUE_A));
-    }
-
-    @Test
     public void buildActions_WithSameSetOfLEnumAttributeTypesWithDefLabelChanges_ShouldBuildChangeLabelAction() {
         final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
             .of("attributeName1", ofEnglish("label1"), SetAttributeType.of(
@@ -637,26 +617,6 @@ public class AttributeDefinitionUpdateActionUtilsTest {
         final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
             .of(SetAttributeType.of(
                 LocalizedEnumAttributeType.of(singletonList(LOCALIZED_ENUM_VALUE_A))),
-                "attributeName1", ofEnglish("label1"), false)
-            .build();
-
-        final List<UpdateAction<ProductType>> result =
-            buildActions(attributeDefinition, attributeDefinitionDraft);
-
-        assertThat(result).containsExactly(
-            AddLocalizedEnumValue.of("attributeName1", LOCALIZED_ENUM_VALUE_A));
-    }
-
-    @Test
-    public void buildActions_WithChangedSetOfSetOfLocalizedEnumAttributeTypes_ShouldBuildEnumActions() {
-        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
-            .of("attributeName1", ofEnglish("label1"), SetAttributeType.of(SetAttributeType.of(
-                LocalizedEnumAttributeType.of(emptyList()))))
-            .build();
-
-        final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
-            .of(SetAttributeType.of(SetAttributeType.of(
-                LocalizedEnumAttributeType.of(singletonList(LOCALIZED_ENUM_VALUE_A)))),
                 "attributeName1", ofEnglish("label1"), false)
             .build();
 

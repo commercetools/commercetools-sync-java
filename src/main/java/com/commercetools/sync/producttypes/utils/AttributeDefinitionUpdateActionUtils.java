@@ -70,8 +70,10 @@ final class AttributeDefinitionUpdateActionUtils {
      * result. If both the {@link AttributeDefinition} and the {@link AttributeDefinitionDraft} have identical
      * enum values, then no update action is needed and hence an empty {@link List} is returned.
      *
-     * <p> Note: This method assumes that both types are identical and either of Enum attribute type or
-     * LocalizedEnum type or set of either or set of set of (etc..) of either. Otherwise, an empty list is returned.</p>
+     * <p> On CTP, enum update actions can only update a enum type attribute definition or a Set of
+     * enum type attribute definition. Therefore, this method will update build enum update actions of the types
+     * supplied are of the same type and are either of enum attribute type or LocalizedEnum attribute type or set of
+     * either.</p>
      *
      * @param oldAttributeDefinition      the attribute definition which should be updated.
      * @param newAttributeDefinitionDraft the new attribute definition draft where we get the new fields.
@@ -116,10 +118,12 @@ final class AttributeDefinitionUpdateActionUtils {
     }
 
     /**
-     * Indicates if the attribute type is a plain enum value or a set of plain enum value.
+     * Indicates if the attribute type is a enum value or a set of enum value.
      *
      * @param attributeType the attribute type.
-     * @return true if the attribute type is a plain enum value or a set of it, false otherwise.
+     * @return an optional containing the enum attribute type if the attribute type is a enum
+     *         attribute type or if is a set of enum attribute type, then it returns an optional containing
+     *         the enum attribute type under the set type.
      */
     private static Optional<EnumAttributeType> getEnumAttributeType(
         @Nonnull final AttributeType attributeType) {
@@ -129,10 +133,12 @@ final class AttributeDefinitionUpdateActionUtils {
         }
 
         if (attributeType instanceof SetAttributeType) {
+            final SetAttributeType setFieldType = (SetAttributeType) attributeType;
+            final AttributeType subType = setFieldType.getElementType();
 
-            final SetAttributeType setAttributeType = (SetAttributeType) attributeType;
-            final AttributeType subType = setAttributeType.getElementType();
-            return getEnumAttributeType(subType);
+            if (subType instanceof EnumAttributeType) {
+                return Optional.of((EnumAttributeType) subType);
+            }
         }
 
         return Optional.empty();
@@ -142,7 +148,9 @@ final class AttributeDefinitionUpdateActionUtils {
      * Indicates if the attribute type is a localized enum value or a set of localized enum value.
      *
      * @param attributeType the attribute type.
-     * @return true if the attribute type is a localized enum value or a set of it, false otherwise.
+     * @return an optional containing the localized enum attribute type if the attribute type is a localized enum
+     *         attribute type or if is a set of localized enum attribute type, then it returns an optional containing
+     *         the localized enum attribute type under the set type.
      */
     private static Optional<LocalizedEnumAttributeType> getLocalizedEnumAttributeType(
         @Nonnull final AttributeType attributeType) {
@@ -152,9 +160,12 @@ final class AttributeDefinitionUpdateActionUtils {
         }
 
         if (attributeType instanceof SetAttributeType) {
-            final SetAttributeType setAttributeType = (SetAttributeType) attributeType;
-            final AttributeType subType = setAttributeType.getElementType();
-            return getLocalizedEnumAttributeType(subType);
+            final SetAttributeType setFieldType = (SetAttributeType) attributeType;
+            final AttributeType subType = setFieldType.getElementType();
+
+            if (subType instanceof LocalizedEnumAttributeType) {
+                return Optional.of((LocalizedEnumAttributeType) subType);
+            }
         }
 
         return Optional.empty();

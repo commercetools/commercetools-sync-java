@@ -626,7 +626,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
             EnumAttributeType.of(singletonList(EnumValue.of("foo", "bar"))));
 
         final AttributeDefinitionDraft newDefinition = AttributeDefinitionDraftBuilder
-            .of(SetAttributeType.of(newSetOfEnumType), "a", ofEnglish("new_label"), true)
+            .of(newSetOfEnumType, "a", ofEnglish("new_label"), true)
             .build();
         final ProductTypeDraft productTypeDraft = ProductTypeDraftBuilder
             .of("foo", "name", "desc", singletonList(newDefinition))
@@ -634,36 +634,6 @@ public class BuildAttributeDefinitionUpdateActionsTest {
 
 
         final SetAttributeType oldSetOfEnumType = SetAttributeType.of(EnumAttributeType.of(emptyList()));
-        final AttributeDefinition oldDefinition = AttributeDefinitionBuilder
-            .of("a", ofEnglish("new_label"), oldSetOfEnumType)
-            .build();
-        final ProductType productType = mock(ProductType.class);
-        when(productType.getAttributes()).thenReturn(singletonList(oldDefinition));
-
-        // test
-        final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(productType,
-            productTypeDraft, SYNC_OPTIONS);
-
-        // assertion
-        assertThat(updateActions).containsExactly(AddEnumValue.of("a", EnumValue.of("foo", "bar")));
-    }
-
-    @Test
-    public void buildAttributesUpdateActions_WithSetOfSetOfEnumsChanges_ShouldBuildCorrectActions() {
-        // preparation
-        final SetAttributeType newSetOfEnumType = SetAttributeType.of(SetAttributeType.of(
-            EnumAttributeType.of(singletonList(EnumValue.of("foo", "bar")))));
-
-        final AttributeDefinitionDraft newDefinition = AttributeDefinitionDraftBuilder
-            .of(SetAttributeType.of(newSetOfEnumType), "a", ofEnglish("new_label"), true)
-            .build();
-        final ProductTypeDraft productTypeDraft = ProductTypeDraftBuilder
-            .of("foo", "name", "desc", singletonList(newDefinition))
-            .build();
-
-
-        final SetAttributeType oldSetOfEnumType = SetAttributeType.of(
-            SetAttributeType.of(EnumAttributeType.of(emptyList())));
         final AttributeDefinition oldDefinition = AttributeDefinitionBuilder
             .of("a", ofEnglish("new_label"), oldSetOfEnumType)
             .build();
@@ -714,45 +684,14 @@ public class BuildAttributeDefinitionUpdateActionsTest {
             LocalizedEnumAttributeType.of(singletonList(LocalizedEnumValue.of("foo", ofEnglish("bar")))));
 
         final AttributeDefinitionDraft newDefinition = AttributeDefinitionDraftBuilder
-            .of(SetAttributeType.of(newSetOfLenumType), "a", ofEnglish("new_label"), true)
+            .of(newSetOfLenumType, "a", ofEnglish("new_label"), true)
             .build();
         final ProductTypeDraft productTypeDraft = ProductTypeDraftBuilder
             .of("foo", "name", "desc", singletonList(newDefinition))
             .build();
 
-        final SetAttributeType oldSetOfLenumType = SetAttributeType.of(SetAttributeType.of(
-            LocalizedEnumAttributeType.of(emptyList())));
-
-        final AttributeDefinition oldDefinition = AttributeDefinitionBuilder
-            .of("a", ofEnglish("new_label"), oldSetOfLenumType)
-            .build();
-        final ProductType productType = mock(ProductType.class);
-        when(productType.getAttributes()).thenReturn(singletonList(oldDefinition));
-
-        // test
-        final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(productType,
-            productTypeDraft, SYNC_OPTIONS);
-
-        // assertion
-        assertThat(updateActions)
-            .containsExactly(AddLocalizedEnumValue.of("a", LocalizedEnumValue.of("foo", ofEnglish("bar"))));
-    }
-
-    @Test
-    public void buildAttributesUpdateActions_WithSetOfSetOfLEnumsChanges_ShouldBuildCorrectActions() {
-        // preparation
-        final SetAttributeType newSetOfLenumType = SetAttributeType.of(SetAttributeType.of(
-            LocalizedEnumAttributeType.of(singletonList(LocalizedEnumValue.of("foo", ofEnglish("bar"))))));
-
-        final AttributeDefinitionDraft newDefinition = AttributeDefinitionDraftBuilder
-            .of(SetAttributeType.of(newSetOfLenumType), "a", ofEnglish("new_label"), true)
-            .build();
-        final ProductTypeDraft productTypeDraft = ProductTypeDraftBuilder
-            .of("foo", "name", "desc", singletonList(newDefinition))
-            .build();
-
-        final SetAttributeType oldSetOfLenumType = SetAttributeType.of(SetAttributeType.of(SetAttributeType.of(
-            LocalizedEnumAttributeType.of(emptyList()))));
+        final SetAttributeType oldSetOfLenumType = SetAttributeType.of(
+            LocalizedEnumAttributeType.of(emptyList()));
 
         final AttributeDefinition oldDefinition = AttributeDefinitionBuilder
             .of("a", ofEnglish("new_label"), oldSetOfLenumType)
@@ -806,14 +745,14 @@ public class BuildAttributeDefinitionUpdateActionsTest {
             LocalizedEnumAttributeType.of(singletonList(LocalizedEnumValue.of("foo", ofEnglish("bar")))));
 
         final AttributeDefinitionDraft newDefinition = AttributeDefinitionDraftBuilder
-            .of(SetAttributeType.of(newSetOfLenumType), "a", ofEnglish("new_label"), true)
+            .of(newSetOfLenumType, "a", ofEnglish("new_label"), true)
             .build();
         final ProductTypeDraft productTypeDraft = ProductTypeDraftBuilder
             .of("foo", "name", "desc", singletonList(newDefinition))
             .build();
 
-        final SetAttributeType oldSetOfLenumType = SetAttributeType.of(SetAttributeType.of(
-            LocalizedEnumAttributeType.of(emptyList())));
+        final SetAttributeType oldSetOfLenumType = SetAttributeType.of(
+            LocalizedEnumAttributeType.of(emptyList()));
 
         final AttributeDefinition oldDefinition = AttributeDefinitionBuilder
             .of("a", ofEnglish("old_label"), oldSetOfLenumType)

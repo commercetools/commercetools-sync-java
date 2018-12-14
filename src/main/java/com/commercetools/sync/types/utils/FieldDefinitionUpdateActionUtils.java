@@ -58,9 +58,9 @@ final class FieldDefinitionUpdateActionUtils {
      * a list of {@link UpdateAction}&lt;{@link Type}&gt; as a result. If both {@link FieldDefinition}s have identical
      * enum values, then no update action is needed and hence an empty {@link List} is returned.
      *
-     * <p> Note: This method assumes that both types are identical and either of Enum field type or
-     * LocalizedEnum field type or set of either or set of set of (etc..) of either. Otherwise, an empty list is
-     * returned.</p>
+     * <p> On CTP, enum update actions can only update a enum type field definition or a Set of
+     * enum type field definition. Therefore, this method will update build enum update actions of the types supplied
+     * are of the same type and are either of Enum field type or LocalizedEnum field type or set of either.</p>
      *
      * @param oldFieldDefinition the old field definition which should be updated.
      * @param newFieldDefinition the new field definition where we get the new fields.
@@ -109,7 +109,9 @@ final class FieldDefinitionUpdateActionUtils {
      * Indicates if the field type is a plain enum value or a set of plain enum value.
      *
      * @param fieldType the field type.
-     * @return true if the field type is a plain enum value or a set of it, false otherwise.
+     * @return an optional containing the enum field type if the field type is an enum field type
+     *          or if it is a set of enum field type, then it returns an optional containing the localized enum field
+     *          type under the set type.
      */
     private static Optional<EnumFieldType> getEnumFieldType(
         @Nonnull final FieldType fieldType) {
@@ -122,7 +124,10 @@ final class FieldDefinitionUpdateActionUtils {
 
             final SetFieldType setFieldType = (SetFieldType) fieldType;
             final FieldType subType = setFieldType.getElementType();
-            return getEnumFieldType(subType);
+
+            if (subType instanceof EnumFieldType) {
+                return Optional.of((EnumFieldType) subType);
+            }
         }
 
         return Optional.empty();
@@ -132,7 +137,9 @@ final class FieldDefinitionUpdateActionUtils {
      * Indicates if the field type is a localized enum value or a set of localized enum value.
      *
      * @param fieldType the field type.
-     * @return true if the field type is a localized enum value or a set of it, false otherwise.
+     * @return an optional containing the localized enum field type if the field type is a localized enum field type
+     *          or if is a set of localized enum field type, then it returns an optional containing the localized enum
+     *          field type under the set type.
      */
     private static Optional<LocalizedEnumFieldType> getLocalizedEnumFieldType(
         @Nonnull final FieldType fieldType) {
@@ -142,10 +149,12 @@ final class FieldDefinitionUpdateActionUtils {
         }
 
         if (fieldType instanceof SetFieldType) {
-
             final SetFieldType setFieldType = (SetFieldType) fieldType;
             final FieldType subType = setFieldType.getElementType();
-            return getLocalizedEnumFieldType(subType);
+
+            if (subType instanceof LocalizedEnumFieldType) {
+                return Optional.of((LocalizedEnumFieldType) subType);
+            }
         }
 
         return Optional.empty();
