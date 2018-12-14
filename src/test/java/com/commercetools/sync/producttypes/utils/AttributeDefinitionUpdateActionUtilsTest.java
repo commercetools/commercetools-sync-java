@@ -42,10 +42,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class AttributeDefinitionUpdateActionUtilsTest {
     private static AttributeDefinition old;
-    private static AttributeDefinition oldNullValues;
     private static AttributeDefinitionDraft newSame;
     private static AttributeDefinitionDraft newDifferent;
-    private static AttributeDefinitionDraft newNullValues;
 
     private static final EnumValue ENUM_VALUE_A = EnumValue.of("a", "label_a");
     private static final EnumValue ENUM_VALUE_B = EnumValue.of("b", "label_b");
@@ -67,15 +65,6 @@ public class AttributeDefinitionUpdateActionUtilsTest {
             .isSearchable(false)
             .build();
 
-        oldNullValues = AttributeDefinitionBuilder
-            .of("attributeName1", ofEnglish("label1"), StringAttributeType.of())
-            .isRequired(false)
-            .attributeConstraint(null)
-            .inputTip(null)
-            .inputHint(null)
-            .isSearchable(false)
-            .build();
-
         newSame = AttributeDefinitionDraftBuilder
             .of(old)
             .build();
@@ -85,14 +74,6 @@ public class AttributeDefinitionUpdateActionUtilsTest {
             .attributeConstraint(AttributeConstraint.SAME_FOR_ALL)
             .inputTip(ofEnglish("inputTip2"))
             .inputHint(TextInputHint.MULTI_LINE)
-            .isSearchable(true)
-            .build();
-
-        newNullValues = AttributeDefinitionDraftBuilder
-            .of(StringAttributeType.of(), "attributeName1", LocalizedString.ofEnglish("label2"), true)
-            .attributeConstraint(null)
-            .inputTip(null)
-            .inputHint(null)
             .isSearchable(true)
             .build();
     }
@@ -458,7 +439,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
             ChangeAttributeDefinitionLabel.of(old.getName(), newDifferent.getLabel()),
             SetInputTip.of(old.getName(), newDifferent.getInputTip()),
             ChangeAttributeConstraint.of(old.getName(), newDifferent.getAttributeConstraint()),
-            ChangeInputHint.of(oldNullValues.getName(), newDifferent.getInputHint()),
+            ChangeInputHint.of(old.getName(), newDifferent.getInputHint()),
             ChangeIsSearchable.of(old.getName(), newDifferent.isSearchable())
         );
     }
