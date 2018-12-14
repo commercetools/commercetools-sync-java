@@ -235,27 +235,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeIsSearchableAction_WithNullSourceAndNonDefaultTarget_ShouldSetFieldToDefault() {
-        // Preparation
-        final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
-            .of(null, "foo", ofEnglish("x"), null)
-            .isSearchable(null)
-            .build();
-
-        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
-            .of("foo", ofEnglish("x"), null)
-            .isSearchable(true)
-            .build();
-
-        // test
-        final Optional<UpdateAction<ProductType>> result =
-            buildChangeIsSearchableUpdateAction(attributeDefinition, draft);
-
-        assertThat(result).contains(ChangeIsSearchable.of(attributeDefinition.getName(), false));
-    }
-
-    @Test
-    public void buildChangeIsSearchableAction_WithNullSourceAndDefaultTarget_ShouldNotUpdateField() {
+    public void buildChangeIsSearchableAction_WithNullSourceAndNonDefaultTarget_ShouldBuildAction() {
         // Preparation
         final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
             .of(null, "foo", ofEnglish("x"), null)
@@ -265,6 +245,26 @@ public class AttributeDefinitionUpdateActionUtilsTest {
         final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
             .of("foo", ofEnglish("x"), null)
             .isSearchable(false)
+            .build();
+
+        // test
+        final Optional<UpdateAction<ProductType>> result =
+            buildChangeIsSearchableUpdateAction(attributeDefinition, draft);
+
+        assertThat(result).contains(ChangeIsSearchable.of("foo", true));
+    }
+
+    @Test
+    public void buildChangeIsSearchableAction_WithNullSourceAndDefaultTarget_ShouldNotBuildAction() {
+        // Preparation
+        final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
+            .of(null, "foo", ofEnglish("x"), null)
+            .isSearchable(null)
+            .build();
+
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("foo", ofEnglish("x"), null)
+            .isSearchable(true)
             .build();
 
         // test
@@ -313,7 +313,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeInputHintAction_WithSourceNullValuesAndNonDefaultTargetValue_ShouldSetToDefault() {
+    public void buildChangeInputHintAction_WithSourceNullValuesAndNonDefaultTargetValue_ShouldBuildAction() {
         // Preparation
         final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
             .of(null, "foo", ofEnglish("x"), null)
@@ -332,7 +332,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeInputHintAction_WithSourceNullValuesAndDefaultTargetValue_ShouldSetToDefault() {
+    public void buildChangeInputHintAction_WithSourceNullValuesAndDefaultTargetValue_ShouldNotBuildAction() {
         // Preparation
         final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
             .of(null, "foo", ofEnglish("x"), null)
@@ -351,7 +351,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeAttributeConstraintAction_WithDifferentValues_ShouldReturnAction() {
+    public void buildChangeAttributeConstraintAction_WithDifferentValues_ShouldBuildAction() {
         // Preparation
         final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
             .of(null, "foo", ofEnglish("x"), null)
@@ -392,7 +392,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeAttributeConstraintAction_WithSourceNullValuesAndDefaultTarget_ShouldReturnAction() {
+    public void buildChangeAttributeConstraintAction_WithSourceNullValuesAndDefaultTarget_ShouldNotBuildAction() {
         // Preparation
         final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
             .of(null, "foo", ofEnglish("x"), null)
@@ -412,7 +412,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeAttributeConstraintAction_WithSourceNullValuesAndNonDefaultTarget_ShouldReturnAction() {
+    public void buildChangeAttributeConstraintAction_WithSourceNullValuesAndNonDefaultTarget_ShouldBuildAction() {
         // Preparation
         final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
             .of(null, "foo", ofEnglish("x"), null)
@@ -429,6 +429,50 @@ public class AttributeDefinitionUpdateActionUtilsTest {
             buildChangeAttributeConstraintUpdateAction(attributeDefinition, draft);
 
         assertThat(result).contains(ChangeAttributeConstraint.of(draft.getName(), AttributeConstraint.NONE));
+    }
+
+    @Test
+    public void buildActions_WithNullOptionalsAndDefaultValues_ShouldBuildNoActions() {
+        final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
+            .of(StringAttributeType.of(), "attributeName1", ofEnglish("label2"), true)
+            .attributeConstraint(null)
+            .inputHint(null)
+            .isSearchable(null)
+            .build();
+
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("attributeName1", ofEnglish("label2"), StringAttributeType.of())
+            .isRequired(true)
+            .build();
+
+
+        final List<UpdateAction<ProductType>> result = buildActions(attributeDefinition, attributeDefinitionDraft);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    public void buildActions_WithNonDefaultValuesForOptionalFields_ShouldBuildActions() {
+        final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
+            .of(StringAttributeType.of(), "attributeName1", ofEnglish("label2"), true)
+            .attributeConstraint(AttributeConstraint.SAME_FOR_ALL)
+            .inputHint(TextInputHint.MULTI_LINE)
+            .isSearchable(false)
+            .build();
+
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("attributeName1", ofEnglish("label2"), StringAttributeType.of())
+            .isRequired(true)
+            .build();
+
+
+        final List<UpdateAction<ProductType>> result = buildActions(attributeDefinition, attributeDefinitionDraft);
+
+        assertThat(result).containsExactlyInAnyOrder(
+            ChangeAttributeConstraint.of("attributeName1", AttributeConstraint.SAME_FOR_ALL),
+            ChangeInputHint.of("attributeName1", TextInputHint.MULTI_LINE),
+            ChangeIsSearchable.of("attributeName1", false)
+        );
     }
 
     @Test
