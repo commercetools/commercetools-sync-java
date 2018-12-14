@@ -6,6 +6,8 @@ import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.EnumValue;
+import io.sphere.sdk.models.LocalizedEnumValue;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.TextInputHint;
 import io.sphere.sdk.products.attributes.AttributeConstraint;
@@ -13,13 +15,17 @@ import io.sphere.sdk.products.attributes.AttributeDefinition;
 import io.sphere.sdk.products.attributes.AttributeDefinitionBuilder;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
+import io.sphere.sdk.products.attributes.EnumAttributeType;
 import io.sphere.sdk.products.attributes.LocalizedEnumAttributeType;
 import io.sphere.sdk.products.attributes.LocalizedStringAttributeType;
+import io.sphere.sdk.products.attributes.SetAttributeType;
 import io.sphere.sdk.products.attributes.StringAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import io.sphere.sdk.producttypes.commands.updateactions.AddAttributeDefinition;
+import io.sphere.sdk.producttypes.commands.updateactions.AddEnumValue;
+import io.sphere.sdk.producttypes.commands.updateactions.AddLocalizedEnumValue;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeConstraint;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeDefinitionLabel;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeOrder;
@@ -559,6 +565,267 @@ public class BuildAttributeDefinitionUpdateActionsTest {
         assertThat(updateActions).containsExactly(
             ChangeAttributeDefinitionLabel.of(attributeDefinitionDraftWithDifferentLabel.getName(),
                 attributeDefinitionDraftWithDifferentLabel.getLabel()));
+    }
+
+    @Test
+    public void buildAttributesUpdateActions_WithSetOfText_ShouldBuildActions() {
+
+        final AttributeDefinitionDraft newDefinition = AttributeDefinitionDraftBuilder
+            .of(SetAttributeType.of(StringAttributeType.of()), "a", ofEnglish("new_label"), true)
+            .build();
+        final ProductTypeDraft productTypeDraft = ProductTypeDraftBuilder
+            .of("foo", "name", "desc", singletonList(newDefinition))
+            .build();
+
+        final AttributeDefinition oldDefinition = AttributeDefinitionBuilder
+            .of("a", ofEnglish("old_label"), SetAttributeType.of(StringAttributeType.of()))
+            .build();
+        final ProductType productType = mock(ProductType.class);
+        when(productType.getAttributes()).thenReturn(singletonList(oldDefinition));
+
+        final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(productType,
+            productTypeDraft, SYNC_OPTIONS);
+
+        assertThat(updateActions)
+            .containsExactly(ChangeAttributeDefinitionLabel.of(newDefinition.getName(), newDefinition.getLabel()));
+
+    }
+
+    @Test
+    public void buildAttributesUpdateActions_WithSetOfSetOfText_ShouldBuildActions() {
+
+        final AttributeDefinitionDraft newDefinition = AttributeDefinitionDraftBuilder
+            .of(SetAttributeType.of(SetAttributeType.of(StringAttributeType.of())), "a", ofEnglish("new_label"), true)
+            .build();
+        final ProductTypeDraft productTypeDraft = ProductTypeDraftBuilder
+            .of("foo", "name", "desc", singletonList(newDefinition))
+            .build();
+
+        final AttributeDefinition oldDefinition = AttributeDefinitionBuilder
+            .of("a", ofEnglish("old_label"), SetAttributeType.of(SetAttributeType.of(StringAttributeType.of())))
+            .build();
+        final ProductType productType = mock(ProductType.class);
+        when(productType.getAttributes()).thenReturn(singletonList(oldDefinition));
+
+        final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(productType,
+            productTypeDraft, SYNC_OPTIONS);
+
+        assertThat(updateActions)
+            .containsExactly(ChangeAttributeDefinitionLabel.of(newDefinition.getName(), newDefinition.getLabel()));
+
+    }
+
+    @Test
+    public void buildAttributesUpdateActions_WithSetOfEnumsChanges_ShouldBuildCorrectActions() {
+        // preparation
+        final SetAttributeType newSetOfEnumType = SetAttributeType.of(
+            EnumAttributeType.of(singletonList(EnumValue.of("foo", "bar"))));
+
+        final AttributeDefinitionDraft newDefinition = AttributeDefinitionDraftBuilder
+            .of(SetAttributeType.of(newSetOfEnumType), "a", ofEnglish("new_label"), true)
+            .build();
+        final ProductTypeDraft productTypeDraft = ProductTypeDraftBuilder
+            .of("foo", "name", "desc", singletonList(newDefinition))
+            .build();
+
+
+        final SetAttributeType oldSetOfEnumType = SetAttributeType.of(EnumAttributeType.of(emptyList()));
+        final AttributeDefinition oldDefinition = AttributeDefinitionBuilder
+            .of("a", ofEnglish("new_label"), oldSetOfEnumType)
+            .build();
+        final ProductType productType = mock(ProductType.class);
+        when(productType.getAttributes()).thenReturn(singletonList(oldDefinition));
+
+        // test
+        final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(productType,
+            productTypeDraft, SYNC_OPTIONS);
+
+        // assertion
+        assertThat(updateActions).containsExactly(AddEnumValue.of("a", EnumValue.of("foo", "bar")));
+    }
+
+    @Test
+    public void buildAttributesUpdateActions_WithSetOfSetOfEnumsChanges_ShouldBuildCorrectActions() {
+        // preparation
+        final SetAttributeType newSetOfEnumType = SetAttributeType.of(SetAttributeType.of(
+            EnumAttributeType.of(singletonList(EnumValue.of("foo", "bar")))));
+
+        final AttributeDefinitionDraft newDefinition = AttributeDefinitionDraftBuilder
+            .of(SetAttributeType.of(newSetOfEnumType), "a", ofEnglish("new_label"), true)
+            .build();
+        final ProductTypeDraft productTypeDraft = ProductTypeDraftBuilder
+            .of("foo", "name", "desc", singletonList(newDefinition))
+            .build();
+
+
+        final SetAttributeType oldSetOfEnumType = SetAttributeType.of(
+            SetAttributeType.of(EnumAttributeType.of(emptyList())));
+        final AttributeDefinition oldDefinition = AttributeDefinitionBuilder
+            .of("a", ofEnglish("new_label"), oldSetOfEnumType)
+            .build();
+        final ProductType productType = mock(ProductType.class);
+        when(productType.getAttributes()).thenReturn(singletonList(oldDefinition));
+
+        // test
+        final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(productType,
+            productTypeDraft, SYNC_OPTIONS);
+
+        // assertion
+        assertThat(updateActions).containsExactly(AddEnumValue.of("a", EnumValue.of("foo", "bar")));
+    }
+
+    @Test
+    public void buildAttributesUpdateActions_WithSetOfIdenticalEnums_ShouldNotBuildActions() {
+        // preparation
+        final SetAttributeType newSetOfEnumType = SetAttributeType.of(
+            EnumAttributeType.of(singletonList(EnumValue.of("foo", "bar"))));
+
+        final AttributeDefinitionDraft newDefinition = AttributeDefinitionDraftBuilder
+            .of(SetAttributeType.of(newSetOfEnumType), "a", ofEnglish("new_label"), true)
+            .build();
+        final ProductTypeDraft productTypeDraft = ProductTypeDraftBuilder
+            .of("foo", "name", "desc", singletonList(newDefinition))
+            .build();
+
+
+        final SetAttributeType oldSetOfEnumType = SetAttributeType.of(EnumAttributeType.of(EnumValue.of("foo", "bar")));
+        final AttributeDefinition oldDefinition = AttributeDefinitionBuilder
+            .of("a", ofEnglish("new_label"), oldSetOfEnumType)
+            .build();
+        final ProductType productType = mock(ProductType.class);
+        when(productType.getAttributes()).thenReturn(singletonList(oldDefinition));
+
+        // test
+        final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(productType,
+            productTypeDraft, SYNC_OPTIONS);
+
+        // assertion
+        assertThat(updateActions).isEmpty();
+    }
+
+    @Test
+    public void buildAttributesUpdateActions_WithSetOfLEnumsChanges_ShouldBuildCorrectActions() {
+        // preparation
+        final SetAttributeType newSetOfLenumType = SetAttributeType.of(
+            LocalizedEnumAttributeType.of(singletonList(LocalizedEnumValue.of("foo", ofEnglish("bar")))));
+
+        final AttributeDefinitionDraft newDefinition = AttributeDefinitionDraftBuilder
+            .of(SetAttributeType.of(newSetOfLenumType), "a", ofEnglish("new_label"), true)
+            .build();
+        final ProductTypeDraft productTypeDraft = ProductTypeDraftBuilder
+            .of("foo", "name", "desc", singletonList(newDefinition))
+            .build();
+
+        final SetAttributeType oldSetOfLenumType = SetAttributeType.of(SetAttributeType.of(
+            LocalizedEnumAttributeType.of(emptyList())));
+
+        final AttributeDefinition oldDefinition = AttributeDefinitionBuilder
+            .of("a", ofEnglish("new_label"), oldSetOfLenumType)
+            .build();
+        final ProductType productType = mock(ProductType.class);
+        when(productType.getAttributes()).thenReturn(singletonList(oldDefinition));
+
+        // test
+        final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(productType,
+            productTypeDraft, SYNC_OPTIONS);
+
+        // assertion
+        assertThat(updateActions)
+            .containsExactly(AddLocalizedEnumValue.of("a", LocalizedEnumValue.of("foo", ofEnglish("bar"))));
+    }
+
+    @Test
+    public void buildAttributesUpdateActions_WithSetOfSetOfLEnumsChanges_ShouldBuildCorrectActions() {
+        // preparation
+        final SetAttributeType newSetOfLenumType = SetAttributeType.of(SetAttributeType.of(
+            LocalizedEnumAttributeType.of(singletonList(LocalizedEnumValue.of("foo", ofEnglish("bar"))))));
+
+        final AttributeDefinitionDraft newDefinition = AttributeDefinitionDraftBuilder
+            .of(SetAttributeType.of(newSetOfLenumType), "a", ofEnglish("new_label"), true)
+            .build();
+        final ProductTypeDraft productTypeDraft = ProductTypeDraftBuilder
+            .of("foo", "name", "desc", singletonList(newDefinition))
+            .build();
+
+        final SetAttributeType oldSetOfLenumType = SetAttributeType.of(SetAttributeType.of(SetAttributeType.of(
+            LocalizedEnumAttributeType.of(emptyList()))));
+
+        final AttributeDefinition oldDefinition = AttributeDefinitionBuilder
+            .of("a", ofEnglish("new_label"), oldSetOfLenumType)
+            .build();
+        final ProductType productType = mock(ProductType.class);
+        when(productType.getAttributes()).thenReturn(singletonList(oldDefinition));
+
+        // test
+        final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(productType,
+            productTypeDraft, SYNC_OPTIONS);
+
+        // assertion
+        assertThat(updateActions)
+            .containsExactly(AddLocalizedEnumValue.of("a", LocalizedEnumValue.of("foo", ofEnglish("bar"))));
+    }
+
+    @Test
+    public void buildAttributesUpdateActions_WithSetOfIdenticalLEnums_ShouldBuildNoActions() {
+        // preparation
+        final SetAttributeType newSetOfLenumType = SetAttributeType.of(
+            LocalizedEnumAttributeType.of(singletonList(LocalizedEnumValue.of("foo", ofEnglish("bar")))));
+
+        final AttributeDefinitionDraft newDefinition = AttributeDefinitionDraftBuilder
+            .of(SetAttributeType.of(newSetOfLenumType), "a", ofEnglish("new_label"), true)
+            .build();
+        final ProductTypeDraft productTypeDraft = ProductTypeDraftBuilder
+            .of("foo", "name", "desc", singletonList(newDefinition))
+            .build();
+
+        final SetAttributeType oldSetOfLenumType = SetAttributeType.of(SetAttributeType.of(
+            LocalizedEnumAttributeType.of(singletonList(LocalizedEnumValue.of("foo", ofEnglish("bar"))))));
+
+        final AttributeDefinition oldDefinition = AttributeDefinitionBuilder
+            .of("a", ofEnglish("new_label"), oldSetOfLenumType)
+            .build();
+        final ProductType productType = mock(ProductType.class);
+        when(productType.getAttributes()).thenReturn(singletonList(oldDefinition));
+
+        // test
+        final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(productType,
+            productTypeDraft, SYNC_OPTIONS);
+
+        // assertion
+        assertThat(updateActions).isEmpty();
+    }
+
+    @Test
+    public void buildAttributesUpdateActions_WithSetOfLEnumsChangesAndDefinitionLabelChange_ShouldBuildCorrectActions() {
+        // preparation
+        final SetAttributeType newSetOfLenumType = SetAttributeType.of(
+            LocalizedEnumAttributeType.of(singletonList(LocalizedEnumValue.of("foo", ofEnglish("bar")))));
+
+        final AttributeDefinitionDraft newDefinition = AttributeDefinitionDraftBuilder
+            .of(SetAttributeType.of(newSetOfLenumType), "a", ofEnglish("new_label"), true)
+            .build();
+        final ProductTypeDraft productTypeDraft = ProductTypeDraftBuilder
+            .of("foo", "name", "desc", singletonList(newDefinition))
+            .build();
+
+        final SetAttributeType oldSetOfLenumType = SetAttributeType.of(SetAttributeType.of(
+            LocalizedEnumAttributeType.of(emptyList())));
+
+        final AttributeDefinition oldDefinition = AttributeDefinitionBuilder
+            .of("a", ofEnglish("old_label"), oldSetOfLenumType)
+            .build();
+        final ProductType productType = mock(ProductType.class);
+        when(productType.getAttributes()).thenReturn(singletonList(oldDefinition));
+
+        // test
+        final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(productType,
+            productTypeDraft, SYNC_OPTIONS);
+
+        // assertion
+        assertThat(updateActions)
+            .containsExactlyInAnyOrder(
+                AddLocalizedEnumValue.of("a", LocalizedEnumValue.of("foo", ofEnglish("bar"))),
+                ChangeAttributeDefinitionLabel.of("a", ofEnglish("new_label")));
     }
 
 }
