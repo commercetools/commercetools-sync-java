@@ -20,8 +20,11 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import io.sphere.sdk.producttypes.commands.updateactions.AddAttributeDefinition;
+import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeConstraint;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeDefinitionLabel;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeOrder;
+import io.sphere.sdk.producttypes.commands.updateactions.ChangeInputHint;
+import io.sphere.sdk.producttypes.commands.updateactions.ChangeIsSearchable;
 import io.sphere.sdk.producttypes.commands.updateactions.RemoveAttributeDefinition;
 import org.junit.Test;
 
@@ -150,20 +153,80 @@ public class BuildAttributeDefinitionUpdateActionsTest {
 
     @Test
     public void buildAttributesUpdateActions_WithIdenticalAttributes_ShouldNotBuildUpdateActions() {
-        final ProductType oldProductType = readObjectFromResource(PRODUCT_TYPE_WITH_ATTRIBUTES_ABC, ProductType.class);
+        final ProductType oldProductType = mock(ProductType.class);
+        when(oldProductType.getAttributes())
+            .thenReturn(asList(ATTRIBUTE_DEFINITION_A, ATTRIBUTE_DEFINITION_B, ATTRIBUTE_DEFINITION_C));
 
-        final ProductTypeDraft newProductTypeDraft = readObjectFromResource(
-            PRODUCT_TYPE_WITH_ATTRIBUTES_ABC,
-            ProductTypeDraft.class
-        );
+        final AttributeDefinitionDraft attributeA = AttributeDefinitionDraftBuilder
+            .of(ATTRIBUTE_DEFINITION_A.getAttributeType(), ATTRIBUTE_DEFINITION_A.getName(),
+                ATTRIBUTE_DEFINITION_A.getLabel(), ATTRIBUTE_DEFINITION_A.isRequired())
+            .build();
+
+        final AttributeDefinitionDraft attributeB = AttributeDefinitionDraftBuilder
+            .of(ATTRIBUTE_DEFINITION_B.getAttributeType(), ATTRIBUTE_DEFINITION_B.getName(),
+                ATTRIBUTE_DEFINITION_B.getLabel(), ATTRIBUTE_DEFINITION_B.isRequired())
+            .build();
+
+        final AttributeDefinitionDraft attributeC = AttributeDefinitionDraftBuilder
+            .of(ATTRIBUTE_DEFINITION_C.getAttributeType(), ATTRIBUTE_DEFINITION_C.getName(),
+                ATTRIBUTE_DEFINITION_C.getLabel(), ATTRIBUTE_DEFINITION_C.isRequired())
+            .build();
+
+        final ProductTypeDraft productTypeDraft = ProductTypeDraftBuilder
+            .of(oldProductType.getKey(), oldProductType.getName(), oldProductType.getDescription(),
+                asList(attributeA, attributeB, attributeC))
+            .build();
 
         final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(
             oldProductType,
-            newProductTypeDraft,
+            productTypeDraft,
             SYNC_OPTIONS
         );
 
         assertThat(updateActions).isEmpty();
+    }
+
+    @Test
+    public void buildAttributesUpdateActions_WithChangedAttributes_ShouldBuildUpdateActions() {
+        final ProductType oldProductType = mock(ProductType.class);
+        when(oldProductType.getAttributes())
+            .thenReturn(asList(ATTRIBUTE_DEFINITION_A, ATTRIBUTE_DEFINITION_B, ATTRIBUTE_DEFINITION_C));
+
+        final AttributeDefinitionDraft attributeA = AttributeDefinitionDraftBuilder
+            .of(ATTRIBUTE_DEFINITION_A.getAttributeType(), ATTRIBUTE_DEFINITION_A.getName(),
+                ATTRIBUTE_DEFINITION_A.getLabel(), ATTRIBUTE_DEFINITION_A.isRequired())
+            .isSearchable(false)
+            .build();
+
+        final AttributeDefinitionDraft attributeB = AttributeDefinitionDraftBuilder
+            .of(ATTRIBUTE_DEFINITION_B.getAttributeType(), ATTRIBUTE_DEFINITION_B.getName(),
+                ofEnglish("newLabel"), ATTRIBUTE_DEFINITION_B.isRequired())
+            .inputHint(TextInputHint.MULTI_LINE)
+            .build();
+
+        final AttributeDefinitionDraft attributeC = AttributeDefinitionDraftBuilder
+            .of(ATTRIBUTE_DEFINITION_C.getAttributeType(), ATTRIBUTE_DEFINITION_C.getName(),
+                ATTRIBUTE_DEFINITION_C.getLabel(), ATTRIBUTE_DEFINITION_C.isRequired())
+            .attributeConstraint(AttributeConstraint.SAME_FOR_ALL)
+            .build();
+
+        final ProductTypeDraft productTypeDraft = ProductTypeDraftBuilder
+            .of(oldProductType.getKey(), oldProductType.getName(), oldProductType.getDescription(),
+                asList(attributeA, attributeB, attributeC))
+            .build();
+
+        final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(
+            oldProductType,
+            productTypeDraft,
+            SYNC_OPTIONS
+        );
+
+        assertThat(updateActions).containsExactlyInAnyOrder(
+            ChangeIsSearchable.of(ATTRIBUTE_DEFINITION_A.getName(), false),
+            ChangeInputHint.of(ATTRIBUTE_DEFINITION_B.getName(), TextInputHint.MULTI_LINE),
+            ChangeAttributeConstraint.of(ATTRIBUTE_DEFINITION_C.getName(), AttributeConstraint.SAME_FOR_ALL),
+            ChangeAttributeDefinitionLabel.of(ATTRIBUTE_DEFINITION_B.getName(), ofEnglish("newLabel"))
+        );
     }
 
     @Test
@@ -273,7 +336,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithDifferent_ShouldBuildChangeAttributeOrderAction() {
+    public void buildAttributesUpdateActions_WithDifferentOrder_ShouldBuildChangeAttributeOrderAction() {
         final ProductType oldProductType = readObjectFromResource(PRODUCT_TYPE_WITH_ATTRIBUTES_ABC, ProductType.class);
 
         final ProductTypeDraft newProductTypeDraft = readObjectFromResource(
