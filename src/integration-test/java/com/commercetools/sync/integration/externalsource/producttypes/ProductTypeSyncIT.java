@@ -256,7 +256,7 @@ public class ProductTypeSyncIT {
     }
 
     @Test
-    public void sync_WithUpdatedProductType_WithUpdatedAttributeDefinition_ShouldUpdateProductTypeUpdatingAttribute() {
+    public void sync_WithUpdatedAttributeDefinition_ShouldUpdateProductTypeUpdatingAttribute() {
         // Updating ATTRIBUTE_DEFINITION_1 (name = "attr_name_1") changing the label, attribute constraint, input tip,
         // input hint, isSearchable fields.
         final AttributeDefinitionDraft attributeDefinitionDraftUpdated = AttributeDefinitionDraftBuilder
@@ -266,7 +266,7 @@ public class ProductTypeSyncIT {
                 ofEnglish("attr_label_updated"),
                 true
             )
-            .attributeConstraint(AttributeConstraint.COMBINATION_UNIQUE)
+            .attributeConstraint(AttributeConstraint.NONE)
             .inputTip(ofEnglish("inputTip_updated"))
             .inputHint(TextInputHint.MULTI_LINE)
             .isSearchable(false)
