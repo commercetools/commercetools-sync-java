@@ -70,8 +70,8 @@ final class AttributeDefinitionUpdateActionUtils {
      * result. If both the {@link AttributeDefinition} and the {@link AttributeDefinitionDraft} have identical
      * enum values, then no update action is needed and hence an empty {@link List} is returned.
      *
-     * <p>Note: This method assumes that both types are identical and either of EnumAttributeType or
-     * LocalizedEnumType or set of either or set of set of (etc..) of either. Otherwise, an empty list is returned.</p>
+     * <p> Note: This method assumes that both types are identical and either of Enum attribute type or
+     * LocalizedEnum type or set of either or set of set of (etc..) of either. Otherwise, an empty list is returned.</p>
      *
      * @param oldAttributeDefinition      the attribute definition which should be updated.
      * @param newAttributeDefinitionDraft the new attribute definition draft where we get the new fields.
