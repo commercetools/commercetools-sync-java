@@ -5,6 +5,8 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.models.LocalizedEnumValue;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.TextInputHint;
+import io.sphere.sdk.products.attributes.AttributeConstraint;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.EnumAttributeType;
@@ -25,6 +27,7 @@ import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.b
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static com.commercetools.sync.producttypes.utils.LocalizedEnumValueUpdateActionUtils.buildLocalizedEnumValuesUpdateActions;
 import static com.commercetools.sync.producttypes.utils.PlainEnumValueUpdateActionUtils.buildEnumValuesUpdateActions;
+import static java.util.Optional.ofNullable;
 
 /**
  * This class is only meant for the internal use of the commercetools-sync-java library.
@@ -160,6 +163,9 @@ final class AttributeDefinitionUpdateActionUtils {
      * an {@link Optional}. If both the {@link AttributeDefinition} and the {@link AttributeDefinitionDraft} have the
      * same 'isSearchable' field, then no update action is needed and hence an empty {@link Optional} is returned.
      *
+     * <p>Note: A {@code null} {@code isSearchable} value in the {@link AttributeDefinitionDraft} is treated as a
+     * {@code true} value which is the default value of CTP.
+     *
      * @param oldAttributeDefinition the attribute definition which should be updated.
      * @param newAttributeDefinition the attribute definition draft where we get the new 'isSearchable' field.
      * @return A filled optional with the update action or an empty optional if the 'isSearchable' fields are identical.
@@ -169,8 +175,10 @@ final class AttributeDefinitionUpdateActionUtils {
         @Nonnull final AttributeDefinition oldAttributeDefinition,
         @Nonnull final AttributeDefinitionDraft newAttributeDefinition) {
 
-        return buildUpdateAction(oldAttributeDefinition.isSearchable(), newAttributeDefinition.isSearchable(),
-            () -> ChangeIsSearchable.of(oldAttributeDefinition.getName(), newAttributeDefinition.isSearchable())
+        final Boolean searchable = ofNullable(newAttributeDefinition.isSearchable()).orElse(true);
+
+        return buildUpdateAction(oldAttributeDefinition.isSearchable(), searchable,
+            () -> ChangeIsSearchable.of(oldAttributeDefinition.getName(), searchable)
         );
     }
 
@@ -179,6 +187,9 @@ final class AttributeDefinitionUpdateActionUtils {
      * an {@link UpdateAction}&lt;{@link ProductType}&gt; as a result in an {@link Optional}. If both the
      * {@link AttributeDefinition} and the {@link AttributeDefinitionDraft} have the same input hints, then no update
      * action is needed and hence an empty {@link Optional} is returned.
+     *
+     * <p>Note: A {@code null} {@code inputHint} value in the {@link AttributeDefinitionDraft} is treated as a
+     * {@code TextInputHint#SINGLE_LINE} value which is the default value of CTP.
      *
      * @param oldAttributeDefinition the attribute definition which should be updated.
      * @param newAttributeDefinition the attribute definition draft where we get the new input hint.
@@ -189,8 +200,11 @@ final class AttributeDefinitionUpdateActionUtils {
         @Nonnull final AttributeDefinition oldAttributeDefinition,
         @Nonnull final AttributeDefinitionDraft newAttributeDefinition) {
 
-        return buildUpdateAction(oldAttributeDefinition.getInputHint(), newAttributeDefinition.getInputHint(),
-            () -> ChangeInputHint.of(oldAttributeDefinition.getName(), newAttributeDefinition.getInputHint())
+        final TextInputHint inputHint = ofNullable(newAttributeDefinition.getInputHint())
+            .orElse(TextInputHint.SINGLE_LINE);
+
+        return buildUpdateAction(oldAttributeDefinition.getInputHint(), inputHint,
+            () -> ChangeInputHint.of(oldAttributeDefinition.getName(), inputHint)
         );
     }
 
@@ -199,6 +213,9 @@ final class AttributeDefinitionUpdateActionUtils {
      * and returns an {@link UpdateAction}&lt;{@link ProductType}&gt; as a result in an {@link Optional}. If both the
      * {@link AttributeDefinition} and the {@link AttributeDefinitionDraft} have the same attribute constraints, then
      * no update action is needed and hence an empty {@link Optional} is returned.
+     *
+     * <p>Note: A {@code null} {@code AttributeConstraint} value in the {@link AttributeDefinitionDraft} is treated as a
+     * {@code AttributeConstraint#NONE} value which is the default value of CTP.
      *
      * @param oldAttributeDefinition the attribute definition which should be updated.
      * @param newAttributeDefinition the attribute definition draft where we get the new attribute constraint.
@@ -209,10 +226,13 @@ final class AttributeDefinitionUpdateActionUtils {
         @Nonnull final AttributeDefinition oldAttributeDefinition,
         @Nonnull final AttributeDefinitionDraft newAttributeDefinition) {
 
+        final AttributeConstraint attributeConstraint = ofNullable(newAttributeDefinition.getAttributeConstraint())
+            .orElse(AttributeConstraint.NONE);
+
         return buildUpdateAction(oldAttributeDefinition.getAttributeConstraint(),
-            newAttributeDefinition.getAttributeConstraint(),
+            attributeConstraint,
             () -> ChangeAttributeConstraint.of(oldAttributeDefinition.getName(),
-                newAttributeDefinition.getAttributeConstraint())
+                attributeConstraint)
         );
     }
 
