@@ -20,6 +20,7 @@ import io.sphere.sdk.products.attributes.AttributeDefinitionDraftDsl;
 import io.sphere.sdk.products.attributes.EnumAttributeType;
 import io.sphere.sdk.products.attributes.LocalizedEnumAttributeType;
 import io.sphere.sdk.products.attributes.MoneyAttributeType;
+import io.sphere.sdk.products.attributes.SetAttributeType;
 import io.sphere.sdk.products.attributes.StringAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
@@ -35,6 +36,7 @@ import org.junit.Test;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -769,7 +771,6 @@ public class ProductTypeSyncIT {
         return spyClient;
     }
 
-
     @Test
     public void sync_WithSeveralBatches_ShouldReturnProperStatistics() {
         // Default batch size is 50 (check ProductTypeSyncOptionsBuilder) so we have 2 batches of 50
@@ -794,6 +795,89 @@ public class ProductTypeSyncIT {
             .toCompletableFuture().join();
 
         assertThat(productTypeSyncStatistics).hasValues(100, 100, 0, 0);
+    }
+
+    @Test
+    public void sync_WithSetOfEnumsAndSetOfLenumsChanges_ShouldUpdateProductType() {
+        // preparation
+        final AttributeDefinitionDraft withSetOfEnumsOld = AttributeDefinitionDraftBuilder
+            .of(
+                SetAttributeType.of(EnumAttributeType.of(emptyList())),
+                "foo",
+                ofEnglish("foo"),
+                false
+            )
+            .build();
+
+        final AttributeDefinitionDraft withSetOfSetOfLEnumsOld = AttributeDefinitionDraftBuilder
+            .of(
+                SetAttributeType.of(
+                    LocalizedEnumAttributeType.of(singletonList(LocalizedEnumValue.of("foo", ofEnglish("bar"))))),
+                "bar",
+                ofEnglish("bar"),
+                false
+            )
+            .build();
+
+        final ProductTypeDraft oldDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
+            "withSetofEnums",
+            "withSetofEnums",
+            "withSetofEnums",
+            asList(withSetOfEnumsOld, withSetOfSetOfLEnumsOld)
+        );
+
+
+        CTP_TARGET_CLIENT.execute(ProductTypeCreateCommand.of(oldDraft)).toCompletableFuture().join();
+
+
+        final AttributeDefinitionDraft withSetOfEnumsNew = AttributeDefinitionDraftBuilder
+            .of(
+                SetAttributeType.of(EnumAttributeType.of(singletonList(EnumValue.of("foo", "bar")))),
+                "foo",
+                ofEnglish("foo"),
+                false
+            )
+            .build();
+
+        final AttributeDefinitionDraft withSetOfSetOfLEnumsNew = AttributeDefinitionDraftBuilder
+            .of(
+                SetAttributeType.of(
+                    LocalizedEnumAttributeType.of(
+                        singletonList(LocalizedEnumValue.of("foo", ofEnglish("bar").plus(Locale.GERMAN, "bar"))))),
+                "bar",
+                ofEnglish("bar"),
+                false
+            )
+            .build();
+
+
+        final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
+            "withSetOfEnums",
+            "withSetOfEnums",
+            "withSetOfEnums",
+            asList(withSetOfEnumsNew, withSetOfSetOfLEnumsNew)
+        );
+
+        final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .build();
+
+        final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
+
+        // tests
+        final ProductTypeSyncStatistics productTypeSyncStatistics = productTypeSync
+            .sync(singletonList(newProductTypeDraft))
+            .toCompletableFuture().join();
+
+        // assertions
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0);
+
+        final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, "withSetOfEnums");
+
+        assertThat(oldProductTypeAfter).hasValueSatisfying(productType ->
+            assertAttributesAreEqual(productType.getAttributes(),
+                asList(withSetOfEnumsNew, withSetOfSetOfLEnumsNew)
+            ));
     }
 
     private static void assertAttributesAreEqual(@Nonnull final List<AttributeDefinition> attributes,

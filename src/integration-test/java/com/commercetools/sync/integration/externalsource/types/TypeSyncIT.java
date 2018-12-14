@@ -17,6 +17,7 @@ import io.sphere.sdk.types.EnumFieldType;
 import io.sphere.sdk.types.FieldDefinition;
 import io.sphere.sdk.types.LocalizedEnumFieldType;
 import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
+import io.sphere.sdk.types.SetFieldType;
 import io.sphere.sdk.types.StringFieldType;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
@@ -54,9 +55,11 @@ import static com.commercetools.sync.integration.commons.utils.TypeITUtils.TYPE_
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.TYPE_NAME_2;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.getTypeByKey;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.populateTargetProject;
+import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.any;
@@ -745,4 +748,68 @@ public class TypeSyncIT {
         return spyClient;
     }
 
+    @Test
+    public void sync_WithSetOfEnumsAndSetOfLenumsChanges_ShouldUpdateTypeAddingFieldDefinition() {
+        //preparation
+        final FieldDefinition withSetOfEnumsOld = FieldDefinition.of(
+            SetFieldType.of(
+                EnumFieldType.of(emptyList())),
+            "foo",
+            ofEnglish("foo"),
+            false);
+
+        final FieldDefinition withSetOfSetOfLEnumsOld = FieldDefinition.of(
+            SetFieldType.of(
+                LocalizedEnumFieldType.of(emptyList())),
+            "bar",
+            ofEnglish("bar"),
+            false);
+
+        final TypeDraft oldTypeDraft = TypeDraftBuilder.of("withSetOfEnums", ofEnglish("withSetOfEnums"),
+            ResourceTypeIdsSetBuilder.of().addCategories().build())
+                                                       .fieldDefinitions(
+                                                           asList(withSetOfEnumsOld, withSetOfSetOfLEnumsOld))
+                                                       .build();
+
+        CTP_TARGET_CLIENT.execute(TypeCreateCommand.of(oldTypeDraft)).toCompletableFuture().join();
+
+        final FieldDefinition withSetOfEnumsNew = FieldDefinition.of(
+            SetFieldType.of(
+                EnumFieldType.of(singletonList(EnumValue.of("foo", "bar")))),
+            "foo",
+            ofEnglish("foo"),
+            false);
+
+        final FieldDefinition withSetOfSetOfLEnumsNew = FieldDefinition.of(
+            SetFieldType.of(LocalizedEnumFieldType.of(
+                singletonList(LocalizedEnumValue.of("foo", ofEnglish("bar"))))), "bar", ofEnglish("bar"), false);
+
+        final TypeDraft newTypeDraft = TypeDraftBuilder.of("withSetOfEnums", ofEnglish("withSetOfEnums"),
+            ResourceTypeIdsSetBuilder.of().addCategories().build())
+                                                       .fieldDefinitions(
+                                                           asList(withSetOfEnumsNew, withSetOfSetOfLEnumsNew))
+                                                       .build();
+
+
+        final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .build();
+
+        final TypeSync typeSync = new TypeSync(typeSyncOptions);
+
+        //test
+        final TypeSyncStatistics typeSyncStatistics = typeSync
+            .sync(singletonList(newTypeDraft))
+            .toCompletableFuture()
+            .join();
+
+        //assertions
+        assertThat(typeSyncStatistics).hasValues(1, 0, 1, 0);
+
+        final Optional<Type> oldTypeAfter = getTypeByKey(CTP_TARGET_CLIENT, "withSetOfEnums");
+
+        assertThat(oldTypeAfter).hasValueSatisfying(type ->
+            assertFieldDefinitionsAreEqual(type.getFieldDefinitions(),
+                asList(withSetOfEnumsNew, withSetOfSetOfLEnumsNew)));
+    }
 }
