@@ -820,9 +820,9 @@ public class ProductTypeSyncIT {
             .build();
 
         final ProductTypeDraft oldDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
-            "withSetofEnums",
-            "withSetofEnums",
-            "withSetofEnums",
+            "withSetOfEnums",
+            "withSetOfEnums",
+            "withSetOfEnums",
             asList(withSetOfEnumsOld, withSetOfSetOfLEnumsOld)
         );
 
