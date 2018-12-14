@@ -534,7 +534,8 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     @Test
     public void buildActions_WithSetOfSetOfStringAttributeTypesWithDefLabelChanges_ShouldBuildChangeLabelAction() {
         final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
-            .of("attributeName1", ofEnglish("label1"), SetAttributeType.of(StringAttributeType.of()))
+            .of("attributeName1", ofEnglish("label1"),
+                SetAttributeType.of(SetAttributeType.of(StringAttributeType.of())))
             .build();
 
         final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
