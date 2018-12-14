@@ -831,5 +831,4 @@ public class BuildAttributeDefinitionUpdateActionsTest {
                 AddLocalizedEnumValue.of("a", LocalizedEnumValue.of("foo", ofEnglish("bar"))),
                 ChangeAttributeDefinitionLabel.of("a", ofEnglish("new_label")));
     }
-
 }
