@@ -91,9 +91,6 @@ public class ProductTypeSyncIT {
     @Test
     public void sync_WithUpdatedProductType_ShouldUpdateProductType() {
         // preparation
-        final Optional<ProductType> oldProductTypeBefore = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
-
-
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
             PRODUCT_TYPE_KEY_1,
             PRODUCT_TYPE_NAME_2,
