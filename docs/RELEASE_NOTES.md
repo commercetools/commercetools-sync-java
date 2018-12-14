@@ -33,9 +33,8 @@
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.1.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.1.0)
 
-- 📋 **Documentation** (2)
-    - *Commons* - Removed the dependency on the commercetools-jvm-sdk from the Quickstart guide.
-    - *Commons* - Reword the prerequisite of the commercetools-jvm-sdk dependency in the Readmes.
+- 📋 **Documentation** (1)
+    - *Commons* - Add link to documentation pages in README of the github repo.
 
 !-->
 
