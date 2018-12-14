@@ -39,7 +39,7 @@ public final class AttributeDefinitionCustomBuilder {
                 .orElse(TextInputHint.SINGLE_LINE)) // Default value is SINGLE_LINE according to commercetools API
             .isSearchable(
                 ofNullable(attributeDefinitionDraft.isSearchable())
-                .orElse(false)) // Default value is false according to commercetools API
+                .orElse(true)) // Default value is true according to commercetools API
             .build();
     }
 
