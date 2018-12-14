@@ -2,8 +2,6 @@ package com.commercetools.sync.integration.commons.utils;
 
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.TextInputHint;
-import io.sphere.sdk.products.attributes.AttributeConstraint;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
 import io.sphere.sdk.products.attributes.BooleanAttributeType;
@@ -50,10 +48,7 @@ public final class ProductTypeITUtils {
             LocalizedString.ofEnglish("attr_label_1"),
             true
         )
-        .attributeConstraint(AttributeConstraint.NONE)
         .inputTip(LocalizedString.ofEnglish("inputTip1"))
-        .inputHint(TextInputHint.SINGLE_LINE)
-        .isSearchable(false)
         .build();
 
     public static final AttributeDefinitionDraft ATTRIBUTE_DEFINITION_DRAFT_2 = AttributeDefinitionDraftBuilder
@@ -63,10 +58,7 @@ public final class ProductTypeITUtils {
             LocalizedString.ofEnglish("attr_label_2"),
             true
         )
-        .attributeConstraint(AttributeConstraint.NONE)
         .inputTip(LocalizedString.ofEnglish("inputTip2"))
-        .inputHint(TextInputHint.SINGLE_LINE)
-        .isSearchable(false)
         .build();
 
     public static final AttributeDefinitionDraft ATTRIBUTE_DEFINITION_DRAFT_3 = AttributeDefinitionDraftBuilder
@@ -76,10 +68,7 @@ public final class ProductTypeITUtils {
             LocalizedString.ofEnglish("attr_label_3"),
             true
         )
-        .attributeConstraint(AttributeConstraint.NONE)
         .inputTip(LocalizedString.ofEnglish("inputTip3"))
-        .inputHint(TextInputHint.SINGLE_LINE)
-        .isSearchable(false)
         .build();
 
 

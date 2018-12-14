@@ -91,7 +91,6 @@ public class ProductTypeSyncIT {
     public void sync_WithUpdatedProductType_ShouldUpdateProductType() {
         // preparation
         final Optional<ProductType> oldProductTypeBefore = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
-        assertThat(oldProductTypeBefore).isNotEmpty();
 
 
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
@@ -267,10 +266,10 @@ public class ProductTypeSyncIT {
                 ofEnglish("attr_label_updated"),
                 true
             )
-            .attributeConstraint(AttributeConstraint.NONE)
+            .attributeConstraint(AttributeConstraint.COMBINATION_UNIQUE)
             .inputTip(ofEnglish("inputTip_updated"))
             .inputHint(TextInputHint.MULTI_LINE)
-            .isSearchable(true)
+            .isSearchable(false)
             .build();
 
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
