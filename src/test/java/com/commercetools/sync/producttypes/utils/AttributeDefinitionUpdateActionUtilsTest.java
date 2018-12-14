@@ -99,124 +99,355 @@ public class AttributeDefinitionUpdateActionUtilsTest {
 
     @Test
     public void buildChangeLabelAction_WithDifferentValues_ShouldReturnAction() {
-        final Optional<UpdateAction<ProductType>> result = buildChangeLabelUpdateAction(old, newDifferent);
+        // Preparation
+        final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
+            .of(null, "foo", ofEnglish("x"), null)
+            .build();
 
-        assertThat(result).contains(ChangeAttributeDefinitionLabel.of(old.getName(), newDifferent.getLabel()));
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("foo", ofEnglish("y"), null)
+            .build();
+
+        // test
+        final Optional<UpdateAction<ProductType>> result = buildChangeLabelUpdateAction(attributeDefinition, draft);
+
+        //assertion
+        assertThat(result).contains(ChangeAttributeDefinitionLabel.of(attributeDefinition.getName(), ofEnglish("x")));
     }
 
     @Test
     public void buildChangeLabelAction_WithSameValues_ShouldReturnEmptyOptional() {
-        final Optional<UpdateAction<ProductType>> result = buildChangeLabelUpdateAction(old, newSame);
+        // Preparation
+        final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
+            .of(null, "foo", ofEnglish("x"), null)
+            .build();
 
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("foo", ofEnglish("x"), null)
+            .build();
+
+        // test
+        final Optional<UpdateAction<ProductType>> result = buildChangeLabelUpdateAction(attributeDefinition, draft);
+
+        //assertion
         assertThat(result).isEmpty();
     }
 
     @Test
     public void buildSetInputTipAction_WithDifferentValues_ShouldReturnAction() {
-        final Optional<UpdateAction<ProductType>> result = buildSetInputTipUpdateAction(old, newDifferent);
+        // Preparation
+        final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
+            .of(null, "foo", ofEnglish("x"), null)
+            .inputTip(ofEnglish("foo"))
+            .build();
 
-        assertThat(result).contains(SetInputTip.of(old.getName(), newDifferent.getInputTip()));
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("foo", ofEnglish("x"), null)
+            .inputTip(ofEnglish("bar"))
+            .build();
+
+        // test
+        final Optional<UpdateAction<ProductType>> result = buildSetInputTipUpdateAction(attributeDefinition, draft);
+
+        //assertion
+        assertThat(result).contains(SetInputTip.of(attributeDefinition.getName(), ofEnglish("foo")));
     }
 
     @Test
     public void buildSetInputTipAction_WithSameValues_ShouldReturnEmptyOptional() {
-        final Optional<UpdateAction<ProductType>> result = buildSetInputTipUpdateAction(old, newSame);
+        // Preparation
+        final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
+            .of(null, "foo", ofEnglish("x"), null)
+            .inputTip(ofEnglish("foo"))
+            .build();
 
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("foo", ofEnglish("x"), null)
+            .inputTip(ofEnglish("foo"))
+            .build();
+
+        // test
+        final Optional<UpdateAction<ProductType>> result = buildSetInputTipUpdateAction(attributeDefinition, draft);
+
+        //assertion
         assertThat(result).isEmpty();
     }
 
     @Test
     public void buildSetInputTipAction_WithSourceNullValues_ShouldReturnAction() {
-        final Optional<UpdateAction<ProductType>> result = buildSetInputTipUpdateAction(oldNullValues, newDifferent);
+        // Preparation
+        final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
+            .of(null, "foo", ofEnglish("x"), null)
+            .inputTip(null)
+            .build();
 
-        assertThat(result).contains(SetInputTip.of(oldNullValues.getName(), newDifferent.getInputTip()));
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("foo", ofEnglish("x"), null)
+            .inputTip(ofEnglish("foo"))
+            .build();
+
+        // test
+        final Optional<UpdateAction<ProductType>> result = buildSetInputTipUpdateAction(attributeDefinition, draft);
+
+        //assertion
+        assertThat(result).contains(SetInputTip.of(attributeDefinition.getName(), null));
     }
 
     @Test
     public void buildSetInputTipAction_WithTargetNullValues_ShouldReturnAction() {
-        final Optional<UpdateAction<ProductType>> result = buildSetInputTipUpdateAction(old, newNullValues);
+        // Preparation
+        final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
+            .of(null, "foo", ofEnglish("x"), null)
+            .inputTip(ofEnglish("foo"))
+            .build();
 
-        assertThat(result).contains(SetInputTip.of(old.getName(), newNullValues.getInputTip()));
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("foo", ofEnglish("x"), null)
+            .inputTip(null)
+            .build();
+
+        // test
+        final Optional<UpdateAction<ProductType>> result = buildSetInputTipUpdateAction(attributeDefinition, draft);
+
+        //assertion
+        assertThat(result).contains(SetInputTip.of(attributeDefinition.getName(), ofEnglish("foo")));
     }
 
     @Test
     public void buildChangeIsSearchableAction_WithDifferentValues_ShouldReturnAction() {
-        final Optional<UpdateAction<ProductType>> result = buildChangeIsSearchableUpdateAction(old, newDifferent);
+        // Preparation
+        final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
+            .of(null, "foo", ofEnglish("x"), null)
+            .isSearchable(true)
+            .build();
 
-        assertThat(result).contains(ChangeIsSearchable.of(old.getName(), newDifferent.isSearchable()));
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("foo", ofEnglish("x"), null)
+            .isSearchable(false)
+            .build();
+
+        // test
+        final Optional<UpdateAction<ProductType>> result =
+            buildChangeIsSearchableUpdateAction(attributeDefinition, draft);
+
+        assertThat(result).contains(ChangeIsSearchable.of(attributeDefinition.getName(), true));
     }
 
     @Test
     public void buildChangeIsSearchableAction_WithSameValues_ShouldReturnEmptyOptional() {
-        final Optional<UpdateAction<ProductType>> result = buildChangeIsSearchableUpdateAction(old, newSame);
+        // Preparation
+        final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
+            .of(null, "foo", ofEnglish("x"), null)
+            .isSearchable(true)
+            .build();
+
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("foo", ofEnglish("x"), null)
+            .isSearchable(true)
+            .build();
+
+        // test
+        final Optional<UpdateAction<ProductType>> result =
+            buildChangeIsSearchableUpdateAction(attributeDefinition, draft);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    public void buildChangeIsSearchableAction_WithNullSourceAndNonDefaultTarget_ShouldSetFieldToDefault() {
+        // Preparation
+        final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
+            .of(null, "foo", ofEnglish("x"), null)
+            .isSearchable(null)
+            .build();
+
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("foo", ofEnglish("x"), null)
+            .isSearchable(true)
+            .build();
+
+        // test
+        final Optional<UpdateAction<ProductType>> result =
+            buildChangeIsSearchableUpdateAction(attributeDefinition, draft);
+
+        assertThat(result).contains(ChangeIsSearchable.of(attributeDefinition.getName(), false));
+    }
+
+    @Test
+    public void buildChangeIsSearchableAction_WithNullSourceAndDefaultTarget_ShouldNotUpdateField() {
+        // Preparation
+        final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
+            .of(null, "foo", ofEnglish("x"), null)
+            .isSearchable(null)
+            .build();
+
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("foo", ofEnglish("x"), null)
+            .isSearchable(false)
+            .build();
+
+        // test
+        final Optional<UpdateAction<ProductType>> result =
+            buildChangeIsSearchableUpdateAction(attributeDefinition, draft);
 
         assertThat(result).isEmpty();
     }
 
     @Test
     public void buildChangeInputHintAction_WithDifferentValues_ShouldReturnAction() {
-        final Optional<UpdateAction<ProductType>> result = buildChangeInputHintUpdateAction(old, newDifferent);
+        // Preparation
+        final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
+            .of(null, "foo", ofEnglish("x"), null)
+            .inputHint(TextInputHint.MULTI_LINE)
+            .build();
 
-        assertThat(result).contains(ChangeInputHint.of(old.getName(), newDifferent.getInputHint()));
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("foo", ofEnglish("x"), null)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .build();
+
+        // test
+        final Optional<UpdateAction<ProductType>> result = buildChangeInputHintUpdateAction(attributeDefinition, draft);
+
+        assertThat(result).contains(ChangeInputHint.of(attributeDefinition.getName(), TextInputHint.MULTI_LINE));
     }
 
     @Test
     public void buildChangeInputHintAction_WithSameValues_ShouldReturnEmptyOptional() {
-        final Optional<UpdateAction<ProductType>> result = buildChangeInputHintUpdateAction(old, newSame);
+        // Preparation
+        final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
+            .of(null, "foo", ofEnglish("x"), null)
+            .inputHint(TextInputHint.MULTI_LINE)
+            .build();
+
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("foo", ofEnglish("x"), null)
+            .inputHint(TextInputHint.MULTI_LINE)
+            .build();
+
+        // test
+        final Optional<UpdateAction<ProductType>> result = buildChangeInputHintUpdateAction(attributeDefinition, draft);
 
         assertThat(result).isEmpty();
     }
 
     @Test
-    public void buildChangeInputHintAction_WithSourceNullValues_ShouldReturnAction() {
-        final Optional<UpdateAction<ProductType>> result =
-            buildChangeInputHintUpdateAction(oldNullValues, newDifferent);
+    public void buildChangeInputHintAction_WithSourceNullValuesAndNonDefaultTargetValue_ShouldSetToDefault() {
+        // Preparation
+        final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
+            .of(null, "foo", ofEnglish("x"), null)
+            .inputHint(null)
+            .build();
 
-        assertThat(result).contains(ChangeInputHint.of(oldNullValues.getName(), newDifferent.getInputHint()));
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("foo", ofEnglish("x"), null)
+            .inputHint(TextInputHint.MULTI_LINE)
+            .build();
+
+        // test
+        final Optional<UpdateAction<ProductType>> result = buildChangeInputHintUpdateAction(attributeDefinition, draft);
+
+        assertThat(result).contains(ChangeInputHint.of(attributeDefinition.getName(), TextInputHint.SINGLE_LINE));
     }
 
     @Test
-    public void buildChangeInputHintAction_WithTargetNullValues_ShouldReturnAction() {
-        final Optional<UpdateAction<ProductType>> result = buildChangeInputHintUpdateAction(old, newNullValues);
+    public void buildChangeInputHintAction_WithSourceNullValuesAndDefaultTargetValue_ShouldSetToDefault() {
+        // Preparation
+        final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
+            .of(null, "foo", ofEnglish("x"), null)
+            .inputHint(null)
+            .build();
 
-        assertThat(result).contains(ChangeInputHint.of(old.getName(), newNullValues.getInputHint()));
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("foo", ofEnglish("x"), null)
+            .inputHint(TextInputHint.SINGLE_LINE)
+            .build();
+
+        // test
+        final Optional<UpdateAction<ProductType>> result = buildChangeInputHintUpdateAction(attributeDefinition, draft);
+
+        assertThat(result).isEmpty();
     }
 
     @Test
     public void buildChangeAttributeConstraintAction_WithDifferentValues_ShouldReturnAction() {
-        final Optional<UpdateAction<ProductType>> result =
-            buildChangeAttributeConstraintUpdateAction(old, newDifferent);
+        // Preparation
+        final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
+            .of(null, "foo", ofEnglish("x"), null)
+            .attributeConstraint(AttributeConstraint.COMBINATION_UNIQUE)
+            .build();
 
-        assertThat(result).contains(ChangeAttributeConstraint.of(old.getName(), newDifferent.getAttributeConstraint()));
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("foo", ofEnglish("x"), null)
+            .attributeConstraint(AttributeConstraint.SAME_FOR_ALL)
+            .build();
+
+        // test
+        final Optional<UpdateAction<ProductType>> result =
+            buildChangeAttributeConstraintUpdateAction(attributeDefinition, draft);
+
+        assertThat(result).contains(
+            ChangeAttributeConstraint.of(attributeDefinition.getName(), AttributeConstraint.COMBINATION_UNIQUE));
     }
 
     @Test
     public void buildChangeAttributeConstraintAction_WithSameValues_ShouldReturnEmptyOptional() {
-        final Optional<UpdateAction<ProductType>> result = buildChangeAttributeConstraintUpdateAction(old, newSame);
+        // Preparation
+        final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
+            .of(null, "foo", ofEnglish("x"), null)
+            .attributeConstraint(AttributeConstraint.COMBINATION_UNIQUE)
+            .build();
+
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("foo", ofEnglish("x"), null)
+            .attributeConstraint(AttributeConstraint.COMBINATION_UNIQUE)
+            .build();
+
+        // test
+        final Optional<UpdateAction<ProductType>> result =
+            buildChangeAttributeConstraintUpdateAction(attributeDefinition, draft);
 
         assertThat(result).isEmpty();
     }
 
     @Test
-    public void buildChangeAttributeConstraintAction_WithSourceNullValues_ShouldReturnAction() {
-        final Optional<UpdateAction<ProductType>> result =
-            buildChangeAttributeConstraintUpdateAction(oldNullValues, newDifferent);
+    public void buildChangeAttributeConstraintAction_WithSourceNullValuesAndDefaultTarget_ShouldReturnAction() {
+        // Preparation
+        final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
+            .of(null, "foo", ofEnglish("x"), null)
+            .attributeConstraint(null)
+            .build();
 
-        assertThat(result).contains(ChangeAttributeConstraint.of(
-            oldNullValues.getName(),
-            newDifferent.getAttributeConstraint())
-        );
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("foo", ofEnglish("x"), null)
+            .attributeConstraint(AttributeConstraint.NONE)
+            .build();
+
+        // test
+        final Optional<UpdateAction<ProductType>> result =
+            buildChangeAttributeConstraintUpdateAction(attributeDefinition, draft);
+
+        assertThat(result).isEmpty();
     }
 
     @Test
-    public void buildChangeAttributeConstraintAction_WithTargetNullValues_ShouldReturnAction() {
-        final Optional<UpdateAction<ProductType>> result =
-            buildChangeAttributeConstraintUpdateAction(old, newNullValues);
+    public void buildChangeAttributeConstraintAction_WithSourceNullValuesAndNonDefaultTarget_ShouldReturnAction() {
+        // Preparation
+        final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
+            .of(null, "foo", ofEnglish("x"), null)
+            .attributeConstraint(null)
+            .build();
 
-        assertThat(result).contains(ChangeAttributeConstraint.of(
-            old.getName(),
-            newNullValues.getAttributeConstraint())
-        );
+        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+            .of("foo", ofEnglish("x"), null)
+            .attributeConstraint(AttributeConstraint.SAME_FOR_ALL)
+            .build();
+
+        // test
+        final Optional<UpdateAction<ProductType>> result =
+            buildChangeAttributeConstraintUpdateAction(attributeDefinition, draft);
+
+        assertThat(result).contains(ChangeAttributeConstraint.of(draft.getName(), AttributeConstraint.NONE));
     }
 
     @Test
