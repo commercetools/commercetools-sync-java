@@ -38,7 +38,7 @@
     - **ProductType Sync** - Fixed a bug in the `productType` sync which would try to unset `isSearchable`, `inputHint` 
     and `attributeConstraint` values to `null` instead of their default values. [#354](https://github.com/commercetools/commercetools-sync-java/issues/354)
     - **ProductType Sync** - `ProductTypeSyncUtils#buildActions`, `ProductTypeUpdateActionUtils#buildAttributesUpdateActions`  
-    treat the values of the optional fields `isSearchable`, `inputHint` and `attributeConstraint` 
+    now treat the values of the optional fields `isSearchable`, `inputHint` and `attributeConstraint` 
     as (`true`, `SingleLine` and `None` respectivley) if they are not passed/`null`. [#354](https://github.com/commercetools/commercetools-sync-java/issues/354)
 
 !-->
