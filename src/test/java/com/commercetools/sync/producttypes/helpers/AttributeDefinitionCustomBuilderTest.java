@@ -135,7 +135,7 @@ public class AttributeDefinitionCustomBuilderTest {
     }
 
     @Test
-    public void of_withNullSearchable_ShouldCreateAttributeDefinitionWithFalseSearchable() {
+    public void of_withNullSearchable_ShouldCreateAttributeDefinitionWithTrueSearchable() {
         // preparation
         final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
             .of(MoneyAttributeType.of(), "foo", ofEnglish("bar"), true)
@@ -146,6 +146,6 @@ public class AttributeDefinitionCustomBuilderTest {
 
         // assertions
         assertThat(attributeDefinition).isNotNull();
-        assertThat(attributeDefinition.isSearchable()).isFalse();
+        assertThat(attributeDefinition.isSearchable()).isTrue();
     }
 }
