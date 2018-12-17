@@ -65,31 +65,34 @@ final class AttributeDefinitionUpdateActionUtils {
     }
 
     /**
-     * Compares all the {@link EnumValue} and {@link LocalizedEnumValue} values of an {@link AttributeDefinition} and
-     * an {@link AttributeDefinitionDraft} and returns a list of {@link UpdateAction}&lt;{@link ProductType}&gt; as a
-     * result. If both the {@link AttributeDefinition} and the {@link AttributeDefinitionDraft} have identical
-     * enum values, then no update action is needed and hence an empty {@link List} is returned.
+     * Checks if both the supplied {@code oldAttributeDefinition} and {@code newAttributeDefinitionDraft} have an
+     * {@link AttributeType} that is either an {@link EnumAttributeType} or a {@link LocalizedEnumAttributeType} or
+     * a {@link SetAttributeType} with a subtype that is either an {@link EnumAttributeType} or a
+     * {@link LocalizedEnumAttributeType}.
      *
-     * <p> On CTP, enum update actions can only update a enum type attribute definition or a Set of
-     * enum type attribute definition. Therefore, this method will update build enum update actions of the types
-     * supplied are of the same type and are either of enum attribute type or LocalizedEnum attribute type or set of
-     * either.</p>
+     * The method compares all the {@link EnumValue} and {@link LocalizedEnumValue} values of the
+     * {@link AttributeDefinition} and the {@link AttributeDefinitionDraft} attribute types and returns a list of
+     * {@link UpdateAction}&lt;{@link ProductType}&gt; as a result. If both the {@link AttributeDefinition} and the
+     * {@link AttributeDefinitionDraft} have identical enum values, then no update action is needed and hence an empty
+     * {@link List} is returned.
+     *
+     * <P>Note: This method expects the supplied {@link AttributeDefinition} and the {@link AttributeDefinitionDraft}
+     *  to have the same {@link AttributeType}. Otherwise, the behaviour is not guaranteed.</P>
      *
      * @param oldAttributeDefinition      the attribute definition which should be updated.
      * @param newAttributeDefinitionDraft the new attribute definition draft where we get the new fields.
      * @return A list with the update actions or an empty list if the attribute definition enums are identical.
+     *
+     * @throws DuplicateKeyException in case there are enum values with duplicate keys.
      */
     @Nonnull
     static List<UpdateAction<ProductType>> buildEnumUpdateActions(
         @Nonnull final AttributeDefinition oldAttributeDefinition,
         @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft) {
 
-
         final AttributeType oldAttributeType = oldAttributeDefinition.getAttributeType();
         final AttributeType newAttributeType = newAttributeDefinitionDraft.getAttributeType();
 
-
-        // Check if the attribute type is of type Enum or Set (of set of set..) of Enums
         return getEnumAttributeType(oldAttributeType)
             .map(oldEnumAttributeType ->
                 getEnumAttributeType(newAttributeType)
@@ -100,7 +103,7 @@ final class AttributeDefinitionUpdateActionUtils {
                     )
                     .orElseGet(Collections::emptyList)
             )
-            .orElseGet(() -> // Check if the attributeType is a LocalizedEnums or Set (of set..) of LocalizedEnums
+            .orElseGet(() ->
                 getLocalizedEnumAttributeType(oldAttributeType)
                     .map(oldLocalizedEnumAttributeType ->
                         getLocalizedEnumAttributeType(newAttributeType)
@@ -118,12 +121,14 @@ final class AttributeDefinitionUpdateActionUtils {
     }
 
     /**
-     * Indicates if the attribute type is a enum value or a set of enum value.
+     * Returns an optional containing the attribute type if is an {@link EnumAttributeType} or if the
+     * {@link AttributeType} is a {@link SetAttributeType} with an {@link EnumAttributeType} as a subtype, it returns
+     * this subtype in the optional. Otherwise, an empty optional.
      *
      * @param attributeType the attribute type.
-     * @return an optional containing the enum attribute type if the attribute type is a enum
-     *         attribute type or if is a set of enum attribute type, then it returns an optional containing
-     *         the enum attribute type under the set type.
+     * @return an optional containing the attribute type if is an {@link EnumAttributeType} or if the
+     *         {@link AttributeType} is a {@link SetAttributeType} with an {@link EnumAttributeType} as a subtype, it
+     *         returns this subtype in the optional. Otherwise, an empty optional.
      */
     private static Optional<EnumAttributeType> getEnumAttributeType(
         @Nonnull final AttributeType attributeType) {
@@ -145,12 +150,14 @@ final class AttributeDefinitionUpdateActionUtils {
     }
 
     /**
-     * Indicates if the attribute type is a localized enum value or a set of localized enum value.
+     * Returns an optional containing the attribute type if is an {@link LocalizedEnumAttributeType} or if the
+     * {@link AttributeType} is a {@link SetAttributeType} with an {@link LocalizedEnumAttributeType} as a subtype, it
+     * returns this subtype in the optional. Otherwise, an empty optional.
      *
      * @param attributeType the attribute type.
-     * @return an optional containing the localized enum attribute type if the attribute type is a localized enum
-     *         attribute type or if is a set of localized enum attribute type, then it returns an optional containing
-     *         the localized enum attribute type under the set type.
+     * @return an optional containing the attribute type if is an {@link LocalizedEnumAttributeType} or if the
+     *         {@link AttributeType} is a {@link SetAttributeType} with an {@link LocalizedEnumAttributeType} as a
+     *         subtype, it returns this subtype in the optional. Otherwise, an empty optional.
      */
     private static Optional<LocalizedEnumAttributeType> getLocalizedEnumAttributeType(
         @Nonnull final AttributeType attributeType) {

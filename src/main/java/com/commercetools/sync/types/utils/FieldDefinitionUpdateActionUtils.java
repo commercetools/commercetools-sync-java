@@ -54,19 +54,25 @@ final class FieldDefinitionUpdateActionUtils {
     }
 
     /**
-     * Compares all the {@link EnumValue} and {@link LocalizedEnumValue} values of {@link FieldDefinition}s and returns
-     * a list of {@link UpdateAction}&lt;{@link Type}&gt; as a result. If both {@link FieldDefinition}s have identical
-     * enum values, then no update action is needed and hence an empty {@link List} is returned.
+     * Checks if both the supplied {@code oldFieldDefinition} and {@code newFieldDefinition} have an
+     * {@link FieldType} that is either an {@link EnumFieldType} or a {@link LocalizedEnumFieldType} or
+     * a {@link SetFieldType} with a subtype that is either an {@link EnumFieldType} or a
+     * {@link LocalizedEnumFieldType}.
      *
-     * <p> On CTP, enum update actions can only update a enum type field definition or a Set of
-     * enum type field definition. Therefore, this method will update build enum update actions of the types supplied
-     * are of the same type and are either of Enum field type or LocalizedEnum field type or set of either.</p>
+     * The method compares all the {@link EnumValue} and {@link LocalizedEnumValue} values of the
+     * {@link FieldType} and the {@link FieldDefinition} types and returns a list of
+     * {@link UpdateAction}&lt;{@link Type}&gt; as a result. If both the {@code oldFieldDefinition} and
+     * {@code newFieldDefinition} have identical enum values, then no update action is needed and hence an empty
+     * {@link List} is returned.
      *
-     * @param oldFieldDefinition the old field definition which should be updated.
-     * @param newFieldDefinition the new field definition where we get the new fields.
+     * <P>Note: This method expects the supplied {@code oldFieldDefinition} and {@code newFieldDefinition}
+     *  to have the same {@link FieldType}. Otherwise, the behaviour is not guaranteed.</P>
+     *
+     * @param oldFieldDefinition      the field definition which should be updated.
+     * @param newFieldDefinition the new field definition draft where we get the new fields.
      * @return A list with the update actions or an empty list if the field definition enums are identical.
      *
-     * @throws DuplicateKeyException in case there are localized enum values with duplicate keys.
+     * @throws DuplicateKeyException in case there are enum values with duplicate keys.
      */
     @Nonnull
     static List<UpdateAction<Type>> buildEnumUpdateActions(
@@ -76,8 +82,6 @@ final class FieldDefinitionUpdateActionUtils {
         final FieldType oldFieldDefinitionType = oldFieldDefinition.getType();
         final FieldType newFieldDefinitionType = newFieldDefinition.getType();
 
-
-        // Check if the fieldType is of type Enum or Set (of set of set..) of Enums
         return getEnumFieldType(oldFieldDefinitionType)
             .map(oldEnumFieldType ->
                 getEnumFieldType(newFieldDefinitionType)
@@ -88,7 +92,7 @@ final class FieldDefinitionUpdateActionUtils {
                     )
                     .orElseGet(Collections::emptyList)
             )
-            .orElseGet(() -> // Check if the fieldType is a LocalizedEnums or Set (of set..) of LocalizedEnums
+            .orElseGet(() ->
                 getLocalizedEnumFieldType(oldFieldDefinitionType)
                     .map(oldLocalizedEnumFieldType ->
                         getLocalizedEnumFieldType(newFieldDefinitionType)
@@ -106,12 +110,14 @@ final class FieldDefinitionUpdateActionUtils {
     }
 
     /**
-     * Indicates if the field type is a plain enum value or a set of plain enum value.
+     * Returns an optional containing the attribute type if is an {@link EnumFieldType} or if the
+     * {@link FieldType} is a {@link SetFieldType} with an {@link EnumFieldType} as a subtype, it returns
+     * this subtype in the optional. Otherwise, an empty optional.
      *
-     * @param fieldType the field type.
-     * @return an optional containing the enum field type if the field type is an enum field type
-     *          or if it is a set of enum field type, then it returns an optional containing the localized enum field
-     *          type under the set type.
+     * @param fieldType the attribute type.
+     * @return an optional containing the attribute type if is an {@link EnumFieldType} or if the
+     *         {@link FieldType} is a {@link SetFieldType} with an {@link EnumFieldType} as a subtype, it
+     *         returns this subtype in the optional. Otherwise, an empty optional.
      */
     private static Optional<EnumFieldType> getEnumFieldType(
         @Nonnull final FieldType fieldType) {
@@ -134,12 +140,14 @@ final class FieldDefinitionUpdateActionUtils {
     }
 
     /**
-     * Indicates if the field type is a localized enum value or a set of localized enum value.
+     * Returns an optional containing the attribute type if is an {@link LocalizedEnumFieldType} or if the
+     * {@link FieldType} is a {@link SetFieldType} with an {@link LocalizedEnumFieldType} as a subtype, it
+     * returns this subtype in the optional. Otherwise, an empty optional.
      *
-     * @param fieldType the field type.
-     * @return an optional containing the localized enum field type if the field type is a localized enum field type
-     *          or if is a set of localized enum field type, then it returns an optional containing the localized enum
-     *          field type under the set type.
+     * @param fieldType the attribute type.
+     * @return an optional containing the attribute type if is an {@link LocalizedEnumFieldType} or if the
+     *         {@link FieldType} is a {@link SetFieldType} with an {@link LocalizedEnumFieldType} as a
+     *         subtype, it returns this subtype in the optional. Otherwise, an empty optional.
      */
     private static Optional<LocalizedEnumFieldType> getLocalizedEnumFieldType(
         @Nonnull final FieldType fieldType) {
