@@ -7,6 +7,7 @@
 [![Javadoc](http://javadoc-badge.appspot.com/com.commercetools/commercetools-sync-java.svg?label=Javadoc)](https://commercetools.github.io/commercetools-sync-java/v/1.0.0/)
 [![Known Vulnerabilities](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646/badge.svg)](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646)
 
+More at https://commercetools.github.io/commercetools-sync-java
  
 Java Library used to import and/or sync (taking care of changes) data into one or more commercetools projects from external sources such 
 as CSV, XML, JSON, etc.. or even from an already existing commercetools project.
