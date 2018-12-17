@@ -27,7 +27,6 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 
 -->
-
 <!--
 ### 1.1.0 -  Dec 20, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.0.0...1.1.0) |
@@ -44,6 +43,9 @@
     - **ProductType Sync** - `ProductTypeSyncUtils#buildActions`, `ProductTypeUpdateActionUtils#buildAttributesUpdateActions`  
     now treat the values of the optional fields `isSearchable`, `inputHint` and `attributeConstraint` 
     as (`true`, `SingleLine` and `None` respectivley) if they are `null` or not passed. [#354](https://github.com/commercetools/commercetools-sync-java/issues/354)
+
+- 📋 **Documentation** (1)
+    - *Commons* - Add link to documentation pages in README of the github repo.
 
 !-->
 
