@@ -59,14 +59,14 @@ final class FieldDefinitionUpdateActionUtils {
      * a {@link SetFieldType} with a subtype that is either an {@link EnumFieldType} or a
      * {@link LocalizedEnumFieldType}.
      *
-     * The method compares all the {@link EnumValue} and {@link LocalizedEnumValue} values of the
+     * <p>The method compares all the {@link EnumValue} and {@link LocalizedEnumValue} values of the
      * {@link FieldType} and the {@link FieldDefinition} types and returns a list of
      * {@link UpdateAction}&lt;{@link Type}&gt; as a result. If both the {@code oldFieldDefinition} and
      * {@code newFieldDefinition} have identical enum values, then no update action is needed and hence an empty
-     * {@link List} is returned.
+     * {@link List} is returned.</p>
      *
-     * <P>Note: This method expects the supplied {@code oldFieldDefinition} and {@code newFieldDefinition}
-     *  to have the same {@link FieldType}. Otherwise, the behaviour is not guaranteed.</P>
+     * <p>Note: This method expects the supplied {@code oldFieldDefinition} and {@code newFieldDefinition}
+     *  to have the same {@link FieldType}. Otherwise, the behaviour is not guaranteed.</p>
      *
      * @param oldFieldDefinition      the field definition which should be updated.
      * @param newFieldDefinition the new field definition draft where we get the new fields.

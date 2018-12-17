@@ -70,14 +70,14 @@ final class AttributeDefinitionUpdateActionUtils {
      * a {@link SetAttributeType} with a subtype that is either an {@link EnumAttributeType} or a
      * {@link LocalizedEnumAttributeType}.
      *
-     * The method compares all the {@link EnumValue} and {@link LocalizedEnumValue} values of the
+     * <p>The method compares all the {@link EnumValue} and {@link LocalizedEnumValue} values of the
      * {@link AttributeDefinition} and the {@link AttributeDefinitionDraft} attribute types and returns a list of
      * {@link UpdateAction}&lt;{@link ProductType}&gt; as a result. If both the {@link AttributeDefinition} and the
      * {@link AttributeDefinitionDraft} have identical enum values, then no update action is needed and hence an empty
-     * {@link List} is returned.
+     * {@link List} is returned.</p>
      *
-     * <P>Note: This method expects the supplied {@link AttributeDefinition} and the {@link AttributeDefinitionDraft}
-     *  to have the same {@link AttributeType}. Otherwise, the behaviour is not guaranteed.</P>
+     * <p>Note: This method expects the supplied {@link AttributeDefinition} and the {@link AttributeDefinitionDraft}
+     *  to have the same {@link AttributeType}. Otherwise, the behaviour is not guaranteed.</p>
      *
      * @param oldAttributeDefinition      the attribute definition which should be updated.
      * @param newAttributeDefinitionDraft the new attribute definition draft where we get the new fields.
