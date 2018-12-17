@@ -2,8 +2,6 @@ package com.commercetools.sync.integration.commons.utils;
 
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.TextInputHint;
-import io.sphere.sdk.products.attributes.AttributeConstraint;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
 import io.sphere.sdk.products.attributes.BooleanAttributeType;
@@ -18,8 +16,6 @@ import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.producttypes.queries.ProductTypeQueryBuilder;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -29,6 +25,7 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 
 public final class ProductTypeITUtils {
     private static final String LOCALISED_STRING_ATTRIBUTE_NAME = "backgroundColor";
@@ -50,10 +47,7 @@ public final class ProductTypeITUtils {
             LocalizedString.ofEnglish("attr_label_1"),
             true
         )
-        .attributeConstraint(AttributeConstraint.NONE)
         .inputTip(LocalizedString.ofEnglish("inputTip1"))
-        .inputHint(TextInputHint.SINGLE_LINE)
-        .isSearchable(false)
         .build();
 
     public static final AttributeDefinitionDraft ATTRIBUTE_DEFINITION_DRAFT_2 = AttributeDefinitionDraftBuilder
@@ -63,10 +57,7 @@ public final class ProductTypeITUtils {
             LocalizedString.ofEnglish("attr_label_2"),
             true
         )
-        .attributeConstraint(AttributeConstraint.NONE)
         .inputTip(LocalizedString.ofEnglish("inputTip2"))
-        .inputHint(TextInputHint.SINGLE_LINE)
-        .isSearchable(false)
         .build();
 
     public static final AttributeDefinitionDraft ATTRIBUTE_DEFINITION_DRAFT_3 = AttributeDefinitionDraftBuilder
@@ -76,10 +67,7 @@ public final class ProductTypeITUtils {
             LocalizedString.ofEnglish("attr_label_3"),
             true
         )
-        .attributeConstraint(AttributeConstraint.NONE)
         .inputTip(LocalizedString.ofEnglish("inputTip3"))
-        .inputHint(TextInputHint.SINGLE_LINE)
-        .isSearchable(false)
         .build();
 
 
@@ -87,14 +75,14 @@ public final class ProductTypeITUtils {
         PRODUCT_TYPE_KEY_1,
         PRODUCT_TYPE_NAME_1,
         PRODUCT_TYPE_DESCRIPTION_1,
-        Arrays.asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2)
+        asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2)
     );
 
     public static final ProductTypeDraft productTypeDraft2 = ProductTypeDraft.ofAttributeDefinitionDrafts(
         PRODUCT_TYPE_KEY_2,
         PRODUCT_TYPE_NAME_2,
         PRODUCT_TYPE_DESCRIPTION_2,
-        Collections.singletonList(ATTRIBUTE_DEFINITION_DRAFT_1)
+        singletonList(ATTRIBUTE_DEFINITION_DRAFT_1)
     );
 
     /**

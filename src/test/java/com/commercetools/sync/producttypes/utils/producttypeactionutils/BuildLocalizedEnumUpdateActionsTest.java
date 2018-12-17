@@ -50,7 +50,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithEmptyPlainEnumValuesAndNoOlEnumValues_ShouldNotBuildActions() {
+    public void buildLocalizedEnumUpdateActions_WithEmptyPlainEnumValuesAndNoOldEnumValues_ShouldNotBuildActions() {
         final List<UpdateAction<ProductType>> updateActions = buildLocalizedEnumValuesUpdateActions(
             "attribute_definition_name_1",
             Collections.emptyList(),

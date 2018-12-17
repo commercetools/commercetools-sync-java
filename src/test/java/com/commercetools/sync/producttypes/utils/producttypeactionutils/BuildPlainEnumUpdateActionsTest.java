@@ -50,7 +50,7 @@ public class BuildPlainEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildPlainEnumUpdateActions_WithEmptyPlainEnumValuesAndNoOlEnumValues_ShouldNotBuildActions() {
+    public void buildPlainEnumUpdateActions_WithEmptyPlainEnumValuesAndNoOldEnumValues_ShouldNotBuildActions() {
         final List<UpdateAction<ProductType>> updateActions = buildEnumValuesUpdateActions(
             "attribute_definition_name_1",
             Collections.emptyList(),

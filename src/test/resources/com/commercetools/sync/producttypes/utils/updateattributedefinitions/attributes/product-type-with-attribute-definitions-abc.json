@@ -12,7 +12,9 @@
         "en": "label_en"
       },
       "isRequired": false,
-      "isSearchable": true
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "attributeConstraint": "None"
     },
     {
       "type": {
@@ -23,7 +25,9 @@
         "en": "label_en"
       },
       "isRequired": false,
-      "isSearchable": true
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "attributeConstraint": "None"
     },
     {
       "type": {
@@ -34,7 +38,9 @@
         "en": "label_en"
       },
       "isRequired": false,
-      "isSearchable": true
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "attributeConstraint": "None"
     }
   ]
 }
