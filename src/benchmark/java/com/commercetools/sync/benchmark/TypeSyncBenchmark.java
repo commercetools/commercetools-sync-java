@@ -32,10 +32,8 @@ import java.util.stream.IntStream;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_AND_UPDATES;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST;
-import static com.commercetools.sync.benchmark.BenchmarkUtils.THRESHOLD;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.TYPE_SYNC;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
-import static com.commercetools.sync.benchmark.BenchmarkUtils.calculateDiff;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.saveNewResult;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
@@ -102,11 +100,12 @@ public class TypeSyncBenchmark {
         final TypeSyncStatistics syncStatistics = executeBlocking(typeSync.sync(typeDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-        final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, TYPE_SYNC, CREATES_ONLY, totalTime);
-        assertThat(diff)
-                .withFailMessage(format("Diff of benchmark '%e' is longer than expected threshold of '%d'.",
-                        diff, THRESHOLD))
-                .isLessThanOrEqualTo(THRESHOLD);
+        // assert on threshold (based on previous benchmarks; highest was ~133 seconds)
+        final int threshold = 150000;
+        assertThat(totalTime)
+            .withFailMessage(format("Total execution time of benchmark '%d' is longer than expected threshold of '%d'.",
+                totalTime, threshold))
+            .isLessThanOrEqualTo(threshold);
 
         // Assert actual state of CTP project (total number of existing types)
         final CompletableFuture<Integer> totalNumberOfTypes =
@@ -148,12 +147,12 @@ public class TypeSyncBenchmark {
         final TypeSyncStatistics syncStatistics = executeBlocking(typeSync.sync(typeDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-        // Calculate time taken for benchmark and assert it lies within threshold
-        final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, TYPE_SYNC, UPDATES_ONLY, totalTime);
-        assertThat(diff)
-                .withFailMessage(format("Diff of benchmark '%e' is longer than expected threshold of '%d'.",
-                        diff, THRESHOLD))
-                .isLessThanOrEqualTo(THRESHOLD);
+        // assert on threshold (based on previous benchmarks; highest was ~126 seconds)
+        final int threshold = 150000;
+        assertThat(totalTime)
+            .withFailMessage(format("Total execution time of benchmark '%d' is longer than expected threshold of '%d'.",
+                totalTime, threshold))
+            .isLessThanOrEqualTo(threshold);
 
         // Assert actual state of CTP project (number of updated types)
         final CompletableFuture<Integer> totalNumberOfUpdatedTypes =
@@ -209,12 +208,12 @@ public class TypeSyncBenchmark {
         final TypeSyncStatistics syncStatistics = executeBlocking(typeSync.sync(typeDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-        // Calculate time taken for benchmark and assert it lies within threshold
-        final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, TYPE_SYNC, CREATES_AND_UPDATES, totalTime);
-        assertThat(diff)
-                .withFailMessage(format("Diff of benchmark '%e' is longer than expected threshold of '%d'.",
-                        diff, THRESHOLD))
-                .isLessThanOrEqualTo(THRESHOLD);
+        // assert on threshold (based on previous benchmarks; highest was ~123 seconds)
+        final int threshold = 150000;
+        assertThat(totalTime)
+            .withFailMessage(format("Total execution time of benchmark '%d' is longer than expected threshold of '%d'.",
+                totalTime, threshold))
+            .isLessThanOrEqualTo(threshold);
 
         // Assert actual state of CTP project (number of updated types)
         final CompletableFuture<Integer> totalNumberOfUpdatedTypesWithOldFieldDefinitionName =

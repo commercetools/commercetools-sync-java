@@ -26,9 +26,7 @@ import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_AND_UPDATE
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.INVENTORY_SYNC;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST;
-import static com.commercetools.sync.benchmark.BenchmarkUtils.THRESHOLD;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
-import static com.commercetools.sync.benchmark.BenchmarkUtils.calculateDiff;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.saveNewResult;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.ChannelITUtils.deleteChannels;
@@ -71,11 +69,11 @@ public class InventorySyncBenchmark {
         final long totalTime = System.currentTimeMillis() - beforeSync;
 
 
-        // Caclulate sync time and assert on threshold
-        final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, INVENTORY_SYNC, CREATES_ONLY, totalTime);
-        assertThat(diff).withFailMessage(format("Diff of benchmark '%e' is longer than expected"
-                            + " threshold of '%d'.", diff, THRESHOLD))
-                        .isLessThanOrEqualTo(THRESHOLD);
+        // assert on threshold (based on previous benchmarks; highest was ~86 seconds)
+        final int threshold = 100000;
+        assertThat(totalTime).withFailMessage(format("Total Execution Time of benchmark '%d' is longer than expected"
+                            + " threshold of '%d'.", totalTime, threshold))
+                             .isLessThanOrEqualTo(threshold);
 
         // Assert actual state of CTP project (total number of existing inventories)
         final CompletableFuture<Integer> totalNumberOfInventories =

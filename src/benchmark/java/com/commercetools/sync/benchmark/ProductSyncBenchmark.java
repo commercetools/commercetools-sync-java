@@ -34,9 +34,7 @@ import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_AND_UPDATE
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.PRODUCT_SYNC;
-import static com.commercetools.sync.benchmark.BenchmarkUtils.THRESHOLD;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
-import static com.commercetools.sync.benchmark.BenchmarkUtils.calculateDiff;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.saveNewResult;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
@@ -110,11 +108,12 @@ public class ProductSyncBenchmark {
         final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(productDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-        final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, PRODUCT_SYNC, CREATES_ONLY, totalTime);
-        assertThat(diff)
-            .withFailMessage(format("Diff of benchmark '%e' is longer than expected threshold of '%d'.",
-                diff, THRESHOLD))
-            .isLessThanOrEqualTo(THRESHOLD);
+        // assert on threshold (based on previous benchmarks; highest was ~162 seconds)
+        final int threshold = 180000;
+        assertThat(totalTime)
+            .withFailMessage(format("Total execution time of benchmark '%d' is longer than expected threshold of '%d'.",
+                totalTime, threshold))
+            .isLessThanOrEqualTo(threshold);
 
         // Assert actual state of CTP project (total number of existing products)
         final CompletableFuture<Integer> totalNumberOfProducts =
@@ -157,12 +156,12 @@ public class ProductSyncBenchmark {
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
 
-        // Calculate time taken for benchmark and assert it lies within threshold
-        final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, PRODUCT_SYNC, UPDATES_ONLY, totalTime);
-        assertThat(diff)
-            .withFailMessage(format("Diff of benchmark '%e' is longer than expected threshold of '%d'.", diff,
-                THRESHOLD))
-            .isLessThanOrEqualTo(THRESHOLD);
+        // assert on threshold (based on previous benchmarks; highest was ~194 seconds)
+        final int threshold = 210000;
+        assertThat(totalTime)
+            .withFailMessage(format("Total execution time of benchmark '%d' is longer than expected threshold of '%d'.",
+                totalTime, threshold))
+            .isLessThanOrEqualTo(threshold);
 
         // Assert actual state of CTP project (number of updated products)
         final CompletableFuture<Integer> totalNumberOfUpdatedProducts =
@@ -221,12 +220,12 @@ public class ProductSyncBenchmark {
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
 
-        // Calculate time taken for benchmark and assert it lies within threshold
-        final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, PRODUCT_SYNC, CREATES_AND_UPDATES, totalTime);
-        assertThat(diff)
-            .withFailMessage(format("Diff of benchmark '%e' is longer than expected threshold of '%d'.", diff,
-                THRESHOLD))
-            .isLessThanOrEqualTo(THRESHOLD);
+        // assert on threshold (based on previous benchmarks; highest was ~187 seconds)
+        final int threshold = 210000;
+        assertThat(totalTime)
+            .withFailMessage(format("Total execution time of benchmark '%d' is longer than expected threshold of '%d'.",
+                totalTime, threshold))
+            .isLessThanOrEqualTo(threshold);
 
         // Assert actual state of CTP project (number of updated products)
         final CompletableFuture<Integer> totalNumberOfUpdatedProducts =
