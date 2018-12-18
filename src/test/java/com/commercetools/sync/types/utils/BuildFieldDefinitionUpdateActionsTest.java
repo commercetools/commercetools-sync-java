@@ -659,7 +659,7 @@ public class BuildFieldDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildFieldsUpdateActions_WithSetOfIdenticalLEnums_ShouldBuildNoActions() {
+    public void buildFieldsUpdateActions_WithSetOfIdenticalLEnums_ShouldNotBuildActions() {
         // preparation
         final SetFieldType newSetFieldType = SetFieldType.of(SetFieldType.of(LocalizedEnumFieldType.of(emptyList())));
 
