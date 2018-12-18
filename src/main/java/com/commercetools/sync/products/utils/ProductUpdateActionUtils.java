@@ -613,15 +613,13 @@ public final class ProductUpdateActionUtils {
 
         actions.add(addVariant);
 
-        final List<UpdateAction<Product>> addAssetActions = ofNullable(draft.getAssets())
+        ofNullable(draft.getAssets())
             .map(assetDrafts -> assetDrafts.stream()
                                            .map(assetDraft -> (UpdateAction<Product>)
-                                               AddAsset.ofSku(draft.getSku(), assetDraft)
-                                                       .withStaged(true))
+                                               AddAsset.ofSku(draft.getSku(), assetDraft).withStaged(true))
                                            .collect(toList()))
-            .orElse(emptyList());
+            .ifPresent(actions::addAll);
 
-        actions.addAll(addAssetActions);
         return actions;
     }
 
