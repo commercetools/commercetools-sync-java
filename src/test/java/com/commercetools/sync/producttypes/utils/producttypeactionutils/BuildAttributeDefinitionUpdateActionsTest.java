@@ -29,9 +29,14 @@ import io.sphere.sdk.producttypes.commands.updateactions.AddLocalizedEnumValue;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeConstraint;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeDefinitionLabel;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeOrder;
+import io.sphere.sdk.producttypes.commands.updateactions.ChangeEnumValueOrder;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeInputHint;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeIsSearchable;
+import io.sphere.sdk.producttypes.commands.updateactions.ChangeLocalizedEnumValueLabel;
+import io.sphere.sdk.producttypes.commands.updateactions.ChangeLocalizedEnumValueOrder;
+import io.sphere.sdk.producttypes.commands.updateactions.ChangePlainEnumValueLabel;
 import io.sphere.sdk.producttypes.commands.updateactions.RemoveAttributeDefinition;
+import io.sphere.sdk.producttypes.commands.updateactions.RemoveEnumValues;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -623,7 +628,12 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     public void buildAttributesUpdateActions_WithSetOfEnumsChanges_ShouldBuildCorrectActions() {
         // preparation
         final SetAttributeType newSetOfEnumType = SetAttributeType.of(
-            EnumAttributeType.of(singletonList(EnumValue.of("foo", "bar"))));
+            EnumAttributeType.of(
+                asList(
+                    EnumValue.of("a", "a"),
+                    EnumValue.of("b", "newB"),
+                    EnumValue.of("c", "c")
+                )));
 
         final AttributeDefinitionDraft newDefinition = AttributeDefinitionDraftBuilder
             .of(newSetOfEnumType, "a", ofEnglish("new_label"), true)
@@ -633,7 +643,13 @@ public class BuildAttributeDefinitionUpdateActionsTest {
             .build();
 
 
-        final SetAttributeType oldSetOfEnumType = SetAttributeType.of(EnumAttributeType.of(emptyList()));
+        final SetAttributeType oldSetOfEnumType = SetAttributeType.of(
+            EnumAttributeType.of(
+                asList(
+                    EnumValue.of("d", "d"),
+                    EnumValue.of("b", "b"),
+                    EnumValue.of("a", "a")
+                )));
         final AttributeDefinition oldDefinition = AttributeDefinitionBuilder
             .of("a", ofEnglish("new_label"), oldSetOfEnumType)
             .build();
@@ -645,7 +661,15 @@ public class BuildAttributeDefinitionUpdateActionsTest {
             productTypeDraft, SYNC_OPTIONS);
 
         // assertion
-        assertThat(updateActions).containsExactly(AddEnumValue.of("a", EnumValue.of("foo", "bar")));
+        assertThat(updateActions).containsExactly(
+            RemoveEnumValues.of("a", "d"),
+            ChangePlainEnumValueLabel.of("a", EnumValue.of("b", "newB")),
+            AddEnumValue.of("a", EnumValue.of("c", "c")),
+            ChangeEnumValueOrder.of("a", asList(
+                EnumValue.of("a", "a"),
+                EnumValue.of("b", "newB"),
+                EnumValue.of("c", "c")
+            )));
     }
 
     @Test
@@ -742,7 +766,13 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     public void buildAttributesUpdateActions_WithSetOfLEnumsChangesAndDefLabelChange_ShouldBuildCorrectActions() {
         // preparation
         final SetAttributeType newSetOfLenumType = SetAttributeType.of(
-            LocalizedEnumAttributeType.of(singletonList(LocalizedEnumValue.of("foo", ofEnglish("bar")))));
+            LocalizedEnumAttributeType.of(
+                asList(
+                    LocalizedEnumValue.of("a", ofEnglish("a")),
+                    LocalizedEnumValue.of("b", ofEnglish("newB")),
+                    LocalizedEnumValue.of("c", ofEnglish("c"))
+                    )
+            ));
 
         final AttributeDefinitionDraft newDefinition = AttributeDefinitionDraftBuilder
             .of(newSetOfLenumType, "a", ofEnglish("new_label"), true)
@@ -752,7 +782,13 @@ public class BuildAttributeDefinitionUpdateActionsTest {
             .build();
 
         final SetAttributeType oldSetOfLenumType = SetAttributeType.of(
-            LocalizedEnumAttributeType.of(emptyList()));
+            LocalizedEnumAttributeType.of(
+                asList(
+                    LocalizedEnumValue.of("d", ofEnglish("d")),
+                    LocalizedEnumValue.of("b", ofEnglish("b")),
+                    LocalizedEnumValue.of("a", ofEnglish("a"))
+                )
+            ));
 
         final AttributeDefinition oldDefinition = AttributeDefinitionBuilder
             .of("a", ofEnglish("old_label"), oldSetOfLenumType)
@@ -761,13 +797,20 @@ public class BuildAttributeDefinitionUpdateActionsTest {
         when(productType.getAttributes()).thenReturn(singletonList(oldDefinition));
 
         // test
-        final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(productType,
-            productTypeDraft, SYNC_OPTIONS);
+        final List<UpdateAction<ProductType>> updateActions =
+            buildAttributesUpdateActions(productType, productTypeDraft, SYNC_OPTIONS);
 
         // assertion
         assertThat(updateActions)
             .containsExactlyInAnyOrder(
-                AddLocalizedEnumValue.of("a", LocalizedEnumValue.of("foo", ofEnglish("bar"))),
+                RemoveEnumValues.ofLocalizedEnumValue("a", LocalizedEnumValue.of("d", ofEnglish("d"))),
+                ChangeLocalizedEnumValueLabel.of("a", LocalizedEnumValue.of("b", ofEnglish("newB"))),
+                AddLocalizedEnumValue.of("a", LocalizedEnumValue.of("c", ofEnglish("c"))),
+                ChangeLocalizedEnumValueOrder.of("a", asList(
+                    LocalizedEnumValue.of("a", ofEnglish("a")),
+                    LocalizedEnumValue.of("b", ofEnglish("newB")),
+                    LocalizedEnumValue.of("c", ofEnglish("c"))
+                )),
                 ChangeAttributeDefinitionLabel.of("a", ofEnglish("new_label")));
     }
 }
