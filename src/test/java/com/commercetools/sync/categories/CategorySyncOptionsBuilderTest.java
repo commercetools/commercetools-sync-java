@@ -178,7 +178,7 @@ public class CategorySyncOptionsBuilderTest {
         assertThat(filteredList).isEmpty();
     }
 
-    private abstract class MockTriFunction implements
+    private interface MockTriFunction extends
         TriFunction<List<UpdateAction<Category>>, CategoryDraft, Category, List<UpdateAction<Category>>> {
     }
 

@@ -177,7 +177,7 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(filteredList).isEmpty();
     }
 
-    private abstract class MockTriFunction implements
+    private interface MockTriFunction extends
         TriFunction<List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>> {
     }
 
