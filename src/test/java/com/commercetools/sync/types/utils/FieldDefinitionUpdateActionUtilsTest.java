@@ -13,7 +13,9 @@ import io.sphere.sdk.types.StringFieldType;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.commands.updateactions.AddEnumValue;
 import io.sphere.sdk.types.commands.updateactions.AddLocalizedEnumValue;
+import io.sphere.sdk.types.commands.updateactions.ChangeEnumValueOrder;
 import io.sphere.sdk.types.commands.updateactions.ChangeFieldDefinitionLabel;
+import io.sphere.sdk.types.commands.updateactions.ChangeLocalizedEnumValueOrder;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -215,17 +217,30 @@ public class FieldDefinitionUpdateActionUtilsTest {
 
     @Test
     public void buildActions_WithChangedSetOfEnumFieldTypes_ShouldBuildEnumActions() {
-        final FieldDefinition oldFieldDefinition = FieldDefinition.of(SetFieldType.of(EnumFieldType.of(emptyList())),
+        final FieldDefinition oldFieldDefinition = FieldDefinition.of(
+            SetFieldType.of(EnumFieldType.of(
+                asList(
+                    ENUM_VALUE_A,
+                    ENUM_VALUE_B
+                ))),
             "fieldName1", ofEnglish("label1"), false);
 
-        final FieldDefinition newFieldDefinition = FieldDefinition.of(SetFieldType.of(
-            EnumFieldType.of(singletonList(ENUM_VALUE_A))),
+        final FieldDefinition newFieldDefinition = FieldDefinition.of(
+            SetFieldType.of(
+                EnumFieldType.of(
+                    asList(
+                        ENUM_VALUE_B,
+                        ENUM_VALUE_A,
+                        EnumValue.of("c", "c")
+                    ))),
             "fieldName1", ofEnglish("label1"), false);
 
         final List<UpdateAction<Type>> result =
             buildActions(oldFieldDefinition, newFieldDefinition);
 
-        assertThat(result).containsExactly(AddEnumValue.of("fieldName1", ENUM_VALUE_A));
+        assertThat(result).containsExactly(
+            AddEnumValue.of("fieldName1", EnumValue.of("c", "c")),
+            ChangeEnumValueOrder.of("fieldName1", asList("b", "a", "c")));
     }
 
     @Test
@@ -252,11 +267,20 @@ public class FieldDefinitionUpdateActionUtilsTest {
     public void buildActions_WithChangedSetOfLocalizedEnumFieldTypes_ShouldBuildEnumActions() {
         // preparation
         final FieldDefinition oldFieldDefinition = FieldDefinition.of(
-            SetFieldType.of(LocalizedEnumFieldType.of(emptyList())),
+            SetFieldType.of(LocalizedEnumFieldType.of(
+                asList(
+                    LOCALIZED_ENUM_VALUE_A,
+                    LOCALIZED_ENUM_VALUE_B
+                ))),
             "fieldName1", ofEnglish("label1"), false);
 
         final FieldDefinition newFieldDefinition = FieldDefinition.of(
-            SetFieldType.of(LocalizedEnumFieldType.of(singletonList(LOCALIZED_ENUM_VALUE_A))),
+            SetFieldType.of(LocalizedEnumFieldType.of(
+                asList(
+                    LOCALIZED_ENUM_VALUE_B,
+                    LOCALIZED_ENUM_VALUE_A,
+                    LocalizedEnumValue.of("c", ofEnglish("c"))
+                ))),
             "fieldName1", ofEnglish("label1"), false);
 
         // test
@@ -264,6 +288,9 @@ public class FieldDefinitionUpdateActionUtilsTest {
             buildActions(oldFieldDefinition, newFieldDefinition);
 
         // assertion
-        assertThat(result).containsExactly(AddLocalizedEnumValue.of("fieldName1", LOCALIZED_ENUM_VALUE_A));
+        assertThat(result).containsExactly(
+            AddLocalizedEnumValue.of("fieldName1", LocalizedEnumValue.of("c", ofEnglish("c"))),
+            ChangeLocalizedEnumValueOrder.of("fieldName1", asList("b", "a", "c"))
+        );
     }
 }

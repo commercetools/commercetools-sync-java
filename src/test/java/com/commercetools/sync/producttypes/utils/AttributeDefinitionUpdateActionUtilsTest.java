@@ -18,9 +18,11 @@ import io.sphere.sdk.producttypes.commands.updateactions.AddEnumValue;
 import io.sphere.sdk.producttypes.commands.updateactions.AddLocalizedEnumValue;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeConstraint;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeDefinitionLabel;
+import io.sphere.sdk.producttypes.commands.updateactions.ChangeEnumValueOrder;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeInputHint;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeIsSearchable;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeLocalizedEnumValueLabel;
+import io.sphere.sdk.producttypes.commands.updateactions.ChangeLocalizedEnumValueOrder;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangePlainEnumValueLabel;
 import io.sphere.sdk.producttypes.commands.updateactions.RemoveEnumValues;
 import io.sphere.sdk.producttypes.commands.updateactions.SetInputTip;
@@ -38,8 +40,8 @@ import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdat
 import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionUtils.buildEnumUpdateActions;
 import static com.commercetools.sync.producttypes.utils.AttributeDefinitionUpdateActionUtils.buildSetInputTipUpdateAction;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class AttributeDefinitionUpdateActionUtilsTest {
@@ -571,22 +573,48 @@ public class AttributeDefinitionUpdateActionUtilsTest {
 
     @Test
     public void buildActions_WithChangedSetOfEnumAttributeTypes_ShouldBuildEnumActions() {
-        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+        // preparation
+        final AttributeDefinition oldDefinition = AttributeDefinitionBuilder
             .of("attributeName1", ofEnglish("label1"), SetAttributeType.of(
-                EnumAttributeType.of(emptyList())))
+                EnumAttributeType.of(
+                    asList(
+                        EnumValue.of("c", "c"),
+                        ENUM_VALUE_B,
+                        EnumValue.of("d", "d")
+                    )
+                )
+            ))
             .build();
 
-        final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
+        final AttributeDefinitionDraft newDraft = AttributeDefinitionDraftBuilder
             .of(SetAttributeType.of(
-                EnumAttributeType.of(singletonList(ENUM_VALUE_A))),
-                "attributeName1", ofEnglish("label1"), false)
+                EnumAttributeType.of(
+                    asList(
+                        ENUM_VALUE_A,
+                        EnumValue.of(ENUM_VALUE_B.getKey(), "newLabel"),
+                        EnumValue.of("c", "c")
+                    )
+                )
+                ), "attributeName1",
+                ofEnglish("label1"), false)
             .build();
 
+        // test
         final List<UpdateAction<ProductType>> result =
-            buildActions(attributeDefinition, attributeDefinitionDraft);
+            buildActions(oldDefinition, newDraft);
 
+        // assertion
         assertThat(result).containsExactly(
-            AddEnumValue.of("attributeName1", ENUM_VALUE_A));
+            RemoveEnumValues.of(oldDefinition.getName(), "d"),
+            ChangePlainEnumValueLabel.of(
+                oldDefinition.getName(), EnumValue.of(ENUM_VALUE_B.getKey(), "newLabel")),
+            AddEnumValue.of(oldDefinition.getName(), ENUM_VALUE_A),
+            ChangeEnumValueOrder.of(oldDefinition.getName(), asList(
+                ENUM_VALUE_A,
+                EnumValue.of(ENUM_VALUE_B.getKey(), "newLabel"),
+                EnumValue.of("c", "c")
+            ))
+        );
     }
 
     @Test
@@ -610,22 +638,43 @@ public class AttributeDefinitionUpdateActionUtilsTest {
 
     @Test
     public void buildActions_WithChangedSetOfLocalizedEnumAttributeTypes_ShouldBuildEnumActions() {
-        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
+        // preparation
+        final AttributeDefinition oldDefinition = AttributeDefinitionBuilder
             .of("attributeName1", ofEnglish("label1"), SetAttributeType.of(
-                LocalizedEnumAttributeType.of(emptyList())))
+                LocalizedEnumAttributeType.of(
+                    asList(
+                        LocalizedEnumValue.of("c", ofEnglish("c")),
+                        LOCALIZED_ENUM_VALUE_B,
+                        LocalizedEnumValue.of("d", ofEnglish("d"))
+                ))))
             .build();
 
-        final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
+        final AttributeDefinitionDraft newDefinition = AttributeDefinitionDraftBuilder
             .of(SetAttributeType.of(
-                LocalizedEnumAttributeType.of(singletonList(LOCALIZED_ENUM_VALUE_A))),
+                LocalizedEnumAttributeType.of(
+                    asList(
+                        LOCALIZED_ENUM_VALUE_A,
+                        LocalizedEnumValue.of(LOCALIZED_ENUM_VALUE_B.getKey(), ofEnglish("newLabel")),
+                        LocalizedEnumValue.of("c", ofEnglish("c"))
+                ))),
                 "attributeName1", ofEnglish("label1"), false)
             .build();
 
+        // test
         final List<UpdateAction<ProductType>> result =
-            buildActions(attributeDefinition, attributeDefinitionDraft);
+            buildActions(oldDefinition, newDefinition);
 
+        // assertion
         assertThat(result).containsExactly(
-            AddLocalizedEnumValue.of("attributeName1", LOCALIZED_ENUM_VALUE_A));
+            RemoveEnumValues.of(oldDefinition.getName(), "d"),
+            ChangeLocalizedEnumValueLabel.of(oldDefinition.getName(),
+                LocalizedEnumValue.of(LOCALIZED_ENUM_VALUE_B.getKey(), ofEnglish("newLabel"))),
+            AddLocalizedEnumValue.of("attributeName1", LOCALIZED_ENUM_VALUE_A),
+            ChangeLocalizedEnumValueOrder.of(oldDefinition.getName(), asList(
+                LOCALIZED_ENUM_VALUE_A,
+                LocalizedEnumValue.of(LOCALIZED_ENUM_VALUE_B.getKey(), ofEnglish("newLabel")),
+                LocalizedEnumValue.of("c", ofEnglish("c"))
+            )));
     }
 
     @Test
