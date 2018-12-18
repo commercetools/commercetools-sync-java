@@ -306,6 +306,13 @@ public class ProductSyncWithAssetsIT {
                                                             .stream().collect(toMap(Asset::getKey, Asset::getId));
 
         assertThat(updateActionsFromSync).containsExactly(
+            AddVariant.of(null, null, "v2", true).withKey("v2"),
+            AddAsset.ofSku("v2", createAssetDraft("4", ofEnglish("4"), assetsCustomType.getId()))
+                    .withStaged(true),
+            AddAsset.ofSku("v2", createAssetDraft("3", ofEnglish("3"), assetsCustomType.getId(), customFieldsJsonMap))
+                    .withStaged(true),
+            AddAsset.ofSku("v2", createAssetDraft("2", ofEnglish("new name")))
+                    .withStaged(true),
             RemoveAsset.ofVariantIdWithKey(1, "1", true),
             ChangeAssetName.ofAssetKeyAndVariantId(1, "2", ofEnglish("new name"), true),
             SetAssetCustomType.ofVariantIdAndAssetKey(1, "2", null, true),
@@ -315,11 +322,7 @@ public class ProductSyncWithAssetsIT {
                 null, true),
             ChangeAssetOrder.ofVariantId(1, asList(assetsKeyToIdMap.get("3"), assetsKeyToIdMap.get("2")), true),
             AddAsset.ofVariantId(1, createAssetDraft("4", ofEnglish("4"), assetsCustomType.getId()))
-                    .withStaged(true).withPosition(0),
-            AddVariant.of(null, null, "v2").withKey("v2"),
-            AddAsset.ofSku("v2", createAssetDraft("4", ofEnglish("4"), assetsCustomType.getId())),
-            AddAsset.ofSku("v2", createAssetDraft("3", ofEnglish("4"), assetsCustomType.getId(), customFieldsJsonMap)),
-            AddAsset.ofSku("v2", createAssetDraft("2", ofEnglish("new name")))
+                    .withStaged(true).withPosition(0)
         );
 
         // Assert that assets got updated correctly
