@@ -110,12 +110,12 @@ final class FieldDefinitionUpdateActionUtils {
     }
 
     /**
-     * Returns an optional containing the attribute type if is an {@link EnumFieldType} or if the
+     * Returns an optional containing the field type if is an {@link EnumFieldType} or if the
      * {@link FieldType} is a {@link SetFieldType} with an {@link EnumFieldType} as a subtype, it returns
      * this subtype in the optional. Otherwise, an empty optional.
      *
-     * @param fieldType the attribute type.
-     * @return an optional containing the attribute type if is an {@link EnumFieldType} or if the
+     * @param fieldType the field type.
+     * @return an optional containing the field type if is an {@link EnumFieldType} or if the
      *         {@link FieldType} is a {@link SetFieldType} with an {@link EnumFieldType} as a subtype, it
      *         returns this subtype in the optional. Otherwise, an empty optional.
      */
@@ -140,12 +140,12 @@ final class FieldDefinitionUpdateActionUtils {
     }
 
     /**
-     * Returns an optional containing the attribute type if is an {@link LocalizedEnumFieldType} or if the
+     * Returns an optional containing the field type if is an {@link LocalizedEnumFieldType} or if the
      * {@link FieldType} is a {@link SetFieldType} with an {@link LocalizedEnumFieldType} as a subtype, it
      * returns this subtype in the optional. Otherwise, an empty optional.
      *
-     * @param fieldType the attribute type.
-     * @return an optional containing the attribute type if is an {@link LocalizedEnumFieldType} or if the
+     * @param fieldType the field type.
+     * @return an optional containing the field type if is an {@link LocalizedEnumFieldType} or if the
      *         {@link FieldType} is a {@link SetFieldType} with an {@link LocalizedEnumFieldType} as a
      *         subtype, it returns this subtype in the optional. Otherwise, an empty optional.
      */
