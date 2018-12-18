@@ -20,6 +20,7 @@ import io.sphere.sdk.products.ProductProjection;
 import io.sphere.sdk.products.ProductProjectionType;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.updateactions.AddAsset;
+import io.sphere.sdk.products.commands.updateactions.AddVariant;
 import io.sphere.sdk.products.commands.updateactions.ChangeAssetName;
 import io.sphere.sdk.products.commands.updateactions.ChangeAssetOrder;
 import io.sphere.sdk.products.commands.updateactions.RemoveAsset;
@@ -256,6 +257,69 @@ public class ProductSyncWithAssetsIT {
             ChangeAssetOrder.ofVariantId(1, asList(assetsKeyToIdMap.get("3"), assetsKeyToIdMap.get("2")), true),
             AddAsset.ofVariantId(1, createAssetDraft("4", ofEnglish("4"), assetsCustomType.getId()))
                     .withStaged(true).withPosition(0)
+        );
+
+        // Assert that assets got updated correctly
+        final ProductProjection productProjection = CTP_TARGET_CLIENT
+            .execute(ProductProjectionByKeyGet.of(productDraft.getKey(), ProductProjectionType.STAGED))
+            .toCompletableFuture().join();
+
+        assertThat(productProjection).isNotNull();
+        assertAssetsAreEqual(productProjection.getMasterVariant().getAssets(), assetDrafts);
+    }
+
+    @Test
+    public void sync_withMatchingProductWithNewVariantWithAssets_shouldUpdateAddAssetsToNewVariant() {
+
+        final Map<String, JsonNode> customFieldsJsonMap = new HashMap<>();
+        customFieldsJsonMap.put(BOOLEAN_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.booleanNode(true));
+
+        // new asset drafts with different kind of asset actions (change order, add asset, remove asset, change asset
+        // name, set asset custom fields, change
+        final List<AssetDraft> assetDrafts = asList(
+            createAssetDraft("4", ofEnglish("4"), ASSETS_CUSTOM_TYPE_KEY),
+            createAssetDraft("3", ofEnglish("3"), ASSETS_CUSTOM_TYPE_KEY, customFieldsJsonMap),
+            createAssetDraft("2", ofEnglish("new name")));
+
+
+        final ProductDraft productDraft = ProductDraftBuilder
+            .of(referenceOfId(productType.getKey()), ofEnglish("draftName"), ofEnglish("existingSlug"),
+                createVariantDraft("v1", assetDrafts, null))
+            .plusVariants(createVariantDraft("v2", assetDrafts, null))
+            .key(product.getKey())
+            .build();
+
+        final ProductSyncStatistics syncStatistics =
+            executeBlocking(productSync.sync(singletonList(productDraft)));
+
+        // Assert results of sync
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(warningCallBackMessages).isEmpty();
+        assertThat(updateActionsFromSync).isNotEmpty();
+
+        final Map<String, String> assetsKeyToIdMap = product.getMasterData()
+                                                            .getStaged()
+                                                            .getMasterVariant()
+                                                            .getAssets()
+                                                            .stream().collect(toMap(Asset::getKey, Asset::getId));
+
+        assertThat(updateActionsFromSync).containsExactly(
+            RemoveAsset.ofVariantIdWithKey(1, "1", true),
+            ChangeAssetName.ofAssetKeyAndVariantId(1, "2", ofEnglish("new name"), true),
+            SetAssetCustomType.ofVariantIdAndAssetKey(1, "2", null, true),
+            SetAssetCustomField.ofVariantIdAndAssetKey(1, "3", BOOLEAN_CUSTOM_FIELD_NAME,
+                customFieldsJsonMap.get(BOOLEAN_CUSTOM_FIELD_NAME), true),
+            SetAssetCustomField.ofVariantIdAndAssetKey(1, "3", LOCALISED_STRING_CUSTOM_FIELD_NAME,
+                null, true),
+            ChangeAssetOrder.ofVariantId(1, asList(assetsKeyToIdMap.get("3"), assetsKeyToIdMap.get("2")), true),
+            AddAsset.ofVariantId(1, createAssetDraft("4", ofEnglish("4"), assetsCustomType.getId()))
+                    .withStaged(true).withPosition(0),
+            AddVariant.of(null, null, "v2").withKey("v2"),
+            AddAsset.ofSku("v2", createAssetDraft("4", ofEnglish("4"), assetsCustomType.getId())),
+            AddAsset.ofSku("v2", createAssetDraft("3", ofEnglish("4"), assetsCustomType.getId(), customFieldsJsonMap)),
+            AddAsset.ofSku("v2", createAssetDraft("2", ofEnglish("new name")))
         );
 
         // Assert that assets got updated correctly
