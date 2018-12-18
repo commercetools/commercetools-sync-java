@@ -329,30 +329,7 @@ public class ProductUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildAddVariantUpdateActionFromDraft_WithOneAsset_BuildsOneAddAssetsAction() {
-        // preparation
-
-        final AssetDraft assetDraft = AssetDraftBuilder
-            .of(singletonList(AssetSourceBuilder.ofUri("foo").build()), ofEnglish("assetName"))
-            .build();
-
-        final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder.of()
-                                                                                  .sku("foo")
-                                                                                  .assets(singletonList(assetDraft))
-                                                                                  .build();
-
-        // test
-        final List<UpdateAction<Product>> result = buildAddVariantUpdateActionFromDraft(productVariantDraft);
-
-        // assertion
-        assertThat(result).containsExactlyInAnyOrder(
-            AddVariant.of(null, null, "foo", true),
-            AddAsset.ofSku("foo", assetDraft).withStaged(true)
-        );
-    }
-
-    @Test
-    public void buildAddVariantUpdateActionFromDraft_WithMultipleAsset_BuildsMultipleAddAssetsActions() {
+    public void buildAddVariantUpdateActionFromDraft_WithMultipleAssets_BuildsMultipleAddAssetsActions() {
         // preparation
         final AssetDraft assetDraft = AssetDraftBuilder
             .of(singletonList(AssetSourceBuilder.ofUri("foo").build()), ofEnglish("assetName"))
