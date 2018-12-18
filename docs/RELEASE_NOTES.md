@@ -33,6 +33,9 @@
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.1.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.1.0)
 
+- 🎉 **New Features** (2)
+    - **Product Sync** - Added support for syncing assets of newly added variants. [#357](https://github.com/commercetools/commercetools-sync-java/issues/357).
+    - **Product Sync** - `ProductSyncUtils#buildActions` and `ProductUpdateActionUtils#buildVariantsUpdateActions` now build `AddAsset` actions for every new asset on every new variant on the new `ProductDraft`. [#357](https://github.com/commercetools/commercetools-sync-java/issues/357).
 - 🐞 **Bug Fixes** (2)
     - **ProductType Sync** - Fixed a bug in the `productType` sync which would try to unset `isSearchable`, `inputHint` 
     and `attributeConstraint` values to `null` instead of their default values. [#354](https://github.com/commercetools/commercetools-sync-java/issues/354)
