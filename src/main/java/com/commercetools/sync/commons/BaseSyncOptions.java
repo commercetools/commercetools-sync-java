@@ -177,6 +177,11 @@ public class BaseSyncOptions<U, V> {
     public List<UpdateAction<U>> applyBeforeUpdateCallBack(@Nonnull final List<UpdateAction<U>> updateActions,
                                                            @Nonnull final V newResourceDraft,
                                                            @Nonnull final U oldResource) {
+
+        if (updateActions.isEmpty()) {
+            return updateActions;
+        }
+
         return ofNullable(beforeUpdateCallback)
             .map(callBack -> emptyIfNull(callBack.apply(updateActions, newResourceDraft, oldResource)))
             .orElse(updateActions);
