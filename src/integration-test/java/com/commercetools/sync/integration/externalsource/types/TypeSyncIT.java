@@ -59,7 +59,6 @@ import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.any;
@@ -753,14 +752,23 @@ public class TypeSyncIT {
         //preparation
         final FieldDefinition withSetOfEnumsOld = FieldDefinition.of(
             SetFieldType.of(
-                EnumFieldType.of(emptyList())),
+                EnumFieldType.of(
+                    asList(
+                        EnumValue.of("b", "b"),
+                        EnumValue.of("a", "a")
+
+                    ))),
             "foo",
             ofEnglish("foo"),
             false);
 
         final FieldDefinition withSetOfSetOfLEnumsOld = FieldDefinition.of(
             SetFieldType.of(
-                LocalizedEnumFieldType.of(emptyList())),
+                LocalizedEnumFieldType.of(
+                    asList(
+                        LocalizedEnumValue.of("b", ofEnglish("b")),
+                        LocalizedEnumValue.of("a", ofEnglish("a"))
+                    ))),
             "bar",
             ofEnglish("bar"),
             false);
@@ -775,14 +783,24 @@ public class TypeSyncIT {
 
         final FieldDefinition withSetOfEnumsNew = FieldDefinition.of(
             SetFieldType.of(
-                EnumFieldType.of(singletonList(EnumValue.of("foo", "bar")))),
+                EnumFieldType.of(
+                    asList(
+                        EnumValue.of("a", "a"),
+                        EnumValue.of("b", "b"),
+                        EnumValue.of("c", "c")
+                    ))),
             "foo",
             ofEnglish("foo"),
             false);
 
         final FieldDefinition withSetOfSetOfLEnumsNew = FieldDefinition.of(
             SetFieldType.of(LocalizedEnumFieldType.of(
-                singletonList(LocalizedEnumValue.of("foo", ofEnglish("bar"))))), "bar", ofEnglish("bar"), false);
+                asList(
+                    LocalizedEnumValue.of("a", ofEnglish("a")),
+                    LocalizedEnumValue.of("b", ofEnglish("b")),
+                    LocalizedEnumValue.of("c", ofEnglish("c"))
+                )
+            )), "bar", ofEnglish("bar"), false);
 
         final TypeDraft newTypeDraft = TypeDraftBuilder.of("withSetOfEnums", ofEnglish("withSetOfEnums"),
             ResourceTypeIdsSetBuilder.of().addCategories().build())

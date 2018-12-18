@@ -36,7 +36,6 @@ import org.junit.Test;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -802,7 +801,13 @@ public class ProductTypeSyncIT {
         // preparation
         final AttributeDefinitionDraft withSetOfEnumsOld = AttributeDefinitionDraftBuilder
             .of(
-                SetAttributeType.of(EnumAttributeType.of(emptyList())),
+                SetAttributeType.of(EnumAttributeType.of(
+                    asList(
+                        EnumValue.of("d", "d"),
+                        EnumValue.of("b", "newB"),
+                        EnumValue.of("a", "a"),
+                        EnumValue.of("c", "c")
+                    ))),
                 "foo",
                 ofEnglish("foo"),
                 false
@@ -812,7 +817,13 @@ public class ProductTypeSyncIT {
         final AttributeDefinitionDraft withSetOfSetOfLEnumsOld = AttributeDefinitionDraftBuilder
             .of(
                 SetAttributeType.of(
-                    LocalizedEnumAttributeType.of(singletonList(LocalizedEnumValue.of("foo", ofEnglish("bar"))))),
+                    LocalizedEnumAttributeType.of(
+                        asList(
+                            LocalizedEnumValue.of("d", ofEnglish("d")),
+                            LocalizedEnumValue.of("b", ofEnglish("newB")),
+                            LocalizedEnumValue.of("a", ofEnglish("a")),
+                            LocalizedEnumValue.of("c", ofEnglish("c"))
+                        ))),
                 "bar",
                 ofEnglish("bar"),
                 false
@@ -832,7 +843,12 @@ public class ProductTypeSyncIT {
 
         final AttributeDefinitionDraft withSetOfEnumsNew = AttributeDefinitionDraftBuilder
             .of(
-                SetAttributeType.of(EnumAttributeType.of(singletonList(EnumValue.of("foo", "bar")))),
+                SetAttributeType.of(EnumAttributeType.of(
+                    asList(
+                        EnumValue.of("a", "a"),
+                        EnumValue.of("b", "b"),
+                        EnumValue.of("c", "c")
+                    ))),
                 "foo",
                 ofEnglish("foo"),
                 false
@@ -843,7 +859,11 @@ public class ProductTypeSyncIT {
             .of(
                 SetAttributeType.of(
                     LocalizedEnumAttributeType.of(
-                        singletonList(LocalizedEnumValue.of("foo", ofEnglish("bar").plus(Locale.GERMAN, "bar"))))),
+                        asList(
+                            LocalizedEnumValue.of("a", ofEnglish("a")),
+                            LocalizedEnumValue.of("b", ofEnglish("newB")),
+                            LocalizedEnumValue.of("c", ofEnglish("c"))
+                        ))),
                 "bar",
                 ofEnglish("bar"),
                 false
