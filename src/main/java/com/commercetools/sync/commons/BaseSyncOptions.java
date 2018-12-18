@@ -161,28 +161,26 @@ public class BaseSyncOptions<U, V> {
 
     /**
      * Given a {@link List} of {@link UpdateAction}, a new resource draft of type {@code V} and the old existing
-     * resource of the type {@code U}, this method applies the {@code beforeUpdateCallback} function
-     * which is set to {@code this} instance of the {@link BaseSyncOptions} and returns the result. If the
-     * {@code beforeUpdateCallback} is null, this method does nothing to the supplied list of update actions and returns
-     * the same list. If the result of the callback is null, an empty list is returned.
+     * resource of the type {@code U}, this method applies the {@code beforeUpdateCallback} function which is set to
+     * {@code this} instance of the {@link BaseSyncOptions} and returns the result. If the {@code beforeUpdateCallback}
+     * is null or {@code updateActions} is empty, this method does nothing to the supplied list of {@code updateActions}
+     * and returns the same list. If the result of the callback is null, an empty list is returned.
      *
      * @param updateActions the list of update actions to apply the {@code beforeUpdateCallback} function on.
      * @param newResourceDraft the new resource draft that is being compared to the old resource.
      * @param oldResource the old resource that is being compared to the new draft.
      * @return a list of update actions after applying the {@code beforeUpdateCallback} function on. If the
-     *         {@code beforeUpdateCallback} function was null, the supplied list of {@code updateActions} is returned as
-     *         is. If the return of the callback was null, an empty list is returned.
+     *         {@code beforeUpdateCallback} function was null or {@code updateActions} was empty, the supplied list of
+     *         {@code updateActions} is returned as is. If the return of the callback was null, an empty list is
+     *         returned.
      */
     @Nonnull
     public List<UpdateAction<U>> applyBeforeUpdateCallBack(@Nonnull final List<UpdateAction<U>> updateActions,
                                                            @Nonnull final V newResourceDraft,
                                                            @Nonnull final U oldResource) {
 
-        if (updateActions.isEmpty()) {
-            return updateActions;
-        }
-
         return ofNullable(beforeUpdateCallback)
+            .filter(callback -> !updateActions.isEmpty())
             .map(callBack -> emptyIfNull(callBack.apply(updateActions, newResourceDraft, oldResource)))
             .orElse(updateActions);
     }
