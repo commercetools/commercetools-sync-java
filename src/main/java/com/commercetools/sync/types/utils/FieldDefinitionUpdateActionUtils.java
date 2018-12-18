@@ -7,12 +7,14 @@ import io.sphere.sdk.models.LocalizedEnumValue;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.types.EnumFieldType;
 import io.sphere.sdk.types.FieldDefinition;
+import io.sphere.sdk.types.FieldType;
 import io.sphere.sdk.types.LocalizedEnumFieldType;
+import io.sphere.sdk.types.SetFieldType;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.commands.updateactions.ChangeFieldDefinitionLabel;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -52,61 +54,118 @@ final class FieldDefinitionUpdateActionUtils {
     }
 
     /**
-     * Compares all the {@link EnumValue} and {@link LocalizedEnumValue} values of {@link FieldDefinition}s and returns
-     * a list of {@link UpdateAction}&lt;{@link Type}&gt; as a result. If both {@link FieldDefinition}s have identical
-     * enum values, then no update action is needed and hence an empty {@link List} is returned.
+     * Checks if both the supplied {@code oldFieldDefinition} and {@code newFieldDefinition} have an
+     * {@link FieldType} that is either an {@link EnumFieldType} or a {@link LocalizedEnumFieldType} or
+     * a {@link SetFieldType} with a subtype that is either an {@link EnumFieldType} or a
+     * {@link LocalizedEnumFieldType}.
      *
-     * @param oldFieldDefinition the old field definition which should be updated.
-     * @param newFieldDefinition the new field definition where we get the new fields.
+     * <p>The method compares all the {@link EnumValue} and {@link LocalizedEnumValue} values of the
+     * {@link FieldType} and the {@link FieldDefinition} types and returns a list of
+     * {@link UpdateAction}&lt;{@link Type}&gt; as a result. If both the {@code oldFieldDefinition} and
+     * {@code newFieldDefinition} have identical enum values, then no update action is needed and hence an empty
+     * {@link List} is returned.</p>
+     *
+     * <p>Note: This method expects the supplied {@code oldFieldDefinition} and {@code newFieldDefinition}
+     *  to have the same {@link FieldType}. Otherwise, the behaviour is not guaranteed.</p>
+     *
+     * @param oldFieldDefinition      the field definition which should be updated.
+     * @param newFieldDefinition the new field definition draft where we get the new fields.
      * @return A list with the update actions or an empty list if the field definition enums are identical.
      *
-     * @throws DuplicateKeyException in case there are localized enum values with duplicate keys.
+     * @throws DuplicateKeyException in case there are enum values with duplicate keys.
      */
     @Nonnull
     static List<UpdateAction<Type>> buildEnumUpdateActions(
         @Nonnull final FieldDefinition oldFieldDefinition,
         @Nonnull final FieldDefinition newFieldDefinition) {
 
-        final List<UpdateAction<Type>> updateActions = new ArrayList<>();
+        final FieldType oldFieldDefinitionType = oldFieldDefinition.getType();
+        final FieldType newFieldDefinitionType = newFieldDefinition.getType();
 
-        if (isPlainEnumField(oldFieldDefinition)) {
+        return getEnumFieldType(oldFieldDefinitionType)
+            .map(oldEnumFieldType ->
+                getEnumFieldType(newFieldDefinitionType)
+                    .map(newEnumFieldType ->
+                        buildEnumValuesUpdateActions(oldFieldDefinition.getName(),
+                            oldEnumFieldType.getValues(),
+                            newEnumFieldType.getValues())
+                    )
+                    .orElseGet(Collections::emptyList)
+            )
+            .orElseGet(() ->
+                getLocalizedEnumFieldType(oldFieldDefinitionType)
+                    .map(oldLocalizedEnumFieldType ->
+                        getLocalizedEnumFieldType(newFieldDefinitionType)
+                            .map(newLocalizedEnumFieldType ->
 
-            updateActions.addAll(buildEnumValuesUpdateActions(
-                oldFieldDefinition.getName(),
-                ((EnumFieldType) oldFieldDefinition.getType()).getValues(),
-                ((EnumFieldType) newFieldDefinition.getType()).getValues()
-            ));
+                                buildLocalizedEnumValuesUpdateActions(oldFieldDefinition.getName(),
+                                    oldLocalizedEnumFieldType.getValues(),
+                                    newLocalizedEnumFieldType.getValues())
 
-        } else if (isLocalizedEnumField(oldFieldDefinition)) {
+                            )
+                            .orElseGet(Collections::emptyList)
+                    )
+                    .orElseGet(Collections::emptyList)
+            );
+    }
 
-            updateActions.addAll(buildLocalizedEnumValuesUpdateActions(
-                oldFieldDefinition.getName(),
-                ((LocalizedEnumFieldType) oldFieldDefinition.getType()).getValues(),
-                ((LocalizedEnumFieldType) newFieldDefinition.getType()).getValues()
-            ));
+    /**
+     * Returns an optional containing the field type if is an {@link EnumFieldType} or if the
+     * {@link FieldType} is a {@link SetFieldType} with an {@link EnumFieldType} as a subtype, it returns
+     * this subtype in the optional. Otherwise, an empty optional.
+     *
+     * @param fieldType the field type.
+     * @return an optional containing the field type if is an {@link EnumFieldType} or if the
+     *         {@link FieldType} is a {@link SetFieldType} with an {@link EnumFieldType} as a subtype, it
+     *         returns this subtype in the optional. Otherwise, an empty optional.
+     */
+    private static Optional<EnumFieldType> getEnumFieldType(
+        @Nonnull final FieldType fieldType) {
 
+        if (fieldType instanceof EnumFieldType) {
+            return Optional.of((EnumFieldType) fieldType);
         }
-        return updateActions;
+
+        if (fieldType instanceof SetFieldType) {
+
+            final SetFieldType setFieldType = (SetFieldType) fieldType;
+            final FieldType subType = setFieldType.getElementType();
+
+            if (subType instanceof EnumFieldType) {
+                return Optional.of((EnumFieldType) subType);
+            }
+        }
+
+        return Optional.empty();
     }
 
     /**
-     * Indicates if the field is a plain enum value or not.
+     * Returns an optional containing the field type if is an {@link LocalizedEnumFieldType} or if the
+     * {@link FieldType} is a {@link SetFieldType} with an {@link LocalizedEnumFieldType} as a subtype, it
+     * returns this subtype in the optional. Otherwise, an empty optional.
      *
-     * @param fieldDefinition the field definition.
-     * @return true if the field definition is a plain enum value, false otherwise.
+     * @param fieldType the field type.
+     * @return an optional containing the field type if is an {@link LocalizedEnumFieldType} or if the
+     *         {@link FieldType} is a {@link SetFieldType} with an {@link LocalizedEnumFieldType} as a
+     *         subtype, it returns this subtype in the optional. Otherwise, an empty optional.
      */
-    private static boolean isPlainEnumField(@Nonnull final FieldDefinition fieldDefinition) {
-        return fieldDefinition.getType().getClass() == EnumFieldType.class;
-    }
+    private static Optional<LocalizedEnumFieldType> getLocalizedEnumFieldType(
+        @Nonnull final FieldType fieldType) {
 
-    /**
-     * Indicates if the field definition is a localized enum value or not.
-     *
-     * @param fieldDefinition the field definition.
-     * @return true if the field definition is a localized enum value, false otherwise.
-     */
-    private static boolean isLocalizedEnumField(@Nonnull final FieldDefinition fieldDefinition) {
-        return fieldDefinition.getType().getClass() == LocalizedEnumFieldType.class;
+        if (fieldType instanceof LocalizedEnumFieldType) {
+            return Optional.of((LocalizedEnumFieldType) fieldType);
+        }
+
+        if (fieldType instanceof SetFieldType) {
+            final SetFieldType setFieldType = (SetFieldType) fieldType;
+            final FieldType subType = setFieldType.getElementType();
+
+            if (subType instanceof LocalizedEnumFieldType) {
+                return Optional.of((LocalizedEnumFieldType) subType);
+            }
+        }
+
+        return Optional.empty();
     }
 
     /**
@@ -128,8 +187,6 @@ final class FieldDefinitionUpdateActionUtils {
             () -> ChangeFieldDefinitionLabel.of(oldFieldDefinition.getName(), newFieldDefinition.getLabel())
         );
     }
-
-
 
     private FieldDefinitionUpdateActionUtils() {
     }

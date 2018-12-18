@@ -9,8 +9,10 @@ import io.sphere.sdk.models.TextInputHint;
 import io.sphere.sdk.products.attributes.AttributeConstraint;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
+import io.sphere.sdk.products.attributes.AttributeType;
 import io.sphere.sdk.products.attributes.EnumAttributeType;
 import io.sphere.sdk.products.attributes.LocalizedEnumAttributeType;
+import io.sphere.sdk.products.attributes.SetAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeConstraint;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeDefinitionLabel;
@@ -19,7 +21,7 @@ import io.sphere.sdk.producttypes.commands.updateactions.ChangeIsSearchable;
 import io.sphere.sdk.producttypes.commands.updateactions.SetInputTip;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -63,57 +65,117 @@ final class AttributeDefinitionUpdateActionUtils {
     }
 
     /**
-     * Compares all the {@link EnumValue} and {@link LocalizedEnumValue} values of an {@link AttributeDefinition} and
-     * an {@link AttributeDefinitionDraft} and returns a list of {@link UpdateAction}&lt;{@link ProductType}&gt; as a
-     * result. If both the {@link AttributeDefinition} and the {@link AttributeDefinitionDraft} have identical
-     * enum values, then no update action is needed and hence an empty {@link List} is returned.
+     * Checks if both the supplied {@code oldAttributeDefinition} and {@code newAttributeDefinitionDraft} have an
+     * {@link AttributeType} that is either an {@link EnumAttributeType} or a {@link LocalizedEnumAttributeType} or
+     * a {@link SetAttributeType} with a subtype that is either an {@link EnumAttributeType} or a
+     * {@link LocalizedEnumAttributeType}.
+     *
+     * <p>The method compares all the {@link EnumValue} and {@link LocalizedEnumValue} values of the
+     * {@link AttributeDefinition} and the {@link AttributeDefinitionDraft} attribute types and returns a list of
+     * {@link UpdateAction}&lt;{@link ProductType}&gt; as a result. If both the {@link AttributeDefinition} and the
+     * {@link AttributeDefinitionDraft} have identical enum values, then no update action is needed and hence an empty
+     * {@link List} is returned.</p>
+     *
+     * <p>Note: This method expects the supplied {@link AttributeDefinition} and the {@link AttributeDefinitionDraft}
+     *  to have the same {@link AttributeType}. Otherwise, the behaviour is not guaranteed.</p>
      *
      * @param oldAttributeDefinition      the attribute definition which should be updated.
      * @param newAttributeDefinitionDraft the new attribute definition draft where we get the new fields.
      * @return A list with the update actions or an empty list if the attribute definition enums are identical.
+     *
+     * @throws DuplicateKeyException in case there are enum values with duplicate keys.
      */
     @Nonnull
-    private static List<UpdateAction<ProductType>> buildEnumUpdateActions(
+    static List<UpdateAction<ProductType>> buildEnumUpdateActions(
         @Nonnull final AttributeDefinition oldAttributeDefinition,
         @Nonnull final AttributeDefinitionDraft newAttributeDefinitionDraft) {
 
-        final List<UpdateAction<ProductType>> updateActions = new ArrayList<>();
+        final AttributeType oldAttributeType = oldAttributeDefinition.getAttributeType();
+        final AttributeType newAttributeType = newAttributeDefinitionDraft.getAttributeType();
 
-        if (isPlainEnumAttribute(oldAttributeDefinition)) {
-            updateActions.addAll(buildEnumValuesUpdateActions(
-                oldAttributeDefinition.getName(),
-                ((EnumAttributeType) oldAttributeDefinition.getAttributeType()).getValues(),
-                ((EnumAttributeType) newAttributeDefinitionDraft.getAttributeType()).getValues()
-            ));
-        } else if (isLocalizedEnumAttribute(oldAttributeDefinition)) {
-            updateActions.addAll(buildLocalizedEnumValuesUpdateActions(
-                oldAttributeDefinition.getName(),
-                ((LocalizedEnumAttributeType) oldAttributeDefinition.getAttributeType()).getValues(),
-                ((LocalizedEnumAttributeType) newAttributeDefinitionDraft.getAttributeType()).getValues()
-            ));
+        return getEnumAttributeType(oldAttributeType)
+            .map(oldEnumAttributeType ->
+                getEnumAttributeType(newAttributeType)
+                    .map(newEnumAttributeType ->
+                        buildEnumValuesUpdateActions(oldAttributeDefinition.getName(),
+                            oldEnumAttributeType.getValues(),
+                            newEnumAttributeType.getValues())
+                    )
+                    .orElseGet(Collections::emptyList)
+            )
+            .orElseGet(() ->
+                getLocalizedEnumAttributeType(oldAttributeType)
+                    .map(oldLocalizedEnumAttributeType ->
+                        getLocalizedEnumAttributeType(newAttributeType)
+                            .map(newLocalizedEnumAttributeType ->
+
+                                buildLocalizedEnumValuesUpdateActions(oldAttributeDefinition.getName(),
+                                    oldLocalizedEnumAttributeType.getValues(),
+                                    newLocalizedEnumAttributeType.getValues())
+
+                            )
+                            .orElseGet(Collections::emptyList)
+                    )
+                    .orElseGet(Collections::emptyList)
+            );
+    }
+
+    /**
+     * Returns an optional containing the attribute type if is an {@link EnumAttributeType} or if the
+     * {@link AttributeType} is a {@link SetAttributeType} with an {@link EnumAttributeType} as a subtype, it returns
+     * this subtype in the optional. Otherwise, an empty optional.
+     *
+     * @param attributeType the attribute type.
+     * @return an optional containing the attribute type if is an {@link EnumAttributeType} or if the
+     *         {@link AttributeType} is a {@link SetAttributeType} with an {@link EnumAttributeType} as a subtype, it
+     *         returns this subtype in the optional. Otherwise, an empty optional.
+     */
+    private static Optional<EnumAttributeType> getEnumAttributeType(
+        @Nonnull final AttributeType attributeType) {
+
+        if (attributeType instanceof EnumAttributeType) {
+            return Optional.of((EnumAttributeType) attributeType);
         }
 
-        return updateActions;
+        if (attributeType instanceof SetAttributeType) {
+            final SetAttributeType setFieldType = (SetAttributeType) attributeType;
+            final AttributeType subType = setFieldType.getElementType();
+
+            if (subType instanceof EnumAttributeType) {
+                return Optional.of((EnumAttributeType) subType);
+            }
+        }
+
+        return Optional.empty();
     }
 
     /**
-     * Indicates if the attribute definition is a plain enum value or not.
+     * Returns an optional containing the attribute type if is an {@link LocalizedEnumAttributeType} or if the
+     * {@link AttributeType} is a {@link SetAttributeType} with an {@link LocalizedEnumAttributeType} as a subtype, it
+     * returns this subtype in the optional. Otherwise, an empty optional.
      *
-     * @param attributeDefinition the attribute definition.
-     * @return true if the attribute definition is a plain enum value, false otherwise.
+     * @param attributeType the attribute type.
+     * @return an optional containing the attribute type if is an {@link LocalizedEnumAttributeType} or if the
+     *         {@link AttributeType} is a {@link SetAttributeType} with an {@link LocalizedEnumAttributeType} as a
+     *         subtype, it returns this subtype in the optional. Otherwise, an empty optional.
      */
-    private static boolean isPlainEnumAttribute(@Nonnull final AttributeDefinition attributeDefinition) {
-        return attributeDefinition.getAttributeType().getClass() == EnumAttributeType.class;
-    }
+    private static Optional<LocalizedEnumAttributeType> getLocalizedEnumAttributeType(
+        @Nonnull final AttributeType attributeType) {
 
-    /**
-     * Indicates if the attribute definition is a localized enum value or not.
-     *
-     * @param attributeDefinition the attribute definition.
-     * @return true if the attribute definition is a localized enum value, false otherwise.
-     */
-    private static boolean isLocalizedEnumAttribute(@Nonnull final AttributeDefinition attributeDefinition) {
-        return attributeDefinition.getAttributeType().getClass() == LocalizedEnumAttributeType.class;
+        if (attributeType instanceof LocalizedEnumAttributeType) {
+            return Optional.of((LocalizedEnumAttributeType) attributeType);
+        }
+
+        if (attributeType instanceof SetAttributeType) {
+            final SetAttributeType setFieldType = (SetAttributeType) attributeType;
+            final AttributeType subType = setFieldType.getElementType();
+
+            if (subType instanceof LocalizedEnumAttributeType) {
+                return Optional.of((LocalizedEnumAttributeType) subType);
+            }
+        }
+
+        return Optional.empty();
     }
 
     /**
