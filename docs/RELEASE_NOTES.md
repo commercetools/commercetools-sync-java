@@ -28,8 +28,18 @@
 
 -->
 
+
 <!--
+
 ### 1.1.0 -  Dec 20, 2018
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.0.0...1.1.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.1.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.1.0)
+
+
+-->
+
+### 1.1.0 -  Dec 19, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.0.0...1.1.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.1.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.1.0)
@@ -40,7 +50,7 @@
     - **ProductType Sync** - Added support for syncing changes to an `AttributeDefinition` with a `SetType` of a subtype `LocalizableEnumType` or `EnumType` [#313](https://github.com/commercetools/commercetools-sync-java/issues/313)
     - **Type Sync** - Added support for syncing changes to a `FieldDefinition` with a `SetType` of a subtype `LocalizableEnumType` or `EnumType` [#313](https://github.com/commercetools/commercetools-sync-java/issues/313)
 
-- 🐞 **Bug Fixes** (2)
+- 🐞 **Bug Fixes** (3)
     - **ProductType Sync** - Fixed a bug in the `productType` sync which would try to unset `isSearchable`, `inputHint` 
     and `attributeConstraint` values to `null` instead of their default values. [#354](https://github.com/commercetools/commercetools-sync-java/issues/354)
     - **ProductType Sync** - `ProductTypeSyncUtils#buildActions`, `ProductTypeUpdateActionUtils#buildAttributesUpdateActions`  
@@ -54,8 +64,6 @@
 - 📋 **Documentation** (2)
     - **Commons** - Added link to [documentation pages](https://commercetools.github.io/commercetools-sync-java) in README of the github repo.
     - **Commons** - Fixed link of [`beforeUpdateCallback` for keeping other variants](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/templates/beforeupdatecallback/KeepOtherVariantsSyncIT.java) example in the [Sync Options](/docs/usage/SYNC_OPTIONS.md) doc page. [#360](https://github.com/commercetools/commercetools-sync-java/issues/360)
-
--->
 
 ### 1.0.0 -  Dec 10, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M14...1.0.0) |
