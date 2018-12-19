@@ -93,8 +93,8 @@ public class ProductTypeSyncBenchmark {
         final ProductTypeSyncStatistics syncStatistics = executeBlocking(productTypeSync.sync(productTypeDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-        // assert on threshold (based on history of benchmarks; highest was ~120 seconds)
-        final int threshold = 180000; // 1 minute higher than highest benchmark
+        // assert on threshold (based on history of benchmarks; highest was ~12 seconds)
+        final int threshold = 72000; // 1 minute higher than highest benchmark
         assertThat(totalTime).withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
                              .isLessThan(threshold);
 
@@ -139,8 +139,8 @@ public class ProductTypeSyncBenchmark {
         final ProductTypeSyncStatistics syncStatistics = executeBlocking(productTypeSync.sync(productTypeDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-        // assert on threshold (based on history of benchmarks; highest was ~129 seconds)
-        final int threshold = 189000; // 1 minute higher than highest benchmark
+        // assert on threshold (based on history of benchmarks; highest was ~13 seconds)
+        final int threshold = 73000; // 1 minute higher than highest benchmark
         assertThat(totalTime).withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
                              .isLessThan(threshold);
 
@@ -199,8 +199,8 @@ public class ProductTypeSyncBenchmark {
         final ProductTypeSyncStatistics syncStatistics = executeBlocking(productTypeSync.sync(productTypeDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-        // assert on threshold (based on history of benchmarks; highest was ~127 seconds)
-        final int threshold = 190000; // 1 minute higher than highest benchmark
+        // assert on threshold (based on history of benchmarks; highest was ~13 seconds)
+        final int threshold = 73000; // 1 minute higher than highest benchmark
         assertThat(totalTime).withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
                              .isLessThan(threshold);
 

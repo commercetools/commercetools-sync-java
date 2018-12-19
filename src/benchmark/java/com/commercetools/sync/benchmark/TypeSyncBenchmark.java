@@ -101,8 +101,8 @@ public class TypeSyncBenchmark {
         final TypeSyncStatistics syncStatistics = executeBlocking(typeSync.sync(typeDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-        // assert on threshold (based on history of benchmarks; highest was ~133 seconds)
-        final int threshold = 190000; // 1 minute higher than highest benchmark
+        // assert on threshold (based on history of benchmarks; highest was ~13 seconds)
+        final int threshold = 73000; // 1 minute higher than highest benchmark
         assertThat(totalTime).withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
                              .isLessThan(threshold);
 
@@ -146,8 +146,8 @@ public class TypeSyncBenchmark {
         final TypeSyncStatistics syncStatistics = executeBlocking(typeSync.sync(typeDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-        // assert on threshold (based on history of benchmarks; highest was ~126 seconds)
-        final int threshold = 190000; // 1 minute higher than highest benchmark
+        // assert on threshold (based on history of benchmarks; highest was ~13 seconds)
+        final int threshold = 73000; // 1 minute higher than highest benchmark
         assertThat(totalTime).withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
                              .isLessThan(threshold);
 
@@ -206,8 +206,8 @@ public class TypeSyncBenchmark {
         final TypeSyncStatistics syncStatistics = executeBlocking(typeSync.sync(typeDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-        // assert on threshold (based on history of benchmarks; highest was ~123 seconds)
-        final int threshold = 180000; // 1 minute higher than highest benchmark
+        // assert on threshold (based on history of benchmarks; highest was ~12 seconds)
+        final int threshold = 72000; // 1 minute higher than highest benchmark
         assertThat(totalTime).withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
                              .isLessThan(threshold);
 
