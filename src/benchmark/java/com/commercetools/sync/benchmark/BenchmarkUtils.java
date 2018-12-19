@@ -11,15 +11,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Spliterator;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.util.Optional.ofNullable;
-import static java.util.Spliterators.spliteratorUnknownSize;
-import static java.util.stream.StreamSupport.stream;
 
 class BenchmarkUtils {
     private static final String BENCHMARK_RESULTS_FILE_NAME = "benchmarks.json";
@@ -27,7 +20,7 @@ class BenchmarkUtils {
         .map(path -> path + "/tmp_git_dir/benchmarks/").orElse("");
     private static final String BENCHMARK_RESULTS_FILE_PATH = BENCHMARK_RESULTS_FILE_DIR + BENCHMARK_RESULTS_FILE_NAME;
     private static final Charset UTF8_CHARSET = StandardCharsets.UTF_8;
-    private static final String EXECUTION_TIMES = "executionTimes";
+    private static final String EXECUTION_TIME = "executionTime";
 
     static final String PRODUCT_SYNC = "productSync";
     static final String INVENTORY_SYNC = "inventorySync";
@@ -47,84 +40,77 @@ class BenchmarkUtils {
                               @Nonnull final String benchmark,
                               final double newResult) throws IOException {
 
-        final JsonNode rootNode = new ObjectMapper().readTree(getFileContent(BENCHMARK_RESULTS_FILE_PATH));
+        final JsonNode rootNode = new ObjectMapper().readTree(getFileContent());
         final JsonNode withNewResult = addNewResult(rootNode, version, sync, benchmark, newResult);
-        writeToFile(withNewResult.toString(), BENCHMARK_RESULTS_FILE_PATH);
+        writeToFile(withNewResult.toString());
     }
 
+    @Nonnull
+    private static String getFileContent() throws IOException {
+
+        final byte[] fileBytes = Files.readAllBytes(Paths.get(BENCHMARK_RESULTS_FILE_PATH));
+        return new String(fileBytes, UTF8_CHARSET);
+    }
+
+    @Nonnull
     private static JsonNode addNewResult(@Nonnull final JsonNode originalRoot,
                                          @Nonnull final String version,
                                          @Nonnull final String sync,
                                          @Nonnull final String benchmark,
                                          final double newResult) {
+
         ObjectNode rootNode = (ObjectNode) originalRoot;
         ObjectNode versionNode = (ObjectNode) rootNode.get(version);
 
         // If version doesn't exist yet, create a new JSON object for the new version.
         if (versionNode == null) {
-            rootNode = createVersionNode(rootNode, version);
-            versionNode = (ObjectNode) rootNode.get(version);
+            versionNode = createVersionNode();
+            rootNode.set(version, versionNode);
         }
 
         final ObjectNode syncNode = (ObjectNode) versionNode.get(sync);
         final ObjectNode benchmarkNode = (ObjectNode) syncNode.get(benchmark);
 
-        // Get current list of execution times for the specified benchmark of the specified sync module
-        // of the specified version.
-        final List<JsonNode> results = toList(benchmarkNode.get(EXECUTION_TIMES).elements());
-
         // Add new result.
-        results.add(JsonNodeFactory.instance.numberNode(newResult));
-        benchmarkNode.set(EXECUTION_TIMES, JsonNodeFactory.instance.arrayNode().addAll(results));
-
-        final JsonNode newSyncNode = syncNode.set(benchmark, benchmarkNode);
-        final JsonNode newVersionNode = versionNode.set(sync, newSyncNode);
-        final JsonNode newRoot = rootNode.set(version, newVersionNode);
-        return newRoot;
+        benchmarkNode.set(EXECUTION_TIME, JsonNodeFactory.instance.numberNode(newResult));
+        return rootNode;
     }
 
     @Nonnull
-    private static <T> List<T> toList(@Nonnull final Iterator<T> iterator) {
-        return toStream(iterator).collect(Collectors.toList());
+    private static ObjectNode createVersionNode() {
+
+        final ObjectNode newVersionNode = JsonNodeFactory.instance.objectNode();
+        newVersionNode.set(PRODUCT_SYNC, createSyncNode());
+        newVersionNode.set(INVENTORY_SYNC, createSyncNode());
+        newVersionNode.set(CATEGORY_SYNC, createSyncNode());
+        newVersionNode.set(PRODUCT_TYPE_SYNC, createSyncNode());
+        newVersionNode.set(TYPE_SYNC, createSyncNode());
+
+        return newVersionNode;
     }
 
     @Nonnull
-    private static <T> Stream<T> toStream(@Nonnull final Iterator<T> iterator) {
-        return stream(spliteratorUnknownSize(iterator, Spliterator.ORDERED), false);
+    private static ObjectNode createSyncNode() {
+
+        final ObjectNode newSyncNode = JsonNodeFactory.instance.objectNode();
+        newSyncNode.set(CREATES_ONLY, createBenchmarkNode());
+        newSyncNode.set(UPDATES_ONLY, createBenchmarkNode());
+        newSyncNode.set(CREATES_AND_UPDATES, createBenchmarkNode());
+
+        return newSyncNode;
     }
 
-    private static ObjectNode createVersionNode(@Nonnull final ObjectNode rootNode, @Nonnull final String version) {
-        final ObjectNode newVersionNode = createSyncNode(createSyncNode(createSyncNode(
-            createSyncNode(createSyncNode(JsonNodeFactory.instance.objectNode(),
-                PRODUCT_SYNC), INVENTORY_SYNC), CATEGORY_SYNC), PRODUCT_TYPE_SYNC), TYPE_SYNC);
-        return (ObjectNode) rootNode.set(version, newVersionNode);
-    }
+    @Nonnull
+    private static ObjectNode createBenchmarkNode() {
 
-    private static ObjectNode createSyncNode(@Nonnull final ObjectNode versionNode,
-                                             @Nonnull final String sync) {
-        final ObjectNode newSyncNode = createBenchmarkNode(
-            createBenchmarkNode(
-                createBenchmarkNode(JsonNodeFactory.instance.objectNode(), CREATES_ONLY), UPDATES_ONLY),
-            CREATES_AND_UPDATES);
-        return (ObjectNode) versionNode.set(sync, newSyncNode);
-    }
-
-    private static ObjectNode createBenchmarkNode(@Nonnull final ObjectNode syncNode,
-                                                  @Nonnull final String benchmark) {
         final ObjectNode newBenchmarkNode = JsonNodeFactory.instance.objectNode();
-        newBenchmarkNode.set(EXECUTION_TIMES, JsonNodeFactory.instance.arrayNode());
+        newBenchmarkNode.set(EXECUTION_TIME, JsonNodeFactory.instance.numberNode(0));
 
-        syncNode.set(benchmark, newBenchmarkNode);
-        return syncNode;
+        return newBenchmarkNode;
     }
 
-    private static String getFileContent(@Nonnull final String path) throws IOException {
-        final byte[] fileBytes = Files.readAllBytes(Paths.get(path));
-        return new String(fileBytes, UTF8_CHARSET);
-    }
-
-    private static void writeToFile(@Nonnull final String content, @Nonnull final String path) throws IOException {
-        Files.write(Paths.get(path), content.getBytes(UTF8_CHARSET));
+    private static void writeToFile(@Nonnull final String content) throws IOException {
+        Files.write(Paths.get(BENCHMARK_RESULTS_FILE_PATH), content.getBytes(UTF8_CHARSET));
     }
 
     private BenchmarkUtils() {
