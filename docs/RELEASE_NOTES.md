@@ -40,6 +40,9 @@
     now treat the values of the optional fields `isSearchable`, `inputHint` and `attributeConstraint` 
     as (`true`, `SingleLine` and `None` respectivley) if they are `null` or not passed. [#354](https://github.com/commercetools/commercetools-sync-java/issues/354)
 
+- 🛠️ **Enhancements** (1)
+    - **Commons** - Benchmarks are now run once on every merge to `master` with a lower number of resources for faster benchmarking. [#246](https://github.com/commercetools/commercetools-sync-java/issues/246)
+
 - 📋 **Documentation** (1)
     - *Commons* - Add link to documentation pages in README of the github repo.
 
