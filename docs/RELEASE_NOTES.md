@@ -27,6 +27,7 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 
 -->
+
 <!--
 ### 1.1.0 -  Dec 20, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.0.0...1.1.0) |
@@ -44,10 +45,11 @@
     now treat the values of the optional fields `isSearchable`, `inputHint` and `attributeConstraint` 
     as (`true`, `SingleLine` and `None` respectivley) if they are `null` or not passed. [#354](https://github.com/commercetools/commercetools-sync-java/issues/354)
 
-- 📋 **Documentation** (1)
-    - *Commons* - Add link to documentation pages in README of the github repo.
+- 📋 **Documentation** (2)
+    - **Commons** - Added link to [documentation pages](https://commercetools.github.io/commercetools-sync-java) in README of the github repo.
+    - **Commons** - Fixed link of [`beforeUpdateCallback` for keeping other variants](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/templates/beforeupdatecallback/KeepOtherVariantsSyncIT.java) example in the [Sync Options](/docs/usage/SYNC_OPTIONS.md) doc page. [#360](https://github.com/commercetools/commercetools-sync-java/issues/360)
 
-!-->
+-->
 
 ### 1.0.0 -  Dec 10, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M14...1.0.0) |
@@ -68,7 +70,7 @@ the library. `1.0.0` is here for you to use with all new features, enhancements 
 ##### Full Release Notes
 
 - 🎉 **New Features** (4)
-    - **Type Sync** - Support for syncing types. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300) For more info how to use it please refer to [Type usage doc](/docs/usage/TYPE_SYNC.md).
+    - **Type Sync** - Added support for syncing types. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300) For more info how to use it please refer to [Type usage doc](/docs/usage/TYPE_SYNC.md).
     - **Type Sync** - Exposed `TypeSyncUtils#buildActions` which calculates all needed update actions after comparing a `Type` and a `TypeDraft`. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
     - **Type Sync** - Exposed `TypeUpdateActionUtils` which contains utils for calculating needed update actions after comparing individual fields of a `Type` and a `TypeDraft`. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
     - **Commons** - Added `OptionalUtils#filterEmptyOptionals` which are utility methods that filter out the empty optionals in a supplied list (with a varargs variation) returning a list of the contents of the non-empty 
