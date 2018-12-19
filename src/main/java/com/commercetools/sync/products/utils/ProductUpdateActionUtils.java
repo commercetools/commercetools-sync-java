@@ -15,6 +15,7 @@ import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
+import io.sphere.sdk.products.commands.updateactions.AddAsset;
 import io.sphere.sdk.products.commands.updateactions.AddToCategory;
 import io.sphere.sdk.products.commands.updateactions.AddVariant;
 import io.sphere.sdk.products.commands.updateactions.ChangeMasterVariant;
@@ -66,7 +67,6 @@ import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUt
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
-import static java.util.Collections.singletonList;
 import static java.util.Objects.nonNull;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
@@ -415,7 +415,7 @@ public final class ProductUpdateActionUtils {
                     final List<UpdateAction<Product>> updateOrAddVariant = ofNullable(matchingOldVariant)
                         .map(oldVariant -> collectAllVariantUpdateActions(oldProduct, oldVariant, newProductVariant,
                             attributesMetaData, syncOptions))
-                        .orElseGet(() -> singletonList(buildAddVariantUpdateActionFromDraft(newProductVariant)));
+                        .orElseGet(() -> buildAddVariantUpdateActionFromDraft(newProductVariant));
                     updateActions.addAll(updateOrAddVariant);
                 }
             }
@@ -432,6 +432,7 @@ public final class ProductUpdateActionUtils {
             @Nonnull final ProductVariantDraft newProductVariant,
             @Nonnull final Map<String, AttributeMetaData> attributesMetaData,
             @Nonnull final ProductSyncOptions syncOptions) {
+
         final ArrayList<UpdateAction<Product>> updateActions = new ArrayList<>();
         final SyncFilter syncFilter = syncOptions.getSyncFilter();
 
@@ -584,7 +585,9 @@ public final class ProductUpdateActionUtils {
     }
 
     /**
-     * Factory method to create {@link AddVariant} action from {@link ProductVariantDraft} instance.
+     * Factory method to create {@link AddVariant} action from {@link ProductVariantDraft} instance. If the supplied
+     * {@link ProductVariantDraft} contains assets, this method will append an {@link AddAsset} action for each
+     * new asset.
      *
      * <p>The {@link AddVariant} will include:<ul>
      * <li>sku</li>
@@ -595,13 +598,29 @@ public final class ProductUpdateActionUtils {
      * </ul>
      *
      * @param draft {@link ProductVariantDraft} which to add.
-     * @return new {@link AddVariant} update action with properties from {@code draft}
+     * @return a list of actions which contains an {@link AddVariant} update action with properties from {@code draft},
+     *         and {@link AddAsset} actions for each asset in the new variant.
      */
     @Nonnull
-    static AddVariant buildAddVariantUpdateActionFromDraft(@Nonnull final ProductVariantDraft draft) {
-        return AddVariant.of(draft.getAttributes(), draft.getPrices(), draft.getSku(), true)
-                         .withKey(draft.getKey())
-                         .withImages(draft.getImages());
+    static List<UpdateAction<Product>> buildAddVariantUpdateActionFromDraft(@Nonnull final ProductVariantDraft draft) {
+
+        final ArrayList<UpdateAction<Product>> actions = new ArrayList<>();
+
+        final UpdateAction<Product> addVariant = AddVariant
+            .of(draft.getAttributes(), draft.getPrices(), draft.getSku(), true)
+            .withKey(draft.getKey())
+            .withImages(draft.getImages());
+
+        actions.add(addVariant);
+
+        ofNullable(draft.getAssets())
+            .map(assetDrafts -> assetDrafts.stream()
+                                           .map(assetDraft -> (UpdateAction<Product>)
+                                               AddAsset.ofSku(draft.getSku(), assetDraft).withStaged(true))
+                                           .collect(toList()))
+            .ifPresent(actions::addAll);
+
+        return actions;
     }
 
     /**
