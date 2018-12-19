@@ -169,10 +169,11 @@ public class TypeSyncOptionsBuilderTest {
     public void applyBeforeUpdateCallBack_WithEmptyUpdateActions_ShouldNotApplyBeforeUpdateCallback() {
         final MockTriFunction beforeUpdateCallback = mock(MockTriFunction.class);
 
-        final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(CTP_CLIENT)
-                                                                      .beforeUpdateCallback(
-                                                                          beforeUpdateCallback)
-                                                                      .build();
+        final TypeSyncOptions typeSyncOptions =
+            TypeSyncOptionsBuilder.of(CTP_CLIENT)
+                                  .beforeUpdateCallback(beforeUpdateCallback)
+                                  .build();
+
         assertThat(typeSyncOptions.getBeforeUpdateCallback()).isNotNull();
 
         final List<UpdateAction<Type>> updateActions = emptyList();

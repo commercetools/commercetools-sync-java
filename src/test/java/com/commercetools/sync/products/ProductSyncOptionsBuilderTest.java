@@ -185,10 +185,10 @@ public class ProductSyncOptionsBuilderTest {
     public void applyBeforeUpdateCallBack_WithEmptyUpdateActions_ShouldNotApplyBeforeUpdateCallback() {
         final MockTriFunction beforeUpdateCallback = mock(MockTriFunction.class);
 
-        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
-                                                                               .beforeUpdateCallback(
-                                                                                   beforeUpdateCallback)
-                                                                               .build();
+        final ProductSyncOptions productSyncOptions =
+            ProductSyncOptionsBuilder.of(CTP_CLIENT)
+                                     .beforeUpdateCallback(beforeUpdateCallback)
+                                     .build();
 
         assertThat(productSyncOptions.getBeforeUpdateCallback()).isNotNull();
 

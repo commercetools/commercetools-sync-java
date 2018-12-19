@@ -186,10 +186,11 @@ public class CategorySyncOptionsBuilderTest {
     public void applyBeforeUpdateCallBack_WithEmptyUpdateActions_ShouldNotApplyBeforeUpdateCallback() {
         final MockTriFunction beforeUpdateCallback = mock(MockTriFunction.class);
 
-        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
-                                                                                  .beforeUpdateCallback(
-                                                                                      beforeUpdateCallback)
-                                                                                  .build();
+        final CategorySyncOptions categorySyncOptions =
+            CategorySyncOptionsBuilder.of(CTP_CLIENT)
+                                      .beforeUpdateCallback(beforeUpdateCallback)
+                                      .build();
+
         assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNotNull();
 
         final List<UpdateAction<Category>> updateActions = emptyList();
