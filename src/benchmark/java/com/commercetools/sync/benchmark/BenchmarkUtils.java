@@ -21,6 +21,8 @@ class BenchmarkUtils {
     private static final String BENCHMARK_RESULTS_FILE_PATH = BENCHMARK_RESULTS_FILE_DIR + BENCHMARK_RESULTS_FILE_NAME;
     private static final Charset UTF8_CHARSET = StandardCharsets.UTF_8;
     private static final String EXECUTION_TIME = "executionTime";
+    private static final String BRANCH_NAME = ofNullable(System.getenv("TRAVIS_COMMIT"))
+        .orElse("dev-local");
 
     static final String PRODUCT_SYNC = "productSync";
     static final String INVENTORY_SYNC = "inventorySync";
@@ -35,13 +37,11 @@ class BenchmarkUtils {
         + " threshold of '%d'.";
 
 
-    static void saveNewResult(@Nonnull final String version,
-                              @Nonnull final String sync,
-                              @Nonnull final String benchmark,
-                              final double newResult) throws IOException {
+    static void saveNewResult(@Nonnull final String sync, @Nonnull final String benchmark, final double newResult)
+        throws IOException {
 
         final JsonNode rootNode = new ObjectMapper().readTree(getFileContent());
-        final JsonNode withNewResult = addNewResult(rootNode, version, sync, benchmark, newResult);
+        final JsonNode withNewResult = addNewResult(rootNode, sync, benchmark, newResult);
         writeToFile(withNewResult.toString());
     }
 
@@ -54,21 +54,20 @@ class BenchmarkUtils {
 
     @Nonnull
     private static JsonNode addNewResult(@Nonnull final JsonNode originalRoot,
-                                         @Nonnull final String version,
                                          @Nonnull final String sync,
                                          @Nonnull final String benchmark,
                                          final double newResult) {
 
         ObjectNode rootNode = (ObjectNode) originalRoot;
-        ObjectNode versionNode = (ObjectNode) rootNode.get(version);
+        ObjectNode branchNode = (ObjectNode) rootNode.get(BRANCH_NAME);
 
         // If version doesn't exist yet, create a new JSON object for the new version.
-        if (versionNode == null) {
-            versionNode = createVersionNode();
-            rootNode.set(version, versionNode);
+        if (branchNode == null) {
+            branchNode = createVersionNode();
+            rootNode.set(BRANCH_NAME, branchNode);
         }
 
-        final ObjectNode syncNode = (ObjectNode) versionNode.get(sync);
+        final ObjectNode syncNode = (ObjectNode) branchNode.get(sync);
         final ObjectNode benchmarkNode = (ObjectNode) syncNode.get(benchmark);
 
         // Add new result.

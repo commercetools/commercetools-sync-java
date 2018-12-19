@@ -1,6 +1,5 @@
 package com.commercetools.sync.benchmark;
 
-import com.commercetools.sync.commons.utils.SyncSolutionInfo;
 import com.commercetools.sync.inventories.InventorySync;
 import com.commercetools.sync.inventories.InventorySyncOptions;
 import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
@@ -89,21 +88,21 @@ public class InventorySyncBenchmark {
         assertThat(inventorySyncStatistics)
             .hasValues(NUMBER_OF_RESOURCE_UNDER_TEST, NUMBER_OF_RESOURCE_UNDER_TEST, 0, 0);
 
-        saveNewResult(SyncSolutionInfo.LIB_VERSION, INVENTORY_SYNC, CREATES_ONLY, totalTime);
+        saveNewResult(INVENTORY_SYNC, CREATES_ONLY, totalTime);
     }
 
     @Ignore
     @Test
     public void sync_ExistingInventories_ShouldUpdateInventories() throws IOException {
         // TODO: SHOULD BE IMPLEMENTED.
-        saveNewResult(SyncSolutionInfo.LIB_VERSION, INVENTORY_SYNC, UPDATES_ONLY, 50000);
+        saveNewResult(INVENTORY_SYNC, UPDATES_ONLY, 50000);
     }
 
     @Ignore
     @Test
     public void sync_WithSomeExistingInventories_ShouldSyncInventories() throws IOException {
         // TODO: SHOULD BE IMPLEMENTED.
-        saveNewResult(SyncSolutionInfo.LIB_VERSION, INVENTORY_SYNC, CREATES_AND_UPDATES, 30000);
+        saveNewResult(INVENTORY_SYNC, CREATES_AND_UPDATES, 30000);
     }
 
     @Nonnull

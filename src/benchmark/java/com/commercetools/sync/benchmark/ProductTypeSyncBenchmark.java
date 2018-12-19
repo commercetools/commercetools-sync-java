@@ -1,6 +1,5 @@
 package com.commercetools.sync.benchmark;
 
-import com.commercetools.sync.commons.utils.SyncSolutionInfo;
 import com.commercetools.sync.producttypes.ProductTypeSync;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
@@ -114,7 +113,7 @@ public class ProductTypeSyncBenchmark {
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
 
-        saveNewResult(SyncSolutionInfo.LIB_VERSION, PRODUCT_TYPE_SYNC, CREATES_ONLY, totalTime);
+        saveNewResult(PRODUCT_TYPE_SYNC, CREATES_ONLY, totalTime);
     }
 
     @Test
@@ -172,7 +171,7 @@ public class ProductTypeSyncBenchmark {
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
 
-        saveNewResult(SyncSolutionInfo.LIB_VERSION, PRODUCT_TYPE_SYNC, UPDATES_ONLY, totalTime);
+        saveNewResult(PRODUCT_TYPE_SYNC, UPDATES_ONLY, totalTime);
     }
 
     @Test
@@ -232,7 +231,7 @@ public class ProductTypeSyncBenchmark {
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
 
-        saveNewResult(SyncSolutionInfo.LIB_VERSION, PRODUCT_TYPE_SYNC, CREATES_AND_UPDATES, totalTime);
+        saveNewResult(PRODUCT_TYPE_SYNC, CREATES_AND_UPDATES, totalTime);
     }
 
 
