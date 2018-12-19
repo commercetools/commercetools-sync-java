@@ -1,6 +1,5 @@
 package com.commercetools.sync.benchmark;
 
-import com.commercetools.sync.commons.utils.SyncSolutionInfo;
 import com.commercetools.sync.types.TypeSync;
 import com.commercetools.sync.types.TypeSyncOptions;
 import com.commercetools.sync.types.TypeSyncOptionsBuilder;
@@ -32,10 +31,9 @@ import java.util.stream.IntStream;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_AND_UPDATES;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST;
-import static com.commercetools.sync.benchmark.BenchmarkUtils.THRESHOLD;
+import static com.commercetools.sync.benchmark.BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.TYPE_SYNC;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
-import static com.commercetools.sync.benchmark.BenchmarkUtils.calculateDiff;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.saveNewResult;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
@@ -93,20 +91,19 @@ public class TypeSyncBenchmark {
 
     @Test
     public void sync_NewTypes_ShouldCreateTypes() throws IOException {
+        // preparation
         final List<TypeDraft> typeDrafts = buildTypeDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
-
-        // Sync drafts
         final TypeSync typeSync = new TypeSync(typeSyncOptions);
 
+        // benchmark
         final long beforeSyncTime = System.currentTimeMillis();
         final TypeSyncStatistics syncStatistics = executeBlocking(typeSync.sync(typeDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-        final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, TYPE_SYNC, CREATES_ONLY, totalTime);
-        assertThat(diff)
-                .withFailMessage(format("Diff of benchmark '%e' is longer than expected threshold of '%d'.",
-                        diff, THRESHOLD))
-                .isLessThanOrEqualTo(THRESHOLD);
+        // assert on threshold (based on history of benchmarks; highest was ~13 seconds)
+        final int threshold = 26000; // double of the highest benchmark
+        assertThat(totalTime).withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
+                             .isLessThan(threshold);
 
         // Assert actual state of CTP project (total number of existing types)
         final CompletableFuture<Integer> totalNumberOfTypes =
@@ -124,13 +121,13 @@ public class TypeSyncBenchmark {
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
 
-        saveNewResult(SyncSolutionInfo.LIB_VERSION, TYPE_SYNC, CREATES_ONLY, totalTime);
+        saveNewResult(TYPE_SYNC, CREATES_ONLY, totalTime);
     }
 
     @Test
     public void sync_ExistingTypes_ShouldUpdateTypes() throws IOException {
+        // preparation
         final List<TypeDraft> typeDrafts = buildTypeDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
-
         // Create drafts to target project with different field type name
         CompletableFuture.allOf(typeDrafts.stream()
                                           .map(TypeDraftBuilder::of)
@@ -141,19 +138,17 @@ public class TypeSyncBenchmark {
                                           .toArray(CompletableFuture[]::new))
                          .join();
 
-        // Sync new drafts
         final TypeSync typeSync = new TypeSync(typeSyncOptions);
 
+        // benchmark
         final long beforeSyncTime = System.currentTimeMillis();
         final TypeSyncStatistics syncStatistics = executeBlocking(typeSync.sync(typeDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-        // Calculate time taken for benchmark and assert it lies within threshold
-        final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, TYPE_SYNC, UPDATES_ONLY, totalTime);
-        assertThat(diff)
-                .withFailMessage(format("Diff of benchmark '%e' is longer than expected threshold of '%d'.",
-                        diff, THRESHOLD))
-                .isLessThanOrEqualTo(THRESHOLD);
+        // assert on threshold (based on history of benchmarks; highest was ~13 seconds)
+        final int threshold = 26000; // double of the highest benchmark
+        assertThat(totalTime).withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
+                             .isLessThan(threshold);
 
         // Assert actual state of CTP project (number of updated types)
         final CompletableFuture<Integer> totalNumberOfUpdatedTypes =
@@ -183,11 +178,12 @@ public class TypeSyncBenchmark {
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
 
-        saveNewResult(SyncSolutionInfo.LIB_VERSION, TYPE_SYNC, UPDATES_ONLY, totalTime);
+        saveNewResult(TYPE_SYNC, UPDATES_ONLY, totalTime);
     }
 
     @Test
     public void sync_WithSomeExistingTypes_ShouldSyncTypes() throws IOException {
+        // preparation
         final List<TypeDraft> typeDrafts = buildTypeDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
         final int halfNumberOfDrafts = typeDrafts.size() / 2;
         final List<TypeDraft> firstHalf = typeDrafts.subList(0, halfNumberOfDrafts);
@@ -202,19 +198,17 @@ public class TypeSyncBenchmark {
                                          .toArray(CompletableFuture[]::new))
                          .join();
 
-        // Sync new drafts
         final TypeSync typeSync = new TypeSync(typeSyncOptions);
 
+        // benchmark
         final long beforeSyncTime = System.currentTimeMillis();
         final TypeSyncStatistics syncStatistics = executeBlocking(typeSync.sync(typeDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-        // Calculate time taken for benchmark and assert it lies within threshold
-        final double diff = calculateDiff(SyncSolutionInfo.LIB_VERSION, TYPE_SYNC, CREATES_AND_UPDATES, totalTime);
-        assertThat(diff)
-                .withFailMessage(format("Diff of benchmark '%e' is longer than expected threshold of '%d'.",
-                        diff, THRESHOLD))
-                .isLessThanOrEqualTo(THRESHOLD);
+        // assert on threshold (based on history of benchmarks; highest was ~12 seconds)
+        final int threshold = 24000; // double of the highest benchmark
+        assertThat(totalTime).withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
+                             .isLessThan(threshold);
 
         // Assert actual state of CTP project (number of updated types)
         final CompletableFuture<Integer> totalNumberOfUpdatedTypesWithOldFieldDefinitionName =
@@ -244,7 +238,7 @@ public class TypeSyncBenchmark {
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
 
-        saveNewResult(SyncSolutionInfo.LIB_VERSION, TYPE_SYNC, CREATES_AND_UPDATES, totalTime);
+        saveNewResult(TYPE_SYNC, CREATES_AND_UPDATES, totalTime);
     }
 
     @Nonnull

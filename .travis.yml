@@ -13,20 +13,8 @@ before_install:
 install: true # skips travis' default installation step which executes gradle assemble.
 jobs:
   include:
-    - stage: benchmark#1
-      if: tag IS present
-      script: ./gradlew clean setLibraryVersion benchmark benchmarkCommit
-    - stage: benchmark#2
-      if: tag IS present
-      script: ./gradlew clean setLibraryVersion benchmark benchmarkCommit
-    - stage: benchmark#3
-      if: tag IS present
-      script: ./gradlew clean setLibraryVersion benchmark benchmarkCommit
-    - stage: benchmark#4
-      if: tag IS present
-      script: ./gradlew clean setLibraryVersion benchmark benchmarkCommit
-    - stage: benchmark#5
-      if: tag IS present
+    - stage: benchmark
+      if: branch = master AND commit_message =~ /^(Merge pull request .*)/
       script: ./gradlew clean setLibraryVersion benchmark benchmarkCommit
     - stage: full build
       script: ./gradlew clean dependencyUpdates setLibraryVersion build

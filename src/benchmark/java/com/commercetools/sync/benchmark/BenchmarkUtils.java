@@ -11,26 +11,18 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.Spliterator;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.util.Optional.ofNullable;
-import static java.util.Spliterators.spliteratorUnknownSize;
-import static java.util.stream.StreamSupport.stream;
 
-public class BenchmarkUtils {
+final class BenchmarkUtils {
     private static final String BENCHMARK_RESULTS_FILE_NAME = "benchmarks.json";
     private static final String BENCHMARK_RESULTS_FILE_DIR = ofNullable(System.getenv("CI_BUILD_DIR"))
         .map(path -> path + "/tmp_git_dir/benchmarks/").orElse("");
     private static final String BENCHMARK_RESULTS_FILE_PATH = BENCHMARK_RESULTS_FILE_DIR + BENCHMARK_RESULTS_FILE_NAME;
     private static final Charset UTF8_CHARSET = StandardCharsets.UTF_8;
-    private static final String EXECUTION_TIMES = "executionTimes";
-    private static final String AVERAGE = "average";
-    private static final String DIFF = "diff";
+    private static final String EXECUTION_TIME = "executionTime";
+    private static final String BRANCH_NAME = ofNullable(System.getenv("TRAVIS_COMMIT"))
+        .orElse("dev-local");
 
     static final String PRODUCT_SYNC = "productSync";
     static final String INVENTORY_SYNC = "inventorySync";
@@ -40,137 +32,86 @@ public class BenchmarkUtils {
     static final String CREATES_ONLY = "createsOnly";
     static final String UPDATES_ONLY = "updatesOnly";
     static final String CREATES_AND_UPDATES = "mix";
-    static final int THRESHOLD = 120000; //120 seconds in milliseconds
-    static final int NUMBER_OF_RESOURCE_UNDER_TEST = 10000;
+    static final int NUMBER_OF_RESOURCE_UNDER_TEST = 1000;
+    static final String THRESHOLD_EXCEEDED_ERROR = "Total execution time of benchmark '%d' took longer than allowed"
+        + " threshold of '%d'.";
 
 
-    static void saveNewResult(@Nonnull final String version,
-                              @Nonnull final String sync,
-                              @Nonnull final String benchmark,
-                              final double newResult) throws IOException {
+    static void saveNewResult(@Nonnull final String sync, @Nonnull final String benchmark, final double newResult)
+        throws IOException {
 
-        final JsonNode rootNode = new ObjectMapper().readTree(getFileContent(BENCHMARK_RESULTS_FILE_PATH));
-        final JsonNode withNewResult = addNewResult(rootNode, version, sync, benchmark, newResult);
-        writeToFile(withNewResult.toString(), BENCHMARK_RESULTS_FILE_PATH);
-    }
-
-    private static JsonNode addNewResult(@Nonnull final JsonNode originalRoot,
-                                         @Nonnull final String version,
-                                         @Nonnull final String sync,
-                                         @Nonnull final String benchmark,
-                                         final double newResult) {
-        ObjectNode rootNode = (ObjectNode) originalRoot;
-        ObjectNode versionNode = (ObjectNode) rootNode.get(version);
-
-        // If version doesn't exist yet, create a new JSON object for the new version.
-        if (versionNode == null) {
-            rootNode = createVersionNode(rootNode, version);
-            versionNode = (ObjectNode) rootNode.get(version);
-        }
-
-        final ObjectNode syncNode = (ObjectNode) versionNode.get(sync);
-        final ObjectNode benchmarkNode = (ObjectNode) syncNode.get(benchmark);
-
-        // Get current list of execution times for the specified benchmark of the specified sync module
-        // of the specified version.
-        final List<JsonNode> results = toList(benchmarkNode.get(EXECUTION_TIMES).elements());
-
-        // Add new result.
-        results.add(JsonNodeFactory.instance.numberNode(newResult));
-        benchmarkNode.set(EXECUTION_TIMES, JsonNodeFactory.instance.arrayNode().addAll(results));
-
-        // Compute new average and add to JSON Object
-        final double averageResult = calculateAvg(results);
-        benchmarkNode.set(AVERAGE, JsonNodeFactory.instance.numberNode(averageResult));
-
-        // Compute new diff from the last version.
-        final double diff = calculateDiff(rootNode, version, sync, benchmark, averageResult);
-        benchmarkNode.set(DIFF, JsonNodeFactory.instance.numberNode(diff));
-
-        final JsonNode newSyncNode = syncNode.set(benchmark, benchmarkNode);
-        final JsonNode newVersionNode = versionNode.set(sync, newSyncNode);
-        final JsonNode newRoot = rootNode.set(version, newVersionNode);
-        return newRoot;
+        final JsonNode rootNode = new ObjectMapper().readTree(getFileContent());
+        final JsonNode withNewResult = addNewResult(rootNode, sync, benchmark, newResult);
+        writeToFile(withNewResult.toString());
     }
 
     @Nonnull
-    private static <T> List<T> toList(@Nonnull final Iterator<T> iterator) {
-        return toStream(iterator).collect(Collectors.toList());
-    }
+    private static String getFileContent() throws IOException {
 
-    @Nonnull
-    private static <T> Stream<T> toStream(@Nonnull final Iterator<T> iterator) {
-        return stream(spliteratorUnknownSize(iterator, Spliterator.ORDERED), false);
-    }
-
-    private static double calculateAvg(@Nonnull final List<JsonNode> results) {
-        return results.stream().mapToDouble(JsonNode::asLong).average().orElse(0);
-    }
-
-    private static ObjectNode createVersionNode(@Nonnull final ObjectNode rootNode, @Nonnull final String version) {
-        final ObjectNode newVersionNode = createSyncNode(createSyncNode(createSyncNode(
-            createSyncNode(createSyncNode(JsonNodeFactory.instance.objectNode(),
-                PRODUCT_SYNC), INVENTORY_SYNC), CATEGORY_SYNC), PRODUCT_TYPE_SYNC), TYPE_SYNC);
-        return (ObjectNode) rootNode.set(version, newVersionNode);
-    }
-
-    private static ObjectNode createSyncNode(@Nonnull final ObjectNode versionNode,
-                                             @Nonnull final String sync) {
-        final ObjectNode newSyncNode = createBenchmarkNode(
-            createBenchmarkNode(
-                createBenchmarkNode(JsonNodeFactory.instance.objectNode(), CREATES_ONLY), UPDATES_ONLY),
-            CREATES_AND_UPDATES);
-        return (ObjectNode) versionNode.set(sync, newSyncNode);
-    }
-
-    private static ObjectNode createBenchmarkNode(@Nonnull final ObjectNode syncNode,
-                                                  @Nonnull final String benchmark) {
-        final ObjectNode newBenchmarkNode = JsonNodeFactory.instance.objectNode();
-        newBenchmarkNode.set(EXECUTION_TIMES, JsonNodeFactory.instance.arrayNode());
-        newBenchmarkNode.set(AVERAGE, JsonNodeFactory.instance.numberNode(0));
-        newBenchmarkNode.set(DIFF, JsonNodeFactory.instance.numberNode(0));
-
-        syncNode.set(benchmark, newBenchmarkNode);
-        return syncNode;
-    }
-
-    static double calculateDiff(@Nonnull final String version,
-                                @Nonnull final String sync,
-                                @Nonnull final String benchmark,
-                                final double average) throws IOException {
-        final JsonNode rootNode = new ObjectMapper().readTree(getFileContent(BENCHMARK_RESULTS_FILE_PATH));
-        return calculateDiff(rootNode, version, sync, benchmark, average);
-    }
-
-    private static double calculateDiff(@Nonnull final JsonNode originalRoot,
-                                @Nonnull final String version,
-                                @Nonnull final String sync,
-                                @Nonnull final String benchmark,
-                                final double average) {
-        return getLatestVersionName(originalRoot, version)
-            .map(latestVersionName -> originalRoot.get(latestVersionName)
-                                                  .get(sync)
-                                                  .get(benchmark)
-                                                  .get(AVERAGE))
-            .map(latestAverageNode -> average - latestAverageNode.asDouble())
-            // if there is no latest version (meaning this is the first benchmark for this module)
-            // then return a 0 diff.
-            .orElse(0.0);
-    }
-
-    private static Optional<String> getLatestVersionName(@Nonnull final JsonNode originalRoot,
-                                                         @Nonnull final String currentVersionName) {
-        return toStream(originalRoot.fieldNames()).reduce((firstVersion, secondVersion) ->
-            !currentVersionName.equals(secondVersion) ? secondVersion : firstVersion);
-    }
-
-
-    private static String getFileContent(@Nonnull final String path) throws IOException {
-        final byte[] fileBytes = Files.readAllBytes(Paths.get(path));
+        final byte[] fileBytes = Files.readAllBytes(Paths.get(BENCHMARK_RESULTS_FILE_PATH));
         return new String(fileBytes, UTF8_CHARSET);
     }
 
-    private static void writeToFile(@Nonnull final String content, @Nonnull final String path) throws IOException {
-        Files.write(Paths.get(path), content.getBytes(UTF8_CHARSET));
+    @Nonnull
+    private static JsonNode addNewResult(@Nonnull final JsonNode originalRoot,
+                                         @Nonnull final String sync,
+                                         @Nonnull final String benchmark,
+                                         final double newResult) {
+
+        ObjectNode rootNode = (ObjectNode) originalRoot;
+        ObjectNode branchNode = (ObjectNode) rootNode.get(BRANCH_NAME);
+
+        // If version doesn't exist yet, create a new JSON object for the new version.
+        if (branchNode == null) {
+            branchNode = createVersionNode();
+            rootNode.set(BRANCH_NAME, branchNode);
+        }
+
+        final ObjectNode syncNode = (ObjectNode) branchNode.get(sync);
+        final ObjectNode benchmarkNode = (ObjectNode) syncNode.get(benchmark);
+
+        // Add new result.
+        benchmarkNode.set(EXECUTION_TIME, JsonNodeFactory.instance.numberNode(newResult));
+        return rootNode;
+    }
+
+    @Nonnull
+    private static ObjectNode createVersionNode() {
+
+        final ObjectNode newVersionNode = JsonNodeFactory.instance.objectNode();
+        newVersionNode.set(PRODUCT_SYNC, createSyncNode());
+        newVersionNode.set(INVENTORY_SYNC, createSyncNode());
+        newVersionNode.set(CATEGORY_SYNC, createSyncNode());
+        newVersionNode.set(PRODUCT_TYPE_SYNC, createSyncNode());
+        newVersionNode.set(TYPE_SYNC, createSyncNode());
+
+        return newVersionNode;
+    }
+
+    @Nonnull
+    private static ObjectNode createSyncNode() {
+
+        final ObjectNode newSyncNode = JsonNodeFactory.instance.objectNode();
+        newSyncNode.set(CREATES_ONLY, createBenchmarkNode());
+        newSyncNode.set(UPDATES_ONLY, createBenchmarkNode());
+        newSyncNode.set(CREATES_AND_UPDATES, createBenchmarkNode());
+
+        return newSyncNode;
+    }
+
+    @Nonnull
+    private static ObjectNode createBenchmarkNode() {
+
+        final ObjectNode newBenchmarkNode = JsonNodeFactory.instance.objectNode();
+        newBenchmarkNode.set(EXECUTION_TIME, JsonNodeFactory.instance.numberNode(0));
+
+        return newBenchmarkNode;
+    }
+
+    private static void writeToFile(@Nonnull final String content) throws IOException {
+        Files.write(Paths.get(BENCHMARK_RESULTS_FILE_PATH), content.getBytes(UTF8_CHARSET));
+    }
+
+    private BenchmarkUtils() {
     }
 }
