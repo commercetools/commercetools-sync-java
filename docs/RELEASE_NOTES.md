@@ -27,11 +27,16 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 
 -->
+
 <!--
 ### 1.1.0 -  Dec 20, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.0.0...1.1.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.1.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.1.0)
+
+- 🎉 **Features** (2)
+    - **ProductType Sync** - Added support for syncing changes to an `AttributeDefinition` with a `SetType` of a subtype `LocalizableEnumType` or `EnumType` [#313](https://github.com/commercetools/commercetools-sync-java/issues/313)
+    - **Type Sync** - Added support for syncing changes to a `FieldDefinition` with a `SetType` of a subtype `LocalizableEnumType` or `EnumType` [#313](https://github.com/commercetools/commercetools-sync-java/issues/313)
 
 - 🐞 **Bug Fixes** (2)
     - **ProductType Sync** - Fixed a bug in the `productType` sync which would try to unset `isSearchable`, `inputHint` 
@@ -43,10 +48,11 @@
 - 🛠️ **Enhancements** (1)
     - **Commons** - Benchmarks are now run once on every merge to `master` with a lower number of resources for faster benchmarking. [#246](https://github.com/commercetools/commercetools-sync-java/issues/246)
 
-- 📋 **Documentation** (1)
-    - *Commons* - Add link to documentation pages in README of the github repo.
+- 📋 **Documentation** (2)
+    - **Commons** - Added link to [documentation pages](https://commercetools.github.io/commercetools-sync-java) in README of the github repo.
+    - **Commons** - Fixed link of [`beforeUpdateCallback` for keeping other variants](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/templates/beforeupdatecallback/KeepOtherVariantsSyncIT.java) example in the [Sync Options](/docs/usage/SYNC_OPTIONS.md) doc page. [#360](https://github.com/commercetools/commercetools-sync-java/issues/360)
 
-!-->
+-->
 
 ### 1.0.0 -  Dec 10, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M14...1.0.0) |
@@ -67,7 +73,7 @@ the library. `1.0.0` is here for you to use with all new features, enhancements 
 ##### Full Release Notes
 
 - 🎉 **New Features** (4)
-    - **Type Sync** - Support for syncing types. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300) For more info how to use it please refer to [Type usage doc](/docs/usage/TYPE_SYNC.md).
+    - **Type Sync** - Added support for syncing types. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300) For more info how to use it please refer to [Type usage doc](/docs/usage/TYPE_SYNC.md).
     - **Type Sync** - Exposed `TypeSyncUtils#buildActions` which calculates all needed update actions after comparing a `Type` and a `TypeDraft`. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
     - **Type Sync** - Exposed `TypeUpdateActionUtils` which contains utils for calculating needed update actions after comparing individual fields of a `Type` and a `TypeDraft`. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
     - **Commons** - Added `OptionalUtils#filterEmptyOptionals` which are utility methods that filter out the empty optionals in a supplied list (with a varargs variation) returning a list of the contents of the non-empty 

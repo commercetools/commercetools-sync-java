@@ -98,4 +98,3 @@ More examples of those utils for different types can be found [here](https://git
 1. Updating the label of enum values and localized enum values of field definition is not supported yet. [#339](https://github.com/commercetools/commercetools-sync-java/issues/339)
 2. Removing the enum values and localized enum values from the field definition is not supported yet. [#339](https://github.com/commercetools/commercetools-sync-java/issues/339)
 3. Updating the input hint of a field definition is not supported yet. [#339](https://github.com/commercetools/commercetools-sync-java/issues/339)
-4. Currently the sync would handle changes to Enum or LocalizedEnum Types but not [Set](https://docs.commercetools.com/http-api-projects-types.html#settype) of either. [#313](https://github.com/commercetools/commercetools-sync-java/issues/313)
