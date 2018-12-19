@@ -9,7 +9,6 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -17,10 +16,15 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
 
 public class CategorySyncOptionsBuilderTest {
     private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
@@ -47,7 +51,7 @@ public class CategorySyncOptionsBuilderTest {
     @Test
     public void beforeUpdateCallback_WithFilterAsCallback_ShouldSetCallback() {
         final TriFunction<List<UpdateAction<Category>>, CategoryDraft, Category, List<UpdateAction<Category>>>
-            beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> Collections.emptyList();
+            beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> emptyList();
         categorySyncOptionsBuilder.beforeUpdateCallback(beforeUpdateCallback);
 
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
@@ -96,7 +100,7 @@ public class CategorySyncOptionsBuilderTest {
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
             .of(CTP_CLIENT)
             .batchSize(30)
-            .beforeUpdateCallback((updateActions, newCategory, oldCategory) -> Collections.emptyList())
+            .beforeUpdateCallback((updateActions, newCategory, oldCategory) -> emptyList())
             .beforeCreateCallback(newCategoryDraft -> null)
             .build();
         assertThat(categorySyncOptions).isNotNull();
@@ -141,7 +145,7 @@ public class CategorySyncOptionsBuilderTest {
     @Test
     public void applyBeforeUpdateCallBack_WithCallback_ShouldReturnFilteredList() {
         final TriFunction<List<UpdateAction<Category>>, CategoryDraft, Category, List<UpdateAction<Category>>>
-            beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> Collections.emptyList();
+            beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> emptyList();
 
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
                                                                                   .beforeUpdateCallback(
@@ -172,6 +176,29 @@ public class CategorySyncOptionsBuilderTest {
             .applyBeforeUpdateCallBack(updateActions, mock(CategoryDraft.class), mock(Category.class));
 
         assertThat(filteredList).isEmpty();
+    }
+
+    private interface MockTriFunction extends
+        TriFunction<List<UpdateAction<Category>>, CategoryDraft, Category, List<UpdateAction<Category>>> {
+    }
+
+    @Test
+    public void applyBeforeUpdateCallBack_WithEmptyUpdateActions_ShouldNotApplyBeforeUpdateCallback() {
+        final MockTriFunction beforeUpdateCallback = mock(MockTriFunction.class);
+
+        final CategorySyncOptions categorySyncOptions =
+            CategorySyncOptionsBuilder.of(CTP_CLIENT)
+                                      .beforeUpdateCallback(beforeUpdateCallback)
+                                      .build();
+
+        assertThat(categorySyncOptions.getBeforeUpdateCallback()).isNotNull();
+
+        final List<UpdateAction<Category>> updateActions = emptyList();
+        final List<UpdateAction<Category>> filteredList = categorySyncOptions
+            .applyBeforeUpdateCallBack(updateActions, mock(CategoryDraft.class), mock(Category.class));
+
+        assertThat(filteredList).isEmpty();
+        verify(beforeUpdateCallback, never()).apply(any(), any(), any());
     }
 
     @Test
@@ -218,7 +245,7 @@ public class CategorySyncOptionsBuilderTest {
 
         final CategoryDraft resourceDraft = mock(CategoryDraft.class);
         final Optional<CategoryDraft> filteredDraft = syncOptions.applyBeforeCreateCallBack(resourceDraft);
-        
+
         assertThat(filteredDraft).isEmpty();
     }
 }

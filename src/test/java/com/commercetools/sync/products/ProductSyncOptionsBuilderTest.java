@@ -19,8 +19,12 @@ import java.util.function.Function;
 import static com.commercetools.sync.products.ActionGroup.IMAGES;
 import static com.commercetools.sync.products.SyncFilter.ofWhiteList;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class ProductSyncOptionsBuilderTest {
@@ -65,7 +69,7 @@ public class ProductSyncOptionsBuilderTest {
     @Test
     public void beforeUpdateCallback_WithFilterAsCallback_ShouldSetCallback() {
         final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
-            beforeUpdateCallback = (updateActions, newProduct, oldProduct) -> Collections.emptyList();
+            beforeUpdateCallback = (updateActions, newProduct, oldProduct) -> emptyList();
         productSyncOptionsBuilder.beforeUpdateCallback(beforeUpdateCallback);
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
@@ -114,7 +118,7 @@ public class ProductSyncOptionsBuilderTest {
             .of(CTP_CLIENT)
             .batchSize(30)
             .beforeCreateCallback((newProduct) -> null)
-            .beforeUpdateCallback((updateActions, newCategory, oldCategory) -> Collections.emptyList())
+            .beforeUpdateCallback((updateActions, newCategory, oldCategory) -> emptyList())
             .build();
         assertThat(productSyncOptions).isNotNull();
     }
@@ -173,10 +177,33 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(filteredList).isEmpty();
     }
 
+    private interface MockTriFunction extends
+        TriFunction<List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>> {
+    }
+
+    @Test
+    public void applyBeforeUpdateCallBack_WithEmptyUpdateActions_ShouldNotApplyBeforeUpdateCallback() {
+        final MockTriFunction beforeUpdateCallback = mock(MockTriFunction.class);
+
+        final ProductSyncOptions productSyncOptions =
+            ProductSyncOptionsBuilder.of(CTP_CLIENT)
+                                     .beforeUpdateCallback(beforeUpdateCallback)
+                                     .build();
+
+        assertThat(productSyncOptions.getBeforeUpdateCallback()).isNotNull();
+
+        final List<UpdateAction<Product>> updateActions = emptyList();
+        final List<UpdateAction<Product>> filteredList =
+            productSyncOptions.applyBeforeUpdateCallBack(updateActions, mock(ProductDraft.class), mock(Product.class));
+
+        assertThat(filteredList).isEmpty();
+        verify(beforeUpdateCallback, never()).apply(any(), any(), any());
+    }
+
     @Test
     public void applyBeforeUpdateCallBack_WithCallback_ShouldReturnFilteredList() {
         final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
-            beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> Collections.emptyList();
+            beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> emptyList();
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
                                                                                .beforeUpdateCallback(
                                                                                    beforeUpdateCallback)

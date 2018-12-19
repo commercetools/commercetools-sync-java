@@ -46,6 +46,7 @@
     - **ProductType Sync** - `ProductTypeSyncUtils#buildActions`, `ProductTypeUpdateActionUtils#buildAttributesUpdateActions`  
     now treat the values of the optional fields `isSearchable`, `inputHint` and `attributeConstraint` 
     as (`true`, `SingleLine` and `None` respectivley) if they are `null` or not passed. [#354](https://github.com/commercetools/commercetools-sync-java/issues/354)
+    - **Commons** - Fixed a bug in the `beforeUpdateCallback` which caused the callback to be called even on an empty list of update actions. [#359](https://github.com/commercetools/commercetools-sync-java/issues/359)
 
 - 🛠️ **Enhancements** (1)
     - **Commons** - Benchmarks are now run once on every merge to `master` with a lower number of resources for faster benchmarking. [#246](https://github.com/commercetools/commercetools-sync-java/issues/246)

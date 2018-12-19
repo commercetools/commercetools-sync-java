@@ -19,7 +19,10 @@ import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class TypeSyncOptionsBuilderTest {
@@ -156,6 +159,29 @@ public class TypeSyncOptionsBuilderTest {
                 typeSyncOptions.applyBeforeUpdateCallBack(updateActions, mock(TypeDraft.class), mock(Type.class));
         assertThat(filteredList).isNotEqualTo(updateActions);
         assertThat(filteredList).isEmpty();
+    }
+
+    private interface MockTriFunction extends
+        TriFunction<List<UpdateAction<Type>>, TypeDraft, Type, List<UpdateAction<Type>>> {
+    }
+
+    @Test
+    public void applyBeforeUpdateCallBack_WithEmptyUpdateActions_ShouldNotApplyBeforeUpdateCallback() {
+        final MockTriFunction beforeUpdateCallback = mock(MockTriFunction.class);
+
+        final TypeSyncOptions typeSyncOptions =
+            TypeSyncOptionsBuilder.of(CTP_CLIENT)
+                                  .beforeUpdateCallback(beforeUpdateCallback)
+                                  .build();
+
+        assertThat(typeSyncOptions.getBeforeUpdateCallback()).isNotNull();
+
+        final List<UpdateAction<Type>> updateActions = emptyList();
+        final List<UpdateAction<Type>> filteredList =
+            typeSyncOptions.applyBeforeUpdateCallBack(updateActions, mock(TypeDraft.class), mock(Type.class));
+
+        assertThat(filteredList).isEmpty();
+        verify(beforeUpdateCallback, never()).apply(any(), any(), any());
     }
 
     @Test

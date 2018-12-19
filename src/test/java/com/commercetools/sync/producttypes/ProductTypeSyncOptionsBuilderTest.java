@@ -16,9 +16,13 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class ProductTypeSyncOptionsBuilderTest {
@@ -160,6 +164,30 @@ public class ProductTypeSyncOptionsBuilderTest {
         assertThat(filteredList).isEmpty();
     }
 
+    private interface MockTriFunction extends
+        TriFunction<List<UpdateAction<ProductType>>, ProductTypeDraft, ProductType, List<UpdateAction<ProductType>>> {
+    }
+
+    @Test
+    public void applyBeforeUpdateCallBack_WithEmptyUpdateActions_ShouldNotApplyBeforeUpdateCallback() {
+        final MockTriFunction beforeUpdateCallback = mock(MockTriFunction.class);
+
+        final ProductTypeSyncOptions productTypeSyncOptions =
+            ProductTypeSyncOptionsBuilder.of(CTP_CLIENT)
+                                         .beforeUpdateCallback(beforeUpdateCallback)
+                                         .build();
+
+        assertThat(productTypeSyncOptions.getBeforeUpdateCallback()).isNotNull();
+
+        final List<UpdateAction<ProductType>> updateActions = emptyList();
+        final List<UpdateAction<ProductType>> filteredList =
+            productTypeSyncOptions.applyBeforeUpdateCallBack(updateActions,
+                mock(ProductTypeDraft.class), mock(ProductType.class));
+
+        assertThat(filteredList).isEmpty();
+        verify(beforeUpdateCallback, never()).apply(any(), any(), any());
+    }
+
     @Test
     public void applyBeforeUpdateCallBack_WithCallback_ShouldReturnFilteredList() {
         final TriFunction<List<UpdateAction<ProductType>>,
@@ -195,7 +223,7 @@ public class ProductTypeSyncOptionsBuilderTest {
 
         final Optional<ProductTypeDraft> filteredDraft =
                 productTypeSyncOptions.applyBeforeCreateCallBack(resourceDraft);
-        
+
         assertThat(filteredDraft).hasValueSatisfying(productTypeDraft ->
             assertThat(productTypeDraft.getKey()).isEqualTo("myKey_filteredKey"));
 
