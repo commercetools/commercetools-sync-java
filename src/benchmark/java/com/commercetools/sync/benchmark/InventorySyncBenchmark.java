@@ -26,6 +26,7 @@ import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_AND_UPDATE
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.INVENTORY_SYNC;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST;
+import static com.commercetools.sync.benchmark.BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.saveNewResult;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
@@ -55,25 +56,23 @@ public class InventorySyncBenchmark {
 
     @Test
     public void sync_NewInventories_ShouldCreateInventories() throws IOException {
+        // preparation
         final List<InventoryEntryDraft> inventoryEntryDrafts = buildInventoryDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
-
-
         final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                                                                      .build();
         final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
 
-
+        // benchmark
         final long beforeSync = System.currentTimeMillis();
         final InventorySyncStatistics inventorySyncStatistics =
             executeBlocking(inventorySync.sync(inventoryEntryDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSync;
 
 
-        // assert on threshold (based on previous benchmarks; highest was ~86 seconds)
-        final int threshold = 100000;
-        assertThat(totalTime).withFailMessage(format("Total Execution Time of benchmark '%d' is longer than expected"
-                            + " threshold of '%d'.", totalTime, threshold))
-                             .isLessThanOrEqualTo(threshold);
+        // assert on threshold (based on history of benchmarks; highest was ~85 seconds)
+        final int threshold = 145000; // 1 minute higher than highest benchmark
+        assertThat(totalTime).withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
+                             .isLessThan(threshold);
 
         // Assert actual state of CTP project (total number of existing inventories)
         final CompletableFuture<Integer> totalNumberOfInventories =

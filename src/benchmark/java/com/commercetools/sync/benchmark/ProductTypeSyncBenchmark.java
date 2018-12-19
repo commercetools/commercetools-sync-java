@@ -31,6 +31,7 @@ import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_AND_UPDATE
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CREATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.NUMBER_OF_RESOURCE_UNDER_TEST;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.PRODUCT_TYPE_SYNC;
+import static com.commercetools.sync.benchmark.BenchmarkUtils.THRESHOLD_EXCEEDED_ERROR;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.saveNewResult;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
@@ -83,21 +84,19 @@ public class ProductTypeSyncBenchmark {
 
     @Test
     public void sync_NewProductTypes_ShouldCreateProductTypes() throws IOException {
+        // preparation
         final List<ProductTypeDraft> productTypeDrafts = buildProductTypeDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
-
-        // Sync drafts
         final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
 
+        // benchmark
         final long beforeSyncTime = System.currentTimeMillis();
         final ProductTypeSyncStatistics syncStatistics = executeBlocking(productTypeSync.sync(productTypeDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-        // assert on threshold (based on previous benchmarks; highest was ~120 seconds)
-        final int threshold = 150000;
-        assertThat(totalTime)
-            .withFailMessage(format("Total execution time of benchmark '%d' is longer than expected threshold of '%d'.",
-                totalTime, threshold))
-            .isLessThanOrEqualTo(threshold);
+        // assert on threshold (based on history of benchmarks; highest was ~120 seconds)
+        final int threshold = 180000; // 1 minute higher than highest benchmark
+        assertThat(totalTime).withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
+                             .isLessThan(threshold);
 
         // Assert actual state of CTP project (total number of existing product types)
         final CompletableFuture<Integer> totalNumberOfProductTypes =
@@ -120,8 +119,8 @@ public class ProductTypeSyncBenchmark {
 
     @Test
     public void sync_ExistingProductTypes_ShouldUpdateProductTypes() throws IOException {
+        // preparation
         final List<ProductTypeDraft> productTypeDrafts = buildProductTypeDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
-
         // Create drafts to target project with different attribute definition name
         CompletableFuture.allOf(
                 productTypeDrafts.stream()
@@ -133,19 +132,17 @@ public class ProductTypeSyncBenchmark {
                                  .toArray(CompletableFuture[]::new))
                          .join();
 
-        // Sync new drafts
         final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
 
+        // benchmark
         final long beforeSyncTime = System.currentTimeMillis();
         final ProductTypeSyncStatistics syncStatistics = executeBlocking(productTypeSync.sync(productTypeDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-        // assert on threshold (based on previous benchmarks; highest was ~129 seconds)
-        final int threshold = 150000;
-        assertThat(totalTime)
-            .withFailMessage(format("Total execution time of benchmark '%d' is longer than expected threshold of '%d'.",
-                totalTime, threshold))
-            .isLessThanOrEqualTo(threshold);
+        // assert on threshold (based on history of benchmarks; highest was ~129 seconds)
+        final int threshold = 189000; // 1 minute higher than highest benchmark
+        assertThat(totalTime).withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
+                             .isLessThan(threshold);
 
         // Assert actual state of CTP project (number of updated product types)
         final CompletableFuture<Integer> totalNumberOfUpdatedProductTypes =
@@ -180,6 +177,7 @@ public class ProductTypeSyncBenchmark {
 
     @Test
     public void sync_WithSomeExistingProductTypes_ShouldSyncProductTypes() throws IOException {
+        // preparation
         final List<ProductTypeDraft> productTypeDrafts = buildProductTypeDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
         final int halfNumberOfDrafts = productTypeDrafts.size() / 2;
         final List<ProductTypeDraft> firstHalf = productTypeDrafts.subList(0, halfNumberOfDrafts);
@@ -194,19 +192,17 @@ public class ProductTypeSyncBenchmark {
                                          .toArray(CompletableFuture[]::new))
                          .join();
 
-        // Sync new drafts
         final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
 
+        // benchmark
         final long beforeSyncTime = System.currentTimeMillis();
         final ProductTypeSyncStatistics syncStatistics = executeBlocking(productTypeSync.sync(productTypeDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-        // assert on threshold (based on previous benchmarks; highest was ~127 seconds)
-        final int threshold = 150000;
-        assertThat(totalTime)
-            .withFailMessage(format("Total execution time of benchmark '%d' is longer than expected threshold of '%d'.",
-                totalTime, threshold))
-            .isLessThanOrEqualTo(threshold);
+        // assert on threshold (based on history of benchmarks; highest was ~127 seconds)
+        final int threshold = 190000; // 1 minute higher than highest benchmark
+        assertThat(totalTime).withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
+                             .isLessThan(threshold);
 
         // Assert actual state of CTP project (number of updated product types)
         final CompletableFuture<Integer> totalNumberOfProductTypesWithOldName =
