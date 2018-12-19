@@ -29,11 +29,11 @@ import io.sphere.sdk.products.commands.updateactions.SetSku;
 import org.junit.Test;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.IntStream;
 
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftFromJson;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductFromJson;
@@ -44,7 +44,7 @@ import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.bui
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildChangeMasterVariantUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildVariantsUpdateActions;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
-import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
@@ -286,9 +286,9 @@ public class ProductUpdateActionUtilsTest {
     @Test
     public void buildAddVariantUpdateActionFromDraft_WithAttribsPricesAndImages_ShouldBuildCorrectAddVariantAction() {
         // preparation
-        final List<AttributeDraft> attributeList = Collections.emptyList();
-        final List<PriceDraft> priceList = Collections.emptyList();
-        final List<Image> imageList = Collections.emptyList();
+        final List<AttributeDraft> attributeList = emptyList();
+        final List<PriceDraft> priceList = emptyList();
+        final List<Image> imageList = emptyList();
         final ProductVariantDraft draft = ProductVariantDraftBuilder.of()
                                                                     .attributes(attributeList)
                                                                     .prices(priceList)
@@ -331,36 +331,32 @@ public class ProductUpdateActionUtilsTest {
     @Test
     public void buildAddVariantUpdateActionFromDraft_WithMultipleAssets_BuildsMultipleAddAssetsActions() {
         // preparation
-        final AssetDraft assetDraft = AssetDraftBuilder
-            .of(singletonList(AssetSourceBuilder.ofUri("foo").build()), ofEnglish("assetName"))
-            .key("1")
-            .build();
-
-        final AssetDraft assetDraft1 = AssetDraftBuilder
-            .of(singletonList(AssetSourceBuilder.ofUri("foo").build()), ofEnglish("assetName"))
-            .key("2")
-            .build();
-
-        final AssetDraft assetDraft2 = AssetDraftBuilder
-            .of(singletonList(AssetSourceBuilder.ofUri("foo").build()), ofEnglish("assetName"))
-            .key("3")
-            .build();
+        final List<AssetDraft> assetDrafts = IntStream
+            .range(1, 4)
+            .mapToObj(i-> AssetDraftBuilder
+                .of(singletonList(AssetSourceBuilder.ofUri("foo").build()), ofEnglish("assetName"))
+                .key(i + "")
+                .build())
+            .collect(toList());
 
         final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
             .of()
             .sku("foo")
-            .assets(asList(assetDraft, assetDraft1, assetDraft2))
+            .assets(assetDrafts)
             .build();
 
         // test
         final List<UpdateAction<Product>> result = buildAddVariantUpdateActionFromDraft(productVariantDraft);
 
         // assertion
-        assertThat(result).containsExactlyInAnyOrder(
-            AddVariant.of(null, null, "foo", true),
-            AddAsset.ofSku("foo", assetDraft).withStaged(true),
-            AddAsset.ofSku("foo", assetDraft1).withStaged(true),
-            AddAsset.ofSku("foo", assetDraft2).withStaged(true)
+        final ArrayList<UpdateAction<Product>> expectedActions =
+            new ArrayList<>(singletonList(AddVariant.of(null, null, "foo", true)));
+        expectedActions.addAll(
+            assetDrafts.stream()
+                       .map(assetDraft -> AddAsset.ofSku(productVariantDraft.getSku(), assetDraft).withStaged(true))
+                       .collect(toList())
         );
+
+        assertThat(result).containsExactlyElementsOf(expectedActions);
     }
 }
