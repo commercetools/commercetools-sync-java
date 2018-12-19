@@ -38,6 +38,8 @@ class BenchmarkUtils {
     static final String UPDATES_ONLY = "updatesOnly";
     static final String CREATES_AND_UPDATES = "mix";
     static final int NUMBER_OF_RESOURCE_UNDER_TEST = 1000;
+    static final String THRESHOLD_EXCEEDED_ERROR = "Total execution time of benchmark '%d' took longer than allowed"
+        + " threshold of '%d'.";
 
 
     static void saveNewResult(@Nonnull final String version,
