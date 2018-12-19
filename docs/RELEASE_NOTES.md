@@ -50,7 +50,7 @@
     - **ProductType Sync** - Added support for syncing changes to an `AttributeDefinition` with a `SetType` of a subtype `LocalizableEnumType` or `EnumType` [#313](https://github.com/commercetools/commercetools-sync-java/issues/313)
     - **Type Sync** - Added support for syncing changes to a `FieldDefinition` with a `SetType` of a subtype `LocalizableEnumType` or `EnumType` [#313](https://github.com/commercetools/commercetools-sync-java/issues/313)
 
-- 🐞 **Bug Fixes** (2)
+- 🐞 **Bug Fixes** (3)
     - **ProductType Sync** - Fixed a bug in the `productType` sync which would try to unset `isSearchable`, `inputHint` 
     and `attributeConstraint` values to `null` instead of their default values. [#354](https://github.com/commercetools/commercetools-sync-java/issues/354)
     - **ProductType Sync** - `ProductTypeSyncUtils#buildActions`, `ProductTypeUpdateActionUtils#buildAttributesUpdateActions`  
