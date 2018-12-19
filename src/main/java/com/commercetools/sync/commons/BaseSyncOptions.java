@@ -170,8 +170,8 @@ public class BaseSyncOptions<U, V> {
      * @param newResourceDraft the new resource draft that is being compared to the old resource.
      * @param oldResource the old resource that is being compared to the new draft.
      * @return a list of update actions after applying the {@code beforeUpdateCallback} function on. If the
-     *         {@code beforeUpdateCallback} function was null or {@code updateActions} was empty, the supplied list of
-     *         {@code updateActions} is returned as is. If the return of the callback was null, an empty list is
+     *         {@code beforeUpdateCallback} function is null or {@code updateActions} is empty, the supplied list of
+     *         {@code updateActions} is returned as is. If the return of the callback is null, an empty list is
      *         returned.
      */
     @Nonnull
@@ -197,7 +197,7 @@ public class BaseSyncOptions<U, V> {
      *
      * @param newResourceDraft the new resource draft that should be created.
      * @return an optional containing the resultant resource draft after applying the {@code beforeCreateCallback}
-     *         function on. If the {@code beforeCreateCallback} function was null, the supplied resource draft is
+     *         function on. If the {@code beforeCreateCallback} function is null, the supplied resource draft is
      *         returned as is, wrapped in an optional.
      */
     @Nonnull
