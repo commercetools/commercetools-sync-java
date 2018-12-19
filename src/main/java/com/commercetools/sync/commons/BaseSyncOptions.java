@@ -181,7 +181,7 @@ public class BaseSyncOptions<U, V> {
 
         return ofNullable(beforeUpdateCallback)
             .filter(callback -> !updateActions.isEmpty())
-            .map(callBack -> emptyIfNull(callBack.apply(updateActions, newResourceDraft, oldResource)))
+            .map(filteredCallback -> emptyIfNull(filteredCallback.apply(updateActions, newResourceDraft, oldResource)))
             .orElse(updateActions);
     }
 
