@@ -109,7 +109,7 @@ public class ProductSyncBenchmark {
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
         // assert on threshold (based on history of benchmarks, highest was ~16 seconds)
-        final int threshold = 76000; // 1 minute higher than highest benchmark
+        final int threshold = 32000; // double of the highest benchmark
         assertThat(totalTime).withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
                              .isLessThan(threshold);
 
@@ -155,7 +155,7 @@ public class ProductSyncBenchmark {
 
 
         // assert on threshold (based on history of benchmarks; highest was ~19 seconds)
-        final int threshold = 79000; // 1 minute higher than highest benchmark
+        final int threshold = 38000; // double of the highest benchmark
         assertThat(totalTime).withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
                              .isLessThan(threshold);
 
@@ -217,7 +217,7 @@ public class ProductSyncBenchmark {
 
 
         // assert on threshold (based on history of benchmarks; highest was ~19 seconds)
-        final int threshold = 79000; // 1 minute higher than highest benchmark
+        final int threshold = 38000; // double of the highest benchmark
         assertThat(totalTime).withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
                              .isLessThan(threshold);
 

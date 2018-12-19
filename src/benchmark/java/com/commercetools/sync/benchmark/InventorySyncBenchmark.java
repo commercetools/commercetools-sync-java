@@ -69,7 +69,7 @@ public class InventorySyncBenchmark {
 
 
         // assert on threshold (based on history of benchmarks; highest was ~9 seconds)
-        final int threshold = 69000; // 1 minute higher than highest benchmark
+        final int threshold = 18000; // double of the highest benchmark
         assertThat(totalTime).withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
                              .isLessThan(threshold);
 

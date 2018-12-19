@@ -101,7 +101,7 @@ public class TypeSyncBenchmark {
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
         // assert on threshold (based on history of benchmarks; highest was ~13 seconds)
-        final int threshold = 73000; // 1 minute higher than highest benchmark
+        final int threshold = 26000; // double of the highest benchmark
         assertThat(totalTime).withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
                              .isLessThan(threshold);
 
@@ -146,7 +146,7 @@ public class TypeSyncBenchmark {
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
         // assert on threshold (based on history of benchmarks; highest was ~13 seconds)
-        final int threshold = 73000; // 1 minute higher than highest benchmark
+        final int threshold = 26000; // double of the highest benchmark
         assertThat(totalTime).withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
                              .isLessThan(threshold);
 
@@ -206,7 +206,7 @@ public class TypeSyncBenchmark {
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
         // assert on threshold (based on history of benchmarks; highest was ~12 seconds)
-        final int threshold = 72000; // 1 minute higher than highest benchmark
+        final int threshold = 24000; // double of the highest benchmark
         assertThat(totalTime).withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
                              .isLessThan(threshold);
 
