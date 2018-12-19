@@ -14,7 +14,7 @@ import java.nio.file.Paths;
 
 import static java.util.Optional.ofNullable;
 
-class BenchmarkUtils {
+final class BenchmarkUtils {
     private static final String BENCHMARK_RESULTS_FILE_NAME = "benchmarks.json";
     private static final String BENCHMARK_RESULTS_FILE_DIR = ofNullable(System.getenv("CI_BUILD_DIR"))
         .map(path -> path + "/tmp_git_dir/benchmarks/").orElse("");
