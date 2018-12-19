@@ -403,7 +403,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.0.0/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.1.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -440,6 +440,13 @@
   
     <label class="md-nav__title" for="__toc">Table of contents</label>
     <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#110-dec-19-2018" title="1.1.0 -  Dec 19, 2018" class="md-nav__link">
+    1.1.0 -  Dec 19, 2018
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#100-dec-10-2018" title="1.0.0 -  Dec 10, 2018" class="md-nav__link">
@@ -641,6 +648,13 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#110-dec-19-2018" title="1.1.0 -  Dec 19, 2018" class="md-nav__link">
+    1.1.0 -  Dec 19, 2018
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#100-dec-10-2018" title="1.0.0 -  Dec 10, 2018" class="md-nav__link">
     1.0.0 -  Dec 10, 2018
   </a>
@@ -821,13 +835,54 @@
 -->
 
 <!--
-### 1.1.0 -  Dec 10, 2018
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M14...1.1.0) |
-[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/v1.1.0/) | 
-[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/v1.1.0)
 
-!-->
+### 1.1.0 -  Dec 20, 2018
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.0.0...1.1.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.1.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.1.0)
 
+
+-->
+
+<h3 id="110-dec-19-2018">1.1.0 -  Dec 19, 2018<a class="headerlink" href="#110-dec-19-2018" title="Permanent link">&para;</a></h3>
+<p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.0.0...1.1.0">Commits</a> |
+<a href="https://commercetools.github.io/commercetools-sync-java/v/1.1.0/">Javadoc</a> | 
+<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/1.1.0">Jar</a></p>
+<ul>
+<li>
+<p>🎉 <strong>New Features</strong> (4)</p>
+<ul>
+<li><strong>Product Sync</strong> - Added support for syncing assets of newly added variants. <a href="https://github.com/commercetools/commercetools-sync-java/issues/357">#357</a>.</li>
+<li><strong>Product Sync</strong> - <code>ProductSyncUtils#buildActions</code> and <code>ProductUpdateActionUtils#buildVariantsUpdateActions</code> now build <code>AddAsset</code> actions for every new asset on every new variant on the new <code>ProductDraft</code>. <a href="https://github.com/commercetools/commercetools-sync-java/issues/357">#357</a>.</li>
+<li><strong>ProductType Sync</strong> - Added support for syncing changes to an <code>AttributeDefinition</code> with a <code>SetType</code> of a subtype <code>LocalizableEnumType</code> or <code>EnumType</code> <a href="https://github.com/commercetools/commercetools-sync-java/issues/313">#313</a></li>
+<li><strong>Type Sync</strong> - Added support for syncing changes to a <code>FieldDefinition</code> with a <code>SetType</code> of a subtype <code>LocalizableEnumType</code> or <code>EnumType</code> <a href="https://github.com/commercetools/commercetools-sync-java/issues/313">#313</a></li>
+</ul>
+</li>
+<li>
+<p>🐞 <strong>Bug Fixes</strong> (3)</p>
+<ul>
+<li><strong>ProductType Sync</strong> - Fixed a bug in the <code>productType</code> sync which would try to unset <code>isSearchable</code>, <code>inputHint</code> 
+and <code>attributeConstraint</code> values to <code>null</code> instead of their default values. <a href="https://github.com/commercetools/commercetools-sync-java/issues/354">#354</a></li>
+<li><strong>ProductType Sync</strong> - <code>ProductTypeSyncUtils#buildActions</code>, <code>ProductTypeUpdateActionUtils#buildAttributesUpdateActions</code><br />
+now treat the values of the optional fields <code>isSearchable</code>, <code>inputHint</code> and <code>attributeConstraint</code> 
+as (<code>true</code>, <code>SingleLine</code> and <code>None</code> respectivley) if they are <code>null</code> or not passed. <a href="https://github.com/commercetools/commercetools-sync-java/issues/354">#354</a></li>
+<li><strong>Commons</strong> - Fixed a bug in the <code>beforeUpdateCallback</code> which caused the callback to be called even on an empty list of update actions. <a href="https://github.com/commercetools/commercetools-sync-java/issues/359">#359</a></li>
+</ul>
+</li>
+<li>
+<p>🛠️ <strong>Enhancements</strong> (1)</p>
+<ul>
+<li><strong>Commons</strong> - Benchmarks are now run once on every merge to <code>master</code> with a lower number of resources for faster benchmarking. <a href="https://github.com/commercetools/commercetools-sync-java/issues/246">#246</a></li>
+</ul>
+</li>
+<li>
+<p>📋 <strong>Documentation</strong> (2)</p>
+<ul>
+<li><strong>Commons</strong> - Added link to <a href="https://commercetools.github.io/commercetools-sync-java">documentation pages</a> in README of the github repo.</li>
+<li><strong>Commons</strong> - Fixed link of <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/templates/beforeupdatecallback/KeepOtherVariantsSyncIT.java"><code>beforeUpdateCallback</code> for keeping other variants</a> example in the <a href="/docs/usage/SYNC_OPTIONS.md">Sync Options</a> doc page. <a href="https://github.com/commercetools/commercetools-sync-java/issues/360">#360</a></li>
+</ul>
+</li>
+</ul>
 <h3 id="100-dec-10-2018">1.0.0 -  Dec 10, 2018<a class="headerlink" href="#100-dec-10-2018" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/v1.0.0-M14...1.0.0">Commits</a> |
 <a href="https://commercetools.github.io/commercetools-sync-java/v/1.0.0/">Javadoc</a> | 
@@ -847,7 +902,7 @@ the library. <code>1.0.0</code> is here for you to use with all new features, en
 <li>
 <p>🎉 <strong>New Features</strong> (4)</p>
 <ul>
-<li><strong>Type Sync</strong> - Support for syncing types. <a href="https://github.com/commercetools/commercetools-sync-java/issues/300">#300</a> For more info how to use it please refer to <a href="/docs/usage/TYPE_SYNC.md">Type usage doc</a>.</li>
+<li><strong>Type Sync</strong> - Added support for syncing types. <a href="https://github.com/commercetools/commercetools-sync-java/issues/300">#300</a> For more info how to use it please refer to <a href="/docs/usage/TYPE_SYNC.md">Type usage doc</a>.</li>
 <li><strong>Type Sync</strong> - Exposed <code>TypeSyncUtils#buildActions</code> which calculates all needed update actions after comparing a <code>Type</code> and a <code>TypeDraft</code>. <a href="https://github.com/commercetools/commercetools-sync-java/issues/300">#300</a></li>
 <li><strong>Type Sync</strong> - Exposed <code>TypeUpdateActionUtils</code> which contains utils for calculating needed update actions after comparing individual fields of a <code>Type</code> and a <code>TypeDraft</code>. <a href="https://github.com/commercetools/commercetools-sync-java/issues/300">#300</a></li>
 <li><strong>Commons</strong> - Added <code>OptionalUtils#filterEmptyOptionals</code> which are utility methods that filter out the empty optionals in a supplied list (with a varargs variation) returning a list of the contents of the non-empty 
