@@ -1,4 +1,4 @@
-package com.commercetools.sync.integration.ctpprojectsource.type;
+package com.commercetools.sync.integration.ctpprojectsource.types;
 
 import com.commercetools.sync.types.TypeSync;
 import com.commercetools.sync.types.TypeSyncOptions;

@@ -60,7 +60,7 @@ If it fails to create the supply channel, the inventory entry/product won't sync
  
 #### 2. [Using `beforeUpdateCallback` for syncing a single locale](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/SyncSingleLocaleIT.java).
 
-#### 3. [Using `beforeUpdateCallback` for keeping other variants](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/products/templates/beforeupdatecallback/SyncSingleLocale.java).
+#### 3. [Using `beforeUpdateCallback` for keeping other variants](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/templates/beforeupdatecallback/KeepOtherVariantsSyncIT.java).
 
 #### 4. [Using `syncFilter` for blacklisting product categories while syncing products](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java#L142-L143).
 
