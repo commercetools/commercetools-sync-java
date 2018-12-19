@@ -333,7 +333,7 @@ public class ProductUpdateActionUtilsTest {
         // preparation
         final List<AssetDraft> assetDrafts = IntStream
             .range(1, 4)
-            .mapToObj(i-> AssetDraftBuilder
+            .mapToObj(i -> AssetDraftBuilder
                 .of(singletonList(AssetSourceBuilder.ofUri("foo").build()), ofEnglish("assetName"))
                 .key(i + "")
                 .build())
