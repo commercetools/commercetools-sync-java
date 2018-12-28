@@ -1,6 +1,7 @@
 package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.services.CustomerGroupService;
 import io.sphere.sdk.customergroups.CustomerGroup;
@@ -54,7 +55,10 @@ public final class CustomerGroupServiceImpl implements CustomerGroupService {
                 if (isNotBlank(fetchedCustomerGroupKey)) {
                     keyToIdCache.put(fetchedCustomerGroupKey, fetchedCustomerGroupId);
                 } else {
-                    syncOptions.applyWarningCallback(format(CUSTOMER_GROUP_KEY_NOT_SET, fetchedCustomerGroupId));
+                    //syncOptions is ProductSyncOptions
+                    syncOptions.applyWarningCallback(
+                        new SyncException(format(CUSTOMER_GROUP_KEY_NOT_SET, fetchedCustomerGroupId)),
+                        null, null);
                 }
             });
 

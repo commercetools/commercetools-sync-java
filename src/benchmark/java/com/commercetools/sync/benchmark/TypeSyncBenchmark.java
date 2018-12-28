@@ -1,13 +1,18 @@
 package com.commercetools.sync.benchmark;
 
+import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.commons.utils.QuadriConsumer;
+import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.types.TypeSync;
 import com.commercetools.sync.types.TypeSyncOptions;
 import com.commercetools.sync.types.TypeSyncOptionsBuilder;
 import com.commercetools.sync.types.helpers.TypeSyncStatistics;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.types.FieldDefinition;
 import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
+import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
 import io.sphere.sdk.types.TypeDraftBuilder;
 import io.sphere.sdk.types.commands.TypeCreateCommand;
@@ -21,10 +26,9 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -71,12 +75,13 @@ public class TypeSyncBenchmark {
 
     @Nonnull
     private TypeSyncOptions buildSyncOptions() {
-        final BiConsumer<String, Throwable> errorCallBack = (errorMessage, exception) -> {
-            errorCallBackMessages.add(errorMessage);
-            errorCallBackExceptions.add(exception);
-        };
-        final Consumer<String> warningCallBack = warningMessage -> warningCallBackMessages.add(warningMessage);
-
+        final QuadriConsumer<SyncException, Type, TypeDraft, Optional<List<UpdateAction<Type>>>>
+            errorCallBack = (exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
+            };
+        final TriConsumer<SyncException, Type, TypeDraft> warningCallBack =
+            (exception, oldResource, newResource) -> warningCallBackMessages.add(exception.getMessage());
         return TypeSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                      .errorCallback(errorCallBack)
                                      .warningCallback(warningCallBack)

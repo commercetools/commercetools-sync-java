@@ -1,6 +1,8 @@
 package com.commercetools.sync.integration.externalsource.products;
 
 import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
+import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -49,7 +51,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
@@ -148,10 +149,12 @@ public class ProductSyncIT {
     }
 
     private ProductSyncOptions buildSyncOptions() {
-        final Consumer<String> warningCallBack = warningMessage -> warningCallBackMessages.add(warningMessage);
+        final TriConsumer<SyncException, Product, ProductDraft> warningCallBack = (exception, oldResource, newResource) 
+            -> warningCallBackMessages.add(exception.getMessage());
 
         return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                        .errorCallback(this::collectErrors)
+                                        .errorCallback((exception, oldResource, newResource, updateActions) 
+                                            -> collectErrors(exception.getMessage(), exception.getCause()))
                                         .warningCallback(warningCallBack)
                                         .build();
     }
@@ -188,8 +191,10 @@ public class ProductSyncIT {
 
         final String keyPrefix = "callback_";
         final ProductSyncOptions options = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                .errorCallback(this::collectErrors)
-                .warningCallback(warningMessage -> warningCallBackMessages.add(warningMessage))
+                .errorCallback((exception, oldResource, newResource, updateActions)
+                    -> collectErrors(exception.getMessage(), exception.getCause()))
+                .warningCallback((exception, oldResource, newResource)
+                    -> warningCallBackMessages.add(exception.getMessage()))
                 .beforeCreateCallback(draft -> prefixDraftKey(draft, keyPrefix))
                 .build();
 
@@ -309,12 +314,13 @@ public class ProductSyncIT {
         // preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdate();
 
-        final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder.of(spyClient)
-                                                                       .errorCallback(this::collectErrors)
-                                                                       .warningCallback(warningMessage ->
-                                                                           warningCallBackMessages
-                                                                               .add(warningMessage))
-                                                                       .build();
+        final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder
+            .of(spyClient)
+            .errorCallback((exception, oldResource, newResource, updateActions)
+                -> collectErrors(exception.getMessage(), exception.getCause()))
+            .warningCallback((exception, oldResource, newResource)
+                -> warningCallBackMessages.add(exception.getMessage()))
+            .build();
 
         final ProductSync spyProductSync = new ProductSync(spyOptions);
 
@@ -349,13 +355,13 @@ public class ProductSyncIT {
         // preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
 
-        final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder.of(spyClient)
-                                                                       .errorCallback(
-                                                                               this::collectErrors)
-                                                                       .warningCallback(warningMessage ->
-                                                                           warningCallBackMessages
-                                                                               .add(warningMessage))
-                                                                       .build();
+        final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder
+            .of(spyClient)
+            .errorCallback((exception, oldResource, newResource, updateActions)
+                -> collectErrors(exception.getMessage(), exception.getCause()))
+            .warningCallback((exception, oldResource, newResource)
+                -> warningCallBackMessages.add(exception.getMessage()))
+            .build();
 
         final ProductSync spyProductSync = new ProductSync(spyOptions);
 
@@ -401,12 +407,13 @@ public class ProductSyncIT {
         // preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
 
-        final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder.of(spyClient)
-                                                                       .errorCallback(this::collectErrors)
-                                                                       .warningCallback(warningMessage ->
-                                                                           warningCallBackMessages
-                                                                               .add(warningMessage))
-                                                                       .build();
+        final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder
+            .of(spyClient)
+            .errorCallback((exception, oldResource, newResource, updateActions)
+                -> collectErrors(exception.getMessage(), exception.getCause()))
+            .warningCallback((exception, oldResource, newResource)
+                -> warningCallBackMessages.add(exception.getMessage()))
+            .build();
 
         final ProductSync spyProductSync = new ProductSync(spyOptions);
 
@@ -817,18 +824,21 @@ public class ProductSyncIT {
     public void sync_withProductContainingAttributeChanges_shouldSyncProductCorrectly() {
         // preparation
         final List<UpdateAction<Product>> updateActions = new ArrayList<>();
-        final Consumer<String> warningCallBack = warningMessage -> warningCallBackMessages.add(warningMessage);
+        final TriConsumer<SyncException, Product, ProductDraft> warningCallBack = (exception, oldResource, newResource)
+            -> warningCallBackMessages.add(exception.getMessage());
 
 
-        final ProductSyncOptions customOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                                                          .errorCallback(this::collectErrors)
-                                                                          .warningCallback(warningCallBack)
-                                                                          .beforeUpdateCallback(
-                                                                              (actions, draft, old) -> {
-                                                                                  updateActions.addAll(actions);
-                                                                                  return actions;
-                                                                              })
-                                                                          .build();
+        final ProductSyncOptions customOptions = ProductSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .errorCallback((exception, oldResource, newResource, actions)
+                -> collectErrors(exception.getMessage(), exception.getCause()))
+            .warningCallback(warningCallBack)
+            .beforeUpdateCallback(
+                (actions, draft, old) -> {
+                    updateActions.addAll(actions);
+                    return actions;
+                })
+            .build();
 
         final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH,
             ProductType.referenceOfId(productType.getKey()))

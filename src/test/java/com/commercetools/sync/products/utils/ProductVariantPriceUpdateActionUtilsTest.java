@@ -117,9 +117,11 @@ class ProductVariantPriceUpdateActionUtilsTest {
                           @Nonnull final List<String> expectedWarnings) {
         // preparation
         final List<String> warnings = new ArrayList<>();
-        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                        .warningCallback(warnings::add)
-                                                                        .build();
+        final ProductSyncOptions syncOptions =
+            ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                .warningCallback((exception, oldResource, newResource) ->
+                    warnings.add(exception.getMessage()))
+                .build();
 
         // test
         final List<UpdateAction<Product>> result = buildActions(0, oldPrice, newPrice, syncOptions);
@@ -177,9 +179,11 @@ class ProductVariantPriceUpdateActionUtilsTest {
                                           @Nonnull final List<String> expectedWarnings) {
         // preparation
         final List<String> warnings = new ArrayList<>();
-        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                  .warningCallback(warnings::add)
-                                                                  .build();
+        final ProductSyncOptions syncOptions =
+            ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                .warningCallback((exception, oldResource, newResource) ->
+                    warnings.add(exception.getMessage()))
+                .build();
 
         // test
         final ChangePrice result = buildChangePriceUpdateAction(oldPrice, newPrice, syncOptions).orElse(null);
@@ -346,10 +350,11 @@ class ProductVariantPriceUpdateActionUtilsTest {
 
         final List<String> errors = new ArrayList<>();
 
-        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                        .errorCallback((errorMessage, throwable) ->
-                                                                            errors.add(errorMessage))
-                                                                        .build();
+        final ProductSyncOptions syncOptions =
+            ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                .errorCallback((exception, oldResource, newResource, updateActions) ->
+                    errors.add(exception.getMessage()))
+                .build();
 
         final List<UpdateAction<Product>> updateActions =
             buildCustomUpdateActions(1, oldPrice, newPrice, syncOptions);

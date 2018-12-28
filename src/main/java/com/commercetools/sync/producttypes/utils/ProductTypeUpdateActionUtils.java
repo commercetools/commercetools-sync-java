@@ -2,6 +2,7 @@ package com.commercetools.sync.producttypes.utils;
 
 
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.producttypes.ProductType;
@@ -83,9 +84,10 @@ public final class ProductTypeUpdateActionUtils {
                 newProductType.getAttributes()
             );
         } catch (final BuildUpdateActionException exception) {
-            syncOptions.applyErrorCallback(format("Failed to build update actions for the attributes definitions "
+            syncOptions.applyErrorCallback(
+                new SyncException(format("Failed to build update actions for the attributes definitions "
                     + "of the product type with the key '%s'. Reason: %s", oldProductType.getKey(), exception),
-                exception);
+                exception), oldProductType, newProductType, null);
             return emptyList();
         }
     }

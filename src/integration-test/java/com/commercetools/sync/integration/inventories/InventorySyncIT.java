@@ -1,5 +1,7 @@
 package com.commercetools.sync.integration.inventories;
 
+import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.commons.utils.QuadriConsumer;
 import com.commercetools.sync.inventories.InventorySync;
 import com.commercetools.sync.inventories.InventorySyncOptions;
 import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
@@ -7,6 +9,7 @@ import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.channels.queries.ChannelQuery;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
@@ -26,7 +29,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 
@@ -388,7 +390,8 @@ public class InventorySyncIT {
 
         //Prepare sync options and perform sync of draft to target project.
         final AtomicInteger invocationCounter = new AtomicInteger(0);
-        BiConsumer<String, Throwable> countingErrorCallback = (string, throwable) ->
+        QuadriConsumer<SyncException, InventoryEntry, InventoryEntryDraft, Optional<List<UpdateAction<InventoryEntry>>>>
+            countingErrorCallback = (exception, oldResource, newResource, updateActions) ->
             invocationCounter.incrementAndGet();
         final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
             .errorCallback(countingErrorCallback)

@@ -66,9 +66,9 @@ public class ProductTypeSyncIT {
 
         final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .errorCallback((error, throwable) -> {
-                errorMessages.add(error);
-                exceptions.add(throwable);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception.getCause());
             })
             .build();
 
@@ -120,9 +120,9 @@ public class ProductTypeSyncIT {
 
         final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .errorCallback((error, throwable) -> {
-                errorMessages.add(error);
-                exceptions.add(throwable);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception.getCause());
             })
             .build();
 

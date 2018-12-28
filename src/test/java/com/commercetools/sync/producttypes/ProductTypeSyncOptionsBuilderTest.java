@@ -1,5 +1,8 @@
 package com.commercetools.sync.producttypes;
 
+import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.commons.utils.QuadriConsumer;
+import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
@@ -12,8 +15,6 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static java.util.Collections.emptyList;
@@ -68,8 +69,9 @@ public class ProductTypeSyncOptionsBuilderTest {
 
     @Test
     public void errorCallBack_WithCallBack_ShouldSetCallBack() {
-        final BiConsumer<String, Throwable> mockErrorCallBack = (errorMessage, errorException) -> {
-        };
+        final QuadriConsumer<SyncException, ProductType, ProductTypeDraft,
+            Optional<List<UpdateAction<ProductType>>>> mockErrorCallBack = (exception, old, newDraft, actions) -> {
+            };
         productTypeSyncOptionsBuilder.errorCallback(mockErrorCallBack);
 
         final ProductTypeSyncOptions productTypeSyncOptions = productTypeSyncOptionsBuilder.build();
@@ -78,8 +80,9 @@ public class ProductTypeSyncOptionsBuilderTest {
 
     @Test
     public void warningCallBack_WithCallBack_ShouldSetCallBack() {
-        final Consumer<String> mockWarningCallBack = (warningMessage) -> {
-        };
+        final TriConsumer<SyncException, ProductType, ProductTypeDraft> mockWarningCallBack =
+            (exception, old, newDraft) -> {
+            };
         productTypeSyncOptionsBuilder.warningCallback(mockWarningCallBack);
 
         final ProductTypeSyncOptions productTypeSyncOptions = productTypeSyncOptionsBuilder.build();

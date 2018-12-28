@@ -1,5 +1,8 @@
 package com.commercetools.sync.commons;
 
+import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.commons.utils.QuadriConsumer;
+import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
@@ -22,19 +25,20 @@ import static java.util.Optional.ofNullable;
  */
 public class BaseSyncOptions<U, V> {
     private final SphereClient ctpClient;
-    private final BiConsumer<String, Throwable> errorCallBack;
-    private final Consumer<String> warningCallBack;
+    private final QuadriConsumer<SyncException, U, V, Optional<List<UpdateAction<U>>>> errorCallBack;
+    private final TriConsumer<SyncException, U, V> warningCallBack;
     private int batchSize;
     private final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>> beforeUpdateCallback;
     private final Function<V, V> beforeCreateCallback;
 
-    protected BaseSyncOptions(@Nonnull final SphereClient ctpClient,
-                              @Nullable final BiConsumer<String, Throwable> errorCallBack,
-                              @Nullable final Consumer<String> warningCallBack,
-                              final int batchSize,
-                              @Nullable final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>>
-                                  beforeUpdateCallback,
-                              @Nullable final Function<V, V> beforeCreateCallback) {
+    protected BaseSyncOptions(
+        @Nonnull final SphereClient ctpClient,
+        @Nullable final QuadriConsumer<SyncException, U, V, Optional<List<UpdateAction<U>>>> errorCallBack,
+        @Nullable final TriConsumer<SyncException, U, V> warningCallBack,
+        final int batchSize,
+        @Nullable final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>>
+            beforeUpdateCallback,
+        @Nullable final Function<V, V> beforeCreateCallback) {
         this.ctpClient = ctpClient;
         this.errorCallBack = errorCallBack;
         this.batchSize = batchSize;
@@ -61,7 +65,7 @@ public class BaseSyncOptions<U, V> {
      *      {@code this} {@link BaseSyncOptions}
      */
     @Nullable
-    public BiConsumer<String, Throwable> getErrorCallBack() {
+    public QuadriConsumer<SyncException, U, V, Optional<List<UpdateAction<U>>>> getErrorCallBack() {
         return errorCallBack;
     }
 
@@ -74,20 +78,24 @@ public class BaseSyncOptions<U, V> {
      *      {@link BaseSyncOptions}
      */
     @Nullable
-    public Consumer<String> getWarningCallBack() {
+    public TriConsumer<SyncException, U, V> getWarningCallBack() {
         return warningCallBack;
     }
 
     /**
-     * Given a {@code warningMessage} string, this method calls the {@code warningCallback} function which is set
-     * to {@code this} instance of the {@link BaseSyncOptions}. If there {@code warningCallback} is null, this
+     * Given an {@code exception}, {@code oldResource} and {@code newResourceDraft} this method calls the
+     * {@code warningCallback} function which is set to {@code this} instance of the
+     * {@link BaseSyncOptions}. If there {@code warningCallback} is null, this
      * method does nothing.
      *
-     * @param warningMessage the warning message to supply to the {@code warningCallback} function.
+     * @param exception the exception to supply to the {@code warningCallback} function.
+     * @param oldResource the old resource that is being compared to the new draft.
+     * @param newResourceDraft the new resource draft that is being compared to the old resource.
      */
-    public void applyWarningCallback(@Nonnull final String warningMessage) {
+    public void applyWarningCallback(@Nonnull final SyncException exception, @Nullable final U oldResource,
+        @Nullable final V newResourceDraft) {
         if (this.warningCallBack != null) {
-            this.warningCallBack.accept(warningMessage);
+            this.warningCallBack.accept(exception, oldResource, newResourceDraft);
         }
     }
 
@@ -96,23 +104,25 @@ public class BaseSyncOptions<U, V> {
      * which is set to {@code this} instance of the {@link BaseSyncOptions}. If there {@code errorCallback} is null,
      * this method does nothing.
      *
-     * @param errorMessage the error message to supply as first param to the {@code errorCallback} function.
-     * @param exception    optional {@link Throwable} instance to supply to the {@code errorCallback} function as a
-     *                     second param.
+     * @param exception {@link Throwable} instance to supply as first param to the {@code errorCallback} function.
+     * @param oldResource the old resource that is being compared to the new draft.
+     * @param newResourceDraft the new resource draft that is being compared to the old resource.
+     * @param updateActions the list of update actions.
      */
-    public void applyErrorCallback(@Nonnull final String errorMessage, @Nullable final Throwable exception) {
+    public void applyErrorCallback(@Nonnull final SyncException exception, @Nullable final U oldResource,
+        @Nullable final V newResourceDraft, @Nullable final List<UpdateAction<U>> updateActions) {
         if (this.errorCallBack != null) {
-            this.errorCallBack.accept(errorMessage, exception);
+            this.errorCallBack.accept(exception, oldResource, newResourceDraft, Optional.ofNullable(updateActions));
         }
     }
 
     /**
      *
-     * @param errorMessage the error message to supply as first param to the {@code errorCallback} function.
-     * @see #applyErrorCallback(String, Throwable) applyErrorCallback(String, Throwable)
+     * @param errorMessage the error message to supply as part of first param to the {@code errorCallback} function.
+     * @see #applyErrorCallback(SyncException, Object, Object, List)
      */
     public void applyErrorCallback(@Nonnull final String errorMessage) {
-        applyErrorCallback(errorMessage, null);
+        applyErrorCallback(new SyncException(errorMessage), null, null, null);
     }
 
     /**

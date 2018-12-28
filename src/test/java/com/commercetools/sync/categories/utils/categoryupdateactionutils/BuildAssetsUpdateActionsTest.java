@@ -125,12 +125,13 @@ public class BuildAssetsUpdateActionsTest {
 
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> exceptions = new ArrayList<>();
-        final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                          .errorCallback((errorMessage, exception) -> {
-                                                                              errorMessages.add(errorMessage);
-                                                                              exceptions.add(exception);
-                                                                          })
-                                                                          .build();
+        final CategorySyncOptions syncOptions =
+            CategorySyncOptionsBuilder.of(mock(SphereClient.class))
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorMessages.add(exception.getMessage());
+                    exceptions.add(exception.getCause());
+                })
+                .build();
 
         final List<UpdateAction<Category>> updateActions =
             buildAssetsUpdateActions(oldCategory, newCategoryDraft, syncOptions);

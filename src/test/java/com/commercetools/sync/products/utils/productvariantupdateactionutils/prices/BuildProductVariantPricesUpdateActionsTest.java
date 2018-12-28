@@ -36,10 +36,11 @@ public class BuildProductVariantPricesUpdateActionsTest {
     private final ProductVariant oldProductVariant = mock(ProductVariant.class);
     private final ProductVariantDraft newProductVariant = mock(ProductVariantDraft.class);
     private List<String> errorMessages;
-    private final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                                   .errorCallback((msg, throwable) ->
-                                                                                       errorMessages.add(msg))
-                                                                                   .build();
+    private final ProductSyncOptions syncOptions =
+        ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+            .errorCallback((exception, oldResource, newResource, updateActions) ->
+                errorMessages.add(exception.getMessage()))
+            .build();
 
     @Before
     public void setupMethod() {

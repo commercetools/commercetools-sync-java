@@ -42,12 +42,13 @@ public class ProductServiceTest {
     public void setUp() {
         errorMessages = new ArrayList<>();
         errorExceptions = new ArrayList<>();
-        productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
-                                                      .errorCallback((errorMessage, errorException) -> {
-                                                          errorMessages.add(errorMessage);
-                                                          errorExceptions.add(errorException);
-                                                      })
-                                                      .build();
+        productSyncOptions = ProductSyncOptionsBuilder
+            .of(mock(SphereClient.class))
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
+                errorExceptions.add(exception.getCause());
+            })
+            .build();
         service = new ProductServiceImpl(productSyncOptions);
     }
 

@@ -5,6 +5,7 @@ import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.categories.helpers.CategoryCustomActionBuilder;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -20,6 +21,7 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
+import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -29,7 +31,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
-import java.util.function.BiConsumer;
 
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildNewOrModifiedCustomFieldsUpdateActions;
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildNonNullCustomFieldsUpdateActions;
@@ -52,10 +53,11 @@ public class ResourceCustomUpdateActionUtilsTest {
     public void setupTest() {
         errorMessages = new ArrayList<>();
         exceptions = new ArrayList<>();
-        final BiConsumer<String, Throwable> updateActionErrorCallBack = (errorMessage, exception) -> {
-            errorMessages.add(errorMessage);
-            exceptions.add(exception);
-        };
+        final QuadriConsumer<SyncException, Category, CategoryDraft, Optional<List<UpdateAction<Category>>>>
+            updateActionErrorCallBack = (exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception.getCause());
+            };
 
         // Mock sync options
         categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)

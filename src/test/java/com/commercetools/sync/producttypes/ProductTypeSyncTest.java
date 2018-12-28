@@ -46,9 +46,9 @@ public class ProductTypeSyncTest {
 
         final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
             .of(mock(SphereClient.class))
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
-                exceptions.add(exception);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception.getCause());
             })
             .build();
 

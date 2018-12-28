@@ -235,9 +235,9 @@ public class CategorySyncIT {
 
         final CategorySyncOptions categorySyncOptions =
                 CategorySyncOptionsBuilder.of(spyClient)
-                        .errorCallback((errorMessage, error) -> {
-                            errorMessages.add(errorMessage);
-                            errors.add(error);
+                        .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                            errorMessages.add(exception.getMessage());
+                            errors.add(exception.getCause());
                         })
                         .build();
 
@@ -293,9 +293,9 @@ public class CategorySyncIT {
 
         final CategorySyncOptions categorySyncOptions =
             CategorySyncOptionsBuilder.of(spyClient)
-                                      .errorCallback((errorMessage, error) -> {
-                                          errorMessages.add(errorMessage);
-                                          errors.add(error);
+                                      .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                                          errorMessages.add(exception.getMessage());
+                                          errors.add(exception.getCause());
                                       })
                                       .build();
 

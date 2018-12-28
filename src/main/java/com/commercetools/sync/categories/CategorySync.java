@@ -4,6 +4,7 @@ import com.commercetools.sync.categories.helpers.CategoryReferenceResolver;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.CategoryServiceImpl;
@@ -606,6 +607,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * the optional error callback specified in the {@code syncOptions} is called.
      *
      * @param category      the category to update.
+     * @param newCategory the category draft where we get the new data.
      * @param updateActions the list of update actions to update the category with.
      * @return a future which contains an empty result after execution of the update.
      */
@@ -623,7 +625,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                                           () -> {
                                               if (!processedCategoryKeys.contains(categoryKey)) {
                                                   handleError(format(UPDATE_FAILED, categoryKey, sphereException),
-                                                      sphereException);
+                                                      sphereException, category, newCategory, updateActions);
                                                   processedCategoryKeys.add(categoryKey);
                                               }
                                               return CompletableFuture.completedFuture(null);
@@ -655,7 +657,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                     if (exception != null) {
                         final String errorMessage = format(UPDATE_FAILED, key, "Failed to fetch from CTP while "
                                 + "retrying after concurrency modification.");
-                        handleError(errorMessage, exception);
+                        handleError(errorMessage, exception, oldCategory, newCategory, null);
                         return CompletableFuture.completedFuture(null);
                     }
 
@@ -665,7 +667,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                             final String errorMessage =
                                 format(UPDATE_FAILED, key, "Not found when attempting to fetch while retrying "
                                     + "after concurrency modification.");
-                            handleError(errorMessage, null);
+                            handleError(errorMessage, null, oldCategory, newCategory, null);
                             return CompletableFuture.completedFuture(null);
                         });
                 });
@@ -680,7 +682,27 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @param exception    The exception that called caused the failure, if any.
      */
     private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception) {
-        syncOptions.applyErrorCallback(errorMessage, exception);
+        handleError(errorMessage, exception, null, null, null);
+    }
+
+    /**
+     * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this method calls the
+     * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
+     * incrementing the total number of failed categories to sync.
+     *
+     * @param errorMessage The error message describing the reason(s) of failure.
+     * @param exception    The exception that called caused the failure, if any.
+     * @param category      the category to update.
+     * @param newCategory the category draft where we get the new data.
+     * @param updateActions the list of update actions to update the category with.
+     */
+    private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
+        @Nullable final Category category,
+        @Nullable final CategoryDraft newCategory,
+        @Nullable final List<UpdateAction<Category>> updateActions) {
+        SyncException syncException = exception != null ? new SyncException(errorMessage, exception)
+            : new SyncException(errorMessage);
+        syncOptions.applyErrorCallback(syncException, category, newCategory, updateActions);
         statistics.incrementFailed();
     }
 
@@ -697,7 +719,9 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                              @Nullable final Throwable exception,
                              final int failedTimes) {
 
-        syncOptions.applyErrorCallback(errorMessage, exception);
+        SyncException syncException = exception != null ? new SyncException(errorMessage, exception)
+            : new SyncException(errorMessage);
+        syncOptions.applyErrorCallback(syncException, null, null, null);
         statistics.incrementFailed(failedTimes);
     }
 }

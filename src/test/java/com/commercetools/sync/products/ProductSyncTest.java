@@ -65,9 +65,9 @@ public class ProductSyncTest {
 
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder
             .of(mockClient)
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
-                exceptions.add(exception);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception.getCause());
             })
             .build();
 
@@ -126,9 +126,9 @@ public class ProductSyncTest {
 
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder
                 .of(mockClient)
-                .errorCallback((errorMessage, exception) -> {
-                    errorMessages.add(errorMessage);
-                    exceptions.add(exception);
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorMessages.add(exception.getMessage());
+                    exceptions.add(exception.getCause());
                 })
                 .build();
 

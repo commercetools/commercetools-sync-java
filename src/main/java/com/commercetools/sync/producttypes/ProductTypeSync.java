@@ -1,6 +1,7 @@
 package com.commercetools.sync.producttypes;
 
 import com.commercetools.sync.commons.BaseSync;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
@@ -167,8 +168,32 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      */
     private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
                              final int failedTimes) {
+        SyncException syncException = exception != null ? new SyncException(errorMessage, exception)
+            : new SyncException(errorMessage);
+        syncOptions.applyErrorCallback(syncException, null, null, null);
+        statistics.incrementFailed(failedTimes);
+    }
 
-        syncOptions.applyErrorCallback(errorMessage, exception);
+    /**
+     * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this method calls the
+     * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
+     * incrementing the total number of failed product types to sync.
+     *
+     * @param errorMessage The error message describing the reason(s) of failure.
+     * @param exception    The exception that called caused the failure, if any.
+     * @param failedTimes  The number of times that the failed product types counter is incremented.
+     * @param oldProductType existing product type that could be updated.
+     * @param newProductType draft containing data that could differ from data in {@code oldProductType}.
+     * @param updateActions the update actions to update the {@link ProductType} with.
+     */
+    private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
+                             final int failedTimes,
+                             @Nullable final ProductType oldProductType,
+                             @Nullable final ProductTypeDraft newProductType,
+                             @Nullable final List<UpdateAction<ProductType>> updateActions) {
+        SyncException syncException = exception != null ? new SyncException(errorMessage, exception)
+            : new SyncException(errorMessage);
+        syncOptions.applyErrorCallback(syncException, oldProductType, newProductType, updateActions);
         statistics.incrementFailed(failedTimes);
     }
 
@@ -258,6 +283,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      *
      * @param oldProductType existing product type that could be updated.
      * @param newProductType draft containing data that could differ from data in {@code oldProductType}.
+     * @param updateActions the update actions to update the {@link ProductType} with.
      * @return a {@link CompletionStage} which contains an empty result after execution of the update.
      */
     @Nonnull
@@ -280,7 +306,8 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                             final String errorMessage =
                                 format(CTP_PRODUCT_TYPE_UPDATE_FAILED, newProductType.getKey(),
                                     sphereException.getMessage());
-                            handleError(errorMessage, sphereException, 1);
+                            handleError(errorMessage, sphereException, 1, oldProductType, newProductType,
+                                updateActions);
                             return CompletableFuture.completedFuture(Optional.empty());
                         });
                 } else {
@@ -306,7 +333,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                 if (exception != null) {
                     final String errorMessage = format(CTP_PRODUCT_TYPE_UPDATE_FAILED, key,
                         "Failed to fetch from CTP while retrying after concurrency modification.");
-                    handleError(errorMessage, exception, 1);
+                    handleError(errorMessage, exception, 1, oldProductType, newProductType, null);
                     return CompletableFuture.completedFuture(null);
                 }
 
@@ -317,7 +344,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                             format(CTP_PRODUCT_TYPE_UPDATE_FAILED, key,
                                 "Not found when attempting to fetch while retrying "
                                     + "after concurrency modification.");
-                        handleError(errorMessage, null, 1);
+                        handleError(errorMessage, null, 1, oldProductType, newProductType, null);
                         return CompletableFuture.completedFuture(null);
                     });
             });

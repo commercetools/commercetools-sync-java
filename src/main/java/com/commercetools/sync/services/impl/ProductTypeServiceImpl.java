@@ -1,6 +1,7 @@
 package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.services.ProductTypeService;
@@ -61,8 +62,10 @@ public final class ProductTypeServiceImpl
                     if (StringUtils.isNotBlank(fetchedTypeKey)) {
                         keyToIdCache.put(fetchedTypeKey, id);
                     } else {
-                        syncOptions.applyWarningCallback(format("ProductType with id: '%s' has no key set. Keys are"
-                                + " required for productType matching.", id));
+                        // syncOptions is ProductSyncOptions
+                        syncOptions.applyWarningCallback(
+                            new SyncException(format("ProductType with id: '%s' has no key set. Keys are"
+                                + " required for productType matching.", id)), null, null);
                     }
                 });
 

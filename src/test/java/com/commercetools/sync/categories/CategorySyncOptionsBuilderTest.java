@@ -1,5 +1,8 @@
 package com.commercetools.sync.categories;
 
+import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.commons.utils.QuadriConsumer;
+import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -11,8 +14,6 @@ import org.junit.Test;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
@@ -69,8 +70,9 @@ public class CategorySyncOptionsBuilderTest {
 
     @Test
     public void errorCallBack_WithCallBack_ShouldSetCallBack() {
-        final BiConsumer<String, Throwable> mockErrorCallBack = (errorMessage, errorException) -> {
-        };
+        final QuadriConsumer<SyncException, Category, CategoryDraft,
+            Optional<List<UpdateAction<Category>>>> mockErrorCallBack = (exception, old, newDraft, actions) -> {
+            };
         categorySyncOptionsBuilder.errorCallback(mockErrorCallBack);
 
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();
@@ -79,7 +81,7 @@ public class CategorySyncOptionsBuilderTest {
 
     @Test
     public void warningCallBack_WithCallBack_ShouldSetCallBack() {
-        final Consumer<String> mockWarningCallBack = (warningMessage) -> {
+        final TriConsumer<SyncException, Category, CategoryDraft> mockWarningCallBack = (exception, old, newDraft) -> {
         };
         categorySyncOptionsBuilder.warningCallback(mockWarningCallBack);
 

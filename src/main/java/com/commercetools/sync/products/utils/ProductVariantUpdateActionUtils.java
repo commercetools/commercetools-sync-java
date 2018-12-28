@@ -1,6 +1,7 @@
 package com.commercetools.sync.products.utils;
 
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.internals.helpers.PriceCompositeId;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
@@ -256,9 +257,9 @@ public final class ProductVariantUpdateActionUtils {
                 new ProductAssetActionFactory(oldProductVariant.getId(), syncOptions));
 
         } catch (final BuildUpdateActionException exception) {
-            syncOptions.applyErrorCallback(format("Failed to build update actions for the assets "
+            syncOptions.applyErrorCallback(new SyncException(format("Failed to build update actions for the assets "
                     + "of the product variant with the sku '%s'. Reason: %s", oldProductVariant.getSku(), exception),
-                exception);
+                exception), null, null, null);
             return emptyList();
         }
     }
@@ -305,8 +306,8 @@ public final class ProductVariantUpdateActionUtils {
                 } catch (final BuildUpdateActionException buildUpdateActionException) {
                     final String errorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, attribute.getName(),
                         newProductVariant.getKey(), productKey, buildUpdateActionException.getMessage());
-                    syncOptions.applyErrorCallback(errorMessage,
-                        new BuildUpdateActionException(errorMessage, buildUpdateActionException));
+                    syncOptions.applyErrorCallback(new SyncException(errorMessage,
+                        new BuildUpdateActionException(errorMessage, buildUpdateActionException)), null, null, null);
                     return null;
                 }
             });
@@ -318,7 +319,8 @@ public final class ProductVariantUpdateActionUtils {
             if (newAttribute == null) {
                 final String errorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, null,
                     newProductVariant.getKey(), productKey, NULL_PRODUCT_VARIANT_ATTRIBUTE);
-                syncOptions.applyErrorCallback(errorMessage, new BuildUpdateActionException(errorMessage));
+                syncOptions.applyErrorCallback(new SyncException(errorMessage,
+                    new BuildUpdateActionException(errorMessage)), null, null, updateActions);
             } else {
                 final String newAttributeName = newAttribute.getName();
                 final Attribute matchingOldAttribute = oldAttributesMap.get(newAttributeName);
@@ -332,8 +334,8 @@ public final class ProductVariantUpdateActionUtils {
                 } catch (final BuildUpdateActionException buildUpdateActionException) {
                     final String errorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, newAttributeName,
                         newProductVariant.getKey(), productKey, buildUpdateActionException.getMessage());
-                    syncOptions.applyErrorCallback(errorMessage,
-                        new BuildUpdateActionException(errorMessage, buildUpdateActionException));
+                    syncOptions.applyErrorCallback(new SyncException(errorMessage,
+                        new BuildUpdateActionException(errorMessage, buildUpdateActionException)), null, null, null);
                 }
             }
 

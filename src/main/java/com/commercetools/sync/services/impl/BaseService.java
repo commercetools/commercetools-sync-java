@@ -1,6 +1,7 @@
 package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import io.sphere.sdk.commands.DraftBasedCreateCommand;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.commands.UpdateCommand;
@@ -116,7 +117,9 @@ class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions> {
         final String draftKey = keyMapper.apply(draft);
 
         if (isBlank(draftKey)) {
-            syncOptions.applyErrorCallback(format(CREATE_FAILED, draftKey, "Draft key is blank!"));
+            syncOptions.applyErrorCallback(
+                new SyncException(format(CREATE_FAILED, draftKey, "Draft key is blank!")),
+                null, draft, null);
             return CompletableFuture.completedFuture(Optional.empty());
         } else {
             return syncOptions
@@ -128,7 +131,8 @@ class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions> {
                         return Optional.of(resource);
                     } else {
                         syncOptions.applyErrorCallback(
-                            format(CREATE_FAILED, draftKey, exception.getMessage()), exception);
+                            new SyncException(format(CREATE_FAILED, draftKey, exception.getMessage()), exception),
+                            null, draft, null);
                         return Optional.empty();
                     }
                 }));

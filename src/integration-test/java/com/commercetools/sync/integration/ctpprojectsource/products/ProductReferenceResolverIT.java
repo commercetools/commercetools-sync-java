@@ -109,17 +109,14 @@ public class ProductReferenceResolverIT {
         warningCallBackMessages = new ArrayList<>();
 
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                                                        .errorCallback(
-                                                                            (errorMessage, exception) -> {
-                                                                                errorCallBackMessages
-                                                                                    .add(errorMessage);
-                                                                                errorCallBackExceptions
-                                                                                    .add(exception);
-                                                                            })
-                                                                        .warningCallback(warningMessage ->
-                                                                            warningCallBackMessages
-                                                                                .add(warningMessage))
-                                                                        .build();
+            .errorCallback(
+                (exception, oldResource, newResource, updateActions) -> {
+                    errorCallBackMessages.add(exception.getMessage());
+                    errorCallBackExceptions.add(exception.getCause());
+                })
+            .warningCallback((exception, oldResource, newResource) ->
+                warningCallBackMessages.add(exception.getMessage()))
+            .build();
         productSync = new ProductSync(syncOptions);
     }
 

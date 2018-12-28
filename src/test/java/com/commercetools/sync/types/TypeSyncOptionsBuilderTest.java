@@ -1,5 +1,8 @@
 package com.commercetools.sync.types;
 
+import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.commons.utils.QuadriConsumer;
+import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
@@ -11,8 +14,6 @@ import org.junit.Test;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
@@ -69,8 +70,9 @@ public class TypeSyncOptionsBuilderTest {
 
     @Test
     public void errorCallBack_WithCallBack_ShouldSetCallBack() {
-        final BiConsumer<String, Throwable> mockErrorCallBack = (errorMessage, errorException) -> {
-        };
+        final QuadriConsumer<SyncException, Type, TypeDraft, Optional<List<UpdateAction<Type>>>>
+            mockErrorCallBack = (exception, oldResource, newResource, updateActions) -> {
+            };
         typeSyncOptionsBuilder.errorCallback(mockErrorCallBack);
 
         final TypeSyncOptions typeSyncOptions = typeSyncOptionsBuilder.build();
@@ -79,8 +81,9 @@ public class TypeSyncOptionsBuilderTest {
 
     @Test
     public void warningCallBack_WithCallBack_ShouldSetCallBack() {
-        final Consumer<String> mockWarningCallBack = (warningMessage) -> {
-        };
+        final TriConsumer<SyncException, Type, TypeDraft> mockWarningCallBack =
+            (exception, oldResource, newResource) -> {
+            };
         typeSyncOptionsBuilder.warningCallback(mockWarningCallBack);
 
         final TypeSyncOptions typeSyncOptions = typeSyncOptionsBuilder.build();

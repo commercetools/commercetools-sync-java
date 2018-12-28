@@ -2,6 +2,7 @@ package com.commercetools.sync.products;
 
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.BaseSync;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.products.helpers.BatchProcessor;
 import com.commercetools.sync.products.helpers.ProductReferenceResolver;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
@@ -177,7 +178,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                                             }
                                             final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES,
                                                 productDraft.getKey(), actualException);
-                                            handleError(errorMessage, actualException);
+                                            handleError(errorMessage, actualException, null, productDraft, null);
                                             return null;
                                         }).toCompletableFuture().join());
     }
@@ -271,7 +272,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                         }).orElseGet(() -> {
                             final String errorMessage = format(UPDATE_FAILED, oldProduct.getKey(),
                                     FAILED_TO_FETCH_PRODUCT_TYPE);
-                            handleError(errorMessage);
+                            handleError(errorMessage, oldProduct, newProduct);
                             return CompletableFuture.completedFuture(Optional.of(oldProduct));
                         })
                 );
@@ -292,7 +293,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                                          () -> {
                                              final String productKey = oldProduct.getKey();
                                              handleError(format(UPDATE_FAILED, productKey, sphereException),
-                                                 sphereException);
+                                                 sphereException, oldProduct, newProduct, updateActions);
                                              return CompletableFuture.completedFuture(empty());
                                          });
                                  } else {
@@ -327,7 +328,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                 if (exception != null) {
                     final String errorMessage = format(UPDATE_FAILED, key, "Failed to fetch from CTP while "
                             + "retrying after concurrency modification.");
-                    handleError(errorMessage, exception);
+                    handleError(errorMessage, exception, oldProduct, newProduct, null);
                     return CompletableFuture.completedFuture(empty());
                 }
 
@@ -336,7 +337,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                     .orElseGet(() -> {
                         final String errorMessage = format(UPDATE_FAILED, key, "Not found when attempting to fetch "
                                 + "while retrying after concurrency modification.");
-                        handleError(errorMessage);
+                        handleError(errorMessage, oldProduct, newProduct);
                         return CompletableFuture.completedFuture(empty());
                     });
             });
@@ -349,8 +350,9 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
      *
      * @param errorMessage The error message describing the reason(s) of failure.
      */
-    private void handleError(@Nonnull final String errorMessage) {
-        handleError(errorMessage, null);
+    private void handleError(@Nonnull final String errorMessage, @Nullable final Product oldResource,
+        @Nullable final ProductDraft newResource) {
+        handleError(errorMessage, null, oldResource, newResource, null);
     }
 
     /**
@@ -360,9 +362,16 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
      *
      * @param errorMessage The error message describing the reason(s) of failure.
      * @param exception    The exception that called caused the failure, if any.
+     * @param oldProduct the product which could be updated.
+     * @param newProduct the product draft where we get the new data.
+     * @param updateActions the update actions to update the {@link Product} with.
      */
-    private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception) {
-        syncOptions.applyErrorCallback(errorMessage, exception);
+    private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
+        @Nullable final Product oldProduct, @Nullable final ProductDraft newProduct,
+        @Nullable final List<UpdateAction<Product>> updateActions) {
+        SyncException syncException = exception != null ? new SyncException(errorMessage, exception)
+            : new SyncException(errorMessage);
+        syncOptions.applyErrorCallback(syncException, oldProduct, newProduct, updateActions);
         statistics.incrementFailed();
     }
 
@@ -378,8 +387,9 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     private void handleError(@Nonnull final String errorMessage,
                              @Nullable final Throwable exception,
                              final int failedTimes) {
-
-        syncOptions.applyErrorCallback(errorMessage, exception);
+        SyncException syncException = exception != null ? new SyncException(errorMessage, exception)
+            : new SyncException(errorMessage);
+        syncOptions.applyErrorCallback(syncException, null, null, null);
         statistics.incrementFailed(failedTimes);
     }
 }

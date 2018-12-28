@@ -37,9 +37,11 @@ public class TaxCategoryServiceImplIT {
         deleteTaxCategories(CTP_TARGET_CLIENT);
         warnings = new ArrayList<>();
         oldTaxCategory = createTaxCategory(CTP_TARGET_CLIENT);
-        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                                                               .warningCallback(warnings::add)
-                                                                               .build();
+        final ProductSyncOptions productSyncOptions =
+            ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+                .warningCallback(
+                    (exception, oldResource, newResource) -> warnings.add(exception.getMessage()))
+                .build();
         taxCategoryService = new TaxCategoryServiceImpl(productSyncOptions);
     }
 

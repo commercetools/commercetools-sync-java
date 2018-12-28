@@ -1,5 +1,6 @@
 package com.commercetools.sync.services.impl;
 
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.TaxCategoryService;
@@ -49,8 +50,9 @@ public final class TaxCategoryServiceImpl implements TaxCategoryService {
                 if (StringUtils.isNotBlank(fetchedTaxCategoryKey)) {
                     keyToIdCache.put(fetchedTaxCategoryKey, id);
                 } else {
-                    syncOptions.applyWarningCallback(format("TaxCategory with id: '%s' has no key set. Keys are"
-                        + " required for taxCategory matching.", id));
+                    syncOptions.applyWarningCallback(
+                        new SyncException(format("TaxCategory with id: '%s' has no key set. Keys are"
+                        + " required for taxCategory matching.", id)), null, null);
                 }
             });
 

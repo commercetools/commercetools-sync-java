@@ -86,10 +86,11 @@ public class CategorySyncTest {
         errorCallBackExceptions = new ArrayList<>();
         final SphereClient ctpClient = mock(SphereClient.class);
         categorySyncOptions = CategorySyncOptionsBuilder.of(ctpClient)
-                                                        .errorCallback((errorMessage, exception) -> {
-                                                            errorCallBackMessages.add(errorMessage);
-                                                            errorCallBackExceptions.add(exception);
-                                                        })
+                                                        .errorCallback(
+                                                            (exception, oldResource, newResource, updateActions) -> {
+                                                                errorCallBackMessages.add(exception.getMessage());
+                                                                errorCallBackExceptions.add(exception.getCause());
+                                                            })
                                                         .build();
     }
 
@@ -332,9 +333,9 @@ public class CategorySyncTest {
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
             .of(mock(SphereClient.class))
             .errorCallback(
-                (errorMessage, exception) -> {
-                    errorCallBackMessages.add(errorMessage);
-                    errorCallBackExceptions.add(exception);
+                (exception, oldResource, newResource, updateActions) -> {
+                    errorCallBackMessages.add(exception.getMessage());
+                    errorCallBackExceptions.add(exception.getCause());
                 })
             .batchSize(batchSize)
             .build();
@@ -412,9 +413,9 @@ public class CategorySyncTest {
 
         final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder
                 .of(mockClient)
-                .errorCallback((errorMessage, exception) -> {
-                    errorCallBackMessages.add(errorMessage);
-                    errorCallBackExceptions.add(exception);
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorCallBackMessages.add(exception.getMessage());
+                    errorCallBackExceptions.add(exception.getCause());
                 })
                 .build();
 
@@ -471,9 +472,9 @@ public class CategorySyncTest {
 
         final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder
             .of(mockClient)
-            .errorCallback((errorMessage, exception) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(exception);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
             .build();
 

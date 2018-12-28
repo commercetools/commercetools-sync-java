@@ -483,9 +483,9 @@ public class InventorySyncTest {
         return InventorySyncOptionsBuilder.of(mock(SphereClient.class))
                                           .batchSize(batchSize)
                                           .ensureChannels(ensureChannels)
-                                          .errorCallback((callBackError, exception) -> {
-                                              errorCallBackMessages.add(callBackError);
-                                              errorCallBackExceptions.add(exception);
+                                          .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                                              errorCallBackMessages.add(exception.getMessage());
+                                              errorCallBackExceptions.add(exception.getCause());
                                           })
                                           .build();
     }

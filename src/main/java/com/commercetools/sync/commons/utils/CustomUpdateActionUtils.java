@@ -2,6 +2,7 @@ package com.commercetools.sync.commons.utils;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.helpers.GenericCustomActionBuilder;
 import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -16,6 +17,7 @@ import io.sphere.sdk.types.CustomFieldsDraft;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.reflect.ParameterizedType;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -144,7 +146,18 @@ public final class CustomUpdateActionUtils {
                 final String errorMessage = format(CUSTOM_FIELDS_UPDATE_ACTIONS_BUILD_FAILED,
                     resourceTypeIdGetter.apply(oldResource),
                     resourceIdGetter.apply(oldResource), exception.getMessage());
-                syncOptions.applyErrorCallback(errorMessage, exception);
+
+                if (((ParameterizedType) syncOptions.getClass().getGenericSuperclass())
+                    .getActualTypeArguments()[0].getClass().isInstance(oldResource)) {
+                    syncOptions
+                        .applyErrorCallback(new SyncException(errorMessage, exception), oldResource,
+                            newResource,
+                            null);
+                } else {
+                    syncOptions
+                        .applyErrorCallback(new SyncException(errorMessage, exception), null, null,
+                            null);
+                }
             }
         } else {
             if (oldResourceCustomFields == null) {
