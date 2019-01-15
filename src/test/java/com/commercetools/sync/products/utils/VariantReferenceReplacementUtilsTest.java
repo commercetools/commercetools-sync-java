@@ -493,7 +493,7 @@ public class VariantReferenceReplacementUtilsTest {
         assertThat(isProductReference(PRODUCT_REFERENCE_SET_ATTRIBUTE)).isFalse();
         assertThat(isProductReference(CATEGORY_REFERENCE_ATTRIBUTE)).isFalse();
         assertThat(isProductReference(LTEXT_SET_ATTRIBUTE)).isFalse();
-        assertThat(isProductReferenceSet(EMPTY_SET_ATTRIBUTE)).isFalse();
+        assertThat(isProductReference(EMPTY_SET_ATTRIBUTE)).isFalse();
         assertThat(isProductReference(PRODUCT_REFERENCE_ATTRIBUTE)).isTrue();
     }
 
