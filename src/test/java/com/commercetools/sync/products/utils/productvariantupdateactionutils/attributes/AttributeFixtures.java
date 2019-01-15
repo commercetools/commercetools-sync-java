@@ -38,6 +38,8 @@ public final class AttributeFixtures {
         readObjectFromResource("ltext-set-attribute.json", Attribute.class);
     public static final Attribute PRODUCT_REFERENCE_SET_ATTRIBUTE =
         readObjectFromResource("product-reference-set-attribute.json", Attribute.class);
+    public static final Attribute EMPTY_SET_ATTRIBUTE =
+        readObjectFromResource("empty-set-attribute.json", Attribute.class);
 
     private AttributeFixtures() {
     }
