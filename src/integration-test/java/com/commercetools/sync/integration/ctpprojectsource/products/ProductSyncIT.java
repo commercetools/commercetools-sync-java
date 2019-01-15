@@ -502,6 +502,10 @@ public class ProductSyncIT {
 
         final ProductDraft sourceProductDraft =
             createProductDraftBuilder(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, sourceProductType.toReference())
+                .taxCategory(sourceTaxCategory)
+                .state(sourceProductState)
+                .categories(sourceCategoryReferencesWithIds)
+                .categoryOrderHints(createRandomCategoryOrderHints(sourceCategoryReferencesWithIds))
                 .masterVariant(masterVariant)
                 .build();
         CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(sourceProductDraft))
@@ -529,6 +533,6 @@ public class ProductSyncIT {
         final Attribute targetAttribute = targetProduct.getMasterData().getStaged().getMasterVariant()
                                                        .getAttribute(emptySetAttr.getName());
         assertThat(targetAttribute).isNotNull();
-        assertThat(targetAttribute.getValueAsJsonNode()).containsExactly(JsonNodeFactory.instance.arrayNode());
+        assertThat(targetAttribute.getValueAsJsonNode()).isEmpty();
     }
 }
