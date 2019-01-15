@@ -18,6 +18,7 @@ import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
+import io.sphere.sdk.products.attributes.Attribute;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.updateactions.SetAttribute;
@@ -75,6 +76,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.getProductRef
 import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.buildProductQuery;
 import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.replaceProductsReferenceIdsWithKeys;
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonList;
 import static java.util.Locale.ENGLISH;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -474,5 +476,59 @@ public class ProductSyncIT {
             SetAttributeInAllVariants.ofUnsetAttribute("zubereitung", true),
             SetAttribute.ofUnsetAttribute(1, "localisedText", true)
         );
+    }
+
+    @Test
+    public void sync_withEmptySetAttribute_ShouldCreateProductWithAnEmptySetAttribute() {
+        // Preparation
+        // Create custom options with whitelisting and action filter callback..
+        final ProductSyncOptions customSyncOptions =
+            ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+                                     .errorCallback(this::errorCallback)
+                                     .warningCallback(warningCallBackMessages::add)
+                                     .beforeUpdateCallback(this::beforeUpdateCallback)
+                                     .syncFilter(SyncFilter.ofWhiteList(ATTRIBUTES))
+                                     .build();
+        final ProductSync customSync = new ProductSync(customSyncOptions);
+
+        final AttributeDraft emptySetAttr = getProductReferenceSetAttributeDraft("empty-reference-set");
+
+        final List<AttributeDraft> attributeDrafts = singletonList(emptySetAttr);
+
+        final ProductVariantDraft masterVariant = ProductVariantDraftBuilder.of()
+                                                                            .key("foo")
+                                                                            .sku("foo")
+                                                                            .attributes(attributeDrafts).build();
+
+        final ProductDraft sourceProductDraft =
+            createProductDraftBuilder(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, sourceProductType.toReference())
+                .masterVariant(masterVariant)
+                .build();
+        CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(sourceProductDraft))
+                         .toCompletableFuture().join();
+
+
+        // Test
+        final List<Product> products = CTP_SOURCE_CLIENT.execute(buildProductQuery())
+                                                        .toCompletableFuture().join().getResults();
+        final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
+        final ProductSyncStatistics syncStatistics =  customSync.sync(productDrafts).toCompletableFuture().join();
+
+
+        // Assertion
+        assertThat(syncStatistics).hasValues(1, 1, 0, 0);
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(warningCallBackMessages).isEmpty();
+        assertThat(updateActions).isEmpty();
+
+        final Product targetProduct = CTP_TARGET_CLIENT.execute(ProductByKeyGet.of(sourceProductDraft.getKey()))
+                                                       .toCompletableFuture()
+                                                       .join();
+
+        final Attribute targetAttribute = targetProduct.getMasterData().getStaged().getMasterVariant()
+                                                       .getAttribute(emptySetAttr.getName());
+        assertThat(targetAttribute).isNotNull();
+        assertThat(targetAttribute.getValueAsJsonNode()).containsExactly(JsonNodeFactory.instance.arrayNode());
     }
 }
