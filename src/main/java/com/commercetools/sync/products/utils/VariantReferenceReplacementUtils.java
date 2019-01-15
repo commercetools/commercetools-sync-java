@@ -19,6 +19,7 @@ import io.sphere.sdk.types.CustomFieldsDraft;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -174,7 +175,10 @@ public final class VariantReferenceReplacementUtils {
 
     static boolean isProductReferenceSet(@Nonnull final Attribute attribute) {
         final JsonNode valueAsJsonNode = attribute.getValueAsJsonNode();
-        return (valueAsJsonNode instanceof ArrayNode) && isValueAProductReference(valueAsJsonNode.elements().next());
+        final Iterator<JsonNode> setIterator = valueAsJsonNode.elements();
+
+        return (valueAsJsonNode instanceof ArrayNode) && setIterator.hasNext()
+            && isValueAProductReference(setIterator.next());
     }
 
     private static boolean isValueAProductReference(@Nonnull final JsonNode valueAsJsonNode) {
