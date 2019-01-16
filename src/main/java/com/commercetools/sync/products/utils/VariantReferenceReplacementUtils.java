@@ -175,10 +175,16 @@ public final class VariantReferenceReplacementUtils {
 
     static boolean isProductReferenceSet(@Nonnull final Attribute attribute) {
         final JsonNode valueAsJsonNode = attribute.getValueAsJsonNode();
-        final Iterator<JsonNode> setIterator = valueAsJsonNode.elements();
 
-        return (valueAsJsonNode instanceof ArrayNode) && setIterator.hasNext()
-            && isValueAProductReference(setIterator.next());
+        if (valueAsJsonNode instanceof ArrayNode) {
+            final Iterator<JsonNode> setIterator = valueAsJsonNode.elements();
+
+            if (setIterator.hasNext()) {
+                return isValueAProductReference(setIterator.next());
+            }
+        }
+
+        return false;
     }
 
     private static boolean isValueAProductReference(@Nonnull final JsonNode valueAsJsonNode) {
