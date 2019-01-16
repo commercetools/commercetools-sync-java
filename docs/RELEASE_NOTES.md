@@ -32,9 +32,9 @@
 <!--
 
 ### 1.2.0 -  Dec 20, 2018
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.0.0...1.1.0) |
-[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.1.0/) | 
-[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.1.0)
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.1.1...1.2.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.2.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.2.0)
 
 
 -->
