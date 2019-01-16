@@ -12,10 +12,10 @@ import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelDraft;
 import io.sphere.sdk.channels.commands.ChannelCreateCommand;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.Attribute;
@@ -75,6 +75,8 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.getProductRef
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceWithId;
 import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.buildProductQuery;
 import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.replaceProductsReferenceIdsWithKeys;
+import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.Locale.ENGLISH;
@@ -315,7 +317,7 @@ public class ProductSyncIT {
 
         final ProductDraft existingProductDraft3 = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             targetProductType.toReference())
-            .slug(LocalizedString.ofEnglish("newSlug3"))
+            .slug(ofEnglish("newSlug3"))
             .key("productKey3")
             .masterVariant(ProductVariantDraftBuilder.of().key("v3").sku("s3").build())
             .taxCategory(null)
@@ -333,7 +335,7 @@ public class ProductSyncIT {
                                                   .toCompletableFuture().join();
         final ProductDraft newProductDraft3 = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             sourceProductType.toReference())
-            .slug(LocalizedString.ofEnglish("newSlug3"))
+            .slug(ofEnglish("newSlug3"))
             .key("productKey3")
             .masterVariant(ProductVariantDraftBuilder.of().key("v3").sku("s3").build())
             .taxCategory(null)
@@ -491,14 +493,68 @@ public class ProductSyncIT {
                                      .build();
         final ProductSync customSync = new ProductSync(customSyncOptions);
 
-        final AttributeDraft emptySetAttr = getProductReferenceSetAttributeDraft("empty-reference-set");
 
-        final List<AttributeDraft> attributeDrafts = singletonList(emptySetAttr);
+        // Create a product that will be referenced by another product in the target project
+        final ProductDraft productDraftToBeReferenced = ProductDraftBuilder
+            .of(targetProductType.toReference(), ofEnglish("root"), ofEnglish("root"), emptyList())
+            .build();
 
-        final ProductVariantDraft masterVariant = ProductVariantDraftBuilder.of()
-                                                                            .key("foo")
-                                                                            .sku("foo")
-                                                                            .attributes(attributeDrafts).build();
+        final Product productToBeReferenced =
+            CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraftToBeReferenced))
+                             .toCompletableFuture().join();
+
+
+        // Create a product "bar" that references a product on the target project
+        final ObjectNode productReferenceValue1 = getProductReferenceWithId(productToBeReferenced.getId());
+
+        final AttributeDraft productSetRefAttr =
+            getProductReferenceSetAttributeDraft("product-reference-set", productReferenceValue1);
+
+        final ProductVariantDraft variantWithProductReferences = ProductVariantDraftBuilder
+            .of()
+            .key("bar")
+            .sku("bar")
+            .attributes(singletonList(productSetRefAttr)).build();
+
+        final ProductDraft existingProductDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
+            targetProductType.toReference())
+            .masterVariant(variantWithProductReferences)
+            .taxCategory(targetTaxCategory.toReference())
+            .state(targetProductState.toReference())
+            .categories(Collections.emptySet())
+            .categoryOrderHints(null)
+            .build();
+
+        CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingProductDraft)).toCompletableFuture().join();
+
+
+        // Create a product "bar" that has an empty references set on the source project (this is expected to update)
+        final ProductVariantDraft variantBarWithEmptyReferenceSet = ProductVariantDraftBuilder
+            .of()
+            .key("bar")
+            .sku("bar")
+            .attributes(singletonList(getProductReferenceSetAttributeDraft(productSetRefAttr.getName())))
+            .build();
+
+        final ProductDraft newProductDraftWithProductReference =
+            createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH, sourceProductType.toReference())
+                .masterVariant(variantBarWithEmptyReferenceSet)
+                .taxCategory(sourceTaxCategory.toReference())
+                .state(sourceProductState.toReference())
+                .categories(Collections.emptySet())
+                .categoryOrderHints(null)
+                .build();
+        CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(newProductDraftWithProductReference))
+                         .toCompletableFuture().join();
+
+
+        // Create a product "foo" that has an empty references set on the source project (this is expected to create)
+        final ProductVariantDraft variantFooWithEmptyReferenceSet = ProductVariantDraftBuilder
+            .of()
+            .key("foo")
+            .sku("foo")
+            .attributes(singletonList(getProductReferenceSetAttributeDraft(productSetRefAttr.getName())))
+            .build();
 
         final ProductDraft sourceProductDraft =
             createProductDraftBuilder(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, sourceProductType.toReference())
@@ -506,7 +562,7 @@ public class ProductSyncIT {
                 .state(sourceProductState)
                 .categories(sourceCategoryReferencesWithIds)
                 .categoryOrderHints(createRandomCategoryOrderHints(sourceCategoryReferencesWithIds))
-                .masterVariant(masterVariant)
+                .masterVariant(variantFooWithEmptyReferenceSet)
                 .build();
         CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(sourceProductDraft))
                          .toCompletableFuture().join();
@@ -520,18 +576,20 @@ public class ProductSyncIT {
 
 
         // Assertion
-        assertThat(syncStatistics).hasValues(1, 1, 0, 0);
+        assertThat(syncStatistics).hasValues(2, 1, 1, 0);
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
-        assertThat(updateActions).isEmpty();
+        assertThat(updateActions)
+            .containsExactly(SetAttributeInAllVariants
+                .of(productSetRefAttr.getName(), JsonNodeFactory.instance.arrayNode(), true));
 
         final Product targetProduct = CTP_TARGET_CLIENT.execute(ProductByKeyGet.of(sourceProductDraft.getKey()))
                                                        .toCompletableFuture()
                                                        .join();
 
         final Attribute targetAttribute = targetProduct.getMasterData().getStaged().getMasterVariant()
-                                                       .getAttribute(emptySetAttr.getName());
+                                                       .getAttribute(productSetRefAttr.getName());
         assertThat(targetAttribute).isNotNull();
         assertThat(targetAttribute.getValueAsJsonNode()).isEmpty();
     }
