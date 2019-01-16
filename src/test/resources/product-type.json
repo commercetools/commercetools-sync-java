@@ -488,6 +488,24 @@
       "displayGroup": "Other"
     },
     {
+      "name": "empty-reference-set",
+      "label": {
+        "en": "related products"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "set",
+        "elementType": {
+          "name": "reference",
+          "referenceTypeId": "product"
+        }
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
       "name": "localisedText",
       "label": {
         "en": "Angebot"

@@ -31,13 +31,24 @@
 
 <!--
 
-### 1.1.0 -  Dec 20, 2018
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.0.0...1.1.0) |
-[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.1.0/) | 
-[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.1.0)
+### 1.2.0 -  Dec 20, 2018
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.1.1...1.2.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.2.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.2.0)
 
 
 -->
+
+
+### 1.1.1 -  Jan 16, 2019
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.1.0...1.1.1) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.1.1/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.1.1)
+
+- 🐞 **Bug Fixes** (1)
+    - **Product Sync** - Fixed a bug in the `product` sync which would fail on syncing attributes of type `Set` that has
+    an empty set as a value. 
+
 
 ### 1.1.0 -  Dec 19, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.0.0...1.1.0) |

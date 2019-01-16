@@ -43,6 +43,7 @@ import static com.commercetools.sync.products.utils.productvariantupdateactionut
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.CATEGORY_REFERENCE_ATTRIBUTE;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.DATE_ATTRIBUTE_2017_11_09;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.DATE_TIME_ATTRIBUTE_2016_05_20T01_02_46;
+import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.EMPTY_SET_ATTRIBUTE;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.ENUM_ATTRIBUTE_BARLABEL_BARKEY;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.LENUM_ATTRIBUTE_EN_BAR;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.LTEXT_ATTRIBUTE_EN_BAR;
@@ -492,6 +493,7 @@ public class VariantReferenceReplacementUtilsTest {
         assertThat(isProductReference(PRODUCT_REFERENCE_SET_ATTRIBUTE)).isFalse();
         assertThat(isProductReference(CATEGORY_REFERENCE_ATTRIBUTE)).isFalse();
         assertThat(isProductReference(LTEXT_SET_ATTRIBUTE)).isFalse();
+        assertThat(isProductReference(EMPTY_SET_ATTRIBUTE)).isFalse();
         assertThat(isProductReference(PRODUCT_REFERENCE_ATTRIBUTE)).isTrue();
     }
 
@@ -510,6 +512,7 @@ public class VariantReferenceReplacementUtilsTest {
         assertThat(isProductReferenceSet(PRODUCT_REFERENCE_ATTRIBUTE)).isFalse();
         assertThat(isProductReferenceSet(CATEGORY_REFERENCE_ATTRIBUTE)).isFalse();
         assertThat(isProductReferenceSet(LTEXT_SET_ATTRIBUTE)).isFalse();
+        assertThat(isProductReferenceSet(EMPTY_SET_ATTRIBUTE)).isFalse();
         assertThat(isProductReferenceSet(PRODUCT_REFERENCE_SET_ATTRIBUTE)).isTrue();
     }
 }
