@@ -9,10 +9,9 @@
 
 More at https://commercetools.github.io/commercetools-sync-java
  
-Java Library used to import and/or sync (taking care of changes) data into one or more commercetools projects from external sources such 
-as CSV, XML, JSON, etc.. or even from an already existing commercetools project.
+Java jibrary for importing and syncing (taking care of changes) data into one or more commercetools projects from external data files (CSV, XML, JSON) or from another commercetools project.
 
-Currently this library supports synchronising the following entities in commercetools
+The library supports synchronising the following entities in commercetools
     
  - [Categories](/docs/usage/CATEGORY_SYNC.md)
  - [Products](/docs/usage/PRODUCT_SYNC.md)
@@ -40,33 +39,36 @@ Currently this library supports synchronising the following entities in commerce
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 ## Usage
 
-commercetools sync is a Java library that could be used to synchronise CTP data in any of the following ways:
+commercetools sync is a Java library that synchronises commercetools platform data in the following ways:
 
 1. Synchronise data coming from an external system in any form (CSV, XML, etc..) that has been already mapped to 
 [commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects 
 (e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)).
 
-2. Synchronise data coming from an already-existing commercetools project in the form of 
+2. Synchronise data coming from another commercetools project as 
 [commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects 
 (e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)).
 
 
-> Synchronise: Resources will either be created or updated. But they will **not** be deleted.
+> **Note**: During a synchronisation, resources are either be created or updated, but **not** deleted.
 
-⚡ Take a look at the [Quick Start Guide](/docs/usage/QUICK_START.md) to find out how to build a product importer in a glance!
+⚡ See the [Quick Start Guide](/docs/usage/QUICK_START.md) for more information on building a product importer!
 
 ### Prerequisites
  
  - Make sure you have `JDK 8` installed.
- - a target CTP project to which your source of data would be synced to.
  - [commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) as a dependency in your JVM-based 
   application. (Make sure to use a version `>= 1.35.0`).
+ - a target commercetools project for syncing yor source data to.
 
 
 ### Installation
+
 There are multiple ways to add the commercetools sync dependency to your project, based on your dependency manager. 
 Here are the most popular ones:
+
 #### Maven 
+
 ````xml
 <dependency>
   <groupId>com.commercetools</groupId>
@@ -74,15 +76,21 @@ Here are the most popular ones:
   <version>1.1.1</version>
 </dependency>
 ````
+
 #### Gradle
+
 ````groovy
 implementation 'com.commercetools:commercetools-sync-java:1.1.1'
 ````
+
 #### SBT 
+
 ````
 libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "1.1.1"
 ````
+
 #### Ivy 
+
 ````xml
 <dependency org="com.commercetools" name="commercetools-sync-java" rev="1.1.1"/>
 ````
