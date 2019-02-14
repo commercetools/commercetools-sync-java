@@ -9,7 +9,7 @@
 
 More at https://commercetools.github.io/commercetools-sync-java
  
-Java jibrary for importing and syncing (taking care of changes) data into one or more commercetools projects from external data files (CSV, XML, JSON) or from another commercetools project.
+Java library for importing and syncing (taking care of changes) data into one or more commercetools projects from external data files or from another commercetools project.
 
 The library supports synchronising the following entities in commercetools
     
@@ -39,18 +39,18 @@ The library supports synchronising the following entities in commercetools
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 ## Usage
 
-commercetools sync is a Java library that synchronises commercetools platform data in the following ways:
+commercetools sync is a Java library that imports commercetools platform data in the following ways:
 
 1. Synchronise data coming from an external system in any form (CSV, XML, etc..) that has been already mapped to 
 [commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects 
 (e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)).
 
-2. Synchronise data coming from another commercetools project as 
+2. Synchronise data from another commercetools project as 
 [commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects 
 (e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)).
 
 
-> **Note**: During a synchronisation, resources are either be created or updated, but **not** deleted.
+> **Note**: During a synchronisation, resources are either created or updated, but **not** deleted.
 
 ⚡ See the [Quick Start Guide](/docs/usage/QUICK_START.md) for more information on building a product importer!
 
@@ -59,7 +59,7 @@ commercetools sync is a Java library that synchronises commercetools platform da
  - Make sure you have `JDK 8` installed.
  - [commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) as a dependency in your JVM-based 
   application. (Make sure to use a version `>= 1.35.0`).
- - a target commercetools project for syncing yor source data to.
+ - a target commercetools project for syncing your source data to.
 
 
 ### Installation
