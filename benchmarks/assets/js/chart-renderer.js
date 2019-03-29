@@ -183,7 +183,7 @@ window.onload = function () {
                     },
                     scaleLabel: {
                         display: true,
-                        labelString: 'Time to sync 10000 resources (in seconds)',
+                        labelString: 'Time to sync 1000 resources (in seconds)',
                         fontColor: 'black'
                     }
                 }],
