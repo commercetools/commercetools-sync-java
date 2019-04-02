@@ -16,8 +16,8 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
     S extends BaseSyncOptions, U, V> {
 
     protected SphereClient ctpClient;
-    protected QuadriConsumer<SyncException, U, V, Optional<List<UpdateAction<U>>>> errorCallback;
-    protected TriConsumer<SyncException, U, V> warningCallback;
+    protected QuadriConsumer<SyncException, Optional<U>, Optional<V>, Optional<List<UpdateAction<U>>>> errorCallback;
+    protected TriConsumer<SyncException, Optional<U>, Optional<V>> warningCallback;
     protected int batchSize = 30;
     protected TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>> beforeUpdateCallback;
     protected Function<V, V> beforeCreateCallback;
@@ -29,7 +29,7 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
      * @param errorCallback the new value to set to the error callback.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public T errorCallback(@Nonnull final QuadriConsumer<SyncException, U, V,
+    public T errorCallback(@Nonnull final QuadriConsumer<SyncException, Optional<U>, Optional<V>,
         Optional<List<UpdateAction<U>>>> errorCallback) {
         this.errorCallback = errorCallback;
         return getThis();
@@ -42,7 +42,7 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
      * @param warningCallback the new value to set to the warning callback.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public T warningCallback(@Nonnull final TriConsumer<SyncException, U, V> warningCallback) {
+    public T warningCallback(@Nonnull final TriConsumer<SyncException, Optional<U>, Optional<V>> warningCallback) {
         this.warningCallback = warningCallback;
         return getThis();
     }

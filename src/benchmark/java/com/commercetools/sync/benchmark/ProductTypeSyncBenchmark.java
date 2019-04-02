@@ -67,12 +67,13 @@ public class ProductTypeSyncBenchmark {
 
     @Nonnull
     private ProductTypeSyncOptions buildSyncOptions() {
-        final QuadriConsumer<SyncException, ProductType, ProductTypeDraft, Optional<List<UpdateAction<ProductType>>>>
-            errorCallBack = (exception, oldResource, newResource, updateActions) -> {
-                errorCallBackMessages.add(exception.getMessage());
-                errorCallBackExceptions.add(exception.getCause());
-            };
-        final TriConsumer<SyncException, ProductType, ProductTypeDraft> warningCallBack =
+        final QuadriConsumer<SyncException, Optional<ProductType>, Optional<ProductTypeDraft>,
+            Optional<List<UpdateAction<ProductType>>>> errorCallBack =
+                (exception, oldResource, newResource, updateActions) -> {
+                    errorCallBackMessages.add(exception.getMessage());
+                    errorCallBackExceptions.add(exception.getCause());
+                };
+        final TriConsumer<SyncException, Optional<ProductType>, Optional<ProductTypeDraft>> warningCallBack =
             (exception, oldResource, newResource) -> warningCallBackMessages.add(exception.getMessage());
         return ProductTypeSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                             .errorCallback(errorCallBack)

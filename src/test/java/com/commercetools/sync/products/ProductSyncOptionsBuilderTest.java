@@ -87,7 +87,7 @@ public class ProductSyncOptionsBuilderTest {
 
     @Test
     public void errorCallBack_WithCallBack_ShouldSetCallBack() {
-        final QuadriConsumer<SyncException, Product, ProductDraft,
+        final QuadriConsumer<SyncException, Optional<Product>, Optional<ProductDraft>,
             Optional<List<UpdateAction<Product>>>> mockErrorCallBack = (exception, old, newDraft, actions) -> {
             };
         productSyncOptionsBuilder.errorCallback(mockErrorCallBack);
@@ -98,8 +98,8 @@ public class ProductSyncOptionsBuilderTest {
 
     @Test
     public void warningCallBack_WithCallBack_ShouldSetCallBack() {
-        final TriConsumer<SyncException, Product, ProductDraft> mockWarningCallBack = (exception, old, newDraft) -> {
-        };
+        final TriConsumer<SyncException, Optional<Product>, Optional<ProductDraft>> mockWarningCallBack =
+            (exception, old, newDraft) -> { };
         productSyncOptionsBuilder.warningCallback(mockWarningCallBack);
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();

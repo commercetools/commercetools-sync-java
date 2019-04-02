@@ -261,28 +261,29 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * out successfully or not. If an exception was thrown on executing the request to CTP, the error handling method
      * is called.
      *
-     * @param entry existing inventory entry that could be updated.
-     * @param draft draft containing data that could differ from data in {@code entry}.
+     * @param oldInventoryEntry existing inventory entry that could be updated.
+     * @param newInventoryEntry draft containing data that could differ from data in {@code entry}.
      *              <strong>Sku isn't compared</strong>
      * @return a future which contains an empty result after execution of the update.
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
-    private CompletionStage<Void> buildUpdateActionsAndUpdate(@Nonnull final InventoryEntry entry,
-                                                              @Nonnull final InventoryEntryDraft draft) {
+    private CompletionStage<Void> buildUpdateActionsAndUpdate(@Nonnull final InventoryEntry oldInventoryEntry,
+                                                              @Nonnull final InventoryEntryDraft newInventoryEntry) {
 
-        final List<UpdateAction<InventoryEntry>> updateActions = buildActions(entry, draft, syncOptions);
+        final List<UpdateAction<InventoryEntry>> updateActions = buildActions(oldInventoryEntry, newInventoryEntry,
+            syncOptions);
         final List<UpdateAction<InventoryEntry>> beforeUpdateCallBackApplied =
-            syncOptions.applyBeforeUpdateCallBack(updateActions, draft, entry);
+            syncOptions.applyBeforeUpdateCallBack(updateActions, newInventoryEntry, oldInventoryEntry);
 
 
         if (!beforeUpdateCallBackApplied.isEmpty()) {
-            return inventoryService.updateInventoryEntry(entry, beforeUpdateCallBackApplied)
+            return inventoryService.updateInventoryEntry(oldInventoryEntry, beforeUpdateCallBackApplied)
                 .thenAccept(updatedInventory -> statistics.incrementUpdated())
                 .exceptionally(exception -> {
-                    final Reference<Channel> supplyChannel = draft.getSupplyChannel();
-                    final String errorMessage = format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
+                    final Reference<Channel> supplyChannel = newInventoryEntry.getSupplyChannel();
+                    final String errorMessage = format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, newInventoryEntry.getSku(),
                         supplyChannel != null ? supplyChannel.getId() : null);
-                    handleError(errorMessage, exception, 1, entry, draft, updateActions);
+                    handleError(errorMessage, exception, 1, oldInventoryEntry, newInventoryEntry, updateActions);
                     return null;
                 });
         }

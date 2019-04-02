@@ -7,6 +7,7 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.Product;
+import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.commands.updateactions.AddPrice;
@@ -33,6 +34,8 @@ import static org.mockito.Mockito.when;
 
 public class BuildProductVariantPricesUpdateActionsTest {
 
+    private final Product oldProduct = mock(Product.class);
+    private final ProductDraft newProductDraft = mock(ProductDraft.class);
     private final ProductVariant oldProductVariant = mock(ProductVariant.class);
     private final ProductVariantDraft newProductVariant = mock(ProductVariantDraft.class);
     private List<String> errorMessages;
@@ -55,7 +58,8 @@ public class BuildProductVariantPricesUpdateActionsTest {
 
         // Test
         final List<UpdateAction<Product>> updateActions =
-            buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant, syncOptions);
+            buildProductVariantPricesUpdateActions(oldProduct, newProductDraft, oldProductVariant, newProductVariant,
+                syncOptions);
 
         // Assertion
         assertThat(updateActions).isEmpty();
@@ -79,7 +83,8 @@ public class BuildProductVariantPricesUpdateActionsTest {
 
         // Test
         final List<UpdateAction<Product>> updateActions =
-            buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant, syncOptions);
+            buildProductVariantPricesUpdateActions(oldProduct, newProductDraft, oldProductVariant, newProductVariant,
+                syncOptions);
 
         // Assertion
         assertThat(updateActions).containsExactly(RemovePrice.of(DE_111_EUR, true));
@@ -96,7 +101,8 @@ public class BuildProductVariantPricesUpdateActionsTest {
 
         // Test
         final List<UpdateAction<Product>> updateActions =
-            buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant, syncOptions);
+            buildProductVariantPricesUpdateActions(oldProduct, newProductDraft, oldProductVariant, newProductVariant,
+                syncOptions);
 
         // Assertion
         assertThat(updateActions).isEmpty();
@@ -121,7 +127,8 @@ public class BuildProductVariantPricesUpdateActionsTest {
 
         // Test
         final List<UpdateAction<Product>> updateActions =
-            buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant, syncOptions);
+            buildProductVariantPricesUpdateActions(oldProduct, newProductDraft, oldProductVariant, newProductVariant,
+                syncOptions);
 
         // Assertion
         assertThat(updateActions).isEmpty();
@@ -142,7 +149,8 @@ public class BuildProductVariantPricesUpdateActionsTest {
 
         // Test
         final List<UpdateAction<Product>> updateActions =
-            buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant, syncOptions);
+            buildProductVariantPricesUpdateActions(oldProduct, newProductDraft, oldProductVariant, newProductVariant,
+                syncOptions);
 
         // Assertion
         assertThat(updateActions).containsExactlyInAnyOrder(
@@ -173,7 +181,8 @@ public class BuildProductVariantPricesUpdateActionsTest {
 
         // Test
         final List<UpdateAction<Product>> updateActions =
-            buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant, syncOptions);
+            buildProductVariantPricesUpdateActions(oldProduct, newProductDraft, oldProductVariant, newProductVariant,
+                syncOptions);
 
         // Assertion
         assertThat(updateActions).containsExactlyInAnyOrder(
@@ -195,7 +204,8 @@ public class BuildProductVariantPricesUpdateActionsTest {
 
         // Test
         final List<UpdateAction<Product>> updateActions =
-            buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant, syncOptions);
+            buildProductVariantPricesUpdateActions(oldProduct, newProductDraft, oldProductVariant, newProductVariant,
+                syncOptions);
 
         // Assertion
         assertThat(updateActions).containsExactlyInAnyOrder(
@@ -218,7 +228,8 @@ public class BuildProductVariantPricesUpdateActionsTest {
 
         // Test
         final List<UpdateAction<Product>> updateActions =
-            buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant, syncOptions);
+            buildProductVariantPricesUpdateActions(oldProduct, newProductDraft, oldProductVariant, newProductVariant,
+                syncOptions);
 
         // Assertion
         assertThat(updateActions).containsExactlyInAnyOrder(
@@ -243,7 +254,8 @@ public class BuildProductVariantPricesUpdateActionsTest {
 
         // Test
         final List<UpdateAction<Product>> updateActions =
-            buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant, syncOptions);
+            buildProductVariantPricesUpdateActions(oldProduct, newProductDraft, oldProductVariant, newProductVariant,
+                syncOptions);
 
         // Assertion
         assertThat(updateActions).containsExactlyInAnyOrder(
@@ -269,7 +281,8 @@ public class BuildProductVariantPricesUpdateActionsTest {
 
         // Test
         final List<UpdateAction<Product>> updateActions =
-            buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant, syncOptions);
+            buildProductVariantPricesUpdateActions(oldProduct, newProductDraft, oldProductVariant, newProductVariant,
+                syncOptions);
 
         // Assertion
         assertThat(updateActions).containsExactlyInAnyOrder(
@@ -302,7 +315,8 @@ public class BuildProductVariantPricesUpdateActionsTest {
 
         // Test
         final List<UpdateAction<Product>> updateActions =
-            buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant, syncOptions);
+            buildProductVariantPricesUpdateActions(oldProduct, newProductDraft, oldProductVariant, newProductVariant,
+                syncOptions);
 
         // Assertion
         assertThat(updateActions).containsExactlyInAnyOrder(
@@ -341,7 +355,8 @@ public class BuildProductVariantPricesUpdateActionsTest {
 
         // Test
         final List<UpdateAction<Product>> updateActions =
-            buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant, syncOptions);
+            buildProductVariantPricesUpdateActions(oldProduct, newProductDraft, oldProductVariant, newProductVariant,
+                syncOptions);
 
         // Assertion
         assertThat(updateActions).containsExactlyInAnyOrder(
@@ -387,7 +402,8 @@ public class BuildProductVariantPricesUpdateActionsTest {
 
         // Test
         final List<UpdateAction<Product>> updateActions =
-            buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant, syncOptions);
+            buildProductVariantPricesUpdateActions(oldProduct, newProductDraft, oldProductVariant, newProductVariant,
+                syncOptions);
 
         // Assertion
         assertThat(updateActions).containsExactlyInAnyOrder(
@@ -430,7 +446,8 @@ public class BuildProductVariantPricesUpdateActionsTest {
 
         // Test
         final List<UpdateAction<Product>> updateActions =
-            buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant, syncOptions);
+            buildProductVariantPricesUpdateActions(oldProduct, newProductDraft, oldProductVariant, newProductVariant,
+                syncOptions);
 
 
         // Assertion
@@ -478,7 +495,8 @@ public class BuildProductVariantPricesUpdateActionsTest {
 
         // Test
         final List<UpdateAction<Product>> updateActions =
-            buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant, syncOptions);
+            buildProductVariantPricesUpdateActions(oldProduct, newProductDraft, oldProductVariant, newProductVariant,
+                syncOptions);
 
         // Assertion
         assertThat(updateActions).containsExactlyInAnyOrder(

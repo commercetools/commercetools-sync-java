@@ -390,9 +390,9 @@ public class InventorySyncIT {
 
         //Prepare sync options and perform sync of draft to target project.
         final AtomicInteger invocationCounter = new AtomicInteger(0);
-        QuadriConsumer<SyncException, InventoryEntry, InventoryEntryDraft, Optional<List<UpdateAction<InventoryEntry>>>>
-            countingErrorCallback = (exception, oldResource, newResource, updateActions) ->
-            invocationCounter.incrementAndGet();
+        QuadriConsumer<SyncException, Optional<InventoryEntry>, Optional<InventoryEntryDraft>,
+            Optional<List<UpdateAction<InventoryEntry>>>> countingErrorCallback =
+                (exception, oldResource, newResource, updateActions) -> invocationCounter.incrementAndGet();
         final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
             .errorCallback(countingErrorCallback)
             .ensureChannels(false).build();

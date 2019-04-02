@@ -23,9 +23,10 @@ public final class ProductSyncOptions extends BaseSyncOptions<Product, ProductDr
     private final boolean ensurePriceChannels;
 
     ProductSyncOptions(@Nonnull final SphereClient ctpClient,
-                       @Nullable final QuadriConsumer<SyncException, Product, ProductDraft,
+                       @Nullable final QuadriConsumer<SyncException, Optional<Product>, Optional<ProductDraft>,
                                                       Optional<List<UpdateAction<Product>>>> errorCallBack,
-                       @Nullable final TriConsumer<SyncException, Product, ProductDraft> warningCallBack,
+                       @Nullable final TriConsumer<SyncException, Optional<Product>, Optional<ProductDraft>>
+                           warningCallBack,
                        final int batchSize,
                        @Nullable final SyncFilter syncFilter,
                        @Nullable final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product,

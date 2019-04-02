@@ -19,9 +19,10 @@ import java.util.function.Function;
 public final class ProductTypeSyncOptions extends BaseSyncOptions<ProductType, ProductTypeDraft> {
     ProductTypeSyncOptions(
         @Nonnull final SphereClient ctpClient,
-        @Nullable final QuadriConsumer<SyncException, ProductType, ProductTypeDraft,
+        @Nullable final QuadriConsumer<SyncException, Optional<ProductType>, Optional<ProductTypeDraft>,
             Optional<List<UpdateAction<ProductType>>>> updateActionErrorCallBack,
-        @Nullable final TriConsumer<SyncException, ProductType, ProductTypeDraft> updateActionWarningCallBack,
+        @Nullable final TriConsumer<SyncException, Optional<ProductType>, Optional<ProductTypeDraft>>
+            updateActionWarningCallBack,
         final int batchSize,
         @Nullable final TriFunction<List<UpdateAction<ProductType>>, ProductTypeDraft, ProductType,
                 List<UpdateAction<ProductType>>> beforeUpdateCallback,

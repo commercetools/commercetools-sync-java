@@ -70,7 +70,7 @@ public class CategorySyncOptionsBuilderTest {
 
     @Test
     public void errorCallBack_WithCallBack_ShouldSetCallBack() {
-        final QuadriConsumer<SyncException, Category, CategoryDraft,
+        final QuadriConsumer<SyncException, Optional<Category>, Optional<CategoryDraft>,
             Optional<List<UpdateAction<Category>>>> mockErrorCallBack = (exception, old, newDraft, actions) -> {
             };
         categorySyncOptionsBuilder.errorCallback(mockErrorCallBack);
@@ -81,8 +81,8 @@ public class CategorySyncOptionsBuilderTest {
 
     @Test
     public void warningCallBack_WithCallBack_ShouldSetCallBack() {
-        final TriConsumer<SyncException, Category, CategoryDraft> mockWarningCallBack = (exception, old, newDraft) -> {
-        };
+        final TriConsumer<SyncException, Optional<Category>, Optional<CategoryDraft>> mockWarningCallBack =
+            (exception, old, newDraft) -> { };
         categorySyncOptionsBuilder.warningCallback(mockWarningCallBack);
 
         final CategorySyncOptions categorySyncOptions = categorySyncOptionsBuilder.build();

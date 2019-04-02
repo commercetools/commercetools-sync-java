@@ -84,14 +84,15 @@ public class KeepOtherVariantsSyncIT {
     }
 
     private ProductSyncOptions getProductSyncOptions() {
-        final QuadriConsumer<SyncException, Product, ProductDraft, Optional<List<UpdateAction<Product>>>> errorCallBack
-            = (exception, oldResource, newResource, updateActions) -> {
-                errorCallBackMessages.add(exception.getMessage());
-                errorCallBackExceptions.add(exception.getCause());
-            };
+        final QuadriConsumer<SyncException, Optional<Product>, Optional<ProductDraft>,
+            Optional<List<UpdateAction<Product>>>> errorCallBack =
+                (exception, oldResource, newResource, updateActions) -> {
+                    errorCallBackMessages.add(exception.getMessage());
+                    errorCallBackExceptions.add(exception.getCause());
+                };
 
-        final TriConsumer<SyncException, Product, ProductDraft> warningCallBack = (exception, oldResource, newResource)
-            -> warningCallBackMessages.add(exception.getMessage());
+        final TriConsumer<SyncException, Optional<Product>, Optional<ProductDraft>> warningCallBack =
+            (exception, oldResource, newResource) -> warningCallBackMessages.add(exception.getMessage());
 
         return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                         .errorCallback(errorCallBack)

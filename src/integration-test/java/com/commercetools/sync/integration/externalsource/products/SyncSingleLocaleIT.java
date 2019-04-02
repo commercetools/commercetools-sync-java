@@ -88,12 +88,13 @@ public class SyncSingleLocaleIT {
     }
 
     private ProductSyncOptions buildSyncOptions() {
-        final QuadriConsumer<SyncException, Product, ProductDraft, Optional<List<UpdateAction<Product>>>>
-            errorCallBack = (exception, oldResource, newResource, updateActions) -> {
-                errorCallBackMessages.add(exception.getMessage());
-                errorCallBackExceptions.add(exception.getCause());
-            };
-        final TriConsumer<SyncException, Product, ProductDraft> warningCallBack =
+        final QuadriConsumer<SyncException, Optional<Product>, Optional<ProductDraft>,
+            Optional<List<UpdateAction<Product>>>> errorCallBack =
+                (exception, oldResource, newResource, updateActions) -> {
+                    errorCallBackMessages.add(exception.getMessage());
+                    errorCallBackExceptions.add(exception.getCause());
+                };
+        final TriConsumer<SyncException, Optional<Product>, Optional<ProductDraft>> warningCallBack =
             (exception, oldResource, newResource) -> warningCallBackMessages.add(exception.getMessage());
 
         final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>

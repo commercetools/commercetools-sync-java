@@ -70,7 +70,7 @@ public class TypeSyncOptionsBuilderTest {
 
     @Test
     public void errorCallBack_WithCallBack_ShouldSetCallBack() {
-        final QuadriConsumer<SyncException, Type, TypeDraft, Optional<List<UpdateAction<Type>>>>
+        final QuadriConsumer<SyncException, Optional<Type>, Optional<TypeDraft>, Optional<List<UpdateAction<Type>>>>
             mockErrorCallBack = (exception, oldResource, newResource, updateActions) -> {
             };
         typeSyncOptionsBuilder.errorCallback(mockErrorCallBack);
@@ -81,7 +81,7 @@ public class TypeSyncOptionsBuilderTest {
 
     @Test
     public void warningCallBack_WithCallBack_ShouldSetCallBack() {
-        final TriConsumer<SyncException, Type, TypeDraft> mockWarningCallBack =
+        final TriConsumer<SyncException, Optional<Type>, Optional<TypeDraft>> mockWarningCallBack =
             (exception, oldResource, newResource) -> {
             };
         typeSyncOptionsBuilder.warningCallback(mockWarningCallBack);

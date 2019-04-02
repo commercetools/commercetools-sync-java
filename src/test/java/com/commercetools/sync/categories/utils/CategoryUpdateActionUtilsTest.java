@@ -223,7 +223,7 @@ public class CategoryUpdateActionUtilsTest {
         when(newCategory.getParent()).thenReturn(null);
 
         final ArrayList<Object> callBackResponse = new ArrayList<>();
-        final TriConsumer<SyncException, Category, CategoryDraft> updateActionWarningCallBack =
+        final TriConsumer<SyncException, Optional<Category>, Optional<CategoryDraft>> updateActionWarningCallBack =
             (exception, oldResource, newResource) -> callBackResponse.add(exception.getMessage());
 
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
@@ -249,7 +249,7 @@ public class CategoryUpdateActionUtilsTest {
         when(newCategory.getParent()).thenReturn(null);
 
         final ArrayList<Object> callBackResponse = new ArrayList<>();
-        final TriConsumer<SyncException, Category, CategoryDraft> updateActionWarningCallBack =
+        final TriConsumer<SyncException, Optional<Category>, Optional<CategoryDraft>> updateActionWarningCallBack =
             (exception, oldResource, newResource) -> callBackResponse.add(exception.getMessage());
 
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
@@ -300,7 +300,7 @@ public class CategoryUpdateActionUtilsTest {
         when(newCategory.getOrderHint()).thenReturn(null);
 
         final ArrayList<Object> callBackResponse = new ArrayList<>();
-        final TriConsumer<SyncException, Category, CategoryDraft> updateActionWarningCallBack =
+        final TriConsumer<SyncException, Optional<Category>, Optional<CategoryDraft>> updateActionWarningCallBack =
             (exception, oldResource, newResource) -> callBackResponse.add(exception.getMessage());
 
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
@@ -326,7 +326,7 @@ public class CategoryUpdateActionUtilsTest {
         when(newCategory.getOrderHint()).thenReturn(null);
 
         final ArrayList<Object> callBackResponse = new ArrayList<>();
-        final TriConsumer<SyncException, Category, CategoryDraft> updateActionWarningCallBack =
+        final TriConsumer<SyncException, Optional<Category>, Optional<CategoryDraft>> updateActionWarningCallBack =
             (exception, oldResource, newResource) -> callBackResponse.add(exception.getMessage());
 
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)

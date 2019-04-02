@@ -20,9 +20,10 @@ public final class TypeSyncOptions extends BaseSyncOptions<Type, TypeDraft> {
 
     TypeSyncOptions(
         @Nonnull final SphereClient ctpClient,
-        @Nullable final QuadriConsumer<SyncException, Type, TypeDraft,
+        @Nullable final QuadriConsumer<SyncException, Optional<Type>, Optional<TypeDraft>,
             Optional<List<UpdateAction<Type>>>> updateActionErrorCallBack,
-        @Nullable final TriConsumer<SyncException, Type, TypeDraft> updateActionWarningCallBack,
+        @Nullable final TriConsumer<SyncException, Optional<Type>, Optional<TypeDraft>>
+            updateActionWarningCallBack,
         final int batchSize,
         @Nullable final TriFunction<List<UpdateAction<Type>>, TypeDraft,
                 Type, List<UpdateAction<Type>>> beforeUpdateCallback,

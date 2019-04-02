@@ -21,9 +21,10 @@ public final class InventorySyncOptions extends BaseSyncOptions<InventoryEntry, 
 
     InventorySyncOptions(
         @Nonnull final SphereClient ctpClient,
-        @Nullable final QuadriConsumer<SyncException, InventoryEntry, InventoryEntryDraft,
+        @Nullable final QuadriConsumer<SyncException, Optional<InventoryEntry>, Optional<InventoryEntryDraft>,
             Optional<List<UpdateAction<InventoryEntry>>>> updateActionErrorCallBack,
-        @Nullable final TriConsumer<SyncException, InventoryEntry, InventoryEntryDraft> updateActionWarningCallBack,
+        @Nullable final TriConsumer<SyncException, Optional<InventoryEntry>, Optional<InventoryEntryDraft>>
+            updateActionWarningCallBack,
         final int batchSize,
         boolean ensureChannels,
         @Nullable final TriFunction<List<UpdateAction<InventoryEntry>>, InventoryEntryDraft,

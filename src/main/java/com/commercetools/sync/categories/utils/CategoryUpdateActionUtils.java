@@ -256,7 +256,7 @@ public final class CategoryUpdateActionUtils {
                 new CategoryAssetActionFactory(syncOptions));
         } catch (final BuildUpdateActionException exception) {
             syncOptions.applyErrorCallback(new SyncException(format("Failed to build update actions for the assets "
-                + "of the category with the key '%s'. Reason: %s", oldCategory.getKey(), exception), exception),
+                + "of the category with the key '%s'.", oldCategory.getKey()), exception),
                 oldCategory, newCategory, null);
             return emptyList();
         }

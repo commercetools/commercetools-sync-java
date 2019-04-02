@@ -108,6 +108,7 @@ class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions> {
      * @return a {@link CompletionStage} containing an optional with the created resource if successful otherwise an
      *         empty optional.
      */
+    @SuppressWarnings("unchecked")
     @Nonnull
     CompletionStage<Optional<U>> createResource(
         @Nonnull final T draft,

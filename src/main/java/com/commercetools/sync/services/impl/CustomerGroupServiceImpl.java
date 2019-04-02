@@ -44,6 +44,7 @@ public final class CustomerGroupServiceImpl implements CustomerGroupService {
         return CompletableFuture.completedFuture(ofNullable(keyToIdCache.get(key)));
     }
 
+    @SuppressWarnings("unchecked")
     @Nonnull
     private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
         final Consumer<List<CustomerGroup>> customerGroupPageConsumer = customerGroupsPage ->

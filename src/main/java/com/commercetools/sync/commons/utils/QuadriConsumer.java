@@ -4,8 +4,8 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
 /**
- * Represents an operation that accepts three arguments and returns no result. This is the
- * three-arity specialization of {@link Consumer}.
+ * Represents an operation that accepts four arguments and returns no result. This is the
+ * quad-arity specialization of {@link Consumer}.
  *
  * <p>This is a <a href="package-summary.html">functional interface</a>
  * whose functional method is {@link #accept(Object, Object, Object, Object)}.

@@ -1,6 +1,7 @@
 package com.commercetools.sync.products.utils;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.products.ActionGroup;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
@@ -413,8 +414,8 @@ public final class ProductUpdateActionUtils {
                 } else {
                     final ProductVariant matchingOldVariant = oldProductVariantsWithMaster.get(newProductVariantKey);
                     final List<UpdateAction<Product>> updateOrAddVariant = ofNullable(matchingOldVariant)
-                        .map(oldVariant -> collectAllVariantUpdateActions(oldProduct, oldVariant, newProductVariant,
-                            attributesMetaData, syncOptions))
+                        .map(oldVariant -> collectAllVariantUpdateActions(oldProduct, newProduct, oldVariant,
+                            newProductVariant, attributesMetaData, syncOptions))
                         .orElseGet(() -> buildAddVariantUpdateActionFromDraft(newProductVariant));
                     updateActions.addAll(updateOrAddVariant);
                 }
@@ -428,6 +429,7 @@ public final class ProductUpdateActionUtils {
     @Nonnull
     private static List<UpdateAction<Product>> collectAllVariantUpdateActions(
             @Nonnull final Product oldProduct,
+            @Nonnull final ProductDraft newProduct,
             @Nonnull final ProductVariant oldProductVariant,
             @Nonnull final ProductVariantDraft newProductVariant,
             @Nonnull final Map<String, AttributeMetaData> attributesMetaData,
@@ -438,7 +440,7 @@ public final class ProductUpdateActionUtils {
 
         updateActions.addAll(
             buildActionsIfPassesFilter(syncFilter, ATTRIBUTES, () ->
-                buildProductVariantAttributesUpdateActions(oldProduct.getKey(), oldProductVariant,
+                buildProductVariantAttributesUpdateActions(oldProduct, newProduct, oldProductVariant,
                     newProductVariant, attributesMetaData, syncOptions)));
 
         updateActions.addAll(
@@ -447,7 +449,8 @@ public final class ProductUpdateActionUtils {
 
         updateActions.addAll(
             buildActionsIfPassesFilter(syncFilter, PRICES, () ->
-                buildProductVariantPricesUpdateActions(oldProductVariant, newProductVariant, syncOptions)));
+                buildProductVariantPricesUpdateActions(oldProduct, newProduct, oldProductVariant,
+                    newProductVariant, syncOptions)));
 
         updateActions.addAll(
             buildActionsIfPassesFilter(syncFilter, ASSETS, () ->
@@ -669,7 +672,7 @@ public final class ProductUpdateActionUtils {
      *
      * @param oldProduct  old product to verify
      * @param newProduct  new product to verify
-     * @param syncOptions {@link BaseSyncOptions#applyErrorCallback(String, Throwable) applyErrorCallback} holder
+     * @param syncOptions {@link BaseSyncOptions#applyErrorCallback(String) applyErrorCallback} holder
      * @return <b>true</b> if at least one of the products have invalid (null/blank) master variant or key.
      */
     private static boolean haveInvalidMasterVariants(@Nonnull final Product oldProduct,
@@ -695,16 +698,17 @@ public final class ProductUpdateActionUtils {
     /**
      * Apply error message to the {@code syncOptions}, reporting the product key and {@code reason}
      *
-     * @param product     product which has sync error
+     * @param oldProduct     product which has sync error
      * @param reason      reason to specify in the error message.
-     * @param syncOptions {@link BaseSyncOptions#applyErrorCallback(String, Throwable) applyErrorCallback} holder
+     * @param syncOptions {@link BaseSyncOptions#applyErrorCallback(SyncException, Object, Object, List)} holder
      */
-    private static void handleBuildVariantsUpdateActionsError(@Nonnull final Product product,
+    private static void handleBuildVariantsUpdateActionsError(@Nonnull final Product oldProduct,
                                                               @Nonnull final String reason,
                                                               @Nonnull final ProductSyncOptions syncOptions) {
-        syncOptions.applyErrorCallback(format("Failed to build variants update actions on the product with key '%s'. "
+        syncOptions.applyErrorCallback(
+            new SyncException(format("Failed to build variants update actions on the product with key '%s'. "
                 + "Reason: %s",
-            product.getKey(), reason));
+            oldProduct.getKey(), reason)), oldProduct, null, null);
     }
 
     private ProductUpdateActionUtils() {

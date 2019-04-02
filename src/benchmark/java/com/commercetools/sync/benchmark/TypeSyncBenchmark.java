@@ -75,12 +75,12 @@ public class TypeSyncBenchmark {
 
     @Nonnull
     private TypeSyncOptions buildSyncOptions() {
-        final QuadriConsumer<SyncException, Type, TypeDraft, Optional<List<UpdateAction<Type>>>>
+        final QuadriConsumer<SyncException, Optional<Type>, Optional<TypeDraft>, Optional<List<UpdateAction<Type>>>>
             errorCallBack = (exception, oldResource, newResource, updateActions) -> {
                 errorCallBackMessages.add(exception.getMessage());
                 errorCallBackExceptions.add(exception.getCause());
             };
-        final TriConsumer<SyncException, Type, TypeDraft> warningCallBack =
+        final TriConsumer<SyncException, Optional<Type>, Optional<TypeDraft>> warningCallBack =
             (exception, oldResource, newResource) -> warningCallBackMessages.add(exception.getMessage());
         return TypeSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                      .errorCallback(errorCallBack)

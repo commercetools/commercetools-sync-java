@@ -20,9 +20,10 @@ public final class CategorySyncOptions extends BaseSyncOptions<Category, Categor
 
     CategorySyncOptions(
         @Nonnull final SphereClient ctpClient,
-        @Nullable final QuadriConsumer<SyncException, Category, CategoryDraft,
+        @Nullable final QuadriConsumer<SyncException, Optional<Category>, Optional<CategoryDraft>,
             Optional<List<UpdateAction<Category>>>> updateActionErrorCallBack,
-        @Nullable final TriConsumer<SyncException, Category, CategoryDraft> updateActionWarningCallBack,
+        @Nullable final TriConsumer<SyncException, Optional<Category>, Optional<CategoryDraft>>
+            updateActionWarningCallBack,
         final int batchSize,
         @Nullable final TriFunction<List<UpdateAction<Category>>, CategoryDraft, Category,
             List<UpdateAction<Category>>> beforeUpdateCallback,

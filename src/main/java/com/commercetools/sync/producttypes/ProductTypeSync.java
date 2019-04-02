@@ -297,16 +297,16 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
             .handle(ImmutablePair::new)
             .thenCompose(updateResponse -> {
                 final ProductType updatedProductType = updateResponse.getKey();
-                final Throwable sphereException = updateResponse.getValue();
-                if (sphereException != null) {
+                final Throwable exception = updateResponse.getValue();
+                if (exception != null) {
                     return executeSupplierIfConcurrentModificationException(
-                        sphereException,
+                        exception,
                         () -> fetchAndUpdate(oldProductType, newProductType),
                         () -> {
                             final String errorMessage =
                                 format(CTP_PRODUCT_TYPE_UPDATE_FAILED, newProductType.getKey(),
-                                    sphereException.getMessage());
-                            handleError(errorMessage, sphereException, 1, oldProductType, newProductType,
+                                    exception.getMessage());
+                            handleError(errorMessage, exception, 1, oldProductType, newProductType,
                                 updateActions);
                             return CompletableFuture.completedFuture(Optional.empty());
                         });

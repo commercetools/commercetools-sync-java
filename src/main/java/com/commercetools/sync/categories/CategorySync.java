@@ -606,26 +606,26 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * out successfully or not. If an exception was thrown on executing the request to CTP,
      * the optional error callback specified in the {@code syncOptions} is called.
      *
-     * @param category      the category to update.
+     * @param oldCategory the category to update.
      * @param newCategory the category draft where we get the new data.
      * @param updateActions the list of update actions to update the category with.
      * @return a future which contains an empty result after execution of the update.
      */
-    private CompletionStage<Void> updateCategory(@Nonnull final Category category,
+    private CompletionStage<Void> updateCategory(@Nonnull final Category oldCategory,
                                                  @Nonnull final CategoryDraft newCategory,
                                                  @Nonnull final List<UpdateAction<Category>> updateActions) {
-        final String categoryKey = category.getKey();
-        return categoryService.updateCategory(category, updateActions)
+        final String categoryKey = oldCategory.getKey();
+        return categoryService.updateCategory(oldCategory, updateActions)
                               .handle((updatedCategory, sphereException) -> sphereException)
                               .thenCompose(sphereException -> {
                                   if (sphereException != null) {
                                       return executeSupplierIfConcurrentModificationException(
                                           sphereException,
-                                          () -> refetchAndUpdate(category, newCategory),
+                                          () -> refetchAndUpdate(oldCategory, newCategory),
                                           () -> {
                                               if (!processedCategoryKeys.contains(categoryKey)) {
                                                   handleError(format(UPDATE_FAILED, categoryKey, sphereException),
-                                                      sphereException, category, newCategory, updateActions);
+                                                      sphereException, oldCategory, newCategory, updateActions);
                                                   processedCategoryKeys.add(categoryKey);
                                               }
                                               return CompletableFuture.completedFuture(null);
@@ -692,17 +692,17 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      *
      * @param errorMessage The error message describing the reason(s) of failure.
      * @param exception    The exception that called caused the failure, if any.
-     * @param category      the category to update.
+     * @param oldCategory the category to update.
      * @param newCategory the category draft where we get the new data.
      * @param updateActions the list of update actions to update the category with.
      */
     private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
-        @Nullable final Category category,
+        @Nullable final Category oldCategory,
         @Nullable final CategoryDraft newCategory,
         @Nullable final List<UpdateAction<Category>> updateActions) {
         SyncException syncException = exception != null ? new SyncException(errorMessage, exception)
             : new SyncException(errorMessage);
-        syncOptions.applyErrorCallback(syncException, category, newCategory, updateActions);
+        syncOptions.applyErrorCallback(syncException, oldCategory, newCategory, updateActions);
         statistics.incrementFailed();
     }
 

@@ -53,11 +53,12 @@ public class ResourceCustomUpdateActionUtilsTest {
     public void setupTest() {
         errorMessages = new ArrayList<>();
         exceptions = new ArrayList<>();
-        final QuadriConsumer<SyncException, Category, CategoryDraft, Optional<List<UpdateAction<Category>>>>
-            updateActionErrorCallBack = (exception, oldResource, newResource, updateActions) -> {
-                errorMessages.add(exception.getMessage());
-                exceptions.add(exception.getCause());
-            };
+        final QuadriConsumer<SyncException, Optional<Category>, Optional<CategoryDraft>,
+            Optional<List<UpdateAction<Category>>>> updateActionErrorCallBack =
+                (exception, oldResource, newResource, updateActions) -> {
+                    errorMessages.add(exception.getMessage());
+                    exceptions.add(exception.getCause());
+                };
 
         // Mock sync options
         categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)

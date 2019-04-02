@@ -119,11 +119,12 @@ public class CustomUpdateActionUtilsTest {
 
         // Mock custom options error callback
         final ArrayList<Object> callBackResponses = new ArrayList<>();
-        final QuadriConsumer<SyncException, Product, ProductDraft, Optional<List<UpdateAction<Product>>>>
-            updateActionErrorCallBack = (exception, oldResource, newResource, updateActions) -> {
-                callBackResponses.add(exception.getMessage());
-                callBackResponses.add(exception.getCause());
-            };
+        final QuadriConsumer<SyncException, Optional<Product>, Optional<ProductDraft>,
+            Optional<List<UpdateAction<Product>>>> updateActionErrorCallBack =
+                (exception, oldResource, newResource, updateActions) -> {
+                    callBackResponses.add(exception.getMessage());
+                    callBackResponses.add(exception.getCause());
+                };
 
         // Mock sync options
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
@@ -190,11 +191,12 @@ public class CustomUpdateActionUtilsTest {
 
         // Mock custom options error callback
         final ArrayList<Object> callBackResponses = new ArrayList<>();
-        final QuadriConsumer<SyncException, Product, ProductDraft, Optional<List<UpdateAction<Product>>>>
-            updateActionErrorCallBack = (exception, oldResource, newResource, updateActions) -> {
-                callBackResponses.add(exception.getMessage());
-                callBackResponses.add(exception.getCause());
-            };
+        final QuadriConsumer<SyncException, Optional<Product>, Optional<ProductDraft>,
+            Optional<List<UpdateAction<Product>>>> updateActionErrorCallBack =
+                (exception, oldResource, newResource, updateActions) -> {
+                    callBackResponses.add(exception.getMessage());
+                    callBackResponses.add(exception.getCause());
+                };
 
         // Mock sync options
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
@@ -222,11 +224,12 @@ public class CustomUpdateActionUtilsTest {
 
         // Mock custom options error callback
         final ArrayList<Object> callBackResponses = new ArrayList<>();
-        final QuadriConsumer<SyncException, Product, ProductDraft, Optional<List<UpdateAction<Product>>>>
-            updateActionErrorCallBack = (exception, oldResource, newResource, updateActions) -> {
-                callBackResponses.add(exception.getMessage());
-                callBackResponses.add(exception.getCause());
-            };
+        final QuadriConsumer<SyncException, Optional<Product>, Optional<ProductDraft>,
+            Optional<List<UpdateAction<Product>>>> updateActionErrorCallBack =
+                (exception, oldResource, newResource, updateActions) -> {
+                    callBackResponses.add(exception.getMessage());
+                    callBackResponses.add(exception.getCause());
+                };
 
         // Mock sync options
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
@@ -329,10 +332,9 @@ public class CustomUpdateActionUtilsTest {
 
         // Mock custom options error callback
         final ArrayList<String> errorMessages = new ArrayList<>();
-        final QuadriConsumer<SyncException, Product, ProductDraft, Optional<List<UpdateAction<Product>>>>
-            updateActionErrorCallBack = (exception, oldResource, newResource, updateActions) -> {
-                errorMessages.add(exception.getMessage());
-            };
+        final QuadriConsumer<SyncException, Optional<Product>, Optional<ProductDraft>,
+            Optional<List<UpdateAction<Product>>>> updateActionErrorCallBack =
+                (exception, oldResource, newResource, updateActions) -> errorMessages.add(exception.getMessage());
 
         // Mock sync options
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)

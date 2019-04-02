@@ -51,6 +51,7 @@ public final class ProductTypeServiceImpl
         return fetchAndCache(key);
     }
 
+    @SuppressWarnings("unchecked")
     @Nonnull
     private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
 

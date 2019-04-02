@@ -123,6 +123,7 @@ public final class CustomUpdateActionUtils {
      * @return a list that contains all the update actions needed, otherwise an
      *      empty list if no update actions are needed.
      */
+    @SuppressWarnings("unchecked")
     @Nonnull
     public static <T extends Custom, S extends CustomDraft, U extends Resource<U>> List<UpdateAction<U>>
         buildCustomUpdateActions(
@@ -134,6 +135,12 @@ public final class CustomUpdateActionUtils {
         @Nonnull final Function<T, String> resourceTypeIdGetter,
         @Nonnull final Function<T, String> updateIdGetter,
         @Nonnull final BaseSyncOptions syncOptions) {
+
+        // oldResource/newResource types can be different than declared in syncOptions, thus can't
+        // be used in errorCallback; example:
+        // ProductSyncOptions<Product, ProductDraft> but oldResource/newResource can be Asset/AssetDraft
+        boolean resourceMatchWithSyncOptions = ((ParameterizedType) syncOptions.getClass().getGenericSuperclass())
+            .getActualTypeArguments()[0].getClass().isInstance(oldResource);
 
         final CustomFields oldResourceCustomFields = oldResource.getCustom();
         final CustomFieldsDraft newResourceCustomFields = newResource.getCustom();
@@ -147,16 +154,12 @@ public final class CustomUpdateActionUtils {
                     resourceTypeIdGetter.apply(oldResource),
                     resourceIdGetter.apply(oldResource), exception.getMessage());
 
-                if (((ParameterizedType) syncOptions.getClass().getGenericSuperclass())
-                    .getActualTypeArguments()[0].getClass().isInstance(oldResource)) {
+                if (resourceMatchWithSyncOptions) {
                     syncOptions
-                        .applyErrorCallback(new SyncException(errorMessage, exception), oldResource,
-                            newResource,
-                            null);
+                        .applyErrorCallback(new SyncException(errorMessage, exception), oldResource, newResource, null);
                 } else {
                     syncOptions
-                        .applyErrorCallback(new SyncException(errorMessage, exception), null, null,
-                            null);
+                        .applyErrorCallback(new SyncException(errorMessage, exception), null, null, null);
                 }
             }
         } else {
@@ -169,7 +172,15 @@ public final class CustomUpdateActionUtils {
                         final String errorMessage = format(CUSTOM_FIELDS_UPDATE_ACTIONS_BUILD_FAILED,
                             resourceTypeIdGetter.apply(oldResource), resourceIdGetter.apply(oldResource),
                             CUSTOM_TYPE_ID_IS_BLANK);
-                        syncOptions.applyErrorCallback(errorMessage);
+                        if (resourceMatchWithSyncOptions) {
+                            //noinspection unchecked
+                            syncOptions
+                                .applyErrorCallback(new SyncException(errorMessage), oldResource, newResource, null);
+                        } else {
+                            //noinspection unchecked
+                            syncOptions
+                                .applyErrorCallback(new SyncException(errorMessage), null, null, null);
+                        }
                     } else {
                         final Map<String, JsonNode> newCustomFieldsJsonMap = newResourceCustomFields.getFields();
                         final Optional<UpdateAction<U>> updateAction = buildTypedSetCustomTypeUpdateAction(
