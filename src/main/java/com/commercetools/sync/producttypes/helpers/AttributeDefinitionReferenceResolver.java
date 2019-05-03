@@ -23,10 +23,6 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 
 public class AttributeDefinitionReferenceResolver
     extends BaseReferenceResolver<AttributeDefinitionDraft, ProductTypeSyncOptions> {
-
-    private static final String FAILED_TO_RESOLVE_NESTED_TYPE_REFERENCE = "Failed to resolve NestedType productType "
-        + "reference.";
-
     private ProductTypeService productTypeService;
 
 
@@ -76,6 +72,7 @@ public class AttributeDefinitionReferenceResolver
             final AttributeType elementType = setAttributeType.getElementType();
 
             if (elementType instanceof NestedAttributeType) {
+
                 return resolveNestedTypeReference((NestedAttributeType) elementType)
                     .thenApply(SetAttributeType::of)
                     .thenApply(attributeDefinitionDraftBuilder::attributeType);
@@ -90,25 +87,23 @@ public class AttributeDefinitionReferenceResolver
 
         final Reference<ProductType> typeReference = nestedAttributeType.getTypeReference();
 
-        try {
-            // TODO: What if reference doesn't exist?? Currently, we return the reference as is.
-            return resolveProductTypeReference(typeReference)
-                .thenApply(optionalResolvedReference ->
-                    optionalResolvedReference.map(NestedAttributeType::of)
-                                             .orElse(nestedAttributeType));
-
-        } catch (ReferenceResolutionException referenceResolutionException) {
-            return exceptionallyCompletedFuture(
-                new ReferenceResolutionException(FAILED_TO_RESOLVE_NESTED_TYPE_REFERENCE, referenceResolutionException));
-        }
-
+        return resolveProductTypeReference(typeReference)
+            .thenApply(optionalResolvedReference ->
+                optionalResolvedReference.map(NestedAttributeType::of)
+                                         .orElse(nestedAttributeType));
     }
 
     @Nonnull
     private CompletionStage<Optional<Reference<ProductType>>> resolveProductTypeReference(
-        @Nonnull final Reference<ProductType> typeReference) throws ReferenceResolutionException {
+        @Nonnull final Reference<ProductType> typeReference) {
 
-        final String resourceKey = getKeyFromResourceIdentifier(typeReference);
+        final String resourceKey;
+        try {
+            resourceKey = getKeyFromResourceIdentifier(typeReference);
+        } catch (ReferenceResolutionException exception) {
+            return exceptionallyCompletedFuture(
+                new ReferenceResolutionException("Failed to resolve NestedType productType reference.", exception));
+        }
         return productTypeService.fetchCachedProductTypeId(resourceKey)
                                  .thenApply(optionalId -> optionalId.map(ProductType::referenceOfId));
     }
