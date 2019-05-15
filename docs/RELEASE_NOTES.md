@@ -31,12 +31,22 @@
 
 <!--
 
-### 1.2.0 -  Dec 20, 2018
+### 1.2.0 -  DATE, 2018
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.1.1...1.2.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.2.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.2.0)
 
+- 🎉 **New Features** (3)
+    - **CartDiscount Sync** - Added support for syncing types. [#379](https://github.com/commercetools/commercetools-sync-java/issues/379) For more info how to use it please refer to [CartDiscount usage doc](/docs/usage/CART_DISCOUNT_SYNC.md).
+    - **CartDiscount Sync** - Exposed `CartDiscountSyncUtils#buildActions` which calculates all needed update actions after comparing a `CartDiscount` and a `CartDiscountDraft`. [[#379](https://github.com/commercetools/commercetools-sync-java/issues/379)
+    - **CartDiscount Sync** - Exposed `CartDiscountUpdateActionUtils` which contains utils for calculating needed update actions after comparing individual fields of a `CartDiscount` and a `CartDiscountDraft`. [#379](https://github.com/commercetools/commercetools-sync-java/issues/379)
+    
+- 🐞 **Bug Fixes** (1)
+    - **Commons** -  Fixed a bug in the `BaseSyncStatistics` which caused the calculation of minutes falsy. [#378](https://github.com/commercetools/commercetools-sync-java/issues/378)
 
+- 🛠️ **Enhancements** (1)
+    - **CartDiscount Sync** - Added benchmarks for the `cartDiscount` sync to be able to compare the performance of the sync with the future releases. [#379](https://github.com/commercetools/commercetools-sync-java/issues/379)
+         
 -->
 
 
