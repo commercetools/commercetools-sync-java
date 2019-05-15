@@ -37,8 +37,7 @@
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.2.0)
 
 
-- 🛠️ **Enhancements** (12)
-    - **Commons** - Bumped commercetools-jvm-sdk to version [1.41.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_41_0).
+- 🛠️ **Enhancements** (11)
     - **Commons** - Bumped `mockito` to 2.27.0.
     - **Commons** - Bumped `assertj` to 3.12.2.
     - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-api` to 5.4.2.
