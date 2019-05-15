@@ -34,7 +34,7 @@ public final class CartDiscountSyncOptionsBuilder extends BaseSyncOptionsBuilder
      * @return new instance of {@link CartDiscountSyncOptions}
      */
     @Override
-    protected CartDiscountSyncOptions build() {
+    public CartDiscountSyncOptions build() {
         return new CartDiscountSyncOptions(
             ctpClient,
             errorCallback,
