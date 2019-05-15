@@ -73,8 +73,11 @@ public class BatchProcessorTest {
 
         assertThat(batchProcessor.getKeysToCache()).isEmpty();
         assertThat(batchProcessor.getValidDrafts()).isEmpty();
-        assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages).containsExactly(PRODUCT_TYPE_DRAFT_IS_NULL);
+        assertThat(errorCallBackExceptions).hasOnlyOneElementSatisfying(throwable -> {
+            assertThat(throwable).isInstanceOf(InvalidProductTypeDraftException.class);
+            assertThat(throwable).hasMessage(PRODUCT_TYPE_DRAFT_IS_NULL);
+        });
     }
 
     @Test
@@ -87,9 +90,12 @@ public class BatchProcessorTest {
 
         assertThat(batchProcessor.getKeysToCache()).isEmpty();
         assertThat(batchProcessor.getValidDrafts()).isEmpty();
-        assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages)
-            .containsExactly(format(PRODUCT_TYPE_DRAFT_KEY_NOT_SET, productTypeDraft.getName()));
+        final String errorMessage = format(PRODUCT_TYPE_DRAFT_KEY_NOT_SET, productTypeDraft.getName());
+        assertThat(errorCallBackMessages).containsExactly(errorMessage);
+        assertThat(errorCallBackExceptions).hasOnlyOneElementSatisfying(throwable -> {
+            assertThat(throwable).isInstanceOf(InvalidProductTypeDraftException.class);
+            assertThat(throwable).hasMessage(errorMessage);
+        });
     }
 
     @Test
@@ -102,9 +108,12 @@ public class BatchProcessorTest {
 
         assertThat(batchProcessor.getKeysToCache()).isEmpty();
         assertThat(batchProcessor.getValidDrafts()).isEmpty();
-        assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages)
-            .containsExactly(format(PRODUCT_TYPE_DRAFT_KEY_NOT_SET, productTypeDraft.getName()));
+        final String errorMessage = format(PRODUCT_TYPE_DRAFT_KEY_NOT_SET, productTypeDraft.getName());
+        assertThat(errorCallBackMessages).containsExactly(errorMessage);
+        assertThat(errorCallBackExceptions).hasOnlyOneElementSatisfying(throwable -> {
+            assertThat(throwable).isInstanceOf(InvalidProductTypeDraftException.class);
+            assertThat(throwable).hasMessage(errorMessage);
+        });
     }
 
     @Test
@@ -120,6 +129,7 @@ public class BatchProcessorTest {
         final List<AttributeDefinitionDraft> attributes = new ArrayList<>();
         attributes.add(attributeDefinitionDraft);
         attributes.add(nestedTypeAttrDefDraft);
+        attributes.add(null);
 
         final ProductTypeDraft productTypeDraft = ProductTypeDraftBuilder
             .of("mainProductType", "foo", "foo", attributes)
@@ -129,7 +139,7 @@ public class BatchProcessorTest {
         batchProcessor.validateBatch();
 
         assertThat(batchProcessor.getKeysToCache()).containsExactlyInAnyOrder("x", "mainProductType");
-        assertThat(batchProcessor.getValidDrafts()).hasSize(1);
+        assertThat(batchProcessor.getValidDrafts()).containsExactly(productTypeDraft);
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(errorCallBackExceptions).isEmpty();
     }
@@ -190,7 +200,7 @@ public class BatchProcessorTest {
             .build();
 
         final AttributeDefinitionDraft setOfInvalidNestedTypeAttrDefDraft = AttributeDefinitionDraftBuilder
-            .of(SetAttributeType.of(NestedAttributeType.of(ProductType.referenceOfId(""))), "setOfInvalidNested",
+            .of(SetAttributeType.of(NestedAttributeType.of(ProductType.referenceOfId(null))), "setOfInvalidNested",
                 ofEnglish("koko"), true)
             .build();
 
