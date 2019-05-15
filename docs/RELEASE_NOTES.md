@@ -37,7 +37,7 @@
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.2.0)
 
 
-- 🛠️ **Enhancements** (11)
+- 🛠️ **Enhancements** (12)
     - **Commons** - Bumped commercetools-jvm-sdk to version [1.41.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_41_0).
     - **Commons** - Bumped `mockito` to 2.27.0.
     - **Commons** - Bumped `assertj` to 3.12.2.
@@ -50,6 +50,7 @@
     - **Commons** - Bumped gradle checkstyle plugin to 8.2.
     - **Commons** - Bumped mockito dependency to 2.27.0.
     - **Commons** - Bumped JaCoCo dependency to 0.8.4.
+    - **Commons** - Bumped gradle to version [gradle-5.4.1](https://docs.gradle.org/5.4.1/release-notes.html)
 -->
 
 
