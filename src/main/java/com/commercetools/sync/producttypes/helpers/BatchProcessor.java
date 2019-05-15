@@ -42,17 +42,17 @@ public class BatchProcessor {
 
     /**
      * This method validates the batch of drafts, and only for valid drafts it adds the valid draft
-     * to {@code validDrafts} set, and adds the keys of all referenced products to
-     * {@code keysToCache}.
+     * to a {@code validDrafts} set, and adds the keys of those drafts and their referenced productTypes to a
+     * {@code keysToCache} set.
      *
      *
-     * <p>A valid product draft is one which satisfies the following conditions:
+     * <p>A valid productType draft is one which satisfies the following conditions:
      * <ol>
+     * <li>Is not null</li>
      * <li>It has a key which is not blank (null/empty)</li>
-     * <li>It has all variants AND master variant valid</li>
-     * <li>A variant is valid if it satisfies the following conditions:
-     * <ol>
-     * <li>It has a key which is not blank (null/empty)</li>
+     * <li>It has an invalid productType reference on an attributeDefinitionDraft
+     * with either a NestedType or SetType AttributeType.
+     * A valid reference is simply one which has its id field's value not blank (null/empty)</li>
      * </ol>
      * </li>
      * </ol>
@@ -81,12 +81,6 @@ public class BatchProcessor {
         }
     }
 
-    /**
-     * Get a set of referenced product keys on all attribute drafts on the supplied ProductType
-     * Variant Draft.
-     *
-     * @return the set of referenced product keys.
-     */
     @Nonnull
     private static Set<String> getReferencedProductTypeKeys(@Nonnull final ProductTypeDraft productTypeDraft)
         throws InvalidProductTypeDraftException {
@@ -122,7 +116,6 @@ public class BatchProcessor {
         return referencedProductTypeKeys;
     }
 
-
     @Nonnull
     private static Optional<String> getProductTypeKey(@Nonnull final AttributeType attributeType)
         throws InvalidReferenceException {
@@ -137,12 +130,6 @@ public class BatchProcessor {
         return Optional.empty();
     }
 
-    /**
-     * Gets a set of referenced product keys (if any) given a JsonNode representing a
-     * reference set.
-     *
-     * @return set of referenced product keys given an attribute draft.
-     */
     @Nonnull
     private static String getProductTypeKey(@Nonnull final NestedAttributeType nestedAttributeType)
         throws InvalidReferenceException {
@@ -154,13 +141,6 @@ public class BatchProcessor {
         return key;
     }
 
-    /**
-     * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this method calls the
-     * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
-     * incrementing the total number of failed products to sync.
-     *
-     * @param throwable The exception representing the reason(s) of failure.
-     */
     private void handleError(@Nonnull final Throwable throwable) {
         productTypeSync.getSyncOptions().applyErrorCallback(throwable.getMessage(), throwable);
         productTypeSync.getStatistics().incrementFailed();
