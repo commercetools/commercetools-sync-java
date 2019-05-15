@@ -31,12 +31,25 @@
 
 <!--
 
-### 1.2.0 -  Dec 20, 2018
+### 1.2.0 -  Jun 10, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.1.1...1.2.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.2.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.2.0)
 
 
+- 🛠️ **Enhancements** (11)
+    - **Commons** - Bumped commercetools-jvm-sdk to version [1.41.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_41_0).
+    - **Commons** - Bumped `mockito` to 2.27.0.
+    - **Commons** - Bumped `assertj` to 3.12.2.
+    - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-api` to 5.4.2.
+    - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-engine` to 5.4.2.
+    - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-params` to 5.4.2.
+    - **Commons** - Bumped `org.ajoberstar.git-publish` to 2.1.1.
+    - **Commons** - Bumped `org.ajoberstar.grgit` to 3.1.1.
+    - **Commons** - Bumped `com.github.ben-manes.versions` to 0.21.0.
+    - **Commons** - Bumped gradle checkstyle plugin to 8.2.
+    - **Commons** - Bumped mockito dependency to 2.27.0.
+    - **Commons** - Bumped JaCoCo dependency to 0.8.4.
 -->
 
 
