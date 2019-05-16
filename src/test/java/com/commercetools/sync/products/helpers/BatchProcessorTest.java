@@ -69,7 +69,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void getVariantDraftErrors_WithNokeyAndSku_ShouldHaveValidationErrors() {
+    public void getVariantDraftErrors_WithNoKeyAndSku_ShouldHaveValidationErrors() {
         final int variantPosition = 0;
         final String productDraftKey = "key";
         final List<String> validationErrors =
