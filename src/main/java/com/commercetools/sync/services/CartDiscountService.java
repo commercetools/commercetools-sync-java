@@ -16,17 +16,6 @@ import java.util.concurrent.CompletionStage;
 
 public interface CartDiscountService {
     /**
-     * If not already done once before, it fetches all the cart discount keys from the CTP project defined in an
-     * injected {@link io.sphere.sdk.client.SphereClient} and stores a mapping for every cart discount to id
-     * in {@link Map} and returns this cached map.
-     *
-     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a map of all
-     * cart discount keys -&gt; ids
-     */
-    @Nonnull
-    CompletionStage<Map<String, String>> cacheKeysToIds();
-
-    /**
      * Given a {@link Set} of CartDiscount keys, this method fetches a set of all the CartDiscounts, matching this given
      * set of keys in the CTP project, defined in an injected {@link SphereClient}. A
      * mapping of the key to the id of the fetched CartDiscount is persisted in an in-memory map.

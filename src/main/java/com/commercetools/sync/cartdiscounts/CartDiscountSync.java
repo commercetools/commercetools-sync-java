@@ -103,12 +103,12 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
         statistics.incrementFailed(failedTimes);
     }
 
-    private String getKey(CartDiscount cartDiscount){
+    private String getKey(@Nonnull final CartDiscount cartDiscount) {
         //todo: SUPPORT-4443 need to be merged from name to key.
         return cartDiscount.getName().get(Locale.ENGLISH);
     }
 
-    private String getKey(CartDiscountDraft cartDiscountDraft){
+    private String getKey(@Nonnull final CartDiscountDraft cartDiscountDraft) {
         //todo: SUPPORT-4443 need to be merged from name to key.
         return cartDiscountDraft.getName().get(Locale.ENGLISH);
     }
