@@ -4,12 +4,14 @@ import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.SphereException;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
 public interface CartDiscountService {
@@ -23,6 +25,19 @@ public interface CartDiscountService {
      */
     @Nonnull
     CompletionStage<Map<String, String>> cacheKeysToIds();
+
+    /**
+     * Given a {@link Set} of CartDiscount keys, this method fetches a set of all the CartDiscounts, matching this given
+     * set of keys in the CTP project, defined in an injected {@link SphereClient}. A
+     * mapping of the key to the id of the fetched CartDiscount is persisted in an in-memory map.
+     *
+     * @param keys set of CartDiscounts keys to fetch matching CartDiscount by.
+     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of its completion contains a {@link Set}
+     *          of all matching CartDiscounts.
+     */
+    @Nonnull
+    CompletionStage<Set<CartDiscount>> fetchMatchingCartDiscountsByKeys(@Nonnull final Set<String> keys);
+
 
     /**
      * Given a cart discount key, this method fetches a cart discount that matches this given key in the CTP project
@@ -61,7 +76,7 @@ public interface CartDiscountService {
     /**
      * Given a {@link CartDiscount} and a {@link List}&lt;{@link UpdateAction}&lt;{@link CartDiscount}&gt;&gt;, this
      * method issues an update request with these update actions on this {@link CartDiscount} in the CTP project
-     * defined in a potentially injected {@link io.sphere.sdk.client.SphereClient}. This method returns
+     * defined in a potentially injected {@link SphereClient}. This method returns
      * {@link CompletionStage}&lt;{@link CartDiscount}&gt; in which the result of it's completion contains an instance
      * of the {@link CartDiscount} which was updated in the CTP project.
      *
@@ -69,7 +84,7 @@ public interface CartDiscountService {
      * @param updateActions the update actions to update the {@link CartDiscount} with.
      * @return {@link CompletionStage}&lt;{@link CartDiscount}&gt; containing as a result of it's completion an
      * instance of the {@link CartDiscount} which was updated in the CTP project or a
-     * {@link io.sphere.sdk.models.SphereException}.
+     * {@link SphereException}.
      */
     @Nonnull
     CompletionStage<CartDiscount> updateCartDiscount(@Nonnull final CartDiscount cartDiscount,

@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,6 +33,12 @@ public class CartDiscountServiceImpl extends BaseService<CartDiscountDraft, Cart
     @Nonnull
     @Override
     public CompletionStage<Map<String, String>> cacheKeysToIds() {
+        return null;
+    }
+
+    @Nonnull
+    @Override
+    public CompletionStage<Set<CartDiscount>> fetchMatchingCartDiscountsByKeys(@Nonnull Set<String> keys) {
         return null;
     }
 
