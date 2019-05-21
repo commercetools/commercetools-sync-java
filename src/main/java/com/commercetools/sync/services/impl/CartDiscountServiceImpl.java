@@ -30,10 +30,9 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+//todo: check keyToIdCache is needed for cart discount service
 public class CartDiscountServiceImpl extends BaseService<CartDiscountDraft, CartDiscount, CartDiscountSyncOptions>
     implements CartDiscountService {
-
-    private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
 
     public CartDiscountServiceImpl(@Nonnull CartDiscountSyncOptions syncOptions) {
         super(syncOptions);
