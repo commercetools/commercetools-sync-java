@@ -224,7 +224,6 @@ public final class CartDiscountUpdateActionUtils {
      * Compares the {@link ZonedDateTime} validFrom and {@link ZonedDateTime} validUntil values
      * of a {@link CartDiscount} and a {@link CartDiscountDraft}
      * and returns an {@link UpdateAction}&lt;{@link CartDiscount}&gt; as a result in an {@link Optional}.
-     *
      * - If both the {@link CartDiscount} and the {@link CartDiscountDraft} have different validFrom
      * and same validUntil values, then 'setValidFrom' update action returned.
      * - If both the {@link CartDiscount} and the {@link CartDiscountDraft} have the same validFrom
@@ -250,9 +249,10 @@ public final class CartDiscountUpdateActionUtils {
         final Optional<UpdateAction<CartDiscount>> setValidUntilUpdateAction =
             buildSetValidUntilUpdateAction(oldCartDiscount, newCartDiscount);
 
-        if (setValidFromUpdateAction.isPresent() && setValidUntilUpdateAction.isPresent())
+        if (setValidFromUpdateAction.isPresent() && setValidUntilUpdateAction.isPresent()) {
             return Optional.of(
                 SetValidFromAndUntil.of(newCartDiscount.getValidFrom(), newCartDiscount.getValidUntil()));
+        }
 
         return setValidFromUpdateAction.isPresent() ? setValidFromUpdateAction : setValidUntilUpdateAction;
     }
