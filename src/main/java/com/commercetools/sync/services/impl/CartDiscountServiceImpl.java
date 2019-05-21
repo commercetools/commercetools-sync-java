@@ -25,7 +25,7 @@ public class CartDiscountServiceImpl extends BaseService<CartDiscountDraft, Cart
         implements CartDiscountService {
     private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
 
-    CartDiscountServiceImpl(@Nonnull CartDiscountSyncOptions syncOptions) {
+    public CartDiscountServiceImpl(@Nonnull CartDiscountSyncOptions syncOptions) {
         super(syncOptions);
     }
 
