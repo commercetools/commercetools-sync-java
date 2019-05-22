@@ -34,8 +34,7 @@ public class CartDiscountSyncOptionsBuilderTest {
 
     @Test
     public void of_WithClient_ShouldCreateCartDiscountSyncOptionsBuilder() {
-        final CartDiscountSyncOptionsBuilder builder = CartDiscountSyncOptionsBuilder.of(CTP_CLIENT);
-        assertThat(builder).isNotNull();
+        assertThat(cartDiscountSyncOptionsBuilder).isNotNull();
     }
 
     @Test
