@@ -49,17 +49,17 @@ public class CartDiscountSyncUtilsTest {
 
         final CartDiscountDraft newCartDiscount = CartDiscountDraftBuilder
             .of(newName,
-                CartPredicate.of("totalPrice >= \"50 EUR\""),
-                CartDiscountValue.ofRelative(1000),
-                ShippingCostTarget.of(),
-                "0.25",
-                false)
-            .active(false)
-            .description(LocalizedString.of(Locale.GERMAN, "Beschreibung",
-                Locale.ENGLISH, "description"))
-            .validFrom(ZonedDateTime.parse("2019-05-05T00:00:00.000Z"))
-            .validUntil(ZonedDateTime.parse("2019-05-15T00:00:00.000Z"))
+                CART_DISCOUNT_WITH_SHIPPING_TARGET.getCartPredicate(),
+                CART_DISCOUNT_WITH_SHIPPING_TARGET.getValue(),
+                CART_DISCOUNT_WITH_SHIPPING_TARGET.getTarget(),
+                CART_DISCOUNT_WITH_SHIPPING_TARGET.getSortOrder(),
+                CART_DISCOUNT_WITH_SHIPPING_TARGET.isActive())
+            .active(CART_DISCOUNT_WITH_SHIPPING_TARGET.isRequiringDiscountCode())
+            .description(CART_DISCOUNT_WITH_SHIPPING_TARGET.getDescription())
+            .validFrom(CART_DISCOUNT_WITH_SHIPPING_TARGET.getValidFrom())
+            .validUntil(CART_DISCOUNT_WITH_SHIPPING_TARGET.getValidUntil())
             .build();
+
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder.of(CTP_CLIENT).build();
         final List<UpdateAction<CartDiscount>> updateActions =
             CartDiscountSyncUtils.buildActions(CART_DISCOUNT_WITH_SHIPPING_TARGET,
