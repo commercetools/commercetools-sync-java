@@ -7,7 +7,6 @@ import io.sphere.sdk.commands.UpdateAction;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.Optional;
 
 import static com.commercetools.sync.cartdiscounts.utils.CartDiscountUpdateActionUtils.buildChangeCartPredicateUpdateAction;
 import static com.commercetools.sync.cartdiscounts.utils.CartDiscountUpdateActionUtils.buildChangeIsActiveUpdateAction;
@@ -19,8 +18,6 @@ import static com.commercetools.sync.cartdiscounts.utils.CartDiscountUpdateActio
 import static com.commercetools.sync.cartdiscounts.utils.CartDiscountUpdateActionUtils.buildChangeValueUpdateAction;
 import static com.commercetools.sync.cartdiscounts.utils.CartDiscountUpdateActionUtils.buildSetDescriptionUpdateAction;
 import static com.commercetools.sync.cartdiscounts.utils.CartDiscountUpdateActionUtils.buildSetValidDatesUpdateAction;
-import static com.commercetools.sync.cartdiscounts.utils.CartDiscountUpdateActionUtils.buildSetValidFromUpdateAction;
-import static com.commercetools.sync.cartdiscounts.utils.CartDiscountUpdateActionUtils.buildSetValidUntilUpdateAction;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 
 public final class CartDiscountSyncUtils {

@@ -53,8 +53,8 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
 
     /**
      * Takes a {@link CartDiscountSyncOptions} and a {@link CartDiscountService} instances to instantiate
-     * a new {@link CartDiscountSync} instance that could be used to sync cart discount drafts in the CTP project specified
-     * in the injected {@link CartDiscountSyncOptions} instance.
+     * a new {@link CartDiscountSync} instance that could be used to sync cart discount drafts in the CTP project
+     * specified in the injected {@link CartDiscountSyncOptions} instance.
      *
      * <p>NOTE: This constructor is mainly to be used for tests where the services can be mocked and passed to.
      *
@@ -78,7 +78,7 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
      *
      * @param cartDiscountDrafts {@link List} of {@link CartDiscountDraft}'s that would be synced into CTP project.
      * @return {@link CompletionStage} with {@link CartDiscountSyncStatistics} holding statistics of all sync
-     * processes performed by this sync instance.
+     *         processes performed by this sync instance.
      */
     @Override
     protected CompletionStage<CartDiscountSyncStatistics> process(

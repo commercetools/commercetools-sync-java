@@ -18,13 +18,10 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
 
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toSet;
@@ -34,7 +31,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 public class CartDiscountServiceImpl extends BaseService<CartDiscountDraft, CartDiscount, CartDiscountSyncOptions>
     implements CartDiscountService {
 
-    public CartDiscountServiceImpl(@Nonnull CartDiscountSyncOptions syncOptions) {
+    public CartDiscountServiceImpl(@Nonnull final CartDiscountSyncOptions syncOptions) {
         super(syncOptions);
     }
 
@@ -64,7 +61,7 @@ public class CartDiscountServiceImpl extends BaseService<CartDiscountDraft, Cart
 
     @Nonnull
     @Override
-    public CompletionStage<Set<CartDiscount>> fetchMatchingCartDiscountsByKeys(@Nonnull Set<String> keys) {
+    public CompletionStage<Set<CartDiscount>> fetchMatchingCartDiscountsByKeys(@Nonnull final Set<String> keys) {
         if (keys.isEmpty()) {
             return CompletableFuture.completedFuture(Collections.emptySet());
         }
@@ -85,7 +82,7 @@ public class CartDiscountServiceImpl extends BaseService<CartDiscountDraft, Cart
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<CartDiscount>> fetchCartDiscount(@Nullable String key) {
+    public CompletionStage<Optional<CartDiscount>> fetchCartDiscount(@Nullable final String key) {
         if (isBlank(key)) {
             return CompletableFuture.completedFuture(Optional.empty());
         }
@@ -107,14 +104,18 @@ public class CartDiscountServiceImpl extends BaseService<CartDiscountDraft, Cart
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<CartDiscount>> createCartDiscount(@Nonnull CartDiscountDraft cartDiscountDraft) {
+    public CompletionStage<Optional<CartDiscount>> createCartDiscount(
+        @Nonnull final CartDiscountDraft cartDiscountDraft) {
+
         return createResource(cartDiscountDraft, this::getKey, CartDiscountCreateCommand::of);
     }
 
     @Nonnull
     @Override
-    public CompletionStage<CartDiscount> updateCartDiscount(@Nonnull CartDiscount cartDiscount,
-                                                            @Nonnull List<UpdateAction<CartDiscount>> updateActions) {
+    public CompletionStage<CartDiscount> updateCartDiscount(
+        @Nonnull final CartDiscount cartDiscount,
+        @Nonnull final List<UpdateAction<CartDiscount>> updateActions) {
+
         return updateResource(cartDiscount, CartDiscountUpdateCommand::of, updateActions);
     }
 }

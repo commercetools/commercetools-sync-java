@@ -57,7 +57,7 @@ public interface CartDiscountService {
      *
      * @param cartDiscountDraft the resource draft to create a resource based off of.
      * @return a {@link CompletionStage} containing an optional with the created resource if successful otherwise an
-     * empty optional.
+     *         empty optional.
      */
     @Nonnull
     CompletionStage<Optional<CartDiscount>> createCartDiscount(@Nonnull final CartDiscountDraft cartDiscountDraft);
@@ -72,8 +72,7 @@ public interface CartDiscountService {
      * @param cartDiscount  the {@link CartDiscount} to update.
      * @param updateActions the update actions to update the {@link CartDiscount} with.
      * @return {@link CompletionStage}&lt;{@link CartDiscount}&gt; containing as a result of it's completion an
-     * instance of the {@link CartDiscount} which was updated in the CTP project or a
-     * {@link SphereException}.
+     *         instance of the {@link CartDiscount} which was updated in the CTP project or a {@link SphereException}.
      */
     @Nonnull
     CompletionStage<CartDiscount> updateCartDiscount(@Nonnull final CartDiscount cartDiscount,
