@@ -168,7 +168,7 @@ public final class CartDiscountUpdateActionUtils {
      * {@code false} value which is the default value of CTP.
      *
      * @param oldCartDiscount the cart discount which should be updated.
-     * @param newCartDiscount the cart discount draft where we get the new 'isActive'.
+     * @param newCartDiscount the cart discount draft where we get the new 'requiresDiscountCode'.
      * @return A filled optional with the update action or an empty optional if the 'requiresDiscountCode' values
      *         are identical.
      */
