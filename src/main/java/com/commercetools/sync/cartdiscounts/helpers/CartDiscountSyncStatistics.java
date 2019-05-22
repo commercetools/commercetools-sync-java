@@ -4,7 +4,7 @@ import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 
 import static java.lang.String.format;
 
-public class CartDiscountSyncStatistics extends BaseSyncStatistics {
+public final class CartDiscountSyncStatistics extends BaseSyncStatistics {
 
     /**
      * Builds a summary of the cart discount sync statistics instance that looks like the following example:
