@@ -9,7 +9,6 @@ import io.sphere.sdk.cartdiscounts.CartDiscountTarget;
 import io.sphere.sdk.cartdiscounts.CartDiscountValue;
 import io.sphere.sdk.cartdiscounts.CartPredicate;
 import io.sphere.sdk.cartdiscounts.LineItemsTarget;
-import io.sphere.sdk.cartdiscounts.ShippingCostTarget;
 import io.sphere.sdk.cartdiscounts.StackingMode;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeCartPredicate;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeIsActive;
