@@ -78,7 +78,7 @@ public final class CartDiscountUpdateActionUtils {
     public static Optional<UpdateAction<CartDiscount>> buildChangeTargetUpdateAction(
         @Nonnull final CartDiscount oldCartDiscount,
         @Nonnull final CartDiscountDraft newCartDiscount) {
-        return buildUpdateAction(oldCartDiscount.getValue(), newCartDiscount.getValue(),
+        return buildUpdateAction(oldCartDiscount.getTarget(), newCartDiscount.getTarget(),
             () -> ChangeTarget.of(newCartDiscount.getTarget()));
     }
 

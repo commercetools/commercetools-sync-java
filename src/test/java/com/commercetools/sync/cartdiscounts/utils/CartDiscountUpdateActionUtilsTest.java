@@ -191,7 +191,7 @@ public class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeTargetUpdateAction_WithSameLineItemTargetValues_ShouldBuildUpdateAction() {
+    public void buildChangeTargetUpdateAction_WithSameLineItemTargetValues_ShouldNotBuildUpdateAction() {
         final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
         final CartDiscountTarget cartDiscountTarget = LineItemsTarget.of("1 = 1");
         when(newCartDiscountDraft.getTarget()).thenReturn(cartDiscountTarget);
@@ -199,7 +199,7 @@ public class CartDiscountUpdateActionUtilsTest {
         final Optional<UpdateAction<CartDiscount>> changeTargetUpdateAction =
             buildChangeTargetUpdateAction(CART_DISCOUNT_WITH_RELATIVE_VALUE, newCartDiscountDraft);
 
-        assertThat(changeTargetUpdateAction).contains(ChangeTarget.of(cartDiscountTarget));
+        assertThat(changeTargetUpdateAction).isNotPresent();
     }
 
     @Test
