@@ -216,7 +216,6 @@ public class CartDiscountSyncOptionsBuilderTest {
 
     @Test
     public void applyBeforeCreateCallBack_WithCallback_ShouldReturnFilteredDraft() {
-        //todo: there is no key, instead of key, use name as an option
         final Function<CartDiscountDraft, CartDiscountDraft> draftFunction =
             cartDiscountDraft ->
                 CartDiscountDraftBuilder.of(cartDiscountDraft)
