@@ -78,7 +78,7 @@ public final class CartDiscountUpdateActionUtils {
     public static Optional<UpdateAction<CartDiscount>> buildChangeTargetUpdateAction(
         @Nonnull final CartDiscount oldCartDiscount,
         @Nonnull final CartDiscountDraft newCartDiscount) {
-        return buildUpdateAction(oldCartDiscount.getValue(), newCartDiscount.getValue(),
+        return buildUpdateAction(oldCartDiscount.getTarget(), newCartDiscount.getTarget(),
             () -> ChangeTarget.of(newCartDiscount.getTarget()));
     }
 
@@ -168,7 +168,7 @@ public final class CartDiscountUpdateActionUtils {
      * {@code false} value which is the default value of CTP.
      *
      * @param oldCartDiscount the cart discount which should be updated.
-     * @param newCartDiscount the cart discount draft where we get the new 'isActive'.
+     * @param newCartDiscount the cart discount draft where we get the new 'requiresDiscountCode'.
      * @return A filled optional with the update action or an empty optional if the 'requiresDiscountCode' values
      *         are identical.
      */
