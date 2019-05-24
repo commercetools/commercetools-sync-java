@@ -7,7 +7,6 @@ import io.sphere.sdk.cartdiscounts.CartDiscountTarget;
 import io.sphere.sdk.cartdiscounts.CartDiscountValue;
 import io.sphere.sdk.cartdiscounts.CartPredicate;
 import io.sphere.sdk.cartdiscounts.LineItemsTarget;
-import io.sphere.sdk.cartdiscounts.ShippingCostTarget;
 import io.sphere.sdk.cartdiscounts.commands.CartDiscountCreateCommand;
 import io.sphere.sdk.cartdiscounts.commands.CartDiscountDeleteCommand;
 import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
@@ -17,8 +16,9 @@ import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.utils.MoneyImpl;
 
 import javax.annotation.Nonnull;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -29,56 +29,37 @@ import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 
 public class CartDiscountITUtils {
 
-    public static final String CART_DISCOUNT_KEY_1 = "key1";
-    public static final String CART_DISCOUNT_KEY_2 = "key2";
-    public static final String CART_DISCOUNT_KEY_3 = "key3";
+    public static final String CART_DISCOUNT_KEY_1 = "key_1";
+    public static final String CART_DISCOUNT_KEY_2 = "key_2";
 
     public static final LocalizedString CART_DISCOUNT_DESC_1 =
         LocalizedString.of(Locale.ENGLISH, "discount- get 10 percent");
     public static final LocalizedString CART_DISCOUNT_DESC_2 =
         LocalizedString.of(Locale.ENGLISH, "discount- get 20 EUR for special items");
-    public static final LocalizedString CART_DISCOUNT_DESC_3 =
-        LocalizedString.of(Locale.ENGLISH, "discount- free shipping if total price is greater than 100 EUR");
 
     public static final String PREDICATE_1 = "1 = 1";
     public static final String PREDICATE_2 = "lineItemExists(sku = \"0123456789\" or sku = \"0246891213\") = true";
-    public static final String PREDICATE_3 = "totalPrice >= \"100 EUR\"";
 
     public static final CartPredicate CART_DISCOUNT_CART_PREDICATE_1 = CartPredicate.of(PREDICATE_1);
     public static final CartPredicate CART_DISCOUNT_CART_PREDICATE_2 = CartPredicate.of(PREDICATE_2);
-    public static final CartPredicate CART_DISCOUNT_CART_PREDICATE_3 = CartPredicate.of(PREDICATE_3);
 
     public static final CartDiscountValue CART_DISCOUNT_VALUE_1 = CartDiscountValue.ofRelative(1000);
     public static final CartDiscountValue CART_DISCOUNT_VALUE_2 = CartDiscountValue.ofAbsolute(MoneyImpl.of(20, EUR));
-    public static final CartDiscountValue CART_DISCOUNT_VALUE_3 = CartDiscountValue.ofRelative(0);
 
     public static final CartDiscountTarget CART_DISCOUNT_TARGET_1 = LineItemsTarget.ofAll();
     public static final CartDiscountTarget CART_DISCOUNT_TARGET_2 =
         LineItemsTarget.of("sku = \"0123456789\" or sku = \"0246891213\"");
-    public static final CartDiscountTarget CART_DISCOUNT_TARGET_3 = ShippingCostTarget.of();
 
-    public static final ZonedDateTime JANUARY_FROM =
-        ZonedDateTime.of(2019, 1, 1, 0, 0, 0, 0, ZoneId.of("UTC"));
-    public static final ZonedDateTime JANUARY_UNTIL =
-        ZonedDateTime.of(2019, 1, 15, 0, 0, 0, 0, ZoneId.of("UTC"));
-
-    public static final ZonedDateTime FEBRUARY_FROM =
-        ZonedDateTime.of(2019, 2, 1, 0, 0, 0, 0, ZoneId.of("UTC"));
-    public static final ZonedDateTime FEBRUARY_UNTIL =
-        ZonedDateTime.of(2019, 2, 15, 0, 0, 0, 0, ZoneId.of("UTC"));
-
-
-    public static final ZonedDateTime MARCH_FROM =
-        ZonedDateTime.of(2019, 3, 1, 0, 0, 0, 0, ZoneId.of("UTC"));
-    public static final ZonedDateTime MARCH_UNTIL =
-        ZonedDateTime.of(2019, 3, 15, 0, 0, 0, 0, ZoneId.of("UTC"));
+    public static final ZonedDateTime JANUARY_FROM = ZonedDateTime.parse("2019-01-01T00:00:00.000Z");
+    public static final ZonedDateTime JANUARY_UNTIL = ZonedDateTime.parse("2019-01-31T00:00:00.000Z");
+    public static final ZonedDateTime FEBRUARY_FROM = ZonedDateTime.parse("2019-02-01T00:00:00.000Z");
+    public static final ZonedDateTime FEBRUARY_UNTIL = ZonedDateTime.parse("2019-02-28T00:00:00.000Z");
 
     public static final String SORT_ORDER_1 = "0.1";
     public static final String SORT_ORDER_2 = "0.2";
-    public static final String SORT_ORDER_3 = "0.3";
 
     public static final CartDiscountDraft CART_DISCOUNT_DRAFT_1 =
-        CartDiscountDraftBuilder.of(LocalizedString.of( Locale.ENGLISH, CART_DISCOUNT_KEY_1),
+        CartDiscountDraftBuilder.of(LocalizedString.of(Locale.ENGLISH, CART_DISCOUNT_KEY_1),
             CART_DISCOUNT_CART_PREDICATE_1,
             CART_DISCOUNT_VALUE_1,
             CART_DISCOUNT_TARGET_1,
@@ -91,7 +72,7 @@ public class CartDiscountITUtils {
                                 .build();
 
     public static final CartDiscountDraft CART_DISCOUNT_DRAFT_2 =
-        CartDiscountDraftBuilder.of(LocalizedString.of( Locale.ENGLISH, CART_DISCOUNT_KEY_2),
+        CartDiscountDraftBuilder.of(LocalizedString.of(Locale.ENGLISH, CART_DISCOUNT_KEY_2),
             CART_DISCOUNT_CART_PREDICATE_2,
             CART_DISCOUNT_VALUE_2,
             CART_DISCOUNT_TARGET_2,
@@ -103,18 +84,6 @@ public class CartDiscountITUtils {
                                 .validUntil(FEBRUARY_UNTIL)
                                 .build();
 
-    public static final CartDiscountDraft CART_DISCOUNT_DRAFT_3 =
-        CartDiscountDraftBuilder.of(LocalizedString.of( Locale.ENGLISH, CART_DISCOUNT_KEY_3),
-            CART_DISCOUNT_CART_PREDICATE_3,
-            CART_DISCOUNT_VALUE_3,
-            CART_DISCOUNT_TARGET_3,
-            SORT_ORDER_3,
-            false)
-                                .active(false)
-                                .description(CART_DISCOUNT_DESC_3)
-                                .validFrom(MARCH_FROM)
-                                .validUntil(MARCH_UNTIL)
-                                .build();
 
     /**
      * Deletes all cart discounts from CTP project, represented by provided {@code ctpClient}.
@@ -160,6 +129,22 @@ public class CartDiscountITUtils {
             .build();
 
         return sphereClient.execute(query).toCompletableFuture().join().head();
+    }
+
+    public static List<String> getSortOrders(int capacity) {
+        // get 100 sortOrder list with odd numbers ex: 0.01, 0.03..
+        // The sortOrder must be a decimal value > 0 and < 1. It is not allowed to end with a zero.
+        final List<String> sortOrders = new ArrayList<>(capacity);
+        int counter = 0;
+        int current = 1;
+
+        while (counter != 100) {
+            current += 2;
+            sortOrders.add("0.0" + current);
+            counter ++;
+        }
+
+        return sortOrders;
     }
 
 }

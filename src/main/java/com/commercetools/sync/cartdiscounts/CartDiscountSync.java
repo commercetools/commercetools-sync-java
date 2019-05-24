@@ -105,12 +105,14 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
 
     private String getKey(@Nonnull final CartDiscount cartDiscount) {
         //todo: SUPPORT-4443 need to be merged from name to key.
-        return cartDiscount.getName().get(Locale.ENGLISH);
+        return Optional.ofNullable(cartDiscount.getName())
+                       .map(localizedString -> localizedString.get(Locale.ENGLISH)).orElse("");
     }
 
     private String getKey(@Nonnull final CartDiscountDraft cartDiscountDraft) {
         //todo: SUPPORT-4443 need to be merged from name to key.
-        return cartDiscountDraft.getName().get(Locale.ENGLISH);
+        return Optional.ofNullable(cartDiscountDraft.getName())
+                       .map(localizedString -> localizedString.get(Locale.ENGLISH)).orElse("");
     }
 
     /**
