@@ -7,9 +7,7 @@ import io.sphere.sdk.producttypes.commands.updateactions.AddEnumValue;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeEnumValueOrder;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangePlainEnumValueLabel;
 import io.sphere.sdk.producttypes.commands.updateactions.RemoveEnumValues;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.List;
@@ -20,11 +18,12 @@ import static com.commercetools.sync.producttypes.utils.PlainEnumValueUpdateActi
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class BuildPlainEnumUpdateActionsTest {
+class BuildPlainEnumUpdateActionsTest {
 
     @Test
-    public void buildPlainEnumUpdateActions_WithNullNewEnumValuesAndExistingEnumValues_ShouldBuildRemoveAction() {
+    void buildPlainEnumUpdateActions_WithNullNewEnumValuesAndExistingEnumValues_ShouldBuildRemoveAction() {
         final List<UpdateAction<ProductType>> updateActions = buildEnumValuesUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUES_ABC,
@@ -37,7 +36,7 @@ public class BuildPlainEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildPlainEnumUpdateActions_WithEmptyNewEnumValuesAndExistingEnumValues_ShouldBuildRemoveAction() {
+    void buildPlainEnumUpdateActions_WithEmptyNewEnumValuesAndExistingEnumValues_ShouldBuildRemoveAction() {
         final List<UpdateAction<ProductType>> updateActions = buildEnumValuesUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUES_ABC,
@@ -50,7 +49,7 @@ public class BuildPlainEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildPlainEnumUpdateActions_WithEmptyPlainEnumValuesAndNoOldEnumValues_ShouldNotBuildActions() {
+    void buildPlainEnumUpdateActions_WithEmptyPlainEnumValuesAndNoOldEnumValues_ShouldNotBuildActions() {
         final List<UpdateAction<ProductType>> updateActions = buildEnumValuesUpdateActions(
             "attribute_definition_name_1",
             Collections.emptyList(),
@@ -61,7 +60,7 @@ public class BuildPlainEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildPlainEnumUpdateActions_WithNewPlainEnumValuesAndNoOldPlainEnumValues_ShouldBuild3AddActions() {
+    void buildPlainEnumUpdateActions_WithNewPlainEnumValuesAndNoOldPlainEnumValues_ShouldBuild3AddActions() {
         final List<UpdateAction<ProductType>> updateActions = buildEnumValuesUpdateActions(
             "attribute_definition_name_1",
             Collections.emptyList(),
@@ -76,7 +75,7 @@ public class BuildPlainEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildPlainEnumUpdateActions_WithIdenticalPlainEnum_ShouldNotBuildUpdateActions() {
+    void buildPlainEnumUpdateActions_WithIdenticalPlainEnum_ShouldNotBuildUpdateActions() {
         final List<UpdateAction<ProductType>> updateActions = buildEnumValuesUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUES_ABC,
@@ -86,25 +85,20 @@ public class BuildPlainEnumUpdateActionsTest {
         assertThat(updateActions).isEmpty();
     }
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
-
     @Test
-    public void buildPlainEnumUpdateActions_WithDuplicatePlainEnumValues_ShouldTriggerDuplicateKeyError() {
-        expectedException.expect(DuplicateKeyException.class);
-        expectedException.expectMessage("Enum Values have duplicated keys. Definition name: "
-            + "'attribute_definition_name_1', Duplicated enum value: 'b'. Enum Values are expected to be unique inside "
-            + "their definition.");
-
-        buildEnumValuesUpdateActions(
+    void buildPlainEnumUpdateActions_WithDuplicatePlainEnumValues_ShouldTriggerDuplicateKeyError() {
+        assertThatThrownBy(() -> buildEnumValuesUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUES_ABC,
             ENUM_VALUES_ABB
-        );
+        )).isInstanceOf(DuplicateKeyException.class)
+          .hasMessage("Enum Values have duplicated keys. Definition name: "
+              + "'attribute_definition_name_1', Duplicated enum value: 'b'. "
+              + "Enum Values are expected to be unique inside their definition.");
     }
 
     @Test
-    public void buildPlainEnumUpdateActions_WithOneMissingPlainEnumValue_ShouldBuildRemoveEnumValueAction() {
+    void buildPlainEnumUpdateActions_WithOneMissingPlainEnumValue_ShouldBuildRemoveEnumValueAction() {
         final List<UpdateAction<ProductType>> updateActions = buildEnumValuesUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUES_ABC,
@@ -117,7 +111,7 @@ public class BuildPlainEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildPlainEnumUpdateActions_WithOnePlainEnumValue_ShouldBuildAddEnumValueAction() {
+    void buildPlainEnumUpdateActions_WithOnePlainEnumValue_ShouldBuildAddEnumValueAction() {
         final List<UpdateAction<ProductType>> updateActions = buildEnumValuesUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUES_ABC,
@@ -130,7 +124,7 @@ public class BuildPlainEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildPlainEnumUpdateActions_WithOneEnumValueSwitch_ShouldBuildRemoveAndAddEnumValueActions() {
+    void buildPlainEnumUpdateActions_WithOneEnumValueSwitch_ShouldBuildRemoveAndAddEnumValueActions() {
         final List<UpdateAction<ProductType>> updateActions = buildEnumValuesUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUES_ABC,
@@ -144,7 +138,7 @@ public class BuildPlainEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildPlainEnumUpdateActions_WithDifferent_ShouldBuildChangeEnumValueOrderAction() {
+    void buildPlainEnumUpdateActions_WithDifferent_ShouldBuildChangeEnumValueOrderAction() {
         final List<UpdateAction<ProductType>> updateActions = buildEnumValuesUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUES_ABC,
@@ -161,7 +155,7 @@ public class BuildPlainEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildPlainEnumUpdateActions_WithMixedCase_ShouldBuildChangeEnumValueOrderAction() {
+    void buildPlainEnumUpdateActions_WithMixedCase_ShouldBuildChangeEnumValueOrderAction() {
         final String attributeDefinitionName = "attribute_definition_name_1";
         final List<UpdateAction<ProductType>> updateActions = buildEnumValuesUpdateActions(
             attributeDefinitionName,
@@ -180,7 +174,7 @@ public class BuildPlainEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildPlainEnumUpdateActions_WithRemovedAndDifferentOrder_ShouldBuildChangeOrderAndRemoveActions() {
+    void buildPlainEnumUpdateActions_WithRemovedAndDifferentOrder_ShouldBuildChangeOrderAndRemoveActions() {
         final List<UpdateAction<ProductType>> updateActions = buildEnumValuesUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUES_ABC,
@@ -197,7 +191,7 @@ public class BuildPlainEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildPlainEnumUpdateActions_WithAddedAndDifferentOrder_ShouldBuildChangeOrderAndAddActions() {
+    void buildPlainEnumUpdateActions_WithAddedAndDifferentOrder_ShouldBuildChangeOrderAndAddActions() {
         final List<UpdateAction<ProductType>> updateActions = buildEnumValuesUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUES_ABC,
@@ -216,7 +210,7 @@ public class BuildPlainEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildPlainEnumUpdateActions_WithAddedEnumValueInBetween_ShouldBuildChangeOrderAndAddActions() {
+    void buildPlainEnumUpdateActions_WithAddedEnumValueInBetween_ShouldBuildChangeOrderAndAddActions() {
         final List<UpdateAction<ProductType>> updateActions = buildEnumValuesUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUES_ABC,
@@ -235,7 +229,7 @@ public class BuildPlainEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildPlainEnumUpdateActions_WithAddedRemovedAndDifOrder_ShouldBuildAllThreeMoveEnumValueActions() {
+    void buildPlainEnumUpdateActions_WithAddedRemovedAndDifOrder_ShouldBuildAllThreeMoveEnumValueActions() {
         final List<UpdateAction<ProductType>> updateActions = buildEnumValuesUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUES_ABC,
@@ -254,7 +248,7 @@ public class BuildPlainEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildPlainEnumUpdateActions_WithDifferentLabels_ShouldReturnChangeLabelAction() {
+    void buildPlainEnumUpdateActions_WithDifferentLabels_ShouldReturnChangeLabelAction() {
         final List<UpdateAction<ProductType>> updateActions = buildEnumValueUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUE_A,
@@ -267,7 +261,7 @@ public class BuildPlainEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildPlainEnumUpdateActions_WithSameLabels_ShouldNotReturnChangeLabelAction() {
+    void buildPlainEnumUpdateActions_WithSameLabels_ShouldNotReturnChangeLabelAction() {
         final List<UpdateAction<ProductType>> updateActions = buildEnumValueUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUE_A,

@@ -8,7 +8,7 @@ import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
 import io.sphere.sdk.types.TypeDraftBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,9 +32,9 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class TypeSyncTest {
+class TypeSyncTest {
     @Test
-    public void sync_WithErrorFetchingExistingKeys_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    void sync_WithErrorFetchingExistingKeys_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         // preparation
 
         final TypeDraft newTypeDraft = TypeDraftBuilder.of(
@@ -86,7 +86,7 @@ public class TypeSyncTest {
     }
 
     @Test
-    public void sync_WithOnlyDraftsToCreate_ShouldCallBeforeCreateCallback() {
+    void sync_WithOnlyDraftsToCreate_ShouldCallBeforeCreateCallback() {
         // preparation
         final TypeDraft newTypeDraft = TypeDraftBuilder
             .of("newType", ofEnglish( "typeName"), ResourceTypeIdsSetBuilder.of().addChannels())
@@ -112,7 +112,7 @@ public class TypeSyncTest {
     }
 
     @Test
-    public void sync_WithOnlyDraftsToUpdate_ShouldOnlyCallBeforeUpdateCallback() {
+    void sync_WithOnlyDraftsToUpdate_ShouldOnlyCallBeforeUpdateCallback() {
         // preparation
         final TypeDraft newTypeDraft = TypeDraftBuilder
             .of("newType", ofEnglish( "typeName"), ResourceTypeIdsSetBuilder.of().addChannels())

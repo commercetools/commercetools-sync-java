@@ -5,9 +5,7 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.commands.updateactions.AddLocalizedEnumValue;
 import io.sphere.sdk.types.commands.updateactions.ChangeLocalizedEnumValueOrder;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -16,15 +14,14 @@ import static com.commercetools.sync.types.utils.LocalizedEnumValueUpdateActionU
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class BuildLocalizedEnumUpdateActionsTest {
+class BuildLocalizedEnumUpdateActionsTest {
     private static final String FIELD_NAME_1 = "field1";
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithEmptyPlainEnumValuesAndNoOldEnumValues_ShouldNotBuildActions() {
+    void buildLocalizedEnumUpdateActions_WithEmptyPlainEnumValuesAndNoOldEnumValues_ShouldNotBuildActions() {
         final List<UpdateAction<Type>> updateActions = buildLocalizedEnumValuesUpdateActions(
             FIELD_NAME_1,
             emptyList(),
@@ -35,7 +32,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithNewPlainEnumValuesAndNoOldPlainEnumValues_ShouldBuild3AddActions() {
+    void buildLocalizedEnumUpdateActions_WithNewPlainEnumValuesAndNoOldPlainEnumValues_ShouldBuild3AddActions() {
         final List<UpdateAction<Type>> updateActions = buildLocalizedEnumValuesUpdateActions(
             FIELD_NAME_1,
             emptyList(),
@@ -50,7 +47,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithIdenticalPlainEnum_ShouldNotBuildUpdateActions() {
+    void buildLocalizedEnumUpdateActions_WithIdenticalPlainEnum_ShouldNotBuildUpdateActions() {
         final List<UpdateAction<Type>> updateActions = buildLocalizedEnumValuesUpdateActions(
             FIELD_NAME_1,
             ENUM_VALUES_ABC,
@@ -61,7 +58,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithOnePlainEnumValue_ShouldBuildAddEnumValueAction() {
+    void buildLocalizedEnumUpdateActions_WithOnePlainEnumValue_ShouldBuildAddEnumValueAction() {
         final List<UpdateAction<Type>> updateActions = buildLocalizedEnumValuesUpdateActions(
             FIELD_NAME_1,
             ENUM_VALUES_ABC,
@@ -74,7 +71,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithOneEnumValueSwitch_ShouldBuildAddEnumValueActions() {
+    void buildLocalizedEnumUpdateActions_WithOneEnumValueSwitch_ShouldBuildAddEnumValueActions() {
         final List<UpdateAction<Type>> updateActions = buildLocalizedEnumValuesUpdateActions(
             FIELD_NAME_1,
             ENUM_VALUES_ABC,
@@ -88,7 +85,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithDifferent_ShouldBuildChangeEnumValueOrderAction() {
+    void buildLocalizedEnumUpdateActions_WithDifferent_ShouldBuildChangeEnumValueOrderAction() {
         final List<UpdateAction<Type>> updateActions = buildLocalizedEnumValuesUpdateActions(
             FIELD_NAME_1,
             ENUM_VALUES_ABC,
@@ -105,7 +102,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithRemovedAndDifferentOrder_ShouldBuildChangeOrderActions() {
+    void buildLocalizedEnumUpdateActions_WithRemovedAndDifferentOrder_ShouldBuildChangeOrderActions() {
         final List<UpdateAction<Type>> updateActions = buildLocalizedEnumValuesUpdateActions(
             FIELD_NAME_1,
             ENUM_VALUES_ABC,
@@ -122,7 +119,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithAddedAndDifferentOrder_ShouldBuildChangeOrderAndAddActions() {
+    void buildLocalizedEnumUpdateActions_WithAddedAndDifferentOrder_ShouldBuildChangeOrderAndAddActions() {
         final List<UpdateAction<Type>> updateActions = buildLocalizedEnumValuesUpdateActions(
             FIELD_NAME_1,
             ENUM_VALUES_ABC,
@@ -141,7 +138,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithAddedEnumValueInBetween_ShouldBuildChangeOrderAndAddActions() {
+    void buildLocalizedEnumUpdateActions_WithAddedEnumValueInBetween_ShouldBuildChangeOrderAndAddActions() {
         final List<UpdateAction<Type>> updateActions = buildLocalizedEnumValuesUpdateActions(
             FIELD_NAME_1,
             ENUM_VALUES_ABC,
@@ -160,7 +157,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithAddedRemovedAndDifOrder_ShouldBuildAddAndOrderEnumValueActions() {
+    void buildLocalizedEnumUpdateActions_WithAddedRemovedAndDifOrder_ShouldBuildAddAndOrderEnumValueActions() {
         final List<UpdateAction<Type>> updateActions = buildLocalizedEnumValuesUpdateActions(
             FIELD_NAME_1,
             ENUM_VALUES_ABC,
@@ -178,16 +175,14 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithDuplicateEnumValues_ShouldTriggerDuplicateKeyError() {
-        expectedException.expect(DuplicateKeyException.class);
-        expectedException.expectMessage("Enum Values have duplicated keys. Definition name: "
-                + "'field_definition_name', Duplicated enum value: 'b'. Enum Values are expected to be unique inside "
-                + "their definition.");
-
-        LocalizedEnumValueUpdateActionUtils.buildLocalizedEnumValuesUpdateActions(
-                "field_definition_name",
-                ENUM_VALUES_ABC,
-                ENUM_VALUES_ABB
-        );
+    void buildLocalizedEnumUpdateActions_WithDuplicateEnumValues_ShouldTriggerDuplicateKeyError() {
+        assertThatThrownBy(() -> LocalizedEnumValueUpdateActionUtils.buildLocalizedEnumValuesUpdateActions(
+            "field_definition_name",
+            ENUM_VALUES_ABC,
+            ENUM_VALUES_ABB
+        )).isInstanceOf(DuplicateKeyException.class)
+          .hasMessage("Enum Values have duplicated keys. Definition name: "
+              + "'field_definition_name', Duplicated enum value: 'b'. "
+              + "Enum Values are expected to be unique inside their definition.");
     }
 }
