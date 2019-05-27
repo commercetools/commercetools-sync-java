@@ -207,7 +207,7 @@ public class ProductReferenceReplacementUtilsTest {
         assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getMasterVariant)
                                                      .flatExtracting(ProductVariantDraft::getPrices)
                                                      .extracting(PriceDraft::getChannel)
-                                                     .extracting(Reference::getId)
+                                                     .extracting(ResourceIdentifier::getId)
                                                      .containsExactly(channel.getKey(), channel.getKey());
     }
 

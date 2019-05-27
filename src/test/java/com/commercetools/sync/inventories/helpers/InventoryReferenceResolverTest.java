@@ -164,8 +164,9 @@ public class InventoryReferenceResolverTest {
                          .exceptionally(exception -> {
                              assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
                              assertThat(exception.getMessage())
-                                 .isEqualTo(format("Failed to resolve supply channel reference on InventoryEntryDraft"
-                                     + " with SKU:'1000'. Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+                                 .isEqualTo(format("Failed to resolve supply channel resource identifier on "
+                                     + "InventoryEntryDraft with SKU:'1000'. Reason: %s",
+                                     BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
                              return null;
                          }).toCompletableFuture().join();
     }
@@ -183,8 +184,9 @@ public class InventoryReferenceResolverTest {
                          .exceptionally(exception -> {
                              assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
                              assertThat(exception.getMessage())
-                                 .isEqualTo(format("Failed to resolve supply channel reference on InventoryEntryDraft"
-                                     + " with SKU:'null'. Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+                                 .isEqualTo(format("Failed to resolve supply channel resource identifier on "
+                                     + "InventoryEntryDraft with SKU:'null'. Reason: %s",
+                                     BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
                              return null;
                          }).toCompletableFuture().join();
     }
@@ -204,8 +206,9 @@ public class InventoryReferenceResolverTest {
                              assertThat(exception.getCause())
                                  .isExactlyInstanceOf(ReferenceResolutionException.class);
                              assertThat(exception.getCause().getMessage())
-                                 .isEqualTo(format("Failed to resolve custom type reference on InventoryEntryDraft"
-                                     + " with SKU:'1000'. Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+                                 .isEqualTo(format("Failed to resolve custom type resource identifier on "
+                                     + "InventoryEntryDraft with SKU:'1000'. Reason: %s",
+                                     BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
                              return null;
                          }).toCompletableFuture().join();
     }

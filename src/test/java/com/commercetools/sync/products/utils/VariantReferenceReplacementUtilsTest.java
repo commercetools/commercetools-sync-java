@@ -88,7 +88,7 @@ public class VariantReferenceReplacementUtilsTest {
 
         assertThat(variantDrafts).hasSize(1);
         assertThat(variantDrafts.get(0).getPrices()).hasSize(1);
-        final Reference<Channel> channelReferenceAfterReplacement =
+        final ResourceIdentifier<Channel> channelReferenceAfterReplacement =
             variantDrafts.get(0).getPrices().get(0).getChannel();
         assertThat(channelReferenceAfterReplacement).isNotNull();
         // Assert that price channel reference id is replaced with key.
@@ -155,8 +155,8 @@ public class VariantReferenceReplacementUtilsTest {
 
         assertThat(variantDrafts).hasSize(2);
         assertThat(variantDrafts.get(0).getPrices()).hasSize(1);
-        final Reference<Channel> channel1ReferenceAfterReplacement = variantDrafts.get(0).getPrices().get(0)
-                                                                                  .getChannel();
+        final ResourceIdentifier<Channel> channel1ReferenceAfterReplacement = variantDrafts.get(0).getPrices().get(0)
+                                                                                           .getChannel();
         assertThat(channel1ReferenceAfterReplacement).isNotNull();
         assertThat(channel1ReferenceAfterReplacement.getId()).isEqualTo(channelKey1);
 
@@ -175,8 +175,8 @@ public class VariantReferenceReplacementUtilsTest {
         assertThat(asset1CustomType.getId()).isEqualTo(customType.getKey());
 
         assertThat(variantDrafts.get(1).getPrices()).hasSize(1);
-        final Reference<Channel> channel2ReferenceAfterReplacement = variantDrafts.get(1).getPrices().get(0)
-                                                                                  .getChannel();
+        final ResourceIdentifier<Channel> channel2ReferenceAfterReplacement = variantDrafts.get(1).getPrices().get(0)
+                                                                                           .getChannel();
         assertThat(channel2ReferenceAfterReplacement).isNotNull();
         // Asset price channel reference id is not replaced.
         assertThat(channel2ReferenceAfterReplacement.getId()).isEqualTo(channelReference2.getId());
@@ -224,8 +224,8 @@ public class VariantReferenceReplacementUtilsTest {
 
         assertThat(variantDrafts).hasSize(1);
         assertThat(variantDrafts.get(0).getPrices()).hasSize(1);
-        final Reference<Channel> channelReferenceAfterReplacement = variantDrafts.get(0).getPrices().get(0)
-                                                                                 .getChannel();
+        final ResourceIdentifier<Channel> channelReferenceAfterReplacement = variantDrafts.get(0).getPrices().get(0)
+                                                                                          .getChannel();
         assertThat(channelReferenceAfterReplacement).isNotNull();
         // Assert price channel reference id is not replaced.
         assertThat(channelReferenceAfterReplacement.getId()).isEqualTo(channelReference.getId());
@@ -259,7 +259,7 @@ public class VariantReferenceReplacementUtilsTest {
         assertThat(priceDrafts).hasSize(1);
         final PriceDraft priceDraftAfterReplacement = priceDrafts.get(0);
 
-        final Reference<Channel> channelReferenceAfterReplacement = priceDraftAfterReplacement.getChannel();;
+        final ResourceIdentifier<Channel> channelReferenceAfterReplacement = priceDraftAfterReplacement.getChannel();
         assertThat(channelReferenceAfterReplacement).isNotNull();
         // Assert Id is not replaced with key.
         assertThat(channelReferenceAfterReplacement.getId()).isEqualTo(channelReference.getId());
@@ -300,7 +300,7 @@ public class VariantReferenceReplacementUtilsTest {
         assertThat(priceDrafts).hasSize(2);
 
         final PriceDraft priceDraft1AfterReplacement = priceDrafts.get(0);
-        final Reference<Channel> channelReference1AfterReplacement = priceDraft1AfterReplacement.getChannel();
+        final ResourceIdentifier<Channel> channelReference1AfterReplacement = priceDraft1AfterReplacement.getChannel();
         assertThat(channelReference1AfterReplacement).isNotNull();
         // Assert id is replaced with key.
         assertThat(channelReference1AfterReplacement.getId()).isEqualTo(channelKey1);
@@ -314,7 +314,7 @@ public class VariantReferenceReplacementUtilsTest {
 
 
         final PriceDraft priceDraft2AfterReplacement = priceDrafts.get(1);
-        final Reference<Channel> channelReference2AfterReplacement = priceDraft2AfterReplacement.getChannel();
+        final ResourceIdentifier<Channel> channelReference2AfterReplacement = priceDraft2AfterReplacement.getChannel();
         assertThat(channelReference2AfterReplacement).isNotNull();
         // Assert id is replaced with key.
         assertThat(channelReference2AfterReplacement.getId()).isEqualTo(channelKey2);
@@ -350,12 +350,12 @@ public class VariantReferenceReplacementUtilsTest {
 
         assertThat(priceDrafts).hasSize(2);
 
-        final Reference<Channel> channelReference1AfterReplacement = priceDrafts.get(0).getChannel();
+        final ResourceIdentifier<Channel> channelReference1AfterReplacement = priceDrafts.get(0).getChannel();
         assertThat(channelReference1AfterReplacement).isNotNull();
         // Assert expanded reference has id replaced with key.
         assertThat(channelReference1AfterReplacement.getId()).isEqualTo(channelKey1);
 
-        final Reference<Channel> channelReference2AfterReplacement = priceDrafts.get(1).getChannel();
+        final ResourceIdentifier<Channel> channelReference2AfterReplacement = priceDrafts.get(1).getChannel();
         assertThat(channelReference2AfterReplacement).isNotNull();
         // Assert non expanded reference has id not replaced.
         assertThat(channelReference2AfterReplacement.getId()).isEqualTo(channelReference2.getId());

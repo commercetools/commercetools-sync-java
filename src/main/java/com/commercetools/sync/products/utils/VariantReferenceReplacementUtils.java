@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.PriceDraftBuilder;
@@ -30,6 +31,7 @@ import static com.commercetools.sync.commons.utils.AssetReferenceReplacementUtil
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.replaceCustomTypeIdWithKeys;
 import static com.commercetools.sync.commons.utils.SyncUtils.replaceReferenceIdWithKey;
 import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_TYPE_ID_FIELD;
+import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
@@ -81,8 +83,12 @@ public final class VariantReferenceReplacementUtils {
      */
     @Nonnull
     static List<PriceDraft> replacePricesReferencesIdsWithKeys(@Nonnull final ProductVariant productVariant) {
+
         return productVariant.getPrices().stream().map(price -> {
-            final Reference<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(price);
+            final ResourceIdentifier<Channel> channelReferenceWithKey =
+                ofNullable(replaceChannelReferenceIdWithKey(price))
+                    .map(Reference::toResourceIdentifier)
+                    .orElse(null);
             final CustomFieldsDraft customFieldsDraftWithKey = replaceCustomTypeIdWithKeys(price);
 
             return PriceDraftBuilder.of(price)

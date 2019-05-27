@@ -106,7 +106,7 @@ public class StateReferenceResolverTest {
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format("Failed to resolve reference 'state' on ProductDraft with "
+            .hasMessage(format("Failed to resolve 'state' resource identifier on ProductDraft with "
                 + "key:'%s'. Reason: %s", productBuilder.getKey(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
@@ -120,7 +120,7 @@ public class StateReferenceResolverTest {
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format("Failed to resolve reference 'state' on ProductDraft with "
+            .hasMessage(format("Failed to resolve 'state' resource identifier on ProductDraft with "
                 + "key:'%s'. Reason: %s", productBuilder.getKey(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 

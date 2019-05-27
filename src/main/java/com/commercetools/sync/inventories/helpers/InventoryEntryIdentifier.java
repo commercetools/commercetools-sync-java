@@ -5,6 +5,7 @@ import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -31,7 +32,7 @@ public final class InventoryEntryIdentifier {
      * @return an instance of {@link InventoryEntryIdentifier} for the given draft.
      */
     public static InventoryEntryIdentifier of(@Nonnull final InventoryEntryDraft inventoryEntryDraft) {
-        final Reference<Channel> supplyChannel = inventoryEntryDraft.getSupplyChannel();
+        final ResourceIdentifier<Channel> supplyChannel = inventoryEntryDraft.getSupplyChannel();
         return new InventoryEntryIdentifier(inventoryEntryDraft.getSku(),
             supplyChannel != null ? supplyChannel.getId() : null);
     }

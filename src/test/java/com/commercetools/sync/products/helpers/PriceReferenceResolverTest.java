@@ -7,7 +7,6 @@ import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.TypeService;
 import com.neovisionaries.i18n.CountryCode;
-import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.DefaultCurrencyUnits;
 import io.sphere.sdk.models.ResourceIdentifier;
@@ -156,7 +155,7 @@ public class PriceReferenceResolverTest {
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
             .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .country(CountryCode.DE)
-            .channel(Channel.referenceOfId("channelKey"));
+            .channel(ResourceIdentifier.ofId("channelKey"));
 
         final PriceReferenceResolver priceReferenceResolver =
             new PriceReferenceResolver(productSyncOptions, typeService, channelService, customerGroupService);
@@ -176,7 +175,7 @@ public class PriceReferenceResolverTest {
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
             .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .country(CountryCode.DE)
-            .channel(Channel.referenceOfId("channelKey"));
+            .channel(ResourceIdentifier.ofId("channelKey"));
 
         final PriceReferenceResolver priceReferenceResolver =
             new PriceReferenceResolver(syncOptions, typeService, channelService, customerGroupService);
@@ -209,7 +208,7 @@ public class PriceReferenceResolverTest {
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
             .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .country(CountryCode.DE)
-            .channel(Channel.referenceOfId("channelKey"));
+            .channel(ResourceIdentifier.ofId("channelKey"));
 
         final PriceReferenceResolver priceReferenceResolver =
             new PriceReferenceResolver(optionsWithEnsureChannels, typeService, channelService, customerGroupService);
