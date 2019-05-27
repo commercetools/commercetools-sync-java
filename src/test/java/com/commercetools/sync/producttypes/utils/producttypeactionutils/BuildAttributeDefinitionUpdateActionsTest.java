@@ -37,7 +37,7 @@ import io.sphere.sdk.producttypes.commands.updateactions.ChangeLocalizedEnumValu
 import io.sphere.sdk.producttypes.commands.updateactions.ChangePlainEnumValueLabel;
 import io.sphere.sdk.producttypes.commands.updateactions.RemoveAttributeDefinition;
 import io.sphere.sdk.producttypes.commands.updateactions.RemoveEnumValues;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,7 +53,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class BuildAttributeDefinitionUpdateActionsTest {
+class BuildAttributeDefinitionUpdateActionsTest {
     private static final String RES_ROOT =
         "com/commercetools/sync/producttypes/utils/updateattributedefinitions/attributes/";
 
@@ -105,7 +105,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
         .build();
 
     @Test
-    public void buildAttributesUpdateActions_WithNullNewAttributesAndExistingAttributes_ShouldBuild3RemoveActions() {
+    void buildAttributesUpdateActions_WithNullNewAttributesAndExistingAttributes_ShouldBuild3RemoveActions() {
         final ProductType oldProductType = readObjectFromResource(PRODUCT_TYPE_WITH_ATTRIBUTES_ABC, ProductType.class);
 
         final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(
@@ -122,7 +122,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithNullNewAttributesAndNoOldAttributes_ShouldNotBuildActions() {
+    void buildAttributesUpdateActions_WithNullNewAttributesAndNoOldAttributes_ShouldNotBuildActions() {
         final ProductType oldProductType = mock(ProductType.class);
         when(oldProductType.getAttributes()).thenReturn(emptyList());
         when(oldProductType.getKey()).thenReturn("product_type_key_1");
@@ -137,7 +137,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithNewAttributesAndNoOldAttributes_ShouldBuild3AddActions() {
+    void buildAttributesUpdateActions_WithNewAttributesAndNoOldAttributes_ShouldBuild3AddActions() {
         final ProductType oldProductType = mock(ProductType.class);
         when(oldProductType.getAttributes()).thenReturn(emptyList());
         when(oldProductType.getKey()).thenReturn("product_type_key_1");
@@ -163,7 +163,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithIdenticalAttributes_ShouldNotBuildUpdateActions() {
+    void buildAttributesUpdateActions_WithIdenticalAttributes_ShouldNotBuildUpdateActions() {
         final ProductType oldProductType = mock(ProductType.class);
         when(oldProductType.getAttributes())
             .thenReturn(asList(ATTRIBUTE_DEFINITION_A, ATTRIBUTE_DEFINITION_B, ATTRIBUTE_DEFINITION_C));
@@ -198,7 +198,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithChangedAttributes_ShouldBuildUpdateActions() {
+    void buildAttributesUpdateActions_WithChangedAttributes_ShouldBuildUpdateActions() {
         final ProductType oldProductType = mock(ProductType.class);
         when(oldProductType.getAttributes())
             .thenReturn(asList(ATTRIBUTE_DEFINITION_A, ATTRIBUTE_DEFINITION_B, ATTRIBUTE_DEFINITION_C));
@@ -241,7 +241,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithDuplicateAttributeNames_ShouldNotBuildActionsAndTriggerErrorCb() {
+    void buildAttributesUpdateActions_WithDuplicateAttributeNames_ShouldNotBuildActionsAndTriggerErrorCb() {
         final ProductType oldProductType = readObjectFromResource(PRODUCT_TYPE_WITH_ATTRIBUTES_ABC, ProductType.class);
 
         final ProductTypeDraft newProductTypeDraft = readObjectFromResource(
@@ -252,11 +252,12 @@ public class BuildAttributeDefinitionUpdateActionsTest {
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> exceptions = new ArrayList<>();
         final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
-                exceptions.add(exception);
-            })
-            .build();
+                                                                                .errorCallback(
+                                                                                    (errorMessage, exception) -> {
+                                                                                        errorMessages.add(errorMessage);
+                                                                                        exceptions.add(exception);
+                                                                                    })
+                                                                                .build();
 
         final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(
             oldProductType,
@@ -273,13 +274,13 @@ public class BuildAttributeDefinitionUpdateActionsTest {
         assertThat(exceptions).hasSize(1);
         assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
         assertThat(exceptions.get(0).getMessage()).contains("Attribute definitions drafts have duplicated names. "
-                + "Duplicated attribute definition name: 'b'. Attribute definitions names are expected to be unique "
-                + "inside their product type.");
+            + "Duplicated attribute definition name: 'b'. Attribute definitions names are expected to be unique "
+            + "inside their product type.");
         assertThat(exceptions.get(0).getCause()).isExactlyInstanceOf(DuplicateNameException.class);
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithOneMissingAttribute_ShouldBuildRemoveAttributeAction() {
+    void buildAttributesUpdateActions_WithOneMissingAttribute_ShouldBuildRemoveAttributeAction() {
         final ProductType oldProductType = readObjectFromResource(PRODUCT_TYPE_WITH_ATTRIBUTES_ABC, ProductType.class);
 
         final ProductTypeDraft newProductTypeDraft = readObjectFromResource(
@@ -288,16 +289,16 @@ public class BuildAttributeDefinitionUpdateActionsTest {
         );
 
         final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(
-                oldProductType,
-                newProductTypeDraft,
-                SYNC_OPTIONS
+            oldProductType,
+            newProductTypeDraft,
+            SYNC_OPTIONS
         );
 
         assertThat(updateActions).containsExactly(RemoveAttributeDefinition.of("c"));
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithOneExtraAttribute_ShouldBuildAddAttributesAction() {
+    void buildAttributesUpdateActions_WithOneExtraAttribute_ShouldBuildAddAttributesAction() {
         final ProductType oldProductType = readObjectFromResource(PRODUCT_TYPE_WITH_ATTRIBUTES_ABC, ProductType.class);
 
         final ProductTypeDraft newProductTypeDraft = readObjectFromResource(
@@ -321,7 +322,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithOneAttributeSwitch_ShouldBuildRemoveAndAddAttributesActions() {
+    void buildAttributesUpdateActions_WithOneAttributeSwitch_ShouldBuildRemoveAndAddAttributesActions() {
         final ProductType oldProductType = readObjectFromResource(PRODUCT_TYPE_WITH_ATTRIBUTES_ABC, ProductType.class);
 
         final ProductTypeDraft newProductTypeDraft = readObjectFromResource(
@@ -347,7 +348,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithDifferentOrder_ShouldBuildChangeAttributeOrderAction() {
+    void buildAttributesUpdateActions_WithDifferentOrder_ShouldBuildChangeAttributeOrderAction() {
         final ProductType oldProductType = readObjectFromResource(PRODUCT_TYPE_WITH_ATTRIBUTES_ABC, ProductType.class);
 
         final ProductTypeDraft newProductTypeDraft = readObjectFromResource(
@@ -372,7 +373,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithRemovedAndDifferentOrder_ShouldBuildChangeOrderAndRemoveActions() {
+    void buildAttributesUpdateActions_WithRemovedAndDifferentOrder_ShouldBuildChangeOrderAndRemoveActions() {
         final ProductType oldProductType = readObjectFromResource(PRODUCT_TYPE_WITH_ATTRIBUTES_ABC, ProductType.class);
 
         final ProductTypeDraft newProductTypeDraft = readObjectFromResource(
@@ -399,7 +400,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithAddedAndDifferentOrder_ShouldBuildChangeOrderAndAddActions() {
+    void buildAttributesUpdateActions_WithAddedAndDifferentOrder_ShouldBuildChangeOrderAndAddActions() {
         final ProductType oldProductType = readObjectFromResource(PRODUCT_TYPE_WITH_ATTRIBUTES_ABC, ProductType.class);
 
         final ProductTypeDraft newProductTypeDraft = readObjectFromResource(
@@ -434,7 +435,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithAddedAttributeInBetween_ShouldBuildChangeOrderAndAddActions() {
+    void buildAttributesUpdateActions_WithAddedAttributeInBetween_ShouldBuildChangeOrderAndAddActions() {
         final ProductType oldProductType = readObjectFromResource(PRODUCT_TYPE_WITH_ATTRIBUTES_ABC, ProductType.class);
 
         final ProductTypeDraft newProductTypeDraft = readObjectFromResource(
@@ -467,7 +468,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithAddedRemovedAndDifOrder_ShouldBuildAllThreeMoveAttributeActions() {
+    void buildAttributesUpdateActions_WithAddedRemovedAndDifOrder_ShouldBuildAllThreeMoveAttributeActions() {
         final ProductType oldProductType = readObjectFromResource(PRODUCT_TYPE_WITH_ATTRIBUTES_ABC, ProductType.class);
 
         final ProductTypeDraft newProductTypeDraft = readObjectFromResource(
@@ -499,7 +500,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithDifferentAttributeType_ShouldRemoveOldAttributeAndAddNewAttribute() {
+    void buildAttributesUpdateActions_WithDifferentAttributeType_ShouldRemoveOldAttributeAndAddNewAttribute() {
         final ProductType oldProductType = readObjectFromResource(PRODUCT_TYPE_WITH_ATTRIBUTES_ABC, ProductType.class);
 
         final ProductTypeDraft newProductTypeDraft = readObjectFromResource(
@@ -529,7 +530,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithANullAttributeDefinitionDraft_ShouldSkipNullAttributes() {
+    void buildAttributesUpdateActions_WithANullAttributeDefinitionDraft_ShouldSkipNullAttributes() {
         // preparation
         final ProductType oldProductType = mock(ProductType.class);
         final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
@@ -577,7 +578,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithSetOfText_ShouldBuildActions() {
+    void buildAttributesUpdateActions_WithSetOfText_ShouldBuildActions() {
 
         final AttributeDefinitionDraft newDefinition = AttributeDefinitionDraftBuilder
             .of(SetAttributeType.of(StringAttributeType.of()), "a", ofEnglish("new_label"), true)
@@ -601,7 +602,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithSetOfSetOfText_ShouldBuildActions() {
+    void buildAttributesUpdateActions_WithSetOfSetOfText_ShouldBuildActions() {
 
         final AttributeDefinitionDraft newDefinition = AttributeDefinitionDraftBuilder
             .of(SetAttributeType.of(SetAttributeType.of(StringAttributeType.of())), "a", ofEnglish("new_label"), true)
@@ -625,7 +626,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithSetOfEnumsChanges_ShouldBuildCorrectActions() {
+    void buildAttributesUpdateActions_WithSetOfEnumsChanges_ShouldBuildCorrectActions() {
         // preparation
         final SetAttributeType newSetOfEnumType = SetAttributeType.of(
             EnumAttributeType.of(
@@ -673,7 +674,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithSetOfIdenticalEnums_ShouldNotBuildActions() {
+    void buildAttributesUpdateActions_WithSetOfIdenticalEnums_ShouldNotBuildActions() {
         // preparation
         final SetAttributeType newSetOfEnumType = SetAttributeType.of(
             EnumAttributeType.of(singletonList(EnumValue.of("foo", "bar"))));
@@ -702,7 +703,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithSetOfLEnumsChanges_ShouldBuildCorrectActions() {
+    void buildAttributesUpdateActions_WithSetOfLEnumsChanges_ShouldBuildCorrectActions() {
         // preparation
         final SetAttributeType newSetOfLenumType = SetAttributeType.of(
             LocalizedEnumAttributeType.of(singletonList(LocalizedEnumValue.of("foo", ofEnglish("bar")))));
@@ -733,7 +734,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithSetOfIdenticalLEnums_ShouldBuildNoActions() {
+    void buildAttributesUpdateActions_WithSetOfIdenticalLEnums_ShouldBuildNoActions() {
         // preparation
         final SetAttributeType newSetOfLenumType = SetAttributeType.of(
             LocalizedEnumAttributeType.of(singletonList(LocalizedEnumValue.of("foo", ofEnglish("bar")))));
@@ -763,7 +764,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
-    public void buildAttributesUpdateActions_WithSetOfLEnumsChangesAndDefLabelChange_ShouldBuildCorrectActions() {
+    void buildAttributesUpdateActions_WithSetOfLEnumsChangesAndDefLabelChange_ShouldBuildCorrectActions() {
         // preparation
         final SetAttributeType newSetOfLenumType = SetAttributeType.of(
             LocalizedEnumAttributeType.of(

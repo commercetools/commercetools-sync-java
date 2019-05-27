@@ -7,30 +7,30 @@ import io.sphere.sdk.producttypes.commands.updateactions.AddEnumValue;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeEnumValueOrder;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangePlainEnumValueLabel;
 import io.sphere.sdk.producttypes.commands.updateactions.RemoveEnumValues;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static com.commercetools.sync.commons.utils.EnumValuesUpdateActionUtils.buildActions;
 import static com.commercetools.sync.commons.utils.EnumValuesUpdateActionUtils.buildAddEnumValuesUpdateActions;
 import static com.commercetools.sync.commons.utils.EnumValuesUpdateActionUtils.buildChangeEnumValuesOrderUpdateAction;
 import static com.commercetools.sync.commons.utils.EnumValuesUpdateActionUtils.buildMatchingEnumValuesUpdateActions;
 import static com.commercetools.sync.commons.utils.EnumValuesUpdateActionUtils.buildRemoveEnumValuesUpdateAction;
+import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static com.commercetools.sync.commons.utils.PlainEnumValueFixtures.*;
 import static com.commercetools.sync.producttypes.utils.PlainEnumValueUpdateActionUtils.buildChangeLabelAction;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class EnumValuesUpdateActionUtilsTest {
+class EnumValuesUpdateActionUtilsTest {
 
     private static final String attributeDefinitionName = "attribute_definition_name_1";
 
     @Test
-    public void buildActions_WithoutCallbacks_ShouldNotBuildActions() {
+    void buildActions_WithoutCallbacks_ShouldNotBuildActions() {
         final List<UpdateAction<ProductType>> updateActions = buildActions(attributeDefinitionName,
             ENUM_VALUES_ABC,
             ENUM_VALUES_ABCD,
@@ -44,7 +44,7 @@ public class EnumValuesUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithoutRemoveCallback_ShouldNotBuildRemoveAction() {
+    void buildActions_WithoutRemoveCallback_ShouldNotBuildRemoveAction() {
         final List<UpdateAction<ProductType>> updateActions = buildActions(attributeDefinitionName,
             ENUM_VALUES_ABC,
             null,
@@ -60,7 +60,7 @@ public class EnumValuesUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithNullNewEnumValues_ShouldJustBuildRemoveActions() {
+    void buildActions_WithNullNewEnumValues_ShouldJustBuildRemoveActions() {
         final List<UpdateAction<ProductType>> updateActions = buildActions(attributeDefinitionName,
             ENUM_VALUES_ABC,
             null,
@@ -80,7 +80,7 @@ public class EnumValuesUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithEmptyNewEnumValues_ShouldJustBuildRemoveActions() {
+    void buildActions_WithEmptyNewEnumValues_ShouldJustBuildRemoveActions() {
         final List<UpdateAction<ProductType>> updateActions = buildActions(attributeDefinitionName,
             ENUM_VALUES_ABC,
             Collections.emptyList(),
@@ -100,7 +100,7 @@ public class EnumValuesUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithRemoveCallback_ShouldBuildRemoveAction() {
+    void buildActions_WithRemoveCallback_ShouldBuildRemoveAction() {
         final List<UpdateAction<ProductType>> updateActions = buildActions(attributeDefinitionName,
             ENUM_VALUES_ABC,
             null,
@@ -116,7 +116,7 @@ public class EnumValuesUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithoutMatchingEnumCallback_ShouldNotBuildMatchingActions() {
+    void buildActions_WithoutMatchingEnumCallback_ShouldNotBuildMatchingActions() {
         final List<UpdateAction<ProductType>> updateActions = buildActions(attributeDefinitionName,
             ENUM_VALUES_AB,
             null,
@@ -133,7 +133,7 @@ public class EnumValuesUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithMatchingEnumCallback_ShouldBuildMatchingActions() {
+    void buildActions_WithMatchingEnumCallback_ShouldBuildMatchingActions() {
         final List<UpdateAction<ProductType>> updateActions = buildActions(attributeDefinitionName,
             ENUM_VALUES_AB,
             ENUM_VALUES_AB_WITH_DIFFERENT_LABEL,
@@ -149,7 +149,7 @@ public class EnumValuesUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithoutAddEnumCallback_ShouldNotBuildAddEnumActions() {
+    void buildActions_WithoutAddEnumCallback_ShouldNotBuildAddEnumActions() {
         final List<UpdateAction<ProductType>> updateActions = buildActions(attributeDefinitionName,
             ENUM_VALUES_AB,
             ENUM_VALUES_ABC,
@@ -165,7 +165,7 @@ public class EnumValuesUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithAddEnumCallback_ShouldBuildAddEnumActions() {
+    void buildActions_WithAddEnumCallback_ShouldBuildAddEnumActions() {
         final List<UpdateAction<ProductType>> updateActions = buildActions(attributeDefinitionName,
             ENUM_VALUES_AB,
             ENUM_VALUES_ABC,
@@ -181,7 +181,7 @@ public class EnumValuesUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithoutChangeOrderEnumCallback_ShouldNotBuildChangeOrderEnumActions() {
+    void buildActions_WithoutChangeOrderEnumCallback_ShouldNotBuildChangeOrderEnumActions() {
         final List<UpdateAction<ProductType>> updateActions = buildActions(attributeDefinitionName,
             ENUM_VALUES_ABC,
             ENUM_VALUES_CAB,
@@ -201,7 +201,7 @@ public class EnumValuesUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithChangeOrderEnumCallback_ShouldBuildChangeOrderEnumActions() {
+    void buildActions_WithChangeOrderEnumCallback_ShouldBuildChangeOrderEnumActions() {
         final List<UpdateAction<ProductType>> updateActions = buildActions(attributeDefinitionName,
             ENUM_VALUES_ABC,
             ENUM_VALUES_CAB,
@@ -221,7 +221,7 @@ public class EnumValuesUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildRemoveEnumValuesUpdateAction_WithNullNewEnumValues_ShouldBuildRemoveActions() {
+    void buildRemoveEnumValuesUpdateAction_WithNullNewEnumValues_ShouldBuildRemoveActions() {
         final Optional<UpdateAction<ProductType>> updateAction = buildRemoveEnumValuesUpdateAction(
             attributeDefinitionName,
             ENUM_VALUES_ABC,
@@ -234,7 +234,7 @@ public class EnumValuesUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildMatchingEnumValuesUpdateActions_WithDifferentEnumValues_ShouldBuildChangeLabelActions() {
+    void buildMatchingEnumValuesUpdateActions_WithDifferentEnumValues_ShouldBuildChangeLabelActions() {
         final List<UpdateAction<ProductType>> updateActions = buildMatchingEnumValuesUpdateActions(
             attributeDefinitionName,
             ENUM_VALUES_AB,
@@ -247,7 +247,7 @@ public class EnumValuesUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildMatchingEnumValuesUpdateActions_WithSameNewEnumValues_ShouldNotBuildChangeLabelActions() {
+    void buildMatchingEnumValuesUpdateActions_WithSameNewEnumValues_ShouldNotBuildChangeLabelActions() {
         final List<UpdateAction<ProductType>> updateActions = buildMatchingEnumValuesUpdateActions(
             attributeDefinitionName,
             ENUM_VALUES_AB,
@@ -258,7 +258,7 @@ public class EnumValuesUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildAddEnumValuesUpdateActions_WithNewEnumValues_ShouldBuildAddActions() {
+    void buildAddEnumValuesUpdateActions_WithNewEnumValues_ShouldBuildAddActions() {
         final List<UpdateAction<ProductType>> updateActions = buildAddEnumValuesUpdateActions(attributeDefinitionName,
             ENUM_VALUES_AB,
             ENUM_VALUES_ABC,
@@ -270,7 +270,7 @@ public class EnumValuesUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildAddEnumValuesUpdateActions_WithSameEnumValues_ShouldNotBuildAddActions() {
+    void buildAddEnumValuesUpdateActions_WithSameEnumValues_ShouldNotBuildAddActions() {
         final List<UpdateAction<ProductType>> updateActions = buildAddEnumValuesUpdateActions(attributeDefinitionName,
             ENUM_VALUES_AB,
             ENUM_VALUES_AB,
@@ -280,7 +280,7 @@ public class EnumValuesUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeEnumValuesOrderUpdateAction_WithNewEnumValues_ShouldBuildAddActions() {
+    void buildChangeEnumValuesOrderUpdateAction_WithNewEnumValues_ShouldBuildAddActions() {
         final Optional<UpdateAction<ProductType>> updateAction =
             buildChangeEnumValuesOrderUpdateAction(attributeDefinitionName,
                 ENUM_VALUES_ABC,
@@ -296,7 +296,7 @@ public class EnumValuesUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeEnumValuesOrderUpdateAction_WithSameEnumValues_ShouldNotBuildAddActions() {
+    void buildChangeEnumValuesOrderUpdateAction_WithSameEnumValues_ShouldNotBuildAddActions() {
         final List<UpdateAction<ProductType>> updateActions = buildAddEnumValuesUpdateActions(attributeDefinitionName,
             ENUM_VALUES_AB,
             ENUM_VALUES_AB,

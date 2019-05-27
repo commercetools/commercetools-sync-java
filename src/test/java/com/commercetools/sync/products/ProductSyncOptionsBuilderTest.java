@@ -7,7 +7,7 @@ import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.List;
@@ -27,18 +27,18 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class ProductSyncOptionsBuilderTest {
+class ProductSyncOptionsBuilderTest {
     private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
     private ProductSyncOptionsBuilder productSyncOptionsBuilder = ProductSyncOptionsBuilder.of(CTP_CLIENT);
 
     @Test
-    public void of_WithClient_ShouldCreateProductSyncOptionsBuilder() {
+    void of_WithClient_ShouldCreateProductSyncOptionsBuilder() {
         final ProductSyncOptionsBuilder builder = ProductSyncOptionsBuilder.of(CTP_CLIENT);
         assertThat(builder).isNotNull();
     }
 
     @Test
-    public void build_WithClient_ShouldBuildProductSyncOptions() {
+    void build_WithClient_ShouldBuildProductSyncOptions() {
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions).isNotNull();
         assertThat(productSyncOptions.getSyncFilter()).isNotNull();
@@ -52,14 +52,14 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
-    public void syncFilter_WithNoSyncFilter_ShouldSetDefaultFilter() {
+    void syncFilter_WithNoSyncFilter_ShouldSetDefaultFilter() {
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
         assertThat(productSyncOptions.getSyncFilter()).isNotNull();
         assertThat(productSyncOptions.getSyncFilter()).isSameAs(SyncFilter.of());
     }
 
     @Test
-    public void syncFilter_WithSyncFilter_ShouldSetFilter() {
+    void syncFilter_WithSyncFilter_ShouldSetFilter() {
         productSyncOptionsBuilder.syncFilter(ofWhiteList(IMAGES));
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
@@ -67,7 +67,7 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
-    public void beforeUpdateCallback_WithFilterAsCallback_ShouldSetCallback() {
+    void beforeUpdateCallback_WithFilterAsCallback_ShouldSetCallback() {
         final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
             beforeUpdateCallback = (updateActions, newProduct, oldProduct) -> emptyList();
         productSyncOptionsBuilder.beforeUpdateCallback(beforeUpdateCallback);
@@ -77,7 +77,7 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
-    public void beforeCreateCallback_WithFilterAsCallback_ShouldSetCallback() {
+    void beforeCreateCallback_WithFilterAsCallback_ShouldSetCallback() {
         productSyncOptionsBuilder.beforeCreateCallback((newProduct) -> null);
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
@@ -85,7 +85,7 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
-    public void errorCallBack_WithCallBack_ShouldSetCallBack() {
+    void errorCallBack_WithCallBack_ShouldSetCallBack() {
         final BiConsumer<String, Throwable> mockErrorCallBack = (errorMessage, errorException) -> {
         };
         productSyncOptionsBuilder.errorCallback(mockErrorCallBack);
@@ -95,7 +95,7 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
-    public void warningCallBack_WithCallBack_ShouldSetCallBack() {
+    void warningCallBack_WithCallBack_ShouldSetCallBack() {
         final Consumer<String> mockWarningCallBack = (warningMessage) -> {
         };
         productSyncOptionsBuilder.warningCallback(mockWarningCallBack);
@@ -105,7 +105,7 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
-    public void getThis_ShouldReturnCorrectInstance() {
+    void getThis_ShouldReturnCorrectInstance() {
         final ProductSyncOptionsBuilder instance = productSyncOptionsBuilder.getThis();
         assertThat(instance).isNotNull();
         assertThat(instance).isInstanceOf(ProductSyncOptionsBuilder.class);
@@ -113,7 +113,7 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
-    public void productSyncOptionsBuilderSetters_ShouldBeCallableAfterBaseSyncOptionsBuildSetters() {
+    void productSyncOptionsBuilderSetters_ShouldBeCallableAfterBaseSyncOptionsBuildSetters() {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder
             .of(CTP_CLIENT)
             .batchSize(30)
@@ -124,7 +124,7 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
-    public void batchSize_WithPositiveValue_ShouldSetBatchSize() {
+    void batchSize_WithPositiveValue_ShouldSetBatchSize() {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
                                                                                .batchSize(10)
                                                                                .build();
@@ -132,7 +132,7 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
-    public void batchSize_WithZeroOrNegativeValue_ShouldFallBackToDefaultValue() {
+    void batchSize_WithZeroOrNegativeValue_ShouldFallBackToDefaultValue() {
         final ProductSyncOptions productSyncOptionsWithZeroBatchSize = ProductSyncOptionsBuilder.of(CTP_CLIENT)
                                                                                                 .batchSize(0)
                                                                                                 .build();
@@ -148,7 +148,7 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
-    public void applyBeforeUpdateCallBack_WithNullCallback_ShouldReturnIdenticalList() {
+    void applyBeforeUpdateCallBack_WithNullCallback_ShouldReturnIdenticalList() {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
                                                                                .build();
         assertThat(productSyncOptions.getBeforeUpdateCallback()).isNull();
@@ -161,7 +161,7 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
-    public void applyBeforeUpdateCallBack_WithNullReturnCallback_ShouldReturnEmptyList() {
+    void applyBeforeUpdateCallBack_WithNullReturnCallback_ShouldReturnEmptyList() {
         final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
             beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> null;
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
@@ -182,7 +182,7 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
-    public void applyBeforeUpdateCallBack_WithEmptyUpdateActions_ShouldNotApplyBeforeUpdateCallback() {
+    void applyBeforeUpdateCallBack_WithEmptyUpdateActions_ShouldNotApplyBeforeUpdateCallback() {
         final MockTriFunction beforeUpdateCallback = mock(MockTriFunction.class);
 
         final ProductSyncOptions productSyncOptions =
@@ -201,7 +201,7 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
-    public void applyBeforeUpdateCallBack_WithCallback_ShouldReturnFilteredList() {
+    void applyBeforeUpdateCallBack_WithCallback_ShouldReturnFilteredList() {
         final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
             beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> emptyList();
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
@@ -218,7 +218,7 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
-    public void applyBeforeCreateCallBack_WithCallback_ShouldReturnFilteredDraft() {
+    void applyBeforeCreateCallBack_WithCallback_ShouldReturnFilteredDraft() {
         final Function<ProductDraft, ProductDraft> draftFunction =
             productDraft -> ProductDraftBuilder.of(productDraft)
                                                .key(productDraft.getKey() + "_filteredKey").build();
@@ -239,7 +239,7 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
-    public void applyBeforeCreateCallBack_WithNullCallback_ShouldReturnIdenticalDraftInOptional() {
+    void applyBeforeCreateCallBack_WithNullCallback_ShouldReturnIdenticalDraftInOptional() {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT).build();
         assertThat(productSyncOptions.getBeforeCreateCallback()).isNull();
 
@@ -250,7 +250,7 @@ public class ProductSyncOptionsBuilderTest {
     }
 
     @Test
-    public void applyBeforeCreateCallBack_WithNullReturnCallback_ShouldReturnEmptyOptional() {
+    void applyBeforeCreateCallBack_WithNullReturnCallback_ShouldReturnEmptyOptional() {
         final Function<ProductDraft, ProductDraft> draftFunction = productDraft -> null;
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
                                                                                .beforeCreateCallback(draftFunction)
