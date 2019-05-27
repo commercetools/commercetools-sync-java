@@ -22,7 +22,7 @@ import io.sphere.sdk.products.commands.updateactions.SetAssetTags;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,12 +47,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ProductVariantAssetUpdateActionUtilsTest {
+class ProductVariantAssetUpdateActionUtilsTest {
     private static final ProductSyncOptions SYNC_OPTIONS = ProductSyncOptionsBuilder
         .of(mock(SphereClient.class)).build();
 
     @Test
-    public void buildActions_WithDifferentValues_ShouldBuildUpdateAction() {
+    void buildActions_WithDifferentValues_ShouldBuildUpdateAction() {
         final LocalizedString oldName = LocalizedString.of(Locale.GERMAN, "oldName");
         final LocalizedString newName = LocalizedString.of(Locale.GERMAN, "newName");
 
@@ -108,7 +108,7 @@ public class ProductVariantAssetUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithIdenticalValues_ShouldBuildUpdateAction() {
+    void buildActions_WithIdenticalValues_ShouldBuildUpdateAction() {
         final LocalizedString oldName = LocalizedString.of(Locale.GERMAN, "oldName");
 
         final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
@@ -139,7 +139,7 @@ public class ProductVariantAssetUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeAssetNameUpdateAction_WithDifferentStagedValues_ShouldBuildUpdateAction() {
+    void buildChangeAssetNameUpdateAction_WithDifferentStagedValues_ShouldBuildUpdateAction() {
         final LocalizedString oldName = LocalizedString.of(Locale.GERMAN, "oldName");
         final LocalizedString newName = LocalizedString.of(Locale.GERMAN, "newName");
 
@@ -157,7 +157,7 @@ public class ProductVariantAssetUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeAssetNameUpdateAction_WithSameStagedValues_ShouldNotBuildUpdateAction() {
+    void buildChangeAssetNameUpdateAction_WithSameStagedValues_ShouldNotBuildUpdateAction() {
         final LocalizedString oldName = LocalizedString.of(Locale.GERMAN, "oldName");
 
         final Asset oldAsset = mock(Asset.class);
@@ -172,7 +172,7 @@ public class ProductVariantAssetUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetAssetDescriptionUpdateAction_WithDifferentStagedValues_ShouldBuildUpdateAction() {
+    void buildSetAssetDescriptionUpdateAction_WithDifferentStagedValues_ShouldBuildUpdateAction() {
         final LocalizedString oldDesc = LocalizedString.of(Locale.GERMAN, "oldDesc");
         final LocalizedString newDesc = LocalizedString.of(Locale.GERMAN, "newDesc");
 
@@ -191,7 +191,7 @@ public class ProductVariantAssetUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetAssetDescriptionUpdateAction_WithNullOldStagedValues_ShouldBuildUpdateAction() {
+    void buildSetAssetDescriptionUpdateAction_WithNullOldStagedValues_ShouldBuildUpdateAction() {
         final LocalizedString newDesc = LocalizedString.of(Locale.GERMAN, "newDesc");
 
         final Asset oldAsset = mock(Asset.class);
@@ -209,7 +209,7 @@ public class ProductVariantAssetUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetAssetDescriptionUpdateAction_WithSameStagedValues_ShouldNotBuildUpdateAction() {
+    void buildSetAssetDescriptionUpdateAction_WithSameStagedValues_ShouldNotBuildUpdateAction() {
         final LocalizedString oldDesc = LocalizedString.of(Locale.GERMAN, "oldDesc");
 
         final Asset oldAsset = mock(Asset.class);
@@ -225,7 +225,7 @@ public class ProductVariantAssetUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetAssetTagsUpdateAction_WithDifferentStagedValues_ShouldBuildUpdateAction() {
+    void buildSetAssetTagsUpdateAction_WithDifferentStagedValues_ShouldBuildUpdateAction() {
         final Set<String> oldTags = new HashSet<>();
         oldTags.add("oldTag");
         final Set<String> newTags = new HashSet<>();
@@ -246,7 +246,7 @@ public class ProductVariantAssetUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetAssetTagsUpdateAction_WithNullOldStagedValues_ShouldBuildUpdateAction() {
+    void buildSetAssetTagsUpdateAction_WithNullOldStagedValues_ShouldBuildUpdateAction() {
         final Set<String> newTags = new HashSet<>();
         newTags.add("newTag");
 
@@ -265,7 +265,7 @@ public class ProductVariantAssetUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetAssetTagsUpdateAction_WithSameStagedValues_ShouldNotBuildUpdateAction() {
+    void buildSetAssetTagsUpdateAction_WithSameStagedValues_ShouldNotBuildUpdateAction() {
         final Set<String> oldTags = new HashSet<>();
         oldTags.add("oldTag");
 
@@ -283,7 +283,7 @@ public class ProductVariantAssetUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetAssetSourcesUpdateAction_WithDifferentStagedValues_ShouldBuildUpdateAction() {
+    void buildSetAssetSourcesUpdateAction_WithDifferentStagedValues_ShouldBuildUpdateAction() {
         final List<AssetSource> oldAssetSources = singletonList(AssetSourceBuilder.ofUri("oldUri").build());
         final List<AssetSource> newAssetSources = singletonList(AssetSourceBuilder.ofUri("newUri").build());
 
@@ -302,7 +302,7 @@ public class ProductVariantAssetUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetAssetSourcesUpdateAction_WithSameStagedValues_ShouldNotBuildUpdateAction() {
+    void buildSetAssetSourcesUpdateAction_WithSameStagedValues_ShouldNotBuildUpdateAction() {
         final List<AssetSource> oldAssetSources = singletonList(AssetSourceBuilder.ofUri("oldUri").build());
 
         final Asset oldAsset = mock(Asset.class);
@@ -318,7 +318,7 @@ public class ProductVariantAssetUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildCustomUpdateActions_WithSameStagedValues_ShouldNotBuildUpdateAction() {
+    void buildCustomUpdateActions_WithSameStagedValues_ShouldNotBuildUpdateAction() {
         final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
         oldCustomFieldsMap.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
         oldCustomFieldsMap.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
@@ -345,7 +345,7 @@ public class ProductVariantAssetUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildCustomUpdateActions_WithDifferentStagedValues_ShouldBuildUpdateAction() {
+    void buildCustomUpdateActions_WithDifferentStagedValues_ShouldBuildUpdateAction() {
         final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
         oldCustomFieldsMap.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
         oldCustomFieldsMap.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
@@ -376,7 +376,7 @@ public class ProductVariantAssetUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildCustomUpdateActions_WithNullOldStagedValues_ShouldBuildUpdateAction() {
+    void buildCustomUpdateActions_WithNullOldStagedValues_ShouldBuildUpdateAction() {
         final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
         newCustomFieldsMap.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));
         newCustomFieldsMap.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("es", "rojo"));
@@ -401,7 +401,7 @@ public class ProductVariantAssetUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildCustomUpdateActions_WithBadCustomFieldData_ShouldNotBuildUpdateActionAndTriggerErrorCallback() {
+    void buildCustomUpdateActions_WithBadCustomFieldData_ShouldNotBuildUpdateActionAndTriggerErrorCallback() {
         final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
         oldCustomFieldsMap.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
         oldCustomFieldsMap.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot"));
