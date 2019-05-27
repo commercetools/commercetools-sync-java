@@ -236,7 +236,8 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         @Nonnull final ProductDraftBuilder draftBuilder) {
         try {
             return resolveResourceIdentifier(draftBuilder, draftBuilder.getTaxCategory(),
-                taxCategoryService::fetchCachedTaxCategoryId, ResourceIdentifier::ofId, ProductDraftBuilder::taxCategory);
+                taxCategoryService::fetchCachedTaxCategoryId, ResourceIdentifier::ofId,
+                ProductDraftBuilder::taxCategory);
         } catch (ReferenceResolutionException referenceResolutionException) {
             return exceptionallyCompletedFuture(new ReferenceResolutionException(
                 format(FAILED_TO_RESOLVE_REFERENCE, TaxCategory.referenceTypeId(), draftBuilder.getKey(),
@@ -291,15 +292,14 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
             return completedFuture(draftBuilder);
         }
 
-            final String resourceKey = getKeyFromResourceIdentifier(resourceIdentifier);
+        final String resourceKey = getKeyFromResourceIdentifier(resourceIdentifier);
 
-            return keyToIdMapper.apply(resourceKey)
-                                .thenApply(optId -> optId
-                                    .map(idToResourceIdentifierMapper)
-                                    .map(resourceIdentifierToSet ->
-                                        resourceIdentifierSetter.apply(draftBuilder, resourceIdentifierToSet))
-                                    .orElse(draftBuilder));
-
+        return keyToIdMapper.apply(resourceKey)
+                            .thenApply(optId -> optId
+                                .map(idToResourceIdentifierMapper)
+                                .map(resourceIdentifierToSet ->
+                                    resourceIdentifierSetter.apply(draftBuilder, resourceIdentifierToSet))
+                                .orElse(draftBuilder));
     }
 
 }
