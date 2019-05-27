@@ -91,11 +91,12 @@ class BuildPlainEnumUpdateActionsTest {
         );
 
         assertThat(updateActions).containsExactly(
-            ChangeEnumValueOrder.of(FIELD_NAME_1, asList(
-                ENUM_VALUE_C.getKey(),
-                ENUM_VALUE_A.getKey(),
-                ENUM_VALUE_B.getKey()
-            ))
+            ChangeEnumValueOrder.of(FIELD_NAME_1,
+                asList(
+                    ENUM_VALUE_C.getKey(),
+                    ENUM_VALUE_A.getKey(),
+                    ENUM_VALUE_B.getKey()
+                ))
         );
     }
 
@@ -177,9 +178,10 @@ class BuildPlainEnumUpdateActionsTest {
             "field_definition_name",
             ENUM_VALUES_ABC,
             ENUM_VALUES_ABB
-        )).isInstanceOf(DuplicateKeyException.class)
-          .hasMessage("Enum Values have duplicated keys. Definition name: "
-              + "'field_definition_name', Duplicated enum value: 'b'. "
-              + "Enum Values are expected to be unique inside their definition.");
+        ))
+            .isInstanceOf(DuplicateKeyException.class)
+            .hasMessage("Enum Values have duplicated keys. Definition name: "
+                + "'field_definition_name', Duplicated enum value: 'b'. "
+                + "Enum Values are expected to be unique inside their definition.");
     }
 }

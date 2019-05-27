@@ -91,10 +91,11 @@ class BuildPlainEnumUpdateActionsTest {
             "attribute_definition_name_1",
             ENUM_VALUES_ABC,
             ENUM_VALUES_ABB
-        )).isInstanceOf(DuplicateKeyException.class)
-          .hasMessage("Enum Values have duplicated keys. Definition name: "
-              + "'attribute_definition_name_1', Duplicated enum value: 'b'. "
-              + "Enum Values are expected to be unique inside their definition.");
+        ))
+            .isInstanceOf(DuplicateKeyException.class)
+            .hasMessage("Enum Values have duplicated keys. Definition name: "
+                + "'attribute_definition_name_1', Duplicated enum value: 'b'. "
+                + "Enum Values are expected to be unique inside their definition.");
     }
 
     @Test

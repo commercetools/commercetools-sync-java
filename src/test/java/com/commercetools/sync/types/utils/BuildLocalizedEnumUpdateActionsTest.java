@@ -93,11 +93,8 @@ class BuildLocalizedEnumUpdateActionsTest {
         );
 
         assertThat(updateActions).containsExactly(
-            ChangeLocalizedEnumValueOrder.of(FIELD_NAME_1, asList(
-                ENUM_VALUE_C.getKey(),
-                ENUM_VALUE_A.getKey(),
-                ENUM_VALUE_B.getKey()
-            ))
+            ChangeLocalizedEnumValueOrder.of(FIELD_NAME_1,
+                asList(ENUM_VALUE_C.getKey(), ENUM_VALUE_A.getKey(), ENUM_VALUE_B.getKey()))
         );
     }
 
@@ -111,10 +108,7 @@ class BuildLocalizedEnumUpdateActionsTest {
 
         // remove enum value actions not exists for type resources
         assertThat(updateActions).containsExactly(
-            ChangeLocalizedEnumValueOrder.of(FIELD_NAME_1, asList(
-                ENUM_VALUE_C.getKey(),
-                ENUM_VALUE_B.getKey()
-            ))
+            ChangeLocalizedEnumValueOrder.of(FIELD_NAME_1, asList(ENUM_VALUE_C.getKey(), ENUM_VALUE_B.getKey()))
         );
     }
 
@@ -176,12 +170,12 @@ class BuildLocalizedEnumUpdateActionsTest {
 
     @Test
     void buildLocalizedEnumUpdateActions_WithDuplicateEnumValues_ShouldTriggerDuplicateKeyError() {
-        assertThatThrownBy(() -> LocalizedEnumValueUpdateActionUtils.buildLocalizedEnumValuesUpdateActions(
+        assertThatThrownBy(() -> buildLocalizedEnumValuesUpdateActions(
             "field_definition_name",
             ENUM_VALUES_ABC,
             ENUM_VALUES_ABB
         )).isInstanceOf(DuplicateKeyException.class)
-          .hasMessage("Enum Values have duplicated keys. Definition name: "
+            .hasMessage("Enum Values have duplicated keys. Definition name: "
               + "'field_definition_name', Duplicated enum value: 'b'. "
               + "Enum Values are expected to be unique inside their definition.");
     }
