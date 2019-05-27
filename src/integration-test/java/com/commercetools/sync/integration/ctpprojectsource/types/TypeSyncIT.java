@@ -11,7 +11,7 @@ import io.sphere.sdk.types.TypeDraftBuilder;
 import io.sphere.sdk.types.queries.TypeQuery;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +31,7 @@ public class TypeSyncIT {
      * Deletes types from source and target CTP projects.
      * Populates source and target CTP projects with test data.
      */
-    @Before
+    @BeforeEach
     public void setup() {
         deleteTypesFromTargetAndSource();
         populateSourceProject();
@@ -42,7 +42,7 @@ public class TypeSyncIT {
      * Deletes all the test data from the {@code CTP_SOURCE_CLIENT} and the {@code CTP_SOURCE_CLIENT} projects that
      * were set up in this test class.
      */
-    @AfterClass
+    @AfterAll
     public static void tearDown() {
         deleteTypesFromTargetAndSource();
     }

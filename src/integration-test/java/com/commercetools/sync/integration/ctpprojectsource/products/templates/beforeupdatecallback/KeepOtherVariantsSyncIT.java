@@ -11,10 +11,10 @@ import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.queries.QueryPredicate;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
@@ -35,9 +36,8 @@ import static io.sphere.sdk.producttypes.ProductType.referenceOfId;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 
-public class KeepOtherVariantsSyncIT {
+class KeepOtherVariantsSyncIT {
 
     private static ProductType productType;
     private Product oldProduct;
@@ -51,8 +51,8 @@ public class KeepOtherVariantsSyncIT {
      * Delete all product related test data from target project. Then creates a productType for the products of the
      * target CTP project.
      */
-    @BeforeClass
-    public static void setupAllTests() {
+    @BeforeAll
+    static void setupAllTests() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
     }
@@ -64,8 +64,8 @@ public class KeepOtherVariantsSyncIT {
      * 4. Creates a product in the target CTP project with 1 variant other than the master
      * variant.
      */
-    @Before
-    public void setupPerTest() {
+    @BeforeEach
+    void setupPerTest() {
         clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
         syncOptions = getProductSyncOptions();
@@ -96,13 +96,13 @@ public class KeepOtherVariantsSyncIT {
                                         .build();
     }
 
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
 
     @Test
-    public void sync_withRemovedVariants_shouldNotRemoveVariants() {
+    void sync_withRemovedVariants_shouldNotRemoveVariants() {
         final ProductDraft productDraft =
             createProductDraftBuilder(PRODUCT_NO_VARS_RESOURCE_PATH, referenceOfId(productType.getKey()))
                 .build();
@@ -130,6 +130,5 @@ public class KeepOtherVariantsSyncIT {
         assertThat(productOptional).isNotEmpty();
         final Product fetchedProduct = productOptional.get();
         assertThat(fetchedProduct.getMasterData().getCurrent().getVariants()).hasSize(1);
-
     }
 }

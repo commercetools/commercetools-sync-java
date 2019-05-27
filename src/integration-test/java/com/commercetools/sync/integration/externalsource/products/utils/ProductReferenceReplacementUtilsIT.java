@@ -30,8 +30,7 @@ import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.utils.MoneyImpl;
 import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -66,25 +65,25 @@ import static java.util.Collections.singletonList;
 import static java.util.Locale.ENGLISH;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ProductReferenceReplacementUtilsIT {
+class ProductReferenceReplacementUtilsIT {
     /**
      * Delete all product related test data from the target project.
      */
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
 
     /**
      * Delete all product related test data from the target project.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
 
     @Test
-    public void buildProductQuery_Always_ShouldFetchProductWithAllExpandedReferences() {
+    void buildProductQuery_Always_ShouldFetchProductWithAllExpandedReferences() {
         final ProductType productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
         final TaxCategory taxCategory = createTaxCategory(CTP_TARGET_CLIENT);
         final State state = createState(CTP_TARGET_CLIENT, StateType.PRODUCT_STATE);

@@ -30,10 +30,10 @@ import io.sphere.sdk.states.StateType;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -82,7 +82,7 @@ import static java.util.Collections.singletonList;
 import static java.util.Locale.ENGLISH;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ProductSyncIT {
+class ProductSyncIT {
     private static ProductType sourceProductType;
     private static ProductType targetProductType;
 
@@ -110,8 +110,8 @@ public class ProductSyncIT {
      * Delete all product related test data from target and source projects. Then creates for both CTP projects price
      * channels, product types, tax categories, categories, custom types for categories and product states.
      */
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         deleteProductSyncTestData(CTP_SOURCE_CLIENT);
 
@@ -152,8 +152,8 @@ public class ProductSyncIT {
      * Deletes Products from the source and target CTP projects, clears the callback collections then it instantiates a
      * new {@link ProductSync} instance.
      */
-    @Before
-    public void setupTest() {
+    @BeforeEach
+    void setupTest() {
         clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
         deleteAllProducts(CTP_SOURCE_CLIENT);
@@ -188,14 +188,14 @@ public class ProductSyncIT {
         return updateActions;
     }
 
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         deleteProductSyncTestData(CTP_SOURCE_CLIENT);
     }
 
     @Test
-    public void sync_withChangesOnly_ShouldUpdateProducts() {
+    void sync_withChangesOnly_ShouldUpdateProducts() {
         final ProductDraft existingProductDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
             targetProductType.toReference(), targetTaxCategory.toReference(), targetProductState.toReference(),
             targetCategoryReferencesWithIds, createRandomCategoryOrderHints(targetCategoryReferencesWithIds));
@@ -220,7 +220,7 @@ public class ProductSyncIT {
     }
 
     @Test
-    public void sync_withChangesOnlyAndUnPublish_ShouldUpdateProducts() {
+    void sync_withChangesOnlyAndUnPublish_ShouldUpdateProducts() {
         final ProductDraft existingProductDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
             targetProductType.toReference(), targetTaxCategory.toReference(), targetProductState.toReference(),
             targetCategoryReferencesWithIds, createRandomCategoryOrderHints(targetCategoryReferencesWithIds));
@@ -250,7 +250,7 @@ public class ProductSyncIT {
     }
 
     @Test
-    public void sync_withPriceReferences_ShouldUpdateProducts() {
+    void sync_withPriceReferences_ShouldUpdateProducts() {
         final ProductDraft existingProductDraft = createProductDraft(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH,
             targetProductType.toReference(), targetTaxCategory.toReference(), targetProductState.toReference(),
             targetCategoryReferencesWithIds, createRandomCategoryOrderHints(targetCategoryReferencesWithIds));
@@ -291,7 +291,7 @@ public class ProductSyncIT {
     }
 
     @Test
-    public void sync_withProductTypeReference_ShouldUpdateProducts() {
+    void sync_withProductTypeReference_ShouldUpdateProducts() {
         // Preparation
         // Create custom options with whitelisting and action filter callback..
         final ProductSyncOptions customSyncOptions =
@@ -414,7 +414,7 @@ public class ProductSyncIT {
     }
 
     @Test
-    public void sync_withChangedAttributes_ShouldUpdateProducts() {
+    void sync_withChangedAttributes_ShouldUpdateProducts() {
         // Preparation
         // Create custom options with whitelisting and action filter callback..
         final ProductSyncOptions customSyncOptions =
@@ -481,7 +481,7 @@ public class ProductSyncIT {
     }
 
     @Test
-    public void sync_withEmptySetAttribute_ShouldCreateProductWithAnEmptySetAttribute() {
+    void sync_withEmptySetAttribute_ShouldCreateProductWithAnEmptySetAttribute() {
         // Preparation
         // Create custom options with whitelisting and action filter callback..
         final ProductSyncOptions customSyncOptions =

@@ -20,10 +20,10 @@ import io.sphere.sdk.models.errors.DuplicateFieldError;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,7 +51,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class CategoryServiceImplIT {
+class CategoryServiceImplIT {
     private CategoryService categoryService;
     private Category oldCategory;
     private static final String oldCategoryKey = "oldCategoryKey";
@@ -64,8 +64,8 @@ public class CategoryServiceImplIT {
     /**
      * Delete all categories and types from target project. Then create custom types for target CTP project categories.
      */
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
         createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH, "anyName", CTP_TARGET_CLIENT);
@@ -75,8 +75,8 @@ public class CategoryServiceImplIT {
      * Deletes Categories and Types from target CTP projects, then it populates target CTP project with category test
      * data.
      */
-    @Before
-    public void setupTest() {
+    @BeforeEach
+    void setupTest() {
         errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
         warningCallBackMessages = new ArrayList<>();
@@ -113,14 +113,14 @@ public class CategoryServiceImplIT {
     /**
      * Cleans up the target test data that were built in this test class.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
     }
 
     @Test
-    public void cacheKeysToIds_ShouldCacheCategoryKeysOnlyFirstTime() {
+    void cacheKeysToIds_ShouldCacheCategoryKeysOnlyFirstTime() {
         Map<String, String> cache = categoryService.cacheKeysToIds().toCompletableFuture().join();
         assertThat(cache).hasSize(1);
 
@@ -141,7 +141,7 @@ public class CategoryServiceImplIT {
     }
 
     @Test
-    public void cacheKeysToIds_WithTargetCategoriesWithNoKeys_ShouldGiveAWarningAboutKeyNotSetAndNotCacheKey() {
+    void cacheKeysToIds_WithTargetCategoriesWithNoKeys_ShouldGiveAWarningAboutKeyNotSetAndNotCacheKey() {
         // Create new category without key
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
@@ -161,7 +161,7 @@ public class CategoryServiceImplIT {
     }
 
     @Test
-    public void fetchMatchingCategoriesByKeys_WithEmptySetOfKeys_ShouldReturnEmptySet() {
+    void fetchMatchingCategoriesByKeys_WithEmptySetOfKeys_ShouldReturnEmptySet() {
         final Set<Category> fetchedCategories = categoryService.fetchMatchingCategoriesByKeys(Collections.emptySet())
                                                                .toCompletableFuture().join();
         assertThat(fetchedCategories).isEmpty();
@@ -170,7 +170,7 @@ public class CategoryServiceImplIT {
     }
 
     @Test
-    public void fetchMatchingCategoriesByKeys_WithAllExistingSetOfKeys_ShouldReturnSetOfCategories() {
+    void fetchMatchingCategoriesByKeys_WithAllExistingSetOfKeys_ShouldReturnSetOfCategories() {
         final Set<String> keys =  new HashSet<>();
         keys.add(oldCategoryKey);
         final Set<Category> fetchedCategories = categoryService.fetchMatchingCategoriesByKeys(keys)
@@ -181,7 +181,7 @@ public class CategoryServiceImplIT {
     }
 
     @Test
-    public void fetchMatchingCategoriesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
+    void fetchMatchingCategoriesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
         // Mock sphere client to return BadGatewayException on any request.
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         when(spyClient.execute(any(CategoryQuery.class)))
@@ -211,7 +211,7 @@ public class CategoryServiceImplIT {
     }
 
     @Test
-    public void fetchMatchingCategoriesByKeys_WithSomeExistingSetOfKeys_ShouldReturnSetOfCategories() {
+    void fetchMatchingCategoriesByKeys_WithSomeExistingSetOfKeys_ShouldReturnSetOfCategories() {
         final Set<String> keys =  new HashSet<>();
         keys.add(oldCategoryKey);
         keys.add("new-key");
@@ -223,7 +223,7 @@ public class CategoryServiceImplIT {
     }
 
     @Test
-    public void fetchCachedCategoryId_WithNonExistingCategory_ShouldNotFetchACategory() {
+    void fetchCachedCategoryId_WithNonExistingCategory_ShouldNotFetchACategory() {
         final Optional<String> categoryId = categoryService.fetchCachedCategoryId("non-existing-category-key")
                                                            .toCompletableFuture()
                                                            .join();
@@ -233,7 +233,7 @@ public class CategoryServiceImplIT {
     }
 
     @Test
-    public void fetchCachedCategoryId_WithExistingCategory_ShouldFetchCategoryAndCache() {
+    void fetchCachedCategoryId_WithExistingCategory_ShouldFetchCategoryAndCache() {
         final Optional<String> categoryId = categoryService.fetchCachedCategoryId(oldCategory.getKey())
                                                            .toCompletableFuture()
                                                            .join();
@@ -243,7 +243,7 @@ public class CategoryServiceImplIT {
     }
 
     @Test
-    public void fetchCachedCategoryId_ShouldCacheCategoryKeysOnlyFirstTime() {
+    void fetchCachedCategoryId_ShouldCacheCategoryKeysOnlyFirstTime() {
         // Fetch any category to populate cache
         categoryService.fetchCachedCategoryId("anyKey").toCompletableFuture().join();
 
@@ -266,7 +266,7 @@ public class CategoryServiceImplIT {
     }
 
     @Test
-    public void fetchCachedCategoryId_WithBlankKey_ShouldReturnFutureContainingEmptyOptional() {
+    void fetchCachedCategoryId_WithBlankKey_ShouldReturnFutureContainingEmptyOptional() {
         // test
         final Optional<String> result = categoryService.fetchCachedCategoryId("").toCompletableFuture().join();
 
@@ -277,7 +277,7 @@ public class CategoryServiceImplIT {
     }
 
     @Test
-    public void createCategory_WithValidCategory_ShouldCreateCategoryAndCacheId() {
+    void createCategory_WithValidCategory_ShouldCreateCategoryAndCacheId() {
         // preparation
         final String newCategoryKey = "newCategoryKey";
         final CategoryDraft categoryDraft = CategoryDraftBuilder
@@ -334,7 +334,7 @@ public class CategoryServiceImplIT {
     }
 
     @Test
-    public void createCategory_WithBlankKey_ShouldNotCreateCategory() {
+    void createCategory_WithBlankKey_ShouldNotCreateCategory() {
         // preparation
         final String newCategoryKey = "";
         final CategoryDraft categoryDraft = CategoryDraftBuilder
@@ -356,7 +356,7 @@ public class CategoryServiceImplIT {
     }
 
     @Test
-    public void createCategory_WithDuplicateSlug_ShouldNotCreateCategory() {
+    void createCategory_WithDuplicateSlug_ShouldNotCreateCategory() {
         // preparation
         final String newCategoryKey = "newCat";
         final CategoryDraft categoryDraft = CategoryDraftBuilder
@@ -410,7 +410,7 @@ public class CategoryServiceImplIT {
     }
 
     @Test
-    public void updateCategory_WithValidChanges_ShouldUpdateCategoryCorrectly() {
+    void updateCategory_WithValidChanges_ShouldUpdateCategoryCorrectly() {
         final Optional<Category> categoryOptional = CTP_TARGET_CLIENT
             .execute(CategoryQuery
                 .of()
@@ -445,7 +445,7 @@ public class CategoryServiceImplIT {
     }
 
     @Test
-    public void updateCategory_WithInvalidChanges_ShouldNotUpdateCategory() {
+    void updateCategory_WithInvalidChanges_ShouldNotUpdateCategory() {
         // Create a mock new category in the target project.
         final CategoryDraft newCategoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "furniture1"))
@@ -497,28 +497,28 @@ public class CategoryServiceImplIT {
     }
 
     @Test
-    public void fetchCategory_WithExistingCategoryKey_ShouldFetchCategory() {
+    void fetchCategory_WithExistingCategoryKey_ShouldFetchCategory() {
         final Optional<Category> fetchedCategoryOptional =
             executeBlocking(categoryService.fetchCategory(oldCategoryKey));
         assertThat(fetchedCategoryOptional).contains(oldCategory);
     }
 
     @Test
-    public void fetchCategory_WithBlankKey_ShouldNotFetchCategory() {
+    void fetchCategory_WithBlankKey_ShouldNotFetchCategory() {
         final Optional<Category> fetchedCategoryOptional =
             executeBlocking(categoryService.fetchCategory(StringUtils.EMPTY));
         assertThat(fetchedCategoryOptional).isEmpty();
     }
 
     @Test
-    public void fetchCategory_WithNullKey_ShouldNotFetchCategory() {
+    void fetchCategory_WithNullKey_ShouldNotFetchCategory() {
         final Optional<Category> fetchedCategoryOptional =
             executeBlocking(categoryService.fetchCategory(null));
         assertThat(fetchedCategoryOptional).isEmpty();
     }
 
     @Test
-    public void fetchCategory_WithBadGateWayExceptionAlways_ShouldFail() {
+    void fetchCategory_WithBadGateWayExceptionAlways_ShouldFail() {
         // Mock sphere client to return BadGatewayException on any request.
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         when(spyClient.execute(any(CategoryQuery.class)))

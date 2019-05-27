@@ -28,10 +28,10 @@ import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -89,7 +89,7 @@ public class ProductServiceImplIT {
      * Delete all product related test data from target project. Then creates custom types for target CTP project
      * categories.
      */
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH,
@@ -103,7 +103,7 @@ public class ProductServiceImplIT {
      * Deletes Products and Types from target CTP projects, then it populates target CTP project with product test
      * data.
      */
-    @Before
+    @BeforeEach
     public void setupTest() {
         errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
@@ -136,7 +136,7 @@ public class ProductServiceImplIT {
     /**
      * Cleans up the target test data that were built in this test class.
      */
-    @AfterClass
+    @AfterAll
     public static void tearDown() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
