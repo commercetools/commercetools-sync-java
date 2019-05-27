@@ -385,7 +385,7 @@ public class CartDiscountSyncIT {
             .hasOnlyOneElementSatisfying(throwable -> {
                 assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
                 assertThat(throwable).hasCauseExactlyInstanceOf(ErrorResponseException.class);
-                assertThat(throwable).hasMessageContaining("Missing required value");
+                assertThat(throwable).hasMessageContaining("value: Missing required value");
             });
 
         assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
