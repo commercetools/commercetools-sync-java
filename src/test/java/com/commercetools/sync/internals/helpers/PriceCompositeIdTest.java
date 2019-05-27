@@ -201,6 +201,7 @@ class PriceCompositeIdTest {
 
     @ParameterizedTest(name = "[#equals]: {0}")
     @MethodSource("equalsTestCases")
+    @SuppressWarnings("PMD")
     void equals(@Nonnull final String testCaseName,
                 @Nonnull final PriceCompositeId thisPriceCompositeId,
                 @Nullable final Object otherObject,
