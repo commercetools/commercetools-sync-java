@@ -230,7 +230,7 @@ public class CategoryReferenceResolverTest {
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format("Failed to resolve reference 'category' on ProductDraft with "
+            .hasMessage(format("Failed to resolve 'category' resource identifier on ProductDraft with "
                 + "key:'%s'. Reason: %s", productBuilder.getKey(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
@@ -254,7 +254,7 @@ public class CategoryReferenceResolverTest {
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format("Failed to resolve reference 'category' on ProductDraft with "
+            .hasMessage(format("Failed to resolve 'category' resource identifier on ProductDraft with "
                 + "key:'%s'. Reason: %s", productBuilder.getKey(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
