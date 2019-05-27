@@ -3,7 +3,7 @@ package com.commercetools.sync.integration.commons.utils;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereRequest;
-import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.PriceDraftBuilder;
 import io.sphere.sdk.products.Product;
@@ -35,6 +35,7 @@ import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndC
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypes;
 import static com.commercetools.sync.integration.commons.utils.StateITUtils.deleteStates;
 import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.deleteTaxCategories;
+import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
@@ -118,7 +119,7 @@ public final class ProductITUtils {
      */
     @Nonnull
     private static SphereRequest<Product> buildUnpublishRequest(@Nonnull final Product product) {
-        return ProductUpdateCommand.of(product, Unpublish.of());
+        return ProductUpdateCommand.of(product, singletonList(Unpublish.of()));
     }
 
     /**
@@ -127,16 +128,17 @@ public final class ProductITUtils {
      * <p>TODO: GITHUB ISSUE#152
      *
      * @param productDraft     the product draft to attach the channel reference on its variants' prices.
-     * @param channelReference the channel reference to attach on the product draft's variants' prices.
+     * @param channelResourceIdentifier the channel reference to attach on the product draft's variants' prices.
      * @return the product draft with the supplied references attached on the product draft's variants' prices.
      */
     public static ProductDraft getDraftWithPriceReferences(@Nonnull final ProductDraft productDraft,
-                                                           @Nullable final Reference<Channel> channelReference,
+                                                           @Nullable final ResourceIdentifier<Channel>
+                                                               channelResourceIdentifier,
                                                            @Nullable final CustomFieldsDraft customFieldsDraft) {
         final List<ProductVariantDraft> allVariants = productDraft
             .getVariants().stream().map(productVariant -> {
                 final List<PriceDraft> priceDraftsWithChannelReferences = getPriceDraftsWithReferences(productVariant,
-                    channelReference, customFieldsDraft);
+                    channelResourceIdentifier, customFieldsDraft);
                 return ProductVariantDraftBuilder.of(productVariant)
                                                  .prices(priceDraftsWithChannelReferences)
                                                  .build();
@@ -146,7 +148,7 @@ public final class ProductITUtils {
         return ofNullable(productDraft.getMasterVariant())
             .map(masterVariant -> {
                 final List<PriceDraft> priceDraftsWithReferences = getPriceDraftsWithReferences(masterVariant,
-                    channelReference, customFieldsDraft);
+                    channelResourceIdentifier, customFieldsDraft);
                 final ProductVariantDraft masterVariantWithPriceDrafts =
                     ProductVariantDraftBuilder.of(masterVariant)
                                               .prices(priceDraftsWithReferences)
@@ -175,7 +177,7 @@ public final class ProductITUtils {
     @Nonnull
     private static List<PriceDraft> getPriceDraftsWithReferences(
         @Nonnull final ProductVariantDraft productVariant,
-        @Nullable final Reference<Channel> channelReference,
+        @Nullable final ResourceIdentifier<Channel> channelReference,
         @Nullable final CustomFieldsDraft customFieldsDraft) {
 
         return productVariant.getPrices()

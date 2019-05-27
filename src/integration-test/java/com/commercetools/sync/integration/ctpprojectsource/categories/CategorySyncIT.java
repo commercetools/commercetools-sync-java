@@ -14,10 +14,10 @@ import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.errors.DuplicateFieldError;
 import io.sphere.sdk.types.CustomFieldsDraft;
-import org.junit.Ignore;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -142,7 +142,7 @@ class CategorySyncIT {
         assertThat(callBackWarningResponses).isEmpty();
     }
 
-    @Ignore("TODO - GITHUB ISSUE#138: Test should be adjusted after reference resolution refactoring")
+    @Disabled("TODO - GITHUB ISSUE#138: Test should be adjusted after reference resolution refactoring")
     @Test
     void syncDrafts_WithUpdatedCategoriesWithoutReferenceKeys_ShouldNotSyncCategories() {
         createCategories(CTP_SOURCE_CLIENT, getCategoryDraftsWithPrefix(Locale.ENGLISH, "new",
