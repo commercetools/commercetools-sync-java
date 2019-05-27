@@ -28,7 +28,7 @@ import io.sphere.sdk.producttypes.commands.updateactions.AddEnumValue;
 import io.sphere.sdk.producttypes.commands.updateactions.AddLocalizedEnumValue;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeConstraint;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeDefinitionLabel;
-import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeOrder;
+import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeOrderByName;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeEnumValueOrder;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeInputHint;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeIsSearchable;
@@ -362,11 +362,11 @@ public class BuildAttributeDefinitionUpdateActionsTest {
         );
 
         assertThat(updateActions).containsExactly(
-            ChangeAttributeOrder
+            ChangeAttributeOrderByName
                 .of(asList(
-                        ATTRIBUTE_DEFINITION_C,
-                        ATTRIBUTE_DEFINITION_A,
-                        ATTRIBUTE_DEFINITION_B
+                    ATTRIBUTE_DEFINITION_C.getName(),
+                    ATTRIBUTE_DEFINITION_A.getName(),
+                    ATTRIBUTE_DEFINITION_B.getName()
                 ))
         );
     }
@@ -389,10 +389,10 @@ public class BuildAttributeDefinitionUpdateActionsTest {
 
         assertThat(updateActions).containsExactly(
             RemoveAttributeDefinition.of("a"),
-            ChangeAttributeOrder
+            ChangeAttributeOrderByName
                 .of(asList(
-                        ATTRIBUTE_DEFINITION_C,
-                        ATTRIBUTE_DEFINITION_B
+                    ATTRIBUTE_DEFINITION_C.getName(),
+                    ATTRIBUTE_DEFINITION_B.getName()
                     )
                 )
         );
@@ -422,12 +422,12 @@ public class BuildAttributeDefinitionUpdateActionsTest {
                 .inputHint(TextInputHint.SINGLE_LINE)
                 .attributeConstraint(AttributeConstraint.NONE)
                 .build()),
-            ChangeAttributeOrder
+            ChangeAttributeOrderByName
                 .of(asList(
-                        ATTRIBUTE_DEFINITION_A,
-                        ATTRIBUTE_DEFINITION_C,
-                        ATTRIBUTE_DEFINITION_B,
-                        ATTRIBUTE_DEFINITION_D
+                    ATTRIBUTE_DEFINITION_A.getName(),
+                    ATTRIBUTE_DEFINITION_C.getName(),
+                    ATTRIBUTE_DEFINITION_B.getName(),
+                    ATTRIBUTE_DEFINITION_D.getName()
                     )
                 )
         );
@@ -455,12 +455,12 @@ public class BuildAttributeDefinitionUpdateActionsTest {
                     ATTRIBUTE_DEFINITION_D.isRequired())
                 .isSearchable(true)
                 .build()),
-            ChangeAttributeOrder
+            ChangeAttributeOrderByName
                 .of(asList(
-                        ATTRIBUTE_DEFINITION_A,
-                        ATTRIBUTE_DEFINITION_D,
-                        ATTRIBUTE_DEFINITION_B,
-                        ATTRIBUTE_DEFINITION_C
+                    ATTRIBUTE_DEFINITION_A.getName(),
+                    ATTRIBUTE_DEFINITION_D.getName(),
+                    ATTRIBUTE_DEFINITION_B.getName(),
+                    ATTRIBUTE_DEFINITION_C.getName()
                     )
                 )
         );
@@ -484,15 +484,15 @@ public class BuildAttributeDefinitionUpdateActionsTest {
         assertThat(updateActions).containsExactly(
             RemoveAttributeDefinition.of("a"),
             AddAttributeDefinition.of(AttributeDefinitionDraftBuilder
-                    .of(ATTRIBUTE_DEFINITION_D.getAttributeType(),
-                        ATTRIBUTE_DEFINITION_D.getName(), ATTRIBUTE_DEFINITION_D.getLabel(),
-                        ATTRIBUTE_DEFINITION_D.isRequired())
-                    .isSearchable(true).build()),
-            ChangeAttributeOrder
+                .of(ATTRIBUTE_DEFINITION_D.getAttributeType(),
+                    ATTRIBUTE_DEFINITION_D.getName(), ATTRIBUTE_DEFINITION_D.getLabel(),
+                    ATTRIBUTE_DEFINITION_D.isRequired())
+                .isSearchable(true).build()),
+            ChangeAttributeOrderByName
                 .of(asList(
-                        ATTRIBUTE_DEFINITION_C,
-                        ATTRIBUTE_DEFINITION_B,
-                        ATTRIBUTE_DEFINITION_D
+                    ATTRIBUTE_DEFINITION_C.getName(),
+                    ATTRIBUTE_DEFINITION_B.getName(),
+                    ATTRIBUTE_DEFINITION_D.getName()
                     )
                 )
         );
@@ -771,7 +771,7 @@ public class BuildAttributeDefinitionUpdateActionsTest {
                     LocalizedEnumValue.of("a", ofEnglish("a")),
                     LocalizedEnumValue.of("b", ofEnglish("newB")),
                     LocalizedEnumValue.of("c", ofEnglish("c"))
-                    )
+                )
             ));
 
         final AttributeDefinitionDraft newDefinition = AttributeDefinitionDraftBuilder
