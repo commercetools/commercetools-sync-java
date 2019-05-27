@@ -17,8 +17,7 @@ import io.sphere.sdk.products.queries.ProductByKeyGet;
 import io.sphere.sdk.producttypes.ProductType;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -37,7 +36,7 @@ import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
-public class BuildProductVariantImageUpdateActionsIT {
+class BuildProductVariantImageUpdateActionsIT {
     private static final String DRAFTS_ROOT = "com/commercetools/sync/integration/externalsource/products/"
         + "utils/imageUpdateActions/";
     private static final String PRODUCT_WITH_IMAGES_1_2_3 = DRAFTS_ROOT + "draftWithMVImages-1-2-3.json";
@@ -57,22 +56,22 @@ public class BuildProductVariantImageUpdateActionsIT {
      * Delete all product related test data from target and source projects. Then creates product types in both
      * CTP projects.
      */
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
     }
 
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
 
     /**
      * Create old product from the draft.
      */
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
 
@@ -107,7 +106,7 @@ public class BuildProductVariantImageUpdateActionsIT {
     }
 
     @Test
-    public void sync_WithNullImageLists_ShouldNotBuildImageUpdateActionAndSyncCorrectly() {
+    void sync_WithNullImageLists_ShouldNotBuildImageUpdateActionAndSyncCorrectly() {
         assertProductSyncShouldNotBuildImageUpdateActions(PRODUCT_WITH_NULL_IMAGES, PRODUCT_WITH_NULL_IMAGES);
 
     }
@@ -147,12 +146,12 @@ public class BuildProductVariantImageUpdateActionsIT {
     }
 
     @Test
-    public void sync_WithEmptyImageLists_ShouldNotBuildImageUpdateActionAndSyncCorrectly() {
+    void sync_WithEmptyImageLists_ShouldNotBuildImageUpdateActionAndSyncCorrectly() {
         assertProductSyncShouldNotBuildImageUpdateActions(PRODUCT_WITH_EMPTY_IMAGES, PRODUCT_WITH_EMPTY_IMAGES);
     }
 
     @Test
-    public void sync_WithNullNewImageList_ShouldBuildRemoveImageUpdateActionsAndSyncCorrectly() {
+    void sync_WithNullNewImageList_ShouldBuildRemoveImageUpdateActionsAndSyncCorrectly() {
         // Prepare existing product before sync.
         final ProductDraft oldProductDraft =
             ProductDraftBuilder.of(readObjectFromResource(PRODUCT_WITH_IMAGES_1_2_3, ProductDraft.class))
@@ -184,7 +183,7 @@ public class BuildProductVariantImageUpdateActionsIT {
     }
 
     @Test
-    public void sync_WithEmptyNewImageList_ShouldBuildRemoveImageUpdateActionsAndSyncCorrectly() {
+    void sync_WithEmptyNewImageList_ShouldBuildRemoveImageUpdateActionsAndSyncCorrectly() {
         assertProductSyncShouldBuildRemoveImageUpdateActions(PRODUCT_WITH_IMAGES_1_2_3,
             PRODUCT_WITH_EMPTY_IMAGES, RemoveImage.class);
 
@@ -225,24 +224,24 @@ public class BuildProductVariantImageUpdateActionsIT {
     }
 
     @Test
-    public void sync_WithNullOldImageList_ShouldBuildAddExternalImageUpdateActionsAndSyncCorrectly() {
+    void sync_WithNullOldImageList_ShouldBuildAddExternalImageUpdateActionsAndSyncCorrectly() {
         assertProductSyncShouldBuildRemoveImageUpdateActions(PRODUCT_WITH_NULL_IMAGES,
             PRODUCT_WITH_IMAGES_1_2_3, AddExternalImage.class);
     }
 
     @Test
-    public void sync_WithEmpyOldImageList_ShouldBuildAddExternalImageUpdateActionsAndSyncCorrectly() {
+    void sync_WithEmpyOldImageList_ShouldBuildAddExternalImageUpdateActionsAndSyncCorrectly() {
         assertProductSyncShouldBuildRemoveImageUpdateActions(PRODUCT_WITH_EMPTY_IMAGES,
             PRODUCT_WITH_IMAGES_1_2_3, AddExternalImage.class);
     }
 
     @Test
-    public void sync_WithIdenticalNonNullImageLists_ShouldNotBuildImageUpdateActions() {
+    void sync_WithIdenticalNonNullImageLists_ShouldNotBuildImageUpdateActions() {
         assertProductSyncShouldNotBuildImageUpdateActions(PRODUCT_WITH_IMAGES_1_2_3, PRODUCT_WITH_IMAGES_1_2_3);
     }
 
     @Test
-    public void sync_WithDifferentImageLists_ShouldBuildImageUpdateActionsAndSyncCorrectly() {
+    void sync_WithDifferentImageLists_ShouldBuildImageUpdateActionsAndSyncCorrectly() {
         // Prepare existing product before sync.
         final ProductDraft oldProductDraft =
             ProductDraftBuilder.of(readObjectFromResource(PRODUCT_WITH_IMAGES_1_2_3, ProductDraft.class))
@@ -280,7 +279,7 @@ public class BuildProductVariantImageUpdateActionsIT {
     }
 
     @Test
-    public void sync_WithDifferentOrderedImageLists_ShouldBuildImageUpdateActionsAndSyncCorrectly() {
+    void sync_WithDifferentOrderedImageLists_ShouldBuildImageUpdateActionsAndSyncCorrectly() {
         // Prepare existing product before sync.
         final ProductDraft oldProductDraft =
             ProductDraftBuilder.of(readObjectFromResource(PRODUCT_WITH_IMAGES_1_2_3, ProductDraft.class))

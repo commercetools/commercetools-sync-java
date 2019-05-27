@@ -10,8 +10,7 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,15 +22,15 @@ import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTyp
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SetExternalIdIT {
+class SetExternalIdIT {
     private static Category oldCategory;
     private List<String> callBackResponses = new ArrayList<>();
 
     /**
      * Deletes Categories and Types from the target CTP projects, then it populates it with category test data.
      */
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
         final CategoryDraft oldCategoryDraft = CategoryDraftBuilder
@@ -48,8 +47,8 @@ public class SetExternalIdIT {
     /**
      * Cleans up the target data that was built in this test class.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
     }
@@ -57,13 +56,13 @@ public class SetExternalIdIT {
     /**
      * Cleans the callback response collector.
      */
-    @Before
-    public void setupTest() {
+    @BeforeEach
+    void setupTest() {
         callBackResponses = new ArrayList<>();
     }
 
     @Test
-    public void buildSetExternalIdUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
+    void buildSetExternalIdUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         // Prepare new category draft with a different externalId
         final CategoryDraft newCategory = CategoryDraftBuilder
             .of(oldCategory.getName(), oldCategory.getSlug())
@@ -82,7 +81,7 @@ public class SetExternalIdIT {
     }
 
     @Test
-    public void buildSetExternalIdUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
+    void buildSetExternalIdUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         // Prepare new category draft with a same externalId as root category
         final CategoryDraft newCategory = CategoryDraftBuilder
             .of(oldCategory.getName(), oldCategory.getSlug())

@@ -16,8 +16,7 @@ import io.sphere.sdk.products.queries.ProductByKeyGet;
 import io.sphere.sdk.producttypes.ProductType;
 import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,7 +30,7 @@ import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ProductUpdateActionUtilsIT {
+class ProductUpdateActionUtilsIT {
 
     private static final String DRAFTS_ROOT = "com/commercetools/sync/integration/externalsource/products/utils/";
     private static final String NEW_PRODUCT = DRAFTS_ROOT + "productDraftNewIT.json";
@@ -43,22 +42,22 @@ public class ProductUpdateActionUtilsIT {
      * Delete all product related test data from target and source projects. Then creates custom types for both
      * CTP projects categories.
      */
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         targetProductType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
     }
 
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
 
     /**
      * Create old product from the draft.
      */
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         ProductDraft productDraftOld = SphereJsonUtils.readObjectFromResource(OLD_PRODUCT, ProductDraft.class);
         ProductDraft productDraft = ProductDraftBuilder.of(productDraftOld)
             .productType(ResourceIdentifier.ofKey(targetProductType.getKey()))
@@ -67,7 +66,7 @@ public class ProductUpdateActionUtilsIT {
     }
 
     @Test
-    public void buildVariantsUpdateActions_shouldUpdateVariants() {
+    void buildVariantsUpdateActions_shouldUpdateVariants() {
         final List<String> errors = new ArrayList<>();
         final List<String> warnings = new ArrayList<>();
 

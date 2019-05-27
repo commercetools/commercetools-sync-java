@@ -8,8 +8,7 @@ import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.types.Type;
 import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -34,7 +33,7 @@ public class CategoryReferenceReplacementUtilsIT {
      * Delete all categories and types from source and target project. Then create custom types for source and target
      * CTP project categories.
      */
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypesFromTargetAndSource();
@@ -43,7 +42,7 @@ public class CategoryReferenceReplacementUtilsIT {
     /**
      * Cleans up the target and source test data that were built in this test class.
      */
-    @AfterClass
+    @AfterAll
     public static void tearDown() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypesFromTargetAndSource();

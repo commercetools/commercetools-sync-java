@@ -8,9 +8,9 @@ import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.customergroups.CustomerGroupDraft;
 import io.sphere.sdk.customergroups.CustomerGroupDraftBuilder;
 import io.sphere.sdk.customergroups.commands.CustomerGroupCreateCommand;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -23,7 +23,7 @@ import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CustomerGroupServiceImplIT {
+class CustomerGroupServiceImplIT {
     private CustomerGroupService customerGroupService;
     private static final String CUSTOMER_GROUP_KEY = "customerGroup_key";
     private static final String CUSTOMER_GROUP_NAME = "customerGroup_name";
@@ -34,8 +34,8 @@ public class CustomerGroupServiceImplIT {
     /**
      * Deletes customer group from the target CTP projects, then it populates the project with test data.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         deleteCustomerGroups(CTP_TARGET_CLIENT);
         warnings = new ArrayList<>();
         oldCustomerGroup = createCustomerGroup(CTP_TARGET_CLIENT, CUSTOMER_GROUP_NAME, CUSTOMER_GROUP_KEY);
@@ -48,13 +48,13 @@ public class CustomerGroupServiceImplIT {
     /**
      * Cleans up the target test data that were built in this test class.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteCustomerGroups(CTP_TARGET_CLIENT);
     }
 
     @Test
-    public void fetchCachedCustomerGroupId_WithNonExistingCustomerGroup_ShouldNotFetchACustomerGroup() {
+    void fetchCachedCustomerGroupId_WithNonExistingCustomerGroup_ShouldNotFetchACustomerGroup() {
         final Optional<String> customerGroupId = customerGroupService.fetchCachedCustomerGroupId("nonExistingKey")
                                                                      .toCompletableFuture()
                                                                      .join();
@@ -62,7 +62,7 @@ public class CustomerGroupServiceImplIT {
     }
 
     @Test
-    public void fetchCachedCustomerGroupId_WithExistingCustomerGroup_ShouldFetchCustomerGroupAndCache() {
+    void fetchCachedCustomerGroupId_WithExistingCustomerGroup_ShouldFetchCustomerGroupAndCache() {
         final Optional<String> customerGroupId = customerGroupService
             .fetchCachedCustomerGroupId(oldCustomerGroup.getKey())
             .toCompletableFuture()
@@ -72,7 +72,7 @@ public class CustomerGroupServiceImplIT {
     }
 
     @Test
-    public void fetchCachedCustomerGroupId_OnSecondTime_ShouldNotFindCustomerGroupInCache() {
+    void fetchCachedCustomerGroupId_OnSecondTime_ShouldNotFindCustomerGroupInCache() {
         // Fetch any key to populate cache
         customerGroupService.fetchCachedCustomerGroupId("anyKey").toCompletableFuture().join();
 
@@ -92,7 +92,7 @@ public class CustomerGroupServiceImplIT {
     }
 
     @Test
-    public void fetchCachedCustomerGroupId_WithNullKey_ShouldReturnFutureWithEmptyOptional() {
+    void fetchCachedCustomerGroupId_WithNullKey_ShouldReturnFutureWithEmptyOptional() {
         final Optional<String> customerGroupId = customerGroupService.fetchCachedCustomerGroupId(null)
                                                                      .toCompletableFuture()
                                                                      .join();
@@ -102,7 +102,7 @@ public class CustomerGroupServiceImplIT {
     }
 
     @Test
-    public void fetchCachedCustomerGroupId_WithExistingCustomerGroupWithNullKey_ShouldReturnFutureWithEmptyOptional() {
+    void fetchCachedCustomerGroupId_WithExistingCustomerGroupWithNullKey_ShouldReturnFutureWithEmptyOptional() {
         // Create new customerGroup
         final CustomerGroupDraft customerGroupDraft = CustomerGroupDraftBuilder.of("name")
                                                                                .build();

@@ -17,10 +17,10 @@ import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import io.sphere.sdk.products.commands.updateactions.RemoveFromCategory;
 import io.sphere.sdk.products.commands.updateactions.SetCategoryOrderHint;
 import io.sphere.sdk.producttypes.ProductType;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +54,7 @@ import static io.sphere.sdk.producttypes.ProductType.referenceOfId;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ProductSyncFilterIT {
+class ProductSyncFilterIT {
 
     private static ProductType productType;
     private static List<Reference<Category>> categoryReferencesWithIds;
@@ -69,8 +69,8 @@ public class ProductSyncFilterIT {
      * Delete all product related test data from target project. Then create custom types for the categories and a
      * productType for the products of the target CTP project.
      */
-    @BeforeClass
-    public static void setupAllTests() {
+    @BeforeAll
+    static void setupAllTests() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH,
                 OLD_CATEGORY_CUSTOM_TYPE_NAME, CTP_TARGET_CLIENT);
@@ -87,8 +87,8 @@ public class ProductSyncFilterIT {
      * {@link ProductSyncOptions} instances.
      * 4. Create a product in the target CTP project.
      */
-    @Before
-    public void setupPerTest() {
+    @BeforeEach
+    void setupPerTest() {
         clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
         syncOptionsBuilder = getProductSyncOptionsBuilder();
@@ -124,13 +124,13 @@ public class ProductSyncFilterIT {
                                         .beforeUpdateCallback(actionsCallBack);
     }
 
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
 
     @Test
-    public void sync_withChangedProductBlackListingCategories_shouldUpdateProductWithoutCategories() {
+    void sync_withChangedProductBlackListingCategories_shouldUpdateProductWithoutCategories() {
         final ProductDraft productDraft =
                 createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, referenceOfId(productType.getKey()), null,
                     null, categoryReferencesWithKeys, createRandomCategoryOrderHints(categoryReferencesWithKeys));
@@ -155,7 +155,7 @@ public class ProductSyncFilterIT {
     }
 
     @Test
-    public void sync_withChangedProductWhiteListingName_shouldOnlyUpdateProductName() {
+    void sync_withChangedProductWhiteListingName_shouldOnlyUpdateProductName() {
         final ProductDraft productDraft =
                 createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, referenceOfId(productType.getKey()), null,
                     null, categoryReferencesWithKeys, createRandomCategoryOrderHints(categoryReferencesWithKeys));
