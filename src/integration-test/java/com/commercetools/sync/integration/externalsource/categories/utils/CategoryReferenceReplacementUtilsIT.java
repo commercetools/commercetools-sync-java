@@ -7,7 +7,8 @@ import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.types.Type;
-import org.junit.AfterClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -27,14 +28,14 @@ import static java.util.Collections.singletonList;
 import static java.util.Locale.ENGLISH;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CategoryReferenceReplacementUtilsIT {
+class CategoryReferenceReplacementUtilsIT {
 
     /**
      * Delete all categories and types from source and target project. Then create custom types for source and target
      * CTP project categories.
      */
     @BeforeAll
-    public static void setup() {
+    static void setup() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypesFromTargetAndSource();
     }
@@ -43,13 +44,13 @@ public class CategoryReferenceReplacementUtilsIT {
      * Cleans up the target and source test data that were built in this test class.
      */
     @AfterAll
-    public static void tearDown() {
+    static void tearDown() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypesFromTargetAndSource();
     }
 
     @Test
-    public void buildCategoryQuery_Always_ShouldFetchProductWithAllExpandedReferences() {
+    void buildCategoryQuery_Always_ShouldFetchProductWithAllExpandedReferences() {
         final CategoryDraft parentDraft = CategoryDraftBuilder.of(ofEnglish("parent"), ofEnglish("parent"))
                                                                 .build();
         final Category parentCategory =
