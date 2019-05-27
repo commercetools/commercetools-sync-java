@@ -11,7 +11,7 @@ import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.commands.updateactions.SetProductPriceCustomField;
 import io.sphere.sdk.products.commands.updateactions.SetProductPriceCustomType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 
@@ -23,10 +23,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ProductPriceCustomUpdateActionUtilsTest {
+class ProductPriceCustomUpdateActionUtilsTest {
 
     @Test
-    public void buildTypedSetCustomTypeUpdateAction_WithProductPrice_ShouldBuildProductUpdateAction() {
+    void buildTypedSetCustomTypeUpdateAction_WithProductPrice_ShouldBuildProductUpdateAction() {
         final Price price = mock(Price.class);
         when(price.getId()).thenReturn("priceId");
         final String newCustomTypeId = "key";
@@ -42,7 +42,7 @@ public class ProductPriceCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildRemoveCustomTypeAction_WithProductPrice_ShouldBuildChannelUpdateAction() {
+    void buildRemoveCustomTypeAction_WithProductPrice_ShouldBuildChannelUpdateAction() {
         final String priceId = "1";
         final UpdateAction<Product> updateAction = new PriceCustomActionBuilder().buildRemoveCustomTypeAction(1,
             priceId);
@@ -53,7 +53,7 @@ public class ProductPriceCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetCustomFieldAction_WithProductPrice_ShouldBuildProductUpdateAction() {
+    void buildSetCustomFieldAction_WithProductPrice_ShouldBuildProductUpdateAction() {
         final String priceId = "1";
         final String customFieldName = "name";
         final JsonNode customFieldValue = JsonNodeFactory.instance.textNode("foo");

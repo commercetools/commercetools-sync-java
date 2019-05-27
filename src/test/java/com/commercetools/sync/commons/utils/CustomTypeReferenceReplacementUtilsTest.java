@@ -5,7 +5,7 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
@@ -14,10 +14,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class CustomTypeReferenceReplacementUtilsTest {
+class CustomTypeReferenceReplacementUtilsTest {
 
     @Test
-    public void replaceCustomTypeIdWithKeys_WithNullCustomType_ShouldReturnNullCustomFields() {
+    void replaceCustomTypeIdWithKeys_WithNullCustomType_ShouldReturnNullCustomFields() {
         final Category mockCategory = mock(Category.class);
 
         final CustomFieldsDraft customFieldsDraft = replaceCustomTypeIdWithKeys(mockCategory);
@@ -26,7 +26,7 @@ public class CustomTypeReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceCustomTypeIdWithKeys_WithExpandedCategory_ShouldReturnCustomFieldsDraft() {
+    void replaceCustomTypeIdWithKeys_WithExpandedCategory_ShouldReturnCustomFieldsDraft() {
         // preparation
         final Category mockCategory = mock(Category.class);
         final CustomFields mockCustomFields  = mock(CustomFields.class);
@@ -47,7 +47,7 @@ public class CustomTypeReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceCustomTypeIdWithKeys_WithNonExpandedCategory_ShouldReturnReferenceWithoutReplacedKey() {
+    void replaceCustomTypeIdWithKeys_WithNonExpandedCategory_ShouldReturnReferenceWithoutReplacedKey() {
         // preparation
         final Category mockCategory = mock(Category.class);
         final CustomFields mockCustomFields  = mock(CustomFields.class);

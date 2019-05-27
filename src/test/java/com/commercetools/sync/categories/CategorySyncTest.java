@@ -14,8 +14,8 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.queries.PagedQueryResult;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -54,7 +54,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class CategorySyncTest {
+class CategorySyncTest {
     private CategorySyncOptions categorySyncOptions;
     private List<String> errorCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
@@ -80,8 +80,8 @@ public class CategorySyncTest {
      * Initializes instances of  {@link CategorySyncOptions} and {@link CategorySync} which will be used by some
      * of the unit test methods in this test class.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
         final SphereClient ctpClient = mock(SphereClient.class);
@@ -94,7 +94,7 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void sync_WithEmptyListOfDrafts_ShouldNotProcessAnyCategories() {
+    void sync_WithEmptyListOfDrafts_ShouldNotProcessAnyCategories() {
         final CategoryService mockCategoryService = mockCategoryService(emptySet(), null);
         final CategorySync mockCategorySync =
             new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService);
@@ -108,7 +108,7 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void sync_WithANullDraft_ShouldBeCountedAsFailed() {
+    void sync_WithANullDraft_ShouldBeCountedAsFailed() {
         final CategoryService mockCategoryService = mockCategoryService(emptySet(), null);
         final CategorySync mockCategorySync =
             new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService);
@@ -124,7 +124,7 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void sync_WithADraftWithNoSetKey_ShouldFailSync() {
+    void sync_WithADraftWithNoSetKey_ShouldFailSync() {
         final CategoryService mockCategoryService = mockCategoryService(emptySet(), null);
         final CategorySync mockCategorySync =
             new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService);
@@ -143,7 +143,7 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void sync_WithNoExistingCategory_ShouldCreateCategory() {
+    void sync_WithNoExistingCategory_ShouldCreateCategory() {
         final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key");
         final CategoryService mockCategoryService = mockCategoryService(emptySet(), mockCategory);
         final CategorySync mockCategorySync =
@@ -160,7 +160,7 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void sync_WithExistingCategory_ShouldUpdateCategory() {
+    void sync_WithExistingCategory_ShouldUpdateCategory() {
         final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key");
         final CategoryService mockCategoryService =
             mockCategoryService(singleton(mockCategory), null, mockCategory);
@@ -178,7 +178,7 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void sync_WithIdenticalExistingCategory_ShouldNotUpdateCategory() {
+    void sync_WithIdenticalExistingCategory_ShouldNotUpdateCategory() {
         final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key");
         final CategoryDraft identicalCategoryDraft = CategoryDraftBuilder.of(mockCategory).build();
         final CategoryService mockCategoryService =
@@ -196,7 +196,7 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void sync_WithExistingCategoryButWithNullParentReference_ShouldFailSync() {
+    void sync_WithExistingCategoryButWithNullParentReference_ShouldFailSync() {
         final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key");
         final CategoryService mockCategoryService =
             mockCategoryService(singleton(mockCategory), null, mockCategory);
@@ -218,7 +218,7 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void sync_WithExistingCategoryButWithNoCustomType_ShouldSync() {
+    void sync_WithExistingCategoryButWithNoCustomType_ShouldSync() {
         final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key");
         final CategoryService mockCategoryService =
             mockCategoryService(singleton(mockCategory), null, mockCategory);
@@ -240,7 +240,7 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void sync_WithExistingCategoryButWithEmptyParentReference_ShouldFailSync() {
+    void sync_WithExistingCategoryButWithEmptyParentReference_ShouldFailSync() {
         final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key");
         final CategoryService mockCategoryService =
             mockCategoryService(singleton(mockCategory), null, mockCategory);
@@ -263,7 +263,7 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void sync_WithExistingCategoryButWithEmptyCustomTypeReference_ShouldFailSync() {
+    void sync_WithExistingCategoryButWithEmptyCustomTypeReference_ShouldFailSync() {
         final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key");
         final CategoryService mockCategoryService =
             mockCategoryService(singleton(mockCategory), null, mockCategory);
@@ -286,7 +286,7 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void requiresChangeParentUpdateAction_WithTwoDifferentParents_ShouldReturnTrue() {
+    void requiresChangeParentUpdateAction_WithTwoDifferentParents_ShouldReturnTrue() {
         final String parentId = "parentId";
         final Category category = mock(Category.class);
         when(category.getParent()).thenReturn(Category.referenceOfId(parentId));
@@ -300,7 +300,7 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void requiresChangeParentUpdateAction_WithTwoIdenticalParents_ShouldReturnFalse() {
+    void requiresChangeParentUpdateAction_WithTwoIdenticalParents_ShouldReturnFalse() {
         final String parentId = "parentId";
         final Category category = mock(Category.class);
         when(category.getParent()).thenReturn(Category.referenceOfId(parentId));
@@ -314,7 +314,7 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void requiresChangeParentUpdateAction_WithNonExistingParents_ShouldReturnFalse() {
+    void requiresChangeParentUpdateAction_WithNonExistingParents_ShouldReturnFalse() {
         final Category category = mock(Category.class);
         when(category.getParent()).thenReturn(null);
 
@@ -326,7 +326,7 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void sync_WithBatchSizeSet_ShouldCallSyncOnEachBatch() {
+    void sync_WithBatchSizeSet_ShouldCallSyncOnEachBatch() {
         // preparation
         final int batchSize = 1;
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
@@ -369,7 +369,7 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void sync_WithDefaultBatchSize_ShouldCallSyncOnEachBatch() {
+    void sync_WithDefaultBatchSize_ShouldCallSyncOnEachBatch() {
         // preparation
         final int numberOfCategoryDrafts  = 160;
         final List<Category> mockedCreatedCategories =
@@ -404,7 +404,7 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void sync_WithFailOnCachingKeysToIds_ShouldTriggerErrorCallbackAndReturnProperStats() {
+    void sync_WithFailOnCachingKeysToIds_ShouldTriggerErrorCallbackAndReturnProperStats() {
         // preparation
         final SphereClient mockClient = mock(SphereClient.class);
         when(mockClient.execute(any(CategoryQuery.class)))
@@ -447,7 +447,7 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void sync_WithFailOnFetchingCategories_ShouldTriggerErrorCallbackAndReturnProperStats() {
+    void sync_WithFailOnFetchingCategories_ShouldTriggerErrorCallbackAndReturnProperStats() {
         // preparation
         final SphereClient mockClient = mock(SphereClient.class);
 
@@ -506,7 +506,7 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void sync_WithOnlyDraftsToCreate_ShouldCallBeforeCreateCallback() {
+    void sync_WithOnlyDraftsToCreate_ShouldCallBeforeCreateCallback() {
         // preparation
         final CategoryDraft categoryDraft =
             getMockCategoryDraft(Locale.ENGLISH, "name", "foo", "parentKey", "customTypeId", new HashMap<>());
@@ -532,7 +532,7 @@ public class CategorySyncTest {
     }
 
     @Test
-    public void sync_WithOnlyDraftsToUpdate_ShouldOnlyCallBeforeUpdateCallback() {
+    void sync_WithOnlyDraftsToUpdate_ShouldOnlyCallBeforeUpdateCallback() {
         // preparation
         final CategoryDraft categoryDraft =
             getMockCategoryDraft(Locale.ENGLISH, "name", "1", "parentKey", "customTypeId", new HashMap<>());

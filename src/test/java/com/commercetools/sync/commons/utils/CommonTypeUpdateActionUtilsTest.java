@@ -5,7 +5,7 @@ import io.sphere.sdk.categories.commands.updateactions.ChangeName;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -14,12 +14,12 @@ import java.util.Optional;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CommonTypeUpdateActionUtilsTest {
+class CommonTypeUpdateActionUtilsTest {
     private static final Locale LOCALE = Locale.GERMAN;
     private static final String MOCK_OLD_CATEGORY_NAME = "categoryName";
 
     @Test
-    public void buildUpdateActionForLocalizedStrings_WithDifferentFieldValues_ShouldBuildUpdateAction() {
+    void buildUpdateActionForLocalizedStrings_WithDifferentFieldValues_ShouldBuildUpdateAction() {
         final LocalizedString oldLocalisedString = LocalizedString.of(LOCALE, "Apfel");
         final LocalizedString newLocalisedString = LocalizedString.of(LOCALE, "Milch");
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
@@ -34,7 +34,7 @@ public class CommonTypeUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildUpdateActionForLocalizedStrings_WithEmptyOldFields_ShouldBuildUpdateAction() {
+    void buildUpdateActionForLocalizedStrings_WithEmptyOldFields_ShouldBuildUpdateAction() {
         final LocalizedString oldLocalisedString = LocalizedString.of(new HashMap<>());
         final LocalizedString newLocalisedString = LocalizedString.of(LOCALE, "Milch");
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
@@ -49,7 +49,7 @@ public class CommonTypeUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildUpdateActionForLocalizedStrings_WithEmptyFields_ShouldNotBuildUpdateAction() {
+    void buildUpdateActionForLocalizedStrings_WithEmptyFields_ShouldNotBuildUpdateAction() {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
             LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
         final Optional<UpdateAction<Category>> updateActionForLocalizedStrings =
@@ -61,7 +61,7 @@ public class CommonTypeUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildUpdateActionForLocalizedStrings_WithSameValues_ShouldNotBuildUpdateAction() {
+    void buildUpdateActionForLocalizedStrings_WithSameValues_ShouldNotBuildUpdateAction() {
         final LocalizedString oldLocalisedString = LocalizedString.of(LOCALE, "Milch");
         final LocalizedString newLocalisedString = LocalizedString.of(LOCALE, "Milch");
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
@@ -75,7 +75,7 @@ public class CommonTypeUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildUpdateActionForLocalizedStrings_WithSameValuesButDifferentFieldOrder_ShouldNotBuildUpdateAction() {
+    void buildUpdateActionForLocalizedStrings_WithSameValuesButDifferentFieldOrder_ShouldNotBuildUpdateAction() {
         final LocalizedString oldLocalisedString = LocalizedString.of(LOCALE, "Milch")
                                                                   .plus(Locale.FRENCH, "Lait")
                                                                   .plus(Locale.ENGLISH, "Milk");
@@ -95,7 +95,7 @@ public class CommonTypeUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildUpdateActionForLocalizedStrings_WithNullValues_ShouldNotBuildUpdateAction() {
+    void buildUpdateActionForLocalizedStrings_WithNullValues_ShouldNotBuildUpdateAction() {
         final UpdateAction<Category> mockUpdateAction = ChangeName
             .of(LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
         final Optional<UpdateAction<Category>> updateActionForReferences =
@@ -106,7 +106,7 @@ public class CommonTypeUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildUpdateActionForLocalizedStrings_WithNullUpdateAction_ShouldNotBuildUpdateAction() {
+    void buildUpdateActionForLocalizedStrings_WithNullUpdateAction_ShouldNotBuildUpdateAction() {
         final Optional<UpdateAction<Category>> updateActionForReferences =
             buildUpdateAction(null, null, () -> null);
 
@@ -115,7 +115,7 @@ public class CommonTypeUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildUpdateActionForReferences_WithDifferentTypeReferenceIds_ShouldBuildUpdateAction() {
+    void buildUpdateActionForReferences_WithDifferentTypeReferenceIds_ShouldBuildUpdateAction() {
         final Reference<Category> oldCategoryReference = Category.referenceOfId("1");
         Reference<Category> newCategoryReference = Category.referenceOfId("2");
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
@@ -130,7 +130,7 @@ public class CommonTypeUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildUpdateActionForReferences_WithOneNullReference_ShouldBuildUpdateAction() {
+    void buildUpdateActionForReferences_WithOneNullReference_ShouldBuildUpdateAction() {
         final Reference<Category> categoryReference = Category.referenceOfId("1");
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
             LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
@@ -144,7 +144,7 @@ public class CommonTypeUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildUpdateActionForReferences_WithSameCategoryReferences_ShouldNotBuildUpdateAction() {
+    void buildUpdateActionForReferences_WithSameCategoryReferences_ShouldNotBuildUpdateAction() {
         final Reference<Category> categoryReference = Category.referenceOfId("1");
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
             LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
@@ -157,7 +157,7 @@ public class CommonTypeUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildUpdateActionForReferences_WithNullReferences_ShouldNotBuildUpdateAction() {
+    void buildUpdateActionForReferences_WithNullReferences_ShouldNotBuildUpdateAction() {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
             LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
         final Optional<UpdateAction<Category>> updateActionForReferences =
@@ -168,7 +168,7 @@ public class CommonTypeUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildUpdateActionForReferences_WithNullUpdateAction_ShouldNotBuildUpdateAction() {
+    void buildUpdateActionForReferences_WithNullUpdateAction_ShouldNotBuildUpdateAction() {
         final Optional<UpdateAction<Category>> updateActionForReferences =
             buildUpdateAction(null, null, () -> null);
 
@@ -177,7 +177,7 @@ public class CommonTypeUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildUpdateActionForStrings_WithDifferentStrings_ShouldBuildUpdateAction() {
+    void buildUpdateActionForStrings_WithDifferentStrings_ShouldBuildUpdateAction() {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
             LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
@@ -190,7 +190,7 @@ public class CommonTypeUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildUpdateActionForStrings_WithOneNullString_ShouldBuildUpdateAction() {
+    void buildUpdateActionForStrings_WithOneNullString_ShouldBuildUpdateAction() {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
             LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
@@ -203,7 +203,7 @@ public class CommonTypeUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildUpdateActionForStrings_WithSameStrings_ShouldNotBuildUpdateAction() {
+    void buildUpdateActionForStrings_WithSameStrings_ShouldNotBuildUpdateAction() {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
             LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
 
@@ -215,7 +215,7 @@ public class CommonTypeUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildUpdateActionForStrings_WithNullStrings_ShouldNotBuildUpdateAction() {
+    void buildUpdateActionForStrings_WithNullStrings_ShouldNotBuildUpdateAction() {
         final UpdateAction<Category> mockUpdateAction = ChangeName.of(
             LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
         final Optional<UpdateAction<Category>> updateActionForStrings =
@@ -226,7 +226,7 @@ public class CommonTypeUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildUpdateActionForStrings_WithNullUpdateAction_ShouldNotBuildUpdateAction() {
+    void buildUpdateActionForStrings_WithNullUpdateAction_ShouldNotBuildUpdateAction() {
         final Optional<UpdateAction<Category>> updateActionForStrings =
             buildUpdateAction(null, null, () -> null);
 

@@ -23,8 +23,8 @@ import io.sphere.sdk.models.AssetDraftBuilder;
 import io.sphere.sdk.models.AssetSourceBuilder;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.ResourceIdentifier;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Locale;
@@ -36,7 +36,7 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-public class CategorySyncUtilsTest {
+class CategorySyncUtilsTest {
     private Category mockOldCategory;
     private CategorySyncOptions categorySyncOptions;
     private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
@@ -60,8 +60,8 @@ public class CategorySyncUtilsTest {
     /**
      * Initializes an instance of {@link CategorySyncOptions} and {@link Category}.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
                                                         .build();
 
@@ -79,7 +79,7 @@ public class CategorySyncUtilsTest {
     }
 
     @Test
-    public void buildActions_FromDraftsWithDifferentNameValues_ShouldBuildUpdateActions() {
+    void buildActions_FromDraftsWithDifferentNameValues_ShouldBuildUpdateActions() {
         final CategoryDraft newCategoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(LOCALE, "differentName"), LocalizedString.of(LOCALE, CATEGORY_SLUG))
             .key(CATEGORY_KEY)
@@ -101,7 +101,7 @@ public class CategorySyncUtilsTest {
     }
 
     @Test
-    public void buildActions_FromDraftsWithMultipleDifferentValues_ShouldBuildUpdateActions() {
+    void buildActions_FromDraftsWithMultipleDifferentValues_ShouldBuildUpdateActions() {
 
         final CategoryDraft newCategoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(LOCALE, "differentName"), LocalizedString.of(LOCALE, "differentSlug"))
