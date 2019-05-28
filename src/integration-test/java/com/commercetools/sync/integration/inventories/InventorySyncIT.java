@@ -14,6 +14,7 @@ import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.inventory.expansion.InventoryEntryExpansionModel;
 import io.sphere.sdk.inventory.queries.InventoryEntryQuery;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -136,37 +137,6 @@ class InventorySyncIT {
     }
 
     @Test
-    void sync_WithExpandedReferenceToExistingSupplyChannel_ShouldUpdateInventory() {
-        //Fetch existing Channel of key SUPPLY_CHANNEL_KEY_1 from target project.
-        final Optional<Channel> supplyChannel = getChannelByKey(CTP_TARGET_CLIENT, SUPPLY_CHANNEL_KEY_1);
-        assertThat(supplyChannel).isNotEmpty();
-
-        //Make Reference from fetched Channel. Ensure that it is expanded.
-        final Reference<Channel> supplyChannelReference = supplyChannel.get().toReference();
-        assertThat(supplyChannelReference.getObj()).isNotNull();
-        assertThat(supplyChannelReference.getObj().getKey()).isEqualTo(SUPPLY_CHANNEL_KEY_1);
-
-        //Prepare InventoryEntryDraft of sku SKU_1 and reference to above supply channel key.
-        final InventoryEntryDraft newInventoryDraft = InventoryEntryDraftBuilder
-            .of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2,
-                Channel.referenceOfId(SUPPLY_CHANNEL_KEY_1)).build();
-
-        //Prepare sync options and perform sync of draft to target project.
-        final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT).build();
-        final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
-        final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(singletonList(newInventoryDraft))
-            .toCompletableFuture().join();
-        assertThat(inventorySyncStatistics).hasValues(1, 0, 1, 0);
-
-        //Ensure old entry values after sync.
-        final Optional<InventoryEntry> oldInventoryAfterSync =
-            getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, supplyChannelReference);
-        assertThat(oldInventoryAfterSync).isPresent();
-        assertValues(oldInventoryAfterSync.get(), QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2);
-        assertThat(oldInventoryAfterSync.get().getSupplyChannel().getId()).isEqualTo(supplyChannelReference.getId());
-    }
-
-    @Test
     void sync_WithKeyToExistingSupplyChannelInPlaceOfReferenceId_ShouldUpdateInventory() {
         /*
          * Fetch existing Channel of key SUPPLY_CHANNEL_KEY_1 from target project.
@@ -232,7 +202,7 @@ class InventorySyncIT {
     }
 
     @Test
-    void sync_WithExpandedReferencesToSourceChannels_ShouldUpdateInventoriesWithoutChannelCreation() {
+    void sync_WithReferencesToSourceChannels_ShouldUpdateInventoriesWithoutChannelCreation() {
         //Ensure channels in target project before sync
         final ChannelQuery targetChannelsQuery = ChannelQuery.of().withPredicates(channelQueryModel ->
                 channelQueryModel.roles().containsAny(singletonList(ChannelRole.INVENTORY_SUPPLY)));
