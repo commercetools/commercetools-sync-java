@@ -4,6 +4,7 @@ import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.Type;
 import org.junit.jupiter.api.Test;
@@ -104,7 +105,7 @@ class InventoryReferenceReplacementUtilsTest {
         when(inventoryEntry.getSupplyChannel()).thenReturn(channelReference);
 
         //test
-        final Reference<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(inventoryEntry);
+        final ResourceIdentifier<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(inventoryEntry);
 
         //assertion
         assertThat(channelReferenceWithKey).isNotNull();
@@ -122,7 +123,7 @@ class InventoryReferenceReplacementUtilsTest {
         when(inventoryEntry.getSupplyChannel()).thenReturn(channelReference);
 
         //test
-        final Reference<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(inventoryEntry);
+        final ResourceIdentifier<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(inventoryEntry);
 
         //assertion
         assertThat(channelReferenceWithKey).isNotNull();
@@ -133,7 +134,7 @@ class InventoryReferenceReplacementUtilsTest {
     void replaceChannelReferenceIdWithKey_WithNullChannelReference_ShouldReturnNull() {
         final InventoryEntry inventoryEntry = mock(InventoryEntry.class);
 
-        final Reference<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(inventoryEntry);
+        final ResourceIdentifier<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(inventoryEntry);
 
         assertThat(channelReferenceWithKey).isNull();
     }
