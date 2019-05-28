@@ -22,12 +22,12 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Consumer;
 
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-//todo: check keyToIdCache is needed for cart discount service
 public class CartDiscountServiceImpl extends BaseService<CartDiscountDraft, CartDiscount, CartDiscountSyncOptions>
     implements CartDiscountService {
 
@@ -61,6 +61,25 @@ public class CartDiscountServiceImpl extends BaseService<CartDiscountDraft, Cart
 
     @Nonnull
     @Override
+    public CompletionStage<Optional<String>> fetchCachedCartDiscountId(@Nonnull final String key) {
+        if (keyToIdCache.containsKey(key)) {
+            return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
+        }
+        return fetchAndCache(key);
+    }
+
+    @Nonnull
+    private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
+
+        final Consumer<List<CartDiscount>> cartDiscountPageConsumer = cartDiscountPage ->
+                cartDiscountPage.forEach(cartDiscount -> keyToIdCache.put(getKey(cartDiscount), cartDiscount.getId()));
+
+        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), CartDiscountQuery.of(), cartDiscountPageConsumer)
+                .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
+    }
+
+    @Nonnull
+    @Override
     public CompletionStage<Set<CartDiscount>> fetchMatchingCartDiscountsByKeys(@Nonnull final Set<String> keys) {
         if (keys.isEmpty()) {
             return CompletableFuture.completedFuture(Collections.emptySet());
@@ -73,7 +92,7 @@ public class CartDiscountServiceImpl extends BaseService<CartDiscountDraft, Cart
 
 
         return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), cartDiscountQuery, identity())
-                            .thenApply(types -> types
+                            .thenApply(cartDiscounts -> cartDiscounts
                                 .stream()
                                 .flatMap(List::stream)
                                 .peek(cartDiscount -> keyToIdCache.put(getKey(cartDiscount), cartDiscount.getId()))
