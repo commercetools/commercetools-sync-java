@@ -183,8 +183,8 @@ class InventorySyncTest {
         assertThat(stats).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on InventoryEntryDraft"
-                + " with SKU:'%s'. Reason: %s: Failed to resolve supply channel reference on InventoryEntryDraft with"
-                + " SKU:'%s'. Reason: Channel with key '%s' does not exist.", SKU_3,
+                + " with SKU:'%s'. Reason: %s: Failed to resolve supply channel resource identifier on"
+                + " InventoryEntryDraft with SKU:'%s'. Reason: Channel with key '%s' does not exist.", SKU_3,
             ReferenceResolutionException.class.getCanonicalName(), SKU_3, KEY_3));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
@@ -344,7 +344,7 @@ class InventorySyncTest {
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).isNotEmpty();
         assertThat(errorCallBackMessages.get(0)).contains(format("Failed to resolve references on"
-            + " InventoryEntryDraft with SKU:'%s'. Reason: %s: Failed to resolve custom type reference on "
+            + " InventoryEntryDraft with SKU:'%s'. Reason: %s: Failed to resolve custom type resource identifier on "
             + "InventoryEntryDraft with SKU:'1000'. Reason: %s", SKU_1,
             ReferenceResolutionException.class.getCanonicalName(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
         assertThat(errorCallBackExceptions).isNotEmpty();
@@ -399,8 +399,8 @@ class InventorySyncTest {
 
         assertThat(stats).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).isNotEmpty();
-        assertThat(errorCallBackMessages.get(0)).contains(format("Failed to resolve supply channel reference on"
-                + " InventoryEntryDraft with SKU:'%s'.", SKU_1));
+        assertThat(errorCallBackMessages.get(0)).contains(format("Failed to resolve supply channel resource identifier"
+            + " on InventoryEntryDraft with SKU:'%s'.", SKU_1));
         assertThat(errorCallBackExceptions).isNotEmpty();
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
