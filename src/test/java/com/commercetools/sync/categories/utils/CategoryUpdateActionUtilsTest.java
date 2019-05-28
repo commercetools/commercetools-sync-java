@@ -35,6 +35,8 @@ import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaDescriptionUpdateAction;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaKeywordsUpdateAction;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaTitleUpdateAction;
+import static com.commercetools.sync.products.ProductSyncMockUtils.CATEGORY_KEY_1_RESOURCE_PATH;
+import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -204,12 +206,13 @@ class CategoryUpdateActionUtilsTest {
 
     @Test
     void buildChangeParentUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
-        final CategoryDraft newCategoryDraftWithSameParent = mock(CategoryDraft.class);
-        when(newCategoryDraftWithSameParent.getParent())
-            .thenReturn(Category.referenceOfId(MOCK_OLD_CATEGORY_PARENT_ID));
+        final Category oldCategory = readObjectFromResource(CATEGORY_KEY_1_RESOURCE_PATH, Category.class);
+        final CategoryDraft newCategory = mock(CategoryDraft.class);
+        when(newCategory.getParent())
+            .thenReturn(ResourceIdentifier.ofId(oldCategory.getParent().getId()));
 
         final Optional<UpdateAction<Category>> changeParentUpdateAction =
-            buildChangeParentUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraftWithSameParent, CATEGORY_SYNC_OPTIONS);
+            buildChangeParentUpdateAction(oldCategory, newCategory, CATEGORY_SYNC_OPTIONS);
 
         assertThat(changeParentUpdateAction).isNotNull();
         assertThat(changeParentUpdateAction).isNotPresent();

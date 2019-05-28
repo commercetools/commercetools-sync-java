@@ -9,6 +9,7 @@ import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.categories.commands.updateactions.ChangeParent;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.ResourceIdentifier;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -127,9 +128,10 @@ class ChangeParentIT {
 
         // Prepare new category draft with a same parent. The parent is substituted with the target project's
         // parnet id, because the utils assume reference resolution has already been done at this point.
-        final CategoryDraft draftFromCategory = CategoryDraftBuilder.of(newCategory)
-                                                                    .parent(oldCategoryParent.toResourceIdentifier())
-                                                                    .build();
+        final CategoryDraft draftFromCategory = CategoryDraftBuilder
+            .of(newCategory)
+            .parent(ResourceIdentifier.ofId(oldCategoryParent.getId()))
+            .build();
 
         // Build change parent update action
         final UpdateAction<Category> changeParentUpdateAction =
