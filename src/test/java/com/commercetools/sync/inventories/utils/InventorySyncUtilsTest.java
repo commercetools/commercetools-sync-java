@@ -15,6 +15,7 @@ import io.sphere.sdk.inventory.commands.updateactions.SetExpectedDelivery;
 import io.sphere.sdk.inventory.commands.updateactions.SetRestockableInDays;
 import io.sphere.sdk.inventory.commands.updateactions.SetSupplyChannel;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.CustomFieldsDraftBuilder;
@@ -60,8 +61,10 @@ class InventorySyncUtilsTest {
         inventoryEntryWithCustomField1 = getMockInventoryEntry("123", 10L, 10, DATE_1, reference, customFields);
 
 
-        similarDraft = InventoryEntryDraftBuilder.of("123", 10L, DATE_1, 10, Channel.referenceOfId("111")).build();
-        variousDraft = InventoryEntryDraftBuilder.of("321", 20L, DATE_2, 20, Channel.referenceOfId("222")).build();
+        similarDraft = InventoryEntryDraftBuilder.of("123", 10L, DATE_1, 10, ResourceIdentifier.ofId("111"))
+                                                 .build();
+        variousDraft = InventoryEntryDraftBuilder.of("321", 20L, DATE_2, 20, ResourceIdentifier.ofId("222"))
+                                                 .build();
     }
 
     @Test
