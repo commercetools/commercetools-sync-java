@@ -10,8 +10,10 @@ import io.sphere.sdk.channels.commands.ChannelCreateCommand;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
+import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.inventory.commands.InventoryEntryUpdateCommand;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.CustomFieldsDraftBuilder;
 import org.junit.jupiter.api.AfterAll;
@@ -169,8 +171,10 @@ class InventoryUpdateActionUtilsIT {
 
         //Prepare draft with updated data.
         final InventoryEntryDraft newInventory =
-            InventoryEntryDraft.of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2,
-                channelReference);
+            InventoryEntryDraftBuilder
+                .of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2,
+                    ResourceIdentifier.ofId(channelReference.getId()))
+                .build();
 
         //Build update action.
         final Optional<UpdateAction<InventoryEntry>> updateActionOptional =
