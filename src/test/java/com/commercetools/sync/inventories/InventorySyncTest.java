@@ -99,15 +99,22 @@ class InventorySyncTest {
         );
 
         drafts = asList(
-                InventoryEntryDraft.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1,null),
-                InventoryEntryDraft.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, expandedReference1),
-                InventoryEntryDraft.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, Channel.referenceOfId(KEY_2)),
-                InventoryEntryDraft.of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2,null),
-                InventoryEntryDraft.of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2, expandedReference1),
-                InventoryEntryDraft.of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2, Channel.referenceOfId(KEY_2)),
-                InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1,null),
-                InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, expandedReference1),
-                InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, Channel.referenceOfId(KEY_2))
+            InventoryEntryDraftBuilder.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, null)
+                                      .build(),
+            InventoryEntryDraftBuilder.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, ResourceIdentifier.ofId(KEY_2))
+                                      .build(),
+            InventoryEntryDraftBuilder.of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2, null)
+                                      .build(),
+            InventoryEntryDraftBuilder.of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2, ResourceIdentifier.ofId(KEY_1))
+                                      .build(),
+            InventoryEntryDraftBuilder.of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2, ResourceIdentifier.ofId(KEY_2))
+                                      .build(),
+            InventoryEntryDraftBuilder.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, null)
+                                      .build(),
+            InventoryEntryDraftBuilder.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, expandedReference1)
+                                      .build(),
+            InventoryEntryDraftBuilder.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, ResourceIdentifier.ofId(KEY_2))
+                                      .build()
         );
 
         errorCallBackMessages = new ArrayList<>();

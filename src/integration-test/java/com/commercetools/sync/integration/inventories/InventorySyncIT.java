@@ -179,9 +179,7 @@ class InventorySyncIT {
          * Prepare InventoryEntryDraft of sku SKU_1 and reference to supply channel of key SUPPLY_CHANNEL_KEY_1.
          * Please note that the key is provided in place of Referenced id.
          */
-        final Reference<Channel> supplyChannelReference = Channel.referenceOfId(SUPPLY_CHANNEL_KEY_1);
-        assertThat(supplyChannelReference.getObj()).isNull();
-        assertThat(supplyChannelReference.getId()).isEqualTo(SUPPLY_CHANNEL_KEY_1);
+        final ResourceIdentifier<Channel> supplyChannelReference = ResourceIdentifier.ofId(SUPPLY_CHANNEL_KEY_1);
 
         final InventoryEntryDraft newInventoryDraft = InventoryEntryDraftBuilder
             .of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, supplyChannelReference).build();
@@ -214,7 +212,7 @@ class InventorySyncIT {
         assertThat(oldSupplyChannelBeforeSync).isEmpty();
 
         //Prepare sync data.
-        final Reference<Channel> newSupplyChannelReference = Channel.referenceOfId(SUPPLY_CHANNEL_KEY_2);
+        final ResourceIdentifier<Channel> newSupplyChannelReference = ResourceIdentifier.ofId(SUPPLY_CHANNEL_KEY_2);
         final InventoryEntryDraft newInventoryDraft = InventoryEntryDraftBuilder
             .of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, newSupplyChannelReference)
             .build();
@@ -246,7 +244,7 @@ class InventorySyncIT {
         //Prepare InventoryEntryDraft of sku SKU_1 and reference to above supply channel key.
         final InventoryEntryDraft newInventoryDraft = InventoryEntryDraftBuilder
             .of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2,
-                Channel.referenceOfId(SUPPLY_CHANNEL_KEY_1)).build();
+                ResourceIdentifier.ofId(SUPPLY_CHANNEL_KEY_1)).build();
 
         //Fetch existing Channel of key SUPPLY_CHANNEL_KEY_1 from target project.
         final Optional<Channel> targetSupplyChannel = getChannelByKey(CTP_TARGET_CLIENT, SUPPLY_CHANNEL_KEY_1);
