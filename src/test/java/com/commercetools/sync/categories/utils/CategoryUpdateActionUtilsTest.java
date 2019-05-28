@@ -193,7 +193,7 @@ class CategoryUpdateActionUtilsTest {
     @Test
     void buildChangeParentUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
-        when(newCategoryDraft.getParent()).thenReturn(Category.referenceOfId("2").toResourceIdentifier());
+        when(newCategoryDraft.getParent()).thenReturn(ResourceIdentifier.ofId("2"));
 
         final UpdateAction<Category> changeParentUpdateAction =
             buildChangeParentUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft, CATEGORY_SYNC_OPTIONS).orElse(null);
