@@ -138,7 +138,7 @@ public class CartDiscountITUtils {
         int counter = 0;
         int current = 1;
 
-        while (counter != 100) {
+        while (counter != capacity) {
             current += 2;
             sortOrders.add("0.0" + current);
             counter ++;
