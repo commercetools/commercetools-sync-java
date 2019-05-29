@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Optional;
 
+import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.areResourceIdentifiersEqual;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActionForReferences;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -286,5 +287,37 @@ class CommonTypeUpdateActionUtilsTest {
 
         assertThat(updateActionForStrings).isNotNull();
         assertThat(updateActionForStrings).contains(mockUpdateAction);
+    }
+
+    @Test
+    void areResourceIdentifiersEqual_WithDiffValues_ShouldBeFalse() {
+        final boolean result = areResourceIdentifiersEqual(
+            ResourceIdentifier.ofId("foo"), ResourceIdentifier.ofId("bar"));
+
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    void areResourceIdentifiersEqual_WithSameValues_ShouldBeTrue() {
+        final boolean result = areResourceIdentifiersEqual(
+            ResourceIdentifier.ofId("foo"), ResourceIdentifier.ofId("foo"));
+
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    void areResourceIdentifiersEqual_WithDiffValuesDifferentInterface_ShouldBeFalse() {
+        final boolean result = areResourceIdentifiersEqual(
+            ResourceIdentifier.ofId("foo"), Category.referenceOfId("bar"));
+
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    void areResourceIdentifiersEqual_WithSameValuesDifferentInterface_ShouldBeTrue() {
+        final boolean result = areResourceIdentifiersEqual(
+            ResourceIdentifier.ofId("foo"), Category.referenceOfId("foo"));
+
+        assertThat(result).isTrue();
     }
 }

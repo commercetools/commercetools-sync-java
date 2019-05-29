@@ -61,10 +61,27 @@ public final class CommonTypeUpdateActionUtils {
             @Nullable final U newResourceIdentifier,
             @Nonnull final Supplier<V> updateActionSupplier) {
 
-        final String oldParentId = ofNullable(oldResourceIdentifier).map(ResourceIdentifier::getId).orElse(null);
-        final String newParentId = ofNullable(newResourceIdentifier).map(ResourceIdentifier::getId).orElse(null);
+        return !areResourceIdentifiersEqual(oldResourceIdentifier, newResourceIdentifier)
+            ? Optional.ofNullable(updateActionSupplier.get())
+            : Optional.empty();
+    }
 
-        return buildUpdateAction(oldParentId, newParentId, updateActionSupplier);
+    /**
+     * Compares the ids of two objects that are of type {@link ResourceIdentifier} (or a type that extends it).
+     *
+     * @param oldResourceIdentifier the old resource identifier
+     * @param newResourceIdentifier the new resource identifier
+     * @param <T>                   the type of the old resource identifier
+     * @param <S>                   the type of the new resource identifier
+     * @return true or false depending if the resource identifiers have the same id.
+     */
+    public static <T extends ResourceIdentifier, S extends ResourceIdentifier> boolean areResourceIdentifiersEqual(
+        @Nullable final T oldResourceIdentifier, @Nullable final S newResourceIdentifier) {
+
+        final String oldId = ofNullable(oldResourceIdentifier).map(ResourceIdentifier::getId).orElse(null);
+        final String newId = ofNullable(newResourceIdentifier).map(ResourceIdentifier::getId).orElse(null);
+
+        return Objects.equals(oldId, newId);
     }
 
     /**
