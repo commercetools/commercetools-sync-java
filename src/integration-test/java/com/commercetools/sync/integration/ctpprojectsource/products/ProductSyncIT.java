@@ -241,7 +241,7 @@ class ProductSyncIT {
 
         final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
 
-        final ProductSyncStatistics syncStatistics =  productSync.sync(productDrafts).toCompletableFuture().join();
+        final ProductSyncStatistics syncStatistics = productSync.sync(productDrafts).toCompletableFuture().join();
 
         assertThat(syncStatistics).hasValues(1, 0, 1, 0);
         assertThat(errorCallBackMessages).isEmpty();
