@@ -50,8 +50,8 @@ public interface CartDiscountService {
      * <li>the create request fails on CTP</li>
      * </ul>
      *
-     * <p>On the other hand, if the CartDiscount gets created successfully on CTP, then the created CartDiscount's id and
-     * key are cached. The method returns a {@link CompletionStage} in which the result of it's completion
+     * <p>On the other hand, if the CartDiscount gets created successfully on CTP, then the created CartDiscount's id
+     * and key are cached. The method returns a {@link CompletionStage} in which the result of it's completion
      * contains an instance {@link Optional} of the created `CartDiscount`.
      *
      * @param cartDiscountDraft the resource draft to create a resource based off of.
