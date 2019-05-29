@@ -51,7 +51,7 @@ public interface CartDiscountService {
      * </ul>
      *
      * <p>On the other hand, if the resource gets created successfully on CTP, then the created resource's id and
-     * key are cached and the method returns a {@link CompletionStage} in which the result of it's completion
+     * key are cached. The method returns a {@link CompletionStage} in which the result of it's completion
      * contains an instance {@link Optional} of the resource which was created.
      *
      * @param cartDiscountDraft the resource draft to create a resource based off of.
