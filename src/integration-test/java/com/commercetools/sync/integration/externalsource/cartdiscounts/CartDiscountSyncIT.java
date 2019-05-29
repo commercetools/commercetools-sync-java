@@ -16,8 +16,8 @@ import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.queries.PagedQueryResult;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -60,14 +60,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-public class CartDiscountSyncIT {
+class CartDiscountSyncIT {
 
     /**
      * Deletes types from the target CTP projects.
      * Populates the target CTP project with test data.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         deleteTypesFromTargetAndSource();
         deleteCartDiscountsFromTargetAndSource();
         populateSourceProject();
@@ -75,7 +75,7 @@ public class CartDiscountSyncIT {
     }
 
     @Test
-    public void sync_WithUpdatedCartDiscount_WithNewCartPredicate_ShouldUpdateCartDiscountWithNewCartPredicate() {
+    void sync_WithUpdatedCartDiscount_WithNewCartPredicate_ShouldUpdateCartDiscountWithNewCartPredicate() {
         // preparation
         final Optional<CartDiscount> oldCartDiscountBefore =
             getCartDiscountByKey(CTP_TARGET_CLIENT, CART_DISCOUNT_KEY_1);
@@ -118,7 +118,7 @@ public class CartDiscountSyncIT {
     }
 
     @Test
-    public void sync_WithUpdatedCartDiscount_WithNewValue_ShouldUpdateCartDiscountWithNewValue() {
+    void sync_WithUpdatedCartDiscount_WithNewValue_ShouldUpdateCartDiscountWithNewValue() {
         // preparation
         final Optional<CartDiscount> oldCartDiscountBefore =
             getCartDiscountByKey(CTP_TARGET_CLIENT, CART_DISCOUNT_KEY_1);
@@ -161,7 +161,7 @@ public class CartDiscountSyncIT {
     }
 
     @Test
-    public void sync_WithUpdatedCartDiscount_WithNewTarget_ShouldUpdateCartDiscountWithNewTarget() {
+    void sync_WithUpdatedCartDiscount_WithNewTarget_ShouldUpdateCartDiscountWithNewTarget() {
         // preparation
         final Optional<CartDiscount> oldCartDiscountBefore =
             getCartDiscountByKey(CTP_TARGET_CLIENT, CART_DISCOUNT_KEY_1);
@@ -204,7 +204,7 @@ public class CartDiscountSyncIT {
     }
 
     @Test
-    public void sync_WithNewCartDiscount_ShouldCreateNewDiscount() {
+    void sync_WithNewCartDiscount_ShouldCreateNewDiscount() {
         //preparation
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
@@ -234,7 +234,7 @@ public class CartDiscountSyncIT {
     }
 
     @Test
-    public void sync_WithoutKey_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    void sync_WithoutKey_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         //prepare
         //todo: SUPPORT-4443 need to be merged from name to key.
         final CartDiscountDraft newCartDiscountDraftWithoutName =
@@ -284,7 +284,7 @@ public class CartDiscountSyncIT {
     }
 
     @Test
-    public void sync_WithoutCartPredicate_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    void sync_WithoutCartPredicate_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         //prepare
         // Draft without "cartPredicate" throws a commercetools exception because "cartPredicate" is a required value
         final CartDiscountDraft newCartDiscountDraftWithoutName =
@@ -338,7 +338,7 @@ public class CartDiscountSyncIT {
     }
 
     @Test
-    public void sync_WithoutValue_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    void sync_WithoutValue_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         //prepare
         // Draft without "value" throws a commercetools exception because "value" is a required value
         final CartDiscountDraft newCartDiscountDraftWithoutValue =
@@ -392,7 +392,7 @@ public class CartDiscountSyncIT {
     }
 
     @Test
-    public void sync_WithNullDraft_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    void sync_WithNullDraft_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         //preparation
         final CartDiscountDraft newCartDiscountDraft = null;
 
@@ -430,7 +430,7 @@ public class CartDiscountSyncIT {
     }
 
     @Test
-    public void sync_WithSeveralBatches_ShouldReturnProperStatistics() {
+    void sync_WithSeveralBatches_ShouldReturnProperStatistics() {
         // preparation
         final List<String> sortOrders = getSortOrders(100);
         // Default batch size is 50 (check CartDiscountSyncOptionsBuilder) so we have 2 batches of 50
@@ -479,7 +479,7 @@ public class CartDiscountSyncIT {
     }
 
     @Test
-    public void sync_WithConcurrentModificationException_ShouldRetryToUpdateNewCartDiscountWithSuccess() {
+    void sync_WithConcurrentModificationException_ShouldRetryToUpdateNewCartDiscountWithSuccess() {
         // Preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdate();
 
@@ -535,7 +535,7 @@ public class CartDiscountSyncIT {
     }
 
     @Test
-    public void sync_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
+    void sync_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
         //preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
 
@@ -599,7 +599,7 @@ public class CartDiscountSyncIT {
     }
 
     @Test
-    public void sync_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
+    void sync_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
         //preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
 
