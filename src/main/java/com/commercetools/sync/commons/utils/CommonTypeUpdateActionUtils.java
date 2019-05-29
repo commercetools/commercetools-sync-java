@@ -31,13 +31,13 @@ public final class CommonTypeUpdateActionUtils {
      */
     @Nonnull
     public static <T, S, U extends UpdateAction<T>> Optional<U> buildUpdateAction(
-            @Nullable final S oldObject,
-            @Nullable final S newObject,
-            @Nonnull final Supplier<U> updateActionSupplier) {
+        @Nullable final S oldObject,
+        @Nullable final S newObject,
+        @Nonnull final Supplier<U> updateActionSupplier) {
 
         return !Objects.equals(oldObject, newObject)
-                ? Optional.ofNullable(updateActionSupplier.get())
-                : Optional.empty();
+            ? Optional.ofNullable(updateActionSupplier.get())
+            : Optional.empty();
     }
 
     /**
@@ -45,21 +45,21 @@ public final class CommonTypeUpdateActionUtils {
      * supplied {@link UpdateAction} as a result in an {@link Optional}. If both the {@link Object}s have the same
      * values, then no update action is needed and hence an empty {@link Optional} is returned.
      *
-     * @param oldResourceIdentifier            the old resource identifier
-     * @param newResourceIdentifier            the new resource identifier
-     * @param updateActionSupplier             the supplier that returns the update action to return in the optional
-     * @param <T>                              the type of the {@link UpdateAction}
-     * @param <S>                              the type of the old resource identifier
-     * @param <U>                              the type of the new resource identifier
-     * @param <V>                              concrete {@link UpdateAction} implementation type
+     * @param oldResourceIdentifier the old resource identifier
+     * @param newResourceIdentifier the new resource identifier
+     * @param updateActionSupplier  the supplier that returns the update action to return in the optional
+     * @param <T>                   the type of the {@link UpdateAction}
+     * @param <S>                   the type of the old resource identifier
+     * @param <U>                   the type of the new resource identifier
+     * @param <V>                   concrete {@link UpdateAction} implementation type
      * @return A filled optional with the update action or an empty optional if the object values are identical
      */
     @Nonnull
     public static <T, S extends ResourceIdentifier, U extends ResourceIdentifier, V extends UpdateAction<T>> Optional<V>
-    buildUpdateActionForReferences(
-        @Nullable final S oldResourceIdentifier,
-        @Nullable final U newResourceIdentifier,
-        @Nonnull final Supplier<V> updateActionSupplier) {
+        buildUpdateActionForReferences(
+            @Nullable final S oldResourceIdentifier,
+            @Nullable final U newResourceIdentifier,
+            @Nonnull final Supplier<V> updateActionSupplier) {
 
         final String oldParentId = ofNullable(oldResourceIdentifier).map(ResourceIdentifier::getId).orElse(null);
         final String newParentId = ofNullable(newResourceIdentifier).map(ResourceIdentifier::getId).orElse(null);
@@ -82,13 +82,13 @@ public final class CommonTypeUpdateActionUtils {
      */
     @Nonnull
     public static <T, S, U extends UpdateAction<T>> List<U> buildUpdateActions(
-            @Nullable final S oldObject,
-            @Nullable final S newObject,
-            @Nonnull final Supplier<List<U>> updateActionSupplier) {
+        @Nullable final S oldObject,
+        @Nullable final S newObject,
+        @Nonnull final Supplier<List<U>> updateActionSupplier) {
 
         return !Objects.equals(oldObject, newObject)
-                ? updateActionSupplier.get()
-                : emptyList();
+            ? updateActionSupplier.get()
+            : emptyList();
     }
 
     private CommonTypeUpdateActionUtils() {

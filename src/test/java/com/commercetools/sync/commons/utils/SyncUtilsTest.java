@@ -149,8 +149,9 @@ class SyncUtilsTest {
         final Reference<Category> categoryReference = Reference.ofResourceTypeIdAndObj(Category.referenceTypeId(),
             mockCategory);
 
-        final ResourceIdentifier<Category> keyReplacedReference = getResourceIdentifierWithKeyReplaced(categoryReference,
-            () -> ResourceIdentifier.ofId(categoryReference.getObj().getKey()));
+        final ResourceIdentifier<Category> keyReplacedReference =
+            getResourceIdentifierWithKeyReplaced(categoryReference,
+                () -> ResourceIdentifier.ofId(categoryReference.getObj().getKey()));
         assertThat(keyReplacedReference).isNotNull();
         assertThat(keyReplacedReference.getId()).isEqualTo(categoryKey);
     }
@@ -173,8 +174,9 @@ class SyncUtilsTest {
         final Reference<Category> categoryReference = Reference.ofResourceTypeIdAndId(Category.referenceTypeId(),
             categoryUuid);
 
-        final ResourceIdentifier<Category> keyReplacedReference = getResourceIdentifierWithKeyReplaced(categoryReference,
-            () -> ResourceIdentifier.ofId(categoryReference.getObj().getKey()));
+        final ResourceIdentifier<Category> keyReplacedReference =
+            getResourceIdentifierWithKeyReplaced(categoryReference,
+                () -> ResourceIdentifier.ofId(categoryReference.getObj().getKey()));
         assertThat(keyReplacedReference).isNotNull();
         assertThat(keyReplacedReference.getId()).isEqualTo(categoryUuid);
     }
