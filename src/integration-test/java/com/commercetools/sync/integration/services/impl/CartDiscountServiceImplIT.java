@@ -183,6 +183,39 @@ class CartDiscountServiceImplIT {
     }
 
     @Test
+    void fetchCachedCartDiscountId_WithNotCachedExistingCartDiscount_ShouldFetchCartDiscount() {
+        final Optional<String> cartDiscountId = cartDiscountService.fetchCachedCartDiscountId(CART_DISCOUNT_KEY_1)
+                .toCompletableFuture()
+                .join();
+
+        assertThat(cartDiscountId).isNotEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+    }
+
+    @Test
+    void fetchCachedCartDiscountId_WithNullCartDiscountKey_ShouldReturnEmptyOptional() {
+        final Optional<String> cartDiscountId = cartDiscountService.fetchCachedCartDiscountId(null)
+                .toCompletableFuture()
+                .join();
+
+        assertThat(cartDiscountId).isEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+    }
+
+    @Test
+    void fetchCachedCartDiscountId_WithBlankCartDiscountKey_ShouldReturnEmptyOptional() {
+        final Optional<String> cartDiscountId = cartDiscountService.fetchCachedCartDiscountId("  ")
+                .toCompletableFuture()
+                .join();
+
+        assertThat(cartDiscountId).isEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+    }
+
+    @Test
     void fetchMatchingCartDiscountsByKeys_WithAllExistingSetOfKeys_ShouldCacheFetchedCartDiscountIds() {
         //preparation
         final Set<CartDiscount> fetchedCartDiscounts =

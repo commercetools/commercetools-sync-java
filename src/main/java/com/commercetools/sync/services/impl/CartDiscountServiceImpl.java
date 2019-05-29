@@ -62,6 +62,9 @@ public class CartDiscountServiceImpl extends BaseService<CartDiscountDraft, Cart
     @Nonnull
     @Override
     public CompletionStage<Optional<String>> fetchCachedCartDiscountId(@Nonnull final String key) {
+        if (isBlank(key)) {
+            return CompletableFuture.completedFuture(Optional.empty());
+        }
         if (keyToIdCache.containsKey(key)) {
             return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
         }
