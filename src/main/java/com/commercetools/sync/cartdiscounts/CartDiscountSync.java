@@ -97,12 +97,13 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
     }
 
     /**
-     * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this method calls the
-     * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
+     * This method calls the optional error callback specified in the {@code syncOptions}
+     * and updates the {@code statistics} instance by
      * incrementing the total number of failed cart discounts to sync.
      *
      * @param errorMessage The error message describing the reason(s) of failure.
      * @param exception    The exception that called caused the failure, if any.
+     * @param failedTimes  The number of times that the failed cart discount statistic counter is incremented.
      */
     private void handleError(@Nonnull final String errorMessage,
                              @Nullable final Throwable exception,
