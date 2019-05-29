@@ -239,7 +239,7 @@ class InventorySyncTest {
                 .toCompletableFuture()
                 .join();
 
-        assertThat(stats).hasValues(8, 5, 1, 3);
+        assertThat(stats).hasValues(8, 5, 1, 2);
         assertThat(errorCallBackMessages).hasSize(3);
         assertThat(errorCallBackExceptions).hasSize(3);
     }
