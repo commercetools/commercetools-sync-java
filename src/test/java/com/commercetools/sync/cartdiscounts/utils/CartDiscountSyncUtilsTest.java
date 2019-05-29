@@ -24,7 +24,8 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.utils.MoneyImpl;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -35,14 +36,14 @@ import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-public class CartDiscountSyncUtilsTest {
+class CartDiscountSyncUtilsTest {
 
     private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
     private static final CartDiscount CART_DISCOUNT_WITH_SHIPPING_TARGET =
         readObjectFromResource("cart-discount-with-shipping-target.json", CartDiscount.class);
 
     @Test
-    public void buildActions_FromDraftsWithDifferentNameValues_ShouldBuildUpdateActions() {
+    void buildActions_FromDraftsWithDifferentNameValues_ShouldBuildUpdateActions() {
         final LocalizedString newName =
             LocalizedString.of(Locale.GERMAN, "Neu Name", Locale.ENGLISH, "new name");
 
@@ -69,7 +70,7 @@ public class CartDiscountSyncUtilsTest {
     }
 
     @Test
-    public void buildActions_FromDraftsWithAllDifferentValues_ShouldBuildAllUpdateActions() {
+    void buildActions_FromDraftsWithAllDifferentValues_ShouldBuildAllUpdateActions() {
         final LocalizedString newName =
             LocalizedString.of(Locale.GERMAN, "Neu Name", Locale.ENGLISH, "new name");
         final CartPredicate newCartDiscounPredicate = CartPredicate.of("1 = 1");

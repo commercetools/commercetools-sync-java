@@ -11,8 +11,8 @@ import io.sphere.sdk.cartdiscounts.ShippingCostTarget;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.SphereException;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -36,12 +36,12 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class CartDiscountSyncTest {
+class CartDiscountSyncTest {
 
     private static CartDiscountDraft newCartDiscount;
 
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         newCartDiscount = CartDiscountDraftBuilder
             .of(LocalizedString.of(Locale.GERMAN, "Neu Name", Locale.ENGLISH, "new name"),
                 CartPredicate.of("totalPrice >= \"50 EUR\""),
@@ -58,7 +58,7 @@ public class CartDiscountSyncTest {
     }
 
     @Test
-    public void sync_WithErrorFetchingExistingKeys_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    void sync_WithErrorFetchingExistingKeys_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         // preparation
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> exceptions = new ArrayList<>();
@@ -105,7 +105,7 @@ public class CartDiscountSyncTest {
     }
 
     @Test
-    public void sync_WithOnlyDraftsToCreate_ShouldCallBeforeCreateCallback() {
+    void sync_WithOnlyDraftsToCreate_ShouldCallBeforeCreateCallback() {
         // preparation
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
             .of(mock(SphereClient.class))
@@ -127,7 +127,7 @@ public class CartDiscountSyncTest {
     }
 
     @Test
-    public void sync_WithOnlyDraftsToUpdate_ShouldOnlyCallBeforeUpdateCallback() {
+    void sync_WithOnlyDraftsToUpdate_ShouldOnlyCallBeforeUpdateCallback() {
         // preparation
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
             .of(mock(SphereClient.class))

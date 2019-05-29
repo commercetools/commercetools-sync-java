@@ -1,21 +1,21 @@
 package com.commercetools.sync.cartdiscounts.helpers;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-public class CartDiscountSyncStatisticsTest {
+class CartDiscountSyncStatisticsTest {
     private CartDiscountSyncStatistics cartDiscountSyncStatistics;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         cartDiscountSyncStatistics = new CartDiscountSyncStatistics();
     }
 
     @Test
-    public void getReportMessage_WithIncrementedStats_ShouldGetCorrectMessage() {
+    void getReportMessage_WithIncrementedStats_ShouldGetCorrectMessage() {
         cartDiscountSyncStatistics.incrementCreated(1);
         cartDiscountSyncStatistics.incrementFailed(2);
         cartDiscountSyncStatistics.incrementUpdated(3);
