@@ -12,6 +12,7 @@ import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.types.CustomFieldsDraft;
@@ -280,10 +281,11 @@ public final class CategoryITUtils {
      *         {@link Category}.
      */
     @Nonnull
-    public static List<Reference<Category>> getReferencesWithKeys(@Nonnull final List<Category> categories) {
+    public static Set<ResourceIdentifier<Category>> geResourceIdentifiersWithKeys(
+        @Nonnull final List<Category> categories) {
         return categories.stream()
-                         .map(category -> Category.referenceOfId(category.getKey()))
-                         .collect(Collectors.toList());
+                         .map(category -> ResourceIdentifier.<Category>ofId(category.getKey()))
+                         .collect(Collectors.toSet());
     }
 
     /**
