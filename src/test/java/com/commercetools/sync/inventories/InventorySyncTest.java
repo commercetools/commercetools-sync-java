@@ -130,7 +130,7 @@ class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.getStatistics();
         assertThat(stats).isNotNull();
 
-        assertThat(stats).hasValues(9, 3, 3, 0);
+        assertThat(stats).hasValues(8, 3, 3, 0);
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
     }
@@ -239,7 +239,7 @@ class InventorySyncTest {
                 .toCompletableFuture()
                 .join();
 
-        assertThat(stats).hasValues(9, 5, 1, 3);
+        assertThat(stats).hasValues(8, 5, 1, 3);
         assertThat(errorCallBackMessages).hasSize(3);
         assertThat(errorCallBackExceptions).hasSize(3);
     }
@@ -260,7 +260,7 @@ class InventorySyncTest {
                 .toCompletableFuture()
                 .join();
 
-        assertThat(stats).hasValues(9, 0, 0, 6);
+        assertThat(stats).hasValues(8, 0, 0, 6);
         assertThat(errorCallBackMessages).hasSize(6);
         assertThat(errorCallBackExceptions).hasSize(6);
     }
@@ -272,13 +272,13 @@ class InventorySyncTest {
             mock(InventoryEntry.class), mock(InventoryEntry.class));
         when(inventoryService.updateInventoryEntry(any(), any())).thenReturn(getCompletionStageWithException());
 
-        final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_1, KEY_1));
+        final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_2, KEY_2));
 
         final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
             mock(TypeService.class));
 
         final InventoryEntryDraft inventoryEntryDraft = InventoryEntryDraftBuilder
-            .of(SKU_1, QUANTITY_2, DATE_1, RESTOCKABLE_1, Channel.referenceOfId(REF_1)).build();
+            .of(SKU_2, QUANTITY_2, DATE_1, RESTOCKABLE_1, ResourceIdentifier.ofId(KEY_2)).build();
 
         final InventorySyncStatistics stats = inventorySync.sync(Collections.singletonList(inventoryEntryDraft))
                                                            .toCompletableFuture()
@@ -288,7 +288,7 @@ class InventorySyncTest {
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(
-            format("Failed to update inventory entry of SKU '%s' and supply channel id '%s'.", SKU_1, REF_1));
+            format("Failed to update inventory entry of SKU '%s' and supply channel id '%s'.", SKU_2, REF_2));
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(RuntimeException.class);
     }
