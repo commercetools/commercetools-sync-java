@@ -55,8 +55,8 @@ public interface CartDiscountService {
      * contains an instance {@link Optional} of the resource which was created.
      *
      * @param cartDiscountDraft the resource draft to create a resource based off of.
-     * @return a {@link CompletionStage} containing an optional with the created resource if successful otherwise an
-     *         empty optional.
+     * @return a {@link CompletionStage} containing an optional with the created {@link CartDiscount} if successful
+     *         otherwise an empty optional.
      */
     @Nonnull
     CompletionStage<Optional<CartDiscount>> createCartDiscount(@Nonnull final CartDiscountDraft cartDiscountDraft);
