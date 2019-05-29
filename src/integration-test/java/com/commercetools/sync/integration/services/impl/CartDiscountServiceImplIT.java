@@ -194,17 +194,6 @@ class CartDiscountServiceImplIT {
     }
 
     @Test
-    void fetchCachedCartDiscountId_WithNullCartDiscountKey_ShouldReturnEmptyOptional() {
-        final Optional<String> cartDiscountId = cartDiscountService.fetchCachedCartDiscountId(null)
-                .toCompletableFuture()
-                .join();
-
-        assertThat(cartDiscountId).isEmpty();
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-    }
-
-    @Test
     void fetchCachedCartDiscountId_WithBlankCartDiscountKey_ShouldReturnEmptyOptional() {
         final Optional<String> cartDiscountId = cartDiscountService.fetchCachedCartDiscountId("  ")
                 .toCompletableFuture()
