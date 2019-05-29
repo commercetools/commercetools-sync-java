@@ -109,13 +109,6 @@ class CartDiscountServiceImplIT {
     }
 
     @Test
-    void fetchCartDiscount_WithBlankKey_ShouldNotFetchCartDiscount() {
-        final Optional<CartDiscount> fetchedCartDiscountOptional =
-                cartDiscountService.fetchCartDiscount("").toCompletableFuture().join();
-        assertThat(fetchedCartDiscountOptional).isEmpty();
-    }
-
-    @Test
     void fetchMatchingCartDiscountsByKeys_WithEmptySetOfKeys_ShouldReturnEmptySet() {
         final Set<String> cartDiscountKeys = new HashSet<>();
         final Set<CartDiscount> matchingCartDiscounts =
