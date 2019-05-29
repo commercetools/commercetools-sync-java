@@ -9,7 +9,6 @@ import io.sphere.sdk.models.SphereException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
@@ -21,7 +20,7 @@ public interface CartDiscountService {
      * mapping of the key to the id of the fetched CartDiscount is persisted in an in-memory map.
      *
      * @param keys set of CartDiscounts keys to fetch matching CartDiscount by.
-     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of its completion contains a {@link Set}
+     * @return {@link CompletionStage}&lt;{@link Set}&gt; in which the result of its completion contains a {@link Set}
      *          of all matching CartDiscounts.
      */
     @Nonnull
