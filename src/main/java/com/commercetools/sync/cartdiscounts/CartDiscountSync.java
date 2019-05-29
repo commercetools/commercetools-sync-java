@@ -47,6 +47,14 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
 
     private final CartDiscountService cartDiscountService;
 
+    /**
+     * Takes a {@link CartDiscountSyncOptions} to instantiate a new {@link CartDiscountSync} instance
+     * that could be used to sync cart discount drafts in the CTP project
+     * specified in the injected {@link CartDiscountSyncOptions} instance.
+     *
+     * @param cartDiscountSyncOptions the container of all the options of the sync process including the CTP project
+     *                                client and/or configuration and other sync-specific options.
+     */
     public CartDiscountSync(@Nonnull final CartDiscountSyncOptions cartDiscountSyncOptions) {
         this(cartDiscountSyncOptions, new CartDiscountServiceImpl(cartDiscountSyncOptions));
     }
