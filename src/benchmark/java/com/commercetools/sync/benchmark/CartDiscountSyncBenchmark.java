@@ -12,10 +12,10 @@ import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.queries.QueryPredicate;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -50,21 +50,21 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CartDiscountSyncBenchmark {
+class CartDiscountSyncBenchmark {
 
     private CartDiscountSyncOptions cartDiscountSyncOptions;
     private List<String> errorCallBackMessages;
     private List<String> warningCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
 
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         deleteTypes(CTP_TARGET_CLIENT);
         deleteCartDiscounts(CTP_TARGET_CLIENT);
     }
 
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteTypes(CTP_TARGET_CLIENT);
         deleteCartDiscounts(CTP_TARGET_CLIENT);
     }
@@ -110,8 +110,8 @@ public class CartDiscountSyncBenchmark {
                                              .build();
     }
 
-    @Before
-    public void setupTest() {
+    @BeforeEach
+    void setupTest() {
         clearSyncTestCollections();
         deleteTypes(CTP_TARGET_CLIENT);
         deleteCartDiscounts(CTP_TARGET_CLIENT);
@@ -119,7 +119,7 @@ public class CartDiscountSyncBenchmark {
     }
 
     @Test
-    public void sync_NewCartDiscounts_ShouldCreateCartDiscounts() throws IOException {
+    void sync_NewCartDiscounts_ShouldCreateCartDiscounts() throws IOException {
         // preparation
         final List<CartDiscountDraft> cartDiscountDrafts = buildCartDiscountDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
         final CartDiscountSync cartDiscountSync = new CartDiscountSync(cartDiscountSyncOptions);
@@ -153,7 +153,7 @@ public class CartDiscountSyncBenchmark {
     }
 
     @Test
-    public void sync_ExistingCartDiscounts_ShouldUpdateCartDiscounts() throws IOException {
+    void sync_ExistingCartDiscounts_ShouldUpdateCartDiscounts() throws IOException {
         // preparation
         final List<CartDiscountDraft> cartDiscountDrafts = buildCartDiscountDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
 
@@ -214,7 +214,7 @@ public class CartDiscountSyncBenchmark {
     }
 
     @Test
-    public void sync_WithSomeExistingCartDiscounts_ShouldSyncCartDiscounts() throws IOException {
+    void sync_WithSomeExistingCartDiscounts_ShouldSyncCartDiscounts() throws IOException {
         // preparation
         final List<CartDiscountDraft> cartDiscountDrafts = buildCartDiscountDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
         final int halfNumberOfDrafts = cartDiscountDrafts.size() / 2;
