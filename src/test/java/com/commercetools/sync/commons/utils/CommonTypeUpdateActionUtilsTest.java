@@ -5,6 +5,7 @@ import io.sphere.sdk.categories.commands.updateactions.ChangeName;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -12,6 +13,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActionForReferences;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class CommonTypeUpdateActionUtilsTest {
@@ -232,5 +234,57 @@ class CommonTypeUpdateActionUtilsTest {
 
         assertThat(updateActionForStrings).isNotNull();
         assertThat(updateActionForStrings).isNotPresent();
+    }
+
+    @Test
+    void buildUpdateActionForReferences_WithSameValues_ShouldNotBuildUpdateAction() {
+        final UpdateAction<Category> mockUpdateAction = ChangeName.of(
+            LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
+
+        final Optional<UpdateAction<Category>> updateActionForStrings =
+            buildUpdateActionForReferences(ResourceIdentifier.ofId("foo"), ResourceIdentifier.ofId("foo"),
+                () -> mockUpdateAction);
+
+        assertThat(updateActionForStrings).isNotNull();
+        assertThat(updateActionForStrings).isNotPresent();
+    }
+
+    @Test
+    void buildUpdateActionForReferences_WithDiffValues_ShouldBuildUpdateAction() {
+        final UpdateAction<Category> mockUpdateAction = ChangeName.of(
+            LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
+
+        final Optional<UpdateAction<Category>> updateActionForStrings =
+            buildUpdateActionForReferences(ResourceIdentifier.ofId("foo"), ResourceIdentifier.ofId("bar"),
+                () -> mockUpdateAction);
+
+        assertThat(updateActionForStrings).isNotNull();
+        assertThat(updateActionForStrings).contains(mockUpdateAction);
+    }
+
+    @Test
+    void buildUpdateActionForReferences_WithSameValuesDifferentInterface_ShouldNotBuildUpdateAction() {
+        final UpdateAction<Category> mockUpdateAction = ChangeName.of(
+            LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
+
+        final Optional<UpdateAction<Category>> updateActionForStrings =
+            buildUpdateActionForReferences(ResourceIdentifier.ofId("foo"), Category.referenceOfId("foo"),
+                () -> mockUpdateAction);
+
+        assertThat(updateActionForStrings).isNotNull();
+        assertThat(updateActionForStrings).isEmpty();
+    }
+
+    @Test
+    void buildUpdateActionForReferences_WithDiffValuesDifferentInterface_ShouldNotBuildUpdateAction() {
+        final UpdateAction<Category> mockUpdateAction = ChangeName.of(
+            LocalizedString.of(LOCALE, MOCK_OLD_CATEGORY_NAME));
+
+        final Optional<UpdateAction<Category>> updateActionForStrings =
+            buildUpdateActionForReferences(ResourceIdentifier.ofId("foo"), Category.referenceOfId("bar"),
+                () -> mockUpdateAction);
+
+        assertThat(updateActionForStrings).isNotNull();
+        assertThat(updateActionForStrings).contains(mockUpdateAction);
     }
 }
