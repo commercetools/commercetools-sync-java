@@ -12,9 +12,9 @@ import io.sphere.sdk.cartdiscounts.CartPredicate;
 import io.sphere.sdk.cartdiscounts.ShippingCostTarget;
 import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
 import io.sphere.sdk.utils.MoneyImpl;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,14 +30,14 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CartDiscountSyncIT {
+class CartDiscountSyncIT {
 
     /**
      * Deletes types from the target CTP projects.
      * Populates the target CTP project with test data.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         deleteTypesFromTargetAndSource();
         deleteCartDiscountsFromTargetAndSource();
         populateSourceProject();
@@ -48,14 +48,14 @@ public class CartDiscountSyncIT {
      * Deletes all the test data from the {@code CTP_SOURCE_CLIENT} and the {@code CTP_SOURCE_CLIENT} projects that
      * were set up in this test class.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteTypesFromTargetAndSource();
         deleteCartDiscountsFromTargetAndSource();
     }
 
     @Test
-    public void sync_WithoutUpdates_ShouldReturnProperStatistics() {
+    void sync_WithoutUpdates_ShouldReturnProperStatistics() {
         // preparation
         final List<CartDiscount> cartDiscounts = CTP_SOURCE_CLIENT
             .execute(CartDiscountQuery.of())
@@ -107,7 +107,7 @@ public class CartDiscountSyncIT {
     }
 
     @Test
-    public void sync_WithUpdates_ShouldReturnProperStatistics() {
+    void sync_WithUpdates_ShouldReturnProperStatistics() {
         // preparation
         final List<CartDiscount> cartDiscounts = CTP_SOURCE_CLIENT
             .execute(CartDiscountQuery.of())
