@@ -272,12 +272,12 @@ public final class CategoryITUtils {
     }
 
     /**
-     * Builds a {@link List} of {@link Reference} with keys in place of ids from the supplied {@link List} of
+     * Builds a {@link Set} of {@link ResourceIdentifier} with keys in place of ids from the supplied {@link List} of
      * {@link Category}.
      *
-     * @param categories a {@link List} of {@link Category} from which the {@link List} of {@link Reference} will be
-     *                   built.
-     * @return a {@link List} of {@link Reference} with keys in place of ids from the supplied {@link List} of
+     * @param categories a {@link List} of {@link Category} from which the {@link Set} of {@link ResourceIdentifier}
+     *                   will be built.
+     * @return a {@link Set} of {@link ResourceIdentifier} with keys in place of ids from the supplied {@link List} of
      *         {@link Category}.
      */
     @Nonnull
