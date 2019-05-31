@@ -4,6 +4,7 @@ import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereRequest;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.PriceDraftBuilder;
 import io.sphere.sdk.products.Product;
@@ -176,7 +177,7 @@ public final class ProductITUtils {
     @Nonnull
     private static List<PriceDraft> getPriceDraftsWithReferences(
         @Nonnull final ProductVariantDraft productVariant,
-        @Nullable final Reference<Channel> channelReference,
+        @Nullable final ResourceIdentifier<Channel> channelReference,
         @Nullable final CustomFieldsDraft customFieldsDraft) {
 
         return productVariant.getPrices()
