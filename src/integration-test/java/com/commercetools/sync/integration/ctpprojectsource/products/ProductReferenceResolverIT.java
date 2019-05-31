@@ -168,8 +168,8 @@ class ProductReferenceResolverIT {
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on ProductDraft with"
-                + " key:'%s'. Reason: %s: Failed to resolve product type reference on ProductDraft with key:'%s'."
-                + " Reason: %s",
+                + " key:'%s'. Reason: %s: Failed to resolve 'product-type' resource identifier on ProductDraft with "
+                + "key:'%s'. Reason: %s",
             productDraft.getKey(), ReferenceResolutionException.class.getCanonicalName(), productDraft.getKey(),
             BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
         assertThat(errorCallBackExceptions).hasSize(1);
