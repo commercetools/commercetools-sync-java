@@ -580,8 +580,9 @@ public final class ProductUpdateActionUtils {
     public static Optional<TransitionState> buildTransitionStateUpdateAction(
         @Nonnull final Product oldProduct,
         @Nonnull final ProductDraft newProduct) {
-        return buildUpdateActionForReferences(oldProduct.getState(), newProduct.getState(),
-            () -> TransitionState.of(newProduct.getState(), true));
+        return ofNullable(newProduct.getState() != null && !Objects.equals(oldProduct.getState(), newProduct.getState())
+            ? TransitionState.of(newProduct.getState(), true)
+            : null);
     }
 
     /**
