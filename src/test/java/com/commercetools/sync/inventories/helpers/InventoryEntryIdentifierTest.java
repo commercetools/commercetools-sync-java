@@ -3,7 +3,7 @@ package com.commercetools.sync.inventories.helpers;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -11,7 +11,7 @@ import java.util.Map;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryEntry;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class InventoryEntryIdentifierTest {
+class InventoryEntryIdentifierTest {
 
     private static final String SKU = "123";
     private static final String SKU_2 = "321";
@@ -19,7 +19,7 @@ public class InventoryEntryIdentifierTest {
     private static final String CHANNEL_ID_2 = "channel-id-2";
 
     @Test
-    public void of_WithDraftWithoutSupplyChannel_ShouldBuildInventoryEntryIdentifier() {
+    void of_WithDraftWithoutSupplyChannel_ShouldBuildInventoryEntryIdentifier() {
         final InventoryEntryDraft draft = InventoryEntryDraft.of(SKU, 1L);
         final InventoryEntryIdentifier inventoryEntryIdentifier = InventoryEntryIdentifier.of(draft);
         assertThat(inventoryEntryIdentifier).isNotNull();
@@ -28,7 +28,7 @@ public class InventoryEntryIdentifierTest {
     }
 
     @Test
-    public void of_WithDraftWithSupplyChannel_ShouldBuildInventoryEntryIdentifier() {
+    void of_WithDraftWithSupplyChannel_ShouldBuildInventoryEntryIdentifier() {
         final InventoryEntryDraft draft = InventoryEntryDraft
             .of(SKU, 1L, null, null, Channel.referenceOfId(CHANNEL_ID));
         final InventoryEntryIdentifier inventoryEntryIdentifier = InventoryEntryIdentifier.of(draft);
@@ -38,7 +38,7 @@ public class InventoryEntryIdentifierTest {
     }
 
     @Test
-    public void of_WithEntryWithoutSupplyChannel_ShouldBuildInventoryEntryIdentifier() {
+    void of_WithEntryWithoutSupplyChannel_ShouldBuildInventoryEntryIdentifier() {
         final InventoryEntry inventoryEntry = getMockInventoryEntry(SKU, null, null, null, null, null);
         final InventoryEntryIdentifier inventoryEntryIdentifier = InventoryEntryIdentifier.of(inventoryEntry);
         assertThat(inventoryEntryIdentifier).isNotNull();
@@ -47,7 +47,7 @@ public class InventoryEntryIdentifierTest {
     }
 
     @Test
-    public void of_WithEntryWithSupplyChannel_ShouldBuildInventoryEntryIdentifier() {
+    void of_WithEntryWithSupplyChannel_ShouldBuildInventoryEntryIdentifier() {
         final InventoryEntry inventoryEntry = getMockInventoryEntry(SKU, null, null, null,
             Channel.referenceOfId(CHANNEL_ID), null);
         final InventoryEntryIdentifier inventoryEntryIdentifier = InventoryEntryIdentifier.of(inventoryEntry);
@@ -57,7 +57,7 @@ public class InventoryEntryIdentifierTest {
     }
 
     @Test
-    public void of_WithSkuAndNoSupplyChannel_ShouldBuildInventoryEntryIdentifier() {
+    void of_WithSkuAndNoSupplyChannel_ShouldBuildInventoryEntryIdentifier() {
         final InventoryEntryIdentifier inventoryEntryIdentifier = InventoryEntryIdentifier.of(SKU, null);
         assertThat(inventoryEntryIdentifier).isNotNull();
         assertThat(inventoryEntryIdentifier.getInventoryEntrySku()).isEqualTo(SKU);
@@ -65,7 +65,7 @@ public class InventoryEntryIdentifierTest {
     }
 
     @Test
-    public void of_WithSkuAndSupplyChannel_ShouldBuildInventoryEntryIdentifier() {
+    void of_WithSkuAndSupplyChannel_ShouldBuildInventoryEntryIdentifier() {
         final InventoryEntryIdentifier inventoryEntryIdentifier = InventoryEntryIdentifier.of(SKU, CHANNEL_ID);
         assertThat(inventoryEntryIdentifier).isNotNull();
         assertThat(inventoryEntryIdentifier.getInventoryEntrySku()).isEqualTo(SKU);
@@ -73,7 +73,7 @@ public class InventoryEntryIdentifierTest {
     }
 
     @Test
-    public void equals_WithSimilarEntryAndDraft_ShouldBeTrue() {
+    void equals_WithSimilarEntryAndDraft_ShouldBeTrue() {
         final InventoryEntry inventoryEntry = getMockInventoryEntry(SKU, null, null, null,
             Channel.referenceOfId(CHANNEL_ID), null);
         final InventoryEntryIdentifier entryIdentifier = InventoryEntryIdentifier.of(inventoryEntry);
@@ -85,7 +85,7 @@ public class InventoryEntryIdentifierTest {
 
 
     @Test
-    public void equals_WithDifferentEntryAndDraft_ShouldBeFalse() {
+    void equals_WithDifferentEntryAndDraft_ShouldBeFalse() {
         // Different SKUs, same channels
         InventoryEntry inventoryEntry = getMockInventoryEntry(SKU, null, null, null,
             Channel.referenceOfId(CHANNEL_ID), null);
@@ -113,7 +113,7 @@ public class InventoryEntryIdentifierTest {
     }
 
     @Test
-    public void equals_WithNoIdentifier_ShouldBeFalse() {
+    void equals_WithNoIdentifier_ShouldBeFalse() {
         final InventoryEntry inventoryEntry = getMockInventoryEntry(SKU, null, null, null,
             Channel.referenceOfId(CHANNEL_ID), null);
         final InventoryEntryIdentifier entryIdentifier = InventoryEntryIdentifier.of(inventoryEntry);
@@ -122,7 +122,7 @@ public class InventoryEntryIdentifierTest {
     }
 
     @Test
-    public void equals_WithNullIdentifier_ShouldBeFalse() {
+    void equals_WithNullIdentifier_ShouldBeFalse() {
         final InventoryEntry inventoryEntry = getMockInventoryEntry(SKU, null, null, null,
             Channel.referenceOfId(CHANNEL_ID), null);
         final InventoryEntryIdentifier entryIdentifier = InventoryEntryIdentifier.of(inventoryEntry);
@@ -131,7 +131,7 @@ public class InventoryEntryIdentifierTest {
     }
 
     @Test
-    public void inventoryEntryIdentifiersCreatedFromSimilarDraftAndEntry_ShouldHaveSameHashCodes() {
+    void inventoryEntryIdentifiersCreatedFromSimilarDraftAndEntry_ShouldHaveSameHashCodes() {
         InventoryEntry inventoryEntry = getMockInventoryEntry(SKU, null, null, null,
             Channel.referenceOfId(CHANNEL_ID), null);
         InventoryEntryIdentifier entryIdentifier = InventoryEntryIdentifier.of(inventoryEntry);
@@ -150,7 +150,7 @@ public class InventoryEntryIdentifierTest {
     }
 
     @Test
-    public void inventoryEntryIdentifier_ShouldWorkAsHashMapKey() {
+    void inventoryEntryIdentifier_ShouldWorkAsHashMapKey() {
         final InventoryEntry inventoryEntry = getMockInventoryEntry(SKU, null, null, null,
             Channel.referenceOfId(CHANNEL_ID), null);
         final InventoryEntryIdentifier inventoryEntryIdentifier = InventoryEntryIdentifier.of(inventoryEntry);

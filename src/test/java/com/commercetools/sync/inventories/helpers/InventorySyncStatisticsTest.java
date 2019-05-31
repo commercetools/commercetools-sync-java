@@ -1,21 +1,21 @@
 package com.commercetools.sync.inventories.helpers;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class InventorySyncStatisticsTest {
+class InventorySyncStatisticsTest {
 
     private InventorySyncStatistics inventorySyncStatistics;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         inventorySyncStatistics = new InventorySyncStatistics();
     }
 
     @Test
-    public void getReportMessage_WithIncrementedStats_ShouldGetCorrectMessage() {
+    void getReportMessage_WithIncrementedStats_ShouldGetCorrectMessage() {
         inventorySyncStatistics.incrementCreated(1);
         inventorySyncStatistics.incrementFailed(1);
         inventorySyncStatistics.incrementUpdated(1);

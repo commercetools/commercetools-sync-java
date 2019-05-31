@@ -13,8 +13,8 @@ import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.types.CustomFieldsDraft;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -49,7 +49,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class InventorySyncTest {
+class InventorySyncTest {
 
     private static final String SKU_1 = "1000";
     private static final String SKU_2 = "2000";
@@ -80,8 +80,8 @@ public class InventorySyncTest {
     /**
      * Initialises test data.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         final Channel channel1 = getMockSupplyChannel(REF_1, KEY_1);
 
         final Reference<Channel> expandedReference1 = Channel.referenceOfId(REF_1).filled(channel1);
@@ -115,7 +115,7 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void getStatistics_ShouldReturnProperStatistics() {
+    void getStatistics_ShouldReturnProperStatistics() {
         final InventorySync inventorySync = getInventorySync(30, false);
         inventorySync.sync(drafts)
                 .toCompletableFuture()
@@ -129,7 +129,7 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void sync_WithEmptyList_ShouldNotSync() {
+    void sync_WithEmptyList_ShouldNotSync() {
         final InventorySync inventorySync = getInventorySync(30, false);
         final InventorySyncStatistics stats = inventorySync.sync(emptyList())
                 .toCompletableFuture()
@@ -141,7 +141,7 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void sync_WithEnsuredChannels_ShouldCreateEntriesWithUnknownChannels() {
+    void sync_WithEnsuredChannels_ShouldCreateEntriesWithUnknownChannels() {
         final InventoryEntryDraft draftWithNewChannel = InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1,
                 Channel.referenceOfId(KEY_3));
         final InventorySync inventorySync = getInventorySync(30, true);
@@ -155,7 +155,7 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void sync_WithNotEnsuredChannels_ShouldNotSyncEntriesWithUnknownChannels() {
+    void sync_WithNotEnsuredChannels_ShouldNotSyncEntriesWithUnknownChannels() {
         final InventoryEntryDraft draftWithNewChannel = InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1,
                 Channel.referenceOfId(KEY_3));
 
@@ -185,7 +185,7 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void sync_WithDraftsWithNullSku_ShouldNotSync() {
+    void sync_WithDraftsWithNullSku_ShouldNotSync() {
         final InventoryEntryDraft draftWithNullSku = InventoryEntryDraft.of(null, 12);
         final InventorySync inventorySync = getInventorySync(30, false);
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(draftWithNullSku))
@@ -200,7 +200,7 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void sync_WithDraftsWithEmptySku_ShouldNotSync() {
+    void sync_WithDraftsWithEmptySku_ShouldNotSync() {
         final InventoryEntryDraft draftWithEmptySku = InventoryEntryDraft.of("", 12);
         final InventorySync inventorySync = getInventorySync(30, false);
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(draftWithEmptySku))
@@ -215,7 +215,7 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void sync_WithExceptionWhenFetchingExistingInventoriesBatch_ShouldProcessThatBatch() {
+    void sync_WithExceptionWhenFetchingExistingInventoriesBatch_ShouldProcessThatBatch() {
         final InventorySyncOptions options = getInventorySyncOptions(1, false);
 
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
@@ -238,7 +238,7 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void sync_WithExceptionWhenCreatingOrUpdatingEntries_ShouldNotSync() {
+    void sync_WithExceptionWhenCreatingOrUpdatingEntries_ShouldNotSync() {
         final InventorySyncOptions options = getInventorySyncOptions(3, false);
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
             mock(InventoryEntry.class), mock(InventoryEntry.class));
@@ -259,7 +259,7 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void sync_WithExceptionWhenUpdatingEntries_ShouldNotSync() {
+    void sync_WithExceptionWhenUpdatingEntries_ShouldNotSync() {
         final InventorySyncOptions options = getInventorySyncOptions(3, false);
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
             mock(InventoryEntry.class), mock(InventoryEntry.class));
@@ -287,7 +287,7 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void sync_WithExceptionWhenCreatingEntries_ShouldNotSync() {
+    void sync_WithExceptionWhenCreatingEntries_ShouldNotSync() {
         final InventorySyncOptions options = getInventorySyncOptions(3, false);
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
             mock(InventoryEntry.class), mock(InventoryEntry.class));
@@ -315,7 +315,7 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void sync_WithExistingInventoryEntryButWithEmptyCustomTypeReference_ShouldFailSync() {
+    void sync_WithExistingInventoryEntryButWithEmptyCustomTypeReference_ShouldFailSync() {
         final InventorySyncOptions options = getInventorySyncOptions(3, false);
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
             mock(InventoryEntry.class), mock(InventoryEntry.class));
@@ -346,7 +346,7 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void sync_WithNewSupplyChannelAndEnsure_ShouldSync() {
+    void sync_WithNewSupplyChannelAndEnsure_ShouldSync() {
         final InventorySyncOptions options = getInventorySyncOptions(3, true);
 
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
@@ -370,7 +370,7 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void sync_WithExceptionWhenCreatingNewSupplyChannel_ShouldTriggerErrorCallbackAndIncrementFailed() {
+    void sync_WithExceptionWhenCreatingNewSupplyChannel_ShouldTriggerErrorCallbackAndIncrementFailed() {
         final InventorySyncOptions options = getInventorySyncOptions(3, true);
 
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
@@ -403,7 +403,7 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void sync_WithNullInInputList_ShouldIncrementFailedStatistics() {
+    void sync_WithNullInInputList_ShouldIncrementFailedStatistics() {
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
             mock(InventoryEntry.class), mock(InventoryEntry.class));
 
@@ -425,7 +425,7 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void sync_WithOnlyDraftsToUpdate_ShouldOnlyCallBeforeUpdateCallback() {
+    void sync_WithOnlyDraftsToUpdate_ShouldOnlyCallBeforeUpdateCallback() {
         // preparation
         final InventoryEntryDraft inventoryEntryDraft = InventoryEntryDraftBuilder.of(SKU_1, 1L)
                                                                                   .build();
@@ -448,7 +448,7 @@ public class InventorySyncTest {
     }
 
     @Test
-    public void sync_WithOnlyDraftsToCreate_ShouldCallBeforeCreateCallback() {
+    void sync_WithOnlyDraftsToCreate_ShouldCallBeforeCreateCallback() {
         // preparation
         final InventoryEntryDraft inventoryEntryDraft = InventoryEntryDraftBuilder.of("newSKU", 1L)
                                                                                   .build();

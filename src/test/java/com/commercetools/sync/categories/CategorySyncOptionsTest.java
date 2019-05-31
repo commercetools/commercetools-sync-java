@@ -7,8 +7,8 @@ import io.sphere.sdk.categories.commands.updateactions.ChangeName;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,20 +18,20 @@ import java.util.Locale;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-public class CategorySyncOptionsTest {
+class CategorySyncOptionsTest {
     private CategorySyncOptionsBuilder categorySyncOptionsBuilder;
 
     /**
      * Initializes an instance of {@link CategorySyncOptionsBuilder} to be used in the unit test methods of this test
      * class.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         categorySyncOptionsBuilder = CategorySyncOptionsBuilder.of(mock(SphereClient.class));
     }
 
     @Test
-    public void getUpdateActionsFilter_WithFilter_ShouldApplyFilterOnList() {
+    void getUpdateActionsFilter_WithFilter_ShouldApplyFilterOnList() {
         final TriFunction<List<UpdateAction<Category>>, CategoryDraft, Category, List<UpdateAction<Category>>>
             clearListFilter = (updateActions, newCategory, oldCategory) -> Collections.emptyList();
         categorySyncOptionsBuilder.beforeUpdateCallback(clearListFilter);
@@ -50,7 +50,7 @@ public class CategorySyncOptionsTest {
     }
 
     @Test
-    public void build_WithOnlyRequiredFieldsSet_ShouldReturnProperOptionsInstance() {
+    void build_WithOnlyRequiredFieldsSet_ShouldReturnProperOptionsInstance() {
         final CategorySyncOptions options = CategorySyncOptionsBuilder.of(mock(SphereClient.class)).build();
         assertThat(options).isNotNull();
         assertThat(options.getBatchSize()).isEqualTo(CategorySyncOptionsBuilder.BATCH_SIZE_DEFAULT);

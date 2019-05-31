@@ -7,7 +7,7 @@ import io.sphere.sdk.products.ImageDimensions;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.commands.updateactions.AddExternalImage;
 import io.sphere.sdk.products.commands.updateactions.RemoveImage;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
@@ -19,7 +19,7 @@ import static com.commercetools.sync.products.ActionGroup.PRICES;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class FilterUtilsTest {
+class FilterUtilsTest {
 
     private  final  List<UpdateAction<Product>> passingUpdateActions = Arrays.asList(
         AddExternalImage.of(Image.of("url2", ImageDimensions.of(10, 10)), 0),
@@ -30,7 +30,7 @@ public class FilterUtilsTest {
         singletonList(RemoveImage.of("anyUrl", 0));
 
     @Test
-    public void executeSupplierIfPassesFilter_WithGroupInBlackList_ShouldFilterOutOnlyThisGroup() {
+    void executeSupplierIfPassesFilter_WithGroupInBlackList_ShouldFilterOutOnlyThisGroup() {
         final SyncFilter syncFilter = SyncFilter.ofBlackList(IMAGES);
 
         final List<UpdateAction<Product>> updateActionsAfterImagesFilter =
@@ -50,7 +50,7 @@ public class FilterUtilsTest {
     }
 
     @Test
-    public void executeSupplierIfPassesFilter_WithGroupNotInBlackList_ShouldFilterInThisGroup() {
+    void executeSupplierIfPassesFilter_WithGroupNotInBlackList_ShouldFilterInThisGroup() {
         final SyncFilter syncFilter = SyncFilter.ofBlackList(PRICES);
         final List<UpdateAction<Product>> updateActionsAfterImagesFilter =
             executeSupplierIfPassesFilter(syncFilter, IMAGES, () -> passingUpdateActions , () -> defaultActions);
@@ -64,7 +64,7 @@ public class FilterUtilsTest {
     }
 
     @Test
-    public void executeSupplierIfPassesFilter_WithGroupInWhiteList_ShouldFilterInOnlyThisGroup() {
+    void executeSupplierIfPassesFilter_WithGroupInWhiteList_ShouldFilterInOnlyThisGroup() {
         final SyncFilter syncFilter = SyncFilter.ofWhiteList(PRICES);
 
         final List<UpdateAction<Product>> updateActionsAfterPricesFilter =
@@ -84,7 +84,7 @@ public class FilterUtilsTest {
     }
 
     @Test
-    public void executeSupplierIfPassesFilter_WithDefault_ShouldFilterInEveryThing() {
+    void executeSupplierIfPassesFilter_WithDefault_ShouldFilterInEveryThing() {
         final SyncFilter syncFilter = SyncFilter.of();
 
         final List<UpdateAction<Product>> updateActionsAfterPricesFilter =

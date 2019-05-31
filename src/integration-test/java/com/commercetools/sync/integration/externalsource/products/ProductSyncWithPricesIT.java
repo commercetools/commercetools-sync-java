@@ -31,10 +31,10 @@ import io.sphere.sdk.products.queries.ProductProjectionByKeyGet;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.math.BigDecimal;
@@ -93,7 +93,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ProductSyncWithPricesIT {
+class ProductSyncWithPricesIT {
     private static ProductType productType;
     private static Type customType1;
     private static Type customType2;
@@ -112,8 +112,8 @@ public class ProductSyncWithPricesIT {
      * Delete all product related test data from the target project. Then creates price custom types, customer groups,
      * channels and a product type for the target CTP project.
      */
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
 
         customType1 = createPricesCustomType("customType1", Locale.ENGLISH,
@@ -134,8 +134,8 @@ public class ProductSyncWithPricesIT {
     /**
      * Deletes Products from the target CTP project.
      */
-    @Before
-    public void setupTest() {
+    @BeforeEach
+    void setupTest() {
         clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
         productSync = new ProductSync(buildSyncOptions());
@@ -168,13 +168,13 @@ public class ProductSyncWithPricesIT {
                                         .build();
     }
 
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
 
     @Test
-    public void sync_withNullNewPricesAndEmptyExistingPrices_ShouldNotBuildUpdateActions() {
+    void sync_withNullNewPricesAndEmptyExistingPrices_ShouldNotBuildUpdateActions() {
         // Preparation
         final ProductDraft existingProductDraft = ProductDraftBuilder
             .of(productType.toReference(), ofEnglish("draftName"), ofEnglish("existingSlug"),
@@ -211,7 +211,7 @@ public class ProductSyncWithPricesIT {
     }
 
     @Test
-    public void sync_withAllMatchingPrices_ShouldNotBuildActions() {
+    void sync_withAllMatchingPrices_ShouldNotBuildActions() {
         // Preparation
         final List<PriceDraft> oldPrices = asList(
             DRAFT_US_111_USD,
@@ -254,7 +254,7 @@ public class ProductSyncWithPricesIT {
     }
 
     @Test
-    public void withNonEmptyNewPricesButEmptyExistingPrices_ShouldAddAllNewPrices() {
+    void withNonEmptyNewPricesButEmptyExistingPrices_ShouldAddAllNewPrices() {
         // Preparation
         final List<PriceDraft> newPrices = asList(
             DRAFT_US_111_USD,
@@ -306,7 +306,7 @@ public class ProductSyncWithPricesIT {
     }
 
     @Test
-    public void withNonEmptyNewWithDuplicatesPricesButEmptyExistingPrices_ShouldNotSyncPrices() {
+    void withNonEmptyNewWithDuplicatesPricesButEmptyExistingPrices_ShouldNotSyncPrices() {
         // Preparation
         final List<PriceDraft> newPrices = asList(
             DRAFT_US_111_USD,
@@ -369,7 +369,7 @@ public class ProductSyncWithPricesIT {
     }
 
     @Test
-    public void sync_withNullNewPrices_ShouldRemoveAllPrices() {
+    void sync_withNullNewPrices_ShouldRemoveAllPrices() {
         // Preparation
         final List<PriceDraft> oldPrices = asList(
             DRAFT_US_111_USD,
@@ -422,7 +422,7 @@ public class ProductSyncWithPricesIT {
     }
 
     @Test
-    public void sync_withSomeChangedMatchingPrices_ShouldAddAndRemovePrices() {
+    void sync_withSomeChangedMatchingPrices_ShouldAddAndRemovePrices() {
         // Preparation
         final List<PriceDraft> oldPrices = asList(
             DRAFT_DE_111_EUR,
@@ -496,7 +496,7 @@ public class ProductSyncWithPricesIT {
     }
 
     @Test
-    public void withMixedCasesOfPriceMatches_ShouldBuildActions() {
+    void withMixedCasesOfPriceMatches_ShouldBuildActions() {
         // Preparation
         createExistingProductWithPrices();
         final ProductDraft newProductDraft = createProductDraftWithNewPrices();
@@ -721,7 +721,7 @@ public class ProductSyncWithPricesIT {
      * @param prices      the list of prices to compare to the list of price drafts.
      * @param priceDrafts the list of price drafts to compare to the list of prices.
      */
-    public static void assertPricesAreEqual(@Nonnull final List<Price> prices,
+    static void assertPricesAreEqual(@Nonnull final List<Price> prices,
                                             @Nonnull final List<PriceDraft> priceDrafts) {
 
         final Map<PriceCompositeId, Price> priceMap = collectionToMap(prices, PriceCompositeId::of);

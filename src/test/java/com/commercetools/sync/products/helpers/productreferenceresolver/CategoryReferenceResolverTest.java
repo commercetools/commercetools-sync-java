@@ -12,8 +12,8 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.ProductDraftBuilder;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -43,7 +43,7 @@ import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class CategoryReferenceResolverTest {
+class CategoryReferenceResolverTest {
     private static final String CHANNEL_KEY = "channel-key_1";
     private static final String CHANNEL_ID = "1";
     private static final String PRODUCT_TYPE_ID = "productTypeId";
@@ -52,7 +52,7 @@ public class CategoryReferenceResolverTest {
     private static final String PRODUCT_ID = "productId";
 
     @Test
-    public void resolveCategoryReferences_WithCategoryKeysAndCategoryOrderHints_ShouldResolveReferences() {
+    void resolveCategoryReferences_WithCategoryKeysAndCategoryOrderHints_ShouldResolveReferences() {
         // preparation
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .build();
@@ -90,7 +90,7 @@ public class CategoryReferenceResolverTest {
     }
 
     @Test
-    public void resolveCategoryReferences_WithCategoryKeysAndNoCategoryOrderHints_ShouldResolveReferences() {
+    void resolveCategoryReferences_WithCategoryKeysAndNoCategoryOrderHints_ShouldResolveReferences() {
         // preparation
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .build();
@@ -124,7 +124,7 @@ public class CategoryReferenceResolverTest {
     }
 
     @Test
-    public void resolveCategoryReferences_WithCategoryKeysAndSomeCategoryOrderHints_ShouldResolveReferences() {
+    void resolveCategoryReferences_WithCategoryKeysAndSomeCategoryOrderHints_ShouldResolveReferences() {
         // preparation
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .build();
@@ -163,7 +163,7 @@ public class CategoryReferenceResolverTest {
     }
 
     @Test
-    public void resolveCategoryReferences_WithNullCategoryReferences_ShouldNotResolveReferences() {
+    void resolveCategoryReferences_WithNullCategoryReferences_ShouldNotResolveReferences() {
         // preparation
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .build();
@@ -183,9 +183,9 @@ public class CategoryReferenceResolverTest {
             .isCompletedWithValueMatching(resolvedDraft -> resolvedDraft.getCategories().isEmpty());
     }
 
-    @Ignore("TODO: SHOULD FAIL ON RESOLUTION IF NOT FOUND ON FETCH GITHUB ISSUE#219")
+    @Disabled("TODO: SHOULD FAIL ON RESOLUTION IF NOT FOUND ON FETCH GITHUB ISSUE#219")
     @Test
-    public void resolveCategoryReferences_WithANonExistentCategoryReference_ShouldNotResolveReference() {
+    void resolveCategoryReferences_WithANonExistentCategoryReference_ShouldNotResolveReference() {
         // preparation
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .build();
@@ -210,7 +210,7 @@ public class CategoryReferenceResolverTest {
     }
 
     @Test
-    public void resolveCategoryReferences_WithNullIdOnCategoryReference_ShouldNotResolveReference() {
+    void resolveCategoryReferences_WithNullIdOnCategoryReference_ShouldNotResolveReference() {
         // preparation
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .build();
@@ -235,7 +235,7 @@ public class CategoryReferenceResolverTest {
     }
 
     @Test
-    public void resolveCategoryReferences_WithEmptyIdOnCategoryReference_ShouldNotResolveReference() {
+    void resolveCategoryReferences_WithEmptyIdOnCategoryReference_ShouldNotResolveReference() {
         // preparation
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .build();
@@ -259,7 +259,7 @@ public class CategoryReferenceResolverTest {
     }
 
     @Test
-    public void resolveCategoryReferences_WithExceptionCategoryFetch_ShouldNotResolveReference() {
+    void resolveCategoryReferences_WithExceptionCategoryFetch_ShouldNotResolveReference() {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .build();
         final Category category = getMockCategory("categoryKey", "categoryKey");
