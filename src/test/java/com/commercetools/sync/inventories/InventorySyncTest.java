@@ -240,8 +240,8 @@ class InventorySyncTest {
                 .join();
 
         assertThat(stats).hasValues(8, 5, 1, 2);
-        assertThat(errorCallBackMessages).hasSize(3);
-        assertThat(errorCallBackExceptions).hasSize(3);
+        assertThat(errorCallBackMessages).hasSize(2);
+        assertThat(errorCallBackExceptions).hasSize(2);
     }
 
     @Test
