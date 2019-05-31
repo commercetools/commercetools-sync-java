@@ -127,7 +127,7 @@ class ChangeParentIT {
                                                       .join();
 
         // Prepare new category draft with a same parent. The parent is substituted with the target project's
-        // parnet id, because the utils assume reference resolution has already been done at this point.
+        // parent id, because the utils assume reference resolution has already been done at this point.
         final CategoryDraft draftFromCategory = CategoryDraftBuilder
             .of(newCategory)
             .parent(ResourceIdentifier.ofId(oldCategoryParent.getId()))
