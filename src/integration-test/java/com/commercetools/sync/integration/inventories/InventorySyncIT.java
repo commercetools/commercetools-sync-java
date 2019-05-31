@@ -137,7 +137,7 @@ class InventorySyncIT {
     }
 
     @Test
-    void sync_WithKeyToExistingSupplyChannelInPlaceOfReferenceId_ShouldUpdateInventory() {
+    void sync_WithKeyToExistingSupplyChannelInPlaceOfId_ShouldUpdateInventory() {
         /*
          * Fetch existing Channel of key SUPPLY_CHANNEL_KEY_1 from target project.
          * This is done only for test assertion reasons, not necessary for sync.
