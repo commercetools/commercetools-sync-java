@@ -36,10 +36,8 @@
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.2.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.2.0)
 
-- 🚧 **Breaking Changes** (1)
+- 🚧 **Breaking Changes** (2)
     - **ProductType Sync** - Removed the unneeded `AttributeDefinitionCustomBuilder` which was an exposed but internal helper. [#377](https://github.com/commercetools/commercetools-sync-java/issues/377). 
-
-- 🚧 **Breaking Changes** (1) 
     - **Commons** - `SyncUtils#replaceReferenceIdWithKey` now renamed to `SyncUtils#getReferenceWithKeyReplaced`. [#349](https://github.com/commercetools/commercetools-sync-java/issues/349)
 
 - 🎉 **New Features** (2)
