@@ -9,6 +9,7 @@ import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.models.LocalizedEnumValue;
 import io.sphere.sdk.models.TextInputHint;
@@ -27,6 +28,7 @@ import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
 import io.sphere.sdk.producttypes.commands.ProductTypeUpdateCommand;
+import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeOrderByName;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.queries.PagedQueryResult;
 import org.junit.jupiter.api.AfterAll;
@@ -232,8 +234,14 @@ class ProductTypeSyncIT {
             asList(ATTRIBUTE_DEFINITION_DRAFT_2, ATTRIBUTE_DEFINITION_DRAFT_1)
         );
 
+        final ArrayList<UpdateAction<ProductType>> builtUpdateActions = new ArrayList<>();
+
         final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
+            .beforeUpdateCallback((actions, draft, oldProductType) -> {
+                builtUpdateActions.addAll(actions);
+                return actions;
+            })
             .build();
 
         final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
@@ -251,6 +259,11 @@ class ProductTypeSyncIT {
                 asList(
                     ATTRIBUTE_DEFINITION_DRAFT_2,
                     ATTRIBUTE_DEFINITION_DRAFT_1)
+            ));
+
+        assertThat(builtUpdateActions).containsExactly(
+            ChangeAttributeOrderByName.of(
+                asList(ATTRIBUTE_DEFINITION_DRAFT_2.getName(), ATTRIBUTE_DEFINITION_DRAFT_1.getName())
             ));
     }
 
