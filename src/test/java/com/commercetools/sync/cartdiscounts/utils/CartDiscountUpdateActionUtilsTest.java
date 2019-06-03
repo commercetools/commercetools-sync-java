@@ -21,6 +21,7 @@ import io.sphere.sdk.cartdiscounts.commands.updateactions.SetDescription;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.SetValidFrom;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.SetValidFromAndUntil;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.SetValidUntil;
+import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
@@ -128,6 +129,108 @@ public class CartDiscountUpdateActionUtilsTest {
                 buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
 
         assertThat(changeValueUpdateAction).contains(ChangeValue.of(giftLineItemCartDiscountValue));
+    }
+
+    @Test
+    public void buildChangeValueUpdateAction_WithDifferentGiftItemProductValue_ShouldBuildUpdateAction() {
+        final GiftLineItemCartDiscountValue oldGiftLineItemCartDiscountValue =
+                GiftLineItemCartDiscountValue.of(Reference.of(Product.referenceTypeId(), "product-1")
+                        , 1, null, null);
+
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getValue()).thenReturn(oldGiftLineItemCartDiscountValue);
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        final GiftLineItemCartDiscountValue newGiftLineItemCartDiscountValue =
+                GiftLineItemCartDiscountValue.of(Reference.of(Product.referenceTypeId(), "product-2")
+                        , 1, null, null);
+        when(newCartDiscountDraft.getValue()).thenReturn(newGiftLineItemCartDiscountValue);
+
+        final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
+                buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeValueUpdateAction).contains(ChangeValue.of(newGiftLineItemCartDiscountValue));
+    }
+
+    @Test
+    public void buildChangeValueUpdateAction_WithDifferentGiftItemProductVariantValue_ShouldBuildUpdateAction() {
+        final GiftLineItemCartDiscountValue oldGiftLineItemCartDiscountValue =
+                GiftLineItemCartDiscountValue.of(Reference.of(Product.referenceTypeId(), "productId")
+                        , 1, null, null);
+
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getValue()).thenReturn(oldGiftLineItemCartDiscountValue);
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        final GiftLineItemCartDiscountValue newGiftLineItemCartDiscountValue =
+                GiftLineItemCartDiscountValue.of(Reference.of(Product.referenceTypeId(), "productId")
+                        , 2, null, null);
+        when(newCartDiscountDraft.getValue()).thenReturn(newGiftLineItemCartDiscountValue);
+
+        final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
+                buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeValueUpdateAction).contains(ChangeValue.of(newGiftLineItemCartDiscountValue));
+    }
+
+    @Test
+    public void buildChangeValueUpdateAction_WithDifferentGiftItemSupplyChannelValue_ShouldBuildUpdateAction() {
+        final GiftLineItemCartDiscountValue oldGiftLineItemCartDiscountValue =
+                GiftLineItemCartDiscountValue.of(Reference.of(Product.referenceTypeId(), "productId")
+                        , 1, Reference.of(Channel.referenceTypeId(), "supplyChannel-1"), null);
+
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getValue()).thenReturn(oldGiftLineItemCartDiscountValue);
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        final GiftLineItemCartDiscountValue newGiftLineItemCartDiscountValue =
+                GiftLineItemCartDiscountValue.of(Reference.of(Product.referenceTypeId(), "productId")
+                        , 1, Reference.of(Channel.referenceTypeId(), "supplyChannel-2"), null);
+        when(newCartDiscountDraft.getValue()).thenReturn(newGiftLineItemCartDiscountValue);
+
+        final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
+                buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeValueUpdateAction).contains(ChangeValue.of(newGiftLineItemCartDiscountValue));
+    }
+
+    @Test
+    public void buildChangeValueUpdateAction_WithDifferentGiftItemDistributionChannelValue_ShouldBuildUpdateAction() {
+        final GiftLineItemCartDiscountValue oldGiftLineItemCartDiscountValue =
+                GiftLineItemCartDiscountValue.of(Reference.of(Product.referenceTypeId(), "productId")
+                        , 1, null, Reference.of(Channel.referenceTypeId(), "dist-channel-1"));
+
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getValue()).thenReturn(oldGiftLineItemCartDiscountValue);
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        final GiftLineItemCartDiscountValue newGiftLineItemCartDiscountValue =
+                GiftLineItemCartDiscountValue.of(Reference.of(Product.referenceTypeId(), "productId")
+                        , 1, null, Reference.of(Channel.referenceTypeId(), "dist-channel-2"));
+        when(newCartDiscountDraft.getValue()).thenReturn(newGiftLineItemCartDiscountValue);
+
+        final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
+                buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeValueUpdateAction).contains(ChangeValue.of(newGiftLineItemCartDiscountValue));
+    }
+
+    @Test
+    public void buildChangeValueUpdateAction_WithSameGiftItemValue_ShouldNotBuildUpdateAction() {
+        final GiftLineItemCartDiscountValue giftLineItemCartDiscountValue =
+                GiftLineItemCartDiscountValue.of(Reference.of(Product.referenceTypeId(), "productId")
+                        , 1, null, null);
+
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getValue()).thenReturn(giftLineItemCartDiscountValue);
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        when(newCartDiscountDraft.getValue()).thenReturn(giftLineItemCartDiscountValue);
+
+        final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
+                buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeValueUpdateAction).isNotPresent();
     }
 
     @Test
