@@ -387,7 +387,6 @@ public class CartDiscountUpdateActionUtilsTest {
         assertThat(changeNameUpdateAction).isNotPresent();
     }
 
-
     @Test
     public void buildSetDescriptionUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
