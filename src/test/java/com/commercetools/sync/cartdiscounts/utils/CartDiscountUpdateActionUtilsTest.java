@@ -84,6 +84,36 @@ public class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
+    public void buildChangeValueUpdateAction_WithSameRelativeValues_ShouldNotBuildUpdateAction() {
+        final CartDiscountValue tenPercent = CartDiscountValue.ofRelative(1000);
+
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getValue()).thenReturn(tenPercent);
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        when(newCartDiscountDraft.getValue()).thenReturn(tenPercent);
+
+        final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
+                buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeValueUpdateAction).isNotPresent();
+    }
+
+    @Test
+    public void buildChangeValueUpdateAction_WithNullRelativeValues_ShouldBuildUpdateAction() {
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getValue()).thenReturn(CartDiscountValue.ofRelative(1000));
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        when(newCartDiscountDraft.getValue()).thenReturn(null);
+
+        final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
+                buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeValueUpdateAction).contains(ChangeValue.of(null));
+    }
+
+    @Test
     public void buildChangeValueUpdateAction_WithNewGiftItemValue_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValue()).thenReturn(CartDiscountValue.ofRelative(1000));
@@ -132,36 +162,6 @@ public class CartDiscountUpdateActionUtilsTest {
                 buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
 
         assertThat(changeValueUpdateAction).contains(ChangeValue.of(sameValuesWithDifferentOrder));
-    }
-
-    @Test
-    public void buildChangeValueUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
-        final CartDiscountValue tenPercent = CartDiscountValue.ofRelative(1000);
-
-        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
-        when(oldCartDiscount.getValue()).thenReturn(tenPercent);
-
-        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
-        when(newCartDiscountDraft.getValue()).thenReturn(tenPercent);
-
-        final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
-                buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
-
-        assertThat(changeValueUpdateAction).isNotPresent();
-    }
-
-    @Test
-    public void buildChangeValueUpdateAction_WithNullValues_ShouldBuildUpdateAction() {
-        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
-        when(oldCartDiscount.getValue()).thenReturn(CartDiscountValue.ofRelative(1000));
-
-        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
-        when(newCartDiscountDraft.getValue()).thenReturn(null);
-
-        final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
-                buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
-
-        assertThat(changeValueUpdateAction).contains(ChangeValue.of(null));
     }
 
     @Test
