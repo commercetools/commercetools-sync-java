@@ -34,8 +34,7 @@ class CartDiscountSyncOptionsBuilderTest {
 
     @Test
     void of_WithClient_ShouldCreateCartDiscountSyncOptionsBuilder() {
-        final CartDiscountSyncOptionsBuilder builder = CartDiscountSyncOptionsBuilder.of(CTP_CLIENT);
-        assertThat(builder).isNotNull();
+        assertThat(cartDiscountSyncOptionsBuilder).isNotNull();
     }
 
     @Test
@@ -217,7 +216,6 @@ class CartDiscountSyncOptionsBuilderTest {
 
     @Test
     void applyBeforeCreateCallBack_WithCallback_ShouldReturnFilteredDraft() {
-        //todo: there is no key, instead of key, use name as an option
         final Function<CartDiscountDraft, CartDiscountDraft> draftFunction =
             cartDiscountDraft ->
                 CartDiscountDraftBuilder.of(cartDiscountDraft)

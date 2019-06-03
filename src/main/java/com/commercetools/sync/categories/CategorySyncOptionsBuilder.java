@@ -29,7 +29,7 @@ public final class CategorySyncOptionsBuilder extends BaseSyncOptionsBuilder<Cat
     }
 
     /**
-     * Creates new instance of {@link CategorySyncOptions} enriched with all attributes provided to {@code this}
+     * Creates a new instance of {@link CategorySyncOptions} enriched with all attributes provided to {@code this}
      * builder.
      *
      * @return new instance of {@link CategorySyncOptions}
