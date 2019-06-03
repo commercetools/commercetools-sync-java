@@ -72,7 +72,7 @@ public class CartDiscountSyncUtilsTest {
     public void buildActions_FromDraftsWithAllDifferentValues_ShouldBuildAllUpdateActions() {
         final LocalizedString newName =
             LocalizedString.of(Locale.GERMAN, "Neu Name", Locale.ENGLISH, "new name");
-        final CartPredicate newCartDiscounPredicate = CartPredicate.of("1 = 1");
+        final CartPredicate newCartDiscountPredicate = CartPredicate.of("1 = 1");
         final CartDiscountValue newCartDiscountValue =  CartDiscountValue.ofAbsolute(MoneyImpl.of(10, EUR));
         final CartDiscountTarget newCartDiscountTarget = LineItemsTarget.of("quantity > 1");
         final String newSortOrder = "0.3";
@@ -86,7 +86,7 @@ public class CartDiscountSyncUtilsTest {
 
         final CartDiscountDraft newCartDiscount = CartDiscountDraftBuilder
             .of(newName,
-                newCartDiscounPredicate,
+                newCartDiscountPredicate,
                 newCartDiscountValue,
                 newCartDiscountTarget,
                 newSortOrder,
@@ -105,7 +105,7 @@ public class CartDiscountSyncUtilsTest {
 
         assertThat(updateActions).containsExactly(
             ChangeValue.of(newCartDiscountValue),
-            ChangeCartPredicate.of(newCartDiscounPredicate),
+            ChangeCartPredicate.of(newCartDiscountPredicate),
             ChangeTarget.of(newCartDiscountTarget),
             ChangeIsActive.of(newIsActive),
             ChangeName.of(newName),
