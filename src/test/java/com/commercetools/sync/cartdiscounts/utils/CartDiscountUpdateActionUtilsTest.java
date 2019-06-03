@@ -148,6 +148,21 @@ public class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
+    public void buildChangeValueUpdateAction_WithDifferentAbsoluteValues_ShouldBuildUpdateAction() {
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getValue()).thenReturn(CartDiscountValue.ofAbsolute(MoneyImpl.of(10, EUR)));
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        final CartDiscountValue fiftyEuro = CartDiscountValue.ofAbsolute(MoneyImpl.of(50, EUR));
+        when(newCartDiscountDraft.getValue()).thenReturn(fiftyEuro);
+
+        final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
+                buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeValueUpdateAction).contains(ChangeValue.of(fiftyEuro));
+    }
+
+    @Test
     public void buildChangeValueUpdateAction_WithSameAbsoluteValuesWithDifferentOrder_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValue()).thenReturn(
