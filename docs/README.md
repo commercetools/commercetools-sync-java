@@ -8,22 +8,22 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646/badge.svg)](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646)
 
  
-Java library that could be used to synchronise commercetools data in any of the following ways:
+Java library that imports commercetools platform data in the following ways:
              
  1. Synchronise data coming from an external system in any form (CSV, XML, etc..) that has been already mapped to 
  [commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects 
  (e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)).
  
- 2. Synchronise data coming from an already-existing commercetools project in the form of 
+ 2. Synchronise data from another commercetools project as 
  [commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) resource draft objects 
  (e.g. [CategoryDraft](https://github.com/commercetools/commercetools-jvm-sdk/blob/master/commercetools-models/src/main/java/io/sphere/sdk/categories/CategoryDraft.java)).
  
  
  > Synchronise: Resources will either be created or updated. But they will **not** be deleted.
  
- ⚡ Take a look at the [Quick Start Guide](https://commercetools.github.io/commercetools-sync-java/doc/usage/QUICK_START/) to find out how to build a product importer in a glance!
+ ⚡ See the [Quick Start Guide](https://commercetools.github.io/commercetools-sync-java/doc/usage/QUICK_START/) for more information on building a product importer!
 
-Currently this library supports synchronising the following entities in commercetools
+The library supports synchronising the following entities in commercetools
     
  - [Categories](usage/CATEGORY_SYNC.md)
  - [Products](usage/PRODUCT_SYNC.md)
@@ -37,9 +37,9 @@ Currently this library supports synchronising the following entities in commerce
 ### Prerequisites
  
  - Make sure you have `JDK 8` installed.
- - a target CTP project to which your source of data would be synced to.
  - [commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) as a dependency in your JVM-based 
   application. (Make sure to use a version `>= 1.35.0`).
+ - a target commercetools project for syncing your source data to.
 
 
 ### Installation
