@@ -14,9 +14,9 @@ import io.sphere.sdk.inventory.commands.InventoryEntryUpdateCommand;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.CustomFieldsDraftBuilder;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
@@ -43,7 +43,7 @@ import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtil
 import static com.commercetools.sync.inventories.utils.InventoryUpdateActionUtils.buildSetSupplyChannelAction;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class InventoryUpdateActionUtilsIT {
+class InventoryUpdateActionUtilsIT {
 
     private static final String CUSTOM_FIELD_VALUE = "custom-value-1";
 
@@ -51,8 +51,8 @@ public class InventoryUpdateActionUtilsIT {
      * Deletes inventories and supply channels from source and target CTP projects.
      * Populates target CTP projects with test data.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         deleteInventoryEntriesFromTargetAndSource();
         deleteTypesFromTargetAndSource();
         deleteChannelsFromTargetAndSource();
@@ -63,15 +63,15 @@ public class InventoryUpdateActionUtilsIT {
      * Deletes all the test data from the {@code CTP_SOURCE_CLIENT} and the {@code CTP_SOURCE_CLIENT} projects that
      * were set up in this test class.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteInventoryEntriesFromTargetAndSource();
         deleteTypesFromTargetAndSource();
         deleteChannelsFromTargetAndSource();
     }
 
     @Test
-    public void buildChangeQuantityAction_ShouldBuildActionThatUpdatesQuantity() {
+    void buildChangeQuantityAction_ShouldBuildActionThatUpdatesQuantity() {
         //Fetch old inventory and ensure its quantity on stock.
         final Optional<InventoryEntry> oldEntryOptional =
             getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null);
@@ -98,7 +98,7 @@ public class InventoryUpdateActionUtilsIT {
     }
 
     @Test
-    public void buildSetRestockableInDaysAction_ShouldBuildActionThatUpdatesRestockableInDays() {
+    void buildSetRestockableInDaysAction_ShouldBuildActionThatUpdatesRestockableInDays() {
         //Fetch old inventory and ensure its restockable in days.
         final Optional<InventoryEntry> oldEntryOptional =
             getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null);
@@ -125,7 +125,7 @@ public class InventoryUpdateActionUtilsIT {
     }
 
     @Test
-    public void buildSetExpectedDeliveryAction_ShouldBuildActionThatUpdatesExpectedDelivery() {
+    void buildSetExpectedDeliveryAction_ShouldBuildActionThatUpdatesExpectedDelivery() {
         //Fetch old inventory and ensure its expected delivery.
         final Optional<InventoryEntry> oldEntryOptional =
             getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null);
@@ -152,7 +152,7 @@ public class InventoryUpdateActionUtilsIT {
     }
 
     @Test
-    public void buildSetSupplyChannelAction_ShouldBuildActionThatUpdatesSupplyChannel() {
+    void buildSetSupplyChannelAction_ShouldBuildActionThatUpdatesSupplyChannel() {
         //Fetch old inventory and ensure it has no supply channel.
         final Optional<InventoryEntry> oldInventoryOptional =
             getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null);
@@ -187,7 +187,7 @@ public class InventoryUpdateActionUtilsIT {
     }
 
     @Test
-    public void buildCustomUpdateActions_ShouldBuildActionThatSetCustomField() {
+    void buildCustomUpdateActions_ShouldBuildActionThatSetCustomField() {
         //Fetch old inventory and ensure it has custom fields.
         final Optional<InventoryEntry> oldInventoryOptional =
             getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null);

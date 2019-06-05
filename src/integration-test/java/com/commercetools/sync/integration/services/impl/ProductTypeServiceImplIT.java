@@ -15,9 +15,9 @@ import io.sphere.sdk.producttypes.commands.updateactions.ChangeName;
 import io.sphere.sdk.producttypes.commands.updateactions.SetKey;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.utils.CompletableFutureUtils;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,7 +45,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class ProductTypeServiceImplIT {
+class ProductTypeServiceImplIT {
     private ProductTypeService productTypeService;
     private static final String OLD_PRODUCT_TYPE_KEY = "old_product_type_key";
     private static final String OLD_PRODUCT_TYPE_NAME = "old_product_type_name";
@@ -57,8 +57,8 @@ public class ProductTypeServiceImplIT {
     /**
      * Deletes product types from the target CTP project, then it populates the project with test data.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
 
@@ -72,13 +72,13 @@ public class ProductTypeServiceImplIT {
     /**
      * Cleans up the target test data that were built in this test class.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteProductTypes(CTP_TARGET_CLIENT);
     }
 
     @Test
-    public void fetchCachedProductTypeId_WithNonExistingProductType_ShouldNotFetchAProductType() {
+    void fetchCachedProductTypeId_WithNonExistingProductType_ShouldNotFetchAProductType() {
         final Optional<String> productTypeId = productTypeService.fetchCachedProductTypeId("non-existing-type-key")
                                                                  .toCompletableFuture()
                                                                  .join();
@@ -86,7 +86,7 @@ public class ProductTypeServiceImplIT {
     }
 
     @Test
-    public void fetchCachedProductTypeId_WithExistingProductType_ShouldFetchProductTypeAndCache() {
+    void fetchCachedProductTypeId_WithExistingProductType_ShouldFetchProductTypeAndCache() {
         final Optional<String> productTypeId = productTypeService.fetchCachedProductTypeId(OLD_PRODUCT_TYPE_KEY)
                                                                  .toCompletableFuture()
                                                                  .join();
@@ -94,7 +94,7 @@ public class ProductTypeServiceImplIT {
     }
 
     @Test
-    public void fetchCachedProductAttributeMetaDataMap_WithMetadataCache_ShouldReturnAnyAttributeMetadata() {
+    void fetchCachedProductAttributeMetaDataMap_WithMetadataCache_ShouldReturnAnyAttributeMetadata() {
         final Optional<String> productTypeId = productTypeService.fetchCachedProductTypeId(OLD_PRODUCT_TYPE_KEY)
                                                                  .toCompletableFuture()
                                                                  .join();
@@ -110,7 +110,7 @@ public class ProductTypeServiceImplIT {
     }
 
     @Test
-    public void fetchCachedProductAttributeMetaDataMap_WithoutMetadataCache_ShouldReturnAnyAttributeMetadata() {
+    void fetchCachedProductAttributeMetaDataMap_WithoutMetadataCache_ShouldReturnAnyAttributeMetadata() {
         final Optional<ProductType> productTypeOptional = CTP_TARGET_CLIENT
             .execute(ProductTypeQuery.of().byKey(OLD_PRODUCT_TYPE_KEY))
             .toCompletableFuture()
@@ -129,7 +129,7 @@ public class ProductTypeServiceImplIT {
     }
 
     @Test
-    public void fetchMatchingProductTypesByKeys_WithEmptySetOfKeys_ShouldReturnEmptySet() {
+    void fetchMatchingProductTypesByKeys_WithEmptySetOfKeys_ShouldReturnEmptySet() {
         final Set<String> typeKeys = new HashSet<>();
         final Set<ProductType> matchingProductTypes = productTypeService.fetchMatchingProductTypesByKeys(typeKeys)
                                                                         .toCompletableFuture()
@@ -141,7 +141,7 @@ public class ProductTypeServiceImplIT {
     }
 
     @Test
-    public void fetchMatchingProductTypesByKeys_WithNonExistingKeys_ShouldReturnEmptySet() {
+    void fetchMatchingProductTypesByKeys_WithNonExistingKeys_ShouldReturnEmptySet() {
         final Set<String> typeKeys = new HashSet<>();
         typeKeys.add("type_key_1");
         typeKeys.add("type_key_2");
@@ -156,7 +156,7 @@ public class ProductTypeServiceImplIT {
     }
 
     @Test
-    public void fetchMatchingProductTypesByKeys_WithAnyExistingKeys_ShouldReturnASetOfProductTypes() {
+    void fetchMatchingProductTypesByKeys_WithAnyExistingKeys_ShouldReturnASetOfProductTypes() {
         final Set<String> typeKeys = new HashSet<>();
         typeKeys.add(OLD_PRODUCT_TYPE_KEY);
 
@@ -171,7 +171,7 @@ public class ProductTypeServiceImplIT {
     }
 
     @Test
-    public void fetchMatchingProductTypesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
+    void fetchMatchingProductTypesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
         // Mock sphere client to return BadGatewayException on any request.
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         when(spyClient.execute(any(ProductTypeQuery.class)))
@@ -200,7 +200,7 @@ public class ProductTypeServiceImplIT {
     }
 
     @Test
-    public void fetchMatchingProductTypesByKeys_WithAllExistingSetOfKeys_ShouldCacheFetchedProductTypeIds() {
+    void fetchMatchingProductTypesByKeys_WithAllExistingSetOfKeys_ShouldCacheFetchedProductTypeIds() {
         final Set<ProductType> fetchedProductTypes = productTypeService.fetchMatchingProductTypesByKeys(
             singleton(OLD_PRODUCT_TYPE_KEY))
                                                                        .toCompletableFuture().join();
@@ -230,7 +230,7 @@ public class ProductTypeServiceImplIT {
     }
 
     @Test
-    public void createProductType_WithValidProductType_ShouldCreateProductTypeAndCacheId() {
+    void createProductType_WithValidProductType_ShouldCreateProductTypeAndCacheId() {
         // preparation
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
             PRODUCT_TYPE_KEY_1,
@@ -277,7 +277,7 @@ public class ProductTypeServiceImplIT {
     }
 
     @Test
-    public void createProductType_WithInvalidProductType_ShouldHaveEmptyOptionalAsAResult() {
+    void createProductType_WithInvalidProductType_ShouldHaveEmptyOptionalAsAResult() {
         // preparation
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
             "",
@@ -307,7 +307,7 @@ public class ProductTypeServiceImplIT {
     }
 
     @Test
-    public void createProductType_WithDuplicateKey_ShouldHaveEmptyOptionalAsAResult() {
+    void createProductType_WithDuplicateKey_ShouldHaveEmptyOptionalAsAResult() {
         //preparation
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
             OLD_PRODUCT_TYPE_KEY,
@@ -354,7 +354,7 @@ public class ProductTypeServiceImplIT {
     }
 
     @Test
-    public void updateProductType_WithValidChanges_ShouldUpdateProductTypeCorrectly() {
+    void updateProductType_WithValidChanges_ShouldUpdateProductTypeCorrectly() {
         final Optional<ProductType> productTypeOptional = CTP_TARGET_CLIENT
             .execute(ProductTypeQuery.of()
                                      .withPredicates(productTypeQueryModel -> productTypeQueryModel.key().is(
@@ -384,7 +384,7 @@ public class ProductTypeServiceImplIT {
     }
 
     @Test
-    public void updateProductType_WithInvalidChanges_ShouldCompleteExceptionally() {
+    void updateProductType_WithInvalidChanges_ShouldCompleteExceptionally() {
         final Optional<ProductType> typeOptional = CTP_TARGET_CLIENT
             .execute(ProductTypeQuery
                 .of()

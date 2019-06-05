@@ -26,8 +26,8 @@ import io.sphere.sdk.producttypes.commands.updateactions.ChangeLocalizedEnumValu
 import io.sphere.sdk.producttypes.commands.updateactions.ChangePlainEnumValueLabel;
 import io.sphere.sdk.producttypes.commands.updateactions.RemoveEnumValues;
 import io.sphere.sdk.producttypes.commands.updateactions.SetInputTip;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
@@ -44,7 +44,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class AttributeDefinitionUpdateActionUtilsTest {
+class AttributeDefinitionUpdateActionUtilsTest {
     private static AttributeDefinition old;
     private static AttributeDefinitionDraft newSame;
     private static AttributeDefinitionDraft newDifferent;
@@ -58,8 +58,8 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     /**
      * Initialises test data.
      */
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         old = AttributeDefinitionBuilder
             .of("attributeName1", ofEnglish("label1"), StringAttributeType.of())
             .isRequired(false)
@@ -83,7 +83,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeLabelAction_WithDifferentValues_ShouldReturnAction() {
+    void buildChangeLabelAction_WithDifferentValues_ShouldReturnAction() {
         // Preparation
         final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
             .of(null, "foo", ofEnglish("x"), null)
@@ -101,7 +101,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeLabelAction_WithSameValues_ShouldReturnEmptyOptional() {
+    void buildChangeLabelAction_WithSameValues_ShouldReturnEmptyOptional() {
         // Preparation
         final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
             .of(null, "foo", ofEnglish("x"), null)
@@ -119,7 +119,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetInputTipAction_WithDifferentValues_ShouldReturnAction() {
+    void buildSetInputTipAction_WithDifferentValues_ShouldReturnAction() {
         // Preparation
         final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
             .of(null, "foo", ofEnglish("x"), null)
@@ -139,7 +139,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetInputTipAction_WithSameValues_ShouldReturnEmptyOptional() {
+    void buildSetInputTipAction_WithSameValues_ShouldReturnEmptyOptional() {
         // Preparation
         final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
             .of(null, "foo", ofEnglish("x"), null)
@@ -159,7 +159,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetInputTipAction_WithSourceNullValues_ShouldReturnAction() {
+    void buildSetInputTipAction_WithSourceNullValues_ShouldReturnAction() {
         // Preparation
         final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
             .of(null, "foo", ofEnglish("x"), null)
@@ -179,7 +179,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetInputTipAction_WithTargetNullValues_ShouldReturnAction() {
+    void buildSetInputTipAction_WithTargetNullValues_ShouldReturnAction() {
         // Preparation
         final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
             .of(null, "foo", ofEnglish("x"), null)
@@ -199,7 +199,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeIsSearchableAction_WithDifferentValues_ShouldReturnAction() {
+    void buildChangeIsSearchableAction_WithDifferentValues_ShouldReturnAction() {
         // Preparation
         final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
             .of(null, "foo", ofEnglish("x"), null)
@@ -219,7 +219,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeIsSearchableAction_WithSameValues_ShouldReturnEmptyOptional() {
+    void buildChangeIsSearchableAction_WithSameValues_ShouldReturnEmptyOptional() {
         // Preparation
         final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
             .of(null, "foo", ofEnglish("x"), null)
@@ -239,7 +239,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeIsSearchableAction_WithNullSourceAndNonDefaultTarget_ShouldBuildAction() {
+    void buildChangeIsSearchableAction_WithNullSourceAndNonDefaultTarget_ShouldBuildAction() {
         // Preparation
         final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
             .of(null, "foo", ofEnglish("x"), null)
@@ -259,7 +259,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeIsSearchableAction_WithNullSourceAndDefaultTarget_ShouldNotBuildAction() {
+    void buildChangeIsSearchableAction_WithNullSourceAndDefaultTarget_ShouldNotBuildAction() {
         // Preparation
         final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
             .of(null, "foo", ofEnglish("x"), null)
@@ -279,7 +279,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeInputHintAction_WithDifferentValues_ShouldReturnAction() {
+    void buildChangeInputHintAction_WithDifferentValues_ShouldReturnAction() {
         // Preparation
         final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
             .of(null, "foo", ofEnglish("x"), null)
@@ -298,7 +298,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeInputHintAction_WithSameValues_ShouldReturnEmptyOptional() {
+    void buildChangeInputHintAction_WithSameValues_ShouldReturnEmptyOptional() {
         // Preparation
         final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
             .of(null, "foo", ofEnglish("x"), null)
@@ -317,7 +317,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeInputHintAction_WithSourceNullValuesAndNonDefaultTargetValue_ShouldBuildAction() {
+    void buildChangeInputHintAction_WithSourceNullValuesAndNonDefaultTargetValue_ShouldBuildAction() {
         // Preparation
         final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
             .of(null, "foo", ofEnglish("x"), null)
@@ -336,7 +336,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeInputHintAction_WithSourceNullValuesAndDefaultTargetValue_ShouldNotBuildAction() {
+    void buildChangeInputHintAction_WithSourceNullValuesAndDefaultTargetValue_ShouldNotBuildAction() {
         // Preparation
         final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
             .of(null, "foo", ofEnglish("x"), null)
@@ -355,7 +355,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeAttributeConstraintAction_WithDifferentValues_ShouldBuildAction() {
+    void buildChangeAttributeConstraintAction_WithDifferentValues_ShouldBuildAction() {
         // Preparation
         final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
             .of(null, "foo", ofEnglish("x"), null)
@@ -376,7 +376,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeAttributeConstraintAction_WithSameValues_ShouldReturnEmptyOptional() {
+    void buildChangeAttributeConstraintAction_WithSameValues_ShouldReturnEmptyOptional() {
         // Preparation
         final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
             .of(null, "foo", ofEnglish("x"), null)
@@ -396,7 +396,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeAttributeConstraintAction_WithSourceNullValuesAndDefaultTarget_ShouldNotBuildAction() {
+    void buildChangeAttributeConstraintAction_WithSourceNullValuesAndDefaultTarget_ShouldNotBuildAction() {
         // Preparation
         final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
             .of(null, "foo", ofEnglish("x"), null)
@@ -416,7 +416,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeAttributeConstraintAction_WithSourceNullValuesAndNonDefaultTarget_ShouldBuildAction() {
+    void buildChangeAttributeConstraintAction_WithSourceNullValuesAndNonDefaultTarget_ShouldBuildAction() {
         // Preparation
         final AttributeDefinitionDraft draft = AttributeDefinitionDraftBuilder
             .of(null, "foo", ofEnglish("x"), null)
@@ -436,7 +436,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithNullOptionalsAndDefaultValues_ShouldBuildNoActions() {
+    void buildActions_WithNullOptionalsAndDefaultValues_ShouldBuildNoActions() {
         final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
             .of(StringAttributeType.of(), "attributeName1", ofEnglish("label2"), true)
             .attributeConstraint(null)
@@ -456,7 +456,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithNonDefaultValuesForOptionalFields_ShouldBuildActions() {
+    void buildActions_WithNonDefaultValuesForOptionalFields_ShouldBuildActions() {
         final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
             .of(StringAttributeType.of(), "attributeName1", ofEnglish("label2"), true)
             .attributeConstraint(AttributeConstraint.SAME_FOR_ALL)
@@ -480,7 +480,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithNewDifferentValues_ShouldReturnActions() {
+    void buildActions_WithNewDifferentValues_ShouldReturnActions() {
         final List<UpdateAction<ProductType>> result = buildActions(old, newDifferent);
 
         assertThat(result).containsExactlyInAnyOrder(
@@ -493,14 +493,14 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithSameValues_ShouldReturnEmpty() {
+    void buildActions_WithSameValues_ShouldReturnEmpty() {
         final List<UpdateAction<ProductType>> result = buildActions(old, newSame);
 
         assertThat(result).isEmpty();
     }
 
     @Test
-    public void buildActions_WithStringAttributeTypesWithLabelChanges_ShouldBuildChangeLabelAction() {
+    void buildActions_WithStringAttributeTypesWithLabelChanges_ShouldBuildChangeLabelAction() {
         final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
             .of("attributeName1", ofEnglish("label1"), StringAttributeType.of())
             .build();
@@ -517,7 +517,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithSetOfStringAttributeTypesWithDefinitionLabelChanges_ShouldBuildChangeLabelAction() {
+    void buildActions_WithSetOfStringAttributeTypesWithDefinitionLabelChanges_ShouldBuildChangeLabelAction() {
         final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
             .of("attributeName1", ofEnglish("label1"), SetAttributeType.of(StringAttributeType.of()))
             .build();
@@ -534,7 +534,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithSetOfSetOfStringAttributeTypesWithDefLabelChanges_ShouldBuildChangeLabelAction() {
+    void buildActions_WithSetOfSetOfStringAttributeTypesWithDefLabelChanges_ShouldBuildChangeLabelAction() {
         final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
             .of("attributeName1", ofEnglish("label1"),
                 SetAttributeType.of(SetAttributeType.of(StringAttributeType.of())))
@@ -553,7 +553,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithSameSetOfEnumsAttributeTypesWithDefLabelChanges_ShouldBuildChangeLabelAction() {
+    void buildActions_WithSameSetOfEnumsAttributeTypesWithDefLabelChanges_ShouldBuildChangeLabelAction() {
         final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
             .of("attributeName1", ofEnglish("label1"), SetAttributeType.of(
                 EnumAttributeType.of(emptyList())))
@@ -572,7 +572,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithChangedSetOfEnumAttributeTypes_ShouldBuildEnumActions() {
+    void buildActions_WithChangedSetOfEnumAttributeTypes_ShouldBuildEnumActions() {
         // preparation
         final AttributeDefinition oldDefinition = AttributeDefinitionBuilder
             .of("attributeName1", ofEnglish("label1"), SetAttributeType.of(
@@ -618,7 +618,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithSameSetOfLEnumAttributeTypesWithDefLabelChanges_ShouldBuildChangeLabelAction() {
+    void buildActions_WithSameSetOfLEnumAttributeTypesWithDefLabelChanges_ShouldBuildChangeLabelAction() {
         final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
             .of("attributeName1", ofEnglish("label1"), SetAttributeType.of(
                 LocalizedEnumAttributeType.of(emptyList())))
@@ -637,7 +637,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithChangedSetOfLocalizedEnumAttributeTypes_ShouldBuildEnumActions() {
+    void buildActions_WithChangedSetOfLocalizedEnumAttributeTypes_ShouldBuildEnumActions() {
         // preparation
         final AttributeDefinition oldDefinition = AttributeDefinitionBuilder
             .of("attributeName1", ofEnglish("label1"), SetAttributeType.of(
@@ -646,7 +646,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
                         LocalizedEnumValue.of("c", ofEnglish("c")),
                         LOCALIZED_ENUM_VALUE_B,
                         LocalizedEnumValue.of("d", ofEnglish("d"))
-                ))))
+                    ))))
             .build();
 
         final AttributeDefinitionDraft newDefinition = AttributeDefinitionDraftBuilder
@@ -656,7 +656,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
                         LOCALIZED_ENUM_VALUE_A,
                         LocalizedEnumValue.of(LOCALIZED_ENUM_VALUE_B.getKey(), ofEnglish("newLabel")),
                         LocalizedEnumValue.of("c", ofEnglish("c"))
-                ))),
+                    ))),
                 "attributeName1", ofEnglish("label1"), false)
             .build();
 
@@ -678,7 +678,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithNewPlainEnum_ShouldReturnAddEnumValueAction() {
+    void buildActions_WithNewPlainEnum_ShouldReturnAddEnumValueAction() {
         final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
             .of("attributeName1", ofEnglish("label1"), EnumAttributeType.of(ENUM_VALUE_A))
             .build();
@@ -701,7 +701,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithoutOldPlainEnum_ShouldReturnRemoveEnumValueAction() {
+    void buildActions_WithoutOldPlainEnum_ShouldReturnRemoveEnumValueAction() {
         final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
             .of("attributeName1", ofEnglish("label1"), EnumAttributeType.of(ENUM_VALUE_A))
             .build();
@@ -723,7 +723,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WitDifferentPlainEnumValueLabel_ShouldReturnChangeEnumValueLabelAction() {
+    void buildActions_WitDifferentPlainEnumValueLabel_ShouldReturnChangeEnumValueLabelAction() {
         final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
             .of("attributeName1", ofEnglish("label1"), EnumAttributeType.of(ENUM_VALUE_A))
             .build();
@@ -746,7 +746,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithNewLocalizedEnum_ShouldReturnAddLocalizedEnumValueAction() {
+    void buildActions_WithNewLocalizedEnum_ShouldReturnAddLocalizedEnumValueAction() {
         final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
             .of(
                 "attributeName1",
@@ -772,7 +772,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithoutOldLocalizedEnum_ShouldReturnRemoveLocalizedEnumValueAction() {
+    void buildActions_WithoutOldLocalizedEnum_ShouldReturnRemoveLocalizedEnumValueAction() {
         final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
             .of(
                 "attributeName1",
@@ -797,7 +797,7 @@ public class AttributeDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithDifferentLocalizedEnumValueLabel_ShouldReturnChangeLocalizedEnumValueLabelAction() {
+    void buildActions_WithDifferentLocalizedEnumValueLabel_ShouldReturnChangeLocalizedEnumValueLabelAction() {
         final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
             .of("attributeName1", ofEnglish("label1"),
                 LocalizedEnumAttributeType.of(LOCALIZED_ENUM_VALUE_A))

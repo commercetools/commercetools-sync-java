@@ -6,7 +6,7 @@ import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,10 +19,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class InventoryReferenceReplacementUtilsTest {
+class InventoryReferenceReplacementUtilsTest {
 
     @Test
-    public void
+    void
         replaceInventoriesReferenceIdsWithKeys_WithAllExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
         //preparation
         final String customTypeId = UUID.randomUUID().toString();
@@ -62,7 +62,7 @@ public class InventoryReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void
+    void
         replaceInventoriesReferenceIdsWithKeys_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
         //preparation
         final String customTypeId = UUID.randomUUID().toString();
@@ -96,7 +96,7 @@ public class InventoryReferenceReplacementUtilsTest {
 
 
     @Test
-    public void replaceChannelReferenceIdWithKey_WithNonExpandedReferences_ShouldReturnReferenceWithoutReplacedKeys() {
+    void replaceChannelReferenceIdWithKey_WithNonExpandedReferences_ShouldReturnReferenceWithoutReplacedKeys() {
         //preparation
         final String channelId = UUID.randomUUID().toString();
         final Reference<Channel> channelReference = Channel.referenceOfId(channelId);
@@ -112,7 +112,7 @@ public class InventoryReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceChannelReferenceIdWithKey_WithExpandedReferences_ShouldReturnReplaceReferenceIdsWithKey() {
+    void replaceChannelReferenceIdWithKey_WithExpandedReferences_ShouldReturnReplaceReferenceIdsWithKey() {
         //preparation
         final String channelKey = "channelKey";
         final Channel channel = getChannelMock(channelKey);
@@ -130,7 +130,7 @@ public class InventoryReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceChannelReferenceIdWithKey_WithNullChannelReference_ShouldReturnNull() {
+    void replaceChannelReferenceIdWithKey_WithNullChannelReference_ShouldReturnNull() {
         final InventoryEntry inventoryEntry = mock(InventoryEntry.class);
 
         final Reference<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(inventoryEntry);

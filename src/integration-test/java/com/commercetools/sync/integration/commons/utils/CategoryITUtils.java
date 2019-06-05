@@ -323,4 +323,7 @@ public final class CategoryITUtils {
                                             categoryOrderHintKeyMap.put(category.getKey(), categoryOrderHintValue)));
         return CategoryOrderHints.of(categoryOrderHintKeyMap);
     }
+
+    private CategoryITUtils() {
+    }
 }

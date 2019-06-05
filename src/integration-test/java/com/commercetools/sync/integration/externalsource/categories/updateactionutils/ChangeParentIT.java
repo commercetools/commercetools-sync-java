@@ -10,10 +10,10 @@ import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.categories.commands.updateactions.ChangeParent;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +26,7 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ChangeParentIT {
+class ChangeParentIT {
     private static Category oldCategory;
     private List<String> callBackResponses = new ArrayList<>();
     private CategorySyncOptions categorySyncOptions;
@@ -35,8 +35,8 @@ public class ChangeParentIT {
      * Deletes Categories and Types from source and target CTP projects, then it populates target CTP project with
      * category test data.
      */
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
 
@@ -61,8 +61,8 @@ public class ChangeParentIT {
     /**
      * Cleans the callback response collector.
      */
-    @Before
-    public void setupTest() {
+    @BeforeEach
+    void setupTest() {
         callBackResponses = new ArrayList<>();
         categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                                         .warningCallback(callBackResponses::add)
@@ -72,14 +72,14 @@ public class ChangeParentIT {
     /**
      * Cleans up the target test data that was built in this test class.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
     }
 
     @Test
-    public void buildChangeParentUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
+    void buildChangeParentUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         // Create a mock category in the target project under this parent.
         final CategoryDraft oldCategoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
@@ -101,7 +101,7 @@ public class ChangeParentIT {
     }
 
     @Test
-    public void buildChangeParentUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
+    void buildChangeParentUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         // Prepare new category draft with the same parent: targetProjectRootCategory
         final CategoryDraft newCategory = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
@@ -118,7 +118,7 @@ public class ChangeParentIT {
     }
 
     @Test
-    public void buildChangeParentUpdateAction_WithNullValue_ShouldTriggerCallback() {
+    void buildChangeParentUpdateAction_WithNullValue_ShouldTriggerCallback() {
         // Prepare new category draft with no parent
         final CategoryDraft newCategory = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),

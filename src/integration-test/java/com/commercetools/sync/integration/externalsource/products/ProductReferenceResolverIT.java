@@ -9,10 +9,10 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.producttypes.ProductType;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +20,7 @@ import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
@@ -39,9 +40,8 @@ import static io.sphere.sdk.producttypes.ProductType.referenceOfId;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 
-public class ProductReferenceResolverIT {
+class ProductReferenceResolverIT {
 
     private static ProductType productType;
     private static List<Category> categories;
@@ -49,8 +49,8 @@ public class ProductReferenceResolverIT {
     private List<String> warningCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
 
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH,
             OLD_CATEGORY_CUSTOM_TYPE_NAME, CTP_TARGET_CLIENT);
@@ -58,8 +58,8 @@ public class ProductReferenceResolverIT {
         productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
     }
 
-    @Before
-    public void setupPerTest() {
+    @BeforeEach
+    void setupPerTest() {
         clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
     }
@@ -84,13 +84,13 @@ public class ProductReferenceResolverIT {
                                         .build();
     }
 
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
 
     @Test
-    public void sync_withNewProductWithInvalidCategoryReferences_ShouldFailCreatingTheProduct() {
+    void sync_withNewProductWithInvalidCategoryReferences_ShouldFailCreatingTheProduct() {
         // Create a list of category references that contains one valid and one invalid reference.
         final List<Reference<Category>> invalidCategoryReferences = new ArrayList<>();
         invalidCategoryReferences.add(Category.referenceOfId(categories.get(0).getId()));
