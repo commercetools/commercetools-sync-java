@@ -4,11 +4,13 @@ import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
+import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.inventory.commands.updateactions.ChangeQuantity;
 import io.sphere.sdk.inventory.commands.updateactions.SetExpectedDelivery;
 import io.sphere.sdk.inventory.commands.updateactions.SetRestockableInDays;
 import io.sphere.sdk.inventory.commands.updateactions.SetSupplyChannel;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -40,9 +42,7 @@ class InventoryUpdateActionUtilsTest {
         final ZonedDateTime date1 = ZonedDateTime.of(2017, 5, 1, 10, 0, 0, 0, ZoneId.of("UTC"));
         final ZonedDateTime date2 = ZonedDateTime.of(2017, 4, 1, 12, 0, 0, 0, ZoneId.of("UTC"));
         
-        final Channel channel = mock(Channel.class);
         final Reference<Channel> supplyChannel1 = Channel.referenceOfId("456");
-        final Reference<Channel> supplyChannel1WithObject = Channel.referenceOfId("456").filled(channel);
         final Reference<Channel> supplyChannel2 = Channel.referenceOfId("789");
 
         old = mock(InventoryEntry.class);
@@ -50,11 +50,17 @@ class InventoryUpdateActionUtilsTest {
         when(old.getQuantityOnStock()).thenReturn(10L);
         when(old.getRestockableInDays()).thenReturn(10);
         when(old.getExpectedDelivery()).thenReturn(date1);
-        when(old.getSupplyChannel()).thenReturn(supplyChannel1WithObject);
+        when(old.getSupplyChannel()).thenReturn(supplyChannel1);
 
-        newSame = InventoryEntryDraft.of("123", 10L, date1, 10, supplyChannel1);
-        newDifferent = InventoryEntryDraft.of("123", 20L, date2, 20, supplyChannel2);
-        newWithNullValues = InventoryEntryDraft.of("123", 20L, null, null, null);
+        newSame = InventoryEntryDraftBuilder
+            .of("123", 10L, date1, 10, ResourceIdentifier.ofId(supplyChannel1.getId()))
+            .build();
+        newDifferent = InventoryEntryDraftBuilder
+            .of("123", 20L, date2, 20, ResourceIdentifier.ofId(supplyChannel2.getId()))
+            .build();
+        newWithNullValues = InventoryEntryDraftBuilder
+            .of("123", 20L, null, null, null)
+            .build();
     }
 
     @Test

@@ -31,13 +31,24 @@
 
 <!--
 
-### 1.2.0 -  Jun 10, 2019
+### 1.2.0 -  Jun 20, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.1.1...1.2.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.2.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.2.0)
 
+- 🚧 **Breaking Changes** (2)
+    - **ProductType Sync** - Removed the unneeded `AttributeDefinitionCustomBuilder` which was an exposed but internal helper. [#377](https://github.com/commercetools/commercetools-sync-java/issues/377). 
+    - **Commons** - `SyncUtils#replaceReferenceIdWithKey` now renamed to `SyncUtils#getReferenceWithKeyReplaced`. [#394](https://github.com/commercetools/commercetools-sync-java/issues/394)
 
-- 🛠️ **Enhancements** (11)
+- 🎉 **New Features** (2)
+    - **Commons** - Added the new `CommonTypeUpdateActionUtils#buildUpdateActionForReferences` which is used for comapring references/resourceIdentifiers and buiding an update action if needed. [#394](https://github.com/commercetools/commercetools-sync-java/issues/394)
+    - **Commons** - Added the new `SyncUtils#getResourceIdentifierWithKeyReplaced` util. [#394](https://github.com/commercetools/commercetools-sync-java/issues/394)
+    
+- 🐞 **Bug Fixes** (1)
+    - **Commons** - Fixed a bug where references and resource identifiers were not being compared correctly. [#394](https://github.com/commercetools/commercetools-sync-java/issues/394)
+
+- 🛠️ **Enhancements** (13)
+    - **Commons** - Bumped commercetools-jvm-sdk to version [1.43.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_43_0).
     - **Commons** - Bumped `mockito` to 2.27.0.
     - **Commons** - Bumped `assertj` to 3.12.2.
     - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-api` to 5.4.2.
@@ -47,9 +58,10 @@
     - **Commons** - Bumped `org.ajoberstar.grgit` to 3.1.1.
     - **Commons** - Bumped `com.github.ben-manes.versions` to 0.21.0.
     - **Commons** - Bumped gradle checkstyle plugin to 8.2.
-    - **Commons** - Bumped mockito dependency to 2.27.0.
+    - **Commons** - Bumped mockito dependency to 2.28.2.
     - **Commons** - Bumped JaCoCo dependency to 0.8.4.
     - **Commons** - Bumped gradle to version [gradle-5.4.1](https://docs.gradle.org/5.4.1/release-notes.html)
+    - **Commons** - Bumped `com.adarshr.test-logger` to 1.7.0.
 -->
 
 

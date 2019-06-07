@@ -89,7 +89,7 @@ class CategorySyncUtilsTest {
             .metaTitle(LocalizedString.of(LOCALE, CATEGORY_META_TITLE))
             .metaKeywords(LocalizedString.of(LOCALE, CATEGORY_KEYWORDS))
             .orderHint(CATEGORY_ORDER_HINT)
-            .parent(Category.referenceOfId(CATEGORY_PARENT_ID).toResourceIdentifier())
+            .parent(ResourceIdentifier.ofId(CATEGORY_PARENT_ID))
             .build();
 
         final List<UpdateAction<Category>> updateActions =
@@ -112,7 +112,7 @@ class CategorySyncUtilsTest {
             .metaTitle(LocalizedString.of(LOCALE, "differentMetaTitle"))
             .metaKeywords(LocalizedString.of(LOCALE, "differentMetaKeywords"))
             .orderHint("differentOrderHint")
-            .parent(Category.referenceOfId("differentParentId").toResourceIdentifier())
+            .parent(ResourceIdentifier.ofId("differentParentId"))
             .assets(ASSET_DRAFTS)
             .build();
 

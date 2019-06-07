@@ -1,6 +1,7 @@
 package com.commercetools.sync.products.utils.productupdateactionutils;
 
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.updateactions.SetTaxCategory;
@@ -29,12 +30,14 @@ class BuildSetTaxCategoryUpdateActionTest {
         "{\"typeId\": \"tax-category\",\"id\": \"11111111-1111-1111-1111-111111111111\"}", Reference.class);
 
     @SuppressWarnings("unchecked")
-    private static final Reference<TaxCategory> newSameTaxCategory = readObject(
-        "{\"typeId\": \"tax-category\",\"id\": \"11111111-1111-1111-1111-111111111111\"}", Reference.class);
+    private static final ResourceIdentifier<TaxCategory> newSameTaxCategory = readObject(
+        "{\"typeId\": \"tax-category\",\"id\": \"11111111-1111-1111-1111-111111111111\"}",
+        ResourceIdentifier.class);
 
     @SuppressWarnings("unchecked")
-    private static final Reference<TaxCategory> newChangedTaxCategory = readObject(
-        "{\"typeId\": \"tax-category\",\"id\": \"22222222-2222-2222-2222-222222222222\"}", Reference.class);
+    private static final ResourceIdentifier<TaxCategory> newChangedTaxCategory = readObject(
+        "{\"typeId\": \"tax-category\",\"id\": \"22222222-2222-2222-2222-222222222222\"}",
+        ResourceIdentifier.class);
 
     @Test
     void buildSetTaxCategoryUpdateAction_withEmptyOld_containsNewCategory() {

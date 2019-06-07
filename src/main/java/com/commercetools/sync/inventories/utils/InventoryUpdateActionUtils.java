@@ -9,6 +9,7 @@ import io.sphere.sdk.inventory.commands.updateactions.SetExpectedDelivery;
 import io.sphere.sdk.inventory.commands.updateactions.SetRestockableInDays;
 import io.sphere.sdk.inventory.commands.updateactions.SetSupplyChannel;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import javax.annotation.Nonnull;
@@ -16,6 +17,7 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActionForReferences;
 
 /**
  * This class provides static utility methods for building update actions related to inventories.
@@ -88,7 +90,7 @@ public final class InventoryUpdateActionUtils {
     }
 
     /**
-     * Compares the {@code supplyChannel} references of an {@link InventoryEntry} and an {@link InventoryEntryDraft}
+     * Compares the {@code supplyChannel}s of an {@link InventoryEntry} and an {@link InventoryEntryDraft}
      * and returns an {@link Optional} of update action, which would contain the {@code "setSupplyChannel"}
      * {@link UpdateAction}. If both {@link InventoryEntry} and {@link InventoryEntryDraft} have the same supply
      * channel, then no update action is needed and empty optional will be returned.
@@ -103,8 +105,9 @@ public final class InventoryUpdateActionUtils {
                                                                                      @Nonnull final InventoryEntryDraft
                                                                                          newEntry) {
         final Reference<Channel> oldSupplyChannel = oldEntry.getSupplyChannel();
-        final Reference<Channel> newSupplyChannel = newEntry.getSupplyChannel();
-        return buildUpdateAction(oldSupplyChannel, newSupplyChannel, () -> SetSupplyChannel.of(newSupplyChannel));
+        final ResourceIdentifier<Channel> newSupplyChannel = newEntry.getSupplyChannel();
+        return buildUpdateActionForReferences(oldSupplyChannel, newSupplyChannel,
+            () -> SetSupplyChannel.of(newSupplyChannel));
     }
 
     private InventoryUpdateActionUtils() { }

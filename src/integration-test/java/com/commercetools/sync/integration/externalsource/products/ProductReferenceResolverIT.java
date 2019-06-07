@@ -109,8 +109,8 @@ class ProductReferenceResolverIT {
         assertThat(errorCallBackExceptions).hasSize(1);
         final Throwable exception = errorCallBackExceptions.get(0);
         assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class)
-                             .hasMessageContaining("Failed to resolve reference 'category' on ProductDraft with "
-                                 + "key:'productKey1'")
+                             .hasMessageContaining("Failed to resolve 'category' resource identifier on ProductDraft "
+                                 + "with key:'productKey1'")
                              .hasMessageContaining(format("Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
 
         assertThat(errorCallBackMessages).hasSize(1);

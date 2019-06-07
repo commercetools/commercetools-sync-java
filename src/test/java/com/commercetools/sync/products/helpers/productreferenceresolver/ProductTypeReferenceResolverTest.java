@@ -97,8 +97,9 @@ class ProductTypeReferenceResolverTest {
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format("Failed to resolve product type reference on ProductDraft"
-                + " with key:'%s'. Reason: %s", productBuilder.getKey(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+            .hasMessage(format("Failed to resolve '%s' resource identifier on ProductDraft"
+                + " with key:'%s'. Reason: %s", ProductType.referenceTypeId(),
+                productBuilder.getKey(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
@@ -110,8 +111,9 @@ class ProductTypeReferenceResolverTest {
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format("Failed to resolve product type reference on ProductDraft"
-                + " with key:'%s'. Reason: %s", productBuilder.getKey(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+            .hasMessage(format("Failed to resolve '%s' resource identifier on ProductDraft"
+                + " with key:'%s'. Reason: %s", ProductType.referenceTypeId(), productBuilder.getKey(),
+                BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
