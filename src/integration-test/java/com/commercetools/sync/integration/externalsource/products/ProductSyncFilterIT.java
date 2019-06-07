@@ -9,6 +9,7 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -35,7 +37,7 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.c
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDrafts;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getReferencesWithIds;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getReferencesWithKeys;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.geResourceIdentifiersWithKeys;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
@@ -58,7 +60,7 @@ class ProductSyncFilterIT {
 
     private static ProductType productType;
     private static List<Reference<Category>> categoryReferencesWithIds;
-    private static List<Reference<Category>> categoryReferencesWithKeys;
+    private static Set<ResourceIdentifier<Category>> categoryResourceIdentifiersWithKeys;
     private ProductSyncOptionsBuilder syncOptionsBuilder;
     private List<String> errorCallBackMessages;
     private List<String> warningCallBackMessages;
@@ -76,7 +78,7 @@ class ProductSyncFilterIT {
                 OLD_CATEGORY_CUSTOM_TYPE_NAME, CTP_TARGET_CLIENT);
         final List<Category> categories = createCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2));
         categoryReferencesWithIds = getReferencesWithIds(categories);
-        categoryReferencesWithKeys = getReferencesWithKeys(categories);
+        categoryResourceIdentifiersWithKeys = geResourceIdentifiersWithKeys(categories);
         productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
     }
 
@@ -133,7 +135,8 @@ class ProductSyncFilterIT {
     void sync_withChangedProductBlackListingCategories_shouldUpdateProductWithoutCategories() {
         final ProductDraft productDraft =
                 createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, referenceOfId(productType.getKey()), null,
-                    null, categoryReferencesWithKeys, createRandomCategoryOrderHints(categoryReferencesWithKeys));
+                    null, categoryResourceIdentifiersWithKeys, createRandomCategoryOrderHints(
+                        categoryResourceIdentifiersWithKeys));
 
         final ProductSyncOptions syncOptions = syncOptionsBuilder.syncFilter(ofBlackList(CATEGORIES))
                                                                  .build();
@@ -158,7 +161,8 @@ class ProductSyncFilterIT {
     void sync_withChangedProductWhiteListingName_shouldOnlyUpdateProductName() {
         final ProductDraft productDraft =
                 createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, referenceOfId(productType.getKey()), null,
-                    null, categoryReferencesWithKeys, createRandomCategoryOrderHints(categoryReferencesWithKeys));
+                    null, categoryResourceIdentifiersWithKeys, createRandomCategoryOrderHints(
+                        categoryResourceIdentifiersWithKeys));
 
         final ProductSyncOptions syncOptions = syncOptionsBuilder.syncFilter(ofWhiteList(NAME)).build();
 

@@ -382,7 +382,7 @@ class VariantReferenceReplacementUtilsTest {
         final Reference<Channel> channelReference = Channel.referenceOfId(channelId);
         final Price price = getPriceMockWithReferences(channelReference, null);
 
-        final Reference<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(price);
+        final ResourceIdentifier<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(price);
 
         assertThat(channelReferenceWithKey).isNotNull();
         assertThat(channelReferenceWithKey.getId()).isEqualTo(channelId);
@@ -398,7 +398,7 @@ class VariantReferenceReplacementUtilsTest {
         final Price price = getPriceMockWithReferences(channelReference, null);
 
 
-        final Reference<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(price);
+        final ResourceIdentifier<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(price);
 
         assertThat(channelReferenceWithKey).isNotNull();
         assertThat(channelReferenceWithKey.getId()).isEqualTo(channelKey);
@@ -408,7 +408,7 @@ class VariantReferenceReplacementUtilsTest {
     void replaceChannelReferenceIdWithKey_WithNullChannelReference_ShouldReturnNull() {
         final Price price = getPriceMockWithReferences(null, null);
 
-        final Reference<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(price);
+        final ResourceIdentifier<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(price);
 
         assertThat(channelReferenceWithKey).isNull();
     }

@@ -17,6 +17,7 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActionForReferences;
 
 /**
  * This class provides static utility methods for building update actions related to inventories.
@@ -105,7 +106,8 @@ public final class InventoryUpdateActionUtils {
                                                                                          newEntry) {
         final Reference<Channel> oldSupplyChannel = oldEntry.getSupplyChannel();
         final ResourceIdentifier<Channel> newSupplyChannel = newEntry.getSupplyChannel();
-        return buildUpdateAction(oldSupplyChannel, newSupplyChannel, () -> SetSupplyChannel.of(newSupplyChannel));
+        return buildUpdateActionForReferences(oldSupplyChannel, newSupplyChannel,
+            () -> SetSupplyChannel.of(newSupplyChannel));
     }
 
     private InventoryUpdateActionUtils() { }

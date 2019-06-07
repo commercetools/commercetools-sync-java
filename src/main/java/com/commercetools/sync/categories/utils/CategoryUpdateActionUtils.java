@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActionForReferences;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 
@@ -120,8 +121,8 @@ public final class CategoryUpdateActionUtils {
             // The newParent.getId() call below can not cause an NPE in this case, since if both newParent and oldParent
             // are null, then the supplier will not be called at all. The remaining cases all involve the newParent
             // being not null.
-            return buildUpdateAction(oldParent,
-                newParent, () -> ChangeParent.of(ResourceIdentifier.ofId(newParent.getId())));
+            return buildUpdateActionForReferences(oldParent, newParent,
+                () -> ChangeParent.of(ResourceIdentifier.ofId(newParent.getId())));
         }
     }
 

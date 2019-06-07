@@ -11,6 +11,7 @@ import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import org.junit.jupiter.api.BeforeEach;
@@ -91,7 +92,6 @@ class InventorySyncTest {
 
         existingInventories = asList(
                 getMockInventoryEntry(SKU_1, QUANTITY_1, RESTOCKABLE_1, DATE_1, null, null),
-                getMockInventoryEntry(SKU_1, QUANTITY_1, RESTOCKABLE_1, DATE_1, reference1, null),
                 getMockInventoryEntry(SKU_1, QUANTITY_1, RESTOCKABLE_1, DATE_1, reference2, null),
                 getMockInventoryEntry(SKU_2, QUANTITY_1, RESTOCKABLE_1, DATE_1, null, null),
                 getMockInventoryEntry(SKU_2, QUANTITY_1, RESTOCKABLE_1, DATE_1, reference1, null),
@@ -99,15 +99,22 @@ class InventorySyncTest {
         );
 
         drafts = asList(
-                InventoryEntryDraft.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1,null),
-                InventoryEntryDraft.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, expandedReference1),
-                InventoryEntryDraft.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, Channel.referenceOfId(KEY_2)),
-                InventoryEntryDraft.of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2,null),
-                InventoryEntryDraft.of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2, expandedReference1),
-                InventoryEntryDraft.of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2, Channel.referenceOfId(KEY_2)),
-                InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1,null),
-                InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, expandedReference1),
-                InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, Channel.referenceOfId(KEY_2))
+            InventoryEntryDraftBuilder.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, null)
+                                      .build(),
+            InventoryEntryDraftBuilder.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, ResourceIdentifier.ofId(KEY_2))
+                                      .build(),
+            InventoryEntryDraftBuilder.of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2, null)
+                                      .build(),
+            InventoryEntryDraftBuilder.of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2, ResourceIdentifier.ofId(KEY_1))
+                                      .build(),
+            InventoryEntryDraftBuilder.of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2, ResourceIdentifier.ofId(KEY_2))
+                                      .build(),
+            InventoryEntryDraftBuilder.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, null)
+                                      .build(),
+            InventoryEntryDraftBuilder.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, expandedReference1)
+                                      .build(),
+            InventoryEntryDraftBuilder.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, ResourceIdentifier.ofId(KEY_2))
+                                      .build()
         );
 
         errorCallBackMessages = new ArrayList<>();
@@ -123,7 +130,7 @@ class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.getStatistics();
         assertThat(stats).isNotNull();
 
-        assertThat(stats).hasValues(9, 3, 3, 0);
+        assertThat(stats).hasValues(8, 3, 3, 0);
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
     }
@@ -176,8 +183,8 @@ class InventorySyncTest {
         assertThat(stats).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on InventoryEntryDraft"
-                + " with SKU:'%s'. Reason: %s: Failed to resolve supply channel reference on InventoryEntryDraft with"
-                + " SKU:'%s'. Reason: Channel with key '%s' does not exist.", SKU_3,
+                + " with SKU:'%s'. Reason: %s: Failed to resolve supply channel resource identifier on"
+                + " InventoryEntryDraft with SKU:'%s'. Reason: Channel with key '%s' does not exist.", SKU_3,
             ReferenceResolutionException.class.getCanonicalName(), SKU_3, KEY_3));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
@@ -232,9 +239,9 @@ class InventorySyncTest {
                 .toCompletableFuture()
                 .join();
 
-        assertThat(stats).hasValues(9, 5, 1, 3);
-        assertThat(errorCallBackMessages).hasSize(3);
-        assertThat(errorCallBackExceptions).hasSize(3);
+        assertThat(stats).hasValues(8, 5, 1, 2);
+        assertThat(errorCallBackMessages).hasSize(2);
+        assertThat(errorCallBackExceptions).hasSize(2);
     }
 
     @Test
@@ -253,7 +260,7 @@ class InventorySyncTest {
                 .toCompletableFuture()
                 .join();
 
-        assertThat(stats).hasValues(9, 0, 0, 6);
+        assertThat(stats).hasValues(8, 0, 0, 6);
         assertThat(errorCallBackMessages).hasSize(6);
         assertThat(errorCallBackExceptions).hasSize(6);
     }
@@ -265,13 +272,13 @@ class InventorySyncTest {
             mock(InventoryEntry.class), mock(InventoryEntry.class));
         when(inventoryService.updateInventoryEntry(any(), any())).thenReturn(getCompletionStageWithException());
 
-        final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_1, KEY_1));
+        final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_2, KEY_2));
 
         final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
             mock(TypeService.class));
 
         final InventoryEntryDraft inventoryEntryDraft = InventoryEntryDraftBuilder
-            .of(SKU_1, QUANTITY_2, DATE_1, RESTOCKABLE_1, Channel.referenceOfId(REF_1)).build();
+            .of(SKU_2, QUANTITY_2, DATE_1, RESTOCKABLE_1, ResourceIdentifier.ofId(KEY_2)).build();
 
         final InventorySyncStatistics stats = inventorySync.sync(Collections.singletonList(inventoryEntryDraft))
                                                            .toCompletableFuture()
@@ -281,7 +288,7 @@ class InventorySyncTest {
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(
-            format("Failed to update inventory entry of SKU '%s' and supply channel id '%s'.", SKU_1, REF_1));
+            format("Failed to update inventory entry of SKU '%s' and supply channel id '%s'.", SKU_2, REF_2));
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(RuntimeException.class);
     }
@@ -337,7 +344,7 @@ class InventorySyncTest {
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).isNotEmpty();
         assertThat(errorCallBackMessages.get(0)).contains(format("Failed to resolve references on"
-            + " InventoryEntryDraft with SKU:'%s'. Reason: %s: Failed to resolve custom type reference on "
+            + " InventoryEntryDraft with SKU:'%s'. Reason: %s: Failed to resolve custom type resource identifier on "
             + "InventoryEntryDraft with SKU:'1000'. Reason: %s", SKU_1,
             ReferenceResolutionException.class.getCanonicalName(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
         assertThat(errorCallBackExceptions).isNotEmpty();
@@ -392,8 +399,8 @@ class InventorySyncTest {
 
         assertThat(stats).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).isNotEmpty();
-        assertThat(errorCallBackMessages.get(0)).contains(format("Failed to resolve supply channel reference on"
-                + " InventoryEntryDraft with SKU:'%s'.", SKU_1));
+        assertThat(errorCallBackMessages.get(0)).contains(format("Failed to resolve supply channel resource identifier"
+            + " on InventoryEntryDraft with SKU:'%s'.", SKU_1));
         assertThat(errorCallBackExceptions).isNotEmpty();
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
