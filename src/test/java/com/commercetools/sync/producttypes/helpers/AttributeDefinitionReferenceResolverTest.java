@@ -9,6 +9,7 @@ import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
 import io.sphere.sdk.products.attributes.NestedAttributeType;
 import io.sphere.sdk.products.attributes.SetAttributeType;
+import io.sphere.sdk.products.attributes.StringAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import org.junit.Test;
 
@@ -23,6 +24,24 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class AttributeDefinitionReferenceResolverTest {
+
+    @Test
+    public void resolveReferences_WithNoNestedTypeReferences_ShouldNotResolveReferences() {
+        // preparation
+        final AttributeDefinitionDraft attributeDefinitionDraft =
+            AttributeDefinitionDraftBuilder.of(StringAttributeType.of(), "foo", ofEnglish("foo"), true)
+                                           .build();
+
+        final ProductTypeSyncOptions syncOptions =
+            ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+
+        final AttributeDefinitionReferenceResolver attributeDefinitionReferenceResolver =
+            new AttributeDefinitionReferenceResolver(syncOptions, mock(ProductTypeService.class));
+
+        // test and assertion
+        assertThat(attributeDefinitionReferenceResolver.resolveReferences(attributeDefinitionDraft))
+            .isCompletedWithValue(attributeDefinitionDraft);
+    }
 
     @Test
     public void resolveReferences_WithOneNestedTypeWithExistingProductTypeReference_ShouldResolveReferences() {
