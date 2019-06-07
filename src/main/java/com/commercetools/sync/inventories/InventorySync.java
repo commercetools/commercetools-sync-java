@@ -307,7 +307,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                                 .exceptionally(exception -> {
                                     final ResourceIdentifier<Channel> supplyChannelIdentifier = draft.getSupplyChannel();
                                     final String errorMessage = format(CTP_INVENTORY_ENTRY_CREATE_FAILED,
-                                            draft.getSku(), supplyChannel != null ? supplyChannel.getId() : null);
+                                        draft.getSku(),
+                                        supplyChannelIdentifier != null ? supplyChannelIdentifier.getId() : null);
                                     handleError(errorMessage, exception, 1);
                                     return null;
                                 }))

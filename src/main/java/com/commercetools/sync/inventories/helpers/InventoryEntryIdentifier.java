@@ -32,9 +32,9 @@ public final class InventoryEntryIdentifier {
      * @return an instance of {@link InventoryEntryIdentifier} for the given draft.
      */
     public static InventoryEntryIdentifier of(@Nonnull final InventoryEntryDraft inventoryEntryDraft) {
-        final ResourceIdentifier<Channel> supplyChannelIdentifer= inventoryEntryDraft.getSupplyChannel();
+        final ResourceIdentifier<Channel> supplyChannelIdentifier = inventoryEntryDraft.getSupplyChannel();
         return new InventoryEntryIdentifier(inventoryEntryDraft.getSku(),
-            supplyChannel != null ? supplyChannel.getId() : null);
+            supplyChannelIdentifier != null ? supplyChannelIdentifier.getId() : null);
     }
 
     /**
