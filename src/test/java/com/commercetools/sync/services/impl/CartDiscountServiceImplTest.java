@@ -41,7 +41,7 @@ class CartDiscountServiceImplTest {
         final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
 
         // test
-        CompletionStage<Optional<CartDiscount>> result = cartDiscountService.fetchCartDiscount("");
+        final CompletionStage<Optional<CartDiscount>> result = cartDiscountService.fetchCartDiscount("");
 
 
         // assertions
@@ -59,7 +59,7 @@ class CartDiscountServiceImplTest {
         final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
 
         // test
-        CompletionStage<Optional<CartDiscount>> result = cartDiscountService.fetchCartDiscount(null);
+        final CompletionStage<Optional<CartDiscount>> result = cartDiscountService.fetchCartDiscount(null);
 
 
         // assertions
@@ -86,7 +86,8 @@ class CartDiscountServiceImplTest {
                 .thenReturn(completedFuture(pagedQueryResult));
 
         // test
-        CompletionStage<Optional<CartDiscount>> result = cartDiscountService.fetchCartDiscount(testCartDiscountKey);
+        final CompletionStage<Optional<CartDiscount>> result =
+                cartDiscountService.fetchCartDiscount(testCartDiscountKey);
 
 
         // assertions
@@ -109,7 +110,8 @@ class CartDiscountServiceImplTest {
         final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
 
         // test
-        CompletionStage<Optional<CartDiscount>> result = cartDiscountService.createCartDiscount(mockCartDiscountDraft);
+        final CompletionStage<Optional<CartDiscount>> result =
+                cartDiscountService.createCartDiscount(mockCartDiscountDraft);
 
         // assertions
         assertThat(result).isCompletedWithValue(Optional.empty());
