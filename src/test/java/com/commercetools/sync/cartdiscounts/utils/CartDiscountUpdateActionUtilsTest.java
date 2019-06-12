@@ -7,6 +7,9 @@ import io.sphere.sdk.cartdiscounts.CartDiscountValue;
 import io.sphere.sdk.cartdiscounts.CustomLineItemsTarget;
 import io.sphere.sdk.cartdiscounts.GiftLineItemCartDiscountValue;
 import io.sphere.sdk.cartdiscounts.LineItemsTarget;
+import io.sphere.sdk.cartdiscounts.MultiBuyCustomLineItemsTarget;
+import io.sphere.sdk.cartdiscounts.MultiBuyLineItemsTarget;
+import io.sphere.sdk.cartdiscounts.SelectionMode;
 import io.sphere.sdk.cartdiscounts.ShippingCostTarget;
 import io.sphere.sdk.cartdiscounts.StackingMode;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeCartPredicate;
@@ -446,6 +449,277 @@ class CartDiscountUpdateActionUtilsTest {
                 buildChangeTargetUpdateAction(oldCartDiscount, newCartDiscountDraft);
 
         assertThat(changeTargetUpdateAction).contains(ChangeTarget.of(cartDiscountTarget));
+    }
+
+    @Test
+    void buildChangeTargetUpdateAction_WithShippingTargetValues_ShouldNotBuildUpdateAction() {
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getTarget()).thenReturn(ShippingCostTarget.of());
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        when(newCartDiscountDraft.getTarget()).thenReturn(ShippingCostTarget.of());
+
+        final Optional<UpdateAction<CartDiscount>> changeTargetUpdateAction =
+                buildChangeTargetUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeTargetUpdateAction).isNotPresent();
+    }
+
+    @Test
+    void buildChangeTargetUpdateAction_WithDifferentMultiBuyLineItemsTargetValues_ShouldBuildUpdateAction() {
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        // Given a cart with 6 items, the discount can be applied only once.
+        // As a result, 2 items will be discounted
+        // and 4 cheapest items will be marked as participating in this discount.
+        when(oldCartDiscount.getTarget())
+                .thenReturn(MultiBuyLineItemsTarget.of("quantity > 0", 6L, 2L,  SelectionMode.CHEAPEST));
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        // Given a cart with 6 items, the discount can be applied only once.
+        // As a result, 3 items will be discounted
+        // and 4 most expensive items will be marked as participating in this discount.
+        final MultiBuyLineItemsTarget newTarget =
+                MultiBuyLineItemsTarget.of("quantity > 0", 6L, 3L, SelectionMode.MOST_EXPENSIVE);
+        when(newCartDiscountDraft.getTarget()).thenReturn(newTarget);
+
+        final Optional<UpdateAction<CartDiscount>> changeTargetUpdateAction =
+                buildChangeTargetUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeTargetUpdateAction).contains(ChangeTarget.of(newTarget));
+    }
+
+    @Test
+    void buildChangeTargetUpdateAction_WithDifferentTargetPredicate_ShouldBuildUpdateAction() {
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getTarget())
+                .thenReturn(MultiBuyLineItemsTarget.of("quantity > 1", 6L, 3L,  SelectionMode.MOST_EXPENSIVE));
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        final MultiBuyLineItemsTarget newTarget =
+                MultiBuyLineItemsTarget.of("quantity > 0", 6L, 3L, SelectionMode.MOST_EXPENSIVE);
+        when(newCartDiscountDraft.getTarget()).thenReturn(newTarget);
+
+        final Optional<UpdateAction<CartDiscount>> changeTargetUpdateAction =
+                buildChangeTargetUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeTargetUpdateAction).contains(ChangeTarget.of(newTarget));
+    }
+
+    @Test
+    void buildChangeTargetUpdateAction_WithDifferentTriggerQuantity_ShouldBuildUpdateAction() {
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getTarget())
+                .thenReturn(MultiBuyLineItemsTarget.of("quantity > 0", 5L, 3L,  SelectionMode.MOST_EXPENSIVE));
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        final MultiBuyLineItemsTarget newTarget =
+                MultiBuyLineItemsTarget.of("quantity > 0", 6L, 3L, SelectionMode.MOST_EXPENSIVE);
+        when(newCartDiscountDraft.getTarget()).thenReturn(newTarget);
+
+        final Optional<UpdateAction<CartDiscount>> changeTargetUpdateAction =
+                buildChangeTargetUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeTargetUpdateAction).contains(ChangeTarget.of(newTarget));
+    }
+
+    @Test
+    void buildChangeTargetUpdateAction_WithDifferentDiscountedQuantity_ShouldBuildUpdateAction() {
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getTarget())
+                .thenReturn(MultiBuyLineItemsTarget.of("quantity > 0", 6L, 2L,  SelectionMode.MOST_EXPENSIVE));
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        final MultiBuyLineItemsTarget newTarget =
+                MultiBuyLineItemsTarget.of("quantity > 0", 6L, 3L, SelectionMode.MOST_EXPENSIVE);
+        when(newCartDiscountDraft.getTarget()).thenReturn(newTarget);
+
+        final Optional<UpdateAction<CartDiscount>> changeTargetUpdateAction =
+                buildChangeTargetUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeTargetUpdateAction).contains(ChangeTarget.of(newTarget));
+    }
+
+    @Test
+    void buildChangeTargetUpdateAction_WithDifferentSelectionMode_ShouldBuildUpdateAction() {
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getTarget())
+                .thenReturn(MultiBuyLineItemsTarget.of("quantity > 0", 6L, 3L,  SelectionMode.CHEAPEST));
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        final MultiBuyLineItemsTarget newTarget =
+                MultiBuyLineItemsTarget.of("quantity > 0", 6L, 3L, SelectionMode.MOST_EXPENSIVE);
+        when(newCartDiscountDraft.getTarget()).thenReturn(newTarget);
+
+        final Optional<UpdateAction<CartDiscount>> changeTargetUpdateAction =
+                buildChangeTargetUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeTargetUpdateAction).contains(ChangeTarget.of(newTarget));
+    }
+
+    @Test
+    void buildChangeTargetUpdateAction_WithDifferentMaxOccurrence_ShouldBuildUpdateAction() {
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getTarget())
+                .thenReturn(MultiBuyLineItemsTarget.of("quantity > 0", 6L, 3L,  SelectionMode.MOST_EXPENSIVE, 1L));
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        final MultiBuyLineItemsTarget newTarget =
+                MultiBuyLineItemsTarget.of("quantity > 0", 6L, 3L, SelectionMode.MOST_EXPENSIVE, 2L);
+        when(newCartDiscountDraft.getTarget()).thenReturn(newTarget);
+
+        final Optional<UpdateAction<CartDiscount>> changeTargetUpdateAction =
+                buildChangeTargetUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeTargetUpdateAction).contains(ChangeTarget.of(newTarget));
+    }
+
+    @Test
+    void buildChangeTargetUpdateAction_WithSameMultiBuyLineItemsTargetValues_ShouldNotBuildUpdateAction() {
+        // Given a cart with 6 items, the discount can be applied only once.
+        // As a result, 3 items will be discounted
+        // and 4 most expensive items will be marked as participating in this discount.
+        final MultiBuyLineItemsTarget target =
+                MultiBuyLineItemsTarget.of("quantity > 0", 6L, 3L, SelectionMode.MOST_EXPENSIVE);
+
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getTarget()).thenReturn(target);
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        when(newCartDiscountDraft.getTarget()).thenReturn(target);
+
+        final Optional<UpdateAction<CartDiscount>> changeTargetUpdateAction =
+                buildChangeTargetUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeTargetUpdateAction).isNotPresent();
+    }
+
+    @Test
+    void buildChangeTargetUpdateAction_WithDifferentMultiBuyCustomLineItemsTargetValues_ShouldBuildUpdateAction() {
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        // Given a cart with 6 items, the discount can be applied only once.
+        // As a result, 2 custom items will be discounted
+        // and 4 cheapest custom items will be marked as participating in this discount.
+        when(oldCartDiscount.getTarget())
+                .thenReturn(MultiBuyCustomLineItemsTarget.of("quantity > 0", 6L, 2L, SelectionMode.CHEAPEST));
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        // Given a cart with 6 items, the discount can be applied only once.
+        // As a result, 3 custom items will be discounted
+        // and 4 most expensive custom items will be marked as participating in this discount.
+        final MultiBuyCustomLineItemsTarget newTarget =
+                MultiBuyCustomLineItemsTarget.of("quantity > 0", 6L, 3L, SelectionMode.MOST_EXPENSIVE);
+        when(newCartDiscountDraft.getTarget()).thenReturn(newTarget);
+
+        final Optional<UpdateAction<CartDiscount>> changeTargetUpdateAction =
+                buildChangeTargetUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeTargetUpdateAction).contains(ChangeTarget.of(newTarget));
+    }
+
+    @Test
+    void buildChangeTargetUpdateAction_WithDifferentCustomTargetPredicate_ShouldBuildUpdateAction() {
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getTarget())
+                .thenReturn(MultiBuyCustomLineItemsTarget.of("quantity > 1", 6L, 3L,  SelectionMode.MOST_EXPENSIVE));
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        final MultiBuyCustomLineItemsTarget newTarget =
+                MultiBuyCustomLineItemsTarget.of("quantity > 0", 6L, 3L, SelectionMode.MOST_EXPENSIVE);
+        when(newCartDiscountDraft.getTarget()).thenReturn(newTarget);
+
+        final Optional<UpdateAction<CartDiscount>> changeTargetUpdateAction =
+                buildChangeTargetUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeTargetUpdateAction).contains(ChangeTarget.of(newTarget));
+    }
+
+    @Test
+    void buildChangeTargetUpdateAction_WithDifferentCustomTriggerQuantity_ShouldBuildUpdateAction() {
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getTarget())
+                .thenReturn(MultiBuyCustomLineItemsTarget.of("quantity > 0", 5L, 3L,  SelectionMode.MOST_EXPENSIVE));
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        final MultiBuyCustomLineItemsTarget newTarget =
+                MultiBuyCustomLineItemsTarget.of("quantity > 0", 6L, 3L, SelectionMode.MOST_EXPENSIVE);
+        when(newCartDiscountDraft.getTarget()).thenReturn(newTarget);
+
+        final Optional<UpdateAction<CartDiscount>> changeTargetUpdateAction =
+                buildChangeTargetUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeTargetUpdateAction).contains(ChangeTarget.of(newTarget));
+    }
+
+    @Test
+    void buildChangeTargetUpdateAction_WithDifferentCustomDiscountedQuantity_ShouldBuildUpdateAction() {
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getTarget())
+                .thenReturn(MultiBuyCustomLineItemsTarget.of("quantity > 0", 6L, 2L,  SelectionMode.MOST_EXPENSIVE));
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        final MultiBuyCustomLineItemsTarget newTarget =
+                MultiBuyCustomLineItemsTarget.of("quantity > 0", 6L, 3L, SelectionMode.MOST_EXPENSIVE);
+        when(newCartDiscountDraft.getTarget()).thenReturn(newTarget);
+
+        final Optional<UpdateAction<CartDiscount>> changeTargetUpdateAction =
+                buildChangeTargetUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeTargetUpdateAction).contains(ChangeTarget.of(newTarget));
+    }
+
+    @Test
+    void buildChangeTargetUpdateAction_WithDifferentCustomSelectionMode_ShouldBuildUpdateAction() {
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getTarget())
+                .thenReturn(MultiBuyCustomLineItemsTarget.of("quantity > 0", 6L, 3L,  SelectionMode.CHEAPEST));
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        final MultiBuyCustomLineItemsTarget newTarget =
+                MultiBuyCustomLineItemsTarget.of("quantity > 0", 6L, 3L, SelectionMode.MOST_EXPENSIVE);
+        when(newCartDiscountDraft.getTarget()).thenReturn(newTarget);
+
+        final Optional<UpdateAction<CartDiscount>> changeTargetUpdateAction =
+                buildChangeTargetUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeTargetUpdateAction).contains(ChangeTarget.of(newTarget));
+    }
+
+    @Test
+    void buildChangeTargetUpdateAction_WithDifferentCustomMaxOccurrence_ShouldBuildUpdateAction() {
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getTarget())
+                .thenReturn(MultiBuyCustomLineItemsTarget
+                        .of("quantity > 0", 6L, 3L,  SelectionMode.MOST_EXPENSIVE, 1L));
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        final MultiBuyCustomLineItemsTarget newTarget =
+                MultiBuyCustomLineItemsTarget.of("quantity > 0", 6L, 3L, SelectionMode.MOST_EXPENSIVE, 2L);
+        when(newCartDiscountDraft.getTarget()).thenReturn(newTarget);
+
+        final Optional<UpdateAction<CartDiscount>> changeTargetUpdateAction =
+                buildChangeTargetUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeTargetUpdateAction).contains(ChangeTarget.of(newTarget));
+    }
+
+    @Test
+    void buildChangeTargetUpdateAction_WithSameMultiBuyCustomLineItemsTargetValues_ShouldNotBuildUpdateAction() {
+        // Given a cart with 6 items, the discount can be applied only once.
+        // As a result, 3 custom items will be discounted
+        // and 4 most expensive custom items will be marked as participating in this discount.
+        final MultiBuyCustomLineItemsTarget target =
+                MultiBuyCustomLineItemsTarget.of("quantity > 0", 6L, 3L, SelectionMode.MOST_EXPENSIVE);
+
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getTarget()).thenReturn(target);
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        when(newCartDiscountDraft.getTarget()).thenReturn(target);
+
+        final Optional<UpdateAction<CartDiscount>> changeTargetUpdateAction =
+                buildChangeTargetUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeTargetUpdateAction).isNotPresent();
     }
 
     @Test
