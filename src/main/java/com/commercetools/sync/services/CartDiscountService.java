@@ -65,7 +65,7 @@ public interface CartDiscountService {
      * Given a {@link CartDiscount} and a {@link List}&lt;{@link UpdateAction}&lt;{@link CartDiscount}&gt;&gt;, this
      * method issues an update request with these update actions on this {@link CartDiscount} in the CTP project
      * defined in a potentially injected {@link SphereClient}. This method returns
-     * {@link CompletionStage}&lt;{@link CartDiscount}&gt; in which the result of it's completion contains an instance
+     * {@link CompletionStage}&lt;{@link CartDiscount}&gt; in which the result of its completion contains an instance
      * of the {@link CartDiscount} which was updated in the CTP project.
      *
      * @param cartDiscount  the {@link CartDiscount} to update.
