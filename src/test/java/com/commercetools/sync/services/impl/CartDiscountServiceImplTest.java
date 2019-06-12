@@ -102,7 +102,7 @@ class CartDiscountServiceImplTest {
                 .of(sphereClient)
                 .errorCallback(errors::put)
                 .build();
-        final CartDiscountServiceImpl cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
+        final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
 
         // test
         CompletionStage<Optional<CartDiscount>> result = cartDiscountService.createCartDiscount(mockCartDiscountDraft);
