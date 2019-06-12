@@ -44,7 +44,8 @@ public interface CartDiscountService {
      * Given a resource draft of type {@link CartDiscountDraft}, this method attempts to create a resource
      * {@link CartDiscount} based on it in the CTP project defined by the sync options.
      *
-     * <p>A completion stage containing an empty {@link Optional} and the error callback will be triggered in those cases:
+     * <p>A completion stage containing an empty {@link Optional}
+     * and the error callback will be triggered in those cases:
      * <ul>
      * <li>the draft has a blank key</li>
      * <li>the create request fails on CTP</li>
