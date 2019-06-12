@@ -17,23 +17,6 @@ import java.util.concurrent.CompletionStage;
 public interface CartDiscountService {
 
     /**
-     * Given a {@code key}, if it is blank (null/empty), a completed future with an empty optional is returned.
-     * This method then checks if the cached map of cart discount keys -&gt; ids contains the key. If it does, then an
-     * optional containing the mapped id is returned. If the cache doesn't contain the key; this method attempts to
-     * fetch the id of the key from the CTP project, caches it and returns a
-     * {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt; in which the result of it's completion
-     * could contain an {@link Optional} with the id inside of it or an empty {@link Optional}
-     * if no {@link CartDiscount} was found in the CTP project with this key.
-     *
-     * @param key the key by which a {@link CartDiscount} id should be fetched from the CTP project.
-     * @return {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt; in which the result of it's
-     *         completion could contain an {@link Optional} with the id inside of it or an empty {@link Optional} if no
-     *         {@link CartDiscount} was found in the CTP project with this key.
-     */
-    @Nonnull
-    CompletionStage<Optional<String>> fetchCachedCartDiscountId(@Nonnull final String key);
-
-    /**
      * Given a {@link Set} of CartDiscount keys, this method fetches a set of all the CartDiscounts, matching this given
      * set of keys in the CTP project, defined in an injected {@link SphereClient}. A
      * mapping of the key to the id of the fetched CartDiscount is persisted in an in-memory map.

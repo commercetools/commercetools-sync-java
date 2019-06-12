@@ -22,7 +22,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Consumer;
 
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toSet;
@@ -57,28 +56,6 @@ public class CartDiscountServiceImpl extends BaseService<CartDiscountDraft, Cart
                                                       @Nonnull final Set<String> keys) {
         //todo: SUPPORT-4443 need to be merged from name to key.
         return cartDiscountQueryModel.name().lang(Locale.ENGLISH).isIn(keys);
-    }
-
-    @Nonnull
-    @Override
-    public CompletionStage<Optional<String>> fetchCachedCartDiscountId(@Nonnull final String key) {
-        if (isBlank(key)) {
-            return CompletableFuture.completedFuture(Optional.empty());
-        }
-        if (keyToIdCache.containsKey(key)) {
-            return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
-        }
-        return fetchAndCache(key);
-    }
-
-    @Nonnull
-    private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
-
-        final Consumer<List<CartDiscount>> cartDiscountPageConsumer = cartDiscountPage ->
-                cartDiscountPage.forEach(cartDiscount -> keyToIdCache.put(getKey(cartDiscount), cartDiscount.getId()));
-
-        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), CartDiscountQuery.of(), cartDiscountPageConsumer)
-                .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
     }
 
     @Nonnull

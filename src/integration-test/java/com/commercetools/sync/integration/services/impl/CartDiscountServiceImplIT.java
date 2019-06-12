@@ -9,7 +9,6 @@ import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraftBuilder;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeCartPredicate;
-import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeName;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.SetDescription;
 import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
 import io.sphere.sdk.client.BadGatewayException;
@@ -43,14 +42,11 @@ import static com.commercetools.sync.integration.commons.utils.CartDiscountITUti
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.deleteTypes;
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
-import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class CartDiscountServiceImplIT {
@@ -183,63 +179,6 @@ class CartDiscountServiceImplIT {
     }
 
     @Test
-    void fetchCachedCartDiscountId_WithNotCachedExistingCartDiscount_ShouldFetchCartDiscount() {
-        final Optional<String> cartDiscountId = cartDiscountService.fetchCachedCartDiscountId(CART_DISCOUNT_KEY_1)
-                .toCompletableFuture()
-                .join();
-
-        assertThat(cartDiscountId).isNotEmpty();
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-    }
-
-    @Test
-    void fetchCachedCartDiscountId_WithBlankCartDiscountKey_ShouldReturnEmptyOptional() {
-        final Optional<String> cartDiscountId = cartDiscountService.fetchCachedCartDiscountId("  ")
-                .toCompletableFuture()
-                .join();
-
-        assertThat(cartDiscountId).isEmpty();
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-    }
-
-    @Test
-    void fetchMatchingCartDiscountsByKeys_WithAllExistingSetOfKeys_ShouldCacheFetchedCartDiscountIds() {
-        //preparation
-        final Set<CartDiscount> fetchedCartDiscounts =
-                cartDiscountService.fetchMatchingCartDiscountsByKeys(singleton(CART_DISCOUNT_KEY_1))
-                        .toCompletableFuture().join();
-        assertThat(fetchedCartDiscounts).hasSize(1);
-
-        final Optional<CartDiscount> cartDiscountOptional = CTP_TARGET_CLIENT
-                .execute(CartDiscountQuery.of()
-                        .withPredicates(queryModel -> queryModel.name().lang(Locale.ENGLISH).is(CART_DISCOUNT_KEY_1)))
-                .toCompletableFuture()
-                .join()
-                .head();
-
-        assertThat(cartDiscountOptional).isNotNull();
-
-        // Change cart discount key_1 on ctp
-        final String newKey = "new_key_1";
-        cartDiscountService.updateCartDiscount(cartDiscountOptional.get(),
-                singletonList(ChangeName.of(LocalizedString.ofEnglish(newKey))))
-                .toCompletableFuture()
-                .join();
-
-        // Fetch cached id by old key
-        final Optional<String> cachedCartDiscountId = cartDiscountService.fetchCachedCartDiscountId(CART_DISCOUNT_KEY_1)
-                .toCompletableFuture()
-                .join();
-
-        assertThat(cachedCartDiscountId).isNotEmpty();
-        assertThat(cachedCartDiscountId).contains(cartDiscountOptional.get().getId());
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-    }
-
-    @Test
     void createCartDiscount_WithValidCartDiscount_ShouldCreateCartDiscountAndCacheId() {
         //preparation
         final CartDiscountDraft newCartDiscountDraft =
@@ -283,11 +222,6 @@ class CartDiscountServiceImplIT {
                     assertThat(created.getSortOrder()).isNotEqualTo(queried.getSortOrder());
                 }));
 
-        // Assert that the created cart discount is cached
-        final Optional<String> cartDiscountId =
-                spyCartDiscountService.fetchCachedCartDiscountId(CART_DISCOUNT_KEY_1).toCompletableFuture().join();
-        assertThat(cartDiscountId).isPresent();
-        verify(spyClient, times(0)).execute(any(CartDiscountQuery.class));
     }
 
     @Test
