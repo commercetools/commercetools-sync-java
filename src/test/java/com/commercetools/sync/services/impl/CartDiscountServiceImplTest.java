@@ -76,7 +76,7 @@ class CartDiscountServiceImplTest {
                 .of(sphereClient)
                 .build();
         final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
-        final PagedQueryResultDsl pagedQueryResult = mock(PagedQueryResultDsl.class);
+        final PagedQueryResult pagedQueryResult = mock(PagedQueryResultDsl.class);
         when(pagedQueryResult.head()).thenReturn(Optional.of(mockCartDiscount));
         when(cartDiscountSyncOptions.getCtpClient().execute(any(CartDiscountQuery.class))).thenReturn(CompletableFuture
                 .completedFuture(pagedQueryResult));
