@@ -40,7 +40,6 @@ import static com.commercetools.sync.integration.commons.utils.CartDiscountITUti
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.deleteCartDiscountsFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.populateTargetProject;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.integration.commons.utils.TypeITUtils.deleteTypes;
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
@@ -61,7 +60,6 @@ class CartDiscountServiceImplIT {
      */
     @AfterAll
     static void tearDown() {
-        deleteTypes(CTP_TARGET_CLIENT);
         deleteCartDiscountsFromTargetAndSource();
     }
 
@@ -70,7 +68,6 @@ class CartDiscountServiceImplIT {
      */
     @BeforeEach
     void setup() {
-        deleteTypes(CTP_TARGET_CLIENT);
         deleteCartDiscountsFromTargetAndSource();
 
         populateTargetProject();
