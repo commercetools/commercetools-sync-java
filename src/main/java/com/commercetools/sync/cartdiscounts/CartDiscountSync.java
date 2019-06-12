@@ -78,25 +78,6 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
     }
 
     /**
-     * Iterates through the whole {@code cartDiscountDrafts} list and accumulates its valid drafts to batches.
-     * Every batch is then processed by {@link CartDiscountSync#processBatch(List)}.
-     *
-     * <p><strong>Inherited doc:</strong>
-     * {@inheritDoc}
-     *
-     * @param cartDiscountDrafts {@link List} of {@link CartDiscountDraft}'s that would be synced into CTP project.
-     * @return {@link CompletionStage} with {@link CartDiscountSyncStatistics} holding statistics of all sync
-     *         processes performed by this sync instance.
-     */
-    @Override
-    protected CompletionStage<CartDiscountSyncStatistics> process(
-        @Nonnull final List<CartDiscountDraft> cartDiscountDrafts) {
-
-        final List<List<CartDiscountDraft>> batches = batchElements(cartDiscountDrafts, syncOptions.getBatchSize());
-        return syncBatches(batches, completedFuture(statistics));
-    }
-
-    /**
      * This method calls the optional error callback specified in the {@code syncOptions}
      * and updates the {@code statistics} instance by
      * incrementing the total number of failed cart discounts to sync.
@@ -123,6 +104,60 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
     }
 
     /**
+     * Iterates through the whole {@code cartDiscountDrafts} list and accumulates its valid drafts to batches.
+     * Every batch is then processed by {@link CartDiscountSync#processBatch(List)}.
+     *
+     * <p><strong>Inherited doc:</strong>
+     * {@inheritDoc}
+     *
+     * @param cartDiscountDrafts {@link List} of {@link CartDiscountDraft}'s that would be synced into CTP project.
+     * @return {@link CompletionStage} with {@link CartDiscountSyncStatistics} holding statistics of all sync
+     *         processes performed by this sync instance.
+     */
+    @Override
+    protected CompletionStage<CartDiscountSyncStatistics> process(
+        @Nonnull final List<CartDiscountDraft> cartDiscountDrafts) {
+
+        final List<List<CartDiscountDraft>> batches = batchElements(cartDiscountDrafts, syncOptions.getBatchSize());
+        return syncBatches(batches, completedFuture(statistics));
+    }
+
+
+    @Override
+    protected CompletionStage<CartDiscountSyncStatistics> processBatch(@Nonnull final List<CartDiscountDraft> batch) {
+
+        final Set<CartDiscountDraft> validCartDiscountDrafts =
+                batch.stream().filter(this::validateDraft).collect(toSet());
+        if (validCartDiscountDrafts.isEmpty()) {
+            statistics.incrementProcessed(batch.size());
+            return completedFuture(statistics);
+        }
+
+        final Set<String> keys = validCartDiscountDrafts.stream().map(this::getKey).collect(toSet());
+
+
+        return cartDiscountService
+                .fetchMatchingCartDiscountsByKeys(keys)
+                .handle(ImmutablePair::new)
+                .thenCompose(fetchResponse -> {
+                    final Set<CartDiscount> fetchedCartDiscounts = fetchResponse.getKey();
+                    final Throwable exception = fetchResponse.getValue();
+
+                    if (exception != null) {
+                        final String errorMessage = format(CTP_CART_DISCOUNT_FETCH_FAILED, keys);
+                        handleError(errorMessage, exception, keys.size());
+                        return CompletableFuture.completedFuture(null);
+                    } else {
+                        return syncBatch(fetchedCartDiscounts, validCartDiscountDrafts);
+                    }
+                })
+                .thenApply(ignored -> {
+                    statistics.incrementProcessed(batch.size());
+                    return statistics;
+                });
+    }
+
+    /**
      * Checks if a draft is valid for further processing. If so, then returns {@code true}. Otherwise handles an error
      * and returns {@code false}. A valid draft is not {@code null} and its
      * key is not empty.
@@ -143,37 +178,81 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
         return false;
     }
 
+    /**
+     * Given a set of cart discount drafts, attempts to sync the drafts with the existing cart discounts in the CTP
+     * project. The cart discount and the draft are considered to match if they have the same key.
+     *
+     * @param oldCartDiscounts old cart discounts.
+     * @param newCartDiscounts drafts that need to be synced.
+     * @return a {@link CompletionStage} which contains an empty result after execution of the update
+     */
     @Nonnull
-    private CompletionStage<Optional<CartDiscount>> fetchAndUpdate(
-        @Nonnull final CartDiscount oldCartDiscount,
-        @Nonnull final CartDiscountDraft newCartDiscount) {
+    private CompletionStage<Void> syncBatch(
+            @Nonnull final Set<CartDiscount> oldCartDiscounts,
+            @Nonnull final Set<CartDiscountDraft> newCartDiscounts) {
 
-        final String key = getKey(oldCartDiscount);
-        return cartDiscountService
-            .fetchCartDiscount(key)
-            .handle(ImmutablePair::new)
-            .thenCompose(fetchResponse -> {
-                final Optional<CartDiscount> fetchedCartDiscountOptional = fetchResponse.getKey();
-                final Throwable exception = fetchResponse.getValue();
+        final Map<String, CartDiscount> oldCartDiscountMap = oldCartDiscounts
+                .stream()
+                .collect(toMap(this::getKey, identity()));
 
-                if (exception != null) {
-                    final String errorMessage = format(CTP_CART_DISCOUNT_UPDATE_FAILED, key,
-                        "Failed to fetch from CTP while retrying after concurrency modification.");
-                    handleError(errorMessage, exception, 1);
-                    return CompletableFuture.completedFuture(null);
-                }
+        return CompletableFuture.allOf(newCartDiscounts
+                .stream()
+                .map(newCartDiscount -> {
+                    final String key = getKey(newCartDiscount);
+                    final CartDiscount oldCartDiscount = oldCartDiscountMap.get(key);
 
-                return fetchedCartDiscountOptional
-                    .map(fetchedCartDiscount -> buildActionsAndUpdate(fetchedCartDiscount, newCartDiscount))
-                    .orElseGet(() -> {
-                        final String errorMessage =
-                            format(CTP_CART_DISCOUNT_UPDATE_FAILED, key,
-                                "Not found when attempting to fetch while retrying "
-                                    + "after concurrency modification.");
-                        handleError(errorMessage, null, 1);
-                        return CompletableFuture.completedFuture(null);
-                    });
-            });
+                    return ofNullable(oldCartDiscount)
+                            .map(cartDiscount -> buildActionsAndUpdate(oldCartDiscount, newCartDiscount))
+                            .orElseGet(() -> applyCallbackAndCreate(newCartDiscount));
+                })
+                .map(CompletionStage::toCompletableFuture)
+                .toArray(CompletableFuture[]::new));
+    }
+
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
+    @Nonnull
+    private CompletionStage<Optional<CartDiscount>> buildActionsAndUpdate(
+            @Nonnull final CartDiscount oldCartDiscount,
+            @Nonnull final CartDiscountDraft newCartDiscount) {
+
+        final List<UpdateAction<CartDiscount>> updateActions =
+                buildActions(oldCartDiscount, newCartDiscount, syncOptions);
+
+        final List<UpdateAction<CartDiscount>> updateActionsAfterCallback =
+                syncOptions.applyBeforeUpdateCallBack(updateActions, newCartDiscount, oldCartDiscount);
+
+        if (!updateActionsAfterCallback.isEmpty()) {
+            return updateCartDiscount(oldCartDiscount, newCartDiscount, updateActionsAfterCallback);
+        }
+
+        return completedFuture(null);
+    }
+
+    /**
+     * Given a cart discount draft, this method applies the beforeCreateCallback and then issues a create request to the
+     * CTP project to create the corresponding CartDiscount.
+     *
+     * @param cartDiscountDraft the cart discount draft to create the cart discount from.
+     * @return a {@link CompletionStage} which contains an empty result after execution of the create.
+     */
+    @Nonnull
+    private CompletionStage<Optional<CartDiscount>> applyCallbackAndCreate(
+            @Nonnull final CartDiscountDraft cartDiscountDraft) {
+
+        return syncOptions
+                .applyBeforeCreateCallBack(cartDiscountDraft)
+                .map(draft -> cartDiscountService
+                        .createCartDiscount(draft)
+                        .thenApply(cartDiscountOptional -> {
+                            if (cartDiscountOptional.isPresent()) {
+                                statistics.incrementCreated();
+                            } else {
+                                statistics.incrementFailed();
+                            }
+                            return cartDiscountOptional;
+                        })
+                )
+                .orElse(CompletableFuture.completedFuture(Optional.empty()));
     }
 
     /**
@@ -221,116 +300,37 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
             });
     }
 
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
-    private CompletionStage<Optional<CartDiscount>> buildActionsAndUpdate(
-        @Nonnull final CartDiscount oldCartDiscount,
-        @Nonnull final CartDiscountDraft newCartDiscount) {
+    private CompletionStage<Optional<CartDiscount>> fetchAndUpdate(
+            @Nonnull final CartDiscount oldCartDiscount,
+            @Nonnull final CartDiscountDraft newCartDiscount) {
 
-        final List<UpdateAction<CartDiscount>> updateActions =
-            buildActions(oldCartDiscount, newCartDiscount, syncOptions);
-
-        final List<UpdateAction<CartDiscount>> updateActionsAfterCallback =
-            syncOptions.applyBeforeUpdateCallBack(updateActions, newCartDiscount, oldCartDiscount);
-
-        if (!updateActionsAfterCallback.isEmpty()) {
-            return updateCartDiscount(oldCartDiscount, newCartDiscount, updateActionsAfterCallback);
-        }
-
-        return completedFuture(null);
-    }
-
-    /**
-     * Given a cart discount draft, this method applies the beforeCreateCallback and then issues a create request to the
-     * CTP project to create the corresponding CartDiscount.
-     *
-     * @param cartDiscountDraft the cart discount draft to create the cart discount from.
-     * @return a {@link CompletionStage} which contains an empty result after execution of the create.
-     */
-    @Nonnull
-    private CompletionStage<Optional<CartDiscount>> applyCallbackAndCreate(
-        @Nonnull final CartDiscountDraft cartDiscountDraft) {
-
-        return syncOptions
-            .applyBeforeCreateCallBack(cartDiscountDraft)
-            .map(draft -> cartDiscountService
-                .createCartDiscount(draft)
-                .thenApply(cartDiscountOptional -> {
-                    if (cartDiscountOptional.isPresent()) {
-                        statistics.incrementCreated();
-                    } else {
-                        statistics.incrementFailed();
-                    }
-                    return cartDiscountOptional;
-                })
-            )
-            .orElse(CompletableFuture.completedFuture(Optional.empty()));
-    }
-
-    /**
-     * Given a set of cart discount drafts, attempts to sync the drafts with the existing cart discounts in the CTP
-     * project. The cart discount and the draft are considered to match if they have the same key.
-     *
-     * @param oldCartDiscounts old cart discounts.
-     * @param newCartDiscounts drafts that need to be synced.
-     * @return a {@link CompletionStage} which contains an empty result after execution of the update
-     */
-    @Nonnull
-    private CompletionStage<Void> syncBatch(
-        @Nonnull final Set<CartDiscount> oldCartDiscounts,
-        @Nonnull final Set<CartDiscountDraft> newCartDiscounts) {
-
-        final Map<String, CartDiscount> oldCartDiscountMap = oldCartDiscounts
-            .stream()
-            .collect(toMap(this::getKey, identity()));
-
-        return CompletableFuture.allOf(newCartDiscounts
-            .stream()
-            .map(newCartDiscount -> {
-                final String key = getKey(newCartDiscount);
-                final CartDiscount oldCartDiscount = oldCartDiscountMap.get(key);
-
-                return ofNullable(oldCartDiscount)
-                    .map(cartDiscount -> buildActionsAndUpdate(oldCartDiscount, newCartDiscount))
-                    .orElseGet(() -> applyCallbackAndCreate(newCartDiscount));
-            })
-            .map(CompletionStage::toCompletableFuture)
-            .toArray(CompletableFuture[]::new));
-    }
-
-    @Override
-    protected CompletionStage<CartDiscountSyncStatistics> processBatch(@Nonnull final List<CartDiscountDraft> batch) {
-
-        final Set<CartDiscountDraft> validCartDiscountDrafts =
-            batch.stream().filter(this::validateDraft).collect(toSet());
-        if (validCartDiscountDrafts.isEmpty()) {
-            statistics.incrementProcessed(batch.size());
-            return completedFuture(statistics);
-        }
-
-        final Set<String> keys = validCartDiscountDrafts.stream().map(this::getKey).collect(toSet());
-
-
+        final String key = getKey(oldCartDiscount);
         return cartDiscountService
-            .fetchMatchingCartDiscountsByKeys(keys)
-            .handle(ImmutablePair::new)
-            .thenCompose(fetchResponse -> {
-                final Set<CartDiscount> fetchedCartDiscounts = fetchResponse.getKey();
-                final Throwable exception = fetchResponse.getValue();
+                .fetchCartDiscount(key)
+                .handle(ImmutablePair::new)
+                .thenCompose(fetchResponse -> {
+                    final Optional<CartDiscount> fetchedCartDiscountOptional = fetchResponse.getKey();
+                    final Throwable exception = fetchResponse.getValue();
 
-                if (exception != null) {
-                    final String errorMessage = format(CTP_CART_DISCOUNT_FETCH_FAILED, keys);
-                    handleError(errorMessage, exception, keys.size());
-                    return CompletableFuture.completedFuture(null);
-                } else {
-                    return syncBatch(fetchedCartDiscounts, validCartDiscountDrafts);
-                }
-            })
-            .thenApply(ignored -> {
-                statistics.incrementProcessed(batch.size());
-                return statistics;
-            });
+                    if (exception != null) {
+                        final String errorMessage = format(CTP_CART_DISCOUNT_UPDATE_FAILED, key,
+                                "Failed to fetch from CTP while retrying after concurrency modification.");
+                        handleError(errorMessage, exception, 1);
+                        return CompletableFuture.completedFuture(null);
+                    }
+
+                    return fetchedCartDiscountOptional
+                            .map(fetchedCartDiscount -> buildActionsAndUpdate(fetchedCartDiscount, newCartDiscount))
+                            .orElseGet(() -> {
+                                final String errorMessage =
+                                        format(CTP_CART_DISCOUNT_UPDATE_FAILED, key,
+                                                "Not found when attempting to fetch while retrying "
+                                                        + "after concurrency modification.");
+                                handleError(errorMessage, null, 1);
+                                return CompletableFuture.completedFuture(null);
+                            });
+                });
     }
-
 
 }
