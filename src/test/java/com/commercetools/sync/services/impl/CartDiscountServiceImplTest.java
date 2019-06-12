@@ -36,7 +36,7 @@ class CartDiscountServiceImplTest {
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
                 .of(sphereClient)
                 .build();
-        final CartDiscountServiceImpl cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
+        final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
 
         // test
         CompletionStage<Optional<CartDiscount>> result = cartDiscountService.fetchCartDiscount("");
