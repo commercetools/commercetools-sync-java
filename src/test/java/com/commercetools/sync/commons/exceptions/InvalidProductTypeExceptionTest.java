@@ -11,6 +11,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class InvalidProductTypeExceptionTest {
+
     @Test
     void invalidProductTypeException_WithMessageAndNoCauses_ShouldBuildExceptionCorrectly() {
         final String message = "foo";
