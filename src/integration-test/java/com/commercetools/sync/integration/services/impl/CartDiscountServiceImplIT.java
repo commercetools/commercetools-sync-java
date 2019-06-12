@@ -221,41 +221,6 @@ class CartDiscountServiceImplIT {
 
     }
 
-    @Test
-    void createCartDiscount_WithInvalidCartDiscount_ShouldHaveEmptyOptionalAsAResult() {
-        //preparation
-        final CartDiscountDraft newCartDiscountDraft =
-                CartDiscountDraftBuilder.of(LocalizedString.of(Locale.ENGLISH, ""),
-                        CART_DISCOUNT_CART_PREDICATE_1,
-                        CART_DISCOUNT_VALUE_1,
-                        CART_DISCOUNT_TARGET_1,
-                        SORT_ORDER_2,
-                        false)
-                        .active(false)
-                        .build();
-
-        final CartDiscountSyncOptions options = CartDiscountSyncOptionsBuilder
-                .of(CTP_TARGET_CLIENT)
-                .errorCallback((errorMessage, exception) -> {
-                    errorCallBackMessages.add(errorMessage);
-                    errorCallBackExceptions.add(exception);
-                })
-                .build();
-
-        final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(options);
-
-        // test
-        final Optional<CartDiscount> result =
-                cartDiscountService.createCartDiscount(newCartDiscountDraft)
-                        .toCompletableFuture().join();
-
-        // assertion
-        assertThat(result).isEmpty();
-        assertThat(errorCallBackMessages)
-                .containsExactly("Failed to create draft with key: ''. Reason: Draft key is blank!");
-
-    }
-
     @Test //todo: SUPPORT-4443 add test case for the key field
     void createCartDiscount_WithDuplicateSortOrder_ShouldHaveEmptyOptionalAsAResult() {
         //preparation
