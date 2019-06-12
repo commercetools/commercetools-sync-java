@@ -54,8 +54,6 @@ public class BatchProcessor {
      * with either a NestedType or SetType AttributeType.
      * A valid reference is simply one which has its id field's value not blank (null/empty)</li>
      * </ol>
-     * </li>
-     * </ol>
      */
     public void validateBatch() {
         for (ProductTypeDraft productTypeDraft : productTypeDrafts) {
