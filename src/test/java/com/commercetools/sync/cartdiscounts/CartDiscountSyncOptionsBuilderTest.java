@@ -10,13 +10,13 @@ import io.sphere.sdk.commands.UpdateAction;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -218,27 +218,25 @@ class CartDiscountSyncOptionsBuilderTest {
     void applyBeforeCreateCallBack_WithCallback_ShouldReturnFilteredDraft() {
         final Function<CartDiscountDraft, CartDiscountDraft> draftFunction =
             cartDiscountDraft ->
-                CartDiscountDraftBuilder.of(cartDiscountDraft)
-                                        .name(
-                                            ofEnglish(cartDiscountDraft.getName().get(Locale.ENGLISH) + "_filteredKey"))
-                                        .build();
+                    CartDiscountDraftBuilder.of(cartDiscountDraft)
+                            .key(format("%s_filteredKey", cartDiscountDraft.getKey()))
+                            .build();
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder.of(CTP_CLIENT)
-                                                                                              .beforeCreateCallback(
-                                                                                                  draftFunction)
-                                                                                              .build();
+                .beforeCreateCallback(draftFunction)
+                .build();
 
         assertThat(cartDiscountSyncOptions.getBeforeCreateCallback()).isNotNull();
 
         final CartDiscountDraft resourceDraft = mock(CartDiscountDraft.class);
-        when(resourceDraft.getName()).thenReturn(ofEnglish("myKey"));
+        when(resourceDraft.getKey()).thenReturn("myKey");
 
 
-        final Optional<CartDiscountDraft> filteredDraft = cartDiscountSyncOptions.applyBeforeCreateCallBack(
-            resourceDraft);
+        final Optional<CartDiscountDraft> filteredDraft = cartDiscountSyncOptions
+                .applyBeforeCreateCallBack(resourceDraft);
 
         assertThat(filteredDraft).isNotEmpty();
-        assertThat(filteredDraft.get().getName()).isEqualTo(ofEnglish("myKey_filteredKey"));
+        assertThat(filteredDraft.get().getKey()).isEqualTo("myKey_filteredKey");
     }
 
     @Test

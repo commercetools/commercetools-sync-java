@@ -14,7 +14,6 @@ import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
 import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.errors.DuplicateFieldError;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,17 +22,14 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 
-import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_CART_PREDICATE_1;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_CART_PREDICATE_2;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_KEY_1;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_KEY_2;
-import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_TARGET_1;
+import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_NAME_2;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_TARGET_2;
-import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_VALUE_1;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_VALUE_2;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.SORT_ORDER_1;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.SORT_ORDER_2;
@@ -41,6 +37,7 @@ import static com.commercetools.sync.integration.commons.utils.CartDiscountITUti
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.populateTargetProject;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
+import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -91,7 +88,7 @@ class CartDiscountServiceImplIT {
         final Optional<CartDiscount> cartDiscountOptional = CTP_TARGET_CLIENT
                 .execute(CartDiscountQuery.of()
                         .withPredicates(cartDiscountQueryModel ->
-                                cartDiscountQueryModel.name().lang(Locale.ENGLISH).is(CART_DISCOUNT_KEY_1)))
+                                cartDiscountQueryModel.key().is(CART_DISCOUNT_KEY_1)))
                 .toCompletableFuture().join().head();
         assertThat(cartDiscountOptional).isNotNull();
 
@@ -176,15 +173,16 @@ class CartDiscountServiceImplIT {
     }
 
     @Test
-    void createCartDiscount_WithValidCartDiscount_ShouldCreateCartDiscountAndCacheId() {
+    void createCartDiscount_WithValidCartDiscount_ShouldCreateCartDiscount() {
         //preparation
         final CartDiscountDraft newCartDiscountDraft =
-                CartDiscountDraftBuilder.of(LocalizedString.of(Locale.ENGLISH, CART_DISCOUNT_KEY_1),
-                        CART_DISCOUNT_CART_PREDICATE_1,
-                        CART_DISCOUNT_VALUE_1,
-                        CART_DISCOUNT_TARGET_1,
+                CartDiscountDraftBuilder.of(CART_DISCOUNT_NAME_2,
+                        CART_DISCOUNT_CART_PREDICATE_2,
+                        CART_DISCOUNT_VALUE_2,
+                        CART_DISCOUNT_TARGET_2,
                         SORT_ORDER_2,
                         false)
+                        .key(CART_DISCOUNT_KEY_2)
                         .active(false)
                         .build();
 
@@ -207,30 +205,32 @@ class CartDiscountServiceImplIT {
 
         final Optional<CartDiscount> queriedOptional = CTP_TARGET_CLIENT
                 .execute(CartDiscountQuery.of().withPredicates(cartDiscountQueryModel ->
-                        cartDiscountQueryModel.name().lang(Locale.ENGLISH).is(CART_DISCOUNT_KEY_1)))
+                        cartDiscountQueryModel.key().is(CART_DISCOUNT_KEY_2)))
                 .toCompletableFuture().join().head();
 
         assertThat(queriedOptional).hasValueSatisfying(queried ->
                 assertThat(createdCartDiscount).hasValueSatisfying(created -> {
+                    assertThat(created.getKey()).isEqualTo(queried.getKey());
                     assertThat(created.getName()).isEqualTo(queried.getName());
                     assertThat(created.getCartPredicate()).isEqualTo(queried.getCartPredicate());
                     assertThat(created.getValue()).isEqualTo(queried.getValue());
                     assertThat(created.getTarget()).isEqualTo(queried.getTarget());
-                    assertThat(created.getSortOrder()).isNotEqualTo(queried.getSortOrder());
+                    assertThat(created.getSortOrder()).isEqualTo(queried.getSortOrder());
                 }));
 
     }
 
-    @Test //todo: SUPPORT-4443 add test case for the key field
-    void createCartDiscount_WithDuplicateSortOrder_ShouldHaveEmptyOptionalAsAResult() {
+    @Test
+    void createCartDiscount_WithDuplicateCartDiscountKey_ShouldHaveEmptyOptionalAsAResult() {
         //preparation
         final CartDiscountDraft newCartDiscountDraft =
-                CartDiscountDraftBuilder.of(LocalizedString.of(Locale.ENGLISH, CART_DISCOUNT_KEY_2),
+                CartDiscountDraftBuilder.of(CART_DISCOUNT_NAME_2,
                         CART_DISCOUNT_CART_PREDICATE_2,
                         CART_DISCOUNT_VALUE_2,
                         CART_DISCOUNT_TARGET_2,
-                        SORT_ORDER_1,
+                        SORT_ORDER_2,
                         false)
+                        .key(CART_DISCOUNT_KEY_1)
                         .active(false)
                         .build();
 
@@ -253,8 +253,13 @@ class CartDiscountServiceImplIT {
         assertThat(result).isEmpty();
         assertThat(errorCallBackMessages)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(msg -> assertThat(msg).contains("A duplicate value"));
+                .hasOnlyOneElementSatisfying(msg -> assertThat(msg)
+                        .contains(format("A duplicate value '\"%s\" exists for field 'key'.", CART_DISCOUNT_KEY_1)));
 
+        ensureErrorCallbackIsDuplicateFieldError();
+    }
+
+    private void ensureErrorCallbackIsDuplicateFieldError() {
         assertThat(errorCallBackExceptions)
                 .hasSize(1)
                 .hasOnlyOneElementSatisfying(exception -> {
@@ -274,11 +279,50 @@ class CartDiscountServiceImplIT {
     }
 
     @Test
+    void createCartDiscount_WithDuplicateSortOrder_ShouldHaveEmptyOptionalAsAResult() {
+        //preparation
+        final CartDiscountDraft newCartDiscountDraft =
+                CartDiscountDraftBuilder.of(CART_DISCOUNT_NAME_2,
+                        CART_DISCOUNT_CART_PREDICATE_2,
+                        CART_DISCOUNT_VALUE_2,
+                        CART_DISCOUNT_TARGET_2,
+                        SORT_ORDER_1,
+                        false)
+                        .key(CART_DISCOUNT_KEY_2)
+                        .active(false)
+                        .build();
+
+        final CartDiscountSyncOptions options = CartDiscountSyncOptionsBuilder
+                .of(CTP_TARGET_CLIENT)
+                .errorCallback((errorMessage, exception) -> {
+                    errorCallBackMessages.add(errorMessage);
+                    errorCallBackExceptions.add(exception);
+                })
+                .build();
+
+        final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(options);
+
+        // test
+        final Optional<CartDiscount> result =
+                cartDiscountService.createCartDiscount(newCartDiscountDraft)
+                        .toCompletableFuture().join();
+
+        // assertion
+        assertThat(result).isEmpty();
+        assertThat(errorCallBackMessages)
+                .hasSize(1)
+                .hasOnlyOneElementSatisfying(msg -> assertThat(msg)
+                    .contains(format("A duplicate value '\"%s\"' exists for field 'sortOrder'.", SORT_ORDER_1)));
+
+        ensureErrorCallbackIsDuplicateFieldError();
+    }
+
+    @Test
     void updateCartDiscount_WithValidChanges_ShouldUpdateCartDiscountCorrectly() {
         final Optional<CartDiscount> cartDiscountOptional = CTP_TARGET_CLIENT
                 .execute(CartDiscountQuery.of()
                         .withPredicates(cartDiscountQueryModel ->
-                                cartDiscountQueryModel.name().lang(Locale.ENGLISH).is(CART_DISCOUNT_KEY_1)))
+                                cartDiscountQueryModel.key().is(CART_DISCOUNT_KEY_1)))
                 .toCompletableFuture().join().head();
         assertThat(cartDiscountOptional).isNotNull();
 
@@ -293,11 +337,12 @@ class CartDiscountServiceImplIT {
         final Optional<CartDiscount> updatedCartDiscountOptional = CTP_TARGET_CLIENT
                 .execute(CartDiscountQuery.of()
                         .withPredicates(cartDiscountQueryModel ->
-                                cartDiscountQueryModel.name().lang(Locale.ENGLISH).is(CART_DISCOUNT_KEY_1)))
+                                cartDiscountQueryModel.key().is(CART_DISCOUNT_KEY_1)))
                 .toCompletableFuture().join().head();
 
         assertThat(cartDiscountOptional).isNotEmpty();
         final CartDiscount fetchedCartDiscount = updatedCartDiscountOptional.get();
+        assertThat(fetchedCartDiscount.getKey()).isEqualTo(updatedCartDiscount.getKey());
         assertThat(fetchedCartDiscount.getName()).isEqualTo(updatedCartDiscount.getName());
         assertThat(fetchedCartDiscount.getValue()).isEqualTo(updatedCartDiscount.getValue());
         assertThat(fetchedCartDiscount.getTarget()).isEqualTo(updatedCartDiscount.getTarget());
@@ -309,7 +354,7 @@ class CartDiscountServiceImplIT {
         final Optional<CartDiscount> cartDiscountOptional = CTP_TARGET_CLIENT
                 .execute(CartDiscountQuery.of()
                         .withPredicates(cartDiscountQueryModel ->
-                                cartDiscountQueryModel.name().lang(Locale.ENGLISH).is(CART_DISCOUNT_KEY_1)))
+                                cartDiscountQueryModel.key().is(CART_DISCOUNT_KEY_1)))
                 .toCompletableFuture().join().head();
         assertThat(cartDiscountOptional).isNotNull();
 

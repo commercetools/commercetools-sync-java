@@ -99,12 +99,6 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
                        .map(localizedString -> localizedString.get(Locale.ENGLISH)).orElse("");
     }
 
-    private String getKey(@Nonnull final CartDiscountDraft cartDiscountDraft) {
-        //todo: SUPPORT-4443 need to be merged from name to key.
-        return Optional.ofNullable(cartDiscountDraft.getName())
-                       .map(localizedString -> localizedString.get(Locale.ENGLISH)).orElse("");
-    }
-
     /**
      * Iterates through the whole {@code cartDiscountDrafts} list and accumulates its valid drafts to batches.
      * Every batch is then processed by {@link CartDiscountSync#processBatch(List)}.
@@ -135,7 +129,7 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
             return completedFuture(statistics);
         }
 
-        final Set<String> keys = validCartDiscountDrafts.stream().map(this::getKey).collect(toSet());
+        final Set<String> keys = validCartDiscountDrafts.stream().map(CartDiscountDraft::getKey).collect(toSet());
 
 
         return cartDiscountService
@@ -170,8 +164,7 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
     private boolean validateDraft(@Nullable final CartDiscountDraft cartDiscountDraft) {
         if (cartDiscountDraft == null) {
             handleError(CART_DISCOUNT_DRAFT_IS_NULL, null, 1);
-        } else if (isBlank(getKey(cartDiscountDraft))) {
-            //todo: SUPPORT-4443 need to be merged from name to key.
+        } else if (isBlank(cartDiscountDraft.getKey())) {
             handleError(CART_DISCOUNT_DRAFT_HAS_NO_KEY, null, 1);
         } else {
             return true;
@@ -195,13 +188,12 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
 
         final Map<String, CartDiscount> oldCartDiscountMap = oldCartDiscounts
                 .stream()
-                .collect(toMap(this::getKey, identity()));
+                .collect(toMap(CartDiscount::getKey, identity()));
 
         return CompletableFuture.allOf(newCartDiscounts
                 .stream()
                 .map(newCartDiscount -> {
-                    final String key = getKey(newCartDiscount);
-                    final CartDiscount oldCartDiscount = oldCartDiscountMap.get(key);
+                    final CartDiscount oldCartDiscount = oldCartDiscountMap.get(newCartDiscount.getKey());
 
                     return ofNullable(oldCartDiscount)
                             .map(cartDiscount -> buildActionsAndUpdate(oldCartDiscount, newCartDiscount))
@@ -290,7 +282,7 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
                         () -> fetchAndUpdate(oldCartDiscount, newCartDiscount),
                         () -> {
                             final String errorMessage =
-                                format(CTP_CART_DISCOUNT_UPDATE_FAILED, getKey(newCartDiscount),
+                                format(CTP_CART_DISCOUNT_UPDATE_FAILED, newCartDiscount.getKey(),
                                     sphereException.getMessage());
                             handleError(errorMessage, sphereException, 1);
                             return CompletableFuture.completedFuture(Optional.empty());
@@ -307,7 +299,7 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
             @Nonnull final CartDiscount oldCartDiscount,
             @Nonnull final CartDiscountDraft newCartDiscount) {
 
-        final String key = getKey(oldCartDiscount);
+        final String key = oldCartDiscount.getKey();
         return cartDiscountService
                 .fetchCartDiscount(key)
                 .handle(ImmutablePair::new)
