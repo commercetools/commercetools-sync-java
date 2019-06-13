@@ -180,10 +180,10 @@ public class CartDiscountSyncTest {
 
         //assertions
         assertThat(errorMessages)
-                .hasSize(1)
-                .hasOnlyOneElementSatisfying(message ->
-                        assertThat(message).isEqualTo("Failed to process null cart discount draft.")
-                );
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(message ->
+                assertThat(message).isEqualTo("Failed to process null cart discount draft.")
+            );
 
         assertThat(exceptions)
                 .hasSize(1)
