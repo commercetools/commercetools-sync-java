@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
 public interface CartDiscountService {
+
     /**
      * Given a {@link Set} of CartDiscount keys, this method fetches a set of all the CartDiscounts, matching this given
      * set of keys in the CTP project, defined in an injected {@link SphereClient}. A
