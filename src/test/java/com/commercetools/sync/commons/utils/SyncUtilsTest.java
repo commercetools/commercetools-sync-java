@@ -4,7 +4,8 @@ package com.commercetools.sync.commons.utils;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.models.Reference;
-import org.junit.Test;
+import io.sphere.sdk.models.ResourceIdentifier;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -18,16 +19,17 @@ import java.util.stream.IntStream;
 
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraft;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
-import static com.commercetools.sync.commons.utils.SyncUtils.replaceReferenceIdWithKey;
+import static com.commercetools.sync.commons.utils.SyncUtils.getReferenceWithKeyReplaced;
+import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKeyReplaced;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class SyncUtilsTest {
+class SyncUtilsTest {
 
     @Test
-    public void batchElements_WithValidSize_ShouldReturnCorrectBatches() {
+    void batchElements_WithValidSize_ShouldReturnCorrectBatches() {
         final int numberOfCategoryDrafts = 160;
         final int batchSize = 10;
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
@@ -41,13 +43,13 @@ public class SyncUtilsTest {
     }
 
     @Test
-    public void batchElements_WithUniformSeparation_ShouldReturnCorrectBatches() {
+    void batchElements_WithUniformSeparation_ShouldReturnCorrectBatches() {
         batchStringElementsAndAssertAfterBatching(100, 10);
         batchStringElementsAndAssertAfterBatching(3, 1);
     }
 
     @Test
-    public void batchElements_WithNonUniformSeparation_ShouldReturnCorrectBatches() {
+    void batchElements_WithNonUniformSeparation_ShouldReturnCorrectBatches() {
         batchStringElementsAndAssertAfterBatching(100, 9);
         batchStringElementsAndAssertAfterBatching(3, 2);
     }
@@ -98,13 +100,13 @@ public class SyncUtilsTest {
     }
 
     @Test
-    public void batchElements_WithEmptyListAndAnySize_ShouldReturnNoBatches() {
+    void batchElements_WithEmptyListAndAnySize_ShouldReturnNoBatches() {
         final List<List<CategoryDraft>> batches = batchElements(new ArrayList<>(), 100);
         assertThat(batches.size()).isEqualTo(0);
     }
 
     @Test
-    public void batchElements_WithNegativeSize_ShouldReturnNoBatches() {
+    void batchElements_WithNegativeSize_ShouldReturnNoBatches() {
         final int numberOfCategoryDrafts = 160;
         final ArrayList<CategoryDraft> categoryDrafts = new ArrayList<>();
 
@@ -117,14 +119,14 @@ public class SyncUtilsTest {
     }
 
     @Test
-    public void replaceReferenceIdWithKey_WithNullReference_ShouldReturnNullReference() {
-        final Reference<Object> keyReplacedReference = replaceReferenceIdWithKey(null,
+    void getReferenceWithKeyReplaced_WithNullReference_ShouldReturnNullReference() {
+        final Reference<Object> keyReplacedReference = getReferenceWithKeyReplaced(null,
             () -> Reference.of(Category.referenceTypeId(), "id"));
         assertThat(keyReplacedReference).isNull();
     }
 
     @Test
-    public void replaceReferenceIdWithKey_WithExpandedCategoryReference_ShouldReturnCategoryReferenceWithKey() {
+    void getReferenceWithKeyReplaced_WithExpandedCategoryReference_ShouldReturnCategoryReferenceWithKey() {
         final String categoryKey = "categoryKey";
         final Category mockCategory = mock(Category.class);
         when(mockCategory.getKey()).thenReturn(categoryKey);
@@ -132,20 +134,53 @@ public class SyncUtilsTest {
         final Reference<Category> categoryReference = Reference.ofResourceTypeIdAndObj(Category.referenceTypeId(),
             mockCategory);
 
-        final Reference<Category> keyReplacedReference = replaceReferenceIdWithKey(categoryReference,
+        final Reference<Category> keyReplacedReference = getReferenceWithKeyReplaced(categoryReference,
             () -> Category.referenceOfId(categoryReference.getObj().getKey()));
+        
         assertThat(keyReplacedReference).isNotNull();
         assertThat(keyReplacedReference.getId()).isEqualTo(categoryKey);
     }
 
     @Test
-    public void replaceReferenceIdWithKey_WithNonExpandedCategoryReference_ShouldReturnReferenceWithoutReplacedKey() {
+    void getResourceIdentifierWithKeyReplaced_WithExpandedReference_ShouldReturnCategoryResourceIdentifierWithKey() {
+        final String categoryKey = "categoryKey";
+        final Category mockCategory = mock(Category.class);
+        when(mockCategory.getKey()).thenReturn(categoryKey);
+
+        final Reference<Category> categoryReference = Reference.ofResourceTypeIdAndObj(Category.referenceTypeId(),
+            mockCategory);
+
+        final ResourceIdentifier<Category> keyReplacedReference =
+            getResourceIdentifierWithKeyReplaced(categoryReference,
+                () -> ResourceIdentifier.ofId(categoryReference.getObj().getKey()));
+
+        assertThat(keyReplacedReference).isNotNull();
+        assertThat(keyReplacedReference.getId()).isEqualTo(categoryKey);
+    }
+
+    @Test
+    void getReferenceWithKeyReplaced_WithNonExpandedCategoryReference_ShouldReturnReferenceWithoutReplacedKey() {
         final String categoryUuid = UUID.randomUUID().toString();
         final Reference<Category> categoryReference = Reference.ofResourceTypeIdAndId(Category.referenceTypeId(),
             categoryUuid);
 
-        final Reference<Category> keyReplacedReference = replaceReferenceIdWithKey(categoryReference,
+        final Reference<Category> keyReplacedReference = getReferenceWithKeyReplaced(categoryReference,
             () -> Category.referenceOfId(categoryReference.getObj().getKey()));
+
+        assertThat(keyReplacedReference).isNotNull();
+        assertThat(keyReplacedReference.getId()).isEqualTo(categoryUuid);
+    }
+
+    @Test
+    void getResourceIdentifierWithKeyReplaced_WithNonExpandedReference_ShouldReturnResIdentifierWithoutReplacedKey() {
+        final String categoryUuid = UUID.randomUUID().toString();
+        final Reference<Category> categoryReference = Reference.ofResourceTypeIdAndId(Category.referenceTypeId(),
+            categoryUuid);
+
+        final ResourceIdentifier<Category> keyReplacedReference =
+            getResourceIdentifierWithKeyReplaced(categoryReference,
+                () -> ResourceIdentifier.ofId(categoryReference.getObj().getKey()));
+
         assertThat(keyReplacedReference).isNotNull();
         assertThat(keyReplacedReference.getId()).isEqualTo(categoryUuid);
     }

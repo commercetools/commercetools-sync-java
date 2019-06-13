@@ -3,7 +3,7 @@ package com.commercetools.sync.commons.utils;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
@@ -12,15 +12,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ResourceIdentifierUtilsTest {
+class ResourceIdentifierUtilsTest {
 
     @Test
-    public void toResourceIdentifierIfNotNull_WithNullResource_ShouldReturnNull() {
+    void toResourceIdentifierIfNotNull_WithNullResource_ShouldReturnNull() {
         assertThat(toResourceIdentifierIfNotNull(null)).isNull();
     }
 
     @Test
-    public void toResourceIdentifierIfNotNull_WithNonNullResource_ShouldReturnCorrectResourceIdentifier() {
+    void toResourceIdentifierIfNotNull_WithNonNullResource_ShouldReturnCorrectResourceIdentifier() {
         final Category category = mock(Category.class);
         when(category.getId()).thenReturn(UUID.randomUUID().toString());
         when(category.toResourceIdentifier()).thenCallRealMethod();
@@ -34,7 +34,7 @@ public class ResourceIdentifierUtilsTest {
     }
 
     @Test
-    public void toResourceIdentifierIfNotNull_WithNonNullReference_ShouldReturnCorrectResourceIdentifier() {
+    void toResourceIdentifierIfNotNull_WithNonNullReference_ShouldReturnCorrectResourceIdentifier() {
         final Reference<Category> categoryReference = Category.referenceOfId("foo");
 
         final ResourceIdentifier<Category> categoryResourceIdentifier = toResourceIdentifierIfNotNull(

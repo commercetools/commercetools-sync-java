@@ -12,8 +12,8 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.states.State;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -34,7 +34,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class StateReferenceResolverTest {
+class StateReferenceResolverTest {
     private static final String CHANNEL_KEY = "channel-key_1";
     private static final String CHANNEL_ID = "1";
     private static final String PRODUCT_TYPE_ID = "productTypeId";
@@ -48,8 +48,8 @@ public class StateReferenceResolverTest {
     /**
      * Sets up the services and the options needed for reference resolution.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         stateService = getMockStateService(STATE_ID);
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
         referenceResolver = new ProductReferenceResolver(syncOptions, getMockProductTypeService(PRODUCT_TYPE_ID),
@@ -59,7 +59,7 @@ public class StateReferenceResolverTest {
     }
 
     @Test
-    public void resolveStateReference_WithKeys_ShouldResolveReference() {
+    void resolveStateReference_WithKeys_ShouldResolveReference() {
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .state(State.referenceOfId("stateKey"));
 
@@ -71,7 +71,7 @@ public class StateReferenceResolverTest {
     }
 
     @Test
-    public void resolveStateReference_WithNullState_ShouldNotResolveReference() {
+    void resolveStateReference_WithNullState_ShouldNotResolveReference() {
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .key("dummyKey");
 
@@ -81,7 +81,7 @@ public class StateReferenceResolverTest {
     }
 
     @Test
-    public void resolveStateReference_WithNonExistentState_ShouldNotResolveReference() {
+    void resolveStateReference_WithNonExistentState_ShouldNotResolveReference() {
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .state(State.referenceOfId("nonExistentKey"))
             .key("dummyKey");
@@ -97,7 +97,7 @@ public class StateReferenceResolverTest {
     }
 
     @Test
-    public void resolveStateReference_WithNullIdOnStateReference_ShouldNotResolveReference() {
+    void resolveStateReference_WithNullIdOnStateReference_ShouldNotResolveReference() {
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .state(Reference.of(State.referenceTypeId(), (String)null))
             .key("dummyKey");
@@ -106,12 +106,12 @@ public class StateReferenceResolverTest {
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format("Failed to resolve reference 'state' on ProductDraft with "
+            .hasMessage(format("Failed to resolve 'state' resource identifier on ProductDraft with "
                 + "key:'%s'. Reason: %s", productBuilder.getKey(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
-    public void resolveStateReference_WithEmptyIdOnStateReference_ShouldNotResolveReference() {
+    void resolveStateReference_WithEmptyIdOnStateReference_ShouldNotResolveReference() {
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .state(State.referenceOfId(""))
             .key("dummyKey");
@@ -120,12 +120,12 @@ public class StateReferenceResolverTest {
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format("Failed to resolve reference 'state' on ProductDraft with "
+            .hasMessage(format("Failed to resolve 'state' resource identifier on ProductDraft with "
                 + "key:'%s'. Reason: %s", productBuilder.getKey(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
-    public void resolveStateReference_WithExceptionOnFetch_ShouldNotResolveReference() {
+    void resolveStateReference_WithExceptionOnFetch_ShouldNotResolveReference() {
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
             .state(State.referenceOfId("stateKey"))
             .key("dummyKey");

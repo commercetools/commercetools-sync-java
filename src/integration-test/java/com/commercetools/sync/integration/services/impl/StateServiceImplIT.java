@@ -9,9 +9,9 @@ import io.sphere.sdk.states.StateDraft;
 import io.sphere.sdk.states.StateDraftBuilder;
 import io.sphere.sdk.states.StateType;
 import io.sphere.sdk.states.commands.StateCreateCommand;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -22,7 +22,7 @@ import static com.commercetools.sync.integration.commons.utils.StateITUtils.dele
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class StateServiceImplIT {
+class StateServiceImplIT {
     private static final StateType STATE_TYPE = StateType.PRODUCT_STATE;
 
     private State oldState;
@@ -32,8 +32,8 @@ public class StateServiceImplIT {
     /**
      * Deletes states from the target CTP projects, then it populates the project with test data.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         deleteStates(CTP_TARGET_CLIENT, STATE_TYPE);
         warnings = new ArrayList<>();
         oldState = createState(CTP_TARGET_CLIENT, STATE_TYPE);
@@ -46,13 +46,13 @@ public class StateServiceImplIT {
     /**
      * Cleans up the target test data that were built in this test class.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteStates(CTP_TARGET_CLIENT, STATE_TYPE);
     }
 
     @Test
-    public void fetchCachedStateId_WithNonExistingState_ShouldNotFetchAState() {
+    void fetchCachedStateId_WithNonExistingState_ShouldNotFetchAState() {
         final Optional<String> stateId = stateService.fetchCachedStateId("non-existing-state-key")
                                                      .toCompletableFuture()
                                                      .join();
@@ -61,7 +61,7 @@ public class StateServiceImplIT {
     }
 
     @Test
-    public void fetchCachedStateId_WithExistingState_ShouldFetchStateAndCache() {
+    void fetchCachedStateId_WithExistingState_ShouldFetchStateAndCache() {
         final Optional<String> stateId = stateService.fetchCachedStateId(oldState.getKey())
                                                                  .toCompletableFuture()
                                                                  .join();
@@ -70,7 +70,7 @@ public class StateServiceImplIT {
     }
 
     @Test
-    public void fetchCachedStateId_OnSecondTime_ShouldNotFindStateInCache() {
+    void fetchCachedStateId_OnSecondTime_ShouldNotFindStateInCache() {
         // Fetch any key to populate cache
         stateService.fetchCachedStateId("anyKey").toCompletableFuture().join();
 
@@ -90,7 +90,7 @@ public class StateServiceImplIT {
     }
 
     @Test
-    public void fetchCachedStateId_WithNullKey_ShouldReturnFutureWithEmptyOptional() {
+    void fetchCachedStateId_WithNullKey_ShouldReturnFutureWithEmptyOptional() {
         final Optional<String> stateId = stateService.fetchCachedStateId(null)
                                                      .toCompletableFuture()
                                                      .join();

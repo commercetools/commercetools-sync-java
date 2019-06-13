@@ -39,8 +39,8 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.search.SearchKeyword;
 import io.sphere.sdk.search.SearchKeywords;
 import io.sphere.sdk.utils.MoneyImpl;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.List;
@@ -59,15 +59,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ProductSyncUtilsTest {
+class ProductSyncUtilsTest {
     private Product oldProduct;
     private ProductSyncOptions productSyncOptions;
 
     /**
      * Initializes an instance of {@link ProductSyncOptions} and {@link Product}.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                       .build();
 
@@ -75,7 +75,7 @@ public class ProductSyncUtilsTest {
     }
 
     @Test
-    public void buildActions_FromDraftsWithDifferentNameValues_ShouldBuildUpdateActions() {
+    void buildActions_FromDraftsWithDifferentNameValues_ShouldBuildUpdateActions() {
         final LocalizedString newName = LocalizedString.of(Locale.ENGLISH, "newName");
         final ProductDraft newProductDraft =
             createProductDraftBuilder(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH,
@@ -91,7 +91,7 @@ public class ProductSyncUtilsTest {
     }
 
     @Test
-    public void buildActions_FromDraftsWithMultipleDifferentValues_ShouldBuildUpdateActions() {
+    void buildActions_FromDraftsWithMultipleDifferentValues_ShouldBuildUpdateActions() {
         // preparation
         final ProductDraftBuilder draftBuilder = createProductDraftBuilder(
             PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH, ProductType.referenceOfId("anyProductType"));
@@ -162,7 +162,7 @@ public class ProductSyncUtilsTest {
     }
 
     @Test
-    public void buildActions_FromDraftsWithMultipleDifferentValues_ShouldBuildUpdateActionsInCorrectOrder() {
+    void buildActions_FromDraftsWithMultipleDifferentValues_ShouldBuildUpdateActionsInCorrectOrder() {
         final ProductDraftBuilder draftBuilder = createProductDraftBuilder(
             PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH, ProductType.referenceOfId("anyProductType"));
 
@@ -220,7 +220,7 @@ public class ProductSyncUtilsTest {
     }
 
     @Test
-    public void buildActions_FromDraftsWithSameNameValues_ShouldNotBuildUpdateActions() {
+    void buildActions_FromDraftsWithSameNameValues_ShouldNotBuildUpdateActions() {
         final ProductDraft newProductDraft =
             createProductDraftBuilder(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH,
                 ProductType.referenceOfId("anyProductType")).build();

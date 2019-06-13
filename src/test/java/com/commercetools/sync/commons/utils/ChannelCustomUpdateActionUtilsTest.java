@@ -9,22 +9,21 @@ import io.sphere.sdk.channels.commands.updateactions.SetCustomField;
 import io.sphere.sdk.channels.commands.updateactions.SetCustomType;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static com.commercetools.sync.commons.asserts.actions.AssertionsForUpdateActions.assertThat;
-
 import static io.sphere.sdk.models.ResourceIdentifier.ofId;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-public class ChannelCustomUpdateActionUtilsTest {
+class ChannelCustomUpdateActionUtilsTest {
 
     @Test
-    public void buildTypedSetCustomTypeUpdateAction_WithChannelResource_ShouldBuildChannelUpdateAction() {
+    void buildTypedSetCustomTypeUpdateAction_WithChannelResource_ShouldBuildChannelUpdateAction() {
         final Channel channel = mock(Channel.class);
         final Map<String, JsonNode> fieldsJsonMap = new HashMap<>();
         final String customTypeId = "key";
@@ -41,7 +40,7 @@ public class ChannelCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildRemoveCustomTypeAction_WithChannelResource_ShouldBuildChannelUpdateAction() {
+    void buildRemoveCustomTypeAction_WithChannelResource_ShouldBuildChannelUpdateAction() {
         final UpdateAction<Channel> updateAction =
             new ChannelCustomActionBuilder().buildRemoveCustomTypeAction(null, null);
 
@@ -50,7 +49,7 @@ public class ChannelCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetCustomFieldAction_WithChannelResource_ShouldBuildChannelUpdateAction() {
+    void buildSetCustomFieldAction_WithChannelResource_ShouldBuildChannelUpdateAction() {
         final String customFieldName = "name";
         final JsonNode customFieldValue = JsonNodeFactory.instance.textNode("foo");
 

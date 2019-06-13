@@ -19,8 +19,8 @@ import io.sphere.sdk.products.attributes.StringAttributeType;
 import io.sphere.sdk.products.attributes.TimeAttributeType;
 import io.sphere.sdk.products.commands.updateactions.SetAttribute;
 import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,7 +44,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class BuildProductVariantAttributesUpdateActionsTest {
+class BuildProductVariantAttributesUpdateActionsTest {
 
     private final ProductVariant oldProductVariant = mock(ProductVariant.class);
     private final ProductVariantDraft newProductVariant = mock(ProductVariantDraft.class);
@@ -54,13 +54,13 @@ public class BuildProductVariantAttributesUpdateActionsTest {
                                                                                 errorMessages.add(msg))
                                                                             .build();
 
-    @Before
-    public void setupMethod() {
+    @BeforeEach
+    void setupMethod() {
         errorMessages = new ArrayList<>();
     }
 
     @Test
-    public void withNullNewAttributesAndEmptyExistingAttributes_ShouldNotBuildActions() {
+    void withNullNewAttributesAndEmptyExistingAttributes_ShouldNotBuildActions() {
         // Preparation
         when(newProductVariant.getAttributes()).thenReturn(null);
         when(oldProductVariant.getAttributes()).thenReturn(emptyList());
@@ -74,7 +74,7 @@ public class BuildProductVariantAttributesUpdateActionsTest {
     }
 
     @Test
-    public void withSomeNullNewAttributesAndExistingAttributes_ShouldBuildActionsAndTriggerErrorCallback() {
+    void withSomeNullNewAttributesAndExistingAttributes_ShouldBuildActionsAndTriggerErrorCallback() {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
@@ -109,7 +109,7 @@ public class BuildProductVariantAttributesUpdateActionsTest {
     }
 
     @Test
-    public void withEmptyNewAttributesAndEmptyExistingAttributes_ShouldNotBuildActions() {
+    void withEmptyNewAttributesAndEmptyExistingAttributes_ShouldNotBuildActions() {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
@@ -127,7 +127,7 @@ public class BuildProductVariantAttributesUpdateActionsTest {
     }
 
     @Test
-    public void withAllMatchingAttributes_ShouldNotBuildActions() {
+    void withAllMatchingAttributes_ShouldNotBuildActions() {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
@@ -160,7 +160,7 @@ public class BuildProductVariantAttributesUpdateActionsTest {
     }
 
     @Test
-    public void withNonEmptyNewAttributesButEmptyExistingAttributes_ShouldBuildSetAttributeActions() {
+    void withNonEmptyNewAttributesButEmptyExistingAttributes_ShouldBuildSetAttributeActions() {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
@@ -196,7 +196,7 @@ public class BuildProductVariantAttributesUpdateActionsTest {
     }
 
     @Test
-    public void withSomeNonChangedMatchingAttributesAndNewAttributes_ShouldBuildSetAttributeActions()  {
+    void withSomeNonChangedMatchingAttributesAndNewAttributes_ShouldBuildSetAttributeActions()  {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
@@ -236,7 +236,7 @@ public class BuildProductVariantAttributesUpdateActionsTest {
     }
 
     @Test
-    public void withNullNewAttributes_ShouldBuildUnSetAttributeActions() {
+    void withNullNewAttributes_ShouldBuildUnSetAttributeActions() {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
@@ -269,7 +269,7 @@ public class BuildProductVariantAttributesUpdateActionsTest {
     }
 
     @Test
-    public void withNullNewAttributes_WithSameForAllAttributes_ShouldBuildUnSetAllAttributeActions() {
+    void withNullNewAttributes_WithSameForAllAttributes_ShouldBuildUnSetAllAttributeActions() {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
@@ -305,7 +305,7 @@ public class BuildProductVariantAttributesUpdateActionsTest {
     }
 
     @Test
-    public void withEmptyNewAttributes_ShouldBuildUnSetAttributeActions() {
+    void withEmptyNewAttributes_ShouldBuildUnSetAttributeActions() {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
@@ -338,7 +338,7 @@ public class BuildProductVariantAttributesUpdateActionsTest {
     }
 
     @Test
-    public void withEmptyNewAttributes_WithNoExistingAttributeInMetaData_ShouldBuildNoActionsAndTriggerErrorCallback() {
+    void withEmptyNewAttributes_WithNoExistingAttributeInMetaData_ShouldBuildNoActionsAndTriggerErrorCallback() {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
@@ -365,7 +365,7 @@ public class BuildProductVariantAttributesUpdateActionsTest {
     }
 
     @Test
-    public void withSomeNonChangedMatchingAttributesAndNoNewAttributes_ShouldBuildUnSetAttributeActions() {
+    void withSomeNonChangedMatchingAttributesAndNoNewAttributes_ShouldBuildUnSetAttributeActions() {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
@@ -399,7 +399,7 @@ public class BuildProductVariantAttributesUpdateActionsTest {
     }
 
     @Test
-    public void withNoMatchingAttributes_ShouldBuildUnsetAndSetActions() {
+    void withNoMatchingAttributes_ShouldBuildUnsetAndSetActions() {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
@@ -434,7 +434,7 @@ public class BuildProductVariantAttributesUpdateActionsTest {
     }
 
     @Test
-    public void withNoMatchingAttributes_WithSomeNoExistingMetaData_ShouldBuildSomeActionsAndTriggerErrorCallback() {
+    void withNoMatchingAttributes_WithSomeNoExistingMetaData_ShouldBuildSomeActionsAndTriggerErrorCallback() {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
@@ -467,7 +467,7 @@ public class BuildProductVariantAttributesUpdateActionsTest {
     }
 
     @Test
-    public void withNoMatchingAttributes_WithNoExistingMetaData_ShouldBuildNoActionsAndTriggerErrorCallback() {
+    void withNoMatchingAttributes_WithNoExistingMetaData_ShouldBuildNoActionsAndTriggerErrorCallback() {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
@@ -496,7 +496,7 @@ public class BuildProductVariantAttributesUpdateActionsTest {
     }
 
     @Test
-    public void withAllChangedMatchingAttributes_ShouldBuildSetActions() {
+    void withAllChangedMatchingAttributes_ShouldBuildSetActions() {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
@@ -532,7 +532,7 @@ public class BuildProductVariantAttributesUpdateActionsTest {
     }
 
     @Test
-    public void withAllChangedMatchingAttrs_WithSomeNoExistingMetaData_ShouldBuildSomeActionsAndTriggerErrorCallback() {
+    void withAllChangedMatchingAttrs_WithSomeNoExistingMetaData_ShouldBuildSomeActionsAndTriggerErrorCallback() {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
@@ -566,7 +566,7 @@ public class BuildProductVariantAttributesUpdateActionsTest {
     }
 
     @Test
-    public void withSomeChangedMatchingAttributes_ShouldBuildSetActions() {
+    void withSomeChangedMatchingAttributes_ShouldBuildSetActions() {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
@@ -601,7 +601,7 @@ public class BuildProductVariantAttributesUpdateActionsTest {
     }
 
     @Test
-    public void withSomeChangedMatchingAttrs_WithNoExistingMetaData_ShouldBuildNoActionsAndTriggerErrorCallback() {
+    void withSomeChangedMatchingAttrs_WithNoExistingMetaData_ShouldBuildNoActionsAndTriggerErrorCallback() {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
@@ -631,7 +631,7 @@ public class BuildProductVariantAttributesUpdateActionsTest {
     }
 
     @Test
-    public void withNoMatchingAttributes_ShouldBuildUnsetAndSetActionsInCorrectOrder() {
+    void withNoMatchingAttributes_ShouldBuildUnsetAndSetActionsInCorrectOrder() {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
