@@ -13,8 +13,8 @@ import io.sphere.sdk.products.commands.ProductUpdateCommand;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.utils.CompletableFutureUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -31,15 +31,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class ProductServiceTest {
+class ProductServiceTest {
 
     private ProductServiceImpl service;
     private ProductSyncOptions productSyncOptions;
     private List<String> errorMessages;
     private List<Throwable> errorExceptions;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         errorMessages = new ArrayList<>();
         errorExceptions = new ArrayList<>();
         productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
@@ -52,7 +52,7 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void createProduct_WithSuccessfulMockCtpResponse_ShouldReturnMock() {
+    void createProduct_WithSuccessfulMockCtpResponse_ShouldReturnMock() {
         final Product mock = mock(Product.class);
         when(mock.getId()).thenReturn("productId");
         when(mock.getKey()).thenReturn("productKey");
@@ -69,7 +69,7 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void createProduct_WithUnSuccessfulMockCtpResponse_ShouldNotCreateProduct() {
+    void createProduct_WithUnSuccessfulMockCtpResponse_ShouldNotCreateProduct() {
         // preparation
         final Product mock = mock(Product.class);
         when(mock.getId()).thenReturn("productId");
@@ -99,7 +99,7 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void createProduct_WithDraftWithoutKey_ShouldNotCreateProduct() {
+    void createProduct_WithDraftWithoutKey_ShouldNotCreateProduct() {
         final ProductDraft draft = mock(ProductDraft.class);
         final Optional<Product> productOptional = service.createProduct(draft).toCompletableFuture().join();
 
@@ -111,7 +111,7 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void updateProduct_WithMockCtpResponse_ShouldReturnMock() {
+    void updateProduct_WithMockCtpResponse_ShouldReturnMock() {
         final Product mock = mock(Product.class);
         when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mock));
 
@@ -124,13 +124,13 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void buildProductKeysQueryPredicate_WithEmptyProductKeysSet_ShouldBuildCorrectQuery() {
+    void buildProductKeysQueryPredicate_WithEmptyProductKeysSet_ShouldBuildCorrectQuery() {
         final QueryPredicate<Product> queryPredicate = service.buildProductKeysQueryPredicate(new HashSet<>());
         assertThat(queryPredicate.toSphereQuery()).isEqualTo("key in ()");
     }
 
     @Test
-    public void buildProductKeysQueryPredicate_WithProductKeysSet_ShouldBuildCorrectQuery() {
+    void buildProductKeysQueryPredicate_WithProductKeysSet_ShouldBuildCorrectQuery() {
         final HashSet<String> productKeys = new HashSet<>();
         productKeys.add("key1");
         productKeys.add("key2");
@@ -139,7 +139,7 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void buildProductKeysQueryPredicate_WithSomeBlankProductKeys_ShouldBuildCorrectQuery() {
+    void buildProductKeysQueryPredicate_WithSomeBlankProductKeys_ShouldBuildCorrectQuery() {
         final HashSet<String> productKeys = new HashSet<>();
         productKeys.add("key1");
         productKeys.add("key2");

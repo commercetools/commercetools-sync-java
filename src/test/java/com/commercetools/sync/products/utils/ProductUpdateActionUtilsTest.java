@@ -26,7 +26,7 @@ import io.sphere.sdk.products.commands.updateactions.RemoveImage;
 import io.sphere.sdk.products.commands.updateactions.RemoveVariant;
 import io.sphere.sdk.products.commands.updateactions.SetAttribute;
 import io.sphere.sdk.products.commands.updateactions.SetSku;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,7 +52,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 
-public class ProductUpdateActionUtilsTest {
+class ProductUpdateActionUtilsTest {
 
     private static final String RES_ROOT = "com/commercetools/sync/products/utils/productVariantUpdateActionUtils/";
     private static final String OLD_PROD_WITH_VARIANTS = RES_ROOT + "productOld.json";
@@ -73,7 +73,7 @@ public class ProductUpdateActionUtilsTest {
     private static final String NEW_PROD_DRAFT_WITHOUT_MV_SKU = RES_ROOT + "productDraftNew_noMasterVariantSku.json";
 
     @Test
-    public void buildVariantsUpdateActions_updatesVariants() {
+    void buildVariantsUpdateActions_updatesVariants() {
         // preparation
         final Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
         final ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER);
@@ -152,7 +152,7 @@ public class ProductUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildVariantsUpdateActions_doesNotRemoveMaster() {
+    void buildVariantsUpdateActions_doesNotRemoveMaster() {
         final Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
         final ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_MOVE_MASTER);
 
@@ -195,20 +195,20 @@ public class ProductUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildVariantsUpdateActions_withEmptyOldMasterVariantKey() {
+    void buildVariantsUpdateActions_withEmptyOldMasterVariantKey() {
         assertMissingMasterVariantKey(OLD_PROD_WITHOUT_MV_KEY_SKU, NEW_PROD_DRAFT_WITH_VARIANTS_MOVE_MASTER,
             BLANK_OLD_MASTER_VARIANT_KEY);
     }
 
     @Test
-    public void buildVariantsUpdateActions_withEmptyNewMasterVariantOrKey_ShouldNotBuildActionAndTriggerCallback() {
+    void buildVariantsUpdateActions_withEmptyNewMasterVariantOrKey_ShouldNotBuildActionAndTriggerCallback() {
         assertMissingMasterVariantKey(OLD_PROD_WITH_VARIANTS, NEW_PROD_DRAFT_WITHOUT_MV, BLANK_NEW_MASTER_VARIANT_KEY);
         assertMissingMasterVariantKey(OLD_PROD_WITH_VARIANTS, NEW_PROD_DRAFT_WITHOUT_MV_KEY,
             BLANK_NEW_MASTER_VARIANT_KEY);
     }
 
     @Test
-    public void buildVariantsUpdateActions_withEmptyBothMasterVariantKey_ShouldNotBuildActionAndTriggerCallback() {
+    void buildVariantsUpdateActions_withEmptyBothMasterVariantKey_ShouldNotBuildActionAndTriggerCallback() {
         assertMissingMasterVariantKey(OLD_PROD_WITHOUT_MV_KEY_SKU, NEW_PROD_DRAFT_WITHOUT_MV_KEY,
             BLANK_OLD_MASTER_VARIANT_KEY, BLANK_NEW_MASTER_VARIANT_KEY);
     }
@@ -239,7 +239,7 @@ public class ProductUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeMasterVariantUpdateAction_changesMasterVariant() {
+    void buildChangeMasterVariantUpdateAction_changesMasterVariant() {
         final Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
         final ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER);
 
@@ -254,12 +254,12 @@ public class ProductUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildVariantsUpdateActions_withEmptyKey_ShouldNotBuildActionAndTriggerCallback() {
+    void buildVariantsUpdateActions_withEmptyKey_ShouldNotBuildActionAndTriggerCallback() {
         assertChangeMasterVariantEmptyErrorCatcher(NEW_PROD_DRAFT_WITHOUT_MV_KEY, BLANK_NEW_MASTER_VARIANT_KEY);
     }
 
     @Test
-    public void buildVariantsUpdateActions_withEmptySku_ShouldNotBuildActionAndTriggerCallback() {
+    void buildVariantsUpdateActions_withEmptySku_ShouldNotBuildActionAndTriggerCallback() {
         assertChangeMasterVariantEmptyErrorCatcher(NEW_PROD_DRAFT_WITHOUT_MV_SKU, BLANK_NEW_MASTER_VARIANT_SKU);
     }
 
@@ -284,7 +284,7 @@ public class ProductUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildAddVariantUpdateActionFromDraft_WithAttribsPricesAndImages_ShouldBuildCorrectAddVariantAction() {
+    void buildAddVariantUpdateActionFromDraft_WithAttribsPricesAndImages_ShouldBuildCorrectAddVariantAction() {
         // preparation
         final List<AttributeDraft> attributeList = emptyList();
         final List<PriceDraft> priceList = emptyList();
@@ -313,7 +313,7 @@ public class ProductUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildAddVariantUpdateActionFromDraft_WithNoAssets_BuildsNoAddAssets() {
+    void buildAddVariantUpdateActionFromDraft_WithNoAssets_BuildsNoAddAssets() {
         // preparation
         final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder.of()
                                                                                   .sku("foo")
@@ -329,7 +329,7 @@ public class ProductUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildAddVariantUpdateActionFromDraft_WithMultipleAssets_BuildsMultipleAddAssetsActions() {
+    void buildAddVariantUpdateActionFromDraft_WithMultipleAssets_BuildsMultipleAddAssetsActions() {
         // preparation
         final List<AssetDraft> assetDrafts = IntStream
             .range(1, 4)
