@@ -63,12 +63,11 @@ import static org.mockito.Mockito.when;
 class CartDiscountSyncIT {
 
     /**
-     * Deletes types from the target CTP projects.
+     * Deletes cart discounts from the target CTP projects.
      * Populates the target CTP project with test data.
      */
     @BeforeEach
     void setup() {
-        deleteTypesFromTargetAndSource();
         deleteCartDiscountsFromTargetAndSource();
         populateSourceProject();
         populateTargetProject();
