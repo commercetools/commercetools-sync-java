@@ -14,7 +14,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class CartDiscountSyncOptions extends BaseSyncOptions<CartDiscount, CartDiscountDraft> {
+public final class CartDiscountSyncOptions extends BaseSyncOptions<CartDiscount, CartDiscountDraft> {
 
     CartDiscountSyncOptions(
         @Nonnull final SphereClient ctpClient,

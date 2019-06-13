@@ -9,7 +9,6 @@ import io.sphere.sdk.models.SphereException;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
@@ -21,7 +20,7 @@ public interface CartDiscountService {
      * mapping of the key to the id of the fetched CartDiscount is persisted in an in-memory map.
      *
      * @param keys set of CartDiscounts keys to fetch matching CartDiscount by.
-     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of its completion contains a {@link Set}
+     * @return {@link CompletionStage}&lt;{@link Set}&gt; in which the result of its completion contains a {@link Set}
      *          of all matching CartDiscounts.
      */
     @Nonnull
@@ -45,19 +44,20 @@ public interface CartDiscountService {
      * Given a resource draft of type {@link CartDiscountDraft}, this method attempts to create a resource
      * {@link CartDiscount} based on it in the CTP project defined by the sync options.
      *
-     * <p>A completion stage containing an empty option and the error callback will be triggered in those cases:
+     * <p>A completion stage containing an empty {@link Optional}
+     * and the error callback will be triggered in those cases:
      * <ul>
      * <li>the draft has a blank key</li>
      * <li>the create request fails on CTP</li>
      * </ul>
      *
-     * <p>On the other hand, if the resource gets created successfully on CTP, then the created resource's id and
-     * key are cached and the method returns a {@link CompletionStage} in which the result of it's completion
-     * contains an instance {@link Optional} of the resource which was created.
+     * <p>On the other hand, if the CartDiscount gets created successfully on CTP, then the created CartDiscount's id
+     * and key are cached. The method returns a {@link CompletionStage} in which the result of it's completion
+     * contains an instance {@link Optional} of the created `CartDiscount`.
      *
      * @param cartDiscountDraft the resource draft to create a resource based off of.
-     * @return a {@link CompletionStage} containing an optional with the created resource if successful otherwise an
-     *         empty optional.
+     * @return a {@link CompletionStage} containing an optional with the created {@link CartDiscount} if successful
+     *         otherwise an empty optional.
      */
     @Nonnull
     CompletionStage<Optional<CartDiscount>> createCartDiscount(@Nonnull final CartDiscountDraft cartDiscountDraft);
@@ -66,12 +66,12 @@ public interface CartDiscountService {
      * Given a {@link CartDiscount} and a {@link List}&lt;{@link UpdateAction}&lt;{@link CartDiscount}&gt;&gt;, this
      * method issues an update request with these update actions on this {@link CartDiscount} in the CTP project
      * defined in a potentially injected {@link SphereClient}. This method returns
-     * {@link CompletionStage}&lt;{@link CartDiscount}&gt; in which the result of it's completion contains an instance
+     * {@link CompletionStage}&lt;{@link CartDiscount}&gt; in which the result of its completion contains an instance
      * of the {@link CartDiscount} which was updated in the CTP project.
      *
      * @param cartDiscount  the {@link CartDiscount} to update.
      * @param updateActions the update actions to update the {@link CartDiscount} with.
-     * @return {@link CompletionStage}&lt;{@link CartDiscount}&gt; containing as a result of it's completion an
+     * @return {@link CompletionStage}&lt;{@link CartDiscount}&gt; containing as a result of its completion an
      *         instance of the {@link CartDiscount} which was updated in the CTP project or a {@link SphereException}.
      */
     @Nonnull
