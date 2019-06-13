@@ -8,6 +8,7 @@ import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
 import io.sphere.sdk.products.attributes.NestedAttributeType;
 import io.sphere.sdk.products.attributes.SetAttributeType;
+import io.sphere.sdk.products.attributes.StringAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
@@ -19,6 +20,7 @@ import java.util.concurrent.CompletableFuture;
 
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -26,6 +28,94 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class ProductTypeReferenceResolverTest {
+
+    @Test
+    public void resolveReferences_WithNullAttributes_ShouldResolveReferences() {
+        // preparation
+        final ProductTypeDraft productTypeDraft =
+            ProductTypeDraftBuilder.of("foo", "foo", "desc", null)
+                                   .build();
+
+        final ProductTypeSyncOptions syncOptions =
+            ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+
+        final ProductTypeService productTypeService = mock(ProductTypeService.class);
+        when(productTypeService.fetchCachedProductTypeId(any()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.of("foo")));
+
+        final ProductTypeReferenceResolver productTypeReferenceResolver = new ProductTypeReferenceResolver(syncOptions,
+            productTypeService);
+
+
+        final ProductTypeDraftDsl expectedResolvedProductTypeDraft =
+            ProductTypeDraftBuilder.of(productTypeDraft)
+                                   .build();
+
+        // test and assertion
+        assertThat(productTypeReferenceResolver.resolveReferences(productTypeDraft))
+            .isCompletedWithValue(expectedResolvedProductTypeDraft);
+    }
+
+    @Test
+    public void resolveReferences_WithNoAttributes_ShouldResolveReferences() {
+        // preparation
+        final ProductTypeDraft productTypeDraft =
+            ProductTypeDraftBuilder.of("foo", "foo", "desc", emptyList())
+                                   .build();
+
+        final ProductTypeSyncOptions syncOptions =
+            ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+
+        final ProductTypeService productTypeService = mock(ProductTypeService.class);
+        when(productTypeService.fetchCachedProductTypeId(any()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.of("foo")));
+
+        final ProductTypeReferenceResolver productTypeReferenceResolver = new ProductTypeReferenceResolver(syncOptions,
+            productTypeService);
+
+
+        final ProductTypeDraftDsl expectedResolvedProductTypeDraft =
+            ProductTypeDraftBuilder.of(productTypeDraft)
+                                   .attributes(emptyList())
+                                   .build();
+
+        // test and assertion
+        assertThat(productTypeReferenceResolver.resolveReferences(productTypeDraft))
+            .isCompletedWithValue(expectedResolvedProductTypeDraft);
+    }
+
+    @Test
+    public void resolveReferences_WithNoNestedTypeReferences_ShouldResolveReferences() {
+        // preparation
+
+        final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
+            .of(StringAttributeType.of(), "string attr", ofEnglish("string attr label"), true)
+            .build();
+
+        final ProductTypeDraft productTypeDraft =
+            ProductTypeDraftBuilder.of("foo", "foo", "desc", singletonList(attributeDefinitionDraft))
+                                   .build();
+
+        final ProductTypeSyncOptions syncOptions =
+            ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+
+        final ProductTypeService productTypeService = mock(ProductTypeService.class);
+        when(productTypeService.fetchCachedProductTypeId(any()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.of("foo")));
+
+        final ProductTypeReferenceResolver productTypeReferenceResolver = new ProductTypeReferenceResolver(syncOptions,
+            productTypeService);
+
+
+        final ProductTypeDraftDsl expectedResolvedProductTypeDraft =
+            ProductTypeDraftBuilder.of(productTypeDraft)
+                                   .attributes(singletonList(attributeDefinitionDraft))
+                                   .build();
+
+        // test and assertion
+        assertThat(productTypeReferenceResolver.resolveReferences(productTypeDraft))
+            .isCompletedWithValue(expectedResolvedProductTypeDraft);
+    }
 
     @Test
     public void resolveReferences_WithOneNestedTypeWithExistingProductTypeReference_ShouldResolveReferences() {
