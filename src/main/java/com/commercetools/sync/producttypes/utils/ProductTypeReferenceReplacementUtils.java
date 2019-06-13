@@ -197,6 +197,10 @@ public final class ProductTypeReferenceReplacementUtils {
      *    a source commercetools project. Otherwise, it is more efficient to build the query without expansions, if they
      *    are not needed, to avoid unnecessarily bigger payloads fetched from the source project.
      *
+     * @param maximumSetDepth defines the maximum nesting of SetType attributes. If there are no setType of
+     *                        NestedType attributes in source productTypes then this number should be 0. If there is an
+     *                        attribute of type setType of a NestedType then this number should be 1. If the maximum
+     *                        nesting is a setType of a setType attribute, then this number should be 2, and so on.
      * @return the query for fetching productTypes from the source CTP project with all the aforementioned references
      *         expanded.
      */
@@ -218,7 +222,7 @@ public final class ProductTypeReferenceReplacementUtils {
 
     @Nonnull
     private static List<ExpansionPath<ProductType>>
-    buildSetOfNestedTypeReferenceExpansionPath(final int maximumSetDepth) {
+        buildSetOfNestedTypeReferenceExpansionPath(final int maximumSetDepth) {
 
         return IntStream.rangeClosed(1, maximumSetDepth)
                         .mapToObj(ProductTypeReferenceReplacementUtils::getExpansionPathForSetDept)
