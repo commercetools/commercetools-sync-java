@@ -11,8 +11,8 @@ import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.AttributeDraft;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,13 +38,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class BatchProcessorTest {
+class BatchProcessorTest {
     private List<String> errorCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
     private ProductSync productSync;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
         final SphereClient ctpClient = mock(SphereClient.class);
@@ -58,7 +58,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void getVariantDraftErrors_WithNullVariant_ShouldHaveValidationErrors() {
+    void getVariantDraftErrors_WithNullVariant_ShouldHaveValidationErrors() {
         final int variantPosition = 0;
         final String productDraftKey = "key";
         final List<String> validationErrors = getVariantDraftErrors(null, variantPosition, productDraftKey);
@@ -69,7 +69,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void getVariantDraftErrors_WithNokeyAndSku_ShouldHaveValidationErrors() {
+    void getVariantDraftErrors_WithNokeyAndSku_ShouldHaveValidationErrors() {
         final int variantPosition = 0;
         final String productDraftKey = "key";
         final List<String> validationErrors =
@@ -82,7 +82,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void getVariantDraftErrors_WithNoKey_ShouldHaveKeyValidationError() {
+    void getVariantDraftErrors_WithNoKey_ShouldHaveKeyValidationError() {
         final int variantPosition = 0;
         final String productDraftKey = "key";
         final ProductVariantDraft productVariantDraft = mock(ProductVariantDraft.class);
@@ -97,7 +97,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void getVariantDraftErrors_WithNoSku_ShouldHaveSkuValidationError() {
+    void getVariantDraftErrors_WithNoSku_ShouldHaveSkuValidationError() {
         final int variantPosition = 0;
         final String productDraftKey = "key";
         final ProductVariantDraft productVariantDraft = mock(ProductVariantDraft.class);
@@ -112,7 +112,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void getVariantDraftErrors_WithSkuAndKey_ShouldHaveNoValidationErrors() {
+    void getVariantDraftErrors_WithSkuAndKey_ShouldHaveNoValidationErrors() {
         final String productDraftKey = "key";
         final ProductVariantDraft productVariantDraft = mock(ProductVariantDraft.class);
         when(productVariantDraft.getKey()).thenReturn("key");
@@ -125,7 +125,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void
+    void
         getProductDraftErrorsAndAcceptConsumer_WithNullMvAndNullVariants_ShouldNotAcceptConsumerAndHaveErrors() {
         final AtomicBoolean isConsumerAccepted = new AtomicBoolean(false);
         final ProductDraft productDraft = mock(ProductDraft.class);
@@ -142,7 +142,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void
+    void
         getProductDraftErrorsAndAcceptConsumer_WithNullMvAndNoVariants_ShouldNotAcceptConsumerAndHaveErrors() {
         final AtomicBoolean isConsumerAccepted = new AtomicBoolean(false);
         final ProductDraft productDraft = mock(ProductDraft.class);
@@ -158,7 +158,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void
+    void
         getProductDraftErrorsAndAcceptConsumer_WithNullMvAndValidVariants_ShouldNotAcceptConsumerAndHaveErrors() {
         final AtomicBoolean isConsumerAccepted = new AtomicBoolean(false);
 
@@ -180,7 +180,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void
+    void
         getProductDraftErrorsAndAcceptConsumer_WithInValidMvAndValidVariants_ShouldNotAcceptConsumerAndHaveErrors() {
         final AtomicBoolean isConsumerAccepted = new AtomicBoolean(false);
 
@@ -204,7 +204,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void
+    void
         getProductDraftErrorsAndAcceptConsumer_WithValidMvAndValidVariants_ShouldAcceptConsumerAndNoErrors() {
         final AtomicBoolean isConsumerAccepted = new AtomicBoolean(false);
 
@@ -225,32 +225,32 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void getProductKeyFromReference_WithNullJsonNode_ShouldReturnEmptyOpt() {
+    void getProductKeyFromReference_WithNullJsonNode_ShouldReturnEmptyOpt() {
         final NullNode nullNode = JsonNodeFactory.instance.nullNode();
         assertThat(getProductKeyFromReference(nullNode)).isEmpty();
     }
 
     @Test
-    public void getProductKeyFromReference_WithoutAProductReference_ShouldReturnEmptyOpt() {
+    void getProductKeyFromReference_WithoutAProductReference_ShouldReturnEmptyOpt() {
         final ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
         objectNode.put("key", "value");
         assertThat(getProductKeyFromReference(objectNode)).isEmpty();
     }
 
     @Test
-    public void getProductKeyFromReference_WithAProductReference_ShouldReturnOptWithRefText() {
+    void getProductKeyFromReference_WithAProductReference_ShouldReturnOptWithRefText() {
         assertThat(getProductKeyFromReference(getProductReferenceWithId("foo"))).contains("foo");
     }
 
     @Test
-    public void getReferencedProductKeysFromSet_WithOnlyNullRefsInSet_ShouldReturnEmptySet() {
+    void getReferencedProductKeysFromSet_WithOnlyNullRefsInSet_ShouldReturnEmptySet() {
         final AttributeDraft productReferenceSetAttribute =
             getProductReferenceSetAttributeDraft("foo", null, null);
         assertThat(getReferencedProductKeysFromSet(productReferenceSetAttribute.getValue())).isEmpty();
     }
 
     @Test
-    public void getReferencedProductKeysFromSet_WithNullRefsInSet_ShouldReturnSetOfNonNullIds() {
+    void getReferencedProductKeysFromSet_WithNullRefsInSet_ShouldReturnSetOfNonNullIds() {
         final AttributeDraft productReferenceSetAttribute =
             getProductReferenceSetAttributeDraft("foo", getProductReferenceWithId("foo"),
                 getProductReferenceWithId("bar"));
@@ -259,7 +259,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void getReferencedProductKeysFromSet_WithNullAndOtherRefsInSet_ShouldReturnSetOfNonNullIds() {
+    void getReferencedProductKeysFromSet_WithNullAndOtherRefsInSet_ShouldReturnSetOfNonNullIds() {
         final ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
         objectNode.put("key", "value");
 
@@ -271,12 +271,12 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void getReferencedProductKeys_WithNullDraftValue_ShouldReturnEmptySet() {
+    void getReferencedProductKeys_WithNullDraftValue_ShouldReturnEmptySet() {
         assertThat(getReferencedProductKeys(AttributeDraft.of("foo", null))).isEmpty();
     }
 
     @Test
-    public void getReferencedProductKeys_WithSetAsValue_ShouldReturnSetKeys() {
+    void getReferencedProductKeys_WithSetAsValue_ShouldReturnSetKeys() {
         final AttributeDraft productReferenceSetAttribute =
             getProductReferenceSetAttributeDraft("foo", getProductReferenceWithId("foo"),
                 getProductReferenceWithId("bar"));
@@ -284,29 +284,29 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void getReferencedProductKeys_WithProductRefAsValue_ShouldReturnKeyinSet() {
+    void getReferencedProductKeys_WithProductRefAsValue_ShouldReturnKeyinSet() {
         final AttributeDraft productReferenceAttribute = AttributeDraft.of("foo", getProductReferenceWithId("foo"));
         assertThat(getReferencedProductKeys(productReferenceAttribute)).containsExactly("foo");
     }
 
     @Test
-    public void getReferencedProductKeys_WithNullAttributes_ShouldReturnEmptySet() {
+    void getReferencedProductKeys_WithNullAttributes_ShouldReturnEmptySet() {
         assertThat(getReferencedProductKeys(ProductVariantDraftBuilder.of().build())).isEmpty();
     }
 
     @Test
-    public void getReferencedProductKeys_WithNoAttributes_ShouldReturnEmptySet() {
+    void getReferencedProductKeys_WithNoAttributes_ShouldReturnEmptySet() {
         assertThat(getReferencedProductKeys(ProductVariantDraftBuilder.of().attributes().build())).isEmpty();
     }
 
     @Test
-    public void getReferencedProductKeys_WithANullAttribute_ShouldReturnEmptySet() {
+    void getReferencedProductKeys_WithANullAttribute_ShouldReturnEmptySet() {
         assertThat(getReferencedProductKeys(ProductVariantDraftBuilder.of().attributes(singletonList(null)).build()))
             .isEmpty();
     }
 
     @Test
-    public void getReferencedProductKeys_WithAProductRefAttribute_ShouldReturnEmptySet() {
+    void getReferencedProductKeys_WithAProductRefAttribute_ShouldReturnEmptySet() {
         final AttributeDraft productReferenceSetAttribute =
             getProductReferenceSetAttributeDraft("foo", getProductReferenceWithId("foo"),
                 getProductReferenceWithId("bar"));
@@ -321,7 +321,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void validateBatch_WithEmptyBatch_ShouldHaveEmptyResults() {
+    void validateBatch_WithEmptyBatch_ShouldHaveEmptyResults() {
         final BatchProcessor batchProcessor = new BatchProcessor(emptyList(), productSync);
 
         batchProcessor.validateBatch();
@@ -333,7 +333,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void validateBatch_WithANullDraft_ShouldResultInAnError() {
+    void validateBatch_WithANullDraft_ShouldResultInAnError() {
         final BatchProcessor batchProcessor = new BatchProcessor(singletonList(null), productSync);
 
         batchProcessor.validateBatch();
@@ -345,7 +345,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void validateBatch_WithADraftWithNullKey_ShouldResultInAnError() {
+    void validateBatch_WithADraftWithNullKey_ShouldResultInAnError() {
         final ProductDraft productDraft = mock(ProductDraft.class);
         final BatchProcessor batchProcessor = new BatchProcessor(singletonList(productDraft), productSync);
 
@@ -359,7 +359,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void validateBatch_WithADraftWithEmptyKey_ShouldResultInAnError() {
+    void validateBatch_WithADraftWithEmptyKey_ShouldResultInAnError() {
         final ProductDraft productDraft = mock(ProductDraft.class);
         when(productDraft.getKey()).thenReturn("");
 
@@ -374,7 +374,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void validateBatch_WithDrafts_ShouldValidateCorrectly() {
+    void validateBatch_WithDrafts_ShouldValidateCorrectly() {
         final AttributeDraft productReferenceSetAttribute =
             getProductReferenceSetAttributeDraft("foo", getProductReferenceWithId("foo"),
                 getProductReferenceWithId("bar"));

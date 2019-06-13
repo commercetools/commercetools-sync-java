@@ -7,9 +7,7 @@ import io.sphere.sdk.producttypes.commands.updateactions.AddLocalizedEnumValue;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeLocalizedEnumValueLabel;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeLocalizedEnumValueOrder;
 import io.sphere.sdk.producttypes.commands.updateactions.RemoveEnumValues;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.List;
@@ -20,11 +18,12 @@ import static com.commercetools.sync.producttypes.utils.LocalizedEnumValueUpdate
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class BuildLocalizedEnumUpdateActionsTest {
+class BuildLocalizedEnumUpdateActionsTest {
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithNullNewEnumValuesAndExistingEnumValues_ShouldBuildRemoveAction() {
+    void buildLocalizedEnumUpdateActions_WithNullNewEnumValuesAndExistingEnumValues_ShouldBuildRemoveAction() {
         final List<UpdateAction<ProductType>> updateActions = buildLocalizedEnumValuesUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUES_ABC,
@@ -37,7 +36,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithEmptyNewEnumValuesAndExistingEnumValues_ShouldBuildRemoveAction() {
+    void buildLocalizedEnumUpdateActions_WithEmptyNewEnumValuesAndExistingEnumValues_ShouldBuildRemoveAction() {
         final List<UpdateAction<ProductType>> updateActions = buildLocalizedEnumValuesUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUES_ABC,
@@ -50,7 +49,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithEmptyPlainEnumValuesAndNoOldEnumValues_ShouldNotBuildActions() {
+    void buildLocalizedEnumUpdateActions_WithEmptyPlainEnumValuesAndNoOldEnumValues_ShouldNotBuildActions() {
         final List<UpdateAction<ProductType>> updateActions = buildLocalizedEnumValuesUpdateActions(
             "attribute_definition_name_1",
             Collections.emptyList(),
@@ -61,7 +60,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithNewPlainEnumValuesAndNoOldPlainEnumValues_ShouldBuild3AddActions() {
+    void buildLocalizedEnumUpdateActions_WithNewPlainEnumValuesAndNoOldPlainEnumValues_ShouldBuild3AddActions() {
         final List<UpdateAction<ProductType>> updateActions = buildLocalizedEnumValuesUpdateActions(
             "attribute_definition_name_1",
             Collections.emptyList(),
@@ -76,7 +75,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithIdenticalPlainEnum_ShouldNotBuildUpdateActions() {
+    void buildLocalizedEnumUpdateActions_WithIdenticalPlainEnum_ShouldNotBuildUpdateActions() {
         final List<UpdateAction<ProductType>> updateActions = buildLocalizedEnumValuesUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUES_ABC,
@@ -86,25 +85,21 @@ public class BuildLocalizedEnumUpdateActionsTest {
         assertThat(updateActions).isEmpty();
     }
 
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
-
     @Test
-    public void buildLocalizedEnumUpdateActions_WithDuplicatePlainEnumValues_ShouldTriggerDuplicateKeyError() {
-        expectedException.expect(DuplicateKeyException.class);
-        expectedException.expectMessage("Enum Values have duplicated keys. Definition name: "
-            + "'attribute_definition_name_1', Duplicated enum value: 'b'. Enum Values are expected to be unique inside "
-            + "their definition.");
-
-        buildLocalizedEnumValuesUpdateActions(
+    void buildLocalizedEnumUpdateActions_WithDuplicatePlainEnumValues_ShouldTriggerDuplicateKeyError() {
+        assertThatThrownBy(() -> buildLocalizedEnumValuesUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUES_ABC,
             ENUM_VALUES_ABB
-        );
+        ))
+            .isInstanceOf(DuplicateKeyException.class)
+            .hasMessage("Enum Values have duplicated keys. Definition name: "
+                + "'attribute_definition_name_1', Duplicated enum value: 'b'. "
+                + "Enum Values are expected to be unique inside their definition.");
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithOneMissingPlainEnumValue_ShouldBuildRemoveEnumValueAction() {
+    void buildLocalizedEnumUpdateActions_WithOneMissingPlainEnumValue_ShouldBuildRemoveEnumValueAction() {
         final List<UpdateAction<ProductType>> updateActions = buildLocalizedEnumValuesUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUES_ABC,
@@ -117,7 +112,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithOnePlainEnumValue_ShouldBuildAddEnumValueAction() {
+    void buildLocalizedEnumUpdateActions_WithOnePlainEnumValue_ShouldBuildAddEnumValueAction() {
         final List<UpdateAction<ProductType>> updateActions = buildLocalizedEnumValuesUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUES_ABC,
@@ -130,7 +125,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithOneEnumValueSwitch_ShouldBuildRemoveAndAddEnumValueActions() {
+    void buildLocalizedEnumUpdateActions_WithOneEnumValueSwitch_ShouldBuildRemoveAndAddEnumValueActions() {
         final List<UpdateAction<ProductType>> updateActions = buildLocalizedEnumValuesUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUES_ABC,
@@ -144,7 +139,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithDifferent_ShouldBuildChangeEnumValueOrderAction() {
+    void buildLocalizedEnumUpdateActions_WithDifferent_ShouldBuildChangeEnumValueOrderAction() {
         final List<UpdateAction<ProductType>> updateActions = buildLocalizedEnumValuesUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUES_ABC,
@@ -161,7 +156,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildPlainEnumUpdateActions_WithMixedCase_ShouldBuildChangeEnumValueOrderAction() {
+    void buildPlainEnumUpdateActions_WithMixedCase_ShouldBuildChangeEnumValueOrderAction() {
         final String attributeDefinitionName = "attribute_definition_name_1";
         final List<UpdateAction<ProductType>> updateActions = buildLocalizedEnumValuesUpdateActions(
             attributeDefinitionName,
@@ -180,7 +175,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithRemovedAndDifferentOrder_ShouldBuildChangeOrderAndRemoveActions() {
+    void buildLocalizedEnumUpdateActions_WithRemovedAndDifferentOrder_ShouldBuildChangeOrderAndRemoveActions() {
         final List<UpdateAction<ProductType>> updateActions = buildLocalizedEnumValuesUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUES_ABC,
@@ -197,7 +192,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithAddedAndDifferentOrder_ShouldBuildChangeOrderAndAddActions() {
+    void buildLocalizedEnumUpdateActions_WithAddedAndDifferentOrder_ShouldBuildChangeOrderAndAddActions() {
         final List<UpdateAction<ProductType>> updateActions = buildLocalizedEnumValuesUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUES_ABC,
@@ -216,7 +211,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithAddedEnumValueInBetween_ShouldBuildChangeOrderAndAddActions() {
+    void buildLocalizedEnumUpdateActions_WithAddedEnumValueInBetween_ShouldBuildChangeOrderAndAddActions() {
         final List<UpdateAction<ProductType>> updateActions = buildLocalizedEnumValuesUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUES_ABC,
@@ -235,7 +230,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithAddedRemovedAndDifOrder_ShouldBuildAllThreeMoveEnumValueActions() {
+    void buildLocalizedEnumUpdateActions_WithAddedRemovedAndDifOrder_ShouldBuildAllThreeMoveEnumValueActions() {
         final List<UpdateAction<ProductType>> updateActions = buildLocalizedEnumValuesUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUES_ABC,
@@ -254,7 +249,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithDifferentLabels_ShouldReturnChangeLabelAction() {
+    void buildLocalizedEnumUpdateActions_WithDifferentLabels_ShouldReturnChangeLabelAction() {
         final List<UpdateAction<ProductType>> updateActions = buildLocalizedEnumValueUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUE_A,
@@ -267,7 +262,7 @@ public class BuildLocalizedEnumUpdateActionsTest {
     }
 
     @Test
-    public void buildLocalizedEnumUpdateActions_WithSameLabels_ShouldNotReturnChangeLabelAction() {
+    void buildLocalizedEnumUpdateActions_WithSameLabels_ShouldNotReturnChangeLabelAction() {
         final List<UpdateAction<ProductType>> updateActions = buildLocalizedEnumValueUpdateActions(
             "attribute_definition_name_1",
             ENUM_VALUE_A,

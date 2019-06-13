@@ -6,7 +6,7 @@ import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.updateactions.SetSearchKeywords;
 import io.sphere.sdk.search.SearchKeyword;
 import io.sphere.sdk.search.SearchKeywords;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -20,12 +20,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class BuildSetSearchKeywordsUpdateActionTest {
+class BuildSetSearchKeywordsUpdateActionTest {
     private static final Product MOCK_OLD_PUBLISHED_PRODUCT = readObjectFromResource(
         PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
 
     @Test
-    public void buildSetSearchKeywordsUpdateAction_WithDifferentStagedValues_ShouldBuildUpdateAction() {
+    void buildSetSearchKeywordsUpdateAction_WithDifferentStagedValues_ShouldBuildUpdateAction() {
         final SearchKeywords newProductSearchKeywords = SearchKeywords.of(Locale.ENGLISH,
             Arrays.asList(SearchKeyword.of("searchKeyword1"), SearchKeyword.of("searchKeyword2")));
         final UpdateAction<Product> setSearchKeywordsUpdateAction =
@@ -39,7 +39,7 @@ public class BuildSetSearchKeywordsUpdateActionTest {
     }
 
     @Test
-    public void buildSetSearchKeywordsUpdateAction_WithSameStagedValues_ShouldNotBuildUpdateAction() {
+    void buildSetSearchKeywordsUpdateAction_WithSameStagedValues_ShouldNotBuildUpdateAction() {
         final SearchKeywords newProductSearchKeywords = SearchKeywords.of();
         final Optional<UpdateAction<Product>> setSearchKeywordsUpdateAction =
             getSetSearchKeywordsUpdateAction(MOCK_OLD_PUBLISHED_PRODUCT, newProductSearchKeywords);

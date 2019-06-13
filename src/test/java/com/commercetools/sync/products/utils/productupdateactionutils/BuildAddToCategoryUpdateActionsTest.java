@@ -6,7 +6,7 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.updateactions.AddToCategory;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -22,12 +22,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class BuildAddToCategoryUpdateActionsTest {
+class BuildAddToCategoryUpdateActionsTest {
     private static final Product MOCK_OLD_PUBLISHED_PRODUCT = readObjectFromResource(
         PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
 
     @Test
-    public void buildAddToCategoryUpdateActions_WithDifferentStagedValues_ShouldBuildUpdateAction() {
+    void buildAddToCategoryUpdateActions_WithDifferentStagedValues_ShouldBuildUpdateAction() {
         final Category category = readObjectFromResource(CATEGORY_KEY_1_RESOURCE_PATH, Category.class);
         final Set<ResourceIdentifier<Category>> newProductCategories = new HashSet<>();
         newProductCategories.add(category.toResourceIdentifier());
@@ -41,7 +41,7 @@ public class BuildAddToCategoryUpdateActionsTest {
     }
 
     @Test
-    public void buildAddToCategoryUpdateActions_WithSameStagedValues_ShouldNotBuildUpdateAction() {
+    void buildAddToCategoryUpdateActions_WithSameStagedValues_ShouldNotBuildUpdateAction() {
         final List<UpdateAction<Product>> addToCategoryUpdateAction =
             getAddToCategoryUpdateActions(MOCK_OLD_PUBLISHED_PRODUCT, Collections.emptySet());
 
