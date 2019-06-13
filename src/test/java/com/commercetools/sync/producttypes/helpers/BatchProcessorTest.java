@@ -307,16 +307,16 @@ public class BatchProcessorTest {
                 format(PRODUCT_TYPE_DRAFT_KEY_NOT_SET, productTypeDraftWithEmptyKey.getName())));
 
         final Predicate<Throwable> invalidReferencePredicate = throwable ->
-            expectedExceptionMessage.equals(throwable.getMessage()) &&
-                BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER.equals(throwable.getCause().getMessage());
+            expectedExceptionMessage.equals(throwable.getMessage())
+                && BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER.equals(throwable.getCause().getMessage());
 
         final Condition<Throwable> invalidReferenceCondition = new Condition<>(invalidReferencePredicate,
             "ReferenceResolutionException: "
                 + "ProductTypeDraft with Key 'foo' has invalid references on attributeDraft with name 'nested'.");
 
         final Predicate<Throwable> nullDraftPredicate = throwable ->
-            PRODUCT_TYPE_DRAFT_IS_NULL.equals(throwable.getMessage()) &&
-                throwable instanceof InvalidProductTypeDraftException;
+            PRODUCT_TYPE_DRAFT_IS_NULL.equals(throwable.getMessage())
+                && throwable instanceof InvalidProductTypeDraftException;
 
         final Condition<Throwable> nullDraftCondition = new Condition<>(nullDraftPredicate,
             "InvalidProductTypeDraftException: ProductTypeDraft is null.");
