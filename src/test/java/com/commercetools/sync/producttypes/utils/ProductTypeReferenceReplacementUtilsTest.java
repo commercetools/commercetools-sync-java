@@ -1,6 +1,7 @@
 package com.commercetools.sync.producttypes.utils;
 
 import com.commercetools.sync.commons.exceptions.ReferenceReplacementException;
+import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
 import io.sphere.sdk.products.attributes.AttributeDefinitionBuilder;
@@ -11,10 +12,12 @@ import io.sphere.sdk.products.attributes.StringAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
+import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import org.junit.Test;
 
 import java.util.List;
 
+import static com.commercetools.sync.producttypes.utils.ProductTypeReferenceReplacementUtils.buildProductTypeQuery;
 import static com.commercetools.sync.producttypes.utils.ProductTypeReferenceReplacementUtils.replaceProductTypesReferenceIdsWithKeys;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
@@ -308,5 +311,37 @@ public class ProductTypeReferenceReplacementUtilsTest {
                 final NestedAttributeType nestedAttributeType = (NestedAttributeType) setOfSetOfSet.getElementType();
                 assertThat(nestedAttributeType.getTypeReference().getId()).isEqualTo(referencedProductType.getKey());
             });
+    }
+
+    @Test
+    public void buildProductTypeQuery_WithNoParam_ShouldReturnQueryWithAllNeededReferencesExpanded() {
+        final ProductTypeQuery productTypeQuery = buildProductTypeQuery();
+        assertThat(productTypeQuery.expansionPaths()).containsExactly(
+            ExpansionPath.of("attributes[*].type.typeReference"));
+    }
+
+    @Test
+    public void buildProductTypeQuery_With0MaxSetDepth_ShouldReturnQueryWithAllNeededReferencesExpanded() {
+        final ProductTypeQuery productTypeQuery = buildProductTypeQuery(0);
+        assertThat(productTypeQuery.expansionPaths()).containsExactly(
+            ExpansionPath.of("attributes[*].type.typeReference"));
+    }
+
+    @Test
+    public void buildProductTypeQuery_With1MaxSetDepth_ShouldReturnQueryWithAllNeededReferencesExpanded() {
+        final ProductTypeQuery productTypeQuery = buildProductTypeQuery(1);
+        assertThat(productTypeQuery.expansionPaths()).containsExactly(
+            ExpansionPath.of("attributes[*].type.typeReference"),
+            ExpansionPath.of("attributes[*].type.elementType.typeReference"));
+    }
+
+    @Test
+    public void buildProductTypeQuery_With3MaxSetDepth_ShouldReturnQueryWithAllNeededReferencesExpanded() {
+        final ProductTypeQuery productTypeQuery = buildProductTypeQuery(3);
+        assertThat(productTypeQuery.expansionPaths()).containsExactly(
+            ExpansionPath.of("attributes[*].type.typeReference"),
+            ExpansionPath.of("attributes[*].type.elementType.typeReference"),
+            ExpansionPath.of("attributes[*].type.elementType.elementType.typeReference"),
+            ExpansionPath.of("attributes[*].type.elementType.elementType.elementType.typeReference"));
     }
 }
