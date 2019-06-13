@@ -464,20 +464,6 @@ class CartDiscountSyncIT {
         assertThat(cartDiscountSyncStatistics).hasValues(100, 100, 0, 0);
     }
 
-    @Nonnull
-    private SphereClient buildClientWithConcurrentModificationUpdate() {
-
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-
-        final CartDiscountUpdateCommand anyCartDiscountUpdate = any(CartDiscountUpdateCommand.class);
-
-        when(spyClient.execute(anyCartDiscountUpdate))
-            .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
-            .thenCallRealMethod();
-
-        return spyClient;
-    }
-
     @Test
     void sync_WithConcurrentModificationException_ShouldRetryToUpdateNewCartDiscountWithSuccess() {
         // Preparation
@@ -518,18 +504,15 @@ class CartDiscountSyncIT {
     }
 
     @Nonnull
-    private SphereClient buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry() {
+    private SphereClient buildClientWithConcurrentModificationUpdate() {
 
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(CartDiscountQuery.class)))
-            .thenCallRealMethod() // Call real fetch on fetching matching cart discounts
-            .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()));
 
         final CartDiscountUpdateCommand anyCartDiscountUpdate = any(CartDiscountUpdateCommand.class);
 
         when(spyClient.execute(anyCartDiscountUpdate))
-            .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
-            .thenCallRealMethod();
+                .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
+                .thenCallRealMethod();
 
         return spyClient;
     }
@@ -580,20 +563,18 @@ class CartDiscountSyncIT {
     }
 
     @Nonnull
-    private SphereClient buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry() {
+    private SphereClient buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry() {
 
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        final CartDiscountQuery anyCartDiscountQuery = any(CartDiscountQuery.class);
-
-        when(spyClient.execute(anyCartDiscountQuery))
-            .thenCallRealMethod() // Call real fetch on fetching matching cart discounts
-            .thenReturn(completedFuture(PagedQueryResult.empty()));
+        when(spyClient.execute(any(CartDiscountQuery.class)))
+                .thenCallRealMethod() // Call real fetch on fetching matching cart discounts
+                .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()));
 
         final CartDiscountUpdateCommand anyCartDiscountUpdate = any(CartDiscountUpdateCommand.class);
 
         when(spyClient.execute(anyCartDiscountUpdate))
-            .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
-            .thenCallRealMethod();
+                .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
+                .thenCallRealMethod();
 
         return spyClient;
     }
@@ -638,6 +619,25 @@ class CartDiscountSyncIT {
         assertThat(errorMessages.get(0)).contains(
             format("Failed to update cart discount with key: '%s'. Reason: Not found when attempting to fetch while "
                 + "retrying after concurrency modification.", CART_DISCOUNT_KEY_2));
+    }
+
+    @Nonnull
+    private SphereClient buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry() {
+
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final CartDiscountQuery anyCartDiscountQuery = any(CartDiscountQuery.class);
+
+        when(spyClient.execute(anyCartDiscountQuery))
+                .thenCallRealMethod() // Call real fetch on fetching matching cart discounts
+                .thenReturn(completedFuture(PagedQueryResult.empty()));
+
+        final CartDiscountUpdateCommand anyCartDiscountUpdate = any(CartDiscountUpdateCommand.class);
+
+        when(spyClient.execute(anyCartDiscountUpdate))
+                .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
+                .thenCallRealMethod();
+
+        return spyClient;
     }
 
 }
