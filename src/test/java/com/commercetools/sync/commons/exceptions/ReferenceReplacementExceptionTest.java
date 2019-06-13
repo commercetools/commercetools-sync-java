@@ -18,13 +18,15 @@ class ReferenceReplacementExceptionTest {
 
         assertThatThrownBy(() -> {
             throw new ReferenceReplacementException(message, emptySet());
-        }).isExactlyInstanceOf(ReferenceReplacementException.class)
-          .hasNoCause()
-          .hasMessage(message)
-          .satisfies(exception -> {
-              final ReferenceReplacementException referenceReplacementException = (ReferenceReplacementException) exception;
-              assertThat(referenceReplacementException.getCauses()).isEmpty();
-          });
+        })
+            .isExactlyInstanceOf(ReferenceReplacementException.class)
+            .hasNoCause()
+            .hasMessage(message)
+            .satisfies(exception -> {
+                final ReferenceReplacementException referenceReplacementException =
+                    (ReferenceReplacementException) exception;
+                assertThat(referenceReplacementException.getCauses()).isEmpty();
+            });
     }
 
     @Test
@@ -39,13 +41,15 @@ class ReferenceReplacementExceptionTest {
 
         assertThatThrownBy(() -> {
             throw new ReferenceReplacementException(message, causes);
-        }).isExactlyInstanceOf(ReferenceReplacementException.class)
-          .hasNoCause()
-          .hasMessage(message)
-          .satisfies(exception -> {
-              final ReferenceReplacementException referenceReplacementException = (ReferenceReplacementException) exception;
-              assertThat(referenceReplacementException.getCauses()).containsExactlyInAnyOrder(cause1, cause2);
-          });
+        })
+            .isExactlyInstanceOf(ReferenceReplacementException.class)
+            .hasNoCause()
+            .hasMessage(message)
+            .satisfies(exception -> {
+                final ReferenceReplacementException referenceReplacementException =
+                    (ReferenceReplacementException) exception;
+                assertThat(referenceReplacementException.getCauses()).containsExactlyInAnyOrder(cause1, cause2);
+            });
     }
 
     @Test
@@ -58,13 +62,15 @@ class ReferenceReplacementExceptionTest {
 
         assertThatThrownBy(() -> {
             throw new ReferenceReplacementException(message, causes);
-        }).isExactlyInstanceOf(ReferenceReplacementException.class)
-          .hasNoCause()
-          .hasMessage(message)
-          .satisfies(exception -> {
-              final ReferenceReplacementException referenceReplacementException = (ReferenceReplacementException) exception;
-              assertThat(referenceReplacementException.getCauses()).containsExactly(cause1);
-          });
+        })
+            .isExactlyInstanceOf(ReferenceReplacementException.class)
+            .hasNoCause()
+            .hasMessage(message)
+            .satisfies(exception -> {
+                final ReferenceReplacementException referenceReplacementException =
+                    (ReferenceReplacementException) exception;
+                assertThat(referenceReplacementException.getCauses()).containsExactly(cause1);
+            });
     }
 
     @Test
@@ -84,14 +90,16 @@ class ReferenceReplacementExceptionTest {
 
         assertThatThrownBy(() -> {
             throw new ReferenceReplacementException(message, causes);
-        }).isExactlyInstanceOf(ReferenceReplacementException.class)
-          .hasNoCause()
-          .hasMessageContaining(format("%s Causes:%n", message))
-          .hasMessageContaining(format("%n\t%s", cause1.getMessage()))
-          .satisfies(exception -> {
-              final ReferenceReplacementException referenceReplacementException = (ReferenceReplacementException) exception;
-              assertThat(referenceReplacementException.getCauses()).containsExactlyInAnyOrder(cause1);
-          });
+        })
+            .isExactlyInstanceOf(ReferenceReplacementException.class)
+            .hasNoCause()
+            .hasMessageContaining(format("%s Causes:%n", message))
+            .hasMessageContaining(format("%n\t%s", cause1.getMessage()))
+            .satisfies(exception -> {
+                final ReferenceReplacementException referenceReplacementException =
+                    (ReferenceReplacementException) exception;
+                assertThat(referenceReplacementException.getCauses()).containsExactlyInAnyOrder(cause1);
+            });
     }
 
 }

@@ -18,13 +18,14 @@ class InvalidProductTypeExceptionTest {
 
         assertThatThrownBy(() -> {
             throw new InvalidProductTypeException(message, emptySet());
-        }).isExactlyInstanceOf(InvalidProductTypeException.class)
-          .hasNoCause()
-          .hasMessage(message)
-          .satisfies(exception -> {
-              final InvalidProductTypeException invalidProductTypeException = (InvalidProductTypeException) exception;
-              assertThat(invalidProductTypeException.getCauses()).isEmpty();
-          });
+        })
+            .isExactlyInstanceOf(InvalidProductTypeException.class)
+            .hasNoCause()
+            .hasMessage(message)
+            .satisfies(exception -> {
+                final InvalidProductTypeException invalidProductTypeException = (InvalidProductTypeException) exception;
+                assertThat(invalidProductTypeException.getCauses()).isEmpty();
+            });
     }
 
     @Test
@@ -39,13 +40,14 @@ class InvalidProductTypeExceptionTest {
 
         assertThatThrownBy(() -> {
             throw new InvalidProductTypeException(message, causes);
-        }).isExactlyInstanceOf(InvalidProductTypeException.class)
-          .hasNoCause()
-          .hasMessage(message)
-          .satisfies(exception -> {
-              final InvalidProductTypeException invalidProductTypeException = (InvalidProductTypeException) exception;
-              assertThat(invalidProductTypeException.getCauses()).containsExactlyInAnyOrder(cause1, cause2);
-          });
+        })
+            .isExactlyInstanceOf(InvalidProductTypeException.class)
+            .hasNoCause()
+            .hasMessage(message)
+            .satisfies(exception -> {
+                final InvalidProductTypeException invalidProductTypeException = (InvalidProductTypeException) exception;
+                assertThat(invalidProductTypeException.getCauses()).containsExactlyInAnyOrder(cause1, cause2);
+            });
     }
 
     @Test
@@ -58,13 +60,14 @@ class InvalidProductTypeExceptionTest {
 
         assertThatThrownBy(() -> {
             throw new InvalidProductTypeException(message, causes);
-        }).isExactlyInstanceOf(InvalidProductTypeException.class)
-          .hasNoCause()
-          .hasMessage(message)
-          .satisfies(exception -> {
-              final InvalidProductTypeException invalidProductTypeException = (InvalidProductTypeException) exception;
-              assertThat(invalidProductTypeException.getCauses()).containsExactly(cause1);
-          });
+        })
+            .isExactlyInstanceOf(InvalidProductTypeException.class)
+            .hasNoCause()
+            .hasMessage(message)
+            .satisfies(exception -> {
+                final InvalidProductTypeException invalidProductTypeException = (InvalidProductTypeException) exception;
+                assertThat(invalidProductTypeException.getCauses()).containsExactly(cause1);
+            });
     }
 
     @Test
@@ -79,15 +82,16 @@ class InvalidProductTypeExceptionTest {
 
         assertThatThrownBy(() -> {
             throw new InvalidProductTypeException(message, causes);
-        }).isExactlyInstanceOf(InvalidProductTypeException.class)
-          .hasNoCause()
-          .hasMessageContaining(format("%s Causes:%n", message))
-          .hasMessageContaining(format("%n\t\t%s", cause1.getMessage()))
-          .hasMessageContaining(format("%n\t\t%s", cause2.getMessage()))
-          .satisfies(exception -> {
-              final InvalidProductTypeException invalidProductTypeException = (InvalidProductTypeException) exception;
-              assertThat(invalidProductTypeException.getCauses()).containsExactlyInAnyOrder(cause1, cause2);
-          });
+        })
+            .isExactlyInstanceOf(InvalidProductTypeException.class)
+            .hasNoCause()
+            .hasMessageContaining(format("%s Causes:%n", message))
+            .hasMessageContaining(format("%n\t\t%s", cause1.getMessage()))
+            .hasMessageContaining(format("%n\t\t%s", cause2.getMessage()))
+            .satisfies(exception -> {
+                final InvalidProductTypeException invalidProductTypeException = (InvalidProductTypeException) exception;
+                assertThat(invalidProductTypeException.getCauses()).containsExactlyInAnyOrder(cause1, cause2);
+            });
     }
 
 }
