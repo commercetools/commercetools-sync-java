@@ -61,6 +61,10 @@ public final class CategoryReferenceReplacementUtils {
      *     <li>Parent Category</li>
      * </ul>
      *
+     * <p>Note: Please only use this util if you desire to sync all the aforementioned references from
+     * a source commercetools project. Otherwise, it is more efficient to build the query without expansions, if they
+     * are not needed, to avoid unnecessarily bigger payloads fetched from the source project.
+     *
      * @return the query for fetching categories from the source CTP project with all the aforementioned references
      *         expanded.
      */
