@@ -17,15 +17,18 @@ import io.sphere.sdk.utils.MoneyImpl;
 
 import javax.annotation.Nonnull;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.IntStream;
 
 import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndExecute;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
+import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 
 public class CartDiscountITUtils {
 
@@ -104,8 +107,10 @@ public class CartDiscountITUtils {
 
 
     public static void populateSourceProject() {
-        CTP_SOURCE_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_1)).toCompletableFuture().join();
-        CTP_SOURCE_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_2)).toCompletableFuture().join();
+        CompletableFuture.allOf(
+                CTP_SOURCE_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_1)).toCompletableFuture(),
+                CTP_SOURCE_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_2)).toCompletableFuture())
+                .join();
     }
 
     public static void populateTargetProject() {
@@ -131,20 +136,13 @@ public class CartDiscountITUtils {
         return sphereClient.execute(query).toCompletableFuture().join().head();
     }
 
-    public static List<String> getSortOrders(int capacity) {
+    public static List<String> getSortOrders(final int capacity) {
         // get 100 sortOrder list with odd numbers ex: 0.01, 0.03..
         // The sortOrder must be a decimal value > 0 and < 1. It is not allowed to end with a zero.
-        final List<String> sortOrders = new ArrayList<>(capacity);
-        int counter = 0;
-        int current = 1;
-
-        while (counter != capacity) {
-            current += 2;
-            sortOrders.add("0.0" + current);
-            counter ++;
-        }
-
-        return sortOrders;
+        return IntStream.range(0, capacity * 2)
+                .filter(index -> index % 2 != 0)
+                .mapToObj(oddNumber -> format("0.0%s", oddNumber))
+                .collect(toList());
     }
 
 }
