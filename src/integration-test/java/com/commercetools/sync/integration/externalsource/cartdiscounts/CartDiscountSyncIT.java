@@ -391,44 +391,6 @@ class CartDiscountSyncIT {
     }
 
     @Test
-    void sync_WithNullDraft_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
-        //preparation
-        final CartDiscountDraft newCartDiscountDraft = null;
-
-        final List<String> errorMessages = new ArrayList<>();
-        final List<Throwable> exceptions = new ArrayList<>();
-
-        final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
-            .of(CTP_TARGET_CLIENT)
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
-                exceptions.add(exception);
-            })
-            .build();
-
-        final CartDiscountSync cartDiscountSync = new CartDiscountSync(cartDiscountSyncOptions);
-
-        //test
-        final CartDiscountSyncStatistics cartDiscountSyncStatistics = cartDiscountSync
-            .sync(singletonList(newCartDiscountDraft))
-            .toCompletableFuture()
-            .join();
-
-        //assertions
-        assertThat(errorMessages)
-            .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).isEqualTo("Failed to process null cart discount draft.")
-            );
-
-        assertThat(exceptions)
-            .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable).isNull());
-
-        assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
-    }
-
-    @Test
     void sync_WithSeveralBatches_ShouldReturnProperStatistics() {
         // preparation
         final List<String> sortOrders = getSortOrders(100);
