@@ -44,7 +44,6 @@ import static com.commercetools.sync.integration.commons.utils.CartDiscountITUti
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.deleteCartDiscounts;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.getSortOrders;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.integration.commons.utils.TypeITUtils.deleteTypes;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
@@ -59,13 +58,11 @@ class CartDiscountSyncBenchmark {
 
     @BeforeAll
     static void setup() {
-        deleteTypes(CTP_TARGET_CLIENT);
         deleteCartDiscounts(CTP_TARGET_CLIENT);
     }
 
     @AfterAll
     static void tearDown() {
-        deleteTypes(CTP_TARGET_CLIENT);
         deleteCartDiscounts(CTP_TARGET_CLIENT);
     }
 
@@ -113,7 +110,6 @@ class CartDiscountSyncBenchmark {
     @BeforeEach
     void setupTest() {
         clearSyncTestCollections();
-        deleteTypes(CTP_TARGET_CLIENT);
         deleteCartDiscounts(CTP_TARGET_CLIENT);
         cartDiscountSyncOptions = buildSyncOptions();
     }
