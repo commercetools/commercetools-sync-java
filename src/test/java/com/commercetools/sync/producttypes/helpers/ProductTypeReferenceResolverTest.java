@@ -152,7 +152,8 @@ public class ProductTypeReferenceResolverTest {
     }
 
     @Test
-    public void resolveReferences_WithNestedAndSetOfNestedTypeWithExistingProductTypeReference_ShouldResolveReferences() {
+    public void
+        resolveReferences_WithNestedAndSetOfNestedTypeWithExistingProductTypeReference_ShouldResolveReferences() {
         // preparation
         final NestedAttributeType nestedAttributeType = NestedAttributeType.of(ProductType.reference("x"));
         final SetAttributeType setAttributeType = SetAttributeType.of(nestedAttributeType);

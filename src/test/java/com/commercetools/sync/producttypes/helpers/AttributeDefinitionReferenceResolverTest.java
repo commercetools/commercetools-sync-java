@@ -120,8 +120,8 @@ public class AttributeDefinitionReferenceResolverTest {
         assertThat(attributeDefinitionReferenceResolver.resolveReferences(attributeDefinitionDraft))
             .hasFailedWithThrowableThat()
             .hasMessageContaining("Failed to resolve references on attribute definition with name 'foo'")
-            .hasCause(
-                new ReferenceResolutionException("Failed to resolve NestedType productType reference.", expectedRootCause));
+            .hasCause(new ReferenceResolutionException(
+                "Failed to resolve NestedType productType reference.", expectedRootCause));
     }
 
     @Test
@@ -183,7 +183,7 @@ public class AttributeDefinitionReferenceResolverTest {
         assertThat(attributeDefinitionReferenceResolver.resolveReferences(attributeDefinitionDraft))
             .hasFailedWithThrowableThat()
             .hasMessageContaining("Failed to resolve references on attribute definition with name 'foo'")
-            .hasCause(
-                new ReferenceResolutionException("Failed to resolve NestedType productType reference.", expectedRootCause));
+            .hasCause(new ReferenceResolutionException(
+                "Failed to resolve NestedType productType reference.", expectedRootCause));
     }
 }
