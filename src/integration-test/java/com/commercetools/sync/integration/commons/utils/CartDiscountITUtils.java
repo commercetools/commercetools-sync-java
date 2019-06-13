@@ -17,10 +17,10 @@ import io.sphere.sdk.utils.MoneyImpl;
 
 import javax.annotation.Nonnull;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
 
 import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndExecute;
@@ -107,8 +107,10 @@ public class CartDiscountITUtils {
 
 
     public static void populateSourceProject() {
-        CTP_SOURCE_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_1)).toCompletableFuture().join();
-        CTP_SOURCE_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_2)).toCompletableFuture().join();
+        CompletableFuture.allOf(
+                CTP_SOURCE_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_1)).toCompletableFuture(),
+                CTP_SOURCE_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_2)).toCompletableFuture())
+                .join();
     }
 
     public static void populateTargetProject() {
