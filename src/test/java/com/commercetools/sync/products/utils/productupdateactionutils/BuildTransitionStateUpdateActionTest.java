@@ -5,18 +5,18 @@ import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.updateactions.TransitionState;
 import io.sphere.sdk.states.State;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildTransitionStateUpdateAction;
 import static io.sphere.sdk.json.SphereJsonUtils.readObject;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
-public class BuildTransitionStateUpdateActionTest {
+@ExtendWith(MockitoExtension.class)
+class BuildTransitionStateUpdateActionTest {
 
     @Mock
     private Product oldProduct;
@@ -37,7 +37,7 @@ public class BuildTransitionStateUpdateActionTest {
         "{\"typeId\": \"state\",\"id\": \"22222222-2222-2222-2222-222222222222\"}", Reference.class);
 
     @Test
-    public void buildTransitionStateUpdateAction_withEmptyOld() throws Exception {
+    void buildTransitionStateUpdateAction_withEmptyOld() {
         assertThat(buildTransitionStateUpdateAction(oldProduct, newProduct)).isEmpty();
 
         when(newProduct.getState()).thenReturn(newState);
@@ -46,19 +46,19 @@ public class BuildTransitionStateUpdateActionTest {
     }
 
     @Test
-    public void buildTransitionStateUpdateAction_withEmptyNewShouldReturnEmpty() throws Exception {
+    void buildTransitionStateUpdateAction_withEmptyNewShouldReturnEmpty() {
         assertThat(buildTransitionStateUpdateAction(oldProduct, newProduct)).isEmpty();
     }
 
     @Test
-    public void buildTransitionStateUpdateAction_withEqual() throws Exception {
+    void buildTransitionStateUpdateAction_withEqual() {
         when(oldProduct.getState()).thenReturn(oldState);
         when(newProduct.getState()).thenReturn(newState);
         assertThat(buildTransitionStateUpdateAction(oldProduct, newProduct)).isEmpty();
     }
 
     @Test
-    public void buildTransitionStateUpdateAction_withEmptyOldShouldReturnNew() throws Exception {
+    void buildTransitionStateUpdateAction_withEmptyOldShouldReturnNew() {
         when(newProduct.getState()).thenReturn(newChangedState);
         assertThat(buildTransitionStateUpdateAction(oldProduct, newProduct))
             .contains(TransitionState.of(newChangedState, true));
@@ -66,7 +66,7 @@ public class BuildTransitionStateUpdateActionTest {
 
 
     @Test
-    public void buildTransitionStateUpdateAction_withDifferent() throws Exception {
+    void buildTransitionStateUpdateAction_withDifferent() {
         when(oldProduct.getState()).thenReturn(oldState);
         when(newProduct.getState()).thenReturn(newChangedState);
         assertThat(buildTransitionStateUpdateAction(oldProduct, newProduct))

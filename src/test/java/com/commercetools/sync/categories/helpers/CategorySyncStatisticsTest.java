@@ -1,8 +1,8 @@
 package com.commercetools.sync.categories.helpers;
 
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -13,61 +13,61 @@ import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class CategorySyncStatisticsTest {
+class CategorySyncStatisticsTest {
 
     private CategorySyncStatistics categorySyncStatistics;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         categorySyncStatistics = new CategorySyncStatistics();
     }
 
     @Test
-    public void getUpdated_WithNoUpdated_ShouldReturnZero() {
+    void getUpdated_WithNoUpdated_ShouldReturnZero() {
         assertThat(categorySyncStatistics.getUpdated()).hasValue(0);
     }
 
     @Test
-    public void incrementUpdated_ShouldIncrementUpdatedValue() {
+    void incrementUpdated_ShouldIncrementUpdatedValue() {
         categorySyncStatistics.incrementUpdated();
         assertThat(categorySyncStatistics.getUpdated()).hasValue(1);
     }
 
     @Test
-    public void getCreated_WithNoCreated_ShouldReturnZero() {
+    void getCreated_WithNoCreated_ShouldReturnZero() {
         assertThat(categorySyncStatistics.getCreated()).hasValue(0);
     }
 
     @Test
-    public void incrementCreated_ShouldIncrementCreatedValue() {
+    void incrementCreated_ShouldIncrementCreatedValue() {
         categorySyncStatistics.incrementCreated();
         assertThat(categorySyncStatistics.getCreated()).hasValue(1);
     }
 
     @Test
-    public void getProcessed_WithNoProcessed_ShouldReturnZero() {
+    void getProcessed_WithNoProcessed_ShouldReturnZero() {
         assertThat(categorySyncStatistics.getProcessed()).hasValue(0);
     }
 
     @Test
-    public void incrementProcessed_ShouldIncrementProcessedValue() {
+    void incrementProcessed_ShouldIncrementProcessedValue() {
         categorySyncStatistics.incrementProcessed();
         assertThat(categorySyncStatistics.getProcessed()).hasValue(1);
     }
 
     @Test
-    public void getFailed_WithNoFailed_ShouldReturnZero() {
+    void getFailed_WithNoFailed_ShouldReturnZero() {
         assertThat(categorySyncStatistics.getFailed()).hasValue(0);
     }
 
     @Test
-    public void incrementFailed_ShouldIncrementFailedValue() {
+    void incrementFailed_ShouldIncrementFailedValue() {
         categorySyncStatistics.incrementFailed();
         assertThat(categorySyncStatistics.getFailed()).hasValue(1);
     }
 
     @Test
-    public void getReportMessage_WithIncrementedStats_ShouldGetCorrectMessage() {
+    void getReportMessage_WithIncrementedStats_ShouldGetCorrectMessage() {
         categorySyncStatistics.incrementCreated(1);
         categorySyncStatistics.incrementFailed(1);
         categorySyncStatistics.incrementUpdated(1);
@@ -78,7 +78,7 @@ public class CategorySyncStatisticsTest {
     }
 
     @Test
-    public void getNumberOfCategoriesWithMissingParents_WithEmptyMap_ShouldReturn0() {
+    void getNumberOfCategoriesWithMissingParents_WithEmptyMap_ShouldReturn0() {
         final ConcurrentHashMap<String, Set<String>> catKeysWithMissingParents = new ConcurrentHashMap<>();
         categorySyncStatistics.setCategoryKeysWithMissingParents(catKeysWithMissingParents);
 
@@ -86,7 +86,7 @@ public class CategorySyncStatisticsTest {
     }
 
     @Test
-    public void getNumberOfCategoriesWithMissingParents_WithEmptyValue_ShouldReturn0() {
+    void getNumberOfCategoriesWithMissingParents_WithEmptyValue_ShouldReturn0() {
         final ConcurrentHashMap<String, Set<String>> categoryKeysWithMissingParents = new ConcurrentHashMap<>();
         categoryKeysWithMissingParents.put("parent2", emptySet());
 
@@ -95,7 +95,7 @@ public class CategorySyncStatisticsTest {
     }
 
     @Test
-    public void getNumberOfCategoriesWithMissingParents_WithNonEmptyMap_ShouldReturnCorrectNumberOfChildren() {
+    void getNumberOfCategoriesWithMissingParents_WithNonEmptyMap_ShouldReturnCorrectNumberOfChildren() {
         final ConcurrentHashMap<String, Set<String>> categoryKeysWithMissingParents = new ConcurrentHashMap<>();
         final Set<String> firstMissingParentChildrenKeys = new HashSet<>();
         firstMissingParentChildrenKeys.add("key1");
@@ -115,7 +115,7 @@ public class CategorySyncStatisticsTest {
     }
 
     @Test
-    public void getCategoryKeysWithMissingParents_WithAnyMap_ShouldGetUnmodifiableMapCorrectly() {
+    void getCategoryKeysWithMissingParents_WithAnyMap_ShouldGetUnmodifiableMapCorrectly() {
         final ConcurrentHashMap<String, Set<String>> catKeysWithMissingParents = new ConcurrentHashMap<>();
         categorySyncStatistics.setCategoryKeysWithMissingParents(catKeysWithMissingParents);
 
@@ -128,7 +128,7 @@ public class CategorySyncStatisticsTest {
     }
 
     @Test
-    public void putMissingParentCategoryChildKey_OnAnEmptyList_ShouldAddNewParentEntryInTheMap() {
+    void putMissingParentCategoryChildKey_OnAnEmptyList_ShouldAddNewParentEntryInTheMap() {
         final String parentKey = "parentKey";
         final String childKey = "childKey";
         categorySyncStatistics.putMissingParentCategoryChildKey(parentKey, childKey);
@@ -142,7 +142,7 @@ public class CategorySyncStatisticsTest {
     }
 
     @Test
-    public void putMissingParentCategoryChildKey_OnANonEmptyListWithNewParent_ShouldAddNewParentEntryInTheMap() {
+    void putMissingParentCategoryChildKey_OnANonEmptyListWithNewParent_ShouldAddNewParentEntryInTheMap() {
         final ConcurrentHashMap<String, Set<String>> categoryKeysWithMissingParents = new ConcurrentHashMap<>();
         final Set<String> existingChildrenKeys = new HashSet<>();
         existingChildrenKeys.add("key1");
@@ -172,7 +172,7 @@ public class CategorySyncStatisticsTest {
     }
 
     @Test
-    public void putMissingParentCategoryChildKey_OnNonEmptyListWithExistingParent_ShouldAddParentToExistingEntry() {
+    void putMissingParentCategoryChildKey_OnNonEmptyListWithExistingParent_ShouldAddParentToExistingEntry() {
         final ConcurrentHashMap<String, Set<String>> categoryKeysWithMissingParents = new ConcurrentHashMap<>();
         final Set<String> existingChildrenKeys = new HashSet<>();
         existingChildrenKeys.add("key1");
@@ -195,12 +195,12 @@ public class CategorySyncStatisticsTest {
     }
 
     @Test
-    public void getMissingParentKey_OAnEmptyList_ShouldReturnAnEmptyOptional() {
+    void getMissingParentKey_OAnEmptyList_ShouldReturnAnEmptyOptional() {
         assertThat(categorySyncStatistics.getMissingParentKey("foo")).isEmpty();
     }
 
     @Test
-    public void getMissingParentKey_OnANonEmptyList_ShouldReturnCorrectParentKeyInOptional() {
+    void getMissingParentKey_OnANonEmptyList_ShouldReturnCorrectParentKeyInOptional() {
         final ConcurrentHashMap<String, Set<String>> categoryKeysWithMissingParents = new ConcurrentHashMap<>();
         final Set<String> existingChildrenKeys = new HashSet<>();
         existingChildrenKeys.add("key1");
@@ -215,14 +215,14 @@ public class CategorySyncStatisticsTest {
     }
 
     @Test
-    public void removeChildCategoryKeyFromMissingParentsMap_OnAEmptyList_ShouldNotAffectTheMap() {
+    void removeChildCategoryKeyFromMissingParentsMap_OnAEmptyList_ShouldNotAffectTheMap() {
         assertThat(categorySyncStatistics.getCategoryKeysWithMissingParents()).isEmpty();
         categorySyncStatistics.removeChildCategoryKeyFromMissingParentsMap("foo");
         assertThat(categorySyncStatistics.getCategoryKeysWithMissingParents()).isEmpty();
     }
 
     @Test
-    public void removeChildCategoryKeyFromMissingParentsMap_OnANonEmptyListButNonExistingKey_ShouldNotAffectTheMap() {
+    void removeChildCategoryKeyFromMissingParentsMap_OnANonEmptyListButNonExistingKey_ShouldNotAffectTheMap() {
         final ConcurrentHashMap<String, Set<String>> categoryKeysWithMissingParents = new ConcurrentHashMap<>();
         final Set<String> existingChildrenKeys = new HashSet<>();
         existingChildrenKeys.add("key1");
@@ -246,7 +246,7 @@ public class CategorySyncStatisticsTest {
     }
 
     @Test
-    public void removeChildCategoryKeyFromMissingParentsMap_OnANonEmptyListWithExistingKey_ShouldNotAffectTheMap() {
+    void removeChildCategoryKeyFromMissingParentsMap_OnANonEmptyListWithExistingKey_ShouldNotAffectTheMap() {
         final ConcurrentHashMap<String, Set<String>> categoryKeysWithMissingParents = new ConcurrentHashMap<>();
         final Set<String> existingChildrenKeys = new HashSet<>();
         existingChildrenKeys.add("key1");

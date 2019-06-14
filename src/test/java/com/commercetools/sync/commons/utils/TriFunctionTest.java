@@ -6,7 +6,7 @@ import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import io.sphere.sdk.products.commands.updateactions.SetSku;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
@@ -21,10 +21,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class TriFunctionTest {
+class TriFunctionTest {
 
     @Test
-    public void apply_WithUpdateActionLocaleFilter_ShouldReturnCorrectResult() {
+    void apply_WithUpdateActionLocaleFilter_ShouldReturnCorrectResult() {
         final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
             updateActionFilter = TriFunctionTest::filterEnglishNameChangesOnly;
 
@@ -69,7 +69,7 @@ public class TriFunctionTest {
     }
 
     @Test
-    public void apply_WithIntegerParams_ShouldReturnCorrectResult() {
+    void apply_WithIntegerParams_ShouldReturnCorrectResult() {
         final TriFunction<Integer, Integer, Integer, String>
             sumToString = (num1, num2, num3) -> {
                 num1 = num1 != null ? num1 : 0;

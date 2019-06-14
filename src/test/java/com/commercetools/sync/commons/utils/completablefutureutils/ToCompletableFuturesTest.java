@@ -1,6 +1,7 @@
 package com.commercetools.sync.commons.utils.completablefutureutils;
 
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -18,21 +19,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-public class ToCompletableFuturesTest {
+class ToCompletableFuturesTest {
     /**
      * Stream to List : empty values.
      * Stream to Set : empty values.
      **/
 
     @Test
-    public void empty_StreamToList_ReturnsEmptyList() {
+    void empty_StreamToList_ReturnsEmptyList() {
         final List<CompletableFuture<String>> futures =
             toCompletableFutures(Stream.<CompletionStage<String>>empty(), toList());
         assertThat(futures).isEmpty();
     }
 
     @Test
-    public void empty_StreamToSet_ReturnsEmptySet() {
+    void empty_StreamToSet_ReturnsEmptySet() {
         final Set<CompletableFuture<String>> futures = toCompletableFutures(Stream.<CompletionStage<String>>empty(),
             toSet());
         assertThat(futures).isEmpty();
@@ -45,14 +46,14 @@ public class ToCompletableFuturesTest {
      */
 
     @Test
-    public void singleNull_StreamToList_ReturnsEmptyList() {
+    void singleNull_StreamToList_ReturnsEmptyList() {
         final CompletionStage<String> nullStage = null;
         final List<CompletableFuture<String>> futures = toCompletableFutures(Stream.of(nullStage), toList());
         assertThat(futures).isEmpty();
     }
 
     @Test
-    public void singleNull_StreamToSet_ReturnsEmptySet() {
+    void singleNull_StreamToSet_ReturnsEmptySet() {
         final CompletionStage<String> nullStage = null;
         final Set<CompletableFuture<String>> futures = toCompletableFutures(Stream.of(nullStage), toSet());
         assertThat(futures).isEmpty();
@@ -63,14 +64,14 @@ public class ToCompletableFuturesTest {
      * Stream to Set : multiple null value.
      */
     @Test
-    public void multipleNull_StreamToList_ReturnsEmptyList() {
+    void multipleNull_StreamToList_ReturnsEmptyList() {
         final CompletionStage<String> nullStage = null;
         final List<CompletableFuture<String>> futures = toCompletableFutures(Stream.of(nullStage, nullStage), toList());
         assertThat(futures).isEmpty();
     }
 
     @Test
-    public void multipleNull_StreamToSet_ReturnsEmptySet() {
+    void multipleNull_StreamToSet_ReturnsEmptySet() {
         final CompletionStage<String> nullStage = null;
         final Set<CompletableFuture<String>> futures = toCompletableFutures(Stream.of(nullStage, nullStage), toSet());
         assertThat(futures).isEmpty();
@@ -82,7 +83,7 @@ public class ToCompletableFuturesTest {
      */
 
     @Test
-    public void single_StreamToList_ReturnsListOfMappedValue() {
+    void single_StreamToList_ReturnsListOfMappedValue() {
         final CompletionStage<String> completionStage = spy(completedFuture("foo"));
         final CompletableFuture<String> barFuture = completedFuture("bar");
         when(completionStage.toCompletableFuture()).thenReturn(barFuture);
@@ -96,7 +97,7 @@ public class ToCompletableFuturesTest {
     }
 
     @Test
-    public void single_StreamToSet_ReturnsSetOfMappedValue() {
+    void single_StreamToSet_ReturnsSetOfMappedValue() {
         final CompletionStage<String> completionStage = spy(completedFuture("foo"));
         final CompletableFuture<String> barFuture = completedFuture("bar");
         when(completionStage.toCompletableFuture()).thenReturn(barFuture);
@@ -115,7 +116,7 @@ public class ToCompletableFuturesTest {
      */
 
     @Test
-    public void multiple_StreamToListNoDuplicates_ReturnsListOfMappedValues() {
+    void multiple_StreamToListNoDuplicates_ReturnsListOfMappedValues() {
         final CompletionStage<String> completionStage1 = spy(completedFuture("foo"));
         final CompletableFuture<String> barFuture = completedFuture("bar");
         when(completionStage1.toCompletableFuture()).thenReturn(barFuture);
@@ -133,7 +134,7 @@ public class ToCompletableFuturesTest {
     }
 
     @Test
-    public void multiple_StreamToSetNoDuplicates_ReturnsSetOfMappedValues() {
+    void multiple_StreamToSetNoDuplicates_ReturnsSetOfMappedValues() {
         final CompletionStage<String> completionStage1 = spy(completedFuture("foo"));
         final CompletableFuture<String> barFuture = completedFuture("bar");
         when(completionStage1.toCompletableFuture()).thenReturn(barFuture);
@@ -157,7 +158,7 @@ public class ToCompletableFuturesTest {
      */
 
     @Test
-    public void multiple_StreamToListDuplicates_ReturnsListOfMappedValuesWithDuplicates() {
+    void multiple_StreamToListDuplicates_ReturnsListOfMappedValuesWithDuplicates() {
         final CompletionStage<String> completionStage = spy(completedFuture("foo"));
         final CompletableFuture<String> barFuture = completedFuture("bar");
         when(completionStage.toCompletableFuture()).thenReturn(barFuture);
@@ -171,7 +172,7 @@ public class ToCompletableFuturesTest {
     }
 
     @Test
-    public void multiple_StreamToSetDuplicates_ReturnsSetOfMappedValuesNoDuplicates() {
+    void multiple_StreamToSetDuplicates_ReturnsSetOfMappedValuesNoDuplicates() {
         final CompletionStage<String> completionStage = spy(completedFuture("foo"));
         final CompletableFuture<String> barFuture = completedFuture("bar");
         when(completionStage.toCompletableFuture()).thenReturn(barFuture);

@@ -8,7 +8,7 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.utils.CompletableFutureUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
@@ -20,10 +20,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class ProductTypeServiceImplTest {
+class ProductTypeServiceImplTest {
 
     @Test
-    public void fetchProductType_WithEmptyKey_ShouldNotFetchProductType() {
+    void fetchProductType_WithEmptyKey_ShouldNotFetchProductType() {
         // preparation
         final SphereClient sphereClient = mock(SphereClient.class);
         final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
@@ -40,7 +40,7 @@ public class ProductTypeServiceImplTest {
     }
 
     @Test
-    public void fetchProductType_WithNullKey_ShouldNotFetchProductType() {
+    void fetchProductType_WithNullKey_ShouldNotFetchProductType() {
         // preparation
         final SphereClient sphereClient = mock(SphereClient.class);
         final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
@@ -57,7 +57,7 @@ public class ProductTypeServiceImplTest {
     }
 
     @Test
-    public void fetchProductType_WithBadGateWayException_ShouldCompleteExceptionally() {
+    void fetchProductType_WithBadGateWayException_ShouldCompleteExceptionally() {
         // preparation
         final SphereClient sphereClient = mock(SphereClient.class);
         when(sphereClient.execute(any(ProductTypeQuery.class)))

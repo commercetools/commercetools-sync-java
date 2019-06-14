@@ -1,13 +1,14 @@
 package com.commercetools.sync.commons.exceptions;
 
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class DuplicateKeyExceptionTest {
+class DuplicateKeyExceptionTest {
 
     @Test
-    public void duplicateKeyException_WithMessageOnly_ShouldBuildExceptionCorrectly() {
+    void duplicateKeyException_WithMessageOnly_ShouldBuildExceptionCorrectly() {
         final String message = "foo";
 
         assertThatThrownBy(() -> {
@@ -18,7 +19,7 @@ public class DuplicateKeyExceptionTest {
     }
 
     @Test
-    public void duplicateKeyException_WithMessageAndCause_ShouldBuildExceptionCorrectly() {
+    void duplicateKeyException_WithMessageAndCause_ShouldBuildExceptionCorrectly() {
         final String message = "foo";
         final IllegalArgumentException cause = new IllegalArgumentException();
 
@@ -30,7 +31,7 @@ public class DuplicateKeyExceptionTest {
     }
 
     @Test
-    public void duplicateKeyException_WithCauseOnly_ShouldBuildExceptionCorrectly() {
+    void duplicateKeyException_WithCauseOnly_ShouldBuildExceptionCorrectly() {
         final IllegalArgumentException cause = new IllegalArgumentException();
 
         assertThatThrownBy(() -> {
