@@ -93,12 +93,6 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
         statistics.incrementFailed(failedTimes);
     }
 
-    private String getKey(@Nonnull final CartDiscount cartDiscount) {
-        //todo: SUPPORT-4443 need to be merged from name to key.
-        return Optional.ofNullable(cartDiscount.getName())
-                       .map(localizedString -> localizedString.get(Locale.ENGLISH)).orElse("");
-    }
-
     /**
      * Iterates through the whole {@code cartDiscountDrafts} list and accumulates its valid drafts to batches.
      * Every batch is then processed by {@link CartDiscountSync#processBatch(List)}.
