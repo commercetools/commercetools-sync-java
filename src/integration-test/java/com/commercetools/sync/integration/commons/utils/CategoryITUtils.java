@@ -12,6 +12,7 @@ import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.types.CustomFieldsDraft;
@@ -271,19 +272,20 @@ public final class CategoryITUtils {
     }
 
     /**
-     * Builds a {@link List} of {@link Reference} with keys in place of ids from the supplied {@link List} of
+     * Builds a {@link Set} of {@link ResourceIdentifier} with keys in place of ids from the supplied {@link List} of
      * {@link Category}.
      *
-     * @param categories a {@link List} of {@link Category} from which the {@link List} of {@link Reference} will be
-     *                   built.
-     * @return a {@link List} of {@link Reference} with keys in place of ids from the supplied {@link List} of
+     * @param categories a {@link List} of {@link Category} from which the {@link Set} of {@link ResourceIdentifier}
+     *                   will be built.
+     * @return a {@link Set} of {@link ResourceIdentifier} with keys in place of ids from the supplied {@link List} of
      *         {@link Category}.
      */
     @Nonnull
-    public static List<Reference<Category>> getReferencesWithKeys(@Nonnull final List<Category> categories) {
+    public static Set<ResourceIdentifier<Category>> geResourceIdentifiersWithKeys(
+        @Nonnull final List<Category> categories) {
         return categories.stream()
-                         .map(category -> Category.referenceOfId(category.getKey()))
-                         .collect(Collectors.toList());
+                         .map(category -> ResourceIdentifier.<Category>ofId(category.getKey()))
+                         .collect(Collectors.toSet());
     }
 
     /**
@@ -322,5 +324,8 @@ public final class CategoryITUtils {
                                         .ifPresent(category ->
                                             categoryOrderHintKeyMap.put(category.getKey(), categoryOrderHintValue)));
         return CategoryOrderHints.of(categoryOrderHintKeyMap);
+    }
+
+    private CategoryITUtils() {
     }
 }

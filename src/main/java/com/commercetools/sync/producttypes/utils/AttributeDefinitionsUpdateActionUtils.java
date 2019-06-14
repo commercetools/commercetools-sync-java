@@ -3,14 +3,13 @@ package com.commercetools.sync.producttypes.utils;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import com.commercetools.sync.commons.exceptions.DuplicateNameException;
-import com.commercetools.sync.producttypes.helpers.AttributeDefinitionCustomBuilder;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.AttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.commands.updateactions.AddAttributeDefinition;
-import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeOrder;
+import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeOrderByName;
 import io.sphere.sdk.producttypes.commands.updateactions.RemoveAttributeDefinition;
 
 import javax.annotation.Nonnull;
@@ -238,9 +237,9 @@ final class AttributeDefinitionsUpdateActionUtils {
             .filter(newName -> !existingNames.contains(newName))
             .collect(toList());
 
-        final List<AttributeDefinition> newAttributeDefinitionsOrder = newAttributeDefinitionDrafts
+        final List<String> newAttributeDefinitionsOrder = newAttributeDefinitionDrafts
             .stream()
-            .map(AttributeDefinitionCustomBuilder::of)
+            .map(AttributeDefinitionDraft::getName)
             .collect(toList());
 
         final List<String> allNames = Stream.concat(existingNames.stream(), notExistingNames.stream())
@@ -249,7 +248,7 @@ final class AttributeDefinitionsUpdateActionUtils {
         return buildUpdateAction(
             allNames,
             newNames,
-            () -> ChangeAttributeOrder.of(newAttributeDefinitionsOrder)
+            () -> ChangeAttributeOrderByName.of(newAttributeDefinitionsOrder)
         );
 
 

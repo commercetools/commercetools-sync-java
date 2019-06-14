@@ -5,7 +5,7 @@ import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.updateactions.SetMetaKeywords;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -19,12 +19,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class BuildSetMetaKeywordsUpdateActionTest {
+class BuildSetMetaKeywordsUpdateActionTest {
     private static final Product MOCK_OLD_PUBLISHED_PRODUCT = readObjectFromResource(
         PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
 
     @Test
-    public void buildSetMetaKeywordsUpdateAction_WithDifferentStagedValues_ShouldBuildUpdateAction() {
+    void buildSetMetaKeywordsUpdateAction_WithDifferentStagedValues_ShouldBuildUpdateAction() {
         final LocalizedString newKeywords = LocalizedString.of(Locale.GERMAN, "newKeywords");
         final UpdateAction<Product> setMetaKeywordsUpdateAction =
             getSetMetaKeywordsUpdateAction(MOCK_OLD_PUBLISHED_PRODUCT, newKeywords).orElse(null);
@@ -35,7 +35,7 @@ public class BuildSetMetaKeywordsUpdateActionTest {
     }
 
     @Test
-    public void buildSetMetaKeywordsUpdateAction_WithSameStagedValues_ShouldNotBuildUpdateAction() {
+    void buildSetMetaKeywordsUpdateAction_WithSameStagedValues_ShouldNotBuildUpdateAction() {
         final Optional<UpdateAction<Product>> setMetaKeywordsUpdateAction =
             getSetMetaKeywordsUpdateAction(MOCK_OLD_PUBLISHED_PRODUCT, null);
 

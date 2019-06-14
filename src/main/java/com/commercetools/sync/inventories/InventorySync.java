@@ -16,7 +16,7 @@ import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
-import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -278,7 +278,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
             return inventoryService.updateInventoryEntry(entry, beforeUpdateCallBackApplied)
                 .thenAccept(updatedInventory -> statistics.incrementUpdated())
                 .exceptionally(exception -> {
-                    final Reference<Channel> supplyChannel = draft.getSupplyChannel();
+                    final ResourceIdentifier<Channel> supplyChannel = draft.getSupplyChannel();
                     final String errorMessage = format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
                         supplyChannel != null ? supplyChannel.getId() : null);
                     handleError(errorMessage, exception, 1);
@@ -305,9 +305,11 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                 .map(creationFuture -> creationFuture
                                 .thenAccept(createdInventory -> statistics.incrementCreated())
                                 .exceptionally(exception -> {
-                                    final Reference<Channel> supplyChannel = draft.getSupplyChannel();
+                                    final ResourceIdentifier<Channel> supplyChannelIdentifier =
+                                        draft.getSupplyChannel();
                                     final String errorMessage = format(CTP_INVENTORY_ENTRY_CREATE_FAILED,
-                                            draft.getSku(), supplyChannel != null ? supplyChannel.getId() : null);
+                                        draft.getSku(),
+                                        supplyChannelIdentifier != null ? supplyChannelIdentifier.getId() : null);
                                     handleError(errorMessage, exception, 1);
                                     return null;
                                 }))

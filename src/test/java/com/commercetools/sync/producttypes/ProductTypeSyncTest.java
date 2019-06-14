@@ -7,7 +7,7 @@ import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,9 +30,10 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class ProductTypeSyncTest {
+class ProductTypeSyncTest {
+
     @Test
-    public void sync_WithErrorFetchingExistingKeys_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    void sync_WithErrorFetchingExistingKeys_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         // preparation
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
             "foo",
@@ -83,7 +84,7 @@ public class ProductTypeSyncTest {
     }
 
     @Test
-    public void sync_WithOnlyDraftsToCreate_ShouldCallBeforeCreateCallback() {
+    void sync_WithOnlyDraftsToCreate_ShouldCallBeforeCreateCallback() {
         // preparation
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraftBuilder
             .of("newProductType", "productType", "a cool type", emptyList())
@@ -109,7 +110,7 @@ public class ProductTypeSyncTest {
     }
 
     @Test
-    public void sync_WithOnlyDraftsToUpdate_ShouldOnlyCallBeforeUpdateCallback() {
+    void sync_WithOnlyDraftsToUpdate_ShouldOnlyCallBeforeUpdateCallback() {
         // preparation
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraftBuilder
             .of("newProductType", "productType", "a cool type", emptyList())

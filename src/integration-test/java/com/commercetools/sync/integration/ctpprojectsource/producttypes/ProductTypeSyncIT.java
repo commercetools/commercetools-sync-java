@@ -10,9 +10,9 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,14 +26,14 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ProductTypeSyncIT {
+class ProductTypeSyncIT {
 
     /**
      * Deletes product types from source and target CTP projects.
      * Populates source and target CTP projects with test data.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         deleteProductTypesFromTargetAndSource();
         populateSourceProject();
         populateTargetProject();
@@ -43,13 +43,13 @@ public class ProductTypeSyncIT {
      * Deletes all the test data from the {@code CTP_SOURCE_CLIENT} and the {@code CTP_SOURCE_CLIENT} projects that
      * were set up in this test class.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteProductTypesFromTargetAndSource();
     }
 
     @Test
-    public void sync_WithoutUpdates_ShouldReturnProperStatistics() {
+    void sync_WithoutUpdates_ShouldReturnProperStatistics() {
         // preparation
         final List<ProductType> productTypes = CTP_SOURCE_CLIENT
             .execute(ProductTypeQuery.of())
@@ -90,7 +90,7 @@ public class ProductTypeSyncIT {
     }
 
     @Test
-    public void sync_WithUpdates_ShouldReturnProperStatistics() {
+    void sync_WithUpdates_ShouldReturnProperStatistics() {
         // preparation
         final List<ProductType> productTypes = CTP_SOURCE_CLIENT
             .execute(ProductTypeQuery.of())

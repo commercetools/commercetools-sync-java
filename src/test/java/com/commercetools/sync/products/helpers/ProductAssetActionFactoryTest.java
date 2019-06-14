@@ -12,8 +12,8 @@ import io.sphere.sdk.products.commands.updateactions.AddAsset;
 import io.sphere.sdk.products.commands.updateactions.ChangeAssetOrder;
 import io.sphere.sdk.products.commands.updateactions.RemoveAsset;
 import io.sphere.sdk.products.commands.updateactions.SetAssetTags;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
 import java.util.List;
@@ -24,11 +24,11 @@ import static org.assertj.core.util.Lists.emptyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ProductAssetActionFactoryTest {
+class ProductAssetActionFactoryTest {
     private ProductAssetActionFactory productAssetActionFactory;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                         .build();
 
@@ -36,7 +36,7 @@ public class ProductAssetActionFactoryTest {
     }
 
     @Test
-    public void buildRemoveAssetAction_always_ShouldBuildCorrectAction() {
+    void buildRemoveAssetAction_always_ShouldBuildCorrectAction() {
         final UpdateAction<Product> action = productAssetActionFactory.buildRemoveAssetAction("foo");
         assertThat(action).isNotNull();
         assertThat(action).isInstanceOf(RemoveAsset.class);
@@ -47,7 +47,7 @@ public class ProductAssetActionFactoryTest {
     }
 
     @Test
-    public void buildChangeAssetOrderAction_always_ShouldBuildCorrectAction() {
+    void buildChangeAssetOrderAction_always_ShouldBuildCorrectAction() {
         final UpdateAction<Product> action = productAssetActionFactory.buildChangeAssetOrderAction(emptyList());
         assertThat(action).isNotNull();
         assertThat(action).isInstanceOf(ChangeAssetOrder.class);
@@ -58,7 +58,7 @@ public class ProductAssetActionFactoryTest {
     }
 
     @Test
-    public void buildAddAssetAction_always_ShouldBuildCorrectAction() {
+    void buildAddAssetAction_always_ShouldBuildCorrectAction() {
         final AssetDraft assetDraft = AssetDraftBuilder.of(emptyList(), ofEnglish("assetName"))
                                                        .build();
 
@@ -75,7 +75,7 @@ public class ProductAssetActionFactoryTest {
     }
 
     @Test
-    public void buildAssetActions_always_ShouldBuildCorrectAction() {
+    void buildAssetActions_always_ShouldBuildCorrectAction() {
         final Asset asset = mock(Asset.class);
         when(asset.getKey()).thenReturn("assetKey");
         when(asset.getName()).thenReturn(ofEnglish("assetName"));

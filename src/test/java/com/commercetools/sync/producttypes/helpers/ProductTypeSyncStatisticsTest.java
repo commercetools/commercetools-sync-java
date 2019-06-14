@@ -1,20 +1,20 @@
 package com.commercetools.sync.producttypes.helpers;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ProductTypeSyncStatisticsTest {
+class ProductTypeSyncStatisticsTest {
     private ProductTypeSyncStatistics productTypeSyncStatistics;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         productTypeSyncStatistics = new ProductTypeSyncStatistics();
     }
 
     @Test
-    public void getReportMessage_WithIncrementedStats_ShouldGetCorrectMessage() {
+    void getReportMessage_WithIncrementedStats_ShouldGetCorrectMessage() {
         productTypeSyncStatistics.incrementCreated(1);
         productTypeSyncStatistics.incrementFailed(2);
         productTypeSyncStatistics.incrementUpdated(3);
