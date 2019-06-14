@@ -15,10 +15,10 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateType;
 import io.sphere.sdk.taxcategories.TaxCategory;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +49,7 @@ import static com.commercetools.sync.products.utils.ProductReferenceReplacementU
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ProductReferenceResolverIT {
+class ProductReferenceResolverIT {
     private static ProductType productTypeSource;
     private static ProductType noKeyProductTypeSource;
 
@@ -67,8 +67,8 @@ public class ProductReferenceResolverIT {
      * Delete all product related test data from target and source projects. Then creates custom types for both
      * CTP projects categories.
      */
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         deleteProductSyncTestData(CTP_SOURCE_CLIENT);
 
@@ -99,8 +99,8 @@ public class ProductReferenceResolverIT {
      * Deletes Products and Types from target CTP projects, then it populates target CTP project with product test
      * data.
      */
-    @Before
-    public void setupTest() {
+    @BeforeEach
+    void setupTest() {
         deleteAllProducts(CTP_TARGET_CLIENT);
         deleteAllProducts(CTP_SOURCE_CLIENT);
 
@@ -123,14 +123,14 @@ public class ProductReferenceResolverIT {
         productSync = new ProductSync(syncOptions);
     }
 
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         deleteProductSyncTestData(CTP_SOURCE_CLIENT);
     }
 
     @Test
-    public void sync_withNewProductWithExistingCategoryAndProductTypeReferences_ShouldCreateProduct() {
+    void sync_withNewProductWithExistingCategoryAndProductTypeReferences_ShouldCreateProduct() {
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
             productTypeSource.toReference(), oldTaxCategory.toReference(), oldProductState.toReference(),
             categoryReferencesWithIds, createRandomCategoryOrderHints(categoryReferencesWithIds));
@@ -152,7 +152,7 @@ public class ProductReferenceResolverIT {
     }
 
     @Test
-    public void sync_withNewProductWithNoProductTypeKey_ShouldFailCreatingTheProduct() {
+    void sync_withNewProductWithNoProductTypeKey_ShouldFailCreatingTheProduct() {
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
             noKeyProductTypeSource.toReference(), oldTaxCategory.toReference(), oldProductState.toReference(),
             categoryReferencesWithIds, createRandomCategoryOrderHints(categoryReferencesWithIds));
@@ -168,8 +168,8 @@ public class ProductReferenceResolverIT {
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on ProductDraft with"
-                + " key:'%s'. Reason: %s: Failed to resolve product type reference on ProductDraft with key:'%s'."
-                + " Reason: %s",
+                + " key:'%s'. Reason: %s: Failed to resolve 'product-type' resource identifier on ProductDraft with "
+                + "key:'%s'. Reason: %s",
             productDraft.getKey(), ReferenceResolutionException.class.getCanonicalName(), productDraft.getKey(),
             BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
         assertThat(errorCallBackExceptions).hasSize(1);

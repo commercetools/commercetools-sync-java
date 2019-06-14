@@ -9,6 +9,7 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
@@ -17,14 +18,15 @@ import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import io.sphere.sdk.products.commands.updateactions.RemoveFromCategory;
 import io.sphere.sdk.products.commands.updateactions.SetCategoryOrderHint;
 import io.sphere.sdk.producttypes.ProductType;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -35,7 +37,7 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.c
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDrafts;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getReferencesWithIds;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getReferencesWithKeys;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.geResourceIdentifiersWithKeys;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
@@ -54,11 +56,11 @@ import static io.sphere.sdk.producttypes.ProductType.referenceOfId;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ProductSyncFilterIT {
+class ProductSyncFilterIT {
 
     private static ProductType productType;
     private static List<Reference<Category>> categoryReferencesWithIds;
-    private static List<Reference<Category>> categoryReferencesWithKeys;
+    private static Set<ResourceIdentifier<Category>> categoryResourceIdentifiersWithKeys;
     private ProductSyncOptionsBuilder syncOptionsBuilder;
     private List<String> errorCallBackMessages;
     private List<String> warningCallBackMessages;
@@ -69,14 +71,14 @@ public class ProductSyncFilterIT {
      * Delete all product related test data from target project. Then create custom types for the categories and a
      * productType for the products of the target CTP project.
      */
-    @BeforeClass
-    public static void setupAllTests() {
+    @BeforeAll
+    static void setupAllTests() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH,
                 OLD_CATEGORY_CUSTOM_TYPE_NAME, CTP_TARGET_CLIENT);
         final List<Category> categories = createCategories(CTP_TARGET_CLIENT, getCategoryDrafts(null, 2));
         categoryReferencesWithIds = getReferencesWithIds(categories);
-        categoryReferencesWithKeys = getReferencesWithKeys(categories);
+        categoryResourceIdentifiersWithKeys = geResourceIdentifiersWithKeys(categories);
         productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
     }
 
@@ -87,8 +89,8 @@ public class ProductSyncFilterIT {
      * {@link ProductSyncOptions} instances.
      * 4. Create a product in the target CTP project.
      */
-    @Before
-    public void setupPerTest() {
+    @BeforeEach
+    void setupPerTest() {
         clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
         syncOptionsBuilder = getProductSyncOptionsBuilder();
@@ -124,16 +126,17 @@ public class ProductSyncFilterIT {
                                         .beforeUpdateCallback(actionsCallBack);
     }
 
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
 
     @Test
-    public void sync_withChangedProductBlackListingCategories_shouldUpdateProductWithoutCategories() {
+    void sync_withChangedProductBlackListingCategories_shouldUpdateProductWithoutCategories() {
         final ProductDraft productDraft =
                 createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, referenceOfId(productType.getKey()), null,
-                    null, categoryReferencesWithKeys, createRandomCategoryOrderHints(categoryReferencesWithKeys));
+                    null, categoryResourceIdentifiersWithKeys, createRandomCategoryOrderHints(
+                        categoryResourceIdentifiersWithKeys));
 
         final ProductSyncOptions syncOptions = syncOptionsBuilder.syncFilter(ofBlackList(CATEGORIES))
                                                                  .build();
@@ -155,10 +158,11 @@ public class ProductSyncFilterIT {
     }
 
     @Test
-    public void sync_withChangedProductWhiteListingName_shouldOnlyUpdateProductName() {
+    void sync_withChangedProductWhiteListingName_shouldOnlyUpdateProductName() {
         final ProductDraft productDraft =
                 createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, referenceOfId(productType.getKey()), null,
-                    null, categoryReferencesWithKeys, createRandomCategoryOrderHints(categoryReferencesWithKeys));
+                    null, categoryResourceIdentifiersWithKeys, createRandomCategoryOrderHints(
+                        categoryResourceIdentifiersWithKeys));
 
         final ProductSyncOptions syncOptions = syncOptionsBuilder.syncFilter(ofWhiteList(NAME)).build();
 

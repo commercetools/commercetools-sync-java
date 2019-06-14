@@ -21,8 +21,8 @@ import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.utils.MoneyImpl;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -51,7 +51,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class VariantReferenceResolverTest { ;
+class VariantReferenceResolverTest { ;
     private ProductService productService;
 
     private static final String CHANNEL_KEY = "channel-key_1";
@@ -62,8 +62,8 @@ public class VariantReferenceResolverTest { ;
     /**
      * Sets up the services and the options needed for reference resolution.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         final TypeService typeService = getMockTypeService();
         final ChannelService channelService = getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY));
         productService = getMockProductService(PRODUCT_ID);
@@ -73,7 +73,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void resolveAssetsReferences_WithEmptyAssets_ShouldNotResolveAssets() {
+    void resolveAssetsReferences_WithEmptyAssets_ShouldNotResolveAssets() {
         final ProductVariantDraftBuilder productVariantDraftBuilder = ProductVariantDraftBuilder.of()
                                                                                                 .assets(emptyList());
 
@@ -86,7 +86,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void resolveAssetsReferences_WithNullAssets_ShouldNotResolveAssets() {
+    void resolveAssetsReferences_WithNullAssets_ShouldNotResolveAssets() {
         final ProductVariantDraftBuilder productVariantDraftBuilder = ProductVariantDraftBuilder.of();
 
         final ProductVariantDraftBuilder resolvedBuilder = referenceResolver
@@ -98,7 +98,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void resolveAssetsReferences_WithANullAsset_ShouldNotResolveAssets() {
+    void resolveAssetsReferences_WithANullAsset_ShouldNotResolveAssets() {
         final ProductVariantDraftBuilder productVariantDraftBuilder =
             ProductVariantDraftBuilder.of().assets(singletonList(null));
 
@@ -111,7 +111,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void resolveAssetsReferences_WithAssetReferences_ShouldResolveAssets() {
+    void resolveAssetsReferences_WithAssetReferences_ShouldResolveAssets() {
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
             .ofTypeIdAndJson("customTypeId", new HashMap<>());
 
@@ -134,7 +134,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void resolvePricesReferences_WithNullPrices_ShouldNotResolvePrices() {
+    void resolvePricesReferences_WithNullPrices_ShouldNotResolvePrices() {
         final ProductVariantDraftBuilder productVariantDraftBuilder = ProductVariantDraftBuilder.of();
 
         final ProductVariantDraftBuilder resolvedBuilder = referenceResolver
@@ -146,7 +146,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void resolvePricesReferences_WithANullPrice_ShouldNotResolvePrices() {
+    void resolvePricesReferences_WithANullPrice_ShouldNotResolvePrices() {
         final ProductVariantDraftBuilder productVariantDraftBuilder =
             ProductVariantDraftBuilder.of().prices((PriceDraft) null);
 
@@ -159,7 +159,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void resolvePricesReferences_WithPriceReferences_ShouldResolvePrices() {
+    void resolvePricesReferences_WithPriceReferences_ShouldResolvePrices() {
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
             .ofTypeIdAndJson("customTypeId", new HashMap<>());
 
@@ -182,7 +182,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void resolveAttributesReferences_WithNullAttributes_ShouldNotResolveAttributes() {
+    void resolveAttributesReferences_WithNullAttributes_ShouldNotResolveAttributes() {
         final ProductVariantDraftBuilder productVariantDraftBuilder = ProductVariantDraftBuilder.of();
 
         final ProductVariantDraftBuilder resolvedBuilder = referenceResolver
@@ -194,7 +194,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void resolveAttributesReferences_WithANullAttribute_ShouldNotResolveAttributes() {
+    void resolveAttributesReferences_WithANullAttribute_ShouldNotResolveAttributes() {
         final ProductVariantDraftBuilder productVariantDraftBuilder =
             ProductVariantDraftBuilder.of().attributes((AttributeDraft) null);
 
@@ -207,7 +207,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void resolveAttributesReferences_WithMixedReference_ShouldResolveProductReferenceAttributes() {
+    void resolveAttributesReferences_WithMixedReference_ShouldResolveProductReferenceAttributes() {
         final ObjectNode productReferenceWithRandomId = getProductReferenceWithRandomId();
         final AttributeDraft productReferenceSetAttribute =
             getProductReferenceSetAttributeDraft("foo", productReferenceWithRandomId);
@@ -248,7 +248,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void resolveAttributeReference_WithEmptyValue_ShouldNotResolveAttribute() {
+    void resolveAttributeReference_WithEmptyValue_ShouldNotResolveAttribute() {
         final AttributeDraft attributeWithEmptyValue =
             AttributeDraft.of("attributeName", JsonNodeFactory.instance.objectNode());
 
@@ -259,7 +259,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void resolveAttributeReference_WithNullValue_ShouldNotResolveAttribute() {
+    void resolveAttributeReference_WithNullValue_ShouldNotResolveAttribute() {
         final AttributeDraft attributeWithNullValue =
             AttributeDraft.of("attributeName", null);
 
@@ -270,7 +270,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void resolveAttributeReference_WithTextValue_ShouldNotResolveAttribute() {
+    void resolveAttributeReference_WithTextValue_ShouldNotResolveAttribute() {
         final AttributeDraft attributeWithTextValue =
             AttributeDraft.of("attributeName", "textValue");
 
@@ -281,7 +281,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void resolveAttributeReference_WithProductReferenceAttribute_ShouldResolveAttribute() {
+    void resolveAttributeReference_WithProductReferenceAttribute_ShouldResolveAttribute() {
         when(productService.getIdFromCacheOrFetch(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
@@ -298,7 +298,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void resolveAttributeReference_WithNonExistingProductReferenceAttribute_ShouldNotResolveAttribute() {
+    void resolveAttributeReference_WithNonExistingProductReferenceAttribute_ShouldNotResolveAttribute() {
         final ObjectNode attributeValue = getProductReferenceWithRandomId();
         final AttributeDraft productReferenceAttribute = AttributeDraft.of("attributeName", attributeValue);
 
@@ -313,7 +313,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void resolveAttributeReference_WithEmptyReferenceSetAttribute_ShouldNotResolveReferences() {
+    void resolveAttributeReference_WithEmptyReferenceSetAttribute_ShouldNotResolveReferences() {
         final ArrayNode referenceSet = JsonNodeFactory.instance.arrayNode();
 
         final AttributeDraft productReferenceAttribute = AttributeDraft.of("attributeName", referenceSet);
@@ -332,7 +332,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void resolveAttributeReference_WithCategoryReferenceSetAttribute_ShouldNotResolveReferences() {
+    void resolveAttributeReference_WithCategoryReferenceSetAttribute_ShouldNotResolveReferences() {
         final ObjectNode categoryReference = JsonNodeFactory.instance.objectNode();
         categoryReference.put("typeId", "category");
         categoryReference.put("id", UUID.randomUUID().toString());
@@ -362,7 +362,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void resolveAttributeReference_WithProductReferenceSetAttribute_ShouldResolveReferences() {
+    void resolveAttributeReference_WithProductReferenceSetAttribute_ShouldResolveReferences() {
         final ObjectNode productReferenceWithRandomId = getProductReferenceWithRandomId();
         final AttributeDraft productReferenceSetAttributeDraft =
             getProductReferenceSetAttributeDraft("foo", productReferenceWithRandomId);
@@ -385,7 +385,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void resolveAttributeReference_WithNullReferenceInSetAttribute_ShouldResolveReferences() {
+    void resolveAttributeReference_WithNullReferenceInSetAttribute_ShouldResolveReferences() {
         final ObjectNode productReference = getProductReferenceWithRandomId();
         final AttributeDraft productReferenceAttribute =
             getProductReferenceSetAttributeDraft("foo", productReference, null);
@@ -408,7 +408,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void resolveAttributeReference_WithNonExistingProductReferenceSetAttribute_ShouldNotResolveReferences() {
+    void resolveAttributeReference_WithNonExistingProductReferenceSetAttribute_ShouldNotResolveReferences() {
         when(productService.getIdFromCacheOrFetch(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
@@ -430,7 +430,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void
+    void
         resolveAttributeReference_WithSomeExistingProductReferenceSetAttribute_ShouldResolveExistingReferences() {
         when(productService.getIdFromCacheOrFetch("existingKey"))
             .thenReturn(CompletableFuture.completedFuture(Optional.of("existingId")));
@@ -460,20 +460,20 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void isProductReference_WithEmptyValue_ShouldReturnFalse() {
+    void isProductReference_WithEmptyValue_ShouldReturnFalse() {
         final AttributeDraft attributeWithEmptyValue =
             AttributeDraft.of("attributeName", JsonNodeFactory.instance.objectNode());
         assertThat(VariantReferenceResolver.isProductReference(attributeWithEmptyValue.getValue())).isFalse();
     }
 
     @Test
-    public void isProductReference_WithTextAttribute_ShouldReturnFalse() {
+    void isProductReference_WithTextAttribute_ShouldReturnFalse() {
         final AttributeDraft textAttribute = AttributeDraft.of("attributeName", "attributeValue");
         assertThat(VariantReferenceResolver.isProductReference(textAttribute.getValue())).isFalse();
     }
 
     @Test
-    public void isProductReference_WithNonReferenceAttribute_ShouldReturnFalse() {
+    void isProductReference_WithNonReferenceAttribute_ShouldReturnFalse() {
         final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
         attributeValue.put("anyString", "anyValue");
         final AttributeDraft attribute = AttributeDraft.of("attributeName", attributeValue);
@@ -481,7 +481,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void isProductReference_WithCategoryReferenceAttribute_ShouldReturnFalse() {
+    void isProductReference_WithCategoryReferenceAttribute_ShouldReturnFalse() {
         final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
         attributeValue.put("typeId", "category");
         attributeValue.put("id", UUID.randomUUID().toString());
@@ -490,14 +490,14 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void isProductReference_WithProductReferenceAttribute_ShouldReturnTrue() {
+    void isProductReference_WithProductReferenceAttribute_ShouldReturnTrue() {
         final ObjectNode attributeValue = getProductReferenceWithRandomId();
         final AttributeDraft categoryReferenceAttribute = AttributeDraft.of("attributeName", attributeValue);
         assertThat(VariantReferenceResolver.isProductReference(categoryReferenceAttribute.getValue())).isTrue();
     }
 
     @Test
-    public void getResolvedIdFromKeyInReference_WithEmptyValue_ShouldGetEmptyId() {
+    void getResolvedIdFromKeyInReference_WithEmptyValue_ShouldGetEmptyId() {
         final AttributeDraft attributeWithEmptyValue =
             AttributeDraft.of("attributeName", JsonNodeFactory.instance.objectNode());
         final Optional<String> optionalId =
@@ -508,7 +508,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void getResolvedIdFromKeyInReference_WithTextAttribute_ShouldGetEmptyId() {
+    void getResolvedIdFromKeyInReference_WithTextAttribute_ShouldGetEmptyId() {
         final AttributeDraft textAttribute = AttributeDraft.of("attributeName", "attributeValue");
         final Optional<String> optionalId = referenceResolver.getResolvedIdFromKeyInReference(textAttribute.getValue())
                                                              .toCompletableFuture().join();
@@ -516,7 +516,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void getResolvedIdFromKeyInReference_WithNonReferenceAttribute_ShouldGetEmptyId() {
+    void getResolvedIdFromKeyInReference_WithNonReferenceAttribute_ShouldGetEmptyId() {
         final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
         attributeValue.put("anyString", "anyValue");
         final AttributeDraft attribute = AttributeDraft.of("attributeName", attributeValue);
@@ -527,7 +527,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void getResolvedIdFromKeyInReference_WithNonExistingProductReferenceAttribute_ShouldGetEmptyId() {
+    void getResolvedIdFromKeyInReference_WithNonExistingProductReferenceAttribute_ShouldGetEmptyId() {
         when(productService.getIdFromCacheOrFetch(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
@@ -540,7 +540,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void getResolvedIdFromKeyInReference_WithProductReferenceAttributeWithNullIdField_ShouldGetEmptyId() {
+    void getResolvedIdFromKeyInReference_WithProductReferenceAttributeWithNullIdField_ShouldGetEmptyId() {
         final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
         attributeValue.put("typeId", "product");
         final AttributeDraft productReferenceAttribute = AttributeDraft.of("attributeName", attributeValue);
@@ -552,7 +552,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void getResolvedIdFromKeyInReference_WithProductReferenceAttributeWithIdField_ShouldGetId() {
+    void getResolvedIdFromKeyInReference_WithProductReferenceAttributeWithIdField_ShouldGetId() {
         final ObjectNode attributeValue = getProductReferenceWithRandomId();
         final AttributeDraft productReferenceAttribute = AttributeDraft.of("attributeName", attributeValue);
 
@@ -563,7 +563,7 @@ public class VariantReferenceResolverTest { ;
     }
 
     @Test
-    public void resolveReferences_WithNoPriceReferences_ShouldResolveAttributeReferences() {
+    void resolveReferences_WithNoPriceReferences_ShouldResolveAttributeReferences() {
         final ObjectNode productReferenceWithRandomId = getProductReferenceWithRandomId();
         final AttributeDraft productReferenceSetAttribute =
             getProductReferenceSetAttributeDraft("foo", productReferenceWithRandomId);

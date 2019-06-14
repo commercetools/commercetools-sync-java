@@ -9,9 +9,9 @@ import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.inventory.commands.updateactions.ChangeQuantity;
 import io.sphere.sdk.inventory.commands.updateactions.SetExpectedDelivery;
 import io.sphere.sdk.inventory.commands.updateactions.SetRestockableInDays;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
@@ -36,7 +36,7 @@ import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class InventoryServiceImplIT {
+class InventoryServiceImplIT {
 
     private InventoryService inventoryService;
 
@@ -44,8 +44,8 @@ public class InventoryServiceImplIT {
      * Deletes inventories and supply channels from source and target CTP projects.
      * Populates target CTP project with test data.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         deleteInventoryEntriesFromTargetAndSource();
         deleteTypesFromTargetAndSource();
         deleteChannelsFromTargetAndSource();
@@ -56,15 +56,15 @@ public class InventoryServiceImplIT {
     /**
      * Cleans up the target and source test data that were built in this test class.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteInventoryEntriesFromTargetAndSource();
         deleteTypesFromTargetAndSource();
         deleteChannelsFromTargetAndSource();
     }
 
     @Test
-    public void fetchInventoryEntriesBySku_ShouldReturnCorrectInventoryEntriesWithoutReferenceExpansion() {
+    void fetchInventoryEntriesBySku_ShouldReturnCorrectInventoryEntriesWithoutReferenceExpansion() {
         final Set<String> skus = singleton(SKU_1);
         final List<InventoryEntry> result = inventoryService.fetchInventoryEntriesBySkus(skus)
                                                             .toCompletableFuture()
@@ -85,7 +85,7 @@ public class InventoryServiceImplIT {
     }
 
     @Test
-    public void createInventoryEntry_ShouldCreateCorrectInventoryEntry() {
+    void createInventoryEntry_ShouldCreateCorrectInventoryEntry() {
         //prepare draft and create
         final InventoryEntryDraft inventoryEntryDraft = InventoryEntryDraftBuilder
             .of(SKU_2, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, null)
@@ -107,7 +107,7 @@ public class InventoryServiceImplIT {
     }
 
     @Test
-    public void updateInventoryEntry_ShouldUpdateInventoryEntry() {
+    void updateInventoryEntry_ShouldUpdateInventoryEntry() {
         //fetch existing inventory entry and assert its state
         final Optional<InventoryEntry> existingEntryOptional =
             getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null);

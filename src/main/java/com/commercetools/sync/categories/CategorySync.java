@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.categories.helpers.CategoryReferenceResolver.getParentCategoryKey;
 import static com.commercetools.sync.categories.utils.CategorySyncUtils.buildActions;
+import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.areResourceIdentifiersEqual;
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.toResourceIdentifierIfNotNull;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
@@ -543,7 +544,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      */
     static boolean requiresChangeParentUpdateAction(@Nonnull final Category category,
                                                     @Nonnull final CategoryDraft categoryDraft) {
-        return !Objects.equals(category.getParent(), categoryDraft.getParent());
+        return !areResourceIdentifiersEqual(category.getParent(), categoryDraft.getParent());
     }
 
     /**

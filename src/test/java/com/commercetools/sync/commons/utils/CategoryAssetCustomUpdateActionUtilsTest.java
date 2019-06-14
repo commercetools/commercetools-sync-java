@@ -10,21 +10,21 @@ import io.sphere.sdk.categories.commands.updateactions.SetAssetCustomType;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Asset;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 
+import static com.commercetools.sync.commons.asserts.actions.AssertionsForUpdateActions.assertThat;
 import static io.sphere.sdk.models.ResourceIdentifier.ofId;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
-import static com.commercetools.sync.commons.asserts.actions.AssertionsForUpdateActions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class CategoryAssetCustomUpdateActionUtilsTest {
+class CategoryAssetCustomUpdateActionUtilsTest {
 
     @Test
-    public void buildTypedSetCustomTypeUpdateAction_WithCategoryAsset_ShouldBuildCategoryUpdateAction() {
+    void buildTypedSetCustomTypeUpdateAction_WithCategoryAsset_ShouldBuildCategoryUpdateAction() {
         final Asset asset = mock(Asset.class);
         when(asset.getKey()).thenReturn("assetKey");
         final String newCustomTypeId = "key";
@@ -42,7 +42,7 @@ public class CategoryAssetCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildRemoveCustomTypeAction_WithCategoryAsset_ShouldBuildChannelUpdateAction() {
+    void buildRemoveCustomTypeAction_WithCategoryAsset_ShouldBuildChannelUpdateAction() {
         final String assetKey = "assetKey";
 
         final UpdateAction<Category> updateAction =
@@ -54,7 +54,7 @@ public class CategoryAssetCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetCustomFieldAction_WithCategoryAsset_ShouldBuildCategoryUpdateAction() {
+    void buildSetCustomFieldAction_WithCategoryAsset_ShouldBuildCategoryUpdateAction() {
         final JsonNode customFieldValue = JsonNodeFactory.instance.textNode("foo");
         final String customFieldName = "name";
         final String assetKey = "assetKey";

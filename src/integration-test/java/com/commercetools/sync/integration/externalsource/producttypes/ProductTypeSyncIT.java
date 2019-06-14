@@ -9,6 +9,7 @@ import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.models.LocalizedEnumValue;
 import io.sphere.sdk.models.TextInputHint;
@@ -27,11 +28,12 @@ import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
 import io.sphere.sdk.producttypes.commands.ProductTypeUpdateCommand;
+import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeOrderByName;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.queries.PagedQueryResult;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -68,14 +70,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-public class ProductTypeSyncIT {
+class ProductTypeSyncIT {
 
     /**
      * Deletes product types from the target CTP project.
      * Populates target CTP project with test data.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         deleteProductTypes(CTP_TARGET_CLIENT);
         populateTargetProject();
     }
@@ -84,13 +86,13 @@ public class ProductTypeSyncIT {
      * Deletes all the test data from the {@code CTP_TARGET_CLIENT} project that
      * were set up in this test class.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteProductTypes(CTP_TARGET_CLIENT);
     }
 
     @Test
-    public void sync_WithUpdatedProductType_ShouldUpdateProductType() {
+    void sync_WithUpdatedProductType_ShouldUpdateProductType() {
         // preparation
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
             PRODUCT_TYPE_KEY_1,
@@ -124,7 +126,7 @@ public class ProductTypeSyncIT {
     }
 
     @Test
-    public void sync_WithNewProductType_ShouldCreateProductType() {
+    void sync_WithNewProductType_ShouldCreateProductType() {
         // preparation
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
             PRODUCT_TYPE_KEY_2,
@@ -159,7 +161,7 @@ public class ProductTypeSyncIT {
     }
 
     @Test
-    public void sync_WithUpdatedProductType_WithNewAttribute_ShouldUpdateProductTypeAddingAttribute() {
+    void sync_WithUpdatedProductType_WithNewAttribute_ShouldUpdateProductTypeAddingAttribute() {
         // preparation
         // Adding ATTRIBUTE_DEFINITION_DRAFT_3
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
@@ -193,7 +195,7 @@ public class ProductTypeSyncIT {
     }
 
     @Test
-    public void sync_WithUpdatedProductType_WithoutOldAttribute_ShouldUpdateProductTypeRemovingAttribute() {
+    void sync_WithUpdatedProductType_WithoutOldAttribute_ShouldUpdateProductTypeRemovingAttribute() {
         // Removing ATTRIBUTE_DEFINITION_DRAFT_2
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
             PRODUCT_TYPE_KEY_1,
@@ -222,7 +224,7 @@ public class ProductTypeSyncIT {
     }
 
     @Test
-    public void sync_WithUpdatedProductType_ChangingAttributeOrder_ShouldUpdateProductTypeChangingAttributeOrder() {
+    void sync_WithUpdatedProductType_ChangingAttributeOrder_ShouldUpdateProductTypeChangingAttributeOrder() {
         // Changing order from ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2 to
         // ATTRIBUTE_DEFINITION_DRAFT_2, ATTRIBUTE_DEFINITION_DRAFT_1
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
@@ -232,8 +234,14 @@ public class ProductTypeSyncIT {
             asList(ATTRIBUTE_DEFINITION_DRAFT_2, ATTRIBUTE_DEFINITION_DRAFT_1)
         );
 
+        final ArrayList<UpdateAction<ProductType>> builtUpdateActions = new ArrayList<>();
+
         final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
+            .beforeUpdateCallback((actions, draft, oldProductType) -> {
+                builtUpdateActions.addAll(actions);
+                return actions;
+            })
             .build();
 
         final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
@@ -252,10 +260,15 @@ public class ProductTypeSyncIT {
                     ATTRIBUTE_DEFINITION_DRAFT_2,
                     ATTRIBUTE_DEFINITION_DRAFT_1)
             ));
+
+        assertThat(builtUpdateActions).containsExactly(
+            ChangeAttributeOrderByName.of(
+                asList(ATTRIBUTE_DEFINITION_DRAFT_2.getName(), ATTRIBUTE_DEFINITION_DRAFT_1.getName())
+            ));
     }
 
     @Test
-    public void sync_WithUpdatedAttributeDefinition_ShouldUpdateProductTypeUpdatingAttribute() {
+    void sync_WithUpdatedAttributeDefinition_ShouldUpdateProductTypeUpdatingAttribute() {
         // Updating ATTRIBUTE_DEFINITION_1 (name = "attr_name_1") changing the label, attribute constraint, input tip,
         // input hint, isSearchable fields.
         final AttributeDefinitionDraft attributeDefinitionDraftUpdated = AttributeDefinitionDraftBuilder
@@ -298,7 +311,7 @@ public class ProductTypeSyncIT {
     }
 
     @Test
-    public void sync_WithoutKey_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    void sync_WithoutKey_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         // Draft without key throws an error
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
             null,
@@ -340,7 +353,7 @@ public class ProductTypeSyncIT {
     }
 
     @Test
-    public void sync_WithNullDraft_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    void sync_WithNullDraft_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         // preparation
         final ProductTypeDraft newProductTypeDraft = null;
         final List<String> errorMessages = new ArrayList<>();
@@ -376,7 +389,7 @@ public class ProductTypeSyncIT {
     }
 
     @Test
-    public void sync_WithErrorCreatingTheProductType_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    void sync_WithErrorCreatingTheProductType_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         // preparation
 
         // Invalid attribute definition due to having the same name as an already existing one but different
@@ -431,7 +444,7 @@ public class ProductTypeSyncIT {
     }
 
     @Test
-    public void sync_WithErrorUpdatingTheProductType_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    void sync_WithErrorUpdatingTheProductType_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         // preparation
 
         // Invalid attribute definition due to having an invalid name.
@@ -484,7 +497,7 @@ public class ProductTypeSyncIT {
     }
 
     @Test
-    public void sync_WithoutName_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    void sync_WithoutName_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         // preparation
         // Draft without "name" throws a commercetools exception because "name" is a required value
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
@@ -531,7 +544,7 @@ public class ProductTypeSyncIT {
     }
 
     @Test
-    public void sync_WithoutAttributeType_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    void sync_WithoutAttributeType_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         // preparation
         final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
             .of(
@@ -590,7 +603,7 @@ public class ProductTypeSyncIT {
     }
 
     @Test
-    public void syncDrafts_WithConcurrentModificationException_ShouldRetryToUpdateNewProductTypeWithSuccess() {
+    void syncDrafts_WithConcurrentModificationException_ShouldRetryToUpdateNewProductTypeWithSuccess() {
         // Preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdate();
 
@@ -644,7 +657,7 @@ public class ProductTypeSyncIT {
     }
 
     @Test
-    public void syncDrafts_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
+    void syncDrafts_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
         // Preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
 
@@ -708,7 +721,7 @@ public class ProductTypeSyncIT {
     }
 
     @Test
-    public void syncDrafts_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
+    void syncDrafts_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
         // Preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
 
@@ -771,7 +784,7 @@ public class ProductTypeSyncIT {
     }
 
     @Test
-    public void sync_WithSeveralBatches_ShouldReturnProperStatistics() {
+    void sync_WithSeveralBatches_ShouldReturnProperStatistics() {
         // Default batch size is 50 (check ProductTypeSyncOptionsBuilder) so we have 2 batches of 50
         final List<ProductTypeDraft> productTypeDrafts = IntStream
             .range(0, 100)
@@ -797,7 +810,7 @@ public class ProductTypeSyncIT {
     }
 
     @Test
-    public void sync_WithSetOfEnumsAndSetOfLenumsChanges_ShouldUpdateProductType() {
+    void sync_WithSetOfEnumsAndSetOfLenumsChanges_ShouldUpdateProductType() {
         // preparation
         final AttributeDefinitionDraft withSetOfEnumsOld = AttributeDefinitionDraftBuilder
             .of(
