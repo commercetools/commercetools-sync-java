@@ -403,7 +403,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.1.1/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.2.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -440,6 +440,13 @@
   
     <label class="md-nav__title" for="__toc">Table of contents</label>
     <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#120-jun-14-2019" title="1.2.0 -  Jun 14, 2019" class="md-nav__link">
+    1.2.0 -  Jun 14, 2019
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#111-jan-16-2019" title="1.1.1 -  Jan 16, 2019" class="md-nav__link">
@@ -655,6 +662,13 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#120-jun-14-2019" title="1.2.0 -  Jun 14, 2019" class="md-nav__link">
+    1.2.0 -  Jun 14, 2019
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#111-jan-16-2019" title="1.1.1 -  Jan 16, 2019" class="md-nav__link">
     1.1.1 -  Jan 16, 2019
   </a>
@@ -849,15 +863,58 @@
 -->
 
 <!--
-
-### 1.2.0 -  Dec 20, 2018
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.1.1...1.2.0) |
-[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.2.0/) | 
-[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.2.0)
-
+### 1.3.0 -  Jun 24, 2019
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.2.0...1.3.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.3.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.3.0)
 
 -->
 
+<h3 id="120-jun-14-2019">1.2.0 -  Jun 14, 2019<a class="headerlink" href="#120-jun-14-2019" title="Permanent link">&para;</a></h3>
+<p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.1.1...1.2.0">Commits</a> |
+<a href="https://commercetools.github.io/commercetools-sync-java/v/1.2.0/">Javadoc</a> | 
+<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/1.2.0">Jar</a></p>
+<ul>
+<li>
+<p>🚧 <strong>Breaking Changes</strong> (2)</p>
+<ul>
+<li><strong>ProductType Sync</strong> - Removed the unneeded <code>AttributeDefinitionCustomBuilder</code> which was an exposed but internal helper. <a href="https://github.com/commercetools/commercetools-sync-java/issues/377">#377</a>. </li>
+<li><strong>Commons</strong> - <code>SyncUtils#replaceReferenceIdWithKey</code> now renamed to <code>SyncUtils#getReferenceWithKeyReplaced</code>. <a href="https://github.com/commercetools/commercetools-sync-java/issues/394">#394</a></li>
+</ul>
+</li>
+<li>
+<p>🎉 <strong>New Features</strong> (2)</p>
+<ul>
+<li><strong>Commons</strong> - Added the new <code>CommonTypeUpdateActionUtils#buildUpdateActionForReferences</code> which is used for comapring references/resourceIdentifiers and buiding an update action if needed. <a href="https://github.com/commercetools/commercetools-sync-java/issues/394">#394</a></li>
+<li><strong>Commons</strong> - Added the new <code>SyncUtils#getResourceIdentifierWithKeyReplaced</code> util. <a href="https://github.com/commercetools/commercetools-sync-java/issues/394">#394</a></li>
+</ul>
+</li>
+<li>
+<p>🐞 <strong>Bug Fixes</strong> (1)</p>
+<ul>
+<li><strong>Commons</strong> - Fixed a bug where references and resource identifiers were not being compared correctly. <a href="https://github.com/commercetools/commercetools-sync-java/issues/394">#394</a></li>
+</ul>
+</li>
+<li>
+<p>🛠️ <strong>Enhancements</strong> (13)</p>
+<ul>
+<li><strong>Commons</strong> - Bumped commercetools-jvm-sdk to version <a href="http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_43_0">1.43.0</a>.</li>
+<li><strong>Commons</strong> - Bumped <code>mockito</code> to 2.27.0.</li>
+<li><strong>Commons</strong> - Bumped <code>assertj</code> to 3.12.2.</li>
+<li><strong>Commons</strong> - Bumped <code>org.junit.jupiter:junit-jupiter-api</code> to 5.4.2.</li>
+<li><strong>Commons</strong> - Bumped <code>org.junit.jupiter:junit-jupiter-engine</code> to 5.4.2.</li>
+<li><strong>Commons</strong> - Bumped <code>org.junit.jupiter:junit-jupiter-params</code> to 5.4.2.</li>
+<li><strong>Commons</strong> - Bumped <code>org.ajoberstar.git-publish</code> to 2.1.1.</li>
+<li><strong>Commons</strong> - Bumped <code>org.ajoberstar.grgit</code> to 3.1.1.</li>
+<li><strong>Commons</strong> - Bumped <code>com.github.ben-manes.versions</code> to 0.21.0.</li>
+<li><strong>Commons</strong> - Bumped gradle checkstyle plugin to 8.2.</li>
+<li><strong>Commons</strong> - Bumped mockito dependency to 2.28.2.</li>
+<li><strong>Commons</strong> - Bumped JaCoCo dependency to 0.8.4.</li>
+<li><strong>Commons</strong> - Bumped gradle to version <a href="https://docs.gradle.org/5.4.1/release-notes.html">gradle-5.4.1</a></li>
+<li><strong>Commons</strong> - Bumped <code>com.adarshr.test-logger</code> to 1.7.0.</li>
+</ul>
+</li>
+</ul>
 <h3 id="111-jan-16-2019">1.1.1 -  Jan 16, 2019<a class="headerlink" href="#111-jan-16-2019" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.1.0...1.1.1">Commits</a> |
 <a href="https://commercetools.github.io/commercetools-sync-java/v/1.1.1/">Javadoc</a> | 
@@ -951,7 +1008,6 @@ If you want, you can apply it explicitly on the result of the <code>..#buildActi
 <li><strong>Commons</strong> - Bumped <code>org.junit.jupiter:junit-jupiter-engine</code> to 5.3.2.</li>
 <li><strong>Commons</strong> - Bumped <code>org.junit.jupiter:junit-jupiter-params</code> to 5.3.2.</li>
 <li><strong>Commons</strong> - Bumped <code>org.ajoberstar.git-publish</code> to 2.0.0.</li>
-<li><strong>Commons</strong> - Bumped <code>com.adarshr.test-logger</code> to 1.6.0.</li>
 <li><strong>Commons</strong> - Bumped <code>org.ajoberstar.grgit</code> to 3.0.0.</li>
 <li><strong>Commons</strong> - Bumped gradle to version <a href="https://docs.gradle.org/5.0/release-notes.html">gradle-5.0</a></li>
 <li><strong>Type Sync</strong> - Added benchmarks for the <code>type</code> sync to be able to compare the performance of the sync with the future releases. <a href="https://github.com/commercetools/commercetools-sync-java/issues/300">#300</a></li>
