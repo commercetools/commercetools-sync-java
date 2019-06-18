@@ -73,7 +73,7 @@ public class CartDiscountServiceImpl extends BaseService<CartDiscountDraft, Cart
 
 
         return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), cartDiscountQuery, identity())
-                            .thenApply(types -> types
+                            .thenApply(cartDiscounts -> cartDiscounts
                                 .stream()
                                 .flatMap(List::stream)
                                 .peek(cartDiscount -> keyToIdCache.put(getKey(cartDiscount), cartDiscount.getId()))
