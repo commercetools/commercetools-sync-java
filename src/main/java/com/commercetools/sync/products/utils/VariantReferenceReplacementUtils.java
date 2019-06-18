@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.PriceDraftBuilder;
@@ -28,7 +29,8 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.AssetReferenceReplacementUtils.replaceAssetsReferencesIdsWithKeys;
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.replaceCustomTypeIdWithKeys;
-import static com.commercetools.sync.commons.utils.SyncUtils.replaceReferenceIdWithKey;
+import static com.commercetools.sync.commons.utils.SyncUtils.getReferenceWithKeyReplaced;
+import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKeyReplaced;
 import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_TYPE_ID_FIELD;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
@@ -81,8 +83,9 @@ public final class VariantReferenceReplacementUtils {
      */
     @Nonnull
     static List<PriceDraft> replacePricesReferencesIdsWithKeys(@Nonnull final ProductVariant productVariant) {
+
         return productVariant.getPrices().stream().map(price -> {
-            final Reference<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(price);
+            final ResourceIdentifier<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(price);
             final CustomFieldsDraft customFieldsDraftWithKey = replaceCustomTypeIdWithKeys(price);
 
             return PriceDraftBuilder.of(price)
@@ -94,21 +97,23 @@ public final class VariantReferenceReplacementUtils {
 
     /**
      * Takes a price that is supposed to have its channel reference expanded in order to be able to fetch the key
-     * and replace the reference id with the corresponding key and then return a new {@link Channel} {@link Reference}
-     * containing the key in the id field.
+     * and replace the reference id with the corresponding key and then return a new {@link Channel}
+     * {@link ResourceIdentifier} containing the key in the id field.
      *
      * <p><b>Note:</b> The Channel reference should be expanded for the {@code price}, otherwise the reference
      * id will not be replaced with the key and will still have the id in place.
      *
      * @param price the price to replace its channel reference id with the key.
      *
-     * @return a new {@link Channel} {@link Reference} containing the key in the id field.
+     * @return a new {@link Channel} {@link ResourceIdentifier} containing the key in the id field.
      */
     @Nullable
     @SuppressWarnings("ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
-    static Reference<Channel> replaceChannelReferenceIdWithKey(@Nonnull final Price price) {
+    static ResourceIdentifier<Channel> replaceChannelReferenceIdWithKey(@Nonnull final Price price) {
+
         final Reference<Channel> priceChannel = price.getChannel();
-        return replaceReferenceIdWithKey(priceChannel, () -> Channel.referenceOfId(priceChannel.getObj().getKey()));
+        return getResourceIdentifierWithKeyReplaced(priceChannel,
+            () -> ResourceIdentifier.ofId(priceChannel.getObj().getKey()));
     }
 
     /**
@@ -139,8 +144,10 @@ public final class VariantReferenceReplacementUtils {
     @SuppressWarnings("ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
     static Optional<Reference<Product>> replaceAttributeReferenceIdWithKey(@Nonnull final Attribute attribute) {
         return getProductReference(attribute)
-            .map(productReference -> replaceReferenceIdWithKey(productReference,
-                () -> Product.referenceOfId(productReference.getObj().getKey())));
+            .map(productReference ->
+                getReferenceWithKeyReplaced(productReference,
+                    () -> Product.referenceOfId(productReference.getObj().getKey()))
+            );
     }
 
     private static Optional<Reference<Product>> getProductReference(@Nonnull final Attribute attribute) {
@@ -156,8 +163,9 @@ public final class VariantReferenceReplacementUtils {
         return getProductReferenceSet(attribute).map(productReferenceSet ->
             productReferenceSet.stream()
                                .map(productReference ->
-                                   replaceReferenceIdWithKey(productReference,
-                                       () -> Product.referenceOfId(productReference.getObj().getKey())))
+                                   getReferenceWithKeyReplaced(productReference,
+                                       () -> Product.referenceOfId(productReference.getObj().getKey()))
+                               )
                                .collect(toSet()));
     }
 

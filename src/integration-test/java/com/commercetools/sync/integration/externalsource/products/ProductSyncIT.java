@@ -15,6 +15,7 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.errors.DuplicateFieldError;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Product;
@@ -37,10 +38,10 @@ import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateType;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import io.sphere.sdk.utils.CompletableFutureUtils;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -48,6 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -58,7 +60,7 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.c
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDrafts;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getReferencesWithIds;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getReferencesWithKeys;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.geResourceIdentifiersWithKeys;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.replaceCategoryOrderHintCategoryIdsWithKeys;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
@@ -86,12 +88,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-public class ProductSyncIT {
+class ProductSyncIT {
     private static ProductType productType;
     private static TaxCategory targetTaxCategory;
     private static State targetProductState;
     private static List<Reference<Category>> categoryReferencesWithIds;
-    private static List<Reference<Category>> categoryReferencesWithKeys;
+    private static Set<ResourceIdentifier<Category>> categoryResourceIdentifiersWithKeys;
     private static CategoryOrderHints categoryOrderHintsWithIds;
     private static CategoryOrderHints categoryOrderHintsWithKeys;
     private ProductSyncOptions syncOptions;
@@ -104,8 +106,8 @@ public class ProductSyncIT {
      * Delete all product related test data from the target project. Then creates for the target CTP project price
      * a product type, a tax category, 2 categories, custom types for the categories and a product state.
      */
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH,
             OLD_CATEGORY_CUSTOM_TYPE_NAME, CTP_TARGET_CLIENT);
@@ -114,7 +116,7 @@ public class ProductSyncIT {
         final List<CategoryDraft> categoryDrafts = getCategoryDrafts(null, 2);
         final List<Category> categories = createCategories(CTP_TARGET_CLIENT, categoryDrafts);
         categoryReferencesWithIds = getReferencesWithIds(categories);
-        categoryReferencesWithKeys = getReferencesWithKeys(categories);
+        categoryResourceIdentifiersWithKeys = geResourceIdentifiersWithKeys(categories);
         categoryOrderHintsWithIds = createRandomCategoryOrderHints(categoryReferencesWithIds);
         categoryOrderHintsWithKeys = replaceCategoryOrderHintCategoryIdsWithKeys(categoryOrderHintsWithIds,
             categories);
@@ -128,8 +130,8 @@ public class ProductSyncIT {
      * Deletes Products and Types from the target CTP project, then it populates target CTP project with product test
      * data.
      */
-    @Before
-    public void setupTest() {
+    @BeforeEach
+    void setupTest() {
         clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
         syncOptions = buildSyncOptions();
@@ -156,13 +158,13 @@ public class ProductSyncIT {
                                         .build();
     }
 
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
 
     @Test
-    public void sync_withNewProduct_shouldCreateProduct() {
+    void sync_withNewProduct_shouldCreateProduct() {
         final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             ProductType.referenceOfId(productType.getKey()))
             .taxCategory(null)
@@ -179,7 +181,7 @@ public class ProductSyncIT {
     }
 
     @Test
-    public void sync_withNewProductAndBeforeCreateCallback_shouldCreateProduct() {
+    void sync_withNewProductAndBeforeCreateCallback_shouldCreateProduct() {
         final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
                 ProductType.referenceOfId(productType.getKey()))
                 .taxCategory(null)
@@ -224,7 +226,7 @@ public class ProductSyncIT {
     }
 
     @Test
-    public void sync_withNewProductWithExistingSlug_shouldNotCreateProduct() {
+    void sync_withNewProductWithExistingSlug_shouldNotCreateProduct() {
         final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             ProductType.referenceOfId(productType.getKey()))
             .taxCategory(null)
@@ -271,11 +273,11 @@ public class ProductSyncIT {
     }
 
     @Test
-    public void sync_withEqualProduct_shouldNotUpdateProduct() {
+    void sync_withEqualProduct_shouldNotUpdateProduct() {
         final ProductDraft productDraft =
             createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH, ProductType.referenceOfId(productType.getKey()),
                 TaxCategory.referenceOfId(targetTaxCategory.getKey()), State.referenceOfId(targetProductState.getKey()),
-                categoryReferencesWithKeys, categoryOrderHintsWithKeys);
+                categoryResourceIdentifiersWithKeys, categoryOrderHintsWithKeys);
 
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics =
@@ -288,11 +290,11 @@ public class ProductSyncIT {
     }
 
     @Test
-    public void sync_withChangedProduct_shouldUpdateProduct() {
+    void sync_withChangedProduct_shouldUpdateProduct() {
         final ProductDraft productDraft =
             createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, ProductType.referenceOfId(productType.getKey()),
                 TaxCategory.referenceOfId(targetTaxCategory.getKey()), State.referenceOfId(targetProductState.getKey()),
-                categoryReferencesWithKeys, categoryOrderHintsWithKeys);
+                categoryResourceIdentifiersWithKeys, categoryOrderHintsWithKeys);
 
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics =
@@ -305,7 +307,7 @@ public class ProductSyncIT {
     }
 
     @Test
-    public void sync_withChangedProductButConcurrentModificationException_shouldRetryAndUpdateProduct() {
+    void sync_withChangedProductButConcurrentModificationException_shouldRetryAndUpdateProduct() {
         // preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdate();
 
@@ -321,7 +323,7 @@ public class ProductSyncIT {
         final ProductDraft productDraft =
             createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, ProductType.referenceOfId(productType.getKey()),
                 TaxCategory.referenceOfId(targetTaxCategory.getKey()), State.referenceOfId(targetProductState.getKey()),
-                categoryReferencesWithKeys, categoryOrderHintsWithKeys);
+                categoryResourceIdentifiersWithKeys, categoryOrderHintsWithKeys);
 
         final ProductSyncStatistics syncStatistics =
                 executeBlocking(spyProductSync.sync(singletonList(productDraft)));
@@ -345,7 +347,7 @@ public class ProductSyncIT {
     }
 
     @Test
-    public void syncDrafts_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
+    void syncDrafts_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
         // preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
 
@@ -362,7 +364,7 @@ public class ProductSyncIT {
         final ProductDraft productDraft =
             createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, ProductType.referenceOfId(productType.getKey()),
                 TaxCategory.referenceOfId(targetTaxCategory.getKey()), State.referenceOfId(targetProductState.getKey()),
-                categoryReferencesWithKeys, categoryOrderHintsWithKeys);
+                categoryResourceIdentifiersWithKeys, categoryOrderHintsWithKeys);
 
         final ProductSyncStatistics syncStatistics =
             executeBlocking(spyProductSync.sync(singletonList(productDraft)));
@@ -397,7 +399,7 @@ public class ProductSyncIT {
     }
 
     @Test
-    public void syncDrafts_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
+    void syncDrafts_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
         // preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
 
@@ -413,7 +415,7 @@ public class ProductSyncIT {
         final ProductDraft productDraft =
             createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, ProductType.referenceOfId(productType.getKey()),
                 TaxCategory.referenceOfId(targetTaxCategory.getKey()), State.referenceOfId(targetProductState.getKey()),
-                categoryReferencesWithKeys, categoryOrderHintsWithKeys);
+                categoryResourceIdentifiersWithKeys, categoryOrderHintsWithKeys);
 
         final ProductSyncStatistics syncStatistics =
             executeBlocking(spyProductSync.sync(singletonList(productDraft)));
@@ -448,7 +450,7 @@ public class ProductSyncIT {
     }
 
     @Test
-    public void sync_withMultipleBatchSyncing_ShouldSync() {
+    void sync_withMultipleBatchSyncing_ShouldSync() {
         // Prepare existing products with keys: productKey1, productKey2, productKey3.
         final ProductDraft key2Draft = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH,
             productType.toReference(), targetTaxCategory.toReference(), targetProductState.toReference(),
@@ -469,7 +471,7 @@ public class ProductSyncIT {
         // Prepare batches from external source
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
             ProductType.reference(productType.getKey()), TaxCategory.referenceOfId(targetTaxCategory.getKey()),
-            State.referenceOfId(targetProductState.getKey()), categoryReferencesWithKeys,
+            State.referenceOfId(targetProductState.getKey()), categoryResourceIdentifiersWithKeys,
             categoryOrderHintsWithKeys);
 
         final List<ProductDraft> batch1 = new ArrayList<>();
@@ -516,11 +518,11 @@ public class ProductSyncIT {
     }
 
     @Test
-    public void sync_withSingleBatchSyncing_ShouldSync() {
+    void sync_withSingleBatchSyncing_ShouldSync() {
         // Prepare batches from external source
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
             ProductType.referenceOfId(productType.getKey()), TaxCategory.referenceOfId(targetTaxCategory.getKey()),
-            State.referenceOfId(targetProductState.getKey()), categoryReferencesWithKeys,
+            State.referenceOfId(targetProductState.getKey()), categoryResourceIdentifiersWithKeys,
             categoryOrderHintsWithKeys);
 
         final ProductDraft key3Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
@@ -584,11 +586,11 @@ public class ProductSyncIT {
     }
 
     @Test
-    public void sync_withSameSlugInSingleBatch_ShouldNotSyncIt() {
+    void sync_withSameSlugInSingleBatch_ShouldNotSyncIt() {
         // Prepare batches from external source
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
             ProductType.referenceOfId(productType.getKey()), TaxCategory.referenceOfId(targetTaxCategory.getKey()),
-            State.referenceOfId(targetProductState.getKey()), categoryReferencesWithKeys,
+            State.referenceOfId(targetProductState.getKey()), categoryResourceIdentifiersWithKeys,
             categoryOrderHintsWithKeys);
 
         final ProductDraft key3Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
@@ -675,11 +677,11 @@ public class ProductSyncIT {
     }
 
     @Test
-    public void sync_withADraftsWithBlankKeysInBatch_ShouldNotSyncItAndTriggerErrorCallBack() {
+    void sync_withADraftsWithBlankKeysInBatch_ShouldNotSyncItAndTriggerErrorCallBack() {
         // Prepare batches from external source
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
             ProductType.reference(productType.getKey()), TaxCategory.referenceOfId(targetTaxCategory.getKey()),
-            State.referenceOfId(targetProductState.getKey()), categoryReferencesWithKeys,
+            State.referenceOfId(targetProductState.getKey()), categoryResourceIdentifiersWithKeys,
             categoryOrderHintsWithKeys);
 
         // Draft with null key
@@ -725,11 +727,11 @@ public class ProductSyncIT {
     }
 
     @Test
-    public void sync_withANullDraftInBatch_ShouldNotSyncItAndTriggerErrorCallBack() {
+    void sync_withANullDraftInBatch_ShouldNotSyncItAndTriggerErrorCallBack() {
         // Prepare batches from external source
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
             ProductType.reference(productType.getKey()), null, null,
-            categoryReferencesWithKeys, categoryOrderHintsWithKeys);
+            categoryResourceIdentifiersWithKeys, categoryOrderHintsWithKeys);
 
         final List<ProductDraft> batch = new ArrayList<>();
         batch.add(productDraft);
@@ -746,11 +748,11 @@ public class ProductSyncIT {
     }
 
     @Test
-    public void sync_withSameDraftsWithChangesInBatch_ShouldRetryUpdateBecauseOfConcurrentModificationExceptions() {
+    void sync_withSameDraftsWithChangesInBatch_ShouldRetryUpdateBecauseOfConcurrentModificationExceptions() {
         // Prepare batches from external source
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
             ProductType.reference(productType.getKey()), null, null,
-            categoryReferencesWithKeys, categoryOrderHintsWithKeys);
+            categoryResourceIdentifiersWithKeys, categoryOrderHintsWithKeys);
 
         // Draft with same key
         final ProductDraft draftWithSameKey = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
@@ -778,7 +780,7 @@ public class ProductSyncIT {
     }
 
     @Test
-    public void sync_withProductBundle_shouldCreateProductReferencingExistingProduct() {
+    void sync_withProductBundle_shouldCreateProductReferencingExistingProduct() {
         final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             ProductType.referenceOfId(productType.getKey()))
             .taxCategory(null)
@@ -814,7 +816,7 @@ public class ProductSyncIT {
     }
 
     @Test
-    public void sync_withProductContainingAttributeChanges_shouldSyncProductCorrectly() {
+    void sync_withProductContainingAttributeChanges_shouldSyncProductCorrectly() {
         // preparation
         final List<UpdateAction<Product>> updateActions = new ArrayList<>();
         final Consumer<String> warningCallBack = warningMessage -> warningCallBackMessages.add(warningMessage);

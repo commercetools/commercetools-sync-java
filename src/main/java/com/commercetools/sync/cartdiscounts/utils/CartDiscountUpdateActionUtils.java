@@ -280,5 +280,6 @@ public final class CartDiscountUpdateActionUtils {
             () -> ChangeStackingMode.of(stackingMode));
     }
 
-
+    private CartDiscountUpdateActionUtils() {
+    }
 }

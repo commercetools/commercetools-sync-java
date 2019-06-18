@@ -2,19 +2,21 @@ package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
+import com.commercetools.sync.services.CartDiscountService;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
+import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.queries.PagedQueryResultDsl;
+import io.sphere.sdk.queries.PagedQueryResult;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -36,10 +38,10 @@ class CartDiscountServiceImplTest {
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
                 .of(sphereClient)
                 .build();
-        final CartDiscountServiceImpl cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
+        final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
 
         // test
-        CompletionStage<Optional<CartDiscount>> result = cartDiscountService.fetchCartDiscount("");
+        final CompletionStage<Optional<CartDiscount>> result = cartDiscountService.fetchCartDiscount("");
 
 
         // assertions
@@ -54,10 +56,10 @@ class CartDiscountServiceImplTest {
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
                 .of(sphereClient)
                 .build();
-        final CartDiscountServiceImpl cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
+        final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
 
         // test
-        CompletionStage<Optional<CartDiscount>> result = cartDiscountService.fetchCartDiscount(null);
+        final CompletionStage<Optional<CartDiscount>> result = cartDiscountService.fetchCartDiscount(null);
 
 
         // assertions
@@ -75,14 +77,17 @@ class CartDiscountServiceImplTest {
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
                 .of(sphereClient)
                 .build();
-        final CartDiscountServiceImpl cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
-        final PagedQueryResultDsl pagedQueryResult = mock(PagedQueryResultDsl.class);
+        final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
+
+        @SuppressWarnings("unchecked")
+        final PagedQueryResult<CartDiscount> pagedQueryResult =  mock(PagedQueryResult.class);
         when(pagedQueryResult.head()).thenReturn(Optional.of(mockCartDiscount));
-        when(cartDiscountSyncOptions.getCtpClient().execute(any())).thenReturn(CompletableFuture
-                .completedFuture(pagedQueryResult));
+        when(cartDiscountSyncOptions.getCtpClient().execute(any(CartDiscountQuery.class)))
+                .thenReturn(completedFuture(pagedQueryResult));
 
         // test
-        CompletionStage<Optional<CartDiscount>> result = cartDiscountService.fetchCartDiscount(testCartDiscountKey);
+        final CompletionStage<Optional<CartDiscount>> result =
+                cartDiscountService.fetchCartDiscount(testCartDiscountKey);
 
 
         // assertions
@@ -102,10 +107,11 @@ class CartDiscountServiceImplTest {
                 .of(sphereClient)
                 .errorCallback(errors::put)
                 .build();
-        final CartDiscountServiceImpl cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
+        final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
 
         // test
-        CompletionStage<Optional<CartDiscount>> result = cartDiscountService.createCartDiscount(mockCartDiscountDraft);
+        final CompletionStage<Optional<CartDiscount>> result =
+                cartDiscountService.createCartDiscount(mockCartDiscountDraft);
 
         // assertions
         assertThat(result).isCompletedWithValue(Optional.empty());

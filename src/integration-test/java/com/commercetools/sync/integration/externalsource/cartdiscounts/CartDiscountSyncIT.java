@@ -16,8 +16,8 @@ import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.queries.PagedQueryResult;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -49,7 +49,6 @@ import static com.commercetools.sync.integration.commons.utils.CartDiscountITUti
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.getSortOrders;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.populateSourceProject;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.populateTargetProject;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
@@ -60,22 +59,21 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-public class CartDiscountSyncIT {
+class CartDiscountSyncIT {
 
     /**
-     * Deletes types from the target CTP projects.
+     * Deletes cart discounts from the target CTP projects.
      * Populates the target CTP project with test data.
      */
-    @Before
-    public void setup() {
-        deleteTypesFromTargetAndSource();
+    @BeforeEach
+    void setup() {
         deleteCartDiscountsFromTargetAndSource();
         populateSourceProject();
         populateTargetProject();
     }
 
     @Test
-    public void sync_WithUpdatedCartDiscount_WithNewCartPredicate_ShouldUpdateCartDiscountWithNewCartPredicate() {
+    void sync_WithUpdatedCartDiscount_WithNewCartPredicate_ShouldUpdateCartDiscountWithNewCartPredicate() {
         // preparation
         final Optional<CartDiscount> oldCartDiscountBefore =
             getCartDiscountByKey(CTP_TARGET_CLIENT, CART_DISCOUNT_KEY_1);
@@ -118,7 +116,7 @@ public class CartDiscountSyncIT {
     }
 
     @Test
-    public void sync_WithUpdatedCartDiscount_WithNewValue_ShouldUpdateCartDiscountWithNewValue() {
+    void sync_WithUpdatedCartDiscount_WithNewValue_ShouldUpdateCartDiscountWithNewValue() {
         // preparation
         final Optional<CartDiscount> oldCartDiscountBefore =
             getCartDiscountByKey(CTP_TARGET_CLIENT, CART_DISCOUNT_KEY_1);
@@ -161,7 +159,7 @@ public class CartDiscountSyncIT {
     }
 
     @Test
-    public void sync_WithUpdatedCartDiscount_WithNewTarget_ShouldUpdateCartDiscountWithNewTarget() {
+    void sync_WithUpdatedCartDiscount_WithNewTarget_ShouldUpdateCartDiscountWithNewTarget() {
         // preparation
         final Optional<CartDiscount> oldCartDiscountBefore =
             getCartDiscountByKey(CTP_TARGET_CLIENT, CART_DISCOUNT_KEY_1);
@@ -204,7 +202,7 @@ public class CartDiscountSyncIT {
     }
 
     @Test
-    public void sync_WithNewCartDiscount_ShouldCreateNewDiscount() {
+    void sync_WithNewCartDiscount_ShouldCreateNewDiscount() {
         //preparation
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
@@ -234,7 +232,7 @@ public class CartDiscountSyncIT {
     }
 
     @Test
-    public void sync_WithoutKey_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    void sync_WithoutKey_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         //prepare
         //todo: SUPPORT-4443 need to be merged from name to key.
         final CartDiscountDraft newCartDiscountDraftWithoutName =
@@ -284,7 +282,7 @@ public class CartDiscountSyncIT {
     }
 
     @Test
-    public void sync_WithoutCartPredicate_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    void sync_WithoutCartPredicate_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         //prepare
         // Draft without "cartPredicate" throws a commercetools exception because "cartPredicate" is a required value
         final CartDiscountDraft newCartDiscountDraftWithoutName =
@@ -331,14 +329,14 @@ public class CartDiscountSyncIT {
             .hasOnlyOneElementSatisfying(throwable -> {
                 assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
                 assertThat(throwable).hasCauseExactlyInstanceOf(ErrorResponseException.class);
-                assertThat(throwable).hasMessageContaining("Missing required value");
+                assertThat(throwable).hasMessageContaining("cartPredicate: Missing required value");
             });
 
         assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
     }
 
     @Test
-    public void sync_WithoutValue_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    void sync_WithoutValue_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         //prepare
         // Draft without "value" throws a commercetools exception because "value" is a required value
         final CartDiscountDraft newCartDiscountDraftWithoutValue =
@@ -385,52 +383,14 @@ public class CartDiscountSyncIT {
             .hasOnlyOneElementSatisfying(throwable -> {
                 assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
                 assertThat(throwable).hasCauseExactlyInstanceOf(ErrorResponseException.class);
-                assertThat(throwable).hasMessageContaining("Missing required value");
+                assertThat(throwable).hasMessageContaining("value: Missing required value");
             });
 
         assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
     }
 
     @Test
-    public void sync_WithNullDraft_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
-        //preparation
-        final CartDiscountDraft newCartDiscountDraft = null;
-
-        final List<String> errorMessages = new ArrayList<>();
-        final List<Throwable> exceptions = new ArrayList<>();
-
-        final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
-            .of(CTP_TARGET_CLIENT)
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
-                exceptions.add(exception);
-            })
-            .build();
-
-        final CartDiscountSync cartDiscountSync = new CartDiscountSync(cartDiscountSyncOptions);
-
-        //test
-        final CartDiscountSyncStatistics cartDiscountSyncStatistics = cartDiscountSync
-            .sync(singletonList(newCartDiscountDraft))
-            .toCompletableFuture()
-            .join();
-
-        //assertions
-        assertThat(errorMessages)
-            .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).isEqualTo("Failed to process null cart discount draft.")
-            );
-
-        assertThat(exceptions)
-            .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable).isNull());
-
-        assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
-    }
-
-    @Test
-    public void sync_WithSeveralBatches_ShouldReturnProperStatistics() {
+    void sync_WithSeveralBatches_ShouldReturnProperStatistics() {
         // preparation
         final List<String> sortOrders = getSortOrders(100);
         // Default batch size is 50 (check CartDiscountSyncOptionsBuilder) so we have 2 batches of 50
@@ -464,22 +424,8 @@ public class CartDiscountSyncIT {
         assertThat(cartDiscountSyncStatistics).hasValues(100, 100, 0, 0);
     }
 
-    @Nonnull
-    private SphereClient buildClientWithConcurrentModificationUpdate() {
-
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-
-        final CartDiscountUpdateCommand anyCartDiscountUpdate = any(CartDiscountUpdateCommand.class);
-
-        when(spyClient.execute(anyCartDiscountUpdate))
-            .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
-            .thenCallRealMethod();
-
-        return spyClient;
-    }
-
     @Test
-    public void sync_WithConcurrentModificationException_ShouldRetryToUpdateNewCartDiscountWithSuccess() {
+    void sync_WithConcurrentModificationException_ShouldRetryToUpdateNewCartDiscountWithSuccess() {
         // Preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdate();
 
@@ -518,24 +464,21 @@ public class CartDiscountSyncIT {
     }
 
     @Nonnull
-    private SphereClient buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry() {
+    private SphereClient buildClientWithConcurrentModificationUpdate() {
 
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(CartDiscountQuery.class)))
-            .thenCallRealMethod() // Call real fetch on fetching matching cart discounts
-            .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()));
 
         final CartDiscountUpdateCommand anyCartDiscountUpdate = any(CartDiscountUpdateCommand.class);
 
         when(spyClient.execute(anyCartDiscountUpdate))
-            .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
-            .thenCallRealMethod();
+                .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
+                .thenCallRealMethod();
 
         return spyClient;
     }
 
     @Test
-    public void sync_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
+    void sync_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
         //preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
 
@@ -580,26 +523,24 @@ public class CartDiscountSyncIT {
     }
 
     @Nonnull
-    private SphereClient buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry() {
+    private SphereClient buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry() {
 
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        final CartDiscountQuery anyCartDiscountQuery = any(CartDiscountQuery.class);
-
-        when(spyClient.execute(anyCartDiscountQuery))
-            .thenCallRealMethod() // Call real fetch on fetching matching cart discounts
-            .thenReturn(completedFuture(PagedQueryResult.empty()));
+        when(spyClient.execute(any(CartDiscountQuery.class)))
+                .thenCallRealMethod() // Call real fetch on fetching matching cart discounts
+                .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()));
 
         final CartDiscountUpdateCommand anyCartDiscountUpdate = any(CartDiscountUpdateCommand.class);
 
         when(spyClient.execute(anyCartDiscountUpdate))
-            .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
-            .thenCallRealMethod();
+                .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
+                .thenCallRealMethod();
 
         return spyClient;
     }
 
     @Test
-    public void sync__WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
+    void sync_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
         //preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
 
@@ -638,6 +579,25 @@ public class CartDiscountSyncIT {
         assertThat(errorMessages.get(0)).contains(
             format("Failed to update cart discount with key: '%s'. Reason: Not found when attempting to fetch while "
                 + "retrying after concurrency modification.", CART_DISCOUNT_KEY_2));
+    }
+
+    @Nonnull
+    private SphereClient buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry() {
+
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final CartDiscountQuery anyCartDiscountQuery = any(CartDiscountQuery.class);
+
+        when(spyClient.execute(anyCartDiscountQuery))
+                .thenCallRealMethod() // Call real fetch on fetching matching cart discounts
+                .thenReturn(completedFuture(PagedQueryResult.empty()));
+
+        final CartDiscountUpdateCommand anyCartDiscountUpdate = any(CartDiscountUpdateCommand.class);
+
+        when(spyClient.execute(anyCartDiscountUpdate))
+                .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
+                .thenCallRealMethod();
+
+        return spyClient;
     }
 
 }

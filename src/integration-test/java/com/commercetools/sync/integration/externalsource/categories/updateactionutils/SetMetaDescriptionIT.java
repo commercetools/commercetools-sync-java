@@ -8,9 +8,9 @@ import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.categories.commands.updateactions.SetMetaDescription;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.Locale;
 
@@ -20,14 +20,14 @@ import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTyp
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SetMetaDescriptionIT {
+class SetMetaDescriptionIT {
     private static Category oldCategory;
 
     /**
      * Deletes Categories and Types from the target CTP projects, then it populates it with category test data.
      */
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
 
@@ -48,15 +48,15 @@ public class SetMetaDescriptionIT {
     /**
      * Cleans up the target data that was built in this test class.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
     }
 
 
     @Test
-    public void buildSetMetaDescriptionUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
+    void buildSetMetaDescriptionUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         // Prepare new category draft with a different MetaDescription
         final CategoryDraft newCategory = CategoryDraftBuilder.of(
             LocalizedString.of(Locale.ENGLISH, "classic furniture"),
@@ -77,7 +77,7 @@ public class SetMetaDescriptionIT {
     }
 
     @Test
-    public void buildSetMetaDescriptionUpdateAction_WithDifferentLocaleOrder_ShouldNotBuildUpdateAction() {
+    void buildSetMetaDescriptionUpdateAction_WithDifferentLocaleOrder_ShouldNotBuildUpdateAction() {
         // Prepare new category draft with a different order of locales of MetaDescription
         final CategoryDraft newCategory = CategoryDraftBuilder
             .of(
@@ -96,7 +96,7 @@ public class SetMetaDescriptionIT {
     }
 
     @Test
-    public void buildSetMetaDescriptionUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
+    void buildSetMetaDescriptionUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         // Prepare new category draft with a same order of locales of MetaDescription
         final CategoryDraft newCategory = CategoryDraftBuilder
             .of(
