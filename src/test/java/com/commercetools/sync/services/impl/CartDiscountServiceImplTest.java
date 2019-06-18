@@ -5,13 +5,13 @@ import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
 import com.commercetools.sync.services.CartDiscountService;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
-import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.queries.PagedQueryResult;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
@@ -30,6 +30,16 @@ import static org.mockito.internal.verification.VerificationModeFactory.only;
 class CartDiscountServiceImplTest {
 
     private String testCartDiscountKey = "ABC123";
+
+    public static final String PREDICATE_1 = "1 = 1";
+
+    public static final CartPredicate CART_DISCOUNT_CART_PREDICATE_1 = CartPredicate.of(PREDICATE_1);
+
+    public static final CartDiscountValue CART_DISCOUNT_VALUE_1 = CartDiscountValue.ofRelative(1000);
+
+    public static final CartDiscountTarget CART_DISCOUNT_TARGET_1 = LineItemsTarget.ofAll();
+
+    public static final String SORT_ORDER_2 = "0.2";
 
     @Test
     void fetchCartDiscount_WithEmptyKey_ShouldNotFetchAnyCartDiscount() {
@@ -122,4 +132,39 @@ class CartDiscountServiceImplTest {
 
     }
 
+    @Test
+    void createCartDiscount_WithInvalidCartDiscount_ShouldHaveEmptyOptionalAsAResult() {
+        //preparation
+        final SphereClient sphereClient = mock(SphereClient.class);
+        final Map<String, Throwable> errors = new HashMap<>();
+        final CartDiscountDraft newCartDiscountDraft =
+                CartDiscountDraftBuilder.of(LocalizedString.of(Locale.ENGLISH, ""),
+                        CART_DISCOUNT_CART_PREDICATE_1,
+                        CART_DISCOUNT_VALUE_1,
+                        CART_DISCOUNT_TARGET_1,
+                        SORT_ORDER_2,
+                        false)
+                        .active(false)
+                        .build();
+
+        final CartDiscountSyncOptions options = CartDiscountSyncOptionsBuilder
+                .of(sphereClient)
+                .errorCallback(errors::put)
+                .build();
+
+        final CartDiscountServiceImpl cartDiscountService = new CartDiscountServiceImpl(options);
+
+        // test
+        final Optional<CartDiscount> result =
+                cartDiscountService.createCartDiscount(newCartDiscountDraft)
+                        .toCompletableFuture().join();
+
+        // assertion
+        assertThat(result).isEmpty();
+        assertThat(errors.keySet())
+                .containsExactly("Failed to create draft with key: ''. Reason: Draft key is blank!");
+
+    }
+
 }
+
