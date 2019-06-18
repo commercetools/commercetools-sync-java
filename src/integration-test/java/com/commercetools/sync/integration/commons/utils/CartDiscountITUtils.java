@@ -136,9 +136,13 @@ public class CartDiscountITUtils {
         return sphereClient.execute(query).toCompletableFuture().join().head();
     }
 
+    /**
+     * Builds a list of odd sortOrder strings that start with `0.01`. They are odd because
+     * because sortOrder in CTP is not allowed to end with a zero and should be decimal value between 0 and 1.
+     *
+     * @param capacity the number of sort orders to build.
+     */
     public static List<String> getSortOrders(final int capacity) {
-        // get 100 sortOrder list with odd numbers ex: 0.01, 0.03..
-        // The sortOrder must be a decimal value > 0 and < 1. It is not allowed to end with a zero.
         return IntStream.range(0, capacity * 2)
                 .filter(index -> index % 2 != 0)
                 .mapToObj(oddNumber -> format("0.0%s", oddNumber))
