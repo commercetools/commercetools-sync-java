@@ -5,6 +5,12 @@ import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
 import com.commercetools.sync.services.CartDiscountService;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
+import io.sphere.sdk.cartdiscounts.CartDiscountDraftBuilder;
+import io.sphere.sdk.cartdiscounts.CartDiscountTarget;
+import io.sphere.sdk.cartdiscounts.CartDiscountValue;
+import io.sphere.sdk.cartdiscounts.CartPredicate;
+import io.sphere.sdk.cartdiscounts.LineItemsTarget;
+import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.queries.PagedQueryResult;
@@ -31,15 +37,11 @@ class CartDiscountServiceImplTest {
 
     private String testCartDiscountKey = "ABC123";
 
-    public static final String PREDICATE_1 = "1 = 1";
-
-    public static final CartPredicate CART_DISCOUNT_CART_PREDICATE_1 = CartPredicate.of(PREDICATE_1);
-
-    public static final CartDiscountValue CART_DISCOUNT_VALUE_1 = CartDiscountValue.ofRelative(1000);
-
-    public static final CartDiscountTarget CART_DISCOUNT_TARGET_1 = LineItemsTarget.ofAll();
-
-    public static final String SORT_ORDER_2 = "0.2";
+    private static final String PREDICATE_1 = "1 = 1";
+    private static final CartPredicate CART_DISCOUNT_CART_PREDICATE_1 = CartPredicate.of(PREDICATE_1);
+    private static final CartDiscountValue CART_DISCOUNT_VALUE_1 = CartDiscountValue.ofRelative(1000);
+    private static final CartDiscountTarget CART_DISCOUNT_TARGET_1 = LineItemsTarget.ofAll();
+    private static final String SORT_ORDER_2 = "0.2";
 
     @Test
     void fetchCartDiscount_WithEmptyKey_ShouldNotFetchAnyCartDiscount() {
