@@ -13,7 +13,6 @@ import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.queries.QueryPredicate;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -55,11 +54,6 @@ class CartDiscountSyncBenchmark {
     private List<String> errorCallBackMessages;
     private List<String> warningCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
-
-    @BeforeAll
-    static void setup() {
-        deleteCartDiscounts(CTP_TARGET_CLIENT);
-    }
 
     @AfterAll
     static void tearDown() {
