@@ -106,7 +106,6 @@ class CartDiscountServiceImplTest {
     @Test
     void createCartDiscount_WithEmptyCartDiscountKey_ShouldNotCreateCartDiscount() {
         // preparation
-        final SphereClient sphereClient = mock(SphereClient.class);
         final CartDiscountDraft mockCartDiscountDraft = mock(CartDiscountDraft.class);
         final Map<String, Throwable> errors = new HashMap<>();
         when(mockCartDiscountDraft.getName()).thenReturn(LocalizedString.ofEnglish(""));
