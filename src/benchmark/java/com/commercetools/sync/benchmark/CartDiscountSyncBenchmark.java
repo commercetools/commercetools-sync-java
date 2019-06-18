@@ -125,8 +125,8 @@ class CartDiscountSyncBenchmark {
         final CartDiscountSyncStatistics syncStatistics = executeBlocking(cartDiscountSync.sync(cartDiscountDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-        // assert on threshold (based on history of benchmarks; highest was ~6 seconds)
-        final int threshold = 12000; // double of the highest benchmark
+        // assert on threshold (based on history of benchmarks; highest was ~5 seconds)
+        final int threshold = 10000; // double of the highest benchmark
         assertThat(totalTime).withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
                              .isLessThan(threshold);
 
@@ -174,8 +174,8 @@ class CartDiscountSyncBenchmark {
         final CartDiscountSyncStatistics syncStatistics = executeBlocking(cartDiscountSync.sync(cartDiscountDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-        // assert on threshold (based on history of benchmarks; highest was ~12 seconds)
-        final int threshold = 24000; // double of the highest benchmark
+        // assert on threshold (based on history of benchmarks; highest was ~5 seconds)
+        final int threshold = 10000; // double of the highest benchmark
         assertThat(totalTime).withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
                              .isLessThan(threshold);
 
@@ -238,8 +238,8 @@ class CartDiscountSyncBenchmark {
         final CartDiscountSyncStatistics syncStatistics = executeBlocking(cartDiscountSync.sync(cartDiscountDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-        // assert on threshold (based on history of benchmarks; highest was ~8 seconds)
-        final int threshold = 16000; // double of the highest benchmark
+        // assert on threshold (based on history of benchmarks; highest was ~5 seconds)
+        final int threshold = 10000; // double of the highest benchmark
         assertThat(totalTime).withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
                 .isLessThan(threshold);
 
