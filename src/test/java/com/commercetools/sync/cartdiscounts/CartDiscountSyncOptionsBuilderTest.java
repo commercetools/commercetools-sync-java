@@ -235,8 +235,8 @@ class CartDiscountSyncOptionsBuilderTest {
         final Optional<CartDiscountDraft> filteredDraft = cartDiscountSyncOptions
                 .applyBeforeCreateCallBack(resourceDraft);
 
-        assertThat(filteredDraft).isNotEmpty();
-        assertThat(filteredDraft.get().getKey()).isEqualTo("myKey_filteredKey");
+        assertThat(filteredDraft).hasValueSatisfying(cartDiscountDraft ->
+            assertThat(cartDiscountDraft.getKey()).isEqualTo("myKey_filteredKey"));
     }
 
     @Test
