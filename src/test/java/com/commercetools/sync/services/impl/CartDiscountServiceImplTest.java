@@ -5,7 +5,6 @@ import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
 import com.commercetools.sync.services.CartDiscountService;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
-import io.sphere.sdk.cartdiscounts.CartDiscountDraftBuilder;
 import io.sphere.sdk.cartdiscounts.CartDiscountTarget;
 import io.sphere.sdk.cartdiscounts.CartDiscountValue;
 import io.sphere.sdk.cartdiscounts.CartPredicate;
@@ -17,18 +16,15 @@ import io.sphere.sdk.queries.PagedQueryResult;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.only;
@@ -112,12 +108,12 @@ class CartDiscountServiceImplTest {
     }
 
     @Test
-    void createCartDiscount_WithEmptyCartDiscountKey_ShouldNotCreateCartDiscount() {
+    void createCartDiscount_WithNullCartDiscountKey_ShouldNotCreateCartDiscount() {
         // preparation
         final SphereClient sphereClient = mock(SphereClient.class);
         final CartDiscountDraft mockCartDiscountDraft = mock(CartDiscountDraft.class);
         final Map<String, Throwable> errors = new HashMap<>();
-        when(mockCartDiscountDraft.getName()).thenReturn(LocalizedString.ofEnglish(""));
+        when(mockCartDiscountDraft.getKey()).thenReturn(null);
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
                 .of(sphereClient)
@@ -126,32 +122,22 @@ class CartDiscountServiceImplTest {
         final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
 
         // test
-        final CompletionStage<Optional<CartDiscount>> result =
-                cartDiscountService.createCartDiscount(mockCartDiscountDraft);
+        final CompletionStage<Optional<CartDiscount>> result = cartDiscountService
+            .createCartDiscount(mockCartDiscountDraft);
 
         // assertions
         assertThat(result).isCompletedWithValue(Optional.empty());
-        assertThat(errors).isNotEmpty();
-        assertThat(errors.size()).isEqualTo(1);
-        assertTrue(errors.keySet().stream().anyMatch(e -> e.contains("Draft key is blank!")));
-        verify(sphereClient, times(0)).execute(any());
-
+        assertThat(errors.keySet())
+            .containsExactly("Failed to create draft with key: 'null'. Reason: Draft key is blank!");
     }
 
     @Test
-    void createCartDiscount_WithInvalidCartDiscount_ShouldHaveEmptyOptionalAsAResult() {
+    void createCartDiscount_WithEmptyCartDiscountKey_ShouldHaveEmptyOptionalAsAResult() {
         //preparation
         final SphereClient sphereClient = mock(SphereClient.class);
+        final CartDiscountDraft mockCartDiscountDraft = mock(CartDiscountDraft.class);
         final Map<String, Throwable> errors = new HashMap<>();
-        final CartDiscountDraft newCartDiscountDraft =
-                CartDiscountDraftBuilder.of(LocalizedString.of(Locale.ENGLISH, ""),
-                        CART_DISCOUNT_CART_PREDICATE_1,
-                        CART_DISCOUNT_VALUE_1,
-                        CART_DISCOUNT_TARGET_1,
-                        SORT_ORDER_2,
-                        false)
-                        .active(false)
-                        .build();
+        when(mockCartDiscountDraft.getKey()).thenReturn("");
 
         final CartDiscountSyncOptions options = CartDiscountSyncOptionsBuilder
                 .of(sphereClient)
@@ -161,12 +147,11 @@ class CartDiscountServiceImplTest {
         final CartDiscountServiceImpl cartDiscountService = new CartDiscountServiceImpl(options);
 
         // test
-        final Optional<CartDiscount> result =
-                cartDiscountService.createCartDiscount(newCartDiscountDraft)
-                        .toCompletableFuture().join();
+        final CompletionStage<Optional<CartDiscount>> result = cartDiscountService
+            .createCartDiscount(mockCartDiscountDraft);
 
         // assertion
-        assertThat(result).isEmpty();
+        assertThat(result).isCompletedWithValue(Optional.empty());
         assertThat(errors.keySet())
                 .containsExactly("Failed to create draft with key: ''. Reason: Draft key is blank!");
 
