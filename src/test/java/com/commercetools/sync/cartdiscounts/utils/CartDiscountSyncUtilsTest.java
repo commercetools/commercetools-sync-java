@@ -26,7 +26,6 @@ import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.utils.MoneyImpl;
 import org.junit.jupiter.api.Test;
 
-
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Locale;
