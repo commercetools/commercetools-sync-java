@@ -90,12 +90,13 @@ class CartDiscountUpdateActionUtilsTest {
     @Test
     void buildChangeValueUpdateAction_WithSameRelativeValues_ShouldNotBuildUpdateAction() {
         final CartDiscountValue tenPercent = CartDiscountValue.ofRelative(1000);
+        final CartDiscountValue tenPercent2 = CartDiscountValue.ofRelative(1000);
 
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValue()).thenReturn(tenPercent);
 
         final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
-        when(newCartDiscountDraft.getValue()).thenReturn(tenPercent);
+        when(newCartDiscountDraft.getValue()).thenReturn(tenPercent2);
 
         final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
                 buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
@@ -210,11 +211,15 @@ class CartDiscountUpdateActionUtilsTest {
                 GiftLineItemCartDiscountValue.of(Reference.of(Product.referenceTypeId(), "productId"),
                         1, null, null);
 
+        final GiftLineItemCartDiscountValue giftLineItemCartDiscountValue2 =
+                GiftLineItemCartDiscountValue.of(Reference.of(Product.referenceTypeId(), "productId"),
+                        1, null, null);
+
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValue()).thenReturn(giftLineItemCartDiscountValue);
 
         final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
-        when(newCartDiscountDraft.getValue()).thenReturn(giftLineItemCartDiscountValue);
+        when(newCartDiscountDraft.getValue()).thenReturn(giftLineItemCartDiscountValue2);
 
         final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
                 buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
@@ -226,12 +231,14 @@ class CartDiscountUpdateActionUtilsTest {
     void buildChangeValueUpdateAction_WithSameAbsoluteValues_ShouldNotBuildUpdateAction() {
         final CartDiscountValue values =
                 CartDiscountValue.ofAbsolute(asList(MoneyImpl.of(10, EUR), MoneyImpl.of(10, USD)));
+        final CartDiscountValue values2 =
+                CartDiscountValue.ofAbsolute(asList(MoneyImpl.of(10, EUR), MoneyImpl.of(10, USD)));
 
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValue()).thenReturn(values);
 
         final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
-        when(newCartDiscountDraft.getValue()).thenReturn(values);
+        when(newCartDiscountDraft.getValue()).thenReturn(values2);
 
         final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
                 buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
@@ -333,12 +340,13 @@ class CartDiscountUpdateActionUtilsTest {
     @Test
     void buildChangeCartPredicateUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final String cartPredicate = "totalPrice = \"10.00 EUR\" and (shippingInfo.shippingMethodName = \"FEDEX\")";
+        final String cartPredicate2 = "totalPrice = \"10.00 EUR\" and (shippingInfo.shippingMethodName = \"FEDEX\")";
 
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getCartPredicate()).thenReturn(cartPredicate);
 
         final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
-        when(newCartDiscountDraft.getCartPredicate()).thenReturn(cartPredicate);
+        when(newCartDiscountDraft.getCartPredicate()).thenReturn(cartPredicate2);
 
         final Optional<UpdateAction<CartDiscount>> changePredicateUpdateAction =
                 buildChangeCartPredicateUpdateAction(oldCartDiscount, newCartDiscountDraft);
@@ -408,12 +416,13 @@ class CartDiscountUpdateActionUtilsTest {
     @Test
     void buildChangeTargetUpdateAction_WithSameLineItemTargetValues_ShouldNotBuildUpdateAction() {
         final CartDiscountTarget cartDiscountTarget = LineItemsTarget.of("quantity > 0");
+        final CartDiscountTarget cartDiscountTarget2 = LineItemsTarget.of("quantity > 0");
 
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getTarget()).thenReturn(cartDiscountTarget);
 
         final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
-        when(newCartDiscountDraft.getTarget()).thenReturn(cartDiscountTarget);
+        when(newCartDiscountDraft.getTarget()).thenReturn(cartDiscountTarget2);
 
         final Optional<UpdateAction<CartDiscount>> changeTargetUpdateAction =
                 buildChangeTargetUpdateAction(oldCartDiscount, newCartDiscountDraft);
@@ -580,12 +589,14 @@ class CartDiscountUpdateActionUtilsTest {
         // and 4 most expensive items will be marked as participating in this discount.
         final MultiBuyLineItemsTarget target =
                 MultiBuyLineItemsTarget.of("quantity > 0", 6L, 3L, SelectionMode.MOST_EXPENSIVE);
+        final MultiBuyLineItemsTarget target2 =
+                MultiBuyLineItemsTarget.of("quantity > 0", 6L, 3L, SelectionMode.MOST_EXPENSIVE);
 
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getTarget()).thenReturn(target);
 
         final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
-        when(newCartDiscountDraft.getTarget()).thenReturn(target);
+        when(newCartDiscountDraft.getTarget()).thenReturn(target2);
 
         final Optional<UpdateAction<CartDiscount>> changeTargetUpdateAction =
                 buildChangeTargetUpdateAction(oldCartDiscount, newCartDiscountDraft);
@@ -709,12 +720,14 @@ class CartDiscountUpdateActionUtilsTest {
         // and 4 most expensive custom items will be marked as participating in this discount.
         final MultiBuyCustomLineItemsTarget target =
                 MultiBuyCustomLineItemsTarget.of("quantity > 0", 6L, 3L, SelectionMode.MOST_EXPENSIVE);
+        final MultiBuyCustomLineItemsTarget target2 =
+                MultiBuyCustomLineItemsTarget.of("quantity > 0", 6L, 3L, SelectionMode.MOST_EXPENSIVE);
 
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getTarget()).thenReturn(target);
 
         final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
-        when(newCartDiscountDraft.getTarget()).thenReturn(target);
+        when(newCartDiscountDraft.getTarget()).thenReturn(target2);
 
         final Optional<UpdateAction<CartDiscount>> changeTargetUpdateAction =
                 buildChangeTargetUpdateAction(oldCartDiscount, newCartDiscountDraft);
@@ -856,8 +869,9 @@ class CartDiscountUpdateActionUtilsTest {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getName()).thenReturn(name);
 
+        final LocalizedString name2 = LocalizedString.of(Locale.ENGLISH, "name");
         final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
-        when(newCartDiscountDraft.getName()).thenReturn(name);
+        when(newCartDiscountDraft.getName()).thenReturn(name2);
 
         final Optional<UpdateAction<CartDiscount>> changeNameUpdateAction =
                 buildChangeNameUpdateAction(oldCartDiscount, newCartDiscountDraft);
@@ -927,12 +941,12 @@ class CartDiscountUpdateActionUtilsTest {
     @Test
     void buildSetDescriptionUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final LocalizedString description = LocalizedString.of(Locale.ENGLISH, "cart-discount-1-desc");
-
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getDescription()).thenReturn(description);
 
+        final LocalizedString description2 = LocalizedString.of(Locale.ENGLISH, "cart-discount-1-desc");
         final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
-        when(newCartDiscountDraft.getDescription()).thenReturn(description);
+        when(newCartDiscountDraft.getDescription()).thenReturn(description2);
 
         final Optional<UpdateAction<CartDiscount>> setDescriptionUpdateAction =
                 buildSetDescriptionUpdateAction(oldCartDiscount, newCartDiscountDraft);
@@ -1002,12 +1016,12 @@ class CartDiscountUpdateActionUtilsTest {
     @Test
     void buildChangeSortOrderUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final String sortOrder = "0.1";
-
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getSortOrder()).thenReturn(sortOrder);
 
+        final String sortOrder2 = "0.1";
         final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
-        when(newCartDiscountDraft.getSortOrder()).thenReturn(sortOrder);
+        when(newCartDiscountDraft.getSortOrder()).thenReturn(sortOrder2);
 
         final Optional<UpdateAction<CartDiscount>> changeChangeSortOrderUpdateAction =
                 buildChangeSortOrderUpdateAction(oldCartDiscount, newCartDiscountDraft);
@@ -1218,12 +1232,12 @@ class CartDiscountUpdateActionUtilsTest {
     @Test
     void buildSetValidFromUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final ZonedDateTime validFrom = ZonedDateTime.parse("2019-04-30T22:00:00.000Z");
-
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValidFrom()).thenReturn(validFrom);
 
+        final ZonedDateTime validFrom2 = ZonedDateTime.parse("2019-04-30T22:00:00.000Z");
         final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
-        when(newCartDiscountDraft.getValidFrom()).thenReturn(validFrom);
+        when(newCartDiscountDraft.getValidFrom()).thenReturn(validFrom2);
 
         final Optional<UpdateAction<CartDiscount>> setValidFromUpdateAction =
                 buildSetValidFromUpdateAction(oldCartDiscount, newCartDiscountDraft);
@@ -1291,12 +1305,12 @@ class CartDiscountUpdateActionUtilsTest {
     @Test
     void buildSetValidUntilUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final ZonedDateTime validUntil = ZonedDateTime.parse("2019-05-30T22:00:00.000Z");
-
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValidUntil()).thenReturn(validUntil);
 
+        final ZonedDateTime validUntil2 = ZonedDateTime.parse("2019-05-30T22:00:00.000Z");
         final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
-        when(newCartDiscountDraft.getValidUntil()).thenReturn(validUntil);
+        when(newCartDiscountDraft.getValidUntil()).thenReturn(validUntil2);
 
         final Optional<UpdateAction<CartDiscount>> setValidUntilUpdateAction =
                 buildSetValidUntilUpdateAction(oldCartDiscount, newCartDiscountDraft);
@@ -1404,14 +1418,15 @@ class CartDiscountUpdateActionUtilsTest {
     void buildSetValidDatesUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final ZonedDateTime validFrom = ZonedDateTime.parse("2019-04-30T22:00:00.000Z");
         final ZonedDateTime validUntil = ZonedDateTime.parse("2019-05-30T22:00:00.000Z");
-
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValidFrom()).thenReturn(validFrom);
         when(oldCartDiscount.getValidUntil()).thenReturn(validUntil);
 
+        final ZonedDateTime validFrom2 = ZonedDateTime.parse("2019-04-30T22:00:00.000Z");
+        final ZonedDateTime validUntil2 = ZonedDateTime.parse("2019-05-30T22:00:00.000Z");
         final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
-        when(newCartDiscountDraft.getValidFrom()).thenReturn(validFrom);
-        when(newCartDiscountDraft.getValidUntil()).thenReturn(validUntil);
+        when(newCartDiscountDraft.getValidFrom()).thenReturn(validFrom2);
+        when(newCartDiscountDraft.getValidUntil()).thenReturn(validUntil2);
 
         final Optional<UpdateAction<CartDiscount>> setValidDatesUpdateAction =
                 buildSetValidDatesUpdateAction(oldCartDiscount, newCartDiscountDraft);
