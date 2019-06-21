@@ -279,7 +279,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildChangeValueUpdateAction_WithJustNewValueHasNullValue_ShouldBuildUpdateAction() {
+    void buildChangeValueUpdateAction_WithNullNewValue_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValue()).thenReturn(CartDiscountValue.ofRelative(1000));
 
@@ -293,7 +293,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildChangeValueUpdateAction_WithJustOldValueHaveNullValue_ShouldBuildUpdateAction() {
+    void buildChangeValueUpdateAction_WithNullOldValue_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValue()).thenReturn(null);
 
@@ -355,7 +355,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildChangeCartPredicateUpdateAction_WithJustNewCartPredicateHasNullValue_ShouldBuildUpdateAction() {
+    void buildChangeCartPredicateUpdateAction_WithNullNewCartPredicate_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getCartPredicate())
                 .thenReturn("totalPrice = \"10.00 EUR\" and (shippingInfo.shippingMethodName = \"FEDEX\")");
@@ -370,7 +370,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildChangeCartPredicateUpdateAction_WithJustOldCartPredicateHasNullValue_ShouldBuildUpdateAction() {
+    void buildChangeCartPredicateUpdateAction_WithNullOldCartPredicate_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getCartPredicate()).thenReturn(null);
 
@@ -736,7 +736,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildChangeTargetUpdateAction_WithJustNewTargetHasNullValue_ShouldBuildUpdateAction() {
+    void buildChangeTargetUpdateAction_WittNullNewTarget_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getTarget()).thenReturn(LineItemsTarget.ofAll());
 
@@ -750,7 +750,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildChangeTargetUpdateAction_WithJustOldTargetHasNullValue_ShouldBuildUpdateAction() {
+    void buildChangeTargetUpdateAction_WithNullOldTarget_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getTarget()).thenReturn(null);
 
@@ -807,7 +807,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildChangeIsActiveUpdateAction_WithJustNewIsActiveHasNullValue_ShouldBuildUpdateAction() {
+    void buildChangeIsActiveUpdateAction_WithNullNewIsActive_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.isActive()).thenReturn(false);
 
@@ -821,7 +821,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildChangeIsActiveUpdateAction_WithJustOldIsActiveHasNullValue_ShouldBuildUpdateAction() {
+    void buildChangeIsActiveUpdateAction_WithNullOldIsActive_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.isActive()).thenReturn(null);
 
@@ -880,7 +880,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildChangeNameUpdateAction_WithJustNewNameHasNullValue_ShouldBuildUpdateAction() {
+    void buildChangeNameUpdateAction_WithNullNewName_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getName()).thenReturn(LocalizedString.of(Locale.ENGLISH, "name"));
 
@@ -894,7 +894,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildChangeNameUpdateAction_WithJustOldNameHasNullValue_ShouldBuildUpdateAction() {
+    void buildChangeNameUpdateAction_WithNullOldName_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.isActive()).thenReturn(null);
 
@@ -955,7 +955,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildSetDescriptionUpdateAction_WithJustNewDescriptionHasNullValue_ShouldBuildUpdateAction() {
+    void buildSetDescriptionUpdateAction_WithNullNewDescription_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getDescription())
                 .thenReturn(LocalizedString.of(Locale.ENGLISH, "cart-discount-1-desc"));
@@ -970,7 +970,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildSetDescriptionUpdateAction_WithJustOldDescriptionHasNullValue_ShouldBuildUpdateAction() {
+    void buildSetDescriptionUpdateAction_WithNullOldDescription_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getDescription()).thenReturn(null);
 
@@ -1030,7 +1030,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildChangeSortOrderUpdateAction_WithJustNewSortOrderHasNullValue_ShouldBuildUpdateAction() {
+    void buildChangeSortOrderUpdateAction_WithNullNewSortOrder_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getSortOrder()).thenReturn("0.1");
 
@@ -1044,7 +1044,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildChangeSortOrderUpdateAction_WithJustOldSortOrderHasNullValue_ShouldBuildUpdateAction() {
+    void buildChangeSortOrderUpdateAction_WithNullOldSortOrder_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getSortOrder()).thenReturn(null);
 
@@ -1101,7 +1101,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildChangeRequiresDiscountCodeUpdateAction_WithJustNewRequiresDisCodeHasNullValue_ShouldBuildUpdateAction() {
+    void buildChangeRequiresDiscountCodeUpdateAction_WithNullNewRequiresDiscountCode_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.isRequiringDiscountCode()).thenReturn(true);
 
@@ -1115,7 +1115,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildChangeRequiresDiscountCodeUpdateAction_WithJustOldRequiresDisCodeHasNullValue_ShouldBuildUpdateAction() {
+    void buildChangeRequiresDiscountCodeUpdateAction_WithNullOldRequiresDiscountCode_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.isRequiringDiscountCode()).thenReturn(null);
 
@@ -1172,7 +1172,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildChangeStackingModeUpdateAction_WithJustNewStackingModeHasNullValue_ShouldBuildUpdateAction() {
+    void buildChangeStackingModeUpdateAction_WithNullNewStackingMode_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getStackingMode()).thenReturn(StackingMode.STOP_AFTER_THIS_DISCOUNT);
 
@@ -1186,7 +1186,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildChangeStackingModeUpdateAction_WithJustOldRequiresDisCodeHasNullValue_ShouldBuildUpdateAction() {
+    void buildChangeStackingModeUpdateAction_WithNullOldStackingMode_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getStackingMode()).thenReturn(null);
 
@@ -1201,7 +1201,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildChangeStackingModeUpdateAction_WithBothReqDisCodeHaveNullValues_ShouldBuildUpdateAction() {
+    void buildChangeStackingModeUpdateAction_WithBothStackingModeHaveNullValues_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getStackingMode()).thenReturn(null);
 
@@ -1246,7 +1246,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildSetValidFromUpdateAction_WithJustNewSetValidFromDateHasNullValue_ShouldBuildUpdateAction() {
+    void buildSetValidFromUpdateAction_WithNullNewSetValidFromDate_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValidFrom()).thenReturn(ZonedDateTime.parse("2019-04-30T22:00:00.000Z"));
 
@@ -1260,7 +1260,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildSetValidFromUpdateAction_WithJustOldSetValidFromDateHasNullValue_ShouldBuildUpdateAction() {
+    void buildSetValidFromUpdateAction_WithNullOldSetValidFromDate_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValidFrom()).thenReturn(null);
 
@@ -1319,7 +1319,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildSetValidUntilUpdateAction_WithJustNewSetValidUntilDateHasNullValue_ShouldBuildUpdateAction() {
+    void buildSetValidUntilUpdateAction_WithNullNewSetValidUntilDate_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValidUntil()).thenReturn(ZonedDateTime.parse("2019-05-30T22:00:00.000Z"));
 
@@ -1333,7 +1333,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildSetValidUntilUpdateAction_WithJustOldSetValidUntilDateHasNullValue_ShouldBuildUpdateAction() {
+    void buildSetValidUntilUpdateAction_WithNullOldSetValidUntilDate_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValidUntil()).thenReturn(null);
 
@@ -1435,7 +1435,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildSetValidDatesUpdateAction_WithJustOldDatesHaveNullValues_ShouldBuildUpdateAction() {
+    void buildSetValidDatesUpdateAction_WithNullOldDates_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValidUntil()).thenReturn(null);
         when(oldCartDiscount.getValidFrom()).thenReturn(null);
@@ -1453,7 +1453,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildSetValidDatesUpdateAction_WithJustNewDatesHaveNullValues_ShouldBuildUpdateAction() {
+    void buildSetValidDatesUpdateAction_WithNullNewDates_ShouldBuildUpdateAction() {
         final ZonedDateTime validFrom = ZonedDateTime.parse("2019-04-30T22:00:00.000Z");
         final ZonedDateTime validUntil = ZonedDateTime.parse("2019-05-30T22:00:00.000Z");
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
