@@ -4,6 +4,7 @@ import io.sphere.sdk.cartdiscounts.AbsoluteCartDiscountValue;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
 import io.sphere.sdk.cartdiscounts.CartDiscountValue;
+import io.sphere.sdk.cartdiscounts.GiftLineItemCartDiscountValue;
 import io.sphere.sdk.cartdiscounts.StackingMode;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeCartPredicate;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeIsActive;
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActionForReferences;
 import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 
@@ -61,9 +63,56 @@ public final class CartDiscountUpdateActionUtils {
             return buildChangeAbsoluteValueUpdateAction(amountsFromCartDiscount, amountsFromCartDiscountDraft);
         }
 
+        if (oldCartDiscount.getValue() instanceof GiftLineItemCartDiscountValue
+                && newCartDiscount.getValue() instanceof GiftLineItemCartDiscountValue) {
+
+            final GiftLineItemCartDiscountValue oldValue = (GiftLineItemCartDiscountValue) oldCartDiscount.getValue();
+            final GiftLineItemCartDiscountValue newValue = (GiftLineItemCartDiscountValue) newCartDiscount.getValue();
+
+            return Optional.ofNullable(buildActionIfDifferentProducts(oldValue, newValue)
+                    .orElse(buildActionIfDifferentProductVariantIds(oldValue, newValue)
+                            .orElse(buildActionIfDifferentSupplyChannels(oldValue, newValue)
+                                    .orElse(buildActionIfDifferentDistributionChannels(oldValue, newValue)
+                                            .orElse(null)))));
+        }
+
         return buildUpdateAction(oldCartDiscount.getValue(), newCartDiscount.getValue(),
             () -> ChangeValue.of(newCartDiscount.getValue()));
     }
+
+    @Nonnull
+    private static Optional<ChangeValue> buildActionIfDifferentProducts(
+            @Nonnull final GiftLineItemCartDiscountValue oldValue,
+            @Nonnull final GiftLineItemCartDiscountValue newValue) {
+        return buildUpdateActionForReferences(oldValue.getProduct(), newValue.getProduct(),
+            () -> ChangeValue.of(newValue));
+    }
+
+    @Nonnull
+    private static Optional<ChangeValue> buildActionIfDifferentProductVariantIds(
+            @Nonnull final GiftLineItemCartDiscountValue oldValue,
+            @Nonnull final GiftLineItemCartDiscountValue newValue) {
+        return buildUpdateAction(oldValue.getVariantId(), newValue.getVariantId(),
+            () -> ChangeValue.of(newValue));
+    }
+
+    @Nonnull
+    private static Optional<ChangeValue> buildActionIfDifferentSupplyChannels(
+            @Nonnull final GiftLineItemCartDiscountValue oldValue,
+            @Nonnull final GiftLineItemCartDiscountValue newValue) {
+        return buildUpdateActionForReferences(oldValue.getSupplyChannel(), newValue.getSupplyChannel(),
+            () -> ChangeValue.of(newValue));
+    }
+
+    @Nonnull
+    private static Optional<ChangeValue> buildActionIfDifferentDistributionChannels(
+            @Nonnull final GiftLineItemCartDiscountValue oldValue,
+            @Nonnull final GiftLineItemCartDiscountValue newValue) {
+        return buildUpdateActionForReferences(oldValue.getDistributionChannel(), newValue.getDistributionChannel(),
+            () -> ChangeValue.of(newValue));
+    }
+
+
 
     @Nonnull
     private static Optional<UpdateAction<CartDiscount>> buildChangeAbsoluteValueUpdateAction(
