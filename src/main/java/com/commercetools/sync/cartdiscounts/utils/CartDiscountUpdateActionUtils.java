@@ -39,7 +39,7 @@ public final class CartDiscountUpdateActionUtils {
      * If both the {@link CartDiscount} and the {@link CartDiscountDraft} have the same cart discount value,
      * then no update action is needed and hence an empty {@link Optional} is returned.
      *
-     * <p>Note: Order is not considered as an update action for the {@link AbsoluteCartDiscountValue}s
+     * <p>Note: Order is not significant when comparing {@link AbsoluteCartDiscountValue}s
      *
      * @param oldCartDiscount the cart discount which should be updated.
      * @param newCartDiscount the cart discount draft where we get the new cart discount value.
