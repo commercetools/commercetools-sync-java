@@ -225,7 +225,6 @@ class CartDiscountServiceImplTest {
                 .isExactlyInstanceOf(InternalServerErrorException.class);
     }
 
-
     @Test
     void createCartDiscount_WithInvalidCartDiscount_ShouldHaveEmptyOptionalAsAResult() {
         //preparation
