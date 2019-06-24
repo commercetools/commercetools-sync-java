@@ -412,7 +412,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildChangeTargetUpdateAction_WithShippingTargetValues_ShouldNotBuildUpdateAction() {
+    void buildChangeTargetUpdateAction_WithBothShippingTargetValues_ShouldNotBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getTarget()).thenReturn(ShippingCostTarget.of());
 
