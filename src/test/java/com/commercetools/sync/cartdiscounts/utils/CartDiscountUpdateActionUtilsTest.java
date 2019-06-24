@@ -299,7 +299,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildChangeValueUpdateAction_WithNullAbsoluteValues_ShouldNotBuildUpdateAction() {
+    void buildChangeValueUpdateAction_WithOnlyNullAbsoluteValues_ShouldNotBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValue()).thenReturn(
                 CartDiscountValue.ofAbsolute(asList(null, MoneyImpl.of(10, USD))));
@@ -671,7 +671,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildChangeTargetUpdateAction_WithBothTargetHaveNullValues_ShouldNotBuildUpdateAction() {
+    void buildChangeTargetUpdateAction_WithBothNullTargetValues_ShouldNotBuildUpdateAction() {
         //this just can be happen if the value type is gift line item
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getTarget()).thenReturn(null);
@@ -777,7 +777,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildSetDescriptionUpdateAction_WithNullNewDescription_ShouldBuildUpdateAction() {
+    void buildSetDescriptionUpdateAction_WithOnlyNullNewDescription_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getDescription())
                 .thenReturn(LocalizedString.of(Locale.ENGLISH, "cart-discount-1-desc"));
@@ -792,7 +792,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildSetDescriptionUpdateAction_WithNullOldDescription_ShouldBuildUpdateAction() {
+    void buildSetDescriptionUpdateAction_WithOnlyNullOldDescription_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getDescription()).thenReturn(null);
 
@@ -807,7 +807,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildSetDescriptionUpdateAction_WithBothDescriptionHaveNullValues_ShouldNotBuildUpdateAction() {
+    void buildSetDescriptionUpdateAction_WithBothNullDescriptionValues_ShouldNotBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getDescription()).thenReturn(null);
 
@@ -940,7 +940,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildSetValidFromUpdateAction_WithNullNewSetValidFromDate_ShouldBuildUpdateAction() {
+    void buildSetValidFromUpdateAction_WithOnlyNullNewSetValidFromDate_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValidFrom()).thenReturn(ZonedDateTime.parse("2019-04-30T22:00:00.000Z"));
 
@@ -954,7 +954,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildSetValidFromUpdateAction_WithNullOldSetValidFromDate_ShouldBuildUpdateAction() {
+    void buildSetValidFromUpdateAction_WithOnlyNullOldSetValidFromDate_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValidFrom()).thenReturn(null);
 
@@ -968,7 +968,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildSetValidFromUpdateAction_WithBothSetValidFromDateHaveNullValues_ShouldNotBuildUpdateAction() {
+    void buildSetValidFromUpdateAction_WithBothNullSetValidFromDates_ShouldNotBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValidFrom()).thenReturn(null);
 
@@ -1013,7 +1013,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildSetValidUntilUpdateAction_WithNullNewSetValidUntilDate_ShouldBuildUpdateAction() {
+    void buildSetValidUntilUpdateAction_WithOnlyNullNewSetValidUntilDate_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValidUntil()).thenReturn(ZonedDateTime.parse("2019-05-30T22:00:00.000Z"));
 
@@ -1027,7 +1027,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildSetValidUntilUpdateAction_WithNullOldSetValidUntilDate_ShouldBuildUpdateAction() {
+    void buildSetValidUntilUpdateAction_WithOnlyNullOldSetValidUntilDate_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValidUntil()).thenReturn(null);
 
@@ -1042,7 +1042,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildSetValidUntilUpdateAction_WithBothSetValidUntilDateHaveNullValues_ShouldNotBuildUpdateAction() {
+    void buildSetValidUntilUpdateAction_WithBothNullSetValidUntilDates_ShouldNotBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValidUntil()).thenReturn(null);
 
@@ -1129,7 +1129,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildSetValidDatesUpdateAction_WithNullOldDates_ShouldBuildUpdateAction() {
+    void buildSetValidDatesUpdateAction_WithOnlyNullOldDates_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValidUntil()).thenReturn(null);
         when(oldCartDiscount.getValidFrom()).thenReturn(null);
@@ -1147,7 +1147,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildSetValidDatesUpdateAction_WithNullNewDates_ShouldBuildUpdateAction() {
+    void buildSetValidDatesUpdateAction_WithOnlyNullNewDates_ShouldBuildUpdateAction() {
         final ZonedDateTime validFrom = ZonedDateTime.parse("2019-04-30T22:00:00.000Z");
         final ZonedDateTime validUntil = ZonedDateTime.parse("2019-05-30T22:00:00.000Z");
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
@@ -1165,7 +1165,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildSetValidDatesUpdateAction_WithBothSetValidUntilAndFromDateHaveNullValues_ShouldNotBuildUpdateAction() {
+    void buildSetValidDatesUpdateAction_WithBothNullValidUntilAndFromDates_ShouldNotBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValidUntil()).thenReturn(null);
         when(oldCartDiscount.getValidFrom()).thenReturn(null);
