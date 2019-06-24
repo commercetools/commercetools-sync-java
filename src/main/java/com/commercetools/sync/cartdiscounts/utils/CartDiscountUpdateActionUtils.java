@@ -75,10 +75,7 @@ public final class CartDiscountUpdateActionUtils {
         for (MonetaryAmount amountDraft : amountsFromCartDiscountDraft) {
             isAmountNew = true;
             for (MonetaryAmount amount : amountsFromCartDiscount) {
-                if (amount == null
-                        || amountDraft == null
-                        || (amount.getCurrency().equals(amountDraft.getCurrency())
-                        && amount.isEqualTo(amountDraft))) {
+                if (amount == null || amountDraft == null || amount.equals(amountDraft)) {
                     isAmountNew = false;
                     break;
                 }
