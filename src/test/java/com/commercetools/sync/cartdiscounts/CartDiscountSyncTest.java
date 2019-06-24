@@ -155,7 +155,7 @@ class CartDiscountSyncTest {
     }
 
     @Test
-    public void sync_WithNullDraft_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    void sync_WithNullDraft_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         //preparation
         final CartDiscountDraft newCartDiscountDraft = null;
 
