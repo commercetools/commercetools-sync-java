@@ -43,8 +43,6 @@ import static org.mockito.internal.verification.VerificationModeFactory.only;
 
 class CartDiscountServiceImplTest {
 
-    private String testCartDiscountKey = "ABC123";
-
     private static final String PREDICATE_1 = "1 = 1";
     private static final CartPredicate CART_DISCOUNT_CART_PREDICATE_1 = CartPredicate.of(PREDICATE_1);
     private static final CartDiscountValue CART_DISCOUNT_VALUE_1 = CartDiscountValue.ofRelative(1000);
@@ -107,8 +105,7 @@ class CartDiscountServiceImplTest {
 
         // test
         final CompletionStage<Optional<CartDiscount>> result =
-                cartDiscountService.fetchCartDiscount(testCartDiscountKey);
-
+                cartDiscountService.fetchCartDiscount("any_key");
 
         // assertions
         assertThat(result).isCompletedWithValue(Optional.of(mockCartDiscount));
