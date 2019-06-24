@@ -529,9 +529,6 @@ class CartDiscountUpdateActionUtilsTest {
 
     @Test
     void buildChangeTargetUpdateAction_WithSameMultiBuyLineItemsTargetValues_ShouldNotBuildUpdateAction() {
-        // Given a cart with 6 items, the discount can be applied only once.
-        // As a result, 3 items will be discounted
-        // and 4 most expensive items will be marked as participating in this discount.
         final MultiBuyLineItemsTarget target =
                 MultiBuyLineItemsTarget.of("quantity > 0", 6L, 3L, SelectionMode.MOST_EXPENSIVE);
         final MultiBuyLineItemsTarget target2 =
