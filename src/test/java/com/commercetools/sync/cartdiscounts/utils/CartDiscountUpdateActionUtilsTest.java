@@ -51,6 +51,7 @@ import static com.commercetools.sync.cartdiscounts.utils.CartDiscountUpdateActio
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.USD;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -245,7 +246,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildChangeValueUpdateAction_WithSameAbsoluteValuesWithDifferentOrder_ShouldBuildUpdateAction() {
+    void buildChangeValueUpdateAction_WithSameAbsoluteValuesWithDifferentOrder_ShouldNotBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValue()).thenReturn(
                 CartDiscountValue.ofAbsolute(asList(MoneyImpl.of(10, EUR), MoneyImpl.of(10, USD))));
@@ -258,7 +259,60 @@ class CartDiscountUpdateActionUtilsTest {
         final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
                 buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
 
-        assertThat(changeValueUpdateAction).contains(ChangeValue.of(sameValuesWithDifferentOrder));
+        assertThat(changeValueUpdateAction).isNotPresent();
+    }
+
+    @Test
+    void buildChangeValueUpdateAction_WithAdditionalAbsoluteValue_ShouldBuildUpdateAction() {
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getValue()).thenReturn(
+                CartDiscountValue.ofAbsolute(singletonList(MoneyImpl.of(10, EUR))));
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        when(newCartDiscountDraft.getValue())
+                .thenReturn(CartDiscountValue.ofAbsolute(
+                        asList(MoneyImpl.of(10, EUR), MoneyImpl.of(10, USD))));
+
+        final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
+                buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeValueUpdateAction)
+                .contains(ChangeValue.of(CartDiscountValue.ofAbsolute(MoneyImpl.of(10, USD))));
+    }
+
+    @Test
+    void buildChangeValueUpdateAction_WithAdditionalAbsoluteValueWithDifferentOrder_ShouldBuildUpdateAction() {
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getValue()).thenReturn(
+                CartDiscountValue.ofAbsolute(singletonList(MoneyImpl.of(10, EUR))));
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        when(newCartDiscountDraft.getValue())
+                .thenReturn(CartDiscountValue.ofAbsolute(
+                        asList(MoneyImpl.of(10, USD), MoneyImpl.of(10, EUR))));
+
+        final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
+                buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeValueUpdateAction)
+                .contains(ChangeValue.of(CartDiscountValue.ofAbsolute(MoneyImpl.of(10, USD))));
+    }
+
+    @Test
+    void buildChangeValueUpdateAction_WithNullAbsoluteValues_ShouldNotBuildUpdateAction() {
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getValue()).thenReturn(
+                CartDiscountValue.ofAbsolute(asList(null, MoneyImpl.of(10, USD))));
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        when(newCartDiscountDraft.getValue())
+                .thenReturn(CartDiscountValue.ofAbsolute(
+                        asList(MoneyImpl.of(10, USD), null)));
+
+        final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
+                buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeValueUpdateAction).isNotPresent();
     }
 
     @Test
