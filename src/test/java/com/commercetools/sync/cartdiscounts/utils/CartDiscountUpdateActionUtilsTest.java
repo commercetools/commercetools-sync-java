@@ -427,16 +427,10 @@ class CartDiscountUpdateActionUtilsTest {
     @Test
     void buildChangeTargetUpdateAction_WithDifferentMultiBuyLineItemsTargetValues_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
-        // Given a cart with 6 items, the discount can be applied only once.
-        // As a result, 2 items will be discounted
-        // and 4 cheapest items will be marked as participating in this discount.
         when(oldCartDiscount.getTarget())
                 .thenReturn(MultiBuyLineItemsTarget.of("quantity > 0", 6L, 2L,  SelectionMode.CHEAPEST));
 
         final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
-        // Given a cart with 6 items, the discount can be applied only once.
-        // As a result, 3 items will be discounted
-        // and 4 most expensive items will be marked as participating in this discount.
         final MultiBuyLineItemsTarget newTarget =
                 MultiBuyLineItemsTarget.of("quantity > 0", 6L, 3L, SelectionMode.MOST_EXPENSIVE);
         when(newCartDiscountDraft.getTarget()).thenReturn(newTarget);
@@ -557,16 +551,10 @@ class CartDiscountUpdateActionUtilsTest {
     @Test
     void buildChangeTargetUpdateAction_WithDifferentMultiBuyCustomLineItemsTargetValues_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
-        // Given a cart with 6 items, the discount can be applied only once.
-        // As a result, 2 custom items will be discounted
-        // and 4 cheapest custom items will be marked as participating in this discount.
         when(oldCartDiscount.getTarget())
                 .thenReturn(MultiBuyCustomLineItemsTarget.of("quantity > 0", 6L, 2L, SelectionMode.CHEAPEST));
 
         final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
-        // Given a cart with 6 items, the discount can be applied only once.
-        // As a result, 3 custom items will be discounted
-        // and 4 most expensive custom items will be marked as participating in this discount.
         final MultiBuyCustomLineItemsTarget newTarget =
                 MultiBuyCustomLineItemsTarget.of("quantity > 0", 6L, 3L, SelectionMode.MOST_EXPENSIVE);
         when(newCartDiscountDraft.getTarget()).thenReturn(newTarget);
@@ -665,9 +653,6 @@ class CartDiscountUpdateActionUtilsTest {
 
     @Test
     void buildChangeTargetUpdateAction_WithSameMultiBuyCustomLineItemsTargetValues_ShouldNotBuildUpdateAction() {
-        // Given a cart with 6 items, the discount can be applied only once.
-        // As a result, 3 custom items will be discounted
-        // and 4 most expensive custom items will be marked as participating in this discount.
         final MultiBuyCustomLineItemsTarget target =
                 MultiBuyCustomLineItemsTarget.of("quantity > 0", 6L, 3L, SelectionMode.MOST_EXPENSIVE);
         final MultiBuyCustomLineItemsTarget target2 =
