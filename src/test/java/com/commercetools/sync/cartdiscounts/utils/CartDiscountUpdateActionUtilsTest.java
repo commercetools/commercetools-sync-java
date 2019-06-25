@@ -397,6 +397,23 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
+    void buildChangeTargetUpdateAction_WithSameCustomLineItemValues_ShouldNotBuildUpdateAction() {
+        final CustomLineItemsTarget customLineItemsTarget = CustomLineItemsTarget.of("money = \"100 EUR\"");
+        final CustomLineItemsTarget customLineItemsTarget2 = CustomLineItemsTarget.of("money = \"100 EUR\"");
+
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getTarget()).thenReturn(customLineItemsTarget);
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        when(newCartDiscountDraft.getTarget()).thenReturn(customLineItemsTarget2);
+
+        final Optional<UpdateAction<CartDiscount>> changeTargetUpdateAction =
+                buildChangeTargetUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeTargetUpdateAction).isNotPresent();
+    }
+
+    @Test
     void buildChangeTargetUpdateAction_WithLineItemAndShippingTargetValues_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getTarget()).thenReturn(LineItemsTarget.ofAll());
