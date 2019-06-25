@@ -109,7 +109,7 @@ class CartDiscountUpdateActionUtilsTest {
     @Test
     void buildChangeValueUpdateAction_WithDifferentGiftItemProductValue_ShouldBuildUpdateAction() {
         final GiftLineItemCartDiscountValue oldGiftLineItemCartDiscountValue =
-                GiftLineItemCartDiscountValue.of(ResourceIdentifier.ofId("product-1"),
+                GiftLineItemCartDiscountValue.of(Reference.of(Product.referenceTypeId(), "product-1"),
                         1, null, null);
 
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
@@ -130,7 +130,7 @@ class CartDiscountUpdateActionUtilsTest {
     @Test
     void buildChangeValueUpdateAction_WithDifferentGiftItemProductVariantValue_ShouldBuildUpdateAction() {
         final GiftLineItemCartDiscountValue oldGiftLineItemCartDiscountValue =
-                GiftLineItemCartDiscountValue.of(ResourceIdentifier.ofId("productId"),
+                GiftLineItemCartDiscountValue.of(Reference.of(Product.referenceTypeId(), "productId"),
                         1, null, null);
 
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
@@ -138,7 +138,7 @@ class CartDiscountUpdateActionUtilsTest {
 
         final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
         final GiftLineItemCartDiscountValue newGiftLineItemCartDiscountValue =
-                GiftLineItemCartDiscountValue.of(Reference.of(Product.referenceTypeId(), "productId"),
+                GiftLineItemCartDiscountValue.of(ResourceIdentifier.ofId("productId"),
                         2, null, null);
         when(newCartDiscountDraft.getValue()).thenReturn(newGiftLineItemCartDiscountValue);
 
@@ -151,16 +151,16 @@ class CartDiscountUpdateActionUtilsTest {
     @Test
     void buildChangeValueUpdateAction_WithDifferentGiftItemSupplyChannelValue_ShouldBuildUpdateAction() {
         final GiftLineItemCartDiscountValue oldGiftLineItemCartDiscountValue =
-                GiftLineItemCartDiscountValue.of(ResourceIdentifier.ofId("productId"),
-                        1, ResourceIdentifier.ofId("supplyChannel-1"), null);
+            GiftLineItemCartDiscountValue.of(Reference.of(Product.referenceTypeId(), "productId"),
+                1, Reference.of(Channel.referenceTypeId(), "supplyChannel-1"), null);
 
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValue()).thenReturn(oldGiftLineItemCartDiscountValue);
 
         final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
         final GiftLineItemCartDiscountValue newGiftLineItemCartDiscountValue =
-                GiftLineItemCartDiscountValue.of(Reference.of(Product.referenceTypeId(), "productId"),
-                        1, Reference.of(Channel.referenceTypeId(), "supplyChannel-2"), null);
+            GiftLineItemCartDiscountValue.of(ResourceIdentifier.ofId("productId"),
+                1, ResourceIdentifier.ofId("supplyChannel-2"), null);
         when(newCartDiscountDraft.getValue()).thenReturn(newGiftLineItemCartDiscountValue);
 
         final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
@@ -172,8 +172,8 @@ class CartDiscountUpdateActionUtilsTest {
     @Test
     void buildChangeValueUpdateAction_WithDifferentGiftItemDistributionChannelValue_ShouldBuildUpdateAction() {
         final GiftLineItemCartDiscountValue oldGiftLineItemCartDiscountValue =
-                GiftLineItemCartDiscountValue.of(ResourceIdentifier.ofId("productId"),
-                        1, null, ResourceIdentifier.ofId("dist-channel-1"));
+            GiftLineItemCartDiscountValue.of(Reference.of(Product.referenceTypeId(), "productId"),
+                1, null, Reference.of(Channel.referenceTypeId(), "dist-channel-1"));
 
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValue()).thenReturn(oldGiftLineItemCartDiscountValue);
@@ -181,7 +181,7 @@ class CartDiscountUpdateActionUtilsTest {
         final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
         final GiftLineItemCartDiscountValue newGiftLineItemCartDiscountValue =
                 GiftLineItemCartDiscountValue.of(ResourceIdentifier.ofId("productId"),
-                        1, null, Reference.of(Channel.referenceTypeId(), "dist-channel-2"));
+                        1, null, ResourceIdentifier.ofId("dist-channel-2"));
         when(newCartDiscountDraft.getValue()).thenReturn(newGiftLineItemCartDiscountValue);
 
         final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
@@ -193,12 +193,12 @@ class CartDiscountUpdateActionUtilsTest {
     @Test
     void buildChangeValueUpdateAction_WithSameGiftItemValue_ShouldNotBuildUpdateAction() {
         final GiftLineItemCartDiscountValue giftLineItemCartDiscountValue =
-                GiftLineItemCartDiscountValue.of(ResourceIdentifier.ofId("productId"),
-                        1, null, null);
+            GiftLineItemCartDiscountValue.of(Reference.of(Product.referenceTypeId(), "productId"),
+                1, null, null);
 
         final GiftLineItemCartDiscountValue giftLineItemCartDiscountValue2 =
-                GiftLineItemCartDiscountValue.of(Reference.of(Product.referenceTypeId(), "productId"),
-                        1, null, null);
+            GiftLineItemCartDiscountValue.of(ResourceIdentifier.ofId("productId"),
+                1, null, null);
 
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValue()).thenReturn(giftLineItemCartDiscountValue);
