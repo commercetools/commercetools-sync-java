@@ -8,10 +8,10 @@ import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.inventory.queries.InventoryEntryQuery;
 import io.sphere.sdk.queries.PagedQueryResult;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -38,23 +38,23 @@ import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-public class InventorySyncBenchmark {
-    @Before
-    public void setup() {
+class InventorySyncBenchmark {
+    @BeforeEach
+    void setup() {
         deleteInventoryEntries(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
         deleteChannels(CTP_TARGET_CLIENT);
     }
 
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteInventoryEntries(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
         deleteChannels(CTP_TARGET_CLIENT);
     }
 
     @Test
-    public void sync_NewInventories_ShouldCreateInventories() throws IOException {
+    void sync_NewInventories_ShouldCreateInventories() throws IOException {
         // preparation
         final List<InventoryEntryDraft> inventoryEntryDrafts = buildInventoryDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
         final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -91,16 +91,16 @@ public class InventorySyncBenchmark {
         saveNewResult(INVENTORY_SYNC, CREATES_ONLY, totalTime);
     }
 
-    @Ignore
+    @Disabled
     @Test
-    public void sync_ExistingInventories_ShouldUpdateInventories() throws IOException {
+    void sync_ExistingInventories_ShouldUpdateInventories() throws IOException {
         // TODO: SHOULD BE IMPLEMENTED.
         saveNewResult(INVENTORY_SYNC, UPDATES_ONLY, 50000);
     }
 
-    @Ignore
+    @Disabled
     @Test
-    public void sync_WithSomeExistingInventories_ShouldSyncInventories() throws IOException {
+    void sync_WithSomeExistingInventories_ShouldSyncInventories() throws IOException {
         // TODO: SHOULD BE IMPLEMENTED.
         saveNewResult(INVENTORY_SYNC, CREATES_AND_UPDATES, 30000);
     }

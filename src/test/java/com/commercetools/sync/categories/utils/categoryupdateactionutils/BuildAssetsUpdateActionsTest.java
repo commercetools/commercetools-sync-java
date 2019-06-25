@@ -17,7 +17,7 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.AssetDraftBuilder;
 import io.sphere.sdk.models.AssetSourceBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -34,7 +34,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class BuildAssetsUpdateActionsTest {
+class BuildAssetsUpdateActionsTest {
     private static final String RES_ROOT =
         "com/commercetools/sync/categories/utils/categoryupdateactionutils/assets/";
     private static final String CATEGORY_DRAFT_WITH_ASSETS_ABC = RES_ROOT + "category-draft-with-assets-abc.json";
@@ -55,7 +55,7 @@ public class BuildAssetsUpdateActionsTest {
                                                                                       .build();
 
     @Test
-    public void buildAssetsUpdateActions_WithNullNewAssetsAndExistingAssets_ShouldBuild3RemoveActions() {
+    void buildAssetsUpdateActions_WithNullNewAssetsAndExistingAssets_ShouldBuild3RemoveActions() {
         final Category oldCategory = readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_ABC, Category.class);
 
         final List<UpdateAction<Category>> updateActions =
@@ -69,7 +69,7 @@ public class BuildAssetsUpdateActionsTest {
     }
 
     @Test
-    public void buildAssetsUpdateActions_WithNullNewAssetsAndNoOldAssets_ShouldNotBuildActions() {
+    void buildAssetsUpdateActions_WithNullNewAssetsAndNoOldAssets_ShouldNotBuildActions() {
         final Category oldCategory = mock(Category.class);
         when(oldCategory.getAssets()).thenReturn(emptyList());
 
@@ -81,7 +81,7 @@ public class BuildAssetsUpdateActionsTest {
     }
 
     @Test
-    public void buildAssetsUpdateActions_WithNewAssetsAndNoOldAssets_ShouldBuild3AddActions() {
+    void buildAssetsUpdateActions_WithNewAssetsAndNoOldAssets_ShouldBuild3AddActions() {
         final Category oldCategory = mock(Category.class);
         when(oldCategory.getAssets()).thenReturn(emptyList());
 
@@ -105,7 +105,7 @@ public class BuildAssetsUpdateActionsTest {
     }
 
     @Test
-    public void buildAssetsUpdateActions_WithIdenticalAssets_ShouldNotBuildUpdateActions() {
+    void buildAssetsUpdateActions_WithIdenticalAssets_ShouldNotBuildUpdateActions() {
         final Category oldCategory = readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_ABC, Category.class);
         final CategoryDraft newCategoryDraft =
             readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_ABC, CategoryDraft.class);
@@ -118,7 +118,7 @@ public class BuildAssetsUpdateActionsTest {
     }
 
     @Test
-    public void buildAssetsUpdateActions_WithDuplicateAssetKeys_ShouldNotBuildActionsAndTriggerErrorCb() {
+    void buildAssetsUpdateActions_WithDuplicateAssetKeys_ShouldNotBuildActionsAndTriggerErrorCb() {
         final Category oldCategory = readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_ABC, Category.class);
         final CategoryDraft newCategoryDraft =
             readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_ABB, CategoryDraft.class);
@@ -148,7 +148,7 @@ public class BuildAssetsUpdateActionsTest {
     }
 
     @Test
-    public void buildAssetsUpdateActions_WithSameAssetPositionButChangesWithin_ShouldBuildUpdateActions() {
+    void buildAssetsUpdateActions_WithSameAssetPositionButChangesWithin_ShouldBuildUpdateActions() {
         final Category oldCategory = readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_ABC, Category.class);
         final CategoryDraft newCategoryDraft = readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_ABC_WITH_CHANGES,
             CategoryDraft.class);
@@ -173,7 +173,7 @@ public class BuildAssetsUpdateActionsTest {
     }
 
     @Test
-    public void buildAssetsUpdateActions_WithOneMissingAsset_ShouldBuildRemoveAssetAction() {
+    void buildAssetsUpdateActions_WithOneMissingAsset_ShouldBuildRemoveAssetAction() {
         final Category oldCategory = readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_ABC, Category.class);
         final CategoryDraft newCategoryDraft = readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_AB,
             CategoryDraft.class);
@@ -186,7 +186,7 @@ public class BuildAssetsUpdateActionsTest {
     }
 
     @Test
-    public void buildAssetsUpdateActions_WithOneExtraAsset_ShouldBuildAddAssetAction() {
+    void buildAssetsUpdateActions_WithOneExtraAsset_ShouldBuildAddAssetAction() {
         final Category oldCategory = readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_ABC, Category.class);
         final CategoryDraft newCategoryDraft =
             readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_ABCD, CategoryDraft.class);
@@ -203,7 +203,7 @@ public class BuildAssetsUpdateActionsTest {
     }
 
     @Test
-    public void buildAssetsUpdateActions_WithOneAssetSwitch_ShouldBuildRemoveAndAddAssetActions() {
+    void buildAssetsUpdateActions_WithOneAssetSwitch_ShouldBuildRemoveAndAddAssetActions() {
         final Category oldCategory = readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_ABC, Category.class);
         final CategoryDraft newCategoryDraft = readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_ABD,
             CategoryDraft.class);
@@ -221,7 +221,7 @@ public class BuildAssetsUpdateActionsTest {
     }
 
     @Test
-    public void buildAssetsUpdateActions_WithDifferent_ShouldBuildChangeAssetOrderAction() {
+    void buildAssetsUpdateActions_WithDifferent_ShouldBuildChangeAssetOrderAction() {
         final Category oldCategory = readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_ABC, Category.class);
         final CategoryDraft newCategoryDraft =
             readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_CAB, CategoryDraft.class);
@@ -233,7 +233,7 @@ public class BuildAssetsUpdateActionsTest {
     }
 
     @Test
-    public void buildAssetsUpdateActions_WithRemovedAndDifferentOrder_ShouldBuildChangeOrderAndRemoveActions() {
+    void buildAssetsUpdateActions_WithRemovedAndDifferentOrder_ShouldBuildChangeOrderAndRemoveActions() {
         final Category oldCategory = readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_ABC, Category.class);
         final CategoryDraft newCategoryDraft =
             readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_CB, CategoryDraft.class);
@@ -245,7 +245,7 @@ public class BuildAssetsUpdateActionsTest {
     }
 
     @Test
-    public void buildAssetsUpdateActions_WithAddedAndDifferentOrder_ShouldBuildChangeOrderAndAddActions() {
+    void buildAssetsUpdateActions_WithAddedAndDifferentOrder_ShouldBuildChangeOrderAndAddActions() {
         final Category oldCategory = readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_ABC, Category.class);
         final CategoryDraft newCategoryDraft =
             readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_ACBD, CategoryDraft.class);
@@ -262,7 +262,7 @@ public class BuildAssetsUpdateActionsTest {
     }
 
     @Test
-    public void buildAssetsUpdateActions_WithAddedAssetInBetween_ShouldBuildAddWithCorrectPositionActions() {
+    void buildAssetsUpdateActions_WithAddedAssetInBetween_ShouldBuildAddWithCorrectPositionActions() {
         final Category oldCategory = readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_ABC, Category.class);
         final CategoryDraft newCategoryDraft =
             readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_ADBC, CategoryDraft.class);
@@ -278,7 +278,7 @@ public class BuildAssetsUpdateActionsTest {
     }
 
     @Test
-    public void buildAssetsUpdateActions_WithAddedRemovedAndDifOrder_ShouldBuildAllThreeMoveAssetActions() {
+    void buildAssetsUpdateActions_WithAddedRemovedAndDifOrder_ShouldBuildAllThreeMoveAssetActions() {
         final Category oldCategory = readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_ABC, Category.class);
         final CategoryDraft newCategoryDraft =
             readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_CBD, CategoryDraft.class);
@@ -297,7 +297,7 @@ public class BuildAssetsUpdateActionsTest {
     }
 
     @Test
-    public void buildAssetsUpdateActions_WithAddedRemovedAndDifOrderAndNewName_ShouldBuildAllDiffAssetActions() {
+    void buildAssetsUpdateActions_WithAddedRemovedAndDifOrderAndNewName_ShouldBuildAllDiffAssetActions() {
         final Category oldCategory = readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_ABC, Category.class);
         final CategoryDraft newCategoryDraft = readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_CBD_WITH_CHANGES,
             CategoryDraft.class);

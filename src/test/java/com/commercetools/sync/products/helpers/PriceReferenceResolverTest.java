@@ -7,7 +7,6 @@ import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.TypeService;
 import com.neovisionaries.i18n.CountryCode;
-import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.DefaultCurrencyUnits;
 import io.sphere.sdk.models.ResourceIdentifier;
@@ -17,8 +16,8 @@ import io.sphere.sdk.products.PriceDraftBuilder;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.utils.MoneyImpl;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -39,7 +38,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class PriceReferenceResolverTest {
+class PriceReferenceResolverTest {
     private TypeService typeService;
     private ChannelService channelService;
     private CustomerGroupService customerGroupService;
@@ -54,8 +53,8 @@ public class PriceReferenceResolverTest {
     /**
      * Sets up the services and the options needed for reference resolution.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         typeService = getMockTypeService();
         channelService = getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY));
         customerGroupService = getMockCustomerGroupService(getMockCustomerGroup(CUSTOMER_GROUP_ID, CUSTOMER_GROUP_KEY));
@@ -63,7 +62,7 @@ public class PriceReferenceResolverTest {
     }
 
     @Test
-    public void resolveCustomTypeReference_WithNonExistentCustomType_ShouldNotResolveCustomTypeReference() {
+    void resolveCustomTypeReference_WithNonExistentCustomType_ShouldNotResolveCustomTypeReference() {
         final String customTypeKey = "customTypeKey";
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeIdAndJson(customTypeKey, new HashMap<>());
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
@@ -86,7 +85,7 @@ public class PriceReferenceResolverTest {
     }
 
     @Test
-    public void resolveCustomTypeReference_WithNullIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
+    void resolveCustomTypeReference_WithNullIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
         final CustomFieldsDraft customFieldsDraft = mock(CustomFieldsDraft.class);
         final ResourceIdentifier<Type> typeReference = ResourceIdentifier.ofId(null);
         when(customFieldsDraft.getType()).thenReturn(typeReference);
@@ -108,7 +107,7 @@ public class PriceReferenceResolverTest {
     }
 
     @Test
-    public void resolveCustomTypeReference_WithEmptyIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
+    void resolveCustomTypeReference_WithEmptyIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeIdAndJson("", new HashMap<>());
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
             .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
@@ -127,7 +126,7 @@ public class PriceReferenceResolverTest {
     }
 
     @Test
-    public void resolveCustomTypeReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
+    void resolveCustomTypeReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
         final String customTypeKey = "customTypeKey";
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeIdAndJson(customTypeKey, new HashMap<>());
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
@@ -150,13 +149,13 @@ public class PriceReferenceResolverTest {
     }
 
     @Test
-    public void resolveChannelReference_WithNonExistingChannelKey_ShouldResolveChannelReference() {
+    void resolveChannelReference_WithNonExistingChannelKey_ShouldResolveChannelReference() {
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                .build();
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
             .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .country(CountryCode.DE)
-            .channel(Channel.referenceOfId("channelKey"));
+            .channel(ResourceIdentifier.ofId("channelKey"));
 
         final PriceReferenceResolver priceReferenceResolver =
             new PriceReferenceResolver(productSyncOptions, typeService, channelService, customerGroupService);
@@ -168,7 +167,7 @@ public class PriceReferenceResolverTest {
     }
 
     @Test
-    public void
+    void
         resolveSupplyChannelReference_WithNonExistingChannelAndNotEnsureChannel_ShouldNotResolveChannelReference() {
         when(channelService.fetchCachedChannelId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
@@ -176,7 +175,7 @@ public class PriceReferenceResolverTest {
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
             .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .country(CountryCode.DE)
-            .channel(Channel.referenceOfId("channelKey"));
+            .channel(ResourceIdentifier.ofId("channelKey"));
 
         final PriceReferenceResolver priceReferenceResolver =
             new PriceReferenceResolver(syncOptions, typeService, channelService, customerGroupService);
@@ -198,7 +197,7 @@ public class PriceReferenceResolverTest {
     }
 
     @Test
-    public void
+    void
         resolveSupplyChannelReference_WithNonExistingChannelAndEnsureChannel_ShouldResolveSupplyChannelReference() {
         final ProductSyncOptions optionsWithEnsureChannels = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                                       .ensurePriceChannels(true)
@@ -209,7 +208,7 @@ public class PriceReferenceResolverTest {
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
             .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .country(CountryCode.DE)
-            .channel(Channel.referenceOfId("channelKey"));
+            .channel(ResourceIdentifier.ofId("channelKey"));
 
         final PriceReferenceResolver priceReferenceResolver =
             new PriceReferenceResolver(optionsWithEnsureChannels, typeService, channelService, customerGroupService);
@@ -225,7 +224,7 @@ public class PriceReferenceResolverTest {
     }
 
     @Test
-    public void resolveReferences_WithNoReferences_ShouldNotResolveReferences() {
+    void resolveReferences_WithNoReferences_ShouldNotResolveReferences() {
         final PriceDraft priceDraft = PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
                                                        .country(CountryCode.DE)
                                                        .build();

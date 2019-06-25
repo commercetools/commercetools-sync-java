@@ -5,7 +5,7 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.util.Collections;
@@ -20,12 +20,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class BuildRemoveFromCategoryUpdateActionsTest {
+class BuildRemoveFromCategoryUpdateActionsTest {
     private static final Product MOCK_OLD_PUBLISHED_PRODUCT = readObjectFromResource(
         PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
 
     @Test
-    public void buildRemoveFromCategoryUpdateActions_WithDifferentStagedValues_ShouldBuildUpdateAction() {
+    void buildRemoveFromCategoryUpdateActions_WithDifferentStagedValues_ShouldBuildUpdateAction() {
         final List<UpdateAction<Product>> removeFromCategoryUpdateActions =
             getRemoveFromCategoryUpdateActions(MOCK_OLD_PUBLISHED_PRODUCT, Collections.emptySet());
 
@@ -35,7 +35,7 @@ public class BuildRemoveFromCategoryUpdateActionsTest {
     }
 
     @Test
-    public void buildRemoveFromCategoryUpdateActions_WithSameStagedValues_ShouldNotBuildUpdateAction() {
+    void buildRemoveFromCategoryUpdateActions_WithSameStagedValues_ShouldNotBuildUpdateAction() {
         final Set<ResourceIdentifier<Category>> newProductCategories = new HashSet<>();
         newProductCategories.add(Category.referenceOfId("1dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"));
         newProductCategories.add(Category.referenceOfId("2dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f"));

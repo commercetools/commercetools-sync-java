@@ -4,7 +4,7 @@ import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.UUID;
@@ -16,10 +16,10 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class AssetReferenceReplacementUtilsTest {
+class AssetReferenceReplacementUtilsTest {
 
     @Test
-    public void replaceAssetsReferencesIdsWithKeys_WithAllExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
+    void replaceAssetsReferencesIdsWithKeys_WithAllExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
         // preparation
         final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
 
@@ -38,7 +38,7 @@ public class AssetReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceAssetsReferencesIdsWithKeys_WithSomeExpandedReferences_ShouldReplaceOnlyExpandedRefs() {
+    void replaceAssetsReferencesIdsWithKeys_WithSomeExpandedReferences_ShouldReplaceOnlyExpandedRefs() {
         // preparation
         final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
 
@@ -61,7 +61,7 @@ public class AssetReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceAssetsReferencesIdsWithKeys_WithNonExpandedRefs_ShouldReturnReferencesWithoutReplacedKeys() {
+    void replaceAssetsReferencesIdsWithKeys_WithNonExpandedRefs_ShouldReturnReferencesWithoutReplacedKeys() {
         // preparation
         final String customTypeId = UUID.randomUUID().toString();
 

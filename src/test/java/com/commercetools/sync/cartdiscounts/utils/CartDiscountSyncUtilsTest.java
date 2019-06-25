@@ -9,7 +9,6 @@ import io.sphere.sdk.cartdiscounts.CartDiscountTarget;
 import io.sphere.sdk.cartdiscounts.CartDiscountValue;
 import io.sphere.sdk.cartdiscounts.CartPredicate;
 import io.sphere.sdk.cartdiscounts.LineItemsTarget;
-import io.sphere.sdk.cartdiscounts.ShippingCostTarget;
 import io.sphere.sdk.cartdiscounts.StackingMode;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeCartPredicate;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeIsActive;
@@ -25,7 +24,7 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.utils.MoneyImpl;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -36,30 +35,30 @@ import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-public class CartDiscountSyncUtilsTest {
+class CartDiscountSyncUtilsTest {
 
     private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
     private static final CartDiscount CART_DISCOUNT_WITH_SHIPPING_TARGET =
         readObjectFromResource("cart-discount-with-shipping-target.json", CartDiscount.class);
 
     @Test
-    public void buildActions_FromDraftsWithDifferentNameValues_ShouldBuildUpdateActions() {
+    void buildActions_FromDraftsWithDifferentNameValues_ShouldBuildUpdateActions() {
         final LocalizedString newName =
             LocalizedString.of(Locale.GERMAN, "Neu Name", Locale.ENGLISH, "new name");
 
         final CartDiscountDraft newCartDiscount = CartDiscountDraftBuilder
             .of(newName,
-                CartPredicate.of("totalPrice >= \"50 EUR\""),
-                CartDiscountValue.ofRelative(1000),
-                ShippingCostTarget.of(),
-                "0.25",
-                false)
-            .active(false)
-            .description(LocalizedString.of(Locale.GERMAN, "Beschreibung",
-                Locale.ENGLISH, "description"))
-            .validFrom(ZonedDateTime.parse("2019-05-05T00:00:00.000Z"))
-            .validUntil(ZonedDateTime.parse("2019-05-15T00:00:00.000Z"))
+                CART_DISCOUNT_WITH_SHIPPING_TARGET.getCartPredicate(),
+                CART_DISCOUNT_WITH_SHIPPING_TARGET.getValue(),
+                CART_DISCOUNT_WITH_SHIPPING_TARGET.getTarget(),
+                CART_DISCOUNT_WITH_SHIPPING_TARGET.getSortOrder(),
+                CART_DISCOUNT_WITH_SHIPPING_TARGET.isActive())
+            .active(CART_DISCOUNT_WITH_SHIPPING_TARGET.isRequiringDiscountCode())
+            .description(CART_DISCOUNT_WITH_SHIPPING_TARGET.getDescription())
+            .validFrom(CART_DISCOUNT_WITH_SHIPPING_TARGET.getValidFrom())
+            .validUntil(CART_DISCOUNT_WITH_SHIPPING_TARGET.getValidUntil())
             .build();
+
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder.of(CTP_CLIENT).build();
         final List<UpdateAction<CartDiscount>> updateActions =
             CartDiscountSyncUtils.buildActions(CART_DISCOUNT_WITH_SHIPPING_TARGET,
@@ -70,10 +69,10 @@ public class CartDiscountSyncUtilsTest {
     }
 
     @Test
-    public void buildActions_FromDraftsWithAllDifferentValues_ShouldBuildAllUpdateActions() {
+    void buildActions_FromDraftsWithAllDifferentValues_ShouldBuildAllUpdateActions() {
         final LocalizedString newName =
             LocalizedString.of(Locale.GERMAN, "Neu Name", Locale.ENGLISH, "new name");
-        final CartPredicate newCartDiscounPredicate = CartPredicate.of("1 = 1");
+        final CartPredicate newCartDiscountPredicate = CartPredicate.of("1 = 1");
         final CartDiscountValue newCartDiscountValue =  CartDiscountValue.ofAbsolute(MoneyImpl.of(10, EUR));
         final CartDiscountTarget newCartDiscountTarget = LineItemsTarget.of("quantity > 1");
         final String newSortOrder = "0.3";
@@ -87,7 +86,7 @@ public class CartDiscountSyncUtilsTest {
 
         final CartDiscountDraft newCartDiscount = CartDiscountDraftBuilder
             .of(newName,
-                newCartDiscounPredicate,
+                newCartDiscountPredicate,
                 newCartDiscountValue,
                 newCartDiscountTarget,
                 newSortOrder,
@@ -106,7 +105,7 @@ public class CartDiscountSyncUtilsTest {
 
         assertThat(updateActions).containsExactly(
             ChangeValue.of(newCartDiscountValue),
-            ChangeCartPredicate.of(newCartDiscounPredicate),
+            ChangeCartPredicate.of(newCartDiscountPredicate),
             ChangeTarget.of(newCartDiscountTarget),
             ChangeIsActive.of(newIsActive),
             ChangeName.of(newName),

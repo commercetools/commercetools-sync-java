@@ -9,7 +9,7 @@ import io.sphere.sdk.categories.commands.updateactions.SetCustomField;
 import io.sphere.sdk.categories.commands.updateactions.SetCustomType;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 
@@ -19,10 +19,10 @@ import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-public class CategoryCustomUpdateActionUtilsTest {
+class CategoryCustomUpdateActionUtilsTest {
 
     @Test
-    public void buildTypedSetCustomTypeUpdateAction_WithCategoryResource_ShouldBuildCategoryUpdateAction() {
+    void buildTypedSetCustomTypeUpdateAction_WithCategoryResource_ShouldBuildCategoryUpdateAction() {
         final String newCustomTypeId = "key";
 
         final UpdateAction<Category> updateAction =
@@ -36,7 +36,7 @@ public class CategoryCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildRemoveCustomTypeAction_WithCategoryResource_ShouldBuildCategoryUpdateAction() {
+    void buildRemoveCustomTypeAction_WithCategoryResource_ShouldBuildCategoryUpdateAction() {
         final UpdateAction<Category> updateAction =
             new CategoryCustomActionBuilder().buildRemoveCustomTypeAction(null, null);
 
@@ -45,7 +45,7 @@ public class CategoryCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetCustomFieldAction_WithCategoryResource_ShouldBuildCategoryUpdateAction() {
+    void buildSetCustomFieldAction_WithCategoryResource_ShouldBuildCategoryUpdateAction() {
         final JsonNode customFieldValue = JsonNodeFactory.instance.textNode("foo");
         final String customFieldName = "name";
 

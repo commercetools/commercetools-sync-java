@@ -1,11 +1,11 @@
 ext{
-    commercetoolsJvmSdkVersion = '1.37.0'
-    mockitoVersion = '2.23.4'
-    jupiterApiVersion = '5.3.2'
-    assertjVersion = '3.11.1'
-    checkstyleVersion = '8.10.1'
-    pmdVersion = '5.8.1'
-    jacocoVersion = '0.8.1'
+    commercetoolsJvmSdkVersion = '1.43.0'
+    mockitoJunitJupiterVersion = '2.28.2'
+    jupiterApiVersion = '5.4.2'
+    assertjVersion = '3.12.2'
+    checkstyleVersion = '8.2'
+    pmdVersion = '6.14.0'
+    jacocoVersion = '0.8.4'
     findbugsVersion = '3.0.1'
 }
 
@@ -14,7 +14,7 @@ dependencies {
     implementation "com.commercetools.sdk.jvm.core:commercetools-java-client:${commercetoolsJvmSdkVersion}"
     implementation "com.commercetools.sdk.jvm.core:commercetools-convenience:${commercetoolsJvmSdkVersion}"
     implementation "com.google.code.findbugs:annotations:${findbugsVersion}"
-    testImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    testImplementation "org.mockito:mockito-junit-jupiter:${mockitoJunitJupiterVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter-api:${jupiterApiVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter-params:${jupiterApiVersion}"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jupiterApiVersion}"

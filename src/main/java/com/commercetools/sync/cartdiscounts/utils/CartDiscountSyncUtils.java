@@ -7,7 +7,6 @@ import io.sphere.sdk.commands.UpdateAction;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.Optional;
 
 import static com.commercetools.sync.cartdiscounts.utils.CartDiscountUpdateActionUtils.buildChangeCartPredicateUpdateAction;
 import static com.commercetools.sync.cartdiscounts.utils.CartDiscountUpdateActionUtils.buildChangeIsActiveUpdateAction;
@@ -19,14 +18,9 @@ import static com.commercetools.sync.cartdiscounts.utils.CartDiscountUpdateActio
 import static com.commercetools.sync.cartdiscounts.utils.CartDiscountUpdateActionUtils.buildChangeValueUpdateAction;
 import static com.commercetools.sync.cartdiscounts.utils.CartDiscountUpdateActionUtils.buildSetDescriptionUpdateAction;
 import static com.commercetools.sync.cartdiscounts.utils.CartDiscountUpdateActionUtils.buildSetValidDatesUpdateAction;
-import static com.commercetools.sync.cartdiscounts.utils.CartDiscountUpdateActionUtils.buildSetValidFromUpdateAction;
-import static com.commercetools.sync.cartdiscounts.utils.CartDiscountUpdateActionUtils.buildSetValidUntilUpdateAction;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 
 public final class CartDiscountSyncUtils {
-    //    private static final CartDiscountCustomActionBuilder cartDiscountCustomActionBuilder =
-    //        new CartDiscountCustomActionBuilder();
-
 
     /**
      * Compares all the fields of a {@link CartDiscount} and a {@link CartDiscountDraft}. It returns a {@link List} of
@@ -60,15 +54,6 @@ public final class CartDiscountSyncUtils {
             buildSetValidDatesUpdateAction(oldCartDiscount, newCartDiscount),
             buildChangeStackingModeUpdateAction(oldCartDiscount, newCartDiscount)
         );
-
-        // ISSUE: https://github.com/commercetools/commercetools-jvm-sdk/pull/1919
-        //        final List<UpdateAction<CartDiscount>> cartDiscountCustomUpdateActions =
-        //            buildPrimaryResourceCustomUpdateActions(oldCartDiscount,
-        //                newCartDiscount,
-        //                cartDiscountCustomActionBuilder,
-        //                syncOptions);
-        //
-        //        updateActions.addAll(cartDiscountCustomUpdateActions);
 
         return updateActions;
     }

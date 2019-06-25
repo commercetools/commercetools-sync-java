@@ -1,7 +1,10 @@
 package com.commercetools.sync.cartdiscounts.utils;
 
+import io.sphere.sdk.cartdiscounts.AbsoluteCartDiscountValue;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
+import io.sphere.sdk.cartdiscounts.CartDiscountValue;
+import io.sphere.sdk.cartdiscounts.GiftLineItemCartDiscountValue;
 import io.sphere.sdk.cartdiscounts.StackingMode;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeCartPredicate;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeIsActive;
@@ -19,11 +22,15 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 
 import javax.annotation.Nonnull;
-
+import javax.money.MonetaryAmount;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActionForReferences;
+import static java.util.Optional.empty;
 import static java.util.Optional.ofNullable;
 
 public final class CartDiscountUpdateActionUtils {
@@ -34,16 +41,101 @@ public final class CartDiscountUpdateActionUtils {
      * If both the {@link CartDiscount} and the {@link CartDiscountDraft} have the same cart discount value,
      * then no update action is needed and hence an empty {@link Optional} is returned.
      *
+     * <p>Note: Order is not significant when comparing {@link AbsoluteCartDiscountValue}s
+     *
      * @param oldCartDiscount the cart discount which should be updated.
      * @param newCartDiscount the cart discount draft where we get the new cart discount value.
      * @return A filled optional with the update action or an empty optional if the cart discount values are identical.
      */
     @Nonnull
     public static Optional<UpdateAction<CartDiscount>> buildChangeValueUpdateAction(
-        @Nonnull final CartDiscount oldCartDiscount,
-        @Nonnull final CartDiscountDraft newCartDiscount) {
+            @Nonnull final CartDiscount oldCartDiscount,
+            @Nonnull final CartDiscountDraft newCartDiscount) {
+
+        if (oldCartDiscount.getValue() instanceof AbsoluteCartDiscountValue
+                && newCartDiscount.getValue() instanceof AbsoluteCartDiscountValue) {
+
+            final List<MonetaryAmount> amountsFromCartDiscount =
+                    ((AbsoluteCartDiscountValue) oldCartDiscount.getValue()).getMoney();
+            final List<MonetaryAmount> amountsFromCartDiscountDraft =
+                    ((AbsoluteCartDiscountValue) newCartDiscount.getValue()).getMoney();
+
+            return buildChangeAbsoluteValueUpdateAction(amountsFromCartDiscount, amountsFromCartDiscountDraft);
+        }
+
+        if (oldCartDiscount.getValue() instanceof GiftLineItemCartDiscountValue
+                && newCartDiscount.getValue() instanceof GiftLineItemCartDiscountValue) {
+
+            final GiftLineItemCartDiscountValue oldValue = (GiftLineItemCartDiscountValue) oldCartDiscount.getValue();
+            final GiftLineItemCartDiscountValue newValue = (GiftLineItemCartDiscountValue) newCartDiscount.getValue();
+
+            return Optional.ofNullable(buildActionIfDifferentProducts(oldValue, newValue)
+                    .orElse(buildActionIfDifferentProductVariantIds(oldValue, newValue)
+                            .orElse(buildActionIfDifferentSupplyChannels(oldValue, newValue)
+                                    .orElse(buildActionIfDifferentDistributionChannels(oldValue, newValue)
+                                            .orElse(null)))));
+        }
+
         return buildUpdateAction(oldCartDiscount.getValue(), newCartDiscount.getValue(),
             () -> ChangeValue.of(newCartDiscount.getValue()));
+    }
+
+    @Nonnull
+    private static Optional<ChangeValue> buildActionIfDifferentProducts(
+            @Nonnull final GiftLineItemCartDiscountValue oldValue,
+            @Nonnull final GiftLineItemCartDiscountValue newValue) {
+        return buildUpdateActionForReferences(oldValue.getProduct(), newValue.getProduct(),
+            () -> ChangeValue.of(newValue));
+    }
+
+    @Nonnull
+    private static Optional<ChangeValue> buildActionIfDifferentProductVariantIds(
+            @Nonnull final GiftLineItemCartDiscountValue oldValue,
+            @Nonnull final GiftLineItemCartDiscountValue newValue) {
+        return buildUpdateAction(oldValue.getVariantId(), newValue.getVariantId(),
+            () -> ChangeValue.of(newValue));
+    }
+
+    @Nonnull
+    private static Optional<ChangeValue> buildActionIfDifferentSupplyChannels(
+            @Nonnull final GiftLineItemCartDiscountValue oldValue,
+            @Nonnull final GiftLineItemCartDiscountValue newValue) {
+        return buildUpdateActionForReferences(oldValue.getSupplyChannel(), newValue.getSupplyChannel(),
+            () -> ChangeValue.of(newValue));
+    }
+
+    @Nonnull
+    private static Optional<ChangeValue> buildActionIfDifferentDistributionChannels(
+            @Nonnull final GiftLineItemCartDiscountValue oldValue,
+            @Nonnull final GiftLineItemCartDiscountValue newValue) {
+        return buildUpdateActionForReferences(oldValue.getDistributionChannel(), newValue.getDistributionChannel(),
+            () -> ChangeValue.of(newValue));
+    }
+
+
+
+    @Nonnull
+    private static Optional<UpdateAction<CartDiscount>> buildChangeAbsoluteValueUpdateAction(
+            @Nonnull final List<MonetaryAmount> amountsFromCartDiscount,
+            @Nonnull final List<MonetaryAmount> amountsFromCartDiscountDraft) {
+
+        final List<MonetaryAmount> newAmounts = new ArrayList<>();
+        boolean isAmountNew;
+        for (MonetaryAmount amountDraft : amountsFromCartDiscountDraft) {
+            isAmountNew = true;
+            for (MonetaryAmount amount : amountsFromCartDiscount) {
+                if (amount == null || amountDraft == null || amount.equals(amountDraft)) {
+                    isAmountNew = false;
+                    break;
+                }
+            }
+            if (isAmountNew) {
+                newAmounts.add(amountDraft);
+            }
+        }
+
+        return newAmounts.isEmpty() ? empty() :
+                Optional.of(ChangeValue.of(CartDiscountValue.ofAbsolute(newAmounts)));
     }
 
     /**
@@ -78,7 +170,7 @@ public final class CartDiscountUpdateActionUtils {
     public static Optional<UpdateAction<CartDiscount>> buildChangeTargetUpdateAction(
         @Nonnull final CartDiscount oldCartDiscount,
         @Nonnull final CartDiscountDraft newCartDiscount) {
-        return buildUpdateAction(oldCartDiscount.getValue(), newCartDiscount.getValue(),
+        return buildUpdateAction(oldCartDiscount.getTarget(), newCartDiscount.getTarget(),
             () -> ChangeTarget.of(newCartDiscount.getTarget()));
     }
 
@@ -168,7 +260,7 @@ public final class CartDiscountUpdateActionUtils {
      * {@code false} value which is the default value of CTP.
      *
      * @param oldCartDiscount the cart discount which should be updated.
-     * @param newCartDiscount the cart discount draft where we get the new 'isActive'.
+     * @param newCartDiscount the cart discount draft where we get the new 'requiresDiscountCode'.
      * @return A filled optional with the update action or an empty optional if the 'requiresDiscountCode' values
      *         are identical.
      */
@@ -224,7 +316,6 @@ public final class CartDiscountUpdateActionUtils {
      * Compares the {@link ZonedDateTime} validFrom and {@link ZonedDateTime} validUntil values
      * of a {@link CartDiscount} and a {@link CartDiscountDraft}
      * and returns an {@link UpdateAction}&lt;{@link CartDiscount}&gt; as a result in an {@link Optional}.
-     *
      * - If both the {@link CartDiscount} and the {@link CartDiscountDraft} have different validFrom
      * and same validUntil values, then 'setValidFrom' update action returned.
      * - If both the {@link CartDiscount} and the {@link CartDiscountDraft} have the same validFrom
@@ -250,9 +341,10 @@ public final class CartDiscountUpdateActionUtils {
         final Optional<UpdateAction<CartDiscount>> setValidUntilUpdateAction =
             buildSetValidUntilUpdateAction(oldCartDiscount, newCartDiscount);
 
-        if (setValidFromUpdateAction.isPresent() && setValidUntilUpdateAction.isPresent())
+        if (setValidFromUpdateAction.isPresent() && setValidUntilUpdateAction.isPresent()) {
             return Optional.of(
                 SetValidFromAndUntil.of(newCartDiscount.getValidFrom(), newCartDiscount.getValidUntil()));
+        }
 
         return setValidFromUpdateAction.isPresent() ? setValidFromUpdateAction : setValidUntilUpdateAction;
     }
@@ -280,5 +372,6 @@ public final class CartDiscountUpdateActionUtils {
             () -> ChangeStackingMode.of(stackingMode));
     }
 
-
+    private CartDiscountUpdateActionUtils() {
+    }
 }

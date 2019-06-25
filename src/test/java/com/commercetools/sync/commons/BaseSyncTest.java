@@ -2,7 +2,7 @@ package com.commercetools.sync.commons;
 
 import io.sphere.sdk.client.BadRequestException;
 import io.sphere.sdk.client.ConcurrentModificationException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
@@ -12,11 +12,10 @@ import static com.commercetools.sync.commons.BaseSync.executeSupplierIfConcurren
 import static org.assertj.core.api.Assertions.assertThat;
 
 
-public class BaseSyncTest {
+class BaseSyncTest {
 
     @Test
-    public void
-        executeSupplierIfConcurrentModificationException_WithConcModExceptionAsCause_ShouldExecuteFirstSupplier() {
+    void executeSupplierIfConcurrentModificationException_WithConcModExceptionAsCause_ShouldExecuteFirstSupplier() {
         final CompletionException sphereException = new CompletionException(new ConcurrentModificationException());
         final Supplier<Optional<String>> firstSupplier = () -> Optional.of("firstSupplier");
         final Supplier<Optional<String>> secondSupplier = () -> Optional.of("SecondSupplier");
@@ -26,8 +25,7 @@ public class BaseSyncTest {
     }
 
     @Test
-    public void
-        executeSupplierIfConcurrentModificationException_WithBadRequestExceptionAsCause_ShouldExecuteSecondSupplier() {
+    void executeSupplierIfConcurrentModificationException_WithBadRequestExceptionAsCause_ShouldExecuteSecondSupplier() {
         final CompletionException sphereException = new CompletionException(new BadRequestException("Bad Request!"));
         final Supplier<Optional<String>> firstSupplier = () -> Optional.of("firstSupplier");
         final Supplier<Optional<String>> secondSupplier = () -> Optional.of("SecondSupplier");
@@ -37,8 +35,7 @@ public class BaseSyncTest {
     }
 
     @Test
-    public void
-        executeSupplierIfConcurrentModificationException_WithConcurrentModException_ShouldExecuteSecondSupplier() {
+    void executeSupplierIfConcurrentModificationException_WithConcurrentModException_ShouldExecuteSecondSupplier() {
         final ConcurrentModificationException sphereException = new ConcurrentModificationException();
         final Supplier<Optional<String>> firstSupplier = () -> Optional.of("firstSupplier");
         final Supplier<Optional<String>> secondSupplier = () -> Optional.of("SecondSupplier");

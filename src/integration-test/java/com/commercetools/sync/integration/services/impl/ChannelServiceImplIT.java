@@ -10,9 +10,9 @@ import io.sphere.sdk.channels.ChannelDraftBuilder;
 import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.channels.commands.ChannelCreateCommand;
 import io.sphere.sdk.channels.queries.ChannelQuery;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 
@@ -24,7 +24,7 @@ import static com.commercetools.sync.integration.inventories.utils.InventoryITUt
 import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ChannelServiceImplIT {
+class ChannelServiceImplIT {
     private ChannelService channelService;
     private static final String CHANNEL_KEY = "channel_key";
 
@@ -32,8 +32,8 @@ public class ChannelServiceImplIT {
      * Deletes inventories and supply channels from source and target CTP projects.
      * Populates target CTP project with test data.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         deleteInventoryEntriesFromTargetAndSource();
         deleteTypesFromTargetAndSource();
         deleteChannelsFromTargetAndSource();
@@ -46,15 +46,15 @@ public class ChannelServiceImplIT {
     /**
      * Cleans up the target and source test data that were built in this test class.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteInventoryEntriesFromTargetAndSource();
         deleteTypesFromTargetAndSource();
         deleteChannelsFromTargetAndSource();
     }
 
     @Test
-    public void fetchCachedChannelId_WithNonExistingChannel_ShouldNotFetchAChannel() {
+    void fetchCachedChannelId_WithNonExistingChannel_ShouldNotFetchAChannel() {
         Optional<String> channelId = channelService.fetchCachedChannelId(CHANNEL_KEY)
                                                    .toCompletableFuture()
                                                    .join();
@@ -62,7 +62,7 @@ public class ChannelServiceImplIT {
     }
 
     @Test
-    public void fetchCachedChannelId_WithExistingChannel_ShouldFetchChannelAndCache() {
+    void fetchCachedChannelId_WithExistingChannel_ShouldFetchChannelAndCache() {
         final ChannelDraft draft = ChannelDraftBuilder.of(CHANNEL_KEY)
                                                       .roles(singleton(ChannelRole.INVENTORY_SUPPLY))
                                                       .build();
@@ -71,7 +71,7 @@ public class ChannelServiceImplIT {
     }
 
     @Test
-    public void fetchCachedChannelId_WithNewlyCreatedChannelAfterCaching_ShouldNotFetchNewChannel() {
+    void fetchCachedChannelId_WithNewlyCreatedChannelAfterCaching_ShouldNotFetchNewChannel() {
         // Fetch any channel to populate cache
         channelService.fetchCachedChannelId("anyChannelKey").toCompletableFuture().join();
 
@@ -89,7 +89,7 @@ public class ChannelServiceImplIT {
     }
 
     @Test
-    public void createChannel_ShouldCreateChannel() {
+    void createChannel_ShouldCreateChannel() {
         final String newChannelKey = "new_channel_key";
         final Channel result = channelService.createChannel(newChannelKey)
                                              .toCompletableFuture()
@@ -109,7 +109,7 @@ public class ChannelServiceImplIT {
     }
 
     @Test
-    public void createAndCacheChannel_ShouldCreateChannelAndCacheIt() {
+    void createAndCacheChannel_ShouldCreateChannelAndCacheIt() {
         final String newChannelKey = "new_channel_key";
         final Channel result = channelService.createAndCacheChannel(newChannelKey)
                                              .toCompletableFuture()

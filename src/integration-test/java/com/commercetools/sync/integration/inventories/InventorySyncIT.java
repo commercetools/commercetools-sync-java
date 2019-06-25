@@ -14,10 +14,11 @@ import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.inventory.expansion.InventoryEntryExpansionModel;
 import io.sphere.sdk.inventory.queries.InventoryEntryQuery;
 import io.sphere.sdk.models.Reference;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import io.sphere.sdk.models.ResourceIdentifier;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -58,14 +59,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Contains integration tests of inventory sync.
  */
-public class InventorySyncIT {
+class InventorySyncIT {
 
     /**
      * Deletes inventories and supply channels from source and target CTP projects.
      * Populates source and target CTP projects with test data.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         deleteInventoryEntriesFromTargetAndSource();
         deleteTypesFromTargetAndSource();
         deleteChannelsFromTargetAndSource();
@@ -77,15 +78,15 @@ public class InventorySyncIT {
      * Deletes all the test data from the {@code CTP_SOURCE_CLIENT} and the {@code CTP_SOURCE_CLIENT} projects that
      * were set up in this test class.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteInventoryEntriesFromTargetAndSource();
         deleteTypesFromTargetAndSource();
         deleteChannelsFromTargetAndSource();
     }
 
     @Test
-    public void sync_WithUpdatedInventory_ShouldUpdateInventory() {
+    void sync_WithUpdatedInventory_ShouldUpdateInventory() {
         //Ensure that old entry has correct values before sync.
         final Optional<InventoryEntry> oldInventoryBeforeSync =
             getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, null);
@@ -111,7 +112,7 @@ public class InventorySyncIT {
     }
 
     @Test
-    public void sync_WithNewInventory_ShouldCreateInventory() {
+    void sync_WithNewInventory_ShouldCreateInventory() {
         //Ensure that old entry has correct values before sync.
         final Optional<InventoryEntry> oldInventoryBeforeSync =
             getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_2, null);
@@ -136,38 +137,7 @@ public class InventorySyncIT {
     }
 
     @Test
-    public void sync_WithExpandedReferenceToExistingSupplyChannel_ShouldUpdateInventory() {
-        //Fetch existing Channel of key SUPPLY_CHANNEL_KEY_1 from target project.
-        final Optional<Channel> supplyChannel = getChannelByKey(CTP_TARGET_CLIENT, SUPPLY_CHANNEL_KEY_1);
-        assertThat(supplyChannel).isNotEmpty();
-
-        //Make Reference from fetched Channel. Ensure that it is expanded.
-        final Reference<Channel> supplyChannelReference = supplyChannel.get().toReference();
-        assertThat(supplyChannelReference.getObj()).isNotNull();
-        assertThat(supplyChannelReference.getObj().getKey()).isEqualTo(SUPPLY_CHANNEL_KEY_1);
-
-        //Prepare InventoryEntryDraft of sku SKU_1 and reference to above supply channel key.
-        final InventoryEntryDraft newInventoryDraft = InventoryEntryDraftBuilder
-            .of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2,
-                Channel.referenceOfId(SUPPLY_CHANNEL_KEY_1)).build();
-
-        //Prepare sync options and perform sync of draft to target project.
-        final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT).build();
-        final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
-        final InventorySyncStatistics inventorySyncStatistics = inventorySync.sync(singletonList(newInventoryDraft))
-            .toCompletableFuture().join();
-        assertThat(inventorySyncStatistics).hasValues(1, 0, 1, 0);
-
-        //Ensure old entry values after sync.
-        final Optional<InventoryEntry> oldInventoryAfterSync =
-            getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_1, supplyChannelReference);
-        assertThat(oldInventoryAfterSync).isPresent();
-        assertValues(oldInventoryAfterSync.get(), QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2);
-        assertThat(oldInventoryAfterSync.get().getSupplyChannel().getId()).isEqualTo(supplyChannelReference.getId());
-    }
-
-    @Test
-    public void sync_WithKeyToExistingSupplyChannelInPlaceOfReferenceId_ShouldUpdateInventory() {
+    void sync_WithKeyToExistingSupplyChannelInPlaceOfId_ShouldUpdateInventory() {
         /*
          * Fetch existing Channel of key SUPPLY_CHANNEL_KEY_1 from target project.
          * This is done only for test assertion reasons, not necessary for sync.
@@ -179,9 +149,7 @@ public class InventorySyncIT {
          * Prepare InventoryEntryDraft of sku SKU_1 and reference to supply channel of key SUPPLY_CHANNEL_KEY_1.
          * Please note that the key is provided in place of Referenced id.
          */
-        final Reference<Channel> supplyChannelReference = Channel.referenceOfId(SUPPLY_CHANNEL_KEY_1);
-        assertThat(supplyChannelReference.getObj()).isNull();
-        assertThat(supplyChannelReference.getId()).isEqualTo(SUPPLY_CHANNEL_KEY_1);
+        final ResourceIdentifier<Channel> supplyChannelReference = ResourceIdentifier.ofId(SUPPLY_CHANNEL_KEY_1);
 
         final InventoryEntryDraft newInventoryDraft = InventoryEntryDraftBuilder
             .of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, supplyChannelReference).build();
@@ -208,13 +176,13 @@ public class InventorySyncIT {
     }
 
     @Test
-    public void sync_WithNewSupplyChannelAndChannelsEnsured_ShouldCreateNewSupplyChannel() {
+    void sync_WithNewSupplyChannelAndChannelsEnsured_ShouldCreateNewSupplyChannel() {
         //Ensure that supply channel doesn't exist before sync.
         final Optional<Channel> oldSupplyChannelBeforeSync = getChannelByKey(CTP_TARGET_CLIENT, SUPPLY_CHANNEL_KEY_2);
         assertThat(oldSupplyChannelBeforeSync).isEmpty();
 
         //Prepare sync data.
-        final Reference<Channel> newSupplyChannelReference = Channel.referenceOfId(SUPPLY_CHANNEL_KEY_2);
+        final ResourceIdentifier<Channel> newSupplyChannelReference = ResourceIdentifier.ofId(SUPPLY_CHANNEL_KEY_2);
         final InventoryEntryDraft newInventoryDraft = InventoryEntryDraftBuilder
             .of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, newSupplyChannelReference)
             .build();
@@ -234,7 +202,7 @@ public class InventorySyncIT {
     }
 
     @Test
-    public void sync_WithExpandedReferencesToSourceChannels_ShouldUpdateInventoriesWithoutChannelCreation() {
+    void sync_WithReferencesToSourceChannels_ShouldUpdateInventoriesWithoutChannelCreation() {
         //Ensure channels in target project before sync
         final ChannelQuery targetChannelsQuery = ChannelQuery.of().withPredicates(channelQueryModel ->
                 channelQueryModel.roles().containsAny(singletonList(ChannelRole.INVENTORY_SUPPLY)));
@@ -246,7 +214,7 @@ public class InventorySyncIT {
         //Prepare InventoryEntryDraft of sku SKU_1 and reference to above supply channel key.
         final InventoryEntryDraft newInventoryDraft = InventoryEntryDraftBuilder
             .of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2,
-                Channel.referenceOfId(SUPPLY_CHANNEL_KEY_1)).build();
+                ResourceIdentifier.ofId(SUPPLY_CHANNEL_KEY_1)).build();
 
         //Fetch existing Channel of key SUPPLY_CHANNEL_KEY_1 from target project.
         final Optional<Channel> targetSupplyChannel = getChannelByKey(CTP_TARGET_CLIENT, SUPPLY_CHANNEL_KEY_1);
@@ -283,7 +251,7 @@ public class InventorySyncIT {
     }
 
     @Test
-    public void sync_FromSourceToTargetProjectWithChannelsEnsured_ShouldReturnProperStatistics() {
+    void sync_FromSourceToTargetProjectWithChannelsEnsured_ShouldReturnProperStatistics() {
         //Fetch new inventories from source project. Convert them to drafts.
         final List<InventoryEntry> inventoryEntries = CTP_SOURCE_CLIENT.execute(
             InventoryEntryQuery.of()
@@ -307,7 +275,7 @@ public class InventorySyncIT {
     }
 
     @Test
-    public void sync_FromSourceToTargetWithoutChannelsEnsured_ShouldReturnProperStatistics() {
+    void sync_FromSourceToTargetWithoutChannelsEnsured_ShouldReturnProperStatistics() {
         //Fetch new inventories from source project. Convert them to drafts.
         final List<InventoryEntry> inventoryEntries = CTP_SOURCE_CLIENT
             .execute(InventoryEntryQuery.of()
@@ -326,9 +294,9 @@ public class InventorySyncIT {
         assertThat(inventorySyncStatistics).hasValues(3, 0, 1, 1);
     }
 
-    @Ignore
+    @Disabled
     @Test
-    public void sync_WithBatchProcessing_ShouldCreateAllGivenInventories() {
+    void sync_WithBatchProcessing_ShouldCreateAllGivenInventories() {
         //Ensure inventory entries amount in target project before sync.
         final List<InventoryEntry> oldEntriesBeforeSync = CTP_TARGET_CLIENT.execute(InventoryEntryQuery.of())
             .toCompletableFuture().join().getResults();
@@ -355,7 +323,7 @@ public class InventorySyncIT {
     }
 
     @Test
-    public void sync_ShouldReturnProperStatisticsObject() {
+    void sync_ShouldReturnProperStatisticsObject() {
         //Fetch new inventories from source project. Convert them to drafts.
         final List<InventoryEntry> inventoryEntries = CTP_SOURCE_CLIENT
             .execute(InventoryEntryQuery.of()
@@ -376,7 +344,7 @@ public class InventorySyncIT {
     }
 
     @Test
-    public void sync_WithCustomErrorCallback_ShouldExecuteCallbackOnError() {
+    void sync_WithCustomErrorCallback_ShouldExecuteCallbackOnError() {
         //Fetch new inventories from source project. Convert them to drafts.
         final List<InventoryEntry> inventoryEntries = CTP_SOURCE_CLIENT
             .execute(InventoryEntryQuery.of()
@@ -401,7 +369,7 @@ public class InventorySyncIT {
     }
 
     @Test
-    public void sync_WithSyncDifferentBatchesConcurrently_ShouldReturnProperStatistics() {
+    void sync_WithSyncDifferentBatchesConcurrently_ShouldReturnProperStatistics() {
         //Prepare new inventories.
         final List<InventoryEntryDraft> newDrafts = IntStream.range(100,160)
             .mapToObj(i -> InventoryEntryDraftBuilder.of(String.valueOf(i), QUANTITY_ON_STOCK_1).build())

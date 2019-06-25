@@ -20,8 +20,8 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,8 +33,8 @@ import java.util.function.BiConsumer;
 
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildNewOrModifiedCustomFieldsUpdateActions;
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildNonNullCustomFieldsUpdateActions;
-import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildRemovedCustomFieldsUpdateActions;
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildPrimaryResourceCustomUpdateActions;
+import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildRemovedCustomFieldsUpdateActions;
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildSetCustomFieldsUpdateActions;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,14 +42,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ResourceCustomUpdateActionUtilsTest {
+class ResourceCustomUpdateActionUtilsTest {
     private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
     private ArrayList<String> errorMessages;
     private ArrayList<Throwable> exceptions;
     private CategorySyncOptions categorySyncOptions;
 
-    @Before
-    public void setupTest() {
+    @BeforeEach
+    void setupTest() {
         errorMessages = new ArrayList<>();
         exceptions = new ArrayList<>();
         final BiConsumer<String, Throwable> updateActionErrorCallBack = (errorMessage, exception) -> {
@@ -63,8 +63,7 @@ public class ResourceCustomUpdateActionUtilsTest {
                                                         .build();
     }
 
-    @Test
-    public void buildResourceCustomUpdateActions_WithNonNullCustomFieldsWithDifferentTypes_ShouldBuildUpdateActions() {
+    @Test void buildResourceCustomUpdateActions_WithNonNullCustomFieldsWithDifferentTypes_ShouldBuildUpdateActions() {
         final Category oldCategory = mock(Category.class);
         final CustomFields oldCategoryCustomFields = mock(CustomFields.class);
         final Reference<Type> oldCategoryCustomFieldsDraftTypeReference = Type.referenceOfId("2");
@@ -91,7 +90,7 @@ public class ResourceCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildResourceCustomUpdateActions_WithNullOldCustomFields_ShouldBuildUpdateActions() {
+    void buildResourceCustomUpdateActions_WithNullOldCustomFields_ShouldBuildUpdateActions() {
         final Category oldCategory = mock(Category.class);
         when(oldCategory.getCustom()).thenReturn(null);
 
@@ -110,7 +109,7 @@ public class ResourceCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildResourceCustomUpdateActions_WithNullOldCustomFieldsAndBlankNewTypeId_ShouldCallErrorCallBack() {
+    void buildResourceCustomUpdateActions_WithNullOldCustomFieldsAndBlankNewTypeId_ShouldCallErrorCallBack() {
         final Category oldCategory = mock(Category.class);
         when(oldCategory.getCustom()).thenReturn(null);
         final String oldCategoryId = "oldCategoryId";
@@ -136,7 +135,7 @@ public class ResourceCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildResourceCustomUpdateActions_WithNullNewCustomFields_ShouldBuildUpdateActions() {
+    void buildResourceCustomUpdateActions_WithNullNewCustomFields_ShouldBuildUpdateActions() {
         final Category oldCategory = mock(Category.class);
         final CustomFields oldCategoryCustomFields = mock(CustomFields.class);
         when(oldCategory.getCustom()).thenReturn(oldCategoryCustomFields);
@@ -157,7 +156,7 @@ public class ResourceCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildResourceCustomUpdateActions_WithNullIds_ShouldCallSyncOptionsCallBack() {
+    void buildResourceCustomUpdateActions_WithNullIds_ShouldCallSyncOptionsCallBack() {
         final Reference<Type> categoryTypeReference = Type.referenceOfId(null);
 
         // Mock old CustomFields
@@ -192,7 +191,7 @@ public class ResourceCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildNonNullCustomFieldsUpdateActions_WithBothNullCustomFields_ShouldNotBuildUpdateActions() {
+    void buildNonNullCustomFieldsUpdateActions_WithBothNullCustomFields_ShouldNotBuildUpdateActions() {
         final Category oldCategory = mock(Category.class);
         when(oldCategory.getCustom()).thenReturn(null);
 
@@ -210,8 +209,7 @@ public class ResourceCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void
-        buildNonNullCustomFieldsUpdateActions_WithSameCategoryTypesButDifferentFieldValues_ShouldBuildUpdateActions()
+    void buildNonNullCustomFieldsUpdateActions_WithSameCategoryTypesButDifferentFieldValues_ShouldBuildUpdateActions()
         throws BuildUpdateActionException {
         // Mock old CustomFields
         final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
@@ -242,7 +240,7 @@ public class ResourceCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildNonNullCustomFieldsUpdateActions_WithDifferentCategoryTypeIds_ShouldBuildUpdateActions()
+    void buildNonNullCustomFieldsUpdateActions_WithDifferentCategoryTypeIds_ShouldBuildUpdateActions()
         throws BuildUpdateActionException {
         // Mock old CustomFields
         final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
@@ -264,7 +262,7 @@ public class ResourceCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildNonNullCustomFieldsUpdateActions_WithNullOldCategoryTypeId_ShouldBuildUpdateActions()
+    void buildNonNullCustomFieldsUpdateActions_WithNullOldCategoryTypeId_ShouldBuildUpdateActions()
         throws BuildUpdateActionException {
         // Mock old CustomFields
         final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
@@ -286,7 +284,7 @@ public class ResourceCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildNonNullCustomFieldsUpdateActions_WithNullNewCategoryTypeId_TriggersErrorCallbackAndNoAction()
+    void buildNonNullCustomFieldsUpdateActions_WithNullNewCategoryTypeId_TriggersErrorCallbackAndNoAction()
         throws BuildUpdateActionException {
         // Mock old CustomFields
         final CustomFields oldCustomFieldsMock = mock(CustomFields.class);
@@ -317,7 +315,7 @@ public class ResourceCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildNonNullCustomFieldsUpdateActions_WithSameIdsButNullNewCustomFields_ShouldBuildUpdateActions()
+    void buildNonNullCustomFieldsUpdateActions_WithSameIdsButNullNewCustomFields_ShouldBuildUpdateActions()
         throws BuildUpdateActionException {
         final Reference<Type> categoryTypeReference = Type.referenceOfId("categoryCustomTypeId");
 
@@ -346,7 +344,7 @@ public class ResourceCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildNonNullCustomFieldsUpdateActions_WithNullIds_ShouldThrowBuildUpdateActionException() {
+    void buildNonNullCustomFieldsUpdateActions_WithNullIds_ShouldThrowBuildUpdateActionException() {
         final Reference<Type> categoryTypeReference = Type.referenceOfId(null);
 
         // Mock old CustomFields
@@ -372,7 +370,7 @@ public class ResourceCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetCustomFieldsUpdateActions_WithDifferentCustomFieldValues_ShouldBuildUpdateActions() {
+    void buildSetCustomFieldsUpdateActions_WithDifferentCustomFieldValues_ShouldBuildUpdateActions() {
         final Map<String, JsonNode> oldCustomFields = new HashMap<>();
         oldCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));
         oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
@@ -394,7 +392,7 @@ public class ResourceCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetCustomFieldsUpdateActions_WithNoNewCustomFieldsInOldCustomFields_ShouldBuildUpdateActions() {
+    void buildSetCustomFieldsUpdateActions_WithNoNewCustomFieldsInOldCustomFields_ShouldBuildUpdateActions() {
         final Map<String, JsonNode> oldCustomFields = new HashMap<>();
 
         final Map<String, JsonNode> newCustomFields = new HashMap<>();
@@ -413,7 +411,7 @@ public class ResourceCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetCustomFieldsUpdateActions_WithOldCustomFieldNotInNewFields_ShouldBuildUpdateActions() {
+    void buildSetCustomFieldsUpdateActions_WithOldCustomFieldNotInNewFields_ShouldBuildUpdateActions() {
         final Map<String, JsonNode> oldCustomFields = new HashMap<>();
         oldCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
         oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
@@ -432,7 +430,7 @@ public class ResourceCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetCustomFieldsUpdateActions_WithSameCustomFieldValues_ShouldNotBuildUpdateActions() {
+    void buildSetCustomFieldsUpdateActions_WithSameCustomFieldValues_ShouldNotBuildUpdateActions() {
         final BooleanNode oldBooleanFieldValue = JsonNodeFactory.instance.booleanNode(true);
         final ObjectNode oldLocalizedFieldValue = JsonNodeFactory.instance.objectNode().put("de", "rot");
 
@@ -453,7 +451,7 @@ public class ResourceCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetCustomFieldsUpdateActions_WithDifferentOrderOfCustomFieldValues_ShouldNotBuildUpdateActions() {
+    void buildSetCustomFieldsUpdateActions_WithDifferentOrderOfCustomFieldValues_ShouldNotBuildUpdateActions() {
         final Map<String, JsonNode> oldCustomFields = new HashMap<>();
         oldCustomFields.put("backgroundColor",
             JsonNodeFactory.instance.objectNode().put("de", "rot").put("es", "rojo"));
@@ -471,7 +469,7 @@ public class ResourceCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetCustomFieldsUpdateActions_WithEmptyCustomFieldValues_ShouldNotBuildUpdateActions() {
+    void buildSetCustomFieldsUpdateActions_WithEmptyCustomFieldValues_ShouldNotBuildUpdateActions() {
         final Map<String, JsonNode> oldCustomFields = new HashMap<>();
         oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode());
 
@@ -487,7 +485,7 @@ public class ResourceCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetCustomFieldsUpdateActions_WithEmptyCustomFields_ShouldNotBuildUpdateActions() {
+    void buildSetCustomFieldsUpdateActions_WithEmptyCustomFields_ShouldNotBuildUpdateActions() {
         final Map<String, JsonNode> oldCustomFields = new HashMap<>();
         final Map<String, JsonNode> newCustomFields = new HashMap<>();
 
@@ -500,7 +498,7 @@ public class ResourceCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildNewOrModifiedCustomFieldsUpdateActions_WithNewOrModifiedCustomFields_ShouldBuildUpdateActions() {
+    void buildNewOrModifiedCustomFieldsUpdateActions_WithNewOrModifiedCustomFields_ShouldBuildUpdateActions() {
         final Map<String, JsonNode> oldCustomFields = new HashMap<>();
         oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
 
@@ -519,7 +517,7 @@ public class ResourceCustomUpdateActionUtilsTest {
 
 
     @Test
-    public void buildNewOrModifiedCustomFieldsUpdateActions_WithNoNewOrModifiedCustomFields_ShouldNotBuildActions() {
+    void buildNewOrModifiedCustomFieldsUpdateActions_WithNoNewOrModifiedCustomFields_ShouldNotBuildActions() {
         final Map<String, JsonNode> oldCustomFields = new HashMap<>();
         oldCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
         oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
@@ -536,7 +534,7 @@ public class ResourceCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildRemovedCustomFieldsUpdateActions_WithRemovedCustomField_ShouldBuildUpdateActions() {
+    void buildRemovedCustomFieldsUpdateActions_WithRemovedCustomField_ShouldBuildUpdateActions() {
         final Map<String, JsonNode> oldCustomFields = new HashMap<>();
         oldCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
         oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
@@ -555,7 +553,7 @@ public class ResourceCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildRemovedCustomFieldsUpdateActions_WithNoRemovedCustomField_ShouldNotBuildUpdateActions() {
+    void buildRemovedCustomFieldsUpdateActions_WithNoRemovedCustomField_ShouldNotBuildUpdateActions() {
         final Map<String, JsonNode> oldCustomFields = new HashMap<>();
         oldCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
 
