@@ -36,6 +36,7 @@ import static com.commercetools.sync.benchmark.BenchmarkUtils.UPDATES_ONLY;
 import static com.commercetools.sync.benchmark.BenchmarkUtils.saveNewResult;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_CART_PREDICATE_1;
+import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_NAME_1;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_TARGET_1;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_VALUE_1;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.JANUARY_FROM;
@@ -97,6 +98,7 @@ class CartDiscountSyncBenchmark {
         final long beforeSyncTime = System.currentTimeMillis();
         final CartDiscountSyncStatistics syncStatistics = executeBlocking(cartDiscountSync.sync(cartDiscountDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
+
 
         // assert on threshold (based on history of benchmarks; highest was ~5 seconds)
         final int threshold = 10000; // double of the highest benchmark
@@ -160,6 +162,7 @@ class CartDiscountSyncBenchmark {
                              .thenApply(Long::intValue)
                              .toCompletableFuture();
 
+
         executeBlocking(totalNumberOfUpdatedCartDiscounts);
         assertThat(totalNumberOfUpdatedCartDiscounts).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
 
@@ -201,6 +204,7 @@ class CartDiscountSyncBenchmark {
                      .toArray(CompletableFuture[]::new))
                          .join();
 
+
         final CartDiscountSync cartDiscountSync = new CartDiscountSync(cartDiscountSyncOptions);
 
 
@@ -210,6 +214,7 @@ class CartDiscountSyncBenchmark {
         // and update half of the cart discount drafts to target project with different stacking mode (STACKING)
         final CartDiscountSyncStatistics syncStatistics = executeBlocking(cartDiscountSync.sync(cartDiscountDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
+
 
         // assert on threshold (based on history of benchmarks; highest was ~5 seconds)
         final int threshold = 10000; // double of the highest benchmark
@@ -255,12 +260,13 @@ class CartDiscountSyncBenchmark {
             .range(0, numberOfCartDiscounts)
             .mapToObj(i ->
                 CartDiscountDraftBuilder.of(
-                    LocalizedString.of(Locale.ENGLISH, format("key__%d", i)),
+                    CART_DISCOUNT_NAME_1,
                     CART_DISCOUNT_CART_PREDICATE_1,
                     CART_DISCOUNT_VALUE_1,
                     CART_DISCOUNT_TARGET_1,
                     sortOrders.get(i),
                     false)
+                                        .key(format("key__%d", i))
                                         .isActive(false)
                                         .description(LocalizedString.of(Locale.ENGLISH, format("description__%d", i)))
                                         .validFrom(JANUARY_FROM)

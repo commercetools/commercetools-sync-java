@@ -9,15 +9,12 @@ import io.sphere.sdk.cartdiscounts.commands.CartDiscountCreateCommand;
 import io.sphere.sdk.cartdiscounts.commands.CartDiscountUpdateCommand;
 import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
 import io.sphere.sdk.cartdiscounts.queries.CartDiscountQueryBuilder;
-import io.sphere.sdk.cartdiscounts.queries.CartDiscountQueryModel;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.queries.QueryPredicate;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -27,36 +24,11 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-//todo: check keyToIdCache is needed for cart discount service
 public class CartDiscountServiceImpl extends BaseService<CartDiscountDraft, CartDiscount, CartDiscountSyncOptions>
     implements CartDiscountService {
 
     public CartDiscountServiceImpl(@Nonnull final CartDiscountSyncOptions syncOptions) {
         super(syncOptions);
-    }
-
-    private String getKey(@Nonnull final CartDiscount cartDiscount) {
-        //todo: SUPPORT-4443 need to be merged from name to key.
-        return cartDiscount.getName().get(Locale.ENGLISH);
-    }
-
-    private String getKey(@Nonnull final CartDiscountDraft cartDiscountDraft) {
-        //todo: SUPPORT-4443 need to be merged from name to key.
-        return cartDiscountDraft.getName().get(Locale.ENGLISH);
-    }
-
-    @Nonnull
-    private QueryPredicate<CartDiscount> getKeyQuery(@Nonnull final CartDiscountQueryModel cartDiscountQueryModel,
-                                                     @Nonnull final String key) {
-        //todo: SUPPORT-4443 need to be merged from name to key.
-        return cartDiscountQueryModel.name().lang(Locale.ENGLISH).is(key);
-    }
-
-    @Nonnull
-    private QueryPredicate<CartDiscount> getKeysQuery(@Nonnull final CartDiscountQueryModel cartDiscountQueryModel,
-                                                      @Nonnull final Set<String> keys) {
-        //todo: SUPPORT-4443 need to be merged from name to key.
-        return cartDiscountQueryModel.name().lang(Locale.ENGLISH).isIn(keys);
     }
 
     @Nonnull
@@ -68,7 +40,7 @@ public class CartDiscountServiceImpl extends BaseService<CartDiscountDraft, Cart
 
         final CartDiscountQuery cartDiscountQuery = CartDiscountQueryBuilder
             .of()
-            .plusPredicates(queryModel -> getKeysQuery(queryModel, keys))
+            .plusPredicates(queryModel -> queryModel.key().isIn(keys))
             .build();
 
 
@@ -76,7 +48,7 @@ public class CartDiscountServiceImpl extends BaseService<CartDiscountDraft, Cart
                             .thenApply(cartDiscounts -> cartDiscounts
                                 .stream()
                                 .flatMap(List::stream)
-                                .peek(cartDiscount -> keyToIdCache.put(getKey(cartDiscount), cartDiscount.getId()))
+                                .peek(cartDiscount -> keyToIdCache.put(cartDiscount.getKey(), cartDiscount.getId()))
                                 .collect(toSet()));
     }
 
@@ -88,7 +60,7 @@ public class CartDiscountServiceImpl extends BaseService<CartDiscountDraft, Cart
         }
 
         final CartDiscountQuery cartDiscountQuery = CartDiscountQuery
-            .of().plusPredicates(cartDiscountQueryModel -> getKeyQuery(cartDiscountQueryModel, key));
+            .of().plusPredicates(cartDiscountQueryModel -> cartDiscountQueryModel.key().is(key));
 
         return syncOptions
             .getCtpClient()
@@ -97,7 +69,7 @@ public class CartDiscountServiceImpl extends BaseService<CartDiscountDraft, Cart
                 cartDiscountPagedQueryResult
                     .head()
                     .map(cartDiscount -> {
-                        keyToIdCache.put(getKey(cartDiscount), cartDiscount.getId());
+                        keyToIdCache.put(cartDiscount.getKey(), cartDiscount.getId());
                         return cartDiscount;
                     }));
     }
@@ -107,7 +79,7 @@ public class CartDiscountServiceImpl extends BaseService<CartDiscountDraft, Cart
     public CompletionStage<Optional<CartDiscount>> createCartDiscount(
         @Nonnull final CartDiscountDraft cartDiscountDraft) {
 
-        return createResource(cartDiscountDraft, this::getKey, CartDiscountCreateCommand::of);
+        return createResource(cartDiscountDraft, CartDiscountDraft::getKey, CartDiscountCreateCommand::of);
     }
 
     @Nonnull
