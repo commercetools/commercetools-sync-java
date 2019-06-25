@@ -62,6 +62,7 @@ class CartDiscountSyncIT {
                     cartDiscount.getTarget(),
                     cartDiscount.getSortOrder(),
                     cartDiscount.isRequiringDiscountCode())
+                                        .key(cartDiscount.getKey())
                                         .active(cartDiscount.isActive())
                                         .description(cartDiscount.getDescription())
                                         .validFrom(cartDiscount.getValidFrom())
@@ -114,6 +115,7 @@ class CartDiscountSyncIT {
                     ShippingCostTarget.of(), //new target
                     cartDiscount.getSortOrder(),
                     cartDiscount.isRequiringDiscountCode())
+                                        .key(cartDiscount.getKey())
                                         .active(cartDiscount.isActive())
                                         .description(cartDiscount.getDescription())
                                         .validFrom(cartDiscount.getValidFrom())

@@ -35,6 +35,9 @@ public class CartDiscountITUtils {
     public static final String CART_DISCOUNT_KEY_1 = "key_1";
     public static final String CART_DISCOUNT_KEY_2 = "key_2";
 
+    public static final LocalizedString CART_DISCOUNT_NAME_1 = LocalizedString.of(Locale.ENGLISH, "name_1");
+    public static final LocalizedString CART_DISCOUNT_NAME_2 = LocalizedString.of(Locale.ENGLISH, "name_2");
+
     public static final LocalizedString CART_DISCOUNT_DESC_1 =
         LocalizedString.of(Locale.ENGLISH, "discount- get 10 percent");
     public static final LocalizedString CART_DISCOUNT_DESC_2 =
@@ -62,12 +65,13 @@ public class CartDiscountITUtils {
     public static final String SORT_ORDER_2 = "0.2";
 
     public static final CartDiscountDraft CART_DISCOUNT_DRAFT_1 =
-        CartDiscountDraftBuilder.of(LocalizedString.of(Locale.ENGLISH, CART_DISCOUNT_KEY_1),
+        CartDiscountDraftBuilder.of(CART_DISCOUNT_NAME_1,
             CART_DISCOUNT_CART_PREDICATE_1,
             CART_DISCOUNT_VALUE_1,
             CART_DISCOUNT_TARGET_1,
             SORT_ORDER_1,
             false)
+                                .key(CART_DISCOUNT_KEY_1)
                                 .active(false)
                                 .description(CART_DISCOUNT_DESC_1)
                                 .validFrom(JANUARY_FROM)
@@ -75,12 +79,13 @@ public class CartDiscountITUtils {
                                 .build();
 
     public static final CartDiscountDraft CART_DISCOUNT_DRAFT_2 =
-        CartDiscountDraftBuilder.of(LocalizedString.of(Locale.ENGLISH, CART_DISCOUNT_KEY_2),
+        CartDiscountDraftBuilder.of(CART_DISCOUNT_NAME_2,
             CART_DISCOUNT_CART_PREDICATE_2,
             CART_DISCOUNT_VALUE_2,
             CART_DISCOUNT_TARGET_2,
             SORT_ORDER_2,
             false)
+                                .key(CART_DISCOUNT_KEY_2)
                                 .active(false)
                                 .description(CART_DISCOUNT_DESC_2)
                                 .validFrom(FEBRUARY_FROM)
@@ -129,8 +134,8 @@ public class CartDiscountITUtils {
         @Nonnull final String key) {
 
         final CartDiscountQuery query = CartDiscountQueryBuilder
-            .of() //todo: SUPPORT-4443 need to be merged from name to key.
-            .plusPredicates(queryModel -> queryModel.name().lang(Locale.ENGLISH).is(key))
+            .of()
+            .plusPredicates(queryModel -> queryModel.key().is(key))
             .build();
 
         return sphereClient.execute(query).toCompletableFuture().join().head();

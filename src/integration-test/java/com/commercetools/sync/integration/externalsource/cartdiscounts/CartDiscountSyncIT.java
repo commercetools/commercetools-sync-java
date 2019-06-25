@@ -14,7 +14,6 @@ import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.queries.PagedQueryResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +21,6 @@ import org.junit.jupiter.api.Test;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
@@ -36,6 +34,8 @@ import static com.commercetools.sync.integration.commons.utils.CartDiscountITUti
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_DRAFT_2;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_KEY_1;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_KEY_2;
+import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_NAME_1;
+import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_NAME_2;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_TARGET_1;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_TARGET_2;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_VALUE_1;
@@ -80,14 +80,15 @@ class CartDiscountSyncIT {
         assertThat(oldCartDiscountBefore).isNotEmpty();
 
         final CartDiscountDraft newCartDiscountDraftWithExistingKey =
-            CartDiscountDraftBuilder.of(LocalizedString.of(Locale.ENGLISH, CART_DISCOUNT_KEY_1),
+            CartDiscountDraftBuilder.of(CART_DISCOUNT_NAME_1,
                 CART_DISCOUNT_CART_PREDICATE_2,
                 CART_DISCOUNT_VALUE_1,
                 CART_DISCOUNT_TARGET_1,
                 SORT_ORDER_1,
                 false)
+                                    .key(CART_DISCOUNT_KEY_1)
                                     .active(false)
-                                    .description(CART_DISCOUNT_DESC_2)
+                                    .description(CART_DISCOUNT_DESC_1)
                                     .validFrom(JANUARY_FROM)
                                     .validUntil(JANUARY_UNTIL)
                                     .build();
@@ -123,12 +124,13 @@ class CartDiscountSyncIT {
         assertThat(oldCartDiscountBefore).isNotEmpty();
 
         final CartDiscountDraft newCartDiscountDraftWithExistingKey =
-            CartDiscountDraftBuilder.of(LocalizedString.of(Locale.ENGLISH, CART_DISCOUNT_KEY_1),
+            CartDiscountDraftBuilder.of(CART_DISCOUNT_NAME_1,
                 CART_DISCOUNT_CART_PREDICATE_1,
                 CART_DISCOUNT_VALUE_2,
                 CART_DISCOUNT_TARGET_1,
                 SORT_ORDER_1,
                 false)
+                                    .key(CART_DISCOUNT_KEY_1)
                                     .active(false)
                                     .description(CART_DISCOUNT_DESC_1)
                                     .validFrom(JANUARY_FROM)
@@ -166,12 +168,13 @@ class CartDiscountSyncIT {
         assertThat(oldCartDiscountBefore).isNotEmpty();
 
         final CartDiscountDraft newCartDiscountDraftWithExistingKey =
-            CartDiscountDraftBuilder.of(LocalizedString.of(Locale.ENGLISH, CART_DISCOUNT_KEY_1),
+            CartDiscountDraftBuilder.of(CART_DISCOUNT_NAME_1,
                 CART_DISCOUNT_CART_PREDICATE_1,
                 CART_DISCOUNT_VALUE_1,
                 CART_DISCOUNT_TARGET_2,
-                "0.1",
+                SORT_ORDER_1,
                 false)
+                                    .key(CART_DISCOUNT_KEY_1)
                                     .active(false)
                                     .description(CART_DISCOUNT_DESC_1)
                                     .validFrom(JANUARY_FROM)
@@ -224,7 +227,7 @@ class CartDiscountSyncIT {
 
         assertThat(cartDiscountAfterCreation).isNotEmpty();
         assertThat(cartDiscountAfterCreation).hasValueSatisfying(cartDiscount -> {
-            assertThat(cartDiscount.getName()).isEqualTo(LocalizedString.of(Locale.ENGLISH, CART_DISCOUNT_KEY_2));
+            assertThat(cartDiscount.getName()).isEqualTo(CART_DISCOUNT_NAME_2);
             assertThat(cartDiscount.getDescription()).isEqualTo(CART_DISCOUNT_DESC_2);
             assertThat(cartDiscount.getCartPredicate()).isEqualTo(PREDICATE_2);
             assertThat(cartDiscount.getValue()).isEqualTo(CART_DISCOUNT_VALUE_2);
@@ -234,14 +237,14 @@ class CartDiscountSyncIT {
     @Test
     void sync_WithoutKey_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         //prepare
-        //todo: SUPPORT-4443 need to be merged from name to key.
-        final CartDiscountDraft newCartDiscountDraftWithoutName =
-            CartDiscountDraftBuilder.of(null,
+        final CartDiscountDraft newCartDiscountDraftWithoutKey =
+            CartDiscountDraftBuilder.of(CART_DISCOUNT_NAME_1,
                 CART_DISCOUNT_CART_PREDICATE_1,
                 CART_DISCOUNT_VALUE_1,
                 CART_DISCOUNT_TARGET_1,
                 SORT_ORDER_1,
                 false)
+                                    .key(null)
                                     .active(false)
                                     .description(CART_DISCOUNT_DESC_1)
                                     .validFrom(JANUARY_FROM)
@@ -263,7 +266,7 @@ class CartDiscountSyncIT {
 
         //test
         final CartDiscountSyncStatistics cartDiscountSyncStatistics = cartDiscountSync
-            .sync(singletonList(newCartDiscountDraftWithoutName))
+            .sync(singletonList(newCartDiscountDraftWithoutKey))
             .toCompletableFuture()
             .join();
 
@@ -286,12 +289,13 @@ class CartDiscountSyncIT {
         //prepare
         // Draft without "cartPredicate" throws a commercetools exception because "cartPredicate" is a required value
         final CartDiscountDraft newCartDiscountDraftWithoutName =
-            CartDiscountDraftBuilder.of(LocalizedString.of(Locale.ENGLISH, CART_DISCOUNT_KEY_1),
+            CartDiscountDraftBuilder.of(CART_DISCOUNT_NAME_1,
                 (String) null,
                 CART_DISCOUNT_VALUE_1,
                 CART_DISCOUNT_TARGET_1,
                 SORT_ORDER_1,
                 false)
+                                    .key(CART_DISCOUNT_KEY_1)
                                     .active(false)
                                     .description(CART_DISCOUNT_DESC_1)
                                     .validFrom(JANUARY_FROM)
@@ -340,12 +344,13 @@ class CartDiscountSyncIT {
         //prepare
         // Draft without "value" throws a commercetools exception because "value" is a required value
         final CartDiscountDraft newCartDiscountDraftWithoutValue =
-            CartDiscountDraftBuilder.of(LocalizedString.of(Locale.ENGLISH, CART_DISCOUNT_KEY_1),
+            CartDiscountDraftBuilder.of(CART_DISCOUNT_NAME_1,
                 CART_DISCOUNT_CART_PREDICATE_1,
                 null,
                 CART_DISCOUNT_TARGET_1,
                 SORT_ORDER_1,
                 false)
+                                    .key(CART_DISCOUNT_KEY_1)
                                     .active(false)
                                     .description(CART_DISCOUNT_DESC_1)
                                     .validFrom(JANUARY_FROM)
@@ -397,12 +402,13 @@ class CartDiscountSyncIT {
         final List<CartDiscountDraft> cartDiscountDrafts = IntStream
             .range(0, 100)
             .mapToObj(i ->
-                CartDiscountDraftBuilder.of(LocalizedString.of(Locale.ENGLISH, "KEY_" + Integer.toString(i)),
+                CartDiscountDraftBuilder.of(CART_DISCOUNT_NAME_2,
                     CART_DISCOUNT_CART_PREDICATE_2,
                     CART_DISCOUNT_VALUE_2,
                     CART_DISCOUNT_TARGET_2,
                     sortOrders.get(i),
                     false)
+                                        .key(format("key__%s", Integer.toString(i)))
                                         .active(false)
                                         .build())
             .collect(Collectors.toList());
@@ -455,12 +461,12 @@ class CartDiscountSyncIT {
         // Assert CTP state.
         final PagedQueryResult<CartDiscount> queryResult =
             CTP_TARGET_CLIENT.execute(CartDiscountQuery.of().plusPredicates(queryModel ->
-                queryModel.name().lang(Locale.ENGLISH).is(CART_DISCOUNT_KEY_1)))
+                queryModel.key().is(CART_DISCOUNT_KEY_1)))
                              .toCompletableFuture()
                              .join();
 
         assertThat(queryResult.head()).hasValueSatisfying(cartDiscount ->
-            assertThat(cartDiscount.getName()).isEqualTo(LocalizedString.of(Locale.ENGLISH, CART_DISCOUNT_KEY_1)));
+            assertThat(cartDiscount.getKey()).isEqualTo(CART_DISCOUNT_KEY_1));
     }
 
     @Nonnull
