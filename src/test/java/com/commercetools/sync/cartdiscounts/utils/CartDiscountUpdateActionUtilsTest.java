@@ -938,6 +938,20 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
+    void buildChangeStackingModeUpdateAction_WithOnlyNullNewStackingMode_ShouldNotBuildUpdateAction() {
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getStackingMode()).thenReturn(StackingMode.STACKING);
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        when(newCartDiscountDraft.getStackingMode()).thenReturn(null);
+
+        final Optional<UpdateAction<CartDiscount>> changeStackingModeUpdateAction =
+                buildChangeStackingModeUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeStackingModeUpdateAction).isNotPresent();
+    }
+
+    @Test
     void buildSetValidFromUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValidFrom()).thenReturn(ZonedDateTime.parse("2019-04-30T22:00:00.000Z"));
