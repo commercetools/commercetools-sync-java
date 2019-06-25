@@ -226,10 +226,11 @@ class CartDiscountSyncUtilsTest {
 
     @Test
     void buildActions_WithSameCustomTypeWithNewCustomFields_ShouldBuildUpdateAction() {
-        final CustomFieldsDraft sameCustomFieldDraftWithNewCustomField = CustomFieldsDraftBuilder.ofTypeId(CUSTOM_TYPE_ID)
-                .addObject(CUSTOM_FIELD_NAME, CUSTOM_FIELD_VALUE)
-                .addObject("name_2", "value_2")
-                .build();
+        final CustomFieldsDraft sameCustomFieldDraftWithNewCustomField =
+                CustomFieldsDraftBuilder.ofTypeId(CUSTOM_TYPE_ID)
+                        .addObject(CUSTOM_FIELD_NAME, CUSTOM_FIELD_VALUE)
+                        .addObject("name_2", "value_2")
+                        .build();
 
         final CartDiscountDraft cartDiscountDraftWithCustomField =
                 CartDiscountDraftBuilder.of(cartDiscountDraft)
