@@ -909,6 +909,20 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
+    void buildChangeRequiresDiscountCodeUpdateAction_WithOnlyNullNewRequiresDiscountCode_ShouldNotBuildUpdateAction() {
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.isRequiringDiscountCode()).thenReturn(false);
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        when(newCartDiscountDraft.isRequiresDiscountCode()).thenReturn(null);
+
+        final Optional<UpdateAction<CartDiscount>> changeRequiresDiscountCodeUpdateAction =
+                buildChangeRequiresDiscountCodeUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeRequiresDiscountCodeUpdateAction).isNotPresent();
+    }
+
+    @Test
     void buildChangeStackingModeUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getStackingMode()).thenReturn(StackingMode.STOP_AFTER_THIS_DISCOUNT);
