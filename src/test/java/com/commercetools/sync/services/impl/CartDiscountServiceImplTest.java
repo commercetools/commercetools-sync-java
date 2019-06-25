@@ -37,8 +37,6 @@ import static org.mockito.internal.verification.VerificationModeFactory.only;
 
 class CartDiscountServiceImplTest {
 
-    private String testCartDiscountKey = "ABC123";
-
     @Test
     void fetchCartDiscount_WithEmptyKey_ShouldNotFetchAnyCartDiscount() {
         // preparation
@@ -95,7 +93,7 @@ class CartDiscountServiceImplTest {
 
         // test
         final CompletionStage<Optional<CartDiscount>> result =
-                cartDiscountService.fetchCartDiscount(testCartDiscountKey);
+                cartDiscountService.fetchCartDiscount("any_key");
 
 
         // assertions
