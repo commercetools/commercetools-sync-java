@@ -13,7 +13,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -75,22 +74,6 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
                      @Nonnull final CartDiscountService cartDiscountService) {
         super(new CartDiscountSyncStatistics(), cartDiscountSyncOptions);
         this.cartDiscountService = cartDiscountService;
-    }
-
-    /**
-     * This method calls the optional error callback specified in the {@code syncOptions}
-     * and updates the {@code statistics} instance by
-     * incrementing the total number of failed cart discounts to sync.
-     *
-     * @param errorMessage The error message describing the reason(s) of failure.
-     * @param exception    The exception that called caused the failure, if any.
-     * @param failedTimes  The number of times that the failed cart discount statistic counter is incremented.
-     */
-    private void handleError(@Nonnull final String errorMessage,
-                             @Nullable final Throwable exception,
-                             final int failedTimes) {
-        syncOptions.applyErrorCallback(errorMessage, exception);
-        statistics.incrementFailed(failedTimes);
     }
 
     /**
@@ -165,6 +148,22 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
         }
 
         return false;
+    }
+
+    /**
+     * This method calls the optional error callback specified in the {@code syncOptions}
+     * and updates the {@code statistics} instance by
+     * incrementing the total number of failed cart discounts to sync.
+     *
+     * @param errorMessage The error message describing the reason(s) of failure.
+     * @param exception    The exception that called caused the failure, if any.
+     * @param failedTimes  The number of times that the failed cart discount statistic counter is incremented.
+     */
+    private void handleError(@Nonnull final String errorMessage,
+                             @Nullable final Throwable exception,
+                             final int failedTimes) {
+        syncOptions.applyErrorCallback(errorMessage, exception);
+        statistics.incrementFailed(failedTimes);
     }
 
     /**

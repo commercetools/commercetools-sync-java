@@ -25,6 +25,9 @@ import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOpti
 public final class CartDiscountSyncUtils {
     private static final CartDiscountCustomActionBuilder cartDiscountCustomActionBuilder =
             new CartDiscountCustomActionBuilder();
+import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
+
+public final class CartDiscountSyncUtils {
 
     /**
      * Compares all the fields of a {@link CartDiscount} and a {@link CartDiscountDraft}. It returns a {@link List} of

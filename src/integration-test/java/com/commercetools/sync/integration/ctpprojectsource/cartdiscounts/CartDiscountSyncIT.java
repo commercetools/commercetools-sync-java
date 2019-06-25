@@ -32,10 +32,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class CartDiscountSyncIT {
 
-    /**
-     * Deletes types from the target CTP projects.
-     * Populates the target CTP project with test data.
-     */
     @BeforeEach
     void setup() {
         deleteTypesFromTargetAndSource();
@@ -44,10 +40,6 @@ class CartDiscountSyncIT {
         populateTargetProject();
     }
 
-    /**
-     * Deletes all the test data from the {@code CTP_SOURCE_CLIENT} and the {@code CTP_SOURCE_CLIENT} projects that
-     * were set up in this test class.
-     */
     @AfterAll
     static void tearDown() {
         deleteTypesFromTargetAndSource();
@@ -61,7 +53,7 @@ class CartDiscountSyncIT {
             .execute(CartDiscountQuery.of())
             .toCompletableFuture().join().getResults();
 
-        final List<CartDiscountDraft> typeDrafts = cartDiscounts
+        final List<CartDiscountDraft> cartDiscountDrafts = cartDiscounts
             .stream()
             .map(cartDiscount ->
                 CartDiscountDraftBuilder.of(cartDiscount.getName(),
@@ -93,7 +85,7 @@ class CartDiscountSyncIT {
 
         // test
         final CartDiscountSyncStatistics cartDiscountSyncStatistics = cartDiscountSync
-            .sync(typeDrafts)
+            .sync(cartDiscountDrafts)
             .toCompletableFuture().join();
 
         // assertion

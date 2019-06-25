@@ -1,0 +1,31 @@
+{
+  "id": "98679be6-2280-40c2-8c35-6178adbf6f74",
+  "version": 1,
+  "value": {
+    "type": "relative",
+    "permyriad": 1000
+  },
+  "cartPredicate": "totalPrice >= \"50 EUR\"",
+  "target": {
+    "type": "shipping"
+  },
+  "name": {
+    "de": "Name",
+    "en": "name"
+  },
+  "description": {
+    "de": "Beschreibung",
+    "en": "description"
+  },
+  "validFrom": "2019-05-05T00:00:00.000Z",
+  "validUntil": "2019-05-15T00:00:00.000Z",
+  "stackingMode": "Stacking",
+  "isActive": false,
+  "requiresDiscountCode": false,
+  "sortOrder": "0.25",
+  "references": [],
+  "attributeTypes": {},
+  "cartFieldTypes": {},
+  "lineItemFieldTypes": {},
+  "customLineItemFieldTypes": {}
+}
