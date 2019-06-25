@@ -729,6 +729,20 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
+    void buildChangeIsActiveUpdateAction_WithOnlyNullNewIsActiveValues_ShouldNotBuildUpdateAction() {
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.isActive()).thenReturn(true);
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        when(newCartDiscountDraft.isActive()).thenReturn(null);
+
+        final Optional<UpdateAction<CartDiscount>> changeIsActiveUpdateAction =
+                buildChangeIsActiveUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeIsActiveUpdateAction).isNotPresent();
+    }
+
+    @Test
     void buildChangeNameUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getName()).thenReturn(LocalizedString.of(Locale.ENGLISH, "cart-discount-1"));
