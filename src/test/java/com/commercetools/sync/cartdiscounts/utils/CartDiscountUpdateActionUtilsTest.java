@@ -33,7 +33,9 @@ import io.sphere.sdk.products.Product;
 import io.sphere.sdk.utils.MoneyImpl;
 import org.junit.jupiter.api.Test;
 
+import javax.money.MonetaryAmount;
 import java.time.ZonedDateTime;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -109,7 +111,7 @@ class CartDiscountUpdateActionUtilsTest {
     @Test
     void buildChangeValueUpdateAction_WithDifferentGiftItemProductValue_ShouldBuildUpdateAction() {
         final GiftLineItemCartDiscountValue oldGiftLineItemCartDiscountValue =
-                GiftLineItemCartDiscountValue.of(ResourceIdentifier.ofId("product-1"),
+                GiftLineItemCartDiscountValue.of(Reference.of(Product.referenceTypeId(), "product-1"),
                         1, null, null);
 
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
@@ -130,7 +132,7 @@ class CartDiscountUpdateActionUtilsTest {
     @Test
     void buildChangeValueUpdateAction_WithDifferentGiftItemProductVariantValue_ShouldBuildUpdateAction() {
         final GiftLineItemCartDiscountValue oldGiftLineItemCartDiscountValue =
-                GiftLineItemCartDiscountValue.of(ResourceIdentifier.ofId("productId"),
+                GiftLineItemCartDiscountValue.of(Reference.of(Product.referenceTypeId(), "productId"),
                         1, null, null);
 
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
@@ -138,7 +140,7 @@ class CartDiscountUpdateActionUtilsTest {
 
         final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
         final GiftLineItemCartDiscountValue newGiftLineItemCartDiscountValue =
-                GiftLineItemCartDiscountValue.of(Reference.of(Product.referenceTypeId(), "productId"),
+                GiftLineItemCartDiscountValue.of(ResourceIdentifier.ofId("productId"),
                         2, null, null);
         when(newCartDiscountDraft.getValue()).thenReturn(newGiftLineItemCartDiscountValue);
 
@@ -151,16 +153,16 @@ class CartDiscountUpdateActionUtilsTest {
     @Test
     void buildChangeValueUpdateAction_WithDifferentGiftItemSupplyChannelValue_ShouldBuildUpdateAction() {
         final GiftLineItemCartDiscountValue oldGiftLineItemCartDiscountValue =
-                GiftLineItemCartDiscountValue.of(ResourceIdentifier.ofId("productId"),
-                        1, ResourceIdentifier.ofId("supplyChannel-1"), null);
+            GiftLineItemCartDiscountValue.of(Reference.of(Product.referenceTypeId(), "productId"),
+                1, Reference.of(Channel.referenceTypeId(), "supplyChannel-1"), null);
 
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValue()).thenReturn(oldGiftLineItemCartDiscountValue);
 
         final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
         final GiftLineItemCartDiscountValue newGiftLineItemCartDiscountValue =
-                GiftLineItemCartDiscountValue.of(Reference.of(Product.referenceTypeId(), "productId"),
-                        1, Reference.of(Channel.referenceTypeId(), "supplyChannel-2"), null);
+            GiftLineItemCartDiscountValue.of(ResourceIdentifier.ofId("productId"),
+                1, ResourceIdentifier.ofId("supplyChannel-2"), null);
         when(newCartDiscountDraft.getValue()).thenReturn(newGiftLineItemCartDiscountValue);
 
         final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
@@ -172,8 +174,8 @@ class CartDiscountUpdateActionUtilsTest {
     @Test
     void buildChangeValueUpdateAction_WithDifferentGiftItemDistributionChannelValue_ShouldBuildUpdateAction() {
         final GiftLineItemCartDiscountValue oldGiftLineItemCartDiscountValue =
-                GiftLineItemCartDiscountValue.of(ResourceIdentifier.ofId("productId"),
-                        1, null, ResourceIdentifier.ofId("dist-channel-1"));
+            GiftLineItemCartDiscountValue.of(Reference.of(Product.referenceTypeId(), "productId"),
+                1, null, Reference.of(Channel.referenceTypeId(), "dist-channel-1"));
 
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValue()).thenReturn(oldGiftLineItemCartDiscountValue);
@@ -181,7 +183,7 @@ class CartDiscountUpdateActionUtilsTest {
         final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
         final GiftLineItemCartDiscountValue newGiftLineItemCartDiscountValue =
                 GiftLineItemCartDiscountValue.of(ResourceIdentifier.ofId("productId"),
-                        1, null, Reference.of(Channel.referenceTypeId(), "dist-channel-2"));
+                        1, null, ResourceIdentifier.ofId("dist-channel-2"));
         when(newCartDiscountDraft.getValue()).thenReturn(newGiftLineItemCartDiscountValue);
 
         final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
@@ -193,12 +195,12 @@ class CartDiscountUpdateActionUtilsTest {
     @Test
     void buildChangeValueUpdateAction_WithSameGiftItemValue_ShouldNotBuildUpdateAction() {
         final GiftLineItemCartDiscountValue giftLineItemCartDiscountValue =
-                GiftLineItemCartDiscountValue.of(ResourceIdentifier.ofId("productId"),
-                        1, null, null);
+            GiftLineItemCartDiscountValue.of(Reference.of(Product.referenceTypeId(), "productId"),
+                1, null, null);
 
         final GiftLineItemCartDiscountValue giftLineItemCartDiscountValue2 =
-                GiftLineItemCartDiscountValue.of(Reference.of(Product.referenceTypeId(), "productId"),
-                        1, null, null);
+            GiftLineItemCartDiscountValue.of(ResourceIdentifier.ofId("productId"),
+                1, null, null);
 
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValue()).thenReturn(giftLineItemCartDiscountValue);
@@ -210,6 +212,42 @@ class CartDiscountUpdateActionUtilsTest {
                 buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
 
         assertThat(changeValueUpdateAction).isNotPresent();
+    }
+
+    @Test
+    void buildChangeValueUpdateAction_WithNullNewAbsoluteValues_ShouldBuildUpdateAction() {
+        final CartDiscountValue values =
+            CartDiscountValue.ofAbsolute(asList(MoneyImpl.of(10, EUR), MoneyImpl.of(10, USD)));
+
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getValue()).thenReturn(values);
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        when(newCartDiscountDraft.getValue()).thenReturn(null);
+
+        final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
+            buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeValueUpdateAction).contains(ChangeValue.of(null));
+    }
+
+    @Test
+    void buildChangeValueUpdateAction_WithNullNewAbsoluteAmounts_ShouldBuildUpdateAction() {
+        final CartDiscountValue value =
+            CartDiscountValue.ofAbsolute(asList(MoneyImpl.of(10, EUR), MoneyImpl.of(10, USD)));
+        final List<MonetaryAmount> newAmounts = null;
+        final CartDiscountValue value2 = CartDiscountValue.ofAbsolute(newAmounts);
+
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getValue()).thenReturn(value);
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        when(newCartDiscountDraft.getValue()).thenReturn(value2);
+
+        final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
+            buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeValueUpdateAction).contains(ChangeValue.of(value2));
     }
 
     @Test
@@ -277,33 +315,15 @@ class CartDiscountUpdateActionUtilsTest {
         final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
                 buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
 
-        assertThat(changeValueUpdateAction)
-                .contains(ChangeValue.of(CartDiscountValue.ofAbsolute(MoneyImpl.of(10, USD))));
+        assertThat(changeValueUpdateAction).contains(ChangeValue.of(CartDiscountValue.ofAbsolute(
+            asList(MoneyImpl.of(10, EUR), MoneyImpl.of(10, USD)))));
     }
 
     @Test
-    void buildChangeValueUpdateAction_WithAdditionalAbsoluteValueWithDifferentOrder_ShouldBuildUpdateAction() {
+    void buildChangeValueUpdateAction_WithOnlyNullNewAbsoluteValues_ShouldNotBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValue()).thenReturn(
-                CartDiscountValue.ofAbsolute(singletonList(MoneyImpl.of(10, EUR))));
-
-        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
-        when(newCartDiscountDraft.getValue())
-                .thenReturn(CartDiscountValue.ofAbsolute(
-                        asList(MoneyImpl.of(10, USD), MoneyImpl.of(10, EUR))));
-
-        final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
-                buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
-
-        assertThat(changeValueUpdateAction)
-                .contains(ChangeValue.of(CartDiscountValue.ofAbsolute(MoneyImpl.of(10, USD))));
-    }
-
-    @Test
-    void buildChangeValueUpdateAction_WithOnlyNullAbsoluteValues_ShouldNotBuildUpdateAction() {
-        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
-        when(oldCartDiscount.getValue()).thenReturn(
-                CartDiscountValue.ofAbsolute(asList(null, MoneyImpl.of(10, USD))));
+                CartDiscountValue.ofAbsolute(singletonList(MoneyImpl.of(10, USD))));
 
         final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
         when(newCartDiscountDraft.getValue())
@@ -313,7 +333,8 @@ class CartDiscountUpdateActionUtilsTest {
         final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
                 buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
 
-        assertThat(changeValueUpdateAction).isNotPresent();
+        assertThat(changeValueUpdateAction).contains(
+            ChangeValue.of(CartDiscountValue.ofAbsolute(asList(MoneyImpl.of(10, USD), null))));
     }
 
     @Test
@@ -743,6 +764,20 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
+    void buildChangeIsActiveUpdateAction_WithOnlyNullNewIsActiveAndFalseOldIsActive_ShouldBuildUpdateAction() {
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.isActive()).thenReturn(false);
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        when(newCartDiscountDraft.isActive()).thenReturn(null);
+
+        final Optional<UpdateAction<CartDiscount>> changeIsActiveUpdateAction =
+                buildChangeIsActiveUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeIsActiveUpdateAction).contains(ChangeIsActive.of(true));
+    }
+
+    @Test
     void buildChangeNameUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getName()).thenReturn(LocalizedString.of(Locale.ENGLISH, "cart-discount-1"));
@@ -923,6 +958,20 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
+    void buildChangeRequiresDiscountCodeUpdateAction_WithOnlyNullNewReqDisCodeAndTrueOldVal_ShouldBuildUpdateAction() {
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.isRequiringDiscountCode()).thenReturn(true);
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        when(newCartDiscountDraft.isRequiresDiscountCode()).thenReturn(null);
+
+        final Optional<UpdateAction<CartDiscount>> changeRequiresDiscountCodeUpdateAction =
+                buildChangeRequiresDiscountCodeUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeRequiresDiscountCodeUpdateAction).contains(ChangeRequiresDiscountCode.of(false));
+    }
+
+    @Test
     void buildChangeStackingModeUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getStackingMode()).thenReturn(StackingMode.STOP_AFTER_THIS_DISCOUNT);
@@ -963,6 +1012,20 @@ class CartDiscountUpdateActionUtilsTest {
                 buildChangeStackingModeUpdateAction(oldCartDiscount, newCartDiscountDraft);
 
         assertThat(changeStackingModeUpdateAction).isNotPresent();
+    }
+
+    @Test
+    void buildChangeStackingModeUpdateAction_WithOnlyNullNewModeAndStopAfterDiscountOldMode_ShouldBuildUpdateAction() {
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getStackingMode()).thenReturn(StackingMode.STOP_AFTER_THIS_DISCOUNT);
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        when(newCartDiscountDraft.getStackingMode()).thenReturn(null);
+
+        final Optional<UpdateAction<CartDiscount>> changeStackingModeUpdateAction =
+                buildChangeStackingModeUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeStackingModeUpdateAction).contains(ChangeStackingMode.of(StackingMode.STACKING));
     }
 
     @Test

@@ -3,7 +3,6 @@ package com.commercetools.sync.cartdiscounts.utils;
 import io.sphere.sdk.cartdiscounts.AbsoluteCartDiscountValue;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
-import io.sphere.sdk.cartdiscounts.CartDiscountValue;
 import io.sphere.sdk.cartdiscounts.GiftLineItemCartDiscountValue;
 import io.sphere.sdk.cartdiscounts.StackingMode;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeCartPredicate;
@@ -22,10 +21,8 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 
 import javax.annotation.Nonnull;
-import javax.money.MonetaryAmount;
+import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
@@ -55,12 +52,13 @@ public final class CartDiscountUpdateActionUtils {
         if (oldCartDiscount.getValue() instanceof AbsoluteCartDiscountValue
                 && newCartDiscount.getValue() instanceof AbsoluteCartDiscountValue) {
 
-            final List<MonetaryAmount> amountsFromCartDiscount =
-                    ((AbsoluteCartDiscountValue) oldCartDiscount.getValue()).getMoney();
-            final List<MonetaryAmount> amountsFromCartDiscountDraft =
-                    ((AbsoluteCartDiscountValue) newCartDiscount.getValue()).getMoney();
+            final AbsoluteCartDiscountValue oldValue =
+                ((AbsoluteCartDiscountValue) oldCartDiscount.getValue());
 
-            return buildChangeAbsoluteValueUpdateAction(amountsFromCartDiscount, amountsFromCartDiscountDraft);
+            final AbsoluteCartDiscountValue newValue =
+                ((AbsoluteCartDiscountValue) newCartDiscount.getValue());
+
+            return buildChangeAbsoluteValueUpdateAction(oldValue, newValue);
         }
 
         if (oldCartDiscount.getValue() instanceof GiftLineItemCartDiscountValue
@@ -69,11 +67,12 @@ public final class CartDiscountUpdateActionUtils {
             final GiftLineItemCartDiscountValue oldValue = (GiftLineItemCartDiscountValue) oldCartDiscount.getValue();
             final GiftLineItemCartDiscountValue newValue = (GiftLineItemCartDiscountValue) newCartDiscount.getValue();
 
-            return Optional.ofNullable(buildActionIfDifferentProducts(oldValue, newValue)
+            return Optional.ofNullable(
+                buildActionIfDifferentProducts(oldValue, newValue)
                     .orElse(buildActionIfDifferentProductVariantIds(oldValue, newValue)
-                            .orElse(buildActionIfDifferentSupplyChannels(oldValue, newValue)
-                                    .orElse(buildActionIfDifferentDistributionChannels(oldValue, newValue)
-                                            .orElse(null)))));
+                        .orElse(buildActionIfDifferentSupplyChannels(oldValue, newValue)
+                            .orElse(buildActionIfDifferentDistributionChannels(oldValue, newValue)
+                                .orElse(null)))));
         }
 
         return buildUpdateAction(oldCartDiscount.getValue(), newCartDiscount.getValue(),
@@ -112,30 +111,27 @@ public final class CartDiscountUpdateActionUtils {
             () -> ChangeValue.of(newValue));
     }
 
-
-
     @Nonnull
     private static Optional<UpdateAction<CartDiscount>> buildChangeAbsoluteValueUpdateAction(
-            @Nonnull final List<MonetaryAmount> amountsFromCartDiscount,
-            @Nonnull final List<MonetaryAmount> amountsFromCartDiscountDraft) {
+            @Nonnull final AbsoluteCartDiscountValue oldValue,
+            @Nullable final AbsoluteCartDiscountValue newValue) {
 
-        final List<MonetaryAmount> newAmounts = new ArrayList<>();
-        boolean isAmountNew;
-        for (MonetaryAmount amountDraft : amountsFromCartDiscountDraft) {
-            isAmountNew = true;
-            for (MonetaryAmount amount : amountsFromCartDiscount) {
-                if (amount == null || amountDraft == null || amount.equals(amountDraft)) {
-                    isAmountNew = false;
-                    break;
-                }
-            }
-            if (isAmountNew) {
-                newAmounts.add(amountDraft);
-            }
+        if (newValue == null) {
+            return Optional.of(ChangeValue.of(null));
         }
 
-        return newAmounts.isEmpty() ? empty() :
-                Optional.of(ChangeValue.of(CartDiscountValue.ofAbsolute(newAmounts)));
+        if (newValue.getMoney() == null) {
+            return Optional.of(ChangeValue.of(newValue));
+        }
+
+        if (oldValue.getMoney().size() != newValue.getMoney().size()) {
+            return Optional.of(ChangeValue.of(newValue));
+        }
+
+        final boolean areEqual = oldValue.getMoney().containsAll(newValue.getMoney())
+            && newValue.getMoney().containsAll(oldValue.getMoney());
+
+        return areEqual ? empty() : Optional.of(ChangeValue.of(newValue));
     }
 
     /**
