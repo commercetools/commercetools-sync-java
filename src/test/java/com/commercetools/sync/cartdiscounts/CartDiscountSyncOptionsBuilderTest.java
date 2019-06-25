@@ -7,16 +7,16 @@ import io.sphere.sdk.cartdiscounts.CartDiscountDraftBuilder;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeName;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -26,19 +26,19 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class CartDiscountSyncOptionsBuilderTest {
+class CartDiscountSyncOptionsBuilderTest {
 
     private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
     private CartDiscountSyncOptionsBuilder cartDiscountSyncOptionsBuilder =
         CartDiscountSyncOptionsBuilder.of(CTP_CLIENT);
 
     @Test
-    public void of_WithClient_ShouldCreateCartDiscountSyncOptionsBuilder() {
+    void of_WithClient_ShouldCreateCartDiscountSyncOptionsBuilder() {
         assertThat(cartDiscountSyncOptionsBuilder).isNotNull();
     }
 
     @Test
-    public void build_WithClient_ShouldBuildSyncOptions() {
+    void build_WithClient_ShouldBuildSyncOptions() {
         final CartDiscountSyncOptions cartDiscountSyncOptions = cartDiscountSyncOptionsBuilder.build();
         assertThat(cartDiscountSyncOptions).isNotNull();
         assertThat(cartDiscountSyncOptions.getBeforeUpdateCallback()).isNull();
@@ -50,7 +50,7 @@ public class CartDiscountSyncOptionsBuilderTest {
     }
 
     @Test
-    public void beforeUpdateCallback_WithFilterAsCallback_ShouldSetCallback() {
+    void beforeUpdateCallback_WithFilterAsCallback_ShouldSetCallback() {
         final TriFunction<List<UpdateAction<CartDiscount>>, CartDiscountDraft, CartDiscount,
             List<UpdateAction<CartDiscount>>> beforeUpdateCallback =
                 (updateActions, newCartDiscount, oldCartDiscount) -> emptyList();
@@ -62,7 +62,7 @@ public class CartDiscountSyncOptionsBuilderTest {
     }
 
     @Test
-    public void beforeCreateCallback_WithFilterAsCallback_ShouldSetCallback() {
+    void beforeCreateCallback_WithFilterAsCallback_ShouldSetCallback() {
         cartDiscountSyncOptionsBuilder.beforeCreateCallback((newCartDiscount) -> null);
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = cartDiscountSyncOptionsBuilder.build();
@@ -70,7 +70,7 @@ public class CartDiscountSyncOptionsBuilderTest {
     }
 
     @Test
-    public void errorCallBack_WithCallBack_ShouldSetCallBack() {
+    void errorCallBack_WithCallBack_ShouldSetCallBack() {
         final BiConsumer<String, Throwable> mockErrorCallBack = (errorMessage, errorException) -> {
         };
         cartDiscountSyncOptionsBuilder.errorCallback(mockErrorCallBack);
@@ -80,7 +80,7 @@ public class CartDiscountSyncOptionsBuilderTest {
     }
 
     @Test
-    public void warningCallBack_WithCallBack_ShouldSetCallBack() {
+    void warningCallBack_WithCallBack_ShouldSetCallBack() {
         final Consumer<String> mockWarningCallBack = (warningMessage) -> {
         };
         cartDiscountSyncOptionsBuilder.warningCallback(mockWarningCallBack);
@@ -90,7 +90,7 @@ public class CartDiscountSyncOptionsBuilderTest {
     }
 
     @Test
-    public void getThis_ShouldReturnCorrectInstance() {
+    void getThis_ShouldReturnCorrectInstance() {
         final CartDiscountSyncOptionsBuilder instance = cartDiscountSyncOptionsBuilder.getThis();
         assertThat(instance).isNotNull();
         assertThat(instance).isInstanceOf(CartDiscountSyncOptionsBuilder.class);
@@ -98,7 +98,7 @@ public class CartDiscountSyncOptionsBuilderTest {
     }
 
     @Test
-    public void cartDiscountSyncOptionsBuilderSetters_ShouldBeCallableAfterBaseSyncOptionsBuildSetters() {
+    void cartDiscountSyncOptionsBuilderSetters_ShouldBeCallableAfterBaseSyncOptionsBuildSetters() {
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
             .of(CTP_CLIENT)
             .batchSize(30)
@@ -109,7 +109,7 @@ public class CartDiscountSyncOptionsBuilderTest {
     }
 
     @Test
-    public void batchSize_WithPositiveValue_ShouldSetBatchSize() {
+    void batchSize_WithPositiveValue_ShouldSetBatchSize() {
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder.of(CTP_CLIENT)
                                                                                       .batchSize(10)
                                                                                       .build();
@@ -117,7 +117,7 @@ public class CartDiscountSyncOptionsBuilderTest {
     }
 
     @Test
-    public void batchSize_WithZeroOrNegativeValue_ShouldFallBackToDefaultValue() {
+    void batchSize_WithZeroOrNegativeValue_ShouldFallBackToDefaultValue() {
         final CartDiscountSyncOptions cartDiscountSyncOptionsWithZeroBatchSize =
             CartDiscountSyncOptionsBuilder.of(CTP_CLIENT)
                                           .batchSize(0)
@@ -135,7 +135,7 @@ public class CartDiscountSyncOptionsBuilderTest {
     }
 
     @Test
-    public void applyBeforeUpdateCallBack_WithNullCallback_ShouldReturnIdenticalList() {
+    void applyBeforeUpdateCallBack_WithNullCallback_ShouldReturnIdenticalList() {
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder.of(CTP_CLIENT)
                                                                                               .build();
         assertThat(cartDiscountSyncOptions.getBeforeUpdateCallback()).isNull();
@@ -150,7 +150,7 @@ public class CartDiscountSyncOptionsBuilderTest {
     }
 
     @Test
-    public void applyBeforeUpdateCallBack_WithNullReturnCallback_ShouldReturnEmptyList() {
+    void applyBeforeUpdateCallBack_WithNullReturnCallback_ShouldReturnEmptyList() {
         final TriFunction<List<UpdateAction<CartDiscount>>, CartDiscountDraft,
             CartDiscount, List<UpdateAction<CartDiscount>>> beforeUpdateCallback =
                 (updateActions, newCartDiscount, oldCartDiscount) -> null;
@@ -175,7 +175,7 @@ public class CartDiscountSyncOptionsBuilderTest {
     }
 
     @Test
-    public void applyBeforeUpdateCallBack_WithEmptyUpdateActions_ShouldNotApplyBeforeUpdateCallback() {
+    void applyBeforeUpdateCallBack_WithEmptyUpdateActions_ShouldNotApplyBeforeUpdateCallback() {
         final MockTriFunction beforeUpdateCallback = mock(MockTriFunction.class);
 
         final CartDiscountSyncOptions cartDiscountSyncOptions =
@@ -195,7 +195,7 @@ public class CartDiscountSyncOptionsBuilderTest {
     }
 
     @Test
-    public void applyBeforeUpdateCallBack_WithCallback_ShouldReturnFilteredList() {
+    void applyBeforeUpdateCallBack_WithCallback_ShouldReturnFilteredList() {
         final TriFunction<List<UpdateAction<CartDiscount>>, CartDiscountDraft,
             CartDiscount, List<UpdateAction<CartDiscount>>> beforeUpdateCallback =
                 (updateActions, newCartDiscount, oldCartDiscount) -> emptyList();
@@ -215,34 +215,32 @@ public class CartDiscountSyncOptionsBuilderTest {
     }
 
     @Test
-    public void applyBeforeCreateCallBack_WithCallback_ShouldReturnFilteredDraft() {
+    void applyBeforeCreateCallBack_WithCallback_ShouldReturnFilteredDraft() {
         final Function<CartDiscountDraft, CartDiscountDraft> draftFunction =
             cartDiscountDraft ->
-                CartDiscountDraftBuilder.of(cartDiscountDraft)
-                                        .name(
-                                            ofEnglish(cartDiscountDraft.getName().get(Locale.ENGLISH) + "_filteredKey"))
-                                        .build();
+                    CartDiscountDraftBuilder.of(cartDiscountDraft)
+                            .key(format("%s_filteredKey", cartDiscountDraft.getKey()))
+                            .build();
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder.of(CTP_CLIENT)
-                                                                                              .beforeCreateCallback(
-                                                                                                  draftFunction)
-                                                                                              .build();
+                .beforeCreateCallback(draftFunction)
+                .build();
 
         assertThat(cartDiscountSyncOptions.getBeforeCreateCallback()).isNotNull();
 
         final CartDiscountDraft resourceDraft = mock(CartDiscountDraft.class);
-        when(resourceDraft.getName()).thenReturn(ofEnglish("myKey"));
+        when(resourceDraft.getKey()).thenReturn("myKey");
 
 
-        final Optional<CartDiscountDraft> filteredDraft = cartDiscountSyncOptions.applyBeforeCreateCallBack(
-            resourceDraft);
+        final Optional<CartDiscountDraft> filteredDraft = cartDiscountSyncOptions
+                .applyBeforeCreateCallBack(resourceDraft);
 
-        assertThat(filteredDraft).isNotEmpty();
-        assertThat(filteredDraft.get().getName()).isEqualTo(ofEnglish("myKey_filteredKey"));
+        assertThat(filteredDraft).hasValueSatisfying(cartDiscountDraft ->
+            assertThat(cartDiscountDraft.getKey()).isEqualTo("myKey_filteredKey"));
     }
 
     @Test
-    public void applyBeforeCreateCallBack_WithNullCallback_ShouldReturnIdenticalDraftInOptional() {
+    void applyBeforeCreateCallBack_WithNullCallback_ShouldReturnIdenticalDraftInOptional() {
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder.of(CTP_CLIENT).build();
         assertThat(cartDiscountSyncOptions.getBeforeCreateCallback()).isNull();
 
@@ -254,7 +252,7 @@ public class CartDiscountSyncOptionsBuilderTest {
     }
 
     @Test
-    public void applyBeforeCreateCallBack_WithCallbackReturningNull_ShouldReturnEmptyOptional() {
+    void applyBeforeCreateCallBack_WithCallbackReturningNull_ShouldReturnEmptyOptional() {
         final Function<CartDiscountDraft, CartDiscountDraft> draftFunction = cartDiscountDraft -> null;
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder.of(CTP_CLIENT)
                                                                                               .beforeCreateCallback(
