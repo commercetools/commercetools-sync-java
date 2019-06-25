@@ -232,7 +232,5 @@ class CartDiscountServiceImplTest {
         assertThat(result).isCompletedWithValue(Optional.empty());
         assertThat(errors.keySet())
                 .containsExactly("Failed to create draft with key: ''. Reason: Draft key is blank!");
-
     }
-
 }
