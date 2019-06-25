@@ -176,7 +176,7 @@ class CartDiscountServiceImplIT {
     }
 
     @Test
-    void createCartDiscount_WithValidCartDiscount_ShouldCreateCartDiscountAndCacheId() {
+    void createCartDiscount_WithValidCartDiscount_ShouldCreateCartDiscount() {
         //preparation
         final CartDiscountDraft newCartDiscountDraft =
                 CartDiscountDraftBuilder.of(LocalizedString.of(Locale.ENGLISH, CART_DISCOUNT_KEY_1),
