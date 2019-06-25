@@ -79,7 +79,7 @@ class CartDiscountServiceImplTest {
         final SphereClient sphereClient = mock(SphereClient.class);
         final CartDiscount mockCartDiscount = mock(CartDiscount.class);
         when(mockCartDiscount.getId()).thenReturn("testId");
-        when(mockCartDiscount.getName()).thenReturn(LocalizedString.ofEnglish("eng"));
+        when(mockCartDiscount.getKey()).thenReturn("any_key");
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
                 .of(sphereClient)
                 .build();
@@ -95,18 +95,17 @@ class CartDiscountServiceImplTest {
         final CompletionStage<Optional<CartDiscount>> result =
                 cartDiscountService.fetchCartDiscount("any_key");
 
-
         // assertions
         assertThat(result).isCompletedWithValue(Optional.of(mockCartDiscount));
         verify(sphereClient, only()).execute(any());
     }
 
     @Test
-    void createCartDiscount_WithEmptyCartDiscountKey_ShouldNotCreateCartDiscount() {
+    void createCartDiscount_WithNullCartDiscountKey_ShouldNotCreateCartDiscount() {
         // preparation
         final CartDiscountDraft mockCartDiscountDraft = mock(CartDiscountDraft.class);
         final Map<String, Throwable> errors = new HashMap<>();
-        when(mockCartDiscountDraft.getName()).thenReturn(LocalizedString.ofEnglish(""));
+        when(mockCartDiscountDraft.getKey()).thenReturn(null);
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
                 .of(mock(SphereClient.class))
@@ -115,8 +114,8 @@ class CartDiscountServiceImplTest {
         final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
 
         // test
-        final CompletionStage<Optional<CartDiscount>> result =
-                cartDiscountService.createCartDiscount(mockCartDiscountDraft);
+        final CompletionStage<Optional<CartDiscount>> result = cartDiscountService
+            .createCartDiscount(mockCartDiscountDraft);
 
         // assertions
         assertThat(result).isCompletedWithValue(Optional.empty());
@@ -124,7 +123,6 @@ class CartDiscountServiceImplTest {
         assertThat(errors.size()).isEqualTo(1);
         assertTrue(errors.keySet().stream().anyMatch(e -> e.contains("Draft key is blank!")));
         verify(cartDiscountSyncOptions.getCtpClient(), times(0)).execute(any());
-
     }
 
     @Test
@@ -132,7 +130,7 @@ class CartDiscountServiceImplTest {
         // preparation
         final CartDiscountDraft mockCartDiscountDraft = mock(CartDiscountDraft.class);
         final Map<String, Throwable> errors = new HashMap<>();
-        when(mockCartDiscountDraft.getName()).thenReturn(LocalizedString.ofEnglish("cartDiscountKey"));
+        when(mockCartDiscountDraft.getKey()).thenReturn("cartDiscountKey");
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
                 .of(mock(SphereClient.class))
@@ -211,5 +209,28 @@ class CartDiscountServiceImplTest {
                 .isExactlyInstanceOf(InternalServerErrorException.class);
     }
 
+    @Test
+    void createCartDiscount_WithEmptyCartDiscountKey_ShouldHaveEmptyOptionalAsAResult() {
+        //preparation
+        final SphereClient sphereClient = mock(SphereClient.class);
+        final CartDiscountDraft mockCartDiscountDraft = mock(CartDiscountDraft.class);
+        final Map<String, Throwable> errors = new HashMap<>();
+        when(mockCartDiscountDraft.getName()).thenReturn(LocalizedString.ofEnglish(""));
 
+        final CartDiscountSyncOptions options = CartDiscountSyncOptionsBuilder
+                .of(sphereClient)
+                .errorCallback(errors::put)
+                .build();
+
+        final CartDiscountServiceImpl cartDiscountService = new CartDiscountServiceImpl(options);
+
+        // test
+        final CompletionStage<Optional<CartDiscount>> result = cartDiscountService
+            .createCartDiscount(mockCartDiscountDraft);
+
+        // assertion
+        assertThat(result).isCompletedWithValue(Optional.empty());
+        assertThat(errors.keySet())
+                .containsExactly("Failed to create draft with key: ''. Reason: Draft key is blank!");
+    }
 }

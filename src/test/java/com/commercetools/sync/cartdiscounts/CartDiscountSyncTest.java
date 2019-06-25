@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletionException;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static java.lang.String.format;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
@@ -39,6 +40,7 @@ import static org.mockito.Mockito.when;
 class CartDiscountSyncTest {
 
     private static CartDiscountDraft newCartDiscount;
+    private static final String KEY = "cart-discount-key";
 
     @BeforeAll
     static void setup() {
@@ -49,6 +51,7 @@ class CartDiscountSyncTest {
                 ShippingCostTarget.of(),
                 "0.25",
                 false)
+            .key(KEY)
             .active(false)
             .description(LocalizedString.of(Locale.GERMAN, "Beschreibung",
                 Locale.ENGLISH, "description"))
@@ -75,7 +78,7 @@ class CartDiscountSyncTest {
         final CartDiscountService mockCartDiscountService = mock(CartDiscountService.class);
 
         when(mockCartDiscountService
-            .fetchMatchingCartDiscountsByKeys(singleton(newCartDiscount.getName().get(Locale.ENGLISH))))
+            .fetchMatchingCartDiscountsByKeys(singleton(KEY)))
             .thenReturn(supplyAsync(() -> {
                 throw new SphereException();
             }));
@@ -91,7 +94,8 @@ class CartDiscountSyncTest {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).isEqualTo("Failed to fetch existing cart discounts with keys: '[new name]'.")
+                assertThat(message).isEqualTo(
+                        format("Failed to fetch existing cart discounts with keys: '[%s]'.", KEY))
             );
 
         assertThat(exceptions)
@@ -134,7 +138,7 @@ class CartDiscountSyncTest {
             .build();
 
         final CartDiscount mockedExistingCartDiscount = mock(CartDiscount.class);
-        when(mockedExistingCartDiscount.getName()).thenReturn(newCartDiscount.getName());
+        when(mockedExistingCartDiscount.getKey()).thenReturn(newCartDiscount.getKey());
 
         final CartDiscountService cartDiscountService = mock(CartDiscountService.class);
         when(cartDiscountService.fetchMatchingCartDiscountsByKeys(anySet()))
@@ -152,6 +156,44 @@ class CartDiscountSyncTest {
         // assertion
         verify(spyCartDiscountSyncOptions).applyBeforeUpdateCallBack(any(), any(), any());
         verify(spyCartDiscountSyncOptions, never()).applyBeforeCreateCallBack(newCartDiscount);
+    }
+
+    @Test
+    void sync_WithNullDraft_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+        //preparation
+        final CartDiscountDraft newCartDiscountDraft = null;
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+
+        final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
+                .of(mock(SphereClient.class))
+                .errorCallback((errorMessage, exception) -> {
+                    errorMessages.add(errorMessage);
+                    exceptions.add(exception);
+                })
+                .build();
+
+        final CartDiscountSync cartDiscountSync = new CartDiscountSync(cartDiscountSyncOptions);
+
+        //test
+        final CartDiscountSyncStatistics cartDiscountSyncStatistics = cartDiscountSync
+                .sync(singletonList(newCartDiscountDraft))
+                .toCompletableFuture()
+                .join();
+
+        //assertions
+        assertThat(errorMessages)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(message ->
+                assertThat(message).isEqualTo("Failed to process null cart discount draft.")
+            );
+
+        assertThat(exceptions)
+                .hasSize(1)
+                .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable).isNull());
+
+        assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
     }
 
 }
