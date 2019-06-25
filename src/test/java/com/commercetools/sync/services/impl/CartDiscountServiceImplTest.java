@@ -25,10 +25,12 @@ import java.util.concurrent.CompletionStage;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.internal.verification.VerificationModeFactory.only;
@@ -77,7 +79,7 @@ class CartDiscountServiceImplTest {
         final SphereClient sphereClient = mock(SphereClient.class);
         final CartDiscount mockCartDiscount = mock(CartDiscount.class);
         when(mockCartDiscount.getId()).thenReturn("testId");
-        when(mockCartDiscount.getName()).thenReturn(LocalizedString.ofEnglish("eng"));
+        when(mockCartDiscount.getKey()).thenReturn("any_key");
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
                 .of(sphereClient)
                 .build();
@@ -121,18 +123,14 @@ class CartDiscountServiceImplTest {
         assertThat(errors.size()).isEqualTo(1);
         assertTrue(errors.keySet().stream().anyMatch(e -> e.contains("Draft key is blank!")));
         verify(cartDiscountSyncOptions.getCtpClient(), times(0)).execute(any());
-
-        assertThat(errors.keySet())
-            .containsExactly("Failed to create draft with key: 'null'. Reason: Draft key is blank!");
     }
 
     @Test
-    void createCartDiscount_WithEmptyCartDiscountKey_ShouldHaveEmptyOptionalAsAResult() {
     void createCartDiscount_WithUnsuccessfulMockCtpResponse_ShouldNotCreateCartDiscount() {
         // preparation
         final CartDiscountDraft mockCartDiscountDraft = mock(CartDiscountDraft.class);
         final Map<String, Throwable> errors = new HashMap<>();
-        when(mockCartDiscountDraft.getName()).thenReturn(LocalizedString.ofEnglish("cartDiscountKey"));
+        when(mockCartDiscountDraft.getKey()).thenReturn("cartDiscountKey");
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
                 .of(mock(SphereClient.class))
@@ -238,4 +236,3 @@ class CartDiscountServiceImplTest {
     }
 
 }
-
