@@ -242,19 +242,20 @@ class CartDiscountServiceImplIT {
                 })
                 .build();
 
-        final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(options);
+        cartDiscountService = new CartDiscountServiceImpl(options);
 
         // test
-        final Optional<CartDiscount> result =
-                cartDiscountService.createCartDiscount(newCartDiscountDraft)
-                        .toCompletableFuture().join();
+        final Optional<CartDiscount> result = cartDiscountService
+            .createCartDiscount(newCartDiscountDraft)
+            .toCompletableFuture()
+            .join();
 
         // assertion
         assertThat(result).isEmpty();
         assertThat(errorCallBackMessages)
                 .hasSize(1)
                 .hasOnlyOneElementSatisfying(msg -> assertThat(msg)
-                        .contains(format("A duplicate value '\"%s\" exists for field 'key'.", CART_DISCOUNT_KEY_1)));
+                        .contains(format("A duplicate value '\"%s\"' exists for field 'key'.", CART_DISCOUNT_KEY_1)));
 
         ensureErrorCallbackIsDuplicateFieldError();
     }
