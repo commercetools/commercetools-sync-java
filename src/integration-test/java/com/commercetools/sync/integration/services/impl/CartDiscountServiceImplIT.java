@@ -15,6 +15,7 @@ import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.errors.DuplicateFieldError;
+import io.sphere.sdk.queries.PagedResult;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_CART_PREDICATE_2;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_KEY_1;
@@ -301,12 +303,13 @@ class CartDiscountServiceImplIT {
                 })
                 .build();
 
-        final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(options);
+        cartDiscountService = new CartDiscountServiceImpl(options);
 
         // test
-        final Optional<CartDiscount> result =
-                cartDiscountService.createCartDiscount(newCartDiscountDraft)
-                        .toCompletableFuture().join();
+        final Optional<CartDiscount> result = cartDiscountService
+            .createCartDiscount(newCartDiscountDraft)
+            .toCompletableFuture()
+            .join();
 
         // assertion
         assertThat(result).isEmpty();
@@ -320,55 +323,51 @@ class CartDiscountServiceImplIT {
 
     @Test
     void updateCartDiscount_WithValidChanges_ShouldUpdateCartDiscountCorrectly() {
-        final Optional<CartDiscount> cartDiscountOptional = CTP_TARGET_CLIENT
+        final CartDiscount cartDiscount = CTP_TARGET_CLIENT
                 .execute(CartDiscountQuery.of()
                         .withPredicates(cartDiscountQueryModel ->
                                 cartDiscountQueryModel.key().is(CART_DISCOUNT_KEY_1)))
-                .toCompletableFuture().join().head();
-        assertThat(cartDiscountOptional).isNotNull();
+                .toCompletableFuture()
+                .thenApply(PagedResult::head)
+                .thenApply(Optional::get)
+                .join();
 
         final ChangeCartPredicate changeCartPredicateUpdateAction =
                 ChangeCartPredicate.of(CART_DISCOUNT_CART_PREDICATE_2);
 
-        final CartDiscount updatedCartDiscount = cartDiscountService.updateCartDiscount(
-                cartDiscountOptional.get(), singletonList(changeCartPredicateUpdateAction))
-                .toCompletableFuture().join();
-        assertThat(updatedCartDiscount).isNotNull();
+        final CartDiscount updatedCartDiscount = cartDiscountService
+            .updateCartDiscount(cartDiscount, singletonList(changeCartPredicateUpdateAction))
+            .toCompletableFuture()
+            .join();
 
-        final Optional<CartDiscount> updatedCartDiscountOptional = CTP_TARGET_CLIENT
-                .execute(CartDiscountQuery.of()
-                        .withPredicates(cartDiscountQueryModel ->
-                                cartDiscountQueryModel.key().is(CART_DISCOUNT_KEY_1)))
-                .toCompletableFuture().join().head();
-
-        assertThat(cartDiscountOptional).isNotEmpty();
-        final CartDiscount fetchedCartDiscount = updatedCartDiscountOptional.get();
-        assertThat(fetchedCartDiscount.getKey()).isEqualTo(updatedCartDiscount.getKey());
-        assertThat(fetchedCartDiscount.getName()).isEqualTo(updatedCartDiscount.getName());
-        assertThat(fetchedCartDiscount.getValue()).isEqualTo(updatedCartDiscount.getValue());
-        assertThat(fetchedCartDiscount.getTarget()).isEqualTo(updatedCartDiscount.getTarget());
-        assertThat(fetchedCartDiscount.getCartPredicate()).isEqualTo(updatedCartDiscount.getCartPredicate());
+        assertThat(updatedCartDiscount).satisfies(updated -> {
+            assertThat(updated.getKey()).isEqualTo(cartDiscount.getKey());
+            assertThat(updated.getName()).isEqualTo(cartDiscount.getName());
+            assertThat(updated.getValue()).isEqualTo(cartDiscount.getValue());
+            assertThat(updated.getTarget()).isEqualTo(cartDiscount.getTarget());
+            assertThat(updated.getCartPredicate()).isEqualTo(CART_DISCOUNT_CART_PREDICATE_2);
+        });
     }
 
     @Test
     void updateCartDiscount_WithInvalidChanges_ShouldCompleteExceptionally() {
-        final Optional<CartDiscount> cartDiscountOptional = CTP_TARGET_CLIENT
-                .execute(CartDiscountQuery.of()
-                        .withPredicates(cartDiscountQueryModel ->
-                                cartDiscountQueryModel.key().is(CART_DISCOUNT_KEY_1)))
-                .toCompletableFuture().join().head();
-        assertThat(cartDiscountOptional).isNotNull();
+        final CartDiscount cartDiscount = CTP_TARGET_CLIENT
+            .execute(CartDiscountQuery.of()
+                                      .withPredicates(cartDiscountQueryModel ->
+                                          cartDiscountQueryModel.key().is(CART_DISCOUNT_KEY_1)))
+            .toCompletableFuture()
+            .thenApply(PagedResult::head)
+            .thenApply(Optional::get)
+            .join();
 
         final SetDescription setDescriptionUpdateAction = SetDescription.of(null);
 
-        cartDiscountService.updateCartDiscount(cartDiscountOptional.get(),
-                singletonList(setDescriptionUpdateAction))
-                .exceptionally(exception -> {
-                    assertThat(exception).isNotNull();
-                    assertThat(exception.getMessage()).contains("Request body does not contain valid JSON.");
-                    return null;
-                })
-                .toCompletableFuture().join();
+        final CompletionStage<CartDiscount> updateCompletionStage = cartDiscountService
+            .updateCartDiscount(cartDiscount, singletonList(setDescriptionUpdateAction));
+
+
+           assertThat(updateCompletionStage).hasFailedWithThrowableThat()
+                                            .hasMessageContaining("Request body does not contain valid JSON.");
     }
 
 }
