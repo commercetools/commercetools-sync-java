@@ -29,6 +29,16 @@ public final class CartDiscountReferenceResolver
     private static final String BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER = "The value of the 'key' field of the "
         + "resourceIdentifier of the '%s' field is blank (null/empty).";
 
+
+    /**
+     * Takes a {@link CartDiscountSyncOptions} instance, a  {@link TypeService} to instantiate a
+     * {@link CartDiscountReferenceResolver} instance that could be used to resolve the cartDiscount drafts in the
+     * CTP project specified in the injected {@link CartDiscountSyncOptions} instance.
+     *
+     * @param options     the container of all the options of the sync process including the CTP project client
+     *                    and/or configuration and other sync-specific options.
+     * @param typeService the service to fetch the custom types for reference resolution.
+     */
     public CartDiscountReferenceResolver(
         @Nonnull final CartDiscountSyncOptions options,
         @Nonnull final TypeService typeService) {
