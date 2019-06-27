@@ -13,6 +13,9 @@ import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
 import io.sphere.sdk.cartdiscounts.queries.CartDiscountQueryBuilder;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.types.CustomFieldsDraft;
+import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
+import io.sphere.sdk.types.Type;
 import io.sphere.sdk.utils.MoneyImpl;
 
 import javax.annotation.Nonnull;
@@ -23,6 +26,8 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
 
+import static com.commercetools.sync.integration.commons.utils.ITUtils.createCustomFieldsJsonMap;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.createTypeIfNotAlreadyExisting;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndExecute;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
@@ -76,6 +81,7 @@ public class CartDiscountITUtils {
                                 .description(CART_DISCOUNT_DESC_1)
                                 .validFrom(JANUARY_FROM)
                                 .validUntil(JANUARY_UNTIL)
+                                .custom(getCustomFieldsDraft())
                                 .build();
 
     public static final CartDiscountDraft CART_DISCOUNT_DRAFT_2 =
@@ -90,6 +96,7 @@ public class CartDiscountITUtils {
                                 .description(CART_DISCOUNT_DESC_2)
                                 .validFrom(FEBRUARY_FROM)
                                 .validUntil(FEBRUARY_UNTIL)
+                                .custom(getCustomFieldsDraft())
                                 .build();
 
 
@@ -120,6 +127,18 @@ public class CartDiscountITUtils {
 
     public static void populateTargetProject() {
         CTP_TARGET_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_1)).toCompletableFuture().join();
+    }
+
+    public static void createCustomTypesInTargetAndSource() {
+        createCartDiscountCustomType(OLD_CART_DISCOUNT_TYPE_KEY,
+                Locale.ENGLISH,
+                OLD_CART_DISCOUNT_TYPE_NAME,
+                CTP_SOURCE_CLIENT);
+
+        createCartDiscountCustomType(OLD_CART_DISCOUNT_TYPE_KEY,
+                Locale.ENGLISH,
+                OLD_CART_DISCOUNT_TYPE_NAME,
+                CTP_TARGET_CLIENT);
     }
 
     /**
