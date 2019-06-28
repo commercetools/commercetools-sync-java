@@ -40,7 +40,7 @@
     - **CartDiscount Sync** - Exposed `CartDiscountUpdateActionUtils` which contains utils for calculating needed update actions after comparing individual fields of a `CartDiscount` and a `CartDiscountDraft`. [#379](https://github.com/commercetools/commercetools-sync-java/issues/379)
     
 - 🐞 **Bug Fixes** (1)
-    - **Commons** -  Fixed a bug in the `BaseSyncStatistics` which caused the calculation of minutes falsy. [#378](https://github.com/commercetools/commercetools-sync-java/issues/378)
+    - **Commons** -  Fixed a bug in the `BaseSyncStatistics` which caused a wrong calculation of the `latestBatchProcessingTimeInMinutes`. [#378](https://github.com/commercetools/commercetools-sync-java/issues/378)
 
 - 🛠️ **Enhancements** (1)
     - **CartDiscount Sync** - Added benchmarks for the `cartDiscount` sync to be able to compare the performance of the sync with the future releases. [#379](https://github.com/commercetools/commercetools-sync-java/issues/379)
@@ -156,7 +156,6 @@ the library. `1.0.0` is here for you to use with all new features, enhancements 
     - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-engine` to 5.3.2.
     - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-params` to 5.3.2.
     - **Commons** - Bumped `org.ajoberstar.git-publish` to 2.0.0.
-    - **Commons** - Bumped `com.adarshr.test-logger` to 1.6.0.
     - **Commons** - Bumped `org.ajoberstar.grgit` to 3.0.0.
     - **Commons** - Bumped gradle to version [gradle-5.0](https://docs.gradle.org/5.0/release-notes.html)
     - **Type Sync** - Added benchmarks for the `type` sync to be able to compare the performance of the sync with the future releases. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)
