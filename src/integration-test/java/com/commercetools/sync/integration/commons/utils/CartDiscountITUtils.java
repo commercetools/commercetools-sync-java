@@ -13,6 +13,9 @@ import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
 import io.sphere.sdk.cartdiscounts.queries.CartDiscountQueryBuilder;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.types.CustomFieldsDraft;
+import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
+import io.sphere.sdk.types.Type;
 import io.sphere.sdk.utils.MoneyImpl;
 
 import javax.annotation.Nonnull;
@@ -23,6 +26,8 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
 
+import static com.commercetools.sync.integration.commons.utils.ITUtils.createCustomFieldsJsonMap;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.createTypeIfNotAlreadyExisting;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndExecute;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
@@ -30,7 +35,7 @@ import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
-public class CartDiscountITUtils {
+public final class CartDiscountITUtils {
 
     public static final String CART_DISCOUNT_KEY_1 = "key_1";
     public static final String CART_DISCOUNT_KEY_2 = "key_2";
@@ -64,6 +69,9 @@ public class CartDiscountITUtils {
     public static final String SORT_ORDER_1 = "0.1";
     public static final String SORT_ORDER_2 = "0.2";
 
+    public static final String OLD_CART_DISCOUNT_TYPE_KEY = "oldCartDiscountCustomTypeKey";
+    public static final String OLD_CART_DISCOUNT_TYPE_NAME = "oldCartDiscountCustomTypeName";
+
     public static final CartDiscountDraft CART_DISCOUNT_DRAFT_1 =
         CartDiscountDraftBuilder.of(CART_DISCOUNT_NAME_1,
             CART_DISCOUNT_CART_PREDICATE_1,
@@ -76,6 +84,7 @@ public class CartDiscountITUtils {
                                 .description(CART_DISCOUNT_DESC_1)
                                 .validFrom(JANUARY_FROM)
                                 .validUntil(JANUARY_UNTIL)
+                                .custom(getCustomFieldsDraft())
                                 .build();
 
     public static final CartDiscountDraft CART_DISCOUNT_DRAFT_2 =
@@ -90,8 +99,13 @@ public class CartDiscountITUtils {
                                 .description(CART_DISCOUNT_DESC_2)
                                 .validFrom(FEBRUARY_FROM)
                                 .validUntil(FEBRUARY_UNTIL)
+                                .custom(getCustomFieldsDraft())
                                 .build();
 
+
+    public static CustomFieldsDraft getCustomFieldsDraft() {
+        return CustomFieldsDraft.ofTypeKeyAndJson(OLD_CART_DISCOUNT_TYPE_KEY, createCustomFieldsJsonMap());
+    }
 
     /**
      * Deletes all cart discounts from CTP project, represented by provided {@code ctpClient}.
@@ -112,13 +126,35 @@ public class CartDiscountITUtils {
 
 
     public static void populateSourceProject() {
+        createCartDiscountCustomType(OLD_CART_DISCOUNT_TYPE_KEY,
+            Locale.ENGLISH,
+            OLD_CART_DISCOUNT_TYPE_NAME,
+            CTP_SOURCE_CLIENT);
+
         CompletableFuture.allOf(
                 CTP_SOURCE_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_1)).toCompletableFuture(),
                 CTP_SOURCE_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_2)).toCompletableFuture())
                 .join();
     }
 
+    private static Type createCartDiscountCustomType(@Nonnull final String typeKey,
+                                                     @Nonnull final Locale locale,
+                                                     @Nonnull final String name,
+                                                     @Nonnull final SphereClient ctpClient) {
+
+        return createTypeIfNotAlreadyExisting(
+            typeKey,
+            locale,
+            name,
+            ResourceTypeIdsSetBuilder.of().add("cart-discount"),
+            ctpClient);
+    }
+
     public static void populateTargetProject() {
+        createCartDiscountCustomType(OLD_CART_DISCOUNT_TYPE_KEY,
+            Locale.ENGLISH,
+            OLD_CART_DISCOUNT_TYPE_NAME,
+            CTP_TARGET_CLIENT);
         CTP_TARGET_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_1)).toCompletableFuture().join();
     }
 
@@ -154,4 +190,6 @@ public class CartDiscountITUtils {
                 .collect(toList());
     }
 
+    private CartDiscountITUtils() {
+    }
 }
