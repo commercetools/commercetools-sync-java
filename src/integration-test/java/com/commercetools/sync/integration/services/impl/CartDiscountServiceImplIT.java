@@ -345,7 +345,7 @@ class CartDiscountServiceImplIT {
             assertThat(updated.getName()).isEqualTo(cartDiscount.getName());
             assertThat(updated.getValue()).isEqualTo(cartDiscount.getValue());
             assertThat(updated.getTarget()).isEqualTo(cartDiscount.getTarget());
-            assertThat(updated.getCartPredicate()).isEqualTo(CART_DISCOUNT_CART_PREDICATE_2);
+            assertThat(updated.getCartPredicate()).isEqualTo(CART_DISCOUNT_CART_PREDICATE_2.toSphereCartPredicate());
         });
     }
 
@@ -365,6 +365,7 @@ class CartDiscountServiceImplIT {
         final CompletionStage<CartDiscount> updateCompletionStage = cartDiscountService
             .updateCartDiscount(cartDiscount, singletonList(setDescriptionUpdateAction));
 
+        updateCompletionStage.toCompletableFuture().join();
 
         assertThat(updateCompletionStage).hasFailedWithThrowableThat()
                                          .hasMessageContaining("Request body does not contain valid JSON.");
