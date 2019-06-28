@@ -16,6 +16,7 @@ import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeTarget;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeValue;
 import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.utils.MoneyImpl;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,10 +28,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.OLD_CART_DISCOUNT_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.deleteCartDiscountsFromTargetAndSource;
-import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.getCustomFieldsDraft;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.populateSourceProject;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.populateTargetProject;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.createCustomFieldsJsonMap;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
@@ -74,7 +76,8 @@ class CartDiscountSyncIT {
                                         .description(cartDiscount.getDescription())
                                         .validFrom(cartDiscount.getValidFrom())
                                         .validUntil(cartDiscount.getValidUntil())
-                                        .custom(getCustomFieldsDraft())
+                                        .custom(CustomFieldsDraft
+                                            .ofTypeIdAndJson(OLD_CART_DISCOUNT_TYPE_KEY, createCustomFieldsJsonMap()))
                                         .build())
             .collect(Collectors.toList());
 
@@ -114,7 +117,7 @@ class CartDiscountSyncIT {
             .execute(CartDiscountQuery.of())
             .toCompletableFuture().join().getResults();
 
-        final List<CartDiscountDraft> typeDrafts = cartDiscounts
+        final List<CartDiscountDraft> cartDiscountDrafts = cartDiscounts
             .stream()
             .map(cartDiscount ->
                 CartDiscountDraftBuilder.of(cartDiscount.getName(),
@@ -128,7 +131,8 @@ class CartDiscountSyncIT {
                                         .description(cartDiscount.getDescription())
                                         .validFrom(cartDiscount.getValidFrom())
                                         .validUntil(cartDiscount.getValidUntil())
-                                        .custom(getCustomFieldsDraft())
+                                        .custom(CustomFieldsDraft
+                                            .ofTypeIdAndJson(OLD_CART_DISCOUNT_TYPE_KEY, createCustomFieldsJsonMap()))
                                         .build())
             .collect(Collectors.toList());
 
@@ -153,7 +157,7 @@ class CartDiscountSyncIT {
 
         // test
         final CartDiscountSyncStatistics cartDiscountSyncStatistics = cartDiscountSync
-            .sync(typeDrafts)
+            .sync(cartDiscountDrafts)
             .toCompletableFuture().join();
 
         // assertion

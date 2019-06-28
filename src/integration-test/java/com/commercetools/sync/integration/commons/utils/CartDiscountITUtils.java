@@ -103,7 +103,7 @@ public final class CartDiscountITUtils {
                                 .build();
 
 
-    public static CustomFieldsDraft getCustomFieldsDraft() {
+    private static CustomFieldsDraft getCustomFieldsDraft() {
         return CustomFieldsDraft.ofTypeKeyAndJson(OLD_CART_DISCOUNT_TYPE_KEY, createCustomFieldsJsonMap());
     }
 

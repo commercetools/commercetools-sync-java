@@ -15,6 +15,7 @@ import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.queries.PagedQueryResult;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -44,11 +45,14 @@ import static com.commercetools.sync.integration.commons.utils.CartDiscountITUti
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.JANUARY_UNTIL;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.PREDICATE_2;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.SORT_ORDER_1;
+import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.deleteCartDiscounts;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.deleteCartDiscountsFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.getCartDiscountByKey;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.getSortOrders;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.populateSourceProject;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.populateTargetProject;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
@@ -67,9 +71,16 @@ class CartDiscountSyncIT {
      */
     @BeforeEach
     void setup() {
-        deleteCartDiscountsFromTargetAndSource();
+        deleteCartDiscounts(CTP_TARGET_CLIENT);
+        deleteTypes(CTP_TARGET_CLIENT);
         populateSourceProject();
         populateTargetProject();
+    }
+
+    @AfterAll
+    static void tearDown() {
+        deleteCartDiscounts(CTP_TARGET_CLIENT);
+        deleteTypes(CTP_TARGET_CLIENT);
     }
 
     @Test
