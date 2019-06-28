@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.OLD_CART_DISCOUNT_TYPE_KEY;
-import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.createCustomTypesInTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.deleteCartDiscountsFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.getCustomFieldsDraft;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.populateSourceProject;
@@ -47,7 +46,6 @@ class CartDiscountSyncIT {
     void setup() {
         deleteCartDiscountsFromTargetAndSource();
         deleteTypesFromTargetAndSource();
-        createCustomTypesInTargetAndSource();
         populateSourceProject();
         populateTargetProject();
     }

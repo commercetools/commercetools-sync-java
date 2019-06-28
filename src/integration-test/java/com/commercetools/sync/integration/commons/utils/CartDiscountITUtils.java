@@ -69,6 +69,9 @@ public class CartDiscountITUtils {
     public static final String SORT_ORDER_1 = "0.1";
     public static final String SORT_ORDER_2 = "0.2";
 
+    public static final String OLD_CART_DISCOUNT_TYPE_KEY = "oldCartDiscountCustomTypeKey";
+    public static final String OLD_CART_DISCOUNT_TYPE_NAME = "oldCartDiscountCustomTypName";
+
     public static final CartDiscountDraft CART_DISCOUNT_DRAFT_1 =
         CartDiscountDraftBuilder.of(CART_DISCOUNT_NAME_1,
             CART_DISCOUNT_CART_PREDICATE_1,
@@ -100,6 +103,10 @@ public class CartDiscountITUtils {
                                 .build();
 
 
+    public static CustomFieldsDraft getCustomFieldsDraft() {
+        return CustomFieldsDraft.ofTypeKeyAndJson(OLD_CART_DISCOUNT_TYPE_KEY, createCustomFieldsJsonMap());
+    }
+
     /**
      * Deletes all cart discounts from CTP project, represented by provided {@code ctpClient}.
      *
@@ -119,26 +126,36 @@ public class CartDiscountITUtils {
 
 
     public static void populateSourceProject() {
+        createCartDiscountCustomType(OLD_CART_DISCOUNT_TYPE_KEY,
+            Locale.ENGLISH,
+            OLD_CART_DISCOUNT_TYPE_NAME,
+            CTP_SOURCE_CLIENT);
+
         CompletableFuture.allOf(
                 CTP_SOURCE_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_1)).toCompletableFuture(),
                 CTP_SOURCE_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_2)).toCompletableFuture())
                 .join();
     }
 
-    public static void populateTargetProject() {
-        CTP_TARGET_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_1)).toCompletableFuture().join();
+    private static Type createCartDiscountCustomType(@Nonnull final String typeKey,
+                                                     @Nonnull final Locale locale,
+                                                     @Nonnull final String name,
+                                                     @Nonnull final SphereClient ctpClient) {
+
+        return createTypeIfNotAlreadyExisting(
+            typeKey,
+            locale,
+            name,
+            ResourceTypeIdsSetBuilder.of().add("cart-discount"),
+            ctpClient);
     }
 
-    public static void createCustomTypesInTargetAndSource() {
+    public static void populateTargetProject() {
         createCartDiscountCustomType(OLD_CART_DISCOUNT_TYPE_KEY,
-                Locale.ENGLISH,
-                OLD_CART_DISCOUNT_TYPE_NAME,
-                CTP_SOURCE_CLIENT);
-
-        createCartDiscountCustomType(OLD_CART_DISCOUNT_TYPE_KEY,
-                Locale.ENGLISH,
-                OLD_CART_DISCOUNT_TYPE_NAME,
-                CTP_TARGET_CLIENT);
+            Locale.ENGLISH,
+            OLD_CART_DISCOUNT_TYPE_NAME,
+            CTP_TARGET_CLIENT);
+        CTP_TARGET_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_1)).toCompletableFuture().join();
     }
 
     /**
