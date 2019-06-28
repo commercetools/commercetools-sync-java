@@ -142,8 +142,9 @@ class CartDiscountSyncIT {
             .errorCallback((error, throwable) -> {
                 errorMessages.add(error);
                 exceptions.add(throwable);
-            }).beforeUpdateCallback((updateActions, newCartDiscount, oldCartDiscount) -> {
-               updateActionsList.addAll(updateActions);
+            })
+            .beforeUpdateCallback((updateActions, newCartDiscount, oldCartDiscount) -> {
+                updateActionsList.addAll(updateActions);
                 return updateActions;
             })
             .build();
