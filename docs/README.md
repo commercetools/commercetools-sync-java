@@ -30,6 +30,7 @@ The library supports synchronising the following entities in commercetools
  - [InventoryEntries](usage/INVENTORY_SYNC.md)
  - [ProductTypes](usage/PRODUCT_TYPE_SYNC.md)
  - [Types](usage/TYPE_SYNC.md)
+ - [CartDiscounts](usage/CART_DISCOUNT_SYNC.md)
 
 ![commercetools-java-sync-final 001](https://user-images.githubusercontent.com/9512131/31230702-0f2255a6-a9e5-11e7-9412-04ed52641dde.png)
 
