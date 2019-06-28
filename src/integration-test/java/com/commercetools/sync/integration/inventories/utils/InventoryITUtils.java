@@ -41,7 +41,7 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static java.util.Collections.singletonList;
 
-public class InventoryITUtils {
+public final class InventoryITUtils {
 
     public static final String SKU_1 = "100000";
     public static final String SKU_2 = "200000";
@@ -202,5 +202,8 @@ public class InventoryITUtils {
         final ChannelQuery channelQuery = ChannelQueryBuilder.of().plusPredicates(channelQueryModel ->
             channelQueryModel.key().is(channelKey)).build();
         return sphereClient.execute(channelQuery).toCompletableFuture().join().head();
+    }
+
+    private InventoryITUtils() {
     }
 }

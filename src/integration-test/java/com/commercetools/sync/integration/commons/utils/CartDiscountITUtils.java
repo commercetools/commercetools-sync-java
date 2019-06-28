@@ -35,7 +35,7 @@ import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
-public class CartDiscountITUtils {
+public final class CartDiscountITUtils {
 
     public static final String CART_DISCOUNT_KEY_1 = "key_1";
     public static final String CART_DISCOUNT_KEY_2 = "key_2";
@@ -190,4 +190,6 @@ public class CartDiscountITUtils {
                 .collect(toList());
     }
 
+    private CartDiscountITUtils() {
+    }
 }
