@@ -14,9 +14,7 @@ import io.sphere.sdk.cartdiscounts.ShippingCostTarget;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeCartPredicate;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeTarget;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeValue;
-import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.utils.MoneyImpl;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,12 +25,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.cartdiscounts.utils.CartDiscountReferenceReplacementUtils.buildCartDiscountQuery;
+import static com.commercetools.sync.cartdiscounts.utils.CartDiscountReferenceReplacementUtils.replaceCartDiscountsReferenceIdsWithKeys;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.OLD_CART_DISCOUNT_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.deleteCartDiscountsFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.populateSourceProject;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.populateTargetProject;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.createCustomFieldsJsonMap;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
@@ -59,27 +57,10 @@ class CartDiscountSyncIT {
     void sync_WithoutUpdates_ShouldReturnProperStatistics() {
         // preparation
         final List<CartDiscount> cartDiscounts = CTP_SOURCE_CLIENT
-            .execute(CartDiscountQuery.of())
+            .execute(buildCartDiscountQuery())
             .toCompletableFuture().join().getResults();
 
-        final List<CartDiscountDraft> cartDiscountDrafts = cartDiscounts
-            .stream()
-            .map(cartDiscount ->
-                CartDiscountDraftBuilder.of(cartDiscount.getName(),
-                    cartDiscount.getCartPredicate(),
-                    cartDiscount.getValue(),
-                    cartDiscount.getTarget(),
-                    cartDiscount.getSortOrder(),
-                    cartDiscount.isRequiringDiscountCode())
-                                        .key(cartDiscount.getKey())
-                                        .active(cartDiscount.isActive())
-                                        .description(cartDiscount.getDescription())
-                                        .validFrom(cartDiscount.getValidFrom())
-                                        .validUntil(cartDiscount.getValidUntil())
-                                        .custom(CustomFieldsDraft
-                                            .ofTypeIdAndJson(OLD_CART_DISCOUNT_TYPE_KEY, createCustomFieldsJsonMap()))
-                                        .build())
-            .collect(Collectors.toList());
+        final List<CartDiscountDraft> cartDiscountDrafts = replaceCartDiscountsReferenceIdsWithKeys(cartDiscounts);
 
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> exceptions = new ArrayList<>();
@@ -114,28 +95,22 @@ class CartDiscountSyncIT {
     void sync_WithUpdates_ShouldReturnProperStatistics() {
         // preparation
         final List<CartDiscount> cartDiscounts = CTP_SOURCE_CLIENT
-            .execute(CartDiscountQuery.of())
+            .execute(buildCartDiscountQuery())
             .toCompletableFuture().join().getResults();
 
-        final List<CartDiscountDraft> cartDiscountDrafts = cartDiscounts
-            .stream()
-            .map(cartDiscount ->
-                CartDiscountDraftBuilder.of(cartDiscount.getName(),
-                    CartPredicate.of("totalPrice >= \"100 EUR\""), //new cart predicate
-                    AbsoluteCartDiscountValue.of(MoneyImpl.of(40, EUR)), //new value
-                    ShippingCostTarget.of(), //new target
-                    cartDiscount.getSortOrder(),
-                    cartDiscount.isRequiringDiscountCode())
-                                        .key(cartDiscount.getKey())
-                                        .active(cartDiscount.isActive())
-                                        .description(cartDiscount.getDescription())
-                                        .validFrom(cartDiscount.getValidFrom())
-                                        .validUntil(cartDiscount.getValidUntil())
-                                        .custom(CustomFieldsDraft
-                                            .ofTypeIdAndJson(OLD_CART_DISCOUNT_TYPE_KEY, createCustomFieldsJsonMap()))
-                                        .build())
-            .collect(Collectors.toList());
+        final List<CartDiscountDraft> cartDiscountsReferenceIdsWithKeys =
+            replaceCartDiscountsReferenceIdsWithKeys(cartDiscounts);
 
+        // Apply some changes
+        final List<CartDiscountDraft> cartDiscountDrafts = cartDiscountsReferenceIdsWithKeys
+            .stream()
+            .map(draft -> CartDiscountDraftBuilder
+                .of(draft)
+                .cartPredicate(CartPredicate.of("totalPrice >= \"100 EUR\""))
+                .value(AbsoluteCartDiscountValue.of(MoneyImpl.of(40, EUR)))
+                .target(ShippingCostTarget.of())
+                .build())
+            .collect(Collectors.toList());
 
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> exceptions = new ArrayList<>();
