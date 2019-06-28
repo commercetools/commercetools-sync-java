@@ -10,6 +10,7 @@ import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraftBuilder;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeCartPredicate;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeName;
+import io.sphere.sdk.cartdiscounts.queries.CartDiscountByKeyGet;
 import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
 import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.ErrorResponseException;
@@ -25,7 +26,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_CART_PREDICATE_2;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_KEY_1;
@@ -352,23 +352,20 @@ class CartDiscountServiceImplIT {
     @Test
     void updateCartDiscount_WithInvalidChanges_ShouldCompleteExceptionally() {
         final CartDiscount cartDiscount = CTP_TARGET_CLIENT
-            .execute(CartDiscountQuery.of()
-                                      .withPredicates(cartDiscountQueryModel ->
-                                          cartDiscountQueryModel.key().is(CART_DISCOUNT_KEY_1)))
+            .execute(CartDiscountByKeyGet.of(CART_DISCOUNT_KEY_1))
             .toCompletableFuture()
-            .thenApply(PagedResult::head)
-            .thenApply(Optional::get)
             .join();
 
         final ChangeName invalidAction = ChangeName.of(null);
 
-        final CompletionStage<CartDiscount> updateCompletionStage = cartDiscountService
-            .updateCartDiscount(cartDiscount, singletonList(invalidAction));
-
-        updateCompletionStage.toCompletableFuture().join();
-
-        assertThat(updateCompletionStage).hasFailedWithThrowableThat()
-                                         .hasMessageContaining("Request body does not contain valid JSON.");
+        cartDiscountService
+            .updateCartDiscount(cartDiscount, singletonList(invalidAction))
+            .handle((result, throwable) -> {
+                assertThat(result).isNull();
+                assertThat(throwable).hasMessageContaining("Request body does not contain valid JSON.");
+                return null;
+            })
+            .toCompletableFuture()
+            .join();
     }
-
 }
