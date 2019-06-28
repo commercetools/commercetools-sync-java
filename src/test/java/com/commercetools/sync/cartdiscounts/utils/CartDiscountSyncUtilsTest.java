@@ -40,9 +40,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
 import static com.commercetools.sync.cartdiscounts.utils.CartDiscountSyncUtils.buildActions;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
+import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -72,8 +74,10 @@ class CartDiscountSyncUtilsTest {
 
     private CartDiscount cartDiscount;
     private CartDiscountDraft cartDiscountDraft;
-    private CustomFieldsDraft customFieldsDraft;
 
+    /**
+     * Creates a {@code cartDiscount} and a {@code cartDiscountDraft} with identical values.
+     */
     @BeforeEach
     void setup() {
         cartDiscount = mock(CartDiscount.class);
@@ -99,9 +103,10 @@ class CartDiscountSyncUtilsTest {
 
         when(cartDiscount.getCustom()).thenReturn(customFields);
 
-        customFieldsDraft = CustomFieldsDraftBuilder.ofTypeId(CUSTOM_TYPE_ID)
-                .addObject(CUSTOM_FIELD_NAME, CUSTOM_FIELD_VALUE)
-                .build();
+        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraftBuilder
+            .ofTypeId(CUSTOM_TYPE_ID)
+            .addObject(CUSTOM_FIELD_NAME, CUSTOM_FIELD_VALUE)
+            .build();
 
         cartDiscountDraft =
                 CartDiscountDraftBuilder.of(NAME, PREDICATE, VALUE, TARGET, SORT_ORDER, IS_REQUIRE_DISC_CODE)
@@ -128,22 +133,11 @@ class CartDiscountSyncUtilsTest {
     @Test
     void buildActions_FromDraftsWithDifferentNameValues_ShouldBuildUpdateActions() {
         final LocalizedString newName =
-                LocalizedString.of(Locale.GERMAN, "Neu Name", Locale.ENGLISH, "new name");
+            LocalizedString.of(Locale.GERMAN, "Neu Name", Locale.ENGLISH, "new name");
 
         final CartDiscountDraft newCartDiscount = CartDiscountDraftBuilder
-                .of(newName,
-                        PREDICATE,
-                        VALUE,
-                        TARGET,
-                        SORT_ORDER,
-                        IS_ACTIVE)
-                .key(KEY)
-                .stackingMode(STACKING_MODE)
-                .active(IS_REQUIRE_DISC_CODE)
-                .description(DESC)
-                .validFrom(JANUARY_FROM)
-                .validUntil(JANUARY_UNTIL)
-                .custom(customFieldsDraft)
+                .of(cartDiscountDraft)
+                .name(newName)
                 .build();
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder.of(CTP_CLIENT).build();
@@ -169,20 +163,23 @@ class CartDiscountSyncUtilsTest {
         final boolean newIsActive = true;
         final boolean newRequireDiscountCode = true;
         final StackingMode newStackingMode = StackingMode.STOP_AFTER_THIS_DISCOUNT;
+        final CustomFieldsDraft newCustomFieldsDraft = CustomFieldsDraftBuilder
+            .ofTypeId(UUID.randomUUID().toString())
+            .build();
 
         final CartDiscountDraft newCartDiscount = CartDiscountDraftBuilder
                 .of(newName,
-                        newCartDiscountPredicate,
-                        newCartDiscountValue,
-                        newCartDiscountTarget,
-                        newSortOrder,
-                        newRequireDiscountCode)
+                    newCartDiscountPredicate,
+                    newCartDiscountValue,
+                    newCartDiscountTarget,
+                    newSortOrder,
+                    newRequireDiscountCode)
                 .active(newIsActive)
                 .description(newDesc)
                 .validFrom(newValidFrom)
                 .validUntil(newValidUntil)
                 .stackingMode(newStackingMode)
-                .custom(customFieldsDraft)
+                .custom(newCustomFieldsDraft)
                 .build();
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder.of(CTP_CLIENT).build();
@@ -199,12 +196,13 @@ class CartDiscountSyncUtilsTest {
                 ChangeSortOrder.of(newSortOrder),
                 ChangeRequiresDiscountCode.of(newRequireDiscountCode),
                 SetValidFromAndUntil.of(newValidFrom, newValidUntil),
-                ChangeStackingMode.of(newStackingMode)
+                ChangeStackingMode.of(newStackingMode),
+                SetCustomType.ofTypeIdAndJson(newCustomFieldsDraft.getType().getId(), emptyMap())
         );
     }
 
     @Test
-    void buildActions_WithDifferentCustomFields_ShouldBuildUpdateAction() {
+    void buildActions_WithDifferentCustomType_ShouldBuildUpdateAction() {
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraftBuilder.ofTypeId("newId")
                 .addObject("newField", "newValue")
                 .build();
@@ -219,9 +217,8 @@ class CartDiscountSyncUtilsTest {
                         CartDiscountSyncOptionsBuilder.of(mock(SphereClient.class)).build());
 
 
-        assertThat(actions).hasSize(1);
-        assertThat(actions.get(0)).isNotNull();
-        assertThat(actions.get(0)).isInstanceOf(SetCustomType.class);
+        assertThat(actions).containsExactly(
+            SetCustomType.ofTypeIdAndJson(customFieldsDraft.getType().getId(), customFieldsDraft.getFields()));
     }
 
     @Test
@@ -242,9 +239,8 @@ class CartDiscountSyncUtilsTest {
                         CartDiscountSyncOptionsBuilder.of(mock(SphereClient.class)).build());
 
 
-        assertThat(actions).hasSize(1);
-        assertThat(actions.get(0)).isNotNull();
-        assertThat(actions.get(0)).isInstanceOf(SetCustomField.class);
+        assertThat(actions).containsExactly(
+            SetCustomField.ofJson("name_2", JsonNodeFactory.instance.textNode("value_2")));
     }
 
     @Test
@@ -263,9 +259,8 @@ class CartDiscountSyncUtilsTest {
                         CartDiscountSyncOptionsBuilder.of(mock(SphereClient.class)).build());
 
 
-        assertThat(actions).hasSize(1);
-        assertThat(actions.get(0)).isNotNull();
-        assertThat(actions.get(0)).isInstanceOf(SetCustomField.class);
+        assertThat(actions).containsExactly(
+            SetCustomField.ofJson(CUSTOM_FIELD_NAME, JsonNodeFactory.instance.textNode("newValue")));
     }
 
     @Test
@@ -280,10 +275,6 @@ class CartDiscountSyncUtilsTest {
                         CartDiscountSyncOptionsBuilder.of(mock(SphereClient.class)).build());
 
 
-        assertThat(actions).hasSize(1);
-        assertThat(actions.get(0)).isNotNull();
-        assertThat(actions.get(0)).isInstanceOf(SetCustomType.class);
+        assertThat(actions).containsExactly(SetCustomType.ofRemoveType());
     }
-
-
 }
