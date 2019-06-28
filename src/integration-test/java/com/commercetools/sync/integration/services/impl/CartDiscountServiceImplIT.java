@@ -9,7 +9,7 @@ import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraftBuilder;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeCartPredicate;
-import io.sphere.sdk.cartdiscounts.commands.updateactions.SetDescription;
+import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeName;
 import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
 import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.ErrorResponseException;
@@ -360,10 +360,10 @@ class CartDiscountServiceImplIT {
             .thenApply(Optional::get)
             .join();
 
-        final SetDescription setDescriptionUpdateAction = SetDescription.of(null);
+        final ChangeName invalidAction = ChangeName.of(null);
 
         final CompletionStage<CartDiscount> updateCompletionStage = cartDiscountService
-            .updateCartDiscount(cartDiscount, singletonList(setDescriptionUpdateAction));
+            .updateCartDiscount(cartDiscount, singletonList(invalidAction));
 
         updateCompletionStage.toCompletableFuture().join();
 
