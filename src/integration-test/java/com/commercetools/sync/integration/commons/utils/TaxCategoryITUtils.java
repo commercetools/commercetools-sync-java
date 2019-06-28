@@ -19,7 +19,7 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static java.util.Collections.singletonList;
 
-public class TaxCategoryITUtils {
+public final class TaxCategoryITUtils {
     private static final String TAXCATEGORY_KEY = "old_tax_category_key";
     private static final String TAXCATEGORY_NAME = "old_tax_category_name";
     private static final String TAXCATEGORY_DESCRIPTION = "old_tax_category_desc";
@@ -70,5 +70,8 @@ public class TaxCategoryITUtils {
     public static TaxRateDraft createTaxRateDraft() {
         return TaxRateDraftBuilder.of(TAXCATEGORY_TAXRATE_NAME, TAXCATEGORY_TAXRATE_AMOUNT, true, CountryCode.DE)
                                   .build();
+    }
+
+    private TaxCategoryITUtils() {
     }
 }

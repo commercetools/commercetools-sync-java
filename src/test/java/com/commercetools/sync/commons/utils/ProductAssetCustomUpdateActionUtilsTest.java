@@ -13,6 +13,7 @@ import io.sphere.sdk.products.commands.updateactions.SetAssetCustomType;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
+import java.util.UUID;
 
 import static com.commercetools.sync.commons.asserts.actions.AssertionsForUpdateActions.assertThat;
 import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.buildTypedSetCustomTypeUpdateAction;
@@ -28,7 +29,7 @@ class ProductAssetCustomUpdateActionUtilsTest {
     void buildTypedSetCustomTypeUpdateAction_WithProductAsset_ShouldBuildProductUpdateAction() {
         final Asset asset = mock(Asset.class);
         when(asset.getKey()).thenReturn("assetKey");
-        final String newCustomTypeId = "key";
+        final String newCustomTypeId = UUID.randomUUID().toString();
         final int variantId = 1;
 
         final UpdateAction<Product> updateAction =

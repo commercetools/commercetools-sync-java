@@ -14,6 +14,7 @@ import io.sphere.sdk.products.commands.updateactions.SetProductPriceCustomType;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
+import java.util.UUID;
 
 import static com.commercetools.sync.commons.asserts.actions.AssertionsForUpdateActions.assertThat;
 import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.buildTypedSetCustomTypeUpdateAction;
@@ -29,7 +30,7 @@ class ProductPriceCustomUpdateActionUtilsTest {
     void buildTypedSetCustomTypeUpdateAction_WithProductPrice_ShouldBuildProductUpdateAction() {
         final Price price = mock(Price.class);
         when(price.getId()).thenReturn("priceId");
-        final String newCustomTypeId = "key";
+        final String newCustomTypeId = UUID.randomUUID().toString();
 
         final UpdateAction<Product> updateAction =
             buildTypedSetCustomTypeUpdateAction(newCustomTypeId, new HashMap<>(), price,

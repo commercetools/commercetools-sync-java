@@ -8,20 +8,27 @@ import io.sphere.sdk.cartdiscounts.AbsoluteCartDiscountValue;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraftBuilder;
+import io.sphere.sdk.cartdiscounts.CartDiscountValue;
 import io.sphere.sdk.cartdiscounts.CartPredicate;
 import io.sphere.sdk.cartdiscounts.ShippingCostTarget;
+import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeCartPredicate;
+import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeTarget;
+import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeValue;
 import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.utils.MoneyImpl;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.deleteCartDiscountsFromTargetAndSource;
+import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.getCustomFieldsDraft;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.populateSourceProject;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.populateTargetProject;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
@@ -34,16 +41,16 @@ class CartDiscountSyncIT {
 
     @BeforeEach
     void setup() {
-        deleteTypesFromTargetAndSource();
         deleteCartDiscountsFromTargetAndSource();
+        deleteTypesFromTargetAndSource();
         populateSourceProject();
         populateTargetProject();
     }
 
     @AfterAll
     static void tearDown() {
-        deleteTypesFromTargetAndSource();
         deleteCartDiscountsFromTargetAndSource();
+        deleteTypesFromTargetAndSource();
     }
 
     @Test
@@ -67,6 +74,7 @@ class CartDiscountSyncIT {
                                         .description(cartDiscount.getDescription())
                                         .validFrom(cartDiscount.getValidFrom())
                                         .validUntil(cartDiscount.getValidUntil())
+                                        .custom(getCustomFieldsDraft())
                                         .build())
             .collect(Collectors.toList());
 
@@ -120,18 +128,23 @@ class CartDiscountSyncIT {
                                         .description(cartDiscount.getDescription())
                                         .validFrom(cartDiscount.getValidFrom())
                                         .validUntil(cartDiscount.getValidUntil())
+                                        .custom(getCustomFieldsDraft())
                                         .build())
             .collect(Collectors.toList());
 
 
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> exceptions = new ArrayList<>();
+        final List<UpdateAction<CartDiscount>> updateActionsList = new ArrayList<>();
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
             .errorCallback((error, throwable) -> {
                 errorMessages.add(error);
                 exceptions.add(throwable);
+            }).beforeUpdateCallback((updateActions, newCartDiscount, oldCartDiscount) -> {
+               updateActionsList.addAll(updateActions);
+                return updateActions;
             })
             .build();
 
@@ -145,6 +158,11 @@ class CartDiscountSyncIT {
         // assertion
         assertThat(errorMessages).isEmpty();
         assertThat(exceptions).isEmpty();
+        assertThat(updateActionsList).containsExactly(
+                ChangeValue.of(CartDiscountValue.ofAbsolute(Collections.singletonList(MoneyImpl.of(40, EUR)))),
+                ChangeCartPredicate.of("totalPrice >= \"100 EUR\""),
+                ChangeTarget.of(ShippingCostTarget.of())
+        );
         assertThat(cartDiscountSyncStatistics).hasValues(2, 1, 1, 0);
         assertThat(cartDiscountSyncStatistics
             .getReportMessage())

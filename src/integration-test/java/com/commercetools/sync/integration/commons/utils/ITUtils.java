@@ -369,4 +369,7 @@ public final class ITUtils {
                      assertThat(createdAsset.getSources()).isEqualTo(assetDraft.getSources());
                  });
     }
+
+    private ITUtils() {
+    }
 }
