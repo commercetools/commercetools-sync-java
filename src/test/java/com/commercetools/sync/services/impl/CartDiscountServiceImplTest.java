@@ -25,7 +25,6 @@ import java.util.concurrent.CompletionStage;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -119,10 +118,35 @@ class CartDiscountServiceImplTest {
 
         // assertions
         assertThat(result).isCompletedWithValue(Optional.empty());
-        assertThat(errors).isNotEmpty();
-        assertThat(errors.size()).isEqualTo(1);
-        assertTrue(errors.keySet().stream().anyMatch(e -> e.contains("Draft key is blank!")));
+        assertThat(errors.keySet())
+            .containsExactly("Failed to create draft with key: 'null'. Reason: Draft key is blank!");
         verify(cartDiscountSyncOptions.getCtpClient(), times(0)).execute(any());
+    }
+
+    @Test
+    void createCartDiscount_WithEmptyCartDiscountKey_ShouldHaveEmptyOptionalAsAResult() {
+        //preparation
+        final SphereClient sphereClient = mock(SphereClient.class);
+        final CartDiscountDraft mockCartDiscountDraft = mock(CartDiscountDraft.class);
+        final Map<String, Throwable> errors = new HashMap<>();
+        when(mockCartDiscountDraft.getKey()).thenReturn("");
+
+        final CartDiscountSyncOptions options = CartDiscountSyncOptionsBuilder
+            .of(sphereClient)
+            .errorCallback(errors::put)
+            .build();
+
+        final CartDiscountServiceImpl cartDiscountService = new CartDiscountServiceImpl(options);
+
+        // test
+        final CompletionStage<Optional<CartDiscount>> result = cartDiscountService
+            .createCartDiscount(mockCartDiscountDraft);
+
+        // assertion
+        assertThat(result).isCompletedWithValue(Optional.empty());
+        assertThat(errors.keySet())
+            .containsExactly("Failed to create draft with key: ''. Reason: Draft key is blank!");
+        verify(options.getCtpClient(), times(0)).execute(any());
     }
 
     @Test
@@ -158,8 +182,6 @@ class CartDiscountServiceImplTest {
                 .hasSize(1)
                 .hasOnlyOneElementSatisfying(exception ->
                         assertThat(exception).isExactlyInstanceOf(InternalServerErrorException.class));
-
-
     }
 
     @Test
@@ -207,30 +229,5 @@ class CartDiscountServiceImplTest {
         // assertions
         assertThat(result).hasFailedWithThrowableThat()
                 .isExactlyInstanceOf(InternalServerErrorException.class);
-    }
-
-    @Test
-    void createCartDiscount_WithEmptyCartDiscountKey_ShouldHaveEmptyOptionalAsAResult() {
-        //preparation
-        final SphereClient sphereClient = mock(SphereClient.class);
-        final CartDiscountDraft mockCartDiscountDraft = mock(CartDiscountDraft.class);
-        final Map<String, Throwable> errors = new HashMap<>();
-        when(mockCartDiscountDraft.getName()).thenReturn(LocalizedString.ofEnglish(""));
-
-        final CartDiscountSyncOptions options = CartDiscountSyncOptionsBuilder
-                .of(sphereClient)
-                .errorCallback(errors::put)
-                .build();
-
-        final CartDiscountServiceImpl cartDiscountService = new CartDiscountServiceImpl(options);
-
-        // test
-        final CompletionStage<Optional<CartDiscount>> result = cartDiscountService
-            .createCartDiscount(mockCartDiscountDraft);
-
-        // assertion
-        assertThat(result).isCompletedWithValue(Optional.empty());
-        assertThat(errors.keySet())
-                .containsExactly("Failed to create draft with key: ''. Reason: Draft key is blank!");
     }
 }
