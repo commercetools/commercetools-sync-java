@@ -21,7 +21,6 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -114,11 +113,7 @@ public final class CartDiscountUpdateActionUtils {
     @Nonnull
     private static Optional<UpdateAction<CartDiscount>> buildChangeAbsoluteValueUpdateAction(
             @Nonnull final AbsoluteCartDiscountValue oldValue,
-            @Nullable final AbsoluteCartDiscountValue newValue) {
-
-        if (newValue == null) {
-            return Optional.of(ChangeValue.of(null));
-        }
+            @Nonnull final AbsoluteCartDiscountValue newValue) {
 
         if (newValue.getMoney() == null) {
             return Optional.of(ChangeValue.of(newValue));
