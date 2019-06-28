@@ -70,7 +70,7 @@ public class CartDiscountITUtils {
     public static final String SORT_ORDER_2 = "0.2";
 
     public static final String OLD_CART_DISCOUNT_TYPE_KEY = "oldCartDiscountCustomTypeKey";
-    public static final String OLD_CART_DISCOUNT_TYPE_NAME = "oldCartDiscountCustomTypName";
+    public static final String OLD_CART_DISCOUNT_TYPE_NAME = "oldCartDiscountCustomTypeName";
 
     public static final CartDiscountDraft CART_DISCOUNT_DRAFT_1 =
         CartDiscountDraftBuilder.of(CART_DISCOUNT_NAME_1,
