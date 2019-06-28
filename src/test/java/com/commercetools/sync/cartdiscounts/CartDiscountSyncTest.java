@@ -2,6 +2,7 @@ package com.commercetools.sync.cartdiscounts;
 
 import com.commercetools.sync.cartdiscounts.helpers.CartDiscountSyncStatistics;
 import com.commercetools.sync.services.CartDiscountService;
+import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraftBuilder;
@@ -83,7 +84,8 @@ class CartDiscountSyncTest {
                 throw new SphereException();
             }));
 
-        final CartDiscountSync cartDiscountSync = new CartDiscountSync(syncOptions, mockCartDiscountService);
+        final CartDiscountSync cartDiscountSync =
+            new CartDiscountSync(syncOptions, mock(TypeService.class), mockCartDiscountService);
 
         // test
         final CartDiscountSyncStatistics cartDiscountSyncStatistics = cartDiscountSync
@@ -122,7 +124,7 @@ class CartDiscountSyncTest {
         final CartDiscountSyncOptions spyCartDiscountSyncOptions = spy(cartDiscountSyncOptions);
 
         // test
-        new CartDiscountSync(spyCartDiscountSyncOptions, cartDiscountService)
+        new CartDiscountSync(spyCartDiscountSyncOptions, mock(TypeService.class), cartDiscountService)
             .sync(singletonList(newCartDiscount)).toCompletableFuture().join();
 
         // assertion
@@ -150,7 +152,7 @@ class CartDiscountSyncTest {
         final CartDiscountSyncOptions spyCartDiscountSyncOptions = spy(cartDiscountSyncOptions);
 
         // test
-        new CartDiscountSync(spyCartDiscountSyncOptions, cartDiscountService)
+        new CartDiscountSync(spyCartDiscountSyncOptions, mock(TypeService.class), cartDiscountService)
             .sync(singletonList(newCartDiscount)).toCompletableFuture().join();
 
         // assertion
