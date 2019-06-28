@@ -366,8 +366,8 @@ class CartDiscountServiceImplIT {
             .updateCartDiscount(cartDiscount, singletonList(setDescriptionUpdateAction));
 
 
-           assertThat(updateCompletionStage).hasFailedWithThrowableThat()
-                                            .hasMessageContaining("Request body does not contain valid JSON.");
+        assertThat(updateCompletionStage).hasFailedWithThrowableThat()
+                                         .hasMessageContaining("Request body does not contain valid JSON.");
     }
 
 }
