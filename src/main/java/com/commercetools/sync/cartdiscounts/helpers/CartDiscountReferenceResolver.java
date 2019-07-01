@@ -45,7 +45,22 @@ public final class CartDiscountReferenceResolver
         super(options, typeService);
     }
 
+    /**
+     * Given a {@link CartDiscountDraft} this method attempts to resolve the custom type reference to
+     * return a {@link CompletionStage} which contains a new instance of the draft with the resolved
+     * reference. If the {@link CartDiscountDraft} has a {@link GiftLineItemCartDiscountValue} value,
+     * the resourceIdentifiers (namely: product, supplyChannel and distributionChannel) are validated that they have
+     * non-blank (empty/null) keys, if they are provided. If they are not valid, this method returns a
+     * {@link CompletionStage} which is completed exceptionally with a {@link ReferenceResolutionException}. If they are
+     * valid, a {@link CompletionStage} is completed containing the {@link CartDiscountDraft}.
+     *
+     * @param draft the CartDiscountDraft to resolve its references.
+     * @return a {@link CompletionStage} that contains as a result a new CartDiscountDraft instance with resolved
+     *          custom type reference or, in case an error occurs during reference resolution,
+     *          a {@link ReferenceResolutionException}.
+     */
     @Override
+    @Nonnull
     public CompletionStage<CartDiscountDraft> resolveReferences(@Nonnull final CartDiscountDraft draft) {
         return resolveCustomTypeReference(CartDiscountDraftBuilder.of(draft))
             .thenCompose(this::validateReferences)
