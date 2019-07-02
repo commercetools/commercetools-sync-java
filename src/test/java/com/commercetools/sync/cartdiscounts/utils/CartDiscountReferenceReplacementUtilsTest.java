@@ -21,8 +21,7 @@ import static org.mockito.Mockito.when;
 class CartDiscountReferenceReplacementUtilsTest {
 
     @Test
-    void
-    replaceCartDiscountsReferenceIdsWithKeys_WithExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
+    void replaceCartDiscountsReferenceIdsWithKeys_WithExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
         final Type mockCustomType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
 
         final List<CartDiscount> mockCartDiscounts = new ArrayList<>();
@@ -48,7 +47,7 @@ class CartDiscountReferenceReplacementUtilsTest {
 
     @Test
     void
-    replaceCartDiscountsReferenceIdsWithKeys_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
+        replaceCartDiscountsReferenceIdsWithKeys_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
         final String customTypeId = UUID.randomUUID().toString();
 
         final List<CartDiscount> mockCartDiscounts = new ArrayList<>();
