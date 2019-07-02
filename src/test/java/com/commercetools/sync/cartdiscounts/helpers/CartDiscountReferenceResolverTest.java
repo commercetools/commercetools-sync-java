@@ -6,7 +6,7 @@ import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraftBuilder;
 import io.sphere.sdk.cartdiscounts.CartDiscountValue;
-import io.sphere.sdk.cartdiscounts.GiftLineItemCartDiscountValue;
+import io.sphere.sdk.cartdiscounts.RelativeCartDiscountValue;
 import io.sphere.sdk.cartdiscounts.ShippingCostTarget;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.DefaultCurrencyUnits;
@@ -112,11 +112,7 @@ class CartDiscountReferenceResolverTest {
                 true,
                 "0.1",
                 ShippingCostTarget.of(),
-                GiftLineItemCartDiscountValue.of(
-                    ResourceIdentifier.ofKey("productKey"),
-                    1,
-                    ResourceIdentifier.ofKey("supplyChannelKey"),
-                    ResourceIdentifier.ofKey("distributionChannelKey")))
+                RelativeCartDiscountValue.of(10))
             .key("cart-discount-key")
             .custom(CustomFieldsDraft.ofTypeIdAndJson("typeKey", new HashMap<>()))
             .build();
