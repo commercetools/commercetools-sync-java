@@ -83,11 +83,11 @@ class CartDiscountSyncIT {
         // assertion
         assertThat(errorMessages).isEmpty();
         assertThat(exceptions).isEmpty();
-        assertThat(cartDiscountSyncStatistics).hasValues(3, 2, 0, 0);
+        assertThat(cartDiscountSyncStatistics).hasValues(2, 1, 0, 0);
         assertThat(cartDiscountSyncStatistics
             .getReportMessage())
-            .isEqualTo("Summary: 3 cart discounts were processed in total"
-                + " (2 created, 0 updated and 0 failed to sync).");
+            .isEqualTo("Summary: 2 cart discounts were processed in total"
+                + " (1 created, 0 updated and 0 failed to sync).");
 
     }
 
