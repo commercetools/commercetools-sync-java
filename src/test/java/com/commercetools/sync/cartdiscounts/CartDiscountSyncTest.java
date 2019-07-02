@@ -2,6 +2,7 @@ package com.commercetools.sync.cartdiscounts;
 
 import com.commercetools.sync.cartdiscounts.helpers.CartDiscountSyncStatistics;
 import com.commercetools.sync.services.CartDiscountService;
+import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraftBuilder;
@@ -83,7 +84,8 @@ class CartDiscountSyncTest {
                 throw new SphereException();
             }));
 
-        final CartDiscountSync cartDiscountSync = new CartDiscountSync(syncOptions, mockCartDiscountService);
+        final CartDiscountSync cartDiscountSync =
+            new CartDiscountSync(syncOptions, mock(TypeService.class), mockCartDiscountService);
 
         // test
         final CartDiscountSyncStatistics cartDiscountSyncStatistics = cartDiscountSync
@@ -122,7 +124,7 @@ class CartDiscountSyncTest {
         final CartDiscountSyncOptions spyCartDiscountSyncOptions = spy(cartDiscountSyncOptions);
 
         // test
-        new CartDiscountSync(spyCartDiscountSyncOptions, cartDiscountService)
+        new CartDiscountSync(spyCartDiscountSyncOptions, mock(TypeService.class), cartDiscountService)
             .sync(singletonList(newCartDiscount)).toCompletableFuture().join();
 
         // assertion
@@ -150,7 +152,7 @@ class CartDiscountSyncTest {
         final CartDiscountSyncOptions spyCartDiscountSyncOptions = spy(cartDiscountSyncOptions);
 
         // test
-        new CartDiscountSync(spyCartDiscountSyncOptions, cartDiscountService)
+        new CartDiscountSync(spyCartDiscountSyncOptions, mock(TypeService.class), cartDiscountService)
             .sync(singletonList(newCartDiscount)).toCompletableFuture().join();
 
         // assertion
@@ -192,6 +194,45 @@ class CartDiscountSyncTest {
         assertThat(exceptions)
                 .hasSize(1)
                 .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable).isNull());
+
+        assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
+    }
+
+    @Test
+    void sync_WithoutKey_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+        //preparation
+        final CartDiscountDraft newCartDiscountDraftWithoutKey = mock(CartDiscountDraft.class);
+        when(newCartDiscountDraftWithoutKey.getKey()).thenReturn(null);
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+
+        final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
+            .of(mock(SphereClient.class))
+            .errorCallback((errorMessage, exception) -> {
+                errorMessages.add(errorMessage);
+                exceptions.add(exception);
+            })
+            .build();
+
+        final CartDiscountSync cartDiscountSync = new CartDiscountSync(cartDiscountSyncOptions);
+
+        //test
+        final CartDiscountSyncStatistics cartDiscountSyncStatistics = cartDiscountSync
+            .sync(singletonList(newCartDiscountDraftWithoutKey))
+            .toCompletableFuture()
+            .join();
+
+        //assertions
+        assertThat(errorMessages)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(message ->
+                assertThat(message).isEqualTo("Failed to process cart discount draft without key.")
+            );
+
+        assertThat(exceptions)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable).isNull());
 
         assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
     }
