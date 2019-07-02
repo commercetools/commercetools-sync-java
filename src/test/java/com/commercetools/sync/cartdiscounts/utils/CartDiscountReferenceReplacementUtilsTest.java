@@ -78,5 +78,4 @@ class CartDiscountReferenceReplacementUtilsTest {
         final CartDiscountQuery cartDiscountQuery = CartDiscountReferenceReplacementUtils.buildCartDiscountQuery();
         assertThat(cartDiscountQuery.expansionPaths()).containsExactly(ExpansionPath.of("custom.type"));
     }
-
 }
