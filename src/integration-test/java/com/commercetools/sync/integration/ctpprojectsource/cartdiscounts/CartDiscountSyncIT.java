@@ -31,7 +31,7 @@ import static com.commercetools.sync.commons.asserts.statistics.AssertionsForSta
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.deleteCartDiscountsFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.populateSourceProject;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.populateTargetProject;
-import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
@@ -42,8 +42,7 @@ class CartDiscountSyncIT {
     @BeforeEach
     void setup() {
         deleteCartDiscountsFromTargetAndSource();
-        deleteProductSyncTestData(CTP_SOURCE_CLIENT);
-        deleteProductSyncTestData(CTP_TARGET_CLIENT);
+        deleteTypesFromTargetAndSource();
         populateSourceProject();
         populateTargetProject();
     }
@@ -51,8 +50,7 @@ class CartDiscountSyncIT {
     @AfterAll
     static void tearDown() {
         deleteCartDiscountsFromTargetAndSource();
-        deleteProductSyncTestData(CTP_SOURCE_CLIENT);
-        deleteProductSyncTestData(CTP_TARGET_CLIENT);
+        deleteTypesFromTargetAndSource();
     }
 
     @Test
