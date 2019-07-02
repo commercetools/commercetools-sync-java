@@ -80,8 +80,8 @@ class CartDiscountReferenceResolverTest {
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format("Failed to resolve custom type reference on CartDiscount with key:'cart-discount-key'. "
-                    + "Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+            .hasMessage(format("Failed to resolve custom type reference on CartDiscountDraft with "
+                + "key:'cart-discount-key'. Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
@@ -100,8 +100,8 @@ class CartDiscountReferenceResolverTest {
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format("Failed to resolve custom type reference on CartDiscount with key:'cart-discount-key'. "
-                + "Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+            .hasMessage(format("Failed to resolve custom type reference on CartDiscountDraft with "
+                + "key:'cart-discount-key'. Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
