@@ -12,18 +12,9 @@ import io.sphere.sdk.cartdiscounts.commands.CartDiscountCreateCommand;
 import io.sphere.sdk.cartdiscounts.commands.CartDiscountDeleteCommand;
 import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
 import io.sphere.sdk.cartdiscounts.queries.CartDiscountQueryBuilder;
-import io.sphere.sdk.channels.ChannelDraft;
-import io.sphere.sdk.channels.ChannelDraftBuilder;
-import io.sphere.sdk.channels.ChannelRole;
-import io.sphere.sdk.channels.commands.ChannelCreateCommand;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductDraftBuilder;
-import io.sphere.sdk.products.commands.ProductCreateCommand;
-import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
 import io.sphere.sdk.types.Type;
@@ -40,15 +31,10 @@ import java.util.stream.IntStream;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createCustomFieldsJsonMap;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createTypeIfNotAlreadyExisting;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndExecute;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.lang.String.format;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singleton;
 import static java.util.stream.Collectors.toList;
 
 public final class CartDiscountITUtils {
@@ -84,14 +70,6 @@ public final class CartDiscountITUtils {
             1,
             ResourceIdentifier.ofKey(CART_DISCOUNT_GIFT_LINEITEM_SUPPLY_CHANNEL_KEY),
             ResourceIdentifier.ofKey(CART_DISCOUNT_GIFT_LINEITEM_DISTRIBUTION_CHANNEL_KEY)
-        );
-
-    public static final CartDiscountValue CART_DISCOUNT_GIFT_LINEITEM_VALUE_WITH_WRONG_REFERENCES =
-        GiftLineItemCartDiscountValue.of(
-            ResourceIdentifier.ofId(CART_DISCOUNT_GIFT_LINEITEM_PRODUCT_KEY),
-            1,
-            ResourceIdentifier.ofId(CART_DISCOUNT_GIFT_LINEITEM_SUPPLY_CHANNEL_KEY),
-            ResourceIdentifier.ofId(CART_DISCOUNT_GIFT_LINEITEM_DISTRIBUTION_CHANNEL_KEY)
         );
 
     public static final CartDiscountTarget CART_DISCOUNT_TARGET_1 = LineItemsTarget.ofAll();
@@ -180,8 +158,6 @@ public final class CartDiscountITUtils {
 
 
     public static void populateSourceProject() {
-        createProduct(CTP_SOURCE_CLIENT);
-        createChannels(CTP_SOURCE_CLIENT);
         createCartDiscountCustomType(OLD_CART_DISCOUNT_TYPE_KEY,
             Locale.ENGLISH,
             OLD_CART_DISCOUNT_TYPE_NAME,
@@ -191,37 +167,6 @@ public final class CartDiscountITUtils {
             CTP_SOURCE_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_2)).toCompletableFuture(),
             CTP_SOURCE_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_WITH_REFERENCES))
                              .toCompletableFuture())
-                         .join();
-    }
-
-    @Nonnull
-    public static Product createProduct(@Nonnull final SphereClient ctpClient) {
-        final ProductType productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, ctpClient);
-        final ProductDraft productDraft = ProductDraftBuilder
-            .of(productType, ofEnglish("product"), ofEnglish("slug"), emptyList())
-            .key(CART_DISCOUNT_GIFT_LINEITEM_PRODUCT_KEY)
-            .build();
-
-        return ctpClient.execute(ProductCreateCommand.of(productDraft)).toCompletableFuture().join();
-    }
-
-    private static void createChannels(@Nonnull final SphereClient ctpClient) {
-
-        final ChannelDraft productDistributionChannel = ChannelDraftBuilder
-            .of("productDistribution")
-            .roles(singleton(ChannelRole.PRODUCT_DISTRIBUTION))
-            .key(CART_DISCOUNT_GIFT_LINEITEM_DISTRIBUTION_CHANNEL_KEY)
-            .build();
-
-        final ChannelDraft supplyChannel = ChannelDraftBuilder
-            .of("supply")
-            .roles(singleton(ChannelRole.INVENTORY_SUPPLY))
-            .key(CART_DISCOUNT_GIFT_LINEITEM_SUPPLY_CHANNEL_KEY)
-            .build();
-
-        CompletableFuture.allOf(
-            ctpClient.execute(ChannelCreateCommand.of(productDistributionChannel)).toCompletableFuture(),
-            ctpClient.execute(ChannelCreateCommand.of(supplyChannel)).toCompletableFuture())
                          .join();
     }
 
@@ -239,8 +184,6 @@ public final class CartDiscountITUtils {
     }
 
     public static void populateTargetProject() {
-        createProduct(CTP_TARGET_CLIENT);
-        createChannels(CTP_TARGET_CLIENT);
         createCartDiscountCustomType(OLD_CART_DISCOUNT_TYPE_KEY,
             Locale.ENGLISH,
             OLD_CART_DISCOUNT_TYPE_NAME,
