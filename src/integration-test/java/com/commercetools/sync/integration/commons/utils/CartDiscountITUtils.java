@@ -104,7 +104,7 @@ public final class CartDiscountITUtils {
 
 
     public static CustomFieldsDraft getCustomFieldsDraft() {
-        return CustomFieldsDraft.ofTypeKeyAndJson(OLD_CART_DISCOUNT_TYPE_KEY, createCustomFieldsJsonMap());
+        return CustomFieldsDraft.ofTypeIdAndJson(OLD_CART_DISCOUNT_TYPE_KEY, createCustomFieldsJsonMap());
     }
 
     /**
@@ -130,16 +130,28 @@ public final class CartDiscountITUtils {
             Locale.ENGLISH,
             OLD_CART_DISCOUNT_TYPE_NAME,
             CTP_SOURCE_CLIENT);
+
+        final CartDiscountDraft draft1 = CartDiscountDraftBuilder
+            .of(CART_DISCOUNT_DRAFT_1)
+            .custom(CustomFieldsDraft
+                .ofTypeKeyAndJson(OLD_CART_DISCOUNT_TYPE_KEY, createCustomFieldsJsonMap()))
+            .build();
+        final CartDiscountDraft draft2 = CartDiscountDraftBuilder
+            .of(CART_DISCOUNT_DRAFT_2)
+            .custom(CustomFieldsDraft
+                .ofTypeKeyAndJson(OLD_CART_DISCOUNT_TYPE_KEY, createCustomFieldsJsonMap()))
+            .build();
+
         CompletableFuture.allOf(
-            CTP_SOURCE_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_1)).toCompletableFuture(),
-            CTP_SOURCE_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_2)).toCompletableFuture())
+            CTP_SOURCE_CLIENT.execute(CartDiscountCreateCommand.of(draft1)).toCompletableFuture(),
+            CTP_SOURCE_CLIENT.execute(CartDiscountCreateCommand.of(draft2)).toCompletableFuture())
                          .join();
     }
 
-    private static Type createCartDiscountCustomType(@Nonnull final String typeKey,
-                                                     @Nonnull final Locale locale,
-                                                     @Nonnull final String name,
-                                                     @Nonnull final SphereClient ctpClient) {
+    public static Type createCartDiscountCustomType(@Nonnull final String typeKey,
+                                                    @Nonnull final Locale locale,
+                                                    @Nonnull final String name,
+                                                    @Nonnull final SphereClient ctpClient) {
 
         return createTypeIfNotAlreadyExisting(
             typeKey,
@@ -154,7 +166,13 @@ public final class CartDiscountITUtils {
             Locale.ENGLISH,
             OLD_CART_DISCOUNT_TYPE_NAME,
             CTP_TARGET_CLIENT);
-        CTP_TARGET_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_1)).toCompletableFuture().join();
+
+        final CartDiscountDraft draft1 = CartDiscountDraftBuilder
+            .of(CART_DISCOUNT_DRAFT_1)
+            .custom(CustomFieldsDraft
+                .ofTypeKeyAndJson(OLD_CART_DISCOUNT_TYPE_KEY, createCustomFieldsJsonMap()))
+            .build();
+        CTP_TARGET_CLIENT.execute(CartDiscountCreateCommand.of(draft1)).toCompletableFuture().join();
     }
 
     /**
