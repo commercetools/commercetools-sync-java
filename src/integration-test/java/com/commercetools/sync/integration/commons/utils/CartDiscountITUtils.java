@@ -87,7 +87,6 @@ public final class CartDiscountITUtils {
                                 .custom(getCustomFieldsDraft())
                                 .build();
 
-
     public static final CartDiscountDraft CART_DISCOUNT_DRAFT_2 =
         CartDiscountDraftBuilder.of(CART_DISCOUNT_NAME_2,
             CART_DISCOUNT_CART_PREDICATE_2,
@@ -185,9 +184,9 @@ public final class CartDiscountITUtils {
      */
     public static List<String> getSortOrders(final int capacity) {
         return IntStream.range(0, capacity * 2)
-                .filter(index -> index % 2 != 0)
-                .mapToObj(oddNumber -> format("0.0%s", oddNumber))
-                .collect(toList());
+                        .filter(index -> index % 2 != 0)
+                        .mapToObj(oddNumber -> format("0.0%s", oddNumber))
+                        .collect(toList());
     }
 
     private CartDiscountITUtils() {
