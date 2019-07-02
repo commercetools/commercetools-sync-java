@@ -47,7 +47,7 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
     private static final String CART_DISCOUNT_DRAFT_IS_NULL =
         "Failed to process null cart discount draft.";
     private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
-        + "cartDiscount with key:'%s'. Reason: %s";
+        + "CartDiscount with key:'%s'. Reason: %s";
 
 
     private final CartDiscountService cartDiscountService;
