@@ -6,7 +6,6 @@ import io.sphere.sdk.cartdiscounts.CartDiscountDraftBuilder;
 import io.sphere.sdk.cartdiscounts.CartDiscountTarget;
 import io.sphere.sdk.cartdiscounts.CartDiscountValue;
 import io.sphere.sdk.cartdiscounts.CartPredicate;
-import io.sphere.sdk.cartdiscounts.GiftLineItemCartDiscountValue;
 import io.sphere.sdk.cartdiscounts.LineItemsTarget;
 import io.sphere.sdk.cartdiscounts.commands.CartDiscountCreateCommand;
 import io.sphere.sdk.cartdiscounts.commands.CartDiscountDeleteCommand;
@@ -14,7 +13,6 @@ import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
 import io.sphere.sdk.cartdiscounts.queries.CartDiscountQueryBuilder;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
 import io.sphere.sdk.types.Type;
@@ -41,7 +39,6 @@ public final class CartDiscountITUtils {
 
     public static final String CART_DISCOUNT_KEY_1 = "key_1";
     public static final String CART_DISCOUNT_KEY_2 = "key_2";
-    public static final String CART_DISCOUNT_WITH_GIFT_LINEITEM_KEY = "giftLineItemCartDiscount";
 
     public static final LocalizedString CART_DISCOUNT_NAME_1 = LocalizedString.of(Locale.ENGLISH, "name_1");
     public static final LocalizedString CART_DISCOUNT_NAME_2 = LocalizedString.of(Locale.ENGLISH, "name_2");
@@ -60,18 +57,6 @@ public final class CartDiscountITUtils {
     public static final CartDiscountValue CART_DISCOUNT_VALUE_1 = CartDiscountValue.ofRelative(1000);
     public static final CartDiscountValue CART_DISCOUNT_VALUE_2 = CartDiscountValue.ofAbsolute(MoneyImpl.of(20, EUR));
 
-    public static final String CART_DISCOUNT_GIFT_LINEITEM_PRODUCT_KEY = "productKey";
-    public static final String CART_DISCOUNT_GIFT_LINEITEM_SUPPLY_CHANNEL_KEY = "supplyChannelKey";
-    public static final String CART_DISCOUNT_GIFT_LINEITEM_DISTRIBUTION_CHANNEL_KEY = "distributionChannelKey";
-
-    public static final CartDiscountValue CART_DISCOUNT_GIFT_LINEITEM_VALUE =
-        GiftLineItemCartDiscountValue.of(
-            ResourceIdentifier.ofKey(CART_DISCOUNT_GIFT_LINEITEM_PRODUCT_KEY),
-            1,
-            ResourceIdentifier.ofKey(CART_DISCOUNT_GIFT_LINEITEM_SUPPLY_CHANNEL_KEY),
-            ResourceIdentifier.ofKey(CART_DISCOUNT_GIFT_LINEITEM_DISTRIBUTION_CHANNEL_KEY)
-        );
-
     public static final CartDiscountTarget CART_DISCOUNT_TARGET_1 = LineItemsTarget.ofAll();
     public static final CartDiscountTarget CART_DISCOUNT_TARGET_2 =
         LineItemsTarget.of("sku = \"0123456789\" or sku = \"0246891213\"");
@@ -83,7 +68,6 @@ public final class CartDiscountITUtils {
 
     public static final String SORT_ORDER_1 = "0.1";
     public static final String SORT_ORDER_2 = "0.2";
-    public static final String SORT_ORDER_3 = "0.3";
 
     public static final String OLD_CART_DISCOUNT_TYPE_KEY = "oldCartDiscountCustomTypeKey";
     public static final String OLD_CART_DISCOUNT_TYPE_NAME = "oldCartDiscountCustomTypeName";
@@ -96,21 +80,6 @@ public final class CartDiscountITUtils {
             SORT_ORDER_1,
             false)
                                 .key(CART_DISCOUNT_KEY_1)
-                                .active(false)
-                                .description(CART_DISCOUNT_DESC_1)
-                                .validFrom(JANUARY_FROM)
-                                .validUntil(JANUARY_UNTIL)
-                                .custom(getCustomFieldsDraft())
-                                .build();
-
-    public static final CartDiscountDraft CART_DISCOUNT_DRAFT_WITH_REFERENCES =
-        CartDiscountDraftBuilder.of(CART_DISCOUNT_NAME_1,
-            CART_DISCOUNT_CART_PREDICATE_1,
-            CART_DISCOUNT_GIFT_LINEITEM_VALUE,
-            null,
-            SORT_ORDER_3,
-            false)
-                                .key(CART_DISCOUNT_WITH_GIFT_LINEITEM_KEY)
                                 .active(false)
                                 .description(CART_DISCOUNT_DESC_1)
                                 .validFrom(JANUARY_FROM)
@@ -164,9 +133,7 @@ public final class CartDiscountITUtils {
             CTP_SOURCE_CLIENT);
         CompletableFuture.allOf(
             CTP_SOURCE_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_1)).toCompletableFuture(),
-            CTP_SOURCE_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_2)).toCompletableFuture(),
-            CTP_SOURCE_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_WITH_REFERENCES))
-                             .toCompletableFuture())
+            CTP_SOURCE_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_2)).toCompletableFuture())
                          .join();
     }
 
