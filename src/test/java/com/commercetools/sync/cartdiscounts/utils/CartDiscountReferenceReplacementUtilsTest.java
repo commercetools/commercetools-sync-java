@@ -27,7 +27,7 @@ class CartDiscountReferenceReplacementUtilsTest {
         final List<CartDiscount> mockCartDiscounts = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             final CartDiscount mockCartDiscount = mock(CartDiscount.class);
-            //Mock cartDiscounts custom fields with non-expanded type references.
+            //Mock cartDiscounts custom fields with expanded type references.
             final CustomFields mockCustomFields = mock(CustomFields.class);
             final Reference<Type> typeReference = Reference.ofResourceTypeIdAndObj("resourceTypeId",
                 mockCustomType);
