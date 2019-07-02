@@ -43,19 +43,6 @@ Therefore, in order for the sync to resolve the actual ids of those references i
     // Puts the keys in the reference id fields to prepare for reference resolution
     final List<CartDiscountDraft> cartDiscountDrafts = replaceCartDiscountsReferenceIdsWithKeys(cartDiscounts);
     ````
-    ##TODO!!!  
-    Example of its usage can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java#L130).
-    
-    - **Note**: If the `CartDiscountDraft`s have `GiftLineItemCartDiscountValue` as values,
-    the `resourceIdentifiers` (namely: `product`, `supplyChannel` and `distributionChannel` are expected to be provided
-    on `CartDiscountDraft` with their `key` values. For example:
-    ````java
-    GiftLineItemCartDiscountValue.of(
-                        ResourceIdentifier.ofKey("productKey"),
-                        1,
-                        ResourceIdentifier.ofKey("supplyChannelKey"),
-                        ResourceIdentifier.ofKey("distributionChannelKey")));
-   ````
 
 3. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
