@@ -12,7 +12,6 @@ against a [CartDiscountDraft](https://docs.commercetools.com/http-api-projects-c
   - [Sync list of cart discount drafts](#sync-list-of-cart-discount-drafts)
     - [Prerequisites](#prerequisites)
     - [Running the sync](#running-the-sync)
-    - [Important to Note](#important-to-note)
     - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)
   - [Build all update actions](#build-all-update-actions)
   - [Build particular update action(s)](#build-particular-update-actions)
@@ -102,3 +101,7 @@ Utility methods provided by the library to compare the specific fields of a `Car
 Optional<UpdateAction<CartDiscount>> updateAction = CartDiscountUpdateActionUtils.buildChangeNameAction(oldCartDiscount, cartDiscountDraft);
 ````
 More examples of those utils for different cart discounts can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/cartdiscounts/utils/CartDiscountUpdateActionUtilsTest.java).
+
+
+## Caveats   
+1. Syncing cart discounts with a `CartDiscountValue` of type `giftLineItem` is not supported yet. [#411](https://github.com/commercetools/commercetools-sync-java/issues/411).
