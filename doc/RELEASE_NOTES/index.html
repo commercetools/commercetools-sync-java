@@ -349,15 +349,27 @@
           
 
 
+  <li class="md-nav__item">
+    <a href="../usage/CART_DISCOUNT_SYNC/" title="CartDiscount Sync" class="md-nav__link">
+      CartDiscount Sync
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
   <li class="md-nav__item md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-7" type="checkbox" id="nav-2-7">
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-8" type="checkbox" id="nav-2-8">
     
-    <label class="md-nav__link" for="nav-2-7">
+    <label class="md-nav__link" for="nav-2-8">
       Advanced
     </label>
     <nav class="md-nav" data-md-component="collapsible" data-md-level="2">
-      <label class="md-nav__title" for="nav-2-7">
+      <label class="md-nav__title" for="nav-2-8">
         Advanced
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
@@ -403,7 +415,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.2.0/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.3.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -440,6 +452,13 @@
   
     <label class="md-nav__title" for="__toc">Table of contents</label>
     <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#130-jul-3-2019" title="1.3.0 -  Jul 3, 2019" class="md-nav__link">
+    1.3.0 -  Jul 3, 2019
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#120-jun-14-2019" title="1.2.0 -  Jun 14, 2019" class="md-nav__link">
@@ -662,6 +681,13 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#130-jul-3-2019" title="1.3.0 -  Jul 3, 2019" class="md-nav__link">
+    1.3.0 -  Jul 3, 2019
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#120-jun-14-2019" title="1.2.0 -  Jun 14, 2019" class="md-nav__link">
     1.2.0 -  Jun 14, 2019
   </a>
@@ -863,13 +889,47 @@
 -->
 
 <!--
-### 1.3.0 -  Jun 24, 2019
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.2.0...1.3.0) |
-[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.3.0/) | 
-[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.3.0)
+### 1.4.0 -  Jun 24, 2019
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.3.0...1.4.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.4.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.4.0)
 
 -->
 
+<h3 id="130-jul-3-2019">1.3.0 -  Jul 3, 2019<a class="headerlink" href="#130-jul-3-2019" title="Permanent link">&para;</a></h3>
+<p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.2.0...1.3.0">Commits</a> |
+<a href="https://commercetools.github.io/commercetools-sync-java/v/1.3.0/">Javadoc</a> | 
+<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/1.3.0">Jar</a></p>
+<ul>
+<li>
+<p>🎉 <strong>New Features</strong> (6)</p>
+<ul>
+<li><strong>CartDiscount Sync</strong> - Added support for syncing types. <a href="https://github.com/commercetools/commercetools-sync-java/issues/379">#379</a> For more info how to use it please refer to <a href="/docs/usage/CART_DISCOUNT_SYNC.md">CartDiscount usage doc</a>.</li>
+<li><strong>CartDiscount Sync</strong> - Exposed <code>CartDiscountSyncUtils#buildActions</code> which calculates all needed update actions after comparing a <code>CartDiscount</code> and a <code>CartDiscountDraft</code>. [<a href="https://github.com/commercetools/commercetools-sync-java/issues/379">#379</a></li>
+<li><strong>CartDiscount Sync</strong> - Exposed <code>CartDiscountUpdateActionUtils</code> which contains utils for calculating needed update actions after comparing individual fields of a <code>CartDiscount</code> and a <code>CartDiscountDraft</code>. <a href="https://github.com/commercetools/commercetools-sync-java/issues/379">#379</a></li>
+<li><strong>CartDiscount Sync</strong> - Introduced the new <code>CartDiscountReferenceResolver</code> which resolves custom type references on CartDiscountDrafts. <a href="https://github.com/commercetools/commercetools-sync-java/issues/379">#379</a></li>
+<li><strong>CartDiscount Sync</strong> - Introduced new <code>CartDiscountReferenceReplacementUtils#replaceCartDiscountsReferenceIdsWithKeys</code> which is a util that replaces the custom type ids with keys in a list of cartDiscounts. <a href="https://github.com/commercetools/commercetools-sync-java/issues/379">#379</a></li>
+<li><strong>CartDiscount Sync</strong> - Exposed <code>CartDiscountReferenceReplacementUtils#buildCartDiscountQuery</code> util to create a cart discount query with all needed reference expansions to fetch cart discounts from a source CTP project for the sync. <a href="https://github.com/commercetools/commercetools-sync-java/issues/379">#379</a>.</li>
+</ul>
+</li>
+<li>
+<p>🐞 <strong>Bug Fixes</strong> (1)</p>
+<ul>
+<li><strong>Commons</strong> -  Fixed a bug in the <code>BaseSyncStatistics</code> which caused a wrong calculation of the <code>latestBatchProcessingTimeInMinutes</code>. <a href="https://github.com/commercetools/commercetools-sync-java/issues/378">#378</a></li>
+</ul>
+</li>
+<li>
+<p>🛠️ <strong>Enhancements</strong> (6)</p>
+<ul>
+<li><strong>CartDiscount Sync</strong> - Added benchmarks for the <code>cartDiscount</code> sync to be able to compare the performance of the sync with the future releases. <a href="https://github.com/commercetools/commercetools-sync-java/issues/379">#379</a></li>
+<li><strong>Commons</strong> - Bumped commercetools-jvm-sdk to version <a href="http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_44_0">1.44.0</a>.</li>
+<li><strong>Commons</strong> - Bumped gradle to version <a href="https://docs.gradle.org/5.5/release-notes.html">gradle-5.5</a></li>
+<li><strong>Commons</strong> - Bumped <code>org.junit.jupiter:junit-jupiter-api</code> to 5.5.0.</li>
+<li><strong>Commons</strong> - Bumped <code>org.junit.jupiter:junit-jupiter-engine</code> to 5.5.0.</li>
+<li><strong>Commons</strong> - Bumped <code>org.junit.jupiter:junit-jupiter-params</code> to 5.5.0.</li>
+</ul>
+</li>
+</ul>
 <h3 id="120-jun-14-2019">1.2.0 -  Jun 14, 2019<a class="headerlink" href="#120-jun-14-2019" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.1.1...1.2.0">Commits</a> |
 <a href="https://commercetools.github.io/commercetools-sync-java/v/1.2.0/">Javadoc</a> | 
