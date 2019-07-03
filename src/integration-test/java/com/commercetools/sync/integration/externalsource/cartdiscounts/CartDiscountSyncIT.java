@@ -4,17 +4,28 @@ import com.commercetools.sync.cartdiscounts.CartDiscountSync;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
 import com.commercetools.sync.cartdiscounts.helpers.CartDiscountSyncStatistics;
+import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraftBuilder;
 import io.sphere.sdk.cartdiscounts.commands.CartDiscountCreateCommand;
 import io.sphere.sdk.cartdiscounts.commands.CartDiscountUpdateCommand;
+import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeCartPredicate;
+import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeTarget;
+import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeValue;
+import io.sphere.sdk.cartdiscounts.commands.updateactions.SetCustomField;
+import io.sphere.sdk.cartdiscounts.commands.updateactions.SetCustomType;
 import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
 import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.queries.PagedQueryResult;
+import io.sphere.sdk.types.CustomFieldsDraft;
+import io.sphere.sdk.types.Type;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +33,8 @@ import org.junit.jupiter.api.Test;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
@@ -31,7 +44,7 @@ import static com.commercetools.sync.commons.asserts.statistics.AssertionsForSta
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_CART_PREDICATE_1;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_CART_PREDICATE_2;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_DESC_1;
-import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_DESC_2;
+import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_DRAFT_1;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_DRAFT_2;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_KEY_1;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_KEY_2;
@@ -43,17 +56,20 @@ import static com.commercetools.sync.integration.commons.utils.CartDiscountITUti
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_VALUE_2;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.JANUARY_FROM;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.JANUARY_UNTIL;
-import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.PREDICATE_2;
+import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.OLD_CART_DISCOUNT_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.SORT_ORDER_1;
+import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.createCartDiscountCustomType;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.deleteCartDiscounts;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.getCartDiscountByKey;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.getSortOrders;
-import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.populateSourceProject;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.populateTargetProject;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.BOOLEAN_CUSTOM_FIELD_NAME;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.createCustomFieldsJsonMap;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -71,7 +87,6 @@ class CartDiscountSyncIT {
     void setup() {
         deleteCartDiscounts(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
-        populateSourceProject();
         populateTargetProject();
     }
 
@@ -84,26 +99,25 @@ class CartDiscountSyncIT {
     @Test
     void sync_WithUpdatedCartDiscount_WithNewCartPredicate_ShouldUpdateCartDiscountWithNewCartPredicate() {
         // preparation
-        final Optional<CartDiscount> oldCartDiscountBefore =
-            getCartDiscountByKey(CTP_TARGET_CLIENT, CART_DISCOUNT_KEY_1);
-        assertThat(oldCartDiscountBefore).isNotEmpty();
-
         final CartDiscountDraft newCartDiscountDraftWithExistingKey =
-            CartDiscountDraftBuilder.of(CART_DISCOUNT_NAME_1,
-                CART_DISCOUNT_CART_PREDICATE_2,
-                CART_DISCOUNT_VALUE_1,
-                CART_DISCOUNT_TARGET_1,
-                SORT_ORDER_1,
-                false)
-                                    .key(CART_DISCOUNT_KEY_1)
-                                    .active(false)
-                                    .description(CART_DISCOUNT_DESC_1)
-                                    .validFrom(JANUARY_FROM)
-                                    .validUntil(JANUARY_UNTIL)
+            CartDiscountDraftBuilder.of(CART_DISCOUNT_DRAFT_1)
+                                    .cartPredicate(CART_DISCOUNT_CART_PREDICATE_2)
                                     .build();
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+        final List<UpdateAction<CartDiscount>> updateActionsList = new ArrayList<>();
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
+            .errorCallback((error, throwable) -> {
+                errorMessages.add(error);
+                exceptions.add(throwable);
+            })
+            .beforeUpdateCallback((updateActions, newCartDiscount, oldCartDiscount) -> {
+                updateActionsList.addAll(updateActions);
+                return updateActions;
+            })
             .build();
 
         final CartDiscountSync cartDiscountSync = new CartDiscountSync(cartDiscountSyncOptions);
@@ -115,39 +129,38 @@ class CartDiscountSyncIT {
             .join();
 
         //assertions
+        assertThat(errorMessages).isEmpty();
+        assertThat(exceptions).isEmpty();
+        assertThat(updateActionsList).containsExactly(ChangeCartPredicate.of(CART_DISCOUNT_CART_PREDICATE_2));
+        assertThat(cartDiscountSyncStatistics
+            .getReportMessage())
+            .isEqualTo("Summary: 1 cart discounts were processed in total"
+                + " (0 created, 1 updated and 0 failed to sync).");
         assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 1, 0);
-
-        final Optional<CartDiscount> oldCartDiscountAfter =
-            getCartDiscountByKey(CTP_TARGET_CLIENT, CART_DISCOUNT_KEY_1);
-
-        assertThat(oldCartDiscountAfter).isNotEmpty();
-        assertThat(oldCartDiscountAfter).hasValueSatisfying(cartDiscount ->
-            assertThat(cartDiscount.getCartPredicate()).isEqualTo(PREDICATE_2));
     }
 
     @Test
     void sync_WithUpdatedCartDiscount_WithNewValue_ShouldUpdateCartDiscountWithNewValue() {
         // preparation
-        final Optional<CartDiscount> oldCartDiscountBefore =
-            getCartDiscountByKey(CTP_TARGET_CLIENT, CART_DISCOUNT_KEY_1);
-        assertThat(oldCartDiscountBefore).isNotEmpty();
-
         final CartDiscountDraft newCartDiscountDraftWithExistingKey =
-            CartDiscountDraftBuilder.of(CART_DISCOUNT_NAME_1,
-                CART_DISCOUNT_CART_PREDICATE_1,
-                CART_DISCOUNT_VALUE_2,
-                CART_DISCOUNT_TARGET_1,
-                SORT_ORDER_1,
-                false)
-                                    .key(CART_DISCOUNT_KEY_1)
-                                    .active(false)
-                                    .description(CART_DISCOUNT_DESC_1)
-                                    .validFrom(JANUARY_FROM)
-                                    .validUntil(JANUARY_UNTIL)
+            CartDiscountDraftBuilder.of(CART_DISCOUNT_DRAFT_1)
+                                    .value(CART_DISCOUNT_VALUE_2)
                                     .build();
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+        final List<UpdateAction<CartDiscount>> updateActionsList = new ArrayList<>();
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
+            .errorCallback((error, throwable) -> {
+                errorMessages.add(error);
+                exceptions.add(throwable);
+            })
+            .beforeUpdateCallback((updateActions, newCartDiscount, oldCartDiscount) -> {
+                updateActionsList.addAll(updateActions);
+                return updateActions;
+            })
             .build();
 
         final CartDiscountSync cartDiscountSync = new CartDiscountSync(cartDiscountSyncOptions);
@@ -159,39 +172,38 @@ class CartDiscountSyncIT {
             .join();
 
         //assertions
+        assertThat(errorMessages).isEmpty();
+        assertThat(exceptions).isEmpty();
+        assertThat(updateActionsList).containsExactly(ChangeValue.of(CART_DISCOUNT_VALUE_2));
+        assertThat(cartDiscountSyncStatistics
+            .getReportMessage())
+            .isEqualTo("Summary: 1 cart discounts were processed in total"
+                + " (0 created, 1 updated and 0 failed to sync).");
         assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 1, 0);
-
-        final Optional<CartDiscount> oldCartDiscountAfter =
-            getCartDiscountByKey(CTP_TARGET_CLIENT, CART_DISCOUNT_KEY_1);
-
-        assertThat(oldCartDiscountAfter).isNotEmpty();
-        assertThat(oldCartDiscountAfter).hasValueSatisfying(cartDiscount ->
-            assertThat(cartDiscount.getValue()).isEqualTo(CART_DISCOUNT_VALUE_2));
     }
 
     @Test
     void sync_WithUpdatedCartDiscount_WithNewTarget_ShouldUpdateCartDiscountWithNewTarget() {
         // preparation
-        final Optional<CartDiscount> oldCartDiscountBefore =
-            getCartDiscountByKey(CTP_TARGET_CLIENT, CART_DISCOUNT_KEY_1);
-        assertThat(oldCartDiscountBefore).isNotEmpty();
-
         final CartDiscountDraft newCartDiscountDraftWithExistingKey =
-            CartDiscountDraftBuilder.of(CART_DISCOUNT_NAME_1,
-                CART_DISCOUNT_CART_PREDICATE_1,
-                CART_DISCOUNT_VALUE_1,
-                CART_DISCOUNT_TARGET_2,
-                SORT_ORDER_1,
-                false)
-                                    .key(CART_DISCOUNT_KEY_1)
-                                    .active(false)
-                                    .description(CART_DISCOUNT_DESC_1)
-                                    .validFrom(JANUARY_FROM)
-                                    .validUntil(JANUARY_UNTIL)
+            CartDiscountDraftBuilder.of(CART_DISCOUNT_DRAFT_1)
+                                    .target(CART_DISCOUNT_TARGET_2)
                                     .build();
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+        final List<UpdateAction<CartDiscount>> updateActionsList = new ArrayList<>();
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
+            .errorCallback((error, throwable) -> {
+                errorMessages.add(error);
+                exceptions.add(throwable);
+            })
+            .beforeUpdateCallback((updateActions, newCartDiscount, oldCartDiscount) -> {
+                updateActionsList.addAll(updateActions);
+                return updateActions;
+            })
             .build();
 
         final CartDiscountSync cartDiscountSync = new CartDiscountSync(cartDiscountSyncOptions);
@@ -203,14 +215,167 @@ class CartDiscountSyncIT {
             .join();
 
         //assertions
+        assertThat(errorMessages).isEmpty();
+        assertThat(exceptions).isEmpty();
+        assertThat(updateActionsList).containsExactly(ChangeTarget.of(CART_DISCOUNT_TARGET_2));
+        assertThat(cartDiscountSyncStatistics
+            .getReportMessage())
+            .isEqualTo("Summary: 1 cart discounts were processed in total"
+                + " (0 created, 1 updated and 0 failed to sync).");
         assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 1, 0);
+    }
 
-        final Optional<CartDiscount> oldCartDiscountAfter =
-            getCartDiscountByKey(CTP_TARGET_CLIENT, CART_DISCOUNT_KEY_1);
+    @Test
+    void sync_WithUpdatedCartDiscount_WithNewCustomType_ShouldUpdateCartDiscountWithNewCustomType() {
+        // preparation
+        final Type newCustomType =
+            createCartDiscountCustomType("new-type", Locale.ENGLISH, "new-type", CTP_TARGET_CLIENT);
 
-        assertThat(oldCartDiscountAfter).isNotEmpty();
-        assertThat(oldCartDiscountAfter).hasValueSatisfying(cartDiscount ->
-            assertThat(cartDiscount.getTarget()).isEqualTo(CART_DISCOUNT_TARGET_2));
+        final CartDiscountDraft newCartDiscountDraftWithExistingKey =
+            CartDiscountDraftBuilder.of(CART_DISCOUNT_DRAFT_1)
+                                    .custom(CustomFieldsDraft.ofTypeIdAndJson(newCustomType.getKey(), emptyMap()))
+                                    .build();
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+        final List<UpdateAction<CartDiscount>> updateActionsList = new ArrayList<>();
+
+        final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .errorCallback((error, throwable) -> {
+                errorMessages.add(error);
+                exceptions.add(throwable);
+            })
+            .beforeUpdateCallback((updateActions, newCartDiscount, oldCartDiscount) -> {
+                updateActionsList.addAll(updateActions);
+                return updateActions;
+            })
+            .build();
+
+        final CartDiscountSync cartDiscountSync = new CartDiscountSync(cartDiscountSyncOptions);
+
+        // test
+        final CartDiscountSyncStatistics cartDiscountSyncStatistics = cartDiscountSync
+            .sync(singletonList(newCartDiscountDraftWithExistingKey))
+            .toCompletableFuture()
+            .join();
+
+        //assertions
+        assertThat(errorMessages).isEmpty();
+        assertThat(exceptions).isEmpty();
+        assertThat(updateActionsList)
+            .containsExactly(SetCustomType.ofTypeIdAndJson(newCustomType.getId(), emptyMap()));
+        assertThat(cartDiscountSyncStatistics
+            .getReportMessage())
+            .isEqualTo("Summary: 1 cart discounts were processed in total"
+                + " (0 created, 1 updated and 0 failed to sync).");
+        assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 1, 0);
+    }
+
+    @Test
+    void sync_WithUpdatedCartDiscount_WithNewCustomTypeWithWrongResIdentifier_ShouldFailToResolveReference() {
+        // preparation
+        final Type newCustomType =
+            createCartDiscountCustomType("new-type", Locale.ENGLISH, "new-type", CTP_TARGET_CLIENT);
+
+        final CartDiscountDraft newCartDiscountDraftWithExistingKey =
+            CartDiscountDraftBuilder.of(CART_DISCOUNT_DRAFT_1)
+                                    .custom(CustomFieldsDraft.ofTypeKeyAndJson(newCustomType.getKey(), emptyMap()))
+                                    .build();
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+        final List<UpdateAction<CartDiscount>> updateActionsList = new ArrayList<>();
+
+        final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .errorCallback((error, throwable) -> {
+                errorMessages.add(error);
+                exceptions.add(throwable);
+            })
+            .beforeUpdateCallback((updateActions, newCartDiscount, oldCartDiscount) -> {
+                updateActionsList.addAll(updateActions);
+                return updateActions;
+            })
+            .build();
+
+        final CartDiscountSync cartDiscountSync = new CartDiscountSync(cartDiscountSyncOptions);
+
+        // test
+        final CartDiscountSyncStatistics cartDiscountSyncStatistics = cartDiscountSync
+            .sync(singletonList(newCartDiscountDraftWithExistingKey))
+            .toCompletableFuture()
+            .join();
+
+        //assertions
+        assertThat(errorMessages).containsExactly(
+            "Failed to resolve references on CartDiscountDraft with key:'key_1'. Reason: "
+                + "Failed to resolve custom type reference on CartDiscountDraft with key:'key_1'. Reason: "
+                + "The value of the 'id' field of the Resource Identifier/Reference is blank (null/empty).");
+        assertThat(exceptions)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(exception -> {
+                assertThat(exception).isInstanceOf(ReferenceResolutionException.class);
+                assertThat(exception.getMessage())
+                    .contains("Failed to resolve custom type reference on CartDiscountDraft with key:'key_1'");
+                assertThat(exception.getCause()).isInstanceOf(ReferenceResolutionException.class);
+                assertThat(exception.getCause().getMessage()).isEqualTo(
+                    "The value of the 'id' field of the Resource Identifier/Reference is blank (null/empty).");
+            });
+        assertThat(updateActionsList).isEmpty();
+        assertThat(cartDiscountSyncStatistics
+            .getReportMessage())
+            .isEqualTo("Summary: 1 cart discounts were processed in total"
+                + " (0 created, 0 updated and 1 failed to sync).");
+        assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
+    }
+
+    @Test
+    void sync_WithUpdatedCartDiscount_WithNewCustomField_ShouldUpdateCartDiscountWithNewCustomField() {
+        // preparation
+        final Map<String, JsonNode> customFieldsJsons = createCustomFieldsJsonMap();
+        customFieldsJsons.put(BOOLEAN_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.booleanNode(true));
+
+        final CartDiscountDraft newCartDiscountDraftWithExistingKey =
+            CartDiscountDraftBuilder.of(CART_DISCOUNT_DRAFT_1)
+                                    .custom(CustomFieldsDraft
+                                        .ofTypeIdAndJson(OLD_CART_DISCOUNT_TYPE_KEY, customFieldsJsons))
+                                    .build();
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+        final List<UpdateAction<CartDiscount>> updateActionsList = new ArrayList<>();
+
+        final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .errorCallback((error, throwable) -> {
+                errorMessages.add(error);
+                exceptions.add(throwable);
+            })
+            .beforeUpdateCallback((updateActions, newCartDiscount, oldCartDiscount) -> {
+                updateActionsList.addAll(updateActions);
+                return updateActions;
+            })
+            .build();
+
+        final CartDiscountSync cartDiscountSync = new CartDiscountSync(cartDiscountSyncOptions);
+
+        // test
+        final CartDiscountSyncStatistics cartDiscountSyncStatistics = cartDiscountSync
+            .sync(singletonList(newCartDiscountDraftWithExistingKey))
+            .toCompletableFuture()
+            .join();
+
+        //assertions
+        assertThat(errorMessages).isEmpty();
+        assertThat(exceptions).isEmpty();
+        assertThat(updateActionsList).containsExactly(SetCustomField
+                .ofJson(BOOLEAN_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.booleanNode(true)));
+        assertThat(cartDiscountSyncStatistics
+            .getReportMessage())
+            .isEqualTo("Summary: 1 cart discounts were processed in total"
+                + " (0 created, 1 updated and 0 failed to sync).");
+        assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 1, 0);
     }
 
     @Test
@@ -221,7 +386,6 @@ class CartDiscountSyncIT {
             .build();
 
         final CartDiscountSync cartDiscountSync = new CartDiscountSync(cartDiscountSyncOptions);
-
         // test
         final CartDiscountSyncStatistics cartDiscountSyncStatistics = cartDiscountSync
             .sync(singletonList(CART_DISCOUNT_DRAFT_2))
@@ -234,63 +398,12 @@ class CartDiscountSyncIT {
         final Optional<CartDiscount> cartDiscountAfterCreation =
             getCartDiscountByKey(CTP_TARGET_CLIENT, CART_DISCOUNT_KEY_2);
 
-        assertThat(cartDiscountAfterCreation).isNotEmpty();
         assertThat(cartDiscountAfterCreation).hasValueSatisfying(cartDiscount -> {
-            assertThat(cartDiscount.getName()).isEqualTo(CART_DISCOUNT_NAME_2);
-            assertThat(cartDiscount.getDescription()).isEqualTo(CART_DISCOUNT_DESC_2);
-            assertThat(cartDiscount.getCartPredicate()).isEqualTo(PREDICATE_2);
-            assertThat(cartDiscount.getValue()).isEqualTo(CART_DISCOUNT_VALUE_2);
+            assertThat(cartDiscount.getName()).isEqualTo(CART_DISCOUNT_DRAFT_2.getName());
+            assertThat(cartDiscount.getDescription()).isEqualTo(CART_DISCOUNT_DRAFT_2.getDescription());
+            assertThat(cartDiscount.getCartPredicate()).isEqualTo(CART_DISCOUNT_DRAFT_2.getCartPredicate());
+            assertThat(cartDiscount.getValue()).isEqualTo(CART_DISCOUNT_DRAFT_2.getValue());
         });
-    }
-
-    @Test
-    void sync_WithoutKey_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
-        //prepare
-        final CartDiscountDraft newCartDiscountDraftWithoutKey =
-            CartDiscountDraftBuilder.of(CART_DISCOUNT_NAME_1,
-                CART_DISCOUNT_CART_PREDICATE_1,
-                CART_DISCOUNT_VALUE_1,
-                CART_DISCOUNT_TARGET_1,
-                SORT_ORDER_1,
-                false)
-                                    .key(null)
-                                    .active(false)
-                                    .description(CART_DISCOUNT_DESC_1)
-                                    .validFrom(JANUARY_FROM)
-                                    .validUntil(JANUARY_UNTIL)
-                                    .build();
-
-        final List<String> errorMessages = new ArrayList<>();
-        final List<Throwable> exceptions = new ArrayList<>();
-
-        final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
-            .of(CTP_TARGET_CLIENT)
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
-                exceptions.add(exception);
-            })
-            .build();
-
-        final CartDiscountSync cartDiscountSync = new CartDiscountSync(cartDiscountSyncOptions);
-
-        //test
-        final CartDiscountSyncStatistics cartDiscountSyncStatistics = cartDiscountSync
-            .sync(singletonList(newCartDiscountDraftWithoutKey))
-            .toCompletableFuture()
-            .join();
-
-        // assertions
-        assertThat(errorMessages)
-            .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).isEqualTo("Failed to process cart discount draft without key.")
-            );
-
-        assertThat(exceptions)
-            .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable).isNull());
-
-        assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
     }
 
     @Test
@@ -444,7 +557,13 @@ class CartDiscountSyncIT {
         // Preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdate();
 
-        CTP_TARGET_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_2))
+
+        final CartDiscountDraft draft2 = CartDiscountDraftBuilder
+            .of(CART_DISCOUNT_DRAFT_2)
+            .custom(CustomFieldsDraft
+                .ofTypeKeyAndJson(OLD_CART_DISCOUNT_TYPE_KEY, createCustomFieldsJsonMap()))
+            .build();
+        CTP_TARGET_CLIENT.execute(CartDiscountCreateCommand.of(draft2))
                          .toCompletableFuture()
                          .join();
 
@@ -497,7 +616,12 @@ class CartDiscountSyncIT {
         //preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
 
-        CTP_TARGET_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_2))
+        final CartDiscountDraft draft2 = CartDiscountDraftBuilder
+            .of(CART_DISCOUNT_DRAFT_2)
+            .custom(CustomFieldsDraft
+                .ofTypeKeyAndJson(OLD_CART_DISCOUNT_TYPE_KEY, createCustomFieldsJsonMap()))
+            .build();
+        CTP_TARGET_CLIENT.execute(CartDiscountCreateCommand.of(draft2))
                          .toCompletableFuture()
                          .join();
 
@@ -559,7 +683,12 @@ class CartDiscountSyncIT {
         //preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
 
-        CTP_TARGET_CLIENT.execute(CartDiscountCreateCommand.of(CART_DISCOUNT_DRAFT_2))
+        final CartDiscountDraft draft2 = CartDiscountDraftBuilder
+            .of(CART_DISCOUNT_DRAFT_2)
+            .custom(CustomFieldsDraft
+                .ofTypeKeyAndJson(OLD_CART_DISCOUNT_TYPE_KEY, createCustomFieldsJsonMap()))
+            .build();
+        CTP_TARGET_CLIENT.execute(CartDiscountCreateCommand.of(draft2))
                          .toCompletableFuture()
                          .join();
 

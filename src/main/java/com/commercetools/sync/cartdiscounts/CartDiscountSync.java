@@ -1,9 +1,13 @@
 package com.commercetools.sync.cartdiscounts;
 
+import com.commercetools.sync.cartdiscounts.helpers.CartDiscountReferenceResolver;
 import com.commercetools.sync.cartdiscounts.helpers.CartDiscountSyncStatistics;
 import com.commercetools.sync.commons.BaseSync;
+import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.services.CartDiscountService;
+import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.CartDiscountServiceImpl;
+import com.commercetools.sync.services.impl.TypeServiceImpl;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
@@ -42,9 +46,12 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
         "Failed to process cart discount draft without key.";
     private static final String CART_DISCOUNT_DRAFT_IS_NULL =
         "Failed to process null cart discount draft.";
+    private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
+        + "CartDiscountDraft with key:'%s'. Reason: %s";
 
 
     private final CartDiscountService cartDiscountService;
+    private final CartDiscountReferenceResolver referenceResolver;
 
     /**
      * Takes a {@link CartDiscountSyncOptions} to instantiate a new {@link CartDiscountSync} instance
@@ -55,7 +62,8 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
      *                                client and/or configuration and other sync-specific options.
      */
     public CartDiscountSync(@Nonnull final CartDiscountSyncOptions cartDiscountSyncOptions) {
-        this(cartDiscountSyncOptions, new CartDiscountServiceImpl(cartDiscountSyncOptions));
+        this(cartDiscountSyncOptions, new TypeServiceImpl(cartDiscountSyncOptions),
+            new CartDiscountServiceImpl(cartDiscountSyncOptions));
     }
 
     /**
@@ -67,13 +75,17 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
      *
      * @param cartDiscountSyncOptions the container of all the options of the sync process including the CTP project
      *                                client and/or configuration and other sync-specific options.
+     * @param typeService             the type service which is responsible for fetching/caching the Types from the CTP
+     *                                project.
      * @param cartDiscountService     the cart discount service which is responsible for fetching/caching
      *                                the CartDiscounts from the CTP project.
      */
     CartDiscountSync(@Nonnull final CartDiscountSyncOptions cartDiscountSyncOptions,
+                     @Nonnull final TypeService typeService,
                      @Nonnull final CartDiscountService cartDiscountService) {
         super(new CartDiscountSyncStatistics(), cartDiscountSyncOptions);
         this.cartDiscountService = cartDiscountService;
+        this.referenceResolver = new CartDiscountReferenceResolver(cartDiscountSyncOptions, typeService);
     }
 
     /**
@@ -185,20 +197,38 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
 
         return CompletableFuture.allOf(newCartDiscounts
                 .stream()
-                .map(newCartDiscount -> {
-                    final CartDiscount oldCartDiscount = oldCartDiscountMap.get(newCartDiscount.getKey());
-
-                    return ofNullable(oldCartDiscount)
-                            .map(cartDiscount -> buildActionsAndUpdate(oldCartDiscount, newCartDiscount))
-                            .orElseGet(() -> applyCallbackAndCreate(newCartDiscount));
-                })
+                .map(newCartDiscount ->
+                    referenceResolver
+                        .resolveReferences(newCartDiscount)
+                        .thenCompose(resolvedDraft -> syncDraft(oldCartDiscountMap, resolvedDraft))
+                        .exceptionally(completionException -> {
+                            final ReferenceResolutionException referenceResolutionException =
+                                (ReferenceResolutionException) completionException.getCause();
+                            final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES, newCartDiscount.getKey(),
+                                             referenceResolutionException.getMessage());
+                            handleError(errorMessage, referenceResolutionException, 1);
+                            return null;
+                        })
+                )
                 .map(CompletionStage::toCompletableFuture)
                 .toArray(CompletableFuture[]::new));
     }
 
+    @Nonnull
+    private CompletionStage<Void> syncDraft(
+        @Nonnull final Map<String, CartDiscount> oldCartDiscountMap,
+        @Nonnull final CartDiscountDraft newCartDiscount) {
+
+        final CartDiscount oldCartDiscount = oldCartDiscountMap.get(newCartDiscount.getKey());
+
+        return ofNullable(oldCartDiscount)
+                .map(cartDiscount -> buildActionsAndUpdate(oldCartDiscount, newCartDiscount))
+                .orElseGet(() -> applyCallbackAndCreate(newCartDiscount));
+    }
+
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
-    private CompletionStage<Optional<CartDiscount>> buildActionsAndUpdate(
+    private CompletionStage<Void> buildActionsAndUpdate(
             @Nonnull final CartDiscount oldCartDiscount,
             @Nonnull final CartDiscountDraft newCartDiscount) {
 
@@ -223,23 +253,20 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
      * @return a {@link CompletionStage} which contains an empty result after execution of the create.
      */
     @Nonnull
-    private CompletionStage<Optional<CartDiscount>> applyCallbackAndCreate(
-            @Nonnull final CartDiscountDraft cartDiscountDraft) {
+    private CompletionStage<Void> applyCallbackAndCreate(@Nonnull final CartDiscountDraft cartDiscountDraft) {
 
         return syncOptions
-                .applyBeforeCreateCallBack(cartDiscountDraft)
-                .map(draft -> cartDiscountService
-                        .createCartDiscount(draft)
-                        .thenApply(cartDiscountOptional -> {
-                            if (cartDiscountOptional.isPresent()) {
-                                statistics.incrementCreated();
-                            } else {
-                                statistics.incrementFailed();
-                            }
-                            return cartDiscountOptional;
-                        })
-                )
-                .orElse(CompletableFuture.completedFuture(Optional.empty()));
+            .applyBeforeCreateCallBack(cartDiscountDraft)
+            .map(draft -> cartDiscountService
+                .createCartDiscount(draft)
+                .thenAccept(cartDiscountOptional -> {
+                    if (cartDiscountOptional.isPresent()) {
+                        statistics.incrementCreated();
+                    } else {
+                        statistics.incrementFailed();
+                    }
+                }))
+            .orElseGet(() -> CompletableFuture.completedFuture(null));
     }
 
     /**
@@ -258,7 +285,7 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
      * @return a {@link CompletionStage} which contains an empty result after execution of the update.
      */
     @Nonnull
-    private CompletionStage<Optional<CartDiscount>> updateCartDiscount(
+    private CompletionStage<Void> updateCartDiscount(
         @Nonnull final CartDiscount oldCartDiscount,
         @Nonnull final CartDiscountDraft newCartDiscount,
         @Nonnull final List<UpdateAction<CartDiscount>> updateActions) {
@@ -267,7 +294,6 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
             .updateCartDiscount(oldCartDiscount, updateActions)
             .handle(ImmutablePair::new)
             .thenCompose(updateResponse -> {
-                final CartDiscount updatedCartDiscount = updateResponse.getKey();
                 final Throwable sphereException = updateResponse.getValue();
                 if (sphereException != null) {
                     return executeSupplierIfConcurrentModificationException(
@@ -278,17 +304,17 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
                                 format(CTP_CART_DISCOUNT_UPDATE_FAILED, newCartDiscount.getKey(),
                                     sphereException.getMessage());
                             handleError(errorMessage, sphereException, 1);
-                            return CompletableFuture.completedFuture(Optional.empty());
+                            return CompletableFuture.completedFuture(null);
                         });
                 } else {
                     statistics.incrementUpdated();
-                    return CompletableFuture.completedFuture(Optional.of(updatedCartDiscount));
+                    return CompletableFuture.completedFuture(null);
                 }
             });
     }
 
     @Nonnull
-    private CompletionStage<Optional<CartDiscount>> fetchAndUpdate(
+    private CompletionStage<Void> fetchAndUpdate(
             @Nonnull final CartDiscount oldCartDiscount,
             @Nonnull final CartDiscountDraft newCartDiscount) {
 
