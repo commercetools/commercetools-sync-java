@@ -131,21 +131,21 @@ var typeSyncCreatesUpdates = {
 
 // purple
 var cartDiscountSyncCreatesOnly = {
-    label: 'Type Sync (creates only)',
+    label: 'CartDiscount Sync (creates only)',
     backgroundColor: color(window.chartColors.purple).alpha(0.2).rgbString(),
     borderColor: color(window.chartColors.purple).alpha(0.2).rgbString(),
     borderWidth: 1,
     data: []
 }
 var cartDiscountSyncUpdatesOnly = {
-    label: 'Type Sync (updates only)',
+    label: 'CartDiscount Sync (updates only)',
     backgroundColor: color(window.chartColors.purple).alpha(0.4).rgbString(),
     borderColor: color(window.chartColors.purple).alpha(0.4).rgbString(),
     borderWidth: 1,
     data: []
 }
 var cartDiscountSyncCreatesUpdates = {
-    label: 'Type Sync (creates and updates)',
+    label: 'CartDiscount Sync (creates and updates)',
     backgroundColor: color(window.chartColors.purple).alpha(0.6).rgbString(),
     borderColor: color(window.chartColors.purple).alpha(0.6).rgbString(),
     borderWidth: 1,
