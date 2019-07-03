@@ -13,7 +13,6 @@ import io.sphere.sdk.types.TypeDraftBuilder;
 import io.sphere.sdk.types.commands.TypeCreateCommand;
 import io.sphere.sdk.types.queries.TypeQuery;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -52,13 +51,8 @@ class TypeSyncBenchmark {
     private List<String> warningCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
 
-    @BeforeAll
-    static void setup() {
-        deleteTypes(CTP_TARGET_CLIENT);
-    }
-
     @AfterEach
-    static void tearDown() {
+    void tearDown() {
         deleteTypes(CTP_TARGET_CLIENT);
     }
 

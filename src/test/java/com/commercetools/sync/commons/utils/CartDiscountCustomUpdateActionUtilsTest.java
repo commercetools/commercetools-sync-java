@@ -1,12 +1,12 @@
 package com.commercetools.sync.commons.utils;
 
-import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
-import com.commercetools.sync.categories.helpers.CategoryCustomActionBuilder;
+import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
+import com.commercetools.sync.cartdiscounts.helpers.CartDiscountCustomActionBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.categories.commands.updateactions.SetCustomField;
-import io.sphere.sdk.categories.commands.updateactions.SetCustomType;
+import io.sphere.sdk.cartdiscounts.CartDiscount;
+import io.sphere.sdk.cartdiscounts.commands.updateactions.SetCustomField;
+import io.sphere.sdk.cartdiscounts.commands.updateactions.SetCustomType;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import org.junit.jupiter.api.Test;
@@ -20,37 +20,37 @@ import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-class CategoryCustomUpdateActionUtilsTest {
+class CartDiscountCustomUpdateActionUtilsTest {
 
     @Test
-    void buildTypedSetCustomTypeUpdateAction_WithCategoryResource_ShouldBuildCategoryUpdateAction() {
+    void buildTypedSetCustomTypeUpdateAction_WithCartDiscountResource_ShouldBuildCartDiscountUpdateAction() {
         final String newCustomTypeId = UUID.randomUUID().toString();
 
-        final UpdateAction<Category> updateAction =
+        final UpdateAction<CartDiscount> updateAction =
             GenericUpdateActionUtils.buildTypedSetCustomTypeUpdateAction(newCustomTypeId, new HashMap<>(),
-                mock(Category.class), new CategoryCustomActionBuilder(), null, Category::getId,
-                categoryResource -> categoryResource.toReference().getTypeId(), categoryResource -> null,
-                CategorySyncOptionsBuilder.of(mock(SphereClient.class)).build()).orElse(null);
+                mock(CartDiscount.class), new CartDiscountCustomActionBuilder(), null, CartDiscount::getId,
+                cartDiscountResource -> cartDiscountResource.toReference().getTypeId(), cartDiscountResource -> null,
+                CartDiscountSyncOptionsBuilder.of(mock(SphereClient.class)).build()).orElse(null);
 
         assertThat(updateAction).isInstanceOf(SetCustomType.class);
         assertThat((SetCustomType) updateAction).hasValues("setCustomType", emptyMap(), ofId(newCustomTypeId));
     }
 
     @Test
-    void buildRemoveCustomTypeAction_WithCategoryResource_ShouldBuildCategoryUpdateAction() {
-        final UpdateAction<Category> updateAction =
-            new CategoryCustomActionBuilder().buildRemoveCustomTypeAction(null, null);
+    void buildRemoveCustomTypeAction_WithCartDiscountResource_ShouldBuildCartDiscountUpdateAction() {
+        final UpdateAction<CartDiscount> updateAction =
+            new CartDiscountCustomActionBuilder().buildRemoveCustomTypeAction(null, null);
 
         assertThat(updateAction).isInstanceOf(SetCustomType.class);
         assertThat((SetCustomType) updateAction).hasValues("setCustomType", null, ofId(null));
     }
 
     @Test
-    void buildSetCustomFieldAction_WithCategoryResource_ShouldBuildCategoryUpdateAction() {
+    void buildSetCustomFieldAction_WithCartDiscountResource_ShouldBuildCartDiscountUpdateAction() {
         final JsonNode customFieldValue = JsonNodeFactory.instance.textNode("foo");
         final String customFieldName = "name";
 
-        final UpdateAction<Category> updateAction = new CategoryCustomActionBuilder()
+        final UpdateAction<CartDiscount> updateAction = new CartDiscountCustomActionBuilder()
             .buildSetCustomFieldAction(null, null, customFieldName, customFieldValue);
 
         assertThat(updateAction).isInstanceOf(SetCustomField.class);

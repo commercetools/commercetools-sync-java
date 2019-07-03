@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import static com.commercetools.sync.commons.asserts.actions.AssertionsForUpdateActions.assertThat;
 import static io.sphere.sdk.models.ResourceIdentifier.ofId;
@@ -26,7 +27,7 @@ class ChannelCustomUpdateActionUtilsTest {
     void buildTypedSetCustomTypeUpdateAction_WithChannelResource_ShouldBuildChannelUpdateAction() {
         final Channel channel = mock(Channel.class);
         final Map<String, JsonNode> fieldsJsonMap = new HashMap<>();
-        final String customTypeId = "key";
+        final String customTypeId = UUID.randomUUID().toString();
 
         final UpdateAction<Channel> updateAction =
             GenericUpdateActionUtils.buildTypedSetCustomTypeUpdateAction(customTypeId,

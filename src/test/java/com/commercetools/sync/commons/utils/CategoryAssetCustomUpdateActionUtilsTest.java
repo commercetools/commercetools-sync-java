@@ -13,6 +13,7 @@ import io.sphere.sdk.models.Asset;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
+import java.util.UUID;
 
 import static com.commercetools.sync.commons.asserts.actions.AssertionsForUpdateActions.assertThat;
 import static io.sphere.sdk.models.ResourceIdentifier.ofId;
@@ -27,7 +28,7 @@ class CategoryAssetCustomUpdateActionUtilsTest {
     void buildTypedSetCustomTypeUpdateAction_WithCategoryAsset_ShouldBuildCategoryUpdateAction() {
         final Asset asset = mock(Asset.class);
         when(asset.getKey()).thenReturn("assetKey");
-        final String newCustomTypeId = "key";
+        final String newCustomTypeId = UUID.randomUUID().toString();
 
         final UpdateAction<Category> updateAction =
             GenericUpdateActionUtils.buildTypedSetCustomTypeUpdateAction(newCustomTypeId,
