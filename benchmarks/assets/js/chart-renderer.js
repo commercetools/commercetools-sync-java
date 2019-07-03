@@ -129,6 +129,29 @@ var typeSyncCreatesUpdates = {
     data: [],
 }
 
+// purple
+var cartDiscountSyncCreatesOnly = {
+    label: 'Type Sync (creates only)',
+    backgroundColor: color(window.chartColors.purple).alpha(0.2).rgbString(),
+    borderColor: color(window.chartColors.purple).alpha(0.2).rgbString(),
+    borderWidth: 1,
+    data: []
+}
+var cartDiscountSyncUpdatesOnly = {
+    label: 'Type Sync (updates only)',
+    backgroundColor: color(window.chartColors.purple).alpha(0.4).rgbString(),
+    borderColor: color(window.chartColors.purple).alpha(0.4).rgbString(),
+    borderWidth: 1,
+    data: []
+}
+var cartDiscountSyncCreatesUpdates = {
+    label: 'Type Sync (creates and updates)',
+    backgroundColor: color(window.chartColors.purple).alpha(0.6).rgbString(),
+    borderColor: color(window.chartColors.purple).alpha(0.6).rgbString(),
+    borderWidth: 1,
+    data: [],
+}
+
 
 
 
@@ -153,7 +176,11 @@ var barChartData = {
 
         typeSyncCreatesOnly,
         typeSyncUpdatesOnly,
-        typeSyncCreatesUpdates
+        typeSyncCreatesUpdates,
+
+        cartDiscountSyncCreatesOnly,
+        cartDiscountSyncUpdatesOnly,
+        cartDiscountSyncCreatesUpdates
     ]
 
 };
@@ -224,6 +251,9 @@ window.onload = function () {
             typeSyncUpdatesOnly.data.push(val.typeSync.updatesOnly.executionTime / 1000)
             typeSyncCreatesUpdates.data.push(val.typeSync.mix.executionTime / 1000)
 
+            cartDiscountSyncCreatesOnly.data.push(val.cartDiscountSync.createsOnly.executionTime / 1000)
+            cartDiscountSyncUpdatesOnly.data.push(val.cartDiscountSync.updatesOnly.executionTime / 1000)
+            cartDiscountSyncCreatesUpdates.data.push(val.cartDiscountSync.mix.executionTime / 1000)
         });
         window.myBar.update();
     }
