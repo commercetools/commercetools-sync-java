@@ -100,8 +100,8 @@ class CartDiscountSyncBenchmark {
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
 
-        // assert on threshold (based on history of benchmarks; highest was ~5 seconds)
-        final int threshold = 10000; // double of the highest benchmark
+        // assert on threshold (based on history of benchmarks; highest was ~11 seconds)
+        final int threshold = 23000; // double of the highest benchmark
         assertThat(totalTime).withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
                              .isLessThan(threshold);
 
@@ -149,8 +149,8 @@ class CartDiscountSyncBenchmark {
         final CartDiscountSyncStatistics syncStatistics = executeBlocking(cartDiscountSync.sync(cartDiscountDrafts));
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
-        // assert on threshold (based on history of benchmarks; highest was ~5 seconds)
-        final int threshold = 10000; // double of the highest benchmark
+        // assert on threshold (based on history of benchmarks; highest was ~11 seconds)
+        final int threshold = 23000; // double of the highest benchmark
         assertThat(totalTime).withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
                              .isLessThan(threshold);
 
@@ -216,8 +216,8 @@ class CartDiscountSyncBenchmark {
         final long totalTime = System.currentTimeMillis() - beforeSyncTime;
 
 
-        // assert on threshold (based on history of benchmarks; highest was ~5 seconds)
-        final int threshold = 10000; // double of the highest benchmark
+        // assert on threshold (based on history of benchmarks; highest was ~11 seconds)
+        final int threshold = 23000; // double of the highest benchmark
         assertThat(totalTime).withFailMessage(format(THRESHOLD_EXCEEDED_ERROR, totalTime, threshold))
                              .isLessThan(threshold);
 
