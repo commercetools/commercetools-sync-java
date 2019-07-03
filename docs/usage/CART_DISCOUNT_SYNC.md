@@ -102,6 +102,5 @@ Optional<UpdateAction<CartDiscount>> updateAction = CartDiscountUpdateActionUtil
 ````
 More examples of those utils for different cart discounts can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/cartdiscounts/utils/CartDiscountUpdateActionUtilsTest.java).
 
-
 ## Caveats   
 1. Syncing cart discounts with a `CartDiscountValue` of type `giftLineItem` is not supported yet. [#411](https://github.com/commercetools/commercetools-sync-java/issues/411).

@@ -29,7 +29,14 @@
 -->
 
 <!--
-### 1.3.0 -  Jun 24, 2019
+### 1.4.0 -  Jun 24, 2019
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.3.0...1.4.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.4.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.4.0)
+
+-->
+
+### 1.3.0 -  Jul 3, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.2.0...1.3.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.3.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.3.0)
@@ -45,10 +52,13 @@
 - 🐞 **Bug Fixes** (1)
     - **Commons** -  Fixed a bug in the `BaseSyncStatistics` which caused a wrong calculation of the `latestBatchProcessingTimeInMinutes`. [#378](https://github.com/commercetools/commercetools-sync-java/issues/378)
 
-- 🛠️ **Enhancements** (1)
+- 🛠️ **Enhancements** (6)
     - **CartDiscount Sync** - Added benchmarks for the `cartDiscount` sync to be able to compare the performance of the sync with the future releases. [#379](https://github.com/commercetools/commercetools-sync-java/issues/379)
-
--->
+    - **Commons** - Bumped commercetools-jvm-sdk to version [1.44.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_44_0).
+    - **Commons** - Bumped gradle to version [gradle-5.5](https://docs.gradle.org/5.5/release-notes.html)
+    - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-api` to 5.5.0.
+    - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-engine` to 5.5.0.
+    - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-params` to 5.5.0.
 
 ### 1.2.0 -  Jun 14, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.1.1...1.2.0) |
