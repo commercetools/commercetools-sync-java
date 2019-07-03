@@ -322,37 +322,37 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildChangeValueUpdateAction_WithNewDuplicatesWithMissingAmount_ShouldBuildUpdateActionNEW() {
+    void buildChangeValueUpdateAction_WithNewDuplicatesWithMissingAmount_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValue()).thenReturn(CartDiscountValue.ofAbsolute(
             asList(MoneyImpl.of(10, EUR), MoneyImpl.of(50, EUR), MoneyImpl.of(30, EUR))));
 
         final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
-        final CartDiscountValue fiftyEuro = CartDiscountValue.ofAbsolute(
+        final CartDiscountValue newValue = CartDiscountValue.ofAbsolute(
             asList(MoneyImpl.of(10, EUR), MoneyImpl.of(50, EUR), MoneyImpl.of(50, EUR)));
-        when(newCartDiscountDraft.getValue()).thenReturn(fiftyEuro);
+        when(newCartDiscountDraft.getValue()).thenReturn(newValue);
 
         final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
             buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
 
-        assertThat(changeValueUpdateAction).contains(ChangeValue.of(fiftyEuro));
+        assertThat(changeValueUpdateAction).contains(ChangeValue.of(newValue));
     }
 
     @Test
-    void buildChangeValueUpdateAction_WithNewDuplicatesWithExtraAndMissingAmount_ShouldBuildUpdateActionNEW() {
+    void buildChangeValueUpdateAction_WithNewDuplicatesWithExtraAndMissingAmount_ShouldBuildUpdateAction() {
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValue()).thenReturn(CartDiscountValue.ofAbsolute(
             asList(MoneyImpl.of(20, EUR), MoneyImpl.of(50, EUR), MoneyImpl.of(30, EUR))));
 
         final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
-        final CartDiscountValue fiftyEuro = CartDiscountValue.ofAbsolute(
+        final CartDiscountValue newValue = CartDiscountValue.ofAbsolute(
             asList(MoneyImpl.of(10, EUR), MoneyImpl.of(50, EUR), MoneyImpl.of(50, EUR)));
-        when(newCartDiscountDraft.getValue()).thenReturn(fiftyEuro);
+        when(newCartDiscountDraft.getValue()).thenReturn(newValue);
 
         final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
             buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
 
-        assertThat(changeValueUpdateAction).contains(ChangeValue.of(fiftyEuro));
+        assertThat(changeValueUpdateAction).contains(ChangeValue.of(newValue));
     }
 
     @Test
