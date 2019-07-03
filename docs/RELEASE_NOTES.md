@@ -42,7 +42,7 @@
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.3.0)
 
 - 🎉 **New Features** (6)
-    - **CartDiscount Sync** - Added support for syncing types. [#379](https://github.com/commercetools/commercetools-sync-java/issues/379) For more info how to use it please refer to [CartDiscount usage doc](/docs/usage/CART_DISCOUNT_SYNC.md).
+    - **CartDiscount Sync** - Added support for syncing cart discounts. [#379](https://github.com/commercetools/commercetools-sync-java/issues/379) For more info how to use it please refer to [CartDiscount usage doc](/docs/usage/CART_DISCOUNT_SYNC.md).
     - **CartDiscount Sync** - Exposed `CartDiscountSyncUtils#buildActions` which calculates all needed update actions after comparing a `CartDiscount` and a `CartDiscountDraft`. [[#379](https://github.com/commercetools/commercetools-sync-java/issues/379)
     - **CartDiscount Sync** - Exposed `CartDiscountUpdateActionUtils` which contains utils for calculating needed update actions after comparing individual fields of a `CartDiscount` and a `CartDiscountDraft`. [#379](https://github.com/commercetools/commercetools-sync-java/issues/379)
     - **CartDiscount Sync** - Introduced the new `CartDiscountReferenceResolver` which resolves custom type references on CartDiscountDrafts. [#379](https://github.com/commercetools/commercetools-sync-java/issues/379)
