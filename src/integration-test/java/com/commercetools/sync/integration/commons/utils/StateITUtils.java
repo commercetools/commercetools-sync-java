@@ -24,7 +24,7 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static com.commercetools.sync.services.impl.StateServiceImpl.buildStateQuery;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 
-public class StateITUtils {
+public final class StateITUtils {
 
     private static final String STATE_KEY = "old_state_key";
 
@@ -102,6 +102,9 @@ public class StateITUtils {
 
         SetTransitions setTransitions = SetTransitions.of(stateTransitions);
         executeBlocking(ctpClient.execute(StateUpdateCommand.of(state, setTransitions)));
+    }
+
+    private StateITUtils() {
     }
 
 }

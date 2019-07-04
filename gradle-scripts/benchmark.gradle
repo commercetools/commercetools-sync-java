@@ -11,11 +11,15 @@ sourceSets {
 
 configurations {
     benchmarkImplementation.extendsFrom implementation, testImplementation
+    benchmarkRuntimeOnly.extendsFrom testRuntimeOnly
 }
 
 task benchmark(type: Test) {
     doFirst{
         grgit.clone(dir: 'tmp_git_dir/', uri: scmProjectUrl, checkout: true, refToCheckout: 'gh-pages')
+    }
+    useJUnitPlatform {
+        includeEngines 'junit-jupiter', 'junit-vintage'
     }
     testClassesDirs = sourceSets.benchmark.output.classesDirs
     classpath = sourceSets.benchmark.runtimeClasspath

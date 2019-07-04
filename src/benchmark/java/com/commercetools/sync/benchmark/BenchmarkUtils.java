@@ -30,6 +30,7 @@ final class BenchmarkUtils {
     static final String CATEGORY_SYNC = "categorySync";
     static final String TYPE_SYNC = "typeSync";
     static final String PRODUCT_TYPE_SYNC = "productTypeSync";
+    static final String CART_DISCOUNT_SYNC = "cartDiscountSync";
     static final String CREATES_ONLY = "createsOnly";
     static final String UPDATES_ONLY = "updatesOnly";
     static final String CREATES_AND_UPDATES = "mix";
@@ -85,7 +86,7 @@ final class BenchmarkUtils {
         newVersionNode.set(CATEGORY_SYNC, createSyncNode());
         newVersionNode.set(PRODUCT_TYPE_SYNC, createSyncNode());
         newVersionNode.set(TYPE_SYNC, createSyncNode());
-
+        newVersionNode.set(CART_DISCOUNT_SYNC, createSyncNode());
         return newVersionNode;
     }
 

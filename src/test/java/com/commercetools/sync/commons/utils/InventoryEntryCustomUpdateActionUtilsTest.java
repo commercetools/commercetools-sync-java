@@ -12,6 +12,7 @@ import io.sphere.sdk.inventory.commands.updateactions.SetCustomType;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
+import java.util.UUID;
 
 import static com.commercetools.sync.commons.asserts.actions.AssertionsForUpdateActions.assertThat;
 import static io.sphere.sdk.models.ResourceIdentifier.ofId;
@@ -23,7 +24,7 @@ class InventoryEntryCustomUpdateActionUtilsTest {
 
     @Test
     void buildTypedSetCustomTypeUpdateAction_WithInventoryResource_ShouldBuildInventoryUpdateAction() {
-        final String newCustomTypeId = "key";
+        final String newCustomTypeId = UUID.randomUUID().toString();
 
         final UpdateAction<InventoryEntry> updateAction =
             GenericUpdateActionUtils.buildTypedSetCustomTypeUpdateAction(newCustomTypeId,
