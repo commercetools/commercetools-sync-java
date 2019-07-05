@@ -13,7 +13,7 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import io.sphere.sdk.producttypes.ProductTypeDraftDsl;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -27,10 +27,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ProductTypeReferenceResolverTest {
+class ProductTypeReferenceResolverTest {
 
     @Test
-    public void resolveReferences_WithNullAttributes_ShouldResolveReferences() {
+    void resolveReferences_WithNullAttributes_ShouldResolveReferences() {
         // preparation
         final ProductTypeDraft productTypeDraft =
             ProductTypeDraftBuilder.of("foo", "foo", "desc", null)
@@ -57,7 +57,7 @@ public class ProductTypeReferenceResolverTest {
     }
 
     @Test
-    public void resolveReferences_WithNoAttributes_ShouldResolveReferences() {
+    void resolveReferences_WithNoAttributes_ShouldResolveReferences() {
         // preparation
         final ProductTypeDraft productTypeDraft =
             ProductTypeDraftBuilder.of("foo", "foo", "desc", emptyList())
@@ -85,7 +85,7 @@ public class ProductTypeReferenceResolverTest {
     }
 
     @Test
-    public void resolveReferences_WithNoNestedTypeReferences_ShouldResolveReferences() {
+    void resolveReferences_WithNoNestedTypeReferences_ShouldResolveReferences() {
         // preparation
 
         final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
@@ -118,7 +118,7 @@ public class ProductTypeReferenceResolverTest {
     }
 
     @Test
-    public void resolveReferences_WithOneNestedTypeWithExistingProductTypeReference_ShouldResolveReferences() {
+    void resolveReferences_WithOneNestedTypeWithExistingProductTypeReference_ShouldResolveReferences() {
         // preparation
         final NestedAttributeType nestedAttributeType = NestedAttributeType.of(ProductType.reference("x"));
         final AttributeDefinitionDraft attributeDefinitionDraft =
@@ -158,7 +158,7 @@ public class ProductTypeReferenceResolverTest {
     }
 
     @Test
-    public void resolveReferences_WithManyNestedTypeWithExistingProductTypeReference_ShouldResolveReferences() {
+    void resolveReferences_WithManyNestedTypeWithExistingProductTypeReference_ShouldResolveReferences() {
         // preparation
         final NestedAttributeType nestedAttributeType = NestedAttributeType.of(ProductType.reference("x"));
         final AttributeDefinitionDraft attributeDefinitionDraft =
@@ -198,7 +198,7 @@ public class ProductTypeReferenceResolverTest {
     }
 
     @Test
-    public void resolveReferences_WithOneSetOfNestedTypeWithExistingProductTypeReference_ShouldResolveReferences() {
+    void resolveReferences_WithOneSetOfNestedTypeWithExistingProductTypeReference_ShouldResolveReferences() {
         // preparation
         final NestedAttributeType nestedAttributeType = NestedAttributeType.of(ProductType.reference("x"));
         final SetAttributeType setAttributeType = SetAttributeType.of(nestedAttributeType);
@@ -242,8 +242,7 @@ public class ProductTypeReferenceResolverTest {
     }
 
     @Test
-    public void
-        resolveReferences_WithNestedAndSetOfNestedTypeWithExistingProductTypeReference_ShouldResolveReferences() {
+    void resolveReferences_WithNestedAndSetOfNestedTypeWithExistingProductTypeReference_ShouldResolveReferences() {
         // preparation
         final NestedAttributeType nestedAttributeType = NestedAttributeType.of(ProductType.reference("x"));
         final SetAttributeType setAttributeType = SetAttributeType.of(nestedAttributeType);
