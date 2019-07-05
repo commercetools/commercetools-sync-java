@@ -1,13 +1,13 @@
 package com.commercetools.sync.commons.exceptions;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class InvalidReferenceExceptionTest {
+class InvalidReferenceExceptionTest {
 
     @Test
-    public void invalidReferenceException_WithMessageOnly_ShouldBuildExceptionCorrectly() {
+    void invalidReferenceException_WithMessageOnly_ShouldBuildExceptionCorrectly() {
         final String message = "foo";
 
         assertThatThrownBy(() -> {
@@ -18,7 +18,7 @@ public class InvalidReferenceExceptionTest {
     }
 
     @Test
-    public void invalidReferenceException_WithMessageAndCause_ShouldBuildExceptionCorrectly() {
+    void invalidReferenceException_WithMessageAndCause_ShouldBuildExceptionCorrectly() {
         final String message = "foo";
         final IllegalArgumentException cause = new IllegalArgumentException();
 
@@ -30,7 +30,7 @@ public class InvalidReferenceExceptionTest {
     }
 
     @Test
-    public void invalidReferenceException_WithCauseOnly_ShouldBuildExceptionCorrectly() {
+    void invalidReferenceException_WithCauseOnly_ShouldBuildExceptionCorrectly() {
         final IllegalArgumentException cause = new IllegalArgumentException();
 
         assertThatThrownBy(() -> {

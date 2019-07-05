@@ -1,13 +1,13 @@
 package com.commercetools.sync.commons.exceptions;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class InvalidProductTypeDraftExceptionTest {
+class InvalidProductTypeDraftExceptionTest {
 
     @Test
-    public void invalidProductTypeDraftException_WithMessageOnly_ShouldBuildExceptionCorrectly() {
+    void invalidProductTypeDraftException_WithMessageOnly_ShouldBuildExceptionCorrectly() {
         final String message = "foo";
 
         assertThatThrownBy(() -> {
@@ -18,7 +18,7 @@ public class InvalidProductTypeDraftExceptionTest {
     }
 
     @Test
-    public void invalidProductTypeDraftException_WithMessageAndCause_ShouldBuildExceptionCorrectly() {
+    void invalidProductTypeDraftException_WithMessageAndCause_ShouldBuildExceptionCorrectly() {
         final String message = "foo";
         final IllegalArgumentException cause = new IllegalArgumentException();
 
@@ -30,7 +30,7 @@ public class InvalidProductTypeDraftExceptionTest {
     }
 
     @Test
-    public void invalidProductTypeDraftException_WithCauseOnly_ShouldBuildExceptionCorrectly() {
+    void invalidProductTypeDraftException_WithCauseOnly_ShouldBuildExceptionCorrectly() {
         final IllegalArgumentException cause = new IllegalArgumentException();
 
         assertThatThrownBy(() -> {
@@ -38,6 +38,5 @@ public class InvalidProductTypeDraftExceptionTest {
         }).isExactlyInstanceOf(InvalidProductTypeDraftException.class)
           .hasCause(cause)
           .hasMessage(cause.toString());
-
     }
 }
