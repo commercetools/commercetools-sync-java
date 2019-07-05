@@ -1,7 +1,9 @@
 package com.commercetools.sync.producttypes;
 
 import com.commercetools.sync.commons.BaseSync;
+import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.producttypes.helpers.BatchProcessor;
+import com.commercetools.sync.producttypes.helpers.ProductTypeReferenceResolver;
 import com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
@@ -36,8 +38,11 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
         + " '%s'.";
     private static final String CTP_PRODUCT_TYPE_UPDATE_FAILED = "Failed to update product type with key: '%s'."
         + " Reason: %s";
+    private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
+        + "productTypeDraft with key:'%s'. Reason: %s";
 
     private final ProductTypeService productTypeService;
+    private final ProductTypeReferenceResolver referenceResolver;
 
     public ProductTypeSync(@Nonnull final ProductTypeSyncOptions productTypeSyncOptions) {
         this(productTypeSyncOptions, new ProductTypeServiceImpl(productTypeSyncOptions));
@@ -60,6 +65,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
 
         super(new ProductTypeSyncStatistics(), productTypeSyncOptions);
         this.productTypeService = productTypeService;
+        this.referenceResolver = new ProductTypeReferenceResolver(productTypeSyncOptions, productTypeService);
     }
 
     /**
@@ -163,6 +169,19 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
         return CompletableFuture.allOf(newProductTypes
             .stream()
             .map(newProductType -> {
+
+                referenceResolver
+                    .resolveReferences(newProductType)
+                    .thenCompose(resolvedDraft -> syncDraft(oldProductTypeMap, resolvedDraft))
+                    .exceptionally(completionException -> {
+                        final ReferenceResolutionException referenceResolutionException =
+                            (ReferenceResolutionException) completionException.getCause();
+                        final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES, newProductType.getKey(),
+                            referenceResolutionException.getMessage());
+                        handleError(errorMessage, referenceResolutionException, 1);
+                        return null;
+                    });
+
                 final ProductType oldProductType = oldProductTypeMap.get(newProductType.getKey());
 
                 return ofNullable(oldProductType)
@@ -173,36 +192,21 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
             .toArray(CompletableFuture[]::new));
     }
 
-    /**
-     * Given a product type draft, this method applies the beforeCreateCallback and then issues a create request to the
-     * CTP project to create the corresponding Product Type.
-     *
-     * @param productTypeDraft the product type draft to create the product type from.
-     * @return a {@link CompletionStage} which contains an empty result after execution of the create.
-     */
     @Nonnull
-    private CompletionStage<Optional<ProductType>> applyCallbackAndCreate(
-        @Nonnull final ProductTypeDraft productTypeDraft) {
+    private CompletionStage<Void> syncDraft(
+        @Nonnull final Map<String, ProductType> oldProductTypeMap,
+        @Nonnull final ProductTypeDraft newProductTypeDraft) {
 
-        return syncOptions
-            .applyBeforeCreateCallBack(productTypeDraft)
-            .map(draft -> productTypeService
-                .createProductType(draft)
-                .thenApply(productTypeOptional -> {
-                    if (productTypeOptional.isPresent()) {
-                        statistics.incrementCreated();
-                    } else {
-                        statistics.incrementFailed();
-                    }
-                    return productTypeOptional;
-                })
-            )
-            .orElse(CompletableFuture.completedFuture(Optional.empty()));
+        final ProductType oldProductType = oldProductTypeMap.get(newProductTypeDraft.getKey());
+
+        return ofNullable(oldProductType)
+            .map(productType -> buildActionsAndUpdate(oldProductType, newProductTypeDraft))
+            .orElseGet(() -> applyCallbackAndCreate(newProductTypeDraft));
     }
 
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
-    private CompletionStage<Optional<ProductType>> buildActionsAndUpdate(
+    private CompletionStage<Void> buildActionsAndUpdate(
         @Nonnull final ProductType oldProductType,
         @Nonnull final ProductTypeDraft newProductType) {
 
@@ -233,7 +237,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * @return a {@link CompletionStage} which contains an empty result after execution of the update.
      */
     @Nonnull
-    private CompletionStage<Optional<ProductType>> updateProductType(
+    private CompletionStage<Void> updateProductType(
         @Nonnull final ProductType oldProductType,
         @Nonnull final ProductTypeDraft newProductType,
         @Nonnull final List<UpdateAction<ProductType>> updateActions) {
@@ -242,7 +246,6 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
             .updateProductType(oldProductType, updateActions)
             .handle(ImmutablePair::new)
             .thenCompose(updateResponse -> {
-                final ProductType updatedProductType = updateResponse.getKey();
                 final Throwable sphereException = updateResponse.getValue();
                 if (sphereException != null) {
                     return executeSupplierIfConcurrentModificationException(
@@ -253,17 +256,17 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                                 format(CTP_PRODUCT_TYPE_UPDATE_FAILED, newProductType.getKey(),
                                     sphereException.getMessage());
                             handleError(errorMessage, sphereException, 1);
-                            return CompletableFuture.completedFuture(Optional.empty());
+                            return CompletableFuture.completedFuture(null);
                         });
                 } else {
                     statistics.incrementUpdated();
-                    return CompletableFuture.completedFuture(Optional.of(updatedProductType));
+                    return CompletableFuture.completedFuture(null);
                 }
             });
     }
 
     @Nonnull
-    private CompletionStage<Optional<ProductType>> fetchAndUpdate(
+    private CompletionStage<Void> fetchAndUpdate(
         @Nonnull final ProductType oldProductType,
         @Nonnull final ProductTypeDraft newProductType) {
 
@@ -293,5 +296,31 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                         return CompletableFuture.completedFuture(null);
                     });
             });
+    }
+
+    /**
+     * Given a product type draft, this method applies the beforeCreateCallback and then issues a create request to the
+     * CTP project to create the corresponding Product Type.
+     *
+     * @param productTypeDraft the product type draft to create the product type from.
+     * @return a {@link CompletionStage} which contains an empty result after execution of the create.
+     */
+    @Nonnull
+    private CompletionStage<Void> applyCallbackAndCreate(
+        @Nonnull final ProductTypeDraft productTypeDraft) {
+
+        return syncOptions
+            .applyBeforeCreateCallBack(productTypeDraft)
+            .map(draft -> productTypeService
+                .createProductType(draft)
+                .thenAccept(productTypeOptional -> {
+                    if (productTypeOptional.isPresent()) {
+                        statistics.incrementCreated();
+                    } else {
+                        statistics.incrementFailed();
+                    }
+                })
+            )
+            .orElseGet(() -> CompletableFuture.completedFuture(null));
     }
 }
