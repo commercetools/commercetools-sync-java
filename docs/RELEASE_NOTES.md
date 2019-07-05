@@ -28,16 +28,70 @@
 
 -->
 
-
 <!--
+### 1.4.0 -  Jun 24, 2019
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.3.0...1.4.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.4.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.4.0)
 
-### 1.2.0 -  Dec 20, 2018
+-->
+
+### 1.3.0 -  Jul 3, 2019
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.2.0...1.3.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.3.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.3.0)
+
+- 🎉 **New Features** (6)
+    - **CartDiscount Sync** - Added support for syncing cart discounts. [#379](https://github.com/commercetools/commercetools-sync-java/issues/379) For more info how to use it please refer to [CartDiscount usage doc](/docs/usage/CART_DISCOUNT_SYNC.md).
+    - **CartDiscount Sync** - Exposed `CartDiscountSyncUtils#buildActions` which calculates all needed update actions after comparing a `CartDiscount` and a `CartDiscountDraft`. [[#379](https://github.com/commercetools/commercetools-sync-java/issues/379)
+    - **CartDiscount Sync** - Exposed `CartDiscountUpdateActionUtils` which contains utils for calculating needed update actions after comparing individual fields of a `CartDiscount` and a `CartDiscountDraft`. [#379](https://github.com/commercetools/commercetools-sync-java/issues/379)
+    - **CartDiscount Sync** - Introduced the new `CartDiscountReferenceResolver` which resolves custom type references on CartDiscountDrafts. [#379](https://github.com/commercetools/commercetools-sync-java/issues/379)
+    - **CartDiscount Sync** - Introduced new `CartDiscountReferenceReplacementUtils#replaceCartDiscountsReferenceIdsWithKeys` which is a util that replaces the custom type ids with keys in a list of cartDiscounts. [#379](https://github.com/commercetools/commercetools-sync-java/issues/379)
+    - **CartDiscount Sync** - Exposed `CartDiscountReferenceReplacementUtils#buildCartDiscountQuery` util to create a cart discount query with all needed reference expansions to fetch cart discounts from a source CTP project for the sync. [#379](https://github.com/commercetools/commercetools-sync-java/issues/379).
+    
+- 🐞 **Bug Fixes** (1)
+    - **Commons** -  Fixed a bug in the `BaseSyncStatistics` which caused a wrong calculation of the `latestBatchProcessingTimeInMinutes`. [#378](https://github.com/commercetools/commercetools-sync-java/issues/378)
+
+- 🛠️ **Enhancements** (6)
+    - **CartDiscount Sync** - Added benchmarks for the `cartDiscount` sync to be able to compare the performance of the sync with the future releases. [#379](https://github.com/commercetools/commercetools-sync-java/issues/379)
+    - **Commons** - Bumped commercetools-jvm-sdk to version [1.44.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_44_0).
+    - **Commons** - Bumped gradle to version [gradle-5.5](https://docs.gradle.org/5.5/release-notes.html)
+    - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-api` to 5.5.0.
+    - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-engine` to 5.5.0.
+    - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-params` to 5.5.0.
+
+### 1.2.0 -  Jun 14, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.1.1...1.2.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.2.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.2.0)
 
+- 🚧 **Breaking Changes** (2)
+    - **ProductType Sync** - Removed the unneeded `AttributeDefinitionCustomBuilder` which was an exposed but internal helper. [#377](https://github.com/commercetools/commercetools-sync-java/issues/377). 
+    - **Commons** - `SyncUtils#replaceReferenceIdWithKey` now
+     renamed to `SyncUtils#getReferenceWithKeyReplaced`. [#394](https://github.com/commercetools/commercetools-sync-java/issues/394)
 
--->
+- 🎉 **New Features** (2)
+    - **Commons** - Added the new `CommonTypeUpdateActionUtils#buildUpdateActionForReferences` which is used for comapring references/resourceIdentifiers and buiding an update action if needed. [#394](https://github.com/commercetools/commercetools-sync-java/issues/394)
+    - **Commons** - Added the new `SyncUtils#getResourceIdentifierWithKeyReplaced` util. [#394](https://github.com/commercetools/commercetools-sync-java/issues/394)
+    
+- 🐞 **Bug Fixes** (1)
+    - **Commons** - Fixed a bug where references and resource identifiers were not being compared correctly. [#394](https://github.com/commercetools/commercetools-sync-java/issues/394)
+
+- 🛠️ **Enhancements** (13)
+    - **Commons** - Bumped commercetools-jvm-sdk to version [1.43.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_43_0).
+    - **Commons** - Bumped `mockito` to 2.27.0.
+    - **Commons** - Bumped `assertj` to 3.12.2.
+    - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-api` to 5.4.2.
+    - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-engine` to 5.4.2.
+    - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-params` to 5.4.2.
+    - **Commons** - Bumped `org.ajoberstar.git-publish` to 2.1.1.
+    - **Commons** - Bumped `org.ajoberstar.grgit` to 3.1.1.
+    - **Commons** - Bumped `com.github.ben-manes.versions` to 0.21.0.
+    - **Commons** - Bumped gradle checkstyle plugin to 8.2.
+    - **Commons** - Bumped mockito dependency to 2.28.2.
+    - **Commons** - Bumped JaCoCo dependency to 0.8.4.
+    - **Commons** - Bumped gradle to version [gradle-5.4.1](https://docs.gradle.org/5.4.1/release-notes.html)
+    - **Commons** - Bumped `com.adarshr.test-logger` to 1.7.0.
 
 
 ### 1.1.1 -  Jan 16, 2019
@@ -116,7 +170,6 @@ the library. `1.0.0` is here for you to use with all new features, enhancements 
     - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-engine` to 5.3.2.
     - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-params` to 5.3.2.
     - **Commons** - Bumped `org.ajoberstar.git-publish` to 2.0.0.
-    - **Commons** - Bumped `com.adarshr.test-logger` to 1.6.0.
     - **Commons** - Bumped `org.ajoberstar.grgit` to 3.0.0.
     - **Commons** - Bumped gradle to version [gradle-5.0](https://docs.gradle.org/5.0/release-notes.html)
     - **Type Sync** - Added benchmarks for the `type` sync to be able to compare the performance of the sync with the future releases. [#300](https://github.com/commercetools/commercetools-sync-java/issues/300)

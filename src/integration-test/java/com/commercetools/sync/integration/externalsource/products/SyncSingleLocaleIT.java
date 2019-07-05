@@ -22,10 +22,10 @@ import io.sphere.sdk.products.commands.updateactions.SetMetaTitle;
 import io.sphere.sdk.products.queries.ProductProjectionQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.queries.PagedQueryResult;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +50,7 @@ import static io.sphere.sdk.producttypes.ProductType.referenceOfId;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class SyncSingleLocaleIT {
+class SyncSingleLocaleIT {
     private static ProductType productType;
     private ProductSync productSync;
     private List<String> errorCallBackMessages;
@@ -62,8 +62,8 @@ public class SyncSingleLocaleIT {
      * Delete all product related test data from the target project. Then creates price custom types, customer groups,
      * channels and a product type for the target CTP project.
      */
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
     }
@@ -71,8 +71,8 @@ public class SyncSingleLocaleIT {
     /**
      * Deletes Products from the target CTP project.
      */
-    @Before
-    public void setupTest() {
+    @BeforeEach
+    void setupTest() {
         clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
         productSync = new ProductSync(buildSyncOptions());
@@ -108,13 +108,13 @@ public class SyncSingleLocaleIT {
                                         .build();
     }
 
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
 
     @Test
-    public void sync_withSingleLocaleBeforeUpdateCallback_ShouldSyncCorrectly() {
+    void sync_withSingleLocaleBeforeUpdateCallback_ShouldSyncCorrectly() {
         // Preparation
         final LocalizedString nameTarget = ofEnglish("name_target").plus(Locale.FRENCH, "nom_target");
         final LocalizedString nameSource = ofEnglish("name_source").plus(Locale.FRENCH, "nom_source");

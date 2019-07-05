@@ -1,6 +1,7 @@
 package com.commercetools.sync.commons.utils.completablefutureutils;
 
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -15,21 +16,21 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class MapValuesToFuturesTest {
+class MapValuesToFuturesTest {
     /**
      * Stream to List : empty values.
      * Stream to Set : empty values.
      **/
 
     @Test
-    public void empty_StreamToList_ReturnsEmptyList() {
+    void empty_StreamToList_ReturnsEmptyList() {
         final List<CompletableFuture<String>> futures = mapValuesToFutures(Stream.<String>empty(),
             CompletableFuture::completedFuture, toList());
         assertThat(futures).isEmpty();
     }
 
     @Test
-    public void empty_StreamToSet_ReturnsEmptySet() {
+    void empty_StreamToSet_ReturnsEmptySet() {
         final Set<CompletableFuture<String>> futures = mapValuesToFutures(Stream.<String>empty(),
             CompletableFuture::completedFuture, toSet());
         assertThat(futures).isEmpty();
@@ -42,7 +43,7 @@ public class MapValuesToFuturesTest {
      */
 
     @Test
-    public void singleNull_StreamToList_ReturnsEmptyList() {
+    void singleNull_StreamToList_ReturnsEmptyList() {
         final String nullString = null;
         final List<CompletableFuture<String>> futures = mapValuesToFutures(Stream.of(nullString),
             CompletableFuture::completedFuture, toList());
@@ -50,7 +51,7 @@ public class MapValuesToFuturesTest {
     }
 
     @Test
-    public void singleNull_StreamToSet_ReturnsEmptySet() {
+    void singleNull_StreamToSet_ReturnsEmptySet() {
         final String nullString = null;
         final Set<CompletableFuture<String>> futures = mapValuesToFutures(Stream.of(nullString),
             CompletableFuture::completedFuture, toSet());
@@ -62,7 +63,7 @@ public class MapValuesToFuturesTest {
      * Stream to Set : multiple null value.
      */
     @Test
-    public void multipleNull_StreamToList_ReturnsEmptyList() {
+    void multipleNull_StreamToList_ReturnsEmptyList() {
         final String nullString = null;
         final List<CompletableFuture<String>> futures = mapValuesToFutures(Stream.of(nullString, nullString),
             CompletableFuture::completedFuture, toList());
@@ -70,7 +71,7 @@ public class MapValuesToFuturesTest {
     }
 
     @Test
-    public void multipleNull_StreamToSet_ReturnsEmptySet() {
+    void multipleNull_StreamToSet_ReturnsEmptySet() {
         final String nullString = null;
         final Set<CompletableFuture<String>> futures = mapValuesToFutures(Stream.of(nullString, nullString),
             CompletableFuture::completedFuture, toSet());
@@ -85,7 +86,7 @@ public class MapValuesToFuturesTest {
      */
 
     @Test
-    public void single_StreamToListWithSameTypeMapping_ReturnsListOfMappedValue() {
+    void single_StreamToListWithSameTypeMapping_ReturnsListOfMappedValue() {
         final List<CompletableFuture<String>> futures = mapValuesToFutures(Stream.of("foo"),
             element -> completedFuture(element.concat("POSTFIX")), toList());
 
@@ -95,7 +96,7 @@ public class MapValuesToFuturesTest {
     }
 
     @Test
-    public void single_StreamToSetWithSameTypeMapping_ReturnsSetOfMappedValue() {
+    void single_StreamToSetWithSameTypeMapping_ReturnsSetOfMappedValue() {
         final Set<CompletableFuture<String>> futures = mapValuesToFutures(Stream.of("foo"),
             element -> completedFuture(element.concat("POSTFIX")), toSet());
 
@@ -105,7 +106,7 @@ public class MapValuesToFuturesTest {
     }
 
     @Test
-    public void single_StreamToListWithDiffTypeMapping_ReturnsListOfMappedValue() {
+    void single_StreamToListWithDiffTypeMapping_ReturnsListOfMappedValue() {
         final List<CompletableFuture<Integer>> futures = mapValuesToFutures(Stream.of("foo"),
             element -> completedFuture(element.length()), toList());
 
@@ -115,7 +116,7 @@ public class MapValuesToFuturesTest {
     }
 
     @Test
-    public void single_StreamToSetWithDiffTypeMapping_ReturnsSetOfMappedValue() {
+    void single_StreamToSetWithDiffTypeMapping_ReturnsSetOfMappedValue() {
         final Set<CompletableFuture<Integer>> futures = mapValuesToFutures(Stream.of("foo"),
             element -> completedFuture(element.length()), toSet());
 
@@ -132,7 +133,7 @@ public class MapValuesToFuturesTest {
      */
 
     @Test
-    public void multiple_StreamToListWithSameTypeMappingNoDuplicates_ReturnsListOfMappedValues() {
+    void multiple_StreamToListWithSameTypeMappingNoDuplicates_ReturnsListOfMappedValues() {
         final List<CompletableFuture<String>> futures = mapValuesToFutures(Stream.of("foo", "bar"),
             element -> completedFuture(element.concat("POSTFIX")), toList());
 
@@ -146,7 +147,7 @@ public class MapValuesToFuturesTest {
     }
 
     @Test
-    public void multiple_StreamToSetWithSameTypeMappingNoDuplicates_ReturnsSetOfMappedValues() {
+    void multiple_StreamToSetWithSameTypeMappingNoDuplicates_ReturnsSetOfMappedValues() {
         final Set<CompletableFuture<String>> futures = mapValuesToFutures(Stream.of("foo", "bar"),
             element -> completedFuture(element.concat("POSTFIX")), toSet());
 
@@ -162,7 +163,7 @@ public class MapValuesToFuturesTest {
     }
 
     @Test
-    public void multiple_StreamToListWithDiffTypeMappingNoDuplicates_ReturnsListOfMappedValues() {
+    void multiple_StreamToListWithDiffTypeMappingNoDuplicates_ReturnsListOfMappedValues() {
         final List<CompletableFuture<Integer>> futures = mapValuesToFutures(Stream.of("john", "smith"),
             element -> completedFuture(element.length()), toList());
 
@@ -178,7 +179,7 @@ public class MapValuesToFuturesTest {
     }
 
     @Test
-    public void multiple_StreamToSetWithDiffTypeMappingNoDuplicates_ReturnsSetOfMappedValues() {
+    void multiple_StreamToSetWithDiffTypeMappingNoDuplicates_ReturnsSetOfMappedValues() {
         final Set<CompletableFuture<Integer>> futures = mapValuesToFutures(Stream.of("john", "smith"),
             element -> completedFuture(element.length()), toSet());
 
@@ -202,7 +203,7 @@ public class MapValuesToFuturesTest {
      */
 
     @Test
-    public void multiple_StreamToListWithSameTypeMappingDuplicates_ReturnsListOfMappedValuesWithDuplicates() {
+    void multiple_StreamToListWithSameTypeMappingDuplicates_ReturnsListOfMappedValuesWithDuplicates() {
         final List<CompletableFuture<String>> futures = mapValuesToFutures(Stream.of("john", "john"),
             CompletableFuture::completedFuture, toList());
 
@@ -218,7 +219,7 @@ public class MapValuesToFuturesTest {
     }
 
     @Test
-    public void multiple_StreamToSetWithSameTypeMappingDuplicates_ReturnsSetOfMappedValuesDuplicates() {
+    void multiple_StreamToSetWithSameTypeMappingDuplicates_ReturnsSetOfMappedValuesDuplicates() {
         final Set<CompletableFuture<String>> futures = mapValuesToFutures(Stream.of("john", "john"),
             CompletableFuture::completedFuture, toSet());
 
@@ -234,7 +235,7 @@ public class MapValuesToFuturesTest {
     }
 
     @Test
-    public void multiple_StreamToListWithDiffTypeMappingDuplicates_ReturnsListOfMappedValuesWithDuplicates() {
+    void multiple_StreamToListWithDiffTypeMappingDuplicates_ReturnsListOfMappedValuesWithDuplicates() {
         final List<CompletableFuture<Integer>> futures = mapValuesToFutures(Stream.of("john", "john"),
             element -> completedFuture(element.length()), toList());
 
@@ -250,7 +251,7 @@ public class MapValuesToFuturesTest {
     }
 
     @Test
-    public void multiple_StreamToSetWithDiffTypeMappingDuplicates_ReturnsSetOfMappedValuesWithDuplicates() {
+    void multiple_StreamToSetWithDiffTypeMappingDuplicates_ReturnsSetOfMappedValuesWithDuplicates() {
         final Set<CompletableFuture<Integer>> futures = mapValuesToFutures(Stream.of("john", "john"),
             element -> completedFuture(element.length()), toSet());
 

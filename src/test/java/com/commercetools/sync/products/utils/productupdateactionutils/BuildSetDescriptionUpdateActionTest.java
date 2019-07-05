@@ -5,7 +5,7 @@ import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.updateactions.SetDescription;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.util.Locale;
@@ -18,12 +18,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class BuildSetDescriptionUpdateActionTest {
+class BuildSetDescriptionUpdateActionTest {
     private static final Product MOCK_OLD_PUBLISHED_PRODUCT = readObjectFromResource(
         PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
 
     @Test
-    public void buildSetDescriptionUpdateAction_WithDifferentStagedValues_ShouldBuildUpdateAction() {
+    void buildSetDescriptionUpdateAction_WithDifferentStagedValues_ShouldBuildUpdateAction() {
         final LocalizedString newDescription = LocalizedString.of(Locale.GERMAN, "newDescription");
         final UpdateAction<Product> setDescriptionUpdateAction =
             getSetDescriptionUpdateAction(MOCK_OLD_PUBLISHED_PRODUCT, newDescription).orElse(null);
@@ -34,7 +34,7 @@ public class BuildSetDescriptionUpdateActionTest {
     }
 
     @Test
-    public void buildSetDescriptionUpdateAction_WithSameStagedValues_ShouldNotBuildUpdateAction() {
+    void buildSetDescriptionUpdateAction_WithSameStagedValues_ShouldNotBuildUpdateAction() {
         final LocalizedString newDescription = LocalizedString.of(Locale.ENGLISH, "english description.");
         final Optional<UpdateAction<Product>> setDescriptionUpdateAction =
             getSetDescriptionUpdateAction(MOCK_OLD_PUBLISHED_PRODUCT, newDescription);
