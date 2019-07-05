@@ -25,10 +25,10 @@ import io.sphere.sdk.products.commands.updateactions.SetAssetCustomType;
 import io.sphere.sdk.products.queries.ProductProjectionByKeyGet;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.types.Type;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -58,7 +58,7 @@ import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ProductSyncWithAssetsIT {
+class ProductSyncWithAssetsIT {
     private static final String ASSETS_CUSTOM_TYPE_KEY = "assetsCustomTypeKey";
     private static ProductType sourceProductType;
     private static ProductType targetProductType;
@@ -76,8 +76,8 @@ public class ProductSyncWithAssetsIT {
      * Delete all product related test data from target and source projects. Then creates for both CTP projects product
      * types and asset custom types.
      */
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         deleteProductSyncTestData(CTP_SOURCE_CLIENT);
 
@@ -95,8 +95,8 @@ public class ProductSyncWithAssetsIT {
      * Deletes Products from the source and target CTP projects, clears the callback collections then it instantiates a
      * new {@link ProductSync} instance.
      */
-    @Before
-    public void setupTest() {
+    @BeforeEach
+    void setupTest() {
         clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
         deleteAllProducts(CTP_SOURCE_CLIENT);
@@ -130,14 +130,14 @@ public class ProductSyncWithAssetsIT {
         return updateActions;
     }
 
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         deleteProductSyncTestData(CTP_SOURCE_CLIENT);
     }
 
     @Test
-    public void sync_withNewProductWithAssets_shouldCreateProduct() {
+    void sync_withNewProductWithAssets_shouldCreateProduct() {
         final List<AssetDraft> assetDraftsToCreateOnExistingProduct = asList(
             createAssetDraft("1", ofEnglish("1"), sourceAssetCustomType.getId()),
             createAssetDraft("2", ofEnglish("2"), sourceAssetCustomType.getId()),
@@ -181,7 +181,7 @@ public class ProductSyncWithAssetsIT {
     }
 
     @Test
-    public void sync_withMatchingProductWithAssetChanges_shouldUpdateProduct() {
+    void sync_withMatchingProductWithAssetChanges_shouldUpdateProduct() {
         final Map<String, JsonNode> customFieldsJsonMap = new HashMap<>();
         customFieldsJsonMap.put(BOOLEAN_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.booleanNode(true));
 

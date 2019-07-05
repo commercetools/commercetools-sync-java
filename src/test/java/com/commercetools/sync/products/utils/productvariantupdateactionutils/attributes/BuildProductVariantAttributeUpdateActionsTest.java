@@ -13,7 +13,7 @@ import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.attributes.StringAttributeType;
 import io.sphere.sdk.products.commands.updateactions.SetAttribute;
 import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,10 +26,10 @@ import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class BuildProductVariantAttributeUpdateActionsTest {
+class BuildProductVariantAttributeUpdateActionsTest {
 
     @Test
-    public void withNullOldAndNonNullNew_ShouldBuildSetAction() throws BuildUpdateActionException {
+    void withNullOldAndNonNullNew_ShouldBuildSetAction() throws BuildUpdateActionException {
 
         // Preparation
         final int variantId = 1;
@@ -51,7 +51,7 @@ public class BuildProductVariantAttributeUpdateActionsTest {
     }
 
     @Test
-    public void withNullOldAndNonNullNew_WithSameForAllAttribute_ShouldBuildSetAllAction()
+    void withNullOldAndNonNullNew_WithSameForAllAttribute_ShouldBuildSetAllAction()
         throws BuildUpdateActionException {
 
         // Preparation
@@ -74,7 +74,7 @@ public class BuildProductVariantAttributeUpdateActionsTest {
     }
 
     @Test
-    public void withNullOldAndNonNullNew_WithNoExistingAttributeInMetaData_ShouldThrowException() {
+    void withNullOldAndNonNullNew_WithNoExistingAttributeInMetaData_ShouldThrowException() {
 
         // Preparation
         final Attribute oldAttribute = null;
@@ -89,7 +89,7 @@ public class BuildProductVariantAttributeUpdateActionsTest {
     }
 
     @Test
-    public void withDifferentValues_ShouldBuildSetAction() throws BuildUpdateActionException {
+    void withDifferentValues_ShouldBuildSetAction() throws BuildUpdateActionException {
         // Preparation
         final Integer variantId = 1;
         final Attribute oldAttribute = Attribute.of("foo", JsonNodeFactory.instance.textNode("bar"));
@@ -110,7 +110,7 @@ public class BuildProductVariantAttributeUpdateActionsTest {
     }
 
     @Test
-    public void withSameValues_ShouldNotBuildAction() throws BuildUpdateActionException {
+    void withSameValues_ShouldNotBuildAction() throws BuildUpdateActionException {
         // Preparation
         final Attribute oldAttribute = Attribute.of("foo", JsonNodeFactory.instance.textNode("foo"));
         final AttributeDraft newAttribute = AttributeDraft.of("foo", JsonNodeFactory.instance.textNode("foo"));
@@ -129,7 +129,7 @@ public class BuildProductVariantAttributeUpdateActionsTest {
     }
 
     @Test
-    public void withDifferentValues_WithNoExistingAttributeInMetaData_ShouldThrowException() {
+    void withDifferentValues_WithNoExistingAttributeInMetaData_ShouldThrowException() {
         // Preparation
         final Attribute oldAttribute = Attribute.of("foo", JsonNodeFactory.instance.textNode("bar"));
         final AttributeDraft newAttribute = AttributeDraft.of("foo", JsonNodeFactory.instance.textNode("other-bar"));
@@ -143,7 +143,7 @@ public class BuildProductVariantAttributeUpdateActionsTest {
     }
 
     @Test
-    public void withSameValues_WithNoExistingAttributeInMetaData_ShouldThrowException() {
+    void withSameValues_WithNoExistingAttributeInMetaData_ShouldThrowException() {
         // Preparation
         final Attribute oldAttribute = Attribute.of("foo", JsonNodeFactory.instance.textNode("foo"));
         final AttributeDraft newAttribute = AttributeDraft.of("foo", JsonNodeFactory.instance.textNode("foo"));

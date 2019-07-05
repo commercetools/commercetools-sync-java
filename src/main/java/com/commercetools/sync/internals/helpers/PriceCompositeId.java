@@ -2,6 +2,7 @@ package com.commercetools.sync.internals.helpers;
 
 import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.PriceDraft;
 
@@ -61,7 +62,8 @@ public final class PriceCompositeId {
     @Nonnull
     public static PriceCompositeId of(@Nonnull final PriceDraft priceDraft) {
         return new PriceCompositeId(priceDraft.getValue().getCurrency().getCurrencyCode(),
-            priceDraft.getCountry(), ofNullable(priceDraft.getChannel()).map(Reference::getId).orElse(null),
+            priceDraft.getCountry(), ofNullable(priceDraft.getChannel()).map(ResourceIdentifier::getId)
+                                                                        .orElse(null),
             ofNullable(priceDraft.getCustomerGroup()).map(Reference::getId).orElse(null),
             priceDraft.getValidFrom(), priceDraft.getValidUntil());
     }
