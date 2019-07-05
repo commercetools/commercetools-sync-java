@@ -24,7 +24,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class BatchProcessor {
     static final String PRODUCT_TYPE_DRAFT_KEY_NOT_SET = "ProductTypeDraft with name: %s doesn't have a key. "
-        + "Please make sure all product drafts have keys.";
+        + "Please make sure all productType drafts have keys.";
     static final String PRODUCT_TYPE_DRAFT_IS_NULL = "ProductTypeDraft is null.";
     static final String PRODUCT_TYPE_HAS_INVALID_REFERENCES = "ProductTypeDraft with key: '%s' has invalid productType "
         + "references on the following AttributeDefinitionDrafts: %s";
@@ -50,7 +50,7 @@ public class BatchProcessor {
      * <ol>
      * <li>Is not null</li>
      * <li>It has a key which is not blank (null/empty)</li>
-     * <li>It has an invalid productType reference on an attributeDefinitionDraft
+     * <li>It has no invalid productType reference on an attributeDefinitionDraft
      * with either a NestedType or SetType AttributeType.
      * A valid reference is simply one which has its id field's value not blank (null/empty)</li>
      * </ol>
@@ -90,7 +90,7 @@ public class BatchProcessor {
         }
 
 
-        final List<String> invalidAttributeDefNames = new ArrayList<>();
+        final List<String> invalidAttributeDefinitionNames = new ArrayList<>();
 
         for (AttributeDefinitionDraft attributeDefinitionDraft : attributeDefinitionDrafts) {
             if (attributeDefinitionDraft != null) {
@@ -98,15 +98,15 @@ public class BatchProcessor {
                 try {
                     getProductTypeKey(attributeType).ifPresent(referencedProductTypeKeys::add);
                 } catch (InvalidReferenceException invalidReferenceException) {
-                    invalidAttributeDefNames.add(attributeDefinitionDraft.getName());
+                    invalidAttributeDefinitionNames.add(attributeDefinitionDraft.getName());
 
                 }
             }
         }
 
-        if (!invalidAttributeDefNames.isEmpty()) {
+        if (!invalidAttributeDefinitionNames.isEmpty()) {
             final String errorMessage = format(PRODUCT_TYPE_HAS_INVALID_REFERENCES, productTypeDraft.getKey(),
-                invalidAttributeDefNames);
+                invalidAttributeDefinitionNames);
             throw new InvalidProductTypeDraftException(errorMessage,
                 new InvalidReferenceException(BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
         }
