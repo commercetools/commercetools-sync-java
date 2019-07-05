@@ -12,10 +12,9 @@ import io.sphere.sdk.types.TypeDraft;
 import io.sphere.sdk.types.TypeDraftBuilder;
 import io.sphere.sdk.types.commands.TypeCreateCommand;
 import io.sphere.sdk.types.queries.TypeQuery;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -45,25 +44,20 @@ import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class TypeSyncBenchmark {
+class TypeSyncBenchmark {
 
     private TypeSyncOptions typeSyncOptions;
     private List<String> errorCallBackMessages;
     private List<String> warningCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
 
-    @BeforeClass
-    public static void setup() {
+    @AfterEach
+    void tearDown() {
         deleteTypes(CTP_TARGET_CLIENT);
     }
 
-    @AfterClass
-    public static void tearDown() {
-        deleteTypes(CTP_TARGET_CLIENT);
-    }
-
-    @Before
-    public void setupTest() {
+    @BeforeEach
+    void setupTest() {
         clearSyncTestCollections();
         deleteTypes(CTP_TARGET_CLIENT);
         typeSyncOptions = buildSyncOptions();
@@ -90,7 +84,7 @@ public class TypeSyncBenchmark {
     }
 
     @Test
-    public void sync_NewTypes_ShouldCreateTypes() throws IOException {
+    void sync_NewTypes_ShouldCreateTypes() throws IOException {
         // preparation
         final List<TypeDraft> typeDrafts = buildTypeDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
         final TypeSync typeSync = new TypeSync(typeSyncOptions);
@@ -125,7 +119,7 @@ public class TypeSyncBenchmark {
     }
 
     @Test
-    public void sync_ExistingTypes_ShouldUpdateTypes() throws IOException {
+    void sync_ExistingTypes_ShouldUpdateTypes() throws IOException {
         // preparation
         final List<TypeDraft> typeDrafts = buildTypeDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
         // Create drafts to target project with different field type name
@@ -182,7 +176,7 @@ public class TypeSyncBenchmark {
     }
 
     @Test
-    public void sync_WithSomeExistingTypes_ShouldSyncTypes() throws IOException {
+    void sync_WithSomeExistingTypes_ShouldSyncTypes() throws IOException {
         // preparation
         final List<TypeDraft> typeDrafts = buildTypeDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
         final int halfNumberOfDrafts = typeDrafts.size() / 2;

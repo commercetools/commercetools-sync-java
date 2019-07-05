@@ -9,10 +9,10 @@ import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.categories.commands.updateactions.ChangeOrderHint;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +25,7 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ChangeOrderHintIT {
+class ChangeOrderHintIT {
     private static Category oldCategory;
     private List<String> callBackResponses = new ArrayList<>();
     private CategorySyncOptions categorySyncOptions;
@@ -33,8 +33,8 @@ public class ChangeOrderHintIT {
     /**
      * Deletes Categories and Types from the target CTP projects, then it populates it with category test data.
      */
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
         final CategoryDraft oldCategoryDraft = CategoryDraftBuilder
@@ -51,8 +51,8 @@ public class ChangeOrderHintIT {
     /**
      * Cleans up the target data that was built in this test class.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
     }
@@ -60,8 +60,8 @@ public class ChangeOrderHintIT {
     /**
      * Cleans the callback response collector.
      */
-    @Before
-    public void setupTest() {
+    @BeforeEach
+    void setupTest() {
         callBackResponses = new ArrayList<>();
         categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                                         .warningCallback(callBackResponses::add)
@@ -69,7 +69,7 @@ public class ChangeOrderHintIT {
     }
 
     @Test
-    public void buildChangeOrderHintUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
+    void buildChangeOrderHintUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         // Prepare new category draft with a different orderHint
         final CategoryDraft newCategory = CategoryDraftBuilder
             .of(oldCategory.getName(), oldCategory.getSlug())
@@ -88,7 +88,7 @@ public class ChangeOrderHintIT {
     }
 
     @Test
-    public void buildChangeOrderHintUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
+    void buildChangeOrderHintUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         // Prepare new category draft with a same orderHint as root category
         final CategoryDraft newCategory = CategoryDraftBuilder
             .of(oldCategory.getName(), oldCategory.getSlug())
@@ -104,7 +104,7 @@ public class ChangeOrderHintIT {
     }
 
     @Test
-    public void buildChangeOrderHintUpdateAction_WithNullValue_ShouldTriggerCallback() {
+    void buildChangeOrderHintUpdateAction_WithNullValue_ShouldTriggerCallback() {
         // Prepare new category draft with no orderHint
         final CategoryDraft newCategory = CategoryDraftBuilder
             .of(oldCategory.getName(), oldCategory.getSlug())

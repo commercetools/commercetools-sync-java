@@ -4,6 +4,7 @@ import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereRequest;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.PriceDraftBuilder;
 import io.sphere.sdk.products.Product;
@@ -35,6 +36,7 @@ import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndC
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypes;
 import static com.commercetools.sync.integration.commons.utils.StateITUtils.deleteStates;
 import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.deleteTaxCategories;
+import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
@@ -118,7 +120,7 @@ public final class ProductITUtils {
      */
     @Nonnull
     private static SphereRequest<Product> buildUnpublishRequest(@Nonnull final Product product) {
-        return ProductUpdateCommand.of(product, Unpublish.of());
+        return ProductUpdateCommand.of(product, singletonList(Unpublish.of()));
     }
 
     /**
@@ -175,7 +177,7 @@ public final class ProductITUtils {
     @Nonnull
     private static List<PriceDraft> getPriceDraftsWithReferences(
         @Nonnull final ProductVariantDraft productVariant,
-        @Nullable final Reference<Channel> channelReference,
+        @Nullable final ResourceIdentifier<Channel> channelReference,
         @Nullable final CustomFieldsDraft customFieldsDraft) {
 
         return productVariant.getPrices()

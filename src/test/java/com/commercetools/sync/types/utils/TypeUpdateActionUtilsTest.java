@@ -8,8 +8,8 @@ import io.sphere.sdk.types.TypeDraft;
 import io.sphere.sdk.types.TypeDraftBuilder;
 import io.sphere.sdk.types.commands.updateactions.ChangeName;
 import io.sphere.sdk.types.commands.updateactions.SetDescription;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 import java.util.Set;
@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class TypeUpdateActionUtilsTest {
+class TypeUpdateActionUtilsTest {
     private static Type old;
     private static TypeDraft newSame;
     private static TypeDraft newDifferent;
@@ -28,8 +28,8 @@ public class TypeUpdateActionUtilsTest {
     /**
      * Initialises test data.
      */
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         final String key = "category-custom-type-key";
         final LocalizedString name = LocalizedString.ofEnglish("type for standard categories");
         final LocalizedString desc = LocalizedString.ofEnglish("description for category custom type");
@@ -56,28 +56,28 @@ public class TypeUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildChangeNameAction_WithDifferentValues_ShouldReturnAction() {
+    void buildChangeNameAction_WithDifferentValues_ShouldReturnAction() {
         final Optional<UpdateAction<Type>> result = buildChangeNameUpdateAction(old, newDifferent);
 
         assertThat(result).contains(ChangeName.of(newDifferent.getName()));
     }
 
     @Test
-    public void buildChangeNameAction_WithSameValues_ShouldReturnEmptyOptional() {
+    void buildChangeNameAction_WithSameValues_ShouldReturnEmptyOptional() {
         final Optional<UpdateAction<Type>> result = buildChangeNameUpdateAction(old, newSame);
 
         assertThat(result).isEmpty();
     }
 
     @Test
-    public void buildSetDescriptionAction_WithDifferentValues_ShouldReturnAction() {
+    void buildSetDescriptionAction_WithDifferentValues_ShouldReturnAction() {
         final Optional<UpdateAction<Type>> result = buildSetDescriptionUpdateAction(old, newDifferent);
 
         assertThat(result).contains(SetDescription.of(newDifferent.getDescription()));
     }
 
     @Test
-    public void buildSetDescriptionAction_WithSameValues_ShouldReturnEmptyOptional() {
+    void buildSetDescriptionAction_WithSameValues_ShouldReturnEmptyOptional() {
         final Optional<UpdateAction<Type>> result = buildSetDescriptionUpdateAction(old, newSame);
 
         assertThat(result).isEmpty();

@@ -16,8 +16,8 @@ import io.sphere.sdk.types.commands.updateactions.AddLocalizedEnumValue;
 import io.sphere.sdk.types.commands.updateactions.ChangeEnumValueOrder;
 import io.sphere.sdk.types.commands.updateactions.ChangeFieldDefinitionLabel;
 import io.sphere.sdk.types.commands.updateactions.ChangeLocalizedEnumValueOrder;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
@@ -31,7 +31,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class FieldDefinitionUpdateActionUtilsTest {
+class FieldDefinitionUpdateActionUtilsTest {
     private static final String FIELD_NAME_1 = "fieldName1";
     private static final String LABEL_1 = "label1";
     private static final String LABEL_2 = "label2";
@@ -50,29 +50,29 @@ public class FieldDefinitionUpdateActionUtilsTest {
     /**
      * Initialises test data.
      */
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         old = stringFieldDefinition(FIELD_NAME_1, LABEL_1, false, TextInputHint.SINGLE_LINE);
         newSame = stringFieldDefinition(FIELD_NAME_1, LABEL_1, false, TextInputHint.SINGLE_LINE);
         newDifferent = stringFieldDefinition(FIELD_NAME_1, LABEL_2, true, TextInputHint.MULTI_LINE);
     }
 
     @Test
-    public void buildChangeLabelAction_WithDifferentValues_ShouldReturnAction() {
+    void buildChangeLabelAction_WithDifferentValues_ShouldReturnAction() {
         final Optional<UpdateAction<Type>> result = buildChangeLabelUpdateAction(old, newDifferent);
 
         assertThat(result).contains(ChangeFieldDefinitionLabel.of(old.getName(), newDifferent.getLabel()));
     }
 
     @Test
-    public void buildChangeLabelAction_WithSameValues_ShouldReturnEmptyOptional() {
+    void buildChangeLabelAction_WithSameValues_ShouldReturnEmptyOptional() {
         final Optional<UpdateAction<Type>> result = buildChangeLabelUpdateAction(old, newSame);
 
         assertThat(result).isEmpty();
     }
 
     @Test
-    public void buildActions_WithNewDifferentValues_ShouldReturnActions() {
+    void buildActions_WithNewDifferentValues_ShouldReturnActions() {
         final List<UpdateAction<Type>> result = buildActions(old, newDifferent);
 
         assertThat(result).containsExactlyInAnyOrder(
@@ -81,14 +81,14 @@ public class FieldDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithSameValues_ShouldReturnEmpty() {
+    void buildActions_WithSameValues_ShouldReturnEmpty() {
         final List<UpdateAction<Type>> result = buildActions(old, newSame);
 
         assertThat(result).isEmpty();
     }
 
     @Test
-    public void buildActions_WithNewPlainEnum_ShouldReturnAddEnumValueAction() {
+    void buildActions_WithNewPlainEnum_ShouldReturnAddEnumValueAction() {
         final FieldDefinition oldFieldDefinition = FieldDefinition.of(
                 EnumFieldType.of(singletonList(ENUM_VALUE_A)),
                 FIELD_NAME_1,
@@ -110,7 +110,7 @@ public class FieldDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithoutOldPlainEnum_ShouldNotReturnAnyValueAction() {
+    void buildActions_WithoutOldPlainEnum_ShouldNotReturnAnyValueAction() {
 
         final FieldDefinition oldFieldDefinition = FieldDefinition.of(
                 EnumFieldType.of(singletonList(ENUM_VALUE_A)),
@@ -133,7 +133,7 @@ public class FieldDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithNewLocalizedEnum_ShouldReturnAddLocalizedEnumValueAction() {
+    void buildActions_WithNewLocalizedEnum_ShouldReturnAddLocalizedEnumValueAction() {
 
         final FieldDefinition oldFieldDefinition = FieldDefinition.of(
                 LocalizedEnumFieldType.of(singletonList(LOCALIZED_ENUM_VALUE_A)),
@@ -156,7 +156,7 @@ public class FieldDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithStringFieldTypesWithLabelChanges_ShouldBuildChangeLabelAction() {
+    void buildActions_WithStringFieldTypesWithLabelChanges_ShouldBuildChangeLabelAction() {
         final FieldDefinition oldFieldDefinition = FieldDefinition.of(StringFieldType.of(),"fieldName1",
             ofEnglish("label1"), false);
 
@@ -171,7 +171,7 @@ public class FieldDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithSetOfStringFieldTypesWithDefinitionLabelChanges_ShouldBuildChangeLabelAction() {
+    void buildActions_WithSetOfStringFieldTypesWithDefinitionLabelChanges_ShouldBuildChangeLabelAction() {
         final FieldDefinition oldFieldDefinition = FieldDefinition.of(SetFieldType.of(StringFieldType.of()),
             "fieldName1", ofEnglish("label1"), false);
 
@@ -186,7 +186,7 @@ public class FieldDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithSetOfSetOfStringFieldTypesWithDefLabelChanges_ShouldBuildChangeLabelAction() {
+    void buildActions_WithSetOfSetOfStringFieldTypesWithDefLabelChanges_ShouldBuildChangeLabelAction() {
         final FieldDefinition oldFieldDefinition = FieldDefinition.of(
             SetFieldType.of(SetFieldType.of(StringFieldType.of())), "fieldName1", ofEnglish("label1"), false);
 
@@ -201,7 +201,7 @@ public class FieldDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithSameSetOfEnumsFieldTypesWithDefLabelChanges_ShouldBuildChangeLabelAction() {
+    void buildActions_WithSameSetOfEnumsFieldTypesWithDefLabelChanges_ShouldBuildChangeLabelAction() {
         final FieldDefinition oldFieldDefinition = FieldDefinition.of(SetFieldType.of(EnumFieldType.of(emptyList())),
             "fieldName1", ofEnglish("label1"), false);
 
@@ -216,7 +216,7 @@ public class FieldDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithChangedSetOfEnumFieldTypes_ShouldBuildEnumActions() {
+    void buildActions_WithChangedSetOfEnumFieldTypes_ShouldBuildEnumActions() {
         final FieldDefinition oldFieldDefinition = FieldDefinition.of(
             SetFieldType.of(EnumFieldType.of(
                 asList(
@@ -244,7 +244,7 @@ public class FieldDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithSameSetOfLEnumFieldTypesWithDefLabelChanges_ShouldBuildChangeLabelAction() {
+    void buildActions_WithSameSetOfLEnumFieldTypesWithDefLabelChanges_ShouldBuildChangeLabelAction() {
         // preparation
         final FieldDefinition oldFieldDefinition = FieldDefinition.of(
             SetFieldType.of(SetFieldType.of(LocalizedEnumFieldType.of(emptyList()))),
@@ -264,7 +264,7 @@ public class FieldDefinitionUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildActions_WithChangedSetOfLocalizedEnumFieldTypes_ShouldBuildEnumActions() {
+    void buildActions_WithChangedSetOfLocalizedEnumFieldTypes_ShouldBuildEnumActions() {
         // preparation
         final FieldDefinition oldFieldDefinition = FieldDefinition.of(
             SetFieldType.of(LocalizedEnumFieldType.of(

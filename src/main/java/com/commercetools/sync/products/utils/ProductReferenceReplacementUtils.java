@@ -31,7 +31,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.commons.utils.SyncUtils.replaceReferenceIdWithKey;
+import static com.commercetools.sync.commons.utils.SyncUtils.getReferenceWithKeyReplaced;
+import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKeyReplaced;
 import static java.util.stream.Collectors.toList;
 
 public final class ProductReferenceReplacementUtils {
@@ -54,9 +55,9 @@ public final class ProductReferenceReplacementUtils {
             .filter(Objects::nonNull)
             .map(product -> {
                 final ProductDraft productDraft = getDraftBuilderFromStagedProduct(product).build();
-                final Reference<ProductType> productTypeReferenceWithKey =
+                final ResourceIdentifier<ProductType> productTypeReferenceWithKey =
                     replaceProductTypeReferenceIdWithKey(product);
-                final Reference<TaxCategory> taxCategoryReferenceWithKey =
+                final ResourceIdentifier<TaxCategory> taxCategoryReferenceWithKey =
                     replaceTaxCategoryReferenceIdWithKey(product);
                 final Reference<State> stateReferenceWithKey = replaceProductStateReferenceIdWithKey(product);
 
@@ -119,40 +120,42 @@ public final class ProductReferenceReplacementUtils {
     /**
      * Takes a product that is supposed to have its ProductType reference expanded in order to be able to fetch the key
      * and replace the reference id with the corresponding key and then return a new {@link ProductType}
-     * {@link Reference} containing the key in the id field.
+     * {@link ResourceIdentifier} containing the key in the id field.
      *
      * <p><b>Note:</b> The productType reference should be expanded for the {@code product}, otherwise the reference
      * id will not be replaced with key and will still have the id in place.
      *
      * @param product the product to replace its ProductType reference id with the key.
      *
-     * @return a new {@link ProductType} {@link Reference} containing the key in the id field.
+     * @return a new {@link ProductType} {@link ResourceIdentifier} containing the key in the id field.
      */
     @Nullable
     @SuppressWarnings("ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
-    static Reference<ProductType> replaceProductTypeReferenceIdWithKey(@Nonnull final Product product) {
+    static ResourceIdentifier<ProductType> replaceProductTypeReferenceIdWithKey(@Nonnull final Product product) {
         final Reference<ProductType> productType = product.getProductType();
-        return replaceReferenceIdWithKey(productType, () -> ProductType.referenceOfId(productType.getObj().getKey()));
+        return getResourceIdentifierWithKeyReplaced(productType,
+            () -> ResourceIdentifier.ofId(productType.getObj().getKey()));
     }
 
     /**
      * Takes a product that is supposed to have its TaxCategory reference expanded in order to be able to fetch the key
      * and replace the reference id with the corresponding key and then return a new {@link TaxCategory}
-     * {@link Reference} containing the key in the id field.
+     * {@link ResourceIdentifier} containing the key in the id field.
      *
      * <p><b>Note:</b> The TaxCategory reference should be expanded for the {@code product}, otherwise the reference
      * id will not be replaced with the key and will still have the id in place.
      *
      * @param product the product to replace its TaxCategory reference id with the key.
      *
-     * @return a new {@link TaxCategory} {@link Reference} containing the key in the id field.
+     * @return a new {@link TaxCategory} {@link ResourceIdentifier} containing the key in the id field.
      */
     @Nullable
     @SuppressWarnings("ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
-    static Reference<TaxCategory> replaceTaxCategoryReferenceIdWithKey(@Nonnull final Product product) {
+    static ResourceIdentifier<TaxCategory> replaceTaxCategoryReferenceIdWithKey(@Nonnull final Product product) {
+
         final Reference<TaxCategory> productTaxCategory = product.getTaxCategory();
-        return replaceReferenceIdWithKey(productTaxCategory,
-            () -> TaxCategory.referenceOfId(productTaxCategory.getObj().getKey()));
+        return getResourceIdentifierWithKeyReplaced(productTaxCategory,
+            () -> ResourceIdentifier.ofId(productTaxCategory.getObj().getKey()));
     }
 
     /**
@@ -171,7 +174,8 @@ public final class ProductReferenceReplacementUtils {
     @SuppressWarnings("ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
     static Reference<State> replaceProductStateReferenceIdWithKey(@Nonnull final Product product) {
         final Reference<State> productState = product.getState();
-        return replaceReferenceIdWithKey(productState, () -> State.referenceOfId(productState.getObj().getKey()));
+        return getReferenceWithKeyReplaced(productState,
+            () -> State.referenceOfId(productState.getObj().getKey()));
     }
 
     /**
@@ -187,8 +191,8 @@ public final class ProductReferenceReplacementUtils {
      * references and the categoryOrderHints and will be returned as is.
      *
      * @param product the product to replace its category references and CategoryOrderHints ids with keys.
-     * @return a {@link CategoryReferencePair} that contains a {@link List} of category references with keys replacing
-     *         the ids and a {@link CategoryOrderHints} with keys replacing the ids.
+     * @return a {@link CategoryReferencePair} that contains a {@link List} of category resource identifiers with keys
+     *         replacing the ids and a {@link CategoryOrderHints} with keys replacing the ids.
      */
     @Nonnull
     static CategoryReferencePair replaceCategoryReferencesIdsWithKeys(@Nonnull final Product product) {
@@ -200,7 +204,7 @@ public final class ProductReferenceReplacementUtils {
 
         categoryReferences.forEach(categoryReference ->
             categoryResourceIdentifiers.add(
-                replaceReferenceIdWithKey(categoryReference, () -> {
+                getResourceIdentifierWithKeyReplaced(categoryReference, () -> {
                     final String categoryId = categoryReference.getId();
                     @SuppressWarnings("ConstantConditions") // NPE is checked in replaceReferenceIdWithKey.
                     final String categoryKey = categoryReference.getObj().getKey();
@@ -211,7 +215,7 @@ public final class ProductReferenceReplacementUtils {
                             categoryOrderHintsMapWithKeys.put(categoryKey, categoryOrderHintValue);
                         }
                     }
-                    return Category.referenceOfId(categoryKey);
+                    return ResourceIdentifier.ofId(categoryKey);
                 }))
         );
 
