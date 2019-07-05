@@ -15,7 +15,6 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
-import io.sphere.sdk.queries.QueryExecutionUtils;
 
 import javax.annotation.Nonnull;
 import java.util.HashSet;
@@ -209,7 +208,6 @@ public final class ProductTypeReferenceReplacementUtils {
         final String nestedTypeReferenceExpansionPath = "attributes[*].type.typeReference";
         final ProductTypeQuery productTypeQuery = ProductTypeQuery
             .of()
-            .withLimit(QueryExecutionUtils.DEFAULT_PAGE_SIZE)
             .plusExpansionPaths(ExpansionPath.of(nestedTypeReferenceExpansionPath));
 
 
