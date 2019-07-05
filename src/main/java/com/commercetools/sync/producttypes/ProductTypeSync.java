@@ -1,6 +1,7 @@
 package com.commercetools.sync.producttypes;
 
 import com.commercetools.sync.commons.BaseSync;
+import com.commercetools.sync.producttypes.helpers.BatchProcessor;
 import com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
@@ -26,8 +27,6 @@ import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
-import static java.util.stream.Collectors.toSet;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * This class syncs product type drafts with the corresponding product types in the CTP project.
@@ -37,8 +36,6 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
         + " '%s'.";
     private static final String CTP_PRODUCT_TYPE_UPDATE_FAILED = "Failed to update product type with key: '%s'."
         + " Reason: %s";
-    private static final String PRODUCT_TYPE_DRAFT_HAS_NO_KEY = "Failed to process product type draft without key.";
-    private static final String PRODUCT_TYPE_DRAFT_IS_NULL = "Failed to process null product type draft.";
 
     private final ProductTypeService productTypeService;
 
@@ -86,7 +83,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
 
     /**
      * This method first creates a new {@link Set} of valid {@link ProductTypeDraft} elements. For more on the rules of
-     * validation, check: {@link ProductTypeSync#validateDraft(ProductTypeDraft)}. Using the resulting set of
+     * validation, check: {@link BatchProcessor#validateBatch()}. Using the resulting set of
      * {@code validProductTypeDrafts}, the matching productTypes in the target CTP project are fetched then the method
      * {@link ProductTypeSync#syncBatch(Set, Set)} is called to perform the sync (<b>update</b> or <b>create</b>
      * requests accordingly) on the target project.
@@ -103,57 +100,32 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     @Override
     protected CompletionStage<ProductTypeSyncStatistics> processBatch(@Nonnull final List<ProductTypeDraft> batch) {
 
-        final Set<ProductTypeDraft> validProductTypeDrafts = batch.stream()
-                                                                  .filter(this::validateDraft)
-                                                                  .collect(toSet());
+        final BatchProcessor batchProcessor = new BatchProcessor(batch, this);
+        batchProcessor.validateBatch();
 
-        if (validProductTypeDrafts.isEmpty()) {
-            statistics.incrementProcessed(batch.size());
-            return completedFuture(statistics);
-        } else {
-            final Set<String> keys = validProductTypeDrafts.stream().map(ProductTypeDraft::getKey).collect(toSet());
+        final Set<String> keysToCache = batchProcessor.getKeysToCache();
 
 
-            return productTypeService
-                .fetchMatchingProductTypesByKeys(keys)
-                .handle(ImmutablePair::new)
-                .thenCompose(fetchResponse -> {
-                    final Set<ProductType> fetchedProductTypes = fetchResponse.getKey();
-                    final Throwable exception = fetchResponse.getValue();
+        return productTypeService
+            .fetchMatchingProductTypesByKeys(keysToCache)
+            .handle(ImmutablePair::new)
+            .thenCompose(fetchResponse -> {
+                final Set<ProductType> fetchedProductTypes = fetchResponse.getKey();
+                final Throwable exception = fetchResponse.getValue();
 
-                    if (exception != null) {
-                        final String errorMessage = format(CTP_PRODUCT_TYPE_FETCH_FAILED, keys);
-                        handleError(errorMessage, exception, keys.size());
-                        return CompletableFuture.completedFuture(null);
-                    } else {
-                        return syncBatch(fetchedProductTypes, validProductTypeDrafts);
-                    }
-                })
-                .thenApply(ignored -> {
-                    statistics.incrementProcessed(batch.size());
-                    return statistics;
-                });
-        }
-    }
+                if (exception != null) {
+                    final String errorMessage = format(CTP_PRODUCT_TYPE_FETCH_FAILED, keysToCache);
+                    handleError(errorMessage, exception, keysToCache.size());
+                    return CompletableFuture.completedFuture(null);
+                } else {
+                    return syncBatch(fetchedProductTypes, batchProcessor.getValidDrafts());
+                }
+            })
+            .thenApply(ignored -> {
+                statistics.incrementProcessed(batch.size());
+                return statistics;
+            });
 
-    /**
-     * Checks if a draft is valid for further processing. If so, then returns {@code true}. Otherwise handles an error
-     * and returns {@code false}. A valid draft is a {@link ProductTypeDraft} object that is not {@code null} and its
-     * key is not empty.
-     *
-     * @param draft nullable draft
-     * @return boolean that indicate if given {@code draft} is valid for sync
-     */
-    private boolean validateDraft(@Nullable final ProductTypeDraft draft) {
-        if (draft == null) {
-            handleError(PRODUCT_TYPE_DRAFT_IS_NULL, null, 1);
-        } else if (isBlank(draft.getKey())) {
-            handleError(PRODUCT_TYPE_DRAFT_HAS_NO_KEY, null, 1);
-        } else {
-            return true;
-        }
-
-        return false;
     }
 
     /**
