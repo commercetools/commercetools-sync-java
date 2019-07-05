@@ -15,8 +15,8 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import org.assertj.core.api.Condition;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,13 +35,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class BatchProcessorTest {
+class BatchProcessorTest {
     private List<String> errorCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
     private ProductTypeSync productTypeSync;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
         final SphereClient ctpClient = mock(SphereClient.class);
@@ -56,7 +56,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void validateBatch_WithEmptyBatch_ShouldResultInNoValidDraftsAndNoCachedKeys() {
+    void validateBatch_WithEmptyBatch_ShouldResultInNoValidDraftsAndNoCachedKeys() {
         final BatchProcessor batchProcessor = new BatchProcessor(emptyList(), productTypeSync);
         batchProcessor.validateBatch();
 
@@ -67,7 +67,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void validateBatch_WithANullDraft_ShouldResultInAnError() {
+    void validateBatch_WithANullDraft_ShouldResultInAnError() {
         final BatchProcessor batchProcessor = new BatchProcessor(singletonList(null), productTypeSync);
         batchProcessor.validateBatch();
 
@@ -81,7 +81,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void validateBatch_WithADraftWithNullKey_ShouldResultInAnError() {
+    void validateBatch_WithADraftWithNullKey_ShouldResultInAnError() {
         final ProductTypeDraft productTypeDraft = mock(ProductTypeDraft.class);
         when(productTypeDraft.getKey()).thenReturn(null);
 
@@ -99,7 +99,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void validateBatch_WithADraftWithEmptyKey_ShouldResultInAnError() {
+    void validateBatch_WithADraftWithEmptyKey_ShouldResultInAnError() {
         final ProductTypeDraft productTypeDraft = mock(ProductTypeDraft.class);
         when(productTypeDraft.getKey()).thenReturn("");
 
@@ -117,7 +117,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void validateBatch_WithADraftWithAValidNestedReference_ShouldNotResultInAnError() {
+    void validateBatch_WithADraftWithAValidNestedReference_ShouldNotResultInAnError() {
         final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
             .of(StringAttributeType.of(), "foo", ofEnglish("koko"), true)
             .build();
@@ -145,7 +145,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void validateBatch_WithADraftWithAnInvalidNestedReference_ShouldResultInAnError() {
+    void validateBatch_WithADraftWithAnInvalidNestedReference_ShouldResultInAnError() {
         final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
             .of(StringAttributeType.of(), "foo", ofEnglish("koko"), true)
             .build();
@@ -181,7 +181,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void validateBatch_WithADraftWithMultipleInvalidNestedReferences_ShouldResultInAnError() {
+    void validateBatch_WithADraftWithMultipleInvalidNestedReferences_ShouldResultInAnError() {
         final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
             .of(StringAttributeType.of(), "foo", ofEnglish("koko"), true)
             .build();
@@ -234,7 +234,7 @@ public class BatchProcessorTest {
     }
 
     @Test
-    public void validateBatch_WithMixOfValidAndInvalidDrafts_ShouldValidateCorrectly() {
+    void validateBatch_WithMixOfValidAndInvalidDrafts_ShouldValidateCorrectly() {
         final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
             .of(StringAttributeType.of(), "foo", ofEnglish("koko"), true)
             .build();
