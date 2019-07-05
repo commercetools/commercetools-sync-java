@@ -13,7 +13,7 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -29,10 +29,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-public class ProductTypeReferenceReplacementUtilsTest {
+class ProductTypeReferenceReplacementUtilsTest {
 
     @Test
-    public void replaceProductTypesReferenceIdsWithKeys_WithEmptyList_ShouldReturnEmptyList() {
+    void replaceProductTypesReferenceIdsWithKeys_WithEmptyList_ShouldReturnEmptyList() {
         // preparation
         final List<ProductType> productTypes = emptyList();
 
@@ -44,7 +44,7 @@ public class ProductTypeReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceProductTypesReferenceIdsWithKeys_WithNullProductType_ShouldReturnEmptyList() {
+    void replaceProductTypesReferenceIdsWithKeys_WithNullProductType_ShouldReturnEmptyList() {
         // preparation
         final List<ProductType> productTypes = singletonList(null);
 
@@ -56,7 +56,7 @@ public class ProductTypeReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceProductTypesReferenceIdsWithKeys_WithProductTypeWithNoAttributeDefs_ShouldReturnProductType() {
+    void replaceProductTypesReferenceIdsWithKeys_WithProductTypeWithNoAttributeDefs_ShouldReturnProductType() {
         // preparation
         final ProductType productTypeFoo = mock(ProductType.class);
         when(productTypeFoo.getKey()).thenReturn("foo");
@@ -72,7 +72,7 @@ public class ProductTypeReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceProductTypesReferenceIdsWithKeys_WithNoReferences_ShouldReturnCorrectProductTypeDrafts() {
+    void replaceProductTypesReferenceIdsWithKeys_WithNoReferences_ShouldReturnCorrectProductTypeDrafts() {
         final AttributeDefinition stringAttr = AttributeDefinitionBuilder
             .of("a", ofEnglish("a"), StringAttributeType.of())
             .build();
@@ -102,7 +102,7 @@ public class ProductTypeReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceProductTypesReferenceIdsWithKeys_WithProductTypeWithAnExpandedRefNestedType_ShouldReplaceRef() {
+    void replaceProductTypesReferenceIdsWithKeys_WithProductTypeWithAnExpandedRefNestedType_ShouldReplaceRef() {
         // preparation
         final ProductType referencedProductType = mock(ProductType.class);
         when(referencedProductType.getKey()).thenReturn("referencedProductType");
@@ -132,7 +132,7 @@ public class ProductTypeReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceProductTypesReferenceIdsWithKeys_WithProductTypeWithNonExpandedRefNestedType_ShouldFail() {
+    void replaceProductTypesReferenceIdsWithKeys_WithProductTypeWithNonExpandedRefNestedType_ShouldFail() {
         // preparation
         final Reference<ProductType> productTypeReference = ProductType.referenceOfId("referencedProductType");
 
@@ -156,7 +156,7 @@ public class ProductTypeReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceProductTypesReferenceIdsWithKeys_WithSetOfNestedType_ShouldReplaceRef() {
+    void replaceProductTypesReferenceIdsWithKeys_WithSetOfNestedType_ShouldReplaceRef() {
         // preparation
         final ProductType referencedProductType = mock(ProductType.class);
         when(referencedProductType.getKey()).thenReturn("referencedProductType");
@@ -189,7 +189,7 @@ public class ProductTypeReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceProductTypesReferenceIdsWithKeys_WithSetOfNestedTypeNonExpanded_ShouldFail() {
+    void replaceProductTypesReferenceIdsWithKeys_WithSetOfNestedTypeNonExpanded_ShouldFail() {
         // preparation
         final Reference<ProductType> productTypeReference = ProductType.referenceOfId("referencedProductType");
 
@@ -215,7 +215,7 @@ public class ProductTypeReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceProductTypesReferenceIdsWithKeys_WithNestedTypeWithSetOfSet_ShouldReplaceRef() {
+    void replaceProductTypesReferenceIdsWithKeys_WithNestedTypeWithSetOfSet_ShouldReplaceRef() {
         // preparation
         final ProductType referencedProductType = mock(ProductType.class);
         when(referencedProductType.getKey()).thenReturn("referencedProductType");
@@ -251,7 +251,7 @@ public class ProductTypeReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceProductTypesReferenceIdsWithKeys_WithProductTypeWithNonExpandedSetOfRefNestedType_ShouldFail() {
+    void replaceProductTypesReferenceIdsWithKeys_WithProductTypeWithNonExpandedSetOfRefNestedType_ShouldFail() {
         // preparation
         final Reference<ProductType> productTypeReference = ProductType.referenceOfId("referencedProductType");
 
@@ -276,7 +276,7 @@ public class ProductTypeReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceProductTypesReferenceIdsWithKeys_WithNestedTypeWithSetOfSetOfSet_ShouldReplaceRef() {
+    void replaceProductTypesReferenceIdsWithKeys_WithNestedTypeWithSetOfSetOfSet_ShouldReplaceRef() {
         // preparation
         final ProductType referencedProductType = mock(ProductType.class);
         when(referencedProductType.getKey()).thenReturn("referencedProductType");
@@ -314,21 +314,21 @@ public class ProductTypeReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void buildProductTypeQuery_WithNoParam_ShouldReturnQueryWithAllNeededReferencesExpanded() {
+    void buildProductTypeQuery_WithNoParam_ShouldReturnQueryWithAllNeededReferencesExpanded() {
         final ProductTypeQuery productTypeQuery = buildProductTypeQuery();
         assertThat(productTypeQuery.expansionPaths()).containsExactly(
             ExpansionPath.of("attributes[*].type.typeReference"));
     }
 
     @Test
-    public void buildProductTypeQuery_With0MaxSetDepth_ShouldReturnQueryWithAllNeededReferencesExpanded() {
+    void buildProductTypeQuery_With0MaxSetDepth_ShouldReturnQueryWithAllNeededReferencesExpanded() {
         final ProductTypeQuery productTypeQuery = buildProductTypeQuery(0);
         assertThat(productTypeQuery.expansionPaths()).containsExactly(
             ExpansionPath.of("attributes[*].type.typeReference"));
     }
 
     @Test
-    public void buildProductTypeQuery_With1MaxSetDepth_ShouldReturnQueryWithAllNeededReferencesExpanded() {
+    void buildProductTypeQuery_With1MaxSetDepth_ShouldReturnQueryWithAllNeededReferencesExpanded() {
         final ProductTypeQuery productTypeQuery = buildProductTypeQuery(1);
         assertThat(productTypeQuery.expansionPaths()).containsExactly(
             ExpansionPath.of("attributes[*].type.typeReference"),
@@ -336,7 +336,7 @@ public class ProductTypeReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void buildProductTypeQuery_With3MaxSetDepth_ShouldReturnQueryWithAllNeededReferencesExpanded() {
+    void buildProductTypeQuery_With3MaxSetDepth_ShouldReturnQueryWithAllNeededReferencesExpanded() {
         final ProductTypeQuery productTypeQuery = buildProductTypeQuery(3);
         assertThat(productTypeQuery.expansionPaths()).containsExactly(
             ExpansionPath.of("attributes[*].type.typeReference"),
