@@ -168,8 +168,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
 
         return CompletableFuture.allOf(newProductTypes
             .stream()
-            .map(newProductType -> {
-
+            .map(newProductType ->
                 referenceResolver
                     .resolveReferences(newProductType)
                     .thenCompose(resolvedDraft -> syncDraft(oldProductTypeMap, resolvedDraft))
@@ -180,14 +179,8 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                             referenceResolutionException.getMessage());
                         handleError(errorMessage, referenceResolutionException, 1);
                         return null;
-                    });
-
-                final ProductType oldProductType = oldProductTypeMap.get(newProductType.getKey());
-
-                return ofNullable(oldProductType)
-                    .map(productType -> buildActionsAndUpdate(oldProductType, newProductType))
-                    .orElseGet(() -> applyCallbackAndCreate(newProductType));
-            })
+                    })
+            )
             .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
     }
