@@ -50,7 +50,7 @@ public final class ProductTypeReferenceReplacementUtils {
     public static List<ProductTypeDraft> replaceProductTypesReferenceIdsWithKeys(
         @Nonnull final List<ProductType> productTypes) {
 
-        final Set<Throwable> potentialErrors = new HashSet<>();
+        final Set<Throwable> errors = new HashSet<>();
 
         final List<ProductTypeDraft> referenceReplacedDrafts = productTypes
             .stream()
@@ -64,7 +64,7 @@ public final class ProductTypeReferenceReplacementUtils {
                     referenceReplacedAttributeDefinitions =
                         replaceAttributeDefinitionsReferenceIdsWithKeys(productType);
                 } catch (InvalidProductTypeException invalidProductTypeException) {
-                    potentialErrors.add(invalidProductTypeException);
+                    errors.add(invalidProductTypeException);
                     return null;
                 }
 
@@ -75,9 +75,8 @@ public final class ProductTypeReferenceReplacementUtils {
             .filter(Objects::nonNull)
             .collect(toList());
 
-        if (!potentialErrors.isEmpty()) {
-            throw new ReferenceReplacementException("Some errors occurred during reference replacement.",
-                potentialErrors);
+        if (!errors.isEmpty()) {
+            throw new ReferenceReplacementException("Some errors occurred during reference replacement.", errors);
         }
 
         return referenceReplacedDrafts;
@@ -87,7 +86,7 @@ public final class ProductTypeReferenceReplacementUtils {
     private static List<AttributeDefinitionDraft> replaceAttributeDefinitionsReferenceIdsWithKeys(
         @Nonnull final ProductType productType) throws InvalidProductTypeException {
 
-        final Set<Throwable> potentialErrors = new HashSet<>();
+        final Set<Throwable> errors = new HashSet<>();
 
         final List<AttributeDefinitionDraft> refReplacedDrafts = productType
             .getAttributes()
@@ -107,17 +106,17 @@ public final class ProductTypeReferenceReplacementUtils {
                             attributeDefinition.getName(),
                             exception.getMessage()),
                             exception);
-                    potentialErrors.add(attributeDefinitionException);
+                    errors.add(attributeDefinitionException);
                     return null;
                 }
             })
             .filter(Objects::nonNull)
             .collect(toList());
 
-        if (!potentialErrors.isEmpty()) {
+        if (!errors.isEmpty()) {
             throw new InvalidProductTypeException(
                 format("Failed to replace some references on the productType with key '%s'.", productType.getKey()),
-                potentialErrors);
+                errors);
         }
         return refReplacedDrafts;
     }
