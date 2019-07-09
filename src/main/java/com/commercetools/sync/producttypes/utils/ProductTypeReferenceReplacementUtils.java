@@ -43,7 +43,7 @@ public final class ProductTypeReferenceReplacementUtils {
      * throw a {@link ReferenceReplacementException} containing the root causes of the exceptions that occurred in any
      * of the supplied {@code productTypes}.
      *
-     * @param productTypes the list of productTypes to to replace the references on and convert to productTypeDrafts.
+     * @param productTypes the list of productTypes to replace the references on and convert to productTypeDrafts.
      * @return a list of productType drafts with keys instead of ids for references.
      */
     @Nonnull
