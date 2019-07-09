@@ -1,5 +1,6 @@
 package com.commercetools.sync.commons.exceptions;
 
+import io.sphere.sdk.client.BadGatewayException;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
@@ -32,7 +33,7 @@ class InvalidProductTypeExceptionTest {
     void invalidProductTypeException_WithMessageAndCausesWithoutMessages_ShouldBuildExceptionCorrectly() {
         final String message = "foo";
 
-        final NullPointerException cause1 = new NullPointerException("");
+        final BadGatewayException cause1 = new BadGatewayException("");
         final InvalidReferenceException cause2 = new InvalidReferenceException("");
         final Set<Throwable> causes = new HashSet<>();
         causes.add(cause1);
@@ -54,7 +55,7 @@ class InvalidProductTypeExceptionTest {
     void invalidProductTypeException_WithMessageAndCauseWithNullMessage_ShouldBuildExceptionCorrectly() {
         final String message = "foo";
 
-        final NullPointerException cause1 = new NullPointerException();
+        final BadGatewayException cause1 = new BadGatewayException();
         final Set<Throwable> causes = new HashSet<>();
         causes.add(cause1);
 
@@ -74,7 +75,7 @@ class InvalidProductTypeExceptionTest {
     void invalidProductTypeException_WithMessageAndCausesWithNonBlankMessages_ShouldBuildExceptionCorrectly() {
         final String message = "foo";
 
-        final NullPointerException cause1 = new NullPointerException("cause1");
+        final BadGatewayException cause1 = new BadGatewayException("cause1");
         final InvalidReferenceException cause2 = new InvalidReferenceException("cause2");
         final Set<Throwable> causes = new HashSet<>();
         causes.add(cause1);

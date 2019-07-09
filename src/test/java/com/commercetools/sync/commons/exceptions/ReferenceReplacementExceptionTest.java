@@ -1,5 +1,6 @@
 package com.commercetools.sync.commons.exceptions;
 
+import io.sphere.sdk.client.BadGatewayException;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
@@ -33,7 +34,7 @@ class ReferenceReplacementExceptionTest {
     void referenceReplacementException_WithMessageAndCausesWithoutMessages_ShouldBuildExceptionCorrectly() {
         final String message = "foo";
 
-        final NullPointerException cause1 = new NullPointerException("");
+        final BadGatewayException cause1 = new BadGatewayException("");
         final InvalidReferenceException cause2 = new InvalidReferenceException("");
         final Set<Throwable> causes = new HashSet<>();
         causes.add(cause1);
@@ -56,7 +57,7 @@ class ReferenceReplacementExceptionTest {
     void referenceReplacementException_WithMessageAndCauseWithNullMessage_ShouldBuildExceptionCorrectly() {
         final String message = "foo";
 
-        final NullPointerException cause1 = new NullPointerException();
+        final BadGatewayException cause1 = new BadGatewayException();
         final Set<Throwable> causes = new HashSet<>();
         causes.add(cause1);
 
