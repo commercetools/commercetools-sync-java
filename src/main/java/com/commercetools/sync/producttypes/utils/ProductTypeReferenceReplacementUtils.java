@@ -35,7 +35,7 @@ public final class ProductTypeReferenceReplacementUtils {
 
     /**
      * Takes a list of ProductTypes that are supposed to have their productType references (in case it has nestedType or
-     * set of NestedType) references expanded in order to be able to fetch the keys and replace the reference ids with
+     * set of NestedType) expanded in order to be able to fetch the keys and replace the reference ids with
      * the corresponding keys and then return a new list of productType drafts with their references containing keys
      * instead of the ids.
      *
