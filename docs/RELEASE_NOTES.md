@@ -34,6 +34,8 @@
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.4.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.4.0)
 
+- 🎉 **New Features** (1)
+    - **ProductType Sync** - Introduced the new `ProductTypeReferenceResolver` which resolves productType references on ProductTypeDrafts. [#372](https://github.com/commercetools/commercetools-sync-java/issues/372)
 -->
 
 ### 1.3.0 -  Jul 3, 2019
