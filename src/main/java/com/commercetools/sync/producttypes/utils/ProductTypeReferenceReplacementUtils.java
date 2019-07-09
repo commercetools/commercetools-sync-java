@@ -123,18 +123,19 @@ public final class ProductTypeReferenceReplacementUtils {
         @Nonnull final AttributeType attributeType) throws InvalidReferenceException {
 
         if (attributeType instanceof NestedAttributeType) {
+
             final Reference<ProductType> referenceReplacedNestedType =
                 replaceProductTypeReferenceIdWithKey((NestedAttributeType) attributeType);
-
             return NestedAttributeType.of(referenceReplacedNestedType);
-        } else {
-            if (attributeType instanceof SetAttributeType) {
-                final SetAttributeType setAttributeType = (SetAttributeType) attributeType;
-                final AttributeType elementType = setAttributeType.getElementType();
-                final AttributeType referenceReplacedElementType = replaceProductTypeReferenceIdWithKey(elementType);
-                return SetAttributeType.of(referenceReplacedElementType);
-            }
+
+        } else if (attributeType instanceof SetAttributeType) {
+
+            final SetAttributeType setAttributeType = (SetAttributeType) attributeType;
+            final AttributeType elementType = setAttributeType.getElementType();
+            final AttributeType referenceReplacedElementType = replaceProductTypeReferenceIdWithKey(elementType);
+            return SetAttributeType.of(referenceReplacedElementType);
         }
+
         return attributeType;
     }
 
