@@ -27,6 +27,10 @@ import java.util.stream.IntStream;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
+/**
+ * Util class which provides utilities that can be used when syncing resources from a source commercetools project
+ * to a target one.
+ */
 public final class ProductTypeReferenceReplacementUtils {
 
     /**

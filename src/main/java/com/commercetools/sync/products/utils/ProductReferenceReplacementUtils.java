@@ -35,6 +35,10 @@ import static com.commercetools.sync.commons.utils.SyncUtils.getReferenceWithKey
 import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKeyReplaced;
 import static java.util.stream.Collectors.toList;
 
+/**
+ * Util class which provides utilities that can be used when syncing resources from a source commercetools project
+ * to a target one.
+ */
 public final class ProductReferenceReplacementUtils {
 
     /**
