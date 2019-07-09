@@ -85,7 +85,7 @@ public final class ProductTypeReferenceReplacementUtils {
 
         final Set<Throwable> errors = new HashSet<>();
 
-        final List<AttributeDefinitionDraft> refReplacedDrafts = productType
+        final List<AttributeDefinitionDraft> referenceReplacedAttributeDefinitions = productType
             .getAttributes()
             .stream()
             .map(attributeDefinition -> {
@@ -115,7 +115,7 @@ public final class ProductTypeReferenceReplacementUtils {
                 format("Failed to replace some references on the productType with key '%s'.", productType.getKey()),
                 errors);
         }
-        return refReplacedDrafts;
+        return referenceReplacedAttributeDefinitions;
     }
 
     @Nonnull
