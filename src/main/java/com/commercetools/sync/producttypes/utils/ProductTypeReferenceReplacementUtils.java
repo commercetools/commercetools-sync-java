@@ -34,7 +34,7 @@ import static java.util.stream.Collectors.toList;
 public final class ProductTypeReferenceReplacementUtils {
 
     /**
-     * Takes a list of ProductTypes that are supposed to have their productType references (in case it has nestedType or
+     * Takes a list of ProductTypes that are supposed to have their productType references (in case it has NestedType or
      * set of NestedType) expanded in order to be able to fetch the keys and replace the reference ids with
      * the corresponding keys and then return a new list of productType drafts with their references containing keys
      * instead of the ids.
