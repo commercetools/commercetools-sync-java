@@ -56,9 +56,6 @@ public final class ProductTypeReferenceReplacementUtils {
             .stream()
             .filter(Objects::nonNull)
             .map(productType -> {
-                final ProductTypeDraft productTypeDraft = ProductTypeDraftBuilder.of(productType)
-                                                                                 .build();
-
                 List<AttributeDefinitionDraft> referenceReplacedAttributeDefinitions;
                 try {
                     referenceReplacedAttributeDefinitions =
@@ -68,7 +65,7 @@ public final class ProductTypeReferenceReplacementUtils {
                     return null;
                 }
 
-                return ProductTypeDraftBuilder.of(productTypeDraft)
+                return ProductTypeDraftBuilder.of(productType)
                                               .attributes(referenceReplacedAttributeDefinitions)
                                               .build();
             })
