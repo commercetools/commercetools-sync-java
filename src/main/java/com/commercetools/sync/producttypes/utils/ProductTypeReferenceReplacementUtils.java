@@ -224,11 +224,11 @@ public final class ProductTypeReferenceReplacementUtils {
         buildSetOfNestedTypeReferenceExpansionPath(final int maximumSetDepth) {
 
         return IntStream.rangeClosed(1, maximumSetDepth)
-                        .mapToObj(ProductTypeReferenceReplacementUtils::getExpansionPathForSetDept)
+                        .mapToObj(ProductTypeReferenceReplacementUtils::getExpansionPathForSetDepth)
                         .collect(toList());
     }
 
-    private static ExpansionPath<ProductType> getExpansionPathForSetDept(final int maximumSetDepth) {
+    private static ExpansionPath<ProductType> getExpansionPathForSetDepth(final int maximumSetDepth) {
 
         final String elementTypePath = IntStream.range(0, maximumSetDepth)
                                                 .mapToObj(index -> "elementType")
