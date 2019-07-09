@@ -56,7 +56,7 @@ public final class ProductTypeReferenceReplacementUtils {
             .stream()
             .filter(Objects::nonNull)
             .map(productType -> {
-                List<AttributeDefinitionDraft> referenceReplacedAttributeDefinitions;
+                final List<AttributeDefinitionDraft> referenceReplacedAttributeDefinitions;
                 try {
                     referenceReplacedAttributeDefinitions =
                         replaceAttributeDefinitionsReferenceIdsWithKeys(productType);
