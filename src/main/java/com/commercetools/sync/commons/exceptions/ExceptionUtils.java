@@ -11,10 +11,10 @@ import java.util.stream.IntStream;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-public final class ExceptionUtils {
+final class ExceptionUtils {
     @Nonnull
-    public static String buildMessage(@Nonnull final String message, @Nonnull final Set<Throwable> causes,
-                                      final int causesTabbingDepth) {
+    static String buildMessage(@Nonnull final String message, @Nonnull final Set<Throwable> causes,
+                               final int causesTabbingDepth) {
         final String causesString = asMessage(causes, causesTabbingDepth);
         return isNotBlank(causesString) ? format("%s %s", message, causesString) :  message;
     }
