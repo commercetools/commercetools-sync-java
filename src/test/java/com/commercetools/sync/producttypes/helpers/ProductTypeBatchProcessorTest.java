@@ -68,7 +68,8 @@ class ProductTypeBatchProcessorTest {
 
     @Test
     void validateBatch_WithANullDraft_ShouldResultInAnError() {
-        final ProductTypeBatchProcessor batchProcessor = new ProductTypeBatchProcessor(singletonList(null), productTypeSync);
+        final ProductTypeBatchProcessor batchProcessor =
+            new ProductTypeBatchProcessor(singletonList(null), productTypeSync);
         batchProcessor.validateBatch();
 
         assertThat(batchProcessor.getKeysToCache()).isEmpty();
@@ -85,7 +86,8 @@ class ProductTypeBatchProcessorTest {
         final ProductTypeDraft productTypeDraft = mock(ProductTypeDraft.class);
         when(productTypeDraft.getKey()).thenReturn(null);
 
-        final ProductTypeBatchProcessor batchProcessor = new ProductTypeBatchProcessor(singletonList(productTypeDraft), productTypeSync);
+        final ProductTypeBatchProcessor batchProcessor =
+            new ProductTypeBatchProcessor(singletonList(productTypeDraft), productTypeSync);
         batchProcessor.validateBatch();
 
         assertThat(batchProcessor.getKeysToCache()).isEmpty();
@@ -103,7 +105,8 @@ class ProductTypeBatchProcessorTest {
         final ProductTypeDraft productTypeDraft = mock(ProductTypeDraft.class);
         when(productTypeDraft.getKey()).thenReturn("");
 
-        final ProductTypeBatchProcessor batchProcessor = new ProductTypeBatchProcessor(singletonList(productTypeDraft), productTypeSync);
+        final ProductTypeBatchProcessor batchProcessor =
+            new ProductTypeBatchProcessor(singletonList(productTypeDraft), productTypeSync);
         batchProcessor.validateBatch();
 
         assertThat(batchProcessor.getKeysToCache()).isEmpty();
@@ -135,7 +138,8 @@ class ProductTypeBatchProcessorTest {
             .of("mainProductType", "foo", "foo", attributes)
             .build();
 
-        final ProductTypeBatchProcessor batchProcessor = new ProductTypeBatchProcessor(singletonList(productTypeDraft), productTypeSync);
+        final ProductTypeBatchProcessor batchProcessor =
+            new ProductTypeBatchProcessor(singletonList(productTypeDraft), productTypeSync);
         batchProcessor.validateBatch();
 
         assertThat(batchProcessor.getKeysToCache()).containsExactlyInAnyOrder("x", "mainProductType");
@@ -162,7 +166,8 @@ class ProductTypeBatchProcessorTest {
             .of("foo", "foo", "foo", attributes)
             .build();
 
-        final ProductTypeBatchProcessor batchProcessor = new ProductTypeBatchProcessor(singletonList(productTypeDraft), productTypeSync);
+        final ProductTypeBatchProcessor batchProcessor =
+            new ProductTypeBatchProcessor(singletonList(productTypeDraft), productTypeSync);
         batchProcessor.validateBatch();
 
         assertThat(batchProcessor.getKeysToCache()).isEmpty();
@@ -216,7 +221,8 @@ class ProductTypeBatchProcessorTest {
             .of("foo", "foo", "foo", attributes)
             .build();
 
-        final ProductTypeBatchProcessor batchProcessor = new ProductTypeBatchProcessor(singletonList(productTypeDraft), productTypeSync);
+        final ProductTypeBatchProcessor batchProcessor =
+            new ProductTypeBatchProcessor(singletonList(productTypeDraft), productTypeSync);
         batchProcessor.validateBatch();
 
         assertThat(batchProcessor.getKeysToCache()).isEmpty();
@@ -293,7 +299,8 @@ class ProductTypeBatchProcessorTest {
         productTypeDrafts.add(draftWithEmptyAttributes);
         productTypeDrafts.add(draftWithNullAttributes);
 
-        final ProductTypeBatchProcessor batchProcessor = new ProductTypeBatchProcessor(productTypeDrafts, productTypeSync);
+        final ProductTypeBatchProcessor batchProcessor =
+            new ProductTypeBatchProcessor(productTypeDrafts, productTypeSync);
         batchProcessor.validateBatch();
 
         assertThat(batchProcessor.getKeysToCache()).containsExactlyInAnyOrder("bar", "x", "y");

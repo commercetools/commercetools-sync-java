@@ -347,7 +347,8 @@ class ProductBatchProcessorTest {
     @Test
     void validateBatch_WithADraftWithNullKey_ShouldResultInAnError() {
         final ProductDraft productDraft = mock(ProductDraft.class);
-        final ProductBatchProcessor batchProcessor = new ProductBatchProcessor(singletonList(productDraft), productSync);
+        final ProductBatchProcessor batchProcessor =
+            new ProductBatchProcessor(singletonList(productDraft), productSync);
 
         batchProcessor.validateBatch();
 
@@ -363,7 +364,8 @@ class ProductBatchProcessorTest {
         final ProductDraft productDraft = mock(ProductDraft.class);
         when(productDraft.getKey()).thenReturn("");
 
-        final ProductBatchProcessor batchProcessor = new ProductBatchProcessor(singletonList(productDraft), productSync);
+        final ProductBatchProcessor batchProcessor =
+            new ProductBatchProcessor(singletonList(productDraft), productSync);
         batchProcessor.validateBatch();
 
         assertThat(batchProcessor.getKeysToCache()).isEmpty();
