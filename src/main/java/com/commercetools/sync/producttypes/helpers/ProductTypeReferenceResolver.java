@@ -28,7 +28,7 @@ public final class ProductTypeReferenceResolver
      *
      * @param productTypeSyncOptions   the container of all the options of the sync process including the CTP project
      *                                 client and/or configuration and other sync-specific options.
-     * @param productTypeService   the service to fetch the product type for reference resolution.
+     * @param productTypeService       the service to fetch the product type for reference resolution.
      */
     public ProductTypeReferenceResolver(@Nonnull final ProductTypeSyncOptions productTypeSyncOptions,
                                         @Nonnull final ProductTypeService productTypeService) {
