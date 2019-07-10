@@ -125,6 +125,31 @@ class AttributeDefinitionReferenceResolverTest {
     }
 
     @Test
+    void resolveReferences_WithSetOfNonNestedType_ShouldResolveReferences() {
+        // preparation
+        final SetAttributeType setAttributeType = SetAttributeType.of(StringAttributeType.of());
+
+        final AttributeDefinitionDraft attributeDefinitionDraft =
+            AttributeDefinitionDraftBuilder.of(setAttributeType, "foo", ofEnglish("foo"), true)
+                                           .build();
+
+        final ProductTypeSyncOptions syncOptions =
+            ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+
+        final ProductTypeService productTypeService = mock(ProductTypeService.class);
+        when(productTypeService.fetchCachedProductTypeId(any()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.of("foo")));
+
+        final AttributeDefinitionReferenceResolver attributeDefinitionReferenceResolver =
+            new AttributeDefinitionReferenceResolver(syncOptions, productTypeService);
+
+
+        // test and assertion
+        assertThat(attributeDefinitionReferenceResolver.resolveReferences(attributeDefinitionDraft))
+            .isCompletedWithValue(attributeDefinitionDraft);
+    }
+
+    @Test
     void resolveReferences_WithSetOfNestedTypeWithExistingProductTypeReference_ShouldResolveReferences() {
         // preparation
         final NestedAttributeType nestedAttributeType = NestedAttributeType.of(ProductType.reference("x"));

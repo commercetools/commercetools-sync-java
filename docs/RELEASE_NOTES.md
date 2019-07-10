@@ -34,6 +34,8 @@
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.4.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.4.0)
 
+- 🎉 **New Features** (1)
+    - **ProductType Sync** - Introduced the new `ProductTypeReferenceResolver` which resolves productType references on ProductTypeDrafts. [#372](https://github.com/commercetools/commercetools-sync-java/issues/372)
 -->
 
 ### 1.3.0 -  Jul 3, 2019
@@ -67,8 +69,7 @@
 
 - 🚧 **Breaking Changes** (2)
     - **ProductType Sync** - Removed the unneeded `AttributeDefinitionCustomBuilder` which was an exposed but internal helper. [#377](https://github.com/commercetools/commercetools-sync-java/issues/377). 
-    - **Commons** - `SyncUtils#replaceReferenceIdWithKey` now
-     renamed to `SyncUtils#getReferenceWithKeyReplaced`. [#394](https://github.com/commercetools/commercetools-sync-java/issues/394)
+    - **Commons** - `SyncUtils#replaceReferenceIdWithKey` is now renamed to `SyncUtils#getReferenceWithKeyReplaced`. [#394](https://github.com/commercetools/commercetools-sync-java/issues/394)
 
 - 🎉 **New Features** (2)
     - **Commons** - Added the new `CommonTypeUpdateActionUtils#buildUpdateActionForReferences` which is used for comapring references/resourceIdentifiers and buiding an update action if needed. [#394](https://github.com/commercetools/commercetools-sync-java/issues/394)
