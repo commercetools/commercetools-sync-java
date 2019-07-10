@@ -87,7 +87,6 @@ class ProductTypeReferenceResolverTest {
     @Test
     void resolveReferences_WithNoNestedTypeReferences_ShouldResolveReferences() {
         // preparation
-
         final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
             .of(StringAttributeType.of(), "string attr", ofEnglish("string attr label"), true)
             .build();
