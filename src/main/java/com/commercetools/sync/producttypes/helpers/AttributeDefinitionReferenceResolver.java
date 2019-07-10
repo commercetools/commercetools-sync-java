@@ -51,7 +51,7 @@ class AttributeDefinitionReferenceResolver
         final AttributeDefinitionDraftBuilder draftBuilder =
             AttributeDefinitionDraftBuilder.of(attributeDefinitionDraft);
 
-        return resolveNestedTypeReferenceOrSetOfNested(draftBuilder)
+        return resolveReferences(draftBuilder)
             .handle(ImmutablePair::new)
             .thenCompose(result -> {
                 final Throwable exception = result.getValue();
@@ -70,7 +70,7 @@ class AttributeDefinitionReferenceResolver
     }
 
     @Nonnull
-    private CompletionStage<AttributeDefinitionDraftBuilder> resolveNestedTypeReferenceOrSetOfNested(
+    private CompletionStage<AttributeDefinitionDraftBuilder> resolveReferences(
         @Nonnull final AttributeDefinitionDraftBuilder attributeDefinitionDraftBuilder) {
 
         final AttributeType attributeType = attributeDefinitionDraftBuilder.getAttributeType();

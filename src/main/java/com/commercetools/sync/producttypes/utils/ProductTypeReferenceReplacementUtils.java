@@ -27,11 +27,15 @@ import java.util.stream.IntStream;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
+/**
+ * Util class which provides utilities that can be used when syncing resources from a source commercetools project
+ * to a target one.
+ */
 public final class ProductTypeReferenceReplacementUtils {
 
     /**
-     * Takes a list of ProductTypes that are supposed to have their productType references (in case it has nestedType or
-     * set of NestedType) references expanded in order to be able to fetch the keys and replace the reference ids with
+     * Takes a list of ProductTypes that are supposed to have their productType references (in case it has NestedType or
+     * set of NestedType) expanded in order to be able to fetch the keys and replace the reference ids with
      * the corresponding keys and then return a new list of productType drafts with their references containing keys
      * instead of the ids.
      *
@@ -39,41 +43,37 @@ public final class ProductTypeReferenceReplacementUtils {
      * throw a {@link ReferenceReplacementException} containing the root causes of the exceptions that occurred in any
      * of the supplied {@code productTypes}.
      *
-     * @param productTypes the list of productTypes to to replace the references on and convert to productTypeDrafts.
+     * @param productTypes the list of productTypes to replace the references on and convert to productTypeDrafts.
      * @return a list of productType drafts with keys instead of ids for references.
      */
     @Nonnull
     public static List<ProductTypeDraft> replaceProductTypesReferenceIdsWithKeys(
         @Nonnull final List<ProductType> productTypes) {
 
-        final Set<Throwable> potentialErrors = new HashSet<>();
+        final Set<Throwable> errors = new HashSet<>();
 
         final List<ProductTypeDraft> referenceReplacedDrafts = productTypes
             .stream()
             .filter(Objects::nonNull)
             .map(productType -> {
-                final ProductTypeDraft productTypeDraft = ProductTypeDraftBuilder.of(productType)
-                                                                                 .build();
-
-                List<AttributeDefinitionDraft> referenceReplacedAttributeDefinitions;
+                final List<AttributeDefinitionDraft> referenceReplacedAttributeDefinitions;
                 try {
                     referenceReplacedAttributeDefinitions =
                         replaceAttributeDefinitionsReferenceIdsWithKeys(productType);
                 } catch (InvalidProductTypeException invalidProductTypeException) {
-                    potentialErrors.add(invalidProductTypeException);
+                    errors.add(invalidProductTypeException);
                     return null;
                 }
 
-                return ProductTypeDraftBuilder.of(productTypeDraft)
+                return ProductTypeDraftBuilder.of(productType)
                                               .attributes(referenceReplacedAttributeDefinitions)
                                               .build();
             })
             .filter(Objects::nonNull)
             .collect(toList());
 
-        if (!potentialErrors.isEmpty()) {
-            throw new ReferenceReplacementException("Some errors occurred during reference replacement.",
-                potentialErrors);
+        if (!errors.isEmpty()) {
+            throw new ReferenceReplacementException("Some errors occurred during reference replacement.", errors);
         }
 
         return referenceReplacedDrafts;
@@ -83,9 +83,9 @@ public final class ProductTypeReferenceReplacementUtils {
     private static List<AttributeDefinitionDraft> replaceAttributeDefinitionsReferenceIdsWithKeys(
         @Nonnull final ProductType productType) throws InvalidProductTypeException {
 
-        final Set<Throwable> potentialErrors = new HashSet<>();
+        final Set<Throwable> errors = new HashSet<>();
 
-        final List<AttributeDefinitionDraft> refReplacedDrafts = productType
+        final List<AttributeDefinitionDraft> referenceReplacedAttributeDefinitions = productType
             .getAttributes()
             .stream()
             .map(attributeDefinition -> {
@@ -103,19 +103,19 @@ public final class ProductTypeReferenceReplacementUtils {
                             attributeDefinition.getName(),
                             exception.getMessage()),
                             exception);
-                    potentialErrors.add(attributeDefinitionException);
+                    errors.add(attributeDefinitionException);
                     return null;
                 }
             })
             .filter(Objects::nonNull)
             .collect(toList());
 
-        if (!potentialErrors.isEmpty()) {
+        if (!errors.isEmpty()) {
             throw new InvalidProductTypeException(
                 format("Failed to replace some references on the productType with key '%s'.", productType.getKey()),
-                potentialErrors);
+                errors);
         }
-        return refReplacedDrafts;
+        return referenceReplacedAttributeDefinitions;
     }
 
     @Nonnull
@@ -123,18 +123,19 @@ public final class ProductTypeReferenceReplacementUtils {
         @Nonnull final AttributeType attributeType) throws InvalidReferenceException {
 
         if (attributeType instanceof NestedAttributeType) {
+
             final Reference<ProductType> referenceReplacedNestedType =
                 replaceProductTypeReferenceIdWithKey((NestedAttributeType) attributeType);
-
             return NestedAttributeType.of(referenceReplacedNestedType);
-        } else {
-            if (attributeType instanceof SetAttributeType) {
-                final SetAttributeType setAttributeType = (SetAttributeType) attributeType;
-                final AttributeType elementType = setAttributeType.getElementType();
-                final AttributeType referenceReplacedElementType = replaceProductTypeReferenceIdWithKey(elementType);
-                return SetAttributeType.of(referenceReplacedElementType);
-            }
+
+        } else if (attributeType instanceof SetAttributeType) {
+
+            final SetAttributeType setAttributeType = (SetAttributeType) attributeType;
+            final AttributeType elementType = setAttributeType.getElementType();
+            final AttributeType referenceReplacedElementType = replaceProductTypeReferenceIdWithKey(elementType);
+            return SetAttributeType.of(referenceReplacedElementType);
         }
+
         return attributeType;
     }
 
@@ -223,11 +224,11 @@ public final class ProductTypeReferenceReplacementUtils {
         buildSetOfNestedTypeReferenceExpansionPath(final int maximumSetDepth) {
 
         return IntStream.rangeClosed(1, maximumSetDepth)
-                        .mapToObj(ProductTypeReferenceReplacementUtils::getExpansionPathForSetDept)
+                        .mapToObj(ProductTypeReferenceReplacementUtils::getExpansionPathForSetDepth)
                         .collect(toList());
     }
 
-    private static ExpansionPath<ProductType> getExpansionPathForSetDept(final int maximumSetDepth) {
+    private static ExpansionPath<ProductType> getExpansionPathForSetDepth(final int maximumSetDepth) {
 
         final String elementTypePath = IntStream.range(0, maximumSetDepth)
                                                 .mapToObj(index -> "elementType")

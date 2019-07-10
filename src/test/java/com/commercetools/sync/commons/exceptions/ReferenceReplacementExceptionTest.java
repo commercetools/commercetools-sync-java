@@ -2,6 +2,7 @@ package com.commercetools.sync.commons.exceptions;
 
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -33,7 +34,7 @@ class ReferenceReplacementExceptionTest {
     void referenceReplacementException_WithMessageAndCausesWithoutMessages_ShouldBuildExceptionCorrectly() {
         final String message = "foo";
 
-        final NullPointerException cause1 = new NullPointerException("");
+        final IOException cause1 = new IOException("");
         final InvalidReferenceException cause2 = new InvalidReferenceException("");
         final Set<Throwable> causes = new HashSet<>();
         causes.add(cause1);
@@ -56,7 +57,7 @@ class ReferenceReplacementExceptionTest {
     void referenceReplacementException_WithMessageAndCauseWithNullMessage_ShouldBuildExceptionCorrectly() {
         final String message = "foo";
 
-        final NullPointerException cause1 = new NullPointerException();
+        final IOException cause1 = new IOException();
         final Set<Throwable> causes = new HashSet<>();
         causes.add(cause1);
 

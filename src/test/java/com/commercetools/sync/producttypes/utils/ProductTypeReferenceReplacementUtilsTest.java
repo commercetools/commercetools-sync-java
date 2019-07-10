@@ -336,6 +336,15 @@ class ProductTypeReferenceReplacementUtilsTest {
     }
 
     @Test
+    void buildProductTypeQuery_With2MaxSetDepth_ShouldReturnQueryWithAllNeededReferencesExpanded() {
+        final ProductTypeQuery productTypeQuery = buildProductTypeQuery(2);
+        assertThat(productTypeQuery.expansionPaths()).containsExactly(
+            ExpansionPath.of("attributes[*].type.typeReference"),
+            ExpansionPath.of("attributes[*].type.elementType.typeReference"),
+            ExpansionPath.of("attributes[*].type.elementType.elementType.typeReference"));
+    }
+
+    @Test
     void buildProductTypeQuery_With3MaxSetDepth_ShouldReturnQueryWithAllNeededReferencesExpanded() {
         final ProductTypeQuery productTypeQuery = buildProductTypeQuery(3);
         assertThat(productTypeQuery.expansionPaths()).containsExactly(
