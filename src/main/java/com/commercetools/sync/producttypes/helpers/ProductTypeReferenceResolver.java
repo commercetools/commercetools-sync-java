@@ -28,7 +28,7 @@ public final class ProductTypeReferenceResolver
      *
      * @param productTypeSyncOptions   the container of all the options of the sync process including the CTP project
      *                                 client and/or configuration and other sync-specific options.
-     * @param productTypeService   the service to fetch the product type for reference resolution.
+     * @param productTypeService       the service to fetch the product type for reference resolution.
      */
     public ProductTypeReferenceResolver(@Nonnull final ProductTypeSyncOptions productTypeSyncOptions,
                                         @Nonnull final ProductTypeService productTypeService) {
@@ -49,12 +49,12 @@ public final class ProductTypeReferenceResolver
      */
     @Nonnull
     public CompletionStage<ProductTypeDraft> resolveReferences(@Nonnull final ProductTypeDraft productTypeDraft) {
-        return resolveAttributeDefinitionsReference(ProductTypeDraftBuilder.of(productTypeDraft))
+        return resolveAttributeDefinitionsReferences(ProductTypeDraftBuilder.of(productTypeDraft))
             .thenApply(ProductTypeDraftBuilder::build);
     }
 
     @Nonnull
-    CompletionStage<ProductTypeDraftBuilder> resolveAttributeDefinitionsReference(
+    CompletionStage<ProductTypeDraftBuilder> resolveAttributeDefinitionsReferences(
         @Nonnull final ProductTypeDraftBuilder productTypeDraftBuilder) {
 
         final List<AttributeDefinitionDraft> attributeDefinitionDrafts = productTypeDraftBuilder.getAttributes();

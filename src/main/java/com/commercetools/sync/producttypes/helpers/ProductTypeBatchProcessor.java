@@ -22,7 +22,7 @@ import static java.util.Collections.emptySet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-public class BatchProcessor {
+public class ProductTypeBatchProcessor {
     static final String PRODUCT_TYPE_DRAFT_KEY_NOT_SET = "ProductTypeDraft with name: %s doesn't have a key. "
         + "Please make sure all productType drafts have keys.";
     static final String PRODUCT_TYPE_DRAFT_IS_NULL = "ProductTypeDraft is null.";
@@ -34,8 +34,8 @@ public class BatchProcessor {
     private final Set<ProductTypeDraft> validDrafts = new HashSet<>();
     private final Set<String> keysToCache = new HashSet<>();
 
-    public BatchProcessor(@Nonnull final List<ProductTypeDraft> productTypeDrafts,
-                          @Nonnull final ProductTypeSync productTypeSync) {
+    public ProductTypeBatchProcessor(@Nonnull final List<ProductTypeDraft> productTypeDrafts,
+                                     @Nonnull final ProductTypeSync productTypeSync) {
         this.productTypeDrafts = productTypeDrafts;
         this.productTypeSync = productTypeSync;
     }
@@ -48,7 +48,7 @@ public class BatchProcessor {
      *
      * <p>A valid productType draft is one which satisfies the following conditions:
      * <ol>
-     * <li>Is not null</li>
+     * <li>It is not null</li>
      * <li>It has a key which is not blank (null/empty)</li>
      * <li>It has no invalid productType reference on an attributeDefinitionDraft
      * with either a NestedType or SetType AttributeType.
@@ -73,7 +73,6 @@ public class BatchProcessor {
                     handleError(new InvalidProductTypeDraftException(errorMessage));
                 }
             } else {
-
                 handleError(new InvalidProductTypeDraftException(PRODUCT_TYPE_DRAFT_IS_NULL));
             }
         }
@@ -83,13 +82,12 @@ public class BatchProcessor {
     private static Set<String> getReferencedProductTypeKeys(@Nonnull final ProductTypeDraft productTypeDraft)
         throws InvalidProductTypeDraftException {
 
-        final Set<String> referencedProductTypeKeys = new HashSet<>();
         final List<AttributeDefinitionDraft> attributeDefinitionDrafts = productTypeDraft.getAttributes();
-        if (attributeDefinitionDrafts == null) {
+        if (attributeDefinitionDrafts == null || attributeDefinitionDrafts.isEmpty()) {
             return emptySet();
         }
 
-
+        final Set<String> referencedProductTypeKeys = new HashSet<>();
         final List<String> invalidAttributeDefinitionNames = new ArrayList<>();
 
         for (AttributeDefinitionDraft attributeDefinitionDraft : attributeDefinitionDrafts) {
@@ -99,7 +97,6 @@ public class BatchProcessor {
                     getProductTypeKey(attributeType).ifPresent(referencedProductTypeKeys::add);
                 } catch (InvalidReferenceException invalidReferenceException) {
                     invalidAttributeDefinitionNames.add(attributeDefinitionDraft.getName());
-
                 }
             }
         }
