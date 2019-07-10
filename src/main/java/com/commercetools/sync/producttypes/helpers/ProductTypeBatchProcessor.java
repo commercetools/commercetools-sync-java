@@ -83,7 +83,7 @@ public class ProductTypeBatchProcessor {
         throws InvalidProductTypeDraftException {
 
         final List<AttributeDefinitionDraft> attributeDefinitionDrafts = productTypeDraft.getAttributes();
-        if (attributeDefinitionDrafts == null) {
+        if (attributeDefinitionDrafts == null || attributeDefinitionDrafts.isEmpty()) {
             return emptySet();
         }
 
