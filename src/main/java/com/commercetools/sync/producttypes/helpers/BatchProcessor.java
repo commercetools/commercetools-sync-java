@@ -48,7 +48,7 @@ public class BatchProcessor {
      *
      * <p>A valid productType draft is one which satisfies the following conditions:
      * <ol>
-     * <li>Is not null</li>
+     * <li>It is not null</li>
      * <li>It has a key which is not blank (null/empty)</li>
      * <li>It has no invalid productType reference on an attributeDefinitionDraft
      * with either a NestedType or SetType AttributeType.
