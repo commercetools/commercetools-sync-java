@@ -73,7 +73,6 @@ public class BatchProcessor {
                     handleError(new InvalidProductTypeDraftException(errorMessage));
                 }
             } else {
-
                 handleError(new InvalidProductTypeDraftException(PRODUCT_TYPE_DRAFT_IS_NULL));
             }
         }
