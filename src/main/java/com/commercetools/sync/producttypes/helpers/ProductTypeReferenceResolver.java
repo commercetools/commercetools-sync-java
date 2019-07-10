@@ -49,12 +49,12 @@ public final class ProductTypeReferenceResolver
      */
     @Nonnull
     public CompletionStage<ProductTypeDraft> resolveReferences(@Nonnull final ProductTypeDraft productTypeDraft) {
-        return resolveAttributeDefinitionsReference(ProductTypeDraftBuilder.of(productTypeDraft))
+        return resolveAttributeDefinitionsReferences(ProductTypeDraftBuilder.of(productTypeDraft))
             .thenApply(ProductTypeDraftBuilder::build);
     }
 
     @Nonnull
-    CompletionStage<ProductTypeDraftBuilder> resolveAttributeDefinitionsReference(
+    CompletionStage<ProductTypeDraftBuilder> resolveAttributeDefinitionsReferences(
         @Nonnull final ProductTypeDraftBuilder productTypeDraftBuilder) {
 
         final List<AttributeDefinitionDraft> attributeDefinitionDrafts = productTypeDraftBuilder.getAttributes();
