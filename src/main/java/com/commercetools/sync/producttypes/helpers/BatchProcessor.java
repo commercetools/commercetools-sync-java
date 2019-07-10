@@ -82,13 +82,12 @@ public class BatchProcessor {
     private static Set<String> getReferencedProductTypeKeys(@Nonnull final ProductTypeDraft productTypeDraft)
         throws InvalidProductTypeDraftException {
 
-        final Set<String> referencedProductTypeKeys = new HashSet<>();
         final List<AttributeDefinitionDraft> attributeDefinitionDrafts = productTypeDraft.getAttributes();
         if (attributeDefinitionDrafts == null) {
             return emptySet();
         }
 
-
+        final Set<String> referencedProductTypeKeys = new HashSet<>();
         final List<String> invalidAttributeDefinitionNames = new ArrayList<>();
 
         for (AttributeDefinitionDraft attributeDefinitionDraft : attributeDefinitionDrafts) {
