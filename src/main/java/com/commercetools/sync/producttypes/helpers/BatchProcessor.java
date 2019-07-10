@@ -97,7 +97,6 @@ public class BatchProcessor {
                     getProductTypeKey(attributeType).ifPresent(referencedProductTypeKeys::add);
                 } catch (InvalidReferenceException invalidReferenceException) {
                     invalidAttributeDefinitionNames.add(attributeDefinitionDraft.getName());
-
                 }
             }
         }
