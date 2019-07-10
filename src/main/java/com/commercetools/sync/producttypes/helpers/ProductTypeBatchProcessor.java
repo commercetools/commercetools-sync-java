@@ -22,7 +22,7 @@ import static java.util.Collections.emptySet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-public class BatchProcessor {
+public class ProductTypeBatchProcessor {
     static final String PRODUCT_TYPE_DRAFT_KEY_NOT_SET = "ProductTypeDraft with name: %s doesn't have a key. "
         + "Please make sure all productType drafts have keys.";
     static final String PRODUCT_TYPE_DRAFT_IS_NULL = "ProductTypeDraft is null.";
@@ -34,8 +34,8 @@ public class BatchProcessor {
     private final Set<ProductTypeDraft> validDrafts = new HashSet<>();
     private final Set<String> keysToCache = new HashSet<>();
 
-    public BatchProcessor(@Nonnull final List<ProductTypeDraft> productTypeDrafts,
-                          @Nonnull final ProductTypeSync productTypeSync) {
+    public ProductTypeBatchProcessor(@Nonnull final List<ProductTypeDraft> productTypeDrafts,
+                                     @Nonnull final ProductTypeSync productTypeSync) {
         this.productTypeDrafts = productTypeDrafts;
         this.productTypeSync = productTypeSync;
     }
