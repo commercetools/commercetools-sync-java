@@ -46,7 +46,8 @@ public class ProductBatchProcessor {
     private final Set<ProductDraft> validDrafts = new HashSet<>();
     private final Set<String> keysToCache = new HashSet<>();
 
-    public ProductBatchProcessor(@Nonnull final List<ProductDraft> productDrafts, @Nonnull final ProductSync productSync) {
+    public ProductBatchProcessor(@Nonnull final List<ProductDraft> productDrafts,
+                                 @Nonnull final ProductSync productSync) {
         this.productDrafts = productDrafts;
         this.productSync = productSync;
     }
