@@ -30,7 +30,7 @@ import static org.mockito.Mockito.when;
 class ProductTypeReferenceResolverTest {
 
     @Test
-    void resolveReferences_WithNullAttributes_ShouldResolveReferences() {
+    void resolveReferences_WithNullAttributes_ShouldNotResolveReferences() {
         // preparation
         final ProductTypeDraft productTypeDraft =
             ProductTypeDraftBuilder.of("foo", "foo", "desc", null)
