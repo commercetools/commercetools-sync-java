@@ -2,7 +2,7 @@ package com.commercetools.sync.producttypes;
 
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
-import com.commercetools.sync.producttypes.helpers.BatchProcessor;
+import com.commercetools.sync.producttypes.helpers.ProductTypeBatchProcessor;
 import com.commercetools.sync.producttypes.helpers.ProductTypeReferenceResolver;
 import com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics;
 import com.commercetools.sync.services.ProductTypeService;
@@ -89,7 +89,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
 
     /**
      * This method first creates a new {@link Set} of valid {@link ProductTypeDraft} elements. For more on the rules of
-     * validation, check: {@link BatchProcessor#validateBatch()}. Using the resulting set of
+     * validation, check: {@link ProductTypeBatchProcessor#validateBatch()}. Using the resulting set of
      * {@code validProductTypeDrafts}, the matching productTypes in the target CTP project are fetched then the method
      * {@link ProductTypeSync#syncBatch(Set, Set)} is called to perform the sync (<b>update</b> or <b>create</b>
      * requests accordingly) on the target project.
@@ -106,7 +106,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     @Override
     protected CompletionStage<ProductTypeSyncStatistics> processBatch(@Nonnull final List<ProductTypeDraft> batch) {
 
-        final BatchProcessor batchProcessor = new BatchProcessor(batch, this);
+        final ProductTypeBatchProcessor batchProcessor = new ProductTypeBatchProcessor(batch, this);
         batchProcessor.validateBatch();
 
         final Set<String> keysToCache = batchProcessor.getKeysToCache();
