@@ -10,6 +10,10 @@ import java.util.List;
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.replaceCustomTypeIdWithKeys;
 import static java.util.stream.Collectors.toList;
 
+/**
+ * Util class which provides utilities that can be used when syncing resources from a source commercetools project
+ * to a target one.
+ */
 public final class AssetReferenceReplacementUtils {
 
     /**
