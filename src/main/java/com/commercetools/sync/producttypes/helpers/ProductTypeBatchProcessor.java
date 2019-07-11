@@ -44,8 +44,6 @@ public class ProductTypeBatchProcessor {
      * This method validates the batch of drafts, and only for valid drafts it adds the valid draft
      * to a {@code validDrafts} set, and adds the keys of those drafts and their referenced productTypes to a
      * {@code keysToCache} set.
-     *
-     *
      * <p>A valid productType draft is one which satisfies the following conditions:
      * <ol>
      * <li>It is not null</li>
