@@ -34,7 +34,7 @@ public class AttributeDefinitionReferenceResolver
 
     /**
      * Given an {@link AttributeDefinitionDraft} this method attempts to resolve the ProductType references, which can
-     * be exist on attributeDefinition with an AttributeType: NestedType or SetType of NestedType, to return a
+     * exist on attributeDefinition with an AttributeType: NestedType or SetType of NestedType, to return a
      * {@link CompletionStage} which contains a new instance of the draft with the resolved references.
      * The keys of the references are taken from the id field of the references.
      *
