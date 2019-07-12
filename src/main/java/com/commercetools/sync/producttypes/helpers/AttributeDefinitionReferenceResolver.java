@@ -42,7 +42,7 @@ public class AttributeDefinitionReferenceResolver
      * @return a {@link CompletionStage} that contains as a result a new attributeDefinitionDraft instance with resolved
      *         references or if there is no productType existing with the given key the draft will be returned as is
      *         without the reference resolved. In case an error occurs during reference resolution, a
-     *         {@link ReferenceResolutionException}.
+     *         {@link ReferenceResolutionException} is thrown.
      */
     @Nonnull
     public CompletionStage<AttributeDefinitionDraft> resolveReferences(
