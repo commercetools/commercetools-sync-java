@@ -57,7 +57,7 @@ class ProductTypeReferenceResolverTest {
     }
 
     @Test
-    void resolveReferences_WithNoAttributes_ShouldResolveReferences() {
+    void resolveReferences_WithNoAttributes_ShouldNotResolveReferences() {
         // preparation
         final ProductTypeDraft productTypeDraft =
             ProductTypeDraftBuilder.of("foo", "foo", "desc", emptyList())
