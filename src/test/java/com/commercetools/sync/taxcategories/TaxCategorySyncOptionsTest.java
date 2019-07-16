@@ -29,12 +29,12 @@ class TaxCategorySyncOptionsTest {
 
     @Test
     void applyBeforeUpdateCallback_WithNullCallback_ShouldReturnIdenticalList() {
-        TaxCategorySyncOptions stateSyncOptions = TaxCategorySyncOptionsBuilder.of(CTP_CLIENT)
+        final TaxCategorySyncOptions taxCategorySyncOptions = TaxCategorySyncOptionsBuilder.of(CTP_CLIENT)
             .build();
-        assertThat(stateSyncOptions.getBeforeUpdateCallback()).isNull();
+        assertThat(taxCategorySyncOptions.getBeforeUpdateCallback()).isNull();
 
         List<UpdateAction<TaxCategory>> updateActions = singletonList(SetKey.of("key"));
-        List<UpdateAction<TaxCategory>> filteredList = stateSyncOptions
+        List<UpdateAction<TaxCategory>> filteredList = taxCategorySyncOptions
             .applyBeforeUpdateCallBack(updateActions, mock(TaxCategoryDraft.class), mock(TaxCategory.class));
 
         assertThat(filteredList).as(" returned 'updateActions' should not be changed")
@@ -45,13 +45,13 @@ class TaxCategorySyncOptionsTest {
     void applyBeforeUpdateCallback_WithNullReturnCallback_ShouldReturnEmptyList() {
         TriFunction<List<UpdateAction<TaxCategory>>, TaxCategoryDraft, TaxCategory, List<UpdateAction<TaxCategory>>>
             beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> null;
-        TaxCategorySyncOptions stateSyncOptions = TaxCategorySyncOptionsBuilder.of(CTP_CLIENT)
+        final TaxCategorySyncOptions taxCategorySyncOptions = TaxCategorySyncOptionsBuilder.of(CTP_CLIENT)
             .beforeUpdateCallback(beforeUpdateCallback)
             .build();
-        assertThat(stateSyncOptions.getBeforeUpdateCallback()).isNotNull();
+        assertThat(taxCategorySyncOptions.getBeforeUpdateCallback()).isNotNull();
 
         List<UpdateAction<TaxCategory>> updateActions = singletonList(SetKey.of("key"));
-        List<UpdateAction<TaxCategory>> filteredList = stateSyncOptions
+        List<UpdateAction<TaxCategory>> filteredList = taxCategorySyncOptions
             .applyBeforeUpdateCallBack(updateActions, mock(TaxCategoryDraft.class), mock(TaxCategory.class));
 
         assertAll(
@@ -71,14 +71,14 @@ class TaxCategorySyncOptionsTest {
         TaxCategorySyncOptionsTest.MockTriFunction beforeUpdateCallback =
             mock(TaxCategorySyncOptionsTest.MockTriFunction.class);
 
-        TaxCategorySyncOptions stateSyncOptions = TaxCategorySyncOptionsBuilder.of(CTP_CLIENT)
+        final TaxCategorySyncOptions taxCategorySyncOptions = TaxCategorySyncOptionsBuilder.of(CTP_CLIENT)
             .beforeUpdateCallback(beforeUpdateCallback)
             .build();
 
-        assertThat(stateSyncOptions.getBeforeUpdateCallback()).isNotNull();
+        assertThat(taxCategorySyncOptions.getBeforeUpdateCallback()).isNotNull();
 
         List<UpdateAction<TaxCategory>> updateActions = emptyList();
-        List<UpdateAction<TaxCategory>> filteredList = stateSyncOptions
+        List<UpdateAction<TaxCategory>> filteredList = taxCategorySyncOptions
             .applyBeforeUpdateCallBack(updateActions, mock(TaxCategoryDraft.class), mock(TaxCategory.class));
 
         assertThat(filteredList).as("returned 'updateActions' should be empty").isEmpty();
@@ -89,13 +89,13 @@ class TaxCategorySyncOptionsTest {
     void applyBeforeUpdateCallback_WithCallback_ShouldReturnFilteredList() {
         TriFunction<List<UpdateAction<TaxCategory>>, TaxCategoryDraft, TaxCategory, List<UpdateAction<TaxCategory>>>
             beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> emptyList();
-        TaxCategorySyncOptions stateSyncOptions = TaxCategorySyncOptionsBuilder.of(CTP_CLIENT)
+        final TaxCategorySyncOptions taxCategorySyncOptions = TaxCategorySyncOptionsBuilder.of(CTP_CLIENT)
             .beforeUpdateCallback(beforeUpdateCallback)
             .build();
-        assertThat(stateSyncOptions.getBeforeUpdateCallback()).isNotNull();
+        assertThat(taxCategorySyncOptions.getBeforeUpdateCallback()).isNotNull();
 
         List<UpdateAction<TaxCategory>> updateActions = singletonList(SetKey.of("key"));
-        List<UpdateAction<TaxCategory>> filteredList = stateSyncOptions
+        List<UpdateAction<TaxCategory>> filteredList = taxCategorySyncOptions
             .applyBeforeUpdateCallBack(updateActions, mock(TaxCategoryDraft.class), mock(TaxCategory.class));
 
         assertAll(
@@ -109,17 +109,18 @@ class TaxCategorySyncOptionsTest {
     @Test
     void applyBeforeCreateCallback_WithCallback_ShouldReturnFilteredDraft() {
         Function<TaxCategoryDraft, TaxCategoryDraft> draftFunction =
-            stateDraft -> TaxCategoryDraftBuilder.of(stateDraft).key(stateDraft.getKey() + "_filteredKey").build();
+            taxCategoryDraft -> TaxCategoryDraftBuilder.of(taxCategoryDraft)
+                .key(taxCategoryDraft.getKey() + "_filteredKey").build();
 
-        TaxCategorySyncOptions stateSyncOptions = TaxCategorySyncOptionsBuilder.of(CTP_CLIENT)
+        final TaxCategorySyncOptions taxCategorySyncOptions = TaxCategorySyncOptionsBuilder.of(CTP_CLIENT)
             .beforeCreateCallback(draftFunction)
             .build();
-        assertThat(stateSyncOptions.getBeforeCreateCallback()).isNotNull();
+        assertThat(taxCategorySyncOptions.getBeforeCreateCallback()).isNotNull();
 
         TaxCategoryDraft resourceDraft = mock(TaxCategoryDraft.class);
         when(resourceDraft.getKey()).thenReturn("myKey");
 
-        Optional<TaxCategoryDraft> filteredDraft = stateSyncOptions.applyBeforeCreateCallBack(resourceDraft);
+        Optional<TaxCategoryDraft> filteredDraft = taxCategorySyncOptions.applyBeforeCreateCallBack(resourceDraft);
 
         assertAll(
             () -> assertThat(filteredDraft).as("should return draft").isNotEmpty(),
@@ -131,25 +132,25 @@ class TaxCategorySyncOptionsTest {
 
     @Test
     void applyBeforeCreateCallback_WithNullCallback_ShouldReturnIdenticalDraftInOptional() {
-        TaxCategorySyncOptions stateSyncOptions = TaxCategorySyncOptionsBuilder.of(CTP_CLIENT).build();
-        assertThat(stateSyncOptions.getBeforeCreateCallback()).isNull();
+        final TaxCategorySyncOptions taxCategorySyncOptions = TaxCategorySyncOptionsBuilder.of(CTP_CLIENT).build();
+        assertThat(taxCategorySyncOptions.getBeforeCreateCallback()).isNull();
 
         TaxCategoryDraft resourceDraft = mock(TaxCategoryDraft.class);
-        Optional<TaxCategoryDraft> filteredDraft = stateSyncOptions.applyBeforeCreateCallBack(resourceDraft);
+        Optional<TaxCategoryDraft> filteredDraft = taxCategorySyncOptions.applyBeforeCreateCallBack(resourceDraft);
 
         assertThat(filteredDraft).as("returned 'draft' should not be changed").containsSame(resourceDraft);
     }
 
     @Test
     void applyBeforeCreateCallback_WithCallbackReturningNull_ShouldReturnEmptyOptional() {
-        Function<TaxCategoryDraft, TaxCategoryDraft> draftFunction = stateDraft -> null;
-        TaxCategorySyncOptions stateSyncOptions = TaxCategorySyncOptionsBuilder.of(CTP_CLIENT)
+        Function<TaxCategoryDraft, TaxCategoryDraft> draftFunction = taxCategoryDraft -> null;
+        final TaxCategorySyncOptions taxCategorySyncOptions = TaxCategorySyncOptionsBuilder.of(CTP_CLIENT)
             .beforeCreateCallback(draftFunction)
             .build();
-        assertThat(stateSyncOptions.getBeforeCreateCallback()).isNotNull();
+        assertThat(taxCategorySyncOptions.getBeforeCreateCallback()).isNotNull();
 
         TaxCategoryDraft resourceDraft = mock(TaxCategoryDraft.class);
-        Optional<TaxCategoryDraft> filteredDraft = stateSyncOptions.applyBeforeCreateCallBack(resourceDraft);
+        Optional<TaxCategoryDraft> filteredDraft = taxCategorySyncOptions.applyBeforeCreateCallBack(resourceDraft);
 
         assertThat(filteredDraft).as("should return no draft").isEmpty();
     }

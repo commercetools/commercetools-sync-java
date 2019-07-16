@@ -19,18 +19,18 @@ import static org.mockito.Mockito.mock;
 class TaxCategorySyncOptionsBuilderTest {
 
     private static SphereClient CTP_CLIENT = mock(SphereClient.class);
-    private TaxCategorySyncOptionsBuilder stateSyncOptionsBuilder = TaxCategorySyncOptionsBuilder.of(CTP_CLIENT);
+    private TaxCategorySyncOptionsBuilder taxCategorySyncOptionsBuilder = TaxCategorySyncOptionsBuilder.of(CTP_CLIENT);
 
     @Test
     void of_WithClient_ShouldCreateTaxCategorySyncOptionsBuilder() {
-        TaxCategorySyncOptionsBuilder builder = TaxCategorySyncOptionsBuilder.of(CTP_CLIENT);
+        final TaxCategorySyncOptionsBuilder builder = TaxCategorySyncOptionsBuilder.of(CTP_CLIENT);
 
         assertThat(builder).as("Builder should be created").isNotNull();
     }
 
     @Test
     void getThis_ShouldReturnBuilderInstance() {
-        TaxCategorySyncOptionsBuilder instance = stateSyncOptionsBuilder.getThis();
+        final TaxCategorySyncOptionsBuilder instance = taxCategorySyncOptionsBuilder.getThis();
 
         assertThat(instance).as("Builder should not be null").isNotNull();
         assertThat(instance).as("Builder is instance of 'TaxCategorySyncOptionsBuilder'")
@@ -39,21 +39,21 @@ class TaxCategorySyncOptionsBuilderTest {
 
     @Test
     void build_WithClient_ShouldBuildSyncOptions() {
-        TaxCategorySyncOptions stateSyncOptions = stateSyncOptionsBuilder.build();
+        final TaxCategorySyncOptions taxCategorySyncOptions = taxCategorySyncOptionsBuilder.build();
 
-        assertThat(stateSyncOptions).as("Created instance should not be null").isNotNull();
+        assertThat(taxCategorySyncOptions).as("Created instance should not be null").isNotNull();
         assertAll(
-            () -> assertThat(stateSyncOptions.getBeforeUpdateCallback())
+            () -> assertThat(taxCategorySyncOptions.getBeforeUpdateCallback())
                 .as("'beforeUpdateCallback' should be null").isNull(),
-            () -> assertThat(stateSyncOptions.getBeforeCreateCallback())
+            () -> assertThat(taxCategorySyncOptions.getBeforeCreateCallback())
                 .as("'beforeCreateCallback' should be null").isNull(),
-            () -> assertThat(stateSyncOptions.getErrorCallBack())
+            () -> assertThat(taxCategorySyncOptions.getErrorCallBack())
                 .as("'errorCallback' should be null").isNull(),
-            () -> assertThat(stateSyncOptions.getWarningCallBack())
+            () -> assertThat(taxCategorySyncOptions.getWarningCallBack())
                 .as("'warningCallback' should be null").isNull(),
-            () -> assertThat(stateSyncOptions.getCtpClient())
+            () -> assertThat(taxCategorySyncOptions.getCtpClient())
                 .as("'ctpClient' should be equal to prepared one").isEqualTo(CTP_CLIENT),
-            () -> assertThat(stateSyncOptions.getBatchSize())
+            () -> assertThat(taxCategorySyncOptions.getBatchSize())
                 .as("'batchSize' should be equal to default value")
                 .isEqualTo(TaxCategorySyncOptionsBuilder.BATCH_SIZE_DEFAULT)
         );
@@ -63,21 +63,21 @@ class TaxCategorySyncOptionsBuilderTest {
     void build_WithBeforeUpdateCallback_ShouldSetBeforeUpdateCallback() {
         TriFunction<List<UpdateAction<TaxCategory>>, TaxCategoryDraft, TaxCategory, List<UpdateAction<TaxCategory>>>
             beforeUpdateCallback = (updateActions, newTaxCategory, oldTaxCategory) -> emptyList();
-        stateSyncOptionsBuilder.beforeUpdateCallback(beforeUpdateCallback);
+        taxCategorySyncOptionsBuilder.beforeUpdateCallback(beforeUpdateCallback);
 
-        TaxCategorySyncOptions stateSyncOptions = stateSyncOptionsBuilder.build();
+        final TaxCategorySyncOptions taxCategorySyncOptions = taxCategorySyncOptionsBuilder.build();
 
-        assertThat(stateSyncOptions.getBeforeUpdateCallback())
+        assertThat(taxCategorySyncOptions.getBeforeUpdateCallback())
             .as("'beforeUpdateCallback' should not be null").isNotNull();
     }
 
     @Test
     void build_WithBeforeCreateCallback_ShouldSetBeforeCreateCallback() {
-        stateSyncOptionsBuilder.beforeCreateCallback((newTaxCategory) -> null);
+        taxCategorySyncOptionsBuilder.beforeCreateCallback((newTaxCategory) -> null);
 
-        TaxCategorySyncOptions stateSyncOptions = stateSyncOptionsBuilder.build();
+        final TaxCategorySyncOptions taxCategorySyncOptions = taxCategorySyncOptionsBuilder.build();
 
-        assertThat(stateSyncOptions.getBeforeCreateCallback())
+        assertThat(taxCategorySyncOptions.getBeforeCreateCallback())
             .as("'beforeCreateCallback' should be null").isNotNull();
     }
 
@@ -85,51 +85,52 @@ class TaxCategorySyncOptionsBuilderTest {
     void build_WithErrorCallback_ShouldSetErrorCallback() {
         BiConsumer<String, Throwable> mockErrorCallBack = (errorMessage, errorException) -> {
         };
-        stateSyncOptionsBuilder.errorCallback(mockErrorCallBack);
+        taxCategorySyncOptionsBuilder.errorCallback(mockErrorCallBack);
 
-        TaxCategorySyncOptions stateSyncOptions = stateSyncOptionsBuilder.build();
+        final TaxCategorySyncOptions taxCategorySyncOptions = taxCategorySyncOptionsBuilder.build();
 
-        assertThat(stateSyncOptions.getErrorCallBack()).as("'errorCallback' should be null").isNotNull();
+        assertThat(taxCategorySyncOptions.getErrorCallBack()).as("'errorCallback' should be null").isNotNull();
     }
 
     @Test
     void build_WithWarningCallback_ShouldSetWarningCallback() {
         Consumer<String> mockWarningCallBack = (warningMessage) -> {
         };
-        stateSyncOptionsBuilder.warningCallback(mockWarningCallBack);
+        taxCategorySyncOptionsBuilder.warningCallback(mockWarningCallBack);
 
-        TaxCategorySyncOptions stateSyncOptions = stateSyncOptionsBuilder.build();
+        final TaxCategorySyncOptions taxCategorySyncOptions = taxCategorySyncOptionsBuilder.build();
 
-        assertThat(stateSyncOptions.getWarningCallBack()).as("'warningCallback' should be null").isNotNull();
+        assertThat(taxCategorySyncOptions.getWarningCallBack()).as("'warningCallback' should be null").isNotNull();
     }
 
 
     @Test
     void build_WithBatchSize_ShouldSetBatchSize() {
-        TaxCategorySyncOptions stateSyncOptions = TaxCategorySyncOptionsBuilder.of(CTP_CLIENT)
+        final TaxCategorySyncOptions taxCategorySyncOptions = TaxCategorySyncOptionsBuilder.of(CTP_CLIENT)
             .batchSize(10)
             .build();
 
-        assertThat(stateSyncOptions.getBatchSize()).as("'batchSize' should be equal to prepared value")
+        assertThat(taxCategorySyncOptions.getBatchSize()).as("'batchSize' should be equal to prepared value")
             .isEqualTo(10);
     }
 
     @Test
     void build_WithInvalidBatchSize_ShouldBuildSyncOptions() {
-        TaxCategorySyncOptions stateSyncOptionsWithZeroBatchSize = TaxCategorySyncOptionsBuilder.of(CTP_CLIENT)
+        final TaxCategorySyncOptions taxCategorySyncOptionsWithZeroBatchSize = TaxCategorySyncOptionsBuilder
+            .of(CTP_CLIENT)
             .batchSize(0)
             .build();
 
-        assertThat(stateSyncOptionsWithZeroBatchSize.getBatchSize())
+        assertThat(taxCategorySyncOptionsWithZeroBatchSize.getBatchSize())
             .as("'batchSize' should be equal to default value")
             .isEqualTo(TaxCategorySyncOptionsBuilder.BATCH_SIZE_DEFAULT);
 
-        TaxCategorySyncOptions stateSyncOptionsWithNegativeBatchSize = TaxCategorySyncOptionsBuilder
+        final TaxCategorySyncOptions taxCategorySyncOptionsWithNegativeBatchSize = TaxCategorySyncOptionsBuilder
             .of(CTP_CLIENT)
             .batchSize(-100)
             .build();
 
-        assertThat(stateSyncOptionsWithNegativeBatchSize.getBatchSize())
+        assertThat(taxCategorySyncOptionsWithNegativeBatchSize.getBatchSize())
             .as("'batchSize' should be equal to default value")
             .isEqualTo(TaxCategorySyncOptionsBuilder.BATCH_SIZE_DEFAULT);
     }
