@@ -149,8 +149,8 @@ public class ProductSyncIT {
     }
 
     private ProductSyncOptions buildSyncOptions() {
-        final TriConsumer<SyncException, Optional<Product>, Optional<ProductDraft>> warningCallBack =
-            (exception, oldResource, newResource) -> warningCallBackMessages.add(exception.getMessage());
+        final TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>> warningCallBack =
+            (exception, newResource, oldResource) -> warningCallBackMessages.add(exception.getMessage());
 
         return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                         .errorCallback((exception, oldResource, newResource, updateActions) 
@@ -809,7 +809,6 @@ public class ProductSyncIT {
                                                                                  .masterVariant(masterVariant)
                                                                                  .build();
 
-
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics =
             executeBlocking(productSync.sync(singletonList(productDraftWithProductReference)));
@@ -824,9 +823,8 @@ public class ProductSyncIT {
     public void sync_withProductContainingAttributeChanges_shouldSyncProductCorrectly() {
         // preparation
         final List<UpdateAction<Product>> updateActions = new ArrayList<>();
-        final TriConsumer<SyncException, Optional<Product>, Optional<ProductDraft>> warningCallBack =
-            (exception, oldResource, newResource) -> warningCallBackMessages.add(exception.getMessage());
-
+        final TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>> warningCallBack =
+            (exception, newResource, oldResource) -> warningCallBackMessages.add(exception.getMessage());
 
         final ProductSyncOptions customOptions = ProductSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)

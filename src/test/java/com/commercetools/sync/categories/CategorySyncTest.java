@@ -528,8 +528,8 @@ public class CategorySyncTest {
             .sync(singletonList(categoryDraft)).toCompletableFuture().join();
 
         // assertion
-        verify(spyCategorySyncOptions).applyBeforeCreateCallBack(any());
-        verify(spyCategorySyncOptions, never()).applyBeforeUpdateCallBack(any(), any(), any());
+        verify(spyCategorySyncOptions).applyBeforeCreateCallback(any());
+        verify(spyCategorySyncOptions, never()).applyBeforeUpdateCallback(any(), any(), any());
     }
 
     @Test
@@ -558,7 +558,7 @@ public class CategorySyncTest {
             .sync(singletonList(categoryDraft)).toCompletableFuture().join();
 
         // assertion
-        verify(spyCategorySyncOptions).applyBeforeUpdateCallBack(any(), any(), any());
-        verify(spyCategorySyncOptions, never()).applyBeforeCreateCallBack(any());
+        verify(spyCategorySyncOptions).applyBeforeUpdateCallback(any(), any(), any());
+        verify(spyCategorySyncOptions, never()).applyBeforeCreateCallback(any());
     }
 }

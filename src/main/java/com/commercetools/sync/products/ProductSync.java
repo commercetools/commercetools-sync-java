@@ -230,7 +230,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     @Nonnull
     private CompletionStage<Optional<Product>> applyCallbackAndCreate(@Nonnull final ProductDraft productDraft) {
         return syncOptions
-            .applyBeforeCreateCallBack(productDraft)
+            .applyBeforeCreateCallback(productDraft)
             .map(productService::createProduct)
             .orElse(CompletableFuture.completedFuture(Optional.empty()));
     }
@@ -262,7 +262,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                                     buildActions(oldProduct, newProduct, syncOptions, attributeMetaDataMap);
 
                             final List<UpdateAction<Product>> beforeUpdateCallBackApplied =
-                                syncOptions.applyBeforeUpdateCallBack(updateActions, newProduct, oldProduct);
+                                syncOptions.applyBeforeUpdateCallback(updateActions, newProduct, oldProduct);
 
                             if (!beforeUpdateCallBackApplied.isEmpty()) {
                                 return updateProduct(oldProduct, newProduct, beforeUpdateCallBackApplied);

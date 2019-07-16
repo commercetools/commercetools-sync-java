@@ -1,7 +1,7 @@
 package com.commercetools.sync.types;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.utils.QuadriConsumer;
+import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.client.SphereClient;
@@ -43,8 +43,8 @@ public class TypeSyncOptionsBuilderTest {
         assertThat(typeSyncOptions).isNotNull();
         assertThat(typeSyncOptions.getBeforeUpdateCallback()).isNull();
         assertThat(typeSyncOptions.getBeforeCreateCallback()).isNull();
-        assertThat(typeSyncOptions.getErrorCallBack()).isNull();
-        assertThat(typeSyncOptions.getWarningCallBack()).isNull();
+        assertThat(typeSyncOptions.getErrorCallback()).isNull();
+        assertThat(typeSyncOptions.getWarningCallback()).isNull();
         assertThat(typeSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
         assertThat(typeSyncOptions.getBatchSize()).isEqualTo(TypeSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
     }
@@ -70,24 +70,24 @@ public class TypeSyncOptionsBuilderTest {
 
     @Test
     public void errorCallBack_WithCallBack_ShouldSetCallBack() {
-        final QuadriConsumer<SyncException, Optional<Type>, Optional<TypeDraft>, Optional<List<UpdateAction<Type>>>>
-            mockErrorCallBack = (exception, oldResource, newResource, updateActions) -> {
+        final QuadConsumer<SyncException, Optional<TypeDraft>, Optional<Type>, List<UpdateAction<Type>>>
+            mockErrorCallBack = (exception, newResource, oldResource, updateActions) -> {
             };
         typeSyncOptionsBuilder.errorCallback(mockErrorCallBack);
 
         final TypeSyncOptions typeSyncOptions = typeSyncOptionsBuilder.build();
-        assertThat(typeSyncOptions.getErrorCallBack()).isNotNull();
+        assertThat(typeSyncOptions.getErrorCallback()).isNotNull();
     }
 
     @Test
     public void warningCallBack_WithCallBack_ShouldSetCallBack() {
-        final TriConsumer<SyncException, Optional<Type>, Optional<TypeDraft>> mockWarningCallBack =
-            (exception, oldResource, newResource) -> {
+        final TriConsumer<SyncException, Optional<TypeDraft>, Optional<Type>> mockWarningCallBack =
+            (exception, newResource, oldResource) -> {
             };
         typeSyncOptionsBuilder.warningCallback(mockWarningCallBack);
 
         final TypeSyncOptions typeSyncOptions = typeSyncOptionsBuilder.build();
-        assertThat(typeSyncOptions.getWarningCallBack()).isNotNull();
+        assertThat(typeSyncOptions.getWarningCallback()).isNotNull();
     }
 
     @Test
@@ -142,7 +142,7 @@ public class TypeSyncOptionsBuilderTest {
         final List<UpdateAction<Type>> updateActions = singletonList(ChangeName.of(ofEnglish("name")));
 
         final List<UpdateAction<Type>> filteredList =
-                typeSyncOptions.applyBeforeUpdateCallBack(updateActions, mock(TypeDraft.class), mock(Type.class));
+                typeSyncOptions.applyBeforeUpdateCallback(updateActions, mock(TypeDraft.class), mock(Type.class));
 
         assertThat(filteredList).isSameAs(updateActions);
     }
@@ -159,7 +159,7 @@ public class TypeSyncOptionsBuilderTest {
 
         final List<UpdateAction<Type>> updateActions = singletonList(ChangeName.of(ofEnglish("name")));
         final List<UpdateAction<Type>> filteredList =
-                typeSyncOptions.applyBeforeUpdateCallBack(updateActions, mock(TypeDraft.class), mock(Type.class));
+                typeSyncOptions.applyBeforeUpdateCallback(updateActions, mock(TypeDraft.class), mock(Type.class));
         assertThat(filteredList).isNotEqualTo(updateActions);
         assertThat(filteredList).isEmpty();
     }
@@ -181,7 +181,7 @@ public class TypeSyncOptionsBuilderTest {
 
         final List<UpdateAction<Type>> updateActions = emptyList();
         final List<UpdateAction<Type>> filteredList =
-            typeSyncOptions.applyBeforeUpdateCallBack(updateActions, mock(TypeDraft.class), mock(Type.class));
+            typeSyncOptions.applyBeforeUpdateCallback(updateActions, mock(TypeDraft.class), mock(Type.class));
 
         assertThat(filteredList).isEmpty();
         verify(beforeUpdateCallback, never()).apply(any(), any(), any());
@@ -200,7 +200,7 @@ public class TypeSyncOptionsBuilderTest {
 
         final List<UpdateAction<Type>> updateActions = singletonList(ChangeName.of(ofEnglish("name")));
         final List<UpdateAction<Type>> filteredList =
-                typeSyncOptions.applyBeforeUpdateCallBack(updateActions, mock(TypeDraft.class), mock(Type.class));
+                typeSyncOptions.applyBeforeUpdateCallback(updateActions, mock(TypeDraft.class), mock(Type.class));
         assertThat(filteredList).isNotEqualTo(updateActions);
         assertThat(filteredList).isEmpty();
     }
@@ -220,7 +220,7 @@ public class TypeSyncOptionsBuilderTest {
         when(resourceDraft.getKey()).thenReturn("myKey");
 
 
-        final Optional<TypeDraft> filteredDraft = typeSyncOptions.applyBeforeCreateCallBack(resourceDraft);
+        final Optional<TypeDraft> filteredDraft = typeSyncOptions.applyBeforeCreateCallback(resourceDraft);
 
         assertThat(filteredDraft).isNotEmpty();
         assertThat(filteredDraft.get().getKey()).isEqualTo("myKey_filteredKey");
@@ -232,7 +232,7 @@ public class TypeSyncOptionsBuilderTest {
         assertThat(typeSyncOptions.getBeforeCreateCallback()).isNull();
 
         final TypeDraft resourceDraft = mock(TypeDraft.class);
-        final Optional<TypeDraft> filteredDraft = typeSyncOptions.applyBeforeCreateCallBack(resourceDraft);
+        final Optional<TypeDraft> filteredDraft = typeSyncOptions.applyBeforeCreateCallback(resourceDraft);
 
         assertThat(filteredDraft).containsSame(resourceDraft);
     }
@@ -246,7 +246,7 @@ public class TypeSyncOptionsBuilderTest {
         assertThat(typeSyncOptions.getBeforeCreateCallback()).isNotNull();
 
         final TypeDraft resourceDraft = mock(TypeDraft.class);
-        final Optional<TypeDraft> filteredDraft = typeSyncOptions.applyBeforeCreateCallBack(resourceDraft);
+        final Optional<TypeDraft> filteredDraft = typeSyncOptions.applyBeforeCreateCallback(resourceDraft);
 
         assertThat(filteredDraft).isEmpty();
     }

@@ -2,7 +2,7 @@ package com.commercetools.sync.types;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.utils.QuadriConsumer;
+import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.client.SphereClient;
@@ -20,10 +20,10 @@ public final class TypeSyncOptions extends BaseSyncOptions<Type, TypeDraft> {
 
     TypeSyncOptions(
         @Nonnull final SphereClient ctpClient,
-        @Nullable final QuadriConsumer<SyncException, Optional<Type>, Optional<TypeDraft>,
-            Optional<List<UpdateAction<Type>>>> updateActionErrorCallBack,
-        @Nullable final TriConsumer<SyncException, Optional<Type>, Optional<TypeDraft>>
-            updateActionWarningCallBack,
+        @Nullable final QuadConsumer<SyncException, Optional<TypeDraft>, Optional<Type>,
+                    List<UpdateAction<Type>>> errorCallback,
+        @Nullable final TriConsumer<SyncException, Optional<TypeDraft>, Optional<Type>>
+            warningCallback,
         final int batchSize,
         @Nullable final TriFunction<List<UpdateAction<Type>>, TypeDraft,
                 Type, List<UpdateAction<Type>>> beforeUpdateCallback,
@@ -31,8 +31,8 @@ public final class TypeSyncOptions extends BaseSyncOptions<Type, TypeDraft> {
     ) {
         super(
             ctpClient,
-            updateActionErrorCallBack,
-            updateActionWarningCallBack,
+            errorCallback,
+            warningCallback,
             batchSize,
             beforeUpdateCallback,
             beforeCreateCallback

@@ -55,4 +55,5 @@ public class CategorySyncOptionsTest {
         assertThat(options).isNotNull();
         assertThat(options.getBatchSize()).isEqualTo(CategorySyncOptionsBuilder.BATCH_SIZE_DEFAULT);
     }
+
 }

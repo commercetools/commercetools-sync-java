@@ -1,7 +1,7 @@
 package com.commercetools.sync.products;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.utils.QuadriConsumer;
+import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.client.SphereClient;
@@ -46,8 +46,8 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(productSyncOptions.getSyncFilter()).isSameAs(SyncFilter.of());
         assertThat(productSyncOptions.getBeforeUpdateCallback()).isNull();
         assertThat(productSyncOptions.getBeforeCreateCallback()).isNull();
-        assertThat(productSyncOptions.getErrorCallBack()).isNull();
-        assertThat(productSyncOptions.getWarningCallBack()).isNull();
+        assertThat(productSyncOptions.getErrorCallback()).isNull();
+        assertThat(productSyncOptions.getWarningCallback()).isNull();
         assertThat(productSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
         assertThat(productSyncOptions.getBatchSize()).isEqualTo(ProductSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
     }
@@ -87,23 +87,23 @@ public class ProductSyncOptionsBuilderTest {
 
     @Test
     public void errorCallBack_WithCallBack_ShouldSetCallBack() {
-        final QuadriConsumer<SyncException, Optional<Product>, Optional<ProductDraft>,
-            Optional<List<UpdateAction<Product>>>> mockErrorCallBack = (exception, old, newDraft, actions) -> {
-            };
-        productSyncOptionsBuilder.errorCallback(mockErrorCallBack);
+        final QuadConsumer<SyncException, Optional<ProductDraft>, Optional<Product>,
+                    List<UpdateAction<Product>>> mockErrorCallback = (exception, newDraft, old, actions) -> {
+                    };
+        productSyncOptionsBuilder.errorCallback(mockErrorCallback);
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
-        assertThat(productSyncOptions.getErrorCallBack()).isNotNull();
+        assertThat(productSyncOptions.getErrorCallback()).isNotNull();
     }
 
     @Test
     public void warningCallBack_WithCallBack_ShouldSetCallBack() {
-        final TriConsumer<SyncException, Optional<Product>, Optional<ProductDraft>> mockWarningCallBack =
-            (exception, old, newDraft) -> { };
+        final TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>> mockWarningCallBack =
+            (exception, newDraft, old) -> { };
         productSyncOptionsBuilder.warningCallback(mockWarningCallBack);
 
         final ProductSyncOptions productSyncOptions = productSyncOptionsBuilder.build();
-        assertThat(productSyncOptions.getWarningCallBack()).isNotNull();
+        assertThat(productSyncOptions.getWarningCallback()).isNotNull();
     }
 
     @Test
@@ -158,7 +158,7 @@ public class ProductSyncOptionsBuilderTest {
         final List<UpdateAction<Product>> updateActions = Collections
             .singletonList(ChangeName.of(ofEnglish("name")));
         final List<UpdateAction<Product>> filteredList =
-            productSyncOptions.applyBeforeUpdateCallBack(updateActions, mock(ProductDraft.class), mock(Product.class));
+            productSyncOptions.applyBeforeUpdateCallback(updateActions, mock(ProductDraft.class), mock(Product.class));
         assertThat(filteredList).isSameAs(updateActions);
     }
 
@@ -174,7 +174,7 @@ public class ProductSyncOptionsBuilderTest {
 
         final List<UpdateAction<Product>> updateActions = Collections.singletonList(ChangeName.of(ofEnglish("name")));
         final List<UpdateAction<Product>> filteredList =
-            productSyncOptions.applyBeforeUpdateCallBack(updateActions, mock(ProductDraft.class), mock(Product.class));
+            productSyncOptions.applyBeforeUpdateCallback(updateActions, mock(ProductDraft.class), mock(Product.class));
         assertThat(filteredList).isNotEqualTo(updateActions);
         assertThat(filteredList).isEmpty();
     }
@@ -196,7 +196,7 @@ public class ProductSyncOptionsBuilderTest {
 
         final List<UpdateAction<Product>> updateActions = emptyList();
         final List<UpdateAction<Product>> filteredList =
-            productSyncOptions.applyBeforeUpdateCallBack(updateActions, mock(ProductDraft.class), mock(Product.class));
+            productSyncOptions.applyBeforeUpdateCallback(updateActions, mock(ProductDraft.class), mock(Product.class));
 
         assertThat(filteredList).isEmpty();
         verify(beforeUpdateCallback, never()).apply(any(), any(), any());
@@ -214,7 +214,7 @@ public class ProductSyncOptionsBuilderTest {
 
         final List<UpdateAction<Product>> updateActions = Collections.singletonList(ChangeName.of(ofEnglish("name")));
         final List<UpdateAction<Product>> filteredList =
-            productSyncOptions.applyBeforeUpdateCallBack(updateActions, mock(ProductDraft.class), mock(Product.class));
+            productSyncOptions.applyBeforeUpdateCallback(updateActions, mock(ProductDraft.class), mock(Product.class));
         assertThat(filteredList).isNotEqualTo(updateActions);
         assertThat(filteredList).isEmpty();
     }
@@ -234,7 +234,7 @@ public class ProductSyncOptionsBuilderTest {
         when(resourceDraft.getKey()).thenReturn("myKey");
 
 
-        final Optional<ProductDraft> filteredDraft = productSyncOptions.applyBeforeCreateCallBack(resourceDraft);
+        final Optional<ProductDraft> filteredDraft = productSyncOptions.applyBeforeCreateCallback(resourceDraft);
 
         assertThat(filteredDraft).isNotEmpty();
         assertThat(filteredDraft.get().getKey()).isEqualTo("myKey_filteredKey");
@@ -246,7 +246,7 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(productSyncOptions.getBeforeCreateCallback()).isNull();
 
         final ProductDraft resourceDraft = mock(ProductDraft.class);
-        final Optional<ProductDraft> filteredDraft = productSyncOptions.applyBeforeCreateCallBack(resourceDraft);
+        final Optional<ProductDraft> filteredDraft = productSyncOptions.applyBeforeCreateCallback(resourceDraft);
 
         assertThat(filteredDraft).containsSame(resourceDraft);
     }
@@ -260,7 +260,7 @@ public class ProductSyncOptionsBuilderTest {
         assertThat(productSyncOptions.getBeforeCreateCallback()).isNotNull();
 
         final ProductDraft resourceDraft = mock(ProductDraft.class);
-        final Optional<ProductDraft> filteredDraft = productSyncOptions.applyBeforeCreateCallBack(resourceDraft);
+        final Optional<ProductDraft> filteredDraft = productSyncOptions.applyBeforeCreateCallback(resourceDraft);
 
         assertThat(filteredDraft).isEmpty();
     }

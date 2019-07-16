@@ -17,7 +17,7 @@ import javax.annotation.Nullable;
  * @see Consumer
  */
 @FunctionalInterface
-public interface QuadriConsumer<T, U, S, V> {
+public interface QuadConsumer<T, U, S, V> {
 
     /**
      * Performs operation on the given arguments.

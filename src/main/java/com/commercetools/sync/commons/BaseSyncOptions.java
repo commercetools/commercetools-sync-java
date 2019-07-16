@@ -1,7 +1,7 @@
 package com.commercetools.sync.commons;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.utils.QuadriConsumer;
+import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.client.SphereClient;
@@ -11,8 +11,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
@@ -25,26 +23,26 @@ import static java.util.Optional.ofNullable;
  */
 public class BaseSyncOptions<U, V> {
     private final SphereClient ctpClient;
-    private final QuadriConsumer<SyncException, Optional<U>, Optional<V>, Optional<List<UpdateAction<U>>>>
-        errorCallBack;
-    private final TriConsumer<SyncException, Optional<U>, Optional<V>> warningCallBack;
+    private final QuadConsumer<SyncException, Optional<V>, Optional<U>, List<UpdateAction<U>>>
+            errorCallback;
+    private final TriConsumer<SyncException, Optional<V>, Optional<U>> warningCallback;
     private int batchSize;
     private final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>> beforeUpdateCallback;
     private final Function<V, V> beforeCreateCallback;
 
     protected BaseSyncOptions(
         @Nonnull final SphereClient ctpClient,
-        @Nullable final QuadriConsumer<SyncException, Optional<U>, Optional<V>, Optional<List<UpdateAction<U>>>>
-            errorCallBack,
-        @Nullable final TriConsumer<SyncException, Optional<U>, Optional<V>> warningCallBack,
+        @Nullable final QuadConsumer<SyncException, Optional<V>, Optional<U>, List<UpdateAction<U>>>
+                errorCallback,
+        @Nullable final TriConsumer<SyncException, Optional<V>, Optional<U>> warningCallback,
         final int batchSize,
         @Nullable final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>>
             beforeUpdateCallback,
         @Nullable final Function<V, V> beforeCreateCallback) {
         this.ctpClient = ctpClient;
-        this.errorCallBack = errorCallBack;
+        this.errorCallback = errorCallback;
         this.batchSize = batchSize;
-        this.warningCallBack = warningCallBack;
+        this.warningCallback = warningCallback;
         this.beforeUpdateCallback = beforeUpdateCallback;
         this.beforeCreateCallback = beforeCreateCallback;
     }
@@ -59,29 +57,35 @@ public class BaseSyncOptions<U, V> {
     }
 
     /**
-     * Returns the {@code errorCallback} {@link BiConsumer}&lt;{@link String}, {@link Throwable}&gt; function set to
+     * Returns the {@code errorCallback} {@link QuadConsumer}&lt;{@link SyncException},
+     * {@link Optional}&lt;{@code V}&gt;, {@link Optional}&lt;{@code U}&gt;,
+     * {@link List}&lt;{@link UpdateAction}&lt;{@code U}&gt;&gt;&gt; function set to
      * {@code this} {@link BaseSyncOptions}. It represents the callback that is called whenever an event occurs during
      * the sync process that represents an error.
      *
-     * @return the {@code errorCallback} {@link BiConsumer}&lt;{@link String}, {@link Throwable}&gt; function set to
+     * @return the {@code errorCallback} {@link QuadConsumer}&lt;{@link SyncException},
+     *      {@link Optional}&lt;{@code V}&gt;, {@link Optional}&lt;{@code U}&gt;,
+     *      {@link List}&lt;{@link UpdateAction}&lt;{@code U}&gt;&gt; function set to
      *      {@code this} {@link BaseSyncOptions}
      */
     @Nullable
-    public QuadriConsumer<SyncException, Optional<U>, Optional<V>, Optional<List<UpdateAction<U>>>> getErrorCallBack() {
-        return errorCallBack;
+    public QuadConsumer<SyncException, Optional<V>, Optional<U>, List<UpdateAction<U>>> getErrorCallback() {
+        return errorCallback;
     }
 
     /**
-     * Returns the {@code warningCallback} {@link Consumer}&lt;{@link String}&gt; function set to {@code this}
+     * Returns the {@code warningCallback} {@link TriConsumer}&lt;{@link SyncException},
+     * {@link Optional}&lt;{@code V}&gt;, {@link Optional}&lt;{@code U}&gt;&gt; function set to {@code this}
      * {@link BaseSyncOptions}. It represents the callback that is called whenever an event occurs
      * during the sync process that represents a warning.
      *
-     * @return the {@code warningCallback} {@link Consumer}&lt;{@link String}&gt; function set to {@code this}
+     * @return the {@code warningCallback} {@link TriConsumer}&lt;{@link SyncException},
+     *      {@link Optional}&lt;{@code V}&gt;, {@link Optional}&lt;{@code U}&gt;&gt; function set to {@code this}
      *      {@link BaseSyncOptions}
      */
     @Nullable
-    public TriConsumer<SyncException, Optional<U>, Optional<V>> getWarningCallBack() {
-        return warningCallBack;
+    public TriConsumer<SyncException, Optional<V>, Optional<U>> getWarningCallback() {
+        return warningCallback;
     }
 
     /**
@@ -96,9 +100,9 @@ public class BaseSyncOptions<U, V> {
      */
     public void applyWarningCallback(@Nonnull final SyncException exception, @Nullable final U oldResource,
         @Nullable final V newResourceDraft) {
-        if (this.warningCallBack != null) {
-            this.warningCallBack.accept(exception, Optional.ofNullable(oldResource),
-                Optional.ofNullable(newResourceDraft));
+        if (this.warningCallback != null) {
+            this.warningCallback.accept(exception, Optional.ofNullable(newResourceDraft),
+                Optional.ofNullable(oldResource));
         }
     }
 
@@ -114,9 +118,9 @@ public class BaseSyncOptions<U, V> {
      */
     public void applyErrorCallback(@Nonnull final SyncException exception, @Nullable final U oldResource,
         @Nullable final V newResourceDraft, @Nullable final List<UpdateAction<U>> updateActions) {
-        if (this.errorCallBack != null) {
-            this.errorCallBack.accept(exception, Optional.ofNullable(oldResource),
-                Optional.ofNullable(newResourceDraft), Optional.ofNullable(updateActions));
+        if (this.errorCallback != null) {
+            this.errorCallback.accept(exception, Optional.ofNullable(newResourceDraft),
+                Optional.ofNullable(oldResource), updateActions);
         }
     }
 
@@ -189,7 +193,7 @@ public class BaseSyncOptions<U, V> {
      *         returned.
      */
     @Nonnull
-    public List<UpdateAction<U>> applyBeforeUpdateCallBack(@Nonnull final List<UpdateAction<U>> updateActions,
+    public List<UpdateAction<U>> applyBeforeUpdateCallback(@Nonnull final List<UpdateAction<U>> updateActions,
                                                            @Nonnull final V newResourceDraft,
                                                            @Nonnull final U oldResource) {
 
@@ -215,7 +219,7 @@ public class BaseSyncOptions<U, V> {
      *         returned as is, wrapped in an optional.
      */
     @Nonnull
-    public Optional<V> applyBeforeCreateCallBack(@Nonnull final V newResourceDraft) {
+    public Optional<V> applyBeforeCreateCallback(@Nonnull final V newResourceDraft) {
         return ofNullable(
                 beforeCreateCallback != null ? beforeCreateCallback.apply(newResourceDraft) : newResourceDraft);
     }

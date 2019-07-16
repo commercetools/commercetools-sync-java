@@ -2,7 +2,7 @@ package com.commercetools.sync.benchmark;
 
 
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.utils.QuadriConsumer;
+import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
@@ -84,14 +84,14 @@ public class ProductSyncBenchmark {
     }
 
     private ProductSyncOptions buildSyncOptions() {
-        final QuadriConsumer<SyncException, Optional<Product>, Optional<ProductDraft>,
-            Optional<List<UpdateAction<Product>>>>
-            errorCallback = (exception, oldResource, newResource, updateActions) -> {
+        final QuadConsumer<SyncException, Optional<ProductDraft>, Optional<Product>,
+                    List<UpdateAction<Product>>>
+            errorCallback = (exception, newResource, oldResource, updateActions) -> {
                 errorCallBackMessages.add(exception.getMessage());
                 errorCallBackExceptions.add(exception.getCause());
             };
-        final TriConsumer<SyncException, Optional<Product>, Optional<ProductDraft>> warningCallback =
-            (exception, oldResource, newResource) -> warningCallBackMessages.add(exception.getMessage());
+        final TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>> warningCallback =
+            (exception, newResource, oldResource) -> warningCallBackMessages.add(exception.getMessage());
 
         return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                         .errorCallback(errorCallback)

@@ -2,7 +2,7 @@ package com.commercetools.sync.producttypes;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.utils.QuadriConsumer;
+import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.client.SphereClient;
@@ -19,10 +19,10 @@ import java.util.function.Function;
 public final class ProductTypeSyncOptions extends BaseSyncOptions<ProductType, ProductTypeDraft> {
     ProductTypeSyncOptions(
         @Nonnull final SphereClient ctpClient,
-        @Nullable final QuadriConsumer<SyncException, Optional<ProductType>, Optional<ProductTypeDraft>,
-            Optional<List<UpdateAction<ProductType>>>> updateActionErrorCallBack,
-        @Nullable final TriConsumer<SyncException, Optional<ProductType>, Optional<ProductTypeDraft>>
-            updateActionWarningCallBack,
+        @Nullable final QuadConsumer<SyncException, Optional<ProductTypeDraft>, Optional<ProductType>,
+                    List<UpdateAction<ProductType>>> errorCallback,
+        @Nullable final TriConsumer<SyncException, Optional<ProductTypeDraft>, Optional<ProductType>>
+            warningCallback,
         final int batchSize,
         @Nullable final TriFunction<List<UpdateAction<ProductType>>, ProductTypeDraft, ProductType,
                 List<UpdateAction<ProductType>>> beforeUpdateCallback,
@@ -31,8 +31,8 @@ public final class ProductTypeSyncOptions extends BaseSyncOptions<ProductType, P
 
         super(
             ctpClient,
-            updateActionErrorCallBack,
-            updateActionWarningCallBack,
+            errorCallback,
+            warningCallback,
             batchSize,
             beforeUpdateCallback,
             beforeCreateCallback

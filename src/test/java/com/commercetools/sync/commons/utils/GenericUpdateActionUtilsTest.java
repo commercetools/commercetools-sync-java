@@ -25,15 +25,15 @@ public class GenericUpdateActionUtilsTest {
     @Test
     public void buildTypedSetCustomTypeUpdateAction_WithNullNewIdCategoryAsset_ShouldNotBuildCategoryUpdateAction() {
         final ArrayList<String> errorMessages = new ArrayList<>();
-        final QuadriConsumer<SyncException, Optional<Category>, Optional<CategoryDraft>,
-            Optional<List<UpdateAction<Category>>>> updateActionErrorCallBack =
-                (exception, oldResource, newResource, updateActions) -> errorMessages.add(exception.getMessage());
+        final QuadConsumer<SyncException, Optional<CategoryDraft>, Optional<Category>,
+                    List<UpdateAction<Category>>> errorCallback =
+                        (exception, oldResource, newResource, updateActions) -> errorMessages
+                                .add(exception.getMessage());
 
         // Mock sync options
         final CategorySyncOptions categorySyncOptions =
-            of(mock(SphereClient.class)).errorCallback(updateActionErrorCallBack)
+            of(mock(SphereClient.class)).errorCallback(errorCallback)
                                         .build();
-
 
         final Optional<UpdateAction<Category>> updateAction =
             buildTypedSetCustomTypeUpdateAction(null, new HashMap<>(), mock(Asset.class),

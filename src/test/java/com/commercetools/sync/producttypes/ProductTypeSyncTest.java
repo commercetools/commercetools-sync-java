@@ -104,8 +104,8 @@ public class ProductTypeSyncTest {
             .sync(singletonList(newProductTypeDraft)).toCompletableFuture().join();
 
         // assertion
-        verify(spyProductTypeSyncOptions).applyBeforeCreateCallBack(newProductTypeDraft);
-        verify(spyProductTypeSyncOptions, never()).applyBeforeUpdateCallBack(any(), any(), any());
+        verify(spyProductTypeSyncOptions).applyBeforeCreateCallback(newProductTypeDraft);
+        verify(spyProductTypeSyncOptions, never()).applyBeforeUpdateCallback(any(), any(), any());
     }
 
     @Test
@@ -134,8 +134,8 @@ public class ProductTypeSyncTest {
             .sync(singletonList(newProductTypeDraft)).toCompletableFuture().join();
 
         // assertion
-        verify(spyProductTypeSyncOptions).applyBeforeUpdateCallBack(any(), any(), any());
-        verify(spyProductTypeSyncOptions, never()).applyBeforeCreateCallBack(newProductTypeDraft);
+        verify(spyProductTypeSyncOptions).applyBeforeUpdateCallback(any(), any(), any());
+        verify(spyProductTypeSyncOptions, never()).applyBeforeCreateCallback(newProductTypeDraft);
     }
 
 }

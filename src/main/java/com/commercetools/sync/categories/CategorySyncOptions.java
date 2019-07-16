@@ -2,7 +2,7 @@ package com.commercetools.sync.categories;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.utils.QuadriConsumer;
+import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.categories.Category;
@@ -20,17 +20,17 @@ public final class CategorySyncOptions extends BaseSyncOptions<Category, Categor
 
     CategorySyncOptions(
         @Nonnull final SphereClient ctpClient,
-        @Nullable final QuadriConsumer<SyncException, Optional<Category>, Optional<CategoryDraft>,
-            Optional<List<UpdateAction<Category>>>> updateActionErrorCallBack,
-        @Nullable final TriConsumer<SyncException, Optional<Category>, Optional<CategoryDraft>>
-            updateActionWarningCallBack,
+        @Nullable final QuadConsumer<SyncException, Optional<CategoryDraft>, Optional<Category>,
+            List<UpdateAction<Category>>> errorCallback,
+        @Nullable final TriConsumer<SyncException, Optional<CategoryDraft>, Optional<Category>>
+            warningCallback,
         final int batchSize,
         @Nullable final TriFunction<List<UpdateAction<Category>>, CategoryDraft, Category,
             List<UpdateAction<Category>>> beforeUpdateCallback,
         @Nullable final Function<CategoryDraft, CategoryDraft> beforeCreateCallback) {
         super(ctpClient,
-            updateActionErrorCallBack,
-            updateActionWarningCallBack,
+            errorCallback,
+            warningCallback,
             batchSize,
             beforeUpdateCallback,
             beforeCreateCallback);

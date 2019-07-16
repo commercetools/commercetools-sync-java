@@ -443,8 +443,8 @@ public class InventorySyncTest {
         inventorySync.sync(singletonList(inventoryEntryDraft)).toCompletableFuture().join();
 
         // assertion
-        verify(optionsSpy).applyBeforeUpdateCallBack(any(), any(), any());
-        verify(optionsSpy, never()).applyBeforeCreateCallBack(any());
+        verify(optionsSpy).applyBeforeUpdateCallback(any(), any(), any());
+        verify(optionsSpy, never()).applyBeforeCreateCallback(any());
     }
 
     @Test
@@ -467,8 +467,8 @@ public class InventorySyncTest {
                      .toCompletableFuture().join();
 
         // assertion
-        verify(optionsSpy).applyBeforeCreateCallBack(any());
-        verify(optionsSpy, never()).applyBeforeUpdateCallBack(any(), any(), any());
+        verify(optionsSpy).applyBeforeCreateCallback(any());
+        verify(optionsSpy, never()).applyBeforeUpdateCallback(any(), any(), any());
     }
 
     private InventorySync getInventorySync(int batchSize, boolean ensureChannels) {

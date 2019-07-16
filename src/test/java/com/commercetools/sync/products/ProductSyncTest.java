@@ -209,8 +209,8 @@ public class ProductSyncTest {
 
 
         // assertion
-        verify(spyProductSyncOptions).applyBeforeCreateCallBack(any());
-        verify(spyProductSyncOptions, never()).applyBeforeUpdateCallBack(any(), any(), any());
+        verify(spyProductSyncOptions).applyBeforeCreateCallback(any());
+        verify(spyProductSyncOptions, never()).applyBeforeUpdateCallback(any(), any(), any());
     }
 
     @Test
@@ -257,7 +257,7 @@ public class ProductSyncTest {
         productSync.sync(singletonList(productDraft)).toCompletableFuture().join();
 
         // assertion
-        verify(spyProductSyncOptions).applyBeforeUpdateCallBack(any(), any(), any());
-        verify(spyProductSyncOptions, never()).applyBeforeCreateCallBack(any());
+        verify(spyProductSyncOptions).applyBeforeUpdateCallback(any(), any(), any());
+        verify(spyProductSyncOptions, never()).applyBeforeCreateCallback(any());
     }
 }

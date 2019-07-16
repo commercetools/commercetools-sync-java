@@ -227,7 +227,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
         @Nonnull final TypeDraft typeDraft) {
 
         return syncOptions
-            .applyBeforeCreateCallBack(typeDraft)
+            .applyBeforeCreateCallback(typeDraft)
             .map(draft -> typeService
                 .createType(draft)
                 .thenApply(typeOptional -> {
@@ -251,7 +251,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
         final List<UpdateAction<Type>> updateActions = buildActions(oldType, newType, syncOptions);
 
         final List<UpdateAction<Type>> updateActionsAfterCallback =
-            syncOptions.applyBeforeUpdateCallBack(updateActions, newType, oldType);
+            syncOptions.applyBeforeUpdateCallback(updateActions, newType, oldType);
 
         if (!updateActionsAfterCallback.isEmpty()) {
             return updateType(oldType, newType, updateActionsAfterCallback);

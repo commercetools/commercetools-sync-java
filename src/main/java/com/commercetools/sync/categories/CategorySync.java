@@ -332,7 +332,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     @Nonnull
     private CompletionStage<Optional<Category>> applyCallbackAndCreate(@Nonnull final CategoryDraft categoryDraft) {
         return syncOptions
-            .applyBeforeCreateCallBack(categoryDraft)
+            .applyBeforeCreateCallback(categoryDraft)
             .map(categoryService::createCategory)
             .orElse(CompletableFuture.completedFuture(Optional.empty()));
     }
@@ -585,7 +585,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
 
         final List<UpdateAction<Category>> updateActions = buildActions(oldCategory, newCategory, syncOptions);
         final List<UpdateAction<Category>> beforeUpdateCallBackApplied =
-            syncOptions.applyBeforeUpdateCallBack(updateActions, newCategory, oldCategory);
+            syncOptions.applyBeforeUpdateCallback(updateActions, newCategory, oldCategory);
 
         if (!beforeUpdateCallBackApplied.isEmpty()) {
             return updateCategory(oldCategory, newCategory, beforeUpdateCallBackApplied);

@@ -238,7 +238,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
         @Nonnull final ProductTypeDraft productTypeDraft) {
 
         return syncOptions
-            .applyBeforeCreateCallBack(productTypeDraft)
+            .applyBeforeCreateCallback(productTypeDraft)
             .map(draft -> productTypeService
                 .createProductType(draft)
                 .thenApply(productTypeOptional -> {
@@ -262,7 +262,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
         final List<UpdateAction<ProductType>> updateActions = buildActions(oldProductType, newProductType, syncOptions);
 
         final List<UpdateAction<ProductType>> updateActionsAfterCallback =
-            syncOptions.applyBeforeUpdateCallBack(updateActions, newProductType, oldProductType);
+            syncOptions.applyBeforeUpdateCallback(updateActions, newProductType, oldProductType);
 
         if (!updateActionsAfterCallback.isEmpty()) {
             return updateProductType(oldProductType, newProductType, updateActionsAfterCallback);

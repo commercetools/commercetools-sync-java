@@ -1,7 +1,7 @@
 package com.commercetools.sync.integration.inventories;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.utils.QuadriConsumer;
+import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.inventories.InventorySync;
 import com.commercetools.sync.inventories.InventorySyncOptions;
 import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
@@ -390,9 +390,9 @@ public class InventorySyncIT {
 
         //Prepare sync options and perform sync of draft to target project.
         final AtomicInteger invocationCounter = new AtomicInteger(0);
-        QuadriConsumer<SyncException, Optional<InventoryEntry>, Optional<InventoryEntryDraft>,
-            Optional<List<UpdateAction<InventoryEntry>>>> countingErrorCallback =
-                (exception, oldResource, newResource, updateActions) -> invocationCounter.incrementAndGet();
+        QuadConsumer<SyncException, Optional<InventoryEntryDraft>, Optional<InventoryEntry>,
+                    List<UpdateAction<InventoryEntry>>> countingErrorCallback =
+                        (exception, newResource, oldResource, updateActions) -> invocationCounter.incrementAndGet();
         final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
             .errorCallback(countingErrorCallback)
             .ensureChannels(false).build();

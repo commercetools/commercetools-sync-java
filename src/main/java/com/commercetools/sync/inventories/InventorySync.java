@@ -273,7 +273,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         final List<UpdateAction<InventoryEntry>> updateActions = buildActions(oldInventoryEntry, newInventoryEntry,
             syncOptions);
         final List<UpdateAction<InventoryEntry>> beforeUpdateCallBackApplied =
-            syncOptions.applyBeforeUpdateCallBack(updateActions, newInventoryEntry, oldInventoryEntry);
+            syncOptions.applyBeforeUpdateCallback(updateActions, newInventoryEntry, oldInventoryEntry);
 
 
         if (!beforeUpdateCallBackApplied.isEmpty()) {
@@ -302,7 +302,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @return a future which contains an empty result after execution of the create.
      */
     private CompletionStage<Void> create(@Nonnull final InventoryEntryDraft draft) {
-        return syncOptions.applyBeforeCreateCallBack(draft)
+        return syncOptions.applyBeforeCreateCallback(draft)
                 .map(inventoryService::createInventoryEntry)
                 .map(creationFuture -> creationFuture
                                 .thenAccept(createdInventory -> statistics.incrementCreated())

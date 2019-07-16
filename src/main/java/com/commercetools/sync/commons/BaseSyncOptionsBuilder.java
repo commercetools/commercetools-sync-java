@@ -1,7 +1,7 @@
 package com.commercetools.sync.commons;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.utils.QuadriConsumer;
+import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.client.SphereClient;
@@ -16,8 +16,8 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
     S extends BaseSyncOptions, U, V> {
 
     protected SphereClient ctpClient;
-    protected QuadriConsumer<SyncException, Optional<U>, Optional<V>, Optional<List<UpdateAction<U>>>> errorCallback;
-    protected TriConsumer<SyncException, Optional<U>, Optional<V>> warningCallback;
+    protected QuadConsumer<SyncException, Optional<V>, Optional<U>, List<UpdateAction<U>>> errorCallback;
+    protected TriConsumer<SyncException, Optional<V>, Optional<U>> warningCallback;
     protected int batchSize = 30;
     protected TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>> beforeUpdateCallback;
     protected Function<V, V> beforeCreateCallback;
@@ -29,8 +29,8 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
      * @param errorCallback the new value to set to the error callback.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public T errorCallback(@Nonnull final QuadriConsumer<SyncException, Optional<U>, Optional<V>,
-        Optional<List<UpdateAction<U>>>> errorCallback) {
+    public T errorCallback(@Nonnull final QuadConsumer<SyncException, Optional<V>, Optional<U>,
+            List<UpdateAction<U>>> errorCallback) {
         this.errorCallback = errorCallback;
         return getThis();
     }
@@ -42,7 +42,7 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
      * @param warningCallback the new value to set to the warning callback.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public T warningCallback(@Nonnull final TriConsumer<SyncException, Optional<U>, Optional<V>> warningCallback) {
+    public T warningCallback(@Nonnull final TriConsumer<SyncException, Optional<V>, Optional<U>> warningCallback) {
         this.warningCallback = warningCallback;
         return getThis();
     }

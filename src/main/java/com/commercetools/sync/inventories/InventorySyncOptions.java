@@ -2,7 +2,7 @@ package com.commercetools.sync.inventories;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.utils.QuadriConsumer;
+import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.client.SphereClient;
@@ -21,18 +21,18 @@ public final class InventorySyncOptions extends BaseSyncOptions<InventoryEntry, 
 
     InventorySyncOptions(
         @Nonnull final SphereClient ctpClient,
-        @Nullable final QuadriConsumer<SyncException, Optional<InventoryEntry>, Optional<InventoryEntryDraft>,
-            Optional<List<UpdateAction<InventoryEntry>>>> updateActionErrorCallBack,
-        @Nullable final TriConsumer<SyncException, Optional<InventoryEntry>, Optional<InventoryEntryDraft>>
-            updateActionWarningCallBack,
+        @Nullable final QuadConsumer<SyncException, Optional<InventoryEntryDraft>, Optional<InventoryEntry>,
+                    List<UpdateAction<InventoryEntry>>> errorCallback,
+        @Nullable final TriConsumer<SyncException, Optional<InventoryEntryDraft>, Optional<InventoryEntry>>
+            warningCallback,
         final int batchSize,
         boolean ensureChannels,
         @Nullable final TriFunction<List<UpdateAction<InventoryEntry>>, InventoryEntryDraft,
             InventoryEntry, List<UpdateAction<InventoryEntry>>> beforeUpdateCallback,
         @Nullable final Function<InventoryEntryDraft, InventoryEntryDraft> beforeCreateCallback) {
         super(ctpClient,
-            updateActionErrorCallBack,
-            updateActionWarningCallBack,
+            errorCallback,
+            warningCallback,
             batchSize,
             beforeUpdateCallback,
             beforeCreateCallback);

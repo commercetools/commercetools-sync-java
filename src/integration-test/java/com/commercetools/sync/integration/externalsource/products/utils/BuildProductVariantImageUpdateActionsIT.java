@@ -1,7 +1,7 @@
 package com.commercetools.sync.integration.externalsource.products.utils;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.utils.QuadriConsumer;
+import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
 import com.commercetools.sync.products.ProductSync;
@@ -78,14 +78,13 @@ public class BuildProductVariantImageUpdateActionsIT {
         clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
 
-        final QuadriConsumer<SyncException,Optional<Product>, Optional<ProductDraft>,
-            Optional<List<UpdateAction<Product>>>> errorCallBack =
-                (exception, oldResource, newResource, updateActions) -> {
+        final QuadConsumer<SyncException,Optional<ProductDraft>, Optional<Product>, List<UpdateAction<Product>>>
+                errorCallBack = (exception, newResource, oldResource, updateActions) -> {
                     errorCallBackMessages.add(exception.getMessage());
                     errorCallBackExceptions.add(exception.getCause());
                 };
-        final TriConsumer<SyncException, Optional<Product>, Optional<ProductDraft>> warningCallBack =
-            (exception, oldResource, newResource) -> warningCallBackMessages.add(exception.getMessage());
+        final TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>> warningCallBack =
+            (exception, newResource, oldResource) -> warningCallBackMessages.add(exception.getMessage());
 
         final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
             updateActionsCollector = (updateActions, newDraft, oldProduct) -> {

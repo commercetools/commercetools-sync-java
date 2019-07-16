@@ -1,7 +1,7 @@
 package com.commercetools.sync.benchmark;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.utils.QuadriConsumer;
+import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.types.TypeSync;
 import com.commercetools.sync.types.TypeSyncOptions;
@@ -75,13 +75,13 @@ public class TypeSyncBenchmark {
 
     @Nonnull
     private TypeSyncOptions buildSyncOptions() {
-        final QuadriConsumer<SyncException, Optional<Type>, Optional<TypeDraft>, Optional<List<UpdateAction<Type>>>>
-            errorCallBack = (exception, oldResource, newResource, updateActions) -> {
+        final QuadConsumer<SyncException, Optional<TypeDraft>, Optional<Type>, List<UpdateAction<Type>>>
+            errorCallBack = (exception, newResource, oldResource, updateActions) -> {
                 errorCallBackMessages.add(exception.getMessage());
                 errorCallBackExceptions.add(exception.getCause());
             };
-        final TriConsumer<SyncException, Optional<Type>, Optional<TypeDraft>> warningCallBack =
-            (exception, oldResource, newResource) -> warningCallBackMessages.add(exception.getMessage());
+        final TriConsumer<SyncException, Optional<TypeDraft>, Optional<Type>> warningCallBack =
+            (exception, newResource, oldResource) -> warningCallBackMessages.add(exception.getMessage());
         return TypeSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                      .errorCallback(errorCallBack)
                                      .warningCallback(warningCallBack)
