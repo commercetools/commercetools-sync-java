@@ -7,8 +7,10 @@ import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
 import io.sphere.sdk.cartdiscounts.commands.CartDiscountCreateCommand;
 import io.sphere.sdk.cartdiscounts.commands.CartDiscountUpdateCommand;
+import io.sphere.sdk.cartdiscounts.expansion.CartDiscountExpansionModel;
 import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
 import io.sphere.sdk.cartdiscounts.queries.CartDiscountQueryBuilder;
+import io.sphere.sdk.cartdiscounts.queries.CartDiscountQueryModel;
 import io.sphere.sdk.commands.UpdateAction;
 
 import javax.annotation.Nonnull;
@@ -24,11 +26,17 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-public class CartDiscountServiceImpl extends BaseService<CartDiscountDraft, CartDiscount, CartDiscountSyncOptions>
+public class CartDiscountServiceImpl extends BaseService<CartDiscountDraft, CartDiscount, CartDiscountSyncOptions,
+    CartDiscountQuery, CartDiscountQueryModel, CartDiscountExpansionModel<CartDiscount>>
     implements CartDiscountService {
 
     public CartDiscountServiceImpl(@Nonnull final CartDiscountSyncOptions syncOptions) {
         super(syncOptions);
+    }
+
+    @Nonnull
+    CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
+        return CompletableFuture.completedFuture(Optional.empty());
     }
 
     @Nonnull

@@ -8,7 +8,9 @@ import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.ProductUpdateCommand;
+import io.sphere.sdk.products.expansion.ProductExpansionModel;
 import io.sphere.sdk.products.queries.ProductQuery;
+import io.sphere.sdk.products.queries.ProductQueryModel;
 import io.sphere.sdk.queries.QueryPredicate;
 import org.apache.commons.lang3.StringUtils;
 
@@ -29,8 +31,8 @@ import static java.util.Collections.singleton;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 
-public final class ProductServiceImpl
-    extends BaseService<ProductDraft, Product, ProductSyncOptions> implements ProductService {
+public final class ProductServiceImpl extends BaseService<ProductDraft, Product, ProductSyncOptions, ProductQuery,
+    ProductQueryModel, ProductExpansionModel<Product>> implements ProductService {
 
     public ProductServiceImpl(@Nonnull final ProductSyncOptions syncOptions) {
         super(syncOptions);
@@ -49,7 +51,7 @@ public final class ProductServiceImpl
     }
 
     @Nonnull
-    private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
+    CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
         return cacheKeysToIds(singleton(key)).thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
     }
 

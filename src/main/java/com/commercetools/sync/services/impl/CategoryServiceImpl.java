@@ -8,7 +8,9 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.categories.commands.CategoryUpdateCommand;
+import io.sphere.sdk.categories.expansion.CategoryExpansionModel;
 import io.sphere.sdk.categories.queries.CategoryQuery;
+import io.sphere.sdk.categories.queries.CategoryQueryModel;
 import io.sphere.sdk.commands.UpdateAction;
 
 import javax.annotation.Nonnull;
@@ -32,8 +34,8 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
  * Implementation of CategoryService interface.
  * TODO: USE graphQL to get only keys. GITHUB ISSUE#84
  */
-public final class CategoryServiceImpl extends BaseService<CategoryDraft, Category, CategorySyncOptions>
-    implements CategoryService {
+public final class CategoryServiceImpl extends BaseService<CategoryDraft, Category, CategorySyncOptions,
+    CategoryQuery, CategoryQueryModel, CategoryExpansionModel<Category>> implements CategoryService {
 
     private static final String CATEGORY_KEY_NOT_SET = "Category with id: '%s' has no key set. Keys are required for "
         + "category matching.";
@@ -120,7 +122,7 @@ public final class CategoryServiceImpl extends BaseService<CategoryDraft, Catego
         return fetchAndCache(key);
     }
 
-    private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
+    CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
         return cacheKeysToIds()
             .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
     }
