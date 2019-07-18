@@ -21,6 +21,7 @@ import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
 import com.commercetools.sync.services.impl.StateServiceImpl;
 import com.commercetools.sync.services.impl.TaxCategoryServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
+import com.commercetools.sync.states.StateSyncOptionsBuilder;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
@@ -43,7 +44,6 @@ import java.util.stream.Collectors;
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.products.utils.ProductSyncUtils.buildActions;
-import static io.sphere.sdk.states.StateType.PRODUCT_STATE;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 import static java.util.Optional.empty;
@@ -82,7 +82,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                 new ChannelServiceImpl(productSyncOptions),
                 new CustomerGroupServiceImpl(productSyncOptions),
                 new TaxCategoryServiceImpl(productSyncOptions),
-                new StateServiceImpl(productSyncOptions, PRODUCT_STATE));
+                new StateServiceImpl(StateSyncOptionsBuilder.of(productSyncOptions.getCtpClient()).build()));
     }
 
     ProductSync(@Nonnull final ProductSyncOptions productSyncOptions, @Nonnull final ProductService productService,

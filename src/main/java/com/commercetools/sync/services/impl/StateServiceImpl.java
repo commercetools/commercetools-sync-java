@@ -1,60 +1,46 @@
 package com.commercetools.sync.services.impl;
 
-import com.commercetools.sync.commons.utils.CtpQueryUtils;
-import com.commercetools.sync.products.ProductSyncOptions;
+import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.services.StateService;
+import com.commercetools.sync.states.StateSyncOptions;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.states.State;
+import io.sphere.sdk.states.StateDraft;
 import io.sphere.sdk.states.StateType;
+import io.sphere.sdk.states.commands.StateCreateCommand;
+import io.sphere.sdk.states.commands.StateUpdateCommand;
+import io.sphere.sdk.states.expansion.StateExpansionModel;
 import io.sphere.sdk.states.queries.StateQuery;
+import io.sphere.sdk.states.queries.StateQueryModel;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
 
 import static java.lang.String.format;
-import static org.apache.commons.lang3.StringUtils.isBlank;
+import static java.util.Collections.singleton;
 
-public final class StateServiceImpl implements StateService {
-    private final ProductSyncOptions syncOptions;
-    private final StateType stateType;
-    private final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
+public final class StateServiceImpl extends BaseService<StateDraft, State, BaseSyncOptions, StateQuery,
+    StateQueryModel, StateExpansionModel<State>> implements StateService {
 
-    public StateServiceImpl(@Nonnull final ProductSyncOptions syncOptions,
-                            @Nonnull final StateType stateType) {
-        this.syncOptions = syncOptions;
-        this.stateType = stateType;
+    public StateServiceImpl(@Nonnull final StateSyncOptions syncOptions) {
+        super(syncOptions);
     }
 
     @Nonnull
     @Override
     public CompletionStage<Optional<String>> fetchCachedStateId(@Nullable final String key) {
-        if (isBlank(key)) {
-            return CompletableFuture.completedFuture(Optional.empty());
-        }
-        if (keyToIdCache.isEmpty()) {
-            return fetchAndCache(key);
-        }
-        return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
+        return fetchCachedResourceId(key);
     }
 
     @Nonnull
-    private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
-        final Consumer<List<State>> statePageConsumer = statePage ->
-            statePage.forEach(state -> {
-                final String fetchedStateKey = state.getKey();
-                final String id = state.getId();
-                keyToIdCache.put(fetchedStateKey, id);
-            });
-
-        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), buildStateQuery(stateType), statePageConsumer)
-                            .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
+    @Override
+    CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
+        return fetchAndCache(key, StateQuery::of, State::getKey, "State");
     }
 
     /**
@@ -68,4 +54,51 @@ public final class StateServiceImpl implements StateService {
             QueryPredicate.of(format("type= \"%s\"", stateType.toSphereName()));
         return StateQuery.of().withPredicates(stateQueryPredicate);
     }
+
+    @Nonnull
+    @Override
+    public CompletionStage<Set<State>> fetchMatchingStatesByKeys(@Nonnull final Set<String> stateKeys) {
+        return fetchMatchingStates(stateKeys, false);
+    }
+
+    @Nonnull
+    @Override
+    public CompletionStage<Set<State>> fetchMatchingStatesByKeysWithTransitions(@Nonnull final Set<String> stateKeys) {
+        return fetchMatchingStates(stateKeys, true);
+    }
+
+    private CompletionStage<Set<State>> fetchMatchingStates(@Nonnull final Set<String> stateKeys,
+                                                            boolean withTransitions) {
+        return fetchMatchingResources(
+            stateKeys,
+            () -> {
+                StateQuery stateQuery = StateQuery.of().withPredicates(buildResourceKeysQueryPredicate(stateKeys));
+                if (withTransitions) {
+                    stateQuery = stateQuery.withExpansionPaths(StateExpansionModel::transitions);
+                }
+                return stateQuery;
+            },
+            State::getKey);
+    }
+
+    @Nonnull
+    @Override
+    public CompletionStage<Optional<State>> fetchState(@Nullable final String key) {
+        return fetchResource(key, () -> StateQuery.of().withPredicates(buildResourceKeysQueryPredicate(singleton(key))),
+            State::getKey);
+    }
+
+    @Nonnull
+    @Override
+    public CompletionStage<Optional<State>> createState(@Nonnull final StateDraft stateDraft) {
+        return createResource(stateDraft, StateDraft::getKey, StateCreateCommand::of);
+    }
+
+    @Nonnull
+    @Override
+    public CompletionStage<State> updateState(@Nonnull final State state,
+                                              @Nonnull final List<UpdateAction<State>> updateActions) {
+        return updateResource(state, StateUpdateCommand::of, updateActions);
+    }
+
 }
