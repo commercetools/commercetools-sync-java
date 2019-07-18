@@ -21,6 +21,7 @@ import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
 import com.commercetools.sync.services.impl.StateServiceImpl;
 import com.commercetools.sync.services.impl.TaxCategoryServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
+import com.commercetools.sync.taxcategories.TaxCategorySyncOptionsBuilder;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
@@ -81,7 +82,8 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                 new TypeServiceImpl(productSyncOptions),
                 new ChannelServiceImpl(productSyncOptions),
                 new CustomerGroupServiceImpl(productSyncOptions),
-                new TaxCategoryServiceImpl(productSyncOptions),
+                new TaxCategoryServiceImpl(TaxCategorySyncOptionsBuilder.of(productSyncOptions.getCtpClient())
+                    .warningCallback(productSyncOptions.getWarningCallBack()).build()),
                 new StateServiceImpl(productSyncOptions, PRODUCT_STATE));
     }
 
