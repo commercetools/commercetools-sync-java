@@ -232,7 +232,7 @@ class BaseServiceImplTest {
     @Test
     void fetchResource_WithNullKey_ShouldFetchNothing() {
         Optional<TestResource> optional = service.fetchResource(null,
-            () -> null, TestResource::getKey).toCompletableFuture().join();
+            () -> null).toCompletableFuture().join();
         assertThat(optional).isEmpty();
     }
 
@@ -250,7 +250,7 @@ class BaseServiceImplTest {
         when(client.execute(any())).thenReturn(completedFuture(result));
 
         Optional<TestResource> resourceOptional = service.fetchResource(resourceKey,
-            () -> mock(TestQuery.class), TestResource::getKey).toCompletableFuture().join();
+            () -> mock(TestQuery.class)).toCompletableFuture().join();
 
         assertAll(
             () -> assertThat(resourceOptional).isNotEmpty(),

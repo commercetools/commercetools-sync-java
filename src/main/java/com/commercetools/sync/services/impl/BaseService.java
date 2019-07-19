@@ -199,6 +199,7 @@ abstract class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions,
      * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion contains an
      *         {@link Optional} that contains the matching id if exists, otherwise empty.
      */
+    // TODO get rid of keyMapper when https://github.com/commercetools/commercetools-jvm-sdk/issues/1957 will be done
     CompletionStage<Optional<String>> fetchAndCache(@Nullable final String key,
                                                     @Nonnull final Supplier<Q> query,
                                                     @Nonnull final Function<U, String> keyMapper,
@@ -225,22 +226,23 @@ abstract class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions,
      * keys in the CTP project, defined in an injected {@link SphereClient}. A mapping of the key to the id
      * of the fetched resources is persisted in an in-memory map.
      *
-     * @param resourceKeys set of state keys to fetch matching states by
-     * @param query        a function to get query
-     * @param keyMapper    a function to get the key from the returned resource
+     * @param resourceKeys  set of state keys to fetch matching states by
+     * @param querySupplier a function to get query
+     * @param keyMapper     a function to get the key from the returned resource
      * @return {@link CompletionStage}&lt;{@link Set}&lt;{@code U}&gt;&gt; in which the result of it's completion
      *         contains a {@link Set} of all matching resources.
      */
     @Nonnull
+    // TODO get rid of keyMapper when https://github.com/commercetools/commercetools-jvm-sdk/issues/1957 will be done
     CompletionStage<Set<U>> fetchMatchingResources(@Nonnull final Set<String> resourceKeys,
-                                                   @Nonnull final Supplier<Q> query,
+                                                   @Nonnull final Supplier<Q> querySupplier,
                                                    @Nonnull final Function<U, String> keyMapper) {
         if (resourceKeys.isEmpty()) {
             return CompletableFuture.completedFuture(Collections.emptySet());
         }
 
         return CtpQueryUtils
-            .queryAll(syncOptions.getCtpClient(), query.get(), Function.identity())
+            .queryAll(syncOptions.getCtpClient(), querySupplier.get(), Function.identity())
             .thenApply(fetchedResources -> fetchedResources
                 .stream()
                 .flatMap(List::stream)
@@ -254,27 +256,25 @@ abstract class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions,
      * returned in the returned future. A mapping of the key to the id of the fetched category is persisted in an in
      * -memory map.
      *
-     * @param key       the key of the resource to fetch
-     * @param query     a function to get query
-     * @param keyMapper a function to get the key from the returned resource
+     * @param key           the key of the resource to fetch
+     * @param querySupplier a function to get query
      * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion contains an
      *         {@link Optional} that contains the matching {@code T} if exists, otherwise empty.
      */
     @Nonnull
     CompletionStage<Optional<U>> fetchResource(@Nullable final String key,
-                                               @Nonnull final Supplier<Q> query,
-                                               @Nonnull final Function<U, String> keyMapper) {
+                                               @Nonnull final Supplier<Q> querySupplier) {
         if (isBlank(key)) {
             return CompletableFuture.completedFuture(Optional.empty());
         }
 
         return syncOptions
             .getCtpClient()
-            .execute(query.get())
+            .execute(querySupplier.get())
             .thenApply(pagedQueryResult -> pagedQueryResult
                 .head()
                 .map(resource -> {
-                    keyToIdCache.put(keyMapper.apply(resource), resource.getId());
+                    keyToIdCache.put(key, resource.getId());
                     return resource;
                 }));
     }
