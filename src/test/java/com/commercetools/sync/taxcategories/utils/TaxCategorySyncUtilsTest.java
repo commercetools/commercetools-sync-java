@@ -17,6 +17,7 @@ import io.sphere.sdk.taxcategories.commands.updateactions.SetDescription;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static com.commercetools.sync.taxcategories.utils.TaxCategorySyncUtils.buildActions;
@@ -39,7 +40,7 @@ class TaxCategorySyncUtilsTest {
         when(taxCategory.getKey()).thenReturn(KEY);
         when(taxCategory.getDescription()).thenReturn(description);
 
-        final TaxCategoryDraft taxCategoryDraft = TaxCategoryDraftBuilder.of(name, null, description)
+        final TaxCategoryDraft taxCategoryDraft = TaxCategoryDraftBuilder.of(name, Collections.emptyList(), description)
             .key(KEY)
             .build();
 

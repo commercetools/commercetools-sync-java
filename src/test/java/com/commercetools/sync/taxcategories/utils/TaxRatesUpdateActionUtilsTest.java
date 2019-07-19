@@ -58,16 +58,16 @@ class TaxRatesUpdateActionUtilsTest {
 
         final SubRate rate1 = SubRate.of(SUB_RATE_NAME_1, SUB_RATE_AMOUNT_1);
         final SubRate rate2 = SubRate.of(SUB_RATE_NAME_2, SUB_RATE_AMOUNT_2);
-        when(oldTaxRate.getSubRates()).thenReturn(Arrays.asList(rate1, rate2));
+        when(oldTaxRate.getSubRates()).thenReturn(Arrays.asList(rate1, rate2, null));
 
         oldTaxRates = singletonList(oldTaxRate);
     }
 
     @Test
-    void buildTaxRatesUpdateActions_WithNewTaxRatesSetToNull_ShouldReturnOnlyRemovalActions()
+    void buildTaxRatesUpdateActions_WithNewTaxRatesSetToEmptyList_ShouldReturnOnlyRemovalActions()
         throws BuildUpdateActionException {
         final List<UpdateAction<TaxCategory>> updateActions = TaxRatesUpdateActionUtils
-            .buildTaxRatesUpdateActions(oldTaxRates, null);
+            .buildTaxRatesUpdateActions(oldTaxRates, emptyList());
 
         assertAll(
             () -> assertThat(updateActions).allMatch(ac -> ac instanceof RemoveTaxRate),
@@ -80,7 +80,8 @@ class TaxRatesUpdateActionUtilsTest {
         final SubRate rate1 = SubRate.of(SUB_RATE_NAME_1, SUB_RATE_AMOUNT_1);
         final SubRate rate2 = SubRate.of(SUB_RATE_NAME_2, SUB_RATE_AMOUNT_2);
 
-        final List<TaxRateDraft> newTaxRates = singletonList(
+        final List<TaxRateDraft> newTaxRates = Arrays.asList(
+            null,
             TaxRateDraftBuilder.of(NAME, AMOUNT, INCLUDED_IN_PRICE, COUNTRY_CODE)
                 .state(STATE)
                 .subRates(Arrays.asList(rate2, rate1)).build());

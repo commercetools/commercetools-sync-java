@@ -19,6 +19,9 @@ import static java.util.Collections.emptyList;
 
 public final class TaxCategoryUpdateActionUtils {
 
+    private TaxCategoryUpdateActionUtils() {
+    }
+
     /**
      * Compares the {@code name} values of a {@link TaxCategory} and a {@link TaxCategoryDraft}
      * and returns an {@link Optional} of update action, which would contain the {@code "changeName"}
@@ -33,6 +36,7 @@ public final class TaxCategoryUpdateActionUtils {
     public static Optional<UpdateAction<TaxCategory>> buildChangeNameAction(
         @Nonnull final TaxCategory oldTaxCategory,
         @Nonnull final TaxCategoryDraft newTaxCategory) {
+
         return buildUpdateAction(oldTaxCategory.getName(), newTaxCategory.getName(),
             () -> ChangeName.of(newTaxCategory.getName()));
     }
@@ -51,6 +55,7 @@ public final class TaxCategoryUpdateActionUtils {
     public static Optional<UpdateAction<TaxCategory>> buildSetDescriptionAction(
         @Nonnull final TaxCategory oldTaxCategory,
         @Nonnull final TaxCategoryDraft newTaxCategory) {
+
         return buildUpdateAction(oldTaxCategory.getDescription(), newTaxCategory.getDescription(),
             () -> SetDescription.of(newTaxCategory.getDescription()));
     }
@@ -59,7 +64,7 @@ public final class TaxCategoryUpdateActionUtils {
      * Compares the tax rates of a {@link TaxCategory} and a {@link TaxCategoryDraft} and returns a list of
      * {@link UpdateAction}&lt;{@link TaxCategory}&gt; as a result. If both the {@link TaxCategory} and
      * the {@link TaxCategoryDraft} have identical tax rates, then no update action is needed and hence an empty
-     * {@link List} is returned. In case, the new product type draft has a list of attributes in which a duplicate name
+     * {@link List} is returned. In case, the new tax category draft has a list of attributes in which a duplicate name
      * exists, the error callback is triggered and an empty list is returned.
      *
      * @param oldTaxCategory the tax category which should be updated.
@@ -74,6 +79,7 @@ public final class TaxCategoryUpdateActionUtils {
         @Nonnull final TaxCategory oldTaxCategory,
         @Nonnull final TaxCategoryDraft newTaxCategory,
         @Nonnull final TaxCategorySyncOptions syncOptions) {
+
         try {
             return buildTaxRatesUpdateActions(
                 oldTaxCategory.getTaxRates(),

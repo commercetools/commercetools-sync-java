@@ -12,12 +12,12 @@ import io.sphere.sdk.taxcategories.commands.updateactions.RemoveTaxRate;
 import io.sphere.sdk.taxcategories.commands.updateactions.ReplaceTaxRate;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -26,14 +26,20 @@ import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
+/**
+ * This class is only meant for the internal use of the commercetools-sync-java library.
+ */
 final class TaxRatesUpdateActionUtils {
+
+    private TaxRatesUpdateActionUtils() {
+    }
 
     /**
      * Compares a list of {@link TaxRate}s with a list of {@link TaxRateDraft}s to
      * returns a {@link List} of {@link UpdateAction}&lt;{@link TaxCategory}&gt;. If both lists have identical
      * TaxRates, then no update actions are needed and hence an empty {@link List} is returned.
      *
-     * <p>If the list of new {@link TaxRateDraft}s is {@code null}, then remove actions are built for
+     * <p>If the list of new {@link TaxRateDraft}s is empty, then remove actions are built for
      * every existing tax rate in the {@code oldTaxRates} list.
      *
      * <p>Note: The method will ignore/filter out {@code null} tax rates drafts from the passed
@@ -49,9 +55,10 @@ final class TaxRatesUpdateActionUtils {
     @Nonnull
     static List<UpdateAction<TaxCategory>> buildTaxRatesUpdateActions(
         @Nonnull final List<TaxRate> oldTaxRates,
-        @Nullable final List<TaxRateDraft> newTaxRatesDrafts)
+        @Nonnull final List<TaxRateDraft> newTaxRatesDrafts)
         throws BuildUpdateActionException {
-        if (newTaxRatesDrafts != null) {
+
+        if (!newTaxRatesDrafts.isEmpty()) {
             return buildUpdateActions(
                 oldTaxRates,
                 newTaxRatesDrafts.stream().filter(Objects::nonNull).collect(toList())
@@ -69,8 +76,7 @@ final class TaxRatesUpdateActionUtils {
     /**
      * Compares a list of {@link TaxRate}s with a list of {@link TaxRateDraft}s.
      * The method serves as an implementation for tax rates syncing. The method takes in functions
-     * for building the required update actions (AddAttribute, RemoveAttribute, ChangeAttributeOrder and 1-1
-     * update actions on tax rates (e.g. changeAttributeName, changeAttributeLabel, etc..) for the required
+     * for building the required update actions (AddTaxRate, ReplaceTaxRate, RemoveTaxRate) for the required
      * resource.
      *
      * @param oldTaxRates       the old list of tax rates.
@@ -87,7 +93,7 @@ final class TaxRatesUpdateActionUtils {
 
         try {
             final List<UpdateAction<TaxCategory>> updateActions =
-                buildRemoveTaxRateOrTaxRateUpdateActions(
+                buildRemoveOrReplaceTaxRateUpdateActions(
                     oldTaxRates,
                     newTaxRatesDrafts
                 );
@@ -114,13 +120,13 @@ final class TaxRatesUpdateActionUtils {
      * @param oldTaxRates       the list of old {@link TaxRate}s.
      * @param newTaxRatesDrafts the list of new {@link TaxRateDraft}s.
      * @return a list of tax rate update actions if there are tax rates that are not existing
-     *         in the new draft. If the tax rate still exists in the new draft, then compare the attribute
-     *         definition fields (name, label, etc..), and add the computed actions to the list of update actions.
+     *         in the new draft. If the tax rate still exists in the new draft, then compare the fields, and add
+     *         the computed actions to the list of update actions.
      *         Otherwise, if the tax rates are identical, an empty list is returned.
      * @throws DuplicateNameException in case there are tax rates drafts with duplicate names.
      */
     @Nonnull
-    private static List<UpdateAction<TaxCategory>> buildRemoveTaxRateOrTaxRateUpdateActions(
+    private static List<UpdateAction<TaxCategory>> buildRemoveOrReplaceTaxRateUpdateActions(
         @Nonnull final List<TaxRate> oldTaxRates,
         @Nonnull final List<TaxRateDraft> newTaxRatesDrafts) {
 
@@ -170,12 +176,13 @@ final class TaxRatesUpdateActionUtils {
     private static List<UpdateAction<TaxCategory>> buildAddTaxRateUpdateActions(
         @Nonnull final List<TaxRate> oldTaxRates,
         @Nonnull final List<TaxRateDraft> newTaxRateDrafts) {
+
         final Map<String, TaxRate> oldTaxRateNameMap = oldTaxRates.stream()
-            .collect(toMap(TaxRate::getName, attributeDefinition -> attributeDefinition));
+            .collect(toMap(TaxRate::getName, Function.identity()));
 
         return newTaxRateDrafts
             .stream()
-            .filter(attributeDefinitionDraft -> !oldTaxRateNameMap.containsKey(attributeDefinitionDraft.getName()))
+            .filter(taxRateDraft -> !oldTaxRateNameMap.containsKey(taxRateDraft.getName()))
             .map(AddTaxRate::of)
             .collect(Collectors.toList());
     }
@@ -185,7 +192,8 @@ final class TaxRatesUpdateActionUtils {
             && Objects.equals(oldTaxRate.getCountry(), newTaxRate.getCountry())
             && Objects.equals(oldTaxRate.getState(), newTaxRate.getState())
             && Objects.equals(oldTaxRate.isIncludedInPrice(), newTaxRate.isIncludedInPrice())
-            && sameSubRates(oldTaxRate.getSubRates(), newTaxRate.getSubRates());
+            && sameSubRates(oldTaxRate.getSubRates().stream().filter(Objects::nonNull).collect(toList()),
+            newTaxRate.getSubRates().stream().filter(Objects::nonNull).collect(toList()));
     }
 
     private static boolean sameSubRates(final List<SubRate> oldSubRates, final List<SubRate> newSubRates) {
