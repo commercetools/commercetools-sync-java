@@ -32,6 +32,9 @@ import static java.util.Collections.emptySet;
 
 public final class StateUpdateActionUtils {
 
+    private StateUpdateActionUtils() {
+    }
+
     /**
      * Compares the {@code type} values of a {@link State} and a {@link StateDraft}
      * and returns an {@link Optional} of update action, which would contain the {@code "changeType"}
@@ -46,6 +49,7 @@ public final class StateUpdateActionUtils {
     public static Optional<UpdateAction<State>> buildChangeTypeAction(
         @Nonnull final State oldState,
         @Nonnull final StateDraft newState) {
+
         return buildUpdateAction(oldState.getType(), newState.getType(),
             () -> ChangeType.of(newState.getType()));
     }
@@ -64,6 +68,7 @@ public final class StateUpdateActionUtils {
     public static Optional<UpdateAction<State>> buildSetNameAction(
         @Nonnull final State oldState,
         @Nonnull final StateDraft newState) {
+
         return buildUpdateAction(oldState.getName(), newState.getName(),
             () -> SetName.of(newState.getName()));
     }
@@ -82,6 +87,7 @@ public final class StateUpdateActionUtils {
     public static Optional<UpdateAction<State>> buildSetDescriptionAction(
         @Nonnull final State oldState,
         @Nonnull final StateDraft newState) {
+
         return buildUpdateAction(oldState.getDescription(), newState.getDescription(),
             () -> SetDescription.of(newState.getDescription()));
     }
@@ -100,6 +106,7 @@ public final class StateUpdateActionUtils {
     public static Optional<UpdateAction<State>> buildChangeInitialAction(
         @Nonnull final State oldState,
         @Nonnull final StateDraft newState) {
+
         return buildUpdateAction(oldState.isInitial(), newState.isInitial(),
             () -> ChangeInitial.of(Optional.ofNullable(newState.isInitial()).orElse(false)));
     }
@@ -118,6 +125,7 @@ public final class StateUpdateActionUtils {
     public static List<UpdateAction<State>> buildRolesUpdateActions(
         @Nonnull final State oldState,
         @Nonnull final StateDraft newState) {
+
         boolean emptyNew = newState.getRoles() == null || newState.getRoles().isEmpty();
         boolean emptyOld = oldState.getRoles() == null || oldState.getRoles().isEmpty();
 
@@ -166,6 +174,7 @@ public final class StateUpdateActionUtils {
         @Nonnull final StateDraft newState,
         @Nonnull final Map<String, String> keyToId,
         @Nonnull final Consumer<String> errorCallback) {
+
         boolean emptyNew = newState.getTransitions() == null || newState.getTransitions().isEmpty();
         boolean emptyOld = oldState.getTransitions() == null || oldState.getTransitions().isEmpty();
 
