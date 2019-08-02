@@ -56,7 +56,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     private final ProductTypeService productTypeService;
     private final ProductTypeReferenceResolver referenceResolver;
 
-    private Set<ProductType> readyToResolve = new HashSet<>();
+    private Set<String> readyToResolve = new HashSet<>();
 
     public ProductTypeSync(@Nonnull final ProductTypeSyncOptions productTypeSyncOptions) {
         this(productTypeSyncOptions, new ProductTypeServiceImpl(productTypeSyncOptions));
@@ -174,10 +174,10 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
         final Map<String, Set<UpdateAction<ProductType>>> toBeUpdatedMap = new HashMap<>();
 
         readyToResolve
-            .forEach(productType -> {
+            .forEach(productTypeKey -> {
                 final Set<Pair<String, UpdateAction<ProductType>>> actionsWaitingToResolveForCurrentParent = statistics
                     .getProductTypeKeysWithMissingParents()
-                    .get(productType.getKey());
+                    .get(productTypeKey);
 
                 if (actionsWaitingToResolveForCurrentParent != null) {
                     actionsWaitingToResolveForCurrentParent
@@ -562,7 +562,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                 .createProductType(draft)
                 .thenAccept(productTypeOptional -> {
                     if (productTypeOptional.isPresent()) {
-                        readyToResolve.add(productTypeOptional.get());
+                        readyToResolve.add(productTypeDraft.getKey());
                         statistics.incrementCreated();
                     } else {
                         statistics.incrementFailed();

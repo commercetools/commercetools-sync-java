@@ -90,7 +90,7 @@ public class ProductTypeSyncStatistics extends BaseSyncStatistics {
         }
     }
 
-    public void removeMissingParentKeys(@Nonnull final Set<ProductType> productTypes) {
-        productTypes.stream().map(ProductType::getKey).forEach(key -> productTypeKeysWithMissingParents.remove(key));
+    public void removeMissingParentKeys(@Nonnull final Set<String> keys) {
+        keys.forEach(key -> productTypeKeysWithMissingParents.remove(key));
     }
 }
