@@ -2,6 +2,7 @@ package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.utils.TriFunction;
+import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.expansion.ExpansionPathContainer;
@@ -9,13 +10,16 @@ import io.sphere.sdk.models.Resource;
 import io.sphere.sdk.models.WithKey;
 import io.sphere.sdk.queries.MetaModelQueryDsl;
 import io.sphere.sdk.queries.PagedQueryResult;
-import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.queries.QuerySort;
 import io.sphere.sdk.queries.ResourceQueryModel;
+import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -112,7 +116,7 @@ class BaseServiceImplTest {
 
     @BeforeEach
     void setup() {
-        TestSyncOptions syncOptions = new TestSyncOptions(client, null, warningCallback, 20, null, null);
+        final TestSyncOptions syncOptions = new TestSyncOptions(client, null, warningCallback, 20, null, null);
         service = new TestServiceImpl(syncOptions);
     }
 
@@ -121,70 +125,90 @@ class BaseServiceImplTest {
         reset(client, query, resource, warningCallback);
     }
 
-    @Test
-    void fetchCachedResourceId_WithEmptyKey_ShouldReturnEmpty() {
-        Optional<String> result = service.fetchCachedResourceId("").toCompletableFuture().join();
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {" "})
+    void fetchCachedResourceId_WithInvalidKey_ShouldReturnEmpty(final String key) {
+        //test
+        final Optional<String> result = service.fetchCachedResourceId(key).toCompletableFuture().join();
 
+        //assertions
         assertThat(result).isEmpty();
+        verify(client, never()).execute(any(TestQuery.class));
     }
 
     @Test
     void fetchCachedResourceId_WithFetchReturnResourceWithoutKey_ShouldReturnEmptyAndTriggerWarningCallback() {
+        //preparation
         when(query.sort()).thenReturn(Collections.singletonList(QuerySort.of("id asc")));
         when(query.withLimit(any())).thenReturn(query);
 
-        PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
+        final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
         when(pagedQueryResult.getResults()).thenReturn(Collections.singletonList(resource));
 
         when(resource.getKey()).thenReturn(null);
 
         when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(pagedQueryResult));
 
-        Optional<String> result = service.fetchCachedResourceId("testKey").toCompletableFuture().join();
+        //test
+        final Optional<String> result = service.fetchCachedResourceId("testKey").toCompletableFuture().join();
 
+        //assertions
         assertThat(result).isEmpty();
         verify(warningCallback).accept(any());
     }
 
     @Test
     void fetchCachedResourceId_WithFetchReturnResource_ShouldReturnResourceId() {
+        //preparation
         when(query.sort()).thenReturn(Collections.singletonList(QuerySort.of("id asc")));
         when(query.withLimit(any())).thenReturn(query);
 
-        PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
+        final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
         when(pagedQueryResult.getResults()).thenReturn(Collections.singletonList(resource));
 
-        String key = "testKey";
-        String id = "testId";
+        final String key = "testKey";
+        final String id = "testId";
         when(resource.getKey()).thenReturn(key);
         when(resource.getId()).thenReturn(id);
 
         when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(pagedQueryResult));
 
-        String result = service.fetchCachedResourceId(key).toCompletableFuture().join().orElse(null);
+        //test
+        final String result = service.fetchCachedResourceId(key).toCompletableFuture().join().orElse(null);
 
+        //assertions
         assertThat(result).isEqualTo(id);
 
+        //additional cleanup
         service.clearCached();
     }
 
     @Test
-    void fetchCachedResourceId_WithCachedResource_ShouldReturnResourceId() {
-        String key = "testKey";
-        String id = "testId";
+    void fetchCachedResourceId_WithCachedResource_ShouldReturnResourceIdWithoutMakingRequest() {
+        //preparation
+        final String key = "testKey";
+        final String id = "testId";
         service.cache(key, id);
 
-        String result = service.fetchCachedResourceId(key).toCompletableFuture().join().orElse(null);
+        //test
+        final String result = service.fetchCachedResourceId(key).toCompletableFuture().join().orElse(null);
 
+        //assertions
         assertThat(result).isEqualTo(id);
+        verify(client, never()).execute(any(TestQuery.class));
 
+        //additional cleanup
         service.clearCached();
     }
 
     @Test
-    void fetchMatchingResources_WithEmptyKeySet_ShouldFetchNothing() {
-        Set<TestResource> resources = service.fetchMatchingResources(new HashSet<>(),
+    void fetchMatchingResources_WithEmptyKeySet_ShouldFetchAndCacheNothing() {
+        //test
+        final Set<TestResource> resources = service.fetchMatchingResources(new HashSet<>(),
             () -> null, TestResource::getKey).toCompletableFuture().join();
+
+        //assertions
         assertAll(
             () -> assertThat(resources).isEmpty(),
             () -> assertThat(service.keyToIdCache).isEmpty()
@@ -193,36 +217,38 @@ class BaseServiceImplTest {
     }
 
     @Test
-    void fetchMatchingResources_WithKeySet_ShouldFetchResources() {
-        String key1 = RandomStringUtils.random(15);
-        String key2 = RandomStringUtils.random(15);
+    void fetchMatchingResources_WithKeySet_ShouldFetchResourcesAndCacheKeys() {
+        //preparation
+        final String key1 = RandomStringUtils.random(15);
+        final String key2 = RandomStringUtils.random(15);
 
-        HashSet<String> resourceKeys = new HashSet<>();
+        final HashSet<String> resourceKeys = new HashSet<>();
         resourceKeys.add(key1);
         resourceKeys.add(key2);
 
-        TestResource mock1 = mock(TestResource.class);
+        final TestResource mock1 = mock(TestResource.class);
         when(mock1.getId()).thenReturn(RandomStringUtils.random(15));
         when(mock1.getKey()).thenReturn(key1);
 
-        TestResource mock2 = mock(TestResource.class);
+        final TestResource mock2 = mock(TestResource.class);
         when(mock2.getId()).thenReturn(RandomStringUtils.random(15));
         when(mock2.getKey()).thenReturn(key2);
 
-        TestPagedQueryResult result = mock(TestPagedQueryResult.class);
+        final TestPagedQueryResult result = mock(TestPagedQueryResult.class);
         when(result.getResults()).thenReturn(Arrays.asList(mock1, mock2));
 
-        when(client.execute(any())).thenReturn(completedFuture(result));
+        when(client.execute(any(TestQuery.class))).thenReturn(completedFuture(result));
 
-        TestQuery testQuery = mock(TestQuery.class);
+        final TestQuery testQuery = mock(TestQuery.class);
         when(testQuery.sort()).thenReturn(Collections.singletonList(QuerySort.of("id asc")));
         when(testQuery.withLimit(anyLong())).thenReturn(testQuery);
 
-        Set<TestResource> resources = service.fetchMatchingResources(resourceKeys,
+        //test
+        final Set<TestResource> resources = service.fetchMatchingResources(resourceKeys,
             () -> testQuery, TestResource::getKey).toCompletableFuture().join();
 
+        //assertions
         assertAll(
-            () -> assertThat(resources).isNotEmpty(),
             () -> assertThat(resources).contains(mock1, mock2),
             () -> assertThat(service.keyToIdCache).containsKeys(key1, key2)
         );
@@ -230,30 +256,65 @@ class BaseServiceImplTest {
     }
 
     @Test
-    void fetchResource_WithNullKey_ShouldFetchNothing() {
-        Optional<TestResource> optional = service.fetchResource(null,
+    void fetchMatchingResources_WithBadGateWayException_ShouldCompleteExceptionally() {
+        //preparation
+        final String key1 = RandomStringUtils.random(15);
+        final String key2 = RandomStringUtils.random(15);
+
+        final HashSet<String> resourceKeys = new HashSet<>();
+        resourceKeys.add(key1);
+        resourceKeys.add(key2);
+
+        when(client.execute(any(TestQuery.class)))
+            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
+
+
+        final TestQuery testQuery = mock(TestQuery.class);
+        when(testQuery.sort()).thenReturn(Collections.singletonList(QuerySort.of("id asc")));
+        when(testQuery.withLimit(anyLong())).thenReturn(testQuery);
+
+        //test
+        final CompletionStage<Set<TestResource>> result = service.fetchMatchingResources(resourceKeys,
+            () -> testQuery, TestResource::getKey);
+
+        //assertions
+        assertThat(result).hasFailedWithThrowableThat().isExactlyInstanceOf(BadGatewayException.class);
+        verify(client).execute(any(TestQuery.class));
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {" "})
+    void fetchResource_WithInvalidKey_ShouldFetchNothing(final String key) {
+        //test
+        final Optional<TestResource> optional = service.fetchResource(key,
             () -> null).toCompletableFuture().join();
+
+        //assertions
         assertThat(optional).isEmpty();
+        verify(client, never()).execute(any(TestQuery.class));
     }
 
     @Test
     void fetchResource_WithKey_ShouldFetchResource() {
-        String resourceId = RandomStringUtils.random(15);
-        String resourceKey = RandomStringUtils.random(15);
+        //preparation
+        final String resourceId = RandomStringUtils.random(15);
+        final String resourceKey = RandomStringUtils.random(15);
 
-        TestResource mock = mock(TestResource.class);
+        final TestResource mock = mock(TestResource.class);
         when(mock.getId()).thenReturn(resourceId);
         when(mock.getKey()).thenReturn(resourceKey);
-        TestPagedQueryResult result = mock(TestPagedQueryResult.class);
+        final TestPagedQueryResult result = mock(TestPagedQueryResult.class);
         when(result.head()).thenReturn(Optional.of(mock));
 
         when(client.execute(any())).thenReturn(completedFuture(result));
 
-        Optional<TestResource> resourceOptional = service.fetchResource(resourceKey,
+        //test
+        final Optional<TestResource> resourceOptional = service.fetchResource(resourceKey,
             () -> mock(TestQuery.class)).toCompletableFuture().join();
 
+        //assertions
         assertAll(
-            () -> assertThat(resourceOptional).isNotEmpty(),
             () -> assertThat(resourceOptional).containsSame(mock),
             () -> assertThat(service.keyToIdCache.get(resourceKey)).isEqualTo(resourceId)
         );
@@ -261,42 +322,18 @@ class BaseServiceImplTest {
     }
 
     @Test
-    void buildResourceKeysQueryPredicate_WithEmptyKeySet_ShouldBuildQueryPredicate() {
-        QueryPredicate<TestResource> queryPredicate = service.buildResourceKeysQueryPredicate(new HashSet<>());
+    void fetchResource_WithBadGateWayException_ShouldCompleteExceptionally() {
+        //preparation
+        when(client.execute(any(TestQuery.class)))
+            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
 
-        assertThat(queryPredicate.toSphereQuery()).isEqualTo("key in ()");
-    }
+        //test
+        final CompletionStage<Optional<TestResource>> result = service.fetchResource("foo",
+            () -> mock(TestQuery.class));
 
-    @Test
-    void buildResourceKeysQueryPredicate_WithKeySet_ShouldBuildQueryPredicate() {
-        String key1 = RandomStringUtils.random(15);
-        String key2 = RandomStringUtils.random(15);
-
-        HashSet<String> stateKeys = new HashSet<>();
-        stateKeys.add(key1);
-        stateKeys.add(key2);
-
-        QueryPredicate<TestResource> queryPredicate = service.buildResourceKeysQueryPredicate(stateKeys);
-
-        assertThat(queryPredicate.toSphereQuery())
-            .isIn("key in (\"" + key1 + "\", \"" + key2 + "\")", "key in (\"" + key2 + "\", \"" + key1 + "\")");
-    }
-
-    @Test
-    void buildResourceKeysQueryPredicate_WithKeySetContainingInvalidKeys_ShouldBuildQueryPredicate() {
-        String key1 = RandomStringUtils.random(15);
-        String key2 = RandomStringUtils.random(15);
-
-        HashSet<String> stateKeys = new HashSet<>();
-        stateKeys.add(key1);
-        stateKeys.add(key2);
-        stateKeys.add("");
-        stateKeys.add(null);
-
-        QueryPredicate<TestResource> queryPredicate = service.buildResourceKeysQueryPredicate(stateKeys);
-
-        assertThat(queryPredicate.toSphereQuery())
-            .isIn("key in (\"" + key1 + "\", \"" + key2 + "\")", "key in (\"" + key2 + "\", \"" + key1 + "\")");
+        //assertions
+        assertThat(result).hasFailedWithThrowableThat().isExactlyInstanceOf(BadGatewayException.class);
+        verify(client).execute(any(TestQuery.class));
     }
 
 }

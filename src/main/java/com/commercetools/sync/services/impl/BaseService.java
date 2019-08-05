@@ -8,7 +8,6 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.commands.UpdateCommand;
 import io.sphere.sdk.models.Resource;
 import io.sphere.sdk.queries.MetaModelQueryDsl;
-import io.sphere.sdk.queries.QueryPredicate;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -192,16 +191,16 @@ abstract class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions,
     /**
      * The default implementation of the {@link #fetchAndCache(String)} abstract method.
      *
-     * @param key       the key by which a resource id should be fetched from the CTP project
-     * @param query     a function to get a query
-     * @param keyMapper a function to get the key from the returned resource
-     * @param typeName  a resource type name, f.e.: <i>ProductType</i>
+     * @param key           the key by which a resource id should be fetched from the CTP project
+     * @param querySupplier a function to get a query
+     * @param keyMapper     a function to get the key from the returned resource
+     * @param typeName      a resource type name, f.e.: <i>ProductType</i>
      * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion contains an
      *         {@link Optional} that contains the matching id if exists, otherwise empty.
      */
     // TODO get rid of keyMapper when https://github.com/commercetools/commercetools-jvm-sdk/issues/1957 will be done
     CompletionStage<Optional<String>> fetchAndCache(@Nullable final String key,
-                                                    @Nonnull final Supplier<Q> query,
+                                                    @Nonnull final Supplier<Q> querySupplier,
                                                     @Nonnull final Function<U, String> keyMapper,
                                                     @Nonnull final String typeName) {
         final Consumer<List<U>> resourcePageConsumer = resourcePage ->
@@ -217,7 +216,7 @@ abstract class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions,
             });
 
         return CtpQueryUtils
-            .queryAll(syncOptions.getCtpClient(), query.get(), resourcePageConsumer)
+            .queryAll(syncOptions.getCtpClient(), querySupplier.get(), resourcePageConsumer)
             .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
     }
 
@@ -277,32 +276,6 @@ abstract class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions,
                     keyToIdCache.put(key, resource.getId());
                     return resource;
                 }));
-    }
-
-    /**
-     * Builds query predicate based on provided set of keys.
-     *
-     * @param resourceKeys set of resource keys
-     * @return the query predicate with set of keys transformed into string
-     */
-    QueryPredicate<U> buildResourceKeysQueryPredicate(@Nonnull final Set<String> resourceKeys) {
-        return buildResourceQueryPredicate(resourceKeys, "key");
-    }
-
-    /**
-     * Builds query predicate based on provided set of values and property name.
-     *
-     * @param propertyValues set of resource property values
-     * @param propertyName   name of the property to create query for
-     * @return the query predicate with set of keys transformed into string
-     */
-    QueryPredicate<U> buildResourceQueryPredicate(@Nonnull final Set<String> propertyValues,
-                                                  @Nonnull final String propertyName) {
-        final String keysQueryString = propertyValues.stream()
-            .filter(StringUtils::isNotBlank)
-            .map(resourceKey -> format("\"%s\"", resourceKey))
-            .collect(Collectors.joining(", "));
-        return QueryPredicate.of(format("%s in (%s)", propertyName, keysQueryString));
     }
 
 }
