@@ -339,13 +339,13 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     }
 
 
-    private Map<String, Set<UpdateAction<ProductType>>> buildToBeUpdatedMap() {
+    private Map<String, Set<AttributeDefinitionDraft>> buildToBeUpdatedMap() {
 
-        final Map<String, Set<UpdateAction<ProductType>>> toBeUpdatedMap = new HashMap<>();
+        final Map<String, Set<AttributeDefinitionDraft>> toBeUpdatedMap = new HashMap<>();
 
         readyToResolve
             .forEach(missingProductTypeKey -> {
-                final ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<UpdateAction<ProductType>, Boolean>>
+                final ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>>
                     productTypesWaitingForMissingReference = statistics
                     .getProductTypeKeysWithMissingParents()
                     .get(missingProductTypeKey);
@@ -361,22 +361,22 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     }
 
     private static void putInToBeUpdated(
-        @Nonnull final Map<String, Set<UpdateAction<ProductType>>> toBeUpdatedMap,
+        @Nonnull final Map<String, Set<AttributeDefinitionDraft>> toBeUpdatedMap,
         @Nonnull final String productTypeKey,
-        @Nonnull final Set<UpdateAction<ProductType>> actions) {
+        @Nonnull final Set<AttributeDefinitionDraft> attributeDefinitionDrafts) {
 
-        final Set<UpdateAction<ProductType>> missingParentChildrenActions = toBeUpdatedMap.get(productTypeKey);
+        final Set<AttributeDefinitionDraft> missingParentChildrenActions = toBeUpdatedMap.get(productTypeKey);
 
         if (missingParentChildrenActions != null) {
-            missingParentChildrenActions.addAll(actions);
+            missingParentChildrenActions.addAll(attributeDefinitionDrafts);
         } else {
-            toBeUpdatedMap.put(productTypeKey, actions);
+            toBeUpdatedMap.put(productTypeKey, attributeDefinitionDrafts);
         }
     }
 
 
     private CompletionStage<Void> updateToBeUpdatedInParallel(
-        @Nonnull final Map<String, Set<UpdateAction<ProductType>>> toBeUpdatedMap) {
+        @Nonnull final Map<String, Set<AttributeDefinitionDraft>> toBeUpdatedMap) {
 
         final Set<String> keysToFetchToUpdate = toBeUpdatedMap.keySet();
         return productTypeService
@@ -400,12 +400,12 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                         .stream()
                         .map(entry -> {
                             final String productTypeToUpdateKey = entry.getKey();
-                            final Set<UpdateAction<ProductType>> updateActions = entry.getValue();
+                            final Set<AttributeDefinitionDraft> attributeDefinitionDrafts = entry.getValue();
                             //TODO: Wrong, update actions should be resolved before because they contain keys in the references not ids. --> DONE
 
                             // First make sure attr is resolved, so as not to have ids. Can't resolve here. Since reference is not in place.
-                            final List<UpdateAction<ProductType>> actionsWithResolvedReferences = resolveReferences(
-                                new ArrayList<>(updateActions));
+                            final List<UpdateAction<ProductType>> actionsWithResolvedReferences = draftsToActions(
+                                new ArrayList<>(attributeDefinitionDrafts));
                             final ProductType productTypeToUpdate = keyToProductType.get(productTypeToUpdateKey);
 
                             return updateProductType(productTypeToUpdate, actionsWithResolvedReferences);
@@ -418,18 +418,16 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     }
 
     @Nonnull
-    private List<UpdateAction<ProductType>> resolveReferences(
-        @Nonnull final List<UpdateAction<ProductType>> updateActions) {
+    private List<UpdateAction<ProductType>> draftsToActions(
+        @Nonnull final List<AttributeDefinitionDraft> attributeDefinitionDrafts) {
 
-        return updateActions
+        return attributeDefinitionDrafts
             .stream()
-            .map(action -> {
-                final AddAttributeDefinition addAttributeDefinition = (AddAttributeDefinition) (action);
-                final AttributeDefinitionDraft attribute = addAttributeDefinition.getAttribute();
+            .map(attributeDefinitionDraft -> {
                 final AttributeDefinitionReferenceResolver attributeDefinitionReferenceResolver =
                     new AttributeDefinitionReferenceResolver(syncOptions, productTypeService);
                 final AttributeDefinitionDraft resolvedDraft = attributeDefinitionReferenceResolver
-                    .resolveReferences(attribute)
+                    .resolveReferences(attributeDefinitionDraft)
                     .toCompletableFuture()
                     .join();
                 return AddAttributeDefinition.of(resolvedDraft);

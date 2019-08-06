@@ -1,10 +1,7 @@
 package com.commercetools.sync.producttypes.helpers;
 
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
-import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
-import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.producttypes.commands.updateactions.AddAttributeDefinition;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
@@ -20,29 +17,42 @@ import static java.lang.String.format;
 public class ProductTypeSyncStatistics extends BaseSyncStatistics {
 
     /**
-     * The following {@link Map} ({@code productTypeKeysWithMissingParents}) represents productTypes with
-     * missing parents.
+     * The following {@link ConcurrentHashMap} ({@code missingNestedProductTypes}) keeps track of the keys of missing
+     * product types, the keys of the product types which are referencing those missing product types and a list
+     * of update actions for each of the referencing product types which should be applied on the referencing product
+     * types as soon as the missing product types are available.
      *
      * <ul>
-     * <li>key: key of the missing parent productType</li>
-     * <li>value: a set of the parent's children productType keys</li>
+     * <li>key: key of the missing product type</li>
+     * <li>value: a map of which consists of:
+     *      <ul>
+     *          <li>key: key of the product type referencing the missing product type.</li>
+     *          <li>value: a set of the update actions which should be applied on the referencing product types as soon
+     *          as the missing product types are available. Each update action represents the attribute definition
+     *          which contains the reference to the missing product type.</li>
+     *      </ul>
+     * </li>
      * </ul>
+     *
+     * <p>Note: Update actions are used
      *
      * <p>The map is thread-safe (by instantiating it with {@link ConcurrentHashMap}) because it is accessed/modified in
      * a concurrent context, specifically when updating products in parallel in TODO: WHICH METHODS ACCESS IT IN PARALLEL.
      */
     private
-    ConcurrentHashMap<String, // -> missing referenced/parent productType Key
-        ConcurrentHashMap<String, // -> actual productType key that is referencing the parent productType key
-            ConcurrentHashMap.KeySetView<UpdateAction<ProductType>, Boolean>// -> The actions to apply
+    ConcurrentHashMap<String, // -> Key of missing nested productType
+        ConcurrentHashMap<String, // -> Key of actual productType that is referencing the nested productType
+            ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>// -> The actions to apply to on the
+            // referencing product type to resolve it's referenced nested product types when they are available.
             >
         >
-        missingProductTypeReferences = new ConcurrentHashMap<>();
+        missingNestedProductTypes = new ConcurrentHashMap<>();
 
-    ProductTypeSyncStatistics (@Nonnull final ConcurrentHashMap<String,
-        ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<UpdateAction<ProductType>, Boolean>>>
-                                   missingProductTypeReferences) {
-        this.missingProductTypeReferences = missingProductTypeReferences;
+    ProductTypeSyncStatistics (
+        @Nonnull final ConcurrentHashMap<String,
+            ConcurrentHashMap<String,
+                ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>>> missingNestedProductTypes) {
+        this.missingNestedProductTypes = missingNestedProductTypes;
     }
 
     public ProductTypeSyncStatistics() {
@@ -76,18 +86,18 @@ public class ProductTypeSyncStatistics extends BaseSyncStatistics {
 
         final Set<String> productTypesWithMissingReferences = new HashSet<>();
 
-        missingProductTypeReferences.values()
-                                    .stream()
-                                    .map(ConcurrentHashMap::keySet)
-                                    .flatMap(Collection::stream)
-                                    .forEach(productTypesWithMissingReferences::add);
+        missingNestedProductTypes.values()
+                                 .stream()
+                                 .map(ConcurrentHashMap::keySet)
+                                 .flatMap(Collection::stream)
+                                 .forEach(productTypesWithMissingReferences::add);
 
         return productTypesWithMissingReferences.size();
     }
 
-    public Map<String, ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<UpdateAction<ProductType>, Boolean>>>
+    public Map<String, ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>>>
     getProductTypeKeysWithMissingParents() {
-        return Collections.unmodifiableMap(missingProductTypeReferences);
+        return Collections.unmodifiableMap(missingNestedProductTypes);
     }
 
     /**
@@ -104,32 +114,32 @@ public class ProductTypeSyncStatistics extends BaseSyncStatistics {
                                                    @Nonnull final AttributeDefinitionDraft attributeDefinitionDraft) {
 
 
-        final ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<UpdateAction<ProductType>, Boolean>>
-            productTypesWaitingForMissingReference = missingProductTypeReferences.get(missingReferencedProductTypeKey);
+        final ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>>
+            productTypesWaitingForMissingReference = missingNestedProductTypes.get(missingReferencedProductTypeKey);
 
         if (productTypesWaitingForMissingReference != null) {
-            final ConcurrentHashMap.KeySetView<UpdateAction<ProductType>, Boolean> actions =
+            final ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean> attributeDefinitionDrafts =
                 productTypesWaitingForMissingReference.get(productTypeDraftKey);
 
-            if (actions != null) {
-                actions.add(AddAttributeDefinition.of(attributeDefinitionDraft));
+            if (attributeDefinitionDrafts != null) {
+                attributeDefinitionDrafts.add(attributeDefinitionDraft);
             } else {
-                final ConcurrentHashMap.KeySetView<UpdateAction<ProductType>, Boolean> newActions =
+                final ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean> newAttributeDefinitions =
                     ConcurrentHashMap.newKeySet();
-                newActions.add(AddAttributeDefinition.of(attributeDefinitionDraft));
-                productTypesWaitingForMissingReference.put(productTypeDraftKey, newActions);
+                newAttributeDefinitions.add(attributeDefinitionDraft);
+                productTypesWaitingForMissingReference.put(productTypeDraftKey, newAttributeDefinitions);
             }
 
         } else {
-            final ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<UpdateAction<ProductType>, Boolean>>
+            final ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>>
                 newProductTypesWaitingForMissingReference = new ConcurrentHashMap<>();
 
-            final ConcurrentHashMap.KeySetView<UpdateAction<ProductType>, Boolean> newActions =
+            final ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean> newAttributeDefinitions =
                 ConcurrentHashMap.newKeySet();
-            newActions.add(AddAttributeDefinition.of(attributeDefinitionDraft));
-            newProductTypesWaitingForMissingReference.put(productTypeDraftKey, newActions);
+            newAttributeDefinitions.add(attributeDefinitionDraft);
+            newProductTypesWaitingForMissingReference.put(productTypeDraftKey, newAttributeDefinitions);
 
-            missingProductTypeReferences.put(
+            missingNestedProductTypes.put(
                 missingReferencedProductTypeKey,
                 newProductTypesWaitingForMissingReference);
         }
@@ -137,11 +147,11 @@ public class ProductTypeSyncStatistics extends BaseSyncStatistics {
 
     public void removeProductTypeWaitingToBeResolvedKey(@Nonnull final String key) {
 
-        final Iterator<ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<UpdateAction<ProductType>, Boolean>>>
-            productTypesIterator = missingProductTypeReferences.values().iterator();
+        final Iterator<ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>>>
+            productTypesIterator = missingNestedProductTypes.values().iterator();
 
         while (productTypesIterator.hasNext()) {
-            final ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<UpdateAction<ProductType>, Boolean>>
+            final ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>>
                 productTypeActionsEntry = productTypesIterator.next();
 
             productTypeActionsEntry.remove(key);
