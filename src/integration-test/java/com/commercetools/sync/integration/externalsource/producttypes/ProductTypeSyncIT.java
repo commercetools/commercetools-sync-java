@@ -913,7 +913,7 @@ class ProductTypeSyncIT {
             ));
     }
 
-    private static void assertAttributesAreEqual(@Nonnull final List<AttributeDefinition> attributes,
+    public static void assertAttributesAreEqual(@Nonnull final List<AttributeDefinition> attributes,
                                                  @Nonnull final List<AttributeDefinitionDraft> attributesDrafts) {
 
         IntStream.range(0, attributesDrafts.size())
