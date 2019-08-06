@@ -2,6 +2,7 @@ package com.commercetools.sync.producttypes;
 
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.producttypes.helpers.AttributeDefinitionReferenceResolver;
 import com.commercetools.sync.producttypes.helpers.ProductTypeBatchProcessor;
 import com.commercetools.sync.producttypes.helpers.ProductTypeReferenceResolver;
 import com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics;
@@ -9,22 +10,32 @@ import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
+import io.sphere.sdk.products.attributes.AttributeType;
+import io.sphere.sdk.products.attributes.NestedAttributeType;
+import io.sphere.sdk.products.attributes.SetAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
+import io.sphere.sdk.producttypes.commands.updateactions.AddAttributeDefinition;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.producttypes.utils.ProductTypeSyncUtils.buildActions;
 import static java.lang.String.format;
+import static java.util.Collections.emptyMap;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
@@ -43,6 +54,14 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
 
     private final ProductTypeService productTypeService;
     private final ProductTypeReferenceResolver referenceResolver;
+
+    /**
+     * The following set ({@code readyToResolve}) is thread-safe because it is accessed/modified in a concurrent
+     * context, specifically when creating productTypes in parallel in
+     * {@link #applyCallbackAndCreate(ProductTypeDraft)}.  It has a local scope within every batch execution, which
+     * means that it is re-initialized on every {@link #processBatch(List)} call.
+     */
+    private ConcurrentHashMap.KeySetView<String, Boolean> readyToResolve = ConcurrentHashMap.newKeySet();
 
     public ProductTypeSync(@Nonnull final ProductTypeSyncOptions productTypeSyncOptions) {
         this(productTypeSyncOptions, new ProductTypeServiceImpl(productTypeSyncOptions));
@@ -106,26 +125,47 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     @Override
     protected CompletionStage<ProductTypeSyncStatistics> processBatch(@Nonnull final List<ProductTypeDraft> batch) {
 
+        readyToResolve = ConcurrentHashMap.newKeySet();
         final ProductTypeBatchProcessor batchProcessor = new ProductTypeBatchProcessor(batch, this);
         batchProcessor.validateBatch();
 
         final Set<String> keysToCache = batchProcessor.getKeysToCache();
 
-
         return productTypeService
-            .fetchMatchingProductTypesByKeys(keysToCache)
+            .cacheKeysToIds(keysToCache)
             .handle(ImmutablePair::new)
-            .thenCompose(fetchResponse -> {
-                final Set<ProductType> fetchedProductTypes = fetchResponse.getKey();
-                final Throwable exception = fetchResponse.getValue();
+            .thenCompose(cachingResponse -> {
 
-                if (exception != null) {
-                    final String errorMessage = format(CTP_PRODUCT_TYPE_FETCH_FAILED, keysToCache);
-                    handleError(errorMessage, exception, keysToCache.size());
+                final Map<String, String> keyToIdCache = cachingResponse.getKey();
+                final Throwable cachingException = cachingResponse.getValue();
+
+                if (cachingException != null) {
+                    handleError("Failed to build a cache of keys to ids.", cachingException, batch.size());
                     return CompletableFuture.completedFuture(null);
-                } else {
-                    return syncBatch(fetchedProductTypes, batchProcessor.getValidDrafts());
                 }
+
+
+                final Set<String> batchDraftKeys = batchProcessor.getValidDrafts()
+                                                                 .stream()
+                                                                 .map(ProductTypeDraft::getKey)
+                                                                 .collect(Collectors.toSet());
+
+                return productTypeService
+                    .fetchMatchingProductTypesByKeys(batchDraftKeys)
+                    .handle(ImmutablePair::new)
+                    .thenCompose(fetchResponse -> {
+                        final Set<ProductType> matchingProductTypes = fetchResponse.getKey();
+                        final Throwable exception = fetchResponse.getValue();
+
+                        if (exception != null) {
+                            final String errorMessage = format(CTP_PRODUCT_TYPE_FETCH_FAILED, keysToCache);
+                            handleError(errorMessage, exception, keysToCache.size());
+                            return CompletableFuture.completedFuture(null);
+                        } else {
+                            return syncBatch(matchingProductTypes, batchProcessor.getValidDrafts(), keyToIdCache)
+                                .thenCompose(ignoredResult -> updateToBeUpdatedInParallel(buildToBeUpdatedMap()));
+                        }
+                    });
             })
             .thenApply(ignored -> {
                 statistics.incrementProcessed(batch.size());
@@ -150,6 +190,8 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
         statistics.incrementFailed(failedTimes);
     }
 
+
+
     /**
      * Given a set of product type drafts, attempts to sync the drafts with the existing products types in the CTP
      * project. The product type and the draft are considered to match if they have the same key.
@@ -160,8 +202,9 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      */
     @Nonnull
     private CompletionStage<Void> syncBatch(
-            @Nonnull final Set<ProductType> oldProductTypes,
-            @Nonnull final Set<ProductTypeDraft> newProductTypes) {
+        @Nonnull final Set<ProductType> oldProductTypes,
+        @Nonnull final Set<ProductTypeDraft> newProductTypes,
+        @Nonnull final Map<String, String> keyToIdCache) {
 
         final Map<String, ProductType> oldProductTypeMap =
             oldProductTypes.stream().collect(toMap(ProductType::getKey, identity()));
@@ -169,13 +212,16 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
         return CompletableFuture.allOf(newProductTypes
             .stream()
             .map(newProductType ->
+                removeMissingReferenceAttributeAndUpdateMissingParentMap(newProductType, keyToIdCache))
+            .map(draftWithoutMissingRefAttrs ->
                 referenceResolver
-                    .resolveReferences(newProductType)
+                    .resolveReferences(draftWithoutMissingRefAttrs)
                     .thenCompose(resolvedDraft -> syncDraft(oldProductTypeMap, resolvedDraft))
                     .exceptionally(completionException -> {
                         final ReferenceResolutionException referenceResolutionException =
                             (ReferenceResolutionException) completionException.getCause();
-                        final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES, newProductType.getKey(),
+                        final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES,
+                            draftWithoutMissingRefAttrs.getKey(),
                             referenceResolutionException.getMessage());
                         handleError(errorMessage, referenceResolutionException, 1);
                         return null;
@@ -184,6 +230,101 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
             .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
     }
+
+    @Nonnull
+    private ProductTypeDraft removeMissingReferenceAttributeAndUpdateMissingParentMap(
+        @Nonnull final ProductTypeDraft newProductTypeDraft,
+        @Nonnull final Map<String, String> keyToIdCache) {
+
+
+        // 1. Check referenced keys not in keyToId
+        final Map<String, List<AttributeDefinitionDraft>> referencedProductTypeKeys =
+            getReferencedProductTypeKeys(newProductTypeDraft);
+
+        // 2. Clean up all occurrences of newProductTypeDraft's key waiting in
+        // statistics#putMissingReferencedProductTypeKey. This is because it should not be existing there,
+        // and if it is then the values are outdated. This is to support the case, if a new version of the product
+        // type is supplied again in a later batch.
+        // TODO: TEST THIS CASE!
+        statistics.removeProductTypeWaitingToBeResolvedKey(newProductTypeDraft.getKey());
+
+        // TODO: Wrong, it could be many attributes referncing this KEY ----> DONE!
+        // TODO: TEST THIS CASE!
+        referencedProductTypeKeys
+            .keySet()
+            .stream()
+            .filter(key -> !keyToIdCache.keySet().contains(key))
+            .forEach(referencedKeyNotCached -> {
+
+                final List<AttributeDefinitionDraft> attributeDefinitionDraftsWithMissingReferences =
+                    referencedProductTypeKeys.get(referencedKeyNotCached);
+
+                // 1.1. Remove attributeDefinition with missing key reference
+                // IMP: This mutates in newProductTypeDraft..
+                newProductTypeDraft.getAttributes()
+                                   .removeAll(attributeDefinitionDraftsWithMissingReferences);
+
+                attributeDefinitionDraftsWithMissingReferences
+                    .forEach(attributeDefinitionDraft -> {
+                        // 1.2. Add pairs (productTypeDraftKey, attributeDefinition) to missing parent map.
+
+                        // TODO: USE MAP OF MAP INSTEAD OF PAIR! TO BE ABLE TO PUT AND OVERWRITE CHANGES IN LATER BATCHES.
+                        // TODO: APPEND CHANGE ORDER ACTION AFTER EVERY KEPT TRACK OF ACTION.
+                        statistics.putMissingReferencedProductTypeKey(referencedKeyNotCached,
+                            newProductTypeDraft.getKey(), attributeDefinitionDraft);
+                    });
+            });
+
+        return newProductTypeDraft;
+    }
+
+    @Nonnull
+    private static Map<String, List<AttributeDefinitionDraft>> getReferencedProductTypeKeys(
+        @Nonnull final ProductTypeDraft productTypeDraft) {
+
+        final List<AttributeDefinitionDraft> attributeDefinitionDrafts = productTypeDraft.getAttributes();
+        if (attributeDefinitionDrafts == null || attributeDefinitionDrafts.isEmpty()) {
+            return emptyMap();
+        }
+
+        final Map<String, List<AttributeDefinitionDraft>> referencedProductTypeKeys = new HashMap<>();
+
+        for (AttributeDefinitionDraft attributeDefinitionDraft : attributeDefinitionDrafts) {
+            if (attributeDefinitionDraft != null) {
+                final AttributeType attributeType = attributeDefinitionDraft.getAttributeType();
+
+                getProductTypeKey(attributeType).ifPresent(key -> {
+
+                    final List<AttributeDefinitionDraft> attributesReferencingCurrentKey = referencedProductTypeKeys
+                        .get(key);
+
+                    if (attributesReferencingCurrentKey != null) {
+                        attributesReferencingCurrentKey.add(attributeDefinitionDraft);
+                    } else {
+                        final ArrayList<AttributeDefinitionDraft> newAttributesReferencingCurrentKey
+                            = new ArrayList<>();
+                        newAttributesReferencingCurrentKey.add(attributeDefinitionDraft);
+                        referencedProductTypeKeys.put(key, newAttributesReferencingCurrentKey);
+                    }
+                });
+            }
+        }
+
+        return referencedProductTypeKeys;
+    }
+
+    @Nonnull
+    private static Optional<String> getProductTypeKey(@Nonnull final AttributeType attributeType) {
+        if (attributeType instanceof NestedAttributeType) {
+            final NestedAttributeType nestedElementType = (NestedAttributeType) attributeType;
+            return Optional.of(nestedElementType.getTypeReference().getId());
+        } else if (attributeType instanceof SetAttributeType) {
+            final SetAttributeType setAttributeType = (SetAttributeType) attributeType;
+            return getProductTypeKey(setAttributeType.getElementType());
+        }
+        return Optional.empty();
+    }
+
 
     @Nonnull
     private CompletionStage<Void> syncDraft(
@@ -196,6 +337,166 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
             .map(productType -> buildActionsAndUpdate(oldProductType, newProductTypeDraft))
             .orElseGet(() -> applyCallbackAndCreate(newProductTypeDraft));
     }
+
+
+    private Map<String, Set<AttributeDefinitionDraft>> buildToBeUpdatedMap() {
+
+        final Map<String, Set<AttributeDefinitionDraft>> toBeUpdatedMap = new HashMap<>();
+
+        readyToResolve
+            .forEach(missingProductTypeKey -> {
+                final ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>>
+                    productTypesWaitingForMissingReference = statistics
+                    .getProductTypeKeysWithMissingParents()
+                    .get(missingProductTypeKey);
+
+                if (productTypesWaitingForMissingReference != null) {
+                    productTypesWaitingForMissingReference
+                        .forEach((productTypeKey, attributes) ->
+                            putInToBeUpdated(toBeUpdatedMap, productTypeKey, attributes));
+                }
+            });
+
+        return toBeUpdatedMap;
+    }
+
+    private static void putInToBeUpdated(
+        @Nonnull final Map<String, Set<AttributeDefinitionDraft>> toBeUpdatedMap,
+        @Nonnull final String productTypeKey,
+        @Nonnull final Set<AttributeDefinitionDraft> attributeDefinitionDrafts) {
+
+        final Set<AttributeDefinitionDraft> missingParentChildrenActions = toBeUpdatedMap.get(productTypeKey);
+
+        if (missingParentChildrenActions != null) {
+            missingParentChildrenActions.addAll(attributeDefinitionDrafts);
+        } else {
+            toBeUpdatedMap.put(productTypeKey, attributeDefinitionDrafts);
+        }
+    }
+
+
+    private CompletionStage<Void> updateToBeUpdatedInParallel(
+        @Nonnull final Map<String, Set<AttributeDefinitionDraft>> toBeUpdatedMap) {
+
+        final Set<String> keysToFetchToUpdate = toBeUpdatedMap.keySet();
+        return productTypeService
+            .fetchMatchingProductTypesByKeys(keysToFetchToUpdate)
+            .handle(ImmutablePair::new)
+            .thenCompose(fetchResponse -> {
+                final Set<ProductType> matchingProductTypes = fetchResponse.getKey();
+                final Map<String, ProductType> keyToProductType = new HashMap<>();
+                matchingProductTypes.forEach(productType -> keyToProductType.put(productType.getKey(), productType));
+
+
+                final Throwable exception = fetchResponse.getValue();
+                if (exception != null) {
+                    //not sure yet
+                    final String errorMessage = format(CTP_PRODUCT_TYPE_FETCH_FAILED, keysToFetchToUpdate);
+                    handleError(errorMessage, exception, keysToFetchToUpdate.size());
+                    return CompletableFuture.completedFuture(null);
+                } else {
+                    return CompletableFuture.allOf(toBeUpdatedMap
+                        .entrySet()
+                        .stream()
+                        .map(entry -> {
+                            final String productTypeToUpdateKey = entry.getKey();
+                            final Set<AttributeDefinitionDraft> attributeDefinitionDrafts = entry.getValue();
+                            //TODO: Wrong, update actions should be resolved before because they contain keys in the references not ids. --> DONE
+
+                            // First make sure attr is resolved, so as not to have ids. Can't resolve here. Since reference is not in place.
+                            final List<UpdateAction<ProductType>> actionsWithResolvedReferences = draftsToActions(
+                                new ArrayList<>(attributeDefinitionDrafts));
+                            final ProductType productTypeToUpdate = keyToProductType.get(productTypeToUpdateKey);
+
+                            return updateProductType(productTypeToUpdate, actionsWithResolvedReferences);
+
+                        })
+                        .map(CompletionStage::toCompletableFuture)
+                        .toArray(CompletableFuture[]::new));
+                }
+            });
+    }
+
+    @Nonnull
+    private List<UpdateAction<ProductType>> draftsToActions(
+        @Nonnull final List<AttributeDefinitionDraft> attributeDefinitionDrafts) {
+
+        return attributeDefinitionDrafts
+            .stream()
+            .map(attributeDefinitionDraft -> {
+                final AttributeDefinitionReferenceResolver attributeDefinitionReferenceResolver =
+                    new AttributeDefinitionReferenceResolver(syncOptions, productTypeService);
+                final AttributeDefinitionDraft resolvedDraft = attributeDefinitionReferenceResolver
+                    .resolveReferences(attributeDefinitionDraft)
+                    .toCompletableFuture()
+                    .join();
+                return AddAttributeDefinition.of(resolvedDraft);
+            })
+            .collect(Collectors.toList());
+    }
+
+    @Nonnull
+    private CompletionStage<Void> updateProductType(
+        @Nonnull final ProductType oldProductType,
+        @Nonnull final List<UpdateAction<ProductType>> updateActions) {
+
+        return productTypeService
+            .updateProductType(oldProductType, updateActions)
+            .handle(ImmutablePair::new)
+            .thenCompose(updateResponse -> {
+                final Throwable sphereException = updateResponse.getValue();
+                if (sphereException != null) {
+                    return executeSupplierIfConcurrentModificationException(
+                        sphereException,
+                        () -> fetchAndUpdate(oldProductType, updateActions),
+                        () -> {
+                            final String errorMessage =
+                                format(CTP_PRODUCT_TYPE_UPDATE_FAILED, oldProductType.getKey(),
+                                    sphereException.getMessage());
+                            handleError(errorMessage, sphereException, 1);
+                            return CompletableFuture.completedFuture(null);
+                        });
+                } else {
+                    // Update missing parents by removing parent keys in ready to resolve.
+                    statistics.removeProductTypeWaitingToBeResolvedKey(oldProductType.getKey());
+                    return CompletableFuture.completedFuture(null);
+                }
+            });
+    }
+
+    @Nonnull
+    private CompletionStage<Void> fetchAndUpdate(
+        @Nonnull final ProductType oldProductType,
+        @Nonnull final List<UpdateAction<ProductType>> updateActions) {
+
+        final String key = oldProductType.getKey();
+        return productTypeService
+            .fetchProductType(key)
+            .handle(ImmutablePair::new)
+            .thenCompose(fetchResponse -> {
+                final Optional<ProductType> fetchedProductTypeOptional = fetchResponse.getKey();
+                final Throwable exception = fetchResponse.getValue();
+
+                if (exception != null) {
+                    final String errorMessage = format(CTP_PRODUCT_TYPE_UPDATE_FAILED, key,
+                        "Failed to fetch from CTP while retrying after concurrency modification.");
+                    handleError(errorMessage, exception, 1);
+                    return CompletableFuture.completedFuture(null);
+                }
+
+                return fetchedProductTypeOptional
+                    .map(fetchedProductType -> updateProductType(oldProductType, updateActions))
+                    .orElseGet(() -> {
+                        final String errorMessage =
+                            format(CTP_PRODUCT_TYPE_UPDATE_FAILED, key,
+                                "Not found when attempting to fetch while retrying "
+                                    + "after concurrency modification.");
+                        handleError(errorMessage, null, 1);
+                        return CompletableFuture.completedFuture(null);
+                    });
+            });
+    }
+
 
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
@@ -308,6 +609,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                 .createProductType(draft)
                 .thenAccept(productTypeOptional -> {
                     if (productTypeOptional.isPresent()) {
+                        readyToResolve.add(productTypeDraft.getKey());
                         statistics.incrementCreated();
                     } else {
                         statistics.incrementFailed();

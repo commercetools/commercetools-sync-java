@@ -21,13 +21,13 @@ import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedF
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
-class AttributeDefinitionReferenceResolver
+public class AttributeDefinitionReferenceResolver
     extends BaseReferenceResolver<AttributeDefinitionDraft, ProductTypeSyncOptions> {
     private ProductTypeService productTypeService;
 
 
-    AttributeDefinitionReferenceResolver(@Nonnull final ProductTypeSyncOptions options,
-                                         @Nonnull final ProductTypeService productTypeService) {
+    public AttributeDefinitionReferenceResolver(@Nonnull final ProductTypeSyncOptions options,
+                                                @Nonnull final ProductTypeService productTypeService) {
         super(options);
         this.productTypeService = productTypeService;
     }
