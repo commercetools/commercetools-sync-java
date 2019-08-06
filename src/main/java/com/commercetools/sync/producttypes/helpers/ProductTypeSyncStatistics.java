@@ -44,16 +44,15 @@ public class ProductTypeSyncStatistics extends BaseSyncStatistics {
     private
     ConcurrentHashMap<String, // -> Key of missing nested productType
         ConcurrentHashMap<String, // -> Key of actual productType that is referencing the nested productType
-            ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>// -> The actions to apply to on the
-            // referencing product type to resolve it's referenced nested product types when they are available.
+            ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>// -> a set of the attribute definition
+            // drafts which contains the reference to the missing product type.
             >
         >
         missingNestedProductTypes = new ConcurrentHashMap<>();
 
-    ProductTypeSyncStatistics (
-        @Nonnull final ConcurrentHashMap<String,
-            ConcurrentHashMap<String,
-                ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>>> missingNestedProductTypes) {
+    ProductTypeSyncStatistics(@Nonnull final ConcurrentHashMap<String,
+        ConcurrentHashMap<String,
+            ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>>> missingNestedProductTypes) {
         this.missingNestedProductTypes = missingNestedProductTypes;
     }
 
@@ -63,7 +62,9 @@ public class ProductTypeSyncStatistics extends BaseSyncStatistics {
     /**
      * Builds a summary of the product type sync statistics instance that looks like the following example:
      *
-     * <p>"Summary: 2 product types were processed in total (0 created, 0 updated and 0 failed to sync)."
+     * <p>"Summary: 2 product types were processed in total (0 created, 0 updated, 0 failed to sync
+     * and 0 product types with at least one NestedType or a Set of NestedType attribute definition(s) referencing a
+     * missing productType)."
      *
      * @return a summary message of the product types sync statistics instance.
      */
@@ -71,21 +72,21 @@ public class ProductTypeSyncStatistics extends BaseSyncStatistics {
     public String getReportMessage() {
         reportMessage = format(
             "Summary: %s product types were processed in total (%s created, %s updated, %s failed to sync"
-                + " and %s product types with a missing referenced productType reference"
-                + " in a NestedType or a Set of NestedType attribute definition).",
+                + " and %s product types with at least one NestedType or a Set of NestedType attribute definition(s) "
+                + " referencing a missing productType).",
             getProcessed(), getCreated(), getUpdated(), getFailed(), getNumberOfProductTypesWithMissingParents());
 
         return reportMessage;
     }
 
     /**
-     * Returns the total number of categories with missing parents.
+     * Returns the total number of product types with at least one NestedType or a Set of NestedType attribute
+     * definition(s) referencing a missing productType.
      *
-     * @return the total number of categories with missing parents.
+     * @return the total number of product types with at least one NestedType or a Set of NestedType attribute
+     *         definition(s) referencing a missing productType.
      */
     public int getNumberOfProductTypesWithMissingParents() {
-        //TODO: This is wrong. This gets the number of ATTRIBUTES with missing references not PRODUCT TYPES.
-
         final Set<String> productTypesWithMissingReferences = new HashSet<>();
 
         missingNestedProductTypes.values()
@@ -97,69 +98,97 @@ public class ProductTypeSyncStatistics extends BaseSyncStatistics {
         return productTypesWithMissingReferences.size();
     }
 
-    public Map<String, ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>>>
-    getProductTypeKeysWithMissingParents() {
+    public Map<String,
+        ConcurrentHashMap<String,
+            ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>>> getProductTypeKeysWithMissingParents() {
         return Collections.unmodifiableMap(missingNestedProductTypes);
     }
 
     /**
-     * This method checks if there is an entry with the key of the {@code missingParentCategoryKey} in the
-     * {@code categoryKeysWithMissingParents}, if there isn't it creates a new entry with this parent key and as a value
-     * a new set containing the {@code childKey}. Otherwise, if there is already, it just adds the
-     * {@code categoryKey} to the existing set.
+     * Adds a new entry for a {@code referencingAttributeDefinitionDraft} that is pointed to by
+     * a {@code referencingProductTypeKey} which is pointed to by a {@code missingNestedProductTypeKey}.
      *
-     * @param missingReferencedProductTypeKey the key of the missing parent.
-     * @param productTypeDraftKey                 the key of the category with a missing parent.
+     * <p>If any of the inner sets/maps is not existing (null), this method will create a new set/map with only this new
+     * entry.
+     *
+     * @param missingNestedProductTypeKey         the key of the missing nested product type.
+     * @param referencingProductTypeKey           the key of the referencing product type.
+     * @param referencingAttributeDefinitionDraft the referencing attribute definition draft.
      */
-    public void putMissingReferencedProductTypeKey(@Nonnull final String missingReferencedProductTypeKey,
-                                                   @Nonnull final String productTypeDraftKey,
-                                                   @Nonnull final AttributeDefinitionDraft attributeDefinitionDraft) {
-
+    public void putMissingNestedProductType(
+        @Nonnull final String missingNestedProductTypeKey,
+        @Nonnull final String referencingProductTypeKey,
+        @Nonnull final AttributeDefinitionDraft referencingAttributeDefinitionDraft) {
 
         final ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>>
-            productTypesWaitingForMissingReference = missingNestedProductTypes.get(missingReferencedProductTypeKey);
+            existingReferencingProductTypes = missingNestedProductTypes.get(missingNestedProductTypeKey);
 
-        if (productTypesWaitingForMissingReference != null) {
-            final ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean> attributeDefinitionDrafts =
-                productTypesWaitingForMissingReference.get(productTypeDraftKey);
+        if (existingReferencingProductTypes != null) {
+            final ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean> existingAttributeDefinitionDrafts =
+                existingReferencingProductTypes.get(referencingProductTypeKey);
 
-            if (attributeDefinitionDrafts != null) {
-                attributeDefinitionDrafts.add(attributeDefinitionDraft);
+            if (existingAttributeDefinitionDrafts != null) {
+                existingAttributeDefinitionDrafts.add(referencingAttributeDefinitionDraft);
             } else {
-                final ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean> newAttributeDefinitions =
-                    ConcurrentHashMap.newKeySet();
-                newAttributeDefinitions.add(attributeDefinitionDraft);
-                productTypesWaitingForMissingReference.put(productTypeDraftKey, newAttributeDefinitions);
+                existingReferencingProductTypes
+                    .put(
+                        referencingProductTypeKey,
+                        asSet(referencingAttributeDefinitionDraft));
             }
-
         } else {
-            final ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>>
-                newProductTypesWaitingForMissingReference = new ConcurrentHashMap<>();
-
-            final ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean> newAttributeDefinitions =
-                ConcurrentHashMap.newKeySet();
-            newAttributeDefinitions.add(attributeDefinitionDraft);
-            newProductTypesWaitingForMissingReference.put(productTypeDraftKey, newAttributeDefinitions);
-
-            missingNestedProductTypes.put(
-                missingReferencedProductTypeKey,
-                newProductTypesWaitingForMissingReference);
+            missingNestedProductTypes
+                .put(
+                    missingNestedProductTypeKey,
+                    asMap(referencingProductTypeKey, referencingAttributeDefinitionDraft));
         }
     }
 
-    public void removeProductTypeWaitingToBeResolvedKey(@Nonnull final String key) {
+    @Nonnull
+    private ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>> asMap(
+            @Nonnull final String referencingProductTypeKey,
+            @Nonnull final AttributeDefinitionDraft referencingAttributeDefinitionDraft) {
+
+        final ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>>
+            newReferencingProductTypes = new ConcurrentHashMap<>();
+        newReferencingProductTypes
+            .put(
+                referencingProductTypeKey,
+                asSet(referencingAttributeDefinitionDraft));
+        return newReferencingProductTypes;
+    }
+
+    @Nonnull
+    private ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean> asSet(
+        @Nonnull final AttributeDefinitionDraft referencingAttributeDefinitionDraft) {
+
+        final ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean> newAttributeDefinitions =
+            ConcurrentHashMap.newKeySet();
+        newAttributeDefinitions.add(referencingAttributeDefinitionDraft);
+        return newAttributeDefinitions;
+    }
+
+    /**
+     * Removes all occurrences of the referencing product type key from {@link #missingNestedProductTypes}.
+     * If there are no referencing product types for any missing nested product type, the whole entry for this
+     * missing nested product type will be removed from {@link #missingNestedProductTypes}.
+     *
+     * @param referencingProductTypeKey the key that should be removed from {@link #missingNestedProductTypes}.
+     */
+    public void removeReferencingProductTypeKey(@Nonnull final String referencingProductTypeKey) {
 
         final Iterator<ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>>>
-            productTypesIterator = missingNestedProductTypes.values().iterator();
+            referencingProductTypesIterator = missingNestedProductTypes.values().iterator();
 
-        while (productTypesIterator.hasNext()) {
+        while (referencingProductTypesIterator.hasNext()) {
             final ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>>
-                productTypeActionsEntry = productTypesIterator.next();
+                referencingProductTypes = referencingProductTypesIterator.next();
 
-            productTypeActionsEntry.remove(key);
+            referencingProductTypes.remove(referencingProductTypeKey);
 
-            if (productTypeActionsEntry.isEmpty()) {
-                productTypesIterator.remove();
+            // If there are no referencing product types for this missing nested product type,
+            // remove referencing product types map.
+            if (referencingProductTypes.isEmpty()) {
+                referencingProductTypesIterator.remove();
             }
         }
     }
