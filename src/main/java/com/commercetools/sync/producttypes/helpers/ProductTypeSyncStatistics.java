@@ -1,13 +1,17 @@
 package com.commercetools.sync.producttypes.helpers;
 
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
+import com.commercetools.sync.producttypes.ProductTypeSync;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
+import io.sphere.sdk.producttypes.ProductType;
+import io.sphere.sdk.producttypes.ProductTypeDraft;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,25 +23,23 @@ public class ProductTypeSyncStatistics extends BaseSyncStatistics {
     /**
      * The following {@link ConcurrentHashMap} ({@code missingNestedProductTypes}) keeps track of the keys of missing
      * product types, the keys of the product types which are referencing those missing product types and a list
-     * of update actions for each of the referencing product types which should be applied on the referencing product
-     * types as soon as the missing product types are available.
+     * of attribute definitions which contains those references.
      *
      * <ul>
      * <li>key: key of the missing product type</li>
      * <li>value: a map of which consists of:
      *      <ul>
      *          <li>key: key of the product type referencing the missing product type.</li>
-     *          <li>value: a set of the update actions which should be applied on the referencing product types as soon
-     *          as the missing product types are available. Each update action represents the attribute definition
-     *          which contains the reference to the missing product type.</li>
+     *          <li>value: a set of the attribute definition drafts which contains the reference
+     *          to the missing product type.</li>
      *      </ul>
      * </li>
      * </ul>
      *
-     * <p>Note: Update actions are used
-     *
      * <p>The map is thread-safe (by instantiating it with {@link ConcurrentHashMap}) because it is accessed/modified in
-     * a concurrent context, specifically when updating products in parallel in TODO: WHICH METHODS ACCESS IT IN PARALLEL.
+     * a concurrent context, specifically when syncing product types in parallel in
+     * {@link ProductTypeSync#removeMissingReferenceAttributeAndUpdateMissingParentMap(ProductTypeDraft, Map)},
+     * {@link ProductTypeSync#updateProductType(ProductType, List)} and {@link ProductTypeSync#buildToBeUpdatedMap()}
      */
     private
     ConcurrentHashMap<String, // -> Key of missing nested productType
