@@ -86,8 +86,9 @@ class ProductTypeWithNestedAttributeSyncIT {
         assertThat(productTypeSyncStatistics).hasValues(4, 1, 0, 0);
         assertThat(productTypeSyncStatistics
             .getReportMessage())
-            .isEqualTo("Summary: 4 product types were processed in total"
-                + " (1 created, 0 updated and 0 failed to sync).");
+            .isEqualTo("Summary: 4 product types were processed in total (1 created, 0 updated, 0 failed to sync"
+                            + " and 0 product types with a missing referenced productType reference"
+                            + " in a NestedType or a Set of NestedType attribute definition).");
     }
 
     @Test
@@ -147,9 +148,10 @@ class ProductTypeWithNestedAttributeSyncIT {
         assertThat(exceptions).isEmpty();
         assertThat(productTypeSyncStatistics).hasValues(4, 1, 1, 0);
         assertThat(productTypeSyncStatistics
-                .getReportMessage())
-                .isEqualTo("Summary: 4 product types were processed in total"
-                        + " (1 created, 1 updated and 0 failed to sync).");
+                .getReportMessage()).isEqualTo(
+                        "Summary: 4 product types were processed in total (1 created, 1 updated, 0 failed to sync"
+                                + " and 0 product types with a missing referenced productType reference"
+                                + " in a NestedType or a Set of NestedType attribute definition).");
 
     }
 }

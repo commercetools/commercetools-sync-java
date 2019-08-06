@@ -113,7 +113,7 @@ public final class ProductTypeITUtils {
     }
 
     public static void populateSourcesProjectWithNestedAttributes() {
-        final ProductType productType1=
+        final ProductType productType1 =
                 CTP_SOURCE_CLIENT.execute(ProductTypeCreateCommand.of(productTypeDraft1)).toCompletableFuture().join();
         final ProductType productType2 =
                 CTP_SOURCE_CLIENT.execute(ProductTypeCreateCommand.of(productTypeDraft2)).toCompletableFuture().join();
@@ -156,7 +156,7 @@ public final class ProductTypeITUtils {
     }
 
     public static void populateTargetProjectWithNestedAttributes() {
-        final ProductType productType1=
+        final ProductType productType1 =
                 CTP_TARGET_CLIENT.execute(ProductTypeCreateCommand.of(productTypeDraft1)).toCompletableFuture().join();
 
         final ProductType productType2 =
@@ -190,6 +190,7 @@ public final class ProductTypeITUtils {
         deleteProductTypes(CTP_TARGET_CLIENT);
         deleteProductTypes(CTP_SOURCE_CLIENT);
     }
+
     /**
      * Deletes all product types from the CTP project defined by the {@code ctpClient}.
      *

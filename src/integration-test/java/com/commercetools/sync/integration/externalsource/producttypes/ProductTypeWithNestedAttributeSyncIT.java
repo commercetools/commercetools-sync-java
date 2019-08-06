@@ -114,7 +114,7 @@ class ProductTypeWithNestedAttributeSyncIT {
 
         final AttributeDefinitionDraft nestedTypeAttr = AttributeDefinitionDraftBuilder.of(
                 AttributeDefinitionBuilder
-                    .of("nestedatt", ofEnglish("nestedattr"),
+                    .of("nestedattr", ofEnglish("nestedattr"),
                         SetAttributeType.of(NestedAttributeType.of(productType2.get())))
                     .build())
                 .build();
