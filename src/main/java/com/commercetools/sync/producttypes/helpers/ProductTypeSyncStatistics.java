@@ -26,7 +26,7 @@ public class ProductTypeSyncStatistics extends BaseSyncStatistics {
      * of attribute definitions which contains those references.
      *
      * <ul>
-     * <li>key: key of the missing product type</li>
+     * <li>key: key of the missing product type.</li>
      * <li>value: a map of which consists of:
      *      <ul>
      *          <li>key: key of the product type referencing the missing product type.</li>
