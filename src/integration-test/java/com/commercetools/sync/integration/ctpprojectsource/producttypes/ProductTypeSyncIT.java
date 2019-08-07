@@ -82,7 +82,7 @@ class ProductTypeSyncIT {
         // assertion
         assertThat(errorMessages).isEmpty();
         assertThat(exceptions).isEmpty();
-        assertThat(productTypeSyncStatistics).hasValues(2, 1, 0, 0);
+        assertThat(productTypeSyncStatistics).hasValues(2, 1, 0, 0, 0);
         assertThat(productTypeSyncStatistics
             .getReportMessage())
             .isEqualTo("Summary: 2 product types were processed in total"
@@ -137,7 +137,7 @@ class ProductTypeSyncIT {
         // assertion
         assertThat(errorMessages).isEmpty();
         assertThat(exceptions).isEmpty();
-        assertThat(productTypeSyncStatistics).hasValues(2, 1, 1, 0);
+        assertThat(productTypeSyncStatistics).hasValues(2, 1, 1, 0, 0);
         assertThat(productTypeSyncStatistics
             .getReportMessage())
             .isEqualTo("Summary: 2 product types were processed in total"

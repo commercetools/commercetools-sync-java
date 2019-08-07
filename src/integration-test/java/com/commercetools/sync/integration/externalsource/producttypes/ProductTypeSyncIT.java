@@ -114,7 +114,7 @@ class ProductTypeSyncIT {
             .join();
 
         // assertion
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0, 0);
 
         final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
 
@@ -148,7 +148,7 @@ class ProductTypeSyncIT {
 
 
         // assertions
-        assertThat(productTypeSyncStatistics).hasValues(1, 1, 0, 0);
+        assertThat(productTypeSyncStatistics).hasValues(1, 1, 0, 0, 0);
 
 
         final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_2);
@@ -183,7 +183,7 @@ class ProductTypeSyncIT {
             .toCompletableFuture().join();
 
         // assertions
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0, 0);
 
         final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
 
@@ -214,7 +214,7 @@ class ProductTypeSyncIT {
             .sync(singletonList(newProductTypeDraft))
             .toCompletableFuture().join();
 
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0, 0);
 
 
         final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
@@ -250,7 +250,7 @@ class ProductTypeSyncIT {
             .sync(singletonList(newProductTypeDraft))
             .toCompletableFuture().join();
 
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0, 0);
 
         final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
 
@@ -301,7 +301,7 @@ class ProductTypeSyncIT {
             .sync(singletonList(newProductTypeDraft))
             .toCompletableFuture().join();
 
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0, 0);
 
 
         final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
@@ -353,7 +353,7 @@ class ProductTypeSyncIT {
                 assertThat(throwable.getMessage()).isEqualTo(expectedErrorMessage);
             });
 
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
     }
 
     @Test
@@ -392,7 +392,7 @@ class ProductTypeSyncIT {
                 assertThat(throwable.getMessage()).isEqualTo("ProductTypeDraft is null.");
             });
 
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
     }
 
     @Test
@@ -447,7 +447,7 @@ class ProductTypeSyncIT {
                 assertThat(throwable).hasMessageContaining("AttributeDefinitionTypeConflict");
             });
 
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
     }
 
     @Test
@@ -500,7 +500,7 @@ class ProductTypeSyncIT {
                 assertThat(throwable).hasMessageContaining("InvalidInput");
             });
 
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
     }
 
     @Test
@@ -547,7 +547,7 @@ class ProductTypeSyncIT {
                 assertThat(throwable).hasMessageContaining("Missing required value");
             });
 
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
     }
 
     @Test
@@ -606,7 +606,7 @@ class ProductTypeSyncIT {
                 assertThat(throwable).hasMessageContaining("Missing required value");
             });
 
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
     }
 
     @Test
@@ -636,7 +636,7 @@ class ProductTypeSyncIT {
                                                                     .join();
 
         // Assertion
-        assertThat(statistics).hasValues(1, 0, 1, 0);
+        assertThat(statistics).hasValues(1, 0, 1, 0, 0);
 
         // Assert CTP state.
         final PagedQueryResult<ProductType> queryResult =
@@ -699,7 +699,7 @@ class ProductTypeSyncIT {
                                                                     .join();
 
         // Assertion
-        assertThat(statistics).hasValues(1, 0, 0, 1);
+        assertThat(statistics).hasValues(1, 0, 0, 1, 0);
 
         assertThat(errorMessages).hasSize(1);
         assertThat(errors).hasSize(1);
@@ -763,7 +763,7 @@ class ProductTypeSyncIT {
                                                                     .join();
 
         // Assertion
-        assertThat(statistics).hasValues(1, 0, 0, 1);
+        assertThat(statistics).hasValues(1, 0, 0, 1, 0);
 
         assertThat(errorMessages).hasSize(1);
         assertThat(errors).hasSize(1);
@@ -813,7 +813,7 @@ class ProductTypeSyncIT {
             .sync(productTypeDrafts)
             .toCompletableFuture().join();
 
-        assertThat(productTypeSyncStatistics).hasValues(100, 100, 0, 0);
+        assertThat(productTypeSyncStatistics).hasValues(100, 100, 0, 0, 0);
     }
 
     @Test
@@ -910,7 +910,7 @@ class ProductTypeSyncIT {
             .toCompletableFuture().join();
 
         // assertions
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0, 0);
 
         final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, "withSetOfEnums");
 

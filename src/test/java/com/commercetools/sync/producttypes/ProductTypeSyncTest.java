@@ -92,7 +92,7 @@ class ProductTypeSyncTest {
                 assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
             });
 
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
     }
 
     @Test
@@ -146,7 +146,7 @@ class ProductTypeSyncTest {
                 assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
             });
 
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
     }
 
     @Test
@@ -204,7 +204,7 @@ class ProductTypeSyncTest {
                 assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
             });
 
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
     }
 
     @Test

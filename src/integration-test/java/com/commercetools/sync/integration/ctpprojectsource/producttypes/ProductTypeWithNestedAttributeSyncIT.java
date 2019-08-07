@@ -83,7 +83,7 @@ class ProductTypeWithNestedAttributeSyncIT {
         // assertion
         assertThat(errorMessages).isEmpty();
         assertThat(exceptions).isEmpty();
-        assertThat(productTypeSyncStatistics).hasValues(4, 1, 0, 0);
+        assertThat(productTypeSyncStatistics).hasValues(4, 1, 0, 0, 0);
         assertThat(productTypeSyncStatistics
             .getReportMessage())
             .isEqualTo("Summary: 4 product types were processed in total"
@@ -146,7 +146,7 @@ class ProductTypeWithNestedAttributeSyncIT {
         // assertion
         assertThat(errorMessages).isEmpty();
         assertThat(exceptions).isEmpty();
-        assertThat(productTypeSyncStatistics).hasValues(4, 1, 1, 0);
+        assertThat(productTypeSyncStatistics).hasValues(4, 1, 1, 0, 0);
         assertThat(productTypeSyncStatistics
             .getReportMessage()).isEqualTo(
             "Summary: 4 product types were processed in total"

@@ -31,6 +31,7 @@ import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -43,6 +44,7 @@ import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
+import static java.util.concurrent.CompletableFuture.allOf;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public final class ProductTypeITUtils {
@@ -171,14 +173,19 @@ public final class ProductTypeITUtils {
         final ProductType productType2 =
                 CTP_TARGET_CLIENT.execute(ProductTypeCreateCommand.of(productTypeDraft2)).toCompletableFuture().join();
 
+        final List<CompletableFuture<ProductType>> creations = asList(
+            CTP_TARGET_CLIENT.execute(ProductTypeCreateCommand.of(productTypeDraft1)).toCompletableFuture(),
+            CTP_TARGET_CLIENT.execute(ProductTypeCreateCommand.of(productTypeDraft2)).toCompletableFuture()
+        );
+
+        allOf(creations.toArray(new CompletableFuture[0])).join();
+
         final AttributeDefinition nestedTypeAttr1 = AttributeDefinitionBuilder
                 .of("nestedattr", ofEnglish("nestedattr"), NestedAttributeType.of(productType1))
-                .isSearchable(false)
                 .build();
 
         final AttributeDefinition nestedTypeAttr2 = AttributeDefinitionBuilder
                 .of("nestedattr2", ofEnglish("nestedattr2"), NestedAttributeType.of(productType2))
-                .isSearchable(false)
                 .build();
 
         final ProductTypeDraft productTypeDraft3 = ProductTypeDraft.ofAttributeDefinitionDrafts(
