@@ -145,7 +145,8 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                 final Throwable cachingException = cachingResponse.getValue();
 
                 if (cachingException != null) {
-                    handleError("Failed to build a cache of keys to ids.", cachingException, batch.size());
+                    handleError("Failed to build a cache of keys to ids.", cachingException,
+                        keysToCache.size());
                     return CompletableFuture.completedFuture(null);
                 }
 
