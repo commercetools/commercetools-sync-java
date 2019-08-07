@@ -42,10 +42,9 @@ public class ProductTypeSyncStatistics extends BaseSyncStatistics {
      * {@link ProductTypeSync#updateProductType(ProductType, List)} and {@link ProductTypeSync#buildToBeUpdatedMap()}
      */
     private
-        ConcurrentHashMap<String, // -> Key of missing nested productType
-            ConcurrentHashMap<String, // -> Key of actual productType that is referencing the nested productType
-                ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>// -> a set of the attribute definition
-                // drafts which contains the reference to the missing product type.
+        ConcurrentHashMap<String,
+            ConcurrentHashMap<String,
+                ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>
                 >
             >
         missingNestedProductTypes = new ConcurrentHashMap<>();
