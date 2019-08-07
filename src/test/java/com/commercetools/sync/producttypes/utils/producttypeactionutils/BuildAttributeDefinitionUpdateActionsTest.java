@@ -18,6 +18,7 @@ import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
 import io.sphere.sdk.products.attributes.EnumAttributeType;
 import io.sphere.sdk.products.attributes.LocalizedEnumAttributeType;
 import io.sphere.sdk.products.attributes.LocalizedStringAttributeType;
+import io.sphere.sdk.products.attributes.NestedAttributeType;
 import io.sphere.sdk.products.attributes.SetAttributeType;
 import io.sphere.sdk.products.attributes.StringAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
@@ -797,7 +798,7 @@ class BuildAttributeDefinitionUpdateActionsTest {
             EnumAttributeType.of(singletonList(EnumValue.of("foo", "bar"))));
 
         final AttributeDefinitionDraft newDefinition = AttributeDefinitionDraftBuilder
-            .of(SetAttributeType.of(newSetOfEnumType), "a", ofEnglish("new_label"), true)
+            .of(newSetOfEnumType, "a", ofEnglish("new_label"), true)
             .build();
         final ProductTypeDraft productTypeDraft = ProductTypeDraftBuilder
             .of("foo", "name", "desc", singletonList(newDefinition))
