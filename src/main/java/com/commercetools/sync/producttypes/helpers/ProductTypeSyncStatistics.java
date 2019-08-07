@@ -50,6 +50,9 @@ public class ProductTypeSyncStatistics extends BaseSyncStatistics {
         >
         missingNestedProductTypes = new ConcurrentHashMap<>();
 
+    /**
+     * Only used for testing.
+     */
     ProductTypeSyncStatistics(@Nonnull final ConcurrentHashMap<String,
         ConcurrentHashMap<String,
             ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>>> missingNestedProductTypes) {
@@ -72,9 +75,10 @@ public class ProductTypeSyncStatistics extends BaseSyncStatistics {
     public String getReportMessage() {
         reportMessage = format(
             "Summary: %s product types were processed in total (%s created, %s updated, %s failed to sync"
-                + " and %s product types with at least one NestedType or a Set of NestedType attribute definition(s) "
+                + " and %s product types with at least one NestedType or a Set of NestedType attribute definition(s)"
                 + " referencing a missing productType).",
-            getProcessed(), getCreated(), getUpdated(), getFailed(), getNumberOfProductTypesWithMissingParents());
+            getProcessed(), getCreated(), getUpdated(), getFailed(),
+            getNumberOfProductTypesWithMissingNestedProductTypes());
 
         return reportMessage;
     }
@@ -86,18 +90,35 @@ public class ProductTypeSyncStatistics extends BaseSyncStatistics {
      * @return the total number of product types with at least one NestedType or a Set of NestedType attribute
      *         definition(s) referencing a missing productType.
      */
-    public int getNumberOfProductTypesWithMissingParents() {
+    public int getNumberOfProductTypesWithMissingNestedProductTypes() {
         final Set<String> productTypesWithMissingReferences = new HashSet<>();
 
-        missingNestedProductTypes.values()
-                                 .stream()
-                                 .map(ConcurrentHashMap::keySet)
-                                 .flatMap(Collection::stream)
-                                 .forEach(productTypesWithMissingReferences::add);
+        missingNestedProductTypes
+            .values()
+            .stream()
+            .map(ConcurrentHashMap::keySet)
+            .flatMap(Collection::stream)
+            .forEach(productTypesWithMissingReferences::add);
 
         return productTypesWithMissingReferences.size();
     }
 
+    /**
+     * @return an unmodifiable {@link ConcurrentHashMap} ({@code missingNestedProductTypes}) which keeps track of the
+     * keys of missing product types, the keys of the product types which are referencing those missing product types
+     * and a list of attribute definitions which contains those references.
+     *
+     * <ul>
+     * <li>key: key of the missing product type</li>
+     * <li>value: a map of which consists of:
+     *      <ul>
+     *          <li>key: key of the product type referencing the missing product type.</li>
+     *          <li>value: a set of the attribute definition drafts which contains the reference
+     *          to the missing product type.</li>
+     *      </ul>
+     * </li>
+     * </ul>
+     */
     public Map<String,
         ConcurrentHashMap<String,
             ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>>> getProductTypeKeysWithMissingParents() {
@@ -110,6 +131,9 @@ public class ProductTypeSyncStatistics extends BaseSyncStatistics {
      *
      * <p>If any of the inner sets/maps is not existing (null), this method will create a new set/map with only this new
      * entry.
+     *
+     * <p>Important: This method is meant to be used only for internal use of the library and should not be used by
+     * externally.
      *
      * @param missingNestedProductTypeKey         the key of the missing nested product type.
      * @param referencingProductTypeKey           the key of the referencing product type.
@@ -171,6 +195,9 @@ public class ProductTypeSyncStatistics extends BaseSyncStatistics {
      * Removes all occurrences of the referencing product type key from {@link #missingNestedProductTypes}.
      * If there are no referencing product types for any missing nested product type, the whole entry for this
      * missing nested product type will be removed from {@link #missingNestedProductTypes}.
+     *
+     * <p>Important: This method is meant to be used only for internal use of the library and should not be used by
+     * externally.
      *
      * @param referencingProductTypeKey the key that should be removed from {@link #missingNestedProductTypes}.
      */
