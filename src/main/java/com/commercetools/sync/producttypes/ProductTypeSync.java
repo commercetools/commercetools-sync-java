@@ -1,6 +1,7 @@
 package com.commercetools.sync.producttypes;
 
 import com.commercetools.sync.commons.BaseSync;
+import com.commercetools.sync.commons.exceptions.InvalidReferenceException;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.producttypes.helpers.AttributeDefinitionReferenceResolver;
 import com.commercetools.sync.producttypes.helpers.ProductTypeBatchProcessor;
@@ -12,10 +13,9 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.AttributeType;
-import io.sphere.sdk.products.attributes.NestedAttributeType;
-import io.sphere.sdk.products.attributes.SetAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
+import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import io.sphere.sdk.producttypes.commands.updateactions.AddAttributeDefinition;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
@@ -33,9 +33,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
+import static com.commercetools.sync.producttypes.helpers.ProductTypeBatchProcessor.getProductTypeKey;
 import static com.commercetools.sync.producttypes.utils.ProductTypeSyncUtils.buildActions;
 import static java.lang.String.format;
-import static java.util.Collections.emptyMap;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
@@ -145,10 +145,11 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                 }
 
 
-                final Set<String> batchDraftKeys = batchProcessor.getValidDrafts()
-                                                                 .stream()
-                                                                 .map(ProductTypeDraft::getKey)
-                                                                 .collect(Collectors.toSet());
+                final Set<String> batchDraftKeys = batchProcessor
+                    .getValidDrafts()
+                    .stream()
+                    .map(ProductTypeDraft::getKey)
+                    .collect(Collectors.toSet());
 
                 return productTypeService
                     .fetchMatchingProductTypesByKeys(batchDraftKeys)
@@ -163,7 +164,8 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                             return CompletableFuture.completedFuture(null);
                         } else {
                             return syncBatch(matchingProductTypes, batchProcessor.getValidDrafts(), keyToIdCache)
-                                .thenCompose(ignoredResult -> updateToBeUpdatedInParallel(buildToBeUpdatedMap()));
+                                .thenApply(ignoredResult -> buildProductTypesToUpdateMap())
+                                .thenCompose(this::lazilyUpdateProductTypes);
                         }
                     });
             })
@@ -212,7 +214,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
         return CompletableFuture.allOf(newProductTypes
             .stream()
             .map(newProductType ->
-                removeMissingReferenceAttributeAndUpdateMissingParentMap(newProductType, keyToIdCache))
+                removeAndKeepTrackOfMissingNestedAttributes(newProductType, keyToIdCache))
             .map(draftWithoutMissingRefAttrs ->
                 referenceResolver
                     .resolveReferences(draftWithoutMissingRefAttrs)
@@ -231,100 +233,98 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
             .toArray(CompletableFuture[]::new));
     }
 
+
+    /**
+     * First, cleans up all occurrences of {@code productTypeDraft}'s key waiting in
+     * statistics#putMissingNestedProductType. This is because it should not be existing there, and if it is then the
+     * values are outdated. This is to support the case, if an already visited attribute is supplied again in a later
+     * batch (maybe with a different reference or a reference that doesn't exist anymore).
+     *
+     *
+     * <p>Then, makes a copy of {@code productTypeDraft} and then goes through all its attribute definition drafts.
+     * For each attribute, attempts to find a nested product type in its attribute type, if it has a
+     * nested type. It checks if the key, of the productType reference, is cached in {@code keyToIdCache}. If it is,
+     * then it means the referenced product type exists in the target project, so there is no need to remove or keep
+     * track of it. However, if it is not, it means it doesn't exist yet, which means we need to keep track of it as a
+     * missing reference and also remove this attribute definition from the supplied {@code draftCopy} to be able to
+     * create product type without this attribute containing the missing reference.
+     *
+     *
+     * @param productTypeDraft         the productTypeDraft containing the attribute which should be updated by removing
+     *                                 the attribute which contains the missing reference.
+     * @param keyToIdCache             a map of productType key to id. It represents a cache of the existing
+     *                                 productTypes in the target project.
+     */
+    @SuppressWarnings("ConstantConditions") // since the batch is validate before, key is assured to be non-blank here.
     @Nonnull
-    private ProductTypeDraft removeMissingReferenceAttributeAndUpdateMissingParentMap(
-        @Nonnull final ProductTypeDraft newProductTypeDraft,
+    private ProductTypeDraft removeAndKeepTrackOfMissingNestedAttributes(
+        @Nonnull final ProductTypeDraft productTypeDraft,
         @Nonnull final Map<String, String> keyToIdCache) {
 
-
-        // 1. Check referenced keys not in keyToId
-        final Map<String, List<AttributeDefinitionDraft>> referencedProductTypeKeys =
-            getReferencedProductTypeKeys(newProductTypeDraft);
-
-        // 2. Clean up all occurrences of newProductTypeDraft's key waiting in
-        // statistics#putMissingReferencedProductTypeKey. This is because it should not be existing there,
-        // and if it is then the values are outdated. This is to support the case, if a new version of the product
-        // type is supplied again in a later batch.
-        // TODO: TEST THIS CASE!
-        statistics.removeProductTypeWaitingToBeResolvedKey(newProductTypeDraft.getKey());
-
-        // TODO: Wrong, it could be many attributes referncing this KEY ----> DONE!
-        // TODO: TEST THIS CASE!
-        referencedProductTypeKeys
-            .keySet()
-            .stream()
-            .filter(key -> !keyToIdCache.keySet().contains(key))
-            .forEach(referencedKeyNotCached -> {
-
-                final List<AttributeDefinitionDraft> attributeDefinitionDraftsWithMissingReferences =
-                    referencedProductTypeKeys.get(referencedKeyNotCached);
-
-                // 1.1. Remove attributeDefinition with missing key reference
-                // IMP: This mutates in newProductTypeDraft..
-                newProductTypeDraft.getAttributes()
-                                   .removeAll(attributeDefinitionDraftsWithMissingReferences);
-
-                attributeDefinitionDraftsWithMissingReferences
-                    .forEach(attributeDefinitionDraft -> {
-                        // 1.2. Add pairs (productTypeDraftKey, attributeDefinition) to missing parent map.
-
-                        // TODO: USE MAP OF MAP INSTEAD OF PAIR! TO BE ABLE TO PUT AND OVERWRITE CHANGES IN LATER BATCHES.
-                        // TODO: APPEND CHANGE ORDER ACTION AFTER EVERY KEPT TRACK OF ACTION.
-                        statistics.putMissingReferencedProductTypeKey(referencedKeyNotCached,
-                            newProductTypeDraft.getKey(), attributeDefinitionDraft);
-                    });
-            });
-
-        return newProductTypeDraft;
-    }
-
-    @Nonnull
-    private static Map<String, List<AttributeDefinitionDraft>> getReferencedProductTypeKeys(
-        @Nonnull final ProductTypeDraft productTypeDraft) {
+        statistics.removeReferencingProductTypeKey(productTypeDraft.getKey());
 
         final List<AttributeDefinitionDraft> attributeDefinitionDrafts = productTypeDraft.getAttributes();
         if (attributeDefinitionDrafts == null || attributeDefinitionDrafts.isEmpty()) {
-            return emptyMap();
+            return productTypeDraft;
         }
 
-        final Map<String, List<AttributeDefinitionDraft>> referencedProductTypeKeys = new HashMap<>();
+        // copies to avoid mutation of attributes array supplied by user.
+        final ProductTypeDraft draftCopy = ProductTypeDraftBuilder
+            .of(productTypeDraft)
+            .attributes(new ArrayList<>(productTypeDraft.getAttributes()))
+            .build();
 
         for (AttributeDefinitionDraft attributeDefinitionDraft : attributeDefinitionDrafts) {
             if (attributeDefinitionDraft != null) {
-                final AttributeType attributeType = attributeDefinitionDraft.getAttributeType();
-
-                getProductTypeKey(attributeType).ifPresent(key -> {
-
-                    final List<AttributeDefinitionDraft> attributesReferencingCurrentKey = referencedProductTypeKeys
-                        .get(key);
-
-                    if (attributesReferencingCurrentKey != null) {
-                        attributesReferencingCurrentKey.add(attributeDefinitionDraft);
-                    } else {
-                        final ArrayList<AttributeDefinitionDraft> newAttributesReferencingCurrentKey
-                            = new ArrayList<>();
-                        newAttributesReferencingCurrentKey.add(attributeDefinitionDraft);
-                        referencedProductTypeKeys.put(key, newAttributesReferencingCurrentKey);
-                    }
-                });
+                removeAndKeepTrackOfMissingNestedAttribute(attributeDefinitionDraft, draftCopy, keyToIdCache);
             }
         }
 
-        return referencedProductTypeKeys;
+        return draftCopy;
     }
 
-    @Nonnull
-    private static Optional<String> getProductTypeKey(@Nonnull final AttributeType attributeType) {
-        if (attributeType instanceof NestedAttributeType) {
-            final NestedAttributeType nestedElementType = (NestedAttributeType) attributeType;
-            return Optional.of(nestedElementType.getTypeReference().getId());
-        } else if (attributeType instanceof SetAttributeType) {
-            final SetAttributeType setAttributeType = (SetAttributeType) attributeType;
-            return getProductTypeKey(setAttributeType.getElementType());
+    /**
+     * Attempts to find a nested product type in the attribute type of {@code attributeDefinitionDraft}, if it has a
+     * nested type. It checks if the key, of the productType reference, is cached in {@code keyToIdCache}. If it is,
+     * then it means the referenced product type exists in the target project, so there is no need to remove or keep
+     * track of it. However, if it is not, it means it doesn't exist yet, which means we need to keep track of it as a
+     * missing reference and also remove this attribute definition from the supplied {@code draftCopy} to be able to
+     * create product type without this attribute containing the missing reference.
+     *
+     *
+     * <p> Note: This method mutates in the supplied {@code productTypeDraft} attribute definition list by removing
+     * the attribute containing a missing reference.
+     *
+     * @param attributeDefinitionDraft the attribute definition being checked for any product references.
+     * @param productTypeDraft         the productTypeDraft containing the attribute which should be updated by removing
+     *                                 the attribute which contains the missing reference.
+     * @param keyToIdCache             a map of productType key to id. It represents a cache of the existing
+     *                                 productTypes in the target project.
+     */
+    @SuppressWarnings("ConstantConditions") // since the batch is validate before, key is assured to be non-blank here.
+    private void removeAndKeepTrackOfMissingNestedAttribute(
+        @Nonnull final AttributeDefinitionDraft attributeDefinitionDraft,
+        @Nonnull final ProductTypeDraft productTypeDraft,
+        @Nonnull final Map<String, String> keyToIdCache) {
+
+        final AttributeType attributeType = attributeDefinitionDraft.getAttributeType();
+
+        try {
+            getProductTypeKey(attributeType)
+                .ifPresent(key -> {
+                    if (!keyToIdCache.keySet().contains(key)) {
+                        productTypeDraft.getAttributes().remove(attributeDefinitionDraft);
+                        statistics.putMissingNestedProductType(
+                            key, productTypeDraft.getKey(), attributeDefinitionDraft);
+                    }
+                });
+        } catch (InvalidReferenceException invalidReferenceException) {
+            handleError("This exception is unexpectedly thrown since the draft batch has been"
+                    + "already validated for blank keys at an earlier stage, which means this draft should"
+                    + " have a valid reference. Please communicate this error with the maintainer of the library.",
+                invalidReferenceException, 1);
         }
-        return Optional.empty();
     }
-
 
     @Nonnull
     private CompletionStage<Void> syncDraft(
@@ -339,46 +339,60 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     }
 
 
-    private Map<String, Set<AttributeDefinitionDraft>> buildToBeUpdatedMap() {
+    /**
+     * Every key in the {@code readyToResolve} set, represents a product type which is now existing on the target
+     * project and can now be resolved on any of the referencing product types which were kept track of in
+     * {@link ProductTypeSyncStatistics#missingNestedProductTypes} map.
+     *
+     * Based on the contents of the {@link ProductTypeSyncStatistics#missingNestedProductTypes} and the
+     * {@code readyToResolve} set, this method builds a map of product type keys pointing to a set of attribute
+     * definition drafts which are now ready to be added for this product type. The purpose of this is to aggregate
+     * all the definitions that are needed to be added to every product type together so that we can issue them
+     * together in the same update request.
+     *
+     * @return a map of product type keys pointing to a set of attribute definition drafts which are now ready to be
+     *         added for this product type.
+     */
+    @Nonnull
+    private Map<String, Set<AttributeDefinitionDraft>> buildProductTypesToUpdateMap() {
 
-        final Map<String, Set<AttributeDefinitionDraft>> toBeUpdatedMap = new HashMap<>();
+        final Map<String, Set<AttributeDefinitionDraft>> productTypesToUpdate = new HashMap<>();
 
         readyToResolve
-            .forEach(missingProductTypeKey -> {
+            .forEach(readyToResolveProductTypeKey -> {
                 final ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>>
-                    productTypesWaitingForMissingReference = statistics
+                    referencingProductTypes = statistics
                     .getProductTypeKeysWithMissingParents()
-                    .get(missingProductTypeKey);
+                    .get(readyToResolveProductTypeKey);
 
-                if (productTypesWaitingForMissingReference != null) {
-                    productTypesWaitingForMissingReference
-                        .forEach((productTypeKey, attributes) ->
-                            putInToBeUpdated(toBeUpdatedMap, productTypeKey, attributes));
+                if (referencingProductTypes != null) {
+                    referencingProductTypes
+                        .forEach((productTypeKey, attributes) -> {
+
+                            final Set<AttributeDefinitionDraft> attributeDefinitionsToAdd =
+                                productTypesToUpdate.get(productTypeKey);
+
+                            if (attributeDefinitionsToAdd != null) {
+                                attributeDefinitionsToAdd.addAll(attributes);
+                            } else {
+                                productTypesToUpdate.put(productTypeKey, attributes);
+                            }
+                        });
                 }
             });
 
-        return toBeUpdatedMap;
+        return productTypesToUpdate;
     }
 
-    private static void putInToBeUpdated(
-        @Nonnull final Map<String, Set<AttributeDefinitionDraft>> toBeUpdatedMap,
-        @Nonnull final String productTypeKey,
-        @Nonnull final Set<AttributeDefinitionDraft> attributeDefinitionDrafts) {
+    /**
+     * TODO: add doc.
+     * @return
+     */
+    @Nonnull
+    private CompletionStage<Void> lazilyUpdateProductTypes(
+        @Nonnull final Map<String, Set<AttributeDefinitionDraft>> productTypesToUpdate) {
 
-        final Set<AttributeDefinitionDraft> missingParentChildrenActions = toBeUpdatedMap.get(productTypeKey);
-
-        if (missingParentChildrenActions != null) {
-            missingParentChildrenActions.addAll(attributeDefinitionDrafts);
-        } else {
-            toBeUpdatedMap.put(productTypeKey, attributeDefinitionDrafts);
-        }
-    }
-
-
-    private CompletionStage<Void> updateToBeUpdatedInParallel(
-        @Nonnull final Map<String, Set<AttributeDefinitionDraft>> toBeUpdatedMap) {
-
-        final Set<String> keysToFetchToUpdate = toBeUpdatedMap.keySet();
+        final Set<String> keysToFetchToUpdate = productTypesToUpdate.keySet();
         return productTypeService
             .fetchMatchingProductTypesByKeys(keysToFetchToUpdate)
             .handle(ImmutablePair::new)
@@ -395,7 +409,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                     handleError(errorMessage, exception, keysToFetchToUpdate.size());
                     return CompletableFuture.completedFuture(null);
                 } else {
-                    return CompletableFuture.allOf(toBeUpdatedMap
+                    return CompletableFuture.allOf(productTypesToUpdate
                         .entrySet()
                         .stream()
                         .map(entry -> {
@@ -458,7 +472,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                         });
                 } else {
                     // Update missing parents by removing parent keys in ready to resolve.
-                    statistics.removeProductTypeWaitingToBeResolvedKey(oldProductType.getKey());
+                    statistics.removeReferencingProductTypeKey(oldProductType.getKey());
                     return CompletableFuture.completedFuture(null);
                 }
             });
