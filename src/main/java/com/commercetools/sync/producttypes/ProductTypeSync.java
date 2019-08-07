@@ -242,11 +242,11 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
             getReferencedProductTypeKeys(newProductTypeDraft);
 
         // 2. Clean up all occurrences of newProductTypeDraft's key waiting in
-        // statistics#putMissingReferencedProductTypeKey. This is because it should not be existing there,
+        // statistics#putMissingNestedProductType. This is because it should not be existing there,
         // and if it is then the values are outdated. This is to support the case, if a new version of the product
         // type is supplied again in a later batch.
         // TODO: TEST THIS CASE!
-        statistics.removeProductTypeWaitingToBeResolvedKey(newProductTypeDraft.getKey());
+        statistics.removeReferencingProductTypeKey(newProductTypeDraft.getKey());
 
         // TODO: Wrong, it could be many attributes referncing this KEY ----> DONE!
         // TODO: TEST THIS CASE!
@@ -270,7 +270,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
 
                         // TODO: USE MAP OF MAP INSTEAD OF PAIR! TO BE ABLE TO PUT AND OVERWRITE CHANGES IN LATER BATCHES.
                         // TODO: APPEND CHANGE ORDER ACTION AFTER EVERY KEPT TRACK OF ACTION.
-                        statistics.putMissingReferencedProductTypeKey(referencedKeyNotCached,
+                        statistics.putMissingNestedProductType(referencedKeyNotCached,
                             newProductTypeDraft.getKey(), attributeDefinitionDraft);
                     });
             });
@@ -458,7 +458,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                         });
                 } else {
                     // Update missing parents by removing parent keys in ready to resolve.
-                    statistics.removeProductTypeWaitingToBeResolvedKey(oldProductType.getKey());
+                    statistics.removeReferencingProductTypeKey(oldProductType.getKey());
                     return CompletableFuture.completedFuture(null);
                 }
             });
