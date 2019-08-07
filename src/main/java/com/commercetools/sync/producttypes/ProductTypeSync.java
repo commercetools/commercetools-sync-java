@@ -114,7 +114,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * {@link ProductTypeSync#syncBatch(Set, Set, Map)} is called to perform the sync (<b>update</b> or <b>create</b>
      * requests accordingly) on the target project.
      *
-     * <p> After the batch is synced, the method resolves all missing nested references that could have been created
+     * <p>After the batch is synced, the method resolves all missing nested references that could have been created
      * after execution of sync of batch.
      * For more info check {@link ProductTypeSync#resolveMissingNestedReferences(Map)}.
      *
@@ -204,7 +204,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * CTP project. The product type and the draft are considered to match if they have the same key.
      *
      *
-     * <p> Note: In order to support syncing product types with nested references in any order, this method will
+     * <p>Note: In order to support syncing product types with nested references in any order, this method will
      * remove any attribute which contains a nested reference on the drafts and keep track of it to be resolved as
      * soon as the referenced product type becomes available.
      *
@@ -302,7 +302,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * create product type without this attribute containing the missing reference.
      *
      *
-     * <p> Note: This method mutates in the supplied {@code productTypeDraft} attribute definition list by removing
+     * <p>Note: This method mutates in the supplied {@code productTypeDraft} attribute definition list by removing
      * the attribute containing a missing reference.
      *
      * @param attributeDefinitionDraft the attribute definition being checked for any product references.
@@ -354,7 +354,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * project and can now be resolved on any of the referencing product types which were kept track of in
      * {@link ProductTypeSyncStatistics#missingNestedProductTypes} map.
      *
-     * Based on the contents of the {@link ProductTypeSyncStatistics#missingNestedProductTypes} and the
+     * <p>Based on the contents of the {@link ProductTypeSyncStatistics#missingNestedProductTypes} and the
      * {@code readyToResolve} set, this method builds a map of product type keys pointing to a set of attribute
      * definition drafts which are now ready to be added for this product type. The purpose of this is to aggregate
      * all the definitions that are needed to be added to every product type together so that we can issue them
@@ -449,31 +449,6 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     }
 
     /**
-     * Given a set of {@link AttributeDefinitionDraft}, for every draft, this method resolves the nested type reference
-     * on the attribute definition draft and creates an {@link AddAttributeDefinition} action out of it and returns
-     * a list of update actions.
-     *
-     * @return a list of update actions corresponding to the supplied set of {@link AttributeDefinitionDraft}s.
-     */
-    @Nonnull
-    private List<UpdateAction<ProductType>> draftsToActions(
-        @Nonnull final Set<AttributeDefinitionDraft> attributeDefinitionDrafts) {
-
-        return attributeDefinitionDrafts
-            .stream()
-            .map(attributeDefinitionDraft -> {
-                final AttributeDefinitionReferenceResolver attributeDefinitionReferenceResolver =
-                    new AttributeDefinitionReferenceResolver(syncOptions, productTypeService);
-                final AttributeDefinitionDraft resolvedDraft = attributeDefinitionReferenceResolver
-                    .resolveReferences(attributeDefinitionDraft)
-                    .toCompletableFuture()
-                    .join();
-                return AddAttributeDefinition.of(resolvedDraft);
-            })
-            .collect(Collectors.toList());
-    }
-
-    /**
      * Given an existing {@link ProductType} and a list of {@link UpdateAction}s, required to resolve the productType
      * with nestedType references.
      *
@@ -515,6 +490,33 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                 }
             });
     }
+
+    /**
+     * Given a set of {@link AttributeDefinitionDraft}, for every draft, this method resolves the nested type reference
+     * on the attribute definition draft and creates an {@link AddAttributeDefinition} action out of it and returns
+     * a list of update actions.
+     *
+     * @return a list of update actions corresponding to the supplied set of {@link AttributeDefinitionDraft}s.
+     */
+    @Nonnull
+    private List<UpdateAction<ProductType>> draftsToActions(
+        @Nonnull final Set<AttributeDefinitionDraft> attributeDefinitionDrafts) {
+
+        return attributeDefinitionDrafts
+            .stream()
+            .map(attributeDefinitionDraft -> {
+                final AttributeDefinitionReferenceResolver attributeDefinitionReferenceResolver =
+                    new AttributeDefinitionReferenceResolver(syncOptions, productTypeService);
+                final AttributeDefinitionDraft resolvedDraft = attributeDefinitionReferenceResolver
+                    .resolveReferences(attributeDefinitionDraft)
+                    .toCompletableFuture()
+                    .join();
+                return AddAttributeDefinition.of(resolvedDraft);
+            })
+            .collect(Collectors.toList());
+    }
+
+
 
 
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
