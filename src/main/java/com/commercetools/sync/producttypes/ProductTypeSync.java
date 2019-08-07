@@ -62,7 +62,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * {@link #applyCallbackAndCreate(ProductTypeDraft)}.  It has a local scope within every batch execution, which
      * means that it is re-initialized on every {@link #processBatch(List)} call.
      */
-    private ConcurrentHashMap.KeySetView<String, Boolean> readyToResolve = ConcurrentHashMap.newKeySet();
+    private ConcurrentHashMap.KeySetView<String, Boolean> readyToResolve;
 
     public ProductTypeSync(@Nonnull final ProductTypeSyncOptions productTypeSyncOptions) {
         this(productTypeSyncOptions, new ProductTypeServiceImpl(productTypeSyncOptions));
