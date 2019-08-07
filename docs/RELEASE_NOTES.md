@@ -34,7 +34,8 @@
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.4.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.4.0)
 
-- 🎉 **New Features** (4)
+- 🎉 **New Features** (5)
+    - **ProductType Sync** - Introduced support for syncing product types with NestedType (or set of NestedType) attributes in any order. [#372](https://github.com/commercetools/commercetools-sync-java/issues/372)
     - **ProductType Sync** - Introduced the new `ProductTypeReferenceReplacementUtils#replaceProductTypesReferenceIdsWithKeys` which is a util that replaces the reference ids with keys in a list of productTypes. [#372](https://github.com/commercetools/commercetools-sync-java/issues/372)
     - **ProductType Sync** - Introduced the new `ProductTypeReferenceReplacementUtils#buildProductTypeQuery` utils to create a product type query with all needed reference expansions to fetch productTypes from a source CTP project for the sync. [#372](https://github.com/commercetools/commercetools-sync-java/issues/372)
     - **ProductType Sync** - Introduced the new `ProductTypeReferenceResolver` which resolves productType references on ProductTypeDrafts. [#372](https://github.com/commercetools/commercetools-sync-java/issues/372)
