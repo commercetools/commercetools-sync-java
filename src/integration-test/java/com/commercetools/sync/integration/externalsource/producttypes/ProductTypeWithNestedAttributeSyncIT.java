@@ -12,6 +12,7 @@ import io.sphere.sdk.products.attributes.NestedAttributeType;
 import io.sphere.sdk.products.attributes.SetAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
+import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,17 +23,25 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_1;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_2;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_3;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_DESCRIPTION_1;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_DESCRIPTION_4;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_KEY_1;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_KEY_2;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_KEY_3;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_KEY_4;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_1;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_4;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypes;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.getProductTypeByKey;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.populateTargetProjectWithNestedAttributes;
+import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.externalsource.producttypes.ProductTypeSyncIT.assertAttributesAreEqual;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 
 class ProductTypeWithNestedAttributeSyncIT {
@@ -150,5 +159,52 @@ class ProductTypeWithNestedAttributeSyncIT {
             Assertions.assertThat(productType.getDescription()).isEqualTo(PRODUCT_TYPE_DESCRIPTION_4);
             assertAttributesAreEqual(productType.getAttributes(), singletonList(nestedTypeAttr));
         });
+    }
+
+    @Test
+    void sync_WithUpdatedProductType_WithNewNestedAttribute_ShouldUpdateProductTypeAddingAttribute() {
+        // preparation
+        final ProductTypeDraft productTypeDraft4 = ProductTypeDraft.ofAttributeDefinitionDrafts(
+                PRODUCT_TYPE_KEY_4,
+                PRODUCT_TYPE_NAME_4,
+                PRODUCT_TYPE_DESCRIPTION_4,
+                singletonList(ATTRIBUTE_DEFINITION_DRAFT_3));
+
+        final ProductType productType4 =
+                CTP_SOURCE_CLIENT.execute(ProductTypeCreateCommand.of(productTypeDraft4)).toCompletableFuture().join();
+
+        final AttributeDefinitionDraft nestedTypeAttr = AttributeDefinitionDraftBuilder.of(
+                AttributeDefinitionBuilder
+                        .of("nestedattr", ofEnglish("nestedattr"), NestedAttributeType.of(productType4))
+                        .isSearchable(false)
+                        .build())
+                .build();
+
+        final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
+                PRODUCT_TYPE_KEY_1,
+                PRODUCT_TYPE_NAME_1,
+                PRODUCT_TYPE_DESCRIPTION_1,
+                asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2, nestedTypeAttr));
+
+        final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
+                .of(CTP_TARGET_CLIENT)
+                .build();
+
+        final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
+
+        // tests
+        final ProductTypeSyncStatistics productTypeSyncStatistics = productTypeSync
+                .sync(singletonList(newProductTypeDraft))
+                .toCompletableFuture().join();
+
+        // assertions
+        assertThat(productTypeSyncStatistics).hasValues(4, 0, 1, 0);
+
+        final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
+
+        Assertions.assertThat(oldProductTypeAfter).hasValueSatisfying(productType ->
+                assertAttributesAreEqual(productType.getAttributes(),
+                        asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2, nestedTypeAttr)
+                ));
     }
 }
