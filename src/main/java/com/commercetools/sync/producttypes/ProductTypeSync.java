@@ -62,7 +62,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * {@link #applyCallbackAndCreate(ProductTypeDraft)}.  It has a local scope within every batch execution, which
      * means that it is re-initialized on every {@link #processBatch(List)} call.
      */
-    private ConcurrentHashMap.KeySetView<String, Boolean> readyToResolve = ConcurrentHashMap.newKeySet();
+    private ConcurrentHashMap.KeySetView<String, Boolean> readyToResolve;
 
     public ProductTypeSync(@Nonnull final ProductTypeSyncOptions productTypeSyncOptions) {
         this(productTypeSyncOptions, new ProductTypeServiceImpl(productTypeSyncOptions));
@@ -256,7 +256,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * For each attribute, attempts to find a nested product type in its attribute type, if it has a
      * nested type. It checks if the key, of the productType reference, is cached in {@code keyToIdCache}. If it is,
      * then it means the referenced product type exists in the target project, so there is no need to remove or keep
-     * track of it. However, if it is not, it means it doesn't exist yet, which means we need to keep track of it as a
+     * track of it. If it is not, it means it doesn't exist yet and needs to be tracked as a
      * missing reference and also remove this attribute definition from the supplied {@code draftCopy} to be able to
      * create product type without this attribute containing the missing reference.
      *
