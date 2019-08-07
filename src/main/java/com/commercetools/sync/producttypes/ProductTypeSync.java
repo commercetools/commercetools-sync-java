@@ -108,12 +108,15 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     }
 
     /**
-     * TODO: add doc.
      * This method first creates a new {@link Set} of valid {@link ProductTypeDraft} elements. For more on the rules of
      * validation, check: {@link ProductTypeBatchProcessor#validateBatch()}. Using the resulting set of
      * {@code validProductTypeDrafts}, the matching productTypes in the target CTP project are fetched then the method
-     * {@link ProductTypeSync#syncBatch(Set, Set)} is called to perform the sync (<b>update</b> or <b>create</b>
+     * {@link ProductTypeSync#syncBatch(Set, Set, Map)} is called to perform the sync (<b>update</b> or <b>create</b>
      * requests accordingly) on the target project.
+     *
+     * <p> After the batch is synced, the method resolves all missing nested references that could have been created
+     * after execution of sync of batch.
+     * For more info check {@link ProductTypeSync#resolveMissingNestedReferences(Map)}.
      *
      * <p> In case of error during of fetching of existing productTypes, the error callback will be triggered.
      * And the sync process would stop for the given batch.
@@ -197,9 +200,13 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
 
 
     /**
-     * TODO: add doc.
-     * Given a set of product type drafts, attempts to sync the drafts with the existing products types in the CTP
-     * project. The product type and the draft are considered to match if they have the same key.
+     * Given a set of product type drafts, attempts to sync the drafts with the existing products types in the target
+     * CTP project. The product type and the draft are considered to match if they have the same key.
+     *
+     *
+     * <p> Note: In order to support syncing product types with nested references in any order, this method will
+     * remove any attribute which contains a nested reference on the drafts and keep track of it to be resolved as
+     * soon as the referenced product type becomes available.
      *
      * @param oldProductTypes old product types.
      * @param newProductTypes drafts that need to be synced.
@@ -391,9 +398,9 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * Given a map of product type keys pointing to a set of attribute definition drafts which are now ready to be added
      * for this product type. This method first converts the drafts to {@link AddAttributeDefinition} actions in which
      * the reference id value (which is a key) is resolved to an actual UUID of the product type key pointed by this
-     * key.
+     * key. Then, for each product type, the method issues an update request containing all the actions.
      *
-     * @return TODO
+     * @return a {@link CompletionStage} which contains an empty result after execution of all the update requests.
      */
     @Nonnull
     private CompletionStage<Void> resolveMissingNestedReferences(
