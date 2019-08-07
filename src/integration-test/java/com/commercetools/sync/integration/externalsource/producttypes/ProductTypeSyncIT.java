@@ -1,6 +1,7 @@
 package com.commercetools.sync.integration.externalsource.producttypes;
 
 
+import com.commercetools.sync.commons.exceptions.InvalidProductTypeDraftException;
 import com.commercetools.sync.producttypes.ProductTypeSync;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
@@ -338,17 +339,20 @@ class ProductTypeSyncIT {
             .sync(singletonList(newProductTypeDraft))
             .toCompletableFuture().join();
 
+
+        final String expectedErrorMessage = format("ProductTypeDraft with name: %s doesn't have a key. "
+            + "Please make sure all productType drafts have keys.", newProductTypeDraft.getName());
         // assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).isEqualTo(format("ProductTypeDraft with name: %s doesn't have a key. "
-                    + "Please make sure all productType drafts have keys.", newProductTypeDraft.getName()))
-            );
+            .hasOnlyOneElementSatisfying(message -> assertThat(message).isEqualTo(expectedErrorMessage));
 
         assertThat(exceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable).isNull());
+            .hasOnlyOneElementSatisfying(throwable -> {
+                assertThat(throwable).isInstanceOf(InvalidProductTypeDraftException.class);
+                assertThat(throwable.getMessage()).isInstanceOf(InvalidProductTypeDraftException.class);
+            });
 
         assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
     }
@@ -379,7 +383,7 @@ class ProductTypeSyncIT {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).isEqualTo("Failed to process null product type draft.")
+                assertThat(message).isEqualTo("ProductTypeDraft is null.")
             );
 
         assertThat(exceptions)
