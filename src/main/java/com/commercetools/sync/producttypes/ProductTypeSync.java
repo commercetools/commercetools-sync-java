@@ -414,10 +414,10 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
             .thenCompose(fetchResponse -> {
 
                 final Set<ProductType> matchingProductTypes = fetchResponse.getKey();
-                final Map<String, ProductType> keyToProductType = new HashMap<>();
-                matchingProductTypes
-                    .forEach(productType -> keyToProductType.put(productType.getKey(), productType));
-
+                final Map<String, ProductType> keyToProductType =
+                    matchingProductTypes
+                        .stream()
+                        .collect(Collectors.toMap(ProductType::getKey, productType -> productType));
 
                 final Throwable exception = fetchResponse.getValue();
                 if (exception != null) {

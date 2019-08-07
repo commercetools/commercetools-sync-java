@@ -370,7 +370,7 @@ class TypeSyncIT {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).isEqualTo("ProductTypeDraft is null.")
+                assertThat(message).isEqualTo("Failed to process null type draft.")
             );
 
         assertThat(exceptions)
