@@ -342,7 +342,8 @@ class ProductTypeSyncIT {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).isEqualTo("Failed to process product type draft without key.")
+                assertThat(message).isEqualTo(format("ProductTypeDraft with name: %s doesn't have a key. "
+                    + "Please make sure all productType drafts have keys.", newProductTypeDraft.getName()))
             );
 
         assertThat(exceptions)
