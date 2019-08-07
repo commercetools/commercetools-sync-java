@@ -13,7 +13,6 @@ import io.sphere.sdk.products.attributes.SetAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,15 +33,16 @@ import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtil
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_KEY_4;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_1;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_4;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.assertAttributesAreEqual;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypes;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.getProductTypeByKey;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.populateTargetProjectWithNestedAttributes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.integration.externalsource.producttypes.ProductTypeSyncIT.assertAttributesAreEqual;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class ProductTypeWithNestedAttributeSyncIT {
 
@@ -108,9 +108,9 @@ class ProductTypeWithNestedAttributeSyncIT {
         final Optional<ProductType> oldProductTypeAfter =
                 getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_3);
 
-        Assertions.assertThat(oldProductTypeAfter).hasValueSatisfying(productType -> {
-            Assertions.assertThat(productType.getName()).isEqualTo(PRODUCT_TYPE_NAME_4);
-            Assertions.assertThat(productType.getDescription()).isEqualTo(PRODUCT_TYPE_DESCRIPTION_4);
+        assertThat(oldProductTypeAfter).hasValueSatisfying(productType -> {
+            assertThat(productType.getName()).isEqualTo(PRODUCT_TYPE_NAME_4);
+            assertThat(productType.getDescription()).isEqualTo(PRODUCT_TYPE_DESCRIPTION_4);
             assertAttributesAreEqual(productType.getAttributes(), attributeDefinitionDrafts);
         });
     }
@@ -154,9 +154,9 @@ class ProductTypeWithNestedAttributeSyncIT {
 
         final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_4);
 
-        Assertions.assertThat(oldProductTypeAfter).hasValueSatisfying(productType -> {
-            Assertions.assertThat(productType.getName()).isEqualTo(PRODUCT_TYPE_NAME_4);
-            Assertions.assertThat(productType.getDescription()).isEqualTo(PRODUCT_TYPE_DESCRIPTION_4);
+        assertThat(oldProductTypeAfter).hasValueSatisfying(productType -> {
+            assertThat(productType.getName()).isEqualTo(PRODUCT_TYPE_NAME_4);
+            assertThat(productType.getDescription()).isEqualTo(PRODUCT_TYPE_DESCRIPTION_4);
             assertAttributesAreEqual(productType.getAttributes(), singletonList(nestedTypeAttr));
         });
     }
@@ -202,9 +202,9 @@ class ProductTypeWithNestedAttributeSyncIT {
 
         final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
 
-        Assertions.assertThat(oldProductTypeAfter).hasValueSatisfying(productType ->
-                assertAttributesAreEqual(productType.getAttributes(),
-                        asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2, nestedTypeAttr)
-                ));
+        assertThat(oldProductTypeAfter).hasValueSatisfying(productType ->
+            assertAttributesAreEqual(productType.getAttributes(),
+                asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2, nestedTypeAttr)
+            ));
     }
 }

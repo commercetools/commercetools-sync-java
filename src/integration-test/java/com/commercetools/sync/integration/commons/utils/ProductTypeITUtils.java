@@ -2,12 +2,18 @@ package com.commercetools.sync.integration.commons.utils;
 
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.EnumValue;
+import io.sphere.sdk.models.LocalizedEnumValue;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.TextInputHint;
+import io.sphere.sdk.products.attributes.AttributeConstraint;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
 import io.sphere.sdk.products.attributes.AttributeDefinitionBuilder;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
 import io.sphere.sdk.products.attributes.BooleanAttributeType;
+import io.sphere.sdk.products.attributes.EnumAttributeType;
+import io.sphere.sdk.products.attributes.LocalizedEnumAttributeType;
 import io.sphere.sdk.products.attributes.LocalizedStringAttributeType;
 import io.sphere.sdk.products.attributes.NestedAttributeType;
 import io.sphere.sdk.products.attributes.StringAttributeType;
@@ -26,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndExecute;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
@@ -35,6 +42,8 @@ import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static java.util.Optional.ofNullable;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public final class ProductTypeITUtils {
     private static final String LOCALISED_STRING_ATTRIBUTE_NAME = "backgroundColor";
@@ -326,6 +335,75 @@ public final class ProductTypeITUtils {
             .build();
 
         return sphereClient.execute(query).toCompletableFuture().join().head();
+    }
+
+    public static void assertAttributesAreEqual(@Nonnull final List<AttributeDefinition> attributes,
+                                                @Nonnull final List<AttributeDefinitionDraft> attributesDrafts) {
+
+        assertThat(attributes).hasSameSizeAs(attributesDrafts);
+        IntStream.range(0, attributesDrafts.size())
+                 .forEach(index -> {
+                     final AttributeDefinition attribute = attributes.get(index);
+                     final AttributeDefinitionDraft attributeDraft = attributesDrafts.get(index);
+
+                     assertThat(attribute.getName()).isEqualTo(attributeDraft.getName());
+
+                     assertThat(attribute.getLabel()).isEqualTo(attributeDraft.getLabel());
+
+                     assertThat(attribute.getAttributeType()).isEqualTo(attributeDraft.getAttributeType());
+
+                     assertThat(attribute.getInputHint())
+                         .isEqualTo(ofNullable(attributeDraft.getInputHint()).orElse(TextInputHint.SINGLE_LINE));
+
+                     assertThat(attribute.getInputTip()).isEqualTo(attributeDraft.getInputTip());
+
+                     assertThat(attribute.isRequired()).isEqualTo(attributeDraft.isRequired());
+
+                     assertThat(attribute.isSearchable())
+                         .isEqualTo(ofNullable(attributeDraft.isSearchable()).orElse(true));
+
+                     assertThat(attribute.getAttributeConstraint())
+                         .isEqualTo(ofNullable(attributeDraft.getAttributeConstraint())
+                             .orElse(AttributeConstraint.NONE));
+
+                     if (attribute.getAttributeType().getClass() == EnumAttributeType.class) {
+                         assertPlainEnumsValuesAreEqual(
+                             ((EnumAttributeType) attribute.getAttributeType()).getValues(),
+                             ((EnumAttributeType) attributeDraft.getAttributeType()).getValues()
+                         );
+                     } else if (attribute.getAttributeType().getClass() == LocalizedEnumAttributeType.class) {
+                         assertLocalizedEnumsValuesAreEqual(
+                             ((LocalizedEnumAttributeType) attribute.getAttributeType()).getValues(),
+                             ((LocalizedEnumAttributeType) attributeDraft.getAttributeType()).getValues()
+                         );
+                     }
+                 });
+    }
+
+    private static void assertPlainEnumsValuesAreEqual(@Nonnull final List<EnumValue> enumValues,
+                                                       @Nonnull final List<EnumValue> enumValuesDrafts) {
+
+        IntStream.range(0, enumValuesDrafts.size())
+                 .forEach(index -> {
+                     final EnumValue enumValue = enumValues.get(index);
+                     final EnumValue enumValueDraft = enumValuesDrafts.get(index);
+
+                     assertThat(enumValue.getKey()).isEqualTo(enumValueDraft.getKey());
+                     assertThat(enumValue.getLabel()).isEqualTo(enumValueDraft.getLabel());
+                 });
+    }
+
+    private static void assertLocalizedEnumsValuesAreEqual(@Nonnull final List<LocalizedEnumValue> enumValues,
+                                                           @Nonnull final List<LocalizedEnumValue> enumValuesDrafts) {
+
+        IntStream.range(0, enumValuesDrafts.size())
+                 .forEach(index -> {
+                     final LocalizedEnumValue enumValue = enumValues.get(index);
+                     final LocalizedEnumValue enumValueDraft = enumValuesDrafts.get(index);
+
+                     assertThat(enumValue.getKey()).isEqualTo(enumValueDraft.getKey());
+                     assertThat(enumValue.getLabel()).isEqualTo(enumValueDraft.getLabel());
+                 });
     }
 
     private ProductTypeITUtils() {
