@@ -38,6 +38,9 @@
     - **ProductType Sync** - Introduced the new `ProductTypeReferenceReplacementUtils#replaceProductTypesReferenceIdsWithKeys` which is a util that replaces the reference ids with keys in a list of productTypes. [#372](https://github.com/commercetools/commercetools-sync-java/issues/372)
     - **ProductType Sync** - Introduced the new `ProductTypeReferenceReplacementUtils#buildProductTypeQuery` utils to create a product type query with all needed reference expansions to fetch productTypes from a source CTP project for the sync. [#372](https://github.com/commercetools/commercetools-sync-java/issues/372)
     - **ProductType Sync** - Introduced the new `ProductTypeReferenceResolver` which resolves productType references on ProductTypeDrafts. [#372](https://github.com/commercetools/commercetools-sync-java/issues/372)
+    
+- 🐞 **Bug Fixes** (1)
+    - **ProductType Sync** -  Fixed a bug in the `ProductTypeUpdateActionUtils#buildAttributesUpdateActions` in which the comparison of product types with different nested references was not generating update actions (`RemoveAttributeDefinition` and `AddAttributeDefinition`), when it should have. [#372](https://github.com/commercetools/commercetools-sync-java/issues/372)
 -->
 
 ### 1.3.0 -  Jul 3, 2019

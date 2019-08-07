@@ -530,6 +530,123 @@ class BuildAttributeDefinitionUpdateActionsTest {
     }
 
     @Test
+    void buildAttributesUpdateActions_WithDifferentNestedAttributeRefs_ShouldRemoveOldAttributeAndAddNewAttributes() {
+        // preparation
+        final AttributeDefinition ofNestedType = AttributeDefinitionBuilder
+            .of("nested", ofEnglish("label"), NestedAttributeType.of(ProductType.referenceOfId("foo")))
+            .build();
+
+        final AttributeDefinition ofSetOfNestedType = AttributeDefinitionBuilder
+            .of("set-of-nested", ofEnglish("label"),
+                SetAttributeType.of(NestedAttributeType.of(ProductType.referenceOfId("foo"))))
+            .build();
+
+        final AttributeDefinition ofSetOfSetOfNestedType = AttributeDefinitionBuilder
+            .of("set-of-set-of-nested", ofEnglish("label"),
+                SetAttributeType.of(SetAttributeType.of(NestedAttributeType.of(ProductType.referenceOfId("foo")))))
+            .build();
+
+
+        final AttributeDefinitionDraft ofNestedTypeDraft = AttributeDefinitionDraftBuilder
+            .of(ofNestedType)
+            .attributeType(NestedAttributeType.of(ProductType.referenceOfId("bar")))
+            .build();
+
+        final AttributeDefinitionDraft ofSetOfNestedTypeDraft = AttributeDefinitionDraftBuilder
+            .of(ofSetOfNestedType)
+            .attributeType(SetAttributeType.of(NestedAttributeType.of(ProductType.referenceOfId("bar"))))
+            .build();
+
+        final AttributeDefinitionDraft ofSetOfSetOfNestedTypeDraft = AttributeDefinitionDraftBuilder
+            .of(ofSetOfSetOfNestedType)
+            .attributeType(
+                SetAttributeType.of(SetAttributeType.of(NestedAttributeType.of(ProductType.referenceOfId("bar")))))
+            .build();
+
+        final ProductType oldProductType = mock(ProductType.class);
+        when(oldProductType.getAttributes())
+            .thenReturn(asList(ofNestedType, ofSetOfNestedType, ofSetOfSetOfNestedType));
+
+        final ProductTypeDraft newProductTypeDraft = mock(ProductTypeDraft.class);
+        when(newProductTypeDraft.getAttributes())
+            .thenReturn(asList(ofNestedTypeDraft, ofSetOfNestedTypeDraft, ofSetOfSetOfNestedTypeDraft));
+
+        final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
+            .of(mock(SphereClient.class))
+            .build();
+
+        // test
+        final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(
+            oldProductType,
+            newProductTypeDraft,
+            syncOptions
+        );
+
+        // assertions
+        assertThat(updateActions).containsExactly(
+            RemoveAttributeDefinition.of(ofNestedType.getName()),
+            AddAttributeDefinition.of(ofNestedTypeDraft),
+            RemoveAttributeDefinition.of(ofSetOfNestedType.getName()),
+            AddAttributeDefinition.of(ofSetOfNestedTypeDraft),
+            RemoveAttributeDefinition.of(ofSetOfSetOfNestedType.getName()),
+            AddAttributeDefinition.of(ofSetOfSetOfNestedTypeDraft)
+        );
+    }
+
+    @Test
+    void buildAttributesUpdateActions_WithIdenticalNestedAttributeRefs_ShouldNotBuildActions() {
+        // preparation
+        final AttributeDefinition ofNestedType = AttributeDefinitionBuilder
+            .of("nested", ofEnglish("label"), NestedAttributeType.of(ProductType.referenceOfId("foo")))
+            .build();
+
+        final AttributeDefinition ofSetOfNestedType = AttributeDefinitionBuilder
+            .of("set-of-nested", ofEnglish("label"),
+                SetAttributeType.of(NestedAttributeType.of(ProductType.referenceOfId("foo"))))
+            .build();
+
+        final AttributeDefinition ofSetOfSetOfNestedType = AttributeDefinitionBuilder
+            .of("set-of-set-of-nested", ofEnglish("label"),
+                SetAttributeType.of(SetAttributeType.of(NestedAttributeType.of(ProductType.referenceOfId("foo")))))
+            .build();
+
+
+        final AttributeDefinitionDraft ofNestedTypeDraft = AttributeDefinitionDraftBuilder
+            .of(ofNestedType)
+            .build();
+
+        final AttributeDefinitionDraft ofSetOfNestedTypeDraft = AttributeDefinitionDraftBuilder
+            .of(ofSetOfNestedType)
+            .build();
+
+        final AttributeDefinitionDraft ofSetOfSetOfNestedTypeDraft = AttributeDefinitionDraftBuilder
+            .of(ofSetOfSetOfNestedType)
+            .build();
+
+        final ProductType oldProductType = mock(ProductType.class);
+        when(oldProductType.getAttributes())
+            .thenReturn(asList(ofNestedType, ofSetOfNestedType, ofSetOfSetOfNestedType));
+
+        final ProductTypeDraft newProductTypeDraft = mock(ProductTypeDraft.class);
+        when(newProductTypeDraft.getAttributes())
+            .thenReturn(asList(ofNestedTypeDraft, ofSetOfNestedTypeDraft, ofSetOfSetOfNestedTypeDraft));
+
+        final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
+            .of(mock(SphereClient.class))
+            .build();
+
+        // test
+        final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(
+            oldProductType,
+            newProductTypeDraft,
+            syncOptions
+        );
+
+        // assertions
+        assertThat(updateActions).isEmpty();
+    }
+
+    @Test
     void buildAttributesUpdateActions_WithANullAttributeDefinitionDraft_ShouldSkipNullAttributes() {
         // preparation
         final ProductType oldProductType = mock(ProductType.class);
