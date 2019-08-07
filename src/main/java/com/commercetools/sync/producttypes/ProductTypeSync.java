@@ -1,6 +1,7 @@
 package com.commercetools.sync.producttypes;
 
 import com.commercetools.sync.commons.BaseSync;
+import com.commercetools.sync.commons.exceptions.InvalidReferenceException;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.producttypes.helpers.AttributeDefinitionReferenceResolver;
 import com.commercetools.sync.producttypes.helpers.ProductTypeBatchProcessor;
@@ -12,8 +13,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.AttributeType;
-import io.sphere.sdk.products.attributes.NestedAttributeType;
-import io.sphere.sdk.products.attributes.SetAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
@@ -34,6 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
+import static com.commercetools.sync.producttypes.helpers.ProductTypeBatchProcessor.getProductTypeKey;
 import static com.commercetools.sync.producttypes.utils.ProductTypeSyncUtils.buildActions;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
@@ -145,10 +145,11 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                 }
 
 
-                final Set<String> batchDraftKeys = batchProcessor.getValidDrafts()
-                                                                 .stream()
-                                                                 .map(ProductTypeDraft::getKey)
-                                                                 .collect(Collectors.toSet());
+                final Set<String> batchDraftKeys = batchProcessor
+                    .getValidDrafts()
+                    .stream()
+                    .map(ProductTypeDraft::getKey)
+                    .collect(Collectors.toSet());
 
                 return productTypeService
                     .fetchMatchingProductTypesByKeys(batchDraftKeys)
@@ -212,7 +213,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
         return CompletableFuture.allOf(newProductTypes
             .stream()
             .map(newProductType ->
-                removeMissingReferenceAttributeAndUpdateMissingParentMap(newProductType, keyToIdCache))
+                removeAndKeepTrackOfMissingNestedAttributes(newProductType, keyToIdCache))
             .map(draftWithoutMissingRefAttrs ->
                 referenceResolver
                     .resolveReferences(draftWithoutMissingRefAttrs)
@@ -231,17 +232,34 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
             .toArray(CompletableFuture[]::new));
     }
 
+
+    /**
+     * First, cleans up all occurrences of {@code productTypeDraft}'s key waiting in
+     * statistics#putMissingNestedProductType. This is because it should not be existing there, and if it is then the
+     * values are outdated. This is to support the case, if an already visited attribute is supplied again in a later
+     * batch (maybe with a different reference or a reference that doesn't exist anymore).
+     *
+     *
+     * <p>Then, makes a copy of {@code productTypeDraft} and then goes through all its attribute definition drafts.
+     * For each attribute, attempts to find a nested product type in its attribute type, if it has a
+     * nested type. It checks if the key, of the productType reference, is cached in {@code keyToIdCache}. If it is,
+     * then it means the referenced product type exists in the target project, so there is no need to remove or keep
+     * track of it. However, if it is not, it means it doesn't exist yet, which means we need to keep track of it as a
+     * missing reference and also remove this attribute definition from the supplied {@code draftCopy} to be able to
+     * create product type without this attribute containing the missing reference.
+     *
+     *
+     * @param productTypeDraft         the productTypeDraft containing the attribute which should be updated by removing
+     *                                 the attribute which contains the missing reference.
+     * @param keyToIdCache             a map of productType key to id. It represents a cache of the existing
+     *                                 productTypes in the target project.
+     */
+    @SuppressWarnings("ConstantConditions") // since the batch is validate before, key is assured to be non-blank here.
     @Nonnull
-    private ProductTypeDraft removeMissingReferenceAttributeAndUpdateMissingParentMap(
+    private ProductTypeDraft removeAndKeepTrackOfMissingNestedAttributes(
         @Nonnull final ProductTypeDraft productTypeDraft,
         @Nonnull final Map<String, String> keyToIdCache) {
 
-
-        // 1. Clean up all occurrences of newProductTypeDraft's key waiting in
-        // statistics#putMissingNestedProductType. This is because it should not be existing there,
-        // and if it is then the values are outdated. This is to support the case, if a new version of the product
-        // type is supplied again in a later batch.
-        // TODO: TEST THIS CASE!
         statistics.removeReferencingProductTypeKey(productTypeDraft.getKey());
 
         final List<AttributeDefinitionDraft> attributeDefinitionDrafts = productTypeDraft.getAttributes();
@@ -257,38 +275,55 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
 
         for (AttributeDefinitionDraft attributeDefinitionDraft : attributeDefinitionDrafts) {
             if (attributeDefinitionDraft != null) {
-                final AttributeType attributeType = attributeDefinitionDraft.getAttributeType();
-
-                getProductTypeKey(attributeType).ifPresent(key -> {
-                    // means it has a nested reference
-                    if (!keyToIdCache.keySet().contains(key)) {
-                        // means it is missing
-                        // 1.1. Remove attributeDefinition with missing key reference
-                        // IMP: This mutates in newProductTypeDraft.. TODO: FIX
-                        draftCopy.getAttributes().remove(attributeDefinitionDraft);
-                        // 1.2. Add to missing parent map.
-                        statistics.putMissingNestedProductType(key,
-                            productTypeDraft.getKey(), attributeDefinitionDraft);
-                    }
-                });
+                removeAndKeepTrackOfMissingNestedAttribute(attributeDefinitionDraft, draftCopy, keyToIdCache);
             }
         }
 
         return draftCopy;
     }
 
-    @Nonnull
-    private static Optional<String> getProductTypeKey(@Nonnull final AttributeType attributeType) {
-        if (attributeType instanceof NestedAttributeType) {
-            final NestedAttributeType nestedElementType = (NestedAttributeType) attributeType;
-            return Optional.of(nestedElementType.getTypeReference().getId());
-        } else if (attributeType instanceof SetAttributeType) {
-            final SetAttributeType setAttributeType = (SetAttributeType) attributeType;
-            return getProductTypeKey(setAttributeType.getElementType());
-        }
-        return Optional.empty();
-    }
+    /**
+     * Attempts to find a nested product type in the attribute type of {@code attributeDefinitionDraft}, if it has a
+     * nested type. It checks if the key, of the productType reference, is cached in {@code keyToIdCache}. If it is,
+     * then it means the referenced product type exists in the target project, so there is no need to remove or keep
+     * track of it. However, if it is not, it means it doesn't exist yet, which means we need to keep track of it as a
+     * missing reference and also remove this attribute definition from the supplied {@code draftCopy} to be able to
+     * create product type without this attribute containing the missing reference.
+     *
+     *
+     * <p> Note: This method mutates in the supplied {@code productTypeDraft} attribute definition list by removing
+     * the attribute containing a missing reference.
+     *
+     * @param attributeDefinitionDraft the attribute definition being checked for any product references.
+     * @param productTypeDraft         the productTypeDraft containing the attribute which should be updated by removing
+     *                                 the attribute which contains the missing reference.
+     * @param keyToIdCache             a map of productType key to id. It represents a cache of the existing
+     *                                 productTypes in the target project.
+     */
+    @SuppressWarnings("ConstantConditions") // since the batch is validate before, key is assured to be non-blank here.
+    private void removeAndKeepTrackOfMissingNestedAttribute(
+        @Nonnull final AttributeDefinitionDraft attributeDefinitionDraft,
+        @Nonnull final ProductTypeDraft productTypeDraft,
+        @Nonnull final Map<String, String> keyToIdCache) {
 
+        final AttributeType attributeType = attributeDefinitionDraft.getAttributeType();
+
+        try {
+            getProductTypeKey(attributeType)
+                .ifPresent(key -> {
+                    if (!keyToIdCache.keySet().contains(key)) {
+                        productTypeDraft.getAttributes().remove(attributeDefinitionDraft);
+                        statistics.putMissingNestedProductType(
+                            key, productTypeDraft.getKey(), attributeDefinitionDraft);
+                    }
+                });
+        } catch (InvalidReferenceException invalidReferenceException) {
+            handleError("This exception is unexpectedly thrown since the draft batch has been"
+                    + "already validated for blank keys at an earlier stage, which means this draft should"
+                    + " have a valid reference. Please communicate this error with the maintainer of the library.",
+                invalidReferenceException, 1);
+        }
+    }
 
     @Nonnull
     private CompletionStage<Void> syncDraft(
