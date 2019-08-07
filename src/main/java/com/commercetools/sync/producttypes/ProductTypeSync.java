@@ -164,7 +164,8 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                             return CompletableFuture.completedFuture(null);
                         } else {
                             return syncBatch(matchingProductTypes, batchProcessor.getValidDrafts(), keyToIdCache)
-                                .thenCompose(ignoredResult -> updateToBeUpdatedInParallel(buildToBeUpdatedMap()));
+                                .thenApply(ignoredResult -> buildProductTypesToUpdateMap())
+                                .thenCompose(this::lazilyUpdateProductTypes);
                         }
                     });
             })
@@ -338,46 +339,60 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     }
 
 
-    private Map<String, Set<AttributeDefinitionDraft>> buildToBeUpdatedMap() {
+    /**
+     * Every key in the {@code readyToResolve} set, represents a product type which is now existing on the target
+     * project and can now be resolved on any of the referencing product types which were kept track of in
+     * {@link ProductTypeSyncStatistics#missingNestedProductTypes} map.
+     *
+     * Based on the contents of the {@link ProductTypeSyncStatistics#missingNestedProductTypes} and the
+     * {@code readyToResolve} set, this method builds a map of product type keys pointing to a set of attribute
+     * definition drafts which are now ready to be added for this product type. The purpose of this is to aggregate
+     * all the definitions that are needed to be added to every product type together so that we can issue them
+     * together in the same update request.
+     *
+     * @return a map of product type keys pointing to a set of attribute definition drafts which are now ready to be
+     *         added for this product type.
+     */
+    @Nonnull
+    private Map<String, Set<AttributeDefinitionDraft>> buildProductTypesToUpdateMap() {
 
-        final Map<String, Set<AttributeDefinitionDraft>> toBeUpdatedMap = new HashMap<>();
+        final Map<String, Set<AttributeDefinitionDraft>> productTypesToUpdate = new HashMap<>();
 
         readyToResolve
-            .forEach(missingProductTypeKey -> {
+            .forEach(readyToResolveProductTypeKey -> {
                 final ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>>
-                    productTypesWaitingForMissingReference = statistics
+                    referencingProductTypes = statistics
                     .getProductTypeKeysWithMissingParents()
-                    .get(missingProductTypeKey);
+                    .get(readyToResolveProductTypeKey);
 
-                if (productTypesWaitingForMissingReference != null) {
-                    productTypesWaitingForMissingReference
-                        .forEach((productTypeKey, attributes) ->
-                            putInToBeUpdated(toBeUpdatedMap, productTypeKey, attributes));
+                if (referencingProductTypes != null) {
+                    referencingProductTypes
+                        .forEach((productTypeKey, attributes) -> {
+
+                            final Set<AttributeDefinitionDraft> attributeDefinitionsToAdd =
+                                productTypesToUpdate.get(productTypeKey);
+
+                            if (attributeDefinitionsToAdd != null) {
+                                attributeDefinitionsToAdd.addAll(attributes);
+                            } else {
+                                productTypesToUpdate.put(productTypeKey, attributes);
+                            }
+                        });
                 }
             });
 
-        return toBeUpdatedMap;
+        return productTypesToUpdate;
     }
 
-    private static void putInToBeUpdated(
-        @Nonnull final Map<String, Set<AttributeDefinitionDraft>> toBeUpdatedMap,
-        @Nonnull final String productTypeKey,
-        @Nonnull final Set<AttributeDefinitionDraft> attributeDefinitionDrafts) {
+    /**
+     * TODO: add doc.
+     * @return
+     */
+    @Nonnull
+    private CompletionStage<Void> lazilyUpdateProductTypes(
+        @Nonnull final Map<String, Set<AttributeDefinitionDraft>> productTypesToUpdate) {
 
-        final Set<AttributeDefinitionDraft> missingParentChildrenActions = toBeUpdatedMap.get(productTypeKey);
-
-        if (missingParentChildrenActions != null) {
-            missingParentChildrenActions.addAll(attributeDefinitionDrafts);
-        } else {
-            toBeUpdatedMap.put(productTypeKey, attributeDefinitionDrafts);
-        }
-    }
-
-
-    private CompletionStage<Void> updateToBeUpdatedInParallel(
-        @Nonnull final Map<String, Set<AttributeDefinitionDraft>> toBeUpdatedMap) {
-
-        final Set<String> keysToFetchToUpdate = toBeUpdatedMap.keySet();
+        final Set<String> keysToFetchToUpdate = productTypesToUpdate.keySet();
         return productTypeService
             .fetchMatchingProductTypesByKeys(keysToFetchToUpdate)
             .handle(ImmutablePair::new)
@@ -394,7 +409,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                     handleError(errorMessage, exception, keysToFetchToUpdate.size());
                     return CompletableFuture.completedFuture(null);
                 } else {
-                    return CompletableFuture.allOf(toBeUpdatedMap
+                    return CompletableFuture.allOf(productTypesToUpdate
                         .entrySet()
                         .stream()
                         .map(entry -> {
