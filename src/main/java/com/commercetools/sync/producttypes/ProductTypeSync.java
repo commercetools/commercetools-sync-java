@@ -165,7 +165,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                         final Throwable exception = fetchResponse.getValue();
 
                         if (exception != null) {
-                            final String errorMessage = format(CTP_PRODUCT_TYPE_FETCH_FAILED, keysToCache);
+                            final String errorMessage = format(CTP_PRODUCT_TYPE_FETCH_FAILED, batchDraftKeys);
                             handleError(errorMessage, exception, batchDraftKeys.size());
                             return CompletableFuture.completedFuture(null);
                         } else {
