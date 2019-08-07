@@ -76,7 +76,7 @@ public class ProductTypeSyncStatistics extends BaseSyncStatistics {
         reportMessage = format(
             "Summary: %s product types were processed in total (%s created, %s updated, %s failed to sync"
                 + " and %s product types with at least one NestedType or a Set of NestedType attribute definition(s)"
-                + " referencing a missing productType).",
+                + " referencing a missing product type).",
             getProcessed(), getCreated(), getUpdated(), getFailed(),
             getNumberOfProductTypesWithMissingNestedProductTypes());
 
