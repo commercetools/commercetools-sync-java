@@ -109,6 +109,13 @@ public class ProductTypeBatchProcessor {
         return referencedProductTypeKeys;
     }
 
+    /**
+     * This method is meant be only used internally by the library.
+     * @param attributeType the attributeType to attempt to fetch the product type key of, if it contains a
+     *                      nestedType reference.
+     * @return an optional containing the productType key or empty if it does not contain a productType reference.
+     * @throws InvalidReferenceException thrown if the productType key in the nested reference is invalid.
+     */
     @Nonnull
     public static Optional<String> getProductTypeKey(@Nonnull final AttributeType attributeType)
         throws InvalidReferenceException {

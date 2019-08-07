@@ -26,7 +26,7 @@ public class ProductTypeSyncStatistics extends BaseSyncStatistics {
      * of attribute definitions which contains those references.
      *
      * <ul>
-     * <li>key: key of the missing product type</li>
+     * <li>key: key of the missing product type.</li>
      * <li>value: a map of which consists of:
      *      <ul>
      *          <li>key: key of the product type referencing the missing product type.</li>
@@ -42,12 +42,11 @@ public class ProductTypeSyncStatistics extends BaseSyncStatistics {
      * {@link ProductTypeSync#updateProductType(ProductType, List)} and {@link ProductTypeSync#buildToBeUpdatedMap()}
      */
     private
-    ConcurrentHashMap<String, // -> Key of missing nested productType
-        ConcurrentHashMap<String, // -> Key of actual productType that is referencing the nested productType
-            ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>// -> a set of the attribute definition
-            // drafts which contains the reference to the missing product type.
+        ConcurrentHashMap<String,
+            ConcurrentHashMap<String,
+                ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>
+                >
             >
-        >
         missingNestedProductTypes = new ConcurrentHashMap<>();
 
     /**
@@ -76,7 +75,7 @@ public class ProductTypeSyncStatistics extends BaseSyncStatistics {
         reportMessage = format(
             "Summary: %s product types were processed in total (%s created, %s updated, %s failed to sync"
                 + " and %s product types with at least one NestedType or a Set of NestedType attribute definition(s)"
-                + " referencing a missing productType).",
+                + " referencing a missing product type).",
             getProcessed(), getCreated(), getUpdated(), getFailed(),
             getNumberOfProductTypesWithMissingNestedProductTypes());
 
@@ -105,9 +104,8 @@ public class ProductTypeSyncStatistics extends BaseSyncStatistics {
 
     /**
      * @return an unmodifiable {@link ConcurrentHashMap} ({@code missingNestedProductTypes}) which keeps track of the
-     * keys of missing product types, the keys of the product types which are referencing those missing product types
-     * and a list of attribute definitions which contains those references.
-     *
+     *         keys of missing product types, the keys of the product types which are referencing those missing product
+     *         types and a list of attribute definitions which contains those references.
      * <ul>
      * <li>key: key of the missing product type</li>
      * <li>value: a map of which consists of:

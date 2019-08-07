@@ -142,7 +142,7 @@ class ProductTypeBatchProcessorTest {
             new ProductTypeBatchProcessor(singletonList(productTypeDraft), productTypeSync);
         batchProcessor.validateBatch();
 
-        assertThat(batchProcessor.getKeysToCache()).containsExactlyInAnyOrder("x", "mainProductType");
+        assertThat(batchProcessor.getKeysToCache()).containsExactlyInAnyOrder("x");
         assertThat(batchProcessor.getValidDrafts()).containsExactly(productTypeDraft);
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(errorCallBackExceptions).isEmpty();
@@ -303,7 +303,7 @@ class ProductTypeBatchProcessorTest {
             new ProductTypeBatchProcessor(productTypeDrafts, productTypeSync);
         batchProcessor.validateBatch();
 
-        assertThat(batchProcessor.getKeysToCache()).containsExactlyInAnyOrder("bar", "x", "y");
+        assertThat(batchProcessor.getKeysToCache()).containsExactlyInAnyOrder("x", "y");
         assertThat(batchProcessor.getValidDrafts()).containsExactlyInAnyOrder(validProductTypeDraftWithReferences,
             draftWithEmptyAttributes, draftWithNullAttributes);
 

@@ -31,7 +31,7 @@ class ProductTypeSyncStatisticsTest {
         assertThat(productTypeSyncStatistics.getReportMessage())
             .isEqualTo("Summary: 6 product types were processed in total "
                 + "(1 created, 3 updated, 2 failed to sync and 0 product types with at least one NestedType or a Set of"
-                + " NestedType attribute definition(s) referencing a missing productType).");
+                + " NestedType attribute definition(s) referencing a missing product type).");
     }
 
     @Test

@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
@@ -61,7 +62,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * {@link #applyCallbackAndCreate(ProductTypeDraft)}.  It has a local scope within every batch execution, which
      * means that it is re-initialized on every {@link #processBatch(List)} call.
      */
-    private ConcurrentHashMap.KeySetView<String, Boolean> readyToResolve = ConcurrentHashMap.newKeySet();
+    private ConcurrentHashMap.KeySetView<String, Boolean> readyToResolve;
 
     public ProductTypeSync(@Nonnull final ProductTypeSyncOptions productTypeSyncOptions) {
         this(productTypeSyncOptions, new ProductTypeServiceImpl(productTypeSyncOptions));
@@ -110,8 +111,12 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * This method first creates a new {@link Set} of valid {@link ProductTypeDraft} elements. For more on the rules of
      * validation, check: {@link ProductTypeBatchProcessor#validateBatch()}. Using the resulting set of
      * {@code validProductTypeDrafts}, the matching productTypes in the target CTP project are fetched then the method
-     * {@link ProductTypeSync#syncBatch(Set, Set)} is called to perform the sync (<b>update</b> or <b>create</b>
+     * {@link ProductTypeSync#syncBatch(Set, Set, Map)} is called to perform the sync (<b>update</b> or <b>create</b>
      * requests accordingly) on the target project.
+     *
+     * <p>After the batch is synced, the method resolves all missing nested references that could have been created
+     * after execution of sync of batch.
+     * For more info check {@link ProductTypeSync#resolveMissingNestedReferences(Map)}.
      *
      * <p> In case of error during of fetching of existing productTypes, the error callback will be triggered.
      * And the sync process would stop for the given batch.
@@ -140,7 +145,8 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                 final Throwable cachingException = cachingResponse.getValue();
 
                 if (cachingException != null) {
-                    handleError("Failed to build a cache of keys to ids.", cachingException, batch.size());
+                    handleError("Failed to build a cache of keys to ids.", cachingException,
+                        keysToCache.size());
                     return CompletableFuture.completedFuture(null);
                 }
 
@@ -159,13 +165,13 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                         final Throwable exception = fetchResponse.getValue();
 
                         if (exception != null) {
-                            final String errorMessage = format(CTP_PRODUCT_TYPE_FETCH_FAILED, keysToCache);
-                            handleError(errorMessage, exception, keysToCache.size());
+                            final String errorMessage = format(CTP_PRODUCT_TYPE_FETCH_FAILED, batchDraftKeys);
+                            handleError(errorMessage, exception, batchDraftKeys.size());
                             return CompletableFuture.completedFuture(null);
                         } else {
                             return syncBatch(matchingProductTypes, batchProcessor.getValidDrafts(), keyToIdCache)
                                 .thenApply(ignoredResult -> buildProductTypesToUpdateMap())
-                                .thenCompose(this::lazilyUpdateProductTypes);
+                                .thenCompose(this::resolveMissingNestedReferences);
                         }
                     });
             })
@@ -195,8 +201,13 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
 
 
     /**
-     * Given a set of product type drafts, attempts to sync the drafts with the existing products types in the CTP
-     * project. The product type and the draft are considered to match if they have the same key.
+     * Given a set of product type drafts, attempts to sync the drafts with the existing products types in the target
+     * CTP project. The product type and the draft are considered to match if they have the same key.
+     *
+     *
+     * <p>Note: In order to support syncing product types with nested references in any order, this method will
+     * remove any attribute which contains a nested reference on the drafts and keep track of it to be resolved as
+     * soon as the referenced product type becomes available.
      *
      * @param oldProductTypes old product types.
      * @param newProductTypes drafts that need to be synced.
@@ -245,7 +256,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * For each attribute, attempts to find a nested product type in its attribute type, if it has a
      * nested type. It checks if the key, of the productType reference, is cached in {@code keyToIdCache}. If it is,
      * then it means the referenced product type exists in the target project, so there is no need to remove or keep
-     * track of it. However, if it is not, it means it doesn't exist yet, which means we need to keep track of it as a
+     * track of it. If it is not, it means it doesn't exist yet and needs to be tracked as a
      * missing reference and also remove this attribute definition from the supplied {@code draftCopy} to be able to
      * create product type without this attribute containing the missing reference.
      *
@@ -292,7 +303,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * create product type without this attribute containing the missing reference.
      *
      *
-     * <p> Note: This method mutates in the supplied {@code productTypeDraft} attribute definition list by removing
+     * <p>Note: This method mutates in the supplied {@code productTypeDraft} attribute definition list by removing
      * the attribute containing a missing reference.
      *
      * @param attributeDefinitionDraft the attribute definition being checked for any product references.
@@ -344,7 +355,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * project and can now be resolved on any of the referencing product types which were kept track of in
      * {@link ProductTypeSyncStatistics#missingNestedProductTypes} map.
      *
-     * Based on the contents of the {@link ProductTypeSyncStatistics#missingNestedProductTypes} and the
+     * <p>Based on the contents of the {@link ProductTypeSyncStatistics#missingNestedProductTypes} and the
      * {@code readyToResolve} set, this method builds a map of product type keys pointing to a set of attribute
      * definition drafts which are now ready to be added for this product type. The purpose of this is to aggregate
      * all the definitions that are needed to be added to every product type together so that we can issue them
@@ -385,72 +396,74 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     }
 
     /**
-     * TODO: add doc.
-     * @return
+     * Given a map of product type keys pointing to a set of attribute definition drafts which are now ready to be added
+     * for this product type. This method first converts the drafts to {@link AddAttributeDefinition} actions in which
+     * the reference id value (which is a key) is resolved to an actual UUID of the product type key pointed by this
+     * key. Then, for each product type, the method issues an update request containing all the actions.
+     *
+     * @return a {@link CompletionStage} which contains an empty result after execution of all the update requests.
      */
     @Nonnull
-    private CompletionStage<Void> lazilyUpdateProductTypes(
+    private CompletionStage<Void> resolveMissingNestedReferences(
         @Nonnull final Map<String, Set<AttributeDefinitionDraft>> productTypesToUpdate) {
 
-        final Set<String> keysToFetchToUpdate = productTypesToUpdate.keySet();
+        final Set<String> keys = productTypesToUpdate.keySet();
         return productTypeService
-            .fetchMatchingProductTypesByKeys(keysToFetchToUpdate)
+            .fetchMatchingProductTypesByKeys(keys)
             .handle(ImmutablePair::new)
             .thenCompose(fetchResponse -> {
+
                 final Set<ProductType> matchingProductTypes = fetchResponse.getKey();
                 final Map<String, ProductType> keyToProductType = new HashMap<>();
-                matchingProductTypes.forEach(productType -> keyToProductType.put(productType.getKey(), productType));
+                matchingProductTypes
+                    .forEach(productType -> keyToProductType.put(productType.getKey(), productType));
 
 
                 final Throwable exception = fetchResponse.getValue();
                 if (exception != null) {
-                    //not sure yet
-                    final String errorMessage = format(CTP_PRODUCT_TYPE_FETCH_FAILED, keysToFetchToUpdate);
-                    handleError(errorMessage, exception, keysToFetchToUpdate.size());
+                    final String errorMessage = format(CTP_PRODUCT_TYPE_FETCH_FAILED, keys);
+                    handleError(errorMessage, exception, keys.size());
                     return CompletableFuture.completedFuture(null);
                 } else {
-                    return CompletableFuture.allOf(productTypesToUpdate
-                        .entrySet()
-                        .stream()
-                        .map(entry -> {
-                            final String productTypeToUpdateKey = entry.getKey();
-                            final Set<AttributeDefinitionDraft> attributeDefinitionDrafts = entry.getValue();
-                            //TODO: Wrong, update actions should be resolved before because they contain keys in the references not ids. --> DONE
+                    return CompletableFuture.allOf(
+                        productTypesToUpdate
+                            .entrySet()
+                            .stream()
+                            .map(entry -> {
+                                final String productTypeToUpdateKey = entry.getKey();
+                                final Set<AttributeDefinitionDraft> attributeDefinitionDrafts = entry.getValue();
 
-                            // First make sure attr is resolved, so as not to have ids. Can't resolve here. Since reference is not in place.
-                            final List<UpdateAction<ProductType>> actionsWithResolvedReferences = draftsToActions(
-                                new ArrayList<>(attributeDefinitionDrafts));
-                            final ProductType productTypeToUpdate = keyToProductType.get(productTypeToUpdateKey);
+                                final List<UpdateAction<ProductType>> actionsWithResolvedReferences =
+                                    draftsToActions(attributeDefinitionDrafts);
 
-                            return updateProductType(productTypeToUpdate, actionsWithResolvedReferences);
+                                final ProductType productTypeToUpdate = keyToProductType.get(productTypeToUpdateKey);
 
-                        })
-                        .map(CompletionStage::toCompletableFuture)
-                        .toArray(CompletableFuture[]::new));
+                                return resolveMissingNestedReferences(
+                                    productTypeToUpdate,
+                                    actionsWithResolvedReferences);
+
+                            })
+                            .map(CompletionStage::toCompletableFuture)
+                            .toArray(CompletableFuture[]::new));
                 }
             });
     }
 
+    /**
+     * Given an existing {@link ProductType} and a list of {@link UpdateAction}s, required to resolve the productType
+     * with nestedType references.
+     *
+     * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried
+     * out successfully or not. If an exception was thrown on executing the request to CTP, the error handling method
+     * is called.
+     *
+     * @param oldProductType existing product type that could be updated.
+     * @param updateActions actions to update the product type with.
+     * @return a {@link CompletionStage} which contains an empty result after execution of the update.
+     */
+    @SuppressWarnings("ConstantConditions") // since the batch is validate before, key is assured to be non-blank here.
     @Nonnull
-    private List<UpdateAction<ProductType>> draftsToActions(
-        @Nonnull final List<AttributeDefinitionDraft> attributeDefinitionDrafts) {
-
-        return attributeDefinitionDrafts
-            .stream()
-            .map(attributeDefinitionDraft -> {
-                final AttributeDefinitionReferenceResolver attributeDefinitionReferenceResolver =
-                    new AttributeDefinitionReferenceResolver(syncOptions, productTypeService);
-                final AttributeDefinitionDraft resolvedDraft = attributeDefinitionReferenceResolver
-                    .resolveReferences(attributeDefinitionDraft)
-                    .toCompletableFuture()
-                    .join();
-                return AddAttributeDefinition.of(resolvedDraft);
-            })
-            .collect(Collectors.toList());
-    }
-
-    @Nonnull
-    private CompletionStage<Void> updateProductType(
+    private CompletionStage<Void> resolveMissingNestedReferences(
         @Nonnull final ProductType oldProductType,
         @Nonnull final List<UpdateAction<ProductType>> updateActions) {
 
@@ -462,7 +475,8 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                 if (sphereException != null) {
                     return executeSupplierIfConcurrentModificationException(
                         sphereException,
-                        () -> fetchAndUpdate(oldProductType, updateActions),
+                        () -> fetchAndUpdate(oldProductType,
+                            fetchedProductType -> resolveMissingNestedReferences(fetchedProductType, updateActions)),
                         () -> {
                             final String errorMessage =
                                 format(CTP_PRODUCT_TYPE_UPDATE_FAILED, oldProductType.getKey(),
@@ -478,38 +492,32 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
             });
     }
 
+    /**
+     * Given a set of {@link AttributeDefinitionDraft}, for every draft, this method resolves the nested type reference
+     * on the attribute definition draft and creates an {@link AddAttributeDefinition} action out of it and returns
+     * a list of update actions.
+     *
+     * @return a list of update actions corresponding to the supplied set of {@link AttributeDefinitionDraft}s.
+     */
     @Nonnull
-    private CompletionStage<Void> fetchAndUpdate(
-        @Nonnull final ProductType oldProductType,
-        @Nonnull final List<UpdateAction<ProductType>> updateActions) {
+    private List<UpdateAction<ProductType>> draftsToActions(
+        @Nonnull final Set<AttributeDefinitionDraft> attributeDefinitionDrafts) {
 
-        final String key = oldProductType.getKey();
-        return productTypeService
-            .fetchProductType(key)
-            .handle(ImmutablePair::new)
-            .thenCompose(fetchResponse -> {
-                final Optional<ProductType> fetchedProductTypeOptional = fetchResponse.getKey();
-                final Throwable exception = fetchResponse.getValue();
-
-                if (exception != null) {
-                    final String errorMessage = format(CTP_PRODUCT_TYPE_UPDATE_FAILED, key,
-                        "Failed to fetch from CTP while retrying after concurrency modification.");
-                    handleError(errorMessage, exception, 1);
-                    return CompletableFuture.completedFuture(null);
-                }
-
-                return fetchedProductTypeOptional
-                    .map(fetchedProductType -> updateProductType(oldProductType, updateActions))
-                    .orElseGet(() -> {
-                        final String errorMessage =
-                            format(CTP_PRODUCT_TYPE_UPDATE_FAILED, key,
-                                "Not found when attempting to fetch while retrying "
-                                    + "after concurrency modification.");
-                        handleError(errorMessage, null, 1);
-                        return CompletableFuture.completedFuture(null);
-                    });
-            });
+        return attributeDefinitionDrafts
+            .stream()
+            .map(attributeDefinitionDraft -> {
+                final AttributeDefinitionReferenceResolver attributeDefinitionReferenceResolver =
+                    new AttributeDefinitionReferenceResolver(syncOptions, productTypeService);
+                final AttributeDefinitionDraft resolvedDraft = attributeDefinitionReferenceResolver
+                    .resolveReferences(attributeDefinitionDraft)
+                    .toCompletableFuture()
+                    .join();
+                return AddAttributeDefinition.of(resolvedDraft);
+            })
+            .collect(Collectors.toList());
     }
+
+
 
 
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
@@ -558,7 +566,8 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                 if (sphereException != null) {
                     return executeSupplierIfConcurrentModificationException(
                         sphereException,
-                        () -> fetchAndUpdate(oldProductType, newProductType),
+                        () -> fetchAndUpdate(oldProductType,
+                            fetchedProductType -> buildActionsAndUpdate(fetchedProductType, newProductType)),
                         () -> {
                             final String errorMessage =
                                 format(CTP_PRODUCT_TYPE_UPDATE_FAILED, newProductType.getKey(),
@@ -576,7 +585,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     @Nonnull
     private CompletionStage<Void> fetchAndUpdate(
         @Nonnull final ProductType oldProductType,
-        @Nonnull final ProductTypeDraft newProductType) {
+        @Nonnull final Function<ProductType, CompletionStage<Void>> fetchedProductMapper) {
 
         final String key = oldProductType.getKey();
         return productTypeService
@@ -594,7 +603,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                 }
 
                 return fetchedProductTypeOptional
-                    .map(fetchedProductType -> buildActionsAndUpdate(fetchedProductType, newProductType))
+                    .map(fetchedProductMapper)
                     .orElseGet(() -> {
                         final String errorMessage =
                             format(CTP_PRODUCT_TYPE_UPDATE_FAILED, key,
@@ -604,6 +613,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                         return CompletableFuture.completedFuture(null);
                     });
             });
+
     }
 
     /**
