@@ -16,6 +16,7 @@ import io.sphere.sdk.products.attributes.NestedAttributeType;
 import io.sphere.sdk.products.attributes.SetAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
+import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import io.sphere.sdk.producttypes.commands.updateactions.AddAttributeDefinition;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
@@ -35,7 +36,6 @@ import java.util.stream.Collectors;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.producttypes.utils.ProductTypeSyncUtils.buildActions;
 import static java.lang.String.format;
-import static java.util.Collections.emptyMap;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
@@ -233,84 +233,48 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
 
     @Nonnull
     private ProductTypeDraft removeMissingReferenceAttributeAndUpdateMissingParentMap(
-        @Nonnull final ProductTypeDraft newProductTypeDraft,
+        @Nonnull final ProductTypeDraft productTypeDraft,
         @Nonnull final Map<String, String> keyToIdCache) {
 
 
-        // 1. Check referenced keys not in keyToId
-        final Map<String, List<AttributeDefinitionDraft>> referencedProductTypeKeys =
-            getReferencedProductTypeKeys(newProductTypeDraft);
-
-        // 2. Clean up all occurrences of newProductTypeDraft's key waiting in
+        // 1. Clean up all occurrences of newProductTypeDraft's key waiting in
         // statistics#putMissingNestedProductType. This is because it should not be existing there,
         // and if it is then the values are outdated. This is to support the case, if a new version of the product
         // type is supplied again in a later batch.
         // TODO: TEST THIS CASE!
-        statistics.removeReferencingProductTypeKey(newProductTypeDraft.getKey());
-
-        // TODO: Wrong, it could be many attributes referncing this KEY ----> DONE!
-        // TODO: TEST THIS CASE!
-        referencedProductTypeKeys
-            .keySet()
-            .stream()
-            .filter(key -> !keyToIdCache.keySet().contains(key))
-            .forEach(referencedKeyNotCached -> {
-
-                final List<AttributeDefinitionDraft> attributeDefinitionDraftsWithMissingReferences =
-                    referencedProductTypeKeys.get(referencedKeyNotCached);
-
-                // 1.1. Remove attributeDefinition with missing key reference
-                // IMP: This mutates in newProductTypeDraft..
-                newProductTypeDraft.getAttributes()
-                                   .removeAll(attributeDefinitionDraftsWithMissingReferences);
-
-                attributeDefinitionDraftsWithMissingReferences
-                    .forEach(attributeDefinitionDraft -> {
-                        // 1.2. Add pairs (productTypeDraftKey, attributeDefinition) to missing parent map.
-
-                        // TODO: USE MAP OF MAP INSTEAD OF PAIR! TO BE ABLE TO PUT AND OVERWRITE CHANGES IN LATER BATCHES.
-                        // TODO: APPEND CHANGE ORDER ACTION AFTER EVERY KEPT TRACK OF ACTION.
-                        statistics.putMissingNestedProductType(referencedKeyNotCached,
-                            newProductTypeDraft.getKey(), attributeDefinitionDraft);
-                    });
-            });
-
-        return newProductTypeDraft;
-    }
-
-    @Nonnull
-    private static Map<String, List<AttributeDefinitionDraft>> getReferencedProductTypeKeys(
-        @Nonnull final ProductTypeDraft productTypeDraft) {
+        statistics.removeReferencingProductTypeKey(productTypeDraft.getKey());
 
         final List<AttributeDefinitionDraft> attributeDefinitionDrafts = productTypeDraft.getAttributes();
         if (attributeDefinitionDrafts == null || attributeDefinitionDrafts.isEmpty()) {
-            return emptyMap();
+            return productTypeDraft;
         }
 
-        final Map<String, List<AttributeDefinitionDraft>> referencedProductTypeKeys = new HashMap<>();
+        // copies to avoid mutation of attributes array supplied by user.
+        final ProductTypeDraft draftCopy = ProductTypeDraftBuilder
+            .of(productTypeDraft)
+            .attributes(new ArrayList<>(productTypeDraft.getAttributes()))
+            .build();
 
         for (AttributeDefinitionDraft attributeDefinitionDraft : attributeDefinitionDrafts) {
             if (attributeDefinitionDraft != null) {
                 final AttributeType attributeType = attributeDefinitionDraft.getAttributeType();
 
                 getProductTypeKey(attributeType).ifPresent(key -> {
-
-                    final List<AttributeDefinitionDraft> attributesReferencingCurrentKey = referencedProductTypeKeys
-                        .get(key);
-
-                    if (attributesReferencingCurrentKey != null) {
-                        attributesReferencingCurrentKey.add(attributeDefinitionDraft);
-                    } else {
-                        final ArrayList<AttributeDefinitionDraft> newAttributesReferencingCurrentKey
-                            = new ArrayList<>();
-                        newAttributesReferencingCurrentKey.add(attributeDefinitionDraft);
-                        referencedProductTypeKeys.put(key, newAttributesReferencingCurrentKey);
+                    // means it has a nested reference
+                    if (!keyToIdCache.keySet().contains(key)) {
+                        // means it is missing
+                        // 1.1. Remove attributeDefinition with missing key reference
+                        // IMP: This mutates in newProductTypeDraft.. TODO: FIX
+                        draftCopy.getAttributes().remove(attributeDefinitionDraft);
+                        // 1.2. Add to missing parent map.
+                        statistics.putMissingNestedProductType(key,
+                            productTypeDraft.getKey(), attributeDefinitionDraft);
                     }
                 });
             }
         }
 
-        return referencedProductTypeKeys;
+        return draftCopy;
     }
 
     @Nonnull
