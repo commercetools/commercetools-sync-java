@@ -17,7 +17,7 @@ import java.util.concurrent.CompletionStage;
 public interface ProductTypeService {
 
     /**
-     * Filters out the keys which are already cached and fetches only the not-cached product keys from the CTP project
+     * Filters out the keys which are already cached and fetches only the not-cached product type keys from the CTP project
      * defined in an injected {@link SphereClient} and stores a mapping for every productType to id in
      * the cached map of keys -&gt; ids and returns this cached map.
      *
