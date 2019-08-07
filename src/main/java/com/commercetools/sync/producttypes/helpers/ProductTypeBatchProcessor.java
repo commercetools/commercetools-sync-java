@@ -110,7 +110,7 @@ public class ProductTypeBatchProcessor {
     }
 
     @Nonnull
-    private static Optional<String> getProductTypeKey(@Nonnull final AttributeType attributeType)
+    public static Optional<String> getProductTypeKey(@Nonnull final AttributeType attributeType)
         throws InvalidReferenceException {
 
         if (attributeType instanceof NestedAttributeType) {
