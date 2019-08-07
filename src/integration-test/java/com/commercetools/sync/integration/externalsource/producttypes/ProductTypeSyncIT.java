@@ -351,7 +351,7 @@ class ProductTypeSyncIT {
             .hasSize(1)
             .hasOnlyOneElementSatisfying(throwable -> {
                 assertThat(throwable).isInstanceOf(InvalidProductTypeDraftException.class);
-                assertThat(throwable.getMessage()).isInstanceOf(InvalidProductTypeDraftException.class);
+                assertThat(throwable.getMessage()).isEqualTo(expectedErrorMessage);
             });
 
         assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
@@ -388,7 +388,10 @@ class ProductTypeSyncIT {
 
         assertThat(exceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable).isNull());
+            .hasOnlyOneElementSatisfying(throwable -> {
+                assertThat(throwable).isInstanceOf(InvalidProductTypeDraftException.class);
+                assertThat(throwable.getMessage()).isEqualTo("ProductTypeDraft is null.");
+            });
 
         assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
     }
