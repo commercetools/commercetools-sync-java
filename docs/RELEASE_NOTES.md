@@ -29,7 +29,15 @@
 -->
 
 <!--
-### 1.4.0 -  Jun 24, 2019
+### 1.5.0 -  Oct 1, 2019
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.4.0...1.5.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.5.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.5.0)
+
+-->
+
+
+### 1.4.0 -  Aug 8, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.3.0...1.4.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.4.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.4.0)
@@ -43,8 +51,6 @@
     - **Commons** - Bumped `mockito-junit-jupiter` dependency to 3.0.0.
     - **Commons** - Bumped `assertj` to 3.13.2.
     - **Commons** - Bumped `com.github.ben-manes.versions` to 0.22.0.
-
--->
 
 ### 1.3.0 -  Jul 3, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.2.0...1.3.0) |
