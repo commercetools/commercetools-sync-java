@@ -11,6 +11,7 @@ import io.sphere.sdk.products.attributes.NestedAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
+import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeName;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -146,6 +147,10 @@ class ProductTypeWithNestedAttributeSyncIT {
         // assertion
         assertThat(errorMessages).isEmpty();
         assertThat(exceptions).isEmpty();
+        assertThat(builtUpdateActions).containsExactly(
+            ChangeAttributeName.of("nestedattr", "new_nestedattr"),
+            ChangeAttributeName.of("nestedattr2", "new_nestedattr2")
+        );
         assertThat(productTypeSyncStatistics).hasValues(4, 1, 1, 0, 0);
         assertThat(productTypeSyncStatistics
             .getReportMessage()).isEqualTo(
