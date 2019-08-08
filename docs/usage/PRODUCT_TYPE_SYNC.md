@@ -114,3 +114,4 @@ More examples of those utils for different fields can be found [here](https://gi
 
 ## Caveats    
 1. The order of attribute definitions in the synced product types is not guaranteed.
+2. Syncing product types with an attribute of type `Set` of `NestedType` attribute is supported. However, `Set` of (`Set` of `Set` of..) of `NestedType` is not yet supported.

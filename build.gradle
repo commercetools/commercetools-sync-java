@@ -3,7 +3,7 @@ plugins {
     id 'org.ajoberstar.git-publish' version '2.1.1'
     id 'com.adarshr.test-logger' version '1.7.0'
     id 'org.ajoberstar.grgit' version '3.1.1'
-    id "com.github.ben-manes.versions" version '0.21.0'
+    id "com.github.ben-manes.versions" version '0.22.0'
     id 'ru.vyarus.mkdocs' version '1.1.0'
 }
 
