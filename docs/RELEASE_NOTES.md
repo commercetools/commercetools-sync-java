@@ -34,6 +34,16 @@
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.4.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.4.0)
 
+- 🛠️ **Enhancements** (8)
+    - **Commons** - Bumped commercetools-jvm-sdk to version [1.45.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_45_0).
+    - **Commons** - Bumped gradle to version [gradle-5.5.1](https://docs.gradle.org/5.5.1/release-notes.html)
+    - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-api` to 5.5.1.
+    - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-engine` to 5.5.1.
+    - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-params` to 5.5.1.
+    - **Commons** - Bumped `mockito-junit-jupiter` dependency to 3.0.0.
+    - **Commons** - Bumped `assertj` to 3.13.2.
+    - **Commons** - Bumped `com.github.ben-manes.versions` to 0.22.0.
+
 -->
 
 ### 1.3.0 -  Jul 3, 2019
