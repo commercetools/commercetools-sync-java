@@ -227,27 +227,28 @@ public final class ProductTypeITUtils {
         CtpQueryUtils
             .queryAll(ctpClient,
                 ProductTypeQuery.of(), page -> {
-                page.forEach(productType -> {
-                    final Set<UpdateAction<ProductType>> removeActions =
-                        productType
-                            .getAttributes()
-                            .stream()
-                            .map(attributeDefinition -> RemoveAttributeDefinition
-                                .of(attributeDefinition.getName()))
-                            .collect(Collectors.toSet());
-                    productTypesToUpdate.put(productType, removeActions);
-                });
-            })
-        .thenCompose(aVoid ->
-            CompletableFuture.allOf(productTypesToUpdate
-                .entrySet()
-                .stream()
-                .map(entry ->
-                    ctpClient.execute(ProductTypeUpdateCommand.of(entry.getKey(), new ArrayList<>(entry.getValue()))))
-                .toArray(CompletableFuture[]::new))
-        )
-        .toCompletableFuture()
-        .join();
+                    page.forEach(productType -> {
+                        final Set<UpdateAction<ProductType>> removeActions =
+                            productType
+                                .getAttributes()
+                                .stream()
+                                .map(attributeDefinition -> RemoveAttributeDefinition
+                                    .of(attributeDefinition.getName()))
+                                .collect(Collectors.toSet());
+                        productTypesToUpdate.put(productType, removeActions);
+                    });
+                })
+            .thenCompose(aVoid ->
+                CompletableFuture.allOf(productTypesToUpdate
+                    .entrySet()
+                    .stream()
+                    .map(entry ->
+                        ctpClient.execute(
+                            ProductTypeUpdateCommand.of(entry.getKey(), new ArrayList<>(entry.getValue()))))
+                    .toArray(CompletableFuture[]::new))
+            )
+            .toCompletableFuture()
+            .join();
     }
 
     /**
