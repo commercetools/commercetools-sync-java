@@ -100,3 +100,4 @@ More examples of those utils for different fields can be found [here](https://gi
 
 ## Caveats    
 1. Syncing product types with an attribute of type [NestedType](https://docs.commercetools.com/http-api-projects-productTypes.html#nestedtype) is not supported yet.
+1. Syncing product types with an attribute of type `Set` of `NestedType` attribute is supported. However, `Set` of (`Set` of `Set` of..) of `NestedType` is not yet supported.
