@@ -139,7 +139,7 @@ class ProductTypeWithNestedAttributeSyncIT {
         final AttributeDefinitionDraft nestedTypeAttr = AttributeDefinitionDraftBuilder.of(
                 AttributeDefinitionBuilder
                     .of("nestedattr", ofEnglish("nestedattr"),
-                        SetAttributeType.of(NestedAttributeType.of(ProductType.referenceOfId(PRODUCT_TYPE_KEY_2))))
+                        NestedAttributeType.of(ProductType.referenceOfId(PRODUCT_TYPE_KEY_2)))
                     .build())
                 .build();
 
@@ -246,12 +246,14 @@ class ProductTypeWithNestedAttributeSyncIT {
     @Test //TODO: TEST DIFFERENT BATCHES.
     void sync_WithUpdatedProductType_WithNewNestedAttributeInSameBatch_ShouldUpdateProductTypeAddingAttribute() {
         // preparation
-        final AttributeDefinitionDraft nestedTypeAttr = AttributeDefinitionDraftBuilder.of(
-                AttributeDefinitionBuilder
-                        .of("nestedattr", ofEnglish("nestedattr"),
-                            NestedAttributeType.of(ProductType.referenceOfId(PRODUCT_TYPE_KEY_4)))
-                        .build())
-                .build();
+        final AttributeDefinitionDraft nestedTypeAttr = AttributeDefinitionDraftBuilder
+            .of(AttributeDefinitionBuilder
+                .of("nestedattr", ofEnglish("nestedattr"),
+                    NestedAttributeType.of(ProductType.referenceOfId(PRODUCT_TYPE_KEY_4)))
+                .build())
+            // "isSearchable=true is not supported for attribute type 'nested'."
+            .searchable(false)
+            .build();
 
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
                 PRODUCT_TYPE_KEY_1,
