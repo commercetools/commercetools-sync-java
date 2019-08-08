@@ -4,6 +4,7 @@ import com.commercetools.sync.producttypes.ProductTypeSync;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
 import com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
 import io.sphere.sdk.products.attributes.NestedAttributeType;
@@ -29,6 +30,10 @@ import static com.commercetools.sync.producttypes.utils.ProductTypeReferenceRepl
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ProductTypeWithNestedAttributeSyncIT {
+    private ProductTypeSyncOptions productTypeSyncOptions;
+    private List<UpdateAction<ProductType>> builtUpdateActions;
+    private List<String> errorMessages;
+    private List<Throwable> exceptions;
 
     /**
      * Deletes product types from source and target CTP projects.
@@ -39,6 +44,22 @@ class ProductTypeWithNestedAttributeSyncIT {
         deleteProductTypesFromTargetAndSource();
         populateSourcesProjectWithNestedAttributes();
         populateTargetProjectWithNestedAttributes();
+
+        builtUpdateActions = new ArrayList<>();
+        errorMessages = new ArrayList<>();
+        exceptions = new ArrayList<>();
+
+        productTypeSyncOptions = ProductTypeSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .beforeUpdateCallback((actions, draft, oldProductType) -> {
+                builtUpdateActions.addAll(actions);
+                return actions;
+            })
+            .errorCallback((errorMessage, exception) -> {
+                errorMessages.add(errorMessage);
+                exceptions.add(exception);
+            })
+            .build();
     }
 
     /**
@@ -62,27 +83,18 @@ class ProductTypeWithNestedAttributeSyncIT {
         final List<ProductTypeDraft> productTypeDrafts =
                 replaceProductTypesReferenceIdsWithKeys(productTypes);
 
-        final List<String> errorMessages = new ArrayList<>();
-        final List<Throwable> exceptions = new ArrayList<>();
-
-        final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
-            .of(CTP_TARGET_CLIENT)
-            .errorCallback((error, throwable) -> {
-                errorMessages.add(error);
-                exceptions.add(throwable);
-            })
-            .build();
-
         final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
 
         // test
         final ProductTypeSyncStatistics productTypeSyncStatistics = productTypeSync
             .sync(productTypeDrafts)
-            .toCompletableFuture().join();
+            .toCompletableFuture()
+            .join();
 
         // assertion
         assertThat(errorMessages).isEmpty();
         assertThat(exceptions).isEmpty();
+        assertThat(builtUpdateActions).isEmpty();
         assertThat(productTypeSyncStatistics).hasValues(4, 1, 0, 0, 0);
         assertThat(productTypeSyncStatistics
             .getReportMessage())
@@ -123,18 +135,6 @@ class ProductTypeWithNestedAttributeSyncIT {
                             .build();
                 })
                 .collect(Collectors.toList());
-
-
-        final List<String> errorMessages = new ArrayList<>();
-        final List<Throwable> exceptions = new ArrayList<>();
-
-        final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
-                .of(CTP_TARGET_CLIENT)
-                .errorCallback((error, throwable) -> {
-                    errorMessages.add(error);
-                    exceptions.add(throwable);
-                })
-                .build();
 
         final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
 
