@@ -39,7 +39,7 @@ order for the sync to resolve the actual ids of those references, those `key`s h
     - Provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the
     reference would return its `key`. 
      
-        **Note**: This library provides you with a utility method 
+        **Note**: When syncing from a source commercetools project, you can use this util which this library provides: 
          [`replaceProductsReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/1.4.0/com/commercetools/sync/products/utils/ProductReferenceReplacementUtils.html#replaceProductsReferenceIdsWithKeys-java.util.List-)
          that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
          ````java

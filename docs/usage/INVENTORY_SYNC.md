@@ -34,7 +34,7 @@ against a [InventoryEntryDraft](https://docs.commercetools.com/http-api-projects
    - Provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the
    reference would return its `key`. 
      
-        **Note**: This library provides you with a utility method 
+        **Note**: When syncing from a source commercetools project, you can use this util which this library provides: 
          [`replaceInventoriesReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/1.4.0/com/commercetools/sync/inventories/utils/InventoryReferenceReplacementUtils.html#replaceInventoriesReferenceIdsWithKeys-java.util.List-)
          that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
          ````java

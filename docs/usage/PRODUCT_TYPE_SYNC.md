@@ -32,9 +32,23 @@ against a [ProductTypeDraft](https://docs.commercetools.com/http-api-projects-pr
 product types in the target CTP project. Also, the product types in the target project are expected to have the `key`
 fields set, otherwise they won't be matched.
 
-2. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
+2. Every productType may have `product type` references if it contains attributeDrafts of type `NestedType`. These 
+referenced are matched by their `key`s. Therefore, in order for the sync to resolve the actual ids of those 
+references, those `key`s have to be supplied in the following way:
+    - Provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the
+    reference would return its `key`. 
+     
+        **Note**: When syncing from a source commercetools project, you can use this util which this library provides: 
+         [`replaceProductTypesReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/1.4.0/com/commercetools/sync/producttypes/utils/ProductTypeReferenceReplacementUtils.html#replaceProductTypesReferenceIdsWithKeys-java.util.List-)
+         that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
+         ````java
+         // Puts the keys in the reference id fields to prepare for reference resolution
+         final List<ProductTypeDraft> productTypeDrafts = replaceProductTypesReferenceIdsWithKeys(productTypes);
+         ````
 
-3. After the `sphereClient` is setup, a `ProductTypeSyncOptions` should be be built as follows:
+3. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
+
+4. After the `sphereClient` is setup, a `ProductTypeSyncOptions` should be be built as follows:
 ````java
 // instantiating a ProductTypeSyncOptions
 final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder.of(sphereClient).build();
@@ -99,5 +113,5 @@ More examples of those utils for different fields can be found [here](https://gi
 
 
 ## Caveats    
-1. Syncing product types with an attribute of type [NestedType](https://docs.commercetools.com/http-api-projects-productTypes.html#nestedtype) is not supported yet.
-1. Syncing product types with an attribute of type `Set` of `NestedType` attribute is supported. However, `Set` of (`Set` of `Set` of..) of `NestedType` is not yet supported.
+1. The order of attribute definitions in the synced product types is not guaranteed.
+2. Syncing product types with an attribute of type `Set` of `NestedType` attribute is supported. However, `Set` of (`Set` of `Set` of..) of `NestedType` is not yet supported.

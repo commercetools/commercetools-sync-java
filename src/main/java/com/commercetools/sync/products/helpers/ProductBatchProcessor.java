@@ -30,7 +30,7 @@ import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-public class BatchProcessor {
+public class ProductBatchProcessor {
     static final String PRODUCT_DRAFT_KEY_NOT_SET = "ProductDraft with name: %s doesn't have a key. "
         + "Please make sure all product drafts have keys.";
     static final String PRODUCT_DRAFT_IS_NULL = "ProductDraft is null.";
@@ -46,7 +46,8 @@ public class BatchProcessor {
     private final Set<ProductDraft> validDrafts = new HashSet<>();
     private final Set<String> keysToCache = new HashSet<>();
 
-    public BatchProcessor(@Nonnull final List<ProductDraft> productDrafts, @Nonnull final ProductSync productSync) {
+    public ProductBatchProcessor(@Nonnull final List<ProductDraft> productDrafts,
+                                 @Nonnull final ProductSync productSync) {
         this.productDrafts = productDrafts;
         this.productSync = productSync;
     }
@@ -115,7 +116,7 @@ public class BatchProcessor {
         }
         return attributeDrafts.stream()
                               .filter(Objects::nonNull)
-                              .map(BatchProcessor::getReferencedProductKeys)
+                              .map(ProductBatchProcessor::getReferencedProductKeys)
                               .flatMap(Collection::stream)
                               .collect(Collectors.toSet());
     }
@@ -149,7 +150,7 @@ public class BatchProcessor {
     static Set<String> getReferencedProductKeysFromSet(@Nonnull final JsonNode referenceSet) {
         return StreamSupport.stream(referenceSet.spliterator(), false)
                             .filter(Objects::nonNull)
-                            .map(BatchProcessor::getProductKeyFromReference)
+                            .map(ProductBatchProcessor::getProductKeyFromReference)
                             .filter(Optional::isPresent)
                             .map(Optional::get)
                             .collect(Collectors.toSet());
