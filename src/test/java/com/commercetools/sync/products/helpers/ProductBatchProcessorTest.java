@@ -20,16 +20,16 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceSetAttributeDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceWithId;
-import static com.commercetools.sync.products.helpers.BatchProcessor.PRODUCT_DRAFT_IS_NULL;
-import static com.commercetools.sync.products.helpers.BatchProcessor.PRODUCT_DRAFT_KEY_NOT_SET;
-import static com.commercetools.sync.products.helpers.BatchProcessor.PRODUCT_VARIANT_DRAFT_IS_NULL;
-import static com.commercetools.sync.products.helpers.BatchProcessor.PRODUCT_VARIANT_DRAFT_KEY_NOT_SET;
-import static com.commercetools.sync.products.helpers.BatchProcessor.PRODUCT_VARIANT_DRAFT_SKU_NOT_SET;
-import static com.commercetools.sync.products.helpers.BatchProcessor.getProductDraftErrorsAndAcceptConsumer;
-import static com.commercetools.sync.products.helpers.BatchProcessor.getProductKeyFromReference;
-import static com.commercetools.sync.products.helpers.BatchProcessor.getReferencedProductKeys;
-import static com.commercetools.sync.products.helpers.BatchProcessor.getReferencedProductKeysFromSet;
-import static com.commercetools.sync.products.helpers.BatchProcessor.getVariantDraftErrors;
+import static com.commercetools.sync.products.helpers.ProductBatchProcessor.PRODUCT_DRAFT_IS_NULL;
+import static com.commercetools.sync.products.helpers.ProductBatchProcessor.PRODUCT_DRAFT_KEY_NOT_SET;
+import static com.commercetools.sync.products.helpers.ProductBatchProcessor.PRODUCT_VARIANT_DRAFT_IS_NULL;
+import static com.commercetools.sync.products.helpers.ProductBatchProcessor.PRODUCT_VARIANT_DRAFT_KEY_NOT_SET;
+import static com.commercetools.sync.products.helpers.ProductBatchProcessor.PRODUCT_VARIANT_DRAFT_SKU_NOT_SET;
+import static com.commercetools.sync.products.helpers.ProductBatchProcessor.getProductDraftErrorsAndAcceptConsumer;
+import static com.commercetools.sync.products.helpers.ProductBatchProcessor.getProductKeyFromReference;
+import static com.commercetools.sync.products.helpers.ProductBatchProcessor.getReferencedProductKeys;
+import static com.commercetools.sync.products.helpers.ProductBatchProcessor.getReferencedProductKeysFromSet;
+import static com.commercetools.sync.products.helpers.ProductBatchProcessor.getVariantDraftErrors;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -38,7 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class BatchProcessorTest {
+class ProductBatchProcessorTest {
     private List<String> errorCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
     private ProductSync productSync;
@@ -322,7 +322,7 @@ class BatchProcessorTest {
 
     @Test
     void validateBatch_WithEmptyBatch_ShouldHaveEmptyResults() {
-        final BatchProcessor batchProcessor = new BatchProcessor(emptyList(), productSync);
+        final ProductBatchProcessor batchProcessor = new ProductBatchProcessor(emptyList(), productSync);
 
         batchProcessor.validateBatch();
 
@@ -334,7 +334,7 @@ class BatchProcessorTest {
 
     @Test
     void validateBatch_WithANullDraft_ShouldResultInAnError() {
-        final BatchProcessor batchProcessor = new BatchProcessor(singletonList(null), productSync);
+        final ProductBatchProcessor batchProcessor = new ProductBatchProcessor(singletonList(null), productSync);
 
         batchProcessor.validateBatch();
 
@@ -347,7 +347,8 @@ class BatchProcessorTest {
     @Test
     void validateBatch_WithADraftWithNullKey_ShouldResultInAnError() {
         final ProductDraft productDraft = mock(ProductDraft.class);
-        final BatchProcessor batchProcessor = new BatchProcessor(singletonList(productDraft), productSync);
+        final ProductBatchProcessor batchProcessor =
+            new ProductBatchProcessor(singletonList(productDraft), productSync);
 
         batchProcessor.validateBatch();
 
@@ -363,7 +364,8 @@ class BatchProcessorTest {
         final ProductDraft productDraft = mock(ProductDraft.class);
         when(productDraft.getKey()).thenReturn("");
 
-        final BatchProcessor batchProcessor = new BatchProcessor(singletonList(productDraft), productSync);
+        final ProductBatchProcessor batchProcessor =
+            new ProductBatchProcessor(singletonList(productDraft), productSync);
         batchProcessor.validateBatch();
 
         assertThat(batchProcessor.getKeysToCache()).isEmpty();
@@ -411,7 +413,7 @@ class BatchProcessorTest {
         final List<ProductDraft> productDrafts = asList(null, mock(ProductDraft.class),
             validProductDraft, inValidProductDraft1, inValidProductDraft2);
 
-        final BatchProcessor batchProcessor = new BatchProcessor(productDrafts, productSync);
+        final ProductBatchProcessor batchProcessor = new ProductBatchProcessor(productDrafts, productSync);
         batchProcessor.validateBatch();
 
         assertThat(batchProcessor.getKeysToCache()).hasSize(3);

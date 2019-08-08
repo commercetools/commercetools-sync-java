@@ -11,6 +11,7 @@ import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
 import io.sphere.sdk.producttypes.commands.ProductTypeUpdateCommand;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.producttypes.queries.ProductTypeQueryBuilder;
+import io.sphere.sdk.queries.QueryPredicate;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
@@ -38,6 +39,41 @@ public final class ProductTypeServiceImpl
 
     public ProductTypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
         super(syncOptions);
+    }
+
+    @Nonnull
+    @Override
+    public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> keys) {
+        final Set<String> keysNotCached = keys.stream()
+                                              .filter(StringUtils::isNotBlank)
+                                              .filter(key -> !keyToIdCache.containsKey(key))
+                                              .collect(Collectors.toSet());
+
+        if (keysNotCached.isEmpty()) {
+            return CompletableFuture.completedFuture(keyToIdCache);
+        }
+
+        final ProductTypeQuery productTypeQuery = ProductTypeQuery
+            .of()
+            .withPredicates(buildProductTypeKeysQueryPredicate(keysNotCached));
+
+        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), productTypeQuery, this::cacheProductTypeIds)
+                            .thenApply(result -> keyToIdCache);
+    }
+
+    private void cacheProductTypeIds(@Nonnull final List<ProductType> productTypes) {
+        productTypes.forEach(productType -> keyToIdCache.put(productType.getKey(), productType.getId()));
+    }
+
+    QueryPredicate<ProductType> buildProductTypeKeysQueryPredicate(@Nonnull final Set<String> keys) {
+        final List<String> keysSurroundedWithDoubleQuotes = keys.stream()
+                                                                .filter(StringUtils::isNotBlank)
+                                                                .map(productType -> format("\"%s\"", productType))
+                                                                .collect(Collectors.toList());
+        String keysQueryString = keysSurroundedWithDoubleQuotes.toString();
+        // Strip square brackets from list string. For example: ["key1", "key2"] -> "key1", "key2"
+        keysQueryString = keysQueryString.substring(1, keysQueryString.length() - 1);
+        return QueryPredicate.of(format("key in (%s)", keysQueryString));
     }
 
     @Nonnull
