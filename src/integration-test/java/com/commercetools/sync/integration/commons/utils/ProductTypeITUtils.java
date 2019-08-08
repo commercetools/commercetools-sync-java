@@ -1,5 +1,6 @@
 package com.commercetools.sync.integration.commons.utils;
 
+import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.EnumValue;
@@ -28,16 +29,19 @@ import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.producttypes.queries.ProductTypeQueryBuilder;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndExecute;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.producttypes.utils.ProductTypeReferenceReplacementUtils.buildProductTypeQuery;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
@@ -212,24 +216,38 @@ public final class ProductTypeITUtils {
 
     /**
      * Deletes all product type attributes from the CTP project defined by the {@code ctpClient} to able to
-     * delete a product-type if it is referenced by at least one product-type.
+     * delete a product type if it is referenced by at least one product type.
      *
      * @param ctpClient defines the CTP project to delete the product types from.
      */
     private static void deleteProductTypeAttributes(@Nonnull final SphereClient ctpClient) {
-        final List<ProductType> productTypes =  ctpClient
-                .execute(buildProductTypeQuery(1))
-                .toCompletableFuture()
-                .join()
-                .getResults();
+        final ConcurrentHashMap<ProductType, Set<UpdateAction<ProductType>>> productTypesToUpdate =
+            new ConcurrentHashMap<>();
 
-        productTypes.forEach(productType -> {
-            final List<UpdateAction<ProductType>> updateActions = productType.getAttributes().stream()
-                    .map(attributeDefinition -> RemoveAttributeDefinition.of(attributeDefinition.getName()))
-                    .collect(Collectors.toList());
-
-            ctpClient.execute(ProductTypeUpdateCommand.of(productType, updateActions)).toCompletableFuture().join();
-        });
+        CtpQueryUtils
+            .queryAll(ctpClient,
+                ProductTypeQuery.of(), page -> {
+                page.forEach(productType -> {
+                    final Set<UpdateAction<ProductType>> removeActions =
+                        productType
+                            .getAttributes()
+                            .stream()
+                            .map(attributeDefinition -> RemoveAttributeDefinition
+                                .of(attributeDefinition.getName()))
+                            .collect(Collectors.toSet());
+                    productTypesToUpdate.put(productType, removeActions);
+                });
+            })
+        .thenCompose(aVoid ->
+            CompletableFuture.allOf(productTypesToUpdate
+                .entrySet()
+                .stream()
+                .map(entry ->
+                    ctpClient.execute(ProductTypeUpdateCommand.of(entry.getKey(), new ArrayList<>(entry.getValue()))))
+                .toArray(CompletableFuture[]::new))
+        )
+        .toCompletableFuture()
+        .join();
     }
 
     /**
