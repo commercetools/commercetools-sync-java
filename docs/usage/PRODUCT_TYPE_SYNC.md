@@ -113,4 +113,4 @@ More examples of those utils for different fields can be found [here](https://gi
 
 
 ## Caveats    
-1. Syncing product types with an attribute of type [NestedType](https://docs.commercetools.com/http-api-projects-productTypes.html#nestedtype) is not supported yet.
+1. The order of attribute definitions in the synced product types is not guaranteed.

@@ -26,8 +26,8 @@ public class AttributeDefinitionReferenceResolver
     private ProductTypeService productTypeService;
 
 
-    AttributeDefinitionReferenceResolver(@Nonnull final ProductTypeSyncOptions options,
-                                         @Nonnull final ProductTypeService productTypeService) {
+    public AttributeDefinitionReferenceResolver(@Nonnull final ProductTypeSyncOptions options,
+                                                @Nonnull final ProductTypeService productTypeService) {
         super(options);
         this.productTypeService = productTypeService;
     }

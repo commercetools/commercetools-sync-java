@@ -42,8 +42,8 @@ public class ProductTypeBatchProcessor {
 
     /**
      * This method validates the batch of drafts, and only for valid drafts it adds the valid draft
-     * to a {@code validDrafts} set, and adds the keys of those drafts and the keys of their referenced productTypes
-     * to a {@code keysToCache} set.
+     * to a {@code validDrafts} set, the keys of their referenced productTypes and
+     * the keys of the missing parents to a {@code keysToCache} set.
      *
      * <p>A valid productType draft is one which satisfies the following conditions:
      * <ol>
@@ -62,7 +62,6 @@ public class ProductTypeBatchProcessor {
                     try {
                         final Set<String> referencedProductTypeKeys = getReferencedProductTypeKeys(productTypeDraft);
                         keysToCache.addAll(referencedProductTypeKeys);
-                        keysToCache.add(productTypeDraftKey);
                         validDrafts.add(productTypeDraft);
                     } catch (InvalidProductTypeDraftException invalidProductTypeDraftException) {
                         handleError(invalidProductTypeDraftException);
@@ -110,8 +109,15 @@ public class ProductTypeBatchProcessor {
         return referencedProductTypeKeys;
     }
 
+    /**
+     * This method is meant be only used internally by the library.
+     * @param attributeType the attributeType to attempt to fetch the product type key of, if it contains a
+     *                      nestedType reference.
+     * @return an optional containing the productType key or empty if it does not contain a productType reference.
+     * @throws InvalidReferenceException thrown if the productType key in the nested reference is invalid.
+     */
     @Nonnull
-    private static Optional<String> getProductTypeKey(@Nonnull final AttributeType attributeType)
+    public static Optional<String> getProductTypeKey(@Nonnull final AttributeType attributeType)
         throws InvalidReferenceException {
 
         if (attributeType instanceof NestedAttributeType) {
