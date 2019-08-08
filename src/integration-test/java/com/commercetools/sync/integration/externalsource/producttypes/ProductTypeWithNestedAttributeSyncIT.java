@@ -51,10 +51,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ProductTypeWithNestedAttributeSyncIT {
 
-    ProductTypeSyncOptions productTypeSyncOptions;
-    List<UpdateAction<ProductType>> builtUpdateActions;
-    List<String> errorMessages;
-    List<Throwable> exceptions;
+    private ProductTypeSyncOptions productTypeSyncOptions;
+    private List<UpdateAction<ProductType>> builtUpdateActions;
+    private List<String> errorMessages;
+    private List<Throwable> exceptions;
 
     /**
      * Deletes product types from the target CTP project.
@@ -62,7 +62,6 @@ class ProductTypeWithNestedAttributeSyncIT {
      */
     @BeforeEach
     void setup() {
-
         deleteProductTypes(CTP_TARGET_CLIENT);
         populateTargetProjectWithNestedAttributes();
 
