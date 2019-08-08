@@ -307,9 +307,7 @@ class ProductTypeWithNestedAttributeSyncIT {
             assertThat(productType.getAttributes()).hasSize(1);
         });
 
-        assertThat(productType1).hasValueSatisfying(productType -> {
-            assertThat(productType.getAttributes()).hasSize(3);
-        });
+        assertThat(productType1).hasValueSatisfying(productType -> assertThat(productType.getAttributes()).hasSize(3));
     }
 
     @Test
@@ -387,8 +385,58 @@ class ProductTypeWithNestedAttributeSyncIT {
             assertThat(productType.getAttributes()).hasSize(1);
         });
 
-        assertThat(productType1).hasValueSatisfying(productType -> {
-            assertThat(productType.getAttributes()).hasSize(3);
-        });
+        assertThat(productType1).hasValueSatisfying(productType -> assertThat(productType.getAttributes()).hasSize(3));
+    }
+
+    @Test
+    void sync_WithUpdatedProductType_WithRemovedNestedAttributeInLaterBatch_ShouldReturnProperStatistics() {
+        // preparation
+        final AttributeDefinitionDraft nestedTypeAttr = AttributeDefinitionDraftBuilder
+            .of(AttributeDefinitionBuilder
+                .of("newNested", ofEnglish("nestedattr"),
+                    NestedAttributeType.of(ProductType.referenceOfId("non-existing-product-type")))
+                .build())
+            // "isSearchable=true is not supported for attribute type 'nested'."
+            .searchable(false)
+            .build();
+
+        final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
+            PRODUCT_TYPE_KEY_1,
+            PRODUCT_TYPE_NAME_1,
+            PRODUCT_TYPE_DESCRIPTION_1,
+            asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2, nestedTypeAttr));
+
+        final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
+
+        // tests
+        productTypeSync
+            .sync(singletonList(newProductTypeDraft))
+            .toCompletableFuture().join();
+
+        final ProductTypeDraft newProductTypeDraftWithoutNested = ProductTypeDraft.ofAttributeDefinitionDrafts(
+            PRODUCT_TYPE_KEY_1,
+            PRODUCT_TYPE_NAME_1,
+            PRODUCT_TYPE_DESCRIPTION_1,
+            asList(ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2));
+
+        final ProductTypeSyncStatistics productTypeSyncStatistics = productTypeSync
+            .sync(singletonList(newProductTypeDraftWithoutNested))
+            .toCompletableFuture().join();
+
+        // assertions
+        final Optional<ProductType> productType1 = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
+        assert productType1.isPresent();
+        assertThat(errorMessages).isEmpty();
+        assertThat(exceptions).isEmpty();
+        assertThat(builtUpdateActions).isEmpty();
+        assertThat(productTypeSyncStatistics).hasValues(2, 0, 0, 0, 0);
+        assertThat(productTypeSyncStatistics
+            .getReportMessage())
+            .isEqualTo("Summary: 2 product types were processed in total"
+                + " (0 created, 0 updated, 0 failed to sync and 0 product types with at least one NestedType or a Set"
+                + " of NestedType attribute definition(s) referencing a missing product type).");
+
+        assertThat(productTypeSyncStatistics.getProductTypeKeysWithMissingParents()).isEmpty();
+        assertThat(productType1).hasValueSatisfying(productType -> assertThat(productType.getAttributes()).hasSize(2));
     }
 }
