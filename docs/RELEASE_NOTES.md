@@ -29,10 +29,19 @@
 -->
 
 <!--
-### 1.4.0 -  Jun 24, 2019
+### 1.5.0 -  Oct 1, 2019
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.4.0...1.5.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.5.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.5.0)
+
+-->
+
+
+### 1.4.0 -  Aug 8, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.3.0...1.4.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.4.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.4.0)
+
 
 - 🎉 **New Features** (5)
     - **ProductType Sync** - Introduced support for syncing product types with NestedType (or set of NestedType) attributes in any order. [#372](https://github.com/commercetools/commercetools-sync-java/issues/372)
@@ -40,7 +49,16 @@
     - **ProductType Sync** - Introduced the new `ProductTypeReferenceReplacementUtils#buildProductTypeQuery` utils to create a product type query with all needed reference expansions to fetch productTypes from a source CTP project for the sync. [#372](https://github.com/commercetools/commercetools-sync-java/issues/372)
     - **ProductType Sync** - Introduced the new `ProductTypeReferenceResolver` which resolves productType references on ProductTypeDrafts. [#372](https://github.com/commercetools/commercetools-sync-java/issues/372)
     - **ProductType Sync** - Introduced the new methods `ProductTypeSyncStatistics#getNumberOfProductTypesWithMissingNestedProductTypes` and `ProductTypeSyncStatistics#getProductTypeKeysWithMissingParents` which represents the nested product types which are still not resolved. [#372](https://github.com/commercetools/commercetools-sync-java/issues/372)
--->
+
+- 🛠️ **Enhancements** (8)
+    - **Commons** - Bumped commercetools-jvm-sdk to version [1.45.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_45_0).
+    - **Commons** - Bumped gradle to version [gradle-5.5.1](https://docs.gradle.org/5.5.1/release-notes.html)
+    - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-api` to 5.5.1.
+    - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-engine` to 5.5.1.
+    - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-params` to 5.5.1.
+    - **Commons** - Bumped `mockito-junit-jupiter` dependency to 3.0.0.
+    - **Commons** - Bumped `assertj` to 3.13.2.
+    - **Commons** - Bumped `com.github.ben-manes.versions` to 0.22.0.
 
 ### 1.3.0 -  Jul 3, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.2.0...1.3.0) |
