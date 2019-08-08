@@ -414,17 +414,16 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
             .thenCompose(fetchResponse -> {
 
                 final Set<ProductType> matchingProductTypes = fetchResponse.getKey();
-                final Map<String, ProductType> keyToProductType =
-                    matchingProductTypes
-                        .stream()
-                        .collect(Collectors.toMap(ProductType::getKey, productType -> productType));
-
                 final Throwable exception = fetchResponse.getValue();
                 if (exception != null) {
                     final String errorMessage = format(CTP_PRODUCT_TYPE_FETCH_FAILED, keys);
                     handleError(errorMessage, exception, keys.size());
                     return CompletableFuture.completedFuture(null);
                 } else {
+                    final Map<String, ProductType> keyToProductType =
+                        matchingProductTypes
+                            .stream()
+                            .collect(Collectors.toMap(ProductType::getKey, productType -> productType));
                     return CompletableFuture.allOf(
                         productTypesToUpdate
                             .entrySet()
