@@ -342,6 +342,7 @@ public final class CustomUpdateActionUtils {
         @Nonnull final Function<T, String> updateIdGetter) {
 
         return newCustomFields.keySet().stream()
+                              .filter(newCustomFieldName -> Objects.nonNull(newCustomFields.get(newCustomFieldName)))
                               .filter(newCustomFieldName -> !Objects.equals(newCustomFields.get(newCustomFieldName),
                                   oldCustomFields.get(newCustomFieldName)))
                               .map(newCustomFieldName -> customActionBuilder.buildSetCustomFieldAction(variantId,

@@ -22,6 +22,8 @@ import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.FieldDefinition;
 import io.sphere.sdk.types.LocalizedStringFieldType;
 import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
+import io.sphere.sdk.types.SetFieldType;
+import io.sphere.sdk.types.StringFieldType;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
 import io.sphere.sdk.types.TypeDraftBuilder;
@@ -59,6 +61,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public final class ITUtils {
     public static final String LOCALISED_STRING_CUSTOM_FIELD_NAME = "backgroundColor";
     public static final String BOOLEAN_CUSTOM_FIELD_NAME = "invisibleInShop";
+    public static final String SET_CUSTOM_FIELD_NAME = "touchpoints";
 
 
     /**
@@ -156,7 +159,10 @@ public final class ITUtils {
                     LocalizedString.of(locale, LOCALISED_STRING_CUSTOM_FIELD_NAME), false),
             FieldDefinition
                 .of(BooleanFieldType.of(), BOOLEAN_CUSTOM_FIELD_NAME,
-                    LocalizedString.of(locale, BOOLEAN_CUSTOM_FIELD_NAME), false));
+                    LocalizedString.of(locale, BOOLEAN_CUSTOM_FIELD_NAME), false),
+            FieldDefinition
+                .of(SetFieldType.of(StringFieldType.of()), SET_CUSTOM_FIELD_NAME,
+                    LocalizedString.of(locale, SET_CUSTOM_FIELD_NAME), false));
 
     }
 
