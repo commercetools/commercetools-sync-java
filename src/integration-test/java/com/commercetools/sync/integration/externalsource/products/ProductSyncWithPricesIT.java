@@ -6,6 +6,7 @@ import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -40,6 +41,7 @@ import org.junit.jupiter.api.Test;
 import javax.annotation.Nonnull;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -768,8 +770,10 @@ class ProductSyncWithPricesIT {
 
         product = executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingProductDraft)));
 
+        final Map<String, JsonNode> customFieldsJsons = new HashMap<>();
+        customFieldsJsons.put(SET_CUSTOM_FIELD_NAME, null);
         final CustomFieldsDraft customType1WithEmptySet = CustomFieldsDraft.ofTypeIdAndJson(customType1.getId(),
-                createCustomFieldsJsonMap(SET_CUSTOM_FIELD_NAME, null));
+                customFieldsJsons);
         final PriceDraft withChannel1CustomType1WithNullSet = getPriceDraft(BigDecimal.valueOf(100), EUR,
                 DE, null, byMonth(1), byMonth(2), channel1.getKey(), customType1WithEmptySet);
         final ProductDraft newProductDraft = ProductDraftBuilder
