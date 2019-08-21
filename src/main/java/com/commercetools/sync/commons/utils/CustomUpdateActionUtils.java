@@ -318,6 +318,7 @@ public final class CustomUpdateActionUtils {
      * "setCustomField" update actions that represent either the modification of an existent custom field's
      * value or the addition of a new one. It returns a {@link List}&lt;{@link UpdateAction}&gt; as a result.
      * If no update action is needed an empty {@link List}&lt;{@link UpdateAction}&gt; is returned.
+     *
      * <p>Note: Null value custom fields are filtered out.
      *
      * @param <T>                    the type of the old {@link Resource} which has the custom fields.
