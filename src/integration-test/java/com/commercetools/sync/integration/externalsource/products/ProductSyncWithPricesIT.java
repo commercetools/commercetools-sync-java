@@ -644,7 +644,7 @@ class ProductSyncWithPricesIT {
         }
     }
 
-    //todo Need to enable @Test when the fix is released from jvm-sdk
+    @Test
     void withEmptyPriceCustomFieldSet_ForNonEmptyPriceCustomField_ShouldNotRemoveCustomField() {
 
         // preparation
