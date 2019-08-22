@@ -34,7 +34,7 @@
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.5.0)
 
 - 🐞 **Bug Fixes** (1)
-    - **Commons** -  Fixed a bug in the `CustomUpdateActionUtils` which caused to generate unnecessary update actions in `buildNewOrModifiedCustomFieldsUpdateActions`. [#428](https://github.com/commercetools/commercetools-sync-java/issues/428)
+    - **Commons** -  Fixed a bug in the `CustomUpdateActionUtils#buildNewOrModifiedCustomFieldsUpdateActions` which caused to generate unnecessary update actions for null custom field values. #428
 
 - 🛠️ **Enhancements** (1)
     - **Commercetools-jvm-sdk** - Upgraded to version 1.46.0 which includes a PriceCustomField serialization bug [#430](https://github.com/commercetools/commercetools-sync-java/issues/430)
