@@ -28,6 +28,20 @@
 
 -->
 
+### 1.5.0 -  Aug 22, 2019
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.4.0...1.5.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.5.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.5.0)
+
+- 🎉 **New Features** (0)
+
+- 🐞 **Bug Fixes** (1)
+    - **Commons** -  Fixed a bug in the `CustomUpdateActionUtils` which caused to generate unnecessary update actions in `buildNewOrModifiedCustomFieldsUpdateActions`. [#428](https://github.com/commercetools/commercetools-sync-java/issues/428)
+
+- 🛠️ **Enhancements** (1)
+    - **Commercetools-jvm-sdk** - Upgraded to version 1.46.0 which includes a PriceCustomField serialization bug [#430](https://github.com/commercetools/commercetools-sync-java/issues/430)
+
+
 <!--
 ### 1.4.0 -  Jun 24, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.3.0...1.4.0) |
