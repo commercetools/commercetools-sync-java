@@ -33,8 +33,6 @@
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.5.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.5.0)
 
-- 🎉 **New Features** (0)
-
 - 🐞 **Bug Fixes** (1)
     - **Commons** -  Fixed a bug in the `CustomUpdateActionUtils` which caused to generate unnecessary update actions in `buildNewOrModifiedCustomFieldsUpdateActions`. [#428](https://github.com/commercetools/commercetools-sync-java/issues/428)
 
