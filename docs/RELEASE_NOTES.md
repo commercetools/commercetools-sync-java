@@ -43,12 +43,36 @@
 
 
 <!--
-### 1.4.0 -  Jun 24, 2019
+### 1.5.0 -  Oct 1, 2019
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.4.0...1.5.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.5.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.5.0)
+
+-->
+
+
+### 1.4.0 -  Aug 8, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.3.0...1.4.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.4.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.4.0)
 
--->
+
+- 🎉 **New Features** (5)
+    - **ProductType Sync** - Introduced support for syncing product types with NestedType (or set of NestedType) attributes in any order. [#372](https://github.com/commercetools/commercetools-sync-java/issues/372)
+    - **ProductType Sync** - Introduced the new `ProductTypeReferenceReplacementUtils#replaceProductTypesReferenceIdsWithKeys` which is a util that replaces the reference ids with keys in a list of productTypes. [#372](https://github.com/commercetools/commercetools-sync-java/issues/372)
+    - **ProductType Sync** - Introduced the new `ProductTypeReferenceReplacementUtils#buildProductTypeQuery` utils to create a product type query with all needed reference expansions to fetch productTypes from a source CTP project for the sync. [#372](https://github.com/commercetools/commercetools-sync-java/issues/372)
+    - **ProductType Sync** - Introduced the new `ProductTypeReferenceResolver` which resolves productType references on ProductTypeDrafts. [#372](https://github.com/commercetools/commercetools-sync-java/issues/372)
+    - **ProductType Sync** - Introduced the new methods `ProductTypeSyncStatistics#getNumberOfProductTypesWithMissingNestedProductTypes` and `ProductTypeSyncStatistics#getProductTypeKeysWithMissingParents` which represents the nested product types which are still not resolved. [#372](https://github.com/commercetools/commercetools-sync-java/issues/372)
+
+- 🛠️ **Enhancements** (8)
+    - **Commons** - Bumped commercetools-jvm-sdk to version [1.45.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_45_0).
+    - **Commons** - Bumped gradle to version [gradle-5.5.1](https://docs.gradle.org/5.5.1/release-notes.html)
+    - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-api` to 5.5.1.
+    - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-engine` to 5.5.1.
+    - **Commons** - Bumped `org.junit.jupiter:junit-jupiter-params` to 5.5.1.
+    - **Commons** - Bumped `mockito-junit-jupiter` dependency to 3.0.0.
+    - **Commons** - Bumped `assertj` to 3.13.2.
+    - **Commons** - Bumped `com.github.ben-manes.versions` to 0.22.0.
 
 ### 1.3.0 -  Jul 3, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.2.0...1.3.0) |
@@ -57,11 +81,11 @@
 
 - 🎉 **New Features** (6)
     - **CartDiscount Sync** - Added support for syncing cart discounts. [#379](https://github.com/commercetools/commercetools-sync-java/issues/379) For more info how to use it please refer to [CartDiscount usage doc](/docs/usage/CART_DISCOUNT_SYNC.md).
-    - **CartDiscount Sync** - Exposed `CartDiscountSyncUtils#buildActions` which calculates all needed update actions after comparing a `CartDiscount` and a `CartDiscountDraft`. [[#379](https://github.com/commercetools/commercetools-sync-java/issues/379)
-    - **CartDiscount Sync** - Exposed `CartDiscountUpdateActionUtils` which contains utils for calculating needed update actions after comparing individual fields of a `CartDiscount` and a `CartDiscountDraft`. [#379](https://github.com/commercetools/commercetools-sync-java/issues/379)
+    - **CartDiscount Sync** - Introduced the new `CartDiscountSyncUtils#buildActions` which calculates all needed update actions after comparing a `CartDiscount` and a `CartDiscountDraft`. [#379](https://github.com/commercetools/commercetools-sync-java/issues/379)
+    - **CartDiscount Sync** - Introduced the new `CartDiscountUpdateActionUtils` which contains utils for calculating needed update actions after comparing individual fields of a `CartDiscount` and a `CartDiscountDraft`. [#379](https://github.com/commercetools/commercetools-sync-java/issues/379)
     - **CartDiscount Sync** - Introduced the new `CartDiscountReferenceResolver` which resolves custom type references on CartDiscountDrafts. [#379](https://github.com/commercetools/commercetools-sync-java/issues/379)
-    - **CartDiscount Sync** - Introduced new `CartDiscountReferenceReplacementUtils#replaceCartDiscountsReferenceIdsWithKeys` which is a util that replaces the custom type ids with keys in a list of cartDiscounts. [#379](https://github.com/commercetools/commercetools-sync-java/issues/379)
-    - **CartDiscount Sync** - Exposed `CartDiscountReferenceReplacementUtils#buildCartDiscountQuery` util to create a cart discount query with all needed reference expansions to fetch cart discounts from a source CTP project for the sync. [#379](https://github.com/commercetools/commercetools-sync-java/issues/379).
+    - **CartDiscount Sync** - Introduced the new `CartDiscountReferenceReplacementUtils#replaceCartDiscountsReferenceIdsWithKeys` which is a util that replaces the custom type ids with keys in a list of cartDiscounts. [#379](https://github.com/commercetools/commercetools-sync-java/issues/379)
+    - **CartDiscount Sync** - Introduced the new `CartDiscountReferenceReplacementUtils#buildCartDiscountQuery` util to create a cart discount query with all needed reference expansions to fetch cart discounts from a source CTP project for the sync. [#379](https://github.com/commercetools/commercetools-sync-java/issues/379).
     
 - 🐞 **Bug Fixes** (1)
     - **Commons** -  Fixed a bug in the `BaseSyncStatistics` which caused a wrong calculation of the `latestBatchProcessingTimeInMinutes`. [#378](https://github.com/commercetools/commercetools-sync-java/issues/378)
@@ -81,7 +105,7 @@
 
 - 🚧 **Breaking Changes** (2)
     - **ProductType Sync** - Removed the unneeded `AttributeDefinitionCustomBuilder` which was an exposed but internal helper. [#377](https://github.com/commercetools/commercetools-sync-java/issues/377). 
-    - **Commons** - `SyncUtils#replaceReferenceIdWithKey` now renamed to `SyncUtils#getReferenceWithKeyReplaced`. [#394](https://github.com/commercetools/commercetools-sync-java/issues/394)
+    - **Commons** - `SyncUtils#replaceReferenceIdWithKey` is now renamed to `SyncUtils#getReferenceWithKeyReplaced`. [#394](https://github.com/commercetools/commercetools-sync-java/issues/394)
 
 - 🎉 **New Features** (2)
     - **Commons** - Added the new `CommonTypeUpdateActionUtils#buildUpdateActionForReferences` which is used for comapring references/resourceIdentifiers and buiding an update action if needed. [#394](https://github.com/commercetools/commercetools-sync-java/issues/394)
