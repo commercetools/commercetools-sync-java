@@ -28,11 +28,12 @@
 
 -->
 
-### 1.5.0 -  Aug 22, 2019
+<!--
+### 1.5.0 -  Oct 1, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.4.0...1.5.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.5.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.5.0)
-
+-->
 - 🐞 **Bug Fixes** (1)
     - **Commons** -  Fixed a bug in the `CustomUpdateActionUtils#buildNewOrModifiedCustomFieldsUpdateActions` which caused to generate unnecessary update actions for null custom field values. [#428](https://github.com/commercetools/commercetools-sync-java/issues/428)
 
