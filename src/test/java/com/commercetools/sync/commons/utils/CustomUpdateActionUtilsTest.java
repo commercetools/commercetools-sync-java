@@ -547,6 +547,22 @@ class CustomUpdateActionUtilsTest {
     }
 
     @Test
+    void buildNewOrModifiedCustomFieldsUpdateActions_WithNullCustomFields_ShouldNotBuildActions() {
+        final Map<String, JsonNode> oldCustomFields = new HashMap<>();
+        oldCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+        oldCustomFields.put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
+
+        final Map<String, JsonNode> newCustomFields = new HashMap<>();
+        newCustomFields.put("invisibleInShop", null);
+
+        final List<UpdateAction<Product>> updateActions = buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields,
+            newCustomFields, mock(Price.class), new PriceCustomActionBuilder(), 1, Price::getId);
+
+        assertThat(updateActions).isNotNull();
+        assertThat(updateActions).isEmpty();
+    }
+
+    @Test
     void buildRemovedCustomFieldsUpdateActions_WithRemovedCustomField_ShouldBuildUpdateActions() {
         final Map<String, JsonNode> oldCustomFields = new HashMap<>();
         oldCustomFields.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
