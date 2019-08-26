@@ -15,7 +15,7 @@ jobs:
         java-version: 1.8
     - name: Build with Gradle
       run: ./gradlew build
-    - env:
+      env:
         SOURCE_PROJECT_KEY: java-sync-source
         SOURCE_CLIENT_ID:  ${{ secrets.SOURCE_CLIENT_ID }}
         SOURCE_CLIENT_SECRET:  ${{ secrets.SOURCE_CLIENT_SECRET }}
