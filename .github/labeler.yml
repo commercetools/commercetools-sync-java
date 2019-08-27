@@ -1,7 +1,7 @@
 cart-discount-sync:
 - src/main/java/com/commercetools/sync/cartdiscounts/**/*
 
-documentation :memo:: *.md
+documentation :memo:: /*.md
 
 category-sync:
 - src/main/java/com/commercetools/sync/categories/**/*
