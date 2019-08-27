@@ -34,7 +34,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
- * This class syncs cart discount drafts with the corresponding cart discounts in the CTP project.
+ * This class syncs cart discount drafts with the corresponding cart discounts in the CTP project. test
  */
 public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSyncStatistics, CartDiscountSyncOptions> {
 
