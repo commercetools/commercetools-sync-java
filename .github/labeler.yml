@@ -1,8 +1,21 @@
+category-sync:
+- src/main/java/com/commercetools/sync/categories/**
+
+product-sync:
+- src/main/java/com/commercetools/sync/products/**
+
+inventory-sync:
+- src/main/java/com/commercetools/sync/inventories/**
+
+productType-sync:
+- src/main/java/com/commercetools/sync/producttypes/**
+
 cart-discount-sync:
 - src/main/java/com/commercetools/sync/cartdiscounts/**
 
-documentation :memo:: 
-- *.md
 
-category-sync:
-- src/main/java/com/commercetools/sync/categories/**/*
+documentation :memo:: 
+- docs/*
+- README.md
+
+
