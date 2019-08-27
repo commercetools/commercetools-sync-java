@@ -11,7 +11,7 @@ repo_url: http://github.com/commercetools/commercetools-sync-java
 #edit_uri: edit/master/src/docs/docs/
 
 #Copyright (shown at the footer)
-copyright: 'Copyright &copy; 2018 commercetools'
+copyright: 'Copyright &copy; 2019 commercetools'
 
 theme:
   name: 'material'
