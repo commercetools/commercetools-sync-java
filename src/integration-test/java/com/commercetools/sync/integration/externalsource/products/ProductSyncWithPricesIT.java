@@ -592,7 +592,7 @@ class ProductSyncWithPricesIT {
     }
 
     @Test
-    void withNonEmptyPriceCustomFieldSet_ForEmptyPriceCustomField_ShouldCreateCustomFieldValue() {
+    void sync_WithEmptyOldCustomFieldAndNonEmptyNewField_ShouldCreateCustomFieldValue() {
 
         // preparation
         final ArrayNode emptyArray = JsonNodeFactory.instance.arrayNode();
@@ -645,8 +645,7 @@ class ProductSyncWithPricesIT {
     }
 
     @Test
-    void withEmptyPriceCustomFieldSet_ForNonEmptyPriceCustomField_ShouldNotRemoveCustomField() {
-
+    void sync_WithNonEmptyOldCustomFieldAndEmptyNewField_ShouldNotRemoveCustomField() {
         // preparation
         final ArrayNode valueArray = JsonNodeFactory.instance.arrayNode()
                 .add("something");
@@ -698,8 +697,7 @@ class ProductSyncWithPricesIT {
     }
 
     @Test
-    void withNonEmptyPriceCustomFieldSet_ForNonEmptyPriceCustomField_ShouldUpdateCustomFieldSet() {
-
+    void sync_WithNonEmptyOldCustomFieldAndNonEmptyNewField_ShouldUpdateCustomFieldSet() {
         // preparation
         final ArrayNode valueArray = JsonNodeFactory.instance.arrayNode()
                 .add("something");
@@ -753,8 +751,7 @@ class ProductSyncWithPricesIT {
     }
 
     @Test
-    void withNullPriceCustomFieldSet_ForEmptyPriceCustomField_ShouldRemoveTheCustomField() {
-
+    void sync_WithEmptyOldCustomFieldAndNullNewField_ShouldRemoveTheCustomField() {
         // preparation
         final ArrayNode emptySet = JsonNodeFactory.instance.arrayNode();
         final CustomFieldsDraft customType1WithSet = CustomFieldsDraft.ofTypeIdAndJson(customType1.getId(),
