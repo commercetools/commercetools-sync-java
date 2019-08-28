@@ -559,7 +559,6 @@ class CustomUpdateActionUtilsTest {
         final List<UpdateAction<Product>> updateActions = buildNewOrModifiedCustomFieldsUpdateActions(oldCustomFields,
             newCustomFields, mock(Price.class), new PriceCustomActionBuilder(), 1, Price::getId);
 
-        assertThat(updateActions).isNotNull();
         assertThat(updateActions).isEmpty();
     }
 
