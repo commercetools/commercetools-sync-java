@@ -319,7 +319,8 @@ public final class CustomUpdateActionUtils {
      * value or the addition of a new one. It returns a {@link List}&lt;{@link UpdateAction}&gt; as a result.
      * If no update action is needed an empty {@link List}&lt;{@link UpdateAction}&gt; is returned.
      *
-     * <p>Note: Null value custom fields are filtered out.
+     * <p>Note: Null value custom fields are filtered out. In other words,
+     * no update actions would be built for fields with null values.
      *
      * @param <T>                    the type of the old {@link Resource} which has the custom fields.
      * @param <U>                    the type of the resource in which the update actions will be applied on.
