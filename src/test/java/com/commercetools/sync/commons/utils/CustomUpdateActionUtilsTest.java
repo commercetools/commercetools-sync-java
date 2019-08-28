@@ -20,6 +20,7 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.Product;
+import io.sphere.sdk.products.commands.updateactions.SetAssetCustomField;
 import io.sphere.sdk.products.commands.updateactions.SetAssetCustomType;
 import io.sphere.sdk.products.commands.updateactions.SetProductPriceCustomField;
 import io.sphere.sdk.products.commands.updateactions.SetProductPriceCustomType;
@@ -560,6 +561,70 @@ class CustomUpdateActionUtilsTest {
 
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).isEmpty();
+    }
+
+    @Test
+    void buildSetCustomFieldsUpdateActions_WithNullAsValue_ShouldCorrectlyBuildAction() {
+        // preparation
+        final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
+        oldCustomFieldsMap.put("setOfBooleans", JsonNodeFactory
+                .instance
+                .arrayNode()
+                .add(JsonNodeFactory.instance.booleanNode(false)));
+
+        final CustomFields oldCustomFields = mock(CustomFields.class);
+        when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+
+        final Asset oldAsset = mock(Asset.class);
+        when(oldAsset.getCustom()).thenReturn(oldCustomFields);
+
+
+        final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
+        newCustomFieldsMap.put("setOfBooleans", null);
+
+
+        // test
+        final List<UpdateAction<Product>> updateActions =
+                buildSetCustomFieldsUpdateActions(oldCustomFieldsMap, newCustomFieldsMap, mock(Asset.class),
+                        new AssetCustomActionBuilder(), 1, Asset::getId);
+
+        // assertion
+        assertThat(updateActions)
+                .containsExactly(SetAssetCustomField
+                        .ofVariantIdUsingJsonAndAssetKey(1, oldAsset.getKey(), "setOfBooleans",
+                                null, true));
+    }
+
+    @Test
+    void buildSetCustomFieldsUpdateActions_WithNullJsonNodeAsValue_ShouldCorrectlyBuildAction() {
+        // preparation
+        final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
+        oldCustomFieldsMap.put("setOfBooleans", JsonNodeFactory
+                .instance
+                .arrayNode()
+                .add(JsonNodeFactory.instance.booleanNode(false)));
+
+        final CustomFields oldCustomFields = mock(CustomFields.class);
+        when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+
+        final Asset oldAsset = mock(Asset.class);
+        when(oldAsset.getCustom()).thenReturn(oldCustomFields);
+
+
+        final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
+        newCustomFieldsMap.put("setOfBooleans", JsonNodeFactory.instance.nullNode());
+
+
+        // test
+        final List<UpdateAction<Product>> updateActions =
+                buildSetCustomFieldsUpdateActions(oldCustomFieldsMap, newCustomFieldsMap, mock(Asset.class),
+                        new AssetCustomActionBuilder(), 1, Asset::getId);
+
+        // assertion
+        assertThat(updateActions)
+                .containsExactly(SetAssetCustomField
+                        .ofVariantIdUsingJsonAndAssetKey(1, oldAsset.getKey(), "setOfBooleans",
+                                JsonNodeFactory.instance.nullNode(), true));
     }
 
     @Test
