@@ -753,7 +753,7 @@ class ProductSyncWithPricesIT {
     }
 
     @Test
-    void withNullPriceCustomFieldSet_ForEmptyPriceCustomField_ShouldDoNothing() {
+    void withNullPriceCustomFieldSet_ForEmptyPriceCustomField_ShouldRemoveTheCustomField() {
 
         // preparation
         final ArrayNode emptySet = JsonNodeFactory.instance.arrayNode();
