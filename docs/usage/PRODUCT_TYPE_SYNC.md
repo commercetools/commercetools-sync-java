@@ -39,7 +39,7 @@ references, those `key`s have to be supplied in the following way:
     reference would return its `key`. 
      
         **Note**: When syncing from a source commercetools project, you can use this util which this library provides: 
-         [`replaceProductTypesReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/1.4.0/com/commercetools/sync/producttypes/utils/ProductTypeReferenceReplacementUtils.html#replaceProductTypesReferenceIdsWithKeys-java.util.List-)
+         [`replaceProductTypesReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/1.4.1/com/commercetools/sync/producttypes/utils/ProductTypeReferenceReplacementUtils.html#replaceProductTypesReferenceIdsWithKeys-java.util.List-)
          that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
          ````java
          // Puts the keys in the reference id fields to prepare for reference resolution

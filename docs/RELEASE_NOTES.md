@@ -29,12 +29,18 @@
 -->
 
 <!--
-### 1.5.0 -  Oct 1, 2019
+### 1.4.1 -  Oct 1, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.4.0...1.5.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.5.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.5.0)
 
 -->
+
+### 1.4.1 -  Aug 30, 2019
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.4.0...1.4.1) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.4.1/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.4.1)
+
 
 
 ### 1.4.0 -  Aug 8, 2019
