@@ -592,7 +592,7 @@ class ProductSyncWithPricesIT {
     }
 
     @Test
-    void sync_WithEmptyOldCustomFieldAndNonEmptyNewField_ShouldCreateCustomFieldValue() {
+    void sync_WithEmptyOldCustomFieldAndNonEmptyNewField_ShouldSetCustomFieldValue() {
 
         // preparation
         final ArrayNode emptyArray = JsonNodeFactory.instance.arrayNode();
@@ -697,7 +697,7 @@ class ProductSyncWithPricesIT {
     }
 
     @Test
-    void sync_WithNonEmptyOldCustomFieldAndNonEmptyNewField_ShouldUpdateCustomFieldSet() {
+    void sync_WithNonEmptyOldCustomFieldAndNonEmptyNewField_ShouldSetCustomField() {
         // preparation
         final ArrayNode valueArray = JsonNodeFactory.instance.arrayNode()
                 .add("something");
@@ -751,7 +751,7 @@ class ProductSyncWithPricesIT {
     }
 
     @Test
-    void sync_WithEmptyOldCustomFieldAndNullNewField_ShouldRemoveTheCustomField() {
+    void sync_WithEmptyOldCustomFieldAndNullNewField_ShouldRemoveCustomField() {
         // preparation
         final ArrayNode emptySet = JsonNodeFactory.instance.arrayNode();
         final CustomFieldsDraft customType1WithSet = CustomFieldsDraft.ofTypeIdAndJson(customType1.getId(),
