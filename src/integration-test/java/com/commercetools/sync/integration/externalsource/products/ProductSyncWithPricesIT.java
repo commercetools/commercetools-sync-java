@@ -600,7 +600,6 @@ class ProductSyncWithPricesIT {
         final ArrayNode emptySet = JsonNodeFactory.instance.arrayNode();
         final Map<String, JsonNode> customFieldsJsonMap =
             createCustomFieldsJsonMap(EMPTY_SET_CUSTOM_FIELD_NAME, emptySet);
-        customFieldsJsonMap.put(NULL_SET_CUSTOM_FIELD_NAME, null);
         customFieldsJsonMap.put(NULL_NODE_SET_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.nullNode());
         final ArrayNode nonEmptySet = JsonNodeFactory.instance.arrayNode();
         nonEmptySet.add("foo");
@@ -669,7 +668,6 @@ class ProductSyncWithPricesIT {
         final ArrayNode emptySet = JsonNodeFactory.instance.arrayNode();
         final Map<String, JsonNode> customFieldsJsonMap =
             createCustomFieldsJsonMap(EMPTY_SET_CUSTOM_FIELD_NAME, emptySet);
-        customFieldsJsonMap.put(NULL_SET_CUSTOM_FIELD_NAME, null);
         customFieldsJsonMap.put(NULL_NODE_SET_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.nullNode());
         final ArrayNode nonEmptySet = JsonNodeFactory.instance.arrayNode();
         nonEmptySet.add("foo");
@@ -740,7 +738,6 @@ class ProductSyncWithPricesIT {
         final ArrayNode emptySet = JsonNodeFactory.instance.arrayNode();
         final Map<String, JsonNode> customFieldsJsonMap =
             createCustomFieldsJsonMap(EMPTY_SET_CUSTOM_FIELD_NAME, emptySet);
-        customFieldsJsonMap.put(NULL_SET_CUSTOM_FIELD_NAME, null);
         final NullNode nullJsonNode = JsonNodeFactory.instance.nullNode();
         customFieldsJsonMap.put(NULL_NODE_SET_CUSTOM_FIELD_NAME, nullJsonNode);
         final ArrayNode nonEmptySet = JsonNodeFactory.instance.arrayNode();
@@ -810,7 +807,6 @@ class ProductSyncWithPricesIT {
         final ArrayNode emptySet = JsonNodeFactory.instance.arrayNode();
         final Map<String, JsonNode> customFieldsJsonMap =
             createCustomFieldsJsonMap(EMPTY_SET_CUSTOM_FIELD_NAME, emptySet);
-        customFieldsJsonMap.put(NULL_SET_CUSTOM_FIELD_NAME, null);
         customFieldsJsonMap.put(NULL_NODE_SET_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.nullNode());
         final ArrayNode nonEmptySet = JsonNodeFactory.instance.arrayNode();
         nonEmptySet.add("foo");
