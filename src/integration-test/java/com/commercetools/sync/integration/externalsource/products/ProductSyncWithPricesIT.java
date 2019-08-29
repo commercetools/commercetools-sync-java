@@ -802,6 +802,156 @@ class ProductSyncWithPricesIT {
         }
     }
 
+    @Test
+    void sync_WithEmptyOldCustomFieldAndNullJsonNodeNewField_ShouldRemoveCustomField() {
+        // preparation
+        final ArrayNode emptySet = JsonNodeFactory.instance.arrayNode();
+        final CustomFieldsDraft customType1WithSet = CustomFieldsDraft.ofTypeIdAndJson(customType1.getId(),
+            createCustomFieldsJsonMap(SET_CUSTOM_FIELD_NAME, emptySet));
+        final PriceDraft withChannel1CustomType1WithSet = getPriceDraft(BigDecimal.valueOf(100), EUR,
+            DE, null, byMonth(1), byMonth(2), channel1.getId(), customType1WithSet);
+        final ProductDraft existingProductDraft = ProductDraftBuilder
+            .of(productType.toReference(), ofEnglish("foo"), ofEnglish("bar"),
+                createVariantDraft("foo", null,
+                    singletonList(withChannel1CustomType1WithSet)))
+            .key("bar")
+            .build();
+
+        product = executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingProductDraft)));
+
+        final Map<String, JsonNode> customFieldsJsons = new HashMap<>();
+        customFieldsJsons.put(SET_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.nullNode());
+        final CustomFieldsDraft customType1WithEmptySet = CustomFieldsDraft.ofTypeIdAndJson(customType1.getId(),
+            customFieldsJsons);
+        final PriceDraft withChannel1CustomType1WithNullSet = getPriceDraft(BigDecimal.valueOf(100), EUR,
+            DE, null, byMonth(1), byMonth(2), channel1.getKey(), customType1WithEmptySet);
+        final ProductDraft newProductDraft = ProductDraftBuilder
+            .of(referenceOfId(productType.getKey()), ofEnglish("foo"), ofEnglish("bar"),
+                createVariantDraft("foo", null,
+                    singletonList(withChannel1CustomType1WithNullSet)))
+            .key("bar")
+            .build();
+
+        // test
+        final ProductSyncStatistics syncStatistics =
+            executeBlocking(productSync.sync(singletonList(newProductDraft)));
+
+        // assertion
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(updateActionsFromSync).filteredOn(action -> action instanceof SetProductPriceCustomField)
+                                         .hasSize(1);
+
+        final ProductProjection productProjection = CTP_TARGET_CLIENT
+            .execute(ProductProjectionByKeyGet.of(newProductDraft.getKey(), ProductProjectionType.STAGED))
+            .toCompletableFuture().join();
+
+        assertThat(productProjection).isNotNull();
+
+        List<Price> priceList = productProjection.getMasterVariant().getPrices();
+        for (Price price : priceList) {
+            Set<String> fieldAsStringSet = price.getCustom().getFieldAsStringSet(SET_CUSTOM_FIELD_NAME);
+            assertThat(fieldAsStringSet).isNull();
+        }
+    }
+
+    @Test
+    void sync_WithNullOldCustomFieldAndEmptySetNewField_ShouldSetCustomField() {
+        // preparation
+        final PriceDraft withChannel1CustomType1WithSet = getPriceDraft(BigDecimal.valueOf(100), EUR,
+            DE, null, byMonth(1), byMonth(2), channel1.getId(), null);
+        final ProductDraft existingProductDraft = ProductDraftBuilder
+            .of(productType.toReference(), ofEnglish("foo"), ofEnglish("bar"),
+                createVariantDraft("foo", null,
+                    singletonList(withChannel1CustomType1WithSet)))
+            .key("bar")
+            .build();
+
+        product = executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingProductDraft)));
+
+        final ArrayNode emptySet = JsonNodeFactory.instance.arrayNode();
+        final Map<String, JsonNode> customFieldsJsons = new HashMap<>();
+        customFieldsJsons.put(SET_CUSTOM_FIELD_NAME, emptySet);
+        final CustomFieldsDraft customType1WithEmptySet = CustomFieldsDraft.ofTypeIdAndJson(customType1.getId(),
+            customFieldsJsons);
+        final PriceDraft withChannel1CustomType1WithNullSet = getPriceDraft(BigDecimal.valueOf(100), EUR,
+            DE, null, byMonth(1), byMonth(2), channel1.getKey(), customType1WithEmptySet);
+        final ProductDraft newProductDraft = ProductDraftBuilder
+            .of(referenceOfId(productType.getKey()), ofEnglish("foo"), ofEnglish("bar"),
+                createVariantDraft("foo", null,
+                    singletonList(withChannel1CustomType1WithNullSet)))
+            .key("bar")
+            .build();
+
+        // test
+        final ProductSyncStatistics syncStatistics =
+            executeBlocking(productSync.sync(singletonList(newProductDraft)));
+
+        // assertion
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(updateActionsFromSync).filteredOn(action -> action instanceof SetProductPriceCustomField)
+                                         .hasSize(1);
+
+        final ProductProjection productProjection = CTP_TARGET_CLIENT
+            .execute(ProductProjectionByKeyGet.of(newProductDraft.getKey(), ProductProjectionType.STAGED))
+            .toCompletableFuture().join();
+
+        assertThat(productProjection).isNotNull();
+
+        List<Price> priceList = productProjection.getMasterVariant().getPrices();
+        for (Price price : priceList) {
+            Set<String> fieldAsStringSet = price.getCustom().getFieldAsStringSet(SET_CUSTOM_FIELD_NAME);
+            assertThat(fieldAsStringSet).isEmpty();
+        }
+    }
+
+    @Test
+    void sync_WithNullOldCustomFieldAndNullNewField_ShouldDoNothing() {
+        // preparation
+        final PriceDraft withChannel1CustomType1WithSet = getPriceDraft(BigDecimal.valueOf(100), EUR,
+            DE, null, byMonth(1), byMonth(2), channel1.getId(), null);
+        final ProductDraft existingProductDraft = ProductDraftBuilder
+            .of(productType.toReference(), ofEnglish("foo"), ofEnglish("bar"),
+                createVariantDraft("foo", null,
+                    singletonList(withChannel1CustomType1WithSet)))
+            .key("bar")
+            .build();
+
+        product = executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingProductDraft)));
+
+        final Map<String, JsonNode> customFieldsJsons = new HashMap<>();
+        customFieldsJsons.put(SET_CUSTOM_FIELD_NAME, null);
+        final CustomFieldsDraft customType1WithEmptySet = CustomFieldsDraft.ofTypeIdAndJson(customType1.getId(),
+            customFieldsJsons);
+        final PriceDraft withChannel1CustomType1WithNullSet = getPriceDraft(BigDecimal.valueOf(100), EUR,
+            DE, null, byMonth(1), byMonth(2), channel1.getKey(), customType1WithEmptySet);
+        final ProductDraft newProductDraft = ProductDraftBuilder
+            .of(referenceOfId(productType.getKey()), ofEnglish("foo"), ofEnglish("bar"),
+                createVariantDraft("foo", null,
+                    singletonList(withChannel1CustomType1WithNullSet)))
+            .key("bar")
+            .build();
+
+        // test
+        final ProductSyncStatistics syncStatistics =
+            executeBlocking(productSync.sync(singletonList(newProductDraft)));
+
+        // assertion
+        assertThat(syncStatistics).hasValues(1, 0, 0, 0);
+        assertThat(updateActionsFromSync).isEmpty();
+
+        final ProductProjection productProjection = CTP_TARGET_CLIENT
+            .execute(ProductProjectionByKeyGet.of(newProductDraft.getKey(), ProductProjectionType.STAGED))
+            .toCompletableFuture().join();
+
+        assertThat(productProjection).isNotNull();
+
+        List<Price> priceList = productProjection.getMasterVariant().getPrices();
+        for (Price price : priceList) {
+            Set<String> fieldAsStringSet = price.getCustom().getFieldAsStringSet(SET_CUSTOM_FIELD_NAME);
+            assertThat(fieldAsStringSet).isNull();
+        }
+    }
+
     /**
      * Creates a productDraft with a master variant containing the following priceDrafts:
      * <ul>
