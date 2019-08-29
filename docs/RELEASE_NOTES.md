@@ -35,7 +35,7 @@
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.4.1)
 
 - 🐞 **Bug Fixes** (1)
-    - **Commons** - Fixed a bug in the `CustomUpdateActionUtils#buildNewOrModifiedCustomFieldsUpdateActions` which generated unnecessary update actions for null custom field values. [#428](https://github.com/commercetools/commercetools-sync-java/issues/428)
+    - **Commons** - Fixed a bug in the custom fields update actions builders which generated duplicated unnecessary update actions for `null` custom field values. This affected any sync module where the resource contained custom fields (i.e. Product Sync, Category Sync, CartDiscount Sync and Inventory Sync). It also affected any update actions building utility in which the resource/sub-resource contained custom fields.  [#428](https://github.com/commercetools/commercetools-sync-java/issues/428)
 
 - 🛠️ **Enhancements** (1)
     - **Commons** - Bumped commercetools-jvm-sdk to version [1.46.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_46_0) which includes a fix for a serialization bug in the `SetCustomField` action which was ignoring empty array values. [#430](https://github.com/commercetools/commercetools-sync-java/issues/430)
