@@ -621,7 +621,8 @@ class ProductSyncWithPricesIT {
 
         product = executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingProductDraft)));
 
-        final Map<String, JsonNode> newCustomFieldsJsonMap = createCustomFieldsJsonMap(EMPTY_SET_CUSTOM_FIELD_NAME, emptySet);
+        final Map<String, JsonNode> newCustomFieldsJsonMap =
+            createCustomFieldsJsonMap(EMPTY_SET_CUSTOM_FIELD_NAME, emptySet);
         newCustomFieldsJsonMap.put(NULL_SET_CUSTOM_FIELD_NAME, emptySet);
         newCustomFieldsJsonMap.put(NULL_NODE_SET_CUSTOM_FIELD_NAME, emptySet);
         newCustomFieldsJsonMap.put(NON_EMPTY_SEY_CUSTOM_FIELD_NAME, emptySet);
@@ -691,7 +692,8 @@ class ProductSyncWithPricesIT {
 
         final ArrayNode nonEmptyNewSet = JsonNodeFactory.instance.arrayNode();
         nonEmptySet.add("bar");
-        final Map<String, JsonNode> newCustomFieldsJsonMap = createCustomFieldsJsonMap("emptySet", nonEmptyNewSet);
+        final Map<String, JsonNode> newCustomFieldsJsonMap =
+            createCustomFieldsJsonMap("emptySet", nonEmptyNewSet);
         newCustomFieldsJsonMap.put("null", nonEmptyNewSet);
         newCustomFieldsJsonMap.put("nullNode", nonEmptyNewSet);
         newCustomFieldsJsonMap.put("nonEmptySet", nonEmptyNewSet);
