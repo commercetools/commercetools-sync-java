@@ -644,7 +644,7 @@ class ProductSyncWithPricesIT {
         // assertion
         assertThat(syncStatistics).hasValues(1, 0, 1, 0);
         assertThat(updateActionsFromSync).filteredOn(action -> action instanceof SetProductPriceCustomField)
-                                         .hasSize(2);
+                                         .hasSize(3);
 
         final ProductProjection productProjection = CTP_TARGET_CLIENT
             .execute(ProductProjectionByKeyGet.of(newProductDraft.getKey(), ProductProjectionType.STAGED))
@@ -687,7 +687,7 @@ class ProductSyncWithPricesIT {
         product = executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingProductDraft)));
 
         final ArrayNode nonEmptyNewSet = JsonNodeFactory.instance.arrayNode();
-        nonEmptySet.add("bar");
+        nonEmptyNewSet.add("bar");
         final Map<String, JsonNode> newCustomFieldsJsonMap =
             createCustomFieldsJsonMap(EMPTY_SET_CUSTOM_FIELD_NAME, nonEmptyNewSet);
         newCustomFieldsJsonMap.put(NULL_SET_CUSTOM_FIELD_NAME, nonEmptyNewSet);
@@ -713,7 +713,7 @@ class ProductSyncWithPricesIT {
         // assertion
         assertThat(syncStatistics).hasValues(1, 0, 1, 0);
         assertThat(updateActionsFromSync).filteredOn(action -> action instanceof SetProductPriceCustomField)
-                                         .hasSize(3);
+                                         .hasSize(4);
 
         final ProductProjection productProjection = CTP_TARGET_CLIENT
             .execute(ProductProjectionByKeyGet.of(newProductDraft.getKey(), ProductProjectionType.STAGED))
