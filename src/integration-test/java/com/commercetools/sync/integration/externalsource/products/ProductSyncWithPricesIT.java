@@ -56,6 +56,7 @@ import static com.commercetools.sync.integration.commons.utils.CustomerGroupITUt
 import static com.commercetools.sync.integration.commons.utils.ITUtils.EMPTY_SET_CUSTOM_FIELD_NAME;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.LOCALISED_STRING_CUSTOM_FIELD_NAME;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.NON_EMPTY_SEY_CUSTOM_FIELD_NAME;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.NULL_NODE_SET_CUSTOM_FIELD_NAME;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.NULL_SET_CUSTOM_FIELD_NAME;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createVariantDraft;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.createPricesCustomType;
@@ -622,6 +623,7 @@ class ProductSyncWithPricesIT {
             createCustomFieldsJsonMap(EMPTY_SET_CUSTOM_FIELD_NAME, emptySet);
         newCustomFieldsJsonMap.put(NULL_SET_CUSTOM_FIELD_NAME, emptySet);
         newCustomFieldsJsonMap.put(NON_EMPTY_SEY_CUSTOM_FIELD_NAME, emptySet);
+        newCustomFieldsJsonMap.put(NULL_NODE_SET_CUSTOM_FIELD_NAME, emptySet);
 
 
         final CustomFieldsDraft customType1WithEmptySet = CustomFieldsDraft.ofTypeIdAndJson(customType1.getId(),
@@ -654,6 +656,7 @@ class ProductSyncWithPricesIT {
         for (Price price : prices) {
             assertThat(price.getCustom().getFieldAsStringSet(EMPTY_SET_CUSTOM_FIELD_NAME)).isEmpty();
             assertThat(price.getCustom().getFieldAsStringSet(NULL_SET_CUSTOM_FIELD_NAME)).isEmpty();
+            assertThat(price.getCustom().getFieldAsStringSet(NULL_NODE_SET_CUSTOM_FIELD_NAME)).isEmpty();
             assertThat(price.getCustom().getFieldAsStringSet(NON_EMPTY_SEY_CUSTOM_FIELD_NAME)).isEmpty();
         }
     }
@@ -686,9 +689,10 @@ class ProductSyncWithPricesIT {
         final ArrayNode nonEmptyNewSet = JsonNodeFactory.instance.arrayNode();
         nonEmptySet.add("bar");
         final Map<String, JsonNode> newCustomFieldsJsonMap =
-            createCustomFieldsJsonMap("emptySet", nonEmptyNewSet);
-        newCustomFieldsJsonMap.put("null", nonEmptyNewSet);
-        newCustomFieldsJsonMap.put("nonEmptySet", nonEmptyNewSet);
+            createCustomFieldsJsonMap(EMPTY_SET_CUSTOM_FIELD_NAME, nonEmptyNewSet);
+        newCustomFieldsJsonMap.put(NULL_SET_CUSTOM_FIELD_NAME, nonEmptyNewSet);
+        newCustomFieldsJsonMap.put(NON_EMPTY_SEY_CUSTOM_FIELD_NAME, nonEmptyNewSet);
+        newCustomFieldsJsonMap.put(NULL_NODE_SET_CUSTOM_FIELD_NAME, nonEmptyNewSet);
 
 
         final CustomFieldsDraft customType1WithEmptySet = CustomFieldsDraft.ofTypeIdAndJson(customType1.getId(),
@@ -721,6 +725,7 @@ class ProductSyncWithPricesIT {
         for (Price price : prices) {
             assertThat(price.getCustom().getFieldAsStringSet(EMPTY_SET_CUSTOM_FIELD_NAME)).containsOnly("bar");
             assertThat(price.getCustom().getFieldAsStringSet(NULL_SET_CUSTOM_FIELD_NAME)).containsOnly("bar");
+            assertThat(price.getCustom().getFieldAsStringSet(NULL_NODE_SET_CUSTOM_FIELD_NAME)).containsOnly("bar");
             assertThat(price.getCustom().getFieldAsStringSet(NON_EMPTY_SEY_CUSTOM_FIELD_NAME)).containsOnly("bar");
         }
     }
@@ -751,11 +756,11 @@ class ProductSyncWithPricesIT {
         product = executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingProductDraft)));
 
         final NullNode nullJsonNode = JsonNodeFactory.instance.nullNode();
-        final Map<String, JsonNode> newCustomFieldsJsonMap = createCustomFieldsJsonMap("emptySet",
+        final Map<String, JsonNode> newCustomFieldsJsonMap = createCustomFieldsJsonMap(EMPTY_SET_CUSTOM_FIELD_NAME,
             nullJsonNode);
-        newCustomFieldsJsonMap.put("null", nullJsonNode);
-        newCustomFieldsJsonMap.put("nullNode", nullJsonNode);
-        newCustomFieldsJsonMap.put("nonEmptySet", nullJsonNode);
+        newCustomFieldsJsonMap.put(NULL_SET_CUSTOM_FIELD_NAME, nullJsonNode);
+        newCustomFieldsJsonMap.put(NULL_NODE_SET_CUSTOM_FIELD_NAME, nullJsonNode);
+        newCustomFieldsJsonMap.put(NON_EMPTY_SEY_CUSTOM_FIELD_NAME, nullJsonNode);
 
 
         final CustomFieldsDraft customType1WithEmptySet = CustomFieldsDraft.ofTypeIdAndJson(customType1.getId(),
@@ -788,6 +793,7 @@ class ProductSyncWithPricesIT {
         for (Price price : prices) {
             assertThat(price.getCustom().getFieldAsStringSet(EMPTY_SET_CUSTOM_FIELD_NAME)).isNull();
             assertThat(price.getCustom().getFieldAsStringSet(NULL_SET_CUSTOM_FIELD_NAME)).isNull();
+            assertThat(price.getCustom().getFieldAsStringSet(NULL_NODE_SET_CUSTOM_FIELD_NAME)).isNull();
             assertThat(price.getCustom().getFieldAsStringSet(NON_EMPTY_SEY_CUSTOM_FIELD_NAME)).isNull();
         }
     }
@@ -847,6 +853,7 @@ class ProductSyncWithPricesIT {
         for (Price price : prices) {
             assertThat(price.getCustom().getFieldAsStringSet(EMPTY_SET_CUSTOM_FIELD_NAME)).isNull();
             assertThat(price.getCustom().getFieldAsStringSet(NULL_SET_CUSTOM_FIELD_NAME)).isNull();
+            assertThat(price.getCustom().getFieldAsStringSet(NULL_NODE_SET_CUSTOM_FIELD_NAME)).isNull();
             assertThat(price.getCustom().getFieldAsStringSet(NON_EMPTY_SEY_CUSTOM_FIELD_NAME)).isNull();
         }
     }
