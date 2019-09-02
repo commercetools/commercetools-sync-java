@@ -5,7 +5,6 @@ import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.helpers.GenericCustomActionBuilder;
 import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.commands.UpdateAction;
@@ -353,14 +352,17 @@ public final class CustomUpdateActionUtils {
                 final JsonNode newCustomFieldValue = newCustomFields.get(newCustomFieldName);
                 final JsonNode oldCustomFieldValue = oldCustomFields.get(newCustomFieldName);
 
-                return Objects.nonNull(newCustomFieldValue)
-                    && !Objects.equals(newCustomFieldValue, JsonNodeFactory.instance.nullNode())
+                return !isNullJsonValue(newCustomFieldValue)
                     && !Objects.equals(newCustomFieldValue, oldCustomFieldValue);
             })
             .map(newCustomFieldName -> customActionBuilder.buildSetCustomFieldAction(variantId,
                 updateIdGetter.apply(resource), newCustomFieldName,
                 newCustomFields.get(newCustomFieldName)))
             .collect(Collectors.toList());
+    }
+
+    private static boolean isNullJsonValue(@Nullable final JsonNode value) {
+        return !Objects.nonNull(value) || value.isNull();
     }
 
     /**
@@ -395,14 +397,9 @@ public final class CustomUpdateActionUtils {
         return oldCustomFields
             .keySet()
             .stream()
-            .filter(oldCustomFieldsName -> {
-                final JsonNode newCustomFieldValue = newCustomFields.get(oldCustomFieldsName);
-
-                return Objects.isNull(newCustomFieldValue)
-                    || Objects.equals(newCustomFieldValue, JsonNodeFactory.instance.nullNode());
-            })
+            .filter(oldCustomFieldsName -> isNullJsonValue(newCustomFields.get(oldCustomFieldsName)))
             .map(oldCustomFieldsName -> customActionBuilder.buildSetCustomFieldAction(variantId,
-                updateIdGetter.apply(resource), oldCustomFieldsName, newCustomFields.get(oldCustomFieldsName)))
+                updateIdGetter.apply(resource), oldCustomFieldsName, null))
             .collect(Collectors.toList());
     }
 

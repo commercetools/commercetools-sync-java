@@ -533,6 +533,6 @@ class ProductVariantAssetUpdateActionUtilsTest {
         assertThat(updateActions)
                 .containsExactly(SetAssetCustomField
                         .ofVariantIdUsingJsonAndAssetKey(1, oldAsset.getKey(), "setOfBooleans",
-                                JsonNodeFactory.instance.nullNode(), true));
+                                null, true));
     }
 }

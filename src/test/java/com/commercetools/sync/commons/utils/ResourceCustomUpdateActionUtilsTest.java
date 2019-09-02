@@ -550,7 +550,7 @@ class ResourceCustomUpdateActionUtilsTest {
 
         // assertion
         assertThat(updateActions)
-            .containsExactly(SetCustomField.ofJson("setOfBooleans", JsonNodeFactory.instance.nullNode()));
+            .containsExactly(SetCustomField.ofJson("setOfBooleans", null));
     }
 
     @Test
