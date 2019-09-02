@@ -337,7 +337,8 @@ public final class CustomUpdateActionUtils {
      *         needed.
      */
     @Nonnull
-    static <T extends Custom, U extends Resource<U>> List<UpdateAction<U>> buildNewOrModifiedCustomFieldsUpdateActions(
+    private static <T extends Custom, U extends Resource<U>> List<UpdateAction<U>>
+    buildNewOrModifiedCustomFieldsUpdateActions(
         @Nonnull final Map<String, JsonNode> oldCustomFields,
         @Nonnull final Map<String, JsonNode> newCustomFields,
         @Nonnull final T resource,
@@ -382,7 +383,8 @@ public final class CustomUpdateActionUtils {
      *         needed.
      */
     @Nonnull
-    static <T extends Custom, U extends Resource<U>> List<UpdateAction<U>> buildRemovedCustomFieldsUpdateActions(
+    private static <T extends Custom, U extends Resource<U>> List<UpdateAction<U>>
+    buildRemovedCustomFieldsUpdateActions(
         @Nonnull final Map<String, JsonNode> oldCustomFields,
         @Nonnull final Map<String, JsonNode> newCustomFields,
         @Nonnull final T resource,
