@@ -32,6 +32,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import static com.commercetools.sync.products.utils.ProductVariantAssetUpdateActionUtils.buildActions;
 import static com.commercetools.sync.products.utils.ProductVariantAssetUpdateActionUtils.buildChangeAssetNameUpdateAction;
@@ -440,5 +441,98 @@ class ProductVariantAssetUpdateActionUtilsTest {
         assertThat(errors.get(0))
             .isEqualTo(format("Failed to build custom fields update actions on the asset with id '%s'."
                 + " Reason: Custom type ids are not set for both the old and new asset.", oldAsset.getId()));
+    }
+
+    @Test
+    void buildCustomUpdateActions_WithNullValue_ShouldCorrectlyBuildAction() {
+        // preparation
+        final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
+        oldCustomFieldsMap.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+        oldCustomFieldsMap.put("setOfBooleans", JsonNodeFactory
+                .instance
+                .arrayNode()
+                .add(JsonNodeFactory.instance.booleanNode(false)));
+
+        final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
+        newCustomFieldsMap.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(true));
+        newCustomFieldsMap.put("setOfBooleans", null);
+
+
+        final CustomFields oldCustomFields = mock(CustomFields.class);
+        final String typeId = UUID.randomUUID().toString();
+        when(oldCustomFields.getType()).thenReturn(Type.referenceOfId(typeId));
+        when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+
+        final CustomFieldsDraft newCustomFieldsDraft =
+                CustomFieldsDraft.ofTypeIdAndJson(typeId, newCustomFieldsMap);
+
+        final Asset oldAsset = mock(Asset.class);
+        when(oldAsset.getCustom()).thenReturn(oldCustomFields);
+
+        final AssetDraft newAssetDraft = AssetDraftBuilder.of(emptyList(), empty())
+                .custom(newCustomFieldsDraft)
+                .build();
+
+        final List<String> errors = new ArrayList<>();
+
+        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                .errorCallback((errorMessage, throwable) ->
+                        errors.add(errorMessage))
+                .build();
+        // test
+        final List<UpdateAction<Product>> updateActions =
+                buildCustomUpdateActions(1, oldAsset, newAssetDraft, syncOptions);
+
+        // assertion
+        assertThat(errors).isEmpty();
+        assertThat(updateActions)
+                .containsExactly(SetAssetCustomField
+                        .ofVariantIdUsingJsonAndAssetKey(1, oldAsset.getKey(), "setOfBooleans", null, true));
+    }
+
+    @Test
+    void buildCustomUpdateActions_WithNullJsonNodeValue_ShouldCorrectlyBuildAction() {
+        // preparation
+        final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
+        oldCustomFieldsMap.put("setOfBooleans", JsonNodeFactory
+                .instance
+                .arrayNode()
+                .add(JsonNodeFactory.instance.booleanNode(false)));
+
+        final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
+        newCustomFieldsMap.put("setOfBooleans", JsonNodeFactory.instance.nullNode());
+
+
+        final CustomFields oldCustomFields = mock(CustomFields.class);
+        final String typeId = UUID.randomUUID().toString();
+        when(oldCustomFields.getType()).thenReturn(Type.referenceOfId(typeId));
+        when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+
+        final CustomFieldsDraft newCustomFieldsDraft =
+                CustomFieldsDraft.ofTypeIdAndJson(typeId, newCustomFieldsMap);
+
+        final Asset oldAsset = mock(Asset.class);
+        when(oldAsset.getCustom()).thenReturn(oldCustomFields);
+
+        final AssetDraft newAssetDraft = AssetDraftBuilder.of(emptyList(), empty())
+                .custom(newCustomFieldsDraft)
+                .build();
+
+        final List<String> errors = new ArrayList<>();
+
+        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                .errorCallback((errorMessage, throwable) ->
+                        errors.add(errorMessage))
+                .build();
+        // test
+        final List<UpdateAction<Product>> updateActions =
+                buildCustomUpdateActions(1, oldAsset, newAssetDraft, syncOptions);
+
+        // assertion
+        assertThat(errors).isEmpty();
+        assertThat(updateActions)
+                .containsExactly(SetAssetCustomField
+                        .ofVariantIdUsingJsonAndAssetKey(1, oldAsset.getKey(), "setOfBooleans",
+                                null, true));
     }
 }
