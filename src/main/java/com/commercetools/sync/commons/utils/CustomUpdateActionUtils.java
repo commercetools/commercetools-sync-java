@@ -5,6 +5,7 @@ import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.helpers.GenericCustomActionBuilder;
 import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.commands.UpdateAction;
@@ -344,14 +345,21 @@ public final class CustomUpdateActionUtils {
         @Nullable final Integer variantId,
         @Nonnull final Function<T, String> updateIdGetter) {
 
-        return newCustomFields.keySet().stream()
-                              .filter(newCustomFieldName -> Objects.nonNull(newCustomFields.get(newCustomFieldName)))
-                              .filter(newCustomFieldName -> !Objects.equals(newCustomFields.get(newCustomFieldName),
-                                  oldCustomFields.get(newCustomFieldName)))
-                              .map(newCustomFieldName -> customActionBuilder.buildSetCustomFieldAction(variantId,
-                                  updateIdGetter.apply(resource), newCustomFieldName,
-                                  newCustomFields.get(newCustomFieldName)))
-                              .collect(Collectors.toList());
+        return newCustomFields
+            .keySet()
+            .stream()
+            .filter(newCustomFieldName -> {
+                final JsonNode newCustomFieldValue = newCustomFields.get(newCustomFieldName);
+                final JsonNode oldCustomFieldValue = oldCustomFields.get(newCustomFieldName);
+
+                return Objects.nonNull(newCustomFieldValue)
+                    && !Objects.equals(newCustomFieldValue, JsonNodeFactory.instance.nullNode())
+                    && !Objects.equals(newCustomFieldValue, oldCustomFieldValue);
+            })
+            .map(newCustomFieldName -> customActionBuilder.buildSetCustomFieldAction(variantId,
+                updateIdGetter.apply(resource), newCustomFieldName,
+                newCustomFields.get(newCustomFieldName)))
+            .collect(Collectors.toList());
     }
 
     /**
@@ -382,11 +390,18 @@ public final class CustomUpdateActionUtils {
         @Nullable final Integer variantId,
         @Nonnull final Function<T, String> updateIdGetter) {
 
-        return oldCustomFields.keySet().stream()
-                              .filter(oldCustomFieldsName -> Objects.isNull(newCustomFields.get(oldCustomFieldsName)))
-                              .map(oldCustomFieldsName -> customActionBuilder.buildSetCustomFieldAction(variantId,
-                                  updateIdGetter.apply(resource), oldCustomFieldsName, null))
-                              .collect(Collectors.toList());
+        return oldCustomFields
+            .keySet()
+            .stream()
+            .filter(oldCustomFieldsName -> {
+                final JsonNode newCustomFieldValue = newCustomFields.get(oldCustomFieldsName);
+
+                return Objects.isNull(newCustomFieldValue)
+                    || Objects.equals(newCustomFieldValue, JsonNodeFactory.instance.nullNode());
+            })
+            .map(oldCustomFieldsName -> customActionBuilder.buildSetCustomFieldAction(variantId,
+                updateIdGetter.apply(resource), oldCustomFieldsName, newCustomFields.get(oldCustomFieldsName)))
+            .collect(Collectors.toList());
     }
 
     private CustomUpdateActionUtils() {
