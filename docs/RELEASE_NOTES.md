@@ -30,6 +30,13 @@
 
 <!--
 ### 1.4.1 -  Oct 1, 2019
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.4.1...1.5.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.5.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.5.0)
+
+-->
+
+### 1.4.1 -  Sept 2, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.4.0...1.4.1) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.4.1/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.4.1)
@@ -39,8 +46,6 @@
 
 - 🛠️ **Enhancements** (1)
     - **Commons** - Bumped commercetools-jvm-sdk to version [1.46.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_46_0) which includes a fix for a serialization bug in the `SetCustomField` action which was ignoring empty array values. [#430](https://github.com/commercetools/commercetools-sync-java/issues/430)
--->
-
 
 ### 1.4.0 -  Aug 8, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.3.0...1.4.0) |
