@@ -546,6 +546,141 @@ class CustomUpdateActionUtilsTest {
     }
 
     @Test
+    void buildSetCustomFieldsUpdateActions_WithEmptyArrayAsDiffValue_ShouldBuildSetAction() {
+        // preparation
+        final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
+        oldCustomFieldsMap.put("setOfBooleans", JsonNodeFactory
+            .instance
+            .arrayNode()
+            .add(JsonNodeFactory.instance.booleanNode(false)));
+
+        final CustomFields oldCustomFields = mock(CustomFields.class);
+        when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+
+        final Asset oldAsset = mock(Asset.class);
+        when(oldAsset.getCustom()).thenReturn(oldCustomFields);
+
+        final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
+        newCustomFieldsMap.put("setOfBooleans", JsonNodeFactory.instance.arrayNode());
+
+        // test
+        final List<UpdateAction<Product>> updateActions =
+            buildSetCustomFieldsUpdateActions(oldCustomFieldsMap, newCustomFieldsMap, mock(Asset.class),
+                new AssetCustomActionBuilder(), 1, Asset::getId);
+
+        // assertion
+        assertThat(updateActions)
+            .containsExactly(SetAssetCustomField
+                .ofVariantIdUsingJsonAndAssetKey(1, oldAsset.getKey(), "setOfBooleans",
+                    JsonNodeFactory.instance.arrayNode(), true));
+    }
+
+    @Test
+    void buildSetCustomFieldsUpdateActions_WithEmptyArrayAndNullOldValue_ShouldBuildSetAction() {
+        // preparation
+        final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
+        oldCustomFieldsMap.put("setOfBooleans", null);
+
+        final CustomFields oldCustomFields = mock(CustomFields.class);
+        when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+
+        final Asset oldAsset = mock(Asset.class);
+        when(oldAsset.getCustom()).thenReturn(oldCustomFields);
+
+        final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
+        newCustomFieldsMap.put("setOfBooleans", JsonNodeFactory.instance.arrayNode());
+
+        // test
+        final List<UpdateAction<Product>> updateActions =
+            buildSetCustomFieldsUpdateActions(oldCustomFieldsMap, newCustomFieldsMap, mock(Asset.class),
+                new AssetCustomActionBuilder(), 1, Asset::getId);
+
+        // assertion
+        assertThat(updateActions)
+            .containsExactly(SetAssetCustomField
+                .ofVariantIdUsingJsonAndAssetKey(1, oldAsset.getKey(), "setOfBooleans",
+                    JsonNodeFactory.instance.arrayNode(), true));
+    }
+
+    @Test
+    void buildSetCustomFieldsUpdateActions_WithEmptyArrayAndNullNodeOldValue_ShouldBuildSetAction() {
+        // preparation
+        final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
+        oldCustomFieldsMap.put("setOfBooleans", JsonNodeFactory.instance.nullNode());
+
+        final CustomFields oldCustomFields = mock(CustomFields.class);
+        when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+
+        final Asset oldAsset = mock(Asset.class);
+        when(oldAsset.getCustom()).thenReturn(oldCustomFields);
+
+        final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
+        newCustomFieldsMap.put("setOfBooleans", JsonNodeFactory.instance.arrayNode());
+
+        // test
+        final List<UpdateAction<Product>> updateActions =
+            buildSetCustomFieldsUpdateActions(oldCustomFieldsMap, newCustomFieldsMap, mock(Asset.class),
+                new AssetCustomActionBuilder(), 1, Asset::getId);
+
+        // assertion
+        assertThat(updateActions)
+            .containsExactly(SetAssetCustomField
+                .ofVariantIdUsingJsonAndAssetKey(1, oldAsset.getKey(), "setOfBooleans",
+                    JsonNodeFactory.instance.arrayNode(), true));
+    }
+
+    @Test
+    void buildSetCustomFieldsUpdateActions_WithEmptyArrayAsNewValue_ShouldBuildSetAction() {
+        // preparation
+        final CustomFields oldCustomFields = mock(CustomFields.class);
+        when(oldCustomFields.getFieldsJsonMap()).thenReturn(new HashMap<>());
+
+        final Asset oldAsset = mock(Asset.class);
+        when(oldAsset.getCustom()).thenReturn(oldCustomFields);
+
+        final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
+        newCustomFieldsMap.put("setOfBooleans", JsonNodeFactory.instance.arrayNode());
+
+        // test
+        final List<UpdateAction<Product>> updateActions =
+            buildSetCustomFieldsUpdateActions(new HashMap<>(), newCustomFieldsMap, mock(Asset.class),
+                new AssetCustomActionBuilder(), 1, Asset::getId);
+
+        // assertion
+        assertThat(updateActions)
+            .containsExactly(SetAssetCustomField
+                .ofVariantIdUsingJsonAndAssetKey(1, oldAsset.getKey(), "setOfBooleans",
+                    JsonNodeFactory.instance.arrayNode(), true));
+    }
+
+    @Test
+    void buildSetCustomFieldsUpdateActions_WithEmptyArrayAsSameValue_ShouldBuildSetAction() {
+        // preparation
+        final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
+        oldCustomFieldsMap.put("setOfBooleans", JsonNodeFactory.instance.arrayNode());
+
+        final CustomFields oldCustomFields = mock(CustomFields.class);
+        when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+
+        final Asset oldAsset = mock(Asset.class);
+        when(oldAsset.getCustom()).thenReturn(oldCustomFields);
+
+        final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
+        newCustomFieldsMap.put("setOfBooleans", JsonNodeFactory.instance.arrayNode());
+
+        // test
+        final List<UpdateAction<Product>> updateActions =
+            buildSetCustomFieldsUpdateActions(new HashMap<>(), newCustomFieldsMap, mock(Asset.class),
+                new AssetCustomActionBuilder(), 1, Asset::getId);
+
+        // assertion
+        assertThat(updateActions)
+            .containsExactly(SetAssetCustomField
+                .ofVariantIdUsingJsonAndAssetKey(1, oldAsset.getKey(), "setOfBooleans",
+                    JsonNodeFactory.instance.arrayNode(), true));
+    }
+
+    @Test
     void buildSetCustomFieldsUpdateActions_WithNullJsonNodeNewValue_ShouldBuildAction() {
         // preparation
         final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
