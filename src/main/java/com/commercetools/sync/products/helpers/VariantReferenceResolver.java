@@ -9,7 +9,6 @@ import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.products.PriceDraft;
@@ -22,11 +21,8 @@ import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Spliterator;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -125,50 +121,38 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
 
     @Nonnull
     CompletionStage<AttributeDraft> resolveAttributeReference(@Nonnull final AttributeDraft attributeDraft) {
+
         final JsonNode attributeDraftValue = attributeDraft.getValue();
+
         if (attributeDraftValue == null) {
             return CompletableFuture.completedFuture(attributeDraft);
         }
-        if (attributeDraftValue.isArray()) {
-            return resolveAttributeSetReferences(attributeDraft);
-        } else {
-            if (isProductReference(attributeDraftValue)) {
-                return getResolvedIdFromKeyInReference(attributeDraftValue)
-                    .thenApply(productIdOptional ->
-                        productIdOptional.map(productId ->
-                            AttributeDraft.of(attributeDraft.getName(), createProductReferenceJson(productId)))
-                                         .orElse(attributeDraft));
-            }
-            return CompletableFuture.completedFuture(attributeDraft);
+
+        // TODO: Make sure to remove nulls! or leave it to s user!!
+
+
+        final List<JsonNode> allAttributeReferences = attributeDraftValue.findParents(REFERENCE_TYPE_ID_FIELD);
+
+        if (!allAttributeReferences.isEmpty()) {
+            final JsonNode clonedValue = attributeDraftValue.deepCopy();
+            return mapValuesToFutureOfCompletedValues(allAttributeReferences, this::resolveReference, toList())
+                .thenApply(ignoredResult -> AttributeDraft.of(attributeDraft.getName(), clonedValue));
+
         }
+
+        return CompletableFuture.completedFuture(attributeDraft);
     }
 
     @Nonnull
-    private CompletionStage<AttributeDraft> resolveAttributeSetReferences(
-        @Nonnull final AttributeDraft attributeDraft) {
-        final JsonNode attributeDraftValue = attributeDraft.getValue();
-        final Spliterator<JsonNode> attributeReferencesIterator = attributeDraftValue.spliterator();
+    private CompletionStage<Void> resolveReference(@Nonnull final JsonNode referenceValue) {
 
-        final Stream<JsonNode> attributeReferenceStream = StreamSupport.stream(attributeReferencesIterator, false)
-                                                                       .filter(Objects::nonNull)
-                                                                       .filter(reference -> !reference.isNull());
-
-
-
-        return mapValuesToFutureOfCompletedValues(attributeReferenceStream,
-            this::resolveAttributeReferenceValue, toList())
-            .thenApply(resolved -> AttributeDraft.of(attributeDraft.getName(), resolved));
-    }
-
-    @Nonnull
-    private CompletionStage<JsonNode> resolveAttributeReferenceValue(@Nonnull final JsonNode referenceValue) {
         if (isProductReference(referenceValue)) {
-            return getResolvedIdFromKeyInReference(referenceValue)
-                .thenApply(productIdOptional ->
-                    productIdOptional.map(this::createProductReferenceJson)
-                                     .orElse(referenceValue));
+            return getProductResolvedIdFromKeyInReference(referenceValue)
+                .thenAccept(productIdOptional ->
+                    productIdOptional.ifPresent(id -> ((ObjectNode) referenceValue).put(REFERENCE_ID_FIELD, id)));
         }
-        return CompletableFuture.completedFuture(referenceValue);
+
+        return CompletableFuture.completedFuture(null);
     }
 
     static boolean isProductReference(@Nonnull final JsonNode referenceValue) {
@@ -184,19 +168,11 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     @Nonnull
-    CompletionStage<Optional<String>> getResolvedIdFromKeyInReference(@Nonnull final JsonNode referenceValue) {
+    CompletionStage<Optional<String>> getProductResolvedIdFromKeyInReference(@Nonnull final JsonNode referenceValue) {
         final JsonNode idField = referenceValue.get(REFERENCE_ID_FIELD);
         return idField != null
             ? productService.getIdFromCacheOrFetch(idField.asText())
             : CompletableFuture.completedFuture(Optional.empty());
-    }
-
-    @Nonnull
-    private JsonNode createProductReferenceJson(@Nonnull final String productId) {
-        final ObjectNode productReferenceJsonNode = JsonNodeFactory.instance.objectNode();
-        productReferenceJsonNode.put(REFERENCE_ID_FIELD, productId);
-        productReferenceJsonNode.put(REFERENCE_TYPE_ID_FIELD, Product.referenceTypeId());
-        return productReferenceJsonNode;
     }
 }
 
