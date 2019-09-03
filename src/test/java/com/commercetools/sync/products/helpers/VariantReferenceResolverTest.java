@@ -51,7 +51,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class VariantReferenceResolverTest { ;
+class VariantReferenceResolverTest {
     private ProductService productService;
 
     private static final String CHANNEL_KEY = "channel-key_1";
@@ -294,19 +294,23 @@ class VariantReferenceResolverTest { ;
             referenceResolver.resolveAttributeReference(productReferenceAttribute)
                              .toCompletableFuture().join();
         assertThat(resolvedAttributeDraft).isNotNull();
-        assertThat(resolvedAttributeDraft).isSameAs(productReferenceAttribute);
+        assertThat(resolvedAttributeDraft).isEqualTo(productReferenceAttribute);
     }
 
     @Test
     void resolveAttributeReference_WithNonExistingProductReferenceAttribute_ShouldNotResolveAttribute() {
+        // preparation
         final ObjectNode attributeValue = getProductReferenceWithRandomId();
         final AttributeDraft productReferenceAttribute = AttributeDraft.of("attributeName", attributeValue);
 
+        // test
         final AttributeDraft resolvedAttributeDraft =
             referenceResolver.resolveAttributeReference(productReferenceAttribute)
                              .toCompletableFuture().join();
+
+        // assertions
         assertThat(resolvedAttributeDraft).isNotNull();
-        assertThat(resolvedAttributeDraft).isNotSameAs(productReferenceAttribute);
+        assertThat(resolvedAttributeDraft).isNotEqualTo(productReferenceAttribute);
         assertThat(resolvedAttributeDraft.getValue()).isNotNull();
         assertThat(resolvedAttributeDraft.getValue().get("id")).isNotNull();
         assertThat(resolvedAttributeDraft.getValue().get("id").asText()).isEqualTo(PRODUCT_ID);
@@ -346,6 +350,62 @@ class VariantReferenceResolverTest { ;
         referenceSet.add(categoryReference1);
 
         final AttributeDraft productReferenceAttribute = AttributeDraft.of("attributeName", referenceSet);
+
+        final AttributeDraft resolvedAttributeDraft =
+            referenceResolver.resolveAttributeReference(productReferenceAttribute)
+                             .toCompletableFuture().join();
+        assertThat(resolvedAttributeDraft).isNotNull();
+        assertThat(resolvedAttributeDraft.getValue()).isNotNull();
+
+        final Spliterator<JsonNode> attributeReferencesIterator = resolvedAttributeDraft.getValue().spliterator();
+        assertThat(attributeReferencesIterator).isNotNull();
+        final Set<JsonNode> resolvedSet = StreamSupport.stream(attributeReferencesIterator, false)
+                                                       .collect(Collectors.toSet());
+        assertThat(resolvedSet).isNotEmpty();
+        assertThat(resolvedSet).contains(categoryReference, categoryReference1);
+    }
+
+    @Test
+    void test() {
+        final ObjectNode categoryReference = JsonNodeFactory.instance.objectNode();
+        categoryReference.put("typeId", "category");
+        categoryReference.put("id", UUID.randomUUID().toString());
+
+        final ObjectNode categoryReference1 = JsonNodeFactory.instance.objectNode();
+        categoryReference1.put("typeId", "category");
+        categoryReference1.put("id", UUID.randomUUID().toString());
+
+        final ArrayNode referenceSet = JsonNodeFactory.instance.arrayNode();
+        referenceSet.add(categoryReference);
+        referenceSet.add(categoryReference1);
+
+
+        final ObjectNode containerAttr = JsonNodeFactory.instance.objectNode();
+        containerAttr.set("value", referenceSet);
+        containerAttr.put("name", "products");
+
+
+        final ArrayNode containerSet = JsonNodeFactory.instance.arrayNode();
+        final ArrayNode nestedContainerSet = JsonNodeFactory.instance.arrayNode();
+        containerSet.add(containerAttr);
+        nestedContainerSet.add(containerSet);
+
+        final ObjectNode parentContainerAttr = JsonNodeFactory.instance.objectNode();
+        parentContainerAttr.set("value", nestedContainerSet);
+        parentContainerAttr.put("name", "includedProducts");
+
+        final ArrayNode nestedAttrVal = JsonNodeFactory.instance.arrayNode();
+        final ArrayNode attrVal = JsonNodeFactory.instance.arrayNode();
+        nestedAttrVal.add(parentContainerAttr);
+        attrVal.add(nestedAttrVal);
+
+        final ObjectNode prodRef = JsonNodeFactory.instance.objectNode();
+        prodRef.put("typeId", "product");
+        prodRef.put("id", UUID.randomUUID().toString());
+        nestedAttrVal.add(prodRef);
+
+
+        final AttributeDraft productReferenceAttribute = AttributeDraft.of("attributeName", attrVal);
 
         final AttributeDraft resolvedAttributeDraft =
             referenceResolver.resolveAttributeReference(productReferenceAttribute)
@@ -497,67 +557,67 @@ class VariantReferenceResolverTest { ;
     }
 
     @Test
-    void getResolvedIdFromKeyInReference_WithEmptyValue_ShouldGetEmptyId() {
+    void getProductResolvedIdFromKeyInReference_WithEmptyValue_ShouldGetEmptyId() {
         final AttributeDraft attributeWithEmptyValue =
             AttributeDraft.of("attributeName", JsonNodeFactory.instance.objectNode());
         final Optional<String> optionalId =
-            referenceResolver.getResolvedIdFromKeyInReference(attributeWithEmptyValue.getValue())
+            referenceResolver.getProductResolvedIdFromKeyInReference(attributeWithEmptyValue.getValue())
                              .toCompletableFuture().join();
         assertThat(optionalId).isEmpty();
 
     }
 
     @Test
-    void getResolvedIdFromKeyInReference_WithTextAttribute_ShouldGetEmptyId() {
+    void getProductResolvedIdFromKeyInReference_WithTextAttribute_ShouldGetEmptyId() {
         final AttributeDraft textAttribute = AttributeDraft.of("attributeName", "attributeValue");
-        final Optional<String> optionalId = referenceResolver.getResolvedIdFromKeyInReference(textAttribute.getValue())
+        final Optional<String> optionalId = referenceResolver.getProductResolvedIdFromKeyInReference(textAttribute.getValue())
                                                              .toCompletableFuture().join();
         assertThat(optionalId).isEmpty();
     }
 
     @Test
-    void getResolvedIdFromKeyInReference_WithNonReferenceAttribute_ShouldGetEmptyId() {
+    void getProductResolvedIdFromKeyInReference_WithNonReferenceAttribute_ShouldGetEmptyId() {
         final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
         attributeValue.put("anyString", "anyValue");
         final AttributeDraft attribute = AttributeDraft.of("attributeName", attributeValue);
 
-        final Optional<String> optionalId = referenceResolver.getResolvedIdFromKeyInReference(attribute.getValue())
+        final Optional<String> optionalId = referenceResolver.getProductResolvedIdFromKeyInReference(attribute.getValue())
                                                              .toCompletableFuture().join();
         assertThat(optionalId).isEmpty();
     }
 
     @Test
-    void getResolvedIdFromKeyInReference_WithNonExistingProductReferenceAttribute_ShouldGetEmptyId() {
+    void getProductResolvedIdFromKeyInReference_WithNonExistingProductInReferenceAttribute_ShouldGetEmptyId() {
         when(productService.getIdFromCacheOrFetch(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
         final ObjectNode attributeValue = getProductReferenceWithRandomId();
         final AttributeDraft attributeDraft = AttributeDraft.of("attributeName", attributeValue);
 
-        final Optional<String> optionalId = referenceResolver.getResolvedIdFromKeyInReference(attributeDraft.getValue())
+        final Optional<String> optionalId = referenceResolver.getProductResolvedIdFromKeyInReference(attributeDraft.getValue())
                                                              .toCompletableFuture().join();
         assertThat(optionalId).isEmpty();
     }
 
     @Test
-    void getResolvedIdFromKeyInReference_WithProductReferenceAttributeWithNullIdField_ShouldGetEmptyId() {
+    void getProductResolvedIdFromKeyInReference_WithNullIdField_ShouldGetEmptyId() {
         final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
         attributeValue.put("typeId", "product");
         final AttributeDraft productReferenceAttribute = AttributeDraft.of("attributeName", attributeValue);
 
         final Optional<String> optionalId =
-            referenceResolver.getResolvedIdFromKeyInReference(productReferenceAttribute.getValue())
+            referenceResolver.getProductResolvedIdFromKeyInReference(productReferenceAttribute.getValue())
                              .toCompletableFuture().join();
         assertThat(optionalId).isEmpty();
     }
 
     @Test
-    void getResolvedIdFromKeyInReference_WithProductReferenceAttributeWithIdField_ShouldGetId() {
+    void getProductResolvedIdFromKeyInReference_WithIdField_ShouldGetId() {
         final ObjectNode attributeValue = getProductReferenceWithRandomId();
         final AttributeDraft productReferenceAttribute = AttributeDraft.of("attributeName", attributeValue);
 
         final Optional<String> optionalId =
-            referenceResolver.getResolvedIdFromKeyInReference(productReferenceAttribute.getValue())
+            referenceResolver.getProductResolvedIdFromKeyInReference(productReferenceAttribute.getValue())
                              .toCompletableFuture().join();
         assertThat(optionalId).contains(PRODUCT_ID);
     }
