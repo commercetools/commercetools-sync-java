@@ -296,7 +296,7 @@ class VariantReferenceResolverTest {
     }
 
     @Test
-    void resolveAttributeReference_WithProductReferenceAttribute_ShouldResolveAttribute() {
+    void resolveAttributeReference_WithNonExistingProductReferenceAttribute_ShouldNotResolveAttribute() {
         when(productService.getIdFromCacheOrFetch(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
@@ -313,7 +313,7 @@ class VariantReferenceResolverTest {
     }
 
     @Test
-    void resolveAttributeReference_WithNonExistingProductReferenceAttribute_ShouldNotResolveAttribute() {
+    void resolveAttributeReference_WithProductReferenceAttribute_ShouldResolveAttribute() {
         // preparation
         final ObjectNode attributeValue = getProductReferenceWithRandomId();
         final AttributeDraft productReferenceAttribute = AttributeDraft.of("attributeName", attributeValue);
