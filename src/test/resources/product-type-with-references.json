@@ -1,0 +1,92 @@
+{
+  "id": "cda0dbf7-b42e-40bf-8453-241d5b587f93",
+  "version": 46,
+  "key": "only-references",
+  "name": "main",
+  "description": "all fleisch",
+  "classifier": "Complex",
+  "attributes": [
+    {
+      "name": "text-attr",
+      "label": {
+        "en": "related product reference"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "text"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "product-reference",
+      "label": {
+        "en": "related product reference"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "reference",
+        "referenceTypeId": "product"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "product-reference-set",
+      "label": {
+        "en": "related products"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "set",
+        "elementType": {
+          "name": "reference",
+          "referenceTypeId": "product"
+        }
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "category-reference",
+      "label": {
+        "en": "related category reference"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "reference",
+        "referenceTypeId": "category"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "category-reference-set",
+      "label": {
+        "en": "related categories"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "set",
+        "elementType": {
+          "name": "reference",
+          "referenceTypeId": "category"
+        }
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    }
+  ],
+  "createdAt": "2015-06-09T08:51:37.052Z",
+  "lastModifiedAt": "2017-05-22T14:15:26.431Z"
+}
