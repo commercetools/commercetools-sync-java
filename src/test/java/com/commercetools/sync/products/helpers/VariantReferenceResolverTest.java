@@ -381,62 +381,6 @@ class VariantReferenceResolverTest {
     }
 
     @Test
-    void test() {
-        final ObjectNode categoryReference = JsonNodeFactory.instance.objectNode();
-        categoryReference.put("typeId", "category");
-        categoryReference.put("id", UUID.randomUUID().toString());
-
-        final ObjectNode categoryReference1 = JsonNodeFactory.instance.objectNode();
-        categoryReference1.put("typeId", "category");
-        categoryReference1.put("id", UUID.randomUUID().toString());
-
-        final ArrayNode referenceSet = JsonNodeFactory.instance.arrayNode();
-        referenceSet.add(categoryReference);
-        referenceSet.add(categoryReference1);
-
-
-        final ObjectNode containerAttr = JsonNodeFactory.instance.objectNode();
-        containerAttr.set("value", referenceSet);
-        containerAttr.put("name", "products");
-
-
-        final ArrayNode containerSet = JsonNodeFactory.instance.arrayNode();
-        final ArrayNode nestedContainerSet = JsonNodeFactory.instance.arrayNode();
-        containerSet.add(containerAttr);
-        nestedContainerSet.add(containerSet);
-
-        final ObjectNode parentContainerAttr = JsonNodeFactory.instance.objectNode();
-        parentContainerAttr.set("value", nestedContainerSet);
-        parentContainerAttr.put("name", "includedProducts");
-
-        final ArrayNode nestedAttrVal = JsonNodeFactory.instance.arrayNode();
-        final ArrayNode attrVal = JsonNodeFactory.instance.arrayNode();
-        nestedAttrVal.add(parentContainerAttr);
-        attrVal.add(nestedAttrVal);
-
-        final ObjectNode prodRef = JsonNodeFactory.instance.objectNode();
-        prodRef.put("typeId", "product");
-        prodRef.put("id", UUID.randomUUID().toString());
-        nestedAttrVal.add(prodRef);
-
-
-        final AttributeDraft productReferenceAttribute = AttributeDraft.of("attributeName", attrVal);
-
-        final AttributeDraft resolvedAttributeDraft =
-            referenceResolver.resolveAttributeReference(productReferenceAttribute)
-                             .toCompletableFuture().join();
-        assertThat(resolvedAttributeDraft).isNotNull();
-        assertThat(resolvedAttributeDraft.getValue()).isNotNull();
-
-        final Spliterator<JsonNode> attributeReferencesIterator = resolvedAttributeDraft.getValue().spliterator();
-        assertThat(attributeReferencesIterator).isNotNull();
-        final Set<JsonNode> resolvedSet = StreamSupport.stream(attributeReferencesIterator, false)
-                                                       .collect(Collectors.toSet());
-        assertThat(resolvedSet).isNotEmpty();
-        assertThat(resolvedSet).contains(categoryReference, categoryReference1);
-    }
-
-    @Test
     void resolveAttributeReference_WithProductReferenceSetAttribute_ShouldResolveReferences() {
         final ObjectNode productReferenceWithRandomId = getProductReferenceWithRandomId();
         final AttributeDraft productReferenceSetAttributeDraft =
