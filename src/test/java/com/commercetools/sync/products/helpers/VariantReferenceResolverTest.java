@@ -23,6 +23,7 @@ import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.utils.MoneyImpl;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
@@ -404,6 +405,7 @@ class VariantReferenceResolverTest {
         assertThat(resolvedSet).containsExactly(resolvedReference);
     }
 
+    @Disabled
     @Test
     void resolveAttributeReference_WithNullReferenceInSetAttribute_ShouldResolveReferences() {
         final ObjectNode productReference = getProductReferenceWithRandomId();
