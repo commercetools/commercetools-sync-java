@@ -85,6 +85,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     @Nonnull
     CompletionStage<ProductVariantDraftBuilder> resolveAssetsReferences(
         @Nonnull final ProductVariantDraftBuilder productVariantDraftBuilder) {
+
         final List<AssetDraft> productVariantDraftAssets = productVariantDraftBuilder.getAssets();
         if (productVariantDraftAssets == null) {
             return completedFuture(productVariantDraftBuilder);
@@ -97,6 +98,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     @Nonnull
     CompletionStage<ProductVariantDraftBuilder> resolvePricesReferences(
         @Nonnull final ProductVariantDraftBuilder productVariantDraftBuilder) {
+
         final List<PriceDraft> productVariantDraftPrices = productVariantDraftBuilder.getPrices();
         if (productVariantDraftPrices == null) {
             return completedFuture(productVariantDraftBuilder);
@@ -110,6 +112,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     @Nonnull
     CompletionStage<ProductVariantDraftBuilder> resolveAttributesReferences(
         @Nonnull final ProductVariantDraftBuilder productVariantDraftBuilder) {
+
         final List<AttributeDraft> attributeDrafts = productVariantDraftBuilder.getAttributes();
         if (attributeDrafts == null) {
             return completedFuture(productVariantDraftBuilder);
@@ -128,16 +131,20 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
             return CompletableFuture.completedFuture(attributeDraft);
         }
 
-        // TODO: Make sure to remove nulls! or leave it to s user!!
+        // TODO: This next line will throw an NPE if there are null elements in any array node.
+        //  User must make sure no nulls are there.
+        final JsonNode clonedValue = attributeDraftValue.deepCopy();
 
-
-        final List<JsonNode> allAttributeReferences = attributeDraftValue.findParents(REFERENCE_TYPE_ID_FIELD);
+        final List<JsonNode> allAttributeReferences = clonedValue.findParents(REFERENCE_TYPE_ID_FIELD);
 
         if (!allAttributeReferences.isEmpty()) {
-            final JsonNode clonedValue = attributeDraftValue.deepCopy();
-            return mapValuesToFutureOfCompletedValues(allAttributeReferences, this::resolveReference, toList())
-                .thenApply(ignoredResult -> AttributeDraft.of(attributeDraft.getName(), clonedValue));
+            final CompletableFuture<AttributeDraft> attributeDraftCompletableFuture =
+                mapValuesToFutureOfCompletedValues(allAttributeReferences, this::resolveReference, toList())
+                    .thenApply(ignoredResult ->
+                        AttributeDraft.of(attributeDraft.getName(), clonedValue));
 
+
+            return attributeDraftCompletableFuture;
         }
 
         return CompletableFuture.completedFuture(attributeDraft);
