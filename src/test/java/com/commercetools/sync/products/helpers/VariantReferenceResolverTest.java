@@ -62,7 +62,8 @@ class VariantReferenceResolverTest {
     private static final String PRODUCT_ID = "productId";
     private VariantReferenceResolver referenceResolver;
 
-    private static final String RES_ROOT = "com/commercetools/sync/products/helpers/variantReferenceResolver/attributes/";
+    private static final String RES_ROOT =
+        "com/commercetools/sync/products/helpers/variantReferenceResolver/attributes/";
     private static final String NESTED_ATTRIBUTE_WITH_TEXT_ATTRIBUTES =
         RES_ROOT + "nested-attribute-with-text-attributes.json";
     private static final String NESTED_ATTRIBUTE_WITH_SET_OF_TEXT_ATTRIBUTES =
@@ -529,8 +530,9 @@ class VariantReferenceResolverTest {
     @Test
     void getProductResolvedIdFromKeyInReference_WithTextAttribute_ShouldGetEmptyId() {
         final AttributeDraft textAttribute = AttributeDraft.of("attributeName", "attributeValue");
-        final Optional<String> optionalId = referenceResolver.getProductResolvedIdFromKeyInReference(textAttribute.getValue())
-                                                             .toCompletableFuture().join();
+        final Optional<String> optionalId = referenceResolver
+            .getProductResolvedIdFromKeyInReference(textAttribute.getValue())
+            .toCompletableFuture().join();
         assertThat(optionalId).isEmpty();
     }
 
@@ -540,8 +542,10 @@ class VariantReferenceResolverTest {
         attributeValue.put("anyString", "anyValue");
         final AttributeDraft attribute = AttributeDraft.of("attributeName", attributeValue);
 
-        final Optional<String> optionalId = referenceResolver.getProductResolvedIdFromKeyInReference(attribute.getValue())
-                                                             .toCompletableFuture().join();
+        final Optional<String> optionalId = referenceResolver
+            .getProductResolvedIdFromKeyInReference(attribute.getValue())
+            .toCompletableFuture().join();
+
         assertThat(optionalId).isEmpty();
     }
 
@@ -553,8 +557,10 @@ class VariantReferenceResolverTest {
         final ObjectNode attributeValue = getProductReferenceWithRandomId();
         final AttributeDraft attributeDraft = AttributeDraft.of("attributeName", attributeValue);
 
-        final Optional<String> optionalId = referenceResolver.getProductResolvedIdFromKeyInReference(attributeDraft.getValue())
-                                                             .toCompletableFuture().join();
+        final Optional<String> optionalId = referenceResolver
+            .getProductResolvedIdFromKeyInReference(attributeDraft.getValue())
+            .toCompletableFuture().join();
+
         assertThat(optionalId).isEmpty();
     }
 
@@ -703,9 +709,12 @@ class VariantReferenceResolverTest {
             .stream(resolvedNestedAttributes.spliterator(), false)
             .collect(Collectors.toMap(jsonNode -> jsonNode.get("name").asText(), jsonNode -> jsonNode));
 
-        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-1-name", "nonExistingProductKey1", "product");
-        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-2-name", PRODUCT_ID, "product");
-        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-3-name", "nonExistingProductKey3", "product");
+        assertReferenceAttributeValue(resolvedNestedAttributesMap,
+            "nested-attribute-1-name", "nonExistingProductKey1", "product");
+        assertReferenceAttributeValue(resolvedNestedAttributesMap,
+            "nested-attribute-2-name", PRODUCT_ID, "product");
+        assertReferenceAttributeValue(resolvedNestedAttributesMap,
+            "nested-attribute-3-name", "nonExistingProductKey3", "product");
     }
 
     @Test
@@ -731,9 +740,12 @@ class VariantReferenceResolverTest {
             .stream(resolvedNestedAttributes.spliterator(), false)
             .collect(Collectors.toMap(jsonNode -> jsonNode.get("name").asText(), jsonNode -> jsonNode));
 
-        assertReferenceSetAttributeValue(resolvedNestedAttributesMap, "nested-attribute-1-name", 2, PRODUCT_ID, "product");
-        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-2-name", PRODUCT_ID, "product");
-        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-3-name", PRODUCT_ID, "product");
+        assertReferenceSetAttributeValue(resolvedNestedAttributesMap,
+            "nested-attribute-1-name", 2, PRODUCT_ID, "product");
+        assertReferenceAttributeValue(resolvedNestedAttributesMap,
+            "nested-attribute-2-name", PRODUCT_ID, "product");
+        assertReferenceAttributeValue(resolvedNestedAttributesMap,
+            "nested-attribute-3-name", PRODUCT_ID, "product");
     }
 
     private void assertReferenceAttributeValue(
