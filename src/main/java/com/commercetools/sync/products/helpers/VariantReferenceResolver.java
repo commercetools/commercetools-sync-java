@@ -138,13 +138,8 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
         final List<JsonNode> allAttributeReferences = clonedValue.findParents(REFERENCE_TYPE_ID_FIELD);
 
         if (!allAttributeReferences.isEmpty()) {
-            final CompletableFuture<AttributeDraft> attributeDraftCompletableFuture =
-                mapValuesToFutureOfCompletedValues(allAttributeReferences, this::resolveReference, toList())
-                    .thenApply(ignoredResult ->
-                        AttributeDraft.of(attributeDraft.getName(), clonedValue));
-
-
-            return attributeDraftCompletableFuture;
+            return mapValuesToFutureOfCompletedValues(allAttributeReferences, this::resolveReference, toList())
+                .thenApply(ignoredResult -> AttributeDraft.of(attributeDraft.getName(), clonedValue));
         }
 
         return CompletableFuture.completedFuture(attributeDraft);
