@@ -45,6 +45,7 @@ import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtil
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_WITH_REFERENCES_RESOURCE_PATH;
+import static com.commercetools.sync.products.ProductSyncMockUtils.createReferenceObject;
 import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_ID_FIELD;
 import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_TYPE_ID_FIELD;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
@@ -219,7 +220,7 @@ class ProductSyncWithNestedReferencedProductsIT {
         // preparation
         final ObjectNode nestedAttributeValue =
             createNestedAttributeValueReferences("product-reference",
-                createReferenceValue(product.getKey(), Product.referenceTypeId()));
+                createReferenceObject(product.getKey(), Product.referenceTypeId()));
 
         final AttributeDraft productReferenceAttribute =
             AttributeDraft.of("nestedAttribute", createArrayNode(nestedAttributeValue));
@@ -283,7 +284,7 @@ class ProductSyncWithNestedReferencedProductsIT {
         // preparation
         final ObjectNode nestedAttributeValue =
             createNestedAttributeValueReferences("product-reference",
-                createReferenceValue(product.getId(), Product.referenceTypeId()));
+                createReferenceObject(product.getId(), Product.referenceTypeId()));
 
         final AttributeDraft productReferenceAttribute =
             AttributeDraft.of("nestedAttribute", createArrayNode(nestedAttributeValue));
@@ -306,7 +307,7 @@ class ProductSyncWithNestedReferencedProductsIT {
 
         final ObjectNode newNestedAttributeValue =
             createNestedAttributeValueReferences("product-reference",
-                createReferenceValue(product.getKey(), Product.referenceTypeId()));
+                createReferenceObject(product.getKey(), Product.referenceTypeId()));
 
         final AttributeDraft newProductReferenceAttribute =
             AttributeDraft.of("nestedAttribute", createArrayNode(newNestedAttributeValue));
@@ -369,7 +370,7 @@ class ProductSyncWithNestedReferencedProductsIT {
         // preparation
         final ObjectNode nestedAttributeValue =
             createNestedAttributeValueReferences("product-reference",
-                createReferenceValue(product.getId(), Product.referenceTypeId()));
+                createReferenceObject(product.getId(), Product.referenceTypeId()));
 
         final AttributeDraft productReferenceAttribute =
             AttributeDraft.of("nestedAttribute", createArrayNode(nestedAttributeValue));
@@ -392,7 +393,7 @@ class ProductSyncWithNestedReferencedProductsIT {
 
         final ObjectNode newNestedAttributeValue =
             createNestedAttributeValueReferences("product-reference",
-                createReferenceValue(product2.getKey(), Product.referenceTypeId()));
+                createReferenceObject(product2.getKey(), Product.referenceTypeId()));
 
         final AttributeDraft newProductReferenceAttribute =
             AttributeDraft.of("nestedAttribute", createArrayNode(newNestedAttributeValue));
@@ -426,7 +427,7 @@ class ProductSyncWithNestedReferencedProductsIT {
 
         final ObjectNode expectedNestedAttributeValue =
             createNestedAttributeValueReferences("product-reference",
-                createReferenceValue(product2.getId(), Product.referenceTypeId()));
+                createReferenceObject(product2.getId(), Product.referenceTypeId()));
 
         final AttributeDraft expectedProductReferenceAttribute =
             AttributeDraft.of("nestedAttribute", createArrayNode(expectedNestedAttributeValue));
@@ -464,7 +465,7 @@ class ProductSyncWithNestedReferencedProductsIT {
         // preparation
         final ObjectNode nestedAttributeValue =
             createNestedAttributeValueReferences("product-reference",
-                createReferenceValue("nonExistingKey", Product.referenceTypeId()));
+                createReferenceObject("nonExistingKey", Product.referenceTypeId()));
 
         final AttributeDraft productReferenceAttribute =
             AttributeDraft.of("nestedAttribute", createArrayNode(nestedAttributeValue));
@@ -516,8 +517,8 @@ class ProductSyncWithNestedReferencedProductsIT {
         // preparation
         final ObjectNode nestedAttributeValue =
             createNestedAttributeValueSetOfReferences("product-reference-set",
-                createReferenceValue(product.getKey(), Product.referenceTypeId()),
-                createReferenceValue(product2.getKey(), Product.referenceTypeId()));
+                createReferenceObject(product.getKey(), Product.referenceTypeId()),
+                createReferenceObject(product2.getKey(), Product.referenceTypeId()));
 
         final AttributeDraft productReferenceAttribute =
             AttributeDraft.of("nestedAttribute", createArrayNode(nestedAttributeValue));
@@ -590,8 +591,8 @@ class ProductSyncWithNestedReferencedProductsIT {
         // preparation
         final ObjectNode nestedAttributeValue =
             createNestedAttributeValueSetOfReferences("product-reference-set",
-                createReferenceValue(product.getKey(), Product.referenceTypeId()),
-                createReferenceValue("nonExistingKey", Product.referenceTypeId()));
+                createReferenceObject(product.getKey(), Product.referenceTypeId()),
+                createReferenceObject("nonExistingKey", Product.referenceTypeId()));
 
         final AttributeDraft productReferenceAttribute =
             AttributeDraft.of("nestedAttribute", createArrayNode(nestedAttributeValue));
@@ -644,8 +645,8 @@ class ProductSyncWithNestedReferencedProductsIT {
         final ArrayNode nestedAttributeValue =
             createArrayNode(
                 createNestedAttributeValueSetOfReferences("product-reference-set",
-                    createReferenceValue(product.getKey(), Product.referenceTypeId()),
-                    createReferenceValue(product2.getKey(), Product.referenceTypeId())));
+                    createReferenceObject(product.getKey(), Product.referenceTypeId()),
+                    createReferenceObject(product2.getKey(), Product.referenceTypeId())));
 
         final AttributeDraft productReferenceAttribute =
             AttributeDraft.of("setOfNestedAttribute", createArrayNode(nestedAttributeValue));
@@ -752,13 +753,5 @@ class ProductSyncWithNestedReferencedProductsIT {
         final ArrayNode containingArrayNode = JsonNodeFactory.instance.arrayNode();
         containingArrayNode.add(arrayNode);
         return containingArrayNode;
-    }
-
-    @Nonnull
-    private ObjectNode createReferenceValue(@Nonnull final String id, @Nonnull final String typeId) {
-        final ObjectNode referenceObjectNode = JsonNodeFactory.instance.objectNode();
-        referenceObjectNode.put(REFERENCE_TYPE_ID_FIELD, typeId);
-        referenceObjectNode.put(REFERENCE_ID_FIELD, id);
-        return referenceObjectNode;
     }
 }
