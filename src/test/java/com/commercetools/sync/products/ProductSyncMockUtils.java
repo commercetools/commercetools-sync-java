@@ -411,8 +411,8 @@ public class ProductSyncMockUtils {
      * @return an {@link AttributeDraft} with the supplied {@code attributeName} and {@code references}.
      */
     @Nonnull
-    public static AttributeDraft getProductReferenceSetAttributeDraft(@Nonnull final String attributeName,
-                                                                      @Nonnull final ObjectNode... references) {
+    public static AttributeDraft getReferenceSetAttributeDraft(@Nonnull final String attributeName,
+                                                               @Nonnull final ObjectNode... references) {
         final ArrayNode referenceSet = JsonNodeFactory.instance.arrayNode();
         referenceSet.addAll(Arrays.asList(references));
         return AttributeDraft.of(attributeName, referenceSet);
