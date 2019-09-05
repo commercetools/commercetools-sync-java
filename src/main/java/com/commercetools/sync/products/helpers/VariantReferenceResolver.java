@@ -158,12 +158,24 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
                     productIdOptional.ifPresent(id -> ((ObjectNode) referenceValue).put(REFERENCE_ID_FIELD, id)));
         }
 
+        if (isCategoryReference(referenceValue)) {
+            return getCategoryResolvedIdFromKeyInReference(referenceValue)
+                .thenAccept(categoryIdOptional ->
+                    categoryIdOptional.ifPresent(id -> ((ObjectNode) referenceValue).put(REFERENCE_ID_FIELD, id)));
+        }
+
         return CompletableFuture.completedFuture(null);
     }
 
     static boolean isProductReference(@Nonnull final JsonNode referenceValue) {
         return getReferenceTypeIdIfReference(referenceValue)
             .map(referenceTypeId -> Objects.equals(referenceTypeId, Product.referenceTypeId()))
+            .orElse(false);
+    }
+
+    private static boolean isCategoryReference(@Nonnull final JsonNode referenceValue) {
+        return getReferenceTypeIdIfReference(referenceValue)
+            .map(referenceTypeId -> Objects.equals(referenceTypeId, Category.referenceTypeId()))
             .orElse(false);
     }
 
@@ -178,6 +190,16 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
         final JsonNode idField = referenceValue.get(REFERENCE_ID_FIELD);
         return idField != null
             ? productService.getIdFromCacheOrFetch(idField.asText())
+            : CompletableFuture.completedFuture(Optional.empty());
+    }
+
+    @Nonnull
+    private CompletionStage<Optional<String>> getCategoryResolvedIdFromKeyInReference(
+        @Nonnull final JsonNode referenceValue) {
+
+        final JsonNode idField = referenceValue.get(REFERENCE_ID_FIELD);
+        return idField != null
+            ? categoryService.fetchCachedCategoryId(idField.asText())
             : CompletableFuture.completedFuture(Optional.empty());
     }
 }
