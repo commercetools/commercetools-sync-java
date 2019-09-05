@@ -578,7 +578,7 @@ class VariantReferenceResolverTest {
     }
 
     @Test
-    void getProductResolvedIdFromKeyInReference_WithIdField_ShouldGetId() {
+    void getProductResolvedIdFromKeyInReference_WithIdField_ShouldResultInResolvedProductId() {
         final ObjectNode attributeValue = getProductReferenceWithRandomId();
         final AttributeDraft productReferenceAttribute = AttributeDraft.of("attributeName", attributeValue);
 
