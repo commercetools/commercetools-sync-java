@@ -6,6 +6,7 @@ import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.sphere.sdk.client.ErrorResponseException;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
@@ -15,6 +16,7 @@ import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.Attribute;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
+import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
 import io.sphere.sdk.products.queries.ProductByKeyGet;
 import io.sphere.sdk.producttypes.ProductType;
 import org.junit.jupiter.api.AfterAll;
@@ -22,6 +24,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -52,6 +56,7 @@ class ProductSyncWithReferencedProductsIT {
     private List<String> errorCallBackMessages;
     private List<String> warningCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
+    private List<UpdateAction<Product>> actions;
 
     /**
      * Delete all product related test data from the target project. Then creates for the target CTP project
@@ -91,6 +96,7 @@ class ProductSyncWithReferencedProductsIT {
         errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
         warningCallBackMessages = new ArrayList<>();
+        actions = new ArrayList<>();
     }
 
     private ProductSyncOptions buildSyncOptions() {
@@ -98,13 +104,21 @@ class ProductSyncWithReferencedProductsIT {
 
         return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                         .errorCallback(this::collectErrors)
+                                        .beforeUpdateCallback(this::collectActions)
                                         .warningCallback(warningCallBack)
                                         .build();
     }
 
-    private void collectErrors(final String errorMessage, final Throwable exception) {
+    private void collectErrors(@Nullable final String errorMessage, @Nullable final Throwable exception) {
         errorCallBackMessages.add(errorMessage);
         errorCallBackExceptions.add(exception);
+    }
+
+    private List<UpdateAction<Product>> collectActions(@Nonnull final List<UpdateAction<Product>> actions,
+                                @Nonnull final ProductDraft productDraft,
+                                @Nonnull final Product product) {
+        this.actions.addAll(actions);
+        return actions;
     }
 
     @AfterAll
@@ -143,6 +157,7 @@ class ProductSyncWithReferencedProductsIT {
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
+        assertThat(actions).isEmpty();
 
 
         final Product createdProduct = CTP_TARGET_CLIENT
@@ -208,6 +223,7 @@ class ProductSyncWithReferencedProductsIT {
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
+        assertThat(actions).isEmpty();
 
 
         final Product createdProduct = CTP_TARGET_CLIENT
@@ -274,6 +290,9 @@ class ProductSyncWithReferencedProductsIT {
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
+        final AttributeDraft expectedAttribute =
+            AttributeDraft.of("product-reference", Reference.of(Product.referenceTypeId(), product2.getId()));
+        assertThat(actions).containsExactly(SetAttributeInAllVariants.of(expectedAttribute, true));
 
 
         final Product createdProduct = CTP_TARGET_CLIENT
@@ -336,6 +355,7 @@ class ProductSyncWithReferencedProductsIT {
                     .contains("The value '{\"typeId\":\"product\",\"id\":\"nonExistingKey\"}' "
                         + "is not valid for field 'product-reference'"));
         assertThat(warningCallBackMessages).isEmpty();
+        assertThat(actions).isEmpty();
     }
 
     @Test
@@ -378,6 +398,7 @@ class ProductSyncWithReferencedProductsIT {
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
+        assertThat(actions).isEmpty();
 
 
         final Product createdProduct = CTP_TARGET_CLIENT
@@ -468,5 +489,6 @@ class ProductSyncWithReferencedProductsIT {
                     .contains("The value '{\"typeId\":\"product\",\"id\":\"nonExistingKey\"}' "
                         + "is not valid for field 'product-reference-set'"));
         assertThat(warningCallBackMessages).isEmpty();
+        assertThat(actions).isEmpty();
     }
 }
