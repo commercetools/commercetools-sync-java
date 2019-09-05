@@ -143,7 +143,6 @@ class ProductSyncWithReferencedProductsIT {
             .key("new-product")
             .build();
 
-
         // test
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics =

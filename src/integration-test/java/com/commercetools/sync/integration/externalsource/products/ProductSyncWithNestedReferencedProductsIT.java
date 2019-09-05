@@ -4,6 +4,7 @@ import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -207,7 +208,8 @@ class ProductSyncWithNestedReferencedProductsIT {
                           .findAttribute(productReferenceAttribute.getName());
 
         assertThat(createdProductReferenceAttribute).hasValueSatisfying(attribute -> {
-            assertThat(attribute.getValueAsJsonNode().get(0).get(ATTRIBUTE_VALUE_FIELD).asText()).isEqualTo("text-attr-value");
+            assertThat(attribute.getValueAsJsonNode().get(0).get(ATTRIBUTE_VALUE_FIELD).asText())
+                .isEqualTo("text-attr-value");
             assertThat(attribute.getValueAsJsonNode().get(0).get(ATTRIBUTE_NAME_FIELD).asText()).isEqualTo("text-attr");
         });
     }
@@ -261,12 +263,18 @@ class ProductSyncWithNestedReferencedProductsIT {
                           .findAttribute(productReferenceAttribute.getName());
 
         assertThat(createdProductReferenceAttribute).hasValueSatisfying(attribute -> {
-            assertThat(attribute.getValueAsJsonNode().get(0).get(ATTRIBUTE_NAME_FIELD).asText())
-                .isEqualTo("product-reference");
-            assertThat(attribute.getValueAsJsonNode().get(0).get(ATTRIBUTE_VALUE_FIELD).get(REFERENCE_TYPE_ID_FIELD).asText())
-                .isEqualTo("product");
-            assertThat(attribute.getValueAsJsonNode().get(0).get(ATTRIBUTE_VALUE_FIELD).get(REFERENCE_ID_FIELD).asText())
-                .isEqualTo(product.getId());
+            final JsonNode nestedAttributeNameField = attribute
+                .getValueAsJsonNode()
+                .get(0)
+                .get(ATTRIBUTE_NAME_FIELD);
+            final JsonNode nestedAttributeReferenceValueField = attribute
+                .getValueAsJsonNode()
+                .get(0)
+                .get(ATTRIBUTE_VALUE_FIELD);
+
+            assertThat(nestedAttributeNameField.asText()).isEqualTo("product-reference");
+            assertThat(nestedAttributeReferenceValueField.get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo("product");
+            assertThat(nestedAttributeReferenceValueField.get(REFERENCE_ID_FIELD).asText()).isEqualTo(product.getId());
         });
     }
 
@@ -342,12 +350,17 @@ class ProductSyncWithNestedReferencedProductsIT {
                           .findAttribute(productReferenceAttribute.getName());
 
         assertThat(createdProductReferenceAttribute).hasValueSatisfying(attribute -> {
-            assertThat(attribute.getValueAsJsonNode().get(0).get(ATTRIBUTE_NAME_FIELD).asText())
-                .isEqualTo("product-reference");
-            assertThat(attribute.getValueAsJsonNode().get(0).get(ATTRIBUTE_VALUE_FIELD).get(REFERENCE_TYPE_ID_FIELD).asText())
-                .isEqualTo("product");
-            assertThat(attribute.getValueAsJsonNode().get(0).get(ATTRIBUTE_VALUE_FIELD).get(REFERENCE_ID_FIELD).asText())
-                .isEqualTo(product.getId());
+            final JsonNode nestedAttributeNameField = attribute
+                .getValueAsJsonNode()
+                .get(0)
+                .get(ATTRIBUTE_NAME_FIELD);
+            final JsonNode nestedAttributeValueField = attribute
+                .getValueAsJsonNode()
+                .get(0)
+                .get(ATTRIBUTE_VALUE_FIELD);
+            assertThat(nestedAttributeNameField.asText()).isEqualTo("product-reference");
+            assertThat(nestedAttributeValueField.get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo("product");
+            assertThat(nestedAttributeValueField.get(REFERENCE_ID_FIELD).asText()).isEqualTo(product.getId());
         });
     }
 
@@ -432,12 +445,19 @@ class ProductSyncWithNestedReferencedProductsIT {
                           .findAttribute(productReferenceAttribute.getName());
 
         assertThat(createdProductReferenceAttribute).hasValueSatisfying(attribute -> {
-            assertThat(attribute.getValueAsJsonNode().get(0).get(ATTRIBUTE_NAME_FIELD).asText())
-                .isEqualTo("product-reference");
-            assertThat(attribute.getValueAsJsonNode().get(0).get(ATTRIBUTE_VALUE_FIELD).get(REFERENCE_TYPE_ID_FIELD).asText())
-                .isEqualTo("product");
-            assertThat(attribute.getValueAsJsonNode().get(0).get(ATTRIBUTE_VALUE_FIELD).get(REFERENCE_ID_FIELD).asText())
-                .isEqualTo(product2.getId());
+            final JsonNode nestedAttributeNameField = attribute
+                .getValueAsJsonNode()
+                .get(0)
+                .get(ATTRIBUTE_NAME_FIELD);
+            final JsonNode nestedAttributeValueField = attribute
+                .getValueAsJsonNode()
+                .get(0)
+                .get(ATTRIBUTE_VALUE_FIELD);
+
+
+            assertThat(nestedAttributeNameField.asText()).isEqualTo("product-reference");
+            assertThat(nestedAttributeValueField.get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo("product");
+            assertThat(nestedAttributeValueField.get(REFERENCE_ID_FIELD).asText()).isEqualTo(product2.getId());
         });
     }
 
@@ -541,11 +561,19 @@ class ProductSyncWithNestedReferencedProductsIT {
                           .findAttribute(productReferenceAttribute.getName());
 
         assertThat(createdProductReferenceAttribute).hasValueSatisfying(attribute -> {
-            assertThat(attribute.getValueAsJsonNode().get(0).get(ATTRIBUTE_NAME_FIELD).asText())
-                .isEqualTo("product-reference-set");
 
-            assertThat(attribute.getValueAsJsonNode().get(0).get(ATTRIBUTE_VALUE_FIELD)).isInstanceOf(ArrayNode.class);
-            final ArrayNode referenceSet = (ArrayNode) attribute.getValueAsJsonNode().get(0).get(ATTRIBUTE_VALUE_FIELD);
+            final JsonNode nestedAttributeNameField = attribute
+                .getValueAsJsonNode()
+                .get(0)
+                .get(ATTRIBUTE_NAME_FIELD);
+            final JsonNode nestedAttributeValueField = attribute
+                .getValueAsJsonNode()
+                .get(0)
+                .get(ATTRIBUTE_VALUE_FIELD);
+
+            assertThat(nestedAttributeNameField.asText()).isEqualTo("product-reference-set");
+            assertThat(nestedAttributeValueField).isInstanceOf(ArrayNode.class);
+            final ArrayNode referenceSet = (ArrayNode) nestedAttributeValueField;
             assertThat(referenceSet)
                 .hasSize(2)
                 .anySatisfy(reference -> {
@@ -662,11 +690,19 @@ class ProductSyncWithNestedReferencedProductsIT {
                           .findAttribute(productReferenceAttribute.getName());
 
         assertThat(createdProductReferenceAttribute).hasValueSatisfying(attribute -> {
-            assertThat(attribute.getValueAsJsonNode().get(0).get(0).get(ATTRIBUTE_NAME_FIELD).asText())
-                .isEqualTo("product-reference-set");
 
-            assertThat(attribute.getValueAsJsonNode().get(0).get(0).get(ATTRIBUTE_VALUE_FIELD)).isInstanceOf(ArrayNode.class);
-            final ArrayNode referenceSet = (ArrayNode) attribute.getValueAsJsonNode().get(0).get(0).get(ATTRIBUTE_VALUE_FIELD);
+            final JsonNode nestedAttributeNameField = attribute
+                .getValueAsJsonNode()
+                .get(0)
+                .get(ATTRIBUTE_NAME_FIELD);
+            final JsonNode nestedAttributeValueField = attribute
+                .getValueAsJsonNode()
+                .get(0)
+                .get(ATTRIBUTE_VALUE_FIELD);
+
+            assertThat(nestedAttributeNameField.asText()).isEqualTo("product-reference-set");
+            assertThat(nestedAttributeValueField).isInstanceOf(ArrayNode.class);
+            final ArrayNode referenceSet = (ArrayNode) nestedAttributeValueField;
             assertThat(referenceSet)
                 .hasSize(2)
                 .anySatisfy(reference -> {
