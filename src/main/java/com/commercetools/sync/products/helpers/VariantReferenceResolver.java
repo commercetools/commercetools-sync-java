@@ -26,6 +26,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Function;
 
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -154,13 +155,13 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     private CompletionStage<Void> resolveReference(@Nonnull final JsonNode referenceValue) {
 
         if (isProductReference(referenceValue)) {
-            return getProductResolvedIdFromKeyInReference(referenceValue)
+            return getResolvedIdFromKeyInReference(referenceValue, productService::getIdFromCacheOrFetch)
                 .thenAccept(productIdOptional ->
                     productIdOptional.ifPresent(id -> ((ObjectNode) referenceValue).put(REFERENCE_ID_FIELD, id)));
         }
 
         if (isCategoryReference(referenceValue)) {
-            return getCategoryResolvedIdFromKeyInReference(referenceValue)
+            return getResolvedIdFromKeyInReference(referenceValue, categoryService::fetchCachedCategoryId)
                 .thenAccept(categoryIdOptional ->
                     categoryIdOptional.ifPresent(id -> ((ObjectNode) referenceValue).put(REFERENCE_ID_FIELD, id)));
         }
@@ -187,22 +188,14 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     @Nonnull
-    CompletionStage<Optional<String>> getProductResolvedIdFromKeyInReference(@Nonnull final JsonNode referenceValue) {
+    private CompletionStage<Optional<String>> getResolvedIdFromKeyInReference(
+        @Nonnull final JsonNode referenceValue,
+        @Nonnull final Function<String, CompletionStage<Optional<String>>> cacheFetcher) {
 
         final JsonNode idField = referenceValue.get(REFERENCE_ID_FIELD);
 
         return idField != null && !Objects.equals(idField, NullNode.getInstance())
-            ? productService.getIdFromCacheOrFetch(idField.asText())
-            : CompletableFuture.completedFuture(Optional.empty());
-    }
-
-    @Nonnull
-    private CompletionStage<Optional<String>> getCategoryResolvedIdFromKeyInReference(
-        @Nonnull final JsonNode referenceValue) {
-
-        final JsonNode idField = referenceValue.get(REFERENCE_ID_FIELD);
-        return idField != null
-            ? categoryService.fetchCachedCategoryId(idField.asText())
+            ? cacheFetcher.apply(idField.asText())
             : CompletableFuture.completedFuture(Optional.empty());
     }
 }
