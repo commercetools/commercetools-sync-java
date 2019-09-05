@@ -580,6 +580,19 @@ class VariantReferenceResolverTest {
     }
 
     @Test
+    void getProductResolvedIdFromKeyInReference_WithNullNodeIdField_ShouldResultInEmptyOptional() {
+        final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
+        attributeValue.put(REFERENCE_TYPE_ID_FIELD, "product");
+        attributeValue.set(REFERENCE_ID_FIELD, JsonNodeFactory.instance.nullNode());
+        final AttributeDraft productReferenceAttribute = AttributeDraft.of("attributeName", attributeValue);
+
+        final Optional<String> optionalId =
+            referenceResolver.getProductResolvedIdFromKeyInReference(productReferenceAttribute.getValue())
+                             .toCompletableFuture().join();
+        assertThat(optionalId).isEmpty();
+    }
+
+    @Test
     void getProductResolvedIdFromKeyInReference_WithIdField_ShouldResultInResolvedProductId() {
         final ObjectNode attributeValue = getProductReferenceWithRandomId();
         final AttributeDraft productReferenceAttribute = AttributeDraft.of("attributeName", attributeValue);

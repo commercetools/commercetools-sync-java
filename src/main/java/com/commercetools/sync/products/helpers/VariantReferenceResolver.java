@@ -9,6 +9,7 @@ import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.products.PriceDraft;
@@ -169,8 +170,10 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
 
     @Nonnull
     CompletionStage<Optional<String>> getProductResolvedIdFromKeyInReference(@Nonnull final JsonNode referenceValue) {
+
         final JsonNode idField = referenceValue.get(REFERENCE_ID_FIELD);
-        return idField != null
+
+        return idField != null && !Objects.equals(idField, NullNode.getInstance())
             ? productService.getIdFromCacheOrFetch(idField.asText())
             : CompletableFuture.completedFuture(Optional.empty());
     }
