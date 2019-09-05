@@ -36,6 +36,17 @@
 
 -->
 
+<!--
+### 1.5.0 -  Sept 6, 2019
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.4.1...1.5.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.5.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.5.0)
+
+- 🎉 **New Features** (1)
+    - **Product Sync** - Added support for resolving product references on attributes of type `Reference`, `Set` of `Reference`, `NestedType` or `Set` of `NestedType`. [#438](https://github.com/commercetools/commercetools-sync-java/issues/438)
+
+-->
+
 ### 1.4.1 -  Sept 2, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.4.0...1.4.1) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.4.1/) | 
