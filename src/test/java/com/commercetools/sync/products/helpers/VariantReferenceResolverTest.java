@@ -101,6 +101,292 @@ class VariantReferenceResolverTest {
     }
 
     @Test
+    void resolveReferences_WithTextAttribute_ShouldReturnEqualDraft() {
+        // preparation
+        final AttributeDraft textAttribute = AttributeDraft.of("attributeName", "attributeValue");
+        final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
+            .of()
+            .attributes(textAttribute)
+            .build();
+
+        // test
+        final ProductVariantDraft resolvedAttributeDraft =
+            referenceResolver.resolveReferences(productVariantDraft)
+                             .toCompletableFuture()
+                             .join();
+        // assertions
+        assertThat(resolvedAttributeDraft).isEqualTo(productVariantDraft);
+    }
+
+    @Test
+    void resolveReferences_WithEmptyValueInReferenceIdField_ShouldReturnEqualDraft() {
+        // preparation
+        final AttributeDraft attributeWithEmptyValue =
+            AttributeDraft.of("attributeName", JsonNodeFactory.instance.objectNode());
+
+        final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
+            .of()
+            .attributes(attributeWithEmptyValue)
+            .build();
+
+        // test
+        final ProductVariantDraft resolvedAttributeDraft =
+            referenceResolver.resolveReferences(productVariantDraft)
+                             .toCompletableFuture()
+                             .join();
+        // assertions
+        assertThat(resolvedAttributeDraft).isEqualTo(productVariantDraft);
+    }
+
+    @Test
+    void resolveReferences_WithNonExistingProductReferenceAttribute_ShouldReturnEqualDraft() {
+        // preparation
+        when(productService.getIdFromCacheOrFetch(anyString()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+
+        final ObjectNode attributeValue = getProductReferenceWithRandomId();
+        final AttributeDraft attributeDraft = AttributeDraft.of("attributeName", attributeValue);
+        final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
+            .of()
+            .attributes(attributeDraft)
+            .build();
+
+        // test
+        final ProductVariantDraft resolvedAttributeDraft =
+            referenceResolver.resolveReferences(productVariantDraft)
+                             .toCompletableFuture()
+                             .join();
+        // assertions
+        assertThat(resolvedAttributeDraft).isEqualTo(productVariantDraft);
+    }
+
+    @Test
+    void resolveReferences_WithNullIdFieldInProductReferenceAttribute_ShouldReturnEqualDraft() {
+        // preparation
+        final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
+        attributeValue.put(REFERENCE_TYPE_ID_FIELD, "product");
+        final AttributeDraft productReferenceAttribute = AttributeDraft.of("attributeName", attributeValue);
+        final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
+            .of()
+            .attributes(productReferenceAttribute)
+            .build();
+
+        // test
+        final ProductVariantDraft resolvedAttributeDraft =
+            referenceResolver.resolveReferences(productVariantDraft)
+                             .toCompletableFuture()
+                             .join();
+        // assertions
+        assertThat(resolvedAttributeDraft).isEqualTo(productVariantDraft);
+    }
+
+    @Test
+    void resolveReferences_WithNullNodeIdFieldInProductReferenceAttribute_ShouldReturnEqualDraft() {
+        // preparation
+        final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
+        attributeValue.put(REFERENCE_TYPE_ID_FIELD, "product");
+        final AttributeDraft productReferenceAttribute =
+            AttributeDraft.of("attributeName", JsonNodeFactory.instance.nullNode());
+        final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
+            .of()
+            .attributes(productReferenceAttribute)
+            .build();
+
+        // test
+        final ProductVariantDraft resolvedAttributeDraft =
+            referenceResolver.resolveReferences(productVariantDraft)
+                             .toCompletableFuture()
+                             .join();
+        // assertions
+        assertThat(resolvedAttributeDraft).isEqualTo(productVariantDraft);
+    }
+
+    @Test
+    void resolveReferences_WithExistingProductReferenceAttribute_ShouldReturnEqualDraft() {
+        // preparation
+        final ObjectNode attributeValue = getProductReferenceWithRandomId();
+        final AttributeDraft productReferenceAttribute = AttributeDraft.of("attributeName", attributeValue);
+        final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
+            .of()
+            .attributes(productReferenceAttribute)
+            .build();
+
+        // test
+        final ProductVariantDraft resolvedAttributeDraft =
+            referenceResolver.resolveReferences(productVariantDraft)
+                             .toCompletableFuture()
+                             .join();
+        // assertions
+        assertThat(resolvedAttributeDraft.getAttributes()).isNotNull();
+        final AttributeDraft resolvedAttribute = resolvedAttributeDraft.getAttributes().get(0);
+        assertThat(resolvedAttribute).isNotNull();
+        assertThat(resolvedAttribute.getValue().get(REFERENCE_ID_FIELD).asText()).isEqualTo(PRODUCT_ID);
+        assertThat(resolvedAttribute.getValue().get(REFERENCE_TYPE_ID_FIELD).asText())
+            .isEqualTo(Product.referenceTypeId());
+    }
+
+    @Test
+    void resolveReferences_WithNoPriceReferences_ShouldResolveAttributeReferences() {
+        final ObjectNode productReferenceWithRandomId = getProductReferenceWithRandomId();
+        final AttributeDraft productReferenceSetAttribute =
+            getProductReferenceSetAttributeDraft("foo", productReferenceWithRandomId);
+
+        final AttributeDraft textAttribute = AttributeDraft.of("attributeName", "textValue");
+
+        final List<AttributeDraft> attributeDrafts =
+            Arrays.asList(productReferenceSetAttribute, textAttribute);
+
+
+        final ProductVariantDraft variantDraft = ProductVariantDraftBuilder.of()
+                                                                           .attributes(attributeDrafts)
+                                                                           .build();
+
+
+        final ProductVariantDraft resolvedDraft = referenceResolver.resolveReferences(variantDraft)
+                                                                   .toCompletableFuture().join();
+
+        final List<PriceDraft> resolvedDraftPrices = resolvedDraft.getPrices();
+        assertThat(resolvedDraftPrices).isNull();
+
+        final List<AttributeDraft> resolvedBuilderAttributes = resolvedDraft.getAttributes();
+        assertThat(resolvedBuilderAttributes).hasSize(2);
+        assertThat(resolvedBuilderAttributes).contains(textAttribute);
+        final AttributeDraft resolvedProductReferenceSetAttribute = resolvedBuilderAttributes.get(0);
+        assertThat(resolvedProductReferenceSetAttribute).isNotNull();
+        final JsonNode resolvedProductReferenceSetValue = resolvedProductReferenceSetAttribute.getValue();
+        assertThat(resolvedProductReferenceSetValue).isNotNull();
+        final JsonNode resolvedProductReferenceValue = resolvedProductReferenceSetValue.get(0);
+        assertThat(resolvedProductReferenceValue).isNotNull();
+        final JsonNode resolvedProductReferenceIdTextNode = resolvedProductReferenceValue.get(REFERENCE_ID_FIELD);
+        assertThat(resolvedProductReferenceIdTextNode).isNotNull();
+        assertThat(resolvedProductReferenceIdTextNode.asText()).isEqualTo(PRODUCT_ID);
+    }
+
+    @Test
+    void resolveReferences_WithNestedTextAttributesOnly_ShouldReturnEqualDraft() {
+        // preparation
+        final ProductVariantDraft withNestedTextAttributesOnly = SphereJsonUtils
+            .readObjectFromResource(NESTED_ATTRIBUTE_WITH_TEXT_ATTRIBUTES, ProductVariantDraft.class);
+
+        // test
+        final ProductVariantDraft resolvedAttributeDraft =
+            referenceResolver.resolveReferences(withNestedTextAttributesOnly)
+                             .toCompletableFuture()
+                             .join();
+        // assertions
+        assertThat(resolvedAttributeDraft).isEqualTo(withNestedTextAttributesOnly);
+    }
+
+    @Test
+    void resolveReferences_WithNestedSetOfTextAttributesOnly_ShouldReturnEqualDraft() {
+        // preparation
+        final ProductVariantDraft withNestedTextAttributesOnly = SphereJsonUtils
+            .readObjectFromResource(NESTED_ATTRIBUTE_WITH_SET_OF_TEXT_ATTRIBUTES, ProductVariantDraft.class);
+
+        // test
+        final ProductVariantDraft resolvedAttributeDraft =
+            referenceResolver.resolveReferences(withNestedTextAttributesOnly)
+                             .toCompletableFuture()
+                             .join();
+        // assertions
+        assertThat(resolvedAttributeDraft).isEqualTo(withNestedTextAttributesOnly);
+    }
+
+    @Test
+    void resolveReferences_WithNestedProductReferenceAttributesOnly_ShouldResolveReferences() {
+        // preparation
+        final ProductVariantDraft withNestedTextAttributesOnly = SphereJsonUtils
+            .readObjectFromResource(NESTED_ATTRIBUTE_WITH_PRODUCT_REFERENCE_ATTRIBUTES, ProductVariantDraft.class);
+
+        // test
+        final ProductVariantDraft resolvedAttributeDraft =
+            referenceResolver.resolveReferences(withNestedTextAttributesOnly)
+                             .toCompletableFuture()
+                             .join();
+        // assertions
+        assertThat(resolvedAttributeDraft.getAttributes()).isNotNull();
+
+        final JsonNode value = resolvedAttributeDraft.getAttributes().get(0).getValue();
+        assertThat(value).isInstanceOf(ArrayNode.class);
+        final ArrayNode resolvedNestedAttributes = (ArrayNode) value;
+
+        final Map<String, JsonNode> resolvedNestedAttributesMap = StreamSupport
+            .stream(resolvedNestedAttributes.spliterator(), false)
+            .collect(Collectors.toMap(jsonNode -> jsonNode.get("name").asText(), jsonNode -> jsonNode));
+
+        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-1-name", PRODUCT_ID, "product");
+        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-2-name", PRODUCT_ID, "product");
+        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-3-name", PRODUCT_ID, "product");
+    }
+
+    @Test
+    void resolveReferences_WithSomeNonExistingNestedProductReferenceAttributes_ShouldOnlyResolveExistingReferences() {
+        // preparation
+        when(productService.getIdFromCacheOrFetch("nonExistingProductKey1"))
+            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+        when(productService.getIdFromCacheOrFetch("nonExistingProductKey3"))
+            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+
+        final ProductVariantDraft withNestedTextAttributesOnly = SphereJsonUtils
+            .readObjectFromResource(NESTED_ATTRIBUTE_WITH_SOME_NOT_EXISTING_PRODUCT_REFERENCE_ATTRIBUTES,
+                ProductVariantDraft.class);
+
+        // test
+        final ProductVariantDraft resolvedAttributeDraft =
+            referenceResolver.resolveReferences(withNestedTextAttributesOnly)
+                             .toCompletableFuture()
+                             .join();
+        // assertions
+        assertThat(resolvedAttributeDraft.getAttributes()).isNotNull();
+
+        final JsonNode value = resolvedAttributeDraft.getAttributes().get(0).getValue();
+        assertThat(value).isInstanceOf(ArrayNode.class);
+        final ArrayNode resolvedNestedAttributes = (ArrayNode) value;
+
+        final Map<String, JsonNode> resolvedNestedAttributesMap = StreamSupport
+            .stream(resolvedNestedAttributes.spliterator(), false)
+            .collect(Collectors.toMap(jsonNode -> jsonNode.get("name").asText(), jsonNode -> jsonNode));
+
+        assertReferenceAttributeValue(resolvedNestedAttributesMap,
+            "nested-attribute-1-name", "nonExistingProductKey1", "product");
+        assertReferenceAttributeValue(resolvedNestedAttributesMap,
+            "nested-attribute-2-name", PRODUCT_ID, "product");
+        assertReferenceAttributeValue(resolvedNestedAttributesMap,
+            "nested-attribute-3-name", "nonExistingProductKey3", "product");
+    }
+
+    @Test
+    void resolveReferences_WithNestedSetOfProductReferenceAttributes_ShouldOnlyResolveExistingReferences() {
+        // preparation
+        final ProductVariantDraft withNestedTextAttributesOnly = SphereJsonUtils
+            .readObjectFromResource(NESTED_ATTRIBUTE_WITH_SET_OF_PRODUCT_REFERENCE_ATTRIBUTES,
+                ProductVariantDraft.class);
+
+        // test
+        final ProductVariantDraft resolvedAttributeDraft =
+            referenceResolver.resolveReferences(withNestedTextAttributesOnly)
+                             .toCompletableFuture()
+                             .join();
+        // assertions
+        assertThat(resolvedAttributeDraft.getAttributes()).isNotNull();
+
+        final JsonNode value = resolvedAttributeDraft.getAttributes().get(0).getValue();
+        assertThat(value).isInstanceOf(ArrayNode.class);
+        final ArrayNode resolvedNestedAttributes = (ArrayNode) value;
+
+        final Map<String, JsonNode> resolvedNestedAttributesMap = StreamSupport
+            .stream(resolvedNestedAttributes.spliterator(), false)
+            .collect(Collectors.toMap(jsonNode -> jsonNode.get("name").asText(), jsonNode -> jsonNode));
+
+        assertReferenceSetAttributeValue(resolvedNestedAttributesMap,
+            "nested-attribute-1-name", 2, PRODUCT_ID, "product");
+        assertReferenceAttributeValue(resolvedNestedAttributesMap,
+            "nested-attribute-2-name", PRODUCT_ID, "product");
+        assertReferenceAttributeValue(resolvedNestedAttributesMap,
+            "nested-attribute-3-name", PRODUCT_ID, "product");
+    }
+
+    @Test
     void resolveAssetsReferences_WithEmptyAssets_ShouldNotResolveAssets() {
         final ProductVariantDraftBuilder productVariantDraftBuilder = ProductVariantDraftBuilder.of()
                                                                                                 .assets(emptyList());
@@ -537,292 +823,6 @@ class VariantReferenceResolverTest {
         final ObjectNode attributeValue = getProductReferenceWithRandomId();
         final AttributeDraft categoryReferenceAttribute = AttributeDraft.of("attributeName", attributeValue);
         assertThat(VariantReferenceResolver.isProductReference(categoryReferenceAttribute.getValue())).isTrue();
-    }
-
-    @Test
-    void resolveReferences_WithNoPriceReferences_ShouldResolveAttributeReferences() {
-        final ObjectNode productReferenceWithRandomId = getProductReferenceWithRandomId();
-        final AttributeDraft productReferenceSetAttribute =
-            getProductReferenceSetAttributeDraft("foo", productReferenceWithRandomId);
-
-        final AttributeDraft textAttribute = AttributeDraft.of("attributeName", "textValue");
-
-        final List<AttributeDraft> attributeDrafts =
-            Arrays.asList(productReferenceSetAttribute, textAttribute);
-
-
-        final ProductVariantDraft variantDraft = ProductVariantDraftBuilder.of()
-                                                                           .attributes(attributeDrafts)
-                                                                           .build();
-
-
-        final ProductVariantDraft resolvedDraft = referenceResolver.resolveReferences(variantDraft)
-                                                                   .toCompletableFuture().join();
-
-        final List<PriceDraft> resolvedDraftPrices = resolvedDraft.getPrices();
-        assertThat(resolvedDraftPrices).isNull();
-
-        final List<AttributeDraft> resolvedBuilderAttributes = resolvedDraft.getAttributes();
-        assertThat(resolvedBuilderAttributes).hasSize(2);
-        assertThat(resolvedBuilderAttributes).contains(textAttribute);
-        final AttributeDraft resolvedProductReferenceSetAttribute = resolvedBuilderAttributes.get(0);
-        assertThat(resolvedProductReferenceSetAttribute).isNotNull();
-        final JsonNode resolvedProductReferenceSetValue = resolvedProductReferenceSetAttribute.getValue();
-        assertThat(resolvedProductReferenceSetValue).isNotNull();
-        final JsonNode resolvedProductReferenceValue = resolvedProductReferenceSetValue.get(0);
-        assertThat(resolvedProductReferenceValue).isNotNull();
-        final JsonNode resolvedProductReferenceIdTextNode = resolvedProductReferenceValue.get(REFERENCE_ID_FIELD);
-        assertThat(resolvedProductReferenceIdTextNode).isNotNull();
-        assertThat(resolvedProductReferenceIdTextNode.asText()).isEqualTo(PRODUCT_ID);
-    }
-
-    @Test
-    void resolveReferences_WithNestedTextAttributesOnly_ShouldReturnEqualDraft() {
-        // preparation
-        final ProductVariantDraft withNestedTextAttributesOnly = SphereJsonUtils
-            .readObjectFromResource(NESTED_ATTRIBUTE_WITH_TEXT_ATTRIBUTES, ProductVariantDraft.class);
-
-        // test
-        final ProductVariantDraft resolvedAttributeDraft =
-            referenceResolver.resolveReferences(withNestedTextAttributesOnly)
-                             .toCompletableFuture()
-                             .join();
-        // assertions
-        assertThat(resolvedAttributeDraft).isEqualTo(withNestedTextAttributesOnly);
-    }
-
-    @Test
-    void resolveReferences_WithNestedSetOfTextAttributesOnly_ShouldReturnEqualDraft() {
-        // preparation
-        final ProductVariantDraft withNestedTextAttributesOnly = SphereJsonUtils
-            .readObjectFromResource(NESTED_ATTRIBUTE_WITH_SET_OF_TEXT_ATTRIBUTES, ProductVariantDraft.class);
-
-        // test
-        final ProductVariantDraft resolvedAttributeDraft =
-            referenceResolver.resolveReferences(withNestedTextAttributesOnly)
-                             .toCompletableFuture()
-                             .join();
-        // assertions
-        assertThat(resolvedAttributeDraft).isEqualTo(withNestedTextAttributesOnly);
-    }
-
-    @Test
-    void resolveReferences_WithNestedProductReferenceAttributesOnly_ShouldResolveReferences() {
-        // preparation
-        final ProductVariantDraft withNestedTextAttributesOnly = SphereJsonUtils
-            .readObjectFromResource(NESTED_ATTRIBUTE_WITH_PRODUCT_REFERENCE_ATTRIBUTES, ProductVariantDraft.class);
-
-        // test
-        final ProductVariantDraft resolvedAttributeDraft =
-            referenceResolver.resolveReferences(withNestedTextAttributesOnly)
-                             .toCompletableFuture()
-                             .join();
-        // assertions
-        assertThat(resolvedAttributeDraft.getAttributes()).isNotNull();
-
-        final JsonNode value = resolvedAttributeDraft.getAttributes().get(0).getValue();
-        assertThat(value).isInstanceOf(ArrayNode.class);
-        final ArrayNode resolvedNestedAttributes = (ArrayNode) value;
-
-        final Map<String, JsonNode> resolvedNestedAttributesMap = StreamSupport
-            .stream(resolvedNestedAttributes.spliterator(), false)
-            .collect(Collectors.toMap(jsonNode -> jsonNode.get("name").asText(), jsonNode -> jsonNode));
-
-        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-1-name", PRODUCT_ID, "product");
-        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-2-name", PRODUCT_ID, "product");
-        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-3-name", PRODUCT_ID, "product");
-    }
-
-    @Test
-    void resolveReferences_WithSomeNonExistingNestedProductReferenceAttributes_ShouldOnlyResolveExistingReferences() {
-        // preparation
-        when(productService.getIdFromCacheOrFetch("nonExistingProductKey1"))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
-        when(productService.getIdFromCacheOrFetch("nonExistingProductKey3"))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
-
-        final ProductVariantDraft withNestedTextAttributesOnly = SphereJsonUtils
-            .readObjectFromResource(NESTED_ATTRIBUTE_WITH_SOME_NOT_EXISTING_PRODUCT_REFERENCE_ATTRIBUTES,
-                ProductVariantDraft.class);
-
-        // test
-        final ProductVariantDraft resolvedAttributeDraft =
-            referenceResolver.resolveReferences(withNestedTextAttributesOnly)
-                             .toCompletableFuture()
-                             .join();
-        // assertions
-        assertThat(resolvedAttributeDraft.getAttributes()).isNotNull();
-
-        final JsonNode value = resolvedAttributeDraft.getAttributes().get(0).getValue();
-        assertThat(value).isInstanceOf(ArrayNode.class);
-        final ArrayNode resolvedNestedAttributes = (ArrayNode) value;
-
-        final Map<String, JsonNode> resolvedNestedAttributesMap = StreamSupport
-            .stream(resolvedNestedAttributes.spliterator(), false)
-            .collect(Collectors.toMap(jsonNode -> jsonNode.get("name").asText(), jsonNode -> jsonNode));
-
-        assertReferenceAttributeValue(resolvedNestedAttributesMap,
-            "nested-attribute-1-name", "nonExistingProductKey1", "product");
-        assertReferenceAttributeValue(resolvedNestedAttributesMap,
-            "nested-attribute-2-name", PRODUCT_ID, "product");
-        assertReferenceAttributeValue(resolvedNestedAttributesMap,
-            "nested-attribute-3-name", "nonExistingProductKey3", "product");
-    }
-
-    @Test
-    void resolveReferences_WithNestedSetOfProductReferenceAttributes_ShouldOnlyResolveExistingReferences() {
-        // preparation
-        final ProductVariantDraft withNestedTextAttributesOnly = SphereJsonUtils
-            .readObjectFromResource(NESTED_ATTRIBUTE_WITH_SET_OF_PRODUCT_REFERENCE_ATTRIBUTES,
-                ProductVariantDraft.class);
-
-        // test
-        final ProductVariantDraft resolvedAttributeDraft =
-            referenceResolver.resolveReferences(withNestedTextAttributesOnly)
-                             .toCompletableFuture()
-                             .join();
-        // assertions
-        assertThat(resolvedAttributeDraft.getAttributes()).isNotNull();
-
-        final JsonNode value = resolvedAttributeDraft.getAttributes().get(0).getValue();
-        assertThat(value).isInstanceOf(ArrayNode.class);
-        final ArrayNode resolvedNestedAttributes = (ArrayNode) value;
-
-        final Map<String, JsonNode> resolvedNestedAttributesMap = StreamSupport
-            .stream(resolvedNestedAttributes.spliterator(), false)
-            .collect(Collectors.toMap(jsonNode -> jsonNode.get("name").asText(), jsonNode -> jsonNode));
-
-        assertReferenceSetAttributeValue(resolvedNestedAttributesMap,
-            "nested-attribute-1-name", 2, PRODUCT_ID, "product");
-        assertReferenceAttributeValue(resolvedNestedAttributesMap,
-            "nested-attribute-2-name", PRODUCT_ID, "product");
-        assertReferenceAttributeValue(resolvedNestedAttributesMap,
-            "nested-attribute-3-name", PRODUCT_ID, "product");
-    }
-
-    @Test
-    void resolveReferences_WithEmptyValueInReferenceIdField_ShouldReturnEqualDraft() {
-        // preparation
-        final AttributeDraft attributeWithEmptyValue =
-            AttributeDraft.of("attributeName", JsonNodeFactory.instance.objectNode());
-
-        final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
-            .of()
-            .attributes(attributeWithEmptyValue)
-            .build();
-
-        // test
-        final ProductVariantDraft resolvedAttributeDraft =
-            referenceResolver.resolveReferences(productVariantDraft)
-                             .toCompletableFuture()
-                             .join();
-        // assertions
-        assertThat(resolvedAttributeDraft).isEqualTo(productVariantDraft);
-    }
-
-    @Test
-    void resolveReferences_WithTextAttribute_ShouldReturnEqualDraft() {
-        // preparation
-        final AttributeDraft textAttribute = AttributeDraft.of("attributeName", "attributeValue");
-        final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
-            .of()
-            .attributes(textAttribute)
-            .build();
-
-        // test
-        final ProductVariantDraft resolvedAttributeDraft =
-            referenceResolver.resolveReferences(productVariantDraft)
-                             .toCompletableFuture()
-                             .join();
-        // assertions
-        assertThat(resolvedAttributeDraft).isEqualTo(productVariantDraft);
-    }
-
-    @Test
-    void resolveReferences_WithNonExistingProductReferenceAttribute_ShouldReturnEqualDraft() {
-        // preparation
-        when(productService.getIdFromCacheOrFetch(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
-
-        final ObjectNode attributeValue = getProductReferenceWithRandomId();
-        final AttributeDraft attributeDraft = AttributeDraft.of("attributeName", attributeValue);
-        final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
-            .of()
-            .attributes(attributeDraft)
-            .build();
-
-        // test
-        final ProductVariantDraft resolvedAttributeDraft =
-            referenceResolver.resolveReferences(productVariantDraft)
-                             .toCompletableFuture()
-                             .join();
-        // assertions
-        assertThat(resolvedAttributeDraft).isEqualTo(productVariantDraft);
-    }
-
-    @Test
-    void resolveReferences_WithNullIdFieldInProductReferenceAttribute_ShouldReturnEqualDraft() {
-        // preparation
-        final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
-        attributeValue.put(REFERENCE_TYPE_ID_FIELD, "product");
-        final AttributeDraft productReferenceAttribute = AttributeDraft.of("attributeName", attributeValue);
-        final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
-            .of()
-            .attributes(productReferenceAttribute)
-            .build();
-
-        // test
-        final ProductVariantDraft resolvedAttributeDraft =
-            referenceResolver.resolveReferences(productVariantDraft)
-                             .toCompletableFuture()
-                             .join();
-        // assertions
-        assertThat(resolvedAttributeDraft).isEqualTo(productVariantDraft);
-    }
-
-    @Test
-    void resolveReferences_WithNullNodeIdFieldInProductReferenceAttribute_ShouldReturnEqualDraft() {
-        // preparation
-        final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
-        attributeValue.put(REFERENCE_TYPE_ID_FIELD, "product");
-        final AttributeDraft productReferenceAttribute =
-            AttributeDraft.of("attributeName", JsonNodeFactory.instance.nullNode());
-        final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
-            .of()
-            .attributes(productReferenceAttribute)
-            .build();
-
-        // test
-        final ProductVariantDraft resolvedAttributeDraft =
-            referenceResolver.resolveReferences(productVariantDraft)
-                             .toCompletableFuture()
-                             .join();
-        // assertions
-        assertThat(resolvedAttributeDraft).isEqualTo(productVariantDraft);
-    }
-
-    @Test
-    void resolveReferences_WithExistingProductReferenceAttribute_ShouldReturnEqualDraft() {
-        // preparation
-        final ObjectNode attributeValue = getProductReferenceWithRandomId();
-        final AttributeDraft productReferenceAttribute = AttributeDraft.of("attributeName", attributeValue);
-        final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
-            .of()
-            .attributes(productReferenceAttribute)
-            .build();
-
-        // test
-        final ProductVariantDraft resolvedAttributeDraft =
-            referenceResolver.resolveReferences(productVariantDraft)
-                             .toCompletableFuture()
-                             .join();
-        // assertions
-        assertThat(resolvedAttributeDraft.getAttributes()).isNotNull();
-        final AttributeDraft resolvedAttribute = resolvedAttributeDraft.getAttributes().get(0);
-        assertThat(resolvedAttribute).isNotNull();
-        assertThat(resolvedAttribute.getValue().get(REFERENCE_ID_FIELD).asText()).isEqualTo(PRODUCT_ID);
-        assertThat(resolvedAttribute.getValue().get(REFERENCE_TYPE_ID_FIELD).asText())
-            .isEqualTo(Product.referenceTypeId());
     }
 
     private void assertReferenceAttributeValue(
