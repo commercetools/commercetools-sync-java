@@ -85,7 +85,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         this.stateService = stateService;
         this.variantReferenceResolver =
             new VariantReferenceResolver(productSyncOptions, typeService, channelService, customerGroupService,
-                productService);
+                productService, categoryService);
     }
 
     /**

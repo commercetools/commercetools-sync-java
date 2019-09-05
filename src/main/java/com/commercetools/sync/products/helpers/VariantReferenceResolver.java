@@ -4,12 +4,14 @@ import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.helpers.AssetReferenceResolver;
 import com.commercetools.sync.commons.helpers.BaseReferenceResolver;
 import com.commercetools.sync.products.ProductSyncOptions;
+import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.Product;
@@ -33,6 +35,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     private final PriceReferenceResolver priceReferenceResolver;
     private final AssetReferenceResolver assetReferenceResolver;
     private final ProductService productService;
+    private final CategoryService categoryService;
 
     public static final String REFERENCE_TYPE_ID_FIELD = "typeId";
     public static final String REFERENCE_ID_FIELD = "id";
@@ -49,17 +52,20 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
      * @param channelService       the service to fetch the channels for reference resolution.
      * @param customerGroupService the service to fetch the customer groups for reference resolution.
      * @param productService       the service to fetch the products for reference resolution.
+     * @param categoryService      the service to fetch the categories for reference resolution.
      */
     public VariantReferenceResolver(@Nonnull final ProductSyncOptions productSyncOptions,
                                     @Nonnull final TypeService typeService,
                                     @Nonnull final ChannelService channelService,
                                     @Nonnull final CustomerGroupService customerGroupService,
-                                    @Nonnull final ProductService productService) {
+                                    @Nonnull final ProductService productService,
+                                    @Nonnull final CategoryService categoryService) {
         super(productSyncOptions);
         this.priceReferenceResolver = new PriceReferenceResolver(productSyncOptions, typeService, channelService,
             customerGroupService);
         this.assetReferenceResolver = new AssetReferenceResolver(productSyncOptions, typeService);
         this.productService = productService;
+        this.categoryService = categoryService;
     }
 
 

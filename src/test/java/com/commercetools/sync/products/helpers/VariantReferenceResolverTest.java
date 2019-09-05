@@ -2,6 +2,7 @@ package com.commercetools.sync.products.helpers;
 
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
+import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
@@ -57,6 +58,7 @@ import static org.mockito.Mockito.when;
 
 class VariantReferenceResolverTest {
     private ProductService productService;
+    private CategoryService categoryService;
 
     private static final String CHANNEL_KEY = "channel-key_1";
     private static final String CHANNEL_ID = "1";
@@ -86,7 +88,7 @@ class VariantReferenceResolverTest {
         productService = getMockProductService(PRODUCT_ID);
         ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
         referenceResolver = new VariantReferenceResolver(syncOptions, typeService, channelService,
-            mock(CustomerGroupService.class), productService);
+            mock(CustomerGroupService.class), productService, categoryService);
     }
 
     @Test
