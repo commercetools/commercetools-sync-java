@@ -131,13 +131,13 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
             return CompletableFuture.completedFuture(attributeDraft);
         }
 
-        final JsonNode clonedValue = attributeDraftValue.deepCopy();
+        final JsonNode attributeDraftValueClone = attributeDraftValue.deepCopy();
 
-        final List<JsonNode> allAttributeReferences = clonedValue.findParents(REFERENCE_TYPE_ID_FIELD);
+        final List<JsonNode> allAttributeReferences = attributeDraftValueClone.findParents(REFERENCE_TYPE_ID_FIELD);
 
         if (!allAttributeReferences.isEmpty()) {
             return mapValuesToFutureOfCompletedValues(allAttributeReferences, this::resolveReference, toList())
-                .thenApply(ignoredResult -> AttributeDraft.of(attributeDraft.getName(), clonedValue));
+                .thenApply(ignoredResult -> AttributeDraft.of(attributeDraft.getName(), attributeDraftValueClone));
         }
 
         return CompletableFuture.completedFuture(attributeDraft);
