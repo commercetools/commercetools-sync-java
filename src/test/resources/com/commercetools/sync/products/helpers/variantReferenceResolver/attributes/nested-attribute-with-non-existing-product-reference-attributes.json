@@ -14,7 +14,7 @@
         },
         {
           "value": {
-            "id": "39611a73-9b45-414b-be70-2a207386678c",
+            "id": "key1",
             "typeId": "product"
           },
           "name": "nested-attribute-2-name"

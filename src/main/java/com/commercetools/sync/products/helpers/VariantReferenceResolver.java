@@ -10,6 +10,7 @@ import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.models.AssetDraft;
@@ -137,13 +138,13 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
             return CompletableFuture.completedFuture(attributeDraft);
         }
 
-        final JsonNode clonedValue = attributeDraftValue.deepCopy();
+        final JsonNode attributeDraftValueClone = attributeDraftValue.deepCopy();
 
-        final List<JsonNode> allAttributeReferences = clonedValue.findParents(REFERENCE_TYPE_ID_FIELD);
+        final List<JsonNode> allAttributeReferences = attributeDraftValueClone.findParents(REFERENCE_TYPE_ID_FIELD);
 
         if (!allAttributeReferences.isEmpty()) {
             return mapValuesToFutureOfCompletedValues(allAttributeReferences, this::resolveReference, toList())
-                .thenApply(ignoredResult -> AttributeDraft.of(attributeDraft.getName(), clonedValue));
+                .thenApply(ignoredResult -> AttributeDraft.of(attributeDraft.getName(), attributeDraftValueClone));
         }
 
         return CompletableFuture.completedFuture(attributeDraft);
@@ -187,8 +188,10 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
 
     @Nonnull
     CompletionStage<Optional<String>> getProductResolvedIdFromKeyInReference(@Nonnull final JsonNode referenceValue) {
+
         final JsonNode idField = referenceValue.get(REFERENCE_ID_FIELD);
-        return idField != null
+
+        return idField != null && !Objects.equals(idField, NullNode.getInstance())
             ? productService.getIdFromCacheOrFetch(idField.asText())
             : CompletableFuture.completedFuture(Optional.empty());
     }

@@ -8,11 +8,11 @@
         {
           "value": [
             {
-              "id": "39611a73-9b45-414b-be70-2a207386678c",
+              "id": "key1",
               "typeId": "product"
             },
             {
-              "id": "39611a73-9b45-414b-be70-2a207386678c",
+              "id": "key2",
               "typeId": "product"
             }
           ],
@@ -20,21 +20,21 @@
         },
         {
           "value": {
-            "id": "39611a73-9b45-414b-be70-2a207386678c",
+            "id": "key2",
             "typeId": "product"
           },
           "name": "nested-attribute-2-name"
         },
         {
           "value": {
-            "id": "39611a73-9b45-414b-be70-2a207386678c",
+            "id": "key3",
             "typeId": "product"
           },
           "name": "nested-attribute-3-name"
         },
         {
           "value": {
-            "id": "39611a73-9b45-414b-be70-2a207386678c",
+            "id": "key4",
             "typeId": "product"
           },
           "name": "nested-attribute-4-name"

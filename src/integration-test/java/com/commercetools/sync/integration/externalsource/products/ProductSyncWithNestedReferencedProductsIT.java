@@ -4,10 +4,12 @@ import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.client.ErrorResponseException;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
@@ -20,6 +22,7 @@ import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.attributes.NestedAttributeType;
 import io.sphere.sdk.products.attributes.SetAttributeType;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
+import io.sphere.sdk.products.commands.updateactions.SetAttribute;
 import io.sphere.sdk.products.queries.ProductByKeyGet;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.commands.ProductTypeUpdateCommand;
@@ -42,6 +45,8 @@ import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtil
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_WITH_REFERENCES_RESOURCE_PATH;
+import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_ID_FIELD;
+import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_TYPE_ID_FIELD;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
@@ -60,6 +65,10 @@ class ProductSyncWithNestedReferencedProductsIT {
     private List<String> errorCallBackMessages;
     private List<String> warningCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
+    private List<UpdateAction<Product>> actions;
+
+    private static final String ATTRIBUTE_NAME_FIELD = "name";
+    private static final String ATTRIBUTE_VALUE_FIELD = "value";
 
     /**
      * Delete all product related test data from the target project. Then creates for the target CTP project
@@ -118,6 +127,7 @@ class ProductSyncWithNestedReferencedProductsIT {
         errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
         warningCallBackMessages = new ArrayList<>();
+        actions = new ArrayList<>();
     }
 
     private ProductSyncOptions buildSyncOptions() {
@@ -125,6 +135,7 @@ class ProductSyncWithNestedReferencedProductsIT {
 
         return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                         .errorCallback(this::collectErrors)
+                                        .beforeUpdateCallback(this::collectActions)
                                         .warningCallback(warningCallBack)
                                         .build();
     }
@@ -132,6 +143,13 @@ class ProductSyncWithNestedReferencedProductsIT {
     private void collectErrors(final String errorMessage, final Throwable exception) {
         errorCallBackMessages.add(errorMessage);
         errorCallBackExceptions.add(exception);
+    }
+
+    private List<UpdateAction<Product>> collectActions(@Nonnull final List<UpdateAction<Product>> actions,
+                                                       @Nonnull final ProductDraft productDraft,
+                                                       @Nonnull final Product product) {
+        this.actions.addAll(actions);
+        return actions;
     }
 
     @AfterAll
@@ -145,8 +163,8 @@ class ProductSyncWithNestedReferencedProductsIT {
         final ArrayNode nestedAttributeValue = JsonNodeFactory.instance.arrayNode();
         final ObjectNode nestedProductTypeAttribute = JsonNodeFactory.instance.objectNode();
         nestedAttributeValue.add(nestedProductTypeAttribute);
-        nestedProductTypeAttribute.put("name", "text-attr");
-        nestedProductTypeAttribute.put("value", "text-attr-value");
+        nestedProductTypeAttribute.put(ATTRIBUTE_NAME_FIELD, "text-attr");
+        nestedProductTypeAttribute.put(ATTRIBUTE_VALUE_FIELD, "text-attr-value");
 
         final AttributeDraft productReferenceAttribute =
             AttributeDraft.of("nestedAttribute", nestedAttributeValue);
@@ -177,6 +195,7 @@ class ProductSyncWithNestedReferencedProductsIT {
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
+        assertThat(actions).isEmpty();
 
 
         final Product createdProduct = CTP_TARGET_CLIENT
@@ -189,8 +208,9 @@ class ProductSyncWithNestedReferencedProductsIT {
                           .findAttribute(productReferenceAttribute.getName());
 
         assertThat(createdProductReferenceAttribute).hasValueSatisfying(attribute -> {
-            assertThat(attribute.getValueAsJsonNode().get(0).get("value").asText()).isEqualTo("text-attr-value");
-            assertThat(attribute.getValueAsJsonNode().get(0).get("name").asText()).isEqualTo("text-attr");
+            assertThat(attribute.getValueAsJsonNode().get(0).get(ATTRIBUTE_VALUE_FIELD).asText())
+                .isEqualTo("text-attr-value");
+            assertThat(attribute.getValueAsJsonNode().get(0).get(ATTRIBUTE_NAME_FIELD).asText()).isEqualTo("text-attr");
         });
     }
 
@@ -230,6 +250,7 @@ class ProductSyncWithNestedReferencedProductsIT {
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
+        assertThat(actions).isEmpty();
 
 
         final Product createdProduct = CTP_TARGET_CLIENT
@@ -242,12 +263,18 @@ class ProductSyncWithNestedReferencedProductsIT {
                           .findAttribute(productReferenceAttribute.getName());
 
         assertThat(createdProductReferenceAttribute).hasValueSatisfying(attribute -> {
-            assertThat(attribute.getValueAsJsonNode().get(0).get("name").asText())
-                .isEqualTo("product-reference");
-            assertThat(attribute.getValueAsJsonNode().get(0).get("value").get("typeId").asText())
-                .isEqualTo("product");
-            assertThat(attribute.getValueAsJsonNode().get(0).get("value").get("id").asText())
-                .isEqualTo(product.getId());
+            final JsonNode nestedAttributeNameField = attribute
+                .getValueAsJsonNode()
+                .get(0)
+                .get(ATTRIBUTE_NAME_FIELD);
+            final JsonNode nestedAttributeReferenceValueField = attribute
+                .getValueAsJsonNode()
+                .get(0)
+                .get(ATTRIBUTE_VALUE_FIELD);
+
+            assertThat(nestedAttributeNameField.asText()).isEqualTo("product-reference");
+            assertThat(nestedAttributeReferenceValueField.get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo("product");
+            assertThat(nestedAttributeReferenceValueField.get(REFERENCE_ID_FIELD).asText()).isEqualTo(product.getId());
         });
     }
 
@@ -310,6 +337,7 @@ class ProductSyncWithNestedReferencedProductsIT {
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
+        assertThat(actions).isEmpty();
 
 
         final Product createdProduct = CTP_TARGET_CLIENT
@@ -322,12 +350,17 @@ class ProductSyncWithNestedReferencedProductsIT {
                           .findAttribute(productReferenceAttribute.getName());
 
         assertThat(createdProductReferenceAttribute).hasValueSatisfying(attribute -> {
-            assertThat(attribute.getValueAsJsonNode().get(0).get("name").asText())
-                .isEqualTo("product-reference");
-            assertThat(attribute.getValueAsJsonNode().get(0).get("value").get("typeId").asText())
-                .isEqualTo("product");
-            assertThat(attribute.getValueAsJsonNode().get(0).get("value").get("id").asText())
-                .isEqualTo(product.getId());
+            final JsonNode nestedAttributeNameField = attribute
+                .getValueAsJsonNode()
+                .get(0)
+                .get(ATTRIBUTE_NAME_FIELD);
+            final JsonNode nestedAttributeValueField = attribute
+                .getValueAsJsonNode()
+                .get(0)
+                .get(ATTRIBUTE_VALUE_FIELD);
+            assertThat(nestedAttributeNameField.asText()).isEqualTo("product-reference");
+            assertThat(nestedAttributeValueField.get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo("product");
+            assertThat(nestedAttributeValueField.get(REFERENCE_ID_FIELD).asText()).isEqualTo(product.getId());
         });
     }
 
@@ -391,6 +424,14 @@ class ProductSyncWithNestedReferencedProductsIT {
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
 
+        final ObjectNode expectedNestedAttributeValue =
+            createNestedAttributeValueReferences("product-reference",
+                createReferenceValue(product2.getId(), Product.referenceTypeId()));
+
+        final AttributeDraft expectedProductReferenceAttribute =
+            AttributeDraft.of("nestedAttribute", createArrayNode(expectedNestedAttributeValue));
+        assertThat(actions).containsExactly(SetAttribute.of(1, expectedProductReferenceAttribute, true));
+
 
         final Product createdProduct = CTP_TARGET_CLIENT
             .execute(ProductByKeyGet.of(productDraftWithProductReference.getKey()))
@@ -402,12 +443,19 @@ class ProductSyncWithNestedReferencedProductsIT {
                           .findAttribute(productReferenceAttribute.getName());
 
         assertThat(createdProductReferenceAttribute).hasValueSatisfying(attribute -> {
-            assertThat(attribute.getValueAsJsonNode().get(0).get("name").asText())
-                .isEqualTo("product-reference");
-            assertThat(attribute.getValueAsJsonNode().get(0).get("value").get("typeId").asText())
-                .isEqualTo("product");
-            assertThat(attribute.getValueAsJsonNode().get(0).get("value").get("id").asText())
-                .isEqualTo(product2.getId());
+            final JsonNode nestedAttributeNameField = attribute
+                .getValueAsJsonNode()
+                .get(0)
+                .get(ATTRIBUTE_NAME_FIELD);
+            final JsonNode nestedAttributeValueField = attribute
+                .getValueAsJsonNode()
+                .get(0)
+                .get(ATTRIBUTE_VALUE_FIELD);
+
+
+            assertThat(nestedAttributeNameField.asText()).isEqualTo("product-reference");
+            assertThat(nestedAttributeValueField.get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo("product");
+            assertThat(nestedAttributeValueField.get(REFERENCE_ID_FIELD).asText()).isEqualTo(product2.getId());
         });
     }
 
@@ -460,6 +508,7 @@ class ProductSyncWithNestedReferencedProductsIT {
                     .contains("The value '{\"typeId\":\"product\",\"id\":\"nonExistingKey\"}' "
                         + "is not valid for field 'nestedAttribute.product-reference'"));
         assertThat(warningCallBackMessages).isEmpty();
+        assertThat(actions).isEmpty();
     }
 
     @Test
@@ -498,7 +547,7 @@ class ProductSyncWithNestedReferencedProductsIT {
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
-
+        assertThat(actions).isEmpty();
 
         final Product createdProduct = CTP_TARGET_CLIENT
             .execute(ProductByKeyGet.of(productDraftWithProductReference.getKey()))
@@ -510,20 +559,28 @@ class ProductSyncWithNestedReferencedProductsIT {
                           .findAttribute(productReferenceAttribute.getName());
 
         assertThat(createdProductReferenceAttribute).hasValueSatisfying(attribute -> {
-            assertThat(attribute.getValueAsJsonNode().get(0).get("name").asText())
-                .isEqualTo("product-reference-set");
 
-            assertThat(attribute.getValueAsJsonNode().get(0).get("value")).isInstanceOf(ArrayNode.class);
-            final ArrayNode referenceSet = (ArrayNode) attribute.getValueAsJsonNode().get(0).get("value");
+            final JsonNode nestedAttributeNameField = attribute
+                .getValueAsJsonNode()
+                .get(0)
+                .get(ATTRIBUTE_NAME_FIELD);
+            final JsonNode nestedAttributeValueField = attribute
+                .getValueAsJsonNode()
+                .get(0)
+                .get(ATTRIBUTE_VALUE_FIELD);
+
+            assertThat(nestedAttributeNameField.asText()).isEqualTo("product-reference-set");
+            assertThat(nestedAttributeValueField).isInstanceOf(ArrayNode.class);
+            final ArrayNode referenceSet = (ArrayNode) nestedAttributeValueField;
             assertThat(referenceSet)
                 .hasSize(2)
                 .anySatisfy(reference -> {
-                    assertThat(reference.get("typeId").asText()).isEqualTo("product");
-                    assertThat(reference.get("id").asText()).isEqualTo(product.getId());
+                    assertThat(reference.get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo("product");
+                    assertThat(reference.get(REFERENCE_ID_FIELD).asText()).isEqualTo(product.getId());
                 })
                 .anySatisfy(reference -> {
-                    assertThat(reference.get("typeId").asText()).isEqualTo("product");
-                    assertThat(reference.get("id").asText()).isEqualTo(product2.getId());
+                    assertThat(reference.get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo("product");
+                    assertThat(reference.get(REFERENCE_ID_FIELD).asText()).isEqualTo(product2.getId());
                 });
         });
     }
@@ -578,6 +635,7 @@ class ProductSyncWithNestedReferencedProductsIT {
                     .contains("The value '{\"typeId\":\"product\",\"id\":\"nonExistingKey\"}' "
                         + "is not valid for field 'nestedAttribute.product-reference-set'"));
         assertThat(warningCallBackMessages).isEmpty();
+        assertThat(actions).isEmpty();
     }
 
     @Test
@@ -617,6 +675,7 @@ class ProductSyncWithNestedReferencedProductsIT {
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
+        assertThat(actions).isEmpty();
 
 
         final Product createdProduct = CTP_TARGET_CLIENT
@@ -629,20 +688,30 @@ class ProductSyncWithNestedReferencedProductsIT {
                           .findAttribute(productReferenceAttribute.getName());
 
         assertThat(createdProductReferenceAttribute).hasValueSatisfying(attribute -> {
-            assertThat(attribute.getValueAsJsonNode().get(0).get(0).get("name").asText())
-                .isEqualTo("product-reference-set");
 
-            assertThat(attribute.getValueAsJsonNode().get(0).get(0).get("value")).isInstanceOf(ArrayNode.class);
-            final ArrayNode referenceSet = (ArrayNode) attribute.getValueAsJsonNode().get(0).get(0).get("value");
+            final JsonNode setOfNestedAttributeNameField = attribute
+                .getValueAsJsonNode()
+                .get(0)
+                .get(0)
+                .get(ATTRIBUTE_NAME_FIELD);
+            final JsonNode setOfNestedAttributeValueField = attribute
+                .getValueAsJsonNode()
+                .get(0)
+                .get(0)
+                .get(ATTRIBUTE_VALUE_FIELD);
+
+            assertThat(setOfNestedAttributeNameField.asText()).isEqualTo("product-reference-set");
+            assertThat(setOfNestedAttributeValueField).isInstanceOf(ArrayNode.class);
+            final ArrayNode referenceSet = (ArrayNode) setOfNestedAttributeValueField;
             assertThat(referenceSet)
                 .hasSize(2)
                 .anySatisfy(reference -> {
-                    assertThat(reference.get("typeId").asText()).isEqualTo("product");
-                    assertThat(reference.get("id").asText()).isEqualTo(product.getId());
+                    assertThat(reference.get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo("product");
+                    assertThat(reference.get(REFERENCE_ID_FIELD).asText()).isEqualTo(product.getId());
                 })
                 .anySatisfy(reference -> {
-                    assertThat(reference.get("typeId").asText()).isEqualTo("product");
-                    assertThat(reference.get("id").asText()).isEqualTo(product2.getId());
+                    assertThat(reference.get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo("product");
+                    assertThat(reference.get(REFERENCE_ID_FIELD).asText()).isEqualTo(product2.getId());
                 });
         });
     }
@@ -653,8 +722,8 @@ class ProductSyncWithNestedReferencedProductsIT {
         @Nonnull final ObjectNode referenceValue) {
 
         final ObjectNode referenceAttribute = JsonNodeFactory.instance.objectNode();
-        referenceAttribute.put("name", attributeName);
-        referenceAttribute.set("value", referenceValue);
+        referenceAttribute.put(ATTRIBUTE_NAME_FIELD, attributeName);
+        referenceAttribute.set(ATTRIBUTE_VALUE_FIELD, referenceValue);
 
         return referenceAttribute;
     }
@@ -665,8 +734,8 @@ class ProductSyncWithNestedReferencedProductsIT {
         @Nonnull final ObjectNode... referenceValues) {
 
         final ObjectNode setOfReferencesAttribute = JsonNodeFactory.instance.objectNode();
-        setOfReferencesAttribute.put("name", attributeName);
-        setOfReferencesAttribute.set("value", createArrayNode(referenceValues));
+        setOfReferencesAttribute.put(ATTRIBUTE_NAME_FIELD, attributeName);
+        setOfReferencesAttribute.set(ATTRIBUTE_VALUE_FIELD, createArrayNode(referenceValues));
 
         return setOfReferencesAttribute;
     }
@@ -688,8 +757,8 @@ class ProductSyncWithNestedReferencedProductsIT {
     @Nonnull
     private ObjectNode createReferenceValue(@Nonnull final String id, @Nonnull final String typeId) {
         final ObjectNode referenceObjectNode = JsonNodeFactory.instance.objectNode();
-        referenceObjectNode.put("typeId", typeId);
-        referenceObjectNode.put("id", id);
+        referenceObjectNode.put(REFERENCE_TYPE_ID_FIELD, typeId);
+        referenceObjectNode.put(REFERENCE_ID_FIELD, id);
         return referenceObjectNode;
     }
 }
