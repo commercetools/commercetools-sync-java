@@ -118,7 +118,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     @Nonnull
-    CompletionStage<ProductVariantDraftBuilder> resolveAttributesReferences(
+    private CompletionStage<ProductVariantDraftBuilder> resolveAttributesReferences(
         @Nonnull final ProductVariantDraftBuilder productVariantDraftBuilder) {
 
         final List<AttributeDraft> attributeDrafts = productVariantDraftBuilder.getAttributes();
@@ -131,7 +131,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     @Nonnull
-    CompletionStage<AttributeDraft> resolveAttributeReference(@Nonnull final AttributeDraft attributeDraft) {
+    private CompletionStage<AttributeDraft> resolveAttributeReference(@Nonnull final AttributeDraft attributeDraft) {
 
         final JsonNode attributeDraftValue = attributeDraft.getValue();
 
