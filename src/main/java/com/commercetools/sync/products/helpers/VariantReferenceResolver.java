@@ -131,8 +131,6 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
             return CompletableFuture.completedFuture(attributeDraft);
         }
 
-        // TODO: This next line will throw an NPE if there are null elements in any array node.
-        //  User must make sure no nulls are there.
         final JsonNode clonedValue = attributeDraftValue.deepCopy();
 
         final List<JsonNode> allAttributeReferences = clonedValue.findParents(REFERENCE_TYPE_ID_FIELD);
