@@ -405,7 +405,7 @@ class VariantReferenceResolverTest {
         assertThat(resolvedSet).containsExactly(resolvedReference);
     }
 
-    @Disabled
+    @Disabled("Fails due to possible bug on https://github.com/FasterXML/jackson-databind/issues/2442")
     @Test
     void resolveAttributeReference_WithNullReferenceInSetAttribute_ShouldResolveReferences() {
         final ObjectNode productReference = getProductReferenceWithRandomId();
