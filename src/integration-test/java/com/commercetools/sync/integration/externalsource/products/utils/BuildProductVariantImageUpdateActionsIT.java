@@ -35,7 +35,7 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class BuildProductVariantImageUpdateActionsIT {
     private static final String DRAFTS_ROOT = "com/commercetools/sync/integration/externalsource/products/"

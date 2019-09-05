@@ -1,31 +1,53 @@
 package com.commercetools.sync.integration.commons.utils;
 
+import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.EnumValue;
+import io.sphere.sdk.models.LocalizedEnumValue;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.TextInputHint;
+import io.sphere.sdk.products.attributes.AttributeConstraint;
+import io.sphere.sdk.products.attributes.AttributeDefinition;
+import io.sphere.sdk.products.attributes.AttributeDefinitionBuilder;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
 import io.sphere.sdk.products.attributes.BooleanAttributeType;
+import io.sphere.sdk.products.attributes.EnumAttributeType;
+import io.sphere.sdk.products.attributes.LocalizedEnumAttributeType;
 import io.sphere.sdk.products.attributes.LocalizedStringAttributeType;
+import io.sphere.sdk.products.attributes.NestedAttributeType;
 import io.sphere.sdk.products.attributes.StringAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
 import io.sphere.sdk.producttypes.commands.ProductTypeDeleteCommand;
+import io.sphere.sdk.producttypes.commands.ProductTypeUpdateCommand;
+import io.sphere.sdk.producttypes.commands.updateactions.RemoveAttributeDefinition;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.producttypes.queries.ProductTypeQueryBuilder;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndExecute;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
+import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static java.util.Optional.ofNullable;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public final class ProductTypeITUtils {
     private static final String LOCALISED_STRING_ATTRIBUTE_NAME = "backgroundColor";
@@ -33,12 +55,18 @@ public final class ProductTypeITUtils {
 
     public static final String PRODUCT_TYPE_KEY_1 = "key_1";
     public static final String PRODUCT_TYPE_KEY_2 = "key_2";
+    public static final String PRODUCT_TYPE_KEY_3 = "key_3";
+    public static final String PRODUCT_TYPE_KEY_4 = "key_4";
 
     public static final String PRODUCT_TYPE_NAME_1 = "name_1";
     public static final String PRODUCT_TYPE_NAME_2 = "name_2";
+    public static final String PRODUCT_TYPE_NAME_3 = "name_3";
+    public static final String PRODUCT_TYPE_NAME_4 = "name_4";
 
     public static final String PRODUCT_TYPE_DESCRIPTION_1 = "description_1";
     public static final String PRODUCT_TYPE_DESCRIPTION_2 = "description_2";
+    public static final String PRODUCT_TYPE_DESCRIPTION_3 = "description_3";
+    public static final String PRODUCT_TYPE_DESCRIPTION_4 = "description_4";
 
     public static final AttributeDefinitionDraft ATTRIBUTE_DEFINITION_DRAFT_1 = AttributeDefinitionDraftBuilder
         .of(
@@ -97,6 +125,40 @@ public final class ProductTypeITUtils {
         CTP_SOURCE_CLIENT.execute(ProductTypeCreateCommand.of(productTypeDraft2)).toCompletableFuture().join();
     }
 
+    public static void populateSourcesProjectWithNestedAttributes() {
+        final ProductType productType1 =
+            CTP_SOURCE_CLIENT.execute(ProductTypeCreateCommand.of(productTypeDraft1)).toCompletableFuture().join();
+        final ProductType productType2 =
+            CTP_SOURCE_CLIENT.execute(ProductTypeCreateCommand.of(productTypeDraft2)).toCompletableFuture().join();
+
+        final AttributeDefinition nestedTypeAttr1 = AttributeDefinitionBuilder
+                .of("nestedattr", ofEnglish("nestedattr"), NestedAttributeType.of(productType1))
+                .isSearchable(false) // "isSearchable=true is not supported for attribute type 'nested'."
+                .build();
+
+        final AttributeDefinition nestedTypeAttr2 = AttributeDefinitionBuilder
+                .of("nestedattr2", ofEnglish("nestedattr2"), NestedAttributeType.of(productType2))
+                .isSearchable(false)
+                .build();
+
+        final ProductTypeDraft productTypeDraft3 = ProductTypeDraft.ofAttributeDefinitionDrafts(
+                PRODUCT_TYPE_KEY_3,
+                PRODUCT_TYPE_NAME_3,
+                PRODUCT_TYPE_DESCRIPTION_3,
+                asList(AttributeDefinitionDraftBuilder.of(nestedTypeAttr1).build(),
+                        AttributeDefinitionDraftBuilder.of(nestedTypeAttr2).build()));
+
+        CTP_SOURCE_CLIENT.execute(ProductTypeCreateCommand.of(productTypeDraft3)).toCompletableFuture().join();
+
+        final ProductTypeDraft productTypeDraft4 = ProductTypeDraft.ofAttributeDefinitionDrafts(
+                PRODUCT_TYPE_KEY_4,
+                PRODUCT_TYPE_NAME_4,
+                PRODUCT_TYPE_DESCRIPTION_4,
+                singletonList(AttributeDefinitionDraftBuilder.of(nestedTypeAttr1).build()));
+
+        CTP_SOURCE_CLIENT.execute(ProductTypeCreateCommand.of(productTypeDraft4)).toCompletableFuture().join();
+    }
+
     /**
      * Populate source CTP project.
      * Creates product type with key PRODUCT_TYPE_KEY_1, PRODUCT_TYPE_NAME_1, PRODUCT_TYPE_DESCRIPTION_1 and
@@ -106,6 +168,32 @@ public final class ProductTypeITUtils {
         CTP_TARGET_CLIENT.execute(ProductTypeCreateCommand.of(productTypeDraft1)).toCompletableFuture().join();
     }
 
+    public static void populateTargetProjectWithNestedAttributes() {
+        final ProductType productType1 =
+                CTP_TARGET_CLIENT.execute(ProductTypeCreateCommand.of(productTypeDraft1)).toCompletableFuture().join();
+
+        final ProductType productType2 =
+                CTP_TARGET_CLIENT.execute(ProductTypeCreateCommand.of(productTypeDraft2)).toCompletableFuture().join();
+
+        final AttributeDefinition nestedTypeAttr1 = AttributeDefinitionBuilder
+                .of("nestedattr", ofEnglish("nestedattr"), NestedAttributeType.of(productType1))
+                .isSearchable(false) // "isSearchable=true is not supported for attribute type 'nested'."
+                .build();
+
+        final AttributeDefinition nestedTypeAttr2 = AttributeDefinitionBuilder
+                .of("nestedattr2", ofEnglish("nestedattr2"), NestedAttributeType.of(productType2))
+                .isSearchable(false)
+                .build();
+
+        final ProductTypeDraft productTypeDraft3 = ProductTypeDraft.ofAttributeDefinitionDrafts(
+                PRODUCT_TYPE_KEY_3,
+                PRODUCT_TYPE_NAME_3,
+                PRODUCT_TYPE_DESCRIPTION_3,
+                asList(AttributeDefinitionDraftBuilder.of(nestedTypeAttr1).build(),
+                        AttributeDefinitionDraftBuilder.of(nestedTypeAttr2).build()));
+
+        CTP_TARGET_CLIENT.execute(ProductTypeCreateCommand.of(productTypeDraft3)).toCompletableFuture().join();
+    }
 
     /**
      * Deletes all ProductTypes from CTP projects defined by the {@code CTP_SOURCE_CLIENT} and
@@ -119,10 +207,48 @@ public final class ProductTypeITUtils {
     /**
      * Deletes all product types from the CTP project defined by the {@code ctpClient}.
      *
-     * @param ctpClient defines the CTP project to delete the categories from.
+     * @param ctpClient defines the CTP project to delete the product types from.
      */
     public static void deleteProductTypes(@Nonnull final SphereClient ctpClient) {
+        deleteProductTypeAttributes(ctpClient);
         queryAndExecute(ctpClient, ProductTypeQuery.of(), ProductTypeDeleteCommand::of);
+    }
+
+    /**
+     * Deletes all product type attributes from the CTP project defined by the {@code ctpClient} to able to
+     * delete a product type if it is referenced by at least one product type.
+     *
+     * @param ctpClient defines the CTP project to delete the product types from.
+     */
+    private static void deleteProductTypeAttributes(@Nonnull final SphereClient ctpClient) {
+        final ConcurrentHashMap<ProductType, Set<UpdateAction<ProductType>>> productTypesToUpdate =
+            new ConcurrentHashMap<>();
+
+        CtpQueryUtils
+            .queryAll(ctpClient,
+                ProductTypeQuery.of(), page -> {
+                    page.forEach(productType -> {
+                        final Set<UpdateAction<ProductType>> removeActions =
+                            productType
+                                .getAttributes()
+                                .stream()
+                                .map(attributeDefinition -> RemoveAttributeDefinition
+                                    .of(attributeDefinition.getName()))
+                                .collect(Collectors.toSet());
+                        productTypesToUpdate.put(productType, removeActions);
+                    });
+                })
+            .thenCompose(aVoid ->
+                CompletableFuture.allOf(productTypesToUpdate
+                    .entrySet()
+                    .stream()
+                    .map(entry ->
+                        ctpClient.execute(
+                            ProductTypeUpdateCommand.of(entry.getKey(), new ArrayList<>(entry.getValue()))))
+                    .toArray(CompletableFuture[]::new))
+            )
+            .toCompletableFuture()
+            .join();
     }
 
     /**
@@ -228,6 +354,75 @@ public final class ProductTypeITUtils {
             .build();
 
         return sphereClient.execute(query).toCompletableFuture().join().head();
+    }
+
+    public static void assertAttributesAreEqual(@Nonnull final List<AttributeDefinition> attributes,
+                                                @Nonnull final List<AttributeDefinitionDraft> attributesDrafts) {
+
+        assertThat(attributes).hasSameSizeAs(attributesDrafts);
+        IntStream.range(0, attributesDrafts.size())
+                 .forEach(index -> {
+                     final AttributeDefinition attribute = attributes.get(index);
+                     final AttributeDefinitionDraft attributeDraft = attributesDrafts.get(index);
+
+                     assertThat(attribute.getName()).isEqualTo(attributeDraft.getName());
+
+                     assertThat(attribute.getLabel()).isEqualTo(attributeDraft.getLabel());
+
+                     assertThat(attribute.getAttributeType()).isEqualTo(attributeDraft.getAttributeType());
+
+                     assertThat(attribute.getInputHint())
+                         .isEqualTo(ofNullable(attributeDraft.getInputHint()).orElse(TextInputHint.SINGLE_LINE));
+
+                     assertThat(attribute.getInputTip()).isEqualTo(attributeDraft.getInputTip());
+
+                     assertThat(attribute.isRequired()).isEqualTo(attributeDraft.isRequired());
+
+                     assertThat(attribute.isSearchable())
+                         .isEqualTo(ofNullable(attributeDraft.isSearchable()).orElse(true));
+
+                     assertThat(attribute.getAttributeConstraint())
+                         .isEqualTo(ofNullable(attributeDraft.getAttributeConstraint())
+                             .orElse(AttributeConstraint.NONE));
+
+                     if (attribute.getAttributeType().getClass() == EnumAttributeType.class) {
+                         assertPlainEnumsValuesAreEqual(
+                             ((EnumAttributeType) attribute.getAttributeType()).getValues(),
+                             ((EnumAttributeType) attributeDraft.getAttributeType()).getValues()
+                         );
+                     } else if (attribute.getAttributeType().getClass() == LocalizedEnumAttributeType.class) {
+                         assertLocalizedEnumsValuesAreEqual(
+                             ((LocalizedEnumAttributeType) attribute.getAttributeType()).getValues(),
+                             ((LocalizedEnumAttributeType) attributeDraft.getAttributeType()).getValues()
+                         );
+                     }
+                 });
+    }
+
+    private static void assertPlainEnumsValuesAreEqual(@Nonnull final List<EnumValue> enumValues,
+                                                       @Nonnull final List<EnumValue> enumValuesDrafts) {
+
+        IntStream.range(0, enumValuesDrafts.size())
+                 .forEach(index -> {
+                     final EnumValue enumValue = enumValues.get(index);
+                     final EnumValue enumValueDraft = enumValuesDrafts.get(index);
+
+                     assertThat(enumValue.getKey()).isEqualTo(enumValueDraft.getKey());
+                     assertThat(enumValue.getLabel()).isEqualTo(enumValueDraft.getLabel());
+                 });
+    }
+
+    private static void assertLocalizedEnumsValuesAreEqual(@Nonnull final List<LocalizedEnumValue> enumValues,
+                                                           @Nonnull final List<LocalizedEnumValue> enumValuesDrafts) {
+
+        IntStream.range(0, enumValuesDrafts.size())
+                 .forEach(index -> {
+                     final LocalizedEnumValue enumValue = enumValues.get(index);
+                     final LocalizedEnumValue enumValueDraft = enumValuesDrafts.get(index);
+
+                     assertThat(enumValue.getKey()).isEqualTo(enumValueDraft.getKey());
+                     assertThat(enumValue.getLabel()).isEqualTo(enumValueDraft.getLabel());
+                 });
     }
 
     private ProductTypeITUtils() {

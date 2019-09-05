@@ -61,7 +61,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 public final class ITUtils {
     public static final String LOCALISED_STRING_CUSTOM_FIELD_NAME = "backgroundColor";
     public static final String BOOLEAN_CUSTOM_FIELD_NAME = "invisibleInShop";
-    public static final String SET_CUSTOM_FIELD_NAME = "touchpoints";
+    public static final String EMPTY_SET_CUSTOM_FIELD_NAME = "emptySet";
+    public static final String NON_EMPTY_SEY_CUSTOM_FIELD_NAME = "nonEmptySet";
+    public static final String NULL_NODE_SET_CUSTOM_FIELD_NAME = "nullNode";
+    public static final String NULL_SET_CUSTOM_FIELD_NAME = "null";
 
 
     /**
@@ -161,8 +164,17 @@ public final class ITUtils {
                 .of(BooleanFieldType.of(), BOOLEAN_CUSTOM_FIELD_NAME,
                     LocalizedString.of(locale, BOOLEAN_CUSTOM_FIELD_NAME), false),
             FieldDefinition
-                .of(SetFieldType.of(StringFieldType.of()), SET_CUSTOM_FIELD_NAME,
-                    LocalizedString.of(locale, SET_CUSTOM_FIELD_NAME), false));
+                .of(SetFieldType.of(StringFieldType.of()), EMPTY_SET_CUSTOM_FIELD_NAME,
+                    LocalizedString.of(locale, EMPTY_SET_CUSTOM_FIELD_NAME), false),
+            FieldDefinition
+                .of(SetFieldType.of(StringFieldType.of()), NON_EMPTY_SEY_CUSTOM_FIELD_NAME,
+                    LocalizedString.of(locale, NON_EMPTY_SEY_CUSTOM_FIELD_NAME), false),
+            FieldDefinition
+                .of(SetFieldType.of(StringFieldType.of()), NULL_NODE_SET_CUSTOM_FIELD_NAME,
+                    LocalizedString.of(locale, NULL_NODE_SET_CUSTOM_FIELD_NAME), false),
+            FieldDefinition
+                .of(SetFieldType.of(StringFieldType.of()), NULL_SET_CUSTOM_FIELD_NAME,
+                    LocalizedString.of(locale, NULL_SET_CUSTOM_FIELD_NAME), false));
 
     }
 

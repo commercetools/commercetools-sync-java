@@ -2,7 +2,7 @@ package com.commercetools.sync.products;
 
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.BaseSync;
-import com.commercetools.sync.products.helpers.BatchProcessor;
+import com.commercetools.sync.products.helpers.ProductBatchProcessor;
 import com.commercetools.sync.products.helpers.ProductReferenceResolver;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.services.CategoryService;
@@ -111,7 +111,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         existingDrafts = new HashSet<>();
 
 
-        final BatchProcessor batchProcessor = new BatchProcessor(batch, this);
+        final ProductBatchProcessor batchProcessor = new ProductBatchProcessor(batch, this);
         batchProcessor.validateBatch();
 
         final Set<String> keysToCache = batchProcessor.getKeysToCache();
