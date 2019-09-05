@@ -519,18 +519,17 @@ class VariantReferenceResolverTest {
     }
 
     @Test
-    void getProductResolvedIdFromKeyInReference_WithEmptyValue_ShouldGetEmptyId() {
+    void getProductResolvedIdFromKeyInReference_WithEmptyValue_ShouldResultInEmptyOptional() {
         final AttributeDraft attributeWithEmptyValue =
             AttributeDraft.of("attributeName", JsonNodeFactory.instance.objectNode());
         final Optional<String> optionalId =
             referenceResolver.getProductResolvedIdFromKeyInReference(attributeWithEmptyValue.getValue())
                              .toCompletableFuture().join();
         assertThat(optionalId).isEmpty();
-
     }
 
     @Test
-    void getProductResolvedIdFromKeyInReference_WithTextAttribute_ShouldGetEmptyId() {
+    void getProductResolvedIdFromKeyInReference_WithTextAttribute_ShouldResultInEmptyOptional() {
         final AttributeDraft textAttribute = AttributeDraft.of("attributeName", "attributeValue");
         final Optional<String> optionalId = referenceResolver
             .getProductResolvedIdFromKeyInReference(textAttribute.getValue())
@@ -539,7 +538,7 @@ class VariantReferenceResolverTest {
     }
 
     @Test
-    void getProductResolvedIdFromKeyInReference_WithNonReferenceAttribute_ShouldGetEmptyId() {
+    void getProductResolvedIdFromKeyInReference_WithNonReferenceAttribute_ShouldResultInEmptyOptional() {
         final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
         attributeValue.put("anyString", "anyValue");
         final AttributeDraft attribute = AttributeDraft.of("attributeName", attributeValue);
@@ -552,7 +551,7 @@ class VariantReferenceResolverTest {
     }
 
     @Test
-    void getProductResolvedIdFromKeyInReference_WithNonExistingProductInReferenceAttribute_ShouldGetEmptyId() {
+    void getProductResolvedIdFromKeyInReference_WithNonExistingProductReferenceAttribute_ShouldResultInEmptyOptional() {
         when(productService.getIdFromCacheOrFetch(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
@@ -567,7 +566,7 @@ class VariantReferenceResolverTest {
     }
 
     @Test
-    void getProductResolvedIdFromKeyInReference_WithNullIdField_ShouldGetEmptyId() {
+    void getProductResolvedIdFromKeyInReference_WithNullIdField_ShouldResultInEmptyOptional() {
         final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
         attributeValue.put("typeId", "product");
         final AttributeDraft productReferenceAttribute = AttributeDraft.of("attributeName", attributeValue);
