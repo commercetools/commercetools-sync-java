@@ -22,7 +22,7 @@ import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.attributes.NestedAttributeType;
 import io.sphere.sdk.products.attributes.SetAttributeType;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
-import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
+import io.sphere.sdk.products.commands.updateactions.SetAttribute;
 import io.sphere.sdk.products.queries.ProductByKeyGet;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.commands.ProductTypeUpdateCommand;
@@ -430,9 +430,7 @@ class ProductSyncWithNestedReferencedProductsIT {
 
         final AttributeDraft expectedProductReferenceAttribute =
             AttributeDraft.of("nestedAttribute", createArrayNode(expectedNestedAttributeValue));
-
-
-        assertThat(actions).containsExactly(SetAttributeInAllVariants.of(expectedProductReferenceAttribute, true));
+        assertThat(actions).containsExactly(SetAttribute.of(1, expectedProductReferenceAttribute, true));
 
 
         final Product createdProduct = CTP_TARGET_CLIENT
@@ -691,18 +689,20 @@ class ProductSyncWithNestedReferencedProductsIT {
 
         assertThat(createdProductReferenceAttribute).hasValueSatisfying(attribute -> {
 
-            final JsonNode nestedAttributeNameField = attribute
+            final JsonNode setOfNestedAttributeNameField = attribute
                 .getValueAsJsonNode()
                 .get(0)
+                .get(0)
                 .get(ATTRIBUTE_NAME_FIELD);
-            final JsonNode nestedAttributeValueField = attribute
+            final JsonNode setOfNestedAttributeValueField = attribute
                 .getValueAsJsonNode()
+                .get(0)
                 .get(0)
                 .get(ATTRIBUTE_VALUE_FIELD);
 
-            assertThat(nestedAttributeNameField.asText()).isEqualTo("product-reference-set");
-            assertThat(nestedAttributeValueField).isInstanceOf(ArrayNode.class);
-            final ArrayNode referenceSet = (ArrayNode) nestedAttributeValueField;
+            assertThat(setOfNestedAttributeNameField.asText()).isEqualTo("product-reference-set");
+            assertThat(setOfNestedAttributeValueField).isInstanceOf(ArrayNode.class);
+            final ArrayNode referenceSet = (ArrayNode) setOfNestedAttributeValueField;
             assertThat(referenceSet)
                 .hasSize(2)
                 .anySatisfy(reference -> {
