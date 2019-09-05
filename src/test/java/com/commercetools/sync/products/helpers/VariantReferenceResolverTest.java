@@ -570,8 +570,6 @@ class VariantReferenceResolverTest {
         assertThat(resolvedCategoryReferenceAttributeValue.get(REFERENCE_ID_FIELD).asText()).isEqualTo(CATEGORY1_ID);
         assertThat(resolvedCategoryReferenceAttributeValue.get(REFERENCE_TYPE_ID_FIELD).asText())
             .isEqualTo(Category.referenceTypeId());
-
-
     }
 
     @Test
@@ -759,8 +757,7 @@ class VariantReferenceResolverTest {
     }
 
     @Test
-    void
-        resolveAttributeReference_WithSomeExistingProductReferenceSetAttribute_ShouldResolveExistingReferences() {
+    void resolveAttributeReference_WithSomeExistingProductReferenceSetAttribute_ShouldResolveExistingReferences() {
         when(productService.getIdFromCacheOrFetch("existingKey"))
             .thenReturn(CompletableFuture.completedFuture(Optional.of("existingId")));
         when(productService.getIdFromCacheOrFetch("randomKey"))
