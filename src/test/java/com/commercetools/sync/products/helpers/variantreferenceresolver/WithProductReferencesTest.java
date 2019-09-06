@@ -19,6 +19,7 @@ import io.sphere.sdk.products.attributes.AttributeDraft;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
@@ -146,9 +147,8 @@ class WithProductReferencesTest {
 
     @Test
     void resolveReferences_WithProductReferenceSetAttribute_ShouldResolveReferences() {
-        final ObjectNode productReferenceWithRandomId = getProductReferenceWithRandomId();
-        final AttributeDraft productReferenceSetAttributeDraft =
-            getReferenceSetAttributeDraft("foo", productReferenceWithRandomId);
+        final AttributeDraft productReferenceSetAttributeDraft = getReferenceSetAttributeDraft("foo",
+                getProductReferenceWithRandomId(), getProductReferenceWithRandomId());
 
         final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
             .of()
@@ -170,13 +170,13 @@ class WithProductReferencesTest {
 
         final Spliterator<JsonNode> attributeReferencesIterator = resolvedAttributeDraft.getValue().spliterator();
         assertThat(attributeReferencesIterator).isNotNull();
-        final Set<JsonNode> resolvedSet = StreamSupport.stream(attributeReferencesIterator, false)
-                                                       .collect(Collectors.toSet());
+        final List<JsonNode> resolvedSet = StreamSupport.stream(attributeReferencesIterator, false)
+                                                        .collect(Collectors.toList());
         assertThat(resolvedSet).isNotEmpty();
         final ObjectNode resolvedReference = JsonNodeFactory.instance.objectNode();
-        resolvedReference.put(REFERENCE_TYPE_ID_FIELD, "product");
+        resolvedReference.put(REFERENCE_TYPE_ID_FIELD, Product.referenceTypeId());
         resolvedReference.put(REFERENCE_ID_FIELD, PRODUCT_ID);
-        assertThat(resolvedSet).containsExactly(resolvedReference);
+        assertThat(resolvedSet).containsExactlyInAnyOrder(resolvedReference, resolvedReference);
     }
 
     @Test

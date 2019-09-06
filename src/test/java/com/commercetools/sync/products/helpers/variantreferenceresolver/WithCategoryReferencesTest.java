@@ -19,6 +19,7 @@ import io.sphere.sdk.products.attributes.AttributeDraft;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Spliterator;
@@ -142,6 +143,41 @@ class WithCategoryReferencesTest {
         assertThat(resolvedAttribute.getValue().get(REFERENCE_ID_FIELD).asText()).isEqualTo(CATEGORY_ID);
         assertThat(resolvedAttribute.getValue().get(REFERENCE_TYPE_ID_FIELD).asText())
             .isEqualTo(Category.referenceTypeId());
+    }
+
+    @Test
+    void resolveReferences_WithCategoryReferenceSetAttribute_ShouldResolveReferences() {
+        final AttributeDraft categoryReferenceSetAttributeDraft = getReferenceSetAttributeDraft("foo",
+            createReferenceObject(UUID.randomUUID().toString(), Category.referenceTypeId()),
+            createReferenceObject(UUID.randomUUID().toString(), Category.referenceTypeId()));
+
+        final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
+            .of()
+            .attributes(categoryReferenceSetAttributeDraft)
+            .build();
+
+        // test
+        final ProductVariantDraft resolvedProductVariantDraft =
+            referenceResolver.resolveReferences(productVariantDraft)
+                             .toCompletableFuture().join();
+
+        // assertions
+        assertThat(resolvedProductVariantDraft).isNotNull();
+        assertThat(resolvedProductVariantDraft.getAttributes()).isNotNull();
+
+        final AttributeDraft resolvedAttributeDraft = resolvedProductVariantDraft.getAttributes().get(0);
+        assertThat(resolvedAttributeDraft).isNotNull();
+        assertThat(resolvedAttributeDraft.getValue()).isNotNull();
+
+        final Spliterator<JsonNode> attributeReferencesIterator = resolvedAttributeDraft.getValue().spliterator();
+        assertThat(attributeReferencesIterator).isNotNull();
+        final List<JsonNode> resolvedSet = StreamSupport.stream(attributeReferencesIterator, false)
+                                                        .collect(Collectors.toList());
+        assertThat(resolvedSet).isNotEmpty();
+        final ObjectNode resolvedReference = JsonNodeFactory.instance.objectNode();
+        resolvedReference.put(REFERENCE_TYPE_ID_FIELD, Category.referenceTypeId());
+        resolvedReference.put(REFERENCE_ID_FIELD, CATEGORY_ID);
+        assertThat(resolvedSet).containsExactlyInAnyOrder(resolvedReference, resolvedReference);
     }
 
     @Test

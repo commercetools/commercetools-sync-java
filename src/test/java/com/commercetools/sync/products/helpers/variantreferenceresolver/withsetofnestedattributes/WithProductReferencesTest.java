@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.json.SphereJsonUtils;
+import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductVariantDraft;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -63,7 +64,8 @@ class WithProductReferencesTest {
     void resolveReferences_WithSetOfNestedProductReferenceAttributes_ShouldResolveReferences() {
         // preparation
         final ProductVariantDraft withSetOfNestedProductReferenceAttributes = SphereJsonUtils
-            .readObjectFromResource(SET_OF_NESTED_ATTRIBUTE_WITH_PRODUCT_REFERENCE_ATTRIBUTES, ProductVariantDraft.class);
+            .readObjectFromResource(SET_OF_NESTED_ATTRIBUTE_WITH_PRODUCT_REFERENCE_ATTRIBUTES,
+                ProductVariantDraft.class);
 
         // test
         final ProductVariantDraft resolvedAttributeDraft =
@@ -85,9 +87,12 @@ class WithProductReferencesTest {
             .stream(resolvedNestedAttributeAsArray.spliterator(), false)
             .collect(Collectors.toMap(jsonNode -> jsonNode.get("name").asText(), jsonNode -> jsonNode));
 
-        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-1-name", PRODUCT_ID, "product");
-        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-2-name", PRODUCT_ID, "product");
-        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-3-name", PRODUCT_ID, "product");
+        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-1-name", PRODUCT_ID,
+            Product.referenceTypeId());
+        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-2-name", PRODUCT_ID,
+            Product.referenceTypeId());
+        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-3-name", PRODUCT_ID,
+            Product.referenceTypeId());
     }
 
     @Test
@@ -118,11 +123,11 @@ class WithProductReferencesTest {
             .collect(Collectors.toMap(jsonNode -> jsonNode.get("name").asText(), jsonNode -> jsonNode));
 
         assertReferenceSetAttributeValue(resolvedNestedAttributesMap,
-            "nested-attribute-1-name", 2, PRODUCT_ID, "product");
+            "nested-attribute-1-name", 2, PRODUCT_ID, Product.referenceTypeId());
         assertReferenceAttributeValue(resolvedNestedAttributesMap,
-            "nested-attribute-2-name", PRODUCT_ID, "product");
+            "nested-attribute-2-name", PRODUCT_ID, Product.referenceTypeId());
         assertReferenceAttributeValue(resolvedNestedAttributesMap,
-            "nested-attribute-3-name", PRODUCT_ID, "product");
+            "nested-attribute-3-name", PRODUCT_ID, Product.referenceTypeId());
     }
 
     @Test
@@ -158,10 +163,10 @@ class WithProductReferencesTest {
             .collect(Collectors.toMap(jsonNode -> jsonNode.get("name").asText(), jsonNode -> jsonNode));
 
         assertReferenceAttributeValue(resolvedNestedAttributesMap,
-            "nested-attribute-1-name", "nonExistingProductKey1", "product");
+            "nested-attribute-1-name", "nonExistingProductKey1", Product.referenceTypeId());
         assertReferenceAttributeValue(resolvedNestedAttributesMap,
-            "nested-attribute-2-name", PRODUCT_ID, "product");
+            "nested-attribute-2-name", PRODUCT_ID, Product.referenceTypeId());
         assertReferenceAttributeValue(resolvedNestedAttributesMap,
-            "nested-attribute-3-name", "nonExistingProductKey3", "product");
+            "nested-attribute-3-name", "nonExistingProductKey3", Product.referenceTypeId());
     }
 }

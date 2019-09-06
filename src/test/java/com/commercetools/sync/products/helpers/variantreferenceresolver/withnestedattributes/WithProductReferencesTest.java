@@ -83,9 +83,12 @@ class WithProductReferencesTest {
             .stream(resolvedNestedAttributes.spliterator(), false)
             .collect(Collectors.toMap(jsonNode -> jsonNode.get("name").asText(), jsonNode -> jsonNode));
 
-        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-1-name", PRODUCT_ID, Product.referenceTypeId());
-        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-2-name", PRODUCT_ID, Product.referenceTypeId());
-        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-3-name", PRODUCT_ID, Product.referenceTypeId());
+        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-1-name", PRODUCT_ID,
+            Product.referenceTypeId());
+        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-2-name", PRODUCT_ID,
+            Product.referenceTypeId());
+        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-3-name", PRODUCT_ID,
+            Product.referenceTypeId());
     }
 
     @Test
