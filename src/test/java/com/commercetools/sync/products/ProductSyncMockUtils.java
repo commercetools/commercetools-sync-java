@@ -52,6 +52,7 @@ import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -326,13 +327,10 @@ public class ProductSyncMockUtils {
      *
      * @return the created mock of the {@link CategoryService}.
      */
-    public static CategoryService getMockCategoryService(@Nonnull final String categoryId,
-                                                         @Nonnull final String categoryId2) {
+    public static CategoryService getMockCategoryService(@Nonnull final String id) {
         final CategoryService categoryService = mock(CategoryService.class);
-        when(categoryService.fetchCachedCategoryId("foo"))
-            .thenReturn(CompletableFuture.completedFuture(Optional.of(categoryId)));
-        when(categoryService.fetchCachedCategoryId("bar"))
-            .thenReturn(CompletableFuture.completedFuture(Optional.of(categoryId2)));
+        when(categoryService.fetchCachedCategoryId(any()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.of(id)));
         return categoryService;
     }
 
