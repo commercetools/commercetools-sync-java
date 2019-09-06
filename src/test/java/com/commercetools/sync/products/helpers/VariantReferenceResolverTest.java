@@ -55,8 +55,7 @@ class VariantReferenceResolverTest {
     private static final String CHANNEL_KEY = "channel-key_1";
     private static final String CHANNEL_ID = UUID.randomUUID().toString();
     private static final String PRODUCT_ID = UUID.randomUUID().toString();
-    private static final String CATEGORY1_ID = UUID.randomUUID().toString();
-    private static final String CATEGORY2_ID = UUID.randomUUID().toString();
+    private static final String CATEGORY_ID = UUID.randomUUID().toString();
     private VariantReferenceResolver referenceResolver;
 
     /**
@@ -70,7 +69,7 @@ class VariantReferenceResolverTest {
         referenceResolver = new VariantReferenceResolver(syncOptions, typeService, channelService,
             mock(CustomerGroupService.class),
             getMockProductService(PRODUCT_ID),
-            getMockCategoryService(CATEGORY1_ID, CATEGORY2_ID));
+            getMockCategoryService(CATEGORY_ID));
     }
 
     @Test
@@ -287,7 +286,7 @@ class VariantReferenceResolverTest {
         final JsonNode resolvedCategoryReferenceAttributeValue = resolvedCategoryReferenceAttribute.getValue();
         assertThat(resolvedCategoryReferenceAttributeValue).isNotNull();
 
-        assertThat(resolvedCategoryReferenceAttributeValue.get(REFERENCE_ID_FIELD).asText()).isEqualTo(CATEGORY1_ID);
+        assertThat(resolvedCategoryReferenceAttributeValue.get(REFERENCE_ID_FIELD).asText()).isEqualTo(CATEGORY_ID);
         assertThat(resolvedCategoryReferenceAttributeValue.get(REFERENCE_TYPE_ID_FIELD).asText())
             .isEqualTo(Category.referenceTypeId());
     }
