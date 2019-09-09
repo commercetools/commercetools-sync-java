@@ -58,6 +58,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
      * @param channelService       the service to fetch the channels for reference resolution.
      * @param customerGroupService the service to fetch the customer groups for reference resolution.
      * @param productService       the service to fetch the products for reference resolution.
+     * @param productTypeService   the service to fetch the productTypes for reference resolution.
      * @param categoryService      the service to fetch the categories for reference resolution.
      */
     public VariantReferenceResolver(@Nonnull final ProductSyncOptions productSyncOptions,
