@@ -3,11 +3,7 @@ package com.commercetools.sync.products.helpers.variantreferenceresolver.withnes
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.VariantReferenceResolver;
-import com.commercetools.sync.services.CategoryService;
-import com.commercetools.sync.services.ChannelService;
-import com.commercetools.sync.services.CustomerGroupService;
-import com.commercetools.sync.services.ProductService;
-import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.services.*;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.json.SphereJsonUtils;
 import io.sphere.sdk.products.ProductVariantDraft;
@@ -39,6 +35,7 @@ class WithNoReferencesTest {
             mock(ChannelService.class),
             mock(CustomerGroupService.class),
             mock(ProductService.class),
+            mock(ProductTypeService.class),
             mock(CategoryService.class));
     }
 

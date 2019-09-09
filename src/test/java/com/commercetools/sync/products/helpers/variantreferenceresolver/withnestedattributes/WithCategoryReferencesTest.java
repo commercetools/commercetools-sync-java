@@ -3,11 +3,7 @@ package com.commercetools.sync.products.helpers.variantreferenceresolver.withnes
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.VariantReferenceResolver;
-import com.commercetools.sync.services.CategoryService;
-import com.commercetools.sync.services.ChannelService;
-import com.commercetools.sync.services.CustomerGroupService;
-import com.commercetools.sync.services.ProductService;
-import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.services.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.sphere.sdk.categories.Category;
@@ -58,6 +54,7 @@ class WithCategoryReferencesTest {
             mock(ChannelService.class),
             mock(CustomerGroupService.class),
             mock(ProductService.class),
+            mock(ProductTypeService.class),
             categoryService);
     }
 

@@ -318,7 +318,7 @@ public class ProductSyncMockUtils {
         return productService;
     }
 
-    /**
+   /**
      * Creates a mock {@link CategoryService} that returns a completed {@link CompletableFuture} containing an
      * {@link Optional} containing the id of the supplied value whenever the following method is called on the service:
      * <ul>

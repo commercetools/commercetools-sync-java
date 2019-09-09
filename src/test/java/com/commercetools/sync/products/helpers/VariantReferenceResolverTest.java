@@ -13,10 +13,7 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.AssetDraftBuilder;
 import io.sphere.sdk.models.DefaultCurrencyUnits;
-import io.sphere.sdk.products.PriceDraft;
-import io.sphere.sdk.products.PriceDraftBuilder;
-import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.products.ProductVariantDraftBuilder;
+import io.sphere.sdk.products.*;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.utils.MoneyImpl;
@@ -37,11 +34,7 @@ import java.util.stream.StreamSupport;
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
-import static com.commercetools.sync.products.ProductSyncMockUtils.createReferenceObject;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCategoryService;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductService;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceWithRandomId;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getReferenceSetAttributeDraft;
+import static com.commercetools.sync.products.ProductSyncMockUtils.*;
 import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_ID_FIELD;
 import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_TYPE_ID_FIELD;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
@@ -55,6 +48,7 @@ class VariantReferenceResolverTest {
     private static final String CHANNEL_KEY = "channel-key_1";
     private static final String CHANNEL_ID = UUID.randomUUID().toString();
     private static final String PRODUCT_ID = UUID.randomUUID().toString();
+    private static final String PRODUCTTYPE_ID = UUID.randomUUID().toString();
     private static final String CATEGORY_ID = UUID.randomUUID().toString();
     private VariantReferenceResolver referenceResolver;
 
@@ -69,6 +63,7 @@ class VariantReferenceResolverTest {
         referenceResolver = new VariantReferenceResolver(syncOptions, typeService, channelService,
             mock(CustomerGroupService.class),
             getMockProductService(PRODUCT_ID),
+            getMockProductTypeService(PRODUCTTYPE_ID),
             getMockCategoryService(CATEGORY_ID));
     }
 
@@ -442,13 +437,13 @@ class VariantReferenceResolverTest {
     void isProductReference_WithEmptyValue_ShouldReturnFalse() {
         final AttributeDraft attributeWithEmptyValue =
             AttributeDraft.of("attributeName", JsonNodeFactory.instance.objectNode());
-        assertThat(VariantReferenceResolver.isProductReference(attributeWithEmptyValue.getValue())).isFalse();
+        assertThat(VariantReferenceResolver.isReferenceOfType(attributeWithEmptyValue.getValue(),  Product.referenceTypeId())).isFalse();
     }
 
     @Test
     void isProductReference_WithTextAttribute_ShouldReturnFalse() {
         final AttributeDraft textAttribute = AttributeDraft.of("attributeName", "attributeValue");
-        assertThat(VariantReferenceResolver.isProductReference(textAttribute.getValue())).isFalse();
+        assertThat(VariantReferenceResolver.isReferenceOfType(textAttribute.getValue(), Product.referenceTypeId())).isFalse();
     }
 
     @Test
@@ -456,7 +451,7 @@ class VariantReferenceResolverTest {
         final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
         attributeValue.put("anyString", "anyValue");
         final AttributeDraft attribute = AttributeDraft.of("attributeName", attributeValue);
-        assertThat(VariantReferenceResolver.isProductReference(attribute.getValue())).isFalse();
+        assertThat(VariantReferenceResolver.isReferenceOfType(attribute.getValue(),  Product.referenceTypeId())).isFalse();
     }
 
     @Test
@@ -465,13 +460,13 @@ class VariantReferenceResolverTest {
         attributeValue.put(REFERENCE_TYPE_ID_FIELD, "category");
         attributeValue.put(REFERENCE_ID_FIELD, UUID.randomUUID().toString());
         final AttributeDraft categoryReferenceAttribute = AttributeDraft.of("attributeName", attributeValue);
-        assertThat(VariantReferenceResolver.isProductReference(categoryReferenceAttribute.getValue())).isFalse();
+        assertThat(VariantReferenceResolver.isReferenceOfType(categoryReferenceAttribute.getValue(), Product.referenceTypeId())).isFalse();
     }
 
     @Test
     void isProductReference_WithProductReferenceAttribute_ShouldReturnTrue() {
         final ObjectNode attributeValue = getProductReferenceWithRandomId();
         final AttributeDraft categoryReferenceAttribute = AttributeDraft.of("attributeName", attributeValue);
-        assertThat(VariantReferenceResolver.isProductReference(categoryReferenceAttribute.getValue())).isTrue();
+        assertThat(VariantReferenceResolver.isReferenceOfType(categoryReferenceAttribute.getValue(), Product.referenceTypeId())).isTrue();
     }
 }
