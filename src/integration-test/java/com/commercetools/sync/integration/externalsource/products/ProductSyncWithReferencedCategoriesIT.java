@@ -101,7 +101,6 @@ class ProductSyncWithReferencedCategoriesIT {
             .execute(CategoryCreateCommand.of(category2Draft))
             .toCompletableFuture()
             .join();
-
     }
 
     private void clearSyncTestCollections() {

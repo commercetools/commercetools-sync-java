@@ -57,8 +57,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class ProductSyncWithNestedReferencedProductsIT {
     private static ProductType productType;
-    private static ProductType nestedProductType;
-
 
     private ProductSyncOptions syncOptions;
     private Product product;
@@ -79,7 +77,8 @@ class ProductSyncWithNestedReferencedProductsIT {
     static void setup() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
-        nestedProductType = createProductType(PRODUCT_TYPE_WITH_REFERENCES_RESOURCE_PATH, CTP_TARGET_CLIENT);
+        final ProductType nestedProductType = createProductType(PRODUCT_TYPE_WITH_REFERENCES_RESOURCE_PATH,
+            CTP_TARGET_CLIENT);
 
 
         final AttributeDefinitionDraft nestedAttributeDef = AttributeDefinitionDraftBuilder
@@ -274,7 +273,8 @@ class ProductSyncWithNestedReferencedProductsIT {
                 .get(ATTRIBUTE_VALUE_FIELD);
 
             assertThat(nestedAttributeNameField.asText()).isEqualTo("product-reference");
-            assertThat(nestedAttributeReferenceValueField.get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo("product");
+            assertThat(nestedAttributeReferenceValueField.get(REFERENCE_TYPE_ID_FIELD).asText())
+                .isEqualTo(Product.referenceTypeId());
             assertThat(nestedAttributeReferenceValueField.get(REFERENCE_ID_FIELD).asText()).isEqualTo(product.getId());
         });
     }
@@ -360,7 +360,8 @@ class ProductSyncWithNestedReferencedProductsIT {
                 .get(0)
                 .get(ATTRIBUTE_VALUE_FIELD);
             assertThat(nestedAttributeNameField.asText()).isEqualTo("product-reference");
-            assertThat(nestedAttributeValueField.get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo("product");
+            assertThat(nestedAttributeValueField.get(REFERENCE_TYPE_ID_FIELD).asText())
+                .isEqualTo(Product.referenceTypeId());
             assertThat(nestedAttributeValueField.get(REFERENCE_ID_FIELD).asText()).isEqualTo(product.getId());
         });
     }
@@ -455,7 +456,8 @@ class ProductSyncWithNestedReferencedProductsIT {
 
 
             assertThat(nestedAttributeNameField.asText()).isEqualTo("product-reference");
-            assertThat(nestedAttributeValueField.get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo("product");
+            assertThat(nestedAttributeValueField.get(REFERENCE_TYPE_ID_FIELD).asText())
+                .isEqualTo(Product.referenceTypeId());
             assertThat(nestedAttributeValueField.get(REFERENCE_ID_FIELD).asText()).isEqualTo(product2.getId());
         });
     }
@@ -576,11 +578,11 @@ class ProductSyncWithNestedReferencedProductsIT {
             assertThat(referenceSet)
                 .hasSize(2)
                 .anySatisfy(reference -> {
-                    assertThat(reference.get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo("product");
+                    assertThat(reference.get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo(Product.referenceTypeId());
                     assertThat(reference.get(REFERENCE_ID_FIELD).asText()).isEqualTo(product.getId());
                 })
                 .anySatisfy(reference -> {
-                    assertThat(reference.get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo("product");
+                    assertThat(reference.get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo(Product.referenceTypeId());
                     assertThat(reference.get(REFERENCE_ID_FIELD).asText()).isEqualTo(product2.getId());
                 });
         });
@@ -707,18 +709,18 @@ class ProductSyncWithNestedReferencedProductsIT {
             assertThat(referenceSet)
                 .hasSize(2)
                 .anySatisfy(reference -> {
-                    assertThat(reference.get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo("product");
+                    assertThat(reference.get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo(Product.referenceTypeId());
                     assertThat(reference.get(REFERENCE_ID_FIELD).asText()).isEqualTo(product.getId());
                 })
                 .anySatisfy(reference -> {
-                    assertThat(reference.get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo("product");
+                    assertThat(reference.get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo(Product.referenceTypeId());
                     assertThat(reference.get(REFERENCE_ID_FIELD).asText()).isEqualTo(product2.getId());
                 });
         });
     }
 
     @Nonnull
-    private ObjectNode createNestedAttributeValueReferences(
+    static ObjectNode createNestedAttributeValueReferences(
         @Nonnull final String attributeName,
         @Nonnull final ObjectNode referenceValue) {
 
@@ -730,7 +732,7 @@ class ProductSyncWithNestedReferencedProductsIT {
     }
 
     @Nonnull
-    private ObjectNode createNestedAttributeValueSetOfReferences(
+    static ObjectNode createNestedAttributeValueSetOfReferences(
         @Nonnull final String attributeName,
         @Nonnull final ObjectNode... referenceValues) {
 
@@ -742,14 +744,14 @@ class ProductSyncWithNestedReferencedProductsIT {
     }
 
     @Nonnull
-    private ArrayNode createArrayNode(@Nonnull final ObjectNode... objectNodes) {
+    static ArrayNode createArrayNode(@Nonnull final ObjectNode... objectNodes) {
         final ArrayNode arrayNode = JsonNodeFactory.instance.arrayNode();
         asList(objectNodes).forEach(arrayNode::add);
         return arrayNode;
     }
 
     @Nonnull
-    private ArrayNode createArrayNode(@Nonnull final ArrayNode arrayNode) {
+    static ArrayNode createArrayNode(@Nonnull final ArrayNode arrayNode) {
         final ArrayNode containingArrayNode = JsonNodeFactory.instance.arrayNode();
         containingArrayNode.add(arrayNode);
         return containingArrayNode;
