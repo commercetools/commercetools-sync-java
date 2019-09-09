@@ -105,8 +105,9 @@ class WithProductReferencesTest {
         // preparation
         final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
         attributeValue.put(REFERENCE_TYPE_ID_FIELD, Product.referenceTypeId());
+        attributeValue.set(REFERENCE_ID_FIELD, JsonNodeFactory.instance.nullNode());
         final AttributeDraft productReferenceAttribute =
-            AttributeDraft.of("attributeName", JsonNodeFactory.instance.nullNode());
+            AttributeDraft.of("attributeName", attributeValue);
         final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
             .of()
             .attributes(productReferenceAttribute)
