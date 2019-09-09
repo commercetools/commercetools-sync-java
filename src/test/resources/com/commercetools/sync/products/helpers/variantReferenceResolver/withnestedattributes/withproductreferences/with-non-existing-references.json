@@ -6,10 +6,16 @@
       "name": "attribute-name",
       "value": [
         {
-          "value": {
-            "id": "nonExistingProductKey1",
-            "typeId": "product"
-          },
+          "value": [
+            {
+              "id": "nonExistingProductKey1",
+              "typeId": "product"
+            },
+            {
+              "id": "key1",
+              "typeId": "product"
+            }
+          ],
           "name": "nested-attribute-1-name"
         },
         {

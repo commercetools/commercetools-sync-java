@@ -6,10 +6,16 @@
       "name": "attribute-name",
       "value": [
         {
-          "value": {
-            "id": "nonExistingCategoryKey1",
-            "typeId": "category"
-          },
+          "value": [
+            {
+              "id": "nonExistingCategoryKey1",
+              "typeId": "category"
+            },
+            {
+              "id": "key1",
+              "typeId": "category"
+            }
+          ],
           "name": "nested-attribute-1-name"
         },
         {

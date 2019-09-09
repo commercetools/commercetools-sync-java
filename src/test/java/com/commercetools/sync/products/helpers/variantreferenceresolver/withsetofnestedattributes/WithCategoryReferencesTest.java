@@ -24,6 +24,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import static com.commercetools.sync.products.ProductSyncMockUtils.createReferenceObject;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCategoryService;
 import static com.commercetools.sync.products.helpers.variantreferenceresolver.Utils.assertReferenceAttributeValue;
 import static com.commercetools.sync.products.helpers.variantreferenceresolver.Utils.assertReferenceSetAttributeValue;
@@ -162,10 +163,14 @@ class WithCategoryReferencesTest {
             .stream(resolvedNestedAttributeAsArray.spliterator(), false)
             .collect(Collectors.toMap(jsonNode -> jsonNode.get("name").asText(), jsonNode -> jsonNode));
 
-        assertReferenceAttributeValue(resolvedNestedAttributesMap,
-            "nested-attribute-1-name", "nonExistingCategoryKey1", Category.referenceTypeId());
+        assertReferenceSetAttributeValue(resolvedNestedAttributesMap,
+            "nested-attribute-1-name",
+            createReferenceObject("nonExistingCategoryKey1", Category.referenceTypeId()),
+            createReferenceObject(CATEGORY_ID, Category.referenceTypeId()));
+
         assertReferenceAttributeValue(resolvedNestedAttributesMap,
             "nested-attribute-2-name", CATEGORY_ID, Category.referenceTypeId());
+
         assertReferenceAttributeValue(resolvedNestedAttributesMap,
             "nested-attribute-3-name", "nonExistingCategoryKey3", Category.referenceTypeId());
     }

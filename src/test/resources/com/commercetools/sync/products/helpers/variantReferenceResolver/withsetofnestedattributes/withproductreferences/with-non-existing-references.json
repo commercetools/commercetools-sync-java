@@ -7,15 +7,21 @@
       "value": [
         [
           {
-            "value": {
-              "id": "nonExistingProductKey1",
-              "typeId": "product"
-            },
+            "value": [
+              {
+                "id": "nonExistingProductKey1",
+                "typeId": "product"
+              },
+              {
+                "id": "key2",
+                "typeId": "product"
+              }
+            ],
             "name": "nested-attribute-1-name"
           },
           {
             "value": {
-              "id": "key1",
+              "id": "key2",
               "typeId": "product"
             },
             "name": "nested-attribute-2-name"
@@ -26,6 +32,13 @@
               "typeId": "product"
             },
             "name": "nested-attribute-3-name"
+          },
+          {
+            "value": {
+              "id": "key4",
+              "typeId": "product"
+            },
+            "name": "nested-attribute-4-name"
           }
         ]
       ]

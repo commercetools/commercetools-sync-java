@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 
 import javax.annotation.Nonnull;
+import java.util.Arrays;
 import java.util.Map;
 
 import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_ID_FIELD;
@@ -44,6 +45,19 @@ public final class Utils {
             assertThat(jsonNode.get(REFERENCE_ID_FIELD).asText()).isEqualTo(referenceId);
             assertThat(jsonNode.get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo(referenceTypeId);
         });
+    }
+
+    public static void assertReferenceSetAttributeValue(
+        @Nonnull final Map<String, JsonNode> attributeDraftMap,
+        @Nonnull final String attributeName,
+        @Nonnull final JsonNode... expectedReferences) {
+
+        assertThat(attributeDraftMap.get(attributeName)).isNotNull();
+        final JsonNode value = attributeDraftMap.get(attributeName).get("value");
+        assertThat(value).isInstanceOf(ArrayNode.class);
+
+        final ArrayNode valueAsArrayNode = (ArrayNode) value;
+        assertThat(valueAsArrayNode).containsAll(Arrays.asList(expectedReferences));
     }
 
     private Utils() {
