@@ -308,7 +308,8 @@ class ProductSyncWithReferencedProductsIT {
                           .findAttribute(productReferenceAttribute.getName());
 
         assertThat(createdProductReferenceAttribute).hasValueSatisfying(attribute -> {
-            assertThat(attribute.getValueAsJsonNode().get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo(Product.referenceTypeId());
+            assertThat(attribute.getValueAsJsonNode().get(REFERENCE_TYPE_ID_FIELD).asText())
+                .isEqualTo(Product.referenceTypeId());
             assertThat(attribute.getValueAsJsonNode().get(REFERENCE_ID_FIELD).asText()).isEqualTo(product2.getId());
         });
     }
@@ -414,7 +415,8 @@ class ProductSyncWithReferencedProductsIT {
                           .findAttribute(productReferenceAttribute.getName());
 
         assertThat(createdProductReferenceAttribute).hasValueSatisfying(attribute -> {
-            assertThat(attribute.getValueAsJsonNode().get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo(Product.referenceTypeId());
+            assertThat(attribute.getValueAsJsonNode().get(REFERENCE_TYPE_ID_FIELD).asText())
+                .isEqualTo(Product.referenceTypeId());
             assertThat(attribute.getValueAsJsonNode().get(REFERENCE_ID_FIELD).asText()).isEqualTo(product.getId());
         });
 
