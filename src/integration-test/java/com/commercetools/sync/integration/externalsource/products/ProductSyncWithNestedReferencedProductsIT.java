@@ -95,10 +95,7 @@ class ProductSyncWithNestedReferencedProductsIT {
         CTP_TARGET_CLIENT.execute(productTypeUpdateCommand).toCompletableFuture().join();
     }
 
-    /**
-     * Deletes Products from the target CTP project, then it populates target CTP project with product test
-     * data.
-     */
+
     @BeforeEach
     void setupTest() {
         clearSyncTestCollections();

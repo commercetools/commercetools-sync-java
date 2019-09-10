@@ -100,10 +100,6 @@ class ProductSyncWithNestedReferencedCategoriesIT {
         CTP_TARGET_CLIENT.execute(productTypeUpdateCommand).toCompletableFuture().join();
     }
 
-    /**
-     * Deletes products and categories from the target CTP project, then populates target CTP project with 2 test categories
-     * data.
-     */
     @BeforeEach
     void setupTest() {
         clearSyncTestCollections();
