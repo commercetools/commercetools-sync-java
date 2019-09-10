@@ -1,4 +1,4 @@
-package com.commercetools.sync.products.helpers.variantreferenceresolver.withnestedattributes;
+package com.commercetools.sync.products.helpers.variantreferenceresolver.withsetofnestedattributes;
 
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -7,7 +7,6 @@ import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
-import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.products.ProductVariantDraft;
@@ -18,16 +17,15 @@ import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-class WithNoReferencesTest {
+class WithCustomerReferencesTest {
+
     private VariantReferenceResolver referenceResolver;
 
-    static final String RES_ROOT =
-        "com/commercetools/sync/products/helpers/variantReferenceResolver/withnestedattributes/";
-    private static final String RES_SUB_ROOT = "withnoreferences/";
-    private static final String NESTED_ATTRIBUTE_WITH_TEXT_ATTRIBUTES =
-        RES_ROOT + RES_SUB_ROOT + "with-text-attributes.json";
-    private static final String NESTED_ATTRIBUTE_WITH_SET_OF_TEXT_ATTRIBUTES =
-        RES_ROOT + RES_SUB_ROOT + "with-set-of-text-attributes.json";
+    private static final String RES_SUB_ROOT = "withcustomerreferences/";
+    private static final String SET_OF_NESTED_ATTRIBUTE_WITH_CUSTOMER_REFERENCE_ATTRIBUTES =
+        WithNoReferencesTest.RES_ROOT + RES_SUB_ROOT + "with-reference.json";
+    private static final String SET_OF_NESTED_ATTRIBUTE_WITH_SET_OF_CUSTOMER_REFERENCE_ATTRIBUTES =
+        WithNoReferencesTest.RES_ROOT + RES_SUB_ROOT + "with-set-of-references.json";
 
     @BeforeEach
     void setup() {
@@ -37,37 +35,40 @@ class WithNoReferencesTest {
             mock(ChannelService.class),
             mock(CustomerGroupService.class),
             mock(ProductService.class),
-            mock(ProductTypeService.class),
             mock(CategoryService.class));
     }
 
     @Test
-    void resolveReferences_WithNestedTextAttributes_ShouldReturnEqualDraft() {
+    void resolveReferences_WithSetOfNestedCustomerReferenceAttributes_ShouldNotResolveReferences() {
         // preparation
-        final ProductVariantDraft withNestedTextAttributes =
-            readObjectFromResource(NESTED_ATTRIBUTE_WITH_TEXT_ATTRIBUTES, ProductVariantDraft.class);
+        final ProductVariantDraft withSetOfNestedCustomerReferenceAttributes =
+            readObjectFromResource(SET_OF_NESTED_ATTRIBUTE_WITH_CUSTOMER_REFERENCE_ATTRIBUTES,
+                ProductVariantDraft.class);
 
         // test
         final ProductVariantDraft resolvedAttributeDraft =
-            referenceResolver.resolveReferences(withNestedTextAttributes)
+            referenceResolver.resolveReferences(withSetOfNestedCustomerReferenceAttributes)
                              .toCompletableFuture()
                              .join();
+
         // assertions
-        assertThat(resolvedAttributeDraft).isEqualTo(withNestedTextAttributes);
+        assertThat(withSetOfNestedCustomerReferenceAttributes).isEqualTo(resolvedAttributeDraft);
     }
 
     @Test
-    void resolveReferences_WithNestedSetOfTextAttributes_ShouldReturnEqualDraft() {
+    void resolveReferences_WithSetOfNestedSetOfCustomerReferenceAttributes_ShouldNotResolveReferences() {
         // preparation
-        final ProductVariantDraft withNestedSetOfTextAttributes =
-            readObjectFromResource(NESTED_ATTRIBUTE_WITH_SET_OF_TEXT_ATTRIBUTES, ProductVariantDraft.class);
+        final ProductVariantDraft withSetOfNestedSetOfCustomerReferenceAttributes =
+            readObjectFromResource(SET_OF_NESTED_ATTRIBUTE_WITH_SET_OF_CUSTOMER_REFERENCE_ATTRIBUTES,
+                ProductVariantDraft.class);
 
         // test
         final ProductVariantDraft resolvedAttributeDraft =
-            referenceResolver.resolveReferences(withNestedSetOfTextAttributes)
+            referenceResolver.resolveReferences(withSetOfNestedSetOfCustomerReferenceAttributes)
                              .toCompletableFuture()
                              .join();
+
         // assertions
-        assertThat(resolvedAttributeDraft).isEqualTo(withNestedSetOfTextAttributes);
+        assertThat(withSetOfNestedSetOfCustomerReferenceAttributes).isEqualTo(resolvedAttributeDraft);
     }
 }

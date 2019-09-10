@@ -7,15 +7,21 @@
       "value": [
         [
           {
-            "value": {
-              "id": "nonExistingCategoryKey1",
-              "typeId": "category"
-            },
+            "value": [
+              {
+                "id": "nonExistingCategoryKey1",
+                "typeId": "category"
+              },
+              {
+                "id": "key2",
+                "typeId": "category"
+              }
+            ],
             "name": "nested-attribute-1-name"
           },
           {
             "value": {
-              "id": "key1",
+              "id": "key2",
               "typeId": "category"
             },
             "name": "nested-attribute-2-name"
@@ -26,9 +32,17 @@
               "typeId": "category"
             },
             "name": "nested-attribute-3-name"
+          },
+          {
+            "value": {
+              "id": "key4",
+              "typeId": "category"
+            },
+            "name": "nested-attribute-4-name"
           }
         ]
       ]
     }
   ]
 }
+

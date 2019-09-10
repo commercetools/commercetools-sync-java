@@ -61,9 +61,6 @@ class VariantReferenceResolverTest {
     private static final String CATEGORY_ID = UUID.randomUUID().toString();
     private VariantReferenceResolver referenceResolver;
 
-    /**
-     * Sets up the services and the options needed for reference resolution.
-     */
     @BeforeEach
     void setup() {
         final TypeService typeService = getMockTypeService();
@@ -86,8 +83,8 @@ class VariantReferenceResolverTest {
         // test
         final ProductVariantDraft resolvedAttributeDraft =
             referenceResolver.resolveReferences(productVariantDraft)
-                .toCompletableFuture()
-                .join();
+                             .toCompletableFuture()
+                             .join();
         // assertions
         assertThat(resolvedAttributeDraft).isEqualTo(productVariantDraft);
     }
@@ -103,8 +100,8 @@ class VariantReferenceResolverTest {
         // test
         final ProductVariantDraft resolvedAttributeDraft =
             referenceResolver.resolveReferences(productVariantDraft)
-                .toCompletableFuture()
-                .join();
+                             .toCompletableFuture()
+                             .join();
         // assertions
         assertThat(resolvedAttributeDraft).isEqualTo(productVariantDraft);
     }
@@ -120,8 +117,8 @@ class VariantReferenceResolverTest {
         // test
         final ProductVariantDraft resolvedAttributeDraft =
             referenceResolver.resolveReferences(productVariantDraft)
-                .toCompletableFuture()
-                .join();
+                             .toCompletableFuture()
+                             .join();
         // assertions
         assertThat(resolvedAttributeDraft.getAttributes()).isEmpty();
     }
@@ -138,8 +135,8 @@ class VariantReferenceResolverTest {
         // test
         final ProductVariantDraft resolvedAttributeDraft =
             referenceResolver.resolveReferences(productVariantDraft)
-                .toCompletableFuture()
-                .join();
+                             .toCompletableFuture()
+                             .join();
         // assertions
         assertThat(resolvedAttributeDraft).isEqualTo(productVariantDraft);
     }
@@ -157,14 +154,14 @@ class VariantReferenceResolverTest {
         // test
         final ProductVariantDraft resolvedAttributeDraft =
             referenceResolver.resolveReferences(productVariantDraft)
-                .toCompletableFuture()
-                .join();
+                             .toCompletableFuture()
+                             .join();
         // assertions
         assertThat(resolvedAttributeDraft).isEqualTo(productVariantDraft);
     }
 
     @Test
-    void resolveReferences_WithEmptyValue_ShouldReturnEqualDraft() {
+    void resolveReferences_WithEmptyJsonNodeAttributeValue_ShouldReturnEqualDraft() {
         // preparation
         final AttributeDraft attributeWithEmptyValue =
             AttributeDraft.of("attributeName", JsonNodeFactory.instance.objectNode());
@@ -177,14 +174,14 @@ class VariantReferenceResolverTest {
         // test
         final ProductVariantDraft resolvedAttributeDraft =
             referenceResolver.resolveReferences(productVariantDraft)
-                .toCompletableFuture()
-                .join();
+                             .toCompletableFuture()
+                             .join();
         // assertions
         assertThat(resolvedAttributeDraft).isEqualTo(productVariantDraft);
     }
 
     @Test
-    void resolveReferences_WithEmptyReferenceSetAttribute_ShouldReturnEqualDraft() {
+    void resolveReferences_WithEmptySetAttribute_ShouldReturnEqualDraft() {
         // preparation
         final AttributeDraft attributeWithEmptyValue =
             AttributeDraft.of("attributeName", JsonNodeFactory.instance.arrayNode());
@@ -197,14 +194,15 @@ class VariantReferenceResolverTest {
         // test
         final ProductVariantDraft resolvedAttributeDraft =
             referenceResolver.resolveReferences(productVariantDraft)
-                .toCompletableFuture()
-                .join();
+                             .toCompletableFuture()
+                             .join();
         // assertions
         assertThat(resolvedAttributeDraft).isEqualTo(productVariantDraft);
     }
 
     @Test
     void resolveReferences_WithNoPriceReferences_ShouldResolveAttributeReferences() {
+        // preparation
         final ObjectNode productReferenceWithRandomId = getProductReferenceWithRandomId();
         final AttributeDraft productReferenceSetAttribute =
             getReferenceSetAttributeDraft("foo", productReferenceWithRandomId);
@@ -215,26 +213,32 @@ class VariantReferenceResolverTest {
             Arrays.asList(productReferenceSetAttribute, textAttribute);
 
 
-        final ProductVariantDraft variantDraft = ProductVariantDraftBuilder.of()
+        final ProductVariantDraft variantDraft = ProductVariantDraftBuilder
+            .of()
             .attributes(attributeDrafts)
             .build();
 
-
+        // test
         final ProductVariantDraft resolvedDraft = referenceResolver.resolveReferences(variantDraft)
-            .toCompletableFuture().join();
+                                                                   .toCompletableFuture().join();
 
+        // assertions
         final List<PriceDraft> resolvedDraftPrices = resolvedDraft.getPrices();
         assertThat(resolvedDraftPrices).isNull();
 
         final List<AttributeDraft> resolvedBuilderAttributes = resolvedDraft.getAttributes();
         assertThat(resolvedBuilderAttributes).hasSize(2);
         assertThat(resolvedBuilderAttributes).contains(textAttribute);
+
         final AttributeDraft resolvedProductReferenceSetAttribute = resolvedBuilderAttributes.get(0);
         assertThat(resolvedProductReferenceSetAttribute).isNotNull();
+
         final JsonNode resolvedProductReferenceSetValue = resolvedProductReferenceSetAttribute.getValue();
         assertThat(resolvedProductReferenceSetValue).isNotNull();
+
         final JsonNode resolvedProductReferenceValue = resolvedProductReferenceSetValue.get(0);
         assertThat(resolvedProductReferenceValue).isNotNull();
+
         final JsonNode resolvedProductReferenceIdTextNode = resolvedProductReferenceValue.get(REFERENCE_ID_FIELD);
         assertThat(resolvedProductReferenceIdTextNode).isNotNull();
         assertThat(resolvedProductReferenceIdTextNode.asText()).isEqualTo(PRODUCT_ID);
@@ -247,10 +251,10 @@ class VariantReferenceResolverTest {
         final AttributeDraft productReferenceSetAttribute =
             getReferenceSetAttributeDraft("foo", productReferenceWithRandomId);
 
-        final ObjectNode categoryReference1 =
-            createReferenceObject("foo", Category.referenceTypeId());
 
-        final AttributeDraft categoryReferenceAttribute = AttributeDraft.of("attributeName", categoryReference1);
+        final ObjectNode categoryReference = createReferenceObject("foo", Category.referenceTypeId());
+
+        final AttributeDraft categoryReferenceAttribute = AttributeDraft.of("attributeName", categoryReference);
         final AttributeDraft textAttribute = AttributeDraft.of("attributeName", "textValue");
 
         final List<AttributeDraft> attributeDrafts =
@@ -311,7 +315,7 @@ class VariantReferenceResolverTest {
         // test
         final ProductVariantDraft resolvedProductVariantDraft =
             referenceResolver.resolveReferences(productVariantDraft)
-                .toCompletableFuture().join();
+                             .toCompletableFuture().join();
 
         // assertions
         assertThat(resolvedProductVariantDraft).isNotNull();
@@ -325,17 +329,19 @@ class VariantReferenceResolverTest {
         final Spliterator<JsonNode> attributeReferencesIterator = resolvedAttributeDraft.getValue().spliterator();
         assertThat(attributeReferencesIterator).isNotNull();
         final Set<JsonNode> resolvedSet = StreamSupport.stream(attributeReferencesIterator, false)
-            .collect(Collectors.toSet());
+                                                       .collect(Collectors.toSet());
+
         assertThat(resolvedSet).isNotEmpty();
         final ObjectNode resolvedReference = JsonNodeFactory.instance.objectNode();
-        resolvedReference.put(REFERENCE_TYPE_ID_FIELD, "product");
+        resolvedReference.put(REFERENCE_TYPE_ID_FIELD, Product.referenceTypeId());
         resolvedReference.put(REFERENCE_ID_FIELD, PRODUCT_ID);
         assertThat(resolvedSet).containsExactly(resolvedReference);
     }
 
     @Test
     void resolveAssetsReferences_WithEmptyAssets_ShouldNotResolveAssets() {
-        final ProductVariantDraftBuilder productVariantDraftBuilder = ProductVariantDraftBuilder.of()
+        final ProductVariantDraftBuilder productVariantDraftBuilder = ProductVariantDraftBuilder
+            .of()
             .assets(emptyList());
 
         final ProductVariantDraftBuilder resolvedBuilder = referenceResolver
@@ -376,7 +382,8 @@ class VariantReferenceResolverTest {
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
             .ofTypeIdAndJson("customTypeId", new HashMap<>());
 
-        final AssetDraft assetDraft = AssetDraftBuilder.of(emptyList(), ofEnglish("assetName"))
+        final AssetDraft assetDraft = AssetDraftBuilder
+            .of(emptyList(), ofEnglish("assetName"))
             .custom(customFieldsDraft)
             .build();
 
@@ -391,7 +398,7 @@ class VariantReferenceResolverTest {
         final AssetDraft resolvedAssetDraft = resolvedBuilderAssets.get(0);
         assertThat(resolvedAssetDraft).isNotNull();
         assertThat(resolvedAssetDraft.getCustom()).isNotNull();
-        assertThat(resolvedAssetDraft.getCustom().getType().getId()).isEqualTo("typeId");
+        assertThat(resolvedAssetDraft.getCustom().getType().getId()).isEqualTo(REFERENCE_TYPE_ID_FIELD);
     }
 
     @Test
@@ -424,7 +431,8 @@ class VariantReferenceResolverTest {
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
             .ofTypeIdAndJson("customTypeId", new HashMap<>());
 
-        final PriceDraft priceDraft = PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+        final PriceDraft priceDraft = PriceDraftBuilder
+            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .custom(customFieldsDraft).build();
 
         final ProductVariantDraftBuilder productVariantDraftBuilder =
@@ -439,7 +447,7 @@ class VariantReferenceResolverTest {
         final PriceDraft resolvedPriceDraft = resolvedBuilderPrices.get(0);
         assertThat(resolvedPriceDraft).isNotNull();
         assertThat(resolvedPriceDraft.getCustom()).isNotNull();
-        assertThat(resolvedPriceDraft.getCustom().getType().getId()).isEqualTo("typeId");
+        assertThat(resolvedPriceDraft.getCustom().getType().getId()).isEqualTo(REFERENCE_TYPE_ID_FIELD);
     }
 
     @Test

@@ -8,29 +8,36 @@
         {
           "value": [
             {
-              "id": "nonExistingCategoryKey1",
-              "typeId": "category"
+              "id": "key1",
+              "typeId": "customer"
             },
             {
-              "id": "key1",
-              "typeId": "category"
+              "id": "key2",
+              "typeId": "customer"
             }
           ],
           "name": "nested-attribute-1-name"
         },
         {
           "value": {
-            "id": "key1",
-            "typeId": "category"
+            "id": "key2",
+            "typeId": "customer"
           },
           "name": "nested-attribute-2-name"
         },
         {
           "value": {
-            "id": "nonExistingCategoryKey3",
-            "typeId": "category"
+            "id": "key3",
+            "typeId": "customer"
           },
           "name": "nested-attribute-3-name"
+        },
+        {
+          "value": {
+            "id": "key4",
+            "typeId": "customer"
+          },
+          "name": "nested-attribute-4-name"
         }
       ]
     }

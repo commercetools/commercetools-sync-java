@@ -470,6 +470,21 @@
       "displayGroup": "Other"
     },
     {
+      "name": "category-reference",
+      "label": {
+        "en": "related category reference"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "reference",
+        "referenceTypeId": "category"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
       "name": "product-reference-set",
       "label": {
         "en": "related products"
@@ -480,6 +495,24 @@
         "elementType": {
           "name": "reference",
           "referenceTypeId": "product"
+        }
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "category-reference-set",
+      "label": {
+        "en": "related categories"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "set",
+        "elementType": {
+          "name": "reference",
+          "referenceTypeId": "category"
         }
       },
       "attributeConstraint": "SameForAll",

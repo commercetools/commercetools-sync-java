@@ -40,7 +40,6 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     private final AssetReferenceResolver assetReferenceResolver;
     private final ProductService productService;
     private final ProductTypeService productTypeService;
-
     private final CategoryService categoryService;
 
     public static final String REFERENCE_TYPE_ID_FIELD = "typeId";
@@ -79,10 +78,13 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
 
 
     /**
-     * Given a {@link ProductVariantDraft} this method attempts to resolve the prices and attributes to
+     * Given a {@link ProductVariantDraft} this method attempts to resolve the prices, assets and attributes to
      * return a {@link CompletionStage} which contains a new instance of the draft with the resolved
      * references. The keys of the references are either taken from the expanded references or
      * taken from the id field of the references.
+     *
+     * <p>Note: this method will filter out any null sub resources (e.g. prices, attributes or assets) under the
+     * returned resolved variant.
      *
      * @param productVariantDraft the product variant draft to resolve it's references.
      * @return a {@link CompletionStage} that contains as a result a new productDraft instance with resolved references
@@ -184,13 +186,13 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     static boolean isReferenceOfType(@Nonnull final JsonNode referenceValue, final String referenceTypeId) {
-        return getReferenceTypeIdIfReference(referenceValue)
+        return getReferenceTypeId(referenceValue)
             .map(resolvedReferenceTypeId -> Objects.equals(resolvedReferenceTypeId, referenceTypeId))
             .orElse(false);
     }
 
     @Nonnull
-    private static Optional<String> getReferenceTypeIdIfReference(@Nonnull final JsonNode referenceValue) {
+    private static Optional<String> getReferenceTypeId(@Nonnull final JsonNode referenceValue) {
         final JsonNode typeId = referenceValue.get(REFERENCE_TYPE_ID_FIELD);
         return Optional.ofNullable(typeId).map(JsonNode::asText);
     }
@@ -198,12 +200,11 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     @Nonnull
     private CompletionStage<Optional<String>> getResolvedIdFromKeyInReference(
         @Nonnull final JsonNode referenceValue,
-        @Nonnull final Function<String, CompletionStage<Optional<String>>> cacheFetcher) {
+        @Nonnull final Function<String, CompletionStage<Optional<String>>> resolvedIdFetcher) {
 
         final JsonNode idField = referenceValue.get(REFERENCE_ID_FIELD);
-
         return idField != null && !Objects.equals(idField, NullNode.getInstance())
-            ? cacheFetcher.apply(idField.asText())
+            ? resolvedIdFetcher.apply(idField.asText())
             : CompletableFuture.completedFuture(Optional.empty());
     }
 }
