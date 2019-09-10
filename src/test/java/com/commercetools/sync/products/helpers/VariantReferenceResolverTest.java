@@ -15,6 +15,7 @@ import io.sphere.sdk.models.AssetDraftBuilder;
 import io.sphere.sdk.models.DefaultCurrencyUnits;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.PriceDraftBuilder;
+import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.AttributeDraft;
@@ -243,7 +244,7 @@ class VariantReferenceResolverTest {
         final ObjectNode categoryReference1 =
             createReferenceObject("foo", Category.referenceTypeId());
 
-        final AttributeDraft categoryReferenceAttribute = AttributeDraft.of("attributeName", categoryReference1);
+        final AttributeDraft categoryReferenceAttribute = AttributeDraft.of("attributeName", categoryReference);
         final AttributeDraft textAttribute = AttributeDraft.of("attributeName", "textValue");
 
         final List<AttributeDraft> attributeDrafts =
@@ -321,7 +322,7 @@ class VariantReferenceResolverTest {
                                                        .collect(Collectors.toSet());
         assertThat(resolvedSet).isNotEmpty();
         final ObjectNode resolvedReference = JsonNodeFactory.instance.objectNode();
-        resolvedReference.put(REFERENCE_TYPE_ID_FIELD, "product");
+        resolvedReference.put(REFERENCE_TYPE_ID_FIELD, Product.referenceTypeId());
         resolvedReference.put(REFERENCE_ID_FIELD, PRODUCT_ID);
         assertThat(resolvedSet).containsExactly(resolvedReference);
     }
@@ -384,7 +385,7 @@ class VariantReferenceResolverTest {
         final AssetDraft resolvedAssetDraft = resolvedBuilderAssets.get(0);
         assertThat(resolvedAssetDraft).isNotNull();
         assertThat(resolvedAssetDraft.getCustom()).isNotNull();
-        assertThat(resolvedAssetDraft.getCustom().getType().getId()).isEqualTo("typeId");
+        assertThat(resolvedAssetDraft.getCustom().getType().getId()).isEqualTo(REFERENCE_TYPE_ID_FIELD);
     }
 
     @Test
@@ -432,7 +433,7 @@ class VariantReferenceResolverTest {
         final PriceDraft resolvedPriceDraft = resolvedBuilderPrices.get(0);
         assertThat(resolvedPriceDraft).isNotNull();
         assertThat(resolvedPriceDraft.getCustom()).isNotNull();
-        assertThat(resolvedPriceDraft.getCustom().getType().getId()).isEqualTo("typeId");
+        assertThat(resolvedPriceDraft.getCustom().getType().getId()).isEqualTo(REFERENCE_TYPE_ID_FIELD);
     }
 
     @Test
