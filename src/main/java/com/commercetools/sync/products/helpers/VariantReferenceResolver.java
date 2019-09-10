@@ -170,19 +170,19 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     static boolean isProductReference(@Nonnull final JsonNode referenceValue) {
-        return getReferenceTypeIdIfReference(referenceValue)
+        return getReferenceTypeId(referenceValue)
             .map(referenceTypeId -> Objects.equals(referenceTypeId, Product.referenceTypeId()))
             .orElse(false);
     }
 
     private static boolean isCategoryReference(@Nonnull final JsonNode referenceValue) {
-        return getReferenceTypeIdIfReference(referenceValue)
+        return getReferenceTypeId(referenceValue)
             .map(referenceTypeId -> Objects.equals(referenceTypeId, Category.referenceTypeId()))
             .orElse(false);
     }
 
     @Nonnull
-    private static Optional<String> getReferenceTypeIdIfReference(@Nonnull final JsonNode referenceValue) {
+    private static Optional<String> getReferenceTypeId(@Nonnull final JsonNode referenceValue) {
         final JsonNode typeId = referenceValue.get(REFERENCE_TYPE_ID_FIELD);
         return Optional.ofNullable(typeId).map(JsonNode::asText);
     }
