@@ -190,12 +190,12 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     @Nonnull
     private CompletionStage<Optional<String>> getResolvedIdFromKeyInReference(
         @Nonnull final JsonNode referenceValue,
-        @Nonnull final Function<String, CompletionStage<Optional<String>>> cacheFetcher) {
+        @Nonnull final Function<String, CompletionStage<Optional<String>>> resolvedIdFetcher) {
 
         final JsonNode idField = referenceValue.get(REFERENCE_ID_FIELD);
 
         return idField != null && !Objects.equals(idField, NullNode.getInstance())
-            ? cacheFetcher.apply(idField.asText())
+            ? resolvedIdFetcher.apply(idField.asText())
             : CompletableFuture.completedFuture(Optional.empty());
     }
 }
