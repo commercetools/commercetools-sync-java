@@ -69,10 +69,6 @@ class ProductSyncWithNestedReferencedProductsIT {
     private static final String ATTRIBUTE_NAME_FIELD = "name";
     private static final String ATTRIBUTE_VALUE_FIELD = "value";
 
-    /**
-     * Delete all product related test data from the target project. Then creates for the target CTP project
-     * a product type.
-     */
     @BeforeAll
     static void setup() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
