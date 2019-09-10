@@ -61,7 +61,7 @@ class WithCategoryReferencesTest {
     @Test
     void resolveReferences_WithNonExistingCategoryReferenceAttribute_ShouldReturnEqualDraft() {
         // preparation
-        when(categoryService.fetchCachedCategoryId(anyString()))
+        when(categoryService.fetchCachedCategoryId("nonExistingCatKey"))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
         final ObjectNode attributeValue = createReferenceObject("nonExistingCatKey", Category.referenceTypeId());
