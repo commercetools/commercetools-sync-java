@@ -241,8 +241,8 @@ class ProductSyncWithNestedReferencedCategoriesIT {
         // preparation
         final ObjectNode nestedAttributeValue =
             createNestedAttributeValueReferences("category-reference",
-
                 createReferenceObject(category.getId(), Category.referenceTypeId()));
+
         final AttributeDraft categoryReferenceAttribute =
             AttributeDraft.of("nestedAttribute", createArrayNode(nestedAttributeValue));
 
