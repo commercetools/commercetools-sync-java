@@ -75,7 +75,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
     private static final String ATTRIBUTE_VALUE_FIELD = "value";
 
     /**
-     * Delete all product related test data from the target project. Then creates for the target CTP project
+     * Deletes all product-related test data from the target project. Then creates the product which has nested and set of nested attribute references to the target project.
      * a product type.
      */
     @BeforeAll
