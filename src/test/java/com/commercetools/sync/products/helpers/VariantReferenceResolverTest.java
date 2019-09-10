@@ -157,7 +157,7 @@ class VariantReferenceResolverTest {
     }
 
     @Test
-    void resolveReferences_WithEmptyValue_ShouldReturnEqualDraft() {
+    void resolveReferences_WithEmptyJsonNodeAttributeValue_ShouldReturnEqualDraft() {
         // preparation
         final AttributeDraft attributeWithEmptyValue =
             AttributeDraft.of("attributeName", JsonNodeFactory.instance.objectNode());
