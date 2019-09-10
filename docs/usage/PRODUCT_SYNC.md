@@ -112,7 +112,7 @@ More examples of those utils for different fields can be found [here](https://gi
 
 ## Caveats
 1. Syncing attribute field types with  `ReferenceType` and `SetType` (of `elementType: ReferenceType`) field definitions, except 
-for Product references, is not supported yet. (See more: [#87](https://github.com/commercetools/commercetools-sync-java/issues/87) [#160](https://github.com/commercetools/commercetools-sync-java/issues/87)). This
+for `Product` and `Category` references, is not supported yet. (See more: [#87](https://github.com/commercetools/commercetools-sync-java/issues/87) [#160](https://github.com/commercetools/commercetools-sync-java/issues/87)). This
 also applies to an attribute field of type `NestedType` which has any of the aforementioned types as an inner field.
 
 

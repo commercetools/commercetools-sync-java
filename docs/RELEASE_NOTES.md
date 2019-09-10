@@ -42,8 +42,12 @@
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.5.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.5.0)
 
-- 🎉 **New Features** (1)
+- 🎉 **New Features** (2)
     - **Product Sync** - Added support for resolving product references on attributes of type `Reference`, `Set` of `Reference`, `NestedType` or `Set` of `NestedType`. [#438](https://github.com/commercetools/commercetools-sync-java/issues/438)
+    - **Product Sync** - Added support for resolving category references on attributes of type `Reference`, `Set` of `Reference`, `NestedType` or `Set` of `NestedType`. [#440](https://github.com/commercetools/commercetools-sync-java/issues/440)
+    
+- 🚧 **Breaking Changes** (1)
+    - **Product Sync** - Unexposed the methods `VariantReferenceResolver#resolveAttributeReferences` and `VariantReferenceResolver#resolveAttributeReference` to be `private` as they are only meant for internal use of the library. [#440](https://github.com/commercetools/commercetools-sync-java/issues/440)
 
 -->
 

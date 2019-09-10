@@ -4,6 +4,7 @@ import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.helpers.AssetReferenceResolver;
 import com.commercetools.sync.commons.helpers.BaseReferenceResolver;
 import com.commercetools.sync.products.ProductSyncOptions;
+import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
@@ -11,6 +12,7 @@ import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.Product;
@@ -24,6 +26,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Function;
 
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -34,6 +37,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     private final PriceReferenceResolver priceReferenceResolver;
     private final AssetReferenceResolver assetReferenceResolver;
     private final ProductService productService;
+    private final CategoryService categoryService;
 
     public static final String REFERENCE_TYPE_ID_FIELD = "typeId";
     public static final String REFERENCE_ID_FIELD = "id";
@@ -50,25 +54,31 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
      * @param channelService       the service to fetch the channels for reference resolution.
      * @param customerGroupService the service to fetch the customer groups for reference resolution.
      * @param productService       the service to fetch the products for reference resolution.
+     * @param categoryService      the service to fetch the categories for reference resolution.
      */
     public VariantReferenceResolver(@Nonnull final ProductSyncOptions productSyncOptions,
                                     @Nonnull final TypeService typeService,
                                     @Nonnull final ChannelService channelService,
                                     @Nonnull final CustomerGroupService customerGroupService,
-                                    @Nonnull final ProductService productService) {
+                                    @Nonnull final ProductService productService,
+                                    @Nonnull final CategoryService categoryService) {
         super(productSyncOptions);
         this.priceReferenceResolver = new PriceReferenceResolver(productSyncOptions, typeService, channelService,
             customerGroupService);
         this.assetReferenceResolver = new AssetReferenceResolver(productSyncOptions, typeService);
         this.productService = productService;
+        this.categoryService = categoryService;
     }
 
 
     /**
-     * Given a {@link ProductVariantDraft} this method attempts to resolve the prices and attributes to
+     * Given a {@link ProductVariantDraft} this method attempts to resolve the prices, assets and attributes to
      * return a {@link CompletionStage} which contains a new instance of the draft with the resolved
      * references. The keys of the references are either taken from the expanded references or
      * taken from the id field of the references.
+     *
+     * <p>Note: this method will filter out any null sub resources (e.g. prices, attributes or assets) under the
+     * returned resolved variant.
      *
      * @param productVariantDraft the product variant draft to resolve it's references.
      * @return a {@link CompletionStage} that contains as a result a new productDraft instance with resolved references
@@ -111,7 +121,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     @Nonnull
-    CompletionStage<ProductVariantDraftBuilder> resolveAttributesReferences(
+    private CompletionStage<ProductVariantDraftBuilder> resolveAttributesReferences(
         @Nonnull final ProductVariantDraftBuilder productVariantDraftBuilder) {
 
         final List<AttributeDraft> attributeDrafts = productVariantDraftBuilder.getAttributes();
@@ -124,7 +134,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     @Nonnull
-    CompletionStage<AttributeDraft> resolveAttributeReference(@Nonnull final AttributeDraft attributeDraft) {
+    private CompletionStage<AttributeDraft> resolveAttributeReference(@Nonnull final AttributeDraft attributeDraft) {
 
         final JsonNode attributeDraftValue = attributeDraft.getValue();
 
@@ -148,33 +158,47 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     private CompletionStage<Void> resolveReference(@Nonnull final JsonNode referenceValue) {
 
         if (isProductReference(referenceValue)) {
-            return getProductResolvedIdFromKeyInReference(referenceValue)
+            return getResolvedIdFromKeyInReference(referenceValue, productService::getIdFromCacheOrFetch)
                 .thenAccept(productIdOptional ->
                     productIdOptional.ifPresent(id -> ((ObjectNode) referenceValue).put(REFERENCE_ID_FIELD, id)));
+        }
+
+        if (isCategoryReference(referenceValue)) {
+            return getResolvedIdFromKeyInReference(referenceValue, categoryService::fetchCachedCategoryId)
+                .thenAccept(categoryIdOptional ->
+                    categoryIdOptional.ifPresent(id -> ((ObjectNode) referenceValue).put(REFERENCE_ID_FIELD, id)));
         }
 
         return CompletableFuture.completedFuture(null);
     }
 
     static boolean isProductReference(@Nonnull final JsonNode referenceValue) {
-        return getReferenceTypeIdIfReference(referenceValue)
+        return getReferenceTypeId(referenceValue)
             .map(referenceTypeId -> Objects.equals(referenceTypeId, Product.referenceTypeId()))
             .orElse(false);
     }
 
+    private static boolean isCategoryReference(@Nonnull final JsonNode referenceValue) {
+        return getReferenceTypeId(referenceValue)
+            .map(referenceTypeId -> Objects.equals(referenceTypeId, Category.referenceTypeId()))
+            .orElse(false);
+    }
+
     @Nonnull
-    private static Optional<String> getReferenceTypeIdIfReference(@Nonnull final JsonNode referenceValue) {
+    private static Optional<String> getReferenceTypeId(@Nonnull final JsonNode referenceValue) {
         final JsonNode typeId = referenceValue.get(REFERENCE_TYPE_ID_FIELD);
         return Optional.ofNullable(typeId).map(JsonNode::asText);
     }
 
     @Nonnull
-    CompletionStage<Optional<String>> getProductResolvedIdFromKeyInReference(@Nonnull final JsonNode referenceValue) {
+    private CompletionStage<Optional<String>> getResolvedIdFromKeyInReference(
+        @Nonnull final JsonNode referenceValue,
+        @Nonnull final Function<String, CompletionStage<Optional<String>>> resolvedIdFetcher) {
 
         final JsonNode idField = referenceValue.get(REFERENCE_ID_FIELD);
 
         return idField != null && !Objects.equals(idField, NullNode.getInstance())
-            ? productService.getIdFromCacheOrFetch(idField.asText())
+            ? resolvedIdFetcher.apply(idField.asText())
             : CompletableFuture.completedFuture(Optional.empty());
     }
 }

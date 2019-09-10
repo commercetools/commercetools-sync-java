@@ -1,5 +1,6 @@
 package com.commercetools.sync.products;
 
+import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
@@ -45,10 +46,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_ID_FIELD;
+import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_TYPE_ID_FIELD;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -315,6 +319,22 @@ public class ProductSyncMockUtils {
     }
 
     /**
+     * Creates a mock {@link CategoryService} that returns a completed {@link CompletableFuture} containing an
+     * {@link Optional} containing the id of the supplied value whenever the following method is called on the service:
+     * <ul>
+     * <li>{@link CategoryService#fetchCachedCategoryId(String)}</li>
+     * </ul>
+     *
+     * @return the created mock of the {@link CategoryService}.
+     */
+    public static CategoryService getMockCategoryService(@Nonnull final String id) {
+        final CategoryService categoryService = mock(CategoryService.class);
+        when(categoryService.fetchCachedCategoryId(any()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.of(id)));
+        return categoryService;
+    }
+
+    /**
      * Creates a mock {@link Price} with the supplied {@link Channel} {@link Reference} and custom {@link Type}
      * {@link Reference}.
      *
@@ -389,8 +409,8 @@ public class ProductSyncMockUtils {
      * @return an {@link AttributeDraft} with the supplied {@code attributeName} and {@code references}.
      */
     @Nonnull
-    public static AttributeDraft getProductReferenceSetAttributeDraft(@Nonnull final String attributeName,
-                                                                      @Nonnull final ObjectNode... references) {
+    public static AttributeDraft getReferenceSetAttributeDraft(@Nonnull final String attributeName,
+                                                               @Nonnull final ObjectNode... references) {
         final ArrayNode referenceSet = JsonNodeFactory.instance.arrayNode();
         referenceSet.addAll(Arrays.asList(references));
         return AttributeDraft.of(attributeName, referenceSet);
@@ -414,10 +434,21 @@ public class ProductSyncMockUtils {
      */
     @Nonnull
     public static ObjectNode getProductReferenceWithId(@Nonnull final String id) {
-        final ObjectNode productReference = JsonNodeFactory.instance.objectNode();
-        productReference.put("typeId", "product");
-        productReference.put("id", id);
-        return productReference;
+        return createReferenceObject(id, Product.referenceTypeId());
+    }
+
+    /**
+     * Creates an {@link ObjectNode} that represents a reference with the  supplied {@code id} in the id field and
+     * {@code typeId} field in the typeId field.
+     * @return an {@link ObjectNode} that represents a product reference with the  supplied {@code id} in the id field
+     *         and {@code typeId} field in the typeId field.
+     */
+    @Nonnull
+    public static ObjectNode createReferenceObject(@Nonnull final String id, @Nonnull final String typeId) {
+        final ObjectNode reference = JsonNodeFactory.instance.objectNode();
+        reference.put(REFERENCE_TYPE_ID_FIELD, typeId);
+        reference.put(REFERENCE_ID_FIELD, id);
+        return reference;
     }
 
     @Nonnull
