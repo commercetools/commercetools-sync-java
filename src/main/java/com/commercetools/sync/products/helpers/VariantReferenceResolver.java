@@ -160,35 +160,34 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
 
     @Nonnull
     private CompletionStage<Void> resolveReference(@Nonnull final JsonNode referenceValue) {
+        return getResolvedId(referenceValue)
+            .thenAccept(optionalId ->
+                optionalId.ifPresent(id -> ((ObjectNode) referenceValue).put(REFERENCE_ID_FIELD, id)));
+    }
 
-        if (isReferenceOfType(referenceValue,  Product.referenceTypeId())) {
-            return getResolvedIdFromKeyInReference(referenceValue, productService::getIdFromCacheOrFetch)
-                .thenAccept(productIdOptional ->
-                    productIdOptional.ifPresent(id -> ((ObjectNode) referenceValue).put(REFERENCE_ID_FIELD, id)));
+    @Nonnull
+    private CompletionStage<Optional<String>> getResolvedId(@Nonnull final JsonNode referenceValue) {
+
+        if (isReferenceOfType(referenceValue, Product.referenceTypeId())) {
+            return getResolvedIdFromKeyInReference(referenceValue, productService::getIdFromCacheOrFetch);
         }
 
         if (isReferenceOfType(referenceValue, Category.referenceTypeId())) {
-            return getResolvedIdFromKeyInReference(referenceValue, categoryService::fetchCachedCategoryId)
-                .thenAccept(categoryIdOptional ->
-                    categoryIdOptional.ifPresent(id -> ((ObjectNode) referenceValue).put(REFERENCE_ID_FIELD, id)));
+            return getResolvedIdFromKeyInReference(referenceValue, categoryService::fetchCachedCategoryId);
         }
 
         if (isReferenceOfType(referenceValue, ProductType.referenceTypeId())) {
-            return getResolvedIdFromKeyInReference(referenceValue, productTypeService::fetchCachedProductTypeId)
-                .thenAccept(productTypeIdOptional ->
-                    productTypeIdOptional.ifPresent(id -> ((ObjectNode) referenceValue).put(REFERENCE_ID_FIELD, id)));
+            return getResolvedIdFromKeyInReference(referenceValue, productTypeService::fetchCachedProductTypeId);
         }
 
-
-        return CompletableFuture.completedFuture(null);
+        return CompletableFuture.completedFuture(Optional.empty());
     }
 
-    static boolean isReferenceOfType(@Nonnull final JsonNode referenceValue,final String referenceTypeId) {
+    static boolean isReferenceOfType(@Nonnull final JsonNode referenceValue, final String referenceTypeId) {
         return getReferenceTypeIdIfReference(referenceValue)
             .map(resolvedReferenceTypeId -> Objects.equals(resolvedReferenceTypeId, referenceTypeId))
             .orElse(false);
     }
-
 
     @Nonnull
     private static Optional<String> getReferenceTypeIdIfReference(@Nonnull final JsonNode referenceValue) {
