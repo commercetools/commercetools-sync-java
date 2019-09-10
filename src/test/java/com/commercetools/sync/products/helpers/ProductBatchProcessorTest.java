@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceSetAttributeDraft;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getReferenceSetAttributeDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceWithId;
 import static com.commercetools.sync.products.helpers.ProductBatchProcessor.PRODUCT_DRAFT_IS_NULL;
 import static com.commercetools.sync.products.helpers.ProductBatchProcessor.PRODUCT_DRAFT_KEY_NOT_SET;
@@ -245,14 +245,14 @@ class ProductBatchProcessorTest {
     @Test
     void getReferencedProductKeysFromSet_WithOnlyNullRefsInSet_ShouldReturnEmptySet() {
         final AttributeDraft productReferenceSetAttribute =
-            getProductReferenceSetAttributeDraft("foo", null, null);
+            getReferenceSetAttributeDraft("foo", null, null);
         assertThat(getReferencedProductKeysFromSet(productReferenceSetAttribute.getValue())).isEmpty();
     }
 
     @Test
     void getReferencedProductKeysFromSet_WithNullRefsInSet_ShouldReturnSetOfNonNullIds() {
         final AttributeDraft productReferenceSetAttribute =
-            getProductReferenceSetAttributeDraft("foo", getProductReferenceWithId("foo"),
+            getReferenceSetAttributeDraft("foo", getProductReferenceWithId("foo"),
                 getProductReferenceWithId("bar"));
         assertThat(getReferencedProductKeysFromSet(productReferenceSetAttribute.getValue()))
             .containsExactlyInAnyOrder("foo", "bar");
@@ -264,7 +264,7 @@ class ProductBatchProcessorTest {
         objectNode.put("key", "value");
 
         final AttributeDraft productReferenceSetAttribute =
-            getProductReferenceSetAttributeDraft("foo", getProductReferenceWithId("foo"),
+            getReferenceSetAttributeDraft("foo", getProductReferenceWithId("foo"),
                 getProductReferenceWithId("bar"), objectNode);
         assertThat(getReferencedProductKeysFromSet(productReferenceSetAttribute.getValue()))
             .containsExactlyInAnyOrder("foo", "bar");
@@ -278,7 +278,7 @@ class ProductBatchProcessorTest {
     @Test
     void getReferencedProductKeys_WithSetAsValue_ShouldReturnSetKeys() {
         final AttributeDraft productReferenceSetAttribute =
-            getProductReferenceSetAttributeDraft("foo", getProductReferenceWithId("foo"),
+            getReferenceSetAttributeDraft("foo", getProductReferenceWithId("foo"),
                 getProductReferenceWithId("bar"));
         assertThat(getReferencedProductKeys(productReferenceSetAttribute)).containsExactlyInAnyOrder("foo", "bar");
     }
@@ -308,7 +308,7 @@ class ProductBatchProcessorTest {
     @Test
     void getReferencedProductKeys_WithAProductRefAttribute_ShouldReturnEmptySet() {
         final AttributeDraft productReferenceSetAttribute =
-            getProductReferenceSetAttributeDraft("foo", getProductReferenceWithId("foo"),
+            getReferenceSetAttributeDraft("foo", getProductReferenceWithId("foo"),
                 getProductReferenceWithId("bar"));
         final AttributeDraft productReferenceAttribute = AttributeDraft.of("foo", getProductReferenceWithId("foo"));
 
@@ -378,7 +378,7 @@ class ProductBatchProcessorTest {
     @Test
     void validateBatch_WithDrafts_ShouldValidateCorrectly() {
         final AttributeDraft productReferenceSetAttribute =
-            getProductReferenceSetAttributeDraft("foo", getProductReferenceWithId("foo"),
+            getReferenceSetAttributeDraft("foo", getProductReferenceWithId("foo"),
                 getProductReferenceWithId("bar"));
         final AttributeDraft productReferenceAttribute = AttributeDraft.of("foo", getProductReferenceWithId("foo"));
 

@@ -71,8 +71,8 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceSetAttributeDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceWithId;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getReferenceSetAttributeDraft;
 import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.buildProductQuery;
 import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.replaceProductsReferenceIdsWithKeys;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
@@ -355,7 +355,7 @@ class ProductSyncIT {
 
         final AttributeDraft productRefAttr = AttributeDraft.of("product-reference", productReferenceValue1);
         final AttributeDraft productSetRefAttr =
-            getProductReferenceSetAttributeDraft("product-reference-set", productReferenceValue1,
+            getReferenceSetAttributeDraft("product-reference-set", productReferenceValue1,
                 productReferenceValue2);
         final List<AttributeDraft> attributeDrafts = existingProductDraft.getMasterVariant().getAttributes();
         attributeDrafts.addAll(Arrays.asList(productRefAttr, productSetRefAttr));
@@ -404,7 +404,7 @@ class ProductSyncIT {
         final AttributeDraft targetProductRefAttr =
             AttributeDraft.of("product-reference", targetProductReferenceValue2);
         final AttributeDraft targetProductSetRefAttr =
-            getProductReferenceSetAttributeDraft("product-reference-set", targetProductReferenceValue2,
+            getReferenceSetAttributeDraft("product-reference-set", targetProductReferenceValue2,
                 targetProductReferenceValue3);
 
         assertThat(updateActions).containsExactlyInAnyOrder(
@@ -508,7 +508,7 @@ class ProductSyncIT {
         final ObjectNode productReferenceValue1 = getProductReferenceWithId(productToBeReferenced.getId());
 
         final AttributeDraft productSetRefAttr =
-            getProductReferenceSetAttributeDraft("product-reference-set", productReferenceValue1);
+            getReferenceSetAttributeDraft("product-reference-set", productReferenceValue1);
 
         final ProductVariantDraft variantWithProductReferences = ProductVariantDraftBuilder
             .of()
@@ -533,7 +533,7 @@ class ProductSyncIT {
             .of()
             .key("bar")
             .sku("bar")
-            .attributes(singletonList(getProductReferenceSetAttributeDraft(productSetRefAttr.getName())))
+            .attributes(singletonList(getReferenceSetAttributeDraft(productSetRefAttr.getName())))
             .build();
 
         final ProductDraft newProductDraftWithProductReference =
@@ -553,7 +553,7 @@ class ProductSyncIT {
             .of()
             .key("foo")
             .sku("foo")
-            .attributes(singletonList(getProductReferenceSetAttributeDraft(productSetRefAttr.getName())))
+            .attributes(singletonList(getReferenceSetAttributeDraft(productSetRefAttr.getName())))
             .build();
 
         final ProductDraft sourceProductDraft =
