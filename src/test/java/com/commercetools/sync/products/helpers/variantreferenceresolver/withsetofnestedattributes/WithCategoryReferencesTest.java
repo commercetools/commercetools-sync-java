@@ -47,7 +47,6 @@ class WithCategoryReferencesTest {
     private static final String SET_OF_NESTED_ATTRIBUTE_WITH_SET_OF_CATEGORY_REFERENCE_ATTRIBUTES =
         WithNoReferencesTest.RES_ROOT + RES_SUB_ROOT + "with-set-of-references.json";
 
-
     @BeforeEach
     void setup() {
         categoryService = getMockCategoryService(CATEGORY_ID);
@@ -162,7 +161,6 @@ class WithCategoryReferencesTest {
         final Map<String, JsonNode> resolvedNestedAttributesMap = StreamSupport
             .stream(resolvedNestedAttributeAsArray.spliterator(), false)
             .collect(Collectors.toMap(jsonNode -> jsonNode.get("name").asText(), jsonNode -> jsonNode));
-
 
         assertReferenceSetAttributeValue(resolvedNestedAttributesMap,
             "nested-attribute-1-name",
