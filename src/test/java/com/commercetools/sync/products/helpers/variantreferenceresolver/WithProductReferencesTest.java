@@ -44,9 +44,6 @@ class WithProductReferencesTest {
     private static final String PRODUCT_ID = UUID.randomUUID().toString();
     private VariantReferenceResolver referenceResolver;
 
-    /**
-     * Sets up the services and the options needed for reference resolution.
-     */
     @BeforeEach
     void setup() {
         productService = getMockProductService(PRODUCT_ID);

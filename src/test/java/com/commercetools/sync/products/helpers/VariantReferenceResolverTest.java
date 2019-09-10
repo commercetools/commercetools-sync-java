@@ -58,9 +58,6 @@ class VariantReferenceResolverTest {
     private static final String CATEGORY_ID = UUID.randomUUID().toString();
     private VariantReferenceResolver referenceResolver;
 
-    /**
-     * Sets up the services and the options needed for reference resolution.
-     */
     @BeforeEach
     void setup() {
         final TypeService typeService = getMockTypeService();

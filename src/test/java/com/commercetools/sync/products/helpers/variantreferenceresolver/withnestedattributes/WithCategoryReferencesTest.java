@@ -47,9 +47,6 @@ class WithCategoryReferencesTest {
     private static final String NESTED_ATTRIBUTE_WITH_SET_OF_CATEGORY_REFERENCE_ATTRIBUTES =
         RES_ROOT + RES_SUB_ROOT + "with-set-of-references.json";
 
-    /**
-     * Sets up the services and the options needed for reference resolution.
-     */
     @BeforeEach
     void setup() {
         categoryService = getMockCategoryService(CATEGORY_ID);

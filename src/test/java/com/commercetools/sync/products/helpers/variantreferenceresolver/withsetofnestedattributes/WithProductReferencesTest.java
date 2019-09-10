@@ -46,9 +46,7 @@ class WithProductReferencesTest {
     private static final String SET_OF_NESTED_ATTRIBUTE_WITH_SET_OF_PRODUCT_REFERENCE_ATTRIBUTES =
         WithNoReferencesTest.RES_ROOT + RES_SUB_ROOT + "with-set-of-references.json";
 
-    /**
-     * Sets up the services and the options needed for reference resolution.
-     */
+
     @BeforeEach
     void setup() {
         productService = getMockProductService(PRODUCT_ID);

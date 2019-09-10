@@ -30,9 +30,6 @@ import static org.mockito.Mockito.mock;
 class WithCustomerReferencesTest {
     private VariantReferenceResolver referenceResolver;
 
-    /**
-     * Sets up the services and the options needed for reference resolution.
-     */
     @BeforeEach
     void setup() {
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();

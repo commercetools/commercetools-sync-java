@@ -28,9 +28,6 @@ class WithNoReferencesTest {
     private static final String SET_OF_NESTED_ATTRIBUTE_WITH_SET_OF_TEXT_ATTRIBUTES =
         RES_ROOT + RES_SUB_ROOT + "with-set-of-text-attributes.json";
 
-    /**
-     * Sets up the services and the options needed for reference resolution.
-     */
     @BeforeEach
     void setup() {
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
