@@ -46,7 +46,7 @@ class WithCustomerReferencesTest {
 
 
     @Test
-    void resolveReferences_WithNullIdFieldInCustomerReferenceAttribute_ShouldReturnEqualDraft() {
+    void resolveReferences_WithNullIdFieldInCustomerReferenceAttribute_ShouldNotResolveReferences() {
         // preparation
         final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
         attributeValue.put(REFERENCE_TYPE_ID_FIELD, Customer.referenceTypeId());
@@ -66,7 +66,7 @@ class WithCustomerReferencesTest {
     }
 
     @Test
-    void resolveReferences_WithNullNodeIdFieldInCustomerReferenceAttribute_ShouldReturnEqualDraft() {
+    void resolveReferences_WithNullNodeIdFieldInCustomerReferenceAttribute_ShouldNotResolveReferences() {
         // preparation
         final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
         attributeValue.put(REFERENCE_TYPE_ID_FIELD, Customer.referenceTypeId());

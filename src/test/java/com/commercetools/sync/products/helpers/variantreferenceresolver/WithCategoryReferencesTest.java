@@ -59,7 +59,7 @@ class WithCategoryReferencesTest {
     }
 
     @Test
-    void resolveReferences_WithNonExistingCategoryReferenceAttribute_ShouldReturnEqualDraft() {
+    void resolveReferences_WithNonExistingCategoryReferenceAttribute_ShouldNotResolveReferences() {
         // preparation
         when(categoryService.fetchCachedCategoryId("nonExistingCatKey"))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
@@ -81,7 +81,7 @@ class WithCategoryReferencesTest {
     }
 
     @Test
-    void resolveReferences_WithNullIdFieldInCategoryReferenceAttribute_ShouldReturnEqualDraft() {
+    void resolveReferences_WithNullIdFieldInCategoryReferenceAttribute_ShouldNotResolveReferences() {
         // preparation
         final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
         attributeValue.put(REFERENCE_TYPE_ID_FIELD, Category.referenceTypeId());
@@ -101,7 +101,7 @@ class WithCategoryReferencesTest {
     }
 
     @Test
-    void resolveReferences_WithNullNodeIdFieldInCategoryReferenceAttribute_ShouldReturnEqualDraft() {
+    void resolveReferences_WithNullNodeIdFieldInCategoryReferenceAttribute_ShouldNotResolveReferences() {
         // preparation
         final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
         attributeValue.put(REFERENCE_TYPE_ID_FIELD, Category.referenceTypeId());
@@ -123,7 +123,7 @@ class WithCategoryReferencesTest {
     }
 
     @Test
-    void resolveReferences_WithExistingCategoryReferenceAttribute_ShouldReturnResolvedDraft() {
+    void resolveReferences_WithExistingCategoryReferenceAttribute_ShouldResolveReferences() {
         // preparation
         final ObjectNode attributeValue = createReferenceObject("foo", Category.referenceTypeId());
         final AttributeDraft categoryReferenceAttribute = AttributeDraft.of("attributeName", attributeValue);

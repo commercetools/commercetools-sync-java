@@ -59,7 +59,7 @@ class WithProductReferencesTest {
     }
 
     @Test
-    void resolveReferences_WithNonExistingProductReferenceAttribute_ShouldReturnEqualDraft() {
+    void resolveReferences_WithNonExistingProductReferenceAttribute_ShouldNotResolveReferences() {
         // preparation
         when(productService.getIdFromCacheOrFetch(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
@@ -81,7 +81,7 @@ class WithProductReferencesTest {
     }
 
     @Test
-    void resolveReferences_WithNullIdFieldInProductReferenceAttribute_ShouldReturnEqualDraft() {
+    void resolveReferences_WithNullIdFieldInProductReferenceAttribute_ShouldNotResolveReferences() {
         // preparation
         final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
         attributeValue.put(REFERENCE_TYPE_ID_FIELD, Product.referenceTypeId());
@@ -101,7 +101,7 @@ class WithProductReferencesTest {
     }
 
     @Test
-    void resolveReferences_WithNullNodeIdFieldInProductReferenceAttribute_ShouldReturnEqualDraft() {
+    void resolveReferences_WithNullNodeIdFieldInProductReferenceAttribute_ShouldNotResolveReferences() {
         // preparation
         final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
         attributeValue.put(REFERENCE_TYPE_ID_FIELD, Product.referenceTypeId());
@@ -123,7 +123,7 @@ class WithProductReferencesTest {
     }
 
     @Test
-    void resolveReferences_WithExistingProductReferenceAttribute_ShouldReturnResolvedDraft() {
+    void resolveReferences_WithExistingProductReferenceAttribute_ShouldNotResolveReferences() {
         // preparation
         final ObjectNode attributeValue = getProductReferenceWithRandomId();
         final AttributeDraft productReferenceAttribute = AttributeDraft.of("attributeName", attributeValue);
