@@ -9,11 +9,11 @@ import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.json.SphereJsonUtils;
 import io.sphere.sdk.products.ProductVariantDraft;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -45,8 +45,8 @@ class WithNoReferencesTest {
     @Test
     void resolveReferences_WithSetOfNestedTextAttributes_ShouldReturnEqualDraft() {
         // preparation
-        final ProductVariantDraft withSetOfNestedTextAttributes = SphereJsonUtils
-            .readObjectFromResource(SET_OF_NESTED_ATTRIBUTE_WITH_TEXT_ATTRIBUTES, ProductVariantDraft.class);
+        final ProductVariantDraft withSetOfNestedTextAttributes =
+            readObjectFromResource(SET_OF_NESTED_ATTRIBUTE_WITH_TEXT_ATTRIBUTES, ProductVariantDraft.class);
 
         // test
         final ProductVariantDraft resolvedAttributeDraft =
@@ -60,8 +60,8 @@ class WithNoReferencesTest {
     @Test
     void resolveReferences_WithSetOfNestedSetOfTextAttributes_ShouldReturnEqualDraft() {
         // preparation
-        final ProductVariantDraft withSetOfNestedSetOfTextAttributes = SphereJsonUtils
-            .readObjectFromResource(SET_OF_NESTED_ATTRIBUTE_WITH_SET_OF_TEXT_ATTRIBUTES, ProductVariantDraft.class);
+        final ProductVariantDraft withSetOfNestedSetOfTextAttributes =
+            readObjectFromResource(SET_OF_NESTED_ATTRIBUTE_WITH_SET_OF_TEXT_ATTRIBUTES, ProductVariantDraft.class);
 
         // test
         final ProductVariantDraft resolvedAttributeDraft =

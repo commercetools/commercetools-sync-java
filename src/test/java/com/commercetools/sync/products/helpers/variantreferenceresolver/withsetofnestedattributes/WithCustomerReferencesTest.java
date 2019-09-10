@@ -9,11 +9,11 @@ import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.json.SphereJsonUtils;
 import io.sphere.sdk.products.ProductVariantDraft;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -44,8 +44,8 @@ class WithCustomerReferencesTest {
     @Test
     void resolveReferences_WithSetOfNestedCustomerReferenceAttributes_ShouldNotResolveReferences() {
         // preparation
-        final ProductVariantDraft withSetOfNestedCustomerReferenceAttributes = SphereJsonUtils
-            .readObjectFromResource(SET_OF_NESTED_ATTRIBUTE_WITH_CUSTOMER_REFERENCE_ATTRIBUTES,
+        final ProductVariantDraft withSetOfNestedCustomerReferenceAttributes =
+            readObjectFromResource(SET_OF_NESTED_ATTRIBUTE_WITH_CUSTOMER_REFERENCE_ATTRIBUTES,
                 ProductVariantDraft.class);
 
         // test
@@ -61,8 +61,8 @@ class WithCustomerReferencesTest {
     @Test
     void resolveReferences_WithSetOfNestedSetOfCustomerReferenceAttributes_ShouldNotResolveReferences() {
         // preparation
-        final ProductVariantDraft withSetOfNestedSetOfCustomerReferenceAttributes = SphereJsonUtils
-            .readObjectFromResource(SET_OF_NESTED_ATTRIBUTE_WITH_SET_OF_CUSTOMER_REFERENCE_ATTRIBUTES,
+        final ProductVariantDraft withSetOfNestedSetOfCustomerReferenceAttributes =
+            readObjectFromResource(SET_OF_NESTED_ATTRIBUTE_WITH_SET_OF_CUSTOMER_REFERENCE_ATTRIBUTES,
                 ProductVariantDraft.class);
 
         // test

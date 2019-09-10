@@ -12,7 +12,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.json.SphereJsonUtils;
 import io.sphere.sdk.products.ProductVariantDraft;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,6 +28,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCatego
 import static com.commercetools.sync.products.helpers.variantreferenceresolver.AssertionUtilsForVariantReferenceResolver.assertReferenceAttributeValue;
 import static com.commercetools.sync.products.helpers.variantreferenceresolver.AssertionUtilsForVariantReferenceResolver.assertReferenceSetAttributeValue;
 import static com.commercetools.sync.products.helpers.variantreferenceresolver.withnestedattributes.WithNoReferencesTest.RES_ROOT;
+import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -65,8 +65,8 @@ class WithCategoryReferencesTest {
     @Test
     void resolveReferences_WithNestedCategoryReferenceAttributes_ShouldResolveReferences() {
         // preparation
-        final ProductVariantDraft withNestedCategoryReferenceAttributes = SphereJsonUtils
-            .readObjectFromResource(NESTED_ATTRIBUTE_WITH_CATEGORY_REFERENCE_ATTRIBUTES, ProductVariantDraft.class);
+        final ProductVariantDraft withNestedCategoryReferenceAttributes =
+            readObjectFromResource(NESTED_ATTRIBUTE_WITH_CATEGORY_REFERENCE_ATTRIBUTES, ProductVariantDraft.class);
 
         // test
         final ProductVariantDraft resolvedAttributeDraft =
@@ -95,8 +95,8 @@ class WithCategoryReferencesTest {
     @Test
     void resolveReferences_WithNestedSetOfCategoryReferenceAttributes_ShouldOnlyResolveExistingReferences() {
         // preparation
-        final ProductVariantDraft withNestedSetOfCategoryReferenceAttributes = SphereJsonUtils
-            .readObjectFromResource(NESTED_ATTRIBUTE_WITH_SET_OF_CATEGORY_REFERENCE_ATTRIBUTES,
+        final ProductVariantDraft withNestedSetOfCategoryReferenceAttributes =
+            readObjectFromResource(NESTED_ATTRIBUTE_WITH_SET_OF_CATEGORY_REFERENCE_ATTRIBUTES,
                 ProductVariantDraft.class);
 
         // test
@@ -131,8 +131,8 @@ class WithCategoryReferencesTest {
         when(categoryService.fetchCachedCategoryId("nonExistingCategoryKey3"))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-        final ProductVariantDraft withSomeNonExistingNestedCategoryReferenceAttributes = SphereJsonUtils
-            .readObjectFromResource(NESTED_ATTRIBUTE_WITH_SOME_NOT_EXISTING_CATEGORY_REFERENCE_ATTRIBUTES,
+        final ProductVariantDraft withSomeNonExistingNestedCategoryReferenceAttributes =
+            readObjectFromResource(NESTED_ATTRIBUTE_WITH_SOME_NOT_EXISTING_CATEGORY_REFERENCE_ATTRIBUTES,
                 ProductVariantDraft.class);
 
         // test
