@@ -105,7 +105,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
     }
 
     /**
-     * Deletes Products from the target CTP project, then it populates target CTP project with product test
+     * Deletes products and categories from the target CTP project, then populates target CTP project with 2 test categories
      * data.
      */
     @BeforeEach
