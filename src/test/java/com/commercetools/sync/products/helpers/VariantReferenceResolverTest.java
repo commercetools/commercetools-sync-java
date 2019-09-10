@@ -223,12 +223,16 @@ class VariantReferenceResolverTest {
         final List<AttributeDraft> resolvedBuilderAttributes = resolvedDraft.getAttributes();
         assertThat(resolvedBuilderAttributes).hasSize(2);
         assertThat(resolvedBuilderAttributes).contains(textAttribute);
+
         final AttributeDraft resolvedProductReferenceSetAttribute = resolvedBuilderAttributes.get(0);
         assertThat(resolvedProductReferenceSetAttribute).isNotNull();
+
         final JsonNode resolvedProductReferenceSetValue = resolvedProductReferenceSetAttribute.getValue();
         assertThat(resolvedProductReferenceSetValue).isNotNull();
+
         final JsonNode resolvedProductReferenceValue = resolvedProductReferenceSetValue.get(0);
         assertThat(resolvedProductReferenceValue).isNotNull();
+
         final JsonNode resolvedProductReferenceIdTextNode = resolvedProductReferenceValue.get(REFERENCE_ID_FIELD);
         assertThat(resolvedProductReferenceIdTextNode).isNotNull();
         assertThat(resolvedProductReferenceIdTextNode.asText()).isEqualTo(PRODUCT_ID);
@@ -241,7 +245,7 @@ class VariantReferenceResolverTest {
         final AttributeDraft productReferenceSetAttribute =
             getReferenceSetAttributeDraft("foo", productReferenceWithRandomId);
 
-        final ObjectNode categoryReference1 =
+        final ObjectNode categoryReference =
             createReferenceObject("foo", Category.referenceTypeId());
 
         final AttributeDraft categoryReferenceAttribute = AttributeDraft.of("attributeName", categoryReference);
