@@ -61,20 +61,12 @@ class ProductSyncWithReferencedCategoriesIT {
     private List<Throwable> errorCallBackExceptions;
     private List<UpdateAction<Product>> actions;
 
-    /**
-     * Delete all product related test data from the target project. Then creates for the target CTP project
-     * a product type.
-     */
     @BeforeAll
     static void setup() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
     }
 
-    /**
-     * Deletes products and categories from the target CTP project, then it populates target CTP project with category test data
-     * data.
-     */
     @BeforeEach
     void setupTest() {
         clearSyncTestCollections();
