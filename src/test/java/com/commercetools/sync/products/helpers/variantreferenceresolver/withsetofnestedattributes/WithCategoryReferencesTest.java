@@ -26,8 +26,8 @@ import java.util.stream.StreamSupport;
 
 import static com.commercetools.sync.products.ProductSyncMockUtils.createReferenceObject;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCategoryService;
-import static com.commercetools.sync.products.helpers.variantreferenceresolver.Utils.assertReferenceAttributeValue;
-import static com.commercetools.sync.products.helpers.variantreferenceresolver.Utils.assertReferenceSetAttributeValue;
+import static com.commercetools.sync.products.helpers.variantreferenceresolver.AssertionUtilsForVariantReferenceResolver.assertReferenceAttributeValue;
+import static com.commercetools.sync.products.helpers.variantreferenceresolver.AssertionUtilsForVariantReferenceResolver.assertReferenceSetAttributeValue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

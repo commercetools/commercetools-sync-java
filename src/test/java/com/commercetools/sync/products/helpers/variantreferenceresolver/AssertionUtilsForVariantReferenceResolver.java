@@ -11,7 +11,8 @@ import static com.commercetools.sync.products.helpers.VariantReferenceResolver.R
 import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_TYPE_ID_FIELD;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public final class Utils {
+public final class AssertionUtilsForVariantReferenceResolver {
+
     public static void assertReferenceAttributeValue(
         @Nonnull final Map<String, JsonNode> attributeDraftMap,
         @Nonnull final String attributeName,
@@ -60,6 +61,6 @@ public final class Utils {
         assertThat(valueAsArrayNode).containsAll(Arrays.asList(expectedReferences));
     }
 
-    private Utils() {
+    private AssertionUtilsForVariantReferenceResolver() {
     }
 }
