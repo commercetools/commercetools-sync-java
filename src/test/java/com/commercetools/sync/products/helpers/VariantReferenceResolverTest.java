@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.AssetDraftBuilder;
 import io.sphere.sdk.models.DefaultCurrencyUnits;
@@ -19,6 +20,7 @@ import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.AttributeDraft;
+import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.utils.MoneyImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,7 +59,7 @@ class VariantReferenceResolverTest {
     private static final String CHANNEL_KEY = "channel-key_1";
     private static final String CHANNEL_ID = UUID.randomUUID().toString();
     private static final String PRODUCT_ID = UUID.randomUUID().toString();
-    private static final String PRODUCTTYPE_ID = UUID.randomUUID().toString();
+    private static final String PRODUCT_TYPE_ID = UUID.randomUUID().toString();
     private static final String CATEGORY_ID = UUID.randomUUID().toString();
     private VariantReferenceResolver referenceResolver;
 
@@ -69,7 +71,7 @@ class VariantReferenceResolverTest {
         referenceResolver = new VariantReferenceResolver(syncOptions, typeService, channelService,
             mock(CustomerGroupService.class),
             getMockProductService(PRODUCT_ID),
-            getMockProductTypeService(PRODUCTTYPE_ID),
+            getMockProductTypeService(PRODUCT_TYPE_ID),
             getMockCategoryService(CATEGORY_ID));
     }
 
@@ -251,14 +253,25 @@ class VariantReferenceResolverTest {
         final AttributeDraft productReferenceSetAttribute =
             getReferenceSetAttributeDraft("foo", productReferenceWithRandomId);
 
-
         final ObjectNode categoryReference = createReferenceObject("foo", Category.referenceTypeId());
+        final ObjectNode productTypeReference = createReferenceObject("foo", ProductType.referenceTypeId());
+        final ObjectNode customerReference = createReferenceObject("foo", Customer.referenceTypeId());
 
-        final AttributeDraft categoryReferenceAttribute = AttributeDraft.of("attributeName", categoryReference);
-        final AttributeDraft textAttribute = AttributeDraft.of("attributeName", "textValue");
+        final AttributeDraft categoryReferenceAttribute = AttributeDraft
+            .of("cat-ref", categoryReference);
+        final AttributeDraft productTypeReferenceAttribute = AttributeDraft
+            .of("productType-ref", productTypeReference);
+        final AttributeDraft customerReferenceAttribute = AttributeDraft
+            .of("customer-ref", customerReference);
+        final AttributeDraft textAttribute = AttributeDraft
+            .of("attributeName", "textValue");
 
         final List<AttributeDraft> attributeDrafts =
-            Arrays.asList(productReferenceSetAttribute, categoryReferenceAttribute, textAttribute);
+            Arrays.asList(productReferenceSetAttribute,
+                categoryReferenceAttribute,
+                productTypeReferenceAttribute,
+                customerReferenceAttribute,
+                textAttribute);
 
         final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
             .of()
@@ -273,8 +286,9 @@ class VariantReferenceResolverTest {
         // assertions
         final List<AttributeDraft> resolvedBuilderAttributes = resolvedBuilder.getAttributes();
 
-        assertThat(resolvedBuilderAttributes).hasSize(3);
+        assertThat(resolvedBuilderAttributes).hasSize(5);
         assertThat(resolvedBuilderAttributes).contains(textAttribute);
+        assertThat(resolvedBuilderAttributes).isNotNull();
         final AttributeDraft resolvedProductReferenceSetAttribute = resolvedBuilderAttributes.get(0);
         assertThat(resolvedProductReferenceSetAttribute).isNotNull();
 
@@ -297,6 +311,28 @@ class VariantReferenceResolverTest {
         assertThat(resolvedCategoryReferenceAttributeValue.get(REFERENCE_ID_FIELD).asText()).isEqualTo(CATEGORY_ID);
         assertThat(resolvedCategoryReferenceAttributeValue.get(REFERENCE_TYPE_ID_FIELD).asText())
             .isEqualTo(Category.referenceTypeId());
+
+        final AttributeDraft resolvedProductTypeReferenceAttribute = resolvedBuilderAttributes.get(2);
+        assertThat(resolvedProductTypeReferenceAttribute).isNotNull();
+
+        final JsonNode resolvedProductTypeReferenceAttributeValue = resolvedProductTypeReferenceAttribute.getValue();
+        assertThat(resolvedProductTypeReferenceAttributeValue).isNotNull();
+
+        assertThat(resolvedProductTypeReferenceAttributeValue.get(REFERENCE_ID_FIELD).asText())
+            .isEqualTo(PRODUCT_TYPE_ID);
+        assertThat(resolvedProductTypeReferenceAttributeValue.get(REFERENCE_TYPE_ID_FIELD).asText())
+            .isEqualTo(ProductType.referenceTypeId());
+
+        final AttributeDraft resolvedCustomerReferenceAttribute = resolvedBuilderAttributes.get(3);
+        assertThat(resolvedCustomerReferenceAttribute).isNotNull();
+
+        final JsonNode resolvedCustomerReferenceAttributeValue = resolvedCustomerReferenceAttribute.getValue();
+        assertThat(resolvedCustomerReferenceAttributeValue).isNotNull();
+
+        assertThat(resolvedCustomerReferenceAttributeValue.get(REFERENCE_ID_FIELD))
+            .isEqualTo(customerReference.get(REFERENCE_ID_FIELD));
+        assertThat(resolvedCustomerReferenceAttributeValue.get(REFERENCE_TYPE_ID_FIELD).asText())
+            .isEqualTo(Customer.referenceTypeId());
     }
 
     @Disabled("Fails due to possible bug on https://github.com/FasterXML/jackson-databind/issues/2442")
