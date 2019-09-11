@@ -31,6 +31,9 @@ import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.isReferenceOfType;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 
@@ -41,9 +44,6 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     private final ProductService productService;
     private final ProductTypeService productTypeService;
     private final CategoryService categoryService;
-
-    public static final String REFERENCE_TYPE_ID_FIELD = "typeId";
-    public static final String REFERENCE_ID_FIELD = "id";
 
     /**
      * Takes a {@link ProductSyncOptions} instance, {@link TypeService}, a {@link ChannelService}, a
@@ -183,18 +183,6 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
         }
 
         return CompletableFuture.completedFuture(Optional.empty());
-    }
-
-    static boolean isReferenceOfType(@Nonnull final JsonNode referenceValue, final String referenceTypeId) {
-        return getReferenceTypeId(referenceValue)
-            .map(resolvedReferenceTypeId -> Objects.equals(resolvedReferenceTypeId, referenceTypeId))
-            .orElse(false);
-    }
-
-    @Nonnull
-    private static Optional<String> getReferenceTypeId(@Nonnull final JsonNode referenceValue) {
-        final JsonNode typeId = referenceValue.get(REFERENCE_TYPE_ID_FIELD);
-        return Optional.ofNullable(typeId).map(JsonNode::asText);
     }
 
     @Nonnull
