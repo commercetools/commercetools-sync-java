@@ -37,25 +37,23 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
-import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_ID_FIELD;
-import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_TYPE_ID_FIELD;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ProductSyncWithReferencedCategoriesIT {
     private static ProductType productType;
-
+    private static Category category;
+    private static Category category2;
 
     private ProductSyncOptions syncOptions;
-    private Category category;
-    private Category category2;
     private List<String> errorCallBackMessages;
     private List<String> warningCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
@@ -65,15 +63,6 @@ class ProductSyncWithReferencedCategoriesIT {
     static void setup() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
-    }
-
-    @BeforeEach
-    void setupTest() {
-        clearSyncTestCollections();
-        deleteAllProducts(CTP_TARGET_CLIENT);
-        deleteAllCategories(CTP_TARGET_CLIENT);
-        syncOptions = buildSyncOptions();
-
         final CategoryDraft category1Draft = CategoryDraftBuilder
             .of(ofEnglish("cat1-name"), ofEnglish("cat1-slug"))
             .key("cat1-key")
@@ -93,6 +82,13 @@ class ProductSyncWithReferencedCategoriesIT {
             .execute(CategoryCreateCommand.of(category2Draft))
             .toCompletableFuture()
             .join();
+    }
+
+    @BeforeEach
+    void setupTest() {
+        clearSyncTestCollections();
+        deleteAllProducts(CTP_TARGET_CLIENT);
+        syncOptions = buildSyncOptions();
     }
 
     private void clearSyncTestCollections() {
