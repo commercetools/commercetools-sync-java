@@ -352,7 +352,8 @@ class ProductSyncWithReferencedProductTypesIT {
     void sync_withProductTypeReferenceSetAsAttribute_shouldCreateProductReferencingExistingCategories() {
         // preparation
         final AttributeDraft productTypeReferenceAttribute =
-            AttributeDraft.of("productType-reference", Reference.of(ProductType.referenceTypeId(), productType.getKey()));
+            AttributeDraft.of("productType-reference",
+                Reference.of(ProductType.referenceTypeId(), productType.getKey()));
 
         final HashSet<Reference<ProductType>> references = new HashSet<>();
         references.add(Reference.of(ProductType.referenceTypeId(), productType.getKey()));
@@ -417,11 +418,13 @@ class ProductSyncWithReferencedProductTypesIT {
             assertThat(referenceSet)
                 .hasSize(2)
                 .anySatisfy(reference -> {
-                    assertThat(reference.get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo(ProductType.referenceTypeId());
+                    assertThat(reference.get(REFERENCE_TYPE_ID_FIELD).asText())
+                        .isEqualTo(ProductType.referenceTypeId());
                     assertThat(reference.get(REFERENCE_ID_FIELD).asText()).isEqualTo(productType.getId());
                 })
                 .anySatisfy(reference -> {
-                    assertThat(reference.get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo(ProductType.referenceTypeId());
+                    assertThat(reference.get(REFERENCE_TYPE_ID_FIELD).asText())
+                        .isEqualTo(ProductType.referenceTypeId());
                     assertThat(reference.get(REFERENCE_ID_FIELD).asText()).isEqualTo(productType2.getId());
                 });
         });
@@ -431,7 +434,8 @@ class ProductSyncWithReferencedProductTypesIT {
     void sync_withProductTypeReferenceSetContainingANonExistingReference_shouldFailCreatingTheProduct() {
         // preparation
         final AttributeDraft productTypeReferenceAttribute =
-            AttributeDraft.of("productType-reference", Reference.of(ProductType.referenceTypeId(), productType.getKey()));
+            AttributeDraft.of("productType-reference", Reference.of(ProductType.referenceTypeId(),
+                productType.getKey()));
 
         final HashSet<Reference<ProductType>> references = new HashSet<>();
         references.add(Reference.of(ProductType.referenceTypeId(), "nonExistingKey"));
