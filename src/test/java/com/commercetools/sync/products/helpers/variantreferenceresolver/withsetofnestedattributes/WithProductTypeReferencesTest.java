@@ -131,7 +131,7 @@ class WithProductTypeReferencesTest {
     }
 
     @Test
-    void resolveReferences_WithSetOfNestedProductTypeReferenceSetOfSomeNonExisting_ShouldOnlyResolveExistingReferences() {
+    void resolveReferences_WithSetOfNestedProdTypeReferenceSetOfSomeNonExisting_ShouldOnlyResolveExistingReferences() {
         // preparation
         when(productTypeService.fetchCachedProductTypeId("nonExistingProductTypeKey1"))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));

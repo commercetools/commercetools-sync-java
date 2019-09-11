@@ -63,7 +63,8 @@ class WithProductTypeReferencesTest {
         when(productTypeService.fetchCachedProductTypeId("nonExistingProductTypeKey"))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-        final ObjectNode attributeValue = createReferenceObject("nonExistingProductTypeKey", ProductType.referenceTypeId());
+        final ObjectNode attributeValue = createReferenceObject("nonExistingProductTypeKey",
+            ProductType.referenceTypeId());
         final AttributeDraft attributeDraft = AttributeDraft.of("attributeName", attributeValue);
         final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
             .of()

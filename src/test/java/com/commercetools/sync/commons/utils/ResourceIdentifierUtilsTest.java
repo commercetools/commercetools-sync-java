@@ -89,7 +89,7 @@ class ResourceIdentifierUtilsTest {
     }
 
     @Test
-    void isReferenceOfType_WithNonCTReferenceObject_ShouldReturnFalse() {
+    void isReferenceOfType_WithNonCommercetoolsReferenceObject_ShouldReturnFalse() {
         // preparation
         final ObjectNode node = JsonNodeFactory.instance.objectNode();
         node.put("anyString", "anyValue");
