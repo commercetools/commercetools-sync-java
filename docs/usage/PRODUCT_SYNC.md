@@ -112,26 +112,29 @@ More examples of those utils for different fields can be found [here](https://gi
 
 ## Caveats
 
+The commercetools-java-sync library has some exceptions to the data it can sync, particularly around product variant 
+attributes.
+
 1. List of supported variant attributes, with a  `AttributeType`: `ReferenceType`, 
  that can be synced (See more: [#87](https://github.com/commercetools/commercetools-sync-java/issues/87)):
  
     | `referenceTypeId`  |  supported |
     |---|---|
-    |  `“cart”` |   |
+    |  `“cart”` | ❌ |
     | `“category”`  | ✅ |
-    | `“channel”`  |   |
-    | `“customer”`  |   |
-    | `“key-value-document”`  |   |
-    | `“order”`  |   |
+    | `“channel”`  | ❌ |
+    | `“customer”`  | ❌ |
+    | `“key-value-document”`  | ❌ |
+    | `“order”`  | ❌ |
     | `“product”` | ✅ |
     | `“product-type”` | ✅ |
-    | `“review”`  |   |
-    | `“state”`  |   |
-    | `“shipping-method”`  |   |
-    | `“zone”`  |   |
+    | `“review”`  | ❌ |
+    | `“state”`  | ❌ |
+    | `“shipping-method”`  | ❌ |
+    | `“zone”`  | ❌ |
 2. Support for syncing variant attributes with an `AttributeType` of `SetType` of `ReferenceType` 
-(of `elementType: ReferenceType`) with any of the aforementioned `referenceTypeId` accordingly applies.
+(of `elementType: ReferenceType`) with any of the aforementioned `referenceTypeId`, accordingly applies.
 3. Support for syncing variant attributes with an `AttributeType` of `NestedType` which has an attribute inside of it of 
-`ReferenceType`  with any of the aforementioned `referenceTypeId` accordingly applies.
+`ReferenceType`  with any of the aforementioned `referenceTypeId`, accordingly applies.
 
 
