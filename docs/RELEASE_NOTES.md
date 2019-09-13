@@ -29,15 +29,14 @@
 -->
 
 <!--
-### 1.4.1 -  Oct 1, 2019
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.4.1...1.5.0) |
-[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.5.0/) | 
-[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.5.0)
+### 1.6.0 -  Oct 1, 2019
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.5.0...1.6.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.6.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.6.0)
 
 -->
 
-<!--
-### 1.5.0 -  Sept 6, 2019
+### 1.5.0 -  Sept 13, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.4.1...1.5.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.5.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.5.0)
@@ -50,8 +49,6 @@
     
 - 🚧 **Breaking Changes** (1)
     - **Product Sync** - Unexposed the methods `VariantReferenceResolver#resolveAttributeReferences` and `VariantReferenceResolver#resolveAttributeReference` to be `private` as they are only meant for internal use of the library. [#440](https://github.com/commercetools/commercetools-sync-java/issues/440)
-
--->
 
 ### 1.4.1 -  Sept 2, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.4.0...1.4.1) |
