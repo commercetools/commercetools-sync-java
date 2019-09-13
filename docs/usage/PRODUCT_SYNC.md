@@ -111,8 +111,22 @@ Optional<UpdateAction<Product>> updateAction = buildChangeNameUpdateAction(oldPr
 More examples of those utils for different fields can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/utils).
 
 ## Caveats
-1. Syncing attribute field types with  `ReferenceType` and `SetType` (of `elementType: ReferenceType`) field definitions, except 
-for `Product`, `Category` and `ProductType` references, is not supported yet. (See more: [#87](https://github.com/commercetools/commercetools-sync-java/issues/87) [#160](https://github.com/commercetools/commercetools-sync-java/issues/87)). This
-also applies to an attribute field of type `NestedType` which has any of the aforementioned types as an inner field.
+
+1. Syncing variant attributes with an `AttributType` of `ReferenceType` with any of the following `referenceTypeId` 
+ is not yet supported (See more: [#87](https://github.com/commercetools/commercetools-sync-java/issues/87)):
+    - `“cart”`
+    - `“channel”`
+    - `“customer”`
+    - `“key-value-document”`
+    - `“order”`
+    - `“review”`
+    - `“state”`
+    - `“shipping-method”`
+    - `“zone”`
+
+2. Syncing variant attributes with an `AttributType` of `SetType` of `ReferenceType` 
+(of `elementType: ReferenceType`) with any of the aforementioned `referenceTypeId` is accordingly not supported.
+3. Syncing variant attributes with an `AttributType` of `NestedType` which has an attribute inside of it of 
+`ReferenceType`  with any of the aforementioned `referenceTypeId` is accordingly not supported.
 
 
