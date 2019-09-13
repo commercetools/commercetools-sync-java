@@ -112,8 +112,8 @@ More examples of those utils for different fields can be found [here](https://gi
 
 ## Caveats
 
-1. List of supported variant attributes with a  `ReferenceType` `AttributeType` of
- to be synced (See more: [#87](https://github.com/commercetools/commercetools-sync-java/issues/87)):
+1. List of supported variant attributes, with a  `AttributeType`: `ReferenceType`, 
+ that can be synced (See more: [#87](https://github.com/commercetools/commercetools-sync-java/issues/87)):
  
     | `referenceTypeId`  |  supported |
     |---|---|
@@ -129,9 +129,9 @@ More examples of those utils for different fields can be found [here](https://gi
     | `“state”`  |   |
     | `“shipping-method”`  |   |
     | `“zone”`  |   |
-2. Syncing variant attributes with an `AttributeType` of `SetType` of `ReferenceType` 
+2. Support for syncing variant attributes with an `AttributeType` of `SetType` of `ReferenceType` 
 (of `elementType: ReferenceType`) with any of the aforementioned `referenceTypeId` accordingly applies.
-3. Syncing variant attributes with an `AttributeType` of `NestedType` which has an attribute inside of it of 
+3. Support for syncing variant attributes with an `AttributeType` of `NestedType` which has an attribute inside of it of 
 `ReferenceType`  with any of the aforementioned `referenceTypeId` accordingly applies.
 
 
