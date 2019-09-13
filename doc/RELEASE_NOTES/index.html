@@ -415,7 +415,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.4.1/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.5.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -452,6 +452,13 @@
   
     <label class="md-nav__title" for="__toc">Table of contents</label>
     <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#150-sept-13-2019" title="1.5.0 -  Sept 13, 2019" class="md-nav__link">
+    1.5.0 -  Sept 13, 2019
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#141-sept-2-2019" title="1.4.1 -  Sept 2, 2019" class="md-nav__link">
@@ -695,6 +702,13 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#150-sept-13-2019" title="1.5.0 -  Sept 13, 2019" class="md-nav__link">
+    1.5.0 -  Sept 13, 2019
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#141-sept-2-2019" title="1.4.1 -  Sept 2, 2019" class="md-nav__link">
     1.4.1 -  Sept 2, 2019
   </a>
@@ -904,8 +918,8 @@
   a link to the releated issue number. 
    **New Features** (n) 🎉 
    **Breaking Changes** (n) 🚧 
-   **Major Enhancements** (n) ✨
-   **Enhancements** (n) 🛠️ 
+   **Enhancements** (n) ✨
+   **Dependency Updates** (n) 🛠️ 
    **Documentation** (n) 📋
    **Critical Bug Fixes** (n) 🔥 
    **Bug Fixes** (n)🐞
@@ -917,13 +931,44 @@
 -->
 
 <!--
-### 1.4.1 -  Oct 1, 2019
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.4.1...1.5.0) |
-[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.5.0/) | 
-[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.5.0)
+### 1.6.0 -  Oct 1, 2019
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.5.0...1.6.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.6.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.6.0)
 
 -->
 
+<h3 id="150-sept-13-2019">1.5.0 -  Sept 13, 2019<a class="headerlink" href="#150-sept-13-2019" title="Permanent link">&para;</a></h3>
+<p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.4.1...1.5.0">Commits</a> |
+<a href="https://commercetools.github.io/commercetools-sync-java/v/1.5.0/">Javadoc</a> | 
+<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/1.5.0">Jar</a></p>
+<ul>
+<li>
+<p>🎉 <strong>New Features</strong> (4)</p>
+<ul>
+<li><strong>Product Sync</strong> - Added support for resolving <code>Product</code> references on attributes of type <code>Reference</code>, <code>Set</code> of <code>Reference</code>, <code>NestedType</code> or <code>Set</code> of <code>NestedType</code>. <a href="https://github.com/commercetools/commercetools-sync-java/issues/438">#438</a></li>
+<li><strong>Product Sync</strong> - Added support for resolving <code>Category</code> references on attributes of type <code>Reference</code>, <code>Set</code> of <code>Reference</code>, <code>NestedType</code> or <code>Set</code> of <code>NestedType</code>. <a href="https://github.com/commercetools/commercetools-sync-java/issues/440">#440</a></li>
+<li><strong>Product Sync</strong> - Added support for resolving <code>ProductType</code> references on attributes of type <code>Reference</code>, <code>Set</code> of <code>Reference</code>, <code>NestedType</code> or <code>Set</code> of <code>NestedType</code>. <a href="https://github.com/commercetools/commercetools-sync-java/issues/443">#440</a></li>
+<li><strong>Commons</strong> - Exposed <code>ResourceIdentifierUtils#isReferenceOfType</code> utility which checks if a JSON representation of a CTP <code>Reference</code> object is of a certain <code>typeId</code> or not. <a href="https://github.com/commercetools/commercetools-sync-java/issues/443">#443</a></li>
+</ul>
+</li>
+<li>
+<p>🚧 <strong>Breaking Changes</strong> (1)</p>
+<ul>
+<li><strong>Product Sync</strong> - Unexposed the methods <code>VariantReferenceResolver#resolveAttributeReferences</code> and <code>VariantReferenceResolver#resolveAttributeReference</code> to be <code>private</code> as they are only meant for internal use of the library. <a href="https://github.com/commercetools/commercetools-sync-java/issues/440">#440</a></li>
+</ul>
+</li>
+<li>
+<p>🛠️ <strong>Dependency Updates</strong> (5)</p>
+<ul>
+<li>Gradle 5.6.1 -&gt; <a href="https://docs.gradle.org/5.6.2/release-notes.html">5.6.2</a></li>
+<li><code>org.junit.jupiter:junit-jupiter-api</code> 5.5.1 -&gt; <a href="https://junit.org/junit5/docs/snapshot/release-notes/index.html#release-notes-5.5.2">5.5.2</a></li>
+<li><code>org.junit.jupiter:junit-jupiter-engine</code> 5.5.1 -&gt; <a href="https://junit.org/junit5/docs/snapshot/release-notes/index.html#release-notes-5.5.2">5.5.2</a></li>
+<li><code>org.junit.jupiter:junit-jupiter-params</code> 5.5.1 -&gt; <a href="https://junit.org/junit5/docs/snapshot/release-notes/index.html#release-notes-5.5.2">5.5.2</a></li>
+<li><code>com.github.ben-manes.versions</code> 0.22.0 -&gt; <a href="https://github.com/ben-manes/gradle-versions-plugin/releases/tag/v0.25.0">0.25.0</a></li>
+</ul>
+</li>
+</ul>
 <h3 id="141-sept-2-2019">1.4.1 -  Sept 2, 2019<a class="headerlink" href="#141-sept-2-2019" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.4.0...1.4.1">Commits</a> |
 <a href="https://commercetools.github.io/commercetools-sync-java/v/1.4.1/">Javadoc</a> | 

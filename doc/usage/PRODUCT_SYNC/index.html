@@ -522,7 +522,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.4.1/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.5.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -735,7 +735,7 @@ order for the sync to resolve the actual ids of those references, those <code>ke
 <p>Provide the <code>key</code> value on the <code>id</code> field of the reference. This means that calling <code>getId()</code> on the
 reference would return its <code>key</code>. </p>
 <p><strong>Note</strong>: When syncing from a source commercetools project, you can use this util which this library provides: 
- <a href="https://commercetools.github.io/commercetools-sync-java/v/1.4.1/com/commercetools/sync/products/utils/ProductReferenceReplacementUtils.html#replaceProductsReferenceIdsWithKeys-java.util.List-"><code>replaceProductsReferenceIdsWithKeys</code></a>
+ <a href="https://commercetools.github.io/commercetools-sync-java/v/1.5.0/com/commercetools/sync/products/utils/ProductReferenceReplacementUtils.html#replaceProductsReferenceIdsWithKeys-java.util.List-"><code>replaceProductsReferenceIdsWithKeys</code></a>
  that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
  <div class="codehilite"><pre><span></span><span class="c1">// Puts the keys in the reference id fields to prepare for reference resolution</span>
 <span class="kd">final</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">ProductDraft</span><span class="o">&gt;</span> <span class="n">productDrafts</span> <span class="o">=</span> <span class="n">replaceProductsReferenceIdsWithKeys</span><span class="o">(</span><span class="n">products</span><span class="o">);</span>
@@ -796,10 +796,87 @@ human-readable format.
 </pre></div>
 More examples of those utils for different fields can be found <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/utils">here</a>.</p>
 <h2 id="caveats">Caveats<a class="headerlink" href="#caveats" title="Permanent link">&para;</a></h2>
+<p>The commercetools-java-sync library has some exceptions to the data it can sync, particularly around product variant 
+attributes.</p>
 <ol>
-<li>Syncing attribute field types with  <code>ReferenceType</code> and <code>SetType</code> (of <code>elementType: ReferenceType</code>) field definitions, except 
-for Product references, is not supported yet. (See more: <a href="https://github.com/commercetools/commercetools-sync-java/issues/87">#87</a> <a href="https://github.com/commercetools/commercetools-sync-java/issues/87">#160</a>). This
-also applies to an attribute field of type <code>NestedType</code> which has any of the aforementioned types as an inner field.</li>
+<li>
+<p>List of supported variant attributes, with a  <code>AttributeType</code>: <code>ReferenceType</code>, 
+ that can be synced (See more: <a href="https://github.com/commercetools/commercetools-sync-java/issues/87">#87</a>):</p>
+<table>
+<thead>
+<tr>
+<th><code>referenceTypeId</code></th>
+<th>supported</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>“cart”</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>“category”</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>“channel”</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>“customer”</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>“key-value-document”</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>“order”</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>“product”</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>“product-type”</code></td>
+<td>✅</td>
+</tr>
+<tr>
+<td><code>“review”</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>“state”</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>“shipping-method”</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td><code>“zone”</code></td>
+<td>❌</td>
+</tr>
+<tr>
+<td>2. Support for syncing variant attributes with an <code>AttributeType</code> of <code>SetType</code> of <code>ReferenceType</code></td>
+<td></td>
+</tr>
+<tr>
+<td>(of <code>elementType: ReferenceType</code>) with any of the aforementioned <code>referenceTypeId</code>, accordingly applies.</td>
+<td></td>
+</tr>
+<tr>
+<td>3. Support for syncing variant attributes with an <code>AttributeType</code> of <code>NestedType</code> which has an attribute inside of it of</td>
+<td></td>
+</tr>
+<tr>
+<td><code>ReferenceType</code>  with any of the aforementioned <code>referenceTypeId</code>, accordingly applies.</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</li>
 </ol>
                 
                   

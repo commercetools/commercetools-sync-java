@@ -415,7 +415,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.4.1/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.5.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -518,6 +518,16 @@ like <a href="https://jcenter.bintray.com/">JCenter</a> and <a href="https://sea
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 <h1 id="release-a-new-version">Release a new version<a class="headerlink" href="#release-a-new-version" title="Permanent link">&para;</a></h1>
+<h3 id="before-release">Before Release<a class="headerlink" href="#before-release" title="Permanent link">&para;</a></h3>
+<p>Before making a new release make sure to:
+ - Create a new PR to prepare for the new release. In this PR, you should make sure all
+ the dependencies are up-to-date and make sure the new release's version is updated 
+ everywhere in the docs and the project files where needed.
+ - Make sure the squashed commit message when merging this PR to master contains the words 
+ <code>"Prepare for release "</code>. For example, before releasing version <code>1.10.0</code>, this commit message should be
+  <code>"Prepare for release 1.10.0"</code>. This is important to trigger and publish new benchmarks
+ for the library.</p>
+<h3 id="release">Release<a class="headerlink" href="#release" title="Permanent link">&para;</a></h3>
 <p>To release the library, you need to create a new git commit tag.</p>
 <p>This will trigger a new Travis build. The tag can be created via the command line</p>
 <div class="codehilite"><pre><span></span>git tag -a <span class="o">{</span>version<span class="o">}</span> -m <span class="s2">&quot;Minor text adjustments.&quot;</span>
