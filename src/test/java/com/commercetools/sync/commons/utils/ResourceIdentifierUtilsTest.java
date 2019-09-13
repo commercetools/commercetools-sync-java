@@ -65,7 +65,7 @@ class ResourceIdentifierUtilsTest {
     }
 
     @Test
-    void isReferenceOfType_WithEmptyObjectNodeValueIsProductReference_ShouldReturnFalse() {
+    void isReferenceOfType_WithEmptyObjectNodeValueAndProductReferenceTypeId_ShouldReturnFalse() {
         // preparation
         final ObjectNode emptyObjectNode = JsonNodeFactory.instance.objectNode();
 
