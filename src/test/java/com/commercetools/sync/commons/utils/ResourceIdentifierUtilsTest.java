@@ -58,10 +58,10 @@ class ResourceIdentifierUtilsTest {
         final ObjectNode emptyObjectNode = JsonNodeFactory.instance.objectNode();
 
         // test
-        final boolean result = isReferenceOfType(emptyObjectNode, "");
+        final boolean isReference = isReferenceOfType(emptyObjectNode, "");
 
         // assertion
-        assertThat(result).isFalse();
+        assertThat(isReference).isFalse();
     }
 
     @Test
@@ -70,10 +70,10 @@ class ResourceIdentifierUtilsTest {
         final ObjectNode emptyObjectNode = JsonNodeFactory.instance.objectNode();
 
         // test
-        final boolean result = isReferenceOfType(emptyObjectNode, Product.referenceTypeId());
+        final boolean isReference = isReferenceOfType(emptyObjectNode, Product.referenceTypeId());
 
         // assertion
-        assertThat(result).isFalse();
+        assertThat(isReference).isFalse();
     }
 
     @Test
@@ -82,10 +82,10 @@ class ResourceIdentifierUtilsTest {
         final TextNode textNode = JsonNodeFactory.instance.textNode("foo");
 
         // test
-        final boolean result = isReferenceOfType(textNode, Product.referenceTypeId());
+        final boolean isReference = isReferenceOfType(textNode, Product.referenceTypeId());
 
         // assertion
-        assertThat(result).isFalse();
+        assertThat(isReference).isFalse();
     }
 
     @Test
@@ -95,10 +95,10 @@ class ResourceIdentifierUtilsTest {
         invalidReferenceObject.put("anyString", "anyValue");
 
         // test
-        final boolean result = isReferenceOfType(invalidReferenceObject, Product.referenceTypeId());
+        final boolean isReference = isReferenceOfType(invalidReferenceObject, Product.referenceTypeId());
 
         // assertion
-        assertThat(result).isFalse();
+        assertThat(isReference).isFalse();
     }
 
     @Test
@@ -109,10 +109,10 @@ class ResourceIdentifierUtilsTest {
         categoryReference.put(REFERENCE_ID_FIELD, UUID.randomUUID().toString());
 
         // test
-        final boolean result = isReferenceOfType(categoryReference, Product.referenceTypeId());
+        final boolean isReference = isReferenceOfType(categoryReference, Product.referenceTypeId());
 
         // assertion
-        assertThat(result).isFalse();
+        assertThat(isReference).isFalse();
     }
 
     @Test
@@ -123,10 +123,10 @@ class ResourceIdentifierUtilsTest {
         categoryReference.put(REFERENCE_ID_FIELD, UUID.randomUUID().toString());
 
         // test
-        final boolean result = isReferenceOfType(categoryReference, Category.referenceTypeId());
+        final boolean isReference = isReferenceOfType(categoryReference, Category.referenceTypeId());
 
         // assertion
-        assertThat(result).isTrue();
+        assertThat(isReference).isTrue();
     }
 
 }
