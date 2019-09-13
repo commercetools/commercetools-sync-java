@@ -164,7 +164,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
     void sync_withNestedCategoryReferenceAsAttribute_shouldCreateProductReferencingExistingCategory() {
         // preparation
         final ObjectNode nestedAttributeValue =
-            createNestedAttributeValueReferences("testCategory1-reference",
+            createNestedAttributeValueReferences("category-reference",
                 createReferenceObject(testCategory1.getKey(), Category.referenceTypeId()));
 
         final AttributeDraft categoryReferenceAttribute =
@@ -218,7 +218,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
                 .get(0)
                 .get(ATTRIBUTE_VALUE_FIELD);
 
-            assertThat(nestedAttributeNameField.asText()).isEqualTo("testCategory1-reference");
+            assertThat(nestedAttributeNameField.asText()).isEqualTo("category-reference");
             assertThat(nestedAttributeReferenceValueField.get(REFERENCE_TYPE_ID_FIELD).asText())
                 .isEqualTo(Category.referenceTypeId());
             assertThat(nestedAttributeReferenceValueField.get(REFERENCE_ID_FIELD).asText())
@@ -230,7 +230,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
     void sync_withSameNestedCategoryReferenceAsAttribute_shouldNotSyncAnythingNew() {
         // preparation
         final ObjectNode nestedAttributeValue =
-            createNestedAttributeValueReferences("testCategory1-reference",
+            createNestedAttributeValueReferences("category-reference",
                 createReferenceObject(testCategory1.getId(), Category.referenceTypeId()));
 
         final AttributeDraft categoryReferenceAttribute =
@@ -253,7 +253,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
                          .join();
 
         final ObjectNode newNestedAttributeValue =
-            createNestedAttributeValueReferences("testCategory1-reference",
+            createNestedAttributeValueReferences("category-reference",
                 createReferenceObject(testCategory1.getKey(), Category.referenceTypeId()));
 
         final AttributeDraft newProductReferenceAttribute =
@@ -306,7 +306,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
                 .getValueAsJsonNode()
                 .get(0)
                 .get(ATTRIBUTE_VALUE_FIELD);
-            assertThat(nestedAttributeNameField.asText()).isEqualTo("testCategory1-reference");
+            assertThat(nestedAttributeNameField.asText()).isEqualTo("category-reference");
             assertThat(nestedAttributeValueField.get(REFERENCE_TYPE_ID_FIELD).asText())
                 .isEqualTo(Category.referenceTypeId());
             assertThat(nestedAttributeValueField.get(REFERENCE_ID_FIELD).asText())
@@ -318,7 +318,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
     void sync_withChangedNestedCategoryReferenceAsAttribute_shouldUpdateProductReferencingExistingCategory() {
         // preparation
         final ObjectNode nestedAttributeValue =
-            createNestedAttributeValueReferences("testCategory1-reference",
+            createNestedAttributeValueReferences("category-reference",
                 createReferenceObject(testCategory1.getId(), Category.referenceTypeId()));
 
         final AttributeDraft categoryReferenceAttribute =
@@ -341,7 +341,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
                          .join();
 
         final ObjectNode newNestedAttributeValue =
-            createNestedAttributeValueReferences("testCategory1-reference",
+            createNestedAttributeValueReferences("category-reference",
                 createReferenceObject(testCategory2.getKey(), Category.referenceTypeId()));
 
         final AttributeDraft newProductReferenceAttribute =
@@ -375,7 +375,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
         assertThat(warningCallBackMessages).isEmpty();
 
         final ObjectNode expectedNestedAttributeValue =
-            createNestedAttributeValueReferences("testCategory1-reference",
+            createNestedAttributeValueReferences("category-reference",
                 createReferenceObject(testCategory2.getId(), Category.referenceTypeId()));
 
         final AttributeDraft expectedCategoryReferenceAttribute =
@@ -403,7 +403,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
                 .get(ATTRIBUTE_VALUE_FIELD);
 
 
-            assertThat(nestedAttributeNameField.asText()).isEqualTo("testCategory1-reference");
+            assertThat(nestedAttributeNameField.asText()).isEqualTo("category-reference");
             assertThat(nestedAttributeValueField.get(REFERENCE_TYPE_ID_FIELD).asText())
                 .isEqualTo(Category.referenceTypeId());
             assertThat(nestedAttributeValueField.get(REFERENCE_ID_FIELD).asText()).isEqualTo(testCategory2.getId());
@@ -414,7 +414,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
     void sync_withNonExistingNestedCategoryReferenceAsAttribute_ShouldFailCreatingTheProduct() {
         // preparation
         final ObjectNode nestedAttributeValue =
-            createNestedAttributeValueReferences("testCategory1-reference",
+            createNestedAttributeValueReferences("category-reference",
                 createReferenceObject("nonExistingKey", Category.referenceTypeId()));
 
         final AttributeDraft categoryReferenceAttribute =
@@ -449,15 +449,15 @@ class ProductSyncWithNestedReferencedCategoriesIT {
                 final ErrorResponseException errorResponseException = (ErrorResponseException) error;
                 assertThat(errorResponseException.getStatusCode()).isEqualTo(400);
                 assertThat(error.getMessage())
-                    .contains("The value '{\"typeId\":\"testCategory1\",\"id\":\"nonExistingKey\"}' "
-                        + "is not valid for field 'nestedAttribute.testCategory1-reference'");
+                    .contains("The value '{\"typeId\":\"category\",\"id\":\"nonExistingKey\"}' "
+                        + "is not valid for field 'nestedAttribute.category-reference'");
             });
         assertThat(errorCallBackMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
                 assertThat(message)
-                    .contains("The value '{\"typeId\":\"testCategory1\",\"id\":\"nonExistingKey\"}' "
-                        + "is not valid for field 'nestedAttribute.testCategory1-reference'"));
+                    .contains("The value '{\"typeId\":\"category\",\"id\":\"nonExistingKey\"}' "
+                        + "is not valid for field 'nestedAttribute.category-reference'"));
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(actions).isEmpty();
     }
@@ -466,7 +466,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
     void sync_withNestedCategoryReferenceSetAsAttribute_shouldCreateProductReferencingExistingCategories() {
         // preparation
         final ObjectNode nestedAttributeValue =
-            createNestedAttributeValueSetOfReferences("testCategory1-reference-set",
+            createNestedAttributeValueSetOfReferences("category-reference-set",
                 createReferenceObject(testCategory1.getKey(), Category.referenceTypeId()),
                 createReferenceObject(testCategory2.getKey(), Category.referenceTypeId()));
 
@@ -520,7 +520,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
                 .get(0)
                 .get(ATTRIBUTE_VALUE_FIELD);
 
-            assertThat(nestedAttributeNameField.asText()).isEqualTo("testCategory1-reference-set");
+            assertThat(nestedAttributeNameField.asText()).isEqualTo("category-reference-set");
             assertThat(nestedAttributeValueField).isInstanceOf(ArrayNode.class);
             final ArrayNode referenceSet = (ArrayNode) nestedAttributeValueField;
             assertThat(referenceSet)
@@ -540,7 +540,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
     void sync_withNestedCategoryReferenceSetContainingANonExistingReference_shouldFailCreatingTheProduct() {
         // preparation
         final ObjectNode nestedAttributeValue =
-            createNestedAttributeValueSetOfReferences("testCategory1-reference-set",
+            createNestedAttributeValueSetOfReferences("category-reference-set",
                 createReferenceObject(testCategory1.getKey(), Category.referenceTypeId()),
                 createReferenceObject("nonExistingKey", Category.referenceTypeId()));
 
@@ -576,15 +576,15 @@ class ProductSyncWithNestedReferencedCategoriesIT {
                 final ErrorResponseException errorResponseException = (ErrorResponseException) error;
                 assertThat(errorResponseException.getStatusCode()).isEqualTo(400);
                 assertThat(error.getMessage())
-                    .contains("The value '{\"typeId\":\"testCategory1\",\"id\":\"nonExistingKey\"}' "
-                        + "is not valid for field 'nestedAttribute.testCategory1-reference-set'");
+                    .contains("The value '{\"typeId\":\"category\",\"id\":\"nonExistingKey\"}' "
+                        + "is not valid for field 'nestedAttribute.category-reference-set'");
             });
         assertThat(errorCallBackMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
                 assertThat(message)
-                    .contains("The value '{\"typeId\":\"testCategory1\",\"id\":\"nonExistingKey\"}' "
-                        + "is not valid for field 'nestedAttribute.testCategory1-reference-set'"));
+                    .contains("The value '{\"typeId\":\"category\",\"id\":\"nonExistingKey\"}' "
+                        + "is not valid for field 'nestedAttribute.category-reference-set'"));
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(actions).isEmpty();
     }
@@ -594,7 +594,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
         // preparation
         final ArrayNode nestedAttributeValue =
             createArrayNode(
-                createNestedAttributeValueSetOfReferences("testCategory1-reference-set",
+                createNestedAttributeValueSetOfReferences("category-reference-set",
                     createReferenceObject(testCategory1.getKey(), Category.referenceTypeId()),
                     createReferenceObject(testCategory2.getKey(), Category.referenceTypeId())));
 
@@ -651,7 +651,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
                 .get(0)
                 .get(ATTRIBUTE_VALUE_FIELD);
 
-            assertThat(setOfNestedAttributeNameField.asText()).isEqualTo("testCategory1-reference-set");
+            assertThat(setOfNestedAttributeNameField.asText()).isEqualTo("category-reference-set");
             assertThat(setOfNestedAttributeValueField).isInstanceOf(ArrayNode.class);
             final ArrayNode referenceSet = (ArrayNode) setOfNestedAttributeValueField;
             assertThat(referenceSet)

@@ -165,13 +165,13 @@ class ProductSyncWithNestedReferencedProductsIT {
         final ProductVariantDraft masterVariant = ProductVariantDraftBuilder
             .of()
             .sku("sku")
-            .key("new-testProduct1-master-variant")
+            .key("new-product-master-variant")
             .attributes(productReferenceAttribute)
             .build();
 
         final ProductDraft productDraftWithProductReference = ProductDraftBuilder
             .of(productType, ofEnglish("productName"), ofEnglish("productSlug"), masterVariant)
-            .key("new-testProduct1")
+            .key("new-product")
             .build();
 
 
@@ -211,7 +211,7 @@ class ProductSyncWithNestedReferencedProductsIT {
     void sync_withNestedProductReferenceAsAttribute_shouldCreateProductReferencingExistingProduct() {
         // preparation
         final ObjectNode nestedAttributeValue =
-            createNestedAttributeValueReferences("testProduct1-reference",
+            createNestedAttributeValueReferences("product-reference",
                 createReferenceObject(testProduct1.getKey(), Product.referenceTypeId()));
 
         final AttributeDraft productReferenceAttribute =
@@ -220,13 +220,13 @@ class ProductSyncWithNestedReferencedProductsIT {
         final ProductVariantDraft masterVariant = ProductVariantDraftBuilder
             .of()
             .sku("sku")
-            .key("new-testProduct1-master-variant")
+            .key("new-product-master-variant")
             .attributes(productReferenceAttribute)
             .build();
 
         final ProductDraft productDraftWithProductReference = ProductDraftBuilder
             .of(productType, ofEnglish("productName"), ofEnglish("productSlug"), masterVariant)
-            .key("new-testProduct1")
+            .key("new-product")
             .build();
 
 
@@ -265,7 +265,7 @@ class ProductSyncWithNestedReferencedProductsIT {
                 .get(0)
                 .get(ATTRIBUTE_VALUE_FIELD);
 
-            assertThat(nestedAttributeNameField.asText()).isEqualTo("testProduct1-reference");
+            assertThat(nestedAttributeNameField.asText()).isEqualTo("product-reference");
             assertThat(nestedAttributeReferenceValueField.get(REFERENCE_TYPE_ID_FIELD).asText())
                 .isEqualTo(Product.referenceTypeId());
             assertThat(nestedAttributeReferenceValueField.get(REFERENCE_ID_FIELD).asText())
@@ -277,7 +277,7 @@ class ProductSyncWithNestedReferencedProductsIT {
     void sync_withSameNestedProductReferenceAsAttribute_shouldNotSyncAnythingNew() {
         // preparation
         final ObjectNode nestedAttributeValue =
-            createNestedAttributeValueReferences("testProduct1-reference",
+            createNestedAttributeValueReferences("product-reference",
                 createReferenceObject(testProduct1.getId(), Product.referenceTypeId()));
 
         final AttributeDraft productReferenceAttribute =
@@ -286,13 +286,13 @@ class ProductSyncWithNestedReferencedProductsIT {
         final ProductVariantDraft masterVariant = ProductVariantDraftBuilder
             .of()
             .sku("sku")
-            .key("new-testProduct1-master-variant")
+            .key("new-product-master-variant")
             .attributes(productReferenceAttribute)
             .build();
 
         final ProductDraft productDraftWithProductReference = ProductDraftBuilder
             .of(productType, ofEnglish("productName"), ofEnglish("productSlug"), masterVariant)
-            .key("new-testProduct1")
+            .key("new-product")
             .build();
 
         CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraftWithProductReference))
@@ -300,7 +300,7 @@ class ProductSyncWithNestedReferencedProductsIT {
                          .join();
 
         final ObjectNode newNestedAttributeValue =
-            createNestedAttributeValueReferences("testProduct1-reference",
+            createNestedAttributeValueReferences("product-reference",
                 createReferenceObject(testProduct1.getKey(), Product.referenceTypeId()));
 
         final AttributeDraft newProductReferenceAttribute =
@@ -309,13 +309,13 @@ class ProductSyncWithNestedReferencedProductsIT {
         final ProductVariantDraft newMasterVariant = ProductVariantDraftBuilder
             .of()
             .sku("sku")
-            .key("new-testProduct1-master-variant")
+            .key("new-product-master-variant")
             .attributes(newProductReferenceAttribute)
             .build();
 
         final ProductDraft newProductDraftWithProductReference = ProductDraftBuilder
             .of(productType, ofEnglish("productName"), ofEnglish("productSlug"), newMasterVariant)
-            .key("new-testProduct1")
+            .key("new-product")
             .build();
 
 
@@ -353,7 +353,7 @@ class ProductSyncWithNestedReferencedProductsIT {
                 .getValueAsJsonNode()
                 .get(0)
                 .get(ATTRIBUTE_VALUE_FIELD);
-            assertThat(nestedAttributeNameField.asText()).isEqualTo("testProduct1-reference");
+            assertThat(nestedAttributeNameField.asText()).isEqualTo("product-reference");
             assertThat(nestedAttributeValueField.get(REFERENCE_TYPE_ID_FIELD).asText())
                 .isEqualTo(Product.referenceTypeId());
             assertThat(nestedAttributeValueField.get(REFERENCE_ID_FIELD).asText()).isEqualTo(testProduct1.getId());
@@ -364,7 +364,7 @@ class ProductSyncWithNestedReferencedProductsIT {
     void sync_withChangedNestedProductReferenceAsAttribute_shouldUpdateProductReferencingExistingProduct() {
         // preparation
         final ObjectNode nestedAttributeValue =
-            createNestedAttributeValueReferences("testProduct1-reference",
+            createNestedAttributeValueReferences("product-reference",
                 createReferenceObject(testProduct1.getId(), Product.referenceTypeId()));
 
         final AttributeDraft productReferenceAttribute =
@@ -373,13 +373,13 @@ class ProductSyncWithNestedReferencedProductsIT {
         final ProductVariantDraft masterVariant = ProductVariantDraftBuilder
             .of()
             .sku("sku")
-            .key("new-testProduct1-master-variant")
+            .key("new-product-master-variant")
             .attributes(productReferenceAttribute)
             .build();
 
         final ProductDraft productDraftWithProductReference = ProductDraftBuilder
             .of(productType, ofEnglish("productName"), ofEnglish("productSlug"), masterVariant)
-            .key("new-testProduct1")
+            .key("new-product")
             .build();
 
         CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraftWithProductReference))
@@ -387,7 +387,7 @@ class ProductSyncWithNestedReferencedProductsIT {
                          .join();
 
         final ObjectNode newNestedAttributeValue =
-            createNestedAttributeValueReferences("testProduct1-reference",
+            createNestedAttributeValueReferences("product-reference",
                 createReferenceObject(testProduct2.getKey(), Product.referenceTypeId()));
 
         final AttributeDraft newProductReferenceAttribute =
@@ -396,13 +396,13 @@ class ProductSyncWithNestedReferencedProductsIT {
         final ProductVariantDraft newMasterVariant = ProductVariantDraftBuilder
             .of()
             .sku("sku")
-            .key("new-testProduct1-master-variant")
+            .key("new-product-master-variant")
             .attributes(newProductReferenceAttribute)
             .build();
 
         final ProductDraft newProductDraftWithProductReference = ProductDraftBuilder
             .of(productType, ofEnglish("productName"), ofEnglish("productSlug"), newMasterVariant)
-            .key("new-testProduct1")
+            .key("new-product")
             .build();
 
 
@@ -421,7 +421,7 @@ class ProductSyncWithNestedReferencedProductsIT {
         assertThat(warningCallBackMessages).isEmpty();
 
         final ObjectNode expectedNestedAttributeValue =
-            createNestedAttributeValueReferences("testProduct1-reference",
+            createNestedAttributeValueReferences("product-reference",
                 createReferenceObject(testProduct2.getId(), Product.referenceTypeId()));
 
         final AttributeDraft expectedProductReferenceAttribute =
@@ -449,7 +449,7 @@ class ProductSyncWithNestedReferencedProductsIT {
                 .get(ATTRIBUTE_VALUE_FIELD);
 
 
-            assertThat(nestedAttributeNameField.asText()).isEqualTo("testProduct1-reference");
+            assertThat(nestedAttributeNameField.asText()).isEqualTo("product-reference");
             assertThat(nestedAttributeValueField.get(REFERENCE_TYPE_ID_FIELD).asText())
                 .isEqualTo(Product.referenceTypeId());
             assertThat(nestedAttributeValueField.get(REFERENCE_ID_FIELD).asText()).isEqualTo(testProduct2.getId());
@@ -460,7 +460,7 @@ class ProductSyncWithNestedReferencedProductsIT {
     void sync_withNonExistingNestedProductReferenceAsAttribute_ShouldFailCreatingTheProduct() {
         // preparation
         final ObjectNode nestedAttributeValue =
-            createNestedAttributeValueReferences("testProduct1-reference",
+            createNestedAttributeValueReferences("product-reference",
                 createReferenceObject("nonExistingKey", Product.referenceTypeId()));
 
         final AttributeDraft productReferenceAttribute =
@@ -469,13 +469,13 @@ class ProductSyncWithNestedReferencedProductsIT {
         final ProductVariantDraft masterVariant = ProductVariantDraftBuilder
             .of()
             .sku("sku")
-            .key("new-testProduct1-master-variant")
+            .key("new-product-master-variant")
             .attributes(productReferenceAttribute)
             .build();
 
         final ProductDraft productDraftWithProductReference = ProductDraftBuilder
             .of(productType, ofEnglish("productName"), ofEnglish("productSlug"), masterVariant)
-            .key("new-testProduct1")
+            .key("new-product")
             .build();
 
         // test
@@ -495,15 +495,15 @@ class ProductSyncWithNestedReferencedProductsIT {
                 final ErrorResponseException errorResponseException = (ErrorResponseException) error;
                 assertThat(errorResponseException.getStatusCode()).isEqualTo(400);
                 assertThat(error.getMessage())
-                    .contains("The value '{\"typeId\":\"testProduct1\",\"id\":\"nonExistingKey\"}' "
-                        + "is not valid for field 'nestedAttribute.testProduct1-reference'");
+                    .contains("The value '{\"typeId\":\"product\",\"id\":\"nonExistingKey\"}' "
+                        + "is not valid for field 'nestedAttribute.product-reference'");
             });
         assertThat(errorCallBackMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
                 assertThat(message)
-                    .contains("The value '{\"typeId\":\"testProduct1\",\"id\":\"nonExistingKey\"}' "
-                        + "is not valid for field 'nestedAttribute.testProduct1-reference'"));
+                    .contains("The value '{\"typeId\":\"product\",\"id\":\"nonExistingKey\"}' "
+                        + "is not valid for field 'nestedAttribute.product-reference'"));
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(actions).isEmpty();
     }
@@ -512,7 +512,7 @@ class ProductSyncWithNestedReferencedProductsIT {
     void sync_withNestedProductReferenceSetAsAttribute_shouldCreateProductReferencingExistingProducts() {
         // preparation
         final ObjectNode nestedAttributeValue =
-            createNestedAttributeValueSetOfReferences("testProduct1-reference-set",
+            createNestedAttributeValueSetOfReferences("product-reference-set",
                 createReferenceObject(testProduct1.getKey(), Product.referenceTypeId()),
                 createReferenceObject(testProduct2.getKey(), Product.referenceTypeId()));
 
@@ -522,13 +522,13 @@ class ProductSyncWithNestedReferencedProductsIT {
         final ProductVariantDraft masterVariant = ProductVariantDraftBuilder
             .of()
             .sku("sku")
-            .key("new-testProduct1-master-variant")
+            .key("new-product-master-variant")
             .attributes(productReferenceAttribute)
             .build();
 
         final ProductDraft productDraftWithProductReference = ProductDraftBuilder
             .of(productType, ofEnglish("productName"), ofEnglish("productSlug"), masterVariant)
-            .key("new-testProduct1")
+            .key("new-product")
             .build();
 
         // test
@@ -566,7 +566,7 @@ class ProductSyncWithNestedReferencedProductsIT {
                 .get(0)
                 .get(ATTRIBUTE_VALUE_FIELD);
 
-            assertThat(nestedAttributeNameField.asText()).isEqualTo("testProduct1-reference-set");
+            assertThat(nestedAttributeNameField.asText()).isEqualTo("product-reference-set");
             assertThat(nestedAttributeValueField).isInstanceOf(ArrayNode.class);
             final ArrayNode referenceSet = (ArrayNode) nestedAttributeValueField;
             assertThat(referenceSet)
@@ -586,7 +586,7 @@ class ProductSyncWithNestedReferencedProductsIT {
     void sync_withNestedProductReferenceSetContainingANonExistingReference_shouldFailCreatingTheProduct() {
         // preparation
         final ObjectNode nestedAttributeValue =
-            createNestedAttributeValueSetOfReferences("testProduct1-reference-set",
+            createNestedAttributeValueSetOfReferences("product-reference-set",
                 createReferenceObject(testProduct1.getKey(), Product.referenceTypeId()),
                 createReferenceObject("nonExistingKey", Product.referenceTypeId()));
 
@@ -596,13 +596,13 @@ class ProductSyncWithNestedReferencedProductsIT {
         final ProductVariantDraft masterVariant = ProductVariantDraftBuilder
             .of()
             .sku("sku")
-            .key("new-testProduct1-master-variant")
+            .key("new-product-master-variant")
             .attributes(productReferenceAttribute)
             .build();
 
         final ProductDraft productDraftWithProductReference = ProductDraftBuilder
             .of(productType, ofEnglish("productName"), ofEnglish("productSlug"), masterVariant)
-            .key("new-testProduct1")
+            .key("new-product")
             .build();
 
         // test
@@ -622,15 +622,15 @@ class ProductSyncWithNestedReferencedProductsIT {
                 final ErrorResponseException errorResponseException = (ErrorResponseException) error;
                 assertThat(errorResponseException.getStatusCode()).isEqualTo(400);
                 assertThat(error.getMessage())
-                    .contains("The value '{\"typeId\":\"testProduct1\",\"id\":\"nonExistingKey\"}' "
-                        + "is not valid for field 'nestedAttribute.testProduct1-reference-set'");
+                    .contains("The value '{\"typeId\":\"product\",\"id\":\"nonExistingKey\"}' "
+                        + "is not valid for field 'nestedAttribute.product-reference-set'");
             });
         assertThat(errorCallBackMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
                 assertThat(message)
-                    .contains("The value '{\"typeId\":\"testProduct1\",\"id\":\"nonExistingKey\"}' "
-                        + "is not valid for field 'nestedAttribute.testProduct1-reference-set'"));
+                    .contains("The value '{\"typeId\":\"product\",\"id\":\"nonExistingKey\"}' "
+                        + "is not valid for field 'nestedAttribute.product-reference-set'"));
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(actions).isEmpty();
     }
@@ -640,7 +640,7 @@ class ProductSyncWithNestedReferencedProductsIT {
         // preparation
         final ArrayNode nestedAttributeValue =
             createArrayNode(
-                createNestedAttributeValueSetOfReferences("testProduct1-reference-set",
+                createNestedAttributeValueSetOfReferences("product-reference-set",
                     createReferenceObject(testProduct1.getKey(), Product.referenceTypeId()),
                     createReferenceObject(testProduct2.getKey(), Product.referenceTypeId())));
 
@@ -650,13 +650,13 @@ class ProductSyncWithNestedReferencedProductsIT {
         final ProductVariantDraft masterVariant = ProductVariantDraftBuilder
             .of()
             .sku("sku")
-            .key("new-testProduct1-master-variant")
+            .key("new-product-master-variant")
             .attributes(productReferenceAttribute)
             .build();
 
         final ProductDraft productDraftWithProductReference = ProductDraftBuilder
             .of(productType, ofEnglish("productName"), ofEnglish("productSlug"), masterVariant)
-            .key("new-testProduct1")
+            .key("new-product")
             .build();
 
         // test
@@ -697,7 +697,7 @@ class ProductSyncWithNestedReferencedProductsIT {
                 .get(0)
                 .get(ATTRIBUTE_VALUE_FIELD);
 
-            assertThat(setOfNestedAttributeNameField.asText()).isEqualTo("testProduct1-reference-set");
+            assertThat(setOfNestedAttributeNameField.asText()).isEqualTo("product-reference-set");
             assertThat(setOfNestedAttributeValueField).isInstanceOf(ArrayNode.class);
             final ArrayNode referenceSet = (ArrayNode) setOfNestedAttributeValueField;
             assertThat(referenceSet)
