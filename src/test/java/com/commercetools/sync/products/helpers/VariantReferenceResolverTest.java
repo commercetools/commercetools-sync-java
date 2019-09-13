@@ -285,10 +285,9 @@ class VariantReferenceResolverTest {
 
         // assertions
         final List<AttributeDraft> resolvedBuilderAttributes = resolvedBuilder.getAttributes();
-
         assertThat(resolvedBuilderAttributes).hasSize(5);
         assertThat(resolvedBuilderAttributes).contains(textAttribute);
-        assertThat(resolvedBuilderAttributes).isNotNull();
+
         final AttributeDraft resolvedProductReferenceSetAttribute = resolvedBuilderAttributes.get(0);
         assertThat(resolvedProductReferenceSetAttribute).isNotNull();
 
