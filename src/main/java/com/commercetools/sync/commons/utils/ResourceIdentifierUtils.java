@@ -38,7 +38,7 @@ public final class ResourceIdentifierUtils {
      * Given a {@link JsonNode} {@code referenceValue} which is the JSON representation of CTP Reference object,
      * this method checks if it is has a {@code typeId} with the value equal to {@code referenceTypeId}.
      *
-     * @param referenceValue JSON representation of a commercetools reference object
+     * @param referenceValue JSON representation of CTP reference object
      * @param referenceTypeId the typeId to check of the reference is of the same type or not.
      * @return true if the typeId field of the reference has the same value as {@code referenceTypeId}, otherwise,
      *          false.
