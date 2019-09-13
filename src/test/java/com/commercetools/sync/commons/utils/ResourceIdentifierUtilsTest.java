@@ -91,11 +91,11 @@ class ResourceIdentifierUtilsTest {
     @Test
     void isReferenceOfType_WithInvalidReferenceVsProductReferenceTypeId_ShouldReturnFalse() {
         // preparation
-        final ObjectNode node = JsonNodeFactory.instance.objectNode();
-        node.put("anyString", "anyValue");
+        final ObjectNode invalidReferenceObject = JsonNodeFactory.instance.objectNode();
+        invalidReferenceObject.put("anyString", "anyValue");
 
         // test
-        final boolean result = isReferenceOfType(node, Product.referenceTypeId());
+        final boolean result = isReferenceOfType(invalidReferenceObject, Product.referenceTypeId());
 
         // assertion
         assertThat(result).isFalse();
@@ -104,12 +104,12 @@ class ResourceIdentifierUtilsTest {
     @Test
     void isReferenceOfType_WithCategoryReferenceVsProductReferenceTypeId_ShouldReturnFalse() {
         // preparation
-        final ObjectNode reference = JsonNodeFactory.instance.objectNode();
-        reference.put(REFERENCE_TYPE_ID_FIELD, Category.referenceTypeId());
-        reference.put(REFERENCE_ID_FIELD, UUID.randomUUID().toString());
+        final ObjectNode categoryReference = JsonNodeFactory.instance.objectNode();
+        categoryReference.put(REFERENCE_TYPE_ID_FIELD, Category.referenceTypeId());
+        categoryReference.put(REFERENCE_ID_FIELD, UUID.randomUUID().toString());
 
         // test
-        final boolean result = isReferenceOfType(reference, Product.referenceTypeId());
+        final boolean result = isReferenceOfType(categoryReference, Product.referenceTypeId());
 
         // assertion
         assertThat(result).isFalse();
@@ -118,12 +118,12 @@ class ResourceIdentifierUtilsTest {
     @Test
     void isReferenceOfType_WithCategoryReferenceVsCategoryReferenceTypeId_ShouldReturnTrue() {
         // preparation
-        final ObjectNode reference = JsonNodeFactory.instance.objectNode();
-        reference.put(REFERENCE_TYPE_ID_FIELD, Category.referenceTypeId());
-        reference.put(REFERENCE_ID_FIELD, UUID.randomUUID().toString());
+        final ObjectNode categoryReference = JsonNodeFactory.instance.objectNode();
+        categoryReference.put(REFERENCE_TYPE_ID_FIELD, Category.referenceTypeId());
+        categoryReference.put(REFERENCE_ID_FIELD, UUID.randomUUID().toString());
 
         // test
-        final boolean result = isReferenceOfType(reference, Category.referenceTypeId());
+        final boolean result = isReferenceOfType(categoryReference, Category.referenceTypeId());
 
         // assertion
         assertThat(result).isTrue();
