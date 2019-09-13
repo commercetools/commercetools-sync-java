@@ -39,7 +39,7 @@ The library supports synchronising the following entities in commercetools
  
  - Make sure you have `JDK 8` installed.
  - [commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) as a dependency in your JVM-based 
-  application. (Make sure to use a version `>= 1.43.0`).
+  application. (Make sure to use a version `>= 1.46.0`).
  - a target commercetools project for syncing your source data to.
 
 
