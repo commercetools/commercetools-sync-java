@@ -22,7 +22,7 @@ like [JCenter](https://jcenter.bintray.com/) and [Maven Central](https://search.
 ### Before Release
 
 Before making a new release make sure to:
- - Create a new PR to prepare for the new release. In this pr, you should make sure all
+ - Create a new PR to prepare for the new release. In this PR, you should make sure all
  the dependencies are up-to-date and make sure the new release's version is updated 
  everywhere in the docs and the project files where needed.
  - Make sure the squashed commit message when merging this PR to master contains the words 
