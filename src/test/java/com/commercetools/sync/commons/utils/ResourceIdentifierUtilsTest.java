@@ -53,7 +53,7 @@ class ResourceIdentifierUtilsTest {
     }
 
     @Test
-    void isReferenceOfType_WithEmptyObjectNodeValueAndEmptyString_ShouldReturnFalse() {
+    void isReferenceOfType_WithEmptyObjectNodeValueVsEmptyStringAsReferenceTypeId_ShouldReturnFalse() {
         // preparation
         final ObjectNode emptyObjectNode = JsonNodeFactory.instance.objectNode();
 
@@ -65,7 +65,7 @@ class ResourceIdentifierUtilsTest {
     }
 
     @Test
-    void isReferenceOfType_WithEmptyObjectNodeValueAndProductReferenceTypeId_ShouldReturnFalse() {
+    void isReferenceOfType_WithEmptyObjectNodeValueVsProductReferenceTypeId_ShouldReturnFalse() {
         // preparation
         final ObjectNode emptyObjectNode = JsonNodeFactory.instance.objectNode();
 
@@ -77,7 +77,7 @@ class ResourceIdentifierUtilsTest {
     }
 
     @Test
-    void isReferenceOfType_WithTextNode_ShouldReturnFalse() {
+    void isReferenceOfType_WithTextNodeVsProductReferenceTypeId_ShouldReturnFalse() {
         // preparation
         final TextNode textNode = JsonNodeFactory.instance.textNode("foo");
 
@@ -89,7 +89,7 @@ class ResourceIdentifierUtilsTest {
     }
 
     @Test
-    void isReferenceOfType_WithInvalidReferenceObject_ShouldReturnFalse() {
+    void isReferenceOfType_WithInvalidReferenceVsProductReferenceTypeId_ShouldReturnFalse() {
         // preparation
         final ObjectNode node = JsonNodeFactory.instance.objectNode();
         node.put("anyString", "anyValue");
@@ -102,10 +102,10 @@ class ResourceIdentifierUtilsTest {
     }
 
     @Test
-    void isReferenceOfType_WithDifferentTypeReferenceObject_ShouldReturnFalse() {
+    void isReferenceOfType_WithCategoryReferenceVsProductReferenceTypeId_ShouldReturnFalse() {
         // preparation
         final ObjectNode reference = JsonNodeFactory.instance.objectNode();
-        reference.put(REFERENCE_TYPE_ID_FIELD, "category");
+        reference.put(REFERENCE_TYPE_ID_FIELD, Category.referenceTypeId());
         reference.put(REFERENCE_ID_FIELD, UUID.randomUUID().toString());
 
         // test
@@ -116,10 +116,10 @@ class ResourceIdentifierUtilsTest {
     }
 
     @Test
-    void isReferenceOfType_WithSameTypeReferenceObject_ShouldReturnFalse() {
+    void isReferenceOfType_WithCategoryReferenceVsCategoryReferenceTypeId_ShouldReturnTrue() {
         // preparation
         final ObjectNode reference = JsonNodeFactory.instance.objectNode();
-        reference.put(REFERENCE_TYPE_ID_FIELD, "category");
+        reference.put(REFERENCE_TYPE_ID_FIELD, Category.referenceTypeId());
         reference.put(REFERENCE_ID_FIELD, UUID.randomUUID().toString());
 
         // test
