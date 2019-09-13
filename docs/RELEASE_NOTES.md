@@ -16,8 +16,8 @@
   a link to the releated issue number. 
    **New Features** (n) 🎉 
    **Breaking Changes** (n) 🚧 
-   **Major Enhancements** (n) ✨
-   **Enhancements** (n) 🛠️ 
+   **Enhancements** (n) ✨
+   **Dependency Updates** (n) 🛠️ 
    **Documentation** (n) 📋
    **Critical Bug Fixes** (n) 🔥 
    **Bug Fixes** (n)🐞
@@ -49,6 +49,13 @@
     
 - 🚧 **Breaking Changes** (1)
     - **Product Sync** - Unexposed the methods `VariantReferenceResolver#resolveAttributeReferences` and `VariantReferenceResolver#resolveAttributeReference` to be `private` as they are only meant for internal use of the library. [#440](https://github.com/commercetools/commercetools-sync-java/issues/440)
+    
+- 🛠️ **Dependency Updates** (5)
+    - Gradle 5.6.1 -> [5.6.2](https://docs.gradle.org/5.6.2/release-notes.html)
+    - `org.junit.jupiter:junit-jupiter-api` 5.5.1 -> 5.5.2
+    - `org.junit.jupiter:junit-jupiter-engine` 5.5.1 -> 5.5.2
+    - `org.junit.jupiter:junit-jupiter-params` 5.5.1 -> 5.5.2
+    - `com.github.ben-manes.versions` 0.22.0 -> 0.22.0
 
 ### 1.4.1 -  Sept 2, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.4.0...1.4.1) |
