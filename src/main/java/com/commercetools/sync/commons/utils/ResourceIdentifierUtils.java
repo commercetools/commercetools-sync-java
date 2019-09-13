@@ -41,7 +41,7 @@ public final class ResourceIdentifierUtils {
      * @param referenceValue JSON representation of CTP reference object
      * @param referenceTypeId the typeId to check of the reference is of the same type or not.
      * @return true if the typeId field of the reference has the same value as {@code referenceTypeId}, otherwise,
-     *          false.
+     *         false.
      */
     public static boolean isReferenceOfType(@Nonnull final JsonNode referenceValue, final String referenceTypeId) {
         return getReferenceTypeId(referenceValue)
