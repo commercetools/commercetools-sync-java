@@ -17,7 +17,21 @@ like [JCenter](https://jcenter.bintray.com/) and [Maven Central](https://search.
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-# Release a new version 
+# Release a new version
+
+### Before Release
+
+Before making a new release make sure to:
+ - Create a new PR to prepare for the new release. In this pr, you should make sure all
+ the dependencies are up-to-date and make sure the new release's version is updated 
+ everywhere in the docs and the project files where needed.
+ - Make sure the squashed commit message when merging this PR to master contains the words 
+ `"Prepare for release "`. For example, before releasing version `1.10.0`, this commit message should be
+  `"Prepare for release 1.10.0"`. This is important to trigger and publish new benchmarks
+ for the library.
+    
+### Release
+    
 To release the library, you need to create a new git commit tag.
 
 This will trigger a new Travis build. The tag can be created via the command line
