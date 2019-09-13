@@ -268,7 +268,8 @@ class ProductSyncWithNestedReferencedProductsIT {
             assertThat(nestedAttributeNameField.asText()).isEqualTo("testProduct1-reference");
             assertThat(nestedAttributeReferenceValueField.get(REFERENCE_TYPE_ID_FIELD).asText())
                 .isEqualTo(Product.referenceTypeId());
-            assertThat(nestedAttributeReferenceValueField.get(REFERENCE_ID_FIELD).asText()).isEqualTo(testProduct1.getId());
+            assertThat(nestedAttributeReferenceValueField.get(REFERENCE_ID_FIELD).asText())
+                .isEqualTo(testProduct1.getId());
         });
     }
 
