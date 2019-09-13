@@ -46,8 +46,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_ID_FIELD;
-import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_TYPE_ID_FIELD;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -97,7 +97,7 @@ public class ProductSyncMockUtils {
      * @param jsonResourcePath     the path of the JSON resource to build the product draft from.
      * @param productTypeReference the reference of the product type that the product draft belongs to.
      * @return a {@link ProductDraftBuilder} instance containing the data from the current projection of the specified
-     *          JSON resource and the product type.
+     *         JSON resource and the product type.
      */
     public static ProductDraftBuilder createProductDraftBuilder(@Nonnull final String jsonResourcePath,
                                                                 @Nonnull final Reference<ProductType>
@@ -273,7 +273,8 @@ public class ProductSyncMockUtils {
 
     /**
      * Creates a mock {@link CustomerGroup} with the supplied {@code id} and {@code key}.
-     * @param id the id of the created mock {@link CustomerGroup}.
+     *
+     * @param id  the id of the created mock {@link CustomerGroup}.
      * @param key the key of the created mock {@link CustomerGroup}.
      * @return a mock customerGroup with the supplied id and key.
      */
@@ -341,7 +342,7 @@ public class ProductSyncMockUtils {
      * <p>If the supplied {@code customTypeReference} is {@code null}, no custom fields are stubbed on the
      * resulting price mock.
      *
-     * @param channelReference the channel reference to attach on the mock {@link Price}.
+     * @param channelReference    the channel reference to attach on the mock {@link Price}.
      * @param customTypeReference the custom type reference to attach on the mock {@link Price}.
      * @return a mock price with the supplied references.
      */
@@ -364,6 +365,7 @@ public class ProductSyncMockUtils {
 
     /**
      * Creates a mock {@link ProductVariant} with the supplied {@link Price} {@link List}.
+     *
      * @param prices the prices to attach on the mock {@link ProductVariant}.
      * @return a mock product variant with the supplied prices.
      */
@@ -376,6 +378,7 @@ public class ProductSyncMockUtils {
 
     /**
      * Creates a mock {@link ProductVariant} with the supplied {@link Price} and {@link Asset} {@link List}.
+     *
      * @param prices the prices to attach on the mock {@link ProductVariant}.
      * @param assets the assets to attach on the mock {@link ProductVariant}.
      * @return a mock product variant with the supplied prices and assets.
@@ -391,6 +394,7 @@ public class ProductSyncMockUtils {
 
     /**
      * Creates a mock {@link Channel} with the supplied {@code key}..
+     *
      * @param key the key to to set on the mock {@link Channel}.
      * @return a mock channel with the supplied key.
      */
@@ -404,8 +408,9 @@ public class ProductSyncMockUtils {
 
     /**
      * Creates an {@link AttributeDraft} with the supplied {@code attributeName} and {@code references}.
+     *
      * @param attributeName the name to set on the {@link AttributeDraft}.
-     * @param references the references to set on the {@link AttributeDraft}.
+     * @param references    the references to set on the {@link AttributeDraft}.
      * @return an {@link AttributeDraft} with the supplied {@code attributeName} and {@code references}.
      */
     @Nonnull
@@ -418,6 +423,7 @@ public class ProductSyncMockUtils {
 
     /**
      * Creates an {@link ObjectNode} that represents a product reference with a random uuid in the id field.
+     *
      * @return an {@link ObjectNode} that represents a product reference with a random uuid in the id field.
      */
     @Nonnull
@@ -430,6 +436,7 @@ public class ProductSyncMockUtils {
 
     /**
      * Creates an {@link ObjectNode} that represents a product reference with the  supplied {@code id} in the id field.
+     *
      * @return an {@link ObjectNode} that represents a product reference with the  supplied {@code id} in the id field.
      */
     @Nonnull
@@ -440,6 +447,7 @@ public class ProductSyncMockUtils {
     /**
      * Creates an {@link ObjectNode} that represents a reference with the  supplied {@code id} in the id field and
      * {@code typeId} field in the typeId field.
+     *
      * @return an {@link ObjectNode} that represents a product reference with the  supplied {@code id} in the id field
      *         and {@code typeId} field in the typeId field.
      */
@@ -456,7 +464,7 @@ public class ProductSyncMockUtils {
         return ProductDraftBuilder.of(ProductType.referenceOfId(refId),
             LocalizedString.ofEnglish("testName"),
             LocalizedString.ofEnglish("testSlug"),
-            (ProductVariantDraft)null);
+            (ProductVariantDraft) null);
     }
 
     @Nonnull
@@ -470,6 +478,6 @@ public class ProductSyncMockUtils {
         return ProductDraftBuilder.of(reference,
             LocalizedString.ofEnglish("testName"),
             LocalizedString.ofEnglish("testSlug"),
-            (ProductVariantDraft)null);
+            (ProductVariantDraft) null);
     }
 }

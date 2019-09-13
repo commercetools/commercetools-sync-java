@@ -7,6 +7,7 @@ import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
+import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -28,12 +29,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceWithId;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceWithRandomId;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getReferenceSetAttributeDraft;
-import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_ID_FIELD;
-import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_TYPE_ID_FIELD;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -52,6 +53,7 @@ class WithProductReferencesTest {
             mock(ChannelService.class),
             mock(CustomerGroupService.class),
             productService,
+            mock(ProductTypeService.class),
             mock(CategoryService.class));
     }
 
@@ -103,6 +105,7 @@ class WithProductReferencesTest {
         final ObjectNode attributeValue = JsonNodeFactory.instance.objectNode();
         attributeValue.put(REFERENCE_TYPE_ID_FIELD, Product.referenceTypeId());
         attributeValue.set(REFERENCE_ID_FIELD, JsonNodeFactory.instance.nullNode());
+
         final AttributeDraft productReferenceAttribute =
             AttributeDraft.of("attributeName", attributeValue);
         final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
@@ -120,7 +123,7 @@ class WithProductReferencesTest {
     }
 
     @Test
-    void resolveReferences_WithExistingProductReferenceAttribute_ShouldNotResolveReferences() {
+    void resolveReferences_WithExistingProductReferenceAttribute_ShouldResolveReferences() {
         // preparation
         final ObjectNode attributeValue = getProductReferenceWithRandomId();
         final AttributeDraft productReferenceAttribute = AttributeDraft.of("attributeName", attributeValue);

@@ -7,8 +7,8 @@ import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.Map;
 
-import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_ID_FIELD;
-import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_TYPE_ID_FIELD;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public final class AssertionUtilsForVariantReferenceResolver {

@@ -5,10 +5,6 @@ import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.categories.CategoryDraftBuilder;
-import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Reference;
@@ -39,19 +35,21 @@ import java.util.function.Consumer;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_WITH_REFERENCES_RESOURCE_PATH;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class ProductSyncWithReferencedCategoriesIT {
+class ProductSyncWithReferencedProductTypesIT {
     private static ProductType productType;
-    private static Category category;
-    private static Category category2;
+    private static ProductType productType2;
+
 
     private ProductSyncOptions syncOptions;
     private List<String> errorCallBackMessages;
@@ -63,31 +61,14 @@ class ProductSyncWithReferencedCategoriesIT {
     static void setup() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
-        final CategoryDraft category1Draft = CategoryDraftBuilder
-            .of(ofEnglish("cat1-name"), ofEnglish("cat1-slug"))
-            .key("cat1-key")
-            .build();
-
-        category = CTP_TARGET_CLIENT
-            .execute(CategoryCreateCommand.of(category1Draft))
-            .toCompletableFuture()
-            .join();
-
-        final CategoryDraft category2Draft = CategoryDraftBuilder
-            .of(ofEnglish("cat2-name"), ofEnglish("cat2-slug"))
-            .key("cat2-key")
-            .build();
-
-        category2 = CTP_TARGET_CLIENT
-            .execute(CategoryCreateCommand.of(category2Draft))
-            .toCompletableFuture()
-            .join();
+        productType2 = createProductType(PRODUCT_TYPE_WITH_REFERENCES_RESOURCE_PATH, CTP_TARGET_CLIENT);
     }
 
     @BeforeEach
     void setupTest() {
         clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
+        deleteAllCategories(CTP_TARGET_CLIENT);
         syncOptions = buildSyncOptions();
     }
 
@@ -126,18 +107,20 @@ class ProductSyncWithReferencedCategoriesIT {
     }
 
     @Test
-    void sync_withCategoryReferenceAsAttribute_shouldCreateProductReferencingExistingCategory() {
+    void sync_withProductTypeReferenceAsAttribute_shouldCreateProductReferencingExistingProductType() {
         // preparation
-        final AttributeDraft categoryReferenceAttribute =
-            AttributeDraft.of("category-reference", Reference.of(Category.referenceTypeId(), category.getKey()));
+        final AttributeDraft productTypeReferenceAttribute =
+            AttributeDraft.of("productType-reference", Reference.of(ProductType.referenceTypeId(),
+                productType.getKey()));
+
         final ProductVariantDraft masterVariant = ProductVariantDraftBuilder
             .of()
             .sku("sku")
             .key("new-product-master-variant")
-            .attributes(categoryReferenceAttribute)
+            .attributes(productTypeReferenceAttribute)
             .build();
 
-        final ProductDraft productDraftWithCategoryReference = ProductDraftBuilder
+        final ProductDraft productDraftWithProductTypeReference = ProductDraftBuilder
             .of(productType, ofEnglish("productName"), ofEnglish("productSlug"), masterVariant)
             .key("new-product")
             .build();
@@ -146,7 +129,7 @@ class ProductSyncWithReferencedCategoriesIT {
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics =
             productSync
-                .sync(singletonList(productDraftWithCategoryReference))
+                .sync(singletonList(productDraftWithProductTypeReference))
                 .toCompletableFuture()
                 .join();
 
@@ -159,45 +142,46 @@ class ProductSyncWithReferencedCategoriesIT {
 
 
         final Product createdProduct = CTP_TARGET_CLIENT
-            .execute(ProductByKeyGet.of(productDraftWithCategoryReference.getKey()))
+            .execute(ProductByKeyGet.of(productDraftWithProductTypeReference.getKey()))
             .toCompletableFuture()
             .join();
 
         final Optional<Attribute> createdProductReferenceAttribute =
             createdProduct.getMasterData().getStaged().getMasterVariant()
-                          .findAttribute(categoryReferenceAttribute.getName());
+                          .findAttribute(productTypeReferenceAttribute.getName());
 
         assertThat(createdProductReferenceAttribute).hasValueSatisfying(attribute -> {
             assertThat(attribute.getValueAsJsonNode().get(REFERENCE_TYPE_ID_FIELD).asText())
-                .isEqualTo(Category.referenceTypeId());
+                .isEqualTo(ProductType.referenceTypeId());
             assertThat(attribute.getValueAsJsonNode().get(REFERENCE_ID_FIELD).asText())
-                .isEqualTo(category.getId());
+                .isEqualTo(productType.getId());
         });
     }
 
     @Test
-    void sync_withSameCategoryReferenceAsAttribute_shouldNotSyncAnythingNew() {
+    void sync_withSameProductTypeReferenceAsAttribute_shouldNotSyncAnythingNew() {
         // preparation
-        final AttributeDraft categoryReferenceAttribute =
-            AttributeDraft.of("category-reference", Reference.of(Category.referenceTypeId(), category));
+        final AttributeDraft productTypeReferenceAttribute =
+            AttributeDraft.of("productType-reference", Reference.of(ProductType.referenceTypeId(), productType));
         final ProductVariantDraft masterVariant = ProductVariantDraftBuilder
             .of()
             .sku("sku")
             .key("new-product-master-variant")
-            .attributes(categoryReferenceAttribute)
+            .attributes(productTypeReferenceAttribute)
             .build();
 
-        final ProductDraft productDraftWithCategoryReference = ProductDraftBuilder
+        final ProductDraft productDraftWithProductTypeReference = ProductDraftBuilder
             .of(productType, ofEnglish("productName"), ofEnglish("productSlug"), masterVariant)
             .key("new-product")
             .build();
 
-        CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraftWithCategoryReference))
+        CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraftWithProductTypeReference))
                          .toCompletableFuture()
                          .join();
 
         final AttributeDraft newProductReferenceAttribute =
-            AttributeDraft.of("category-reference", Reference.of(Category.referenceTypeId(), category.getKey()));
+            AttributeDraft.of("productType-reference", Reference.of(ProductType.referenceTypeId(),
+                productType.getKey()));
         final ProductVariantDraft newMasterVariant = ProductVariantDraftBuilder
             .of()
             .sku("sku")
@@ -227,54 +211,55 @@ class ProductSyncWithReferencedCategoriesIT {
 
 
         final Product createdProduct = CTP_TARGET_CLIENT
-            .execute(ProductByKeyGet.of(productDraftWithCategoryReference.getKey()))
+            .execute(ProductByKeyGet.of(productDraftWithProductTypeReference.getKey()))
             .toCompletableFuture()
             .join();
 
         final Optional<Attribute> createdProductReferenceAttribute =
             createdProduct.getMasterData().getStaged().getMasterVariant()
-                          .findAttribute(categoryReferenceAttribute.getName());
+                          .findAttribute(productTypeReferenceAttribute.getName());
 
         assertThat(createdProductReferenceAttribute).hasValueSatisfying(attribute -> {
             assertThat(attribute.getValueAsJsonNode().get(REFERENCE_TYPE_ID_FIELD).asText())
-                .isEqualTo(Category.referenceTypeId());
+                .isEqualTo(ProductType.referenceTypeId());
             assertThat(attribute.getValueAsJsonNode().get(REFERENCE_ID_FIELD).asText())
-                .isEqualTo(category.getId());
+                .isEqualTo(productType.getId());
         });
     }
 
     @Test
-    void sync_withChangedCategoryReferenceAsAttribute_shouldUpdateProductReferencingExistingCategory() {
+    void sync_withChangedProductTypeReferenceAsAttribute_shouldUpdateProductReferencingExistingProductType() {
         // preparation
-        final AttributeDraft categoryReferenceAttribute =
-            AttributeDraft.of("category-reference", Reference.of(Category.referenceTypeId(), category));
+        final AttributeDraft productTypeReferenceAttribute =
+            AttributeDraft.of("productType-reference", Reference.of(ProductType.referenceTypeId(), productType));
         final ProductVariantDraft masterVariant = ProductVariantDraftBuilder
             .of()
             .sku("sku")
             .key("new-product-master-variant")
-            .attributes(categoryReferenceAttribute)
+            .attributes(productTypeReferenceAttribute)
             .build();
 
-        final ProductDraft productDraftWithCategoryReference = ProductDraftBuilder
+        final ProductDraft productDraftWithProductTypeReference = ProductDraftBuilder
             .of(productType, ofEnglish("productName"), ofEnglish("productSlug"), masterVariant)
             .key("new-product")
             .build();
 
-        CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraftWithCategoryReference))
+        CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraftWithProductTypeReference))
                          .toCompletableFuture()
                          .join();
 
 
-        final AttributeDraft newCategoryReferenceAttribute =
-            AttributeDraft.of("category-reference", Reference.of(Category.referenceTypeId(), category2.getKey()));
+        final AttributeDraft newProductTypeReferenceAttribute =
+            AttributeDraft.of("productType-reference", Reference.of(ProductType.referenceTypeId(),
+                productType2.getKey()));
         final ProductVariantDraft newMasterVariant = ProductVariantDraftBuilder
             .of()
             .sku("sku")
             .key("new-product-master-variant")
-            .attributes(newCategoryReferenceAttribute)
+            .attributes(newProductTypeReferenceAttribute)
             .build();
 
-        final ProductDraft newProductDraftWithCategoryReference = ProductDraftBuilder
+        final ProductDraft newProductDraftWithProductTypeReference = ProductDraftBuilder
             .of(productType, ofEnglish("productName"), ofEnglish("productSlug"), newMasterVariant)
             .key("new-product")
             .build();
@@ -283,7 +268,7 @@ class ProductSyncWithReferencedCategoriesIT {
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics =
             productSync
-                .sync(singletonList(newProductDraftWithCategoryReference))
+                .sync(singletonList(newProductDraftWithProductTypeReference))
                 .toCompletableFuture()
                 .join();
 
@@ -293,40 +278,41 @@ class ProductSyncWithReferencedCategoriesIT {
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
         final AttributeDraft expectedAttribute =
-            AttributeDraft.of("category-reference", Reference.of(Category.referenceTypeId(), category2.getId()));
+            AttributeDraft.of("productType-reference", Reference.of(ProductType.referenceTypeId(),
+                productType2.getId()));
         assertThat(actions).containsExactly(SetAttributeInAllVariants.of(expectedAttribute, true));
 
 
         final Product createdProduct = CTP_TARGET_CLIENT
-            .execute(ProductByKeyGet.of(productDraftWithCategoryReference.getKey()))
+            .execute(ProductByKeyGet.of(productDraftWithProductTypeReference.getKey()))
             .toCompletableFuture()
             .join();
 
         final Optional<Attribute> createdProductReferenceAttribute =
             createdProduct.getMasterData().getStaged().getMasterVariant()
-                          .findAttribute(categoryReferenceAttribute.getName());
+                          .findAttribute(productTypeReferenceAttribute.getName());
 
         assertThat(createdProductReferenceAttribute).hasValueSatisfying(attribute -> {
             assertThat(attribute.getValueAsJsonNode().get(REFERENCE_TYPE_ID_FIELD).asText())
-                .isEqualTo(Category.referenceTypeId());
+                .isEqualTo(ProductType.referenceTypeId());
             assertThat(attribute.getValueAsJsonNode().get(REFERENCE_ID_FIELD).asText())
-                .isEqualTo(category2.getId());
+                .isEqualTo(productType2.getId());
         });
     }
 
     @Test
-    void sync_withNonExistingCategoryReferenceAsAttribute_ShouldFailCreatingTheProduct() {
+    void sync_withNonExistingProductTypeReferenceAsAttribute_ShouldFailCreatingTheProduct() {
         // preparation
-        final AttributeDraft categoryReferenceAttribute =
-            AttributeDraft.of("category-reference", Reference.of(Category.referenceTypeId(), "nonExistingKey"));
+        final AttributeDraft productTypeReferenceAttribute =
+            AttributeDraft.of("productType-reference", Reference.of(ProductType.referenceTypeId(), "nonExistingKey"));
         final ProductVariantDraft masterVariant = ProductVariantDraftBuilder
             .of()
             .sku("sku")
             .key("new-product-master-variant")
-            .attributes(categoryReferenceAttribute)
+            .attributes(productTypeReferenceAttribute)
             .build();
 
-        final ProductDraft productDraftWithCategoryReference = ProductDraftBuilder
+        final ProductDraft productDraftWithProductTypeReference = ProductDraftBuilder
             .of(productType, ofEnglish("productName"), ofEnglish("productSlug"), masterVariant)
             .key("new-product")
             .build();
@@ -336,7 +322,7 @@ class ProductSyncWithReferencedCategoriesIT {
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics =
             productSync
-                .sync(singletonList(productDraftWithCategoryReference))
+                .sync(singletonList(productDraftWithProductTypeReference))
                 .toCompletableFuture()
                 .join();
 
@@ -349,41 +335,42 @@ class ProductSyncWithReferencedCategoriesIT {
                 final ErrorResponseException errorResponseException = (ErrorResponseException) error;
                 assertThat(errorResponseException.getStatusCode()).isEqualTo(400);
                 assertThat(error.getMessage())
-                    .contains("The value '{\"typeId\":\"category\",\"id\":\"nonExistingKey\"}' "
-                        + "is not valid for field 'category-reference'");
+                    .contains("The value '{\"typeId\":\"product-type\",\"id\":\"nonExistingKey\"}' "
+                        + "is not valid for field 'productType-reference'");
             });
         assertThat(errorCallBackMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
                 assertThat(message)
-                    .contains("The value '{\"typeId\":\"category\",\"id\":\"nonExistingKey\"}' "
-                        + "is not valid for field 'category-reference'"));
+                    .contains("The value '{\"typeId\":\"product-type\",\"id\":\"nonExistingKey\"}' "
+                        + "is not valid for field 'productType-reference'"));
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(actions).isEmpty();
     }
 
     @Test
-    void sync_withCategoryReferenceSetAsAttribute_shouldCreateProductReferencingExistingCategories() {
+    void sync_withProductTypeReferenceSetAsAttribute_shouldCreateProductReferencingExistingCategories() {
         // preparation
-        final AttributeDraft categoryReferenceAttribute =
-            AttributeDraft.of("category-reference", Reference.of(Category.referenceTypeId(), category.getKey()));
+        final AttributeDraft productTypeReferenceAttribute =
+            AttributeDraft.of("productType-reference",
+                Reference.of(ProductType.referenceTypeId(), productType.getKey()));
 
-        final HashSet<Reference<Category>> references = new HashSet<>();
-        references.add(Reference.of(Category.referenceTypeId(), category.getKey()));
-        references.add(Reference.of(Category.referenceTypeId(), category2.getKey()));
+        final HashSet<Reference<ProductType>> references = new HashSet<>();
+        references.add(Reference.of(ProductType.referenceTypeId(), productType.getKey()));
+        references.add(Reference.of(ProductType.referenceTypeId(), productType2.getKey()));
 
-        final AttributeDraft categoryReferenceSetAttribute =
-            AttributeDraft.of("category-reference-set", references);
+        final AttributeDraft productTypeReferenceSetAttribute =
+            AttributeDraft.of("productType-reference-set", references);
 
 
         final ProductVariantDraft masterVariant = ProductVariantDraftBuilder
             .of()
             .sku("sku")
             .key("new-product-master-variant")
-            .attributes(categoryReferenceAttribute, categoryReferenceSetAttribute)
+            .attributes(productTypeReferenceAttribute, productTypeReferenceSetAttribute)
             .build();
 
-        final ProductDraft productDraftWithCategoryReference = ProductDraftBuilder
+        final ProductDraft productDraftWithProductTypeReference = ProductDraftBuilder
             .of(productType, ofEnglish("productName"), ofEnglish("productSlug"), masterVariant)
             .key("new-product")
             .build();
@@ -393,7 +380,7 @@ class ProductSyncWithReferencedCategoriesIT {
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics =
             productSync
-                .sync(singletonList(productDraftWithCategoryReference))
+                .sync(singletonList(productDraftWithProductTypeReference))
                 .toCompletableFuture()
                 .join();
 
@@ -406,63 +393,66 @@ class ProductSyncWithReferencedCategoriesIT {
 
 
         final Product createdProduct = CTP_TARGET_CLIENT
-            .execute(ProductByKeyGet.of(productDraftWithCategoryReference.getKey()))
+            .execute(ProductByKeyGet.of(productDraftWithProductTypeReference.getKey()))
             .toCompletableFuture()
             .join();
 
         final Optional<Attribute> createdProductReferenceAttribute =
             createdProduct.getMasterData().getStaged().getMasterVariant()
-                          .findAttribute(categoryReferenceAttribute.getName());
+                          .findAttribute(productTypeReferenceAttribute.getName());
 
         assertThat(createdProductReferenceAttribute).hasValueSatisfying(attribute -> {
             assertThat(attribute.getValueAsJsonNode().get(REFERENCE_TYPE_ID_FIELD).asText())
-                .isEqualTo(Category.referenceTypeId());
+                .isEqualTo(ProductType.referenceTypeId());
             assertThat(attribute.getValueAsJsonNode().get(REFERENCE_ID_FIELD).asText())
-                .isEqualTo(category.getId());
+                .isEqualTo(productType.getId());
         });
 
-        final Optional<Attribute> createdCategoryReferenceSetAttribute =
+        final Optional<Attribute> createdProductTypeReferenceSetAttribute =
             createdProduct.getMasterData().getStaged().getMasterVariant()
-                          .findAttribute(categoryReferenceSetAttribute.getName());
+                          .findAttribute(productTypeReferenceSetAttribute.getName());
 
-        assertThat(createdCategoryReferenceSetAttribute).hasValueSatisfying(attribute -> {
+        assertThat(createdProductTypeReferenceSetAttribute).hasValueSatisfying(attribute -> {
             assertThat(attribute.getValueAsJsonNode()).isInstanceOf(ArrayNode.class);
             final ArrayNode referenceSet = (ArrayNode) attribute.getValueAsJsonNode();
             assertThat(referenceSet)
                 .hasSize(2)
                 .anySatisfy(reference -> {
-                    assertThat(reference.get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo(Category.referenceTypeId());
-                    assertThat(reference.get(REFERENCE_ID_FIELD).asText()).isEqualTo(category.getId());
+                    assertThat(reference.get(REFERENCE_TYPE_ID_FIELD).asText())
+                        .isEqualTo(ProductType.referenceTypeId());
+                    assertThat(reference.get(REFERENCE_ID_FIELD).asText()).isEqualTo(productType.getId());
                 })
                 .anySatisfy(reference -> {
-                    assertThat(reference.get(REFERENCE_TYPE_ID_FIELD).asText()).isEqualTo(Category.referenceTypeId());
-                    assertThat(reference.get(REFERENCE_ID_FIELD).asText()).isEqualTo(category2.getId());
+                    assertThat(reference.get(REFERENCE_TYPE_ID_FIELD).asText())
+                        .isEqualTo(ProductType.referenceTypeId());
+                    assertThat(reference.get(REFERENCE_ID_FIELD).asText()).isEqualTo(productType2.getId());
                 });
         });
     }
 
     @Test
-    void sync_withCategoryReferenceSetContainingANonExistingReference_shouldFailCreatingTheProduct() {
+    void sync_withProductTypeReferenceSetContainingANonExistingReference_shouldFailCreatingTheProduct() {
         // preparation
-        final AttributeDraft categoryReferenceAttribute =
-            AttributeDraft.of("category-reference", Reference.of(Category.referenceTypeId(), category.getKey()));
+        final AttributeDraft productTypeReferenceAttribute =
+            AttributeDraft.of("productType-reference", Reference.of(ProductType.referenceTypeId(),
+                productType.getKey()));
 
-        final HashSet<Reference<Category>> references = new HashSet<>();
-        references.add(Reference.of(Category.referenceTypeId(), "nonExistingKey"));
-        references.add(Reference.of(Category.referenceTypeId(), category2.getKey()));
+        final HashSet<Reference<ProductType>> references = new HashSet<>();
+        references.add(Reference.of(ProductType.referenceTypeId(), "nonExistingKey"));
+        references.add(Reference.of(ProductType.referenceTypeId(), productType2.getKey()));
 
-        final AttributeDraft categoryReferenceSetAttribute =
-            AttributeDraft.of("category-reference-set", references);
+        final AttributeDraft productTypeReferenceSetAttribute =
+            AttributeDraft.of("productType-reference-set", references);
 
 
         final ProductVariantDraft masterVariant = ProductVariantDraftBuilder
             .of()
             .sku("sku")
             .key("new-product-master-variant")
-            .attributes(categoryReferenceAttribute, categoryReferenceSetAttribute)
+            .attributes(productTypeReferenceAttribute, productTypeReferenceSetAttribute)
             .build();
 
-        final ProductDraft productDraftWithCategoryReference = ProductDraftBuilder
+        final ProductDraft productDraftWithProductTypeReference = ProductDraftBuilder
             .of(productType, ofEnglish("productName"), ofEnglish("productSlug"), masterVariant)
             .key("new-product")
             .build();
@@ -472,7 +462,7 @@ class ProductSyncWithReferencedCategoriesIT {
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics =
             productSync
-                .sync(singletonList(productDraftWithCategoryReference))
+                .sync(singletonList(productDraftWithProductTypeReference))
                 .toCompletableFuture()
                 .join();
 
@@ -485,15 +475,15 @@ class ProductSyncWithReferencedCategoriesIT {
                 final ErrorResponseException errorResponseException = (ErrorResponseException) error;
                 assertThat(errorResponseException.getStatusCode()).isEqualTo(400);
                 assertThat(error.getMessage())
-                    .contains("The value '{\"typeId\":\"category\",\"id\":\"nonExistingKey\"}' "
-                        + "is not valid for field 'category-reference-set'");
+                    .contains("The value '{\"typeId\":\"product-type\",\"id\":\"nonExistingKey\"}' "
+                        + "is not valid for field 'productType-reference-set'");
             });
         assertThat(errorCallBackMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
                 assertThat(message)
-                    .contains("The value '{\"typeId\":\"category\",\"id\":\"nonExistingKey\"}' "
-                        + "is not valid for field 'category-reference-set'"));
+                    .contains("The value '{\"typeId\":\"product-type\",\"id\":\"nonExistingKey\"}' "
+                        + "is not valid for field 'productType-reference-set'"));
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(actions).isEmpty();
     }

@@ -111,8 +111,30 @@ Optional<UpdateAction<Product>> updateAction = buildChangeNameUpdateAction(oldPr
 More examples of those utils for different fields can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/utils).
 
 ## Caveats
-1. Syncing attribute field types with  `ReferenceType` and `SetType` (of `elementType: ReferenceType`) field definitions, except 
-for `Product` and `Category` references, is not supported yet. (See more: [#87](https://github.com/commercetools/commercetools-sync-java/issues/87) [#160](https://github.com/commercetools/commercetools-sync-java/issues/87)). This
-also applies to an attribute field of type `NestedType` which has any of the aforementioned types as an inner field.
+
+The commercetools-java-sync library has some exceptions to the data it can sync, particularly around product variant 
+attributes.
+
+1. List of supported variant attributes, with a  `AttributeType`: `ReferenceType`, 
+ that can be synced (See more: [#87](https://github.com/commercetools/commercetools-sync-java/issues/87)):
+ 
+    | `referenceTypeId`  |  supported |
+    |---|---|
+    |  `“cart”` | ❌ |
+    | `“category”`  | ✅ |
+    | `“channel”`  | ❌ |
+    | `“customer”`  | ❌ |
+    | `“key-value-document”`  | ❌ |
+    | `“order”`  | ❌ |
+    | `“product”` | ✅ |
+    | `“product-type”` | ✅ |
+    | `“review”`  | ❌ |
+    | `“state”`  | ❌ |
+    | `“shipping-method”`  | ❌ |
+    | `“zone”`  | ❌ |
+2. Support for syncing variant attributes with an `AttributeType` of `SetType` of `ReferenceType` 
+(of `elementType: ReferenceType`) with any of the aforementioned `referenceTypeId`, accordingly applies.
+3. Support for syncing variant attributes with an `AttributeType` of `NestedType` which has an attribute inside of it of 
+`ReferenceType`  with any of the aforementioned `referenceTypeId`, accordingly applies.
 
 

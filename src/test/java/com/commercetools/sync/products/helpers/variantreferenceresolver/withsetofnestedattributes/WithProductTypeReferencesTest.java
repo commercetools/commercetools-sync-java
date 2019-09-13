@@ -12,8 +12,8 @@ import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductVariantDraft;
+import io.sphere.sdk.producttypes.ProductType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import static com.commercetools.sync.products.ProductSyncMockUtils.createReferenceObject;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductService;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductTypeService;
 import static com.commercetools.sync.products.helpers.variantreferenceresolver.AssertionUtilsForVariantReferenceResolver.assertReferenceAttributeValue;
 import static com.commercetools.sync.products.helpers.variantreferenceresolver.AssertionUtilsForVariantReferenceResolver.assertReferenceSetAttributeValue;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
@@ -33,43 +33,43 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class WithProductReferencesTest {
-    private ProductService productService;
+class WithProductTypeReferencesTest {
+    private ProductTypeService productTypeService;
 
-    private static final String PRODUCT_ID = UUID.randomUUID().toString();
+    private static final String PRODUCT_TYPE_ID = UUID.randomUUID().toString();
     private VariantReferenceResolver referenceResolver;
 
-    private static final String RES_SUB_ROOT = "withproductreferences/";
-    private static final String SET_OF_NESTED_ATTRIBUTE_WITH_PRODUCT_REFERENCE_ATTRIBUTES =
+    private static final String RES_SUB_ROOT = "withproducttypereferences/";
+    private static final String SET_OF_NESTED_ATTRIBUTE_WITH_PRODUCT_TYPE_REFERENCE_ATTRIBUTES =
         WithNoReferencesTest.RES_ROOT + RES_SUB_ROOT + "with-reference.json";
-    private static final String SET_OF_NESTED_ATTRIBUTE_WITH_SOME_NOT_EXISTING_PRODUCT_REFERENCE_ATTRIBUTES =
+    private static final String SET_OF_NESTED_ATTRIBUTE_WITH_SOME_NOT_EXISTING_PRODUCT_TYPE_REFERENCE_ATTRIBUTES =
         WithNoReferencesTest.RES_ROOT + RES_SUB_ROOT + "with-non-existing-references.json";
-    private static final String SET_OF_NESTED_ATTRIBUTE_WITH_SET_OF_PRODUCT_REFERENCE_ATTRIBUTES =
+    private static final String SET_OF_NESTED_ATTRIBUTE_WITH_SET_OF_PRODUCT_TYPE_REFERENCE_ATTRIBUTES =
         WithNoReferencesTest.RES_ROOT + RES_SUB_ROOT + "with-set-of-references.json";
 
     @BeforeEach
     void setup() {
-        productService = getMockProductService(PRODUCT_ID);
+        productTypeService = getMockProductTypeService(PRODUCT_TYPE_ID);
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
         referenceResolver = new VariantReferenceResolver(syncOptions,
             mock(TypeService.class),
             mock(ChannelService.class),
             mock(CustomerGroupService.class),
-            productService,
-            mock(ProductTypeService.class),
+            mock(ProductService.class),
+            productTypeService,
             mock(CategoryService.class));
     }
 
     @Test
-    void resolveReferences_WithSetOfNestedProductReferenceAttributes_ShouldResolveReferences() {
+    void resolveReferences_WithSetOfNestedProductTypeReferenceAttributes_ShouldResolveReferences() {
         // preparation
-        final ProductVariantDraft withSetOfNestedProductReferenceAttributes =
-            readObjectFromResource(SET_OF_NESTED_ATTRIBUTE_WITH_PRODUCT_REFERENCE_ATTRIBUTES,
+        final ProductVariantDraft withSetOfNestedProductTypeReferenceAttributes =
+            readObjectFromResource(SET_OF_NESTED_ATTRIBUTE_WITH_PRODUCT_TYPE_REFERENCE_ATTRIBUTES,
                 ProductVariantDraft.class);
 
         // test
         final ProductVariantDraft resolvedAttributeDraft =
-            referenceResolver.resolveReferences(withSetOfNestedProductReferenceAttributes)
+            referenceResolver.resolveReferences(withSetOfNestedProductTypeReferenceAttributes)
                              .toCompletableFuture()
                              .join();
         // assertions
@@ -87,24 +87,24 @@ class WithProductReferencesTest {
             .stream(resolvedNestedAttributeAsArray.spliterator(), false)
             .collect(Collectors.toMap(jsonNode -> jsonNode.get("name").asText(), jsonNode -> jsonNode));
 
-        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-1-name", PRODUCT_ID,
-            Product.referenceTypeId());
-        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-2-name", PRODUCT_ID,
-            Product.referenceTypeId());
-        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-3-name", PRODUCT_ID,
-            Product.referenceTypeId());
+        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-1-name", PRODUCT_TYPE_ID,
+            ProductType.referenceTypeId());
+        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-2-name", PRODUCT_TYPE_ID,
+            ProductType.referenceTypeId());
+        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-3-name", PRODUCT_TYPE_ID,
+            ProductType.referenceTypeId());
     }
 
     @Test
-    void resolveReferences_WithSetOfNestedSetOfProductReferenceAttributes_ShouldOnlyResolveExistingReferences() {
+    void resolveReferences_WithSetOfNestedSetOfProductTypeReferenceAttributes_ShouldOnlyResolveExistingReferences() {
         // preparation
-        final ProductVariantDraft withSetOfNestedSetOfProductReferenceAttributes =
-            readObjectFromResource(SET_OF_NESTED_ATTRIBUTE_WITH_SET_OF_PRODUCT_REFERENCE_ATTRIBUTES,
+        final ProductVariantDraft withSetOfNestedSetOfProductTypeReferenceAttributes =
+            readObjectFromResource(SET_OF_NESTED_ATTRIBUTE_WITH_SET_OF_PRODUCT_TYPE_REFERENCE_ATTRIBUTES,
                 ProductVariantDraft.class);
 
         // test
         final ProductVariantDraft resolvedAttributeDraft =
-            referenceResolver.resolveReferences(withSetOfNestedSetOfProductReferenceAttributes)
+            referenceResolver.resolveReferences(withSetOfNestedSetOfProductTypeReferenceAttributes)
                              .toCompletableFuture()
                              .join();
         // assertions
@@ -123,28 +123,28 @@ class WithProductReferencesTest {
             .collect(Collectors.toMap(jsonNode -> jsonNode.get("name").asText(), jsonNode -> jsonNode));
 
         assertReferenceSetAttributeValue(resolvedNestedAttributesMap,
-            "nested-attribute-1-name", 2, PRODUCT_ID, Product.referenceTypeId());
+            "nested-attribute-1-name", 2, PRODUCT_TYPE_ID, ProductType.referenceTypeId());
         assertReferenceAttributeValue(resolvedNestedAttributesMap,
-            "nested-attribute-2-name", PRODUCT_ID, Product.referenceTypeId());
+            "nested-attribute-2-name", PRODUCT_TYPE_ID, ProductType.referenceTypeId());
         assertReferenceAttributeValue(resolvedNestedAttributesMap,
-            "nested-attribute-3-name", PRODUCT_ID, Product.referenceTypeId());
+            "nested-attribute-3-name", PRODUCT_TYPE_ID, ProductType.referenceTypeId());
     }
 
     @Test
-    void resolveReferences_WithSetOfNestedProductReferenceSetWithSomeNonExisting_ShouldOnlyResolveExistingReferences() {
+    void resolveReferences_WithSetOfNestedProdTypeReferenceSetOfSomeNonExisting_ShouldOnlyResolveExistingReferences() {
         // preparation
-        when(productService.getIdFromCacheOrFetch("nonExistingProductKey1"))
+        when(productTypeService.fetchCachedProductTypeId("nonExistingProductTypeKey1"))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
-        when(productService.getIdFromCacheOrFetch("nonExistingProductKey3"))
+        when(productTypeService.fetchCachedProductTypeId("nonExistingProductTypeKey3"))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-        final ProductVariantDraft withSetOfNestedProductReferenceSetWithSomeNonExisting =
-            readObjectFromResource(SET_OF_NESTED_ATTRIBUTE_WITH_SOME_NOT_EXISTING_PRODUCT_REFERENCE_ATTRIBUTES,
+        final ProductVariantDraft withSetOfNestedProductTypeReferenceSetWithSomeNonExisting =
+            readObjectFromResource(SET_OF_NESTED_ATTRIBUTE_WITH_SOME_NOT_EXISTING_PRODUCT_TYPE_REFERENCE_ATTRIBUTES,
                 ProductVariantDraft.class);
 
         // test
         final ProductVariantDraft resolvedAttributeDraft =
-            referenceResolver.resolveReferences(withSetOfNestedProductReferenceSetWithSomeNonExisting)
+            referenceResolver.resolveReferences(withSetOfNestedProductTypeReferenceSetWithSomeNonExisting)
                              .toCompletableFuture()
                              .join();
         // assertions
@@ -164,13 +164,13 @@ class WithProductReferencesTest {
 
         assertReferenceSetAttributeValue(resolvedNestedAttributesMap,
             "nested-attribute-1-name",
-            createReferenceObject("nonExistingProductKey1", Product.referenceTypeId()),
-            createReferenceObject(PRODUCT_ID, Product.referenceTypeId()));
+            createReferenceObject("nonExistingProductTypeKey1", ProductType.referenceTypeId()),
+            createReferenceObject(PRODUCT_TYPE_ID, ProductType.referenceTypeId()));
 
         assertReferenceAttributeValue(resolvedNestedAttributesMap,
-            "nested-attribute-2-name", PRODUCT_ID, Product.referenceTypeId());
+            "nested-attribute-2-name", PRODUCT_TYPE_ID, ProductType.referenceTypeId());
 
         assertReferenceAttributeValue(resolvedNestedAttributesMap,
-            "nested-attribute-3-name", "nonExistingProductKey3", Product.referenceTypeId());
+            "nested-attribute-3-name", "nonExistingProductTypeKey3", ProductType.referenceTypeId());
     }
 }

@@ -7,6 +7,7 @@ import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
+import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.products.ProductVariantDraft;
@@ -36,6 +37,7 @@ class WithNoReferencesTest {
             mock(ChannelService.class),
             mock(CustomerGroupService.class),
             mock(ProductService.class),
+            mock(ProductTypeService.class),
             mock(CategoryService.class));
     }
 
