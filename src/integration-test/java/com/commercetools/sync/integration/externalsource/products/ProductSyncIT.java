@@ -780,42 +780,6 @@ class ProductSyncIT {
     }
 
     @Test
-    void sync_withProductBundle_shouldCreateProductReferencingExistingProduct() {
-        final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
-            ProductType.referenceOfId(productType.getKey()))
-            .taxCategory(null)
-            .state(null)
-            .build();
-
-        // Creating the attribute draft with the product reference
-        final AttributeDraft productReferenceAttribute =
-            AttributeDraft.of("product-reference", Reference.of(Product.referenceTypeId(), product.getKey()));
-
-        // Creating the product variant draft with the product reference attribute
-        final ProductVariantDraft draftMasterVariant = productDraft.getMasterVariant();
-        assertThat(draftMasterVariant).isNotNull();
-        final List<AttributeDraft> attributes = draftMasterVariant.getAttributes();
-        attributes.add(productReferenceAttribute);
-        final ProductVariantDraft masterVariant = ProductVariantDraftBuilder.of(draftMasterVariant)
-                                                                            .attributes(attributes)
-                                                                            .build();
-
-        final ProductDraft productDraftWithProductReference = ProductDraftBuilder.of(productDraft)
-                                                                                 .masterVariant(masterVariant)
-                                                                                 .build();
-
-
-        final ProductSync productSync = new ProductSync(syncOptions);
-        final ProductSyncStatistics syncStatistics =
-            executeBlocking(productSync.sync(singletonList(productDraftWithProductReference)));
-
-        assertThat(syncStatistics).hasValues(1, 1, 0, 0);
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-        assertThat(warningCallBackMessages).isEmpty();
-    }
-
-    @Test
     void sync_withProductContainingAttributeChanges_shouldSyncProductCorrectly() {
         // preparation
         final List<UpdateAction<Product>> updateActions = new ArrayList<>();
