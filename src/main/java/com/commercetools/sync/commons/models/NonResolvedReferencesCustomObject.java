@@ -1,14 +1,11 @@
 package com.commercetools.sync.commons.models;
 
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.Resource;
 import io.sphere.sdk.products.ProductDraft;
 
 import javax.annotation.Nonnull;
-import java.time.ZonedDateTime;
 import java.util.List;
 
-public class NonResolvedReferencesCustomObject implements Resource {
+public class NonResolvedReferencesCustomObject {
 
     @Nonnull
     private String productKey;
@@ -18,11 +15,24 @@ public class NonResolvedReferencesCustomObject implements Resource {
 
     private List<String> dependantProductKeys;
 
+    /**
+     * Object represent the value for the custom object that will hold unresolved references
+     * @param productKey product key that has non-resolved references
+     * @param productDraft product draft which has non-resolved references
+     * @param dependantProductKeys product keys of non-resolved references
+     */
+    public NonResolvedReferencesCustomObject(@Nonnull final String productKey, @Nonnull final ProductDraft productDraft,
+                                             final List<String> dependantProductKeys) {
+        this.productKey = productKey;
+        this.productDraft = productDraft;
+        this.dependantProductKeys = dependantProductKeys;
+    }
+
     public String getProductKey() {
         return productKey;
     }
 
-    public void setProductKey(String productKey) {
+    public void setProductKey(final String productKey) {
         this.productKey = productKey;
     }
 
@@ -30,7 +40,7 @@ public class NonResolvedReferencesCustomObject implements Resource {
         return productDraft;
     }
 
-    public void setProductDraft(ProductDraft productDraft) {
+    public void setProductDraft(final ProductDraft productDraft) {
         this.productDraft = productDraft;
     }
 
@@ -38,32 +48,8 @@ public class NonResolvedReferencesCustomObject implements Resource {
         return dependantProductKeys;
     }
 
-    public void setDependantProductKeys(List<String> dependantProductKeys) {
+    public void setDependantProductKeys(final List<String> dependantProductKeys) {
         this.dependantProductKeys = dependantProductKeys;
     }
 
-    @Override
-    public String getId() {
-        return null;
-    }
-
-    @Override
-    public Long getVersion() {
-        return null;
-    }
-
-    @Override
-    public ZonedDateTime getCreatedAt() {
-        return null;
-    }
-
-    @Override
-    public ZonedDateTime getLastModifiedAt() {
-        return null;
-    }
-
-    @Override
-    public Reference toReference() {
-        return null;
-    }
 }

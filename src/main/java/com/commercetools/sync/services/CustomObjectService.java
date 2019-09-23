@@ -24,8 +24,8 @@ public interface CustomObjectService {
      * {@link Optional} that contains the matching {@link CustomObject} if exists, otherwise empty.
      */
     @Nonnull
-    CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>>
-    fetchCustomObject(@Nullable final String key);
+    CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>> fetchCustomObject(
+            @Nullable final String key);
 
     /**
      * Given a resource of type {@link CustomObject}, this method attempts to create a
@@ -43,11 +43,11 @@ public interface CustomObjectService {
      *
      * @param customObject the resource to create/update a resource based off of.
      * @return a {@link CompletionStage} containing an optional with the created resource if successful otherwise an
-     * empty optional.
+     *     empty optional.
      */
     @Nonnull
-    CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>> createOrUpdateCustomObject
-    (@Nonnull final CustomObjectDraft<NonResolvedReferencesCustomObject> customObject);
+    CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>> createOrUpdateCustomObject(
+            @Nonnull final CustomObjectDraft<NonResolvedReferencesCustomObject> customObject);
 
     /**
      * Given a resource of type {@link CustomObject}, this method attempts to delete a
@@ -65,10 +65,10 @@ public interface CustomObjectService {
      *
      * @param customObject the resource to delete a resource based off of.
      * @return a {@link CompletionStage} containing an optional with the deleted resource if successful otherwise an
-     * empty optional.
+     *     empty optional.
      */
     @Nonnull
-    CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>> deleteCustomObject
-    (@Nonnull final CustomObject<NonResolvedReferencesCustomObject> customObject);
+    CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>> deleteCustomObject(
+            @Nonnull final CustomObject<NonResolvedReferencesCustomObject> customObject);
 
 }

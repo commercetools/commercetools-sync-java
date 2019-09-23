@@ -32,21 +32,21 @@ public class CustomObjectServiceImpl
 
     private static final String CREATE_FAILED = "Failed to create draft with key: '%s'. Reason: %s";
 
-    public CustomObjectServiceImpl(BaseSyncOptions baseSyncOptions) {
+    public CustomObjectServiceImpl(final BaseSyncOptions baseSyncOptions) {
         this.syncOptions = baseSyncOptions;
     }
 
     @Nonnull
     @Override
     public CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>>
-    fetchCustomObject(@Nullable String key) {
+        fetchCustomObject(@Nullable final String key) {
 
         if (isBlank(key)) {
             return CompletableFuture.completedFuture(Optional.empty());
         }
 
-        final CustomObjectQuery<NonResolvedReferencesCustomObject> customObjectQuery = CustomObjectQuery.
-                of(NonResolvedReferencesCustomObject.class)
+        final CustomObjectQuery<NonResolvedReferencesCustomObject> customObjectQuery = CustomObjectQuery
+                .of(NonResolvedReferencesCustomObject.class)
                 .withPredicates(buildCustomObjectKeysQueryPredicate(singleton(key)));
 
         return syncOptions
@@ -55,8 +55,8 @@ public class CustomObjectServiceImpl
                 .thenApply(PagedResult::head);
     }
 
-    private QueryPredicate<CustomObject<NonResolvedReferencesCustomObject>> buildCustomObjectKeysQueryPredicate
-            (@Nonnull final Set<String> customObjectKeys) {
+    private QueryPredicate<CustomObject<NonResolvedReferencesCustomObject>> buildCustomObjectKeysQueryPredicate(
+        @Nonnull final Set<String> customObjectKeys) {
         final List<String> keysSurroundedWithDoubleQuotes = customObjectKeys.stream()
                 .filter(StringUtils::isNotBlank)
                 .map(customObjectKey -> format("\"%s\"", customObjectKey))
@@ -70,7 +70,8 @@ public class CustomObjectServiceImpl
     @Nonnull
     @Override
     public CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>>
-    createOrUpdateCustomObject(@Nonnull CustomObjectDraft<NonResolvedReferencesCustomObject> customObjectDraft) {
+        createOrUpdateCustomObject(@Nonnull final CustomObjectDraft<NonResolvedReferencesCustomObject>
+                                           customObjectDraft) {
 
         return syncOptions
                 .getCtpClient()
@@ -89,7 +90,7 @@ public class CustomObjectServiceImpl
     @Nonnull
     @Override
     public CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>>
-    deleteCustomObject(@Nonnull CustomObject<NonResolvedReferencesCustomObject> customObject) {
+        deleteCustomObject(@Nonnull final CustomObject<NonResolvedReferencesCustomObject> customObject) {
 
         return syncOptions
                 .getCtpClient()
