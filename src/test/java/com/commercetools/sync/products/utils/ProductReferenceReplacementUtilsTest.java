@@ -349,10 +349,6 @@ class ProductReferenceReplacementUtilsTest {
                 ExpansionPath.of("masterData.staged.variants[*].prices[*].channel"),
                 ExpansionPath.of("masterData.staged.masterVariant.prices[*].custom.type"),
                 ExpansionPath.of("masterData.staged.variants[*].prices[*].custom.type"),
-                ExpansionPath.of("masterData.staged.masterVariant.attributes[*].value"),
-                ExpansionPath.of("masterData.staged.variants[*].attributes[*].value"),
-                ExpansionPath.of("masterData.staged.masterVariant.attributes[*].value[*]"),
-                ExpansionPath.of("masterData.staged.variants[*].attributes[*].value[*]"),
                 ExpansionPath.of("masterData.staged.masterVariant.assets[*].custom.type"),
                 ExpansionPath.of("masterData.staged.variants[*].assets[*].custom.type"));
     }
