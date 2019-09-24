@@ -13,12 +13,10 @@ import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.attributes.Attribute;
 import io.sphere.sdk.products.attributes.AttributeAccess;
-import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -31,34 +29,15 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1
 import static com.commercetools.sync.products.ProductSyncMockUtils.getChannelMock;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getPriceMockWithReferences;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductVariantMock;
-import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.isProductReference;
-import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.isProductReferenceSet;
 import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.replaceAttributeReferenceIdWithKey;
 import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.replaceAttributeReferenceSetIdsWithKeys;
-import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.replaceAttributesReferencesIdsWithKeys;
 import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.replaceChannelReferenceIdWithKey;
 import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.replacePricesReferencesIdsWithKeys;
 import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.replaceVariantsReferenceIdsWithKeys;
-import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE;
-import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.CATEGORY_REFERENCE_ATTRIBUTE;
-import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.DATE_ATTRIBUTE_2017_11_09;
-import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.DATE_TIME_ATTRIBUTE_2016_05_20T01_02_46;
-import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.EMPTY_SET_ATTRIBUTE;
-import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.ENUM_ATTRIBUTE_BARLABEL_BARKEY;
-import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.LENUM_ATTRIBUTE_EN_BAR;
-import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.LTEXT_ATTRIBUTE_EN_BAR;
-import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.LTEXT_SET_ATTRIBUTE;
-import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.MONEY_ATTRIBUTE_EUR_2300;
-import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.NUMBER_ATTRIBUTE_10;
-import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.PRODUCT_REFERENCE_ATTRIBUTE;
-import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.PRODUCT_REFERENCE_SET_ATTRIBUTE;
-import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.TEXT_ATTRIBUTE_BAR;
-import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.TIME_ATTRIBUTE_10_08_46;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class VariantReferenceReplacementUtilsTest {
@@ -411,111 +390,5 @@ class VariantReferenceReplacementUtilsTest {
         final ResourceIdentifier<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(price);
 
         assertThat(channelReferenceWithKey).isNull();
-    }
-
-    @Test
-    void replaceAttributeReferenceIdWithKey_WithTextAttribute_ShouldReturnEmptyOptional() {
-        final Attribute attribute = Attribute.of("attrName", AttributeAccess.ofText(), "value");
-        final Optional<Reference<Product>> attributeReferenceIdWithKey = replaceAttributeReferenceIdWithKey(attribute);
-
-        assertThat(attributeReferenceIdWithKey).isEmpty();
-    }
-
-    @Test
-    void replaceAttributeReferenceIdWithKey_WithProductReferenceSetAttribute_ShouldReturnEmptyOptional() {
-        final Attribute attribute =
-            Attribute.of("attrName", AttributeAccess.ofProductReferenceSet(), new HashSet<>());
-        final Optional<Reference<Product>> attributeReferenceIdWithKey = replaceAttributeReferenceIdWithKey(attribute);
-
-        assertThat(attributeReferenceIdWithKey).isEmpty();
-    }
-
-    @Test
-    void replaceAttributeReferenceIdWithKey_WithNonExpandedProductReferenceAttribute_ShouldNotReplaceId() {
-        final Reference<Product> nonExpandedReference = Product.referenceOfId(UUID.randomUUID().toString());
-        final Attribute attribute =
-            Attribute.of("attrName", AttributeAccess.ofProductReference(), nonExpandedReference);
-        final Optional<Reference<Product>> attributeReferenceIdWithKey = replaceAttributeReferenceIdWithKey(attribute);
-
-        assertThat(attributeReferenceIdWithKey).contains(nonExpandedReference);
-    }
-
-    @Test
-    void replaceAttributeReferenceIdWithKey_WithExpandedProductReferenceAttribute_ShouldReplaceId() {
-        final Product product = readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
-        final Reference<Product> expandedReference =
-            Reference.ofResourceTypeIdAndIdAndObj(Product.referenceTypeId(), UUID.randomUUID().toString(), product);
-        final Attribute attribute =
-            Attribute.of("attrName", AttributeAccess.ofProductReference(), expandedReference);
-        final Optional<Reference<Product>> attributeReferenceIdWithKey = replaceAttributeReferenceIdWithKey(attribute);
-        assertThat(attributeReferenceIdWithKey).contains(Product.referenceOfId("productKey1"));
-    }
-
-    @Test
-    void replaceAttributeReferenceSetIdsWithKeys_WithTextAttribute_ShouldReturnEmptyOptional() {
-        final Attribute attribute = Attribute.of("attrName", AttributeAccess.ofText(), "value");
-        final Optional<Set<Reference<Product>>> attributeReferenceSetIdsWithKeys =
-            replaceAttributeReferenceSetIdsWithKeys(attribute);
-
-        assertThat(attributeReferenceSetIdsWithKeys).isEmpty();
-    }
-
-    @Test
-    void replaceAttributesReferencesIdsWithKeys_WithNoAttributes_ShouldNotReplaceIds() {
-        final ProductVariant variant = mock(ProductVariant.class);
-        when(variant.getAttributes()).thenReturn(new ArrayList<>());
-        final List<AttributeDraft> replacedDrafts = replaceAttributesReferencesIdsWithKeys(variant);
-        assertThat(replacedDrafts).isEmpty();
-    }
-
-    @Test
-    void replaceAttributesReferencesIdsWithKeys_WithAttributesWithNoReferences_ShouldNotChangeAttributes() {
-        final Product product = readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
-        final ProductVariant masterVariant = product.getMasterData().getStaged().getMasterVariant();
-        final List<AttributeDraft> replacedDrafts = replaceAttributesReferencesIdsWithKeys(masterVariant);
-        replacedDrafts.forEach(attributeDraft -> {
-            final String name = attributeDraft.getName();
-            final Attribute originalAttribute = masterVariant.getAttribute(name);
-            assertThat(originalAttribute).isNotNull();
-            assertThat(originalAttribute.getValueAsJsonNode()).isEqualTo(attributeDraft.getValue());
-        });
-    }
-
-    @Test
-    void isProductReference_WithDifferentAttributeTypes_ShouldBeTrueForProductReferenceAttributeOnly() {
-        assertThat(isProductReference(BOOLEAN_ATTRIBUTE_TRUE)).isFalse();
-        assertThat(isProductReference(TEXT_ATTRIBUTE_BAR)).isFalse();
-        assertThat(isProductReference(LTEXT_ATTRIBUTE_EN_BAR)).isFalse();
-        assertThat(isProductReference(ENUM_ATTRIBUTE_BARLABEL_BARKEY)).isFalse();
-        assertThat(isProductReference(LENUM_ATTRIBUTE_EN_BAR)).isFalse();
-        assertThat(isProductReference(NUMBER_ATTRIBUTE_10)).isFalse();
-        assertThat(isProductReference(MONEY_ATTRIBUTE_EUR_2300)).isFalse();
-        assertThat(isProductReference(DATE_ATTRIBUTE_2017_11_09)).isFalse();
-        assertThat(isProductReference(TIME_ATTRIBUTE_10_08_46)).isFalse();
-        assertThat(isProductReference(DATE_TIME_ATTRIBUTE_2016_05_20T01_02_46)).isFalse();
-        assertThat(isProductReference(PRODUCT_REFERENCE_SET_ATTRIBUTE)).isFalse();
-        assertThat(isProductReference(CATEGORY_REFERENCE_ATTRIBUTE)).isFalse();
-        assertThat(isProductReference(LTEXT_SET_ATTRIBUTE)).isFalse();
-        assertThat(isProductReference(EMPTY_SET_ATTRIBUTE)).isFalse();
-        assertThat(isProductReference(PRODUCT_REFERENCE_ATTRIBUTE)).isTrue();
-    }
-
-    @Test
-    void isProductReferenceSet_WithDifferentAttributeTypes_ShouldBeTrueForProductReferenceSetAttributeOnly() {
-        assertThat(isProductReferenceSet(BOOLEAN_ATTRIBUTE_TRUE)).isFalse();
-        assertThat(isProductReferenceSet(TEXT_ATTRIBUTE_BAR)).isFalse();
-        assertThat(isProductReferenceSet(LTEXT_ATTRIBUTE_EN_BAR)).isFalse();
-        assertThat(isProductReferenceSet(ENUM_ATTRIBUTE_BARLABEL_BARKEY)).isFalse();
-        assertThat(isProductReferenceSet(LENUM_ATTRIBUTE_EN_BAR)).isFalse();
-        assertThat(isProductReferenceSet(NUMBER_ATTRIBUTE_10)).isFalse();
-        assertThat(isProductReferenceSet(MONEY_ATTRIBUTE_EUR_2300)).isFalse();
-        assertThat(isProductReferenceSet(DATE_ATTRIBUTE_2017_11_09)).isFalse();
-        assertThat(isProductReferenceSet(TIME_ATTRIBUTE_10_08_46)).isFalse();
-        assertThat(isProductReferenceSet(DATE_TIME_ATTRIBUTE_2016_05_20T01_02_46)).isFalse();
-        assertThat(isProductReferenceSet(PRODUCT_REFERENCE_ATTRIBUTE)).isFalse();
-        assertThat(isProductReferenceSet(CATEGORY_REFERENCE_ATTRIBUTE)).isFalse();
-        assertThat(isProductReferenceSet(LTEXT_SET_ATTRIBUTE)).isFalse();
-        assertThat(isProductReferenceSet(EMPTY_SET_ATTRIBUTE)).isFalse();
-        assertThat(isProductReferenceSet(PRODUCT_REFERENCE_SET_ATTRIBUTE)).isTrue();
     }
 }
