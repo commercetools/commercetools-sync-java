@@ -1,5 +1,6 @@
 package com.commercetools.sync.integration.externalsource.products.utils;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelDraft;
@@ -18,6 +19,7 @@ import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
+import io.sphere.sdk.products.attributes.Attribute;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.producttypes.ProductType;
@@ -229,5 +231,41 @@ class ProductReferenceReplacementUtilsIT {
         final Asset variantAsset = variant.getAssets().get(0);
         assertThat(variantAsset.getCustom()).isNotNull();
         assertThat(variantAsset.getCustom().getType().getObj()).isNotNull();
+
+        // Assert master variant's attribute references are expanded.
+        final Attribute attribute1 = stagedProjectionMasterVariant.getAttribute(attribute1Name);
+        assertThat(attribute1).isNotNull();
+        final JsonNode attribute1ValueAsJsonNode = attribute1.getValueAsJsonNode();
+        assertThat(attribute1ValueAsJsonNode).isNotNull();
+        assertThat(attribute1ValueAsJsonNode.get("obj")).isNotNull();
+
+        final Attribute attribute2 = stagedProjectionMasterVariant.getAttribute(attribute2Name);
+        assertThat(attribute2).isNotNull();
+        final JsonNode attribute2ValueAsJsonNode = attribute2.getValueAsJsonNode();
+        assertThat(attribute2ValueAsJsonNode).isNotNull();
+        assertThat(attribute2ValueAsJsonNode.isArray()).isTrue();
+        assertThat(attribute2ValueAsJsonNode).hasSize(1);
+
+        final JsonNode firstReferenceInSet = attribute2ValueAsJsonNode.get(0);
+        assertThat(firstReferenceInSet).isNotNull();
+        assertThat(firstReferenceInSet.get("obj")).isNotNull();
+
+        // Assert variants' attribute references are expanded.
+        final Attribute variantAttribute1 = variant.getAttribute(attribute1Name);
+        assertThat(variantAttribute1).isNotNull();
+        final JsonNode variantAttribute1ValueAsJsonNode = variantAttribute1.getValueAsJsonNode();
+        assertThat(variantAttribute1ValueAsJsonNode).isNotNull();
+        assertThat(variantAttribute1ValueAsJsonNode.get("obj")).isNotNull();
+
+        final Attribute variantAttribute2 = variant.getAttribute(attribute2Name);
+        assertThat(variantAttribute2).isNotNull();
+        final JsonNode variantAttribute2ValueAsJsonNode = variantAttribute2.getValueAsJsonNode();
+        assertThat(variantAttribute2ValueAsJsonNode).isNotNull();
+        assertThat(variantAttribute2ValueAsJsonNode.isArray()).isTrue();
+        assertThat(variantAttribute2ValueAsJsonNode).hasSize(1);
+
+        final JsonNode firstReferenceInSetOfVariantAttribute2 = variantAttribute2ValueAsJsonNode.get(0);
+        assertThat(firstReferenceInSetOfVariantAttribute2).isNotNull();
+        assertThat(firstReferenceInSetOfVariantAttribute2.get("obj")).isNotNull();
     }
 }

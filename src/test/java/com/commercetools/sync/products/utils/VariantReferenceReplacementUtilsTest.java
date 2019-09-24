@@ -1,6 +1,7 @@
 package com.commercetools.sync.products.utils;
 
 import com.commercetools.sync.products.ProductSyncMockUtils;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.Reference;
@@ -196,6 +197,17 @@ class VariantReferenceReplacementUtilsTest {
         assertThat(asset2CustomType).isNotNull();
         // Asset price asset custom type reference id is not replaced.
         assertThat(asset2CustomType.getId()).isEqualTo(asset2.getCustom().getType().getId());
+
+        final JsonNode productReference1Value = variantDrafts.get(0).getAttributes().get(0).getValue();
+        assertThat(productReference1Value).isNotNull();
+        assertThat(productReference1Value.get("id")).isNotNull();
+        assertThat(productReference1Value.get("id").asText()).isEqualTo(uuid);
+
+
+        final JsonNode productReference2Value = variantDrafts.get(1).getAttributes().get(0).getValue();
+        assertThat(productReference2Value).isNotNull();
+        assertThat(productReference2Value.get("id")).isNotNull();
+        assertThat(productReference2Value.get("id").asText()).isEqualTo("productKey1");
     }
 
     @Test
