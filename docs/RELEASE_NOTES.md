@@ -29,11 +29,22 @@
 -->
 
 <!--
-### 1.6.0 -  Oct 1, 2019
+### 1.7.0 -  Oct 1, 2019
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.6.0...1.7.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.7.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.7.0)
+
+-->
+
+<!--
+### 1.6.0 -  Sept 25, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.5.0...1.6.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.6.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.6.0)
 
+- 🚧 **Breaking Changes** (2)
+    - **Product Sync** - `ProductReferenceReplacementUtils#replaceProductsReferenceIdsWithKeys` and `VariantReferenceReplacementUtils#replaceVariantsReferenceIdsWithKeys` no longer replaces product references on the variants' attributes. [#449](https://github.com/commercetools/commercetools-sync-java/issues/449)
+    - **Product Sync** - `ProductReferenceReplacementUtils#buildProductQuery` no longer expands refernces on the variants' attributes. [#449](https://github.com/commercetools/commercetools-sync-java/issues/449)
 -->
 
 ### 1.5.0 -  Sept 13, 2019
