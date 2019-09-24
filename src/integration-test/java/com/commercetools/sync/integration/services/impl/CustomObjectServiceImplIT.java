@@ -6,8 +6,12 @@ import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.CustomObjectService;
 import com.commercetools.sync.services.impl.CustomObjectServiceImpl;
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.commands.DeleteCommand;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
+import io.sphere.sdk.customobjects.commands.CustomObjectDeleteCommand;
+import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.producttypes.ProductType;
@@ -32,10 +36,12 @@ import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtil
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_2_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CustomObjectServiceImplIT {
@@ -65,6 +71,20 @@ public class CustomObjectServiceImplIT {
     static void tearDown() {
         deleteProductTypes(CTP_TARGET_CLIENT);
         deleteAllCategories(CTP_TARGET_CLIENT);
+        deleteCustomObjects(CTP_TARGET_CLIENT);
+    }
+
+    private static void deleteCustomObjects(final SphereClient sphereClient) {
+        CustomObjectQuery<NonResolvedReferencesCustomObject> customObjectQuery = CustomObjectQuery
+                .of(NonResolvedReferencesCustomObject.class).byContainer(containerKey);
+        List<CustomObject<NonResolvedReferencesCustomObject>> existingCOs = sphereClient
+                .execute(customObjectQuery).toCompletableFuture().join().getResults();
+
+        existingCOs.forEach(obj -> {
+            DeleteCommand<CustomObject<NonResolvedReferencesCustomObject>> deleteCommand = CustomObjectDeleteCommand
+                    .of(obj, NonResolvedReferencesCustomObject.class);
+            sphereClient.execute(deleteCommand).toCompletableFuture().join();
+        });
     }
 
     @BeforeEach
@@ -74,17 +94,17 @@ public class CustomObjectServiceImplIT {
         warningCallBackMessages = new ArrayList<>();
 
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                .errorCallback(
-                    (errorMessage, exception) -> {
-                        errorCallBackMessages
-                                .add(errorMessage);
-                        errorCallBackExceptions
-                                .add(exception);
-                    })
-                .warningCallback(warningMessage ->
-                        warningCallBackMessages
-                                .add(warningMessage))
-                .build();
+            .errorCallback(
+                (errorMessage, exception) -> {
+                    errorCallBackMessages
+                            .add(errorMessage);
+                    errorCallBackExceptions
+                            .add(exception);
+                })
+            .warningCallback(warningMessage ->
+                    warningCallBackMessages
+                            .add(warningMessage))
+            .build();
 
 
         customObjectService = new CustomObjectServiceImpl(productSyncOptions);
@@ -111,15 +131,15 @@ public class CustomObjectServiceImplIT {
 
         // assertions
         assertTrue(result.isPresent());
-        CustomObject<NonResolvedReferencesCustomObject> savedCustomObject = result.get();
-        assertThat(savedCustomObject.getKey()).isEqualTo("test-co-key");
-        assertThat(savedCustomObject.getContainer()).isEqualTo(containerKey);
+        CustomObject<NonResolvedReferencesCustomObject> createdCustomObject = result.get();
+        assertThat(createdCustomObject.getKey()).isEqualTo("test-co-key");
+        assertThat(createdCustomObject.getContainer()).isEqualTo(containerKey);
     }
 
     @Test
     void fetchCustomObject_shouldReturnCorrectCustomObject() {
         // preparation
-        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
+        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH,
                 productType.toReference(), null, null, categoryReferencesWithIds,
                 createRandomCategoryOrderHints(categoryReferencesWithIds));
         NonResolvedReferencesCustomObject valueObject =
@@ -140,6 +160,37 @@ public class CustomObjectServiceImplIT {
         assertTrue(result.isPresent());
         CustomObject<NonResolvedReferencesCustomObject> savedCustomObject = result.get();
         assertThat(savedCustomObject.getContainer()).isEqualTo(containerKey);
+    }
+
+
+    @Test
+    void deleteCustomObject_shouldReturnCorrectCustomObject() {
+        // preparation
+        final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH,
+                productType.toReference(), null, null, categoryReferencesWithIds,
+                createRandomCategoryOrderHints(categoryReferencesWithIds));
+        NonResolvedReferencesCustomObject valueObject =
+                new NonResolvedReferencesCustomObject("test-product-key", productDraft,
+                        null);
+
+        CustomObjectDraft<NonResolvedReferencesCustomObject> customObjectDraft =
+                CustomObjectDraft.ofUnversionedUpsert(containerKey, "test-co-key", valueObject,
+                        NonResolvedReferencesCustomObject.class);
+        Optional<CustomObject<NonResolvedReferencesCustomObject>> optionalCustomObject = customObjectService
+                .createOrUpdateCustomObject(customObjectDraft).toCompletableFuture().join();
+
+        // test
+        Optional<CustomObject<NonResolvedReferencesCustomObject>> result = customObjectService
+                .deleteCustomObject(optionalCustomObject.get()).toCompletableFuture().join();
+
+        // assertions
+        assertTrue(result.isPresent());
+        CustomObject<NonResolvedReferencesCustomObject> deletedCustomObject = result.get();
+        assertThat(deletedCustomObject.getContainer()).isEqualTo(containerKey);
+
+        Optional<CustomObject<NonResolvedReferencesCustomObject>> nonExistingObj = customObjectService
+                .fetchCustomObject("test-co-key").toCompletableFuture().join();
+        assertFalse(nonExistingObj.isPresent());
     }
 
 }

@@ -7,10 +7,8 @@ import java.util.List;
 
 public class NonResolvedReferencesCustomObject {
 
-    @Nonnull
     private String productKey;
 
-    @Nonnull
     private ProductDraft productDraft;
 
     private List<String> dependantProductKeys;
@@ -26,6 +24,9 @@ public class NonResolvedReferencesCustomObject {
         this.productKey = productKey;
         this.productDraft = productDraft;
         this.dependantProductKeys = dependantProductKeys;
+    }
+
+    public NonResolvedReferencesCustomObject() {
     }
 
     public String getProductKey() {
