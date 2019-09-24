@@ -239,6 +239,8 @@ public final class ProductReferenceReplacementUtils {
      *     <li>Staged Product Categories</li>
      *     <li>Staged Prices' Channels</li>
      *     <li>Staged Prices' Custom Types</li>
+     *     <li>Reference Attributes</li>
+     *     <li>Reference Set Attributes</li>
      * </ul>
      *
      * <p>Note: Please only use this util if you desire to sync all the aforementioned references from
@@ -263,6 +265,10 @@ public final class ProductReferenceReplacementUtils {
                                ExpansionPath.of("masterData.staged.masterVariant.prices[*].custom.type"))
                             .plusExpansionPaths(
                                ExpansionPath.of("masterData.staged.variants[*].prices[*].custom.type"))
+                           .plusExpansionPaths(expansionModel ->
+                               expansionModel.masterData().staged().allVariants().attributes().value())
+                           .plusExpansionPaths(expansionModel ->
+                               expansionModel.masterData().staged().allVariants().attributes().valueSet())
                            .plusExpansionPaths(
                                ExpansionPath.of("masterData.staged.masterVariant.assets[*].custom.type"))
                            .plusExpansionPaths(
