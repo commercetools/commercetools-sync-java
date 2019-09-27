@@ -1,17 +1,16 @@
 package com.commercetools.sync.services;
 
 
-import com.commercetools.sync.commons.models.NonResolvedReferencesCustomObject;
+import com.commercetools.sync.commons.models.ProductWithUnResolvedProductReferences;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customobjects.CustomObject;
-import io.sphere.sdk.customobjects.CustomObjectDraft;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
-public interface CustomObjectService {
+public interface LazyResolutionService {
 
     /**
      * Given a custom object key, this method fetches a custom object that matches this given key in the CTP project
@@ -24,8 +23,8 @@ public interface CustomObjectService {
      * {@link Optional} that contains the matching {@link CustomObject} if exists, otherwise empty.
      */
     @Nonnull
-    CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>> fetchCustomObject(
-            @Nullable final String key);
+    CompletionStage<Optional<CustomObject<ProductWithUnResolvedProductReferences>>>
+    fetch(@Nullable final String key);
 
     /**
      * Given a resource of type {@link CustomObject}, this method attempts to create a
@@ -46,8 +45,8 @@ public interface CustomObjectService {
      *     empty optional.
      */
     @Nonnull
-    CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>> createOrUpdateCustomObject(
-            @Nonnull final CustomObjectDraft<NonResolvedReferencesCustomObject> customObject);
+    CompletionStage<Optional<CustomObject<ProductWithUnResolvedProductReferences>>> save(
+        @Nonnull final ProductWithUnResolvedProductReferences productDraftWithUnresolvedRefs);
 
     /**
      * Given a resource of type {@link CustomObject}, this method attempts to delete a
@@ -68,7 +67,6 @@ public interface CustomObjectService {
      *     empty optional.
      */
     @Nonnull
-    CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>> deleteCustomObject(
-            @Nonnull final CustomObject<NonResolvedReferencesCustomObject> customObject);
-
+    CompletionStage<Optional<CustomObject<ProductWithUnResolvedProductReferences>>> delete(
+        @Nonnull final String key);
 }
