@@ -3,11 +3,11 @@ package com.commercetools.sync.commons.models;
 import io.sphere.sdk.products.ProductDraft;
 
 import javax.annotation.Nonnull;
-import java.util.List;
+import java.util.Set;
 
-public final class ProductWithUnResolvedProductReferences {
+public final class WaitingToBeResolved {
     private ProductDraft productDraft;
-    private List<String> missingReferencedProductKeys;
+    private Set<String> missingReferencedProductKeys;
 
     /**
      * Object represent the value for the custom object that will hold unresolved references
@@ -15,21 +15,21 @@ public final class ProductWithUnResolvedProductReferences {
      * @param productDraft       product draft which has non-resolved references
      * @param missingProductKeys product keys of non-resolved references
      */
-    public ProductWithUnResolvedProductReferences(
+    public WaitingToBeResolved(
         @Nonnull final ProductDraft productDraft,
-        @Nonnull final List<String> missingProductKeys) {
+        @Nonnull final Set<String> missingProductKeys) {
         this.productDraft = productDraft;
         this.missingReferencedProductKeys = missingProductKeys;
     }
 
-    public ProductWithUnResolvedProductReferences() {
+    public WaitingToBeResolved() {
     }
 
     public ProductDraft getProductDraft() {
         return productDraft;
     }
 
-    public List<String> getMissingReferencedProductKeys() {
+    public Set<String> getMissingReferencedProductKeys() {
         return missingReferencedProductKeys;
     }
 
@@ -37,7 +37,7 @@ public final class ProductWithUnResolvedProductReferences {
         this.productDraft = productDraft;
     }
 
-    public void setMissingReferencedProductKeys(@Nonnull final List<String> missingReferencedProductKeys) {
+    public void setMissingReferencedProductKeys(@Nonnull final Set<String> missingReferencedProductKeys) {
         this.missingReferencedProductKeys = missingReferencedProductKeys;
     }
 }
