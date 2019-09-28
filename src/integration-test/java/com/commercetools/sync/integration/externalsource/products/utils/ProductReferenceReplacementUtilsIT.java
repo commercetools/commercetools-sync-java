@@ -54,8 +54,8 @@ import static com.commercetools.sync.integration.commons.utils.StateITUtils.crea
 import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.createTaxCategory;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.SUPPLY_CHANNEL_KEY_1;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceSetAttributeDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceWithId;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getReferenceSetAttributeDraft;
 import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.buildProductQuery;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
@@ -129,7 +129,7 @@ class ProductReferenceReplacementUtilsIT {
         final AttributeDraft productRefAttr = AttributeDraft.of(attribute1Name,
             getProductReferenceWithId(parentProduct.getId()));
         final String attribute2Name = "product-reference-set";
-        final AttributeDraft productSetRefAttr = getProductReferenceSetAttributeDraft(attribute2Name,
+        final AttributeDraft productSetRefAttr = getReferenceSetAttributeDraft(attribute2Name,
             getProductReferenceWithId(parentProduct.getId()));
         final List<AttributeDraft> attributeDrafts = Arrays.asList(productRefAttr, productSetRefAttr);
 

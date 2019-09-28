@@ -16,8 +16,8 @@
   a link to the releated issue number. 
    **New Features** (n) 🎉 
    **Breaking Changes** (n) 🚧 
-   **Major Enhancements** (n) ✨
-   **Enhancements** (n) 🛠️ 
+   **Enhancements** (n) ✨
+   **Dependency Updates** (n) 🛠️ 
    **Documentation** (n) 📋
    **Critical Bug Fixes** (n) 🔥 
    **Bug Fixes** (n)🐞
@@ -29,13 +29,44 @@
 -->
 
 <!--
-### 1.5.0 -  Oct 1, 2019
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.4.0...1.5.0) |
-[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.5.0/) | 
-[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.5.0)
+### 1.6.0 -  Oct 1, 2019
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.5.0...1.6.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.6.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.6.0)
 
 -->
 
+### 1.5.0 -  Sept 13, 2019
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.4.1...1.5.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.5.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.5.0)
+
+- 🎉 **New Features** (4)
+    - **Product Sync** - Added support for resolving `Product` references on attributes of type `Reference`, `Set` of `Reference`, `NestedType` or `Set` of `NestedType`. [#438](https://github.com/commercetools/commercetools-sync-java/issues/438)
+    - **Product Sync** - Added support for resolving `Category` references on attributes of type `Reference`, `Set` of `Reference`, `NestedType` or `Set` of `NestedType`. [#440](https://github.com/commercetools/commercetools-sync-java/issues/440)
+    - **Product Sync** - Added support for resolving `ProductType` references on attributes of type `Reference`, `Set` of `Reference`, `NestedType` or `Set` of `NestedType`. [#440](https://github.com/commercetools/commercetools-sync-java/issues/443)
+    - **Commons** - Exposed `ResourceIdentifierUtils#isReferenceOfType` utility which checks if a JSON representation of a CTP `Reference` object is of a certain `typeId` or not. [#443](https://github.com/commercetools/commercetools-sync-java/issues/443)
+    
+- 🚧 **Breaking Changes** (1)
+    - **Product Sync** - Unexposed the methods `VariantReferenceResolver#resolveAttributeReferences` and `VariantReferenceResolver#resolveAttributeReference` to be `private` as they are only meant for internal use of the library. [#440](https://github.com/commercetools/commercetools-sync-java/issues/440)
+    
+- 🛠️ **Dependency Updates** (5)
+    - Gradle 5.6.1 -> [5.6.2](https://docs.gradle.org/5.6.2/release-notes.html)
+    - `org.junit.jupiter:junit-jupiter-api` 5.5.1 -> [5.5.2](https://junit.org/junit5/docs/snapshot/release-notes/index.html#release-notes-5.5.2)
+    - `org.junit.jupiter:junit-jupiter-engine` 5.5.1 -> [5.5.2](https://junit.org/junit5/docs/snapshot/release-notes/index.html#release-notes-5.5.2)
+    - `org.junit.jupiter:junit-jupiter-params` 5.5.1 -> [5.5.2](https://junit.org/junit5/docs/snapshot/release-notes/index.html#release-notes-5.5.2)
+    - `com.github.ben-manes.versions` 0.22.0 -> [0.25.0](https://github.com/ben-manes/gradle-versions-plugin/releases/tag/v0.25.0)
+
+### 1.4.1 -  Sept 2, 2019
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.4.0...1.4.1) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.4.1/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.4.1)
+
+- 🐞 **Bug Fixes** (1)
+    - **Commons** - Fixed a bug in the custom fields update actions builders which generated duplicated unnecessary update actions for `null` custom field values. This affected any sync module where the resource contained custom fields (i.e. Product Sync, Category Sync, CartDiscount Sync and Inventory Sync). It also affected any update actions building utility in which the resource/sub-resource contained custom fields.  [#428](https://github.com/commercetools/commercetools-sync-java/issues/428)
+
+- 🛠️ **Enhancements** (1)
+    - **Commons** - Bumped commercetools-jvm-sdk to version [1.46.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_46_0) which includes a fix for a serialization bug in the `SetCustomField` action which was ignoring empty array values. [#430](https://github.com/commercetools/commercetools-sync-java/issues/430)
 
 ### 1.4.0 -  Aug 8, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.3.0...1.4.0) |

@@ -2,6 +2,7 @@ package com.commercetools.sync.products.helpers;
 
 import com.commercetools.sync.products.ProductSync;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.attributes.AttributeDraft;
@@ -20,8 +21,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import static com.commercetools.sync.products.helpers.VariantReferenceResolver.REFERENCE_ID_FIELD;
-import static com.commercetools.sync.products.helpers.VariantReferenceResolver.isProductReference;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.isReferenceOfType;
 import static java.lang.String.format;
 import static java.util.Collections.emptySet;
 import static java.util.Objects.requireNonNull;
@@ -164,7 +165,7 @@ public class ProductBatchProcessor {
      */
     @Nonnull
     static Optional<String> getProductKeyFromReference(@Nonnull final JsonNode referenceValue) {
-        return isProductReference(referenceValue)
+        return isReferenceOfType(referenceValue, Product.referenceTypeId())
             ? ofNullable(referenceValue.get(REFERENCE_ID_FIELD)).map(JsonNode::asText) : empty();
     }
 

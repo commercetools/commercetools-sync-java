@@ -14,7 +14,7 @@ public final class SyncSolutionInfo extends SolutionInfo {
      * commercetools-sync-java library
      *
      * <p>A User-Agent header with a solution information looks like this:
-     * {@code commercetools-jvm-sdk/1.4.1 (AHC/2.0) Java/1.8.0_92-b14 (Mac OS X; x86_64)
+     * {@code commercetools-jvm-sdk/1.46.1 (AHC/2.0) Java/1.8.0_92-b14 (Mac OS X; x86_64)
      * {@value LIB_NAME}/{@value LIB_VERSION}}</p>
      *
      */
