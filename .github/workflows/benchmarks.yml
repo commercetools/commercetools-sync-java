@@ -1,6 +1,13 @@
-name: Java CI
+name: Benchmarks
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - '!/docs/*' # Don't run workflow when files are only in the /docs directory
+      - '!README.md' # Don't run workflow when files are only README.md
+      - '!README.md' # Don't run workflow when files are only README.md
 
 jobs:
   build:
@@ -13,8 +20,8 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
-    - name: Build with Gradle
-      run: ./gradlew build
+    - name: Run benchmarks
+      run: ./gradlew clean setLibraryVersion benchmark benchmarkCommit
       env:
         SOURCE_PROJECT_KEY: java-sync-source
         SOURCE_CLIENT_ID:  ${{ secrets.SOURCE_CLIENT_ID }}
