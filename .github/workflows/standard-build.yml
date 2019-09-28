@@ -32,6 +32,9 @@ jobs:
     name: Unit Tests
     runs-on: ubuntu-latest
     steps:
+      - name: Git Checkout
+        uses: actions/checkout@v1
+
       - name: Unit Tests
         run: ./gradlew test
 
@@ -39,6 +42,9 @@ jobs:
     name: Integration Tests
     runs-on: ubuntu-latest
     steps:
+      - name: Git Checkout
+        uses: actions/checkout@v1
+
       - name: Integration Tests
         run: ./gradlew clean setLibraryVersion integrationTest
         env:
