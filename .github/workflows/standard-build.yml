@@ -1,4 +1,4 @@
-name: Build
+name: Standard Build
 
 on: push
 
@@ -25,11 +25,8 @@ jobs:
         TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID }}
         TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET }}
 
-  codecov:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - name: Codecov
-        uses: codecov/codecov-action@v1.0.2
-        with:
-          token: ${{secrets.CODECOV_TOKEN}}
+    - name: Codecov
+      if: success() # only when previous step succeeds
+      uses: codecov/codecov-action@v1.0.2
+      with:
+        token: ${{secrets.CODECOV_TOKEN}}

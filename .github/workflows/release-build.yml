@@ -1,0 +1,75 @@
+name: Release Build
+
+on:
+  push:
+    tags:
+      - '*'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v1
+
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+
+      - name: Build
+        #      run: ./gradlew clean dependencyUpdates setLibraryVersion build
+        run: ./gradlew clean dependencyUpdates setLibraryVersion # build
+        env:
+          SOURCE_PROJECT_KEY: java-sync-source
+          SOURCE_CLIENT_ID:  ${{ secrets.SOURCE_CLIENT_ID }}
+          SOURCE_CLIENT_SECRET:  ${{ secrets.SOURCE_CLIENT_SECRET }}
+          TARGET_PROJECT_KEY: java-sync-target
+          TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID }}
+          TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET }}
+
+      - name: Codecov
+        if: success() # only when previous step succeeds
+        uses: codecov/codecov-action@v1.0.2
+        with:
+          token: ${{secrets.CODECOV_TOKEN}}
+
+      - name: Run benchmarks
+        #run: ./gradlew clean setLibraryVersion benchmark benchmarkCommit
+        if: success() # only when previous step succeeds
+        run: ./gradlew clean dependencyUpdates setLibraryVersion # build
+        env:
+          SOURCE_PROJECT_KEY: java-sync-source
+          SOURCE_CLIENT_ID:  ${{ secrets.SOURCE_CLIENT_ID }}
+          SOURCE_CLIENT_SECRET:  ${{ secrets.SOURCE_CLIENT_SECRET }}
+          TARGET_PROJECT_KEY: java-sync-target
+          TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID }}
+          TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET }}
+          CI_BUILD_DIR: ${{ secrets.CI_BUILD_DIR }}
+          GRGIT_USER: ${{ secrets.GRGIT_USER }}
+
+      - name: Publish GitHub Pages
+        if: success() # only when previous step succeeds
+        run: ./gradlew --info -Dbuild.version="${{ GITHUB_REF }}" mkdocsPublish
+        env:
+          BINTRAY_USER: commercetools
+          BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+          CI_BUILD_DIR: ${{ secrets.CI_BUILD_DIR }}
+          GRGIT_USER: ${{ secrets.GRGIT_USER }}
+
+      - name: Upload Artifacts to Bintray
+        if: success() # only when previous step succeeds
+        run: ./gradlew --info -Dbuild.version="${{ GITHUB_REF }}" bintrayUpload
+        env:
+          BINTRAY_USER: commercetools
+          BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+
+      - name: Slack notification
+        if: success() # only when previous step succeeds
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_USERNAME: Github Release Action.
+          SLACK_CHANNEL: java-sync
+        uses: Ilshidur/action-slack@master
+        with:
+          args: 'Version: ${{ GITHUB_REF }} of the library is released :tada: :tada:'
+
