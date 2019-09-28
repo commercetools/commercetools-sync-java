@@ -3,7 +3,7 @@ name: Standard Build
 on:
   push:
     branches: # Trigger build on any push to branch that is not the master.
-      - '!*'
+      - '*'
       - '!master'
     tags: # Should not trigger for tagged commits.
       - '!*'

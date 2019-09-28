@@ -3,7 +3,7 @@ name: Master Build
 on:
   push:
     branches: # Trigger build on any push to master branch.
-      - '*'
+      - 'master'
 
 jobs:
   static_code_analysis:
