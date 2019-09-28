@@ -20,7 +20,7 @@ public interface CategoryService {
      * injected {@link io.sphere.sdk.client.SphereClient} and stores a mapping for every category to id in {@link Map}
      * and returns this cached map.
      *
-     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a map of all
+     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of its completion contains a map of all
      *         category keys -&gt; ids
      */
     @Nonnull
@@ -32,7 +32,7 @@ public interface CategoryService {
      * of the key to the id of the fetched categories is persisted in an in-memory map.
      *
      * @param categoryKeys set of category keys to fetch matching categories by.
-     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a {@link Set}
+     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of its completion contains a {@link Set}
      *          of all matching categories.
      */
     @Nonnull
@@ -45,7 +45,7 @@ public interface CategoryService {
      * -memory map.
      *
      * @param key the key of the category to fetch.
-     * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion contains an
+     * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of its completion contains an
      *         {@link Optional} that contains the matching {@link Category} if exists, otherwise empty.
      */
     @Nonnull
@@ -56,7 +56,7 @@ public interface CategoryService {
      * If not, it returns a completed future that contains an optional that contains what this key maps to in
      * the cache. If the cache is empty, the method populates the cache with the mapping of all categories' keys
      * to ids in the CTP project. After that, the method returns a
-     * {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt; in which the result of it's completion
+     * {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt; in which the result of its completion
      * could contain an {@link Optional} with the id inside of it or an empty {@link Optional} if no {@link Category}
      * was found in the CTP project with this key.
      *
@@ -79,7 +79,7 @@ public interface CategoryService {
      * </ul>
      *
      * <p>On the other hand, if the resource gets created successfully on CTP, then the created resource's id and
-     * key are cached and the method returns a {@link CompletionStage} in which the result of it's completion
+     * key are cached and the method returns a {@link CompletionStage} in which the result of its completion
      * contains an instance {@link Optional} of the resource which was created.
      *
      * @param categoryDraft the resource draft to create a resource based off of.
@@ -93,12 +93,12 @@ public interface CategoryService {
      * Given a {@link Category} and a {@link List}&lt;{@link UpdateAction}&lt;{@link Category}&gt;&gt;, this method
      * issues an update request with these update actions on this {@link Category} in the CTP project defined in a
      * potentially injected {@link io.sphere.sdk.client.SphereClient}. This method returns
-     * {@link CompletionStage}&lt;{@link Category}&gt; in which the result of it's completion contains an instance of
+     * {@link CompletionStage}&lt;{@link Category}&gt; in which the result of its completion contains an instance of
      * the {@link Category} which was updated in the CTP project.
      *
      * @param category      the {@link Category} to update.
      * @param updateActions the update actions to update the {@link Category} with.
-     * @return {@link CompletionStage}&lt;{@link Category}&gt; containing as a result of it's completion an instance of
+     * @return {@link CompletionStage}&lt;{@link Category}&gt; containing as a result of its completion an instance of
      *         the {@link Category} which was updated in the CTP project or a
      *         {@link io.sphere.sdk.models.SphereException}.
      */
