@@ -26,7 +26,7 @@ jobs:
           TARGET_PROJECT_KEY: java-sync-target
           TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID }}
           TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET }}
-          CI_BUILD_DIR: temp_dir
+          CI_BUILD_DIR: ''
           GRGIT_USER: ${{ secrets.GRGIT_USER }}
 
       - name: Compiling, static analysis, unit and integration testing
