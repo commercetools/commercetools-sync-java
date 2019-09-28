@@ -39,9 +39,8 @@ jobs:
           token: ${{secrets.CODECOV_TOKEN}}
 
       - name: Run benchmarks
-        #run: ./gradlew clean setLibraryVersion benchmark benchmarkCommit
         if: success() # only when previous step succeeds
-        run: ./gradlew clean dependencyUpdates setLibraryVersion # build
+        run: ./gradlew clean setLibraryVersion benchmark benchmarkCommit
         env:
           SOURCE_PROJECT_KEY: java-sync-source
           SOURCE_CLIENT_ID:  ${{ secrets.SOURCE_CLIENT_ID }}
