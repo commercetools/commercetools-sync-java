@@ -2,7 +2,7 @@ name: Release Build
 
 on:
   push:
-    tags:
+    tags: # Trigger for any tagged commit.
       - '*'
 jobs:
   build:

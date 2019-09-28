@@ -2,10 +2,10 @@ name: Standard Build
 
 on:
   push:
-    branches:
+    branches: # Trigger build on any push to branch that is not the master.
       - '*'
       - '!heshamMassoud-actions-test'
-    tags:
+    tags: # Should not trigger for tagged commits.
       - '!*'
 
 jobs:
