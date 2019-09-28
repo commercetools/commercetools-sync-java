@@ -2,8 +2,8 @@ name: Master Build
 
 on:
   push:
-    branches:
-      - heshamMassoud-actions-test #master
+    branches: # Trigger build on any push to master branch.
+      - 'master'
 
 jobs:
   build:
