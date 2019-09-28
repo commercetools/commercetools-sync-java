@@ -16,7 +16,7 @@ jobs:
     - name: Git Checkout
       uses: actions/checkout@v1
 
-    - name: Dependency Updates
+    - name: Generate Dependency Updates Report
       run: ./gradlew clean dependencyUpdates
 
     - name: Checkstyle
@@ -46,7 +46,7 @@ jobs:
         uses: actions/checkout@v1
 
       - name: Integration Tests
-        run: ./gradlew clean setLibraryVersion check
+        run: ./gradlew clean setLibraryVersion integrationTest test
         env:
           SOURCE_PROJECT_KEY: java-sync-source
           SOURCE_CLIENT_ID:  ${{ secrets.SOURCE_CLIENT_ID }}
@@ -54,6 +54,10 @@ jobs:
           TARGET_PROJECT_KEY: java-sync-target
           TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID }}
           TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET }}
+
+      - name: Generate Test Coverage Report
+        if: success()
+        run: ./gradlew clean jacocoTestCoverageVerification jacocoTestReport
 
       - name: Codecov
         if: success()
