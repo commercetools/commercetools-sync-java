@@ -171,7 +171,7 @@ public final class CategoryReferenceResolver
      * would remain exactly the same as the passed category draft (without parent reference resolution).
      *
      * @param draftBuilder      the category draft builder to accept resolved references values.
-     * @param parentCategoryKey the parent category key of to resolve it's actual id on the draft.
+     * @param parentCategoryKey the parent category key of to resolve its actual id on the draft.
      * @return a {@link CompletionStage} that contains as a result the same {@code draftBuilder} category draft builder
      *         instance with resolved parent category references or an exception.
      */

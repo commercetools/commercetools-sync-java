@@ -75,7 +75,7 @@ public final class InventoryReferenceResolver
      * However, if the {@code ensureChannel} is set to false, the future is completed exceptionally with a
      * {@link ReferenceResolutionException}.
      *
-     * @param draftBuilder the inventory draft builder to read it's values (key, sku, channel)
+     * @param draftBuilder the inventory draft builder to read its values (key, sku, channel)
      *                     and then to write resolved resource identifier.
      * @return a {@link CompletionStage} that contains as a result the same {@code draftBuilder} inventory draft builder
      *         instance with resolved supply channel or, in case an error occurs during reference resolution,
@@ -108,9 +108,9 @@ public final class InventoryReferenceResolver
      * However, if the {@code ensureChannel} is set to false, the future is completed exceptionally with a
      * {@link ReferenceResolutionException}.
      *
-     * @param draftBuilder the inventory draft builder to read it's values (key, sku, channel)
+     * @param draftBuilder the inventory draft builder to read its values (key, sku, channel)
      *                     and then to write resolved resource identifiers.
-     * @param channelKey the key of the channel to resolve it's actual id on the draft.
+     * @param channelKey the key of the channel to resolve its actual id on the draft.
      * @return a {@link CompletionStage} that contains as a result the same {@code draftBuilder} inventory draft builder
      *         instance with resolved supply channel resource identifier or an exception.
      */

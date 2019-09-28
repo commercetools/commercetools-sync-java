@@ -77,13 +77,13 @@ public final class CustomUpdateActionUtils {
      * {@link List}&lt;{@link UpdateAction}&gt; is returned. A {@link BaseSyncOptions} instance is injected into the
      * method which is responsible for supplying the sync options to the sync utility method. For example, custom error
      * callbacks for errors. The {@link TypeService} is injected also for fetching the key of the old resource type
-     * from it's cache (see {@link CustomUpdateActionUtils#buildNonNullCustomFieldsUpdateActions(CustomFields,
+     * from its cache (see {@link CustomUpdateActionUtils#buildNonNullCustomFieldsUpdateActions(CustomFields,
      * CustomFieldsDraft, Custom, GenericCustomActionBuilder, Integer, Function, Function, Function, BaseSyncOptions)}).
      *
      * <p>An update action will be added to the result list in the following cases:-
      * <ol>
      * <li>If the new resources's custom type is set, but old resources's custom type is not. A "setCustomType" update
-     * actions is added, which sets the custom type (and all it's fields to the old resource).</li>
+     * actions is added, which sets the custom type (and all its fields to the old resource).</li>
      * <li>If the new resource's custom type is not set, but the old resource's custom type is set. A
      * "setCustomType" update action is added, which removes the type set on the old resource.</li>
      * <li>If both the resources custom types are the same and the custom fields are both set. The custom

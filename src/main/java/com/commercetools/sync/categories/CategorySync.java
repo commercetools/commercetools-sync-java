@@ -345,7 +345,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * but with a {@code null} parent. If it is not missing, then the same identical category draft is returned with the
      * same parent.
      *
-     * @param categoryDraft the category draft to check whether it's parent is missing or not.
+     * @param categoryDraft the category draft to check whether its parent is missing or not.
      * @param keyToIdCache  the cache containing the mapping of all existing category keys to ids.
      * @return the same identical supplied category draft. However, with a null parent field, if the parent is missing.
      * @throws ReferenceResolutionException thrown if the parent key is not valid.

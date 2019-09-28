@@ -32,12 +32,12 @@ public final class SyncUtils {
     /**
      * Given a reference to a resource of type {@code T}, this method
      * checks if the reference is expanded. If it is, then it executes the {@code keyInReferenceSupplier} and returns
-     * it's result. Otherwise, it returns the supplied reference as is. Since, the reference could be {@code null}, this
+     * its result. Otherwise, it returns the supplied reference as is. Since, the reference could be {@code null}, this
      * method could also return null if the reference was not expanded.
      *
      * <p>This method expects the passed supplier to either </p>
      *
-     * @param reference              the reference of the resource to check if it's expanded.
+     * @param reference              the reference of the resource to check if its expanded.
      * @param <T>                    the type of the resource.
      * @param keyInReferenceSupplier the supplier to execute and return its result if the {@code reference} was
      *                               expanded.
@@ -59,12 +59,12 @@ public final class SyncUtils {
     /**
      * Given a reference to a resource of type {@code T}, this method
      * checks if the reference is expanded. If it is, then it executes the {@code keyInReferenceSupplier} and returns
-     * it's result. Otherwise, it returns the supplied reference as is. Since, the reference could be {@code null}, this
+     * its result. Otherwise, it returns the supplied reference as is. Since, the reference could be {@code null}, this
      * method could also return null if the reference was not expanded.
      *
      * <p>This method expects the passed supplier to either </p>
      *
-     * @param reference              the reference of the resource to check if it's expanded.
+     * @param reference              the reference of the resource to check if its expanded.
      * @param <T>                    the type of the resource.
      * @param keyInReferenceSupplier the supplier to execute and return its result if the {@code reference} was
      *                               expanded.

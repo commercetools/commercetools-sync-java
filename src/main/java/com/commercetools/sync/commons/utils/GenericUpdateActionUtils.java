@@ -37,7 +37,7 @@ final class GenericUpdateActionUtils {
      * @param updateIdGetter         a function used to get the id/key needed for updating the resource that has the
      *                               custom fields.
      * @param syncOptions            responsible for supplying the sync options to the sync utility method.
-     * @return a setCustomType update action of the type of the resource it's requested on, or an empty optional
+     * @return a setCustomType update action of the type of the resource its requested on, or an empty optional
      *         if the {@code customTypeId} is blank.
      */
     @Nonnull

@@ -126,7 +126,7 @@ public final class VariantReferenceReplacementUtils {
      * references. This method returns as a result a {@link List} of {@link AttributeDraft} that has all product
      * references with keys replacing the ids.
      *
-     * <p>Any product reference that is not expanded will have it's id in place and not replaced by the key.
+     * <p>Any product reference that is not expanded will have its id in place and not replaced by the key.
      *
      * @param productVariant the product variant to replace its attribute product references ids with keys.
      * @return  a {@link List} of {@link AttributeDraft} that has all product references with keys replacing the ids.

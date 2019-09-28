@@ -84,7 +84,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
      * <p>Note: this method will filter out any null sub resources (e.g. prices, attributes or assets) under the
      * returned resolved variant.
      *
-     * @param productVariantDraft the product variant draft to resolve it's references.
+     * @param productVariantDraft the product variant draft to resolve its references.
      * @return a {@link CompletionStage} that contains as a result a new productDraft instance with resolved references
      *         or, in case an error occurs during reference resolution, a {@link ReferenceResolutionException}.
      */
