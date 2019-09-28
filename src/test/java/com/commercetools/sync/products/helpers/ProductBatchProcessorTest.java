@@ -3,9 +3,6 @@ package com.commercetools.sync.products.helpers;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductVariantDraft;
@@ -18,17 +15,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.commercetools.sync.products.ProductSyncMockUtils.getReferenceSetAttributeDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceWithId;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getReferenceSetAttributeDraft;
 import static com.commercetools.sync.products.helpers.ProductBatchProcessor.PRODUCT_DRAFT_IS_NULL;
 import static com.commercetools.sync.products.helpers.ProductBatchProcessor.PRODUCT_DRAFT_KEY_NOT_SET;
 import static com.commercetools.sync.products.helpers.ProductBatchProcessor.PRODUCT_VARIANT_DRAFT_IS_NULL;
 import static com.commercetools.sync.products.helpers.ProductBatchProcessor.PRODUCT_VARIANT_DRAFT_KEY_NOT_SET;
 import static com.commercetools.sync.products.helpers.ProductBatchProcessor.PRODUCT_VARIANT_DRAFT_SKU_NOT_SET;
 import static com.commercetools.sync.products.helpers.ProductBatchProcessor.getProductDraftErrorsAndAcceptConsumer;
-import static com.commercetools.sync.products.helpers.ProductBatchProcessor.getProductKeyFromReference;
 import static com.commercetools.sync.products.helpers.ProductBatchProcessor.getReferencedProductKeys;
-import static com.commercetools.sync.products.helpers.ProductBatchProcessor.getReferencedProductKeysFromSet;
 import static com.commercetools.sync.products.helpers.ProductBatchProcessor.getVariantDraftErrors;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -224,7 +219,7 @@ class ProductBatchProcessorTest {
         assertThat(isConsumerAccepted.get()).isTrue();
     }
 
-    @Test
+/*    @Test
     void getProductKeyFromReference_WithNullJsonNode_ShouldReturnEmptyOpt() {
         final NullNode nullNode = JsonNodeFactory.instance.nullNode();
         assertThat(getProductKeyFromReference(nullNode)).isEmpty();
@@ -268,7 +263,7 @@ class ProductBatchProcessorTest {
                 getProductReferenceWithId("bar"), objectNode);
         assertThat(getReferencedProductKeysFromSet(productReferenceSetAttribute.getValue()))
             .containsExactlyInAnyOrder("foo", "bar");
-    }
+    }*/
 
     @Test
     void getReferencedProductKeys_WithNullDraftValue_ShouldReturnEmptySet() {
