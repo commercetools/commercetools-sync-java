@@ -5,9 +5,7 @@ on:
     branches:
       - master
     paths:
-      - '!/docs/*' # Don't run workflow when files are only in the /docs directory
-      - '!README.md' # Don't run workflow when files are only README.md
-      - '!README.md' # Don't run workflow when files are only README.md
+      - '*/*.java' # Only run workflow when files changed contain Java files.
 
 jobs:
   build:
