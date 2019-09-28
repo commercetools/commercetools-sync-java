@@ -26,10 +26,10 @@ jobs:
           TARGET_PROJECT_KEY: java-sync-target
           TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID }}
           TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET }}
-          CI_BUILD_DIR: ${{ secrets.CI_BUILD_DIR }}
+          CI_BUILD_DIR: temp_dir
           GRGIT_USER: ${{ secrets.GRGIT_USER }}
 
-      - name: Build
+      - name: Compiling, static analysis, unit and integration Testing
         #run: ./gradlew clean dependencyUpdates setLibraryVersion build
         if: success() # only when previous step succeeds
         run: ./gradlew clean dependencyUpdates setLibraryVersion # build
@@ -41,7 +41,7 @@ jobs:
           TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID }}
           TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET }}
 
-      - name: Codecov
+      - name: Publish JaCoCo results to Codecov
         if: success() # only when previous step succeeds
         uses: codecov/codecov-action@v1.0.2
         with:
