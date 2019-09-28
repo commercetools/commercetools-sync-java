@@ -4,11 +4,6 @@ on:
   push:
     branches:
       - heshamMassoud-actions-test #master
-    paths:
-      - '*'
-      - '*.java' # Only run workflow when files changed contain java files.
-#      - '!*test*' # Don't run workflow if files are only in the test directory.
-#      - '!*integration-test*' # Don't run workflow if files are only in the integration-test directory.
 
 jobs:
   build:
