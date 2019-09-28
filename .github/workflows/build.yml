@@ -23,10 +23,6 @@ jobs:
         TARGET_PROJECT_KEY: java-sync-target
         TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID }}
         TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET }}
-        BINTRAY_USER: commercetools
-        BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
-        CI_BUILD_DIR: ${{ secrets.CI_BUILD_DIR }}
-        GRGIT_USER: ${{ secrets.GRGIT_USER }}
 
   codecov:
     needs: build
@@ -34,3 +30,5 @@ jobs:
     steps:
       - name: Codecov
         uses: codecov/codecov-action@v1.0.2
+        with:
+          token: ${{secrets.CODECOV_TOKEN}}

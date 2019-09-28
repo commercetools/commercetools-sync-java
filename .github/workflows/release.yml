@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  publish_gh:
+    name: Publish GitHub Pages
+    runs-on: ubuntu-latest
+      steps:
+        - name: Git Checkout
+          uses: actions/checkout@v1
+
+        - name: Publish GitHub Pages
+          run: ./gradlew --info -Dbuild.version="${{ GITHUB_REF }}" mkdocsPublish
+          env:
+            BINTRAY_USER: commercetools
+            BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+            CI_BUILD_DIR: ${{ secrets.CI_BUILD_DIR }}
+            GRGIT_USER: ${{ secrets.GRGIT_USER }}
+
+  upload_bintray:
+    needs: publish_gh
+    name: Upload Artifacts to Bintray
+    runs-on: ubuntu-latest
+      steps:
+          - name: Git Checkout
+            uses: actions/checkout@v1
+
+          - name: Upload Artifacts to Bintray
+              run: ./gradlew --info -Dbuild.version="${{ GITHUB_REF }}" bintrayUpload
+              env:
+                BINTRAY_USER: commercetools
+                BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+
+
+  notify_slack:
+    needs: [publish_gh, publish_gh]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Slack notification
+          env:
+            SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+            SLACK_USERNAME: Github Release Action.
+            SLACK_CHANNEL: java-sync
+          uses: Ilshidur/action-slack@master
+          with:
+            args: 'Version: ${{ GITHUB_REF }} of the library is released :tada: :tada:'
+
