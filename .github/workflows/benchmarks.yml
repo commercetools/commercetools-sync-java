@@ -5,7 +5,8 @@ on:
     branches:
       - heshamMassoud-actions-test
     paths:
-      - '*/*.java' # Only run workflow when files changed contain Java files.
+      - '*/main*/*.java' # Only run workflow when files changed contain main Java files.
+      - '*/benchmark*/*.java' # Only run workflow when files changed contain main Java files.
 
 jobs:
   build:
