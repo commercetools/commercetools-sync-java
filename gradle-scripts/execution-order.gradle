@@ -38,7 +38,7 @@ findbugsMain.mustRunAfter pmdIntegrationTest
 test.mustRunAfter findbugsIntegrationTest
 // Ensure integration tests are run after unit tests and are part of check
 check.dependsOn integrationTest
-integrationTest.mustRunAfter test
+test.mustRunAfter integrationTest
 // Ensure jacocoTestCoverageVerification and jacocoTestReport are part of check
 check.dependsOn jacocoTestCoverageVerification
 check.dependsOn jacocoTestReport
