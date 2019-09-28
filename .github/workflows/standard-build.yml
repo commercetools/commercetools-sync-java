@@ -3,7 +3,7 @@ name: Standard Build
 on:
   push:
     branches: # Trigger build on any push to branch that is not the master.
-      - '*'
+      - '!*'
       - '!master'
     tags: # Should not trigger for tagged commits.
       - '!*'
@@ -32,27 +32,27 @@ jobs:
     name: Unit Tests
     runs-on: ubuntu-latest
     steps:
-      - name: Git Checkout
-        uses: actions/checkout@v1
+    - name: Git Checkout
+      uses: actions/checkout@v1
 
-      - name: Unit Tests
-        run: ./gradlew test
+    - name: Unit Tests
+      run: ./gradlew test
 
   integration_testing:
-    name: Integration Tests
+    name: Integration Tests, Unit Tests and Coverage
     runs-on: ubuntu-latest
     steps:
-      - name: Git Checkout
-        uses: actions/checkout@v1
+    - name: Git Checkout
+      uses: actions/checkout@v1
 
-      - name: Integration Tests
-        run: |
-            ./gradlew clean setLibraryVersion integrationTest test jacocoTestCoverageVerification jacocoTestReport
-            curl -s https://codecov.io/bash | bash -s -- -t ${{secrets.CODECOV_TOKEN}}
-        env:
-          SOURCE_PROJECT_KEY: java-sync-source
-          SOURCE_CLIENT_ID:  ${{ secrets.SOURCE_CLIENT_ID }}
-          SOURCE_CLIENT_SECRET:  ${{ secrets.SOURCE_CLIENT_SECRET }}
-          TARGET_PROJECT_KEY: java-sync-target
-          TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID }}
-          TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET }}
+    - name: Integration Tests, Unit Tests and Coverage
+      run: |
+          ./gradlew clean setLibraryVersion integrationTest test jacocoTestCoverageVerification jacocoTestReport
+          curl -s https://codecov.io/bash | bash -s -- -t ${{secrets.CODECOV_TOKEN}}
+      env:
+        SOURCE_PROJECT_KEY: java-sync-source
+        SOURCE_CLIENT_ID:  ${{ secrets.SOURCE_CLIENT_ID }}
+        SOURCE_CLIENT_SECRET:  ${{ secrets.SOURCE_CLIENT_SECRET }}
+        TARGET_PROJECT_KEY: java-sync-target
+        TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID }}
+        TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET }}
