@@ -7,8 +7,6 @@ plugins {
     id 'ru.vyarus.mkdocs' version '1.1.0'
 }
 
-logger.quiet('Hola:' + System.getenv('CI_BUILD_DIR'));
-
 apply from: "$rootDir/gradle-scripts/plugins.gradle"
 apply from: "$rootDir/gradle-scripts/extensions.gradle"
 apply from: "$rootDir/gradle-scripts/project-info.gradle"
