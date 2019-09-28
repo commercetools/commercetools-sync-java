@@ -56,6 +56,8 @@ class ProductTypeSyncBenchmark {
 
     @BeforeEach
     void setupTest() {
+        System.out.println("CI_BUILD_DIR" + System.getenv("CI_BUILD_DIR"));
+        System.err.println("CI_BUILD_DIR" + System.getenv("CI_BUILD_DIR"));
         clearSyncTestCollections();
         deleteProductTypes(CTP_TARGET_CLIENT);
         productTypeSyncOptions = buildSyncOptions();
