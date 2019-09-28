@@ -1,13 +1,13 @@
 package com.commercetools.sync.services;
 
 
-import com.commercetools.sync.commons.models.ProductWithUnResolvedProductReferences;
+import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customobjects.CustomObject;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
 public interface LazyResolutionService {
@@ -23,8 +23,8 @@ public interface LazyResolutionService {
      * {@link Optional} that contains the matching {@link CustomObject} if exists, otherwise empty.
      */
     @Nonnull
-    CompletionStage<Optional<CustomObject<ProductWithUnResolvedProductReferences>>>
-    fetch(@Nullable final String key);
+    CompletionStage<Set<CustomObject<WaitingToBeResolved>>>
+    fetch(@Nonnull final Set<String> keys);
 
     /**
      * Given a resource of type {@link CustomObject}, this method attempts to create a
@@ -45,8 +45,8 @@ public interface LazyResolutionService {
      *     empty optional.
      */
     @Nonnull
-    CompletionStage<Optional<CustomObject<ProductWithUnResolvedProductReferences>>> save(
-        @Nonnull final ProductWithUnResolvedProductReferences productDraftWithUnresolvedRefs);
+    CompletionStage<Optional<CustomObject<WaitingToBeResolved>>> save(
+        @Nonnull final WaitingToBeResolved productDraftWithUnresolvedRefs);
 
     /**
      * Given a resource of type {@link CustomObject}, this method attempts to delete a
@@ -67,6 +67,6 @@ public interface LazyResolutionService {
      *     empty optional.
      */
     @Nonnull
-    CompletionStage<Optional<CustomObject<ProductWithUnResolvedProductReferences>>> delete(
+    CompletionStage<Optional<CustomObject<WaitingToBeResolved>>> delete(
         @Nonnull final String key);
 }

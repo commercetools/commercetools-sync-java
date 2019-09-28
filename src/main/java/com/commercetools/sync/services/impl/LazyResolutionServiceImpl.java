@@ -1,22 +1,24 @@
 package com.commercetools.sync.services.impl;
 
-import com.commercetools.sync.commons.models.ProductWithUnResolvedProductReferences;
+import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.LazyResolutionService;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
 import io.sphere.sdk.customobjects.commands.CustomObjectDeleteCommand;
 import io.sphere.sdk.customobjects.commands.CustomObjectUpsertCommand;
-import io.sphere.sdk.customobjects.queries.CustomObjectByKeyGet;
+import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
+import io.sphere.sdk.queries.QueryExecutionUtils;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import static java.lang.String.format;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class LazyResolutionServiceImpl implements LazyResolutionService {
 
@@ -32,32 +34,35 @@ public class LazyResolutionServiceImpl implements LazyResolutionService {
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<CustomObject<ProductWithUnResolvedProductReferences>>>
-    fetch(@Nullable final String key) {
+    public CompletionStage<Set<CustomObject<WaitingToBeResolved>>>
+    fetch(@Nonnull final Set<String> keys) {
 
-        if (isBlank(key)) {
-            return CompletableFuture.completedFuture(Optional.empty());
+        if (keys.isEmpty()) {
+            return CompletableFuture.completedFuture(Collections.emptySet());
         }
 
-        return syncOptions
-            .getCtpClient()
-            .execute(CustomObjectByKeyGet
-                .of(CUSTOM_OBJECT_CONTAINER_KEY, key, ProductWithUnResolvedProductReferences.class))
-            .thenApply(Optional::ofNullable);
+        final CustomObjectQuery<WaitingToBeResolved> customObjectQuery =
+            CustomObjectQuery
+                .of(WaitingToBeResolved.class)
+                .byContainer(CUSTOM_OBJECT_CONTAINER_KEY)
+                .withPredicates(p -> p.key().isIn(keys));
+
+        return QueryExecutionUtils.queryAll(syncOptions.getCtpClient(), customObjectQuery)
+                                  .thenApply(HashSet::new);
     }
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<CustomObject<ProductWithUnResolvedProductReferences>>>
-    save(@Nonnull final ProductWithUnResolvedProductReferences draftWithUnresolvedReferences) {
+    public CompletionStage<Optional<CustomObject<WaitingToBeResolved>>>
+    save(@Nonnull final WaitingToBeResolved draftWithUnresolvedReferences) {
 
 
-        final CustomObjectDraft<ProductWithUnResolvedProductReferences> customObjectDraft = CustomObjectDraft
+        final CustomObjectDraft<WaitingToBeResolved> customObjectDraft = CustomObjectDraft
             .ofUnversionedUpsert(
                 CUSTOM_OBJECT_CONTAINER_KEY,
                 draftWithUnresolvedReferences.getProductDraft().getKey(),
                 draftWithUnresolvedReferences,
-                ProductWithUnResolvedProductReferences.class);
+                WaitingToBeResolved.class);
 
         return syncOptions
             .getCtpClient()
@@ -75,12 +80,12 @@ public class LazyResolutionServiceImpl implements LazyResolutionService {
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<CustomObject<ProductWithUnResolvedProductReferences>>>
+    public CompletionStage<Optional<CustomObject<WaitingToBeResolved>>>
     delete(@Nonnull final String key) {
         return syncOptions
             .getCtpClient()
             .execute(CustomObjectDeleteCommand
-                .of(CUSTOM_OBJECT_CONTAINER_KEY, key, ProductWithUnResolvedProductReferences.class))
+                .of(CUSTOM_OBJECT_CONTAINER_KEY, key, WaitingToBeResolved.class))
             .handle((resource, exception) -> {
                 if (exception == null) {
                     return Optional.of(resource);

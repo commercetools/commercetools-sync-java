@@ -1,6 +1,6 @@
 package com.commercetools.sync.integration.services.impl;
 
-import com.commercetools.sync.commons.models.ProductWithUnResolvedProductReferences;
+import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.LazyResolutionService;
@@ -20,10 +20,11 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
-import static java.util.Arrays.asList;
+import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -47,15 +48,15 @@ public class LazyResolutionServiceImplIT {
     }
 
     private static void deleteCustomObjects(final SphereClient sphereClient) {
-        final CustomObjectQuery<ProductWithUnResolvedProductReferences> customObjectQuery = CustomObjectQuery
-            .of(ProductWithUnResolvedProductReferences.class).byContainer("[commercetools-sync-java]"
+        final CustomObjectQuery<WaitingToBeResolved> customObjectQuery = CustomObjectQuery
+            .of(WaitingToBeResolved.class).byContainer("[commercetools-sync-java]"
                 + "-products-with-unresolved-references");
-        List<CustomObject<ProductWithUnResolvedProductReferences>> existingCOs = sphereClient
+        List<CustomObject<WaitingToBeResolved>> existingCOs = sphereClient
                 .execute(customObjectQuery).toCompletableFuture().join().getResults();
 
         existingCOs.forEach(obj -> {
-            DeleteCommand<CustomObject<ProductWithUnResolvedProductReferences>> deleteCommand = CustomObjectDeleteCommand
-                    .of(obj, ProductWithUnResolvedProductReferences.class);
+            DeleteCommand<CustomObject<WaitingToBeResolved>> deleteCommand = CustomObjectDeleteCommand
+                    .of(obj, WaitingToBeResolved.class);
             sphereClient.execute(deleteCommand).toCompletableFuture().join();
         });
     }
@@ -89,24 +90,24 @@ public class LazyResolutionServiceImplIT {
         final ProductDraft productDraft =
             SphereJsonUtils.readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, ProductDraft.class);
 
-        final ProductWithUnResolvedProductReferences productDraftWithUnresolvedRefs =
-                new ProductWithUnResolvedProductReferences(productDraft, asList("foo", "bar"));
+        final WaitingToBeResolved productDraftWithUnresolvedRefs =
+                new WaitingToBeResolved(productDraft, asSet("foo", "bar"));
 
         // test
-        final Optional<CustomObject<ProductWithUnResolvedProductReferences>> result =
+        final Optional<CustomObject<WaitingToBeResolved>> result =
             lazyResolutionService.save(productDraftWithUnresolvedRefs)
                                  .toCompletableFuture()
                                  .join();
 
-        final Optional<CustomObject<ProductWithUnResolvedProductReferences>> customObjectOptional =
-            lazyResolutionService.fetch(productDraft.getKey()).toCompletableFuture().join();
+        final Set<CustomObject<WaitingToBeResolved>> customObjectOptional =
+            lazyResolutionService.fetch(asSet(productDraft.getKey())).toCompletableFuture().join();
 
-        final Optional<CustomObject<ProductWithUnResolvedProductReferences>> join = lazyResolutionService
+        final Optional<CustomObject<WaitingToBeResolved>> join = lazyResolutionService
             .delete(productDraft.getKey()).toCompletableFuture().join();
 
         // assertions
         assertTrue(result.isPresent());
-        CustomObject<ProductWithUnResolvedProductReferences> createdCustomObject = result.get();
+        CustomObject<WaitingToBeResolved> createdCustomObject = result.get();
         assertThat(createdCustomObject.getKey()).isEqualTo("test-co-key");
         assertThat(createdCustomObject.getContainer()).isEqualTo("[commercetools-sync-java]"
             + "-products-with-unresolved-references");
