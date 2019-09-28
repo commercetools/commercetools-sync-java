@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - heshamMassoud-actions-test
+#    paths:
+#      - '*.java' # Only run workflow when files changed contain java files.
+#      - '!*test*' # Don't run workflow if files are only in the test directory.
+#      - '!*integration-test*' # Don't run workflow if files are only in the integration-test directory.
 
 jobs:
   build:
@@ -20,7 +24,8 @@ jobs:
           java-version: 1.8
 
       - name: Run benchmarks
-        run: ./gradlew clean setLibraryVersion benchmark benchmarkCommit
+#        run: ./gradlew clean setLibraryVersion benchmark benchmarkCommit
+        run: ./gradlew clean dependencyUpdates setLibraryVersion # build
         env:
           SOURCE_PROJECT_KEY: java-sync-source
           SOURCE_CLIENT_ID:  ${{ secrets.SOURCE_CLIENT_ID }}
