@@ -46,7 +46,7 @@ jobs:
         uses: actions/checkout@v1
 
       - name: Integration Tests
-        run: ./gradlew clean setLibraryVersion integrationTest
+        run: ./gradlew clean setLibraryVersion integrationTest test
         env:
           SOURCE_PROJECT_KEY: java-sync-source
           SOURCE_CLIENT_ID:  ${{ secrets.SOURCE_CLIENT_ID }}
