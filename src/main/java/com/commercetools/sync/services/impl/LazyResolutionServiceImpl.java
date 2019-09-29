@@ -7,28 +7,23 @@ import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
 import io.sphere.sdk.customobjects.commands.CustomObjectDeleteCommand;
 import io.sphere.sdk.customobjects.commands.CustomObjectUpsertCommand;
-import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
-import io.sphere.sdk.queries.PagedResult;
-import io.sphere.sdk.queries.QueryPredicate;
-import org.apache.commons.lang3.StringUtils;
+import io.sphere.sdk.customobjects.queries.CustomObjectByKeyGet;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.stream.Collectors;
 
 import static java.lang.String.format;
-import static java.util.Collections.singleton;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class LazyResolutionServiceImpl
         implements LazyResolutionService {
 
     private final ProductSyncOptions productSyncOptions;
+
+    private static final String CUSTOM_OBJECT_CONTAINER_KEY = "commercetools-sync-java.LazyResolutionService";
 
     private static final String CREATE_FAILED = "Failed to create draft with key: '%s'. Reason: %s";
 
@@ -45,26 +40,11 @@ public class LazyResolutionServiceImpl
             return CompletableFuture.completedFuture(Optional.empty());
         }
 
-        final CustomObjectQuery<NonResolvedReferencesCustomObject> customObjectQuery = CustomObjectQuery
-                .of(NonResolvedReferencesCustomObject.class)
-                .withPredicates(buildCustomObjectKeysQueryPredicate(singleton(key)));
-
         return productSyncOptions
                 .getCtpClient()
-                .execute(customObjectQuery)
-                .thenApply(PagedResult::head);
-    }
-
-    private QueryPredicate<CustomObject<NonResolvedReferencesCustomObject>> buildCustomObjectKeysQueryPredicate(
-        @Nonnull final Set<String> customObjectKeys) {
-        final List<String> keysSurroundedWithDoubleQuotes = customObjectKeys.stream()
-                .filter(StringUtils::isNotBlank)
-                .map(customObjectKey -> format("\"%s\"", customObjectKey))
-                .collect(Collectors.toList());
-        String keysQueryString = keysSurroundedWithDoubleQuotes.toString();
-        // Strip square brackets from list string. For example: ["key1", "key2"] -> "key1", "key2"
-        keysQueryString = keysQueryString.substring(1, keysQueryString.length() - 1);
-        return QueryPredicate.of(format("key in (%s)", keysQueryString));
+                .execute(CustomObjectByKeyGet
+                        .of(CUSTOM_OBJECT_CONTAINER_KEY, key, NonResolvedReferencesCustomObject.class))
+                .thenApply(Optional::ofNullable);
     }
 
     @Nonnull

@@ -2,7 +2,6 @@ package com.commercetools.sync.services;
 
 
 import com.commercetools.sync.commons.models.NonResolvedReferencesCustomObject;
-import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
 
@@ -14,9 +13,8 @@ import java.util.concurrent.CompletionStage;
 public interface LazyResolutionService {
 
     /**
-     * Given a custom object key, this method fetches a custom object that matches this given key in the CTP project
-     * defined in a potentially injected {@link SphereClient}. If there is no matching custom object an empty
-     * {@link Optional} will be returned in the returned future.
+     * Given a resource key, this method fetches the matching resource. If there is no matching resource
+     * object an empty {@link Optional} will be returned in the returned future.
      *
      * @param key the key of the custom object to fetch.
      * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion contains an
