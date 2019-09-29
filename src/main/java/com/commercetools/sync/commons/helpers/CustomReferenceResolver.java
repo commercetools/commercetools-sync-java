@@ -42,7 +42,7 @@ public abstract class CustomReferenceResolver
     }
 
     /**
-     * Given a draft of {@code D} (e.g. {@link CategoryDraft}) this method attempts to resolve its custom type
+     * Given a draft of {@code D} (e.g. {@link CategoryDraft}) this method attempts to resolve it's custom type
      * reference to return {@link CompletionStage} which contains a new instance of the draft with the resolved
      * custom type reference. The key of the custom type is taken from the from the id field of the reference.
      *
@@ -50,7 +50,7 @@ public abstract class CustomReferenceResolver
      * cache. If the key is is not found, the resultant draft would remain exactly the same as the passed
      * draft (without a custom type reference resolution).
      *
-     * @param draftBuilder the draft builder to resolve its references.
+     * @param draftBuilder the draft builder to resolve it's references.
      * @return a {@link CompletionStage} that contains as a result a new draft instance with resolved custom
      *         type references or, in case an error occurs during reference resolution,
      *         a {@link ReferenceResolutionException}.
@@ -58,7 +58,7 @@ public abstract class CustomReferenceResolver
     protected abstract CompletionStage<B> resolveCustomTypeReference(@Nonnull B draftBuilder);
 
     /**
-     * Given a draft of {@code D} (e.g. {@link CategoryDraft}) this method attempts to resolve its custom type
+     * Given a draft of {@code D} (e.g. {@link CategoryDraft}) this method attempts to resolve it's custom type
      * reference to return {@link CompletionStage} which contains a new instance of the draft with the resolved
      * custom type reference. The key of the custom type is taken from the from the id field of the reference.
      *
@@ -66,7 +66,7 @@ public abstract class CustomReferenceResolver
      * cache. If the key is is not found, the resultant draft would remain exactly the same as the passed
      * draft (without a custom type reference resolution).
      *
-     * @param draftBuilder the draft builder to resolve its references.
+     * @param draftBuilder the draft builder to resolve it's references.
      * @param customGetter a function to return the CustomFieldsDraft instance of the draft builder.
      * @param customSetter a function to set the CustomFieldsDraft instance of the builder and return this builder.
      * @param errorMessage the error message to inject in the {@link ReferenceResolutionException} if it occurs.

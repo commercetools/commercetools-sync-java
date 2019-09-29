@@ -26,7 +26,7 @@ public final class InventoryEntryIdentifier {
     }
 
     /**
-     * Builds an {@link InventoryEntryIdentifier} instance given an {@link InventoryEntryDraft} using its sku and
+     * Builds an {@link InventoryEntryIdentifier} instance given an {@link InventoryEntryDraft} using it's sku and
      * supply channel id.
      * @param inventoryEntryDraft the draft to take the sku and channel id value from.
      * @return an instance of {@link InventoryEntryIdentifier} for the given draft.
@@ -38,7 +38,7 @@ public final class InventoryEntryIdentifier {
     }
 
     /**
-     * Builds an {@link InventoryEntryIdentifier} instance given an {@link InventoryEntry} using its sku and
+     * Builds an {@link InventoryEntryIdentifier} instance given an {@link InventoryEntry} using it's sku and
      * supply channel id.
      * @param inventoryEntry the entry to take the sku and channel id value from.
      * @return an instance of {@link InventoryEntryIdentifier} for the given entry.

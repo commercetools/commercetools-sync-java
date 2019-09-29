@@ -19,7 +19,7 @@ public interface ChannelService {
      * found in the CTP project with this key.
      *
      * @param key the key by which a {@link Channel} id should be fetched from the CTP project.
-     * @return {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt; in which the result of its
+     * @return {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt; in which the result of it's
      *         completion could contain an {@link Optional} with the id inside of it or an empty {@link Optional} if no
      *         {@link Channel} was found in the CTP project with this external id.
      */
@@ -36,7 +36,7 @@ public interface ChannelService {
     CompletionStage<Channel> createChannel(@Nonnull final String key);
 
     /**
-     * Creates a new channel with the supplied {@code key} and puts a new mapping of its key
+     * Creates a new channel with the supplied {@code key} and puts a new mapping of it's key
      * to id in a cache map.
      *
      * @param key key of supply channel.

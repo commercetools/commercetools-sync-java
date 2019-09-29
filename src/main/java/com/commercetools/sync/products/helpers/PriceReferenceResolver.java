@@ -64,7 +64,7 @@ public final class PriceReferenceResolver
      * references. The keys of the references are either taken from the expanded references or
      * taken from the id field of the references.
      *
-     * @param priceDraft the priceDraft to resolve its references.
+     * @param priceDraft the priceDraft to resolve it's references.
      * @return a {@link CompletionStage} that contains as a result a new inventoryEntryDraft instance with resolved
      *         references or, in case an error occurs during reference resolution a
      *         {@link ReferenceResolutionException}.
@@ -173,7 +173,7 @@ public final class PriceReferenceResolver
      * Helper method that creates a new {@link Channel} on the CTP project with the specified {@code channelKey} and of
      * the role {@code "InventorySupply"}. Only if the {@code ensureChannels} options is set to {@code true} on the
      * {@code options} instance of {@code this} class. Then it resolves the supply channel reference on the supplied
-     * {@code inventoryEntryDraft} by setting the id of its supply channel reference with the newly created Channel.
+     * {@code inventoryEntryDraft} by setting the id of it's supply channel reference with the newly created Channel.
      *
      * <p>If the {@code ensureChannels} options is set to {@code false} on the {@code options} instance of {@code this}
      * class, the future is completed exceptionally with a {@link ReferenceResolutionException}.
@@ -182,7 +182,7 @@ public final class PriceReferenceResolver
      * object.
      *
      * @param channelKey   the key to create the new channel with.
-     * @param draftBuilder the inventory entry draft builder where to resolve its supply channel reference to the newly
+     * @param draftBuilder the inventory entry draft builder where to resolve it's supply channel reference to the newly
      *                     created channel.
      * @return a CompletionStage with the same {@code draftBuilder} instance having resolved channel reference.
      */

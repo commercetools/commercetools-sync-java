@@ -145,7 +145,7 @@ public final class ProductVariantUpdateActionUtils {
         final List<Image> newProductVariantImages = newProductVariant.getImages();
 
         // This implementation is quite straight forward and might be slow on large arrays, this is
-        // due to its quadratic nature on images' removal/addition.
+        // due to it's quadratic nature on images' removal/addition.
         // Unfortunately, currently there is no easy solution to sync 2 ordered lists
         // having only AddExternalImage/RemoveImage/MoveImageToPosition actions.
         // This solution should be re-optimized in the next releases to avoid O(N^2) for large lists.

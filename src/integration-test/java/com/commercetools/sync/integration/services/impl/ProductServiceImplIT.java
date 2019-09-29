@@ -235,7 +235,7 @@ class ProductServiceImplIT {
                                  .toCompletableFuture().join();
         assertThat(cache).hasSize(1);
 
-        // verify only 1 request was made to fetch id the first time, but not second time since its already in cache.
+        // verify only 1 request was made to fetch id the first time, but not second time since it's already in cache.
         verify(spyClient, times(1)).execute(any());
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();

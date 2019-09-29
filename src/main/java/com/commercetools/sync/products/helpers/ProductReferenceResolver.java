@@ -94,7 +94,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
      * draft with the resolved references. The keys of the references are either taken from the expanded references or
      * taken from the id field of the references.
      *
-     * @param productDraft the productDraft to resolve its references.
+     * @param productDraft the productDraft to resolve it's references.
      * @return a {@link CompletionStage} that contains as a result a new productDraft instance with resolved references
      *         or, in case an error occurs during reference resolution, a {@link ReferenceResolutionException}.
      */
@@ -193,7 +193,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
      * in the CTP project, the resultant draft would remain exactly the same as the passed product draft
      * (without reference resolution).
      *
-     * @param draftBuilder the product draft builder to resolve its category references.
+     * @param draftBuilder the product draft builder to resolve it's category references.
      * @param categoryKeys the category keys of to resolve their actual id on the draft.
      * @return a {@link CompletionStage} that contains as a result a new productDraft instance with resolved category
      *          references or an exception.

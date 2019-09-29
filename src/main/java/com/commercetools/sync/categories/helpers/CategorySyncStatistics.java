@@ -101,7 +101,7 @@ public class CategorySyncStatistics extends BaseSyncStatistics {
      * if it exists as a child to a missing parent, and returns the key of first found (since a category can have only
      * one parent) missing parent in an optional. Otherwise, it returns an empty optional.
      *
-     * @param childCategoryKey key of the category to find its has a missing parent key.
+     * @param childCategoryKey key of the category to find it's has a missing parent key.
      * @return the key of that missing parent in an optional, if it exists. Otherwise, it returns an empty optional.
      */
     @Nonnull

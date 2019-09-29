@@ -27,7 +27,7 @@ public interface GenericCustomActionBuilder<T extends Resource<T>> {
      *                  (e.g. asset) which has the custom fields.
      * @param objectId  an optional field which could be used to identify the id of the resource
      *                  (e.g. asset, price, etc..) which has the custom fields.
-     * @return a setCustomType update action that removes the custom type from the resource its requested on.
+     * @return a setCustomType update action that removes the custom type from the resource it's requested on.
      */
     @Nonnull
     UpdateAction<T> buildRemoveCustomTypeAction(@Nullable final Integer variantId, @Nullable final String objectId);
@@ -44,7 +44,7 @@ public interface GenericCustomActionBuilder<T extends Resource<T>> {
      *                            (e.g. asset, price, etc..) which has the custom fields.
      * @param customTypeId        the id of the new custom type.
      * @param customFieldsJsonMap the custom fields map of JSON values.
-     * @return a setCustomType update action of the type of the resource its requested on.
+     * @return a setCustomType update action of the type of the resource it's requested on.
      */
     @Nonnull
     UpdateAction<T> buildSetCustomTypeAction(@Nullable final Integer variantId,
@@ -66,7 +66,7 @@ public interface GenericCustomActionBuilder<T extends Resource<T>> {
      * @param customFieldName  the name of the custom field to update.
      * @param customFieldValue the new JSON value of the custom field.
      * @return a setCustomField update action on the provided field name, with the provided value
-     *         on the resource its requested on.
+     *         on the resource it's requested on.
      */
     @Nonnull
     UpdateAction<T> buildSetCustomFieldAction(@Nullable final Integer variantId,

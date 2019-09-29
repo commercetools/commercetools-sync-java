@@ -85,13 +85,13 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
 
     /**
      * Sets the beforeCreateCallback {@link Function} which can be applied on a new resource draft of type {@code V}
-     * (e.g. {@link io.sphere.sdk.products.ProductDraft}) before its created by the sync. It results in a resource
+     * (e.g. {@link io.sphere.sdk.products.ProductDraft}) before it's created by the sync. It results in a resource
      * draft of the same type which is the result of the application of the specified {@link Function}
      * {@code beforeCreateCallback} function. This can be used to intercept the sync process before creating the
      * resource draft and to be able to manipulate it. <b>Note</b>: Specifying a callback that returns a {@code null}
      * value will skip draft creation.
      *
-     * @param beforeCreateCallback function which can be applied on a new draft before its created by the sync.
+     * @param beforeCreateCallback function which can be applied on a new draft before it's created by the sync.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
     public T beforeCreateCallback(@Nonnull final Function<V, V> beforeCreateCallback) {

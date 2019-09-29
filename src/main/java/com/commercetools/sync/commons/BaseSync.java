@@ -20,7 +20,7 @@ public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSy
 
     /**
      * Given a list of resource (e.g. categories, products, etc..) drafts. This method compares each new resource in
-     * this list with its corresponding old resource in a given CTP project, and in turn it either issues update
+     * this list with it's corresponding old resource in a given CTP project, and in turn it either issues update
      * actions on the existing resource if it exists or create it if it doesn't.
      *
      * @param resourceDrafts the list of new resources as drafts.
@@ -33,7 +33,7 @@ public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSy
 
     /**
      * Given a list of resource (e.g. categories, products, etc..) drafts. This method compares each new resource in
-     * this list with its corresponding old resource in a given CTP project, and in turn it either issues update
+     * this list with it's corresponding old resource in a given CTP project, and in turn it either issues update
      * actions on the existing resource if it exists or create it if it doesn't.
      *
      * <p>The time before and after the actual sync process starts is recorded in the {@link BaseSyncStatistics}

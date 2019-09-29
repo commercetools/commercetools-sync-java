@@ -92,7 +92,7 @@ public final class ProductReferenceReplacementUtils {
      * Given a {@link Product} this method creates a {@link ProductDraftBuilder} based on the staged projection
      * values of the supplied product.
      *
-     * @param product the product to create a {@link ProductDraftBuilder} based on its staged data.
+     * @param product the product to create a {@link ProductDraftBuilder} based on it's staged data.
      * @return a {@link ProductDraftBuilder} based on the staged projection values of the supplied product.
      */
     @Nonnull

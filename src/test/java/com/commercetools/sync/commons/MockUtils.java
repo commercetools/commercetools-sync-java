@@ -125,9 +125,9 @@ public class MockUtils {
     }
 
     /**
-     * Creates a mock {@link Asset} with the supplied {@link Type} reference for its custom field.
+     * Creates a mock {@link Asset} with the supplied {@link Type} reference for it's custom field.
      * @param typeReference the type reference to attach to the custom field of the created asset.
-     * @return a mock asset with the supplied type reference on its custom field.
+     * @return a mock asset with the supplied type reference on it's custom field.
      */
     @Nonnull
     public static Asset getAssetMockWithCustomFields(@Nullable final Reference<Type> typeReference) {

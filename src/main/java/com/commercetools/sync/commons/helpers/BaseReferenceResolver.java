@@ -33,7 +33,7 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
      * references. The keys of the references are either taken from the expanded references or
      * taken from the id field of the references.
      *
-     * @param draft the productDraft to resolve its references.
+     * @param draft the productDraft to resolve it's references.
      * @return a {@link CompletionStage} that contains as a result a new draft instance with resolved references
      *          or, in case an error occurs during reference resolution, a {@link ReferenceResolutionException}.
      */
