@@ -40,13 +40,13 @@ public interface LazyResolutionService {
      * of {@link CompletionStage} in which the result of it's completion
      * contains an instance {@link Optional} of the resource which was created/updated.
      *
-     * @param customObject the resource to create/update a resource based off of.
+     * @param customObjectDraft the resource to create/update a resource based off of.
      * @return a {@link CompletionStage} containing an optional with the created resource if successful otherwise an
      *     empty optional.
      */
     @Nonnull
-    CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>> createOrUpdateCustomObject(
-            @Nonnull final CustomObjectDraft<NonResolvedReferencesCustomObject> customObject);
+    CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>> save(
+            @Nonnull final CustomObjectDraft<NonResolvedReferencesCustomObject> customObjectDraft);
 
     /**
      * Given a resource of type {@link CustomObject}, this method attempts to delete a

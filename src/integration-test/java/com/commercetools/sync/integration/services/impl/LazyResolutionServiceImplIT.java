@@ -112,7 +112,7 @@ public class LazyResolutionServiceImplIT {
 
 
     @Test
-    void createOrUpdateCustomObject_createNewCustomObject() {
+    void save_shouldCreateNewCustomObject() {
         // preparation
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
                 productType.toReference(), null, null, categoryReferencesWithIds,
@@ -127,7 +127,7 @@ public class LazyResolutionServiceImplIT {
 
         // test
         Optional<CustomObject<NonResolvedReferencesCustomObject>> result = lazyResolutionService
-                .createOrUpdateCustomObject(customObjectDraft).toCompletableFuture().join();
+                .save(customObjectDraft).toCompletableFuture().join();
 
         // assertions
         assertTrue(result.isPresent());
@@ -150,7 +150,7 @@ public class LazyResolutionServiceImplIT {
                 CustomObjectDraft.ofUnversionedUpsert(containerKey, "test-co-key", valueObject,
                         NonResolvedReferencesCustomObject.class);
         lazyResolutionService
-                .createOrUpdateCustomObject(customObjectDraft).toCompletableFuture().join();
+                .save(customObjectDraft).toCompletableFuture().join();
 
         // test
         Optional<CustomObject<NonResolvedReferencesCustomObject>> result = lazyResolutionService
@@ -177,7 +177,7 @@ public class LazyResolutionServiceImplIT {
                 CustomObjectDraft.ofUnversionedUpsert(containerKey, "test-co-key", valueObject,
                         NonResolvedReferencesCustomObject.class);
         Optional<CustomObject<NonResolvedReferencesCustomObject>> optionalCustomObject = lazyResolutionService
-                .createOrUpdateCustomObject(customObjectDraft).toCompletableFuture().join();
+                .save(customObjectDraft).toCompletableFuture().join();
 
         // test
         Optional<CustomObject<NonResolvedReferencesCustomObject>> result = lazyResolutionService

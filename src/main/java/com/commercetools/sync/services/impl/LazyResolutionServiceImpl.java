@@ -70,7 +70,7 @@ public class LazyResolutionServiceImpl
     @Nonnull
     @Override
     public CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>>
-        createOrUpdateCustomObject(@Nonnull final CustomObjectDraft<NonResolvedReferencesCustomObject>
+    save(@Nonnull final CustomObjectDraft<NonResolvedReferencesCustomObject>
                                            customObjectDraft) {
 
         return syncOptions
