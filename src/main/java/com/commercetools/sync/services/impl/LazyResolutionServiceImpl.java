@@ -1,7 +1,7 @@
 package com.commercetools.sync.services.impl;
 
-import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.models.NonResolvedReferencesCustomObject;
+import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.LazyResolutionService;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
@@ -28,12 +28,12 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 public class LazyResolutionServiceImpl
         implements LazyResolutionService {
 
-    private final BaseSyncOptions syncOptions;
+    private final ProductSyncOptions productSyncOptions;
 
     private static final String CREATE_FAILED = "Failed to create draft with key: '%s'. Reason: %s";
 
-    public LazyResolutionServiceImpl(final BaseSyncOptions baseSyncOptions) {
-        this.syncOptions = baseSyncOptions;
+    public LazyResolutionServiceImpl(final ProductSyncOptions productSyncOptions) {
+        this.productSyncOptions = productSyncOptions;
     }
 
     @Nonnull
@@ -49,7 +49,7 @@ public class LazyResolutionServiceImpl
                 .of(NonResolvedReferencesCustomObject.class)
                 .withPredicates(buildCustomObjectKeysQueryPredicate(singleton(key)));
 
-        return syncOptions
+        return productSyncOptions
                 .getCtpClient()
                 .execute(customObjectQuery)
                 .thenApply(PagedResult::head);
@@ -73,14 +73,14 @@ public class LazyResolutionServiceImpl
     save(@Nonnull final CustomObjectDraft<NonResolvedReferencesCustomObject>
                                            customObjectDraft) {
 
-        return syncOptions
+        return productSyncOptions
                 .getCtpClient()
                 .execute(CustomObjectUpsertCommand.of(customObjectDraft))
                 .handle((resource, exception) -> {
                     if (exception == null) {
                         return Optional.of(resource);
                     } else {
-                        syncOptions.applyErrorCallback(
+                        productSyncOptions.applyErrorCallback(
                                 format(CREATE_FAILED, customObjectDraft.getKey(), exception.getMessage()), exception);
                         return Optional.empty();
                     }
@@ -92,14 +92,14 @@ public class LazyResolutionServiceImpl
     public CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>>
     delete(@Nonnull final CustomObject<NonResolvedReferencesCustomObject> customObject) {
 
-        return syncOptions
+        return productSyncOptions
                 .getCtpClient()
                 .execute(CustomObjectDeleteCommand.of(customObject, NonResolvedReferencesCustomObject.class))
                 .handle((resource, exception) -> {
                     if (exception == null) {
                         return Optional.of(resource);
                     } else {
-                        syncOptions.applyErrorCallback(
+                        productSyncOptions.applyErrorCallback(
                                 format(CREATE_FAILED, customObject.getKey(), exception.getMessage()), exception);
                         return Optional.empty();
                     }
