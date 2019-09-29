@@ -3,7 +3,6 @@ package com.commercetools.sync.services;
 
 import com.commercetools.sync.commons.models.NonResolvedReferencesCustomObject;
 import io.sphere.sdk.customobjects.CustomObject;
-import io.sphere.sdk.customobjects.CustomObjectDraft;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -29,13 +28,13 @@ public interface LazyResolutionService {
      * of {@link CompletionStage} in which contains an instance {@link Optional}
      * of the resource which was created/updated.
      *
-     * @param customObjectDraft the resource to create/update a resource based off of.
+     * @param nonResolvedReferencesCustomObject the resource to create/update
      * @return a {@link CompletionStage} containing an optional with the created resource if successful otherwise an
      *     empty optional.
      */
     @Nonnull
     CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>> save(
-            @Nonnull final CustomObjectDraft<NonResolvedReferencesCustomObject> customObjectDraft);
+            @Nonnull final NonResolvedReferencesCustomObject nonResolvedReferencesCustomObject);
 
     /**
      * Given a resource gets deleted on CTP, then returns deleted resource

@@ -50,8 +50,12 @@ public class LazyResolutionServiceImpl
     @Nonnull
     @Override
     public CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>>
-    save(@Nonnull final CustomObjectDraft<NonResolvedReferencesCustomObject>
-                                           customObjectDraft) {
+    save(@Nonnull final NonResolvedReferencesCustomObject nonResolvedReferencesCustomObject) {
+
+        CustomObjectDraft<NonResolvedReferencesCustomObject> customObjectDraft = CustomObjectDraft
+                .ofVersionedUpsert(CUSTOM_OBJECT_CONTAINER_KEY,
+                nonResolvedReferencesCustomObject.getProductKey(),
+                nonResolvedReferencesCustomObject, 1L, NonResolvedReferencesCustomObject.class);
 
         return productSyncOptions
                 .getCtpClient()
