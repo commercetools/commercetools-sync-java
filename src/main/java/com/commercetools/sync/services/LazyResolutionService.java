@@ -27,18 +27,9 @@ public interface LazyResolutionService {
             @Nullable final String key);
 
     /**
-     * Given a resource of type {@link CustomObject}, this method attempts to create a
-     * {@link CustomObject} based on it in the CTP project defined by the sync options.
-     *
-     * <p>A completion stage containing an empty option and the error callback will be triggered in those cases:
-     * <ul>
-     *     <li>the draft has a blank key</li>
-     *     <li>the create request fails on CTP</li>
-     * </ul>
-     *
-     * <p>On the other hand, if the resource gets created/updated successfully on CTP, then the created resource
-     * of {@link CompletionStage} in which the result of it's completion
-     * contains an instance {@link Optional} of the resource which was created/updated.
+     * Given a resource gets created/updated on CTP, then returns the created resource
+     * of {@link CompletionStage} in which contains an instance {@link Optional}
+     * of the resource which was created/updated.
      *
      * @param customObjectDraft the resource to create/update a resource based off of.
      * @return a {@link CompletionStage} containing an optional with the created resource if successful otherwise an
@@ -49,18 +40,9 @@ public interface LazyResolutionService {
             @Nonnull final CustomObjectDraft<NonResolvedReferencesCustomObject> customObjectDraft);
 
     /**
-     * Given a resource of type {@link CustomObject}, this method attempts to delete a
-     * {@link CustomObject} based on it in the CTP project defined by the sync options.
-     *
-     * <p>A completion stage containing an empty option and the error callback will be triggered in those cases:
-     * <ul>
-     *     <li>the draft has a blank key</li>
-     *     <li>the delete request fails on CTP</li>
-     * </ul>
-     *
-     * <p>On the other hand, if the resource gets deleted successfully on CTP, then the created resource
-     * of {@link CompletionStage} in which the result of it's completion
-     * contains an instance {@link Optional} of the resource which was deleted.
+     * Given a resource gets deleted on CTP, then returns deleted resource
+     * of {@link CompletionStage} in which contains an instance {@link Optional}
+     * of the resource which was deleted.
      *
      * @param customObject the resource to delete a resource based off of.
      * @return a {@link CompletionStage} containing an optional with the deleted resource if successful otherwise an
