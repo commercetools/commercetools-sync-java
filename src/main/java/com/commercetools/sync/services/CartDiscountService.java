@@ -35,7 +35,7 @@ public interface CartDiscountService {
      * discount is persisted in an in-memory map.
      *
      * @param key the key of the product to fetch.
-     * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of its completion contains an
+     * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion contains an
      * {@link Optional} that contains the matching {@link CartDiscount} if exists, otherwise empty.
      */
     @Nonnull
@@ -53,7 +53,7 @@ public interface CartDiscountService {
      * </ul>
      *
      * <p>On the other hand, if the CartDiscount gets created successfully on CTP, then the created CartDiscount's id
-     * and key are cached. The method returns a {@link CompletionStage} in which the result of its completion
+     * and key are cached. The method returns a {@link CompletionStage} in which the result of it's completion
      * contains an instance {@link Optional} of the created `CartDiscount`.
      *
      * @param cartDiscountDraft the resource draft to create a resource based off of.

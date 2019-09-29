@@ -15,7 +15,7 @@ public interface StateService {
      * in the CTP project, by querying the CTP project for all states.
      *
      * <p>After that, the method returns a {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt;
-     * in which the result of its completion could contain an
+     * in which the result of it's completion could contain an
      * {@link Optional} with the id inside of it or an empty {@link Optional} if no {@link State} was
      * found in the CTP project with this key.
      *

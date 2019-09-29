@@ -21,7 +21,7 @@ public interface TypeService {
      * the CTP project, by querying the CTP project for all Types.
      *
      * <p>After that, the method returns a {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt;
-     * in which the result of its completion could contain an
+     * in which the result of it's completion could contain an
      * {@link Optional} with the id inside of it or an empty {@link Optional} if no {@link Type} was
      * found in the CTP project with this key.
      *
@@ -87,7 +87,7 @@ public interface TypeService {
      *
      * @param type          the {@link Type} to update.
      * @param updateActions the update actions to update the {@link Type} with.
-     * @return {@link CompletionStage}&lt;{@link Type}&gt; containing as a result of its completion an instance of
+     * @return {@link CompletionStage}&lt;{@link Type}&gt; containing as a result of it's completion an instance of
      *         the {@link Type} which was updated in the CTP project or a {@link io.sphere.sdk.models.SphereException}.
      */
     @Nonnull

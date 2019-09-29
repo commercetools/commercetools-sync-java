@@ -98,7 +98,7 @@ class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions> {
      * </ul>
      *
      * <p>On the other hand, if the resource gets created successfully on CTP, then the created resource's id and
-     * key are cached and the method returns a {@link CompletionStage} in which the result of its completion
+     * key are cached and the method returns a {@link CompletionStage} in which the result of it's completion
      * contains an instance {@link Optional} of the resource which was created.
      *
      * @param draft the resource draft to create a resource based off of.
