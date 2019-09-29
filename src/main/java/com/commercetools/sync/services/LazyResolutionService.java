@@ -16,15 +16,14 @@ public interface LazyResolutionService {
     /**
      * Given a custom object key, this method fetches a custom object that matches this given key in the CTP project
      * defined in a potentially injected {@link SphereClient}. If there is no matching custom object an empty
-     * {@link Optional} will be returned in the returned future. A mapping of the key to the id of the fetched
-     * custom object is persisted in an in -memory map.
+     * {@link Optional} will be returned in the returned future.
      *
      * @param key the key of the custom object to fetch.
      * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion contains an
      * {@link Optional} that contains the matching {@link CustomObject} if exists, otherwise empty.
      */
     @Nonnull
-    CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>> fetchCustomObject(
+    CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>> fetch(
             @Nullable final String key);
 
     /**

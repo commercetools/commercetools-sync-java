@@ -137,7 +137,7 @@ public class LazyResolutionServiceImplIT {
     }
 
     @Test
-    void fetchCustomObject_shouldReturnCorrectCustomObject() {
+    void fetch_shouldReturnCorrectCustomObject() {
         // preparation
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH,
                 productType.toReference(), null, null, categoryReferencesWithIds,
@@ -154,7 +154,7 @@ public class LazyResolutionServiceImplIT {
 
         // test
         Optional<CustomObject<NonResolvedReferencesCustomObject>> result = lazyResolutionService
-                .fetchCustomObject("test-co-key").toCompletableFuture().join();
+                .fetch("test-co-key").toCompletableFuture().join();
 
         // assertions
         assertTrue(result.isPresent());
@@ -189,7 +189,7 @@ public class LazyResolutionServiceImplIT {
         assertThat(deletedCustomObject.getContainer()).isEqualTo(containerKey);
 
         Optional<CustomObject<NonResolvedReferencesCustomObject>> nonExistingObj = lazyResolutionService
-                .fetchCustomObject("test-co-key").toCompletableFuture().join();
+                .fetch("test-co-key").toCompletableFuture().join();
         assertFalse(nonExistingObj.isPresent());
     }
 

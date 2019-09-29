@@ -39,7 +39,7 @@ public class LazyResolutionServiceImpl
     @Nonnull
     @Override
     public CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>>
-        fetchCustomObject(@Nullable final String key) {
+    fetch(@Nullable final String key) {
 
         if (isBlank(key)) {
             return CompletableFuture.completedFuture(Optional.empty());
