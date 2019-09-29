@@ -67,7 +67,7 @@ public interface LazyResolutionService {
      *     empty optional.
      */
     @Nonnull
-    CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>> deleteCustomObject(
+    CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>> delete(
             @Nonnull final CustomObject<NonResolvedReferencesCustomObject> customObject);
 
 }

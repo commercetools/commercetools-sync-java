@@ -164,7 +164,7 @@ public class LazyResolutionServiceImplIT {
 
 
     @Test
-    void deleteCustomObject_shouldReturnCorrectCustomObject() {
+    void delete_shouldRemoveAndReturnCorrectCustomObject() {
         // preparation
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH,
                 productType.toReference(), null, null, categoryReferencesWithIds,
@@ -181,7 +181,7 @@ public class LazyResolutionServiceImplIT {
 
         // test
         Optional<CustomObject<NonResolvedReferencesCustomObject>> result = lazyResolutionService
-                .deleteCustomObject(optionalCustomObject.get()).toCompletableFuture().join();
+                .delete(optionalCustomObject.get()).toCompletableFuture().join();
 
         // assertions
         assertTrue(result.isPresent());

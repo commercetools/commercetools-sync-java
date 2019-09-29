@@ -90,7 +90,7 @@ public class LazyResolutionServiceImpl
     @Nonnull
     @Override
     public CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>>
-        deleteCustomObject(@Nonnull final CustomObject<NonResolvedReferencesCustomObject> customObject) {
+    delete(@Nonnull final CustomObject<NonResolvedReferencesCustomObject> customObject) {
 
         return syncOptions
                 .getCtpClient()
