@@ -2,7 +2,7 @@ package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.models.NonResolvedReferencesCustomObject;
-import com.commercetools.sync.services.CustomObjectService;
+import com.commercetools.sync.services.LazyResolutionService;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
 import io.sphere.sdk.customobjects.commands.CustomObjectDeleteCommand;
@@ -25,14 +25,14 @@ import static java.lang.String.format;
 import static java.util.Collections.singleton;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-public class CustomObjectServiceImpl
-        implements CustomObjectService {
+public class LazyResolutionServiceImpl
+        implements LazyResolutionService {
 
     private final BaseSyncOptions syncOptions;
 
     private static final String CREATE_FAILED = "Failed to create draft with key: '%s'. Reason: %s";
 
-    public CustomObjectServiceImpl(final BaseSyncOptions baseSyncOptions) {
+    public LazyResolutionServiceImpl(final BaseSyncOptions baseSyncOptions) {
         this.syncOptions = baseSyncOptions;
     }
 

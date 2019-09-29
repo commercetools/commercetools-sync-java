@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.concurrent.CompletionStage;
 
-public interface CustomObjectService {
+public interface LazyResolutionService {
 
     /**
      * Given a custom object key, this method fetches a custom object that matches this given key in the CTP project

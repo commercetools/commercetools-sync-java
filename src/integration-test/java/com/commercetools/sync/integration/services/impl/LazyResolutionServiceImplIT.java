@@ -3,8 +3,8 @@ package com.commercetools.sync.integration.services.impl;
 import com.commercetools.sync.commons.models.NonResolvedReferencesCustomObject;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
-import com.commercetools.sync.services.CustomObjectService;
-import com.commercetools.sync.services.impl.CustomObjectServiceImpl;
+import com.commercetools.sync.services.LazyResolutionService;
+import com.commercetools.sync.services.impl.LazyResolutionServiceImpl;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.DeleteCommand;
@@ -44,10 +44,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class CustomObjectServiceImplIT {
+public class LazyResolutionServiceImplIT {
 
     private static final String containerKey = "test-container-key";
-    private CustomObjectService customObjectService;
+    private LazyResolutionService lazyResolutionService;
     private static ProductType productType;
     private static List<Reference<Category>> categoryReferencesWithIds;
 
@@ -107,7 +107,7 @@ public class CustomObjectServiceImplIT {
             .build();
 
 
-        customObjectService = new CustomObjectServiceImpl(productSyncOptions);
+        lazyResolutionService = new LazyResolutionServiceImpl(productSyncOptions);
     }
 
 
@@ -126,7 +126,7 @@ public class CustomObjectServiceImplIT {
                         NonResolvedReferencesCustomObject.class);
 
         // test
-        Optional<CustomObject<NonResolvedReferencesCustomObject>> result = customObjectService
+        Optional<CustomObject<NonResolvedReferencesCustomObject>> result = lazyResolutionService
                 .createOrUpdateCustomObject(customObjectDraft).toCompletableFuture().join();
 
         // assertions
@@ -149,11 +149,11 @@ public class CustomObjectServiceImplIT {
         CustomObjectDraft<NonResolvedReferencesCustomObject> customObjectDraft =
                 CustomObjectDraft.ofUnversionedUpsert(containerKey, "test-co-key", valueObject,
                         NonResolvedReferencesCustomObject.class);
-        customObjectService
+        lazyResolutionService
                 .createOrUpdateCustomObject(customObjectDraft).toCompletableFuture().join();
 
         // test
-        Optional<CustomObject<NonResolvedReferencesCustomObject>> result = customObjectService
+        Optional<CustomObject<NonResolvedReferencesCustomObject>> result = lazyResolutionService
                 .fetchCustomObject("test-co-key").toCompletableFuture().join();
 
         // assertions
@@ -176,11 +176,11 @@ public class CustomObjectServiceImplIT {
         CustomObjectDraft<NonResolvedReferencesCustomObject> customObjectDraft =
                 CustomObjectDraft.ofUnversionedUpsert(containerKey, "test-co-key", valueObject,
                         NonResolvedReferencesCustomObject.class);
-        Optional<CustomObject<NonResolvedReferencesCustomObject>> optionalCustomObject = customObjectService
+        Optional<CustomObject<NonResolvedReferencesCustomObject>> optionalCustomObject = lazyResolutionService
                 .createOrUpdateCustomObject(customObjectDraft).toCompletableFuture().join();
 
         // test
-        Optional<CustomObject<NonResolvedReferencesCustomObject>> result = customObjectService
+        Optional<CustomObject<NonResolvedReferencesCustomObject>> result = lazyResolutionService
                 .deleteCustomObject(optionalCustomObject.get()).toCompletableFuture().join();
 
         // assertions
@@ -188,7 +188,7 @@ public class CustomObjectServiceImplIT {
         CustomObject<NonResolvedReferencesCustomObject> deletedCustomObject = result.get();
         assertThat(deletedCustomObject.getContainer()).isEqualTo(containerKey);
 
-        Optional<CustomObject<NonResolvedReferencesCustomObject>> nonExistingObj = customObjectService
+        Optional<CustomObject<NonResolvedReferencesCustomObject>> nonExistingObj = lazyResolutionService
                 .fetchCustomObject("test-co-key").toCompletableFuture().join();
         assertFalse(nonExistingObj.isPresent());
     }
