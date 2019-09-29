@@ -27,6 +27,8 @@ public class LazyResolutionServiceImpl
 
     private static final String CREATE_FAILED = "Failed to create draft with key: '%s'. Reason: %s";
 
+    private static final String DELETE_FAILED = "Failed to delete resource with key: '%s'. Reason: %s";
+
     public LazyResolutionServiceImpl(final ProductSyncOptions productSyncOptions) {
         this.productSyncOptions = productSyncOptions;
     }
@@ -74,17 +76,20 @@ public class LazyResolutionServiceImpl
     @Nonnull
     @Override
     public CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>>
-    delete(@Nonnull final CustomObject<NonResolvedReferencesCustomObject> customObject) {
+    delete(@Nonnull final String nonResolvedReferencesObjectKey) {
 
         return productSyncOptions
                 .getCtpClient()
-                .execute(CustomObjectDeleteCommand.of(customObject, NonResolvedReferencesCustomObject.class))
+                .execute(CustomObjectDeleteCommand
+                        .of(CUSTOM_OBJECT_CONTAINER_KEY, nonResolvedReferencesObjectKey,
+                                NonResolvedReferencesCustomObject.class))
                 .handle((resource, exception) -> {
                     if (exception == null) {
                         return Optional.of(resource);
                     } else {
                         productSyncOptions.applyErrorCallback(
-                                format(CREATE_FAILED, customObject.getKey(), exception.getMessage()), exception);
+                                format(DELETE_FAILED, nonResolvedReferencesObjectKey,
+                                        exception.getMessage()), exception);
                         return Optional.empty();
                     }
                 });

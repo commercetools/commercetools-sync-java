@@ -169,7 +169,7 @@ public class LazyResolutionServiceImplIT {
 
         // test
         Optional<CustomObject<NonResolvedReferencesCustomObject>> result = lazyResolutionService
-                .delete(optionalCustomObject.get()).toCompletableFuture().join();
+                .delete("test-product-key-3").toCompletableFuture().join();
 
         // assertions
         assertTrue(result.isPresent());

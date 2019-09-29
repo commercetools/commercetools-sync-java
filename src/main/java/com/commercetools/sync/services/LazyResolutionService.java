@@ -41,12 +41,12 @@ public interface LazyResolutionService {
      * of {@link CompletionStage} in which contains an instance {@link Optional}
      * of the resource which was deleted.
      *
-     * @param customObject the resource to delete a resource based off of.
+     * @param nonResolvedReferencesObjectKey the resource key to delete
      * @return a {@link CompletionStage} containing an optional with the deleted resource if successful otherwise an
      *     empty optional.
      */
     @Nonnull
     CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>> delete(
-            @Nonnull final CustomObject<NonResolvedReferencesCustomObject> customObject);
+            @Nonnull final String nonResolvedReferencesObjectKey);
 
 }
