@@ -5,7 +5,7 @@ import io.sphere.sdk.products.ProductDraft;
 import javax.annotation.Nonnull;
 import java.util.Set;
 
-public class ProductWithUnResolvedProductReferences {
+public final class ProductWithUnResolvedProductReferences {
 
     private ProductDraft productDraft;
 
