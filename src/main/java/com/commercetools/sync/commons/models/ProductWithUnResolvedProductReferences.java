@@ -29,7 +29,7 @@ public final class ProductWithUnResolvedProductReferences {
         return productDraft;
     }
 
-    public void setProductDraft(final ProductDraft productDraft) {
+    public void setProductDraft(@Nonnull final ProductDraft productDraft) {
         this.productDraft = productDraft;
     }
 
