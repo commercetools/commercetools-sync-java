@@ -29,7 +29,7 @@ public class LazyResolutionServiceImpl
 
     private static final String DELETE_FAILED = "Failed to delete resource with key: '%s'. Reason: %s";
 
-    public LazyResolutionServiceImpl(final ProductSyncOptions productSyncOptions) {
+    public LazyResolutionServiceImpl(@Nonnull final ProductSyncOptions productSyncOptions) {
         this.productSyncOptions = productSyncOptions;
     }
 
