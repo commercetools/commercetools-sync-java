@@ -28,13 +28,13 @@ public interface LazyResolutionService {
      * of {@link CompletionStage} in which contains an instance {@link Optional}
      * of the resource which was created/updated.
      *
-     * @param nonResolvedReferencesCustomObject the resource to create/update
+     * @param draftWithUnresolvedReferences the resource to create/update
      * @return a {@link CompletionStage} containing an optional with the created resource if successful otherwise an
      *     empty optional.
      */
     @Nonnull
     CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>> save(
-            @Nonnull final NonResolvedReferencesCustomObject nonResolvedReferencesCustomObject);
+            @Nonnull final NonResolvedReferencesCustomObject draftWithUnresolvedReferences);
 
     /**
      * Given a resource gets deleted on CTP, then returns deleted resource

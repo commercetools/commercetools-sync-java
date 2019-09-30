@@ -25,7 +25,7 @@ public class LazyResolutionServiceImpl
 
     private static final String CUSTOM_OBJECT_CONTAINER_KEY = "commercetools-sync-java.LazyResolutionService";
 
-    private static final String CREATE_FAILED = "Failed to create draft with key: '%s'. Reason: %s";
+    private static final String SAVE_FAILED = "Failed to save draft with key: '%s'. Reason: %s";
 
     private static final String DELETE_FAILED = "Failed to delete resource with key: '%s'. Reason: %s";
 
@@ -52,12 +52,12 @@ public class LazyResolutionServiceImpl
     @Nonnull
     @Override
     public CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>>
-    save(@Nonnull final NonResolvedReferencesCustomObject nonResolvedReferencesCustomObject) {
+    save(@Nonnull final NonResolvedReferencesCustomObject draftWithUnresolvedReferences) {
 
-        CustomObjectDraft<NonResolvedReferencesCustomObject> customObjectDraft = CustomObjectDraft
+        final CustomObjectDraft<NonResolvedReferencesCustomObject> customObjectDraft = CustomObjectDraft
                 .ofVersionedUpsert(CUSTOM_OBJECT_CONTAINER_KEY,
-                nonResolvedReferencesCustomObject.getProductKey(),
-                nonResolvedReferencesCustomObject, 1L, NonResolvedReferencesCustomObject.class);
+                draftWithUnresolvedReferences.getProductKey(),
+                        draftWithUnresolvedReferences, 1L, NonResolvedReferencesCustomObject.class);
 
         return productSyncOptions
                 .getCtpClient()
@@ -67,7 +67,7 @@ public class LazyResolutionServiceImpl
                         return Optional.of(resource);
                     } else {
                         productSyncOptions.applyErrorCallback(
-                                format(CREATE_FAILED, customObjectDraft.getKey(), exception.getMessage()), exception);
+                                format(SAVE_FAILED, customObjectDraft.getKey(), exception.getMessage()), exception);
                         return Optional.empty();
                     }
                 });
