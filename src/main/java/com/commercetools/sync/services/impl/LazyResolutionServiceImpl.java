@@ -11,6 +11,7 @@ import io.sphere.sdk.customobjects.queries.CustomObjectByKeyGet;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -56,7 +57,7 @@ public class LazyResolutionServiceImpl
 
         final CustomObjectDraft<ProductWithUnResolvedProductReferences> customObjectDraft = CustomObjectDraft
                 .ofVersionedUpsert(CUSTOM_OBJECT_CONTAINER_KEY,
-                draftWithUnresolvedReferences.getProductKey(),
+                        Objects.requireNonNull(draftWithUnresolvedReferences.getProductDraft().getKey()),
                         draftWithUnresolvedReferences, 1L, ProductWithUnResolvedProductReferences.class);
 
         return productSyncOptions

@@ -117,7 +117,7 @@ public class LazyResolutionServiceImplIT {
                 productType.toReference(), null, null, categoryReferencesWithIds,
                 createRandomCategoryOrderHints(categoryReferencesWithIds));
         ProductWithUnResolvedProductReferences valueObject =
-                new ProductWithUnResolvedProductReferences("test-product-key-1", productDraft,
+                new ProductWithUnResolvedProductReferences(productDraft,
                         null);
 
         // test
@@ -127,7 +127,7 @@ public class LazyResolutionServiceImplIT {
         // assertions
         assertTrue(result.isPresent());
         CustomObject<ProductWithUnResolvedProductReferences> createdCustomObject = result.get();
-        assertThat(createdCustomObject.getKey()).isEqualTo("test-product-key-1");
+        assertThat(createdCustomObject.getKey()).isEqualTo("productKey1");
         assertThat(createdCustomObject.getContainer()).isEqualTo(testContainerKey);
     }
 
@@ -138,14 +138,14 @@ public class LazyResolutionServiceImplIT {
                 productType.toReference(), null, null, categoryReferencesWithIds,
                 createRandomCategoryOrderHints(categoryReferencesWithIds));
         ProductWithUnResolvedProductReferences valueObject =
-                new ProductWithUnResolvedProductReferences("test-product-key-2", productDraft,
+                new ProductWithUnResolvedProductReferences(productDraft,
                         null);
         lazyResolutionService
                 .save(valueObject).toCompletableFuture().join();
 
         // test
         Optional<CustomObject<ProductWithUnResolvedProductReferences>> result = lazyResolutionService
-                .fetch("test-product-key-2").toCompletableFuture().join();
+                .fetch("productKey2").toCompletableFuture().join();
 
         // assertions
         assertTrue(result.isPresent());
@@ -161,10 +161,10 @@ public class LazyResolutionServiceImplIT {
                 productType.toReference(), null, null, categoryReferencesWithIds,
                 createRandomCategoryOrderHints(categoryReferencesWithIds));
         ProductWithUnResolvedProductReferences valueObject =
-                new ProductWithUnResolvedProductReferences("test-product-key-3", productDraft,
+                new ProductWithUnResolvedProductReferences(productDraft,
                         null);
 
-        Optional<CustomObject<ProductWithUnResolvedProductReferences>> optionalCustomObject = lazyResolutionService
+        lazyResolutionService
                 .save(valueObject).toCompletableFuture().join();
 
         // test
@@ -177,7 +177,7 @@ public class LazyResolutionServiceImplIT {
         assertThat(deletedCustomObject.getContainer()).isEqualTo(testContainerKey);
 
         Optional<CustomObject<ProductWithUnResolvedProductReferences>> nonExistingObj = lazyResolutionService
-                .fetch("test-product-key-3").toCompletableFuture().join();
+                .fetch("productKey2").toCompletableFuture().join();
         assertFalse(nonExistingObj.isPresent());
     }
 
