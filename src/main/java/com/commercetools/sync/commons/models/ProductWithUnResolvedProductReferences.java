@@ -3,7 +3,7 @@ package com.commercetools.sync.commons.models;
 import io.sphere.sdk.products.ProductDraft;
 
 import javax.annotation.Nonnull;
-import java.util.List;
+import java.util.Set;
 
 public class ProductWithUnResolvedProductReferences {
 
@@ -11,19 +11,19 @@ public class ProductWithUnResolvedProductReferences {
 
     private ProductDraft productDraft;
 
-    private List<String> dependantProductKeys;
+    private Set<String> missingReferencedProductKeys;
 
     /**
      * Object represent the value for the custom object that will hold unresolved references
      * @param productKey product key that has non-resolved references
      * @param productDraft product draft which has non-resolved references
-     * @param dependantProductKeys product keys of non-resolved references
+     * @param missingReferencedProductKeys product keys of non-resolved references
      */
     public ProductWithUnResolvedProductReferences(@Nonnull final String productKey, @Nonnull final ProductDraft productDraft,
-                                                  final List<String> dependantProductKeys) {
+                                                  final Set<String> missingReferencedProductKeys) {
         this.productKey = productKey;
         this.productDraft = productDraft;
-        this.dependantProductKeys = dependantProductKeys;
+        this.missingReferencedProductKeys = missingReferencedProductKeys;
     }
 
     public ProductWithUnResolvedProductReferences() {
@@ -45,12 +45,12 @@ public class ProductWithUnResolvedProductReferences {
         this.productDraft = productDraft;
     }
 
-    public List<String> getDependantProductKeys() {
-        return dependantProductKeys;
+    public Set<String> getMissingReferencedProductKeys() {
+        return missingReferencedProductKeys;
     }
 
-    public void setDependantProductKeys(final List<String> dependantProductKeys) {
-        this.dependantProductKeys = dependantProductKeys;
+    public void setMissingReferencedProductKeys(final Set<String> missingReferencedProductKeys) {
+        this.missingReferencedProductKeys = missingReferencedProductKeys;
     }
 
 }
