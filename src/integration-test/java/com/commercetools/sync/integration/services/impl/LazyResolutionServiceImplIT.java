@@ -46,7 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class LazyResolutionServiceImplIT {
 
-    private static final String testContainerKey = "commercetools-sync-java.LazyResolutionService";
+    private static final String TEST_CONTAINER_KEY = "commercetools-sync-java.LazyResolutionService";
     private LazyResolutionService lazyResolutionService;
     private static ProductType productType;
     private static List<Reference<Category>> categoryReferencesWithIds;
@@ -76,7 +76,7 @@ public class LazyResolutionServiceImplIT {
 
     private static void deleteCustomObjects(final SphereClient sphereClient) {
         CustomObjectQuery<ProductWithUnResolvedProductReferences> customObjectQuery = CustomObjectQuery
-                .of(ProductWithUnResolvedProductReferences.class).byContainer(testContainerKey);
+                .of(ProductWithUnResolvedProductReferences.class).byContainer(TEST_CONTAINER_KEY);
         List<CustomObject<ProductWithUnResolvedProductReferences>> existingCOs = sphereClient
                 .execute(customObjectQuery).toCompletableFuture().join().getResults();
 
@@ -129,7 +129,7 @@ public class LazyResolutionServiceImplIT {
         assertTrue(result.isPresent());
         CustomObject<ProductWithUnResolvedProductReferences> createdCustomObject = result.get();
         assertThat(createdCustomObject.getKey()).isEqualTo("productKey1");
-        assertThat(createdCustomObject.getContainer()).isEqualTo(testContainerKey);
+        assertThat(createdCustomObject.getContainer()).isEqualTo(TEST_CONTAINER_KEY);
     }
 
     @Test
@@ -151,7 +151,7 @@ public class LazyResolutionServiceImplIT {
         // assertions
         assertTrue(result.isPresent());
         CustomObject<ProductWithUnResolvedProductReferences> savedCustomObject = result.get();
-        assertThat(savedCustomObject.getContainer()).isEqualTo(testContainerKey);
+        assertThat(savedCustomObject.getContainer()).isEqualTo(TEST_CONTAINER_KEY);
     }
 
 
@@ -175,7 +175,7 @@ public class LazyResolutionServiceImplIT {
         // assertions
         assertTrue(result.isPresent());
         CustomObject<ProductWithUnResolvedProductReferences> deletedCustomObject = result.get();
-        assertThat(deletedCustomObject.getContainer()).isEqualTo(testContainerKey);
+        assertThat(deletedCustomObject.getContainer()).isEqualTo(TEST_CONTAINER_KEY);
 
         Optional<CustomObject<ProductWithUnResolvedProductReferences>> nonExistingObj = lazyResolutionService
                 .fetch("productKey2").toCompletableFuture().join();
