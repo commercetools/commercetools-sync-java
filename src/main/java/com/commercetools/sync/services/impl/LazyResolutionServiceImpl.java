@@ -3,7 +3,6 @@ package com.commercetools.sync.services.impl;
 import com.commercetools.sync.commons.models.ProductWithUnResolvedProductReferences;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.LazyResolutionService;
-import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
 import io.sphere.sdk.customobjects.commands.CustomObjectDeleteCommand;
 import io.sphere.sdk.customobjects.commands.CustomObjectUpsertCommand;
@@ -36,7 +35,7 @@ public class LazyResolutionServiceImpl
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<CustomObject<ProductWithUnResolvedProductReferences>>>
+    public CompletionStage<Optional<ProductWithUnResolvedProductReferences>>
         fetch(@Nullable final String key) {
 
         if (isBlank(key)) {
@@ -47,12 +46,17 @@ public class LazyResolutionServiceImpl
                 .getCtpClient()
                 .execute(CustomObjectByKeyGet
                         .of(CUSTOM_OBJECT_CONTAINER_KEY, key, ProductWithUnResolvedProductReferences.class))
-                .thenApply(Optional::ofNullable);
+                .thenApply(res -> {
+                    if (res == null) {
+                        return Optional.empty();
+                    }
+                    return Optional.ofNullable(res.getValue());
+                });
     }
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<CustomObject<ProductWithUnResolvedProductReferences>>>
+    public CompletionStage<Optional<ProductWithUnResolvedProductReferences>>
         save(@Nonnull final ProductWithUnResolvedProductReferences draftWithUnresolvedReferences) {
 
         final CustomObjectDraft<ProductWithUnResolvedProductReferences> customObjectDraft = CustomObjectDraft
@@ -65,7 +69,7 @@ public class LazyResolutionServiceImpl
                 .execute(CustomObjectUpsertCommand.of(customObjectDraft))
                 .handle((resource, exception) -> {
                     if (exception == null) {
-                        return Optional.of(resource);
+                        return Optional.of(resource.getValue());
                     } else {
                         productSyncOptions.applyErrorCallback(
                                 format(SAVE_FAILED, customObjectDraft.getKey(), exception.getMessage()), exception);
@@ -76,7 +80,7 @@ public class LazyResolutionServiceImpl
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<CustomObject<ProductWithUnResolvedProductReferences>>>
+    public CompletionStage<Optional<ProductWithUnResolvedProductReferences>>
         delete(@Nonnull final String nonResolvedReferencesObjectKey) {
 
         return productSyncOptions
@@ -86,7 +90,7 @@ public class LazyResolutionServiceImpl
                                 ProductWithUnResolvedProductReferences.class))
                 .handle((resource, exception) -> {
                     if (exception == null) {
-                        return Optional.of(resource);
+                        return Optional.of(resource.getValue());
                     } else {
                         productSyncOptions.applyErrorCallback(
                                 format(DELETE_FAILED, nonResolvedReferencesObjectKey,

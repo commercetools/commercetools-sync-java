@@ -122,14 +122,12 @@ public class LazyResolutionServiceImplIT {
                         new HashSet<>());
 
         // test
-        Optional<CustomObject<ProductWithUnResolvedProductReferences>> result = lazyResolutionService
+        Optional<ProductWithUnResolvedProductReferences> result = lazyResolutionService
                 .save(valueObject).toCompletableFuture().join();
 
         // assertions
         assertTrue(result.isPresent());
-        CustomObject<ProductWithUnResolvedProductReferences> createdCustomObject = result.get();
-        assertThat(createdCustomObject.getKey()).isEqualTo("productKey1");
-        assertThat(createdCustomObject.getContainer()).isEqualTo(TEST_CONTAINER_KEY);
+        assertThat(result.get().getProductDraft().getKey()).isEqualTo("productKey1");
     }
 
     @Test
@@ -145,13 +143,12 @@ public class LazyResolutionServiceImplIT {
                 .save(valueObject).toCompletableFuture().join();
 
         // test
-        Optional<CustomObject<ProductWithUnResolvedProductReferences>> result = lazyResolutionService
+        Optional<ProductWithUnResolvedProductReferences> result = lazyResolutionService
                 .fetch("productKey2").toCompletableFuture().join();
 
         // assertions
         assertTrue(result.isPresent());
-        CustomObject<ProductWithUnResolvedProductReferences> savedCustomObject = result.get();
-        assertThat(savedCustomObject.getContainer()).isEqualTo(TEST_CONTAINER_KEY);
+        assertThat(result.get().getProductDraft().getKey()).isEqualTo("productKey2");
     }
 
 
@@ -169,15 +166,14 @@ public class LazyResolutionServiceImplIT {
                 .save(valueObject).toCompletableFuture().join();
 
         // test
-        Optional<CustomObject<ProductWithUnResolvedProductReferences>> result = lazyResolutionService
+        Optional<ProductWithUnResolvedProductReferences> result = lazyResolutionService
                 .delete("productKey2").toCompletableFuture().join();
 
         // assertions
         assertTrue(result.isPresent());
-        CustomObject<ProductWithUnResolvedProductReferences> deletedCustomObject = result.get();
-        assertThat(deletedCustomObject.getContainer()).isEqualTo(TEST_CONTAINER_KEY);
+        assertThat(result.get().getProductDraft().getKey()).isEqualTo("productKey2");
 
-        Optional<CustomObject<ProductWithUnResolvedProductReferences>> nonExistingObj = lazyResolutionService
+        Optional<ProductWithUnResolvedProductReferences> nonExistingObj = lazyResolutionService
                 .fetch("productKey2").toCompletableFuture().join();
         assertFalse(nonExistingObj.isPresent());
     }

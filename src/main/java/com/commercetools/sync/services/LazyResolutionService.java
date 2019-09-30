@@ -2,7 +2,6 @@ package com.commercetools.sync.services;
 
 
 import com.commercetools.sync.commons.models.ProductWithUnResolvedProductReferences;
-import io.sphere.sdk.customobjects.CustomObject;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -17,10 +16,11 @@ public interface LazyResolutionService {
      *
      * @param key the key of the custom object to fetch.
      * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion contains an
-     * {@link Optional} that contains the matching {@link CustomObject} if exists, otherwise empty.
+     * {@link Optional} that contains the matching {@link ProductWithUnResolvedProductReferences} if exists,
+     *     otherwise empty.
      */
     @Nonnull
-    CompletionStage<Optional<CustomObject<ProductWithUnResolvedProductReferences>>> fetch(
+    CompletionStage<Optional<ProductWithUnResolvedProductReferences>> fetch(
             @Nullable final String key);
 
     /**
@@ -33,7 +33,7 @@ public interface LazyResolutionService {
      *     empty optional.
      */
     @Nonnull
-    CompletionStage<Optional<CustomObject<ProductWithUnResolvedProductReferences>>> save(
+    CompletionStage<Optional<ProductWithUnResolvedProductReferences>> save(
             @Nonnull final ProductWithUnResolvedProductReferences draftWithUnresolvedReferences);
 
     /**
@@ -46,7 +46,7 @@ public interface LazyResolutionService {
      *     empty optional.
      */
     @Nonnull
-    CompletionStage<Optional<CustomObject<ProductWithUnResolvedProductReferences>>> delete(
+    CompletionStage<Optional<ProductWithUnResolvedProductReferences>> delete(
             @Nonnull final String nonResolvedReferencesObjectKey);
 
 }
