@@ -81,8 +81,8 @@ public class LazyResolutionServiceImplIT {
                 .execute(customObjectQuery).toCompletableFuture().join().getResults();
 
         existingCOs.forEach(obj -> {
-            DeleteCommand<CustomObject<ProductWithUnResolvedProductReferences>> deleteCommand = CustomObjectDeleteCommand
-                    .of(obj, ProductWithUnResolvedProductReferences.class);
+            DeleteCommand<CustomObject<ProductWithUnResolvedProductReferences>> deleteCommand =
+                    CustomObjectDeleteCommand.of(obj, ProductWithUnResolvedProductReferences.class);
             sphereClient.execute(deleteCommand).toCompletableFuture().join();
         });
     }
@@ -170,7 +170,7 @@ public class LazyResolutionServiceImplIT {
 
         // test
         Optional<CustomObject<ProductWithUnResolvedProductReferences>> result = lazyResolutionService
-                .delete("test-product-key-3").toCompletableFuture().join();
+                .delete("productKey2").toCompletableFuture().join();
 
         // assertions
         assertTrue(result.isPresent());

@@ -37,7 +37,7 @@ public class LazyResolutionServiceImpl
     @Nonnull
     @Override
     public CompletionStage<Optional<CustomObject<ProductWithUnResolvedProductReferences>>>
-    fetch(@Nullable final String key) {
+        fetch(@Nullable final String key) {
 
         if (isBlank(key)) {
             return CompletableFuture.completedFuture(Optional.empty());
@@ -53,12 +53,12 @@ public class LazyResolutionServiceImpl
     @Nonnull
     @Override
     public CompletionStage<Optional<CustomObject<ProductWithUnResolvedProductReferences>>>
-    save(@Nonnull final ProductWithUnResolvedProductReferences draftWithUnresolvedReferences) {
+        save(@Nonnull final ProductWithUnResolvedProductReferences draftWithUnresolvedReferences) {
 
         final CustomObjectDraft<ProductWithUnResolvedProductReferences> customObjectDraft = CustomObjectDraft
-                .ofVersionedUpsert(CUSTOM_OBJECT_CONTAINER_KEY,
+                .ofUnversionedUpsert(CUSTOM_OBJECT_CONTAINER_KEY,
                         Objects.requireNonNull(draftWithUnresolvedReferences.getProductDraft().getKey()),
-                        draftWithUnresolvedReferences, 1L, ProductWithUnResolvedProductReferences.class);
+                        draftWithUnresolvedReferences, ProductWithUnResolvedProductReferences.class);
 
         return productSyncOptions
                 .getCtpClient()
@@ -77,7 +77,7 @@ public class LazyResolutionServiceImpl
     @Nonnull
     @Override
     public CompletionStage<Optional<CustomObject<ProductWithUnResolvedProductReferences>>>
-    delete(@Nonnull final String nonResolvedReferencesObjectKey) {
+        delete(@Nonnull final String nonResolvedReferencesObjectKey) {
 
         return productSyncOptions
                 .getCtpClient()
