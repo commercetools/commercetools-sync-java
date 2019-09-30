@@ -1,7 +1,7 @@
 package com.commercetools.sync.services;
 
 
-import com.commercetools.sync.commons.models.NonResolvedReferencesCustomObject;
+import com.commercetools.sync.commons.models.ProductWithUnResolvedProductReferences;
 import io.sphere.sdk.customobjects.CustomObject;
 
 import javax.annotation.Nonnull;
@@ -20,7 +20,7 @@ public interface LazyResolutionService {
      * {@link Optional} that contains the matching {@link CustomObject} if exists, otherwise empty.
      */
     @Nonnull
-    CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>> fetch(
+    CompletionStage<Optional<CustomObject<ProductWithUnResolvedProductReferences>>> fetch(
             @Nullable final String key);
 
     /**
@@ -33,8 +33,8 @@ public interface LazyResolutionService {
      *     empty optional.
      */
     @Nonnull
-    CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>> save(
-            @Nonnull final NonResolvedReferencesCustomObject draftWithUnresolvedReferences);
+    CompletionStage<Optional<CustomObject<ProductWithUnResolvedProductReferences>>> save(
+            @Nonnull final ProductWithUnResolvedProductReferences draftWithUnresolvedReferences);
 
     /**
      * Given a resource gets deleted on CTP, then returns deleted resource
@@ -46,7 +46,7 @@ public interface LazyResolutionService {
      *     empty optional.
      */
     @Nonnull
-    CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>> delete(
+    CompletionStage<Optional<CustomObject<ProductWithUnResolvedProductReferences>>> delete(
             @Nonnull final String nonResolvedReferencesObjectKey);
 
 }

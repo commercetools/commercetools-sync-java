@@ -5,7 +5,7 @@ import io.sphere.sdk.products.ProductDraft;
 import javax.annotation.Nonnull;
 import java.util.List;
 
-public class NonResolvedReferencesCustomObject {
+public class ProductWithUnResolvedProductReferences {
 
     private String productKey;
 
@@ -19,14 +19,14 @@ public class NonResolvedReferencesCustomObject {
      * @param productDraft product draft which has non-resolved references
      * @param dependantProductKeys product keys of non-resolved references
      */
-    public NonResolvedReferencesCustomObject(@Nonnull final String productKey, @Nonnull final ProductDraft productDraft,
-                                             final List<String> dependantProductKeys) {
+    public ProductWithUnResolvedProductReferences(@Nonnull final String productKey, @Nonnull final ProductDraft productDraft,
+                                                  final List<String> dependantProductKeys) {
         this.productKey = productKey;
         this.productDraft = productDraft;
         this.dependantProductKeys = dependantProductKeys;
     }
 
-    public NonResolvedReferencesCustomObject() {
+    public ProductWithUnResolvedProductReferences() {
     }
 
     public String getProductKey() {

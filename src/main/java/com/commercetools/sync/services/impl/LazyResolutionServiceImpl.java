@@ -1,6 +1,6 @@
 package com.commercetools.sync.services.impl;
 
-import com.commercetools.sync.commons.models.NonResolvedReferencesCustomObject;
+import com.commercetools.sync.commons.models.ProductWithUnResolvedProductReferences;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.LazyResolutionService;
 import io.sphere.sdk.customobjects.CustomObject;
@@ -35,7 +35,7 @@ public class LazyResolutionServiceImpl
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>>
+    public CompletionStage<Optional<CustomObject<ProductWithUnResolvedProductReferences>>>
     fetch(@Nullable final String key) {
 
         if (isBlank(key)) {
@@ -45,19 +45,19 @@ public class LazyResolutionServiceImpl
         return productSyncOptions
                 .getCtpClient()
                 .execute(CustomObjectByKeyGet
-                        .of(CUSTOM_OBJECT_CONTAINER_KEY, key, NonResolvedReferencesCustomObject.class))
+                        .of(CUSTOM_OBJECT_CONTAINER_KEY, key, ProductWithUnResolvedProductReferences.class))
                 .thenApply(Optional::ofNullable);
     }
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>>
-    save(@Nonnull final NonResolvedReferencesCustomObject draftWithUnresolvedReferences) {
+    public CompletionStage<Optional<CustomObject<ProductWithUnResolvedProductReferences>>>
+    save(@Nonnull final ProductWithUnResolvedProductReferences draftWithUnresolvedReferences) {
 
-        final CustomObjectDraft<NonResolvedReferencesCustomObject> customObjectDraft = CustomObjectDraft
+        final CustomObjectDraft<ProductWithUnResolvedProductReferences> customObjectDraft = CustomObjectDraft
                 .ofVersionedUpsert(CUSTOM_OBJECT_CONTAINER_KEY,
                 draftWithUnresolvedReferences.getProductKey(),
-                        draftWithUnresolvedReferences, 1L, NonResolvedReferencesCustomObject.class);
+                        draftWithUnresolvedReferences, 1L, ProductWithUnResolvedProductReferences.class);
 
         return productSyncOptions
                 .getCtpClient()
@@ -75,14 +75,14 @@ public class LazyResolutionServiceImpl
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<CustomObject<NonResolvedReferencesCustomObject>>>
+    public CompletionStage<Optional<CustomObject<ProductWithUnResolvedProductReferences>>>
     delete(@Nonnull final String nonResolvedReferencesObjectKey) {
 
         return productSyncOptions
                 .getCtpClient()
                 .execute(CustomObjectDeleteCommand
                         .of(CUSTOM_OBJECT_CONTAINER_KEY, nonResolvedReferencesObjectKey,
-                                NonResolvedReferencesCustomObject.class))
+                                ProductWithUnResolvedProductReferences.class))
                 .handle((resource, exception) -> {
                     if (exception == null) {
                         return Optional.of(resource);

@@ -1,6 +1,6 @@
 package com.commercetools.sync.integration.services.impl;
 
-import com.commercetools.sync.commons.models.NonResolvedReferencesCustomObject;
+import com.commercetools.sync.commons.models.ProductWithUnResolvedProductReferences;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.LazyResolutionService;
@@ -74,14 +74,14 @@ public class LazyResolutionServiceImplIT {
     }
 
     private static void deleteCustomObjects(final SphereClient sphereClient) {
-        CustomObjectQuery<NonResolvedReferencesCustomObject> customObjectQuery = CustomObjectQuery
-                .of(NonResolvedReferencesCustomObject.class).byContainer(testContainerKey);
-        List<CustomObject<NonResolvedReferencesCustomObject>> existingCOs = sphereClient
+        CustomObjectQuery<ProductWithUnResolvedProductReferences> customObjectQuery = CustomObjectQuery
+                .of(ProductWithUnResolvedProductReferences.class).byContainer(testContainerKey);
+        List<CustomObject<ProductWithUnResolvedProductReferences>> existingCOs = sphereClient
                 .execute(customObjectQuery).toCompletableFuture().join().getResults();
 
         existingCOs.forEach(obj -> {
-            DeleteCommand<CustomObject<NonResolvedReferencesCustomObject>> deleteCommand = CustomObjectDeleteCommand
-                    .of(obj, NonResolvedReferencesCustomObject.class);
+            DeleteCommand<CustomObject<ProductWithUnResolvedProductReferences>> deleteCommand = CustomObjectDeleteCommand
+                    .of(obj, ProductWithUnResolvedProductReferences.class);
             sphereClient.execute(deleteCommand).toCompletableFuture().join();
         });
     }
@@ -116,17 +116,17 @@ public class LazyResolutionServiceImplIT {
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
                 productType.toReference(), null, null, categoryReferencesWithIds,
                 createRandomCategoryOrderHints(categoryReferencesWithIds));
-        NonResolvedReferencesCustomObject valueObject =
-                new NonResolvedReferencesCustomObject("test-product-key-1", productDraft,
+        ProductWithUnResolvedProductReferences valueObject =
+                new ProductWithUnResolvedProductReferences("test-product-key-1", productDraft,
                         null);
 
         // test
-        Optional<CustomObject<NonResolvedReferencesCustomObject>> result = lazyResolutionService
+        Optional<CustomObject<ProductWithUnResolvedProductReferences>> result = lazyResolutionService
                 .save(valueObject).toCompletableFuture().join();
 
         // assertions
         assertTrue(result.isPresent());
-        CustomObject<NonResolvedReferencesCustomObject> createdCustomObject = result.get();
+        CustomObject<ProductWithUnResolvedProductReferences> createdCustomObject = result.get();
         assertThat(createdCustomObject.getKey()).isEqualTo("test-product-key-1");
         assertThat(createdCustomObject.getContainer()).isEqualTo(testContainerKey);
     }
@@ -137,19 +137,19 @@ public class LazyResolutionServiceImplIT {
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH,
                 productType.toReference(), null, null, categoryReferencesWithIds,
                 createRandomCategoryOrderHints(categoryReferencesWithIds));
-        NonResolvedReferencesCustomObject valueObject =
-                new NonResolvedReferencesCustomObject("test-product-key-2", productDraft,
+        ProductWithUnResolvedProductReferences valueObject =
+                new ProductWithUnResolvedProductReferences("test-product-key-2", productDraft,
                         null);
         lazyResolutionService
                 .save(valueObject).toCompletableFuture().join();
 
         // test
-        Optional<CustomObject<NonResolvedReferencesCustomObject>> result = lazyResolutionService
+        Optional<CustomObject<ProductWithUnResolvedProductReferences>> result = lazyResolutionService
                 .fetch("test-product-key-2").toCompletableFuture().join();
 
         // assertions
         assertTrue(result.isPresent());
-        CustomObject<NonResolvedReferencesCustomObject> savedCustomObject = result.get();
+        CustomObject<ProductWithUnResolvedProductReferences> savedCustomObject = result.get();
         assertThat(savedCustomObject.getContainer()).isEqualTo(testContainerKey);
     }
 
@@ -160,23 +160,23 @@ public class LazyResolutionServiceImplIT {
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_2_RESOURCE_PATH,
                 productType.toReference(), null, null, categoryReferencesWithIds,
                 createRandomCategoryOrderHints(categoryReferencesWithIds));
-        NonResolvedReferencesCustomObject valueObject =
-                new NonResolvedReferencesCustomObject("test-product-key-3", productDraft,
+        ProductWithUnResolvedProductReferences valueObject =
+                new ProductWithUnResolvedProductReferences("test-product-key-3", productDraft,
                         null);
 
-        Optional<CustomObject<NonResolvedReferencesCustomObject>> optionalCustomObject = lazyResolutionService
+        Optional<CustomObject<ProductWithUnResolvedProductReferences>> optionalCustomObject = lazyResolutionService
                 .save(valueObject).toCompletableFuture().join();
 
         // test
-        Optional<CustomObject<NonResolvedReferencesCustomObject>> result = lazyResolutionService
+        Optional<CustomObject<ProductWithUnResolvedProductReferences>> result = lazyResolutionService
                 .delete("test-product-key-3").toCompletableFuture().join();
 
         // assertions
         assertTrue(result.isPresent());
-        CustomObject<NonResolvedReferencesCustomObject> deletedCustomObject = result.get();
+        CustomObject<ProductWithUnResolvedProductReferences> deletedCustomObject = result.get();
         assertThat(deletedCustomObject.getContainer()).isEqualTo(testContainerKey);
 
-        Optional<CustomObject<NonResolvedReferencesCustomObject>> nonExistingObj = lazyResolutionService
+        Optional<CustomObject<ProductWithUnResolvedProductReferences>> nonExistingObj = lazyResolutionService
                 .fetch("test-product-key-3").toCompletableFuture().join();
         assertFalse(nonExistingObj.isPresent());
     }
