@@ -20,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -118,7 +119,7 @@ public class LazyResolutionServiceImplIT {
                 createRandomCategoryOrderHints(categoryReferencesWithIds));
         ProductWithUnResolvedProductReferences valueObject =
                 new ProductWithUnResolvedProductReferences(productDraft,
-                        null);
+                        new HashSet<>());
 
         // test
         Optional<CustomObject<ProductWithUnResolvedProductReferences>> result = lazyResolutionService
@@ -139,7 +140,7 @@ public class LazyResolutionServiceImplIT {
                 createRandomCategoryOrderHints(categoryReferencesWithIds));
         ProductWithUnResolvedProductReferences valueObject =
                 new ProductWithUnResolvedProductReferences(productDraft,
-                        null);
+                        new HashSet<>());
         lazyResolutionService
                 .save(valueObject).toCompletableFuture().join();
 
@@ -162,7 +163,7 @@ public class LazyResolutionServiceImplIT {
                 createRandomCategoryOrderHints(categoryReferencesWithIds));
         ProductWithUnResolvedProductReferences valueObject =
                 new ProductWithUnResolvedProductReferences(productDraft,
-                        null);
+                        new HashSet<>());
 
         lazyResolutionService
                 .save(valueObject).toCompletableFuture().join();

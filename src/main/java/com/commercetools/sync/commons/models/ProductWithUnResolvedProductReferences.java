@@ -17,7 +17,7 @@ public class ProductWithUnResolvedProductReferences {
      * @param missingReferencedProductKeys product keys of non-resolved references
      */
     public ProductWithUnResolvedProductReferences(@Nonnull final ProductDraft productDraft,
-                                                  final Set<String> missingReferencedProductKeys) {
+                                                  @Nonnull final Set<String> missingReferencedProductKeys) {
         this.productDraft = productDraft;
         this.missingReferencedProductKeys = missingReferencedProductKeys;
     }
@@ -37,7 +37,7 @@ public class ProductWithUnResolvedProductReferences {
         return missingReferencedProductKeys;
     }
 
-    public void setMissingReferencedProductKeys(final Set<String> missingReferencedProductKeys) {
+    public void setMissingReferencedProductKeys(@Nonnull final Set<String> missingReferencedProductKeys) {
         this.missingReferencedProductKeys = missingReferencedProductKeys;
     }
 
