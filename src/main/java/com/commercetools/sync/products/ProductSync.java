@@ -25,6 +25,7 @@ import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
 import com.commercetools.sync.services.impl.StateServiceImpl;
 import com.commercetools.sync.services.impl.TaxCategoryServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
@@ -79,14 +80,14 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
      */
     public ProductSync(@Nonnull final ProductSyncOptions productSyncOptions) {
         this(productSyncOptions, new ProductServiceImpl(productSyncOptions),
-                new ProductTypeServiceImpl(productSyncOptions),
-                new CategoryServiceImpl(CategorySyncOptionsBuilder.of(productSyncOptions.getCtpClient()).build()),
-                new TypeServiceImpl(productSyncOptions),
-                new ChannelServiceImpl(productSyncOptions),
-                new CustomerGroupServiceImpl(productSyncOptions),
-                new TaxCategoryServiceImpl(productSyncOptions),
-                new StateServiceImpl(productSyncOptions, PRODUCT_STATE),
-                new LazyResolutionServiceImpl(productSyncOptions));
+            new ProductTypeServiceImpl(productSyncOptions),
+            new CategoryServiceImpl(CategorySyncOptionsBuilder.of(productSyncOptions.getCtpClient()).build()),
+            new TypeServiceImpl(productSyncOptions),
+            new ChannelServiceImpl(productSyncOptions),
+            new CustomerGroupServiceImpl(productSyncOptions),
+            new TaxCategoryServiceImpl(productSyncOptions),
+            new StateServiceImpl(productSyncOptions, PRODUCT_STATE),
+            new LazyResolutionServiceImpl(productSyncOptions));
     }
 
     ProductSync(@Nonnull final ProductSyncOptions productSyncOptions, @Nonnull final ProductService productService,
@@ -139,6 +140,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             });
     }
 
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
     private CompletionStage<Void> syncBatch(
         @Nonnull final Set<ProductDraft> productDrafts,
@@ -171,13 +173,64 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             });
     }
 
+    /**
+     * Given a set of product type drafts, attempts to sync the drafts with the existing products types in the target
+     * CTP project. The product type and the draft are considered to match if they have the same key.
+     *
+     *
+     * <p>Note: In order to support syncing product types with nested references in any order, this method will
+     * remove any attribute which contains a nested reference on the drafts and keep track of it to be resolved as
+     * soon as the referenced product type becomes available.
+     *
+     * @param oldProducts old product types.
+     * @param newProducts drafts that need to be synced.
+     * @return a {@link CompletionStage} which contains an empty result after execution of the update
+     */
+    @Nonnull
+    private CompletionStage<Void> syncBatch(
+        @Nonnull final Set<ProductDraft> newProducts,
+        @Nonnull final Set<Product> oldProducts,
+        @Nonnull final Map<String, String> keyToIdCache) {
+
+        final Map<String, Product> oldProductMap =
+            oldProducts.stream().collect(toMap(Product::getKey, identity()));
+
+        return allOf(newProducts
+            .stream()
+            .map(newDraft -> {
+                final Set<String> missingReferencedProductKeys =
+                    getMissingReferencedProductKeys(newDraft, keyToIdCache);
+
+                if (!missingReferencedProductKeys.isEmpty()) {
+                    return keepTrackOfMissingReferences(newDraft, missingReferencedProductKeys);
+                } else {
+
+                    return productReferenceResolver
+                        .resolveReferences(newDraft)
+                        .thenCompose(resolvedDraft -> syncDraft(oldProductMap, resolvedDraft))
+                        .exceptionally(completionException -> {
+                            final ReferenceResolutionException referenceResolutionException =
+                                (ReferenceResolutionException) completionException.getCause();
+                            final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES, newDraft.getKey(),
+                                referenceResolutionException.getMessage());
+                            handleError(errorMessage, referenceResolutionException, 1);
+                            return null;
+                        });
+                }
+            })
+            .map(CompletionStage::toCompletableFuture)
+            .toArray(CompletableFuture[]::new));
+    }
+
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
     private CompletionStage<Void> lazilyResolveReferences(final Map<String, String> keyToIdCache) {
         // ugly method
 
         final Set<String> referencingDraftKeys = readyToResolve
             .stream()
-            .map(statistics::removeAndGetReferencingKeys) // because one could argue that doesn't matter failed or succeeeded, we should not keep track..
+            // because one could argue that doesn't matter failed or succeeeded, we should not keep track..
+            .map(statistics::removeAndGetReferencingKeys)
             .filter(Objects::nonNull)
             .flatMap(Set::stream)
             .collect(Collectors.toSet());
@@ -237,55 +290,6 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             .toArray(CompletableFuture[]::new));
     }
 
-    /**
-     * Given a set of product type drafts, attempts to sync the drafts with the existing products types in the target
-     * CTP project. The product type and the draft are considered to match if they have the same key.
-     *
-     *
-     * <p>Note: In order to support syncing product types with nested references in any order, this method will
-     * remove any attribute which contains a nested reference on the drafts and keep track of it to be resolved as
-     * soon as the referenced product type becomes available.
-     *
-     * @param oldProducts old product types.
-     * @param newProducts drafts that need to be synced.
-     * @return a {@link CompletionStage} which contains an empty result after execution of the update
-     */
-    @Nonnull
-    private CompletionStage<Void> syncBatch(
-        @Nonnull final Set<ProductDraft> newProducts,
-        @Nonnull final Set<Product> oldProducts,
-        @Nonnull final Map<String, String> keyToIdCache) {
-
-        final Map<String, Product> oldProductMap =
-            oldProducts.stream().collect(toMap(Product::getKey, identity()));
-
-        return allOf(newProducts
-            .stream()
-            .map(newDraft -> {
-                final Set<String> missingReferencedProductKeys =
-                    getMissingReferencedProductKeys(newDraft, keyToIdCache);
-
-                if (!missingReferencedProductKeys.isEmpty()) {
-                    return keepTrackOfMissingReferences(newDraft, missingReferencedProductKeys);
-                } else {
-
-                    return productReferenceResolver
-                        .resolveReferences(newDraft)
-                        .thenCompose(resolvedDraft -> syncDraft(oldProductMap, resolvedDraft))
-                        .exceptionally(completionException -> {
-                            final ReferenceResolutionException referenceResolutionException =
-                                (ReferenceResolutionException) completionException.getCause();
-                            final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES, newDraft.getKey(),
-                                referenceResolutionException.getMessage());
-                            handleError(errorMessage, referenceResolutionException, 1);
-                            return null;
-                        });
-                }}
-                )
-            .map(CompletionStage::toCompletableFuture)
-            .toArray(CompletableFuture[]::new));
-    }
-
     private Set<String> getMissingReferencedProductKeys(
         @Nonnull final ProductDraft newProduct,
         @Nonnull final Map<String, String> keyToIdCache) {
@@ -317,7 +321,8 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             new WaitingToBeResolved(newProduct, referencedProductKeys);
 
         return lazyResolutionService.save(waitingToBeResolved)
-                                    .thenAccept(o -> { } );
+                                    .thenAccept(o -> {
+                                    });
     }
 
     @Nonnull
@@ -332,6 +337,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             .orElseGet(() -> applyCallbackAndCreate(newProductDraft));
     }
 
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
     private CompletionStage<Void> applyCallbackAndCreate(@Nonnull final ProductDraft productDraft) {
         return syncOptions
@@ -346,7 +352,6 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                         statistics.incrementFailed();
                     }
                 })
-
             )
             .orElse(CompletableFuture.completedFuture(null));
     }
@@ -373,7 +378,8 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
                         return CompletableFuture.completedFuture((Void) null);
 
-                    }).orElseGet(() -> {
+                    })
+                    .orElseGet(() -> {
                         final String errorMessage =
                             format(UPDATE_FAILED, oldProduct.getKey(), FAILED_TO_FETCH_PRODUCT_TYPE);
                         handleError(errorMessage);
@@ -397,17 +403,16 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                     return executeSupplierIfConcurrentModificationException(sphereException,
                         () -> fetchAndUpdate(oldProduct, newProduct),
                         () -> {
-                        final String productKey = oldProduct.getKey();
-                        handleError(format(UPDATE_FAILED, productKey, sphereException), sphereException);
-                        return CompletableFuture.completedFuture(null);
-                    });
+                            final String productKey = oldProduct.getKey();
+                            handleError(format(UPDATE_FAILED, productKey, sphereException), sphereException);
+                            return CompletableFuture.completedFuture(null);
+                        });
                 } else {
                     statistics.incrementUpdated();
                     return CompletableFuture.completedFuture(null);
                 }
             });
     }
-
 
 
     /**
@@ -422,7 +427,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
      */
     @Nonnull
     private CompletionStage<Void> fetchAndUpdate(@Nonnull final Product oldProduct,
-                                                              @Nonnull final ProductDraft newProduct) {
+                                                 @Nonnull final ProductDraft newProduct) {
 
         final String key = oldProduct.getKey();
         return productService
@@ -434,7 +439,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
                 if (exception != null) {
                     final String errorMessage = format(UPDATE_FAILED, key, "Failed to fetch from CTP while "
-                            + "retrying after concurrency modification.");
+                        + "retrying after concurrency modification.");
                     handleError(errorMessage, exception);
                     return CompletableFuture.completedFuture(null);
                 }
@@ -443,7 +448,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                     .map(fetchedProduct -> fetchProductAttributesMetadataAndUpdate(fetchedProduct, newProduct))
                     .orElseGet(() -> {
                         final String errorMessage = format(UPDATE_FAILED, key, "Not found when attempting to fetch "
-                                + "while retrying after concurrency modification.");
+                            + "while retrying after concurrency modification.");
                         handleError(errorMessage);
                         return CompletableFuture.completedFuture(null);
                     });

@@ -43,12 +43,13 @@ class ProductBatchProcessorTest {
         errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
         final SphereClient ctpClient = mock(SphereClient.class);
-        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(ctpClient)
-                                                                        .errorCallback((errorMessage, exception) -> {
-                                                                            errorCallBackMessages.add(errorMessage);
-                                                                            errorCallBackExceptions.add(exception);
-                                                                        })
-                                                                        .build();
+        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder
+            .of(ctpClient)
+            .errorCallback((errorMessage, exception) -> {
+                errorCallBackMessages.add(errorMessage);
+                errorCallBackExceptions.add(exception);
+            })
+            .build();
         productSync = new ProductSync(syncOptions);
     }
 
@@ -120,8 +121,7 @@ class ProductBatchProcessorTest {
     }
 
     @Test
-    void
-        getProductDraftErrorsAndAcceptConsumer_WithNullMvAndNullVariants_ShouldNotAcceptConsumerAndHaveErrors() {
+    void getProductDraftErrorsAndAcceptConsumer_WithNullMvAndNullVariants_ShouldNotAcceptConsumerAndHaveErrors() {
         final AtomicBoolean isConsumerAccepted = new AtomicBoolean(false);
         final ProductDraft productDraft = mock(ProductDraft.class);
         when(productDraft.getKey()).thenReturn("key");
@@ -137,8 +137,7 @@ class ProductBatchProcessorTest {
     }
 
     @Test
-    void
-        getProductDraftErrorsAndAcceptConsumer_WithNullMvAndNoVariants_ShouldNotAcceptConsumerAndHaveErrors() {
+    void getProductDraftErrorsAndAcceptConsumer_WithNullMvAndNoVariants_ShouldNotAcceptConsumerAndHaveErrors() {
         final AtomicBoolean isConsumerAccepted = new AtomicBoolean(false);
         final ProductDraft productDraft = mock(ProductDraft.class);
         when(productDraft.getKey()).thenReturn("key");
@@ -153,8 +152,7 @@ class ProductBatchProcessorTest {
     }
 
     @Test
-    void
-        getProductDraftErrorsAndAcceptConsumer_WithNullMvAndValidVariants_ShouldNotAcceptConsumerAndHaveErrors() {
+    void getProductDraftErrorsAndAcceptConsumer_WithNullMvAndValidVariants_ShouldNotAcceptConsumerAndHaveErrors() {
         final AtomicBoolean isConsumerAccepted = new AtomicBoolean(false);
 
         final ProductVariantDraft productVariantDraft = mock(ProductVariantDraft.class);
@@ -175,8 +173,7 @@ class ProductBatchProcessorTest {
     }
 
     @Test
-    void
-        getProductDraftErrorsAndAcceptConsumer_WithInValidMvAndValidVariants_ShouldNotAcceptConsumerAndHaveErrors() {
+    void getProductDraftErrorsAndAcceptConsumer_WithInValidMvAndValidVariants_ShouldNotAcceptConsumerAndHaveErrors() {
         final AtomicBoolean isConsumerAccepted = new AtomicBoolean(false);
 
         final ProductVariantDraft productVariantDraft = mock(ProductVariantDraft.class);
@@ -199,8 +196,7 @@ class ProductBatchProcessorTest {
     }
 
     @Test
-    void
-        getProductDraftErrorsAndAcceptConsumer_WithValidMvAndValidVariants_ShouldAcceptConsumerAndNoErrors() {
+    void getProductDraftErrorsAndAcceptConsumer_WithValidMvAndValidVariants_ShouldAcceptConsumerAndNoErrors() {
         final AtomicBoolean isConsumerAccepted = new AtomicBoolean(false);
 
         final ProductVariantDraft productVariantDraft = mock(ProductVariantDraft.class);
@@ -219,7 +215,8 @@ class ProductBatchProcessorTest {
         assertThat(isConsumerAccepted.get()).isTrue();
     }
 
-/*    @Test
+    /*
+    @Test
     void getProductKeyFromReference_WithNullJsonNode_ShouldReturnEmptyOpt() {
         final NullNode nullNode = JsonNodeFactory.instance.nullNode();
         assertThat(getProductKeyFromReference(nullNode)).isEmpty();
@@ -380,14 +377,14 @@ class ProductBatchProcessorTest {
         final List<AttributeDraft> attributes = asList(null, productReferenceAttribute, productReferenceSetAttribute);
 
         final ProductVariantDraft validVariantDraft = ProductVariantDraftBuilder.of()
-                                                                           .key("variantKey")
-                                                                           .sku("variantSku")
-                                                                           .attributes(attributes)
-                                                                           .build();
-        final ProductVariantDraft invalidVariantDraft = ProductVariantDraftBuilder.of()
-                                                                                .key("invalidVariant")
+                                                                                .key("variantKey")
+                                                                                .sku("variantSku")
                                                                                 .attributes(attributes)
                                                                                 .build();
+        final ProductVariantDraft invalidVariantDraft = ProductVariantDraftBuilder.of()
+                                                                                  .key("invalidVariant")
+                                                                                  .attributes(attributes)
+                                                                                  .build();
 
         final ProductDraft validProductDraft = mock(ProductDraft.class);
         when(validProductDraft.getKey()).thenReturn("validProductDraft");
