@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
@@ -184,7 +183,7 @@ class ProductSyncWithNestedReferencedProductsIT {
                 .join();
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 1, 0, 0);
+        assertThat(syncStatistics).hasValues(1, 1, 0, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -239,7 +238,7 @@ class ProductSyncWithNestedReferencedProductsIT {
                 .join();
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 1, 0, 0);
+        assertThat(syncStatistics).hasValues(1, 1, 0, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -328,7 +327,7 @@ class ProductSyncWithNestedReferencedProductsIT {
                 .join();
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 0, 0, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 0, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -415,7 +414,7 @@ class ProductSyncWithNestedReferencedProductsIT {
                 .join();
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -487,23 +486,9 @@ class ProductSyncWithNestedReferencedProductsIT {
                 .join();
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 0, 0, 1);
-        assertThat(errorCallBackExceptions)
-            .hasSize(1)
-            .hasOnlyOneElementSatisfying(error -> {
-                assertThat(error).isInstanceOf(ErrorResponseException.class);
-                final ErrorResponseException errorResponseException = (ErrorResponseException) error;
-                assertThat(errorResponseException.getStatusCode()).isEqualTo(400);
-                assertThat(error.getMessage())
-                    .contains("The value '{\"typeId\":\"product\",\"id\":\"nonExistingKey\"}' "
-                        + "is not valid for field 'nestedAttribute.product-reference'");
-            });
-        assertThat(errorCallBackMessages)
-            .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
-                assertThat(message)
-                    .contains("The value '{\"typeId\":\"product\",\"id\":\"nonExistingKey\"}' "
-                        + "is not valid for field 'nestedAttribute.product-reference'"));
+        assertThat(syncStatistics).hasValues(1, 0, 0, 0, 1);
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(actions).isEmpty();
     }
@@ -540,7 +525,7 @@ class ProductSyncWithNestedReferencedProductsIT {
                 .join();
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 1, 0, 0);
+        assertThat(syncStatistics).hasValues(1, 1, 0, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -614,23 +599,9 @@ class ProductSyncWithNestedReferencedProductsIT {
                 .join();
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 0, 0, 1);
-        assertThat(errorCallBackExceptions)
-            .hasSize(1)
-            .hasOnlyOneElementSatisfying(error -> {
-                assertThat(error).isInstanceOf(ErrorResponseException.class);
-                final ErrorResponseException errorResponseException = (ErrorResponseException) error;
-                assertThat(errorResponseException.getStatusCode()).isEqualTo(400);
-                assertThat(error.getMessage())
-                    .contains("The value '{\"typeId\":\"product\",\"id\":\"nonExistingKey\"}' "
-                        + "is not valid for field 'nestedAttribute.product-reference-set'");
-            });
-        assertThat(errorCallBackMessages)
-            .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
-                assertThat(message)
-                    .contains("The value '{\"typeId\":\"product\",\"id\":\"nonExistingKey\"}' "
-                        + "is not valid for field 'nestedAttribute.product-reference-set'"));
+        assertThat(syncStatistics).hasValues(1, 0, 0, 0, 1);
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(actions).isEmpty();
     }
@@ -668,7 +639,7 @@ class ProductSyncWithNestedReferencedProductsIT {
                 .join();
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 1, 0, 0);
+        assertThat(syncStatistics).hasValues(1, 1, 0, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();

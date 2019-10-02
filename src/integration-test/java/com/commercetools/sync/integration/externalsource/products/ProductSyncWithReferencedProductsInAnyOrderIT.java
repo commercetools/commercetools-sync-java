@@ -158,7 +158,7 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
         // assertion
         assertThat(syncedParent).isNotNull();
         assertThat(syncedParent.getKey()).isEqualTo(parentProductKey);
-        assertThat(syncStatistics).hasValues(2, 1, 1, 0);
+        assertThat(syncStatistics).hasValues(2, 1, 1, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -256,7 +256,7 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
         assertThat(syncedParent2).isNotNull();
         assertThat(syncedParent1.getKey()).isEqualTo(parentProductKey);
         assertThat(syncedParent2.getKey()).isEqualTo(parentProductKey2);
-        assertThat(syncStatistics).hasValues(3, 2, 1, 0);
+        assertThat(syncStatistics).hasValues(3, 2, 1, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -353,7 +353,7 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
         // assertion
         assertThat(syncedParent).isNotNull();
         assertThat(syncedParent.getKey()).isEqualTo(parentProductKey);
-        assertThat(syncStatistics).hasValues(3, 2, 1, 0);
+        assertThat(syncStatistics).hasValues(3, 2, 1, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -552,7 +552,7 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
         expectedAttributeValue.add(createReferenceObject(syncedParent3.getId(), Product.referenceTypeId()));
         expectedAttributeValue.add(createReferenceObject(syncedParent4.getId(), Product.referenceTypeId()));
 
-        assertThat(syncStatistics).hasValues(7, 6, 1, 0);
+        assertThat(syncStatistics).hasValues(7, 6, 1, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
