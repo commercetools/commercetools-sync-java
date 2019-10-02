@@ -229,7 +229,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
         final Set<String> referencingDraftKeys = readyToResolve
             .stream()
-            // because one could argue that doesn't matter failed or succeeeded, we should not keep track..
+            // because one could argue that doesn't matter failed or succeeded, we should not keep track..
             .map(statistics::removeAndGetReferencingKeys)
             .filter(Objects::nonNull)
             .flatMap(Set::stream)
