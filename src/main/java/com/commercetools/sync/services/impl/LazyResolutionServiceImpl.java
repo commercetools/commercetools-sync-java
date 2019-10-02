@@ -19,6 +19,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 
 public class LazyResolutionServiceImpl implements LazyResolutionService {
 
@@ -28,14 +29,13 @@ public class LazyResolutionServiceImpl implements LazyResolutionService {
     private static final String DELETE_FAILED = "Failed to delete CustomObject with key: '%s'. Reason: %s";
     private static final String CUSTOM_OBJECT_CONTAINER_KEY = "commercetools-sync-java.LazyResolutionService";
 
-    public LazyResolutionServiceImpl(final ProductSyncOptions baseSyncOptions) {
+    public LazyResolutionServiceImpl(@Nonnull final ProductSyncOptions baseSyncOptions) {
         this.syncOptions = baseSyncOptions;
     }
 
     @Nonnull
     @Override
-    public CompletionStage<Set<CustomObject<WaitingToBeResolved>>>
-    fetch(@Nonnull final Set<String> keys) {
+    public CompletionStage<Set<WaitingToBeResolved>> fetch(@Nonnull final Set<String> keys) {
 
         if (keys.isEmpty()) {
             return CompletableFuture.completedFuture(Collections.emptySet());
@@ -45,23 +45,25 @@ public class LazyResolutionServiceImpl implements LazyResolutionService {
             CustomObjectQuery
                 .of(WaitingToBeResolved.class)
                 .byContainer(CUSTOM_OBJECT_CONTAINER_KEY)
-                .withPredicates(p -> p.key().isIn(keys));
+                .plusPredicates(p -> p.key().isIn(keys));
 
-        return QueryExecutionUtils.queryAll(syncOptions.getCtpClient(), customObjectQuery)
-                                  .thenApply(HashSet::new);
+        return QueryExecutionUtils
+            .queryAll(syncOptions.getCtpClient(), customObjectQuery)
+            .thenApply(customObjects -> customObjects
+                .stream()
+                .map(CustomObject::getValue)
+                .collect(toList()))
+            .thenApply(HashSet::new);
     }
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<CustomObject<WaitingToBeResolved>>>
-    save(@Nonnull final WaitingToBeResolved draftWithUnresolvedReferences) {
-
-
+    public CompletionStage<Optional<WaitingToBeResolved>> save(@Nonnull final WaitingToBeResolved draft) {
         final CustomObjectDraft<WaitingToBeResolved> customObjectDraft = CustomObjectDraft
             .ofUnversionedUpsert(
                 CUSTOM_OBJECT_CONTAINER_KEY,
-                draftWithUnresolvedReferences.getProductDraft().getKey(),
-                draftWithUnresolvedReferences,
+                draft.getProductDraft().getKey(),
+                draft,
                 WaitingToBeResolved.class);
 
         return syncOptions
@@ -69,7 +71,7 @@ public class LazyResolutionServiceImpl implements LazyResolutionService {
             .execute(CustomObjectUpsertCommand.of(customObjectDraft))
             .handle((resource, exception) -> {
                 if (exception == null) {
-                    return Optional.of(resource);
+                    return Optional.of(resource.getValue());
                 } else {
                     syncOptions.applyErrorCallback(
                         format(SAVE_FAILED, customObjectDraft.getKey(), exception.getMessage()), exception);
@@ -80,15 +82,15 @@ public class LazyResolutionServiceImpl implements LazyResolutionService {
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<CustomObject<WaitingToBeResolved>>>
-    delete(@Nonnull final String key) {
+    public CompletionStage<Optional<WaitingToBeResolved>> delete(@Nonnull final String key) {
+
         return syncOptions
             .getCtpClient()
             .execute(CustomObjectDeleteCommand
                 .of(CUSTOM_OBJECT_CONTAINER_KEY, key, WaitingToBeResolved.class))
             .handle((resource, exception) -> {
                 if (exception == null) {
-                    return Optional.of(resource);
+                    return Optional.of(resource.getValue());
                 } else {
                     syncOptions.applyErrorCallback(
                         format(DELETE_FAILED, key, exception.getMessage()), exception);

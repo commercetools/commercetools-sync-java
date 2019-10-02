@@ -3,6 +3,7 @@ package com.commercetools.sync.commons.models;
 import io.sphere.sdk.products.ProductDraft;
 
 import javax.annotation.Nonnull;
+import java.util.Objects;
 import java.util.Set;
 
 public final class WaitingToBeResolved {
@@ -10,25 +11,28 @@ public final class WaitingToBeResolved {
     private Set<String> missingReferencedProductKeys;
 
     /**
-     * Object represent the value for the custom object that will hold unresolved references
+     * Represents a productDraft that is waiting for some product references, which are on this productDraft as
+     * attributes, to be resolved.
      *
-     * @param productDraft       product draft which has non-resolved references
-     * @param missingProductKeys product keys of non-resolved references
+     * @param productDraft       product draft which has irresolvable references as attributes.
+     * @param missingReferencedProductKeys product keys of irresolvable references.
      */
     public WaitingToBeResolved(
         @Nonnull final ProductDraft productDraft,
-        @Nonnull final Set<String> missingProductKeys) {
+        @Nonnull final Set<String> missingReferencedProductKeys) {
         this.productDraft = productDraft;
-        this.missingReferencedProductKeys = missingProductKeys;
+        this.missingReferencedProductKeys = missingReferencedProductKeys;
     }
 
     public WaitingToBeResolved() {
     }
 
+    @Nonnull
     public ProductDraft getProductDraft() {
         return productDraft;
     }
 
+    @Nonnull
     public Set<String> getMissingReferencedProductKeys() {
         return missingReferencedProductKeys;
     }
@@ -39,5 +43,23 @@ public final class WaitingToBeResolved {
 
     public void setMissingReferencedProductKeys(@Nonnull final Set<String> missingReferencedProductKeys) {
         this.missingReferencedProductKeys = missingReferencedProductKeys;
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof WaitingToBeResolved)) {
+            return false;
+        }
+        final WaitingToBeResolved that = (WaitingToBeResolved) other;
+        return getProductDraft().equals(that.getProductDraft())
+            && getMissingReferencedProductKeys().equals(that.getMissingReferencedProductKeys());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getProductDraft(), getMissingReferencedProductKeys());
     }
 }

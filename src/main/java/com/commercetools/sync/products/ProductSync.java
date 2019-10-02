@@ -192,11 +192,10 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
         return lazyResolutionService
             .fetch(referencingDraftKeys)
-            .thenCompose(persistedObjects -> {
+            .thenCompose(waitingDrafts -> {
 
-                persistedObjects
-                    .forEach(persistedObject -> {
-                        final WaitingToBeResolved waitingDraft = persistedObject.getValue();
+                waitingDrafts
+                    .forEach(waitingDraft -> {
                         final Set<String> missingReferencedProductKeys = waitingDraft.getMissingReferencedProductKeys();
 
                         final boolean setChanged = missingReferencedProductKeys.removeAll(readyToResolve);
