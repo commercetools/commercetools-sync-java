@@ -13,20 +13,19 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 public final class CustomObjectITUtils {
+    private static final String CUSTOM_OBJECT_CONTAINER_KEY = "commercetools-sync-java.LazyResolutionService";
     /**
      * This method is expected to be used only by tests, it only works on projects with less than equal to 20 custom
      * objects. Otherwise, it won't delete all the custom objects in the project of the client.
      *
      * @param ctpClient the client to delete the custom objects from.
      */
-    public static void deleteWaitingToBeResolvedCustomObjects(
-        @Nonnull final SphereClient ctpClient,
-        @Nonnull final String containerKey) {
+    public static void deleteWaitingToBeResolvedCustomObjects(@Nonnull final SphereClient ctpClient) {
 
         final CustomObjectQuery<WaitingToBeResolved> customObjectQuery =
             CustomObjectQuery
                 .of(WaitingToBeResolved.class)
-                .byContainer(containerKey);
+                .byContainer(CUSTOM_OBJECT_CONTAINER_KEY);
 
         ctpClient
             .execute(customObjectQuery)
