@@ -13,7 +13,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 public final class CustomObjectITUtils {
+
     private static final String CUSTOM_OBJECT_CONTAINER_KEY = "commercetools-sync-java.LazyResolutionService";
+
     /**
      * This method is expected to be used only by tests, it only works on projects with less than equal to 20 custom
      * objects. Otherwise, it won't delete all the custom objects in the project of the client.
