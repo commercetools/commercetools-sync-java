@@ -126,7 +126,12 @@ public class ProductBatchProcessor {
      */
     @Nonnull
     static Set<String> getReferencedProductKeys(@Nonnull final AttributeDraft attributeDraft) {
+
         final JsonNode attributeDraftValue = attributeDraft.getValue();
+        if (attributeDraftValue == null) {
+            return emptySet();
+        }
+
         final List<JsonNode> allAttributeReferences = attributeDraftValue.findParents(REFERENCE_TYPE_ID_FIELD);
 
         return allAttributeReferences

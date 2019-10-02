@@ -21,6 +21,6 @@ class ProductSyncStatisticsTest {
         productSyncStatistics.incrementProcessed(3);
 
         assertThat(productSyncStatistics.getReportMessage()).isEqualTo("Summary: 3 products were processed in total "
-            + "(1 created, 1 updated and 1 failed to sync).");
+            + "(1 created, 1 updated, 1 failed to sync and 0 products with a missing reference).");
     }
 }
