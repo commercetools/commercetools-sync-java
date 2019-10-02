@@ -37,7 +37,7 @@ class LazyResolutionServiceImplIT {
 
     @BeforeEach
     void setup() {
-        deleteWaitingToBeResolvedCustomObjects(CTP_TARGET_CLIENT, CUSTOM_OBJECT_CONTAINER_KEY);
+        deleteWaitingToBeResolvedCustomObjects(CTP_TARGET_CLIENT);
     }
 
     @BeforeEach
