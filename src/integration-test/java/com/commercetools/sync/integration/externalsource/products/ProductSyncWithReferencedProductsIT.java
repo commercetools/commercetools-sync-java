@@ -341,6 +341,20 @@ class ProductSyncWithReferencedProductsIT {
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(actions).isEmpty();
+
+        final LazyResolutionServiceImpl lazyResolutionService = new LazyResolutionServiceImpl(syncOptions);
+        final Set<WaitingToBeResolved> waitingToBeResolvedDrafts = lazyResolutionService
+            .fetch(asSet(productDraftWithProductReference.getKey()))
+            .toCompletableFuture()
+            .join();
+
+        assertThat(waitingToBeResolvedDrafts)
+            .hasOnlyOneElementSatisfying(waitingToBeResolvedDraft -> {
+                assertThat(waitingToBeResolvedDraft.getProductDraft().getKey())
+                    .isEqualTo(productDraftWithProductReference.getKey());
+                assertThat(waitingToBeResolvedDraft.getMissingReferencedProductKeys())
+                    .containsExactly("nonExistingKey");
+            });
     }
 
     @Test
