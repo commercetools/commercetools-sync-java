@@ -26,5 +26,5 @@ public interface TaxCategoryService {
      *         {@link TaxCategory} was found in the CTP project with this key.
      */
     @Nonnull
-    CompletionStage<Optional<String>> fetchCachedTaxCategoryId(@Nullable final String key);
+    CompletionStage<Optional<String>> fetchCachedTaxCategoryId(@Nullable String key);
 }

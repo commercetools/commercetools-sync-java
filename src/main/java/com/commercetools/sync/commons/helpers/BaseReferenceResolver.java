@@ -37,7 +37,7 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
      * @return a {@link CompletionStage} that contains as a result a new draft instance with resolved references
      *          or, in case an error occurs during reference resolution, a {@link ReferenceResolutionException}.
      */
-    public abstract CompletionStage<T> resolveReferences(@Nonnull final T draft);
+    public abstract CompletionStage<T> resolveReferences(@Nonnull T draft);
 
     /**
      * This method fetches the id value on the passed {@link ResourceIdentifier}, if valid. If it is not valid, a

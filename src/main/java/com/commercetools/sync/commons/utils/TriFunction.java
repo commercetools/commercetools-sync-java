@@ -28,5 +28,5 @@ public interface TriFunction<T,U,S, R> {
      * @param thirdParam the third argument.
      * @return the function result.
      */
-    R apply(@Nullable final T firstParam, @Nullable final U secondParam, @Nullable final S thirdParam);
+    R apply(@Nullable T firstParam, @Nullable U secondParam, @Nullable S thirdParam);
 }

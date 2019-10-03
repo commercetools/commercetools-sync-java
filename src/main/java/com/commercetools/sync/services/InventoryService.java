@@ -18,7 +18,7 @@ public interface InventoryService {
      * @return {@link List} of matching entries or empty list when there was no entry of sku matching to {@code skus}.
      */
     @Nonnull
-    CompletionStage<List<InventoryEntry>> fetchInventoryEntriesBySkus(@Nonnull final Set<String> skus);
+    CompletionStage<List<InventoryEntry>> fetchInventoryEntriesBySkus(@Nonnull Set<String> skus);
 
     /**
      * Creates new inventory entry from {@code inventoryEntryDraft}.
@@ -27,7 +27,7 @@ public interface InventoryService {
      * @return {@link CompletionStage} with created {@link InventoryEntry} or an exception
      */
     @Nonnull
-    CompletionStage<InventoryEntry> createInventoryEntry(@Nonnull final InventoryEntryDraft inventoryEntryDraft);
+    CompletionStage<InventoryEntry> createInventoryEntry(@Nonnull InventoryEntryDraft inventoryEntryDraft);
 
     /**
      * Updates existing inventory entry with {@code updateActions}.
@@ -37,7 +37,7 @@ public interface InventoryService {
      * @return {@link CompletionStage} with updated {@link InventoryEntry} or an exception
      */
     @Nonnull
-    CompletionStage<InventoryEntry> updateInventoryEntry(@Nonnull final InventoryEntry inventoryEntry,
-                                                         @Nonnull final List<UpdateAction<InventoryEntry>>
+    CompletionStage<InventoryEntry> updateInventoryEntry(@Nonnull InventoryEntry inventoryEntry,
+                                                         @Nonnull List<UpdateAction<InventoryEntry>>
                                                              updateActions);
 }

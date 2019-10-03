@@ -30,7 +30,7 @@ public interface ProductService {
      *         {@link Product} was found in the CTP project with this key.
      */
     @Nonnull
-    CompletionStage<Optional<String>> getIdFromCacheOrFetch(@Nullable final String key);
+    CompletionStage<Optional<String>> getIdFromCacheOrFetch(@Nullable String key);
 
     /**
      * Filters out the keys which are already cached and fetches only the not-cached product keys from the CTP project
@@ -46,7 +46,7 @@ public interface ProductService {
      *          product keys -&gt; ids
      */
     @Nonnull
-    CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> productKeys);
+    CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull Set<String> productKeys);
 
     /**
      * Given a {@link Set} of product keys, this method fetches a set of all the products, matching this given set of
@@ -58,7 +58,7 @@ public interface ProductService {
      *          of all matching products.
      */
     @Nonnull
-    CompletionStage<Set<Product>> fetchMatchingProductsByKeys(@Nonnull final Set<String> productKeys);
+    CompletionStage<Set<Product>> fetchMatchingProductsByKeys(@Nonnull Set<String> productKeys);
 
 
     /**
@@ -72,7 +72,7 @@ public interface ProductService {
      *         {@link Optional} that contains the matching {@link Product} if exists, otherwise empty.
      */
     @Nonnull
-    CompletionStage<Optional<Product>> fetchProduct(@Nullable final String key);
+    CompletionStage<Optional<Product>> fetchProduct(@Nullable String key);
 
     /**
      * Given a resource draft of type {@link ProductDraft}, this method attempts to create a resource
@@ -93,7 +93,7 @@ public interface ProductService {
      *         empty optional.
      */
     @Nonnull
-    CompletionStage<Optional<Product>> createProduct(@Nonnull final ProductDraft productDraft);
+    CompletionStage<Optional<Product>> createProduct(@Nonnull ProductDraft productDraft);
 
     /**
      * Given a {@link Product} and a {@link List}&lt;{@link UpdateAction}&lt;{@link Product}&gt;&gt;, this method
@@ -109,6 +109,6 @@ public interface ProductService {
      *          {@link io.sphere.sdk.models.SphereException}.
      */
     @Nonnull
-    CompletionStage<Product> updateProduct(@Nonnull final Product product,
-                                           @Nonnull final List<UpdateAction<Product>> updateActions);
+    CompletionStage<Product> updateProduct(@Nonnull Product product,
+                                           @Nonnull List<UpdateAction<Product>> updateActions);
 }

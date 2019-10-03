@@ -28,7 +28,7 @@ public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSy
      *      {@code U} which is a subclass of {@link BaseSyncStatistics} representing the {@code statistics} instance
      *      attribute of {@code this} {@link BaseSync}.
      */
-    protected abstract CompletionStage<U> process(@Nonnull final List<T> resourceDrafts);
+    protected abstract CompletionStage<U> process(@Nonnull List<T> resourceDrafts);
 
 
     /**
@@ -92,7 +92,7 @@ public abstract class BaseSync<T, U extends BaseSyncStatistics, V extends BaseSy
         return syncBatches(batches, result.thenCompose(subResult -> processBatch(firstBatch)));
     }
 
-    protected abstract CompletionStage<U> processBatch(@Nonnull final List<T> batch);
+    protected abstract CompletionStage<U> processBatch(@Nonnull List<T> batch);
 
     /**
      * This method checks if the supplied {@code sphereException} is an instance of

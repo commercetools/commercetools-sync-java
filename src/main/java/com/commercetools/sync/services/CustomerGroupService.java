@@ -26,5 +26,5 @@ public interface CustomerGroupService {
      *         supplied.
      */
     @Nonnull
-    CompletionStage<Optional<String>> fetchCachedCustomerGroupId(@Nullable final String key);
+    CompletionStage<Optional<String>> fetchCachedCustomerGroupId(@Nullable String key);
 }
