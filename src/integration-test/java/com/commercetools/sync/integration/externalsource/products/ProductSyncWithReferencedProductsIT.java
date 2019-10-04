@@ -5,7 +5,7 @@ import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
-import com.commercetools.sync.services.impl.LazyResolutionServiceImpl;
+import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Reference;
@@ -342,8 +342,8 @@ class ProductSyncWithReferencedProductsIT {
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(actions).isEmpty();
 
-        final LazyResolutionServiceImpl lazyResolutionService = new LazyResolutionServiceImpl(syncOptions);
-        final Set<WaitingToBeResolved> waitingToBeResolvedDrafts = lazyResolutionService
+        final UnresolvedReferencesServiceImpl unresolvedReferencesService = new UnresolvedReferencesServiceImpl(syncOptions);
+        final Set<WaitingToBeResolved> waitingToBeResolvedDrafts = unresolvedReferencesService
             .fetch(asSet(productDraftWithProductReference.getKey()))
             .toCompletableFuture()
             .join();
@@ -477,8 +477,8 @@ class ProductSyncWithReferencedProductsIT {
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(actions).isEmpty();
 
-        final LazyResolutionServiceImpl lazyResolutionService = new LazyResolutionServiceImpl(syncOptions);
-        final Set<WaitingToBeResolved> waitingToBeResolvedDrafts = lazyResolutionService
+        final UnresolvedReferencesServiceImpl unresolvedReferencesService = new UnresolvedReferencesServiceImpl(syncOptions);
+        final Set<WaitingToBeResolved> waitingToBeResolvedDrafts = unresolvedReferencesService
             .fetch(asSet(productDraftWithProductReference.getKey()))
             .toCompletableFuture()
             .join();

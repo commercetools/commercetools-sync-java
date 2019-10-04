@@ -4,7 +4,7 @@ import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.CustomerGroupService;
-import com.commercetools.sync.services.LazyResolutionService;
+import com.commercetools.sync.services.UnresolvedReferencesService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.StateService;
@@ -87,7 +87,7 @@ class ProductSyncTest {
             productTypeService, categoryService, mock(TypeService.class),
             mock(ChannelService.class), mock(CustomerGroupService.class), mock(TaxCategoryService.class),
             mock(StateService.class),
-            mock(LazyResolutionService.class));
+            mock(UnresolvedReferencesService.class));
 
         // test
         final ProductSyncStatistics productSyncStatistics = productSync
@@ -152,7 +152,7 @@ class ProductSyncTest {
                 productTypeService, categoryService, mock(TypeService.class),
                 mock(ChannelService.class), mock(CustomerGroupService.class), mock(TaxCategoryService.class),
                 mock(StateService.class),
-            mock(LazyResolutionService.class));
+            mock(UnresolvedReferencesService.class));
 
         // test
         final ProductSyncStatistics productSyncStatistics = productSync
@@ -207,7 +207,7 @@ class ProductSyncTest {
             productTypeService, categoryService, mock(TypeService.class),
             mock(ChannelService.class), mock(CustomerGroupService.class), mock(TaxCategoryService.class),
             mock(StateService.class),
-            mock(LazyResolutionService.class));
+            mock(UnresolvedReferencesService.class));
 
         // test
         productSync.sync(singletonList(productDraft)).toCompletableFuture().join();
@@ -257,7 +257,7 @@ class ProductSyncTest {
             productTypeService, categoryService, mock(TypeService.class),
             mock(ChannelService.class), mock(CustomerGroupService.class), mock(TaxCategoryService.class),
             mock(StateService.class),
-            mock(LazyResolutionService.class));
+            mock(UnresolvedReferencesService.class));
 
         // test
         productSync.sync(singletonList(productDraft)).toCompletableFuture().join();
