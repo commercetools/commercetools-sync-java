@@ -10,7 +10,7 @@ import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.CustomerGroupService;
-import com.commercetools.sync.services.LazyResolutionService;
+import com.commercetools.sync.services.UnresolvedReferencesService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.StateService;
@@ -19,7 +19,7 @@ import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.CategoryServiceImpl;
 import com.commercetools.sync.services.impl.ChannelServiceImpl;
 import com.commercetools.sync.services.impl.CustomerGroupServiceImpl;
-import com.commercetools.sync.services.impl.LazyResolutionServiceImpl;
+import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
 import com.commercetools.sync.services.impl.ProductServiceImpl;
 import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
 import com.commercetools.sync.services.impl.StateServiceImpl;
@@ -57,6 +57,8 @@ import static java.util.stream.Collectors.toMap;
 public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, ProductSyncOptions> {
     private static final String CTP_PRODUCT_FETCH_FAILED = "Failed to fetch existing products with keys:"
         + " '%s'.";
+    private static final String UNRESOLVED_REFERENCES_STORE_FETCH_FAILED = "Failed to fetch drafts waiting to be "
+        + "resolved with keys '%s'.";
     private static final String UPDATE_FAILED = "Failed to update Product with key: '%s'. Reason: %s";
     private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
         + "ProductDraft with key:'%s'. Reason: %s";
@@ -66,7 +68,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     private final ProductService productService;
     private final ProductTypeService productTypeService;
     private final ProductReferenceResolver productReferenceResolver;
-    private final LazyResolutionService lazyResolutionService;
+    private final UnresolvedReferencesService unresolvedReferencesService;
 
     private ConcurrentHashMap.KeySetView<String, Boolean> readyToResolve;
 
@@ -87,7 +89,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             new CustomerGroupServiceImpl(productSyncOptions),
             new TaxCategoryServiceImpl(productSyncOptions),
             new StateServiceImpl(productSyncOptions, PRODUCT_STATE),
-            new LazyResolutionServiceImpl(productSyncOptions));
+            new UnresolvedReferencesServiceImpl(productSyncOptions));
     }
 
     ProductSync(@Nonnull final ProductSyncOptions productSyncOptions, @Nonnull final ProductService productService,
@@ -95,14 +97,14 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                 @Nonnull final TypeService typeService, @Nonnull final ChannelService channelService,
                 @Nonnull final CustomerGroupService customerGroupService,
                 @Nonnull final TaxCategoryService taxCategoryService, @Nonnull final StateService stateService,
-                @Nonnull final LazyResolutionService lazyResolutionService) {
+                @Nonnull final UnresolvedReferencesService unresolvedReferencesService) {
         super(new ProductSyncStatistics(), productSyncOptions);
         this.productService = productService;
         this.productTypeService = productTypeService;
         this.productReferenceResolver = new ProductReferenceResolver(productSyncOptions, productTypeService,
             categoryService, typeService, channelService, customerGroupService, taxCategoryService, stateService,
             productService);
-        this.lazyResolutionService = lazyResolutionService;
+        this.unresolvedReferencesService = unresolvedReferencesService;
     }
 
     @Override
@@ -167,33 +169,25 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                     handleError(errorMessage, fetchException, productDraftKeys.size());
                     return CompletableFuture.completedFuture(null);
                 } else {
-                    return syncBatch(productDrafts, matchingProducts, keyToIdCache)
-                        .thenCompose(aVoid -> lazilyResolveReferences(keyToIdCache));
+                    return syncOrKeepTrack(productDrafts, matchingProducts, keyToIdCache)
+                        .thenCompose(aVoid -> resolveNowReadyReferences(keyToIdCache));
                 }
             });
     }
 
     /**
-     * Given a set of product type drafts, attempts to sync the drafts with the existing products types in the target
-     * CTP project. The product type and the draft are considered to match if they have the same key.
-     *
-     *
-     * <p>Note: In order to support syncing product types with nested references in any order, this method will
-     * remove any attribute which contains a nested reference on the drafts and keep track of it to be resolved as
-     * soon as the referenced product type becomes available.
+     * Given a set of product drafts, for each new draft: if it doesn't have any product references which are missing,
+     * it syncs the new draft. However, if it does have missing references, it keeps track of it by persisting it.
      *
      * @param oldProducts old product types.
      * @param newProducts drafts that need to be synced.
      * @return a {@link CompletionStage} which contains an empty result after execution of the update
      */
     @Nonnull
-    private CompletionStage<Void> syncBatch(
+    private CompletionStage<Void> syncOrKeepTrack(
         @Nonnull final Set<ProductDraft> newProducts,
         @Nonnull final Set<Product> oldProducts,
         @Nonnull final Map<String, String> keyToIdCache) {
-
-        final Map<String, Product> oldProductMap =
-            oldProducts.stream().collect(toMap(Product::getKey, identity()));
 
         return allOf(newProducts
             .stream()
@@ -204,32 +198,52 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                 if (!missingReferencedProductKeys.isEmpty()) {
                     return keepTrackOfMissingReferences(newDraft, missingReferencedProductKeys);
                 } else {
-
-                    return productReferenceResolver
-                        .resolveReferences(newDraft)
-                        .thenCompose(resolvedDraft -> syncDraft(oldProductMap, resolvedDraft))
-                        .exceptionally(completionException -> {
-                            final ReferenceResolutionException referenceResolutionException =
-                                (ReferenceResolutionException) completionException.getCause();
-                            final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES, newDraft.getKey(),
-                                referenceResolutionException.getMessage());
-                            handleError(errorMessage, referenceResolutionException, 1);
-                            return null;
-                        });
+                    return syncDraft(oldProducts, newDraft);
                 }
             })
             .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
     }
 
+    private Set<String> getMissingReferencedProductKeys(
+        @Nonnull final ProductDraft newProduct,
+        @Nonnull final Map<String, String> keyToIdCache) {
+
+        final Set<String> referencedProductKeys = newProduct
+            .getVariants()
+            .stream()
+            .map(ProductBatchProcessor::getReferencedProductKeys)
+            .flatMap(Collection::stream)
+            .collect(Collectors.toSet());
+
+        // add also master variant keys
+        ofNullable(newProduct.getMasterVariant())
+            .map(ProductBatchProcessor::getReferencedProductKeys)
+            .ifPresent(referencedProductKeys::addAll);
+
+        return referencedProductKeys
+            .stream()
+            .filter(key -> !keyToIdCache.containsKey(key))
+            .collect(Collectors.toSet());
+    }
+
+    private CompletionStage<Optional<WaitingToBeResolved>> keepTrackOfMissingReferences(
+        @Nonnull final ProductDraft newProduct,
+        @Nonnull final Set<String> referencedProductKeys) {
+
+        referencedProductKeys.forEach(parentKey -> statistics.addMissingDependency(parentKey, newProduct.getKey()));
+        return unresolvedReferencesService.save(new WaitingToBeResolved(newProduct, referencedProductKeys));
+    }
+
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
-    private CompletionStage<Void> lazilyResolveReferences(final Map<String, String> keyToIdCache) {
-        // ugly method
+    private CompletionStage<Void> resolveNowReadyReferences(final Map<String, String> keyToIdCache) {
+
+        // We delete anyways the keys from the statistics before we attempt resolution, because even if resolution fails
+        // the products that failed to be synced would be counted as failed.
 
         final Set<String> referencingDraftKeys = readyToResolve
             .stream()
-            // because one could argue that doesn't matter failed or succeeded, we should not keep track..
             .map(statistics::removeAndGetReferencingKeys)
             .filter(Objects::nonNull)
             .flatMap(Set::stream)
@@ -243,9 +257,18 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         final Set<ProductDraft> readyToSync = new HashSet<>();
         final Set<WaitingToBeResolved> waitingDraftsToBeUpdated = new HashSet<>();
 
-        return lazyResolutionService
+        return unresolvedReferencesService
             .fetch(referencingDraftKeys)
-            .thenCompose(waitingDrafts -> {
+            .handle(ImmutablePair::new)
+            .thenCompose(fetchResponse -> {
+                final Set<WaitingToBeResolved> waitingDrafts = fetchResponse.getKey();
+                final Throwable fetchException = fetchResponse.getValue();
+
+                if (fetchException != null) {
+                    final String errorMessage = format(UNRESOLVED_REFERENCES_STORE_FETCH_FAILED, referencingDraftKeys);
+                    handleError(errorMessage, fetchException, referencingDraftKeys.size());
+                    return CompletableFuture.completedFuture(null);
+                }
 
                 waitingDrafts
                     .forEach(waitingDraft -> {
@@ -275,87 +298,54 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
         return allOf(waitingDraftsToBeUpdated
             .stream()
-            .map(lazyResolutionService::save)
+            .map(unresolvedReferencesService::save)
+            .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
     }
 
     @Nonnull
     private CompletableFuture<Void> removeFromWaiting(
         @Nonnull final Set<ProductDraft> drafts) {
-        //todo: not a very good idea to delete in the end, rather after every success.
         return allOf(drafts
             .stream()
             .map(ProductDraft::getKey)
-            .map(lazyResolutionService::delete)
+            .map(unresolvedReferencesService::delete)
+            .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
     }
 
-    private Set<String> getMissingReferencedProductKeys(
-        @Nonnull final ProductDraft newProduct,
-        @Nonnull final Map<String, String> keyToIdCache) {
-
-        final Set<String> referencedProductKeys = newProduct
-            .getVariants()
-            .stream()
-            .map(ProductBatchProcessor::getReferencedProductKeys)
-            .flatMap(Collection::stream)
-            .collect(Collectors.toSet());
-
-        // add also master variant keys
-        ofNullable(newProduct.getMasterVariant())
-            .map(ProductBatchProcessor::getReferencedProductKeys)
-            .ifPresent(referencedProductKeys::addAll);
-
-        return referencedProductKeys
-            .stream()
-            .filter(key -> !keyToIdCache.containsKey(key))
-            .collect(Collectors.toSet());
-    }
-
-    private CompletionStage<Void> keepTrackOfMissingReferences(
-        @Nonnull final ProductDraft newProduct,
-        @Nonnull final Set<String> referencedProductKeys) {
-
-        referencedProductKeys.forEach(parentKey -> statistics.putMissingParentProductChildKey(parentKey,
-            newProduct.getKey()));
-
-        final WaitingToBeResolved waitingToBeResolved =
-            new WaitingToBeResolved(newProduct, referencedProductKeys);
-
-        return lazyResolutionService.save(waitingToBeResolved)
-                                    .thenAccept(o -> {
-                                    });
-    }
 
     @Nonnull
     private CompletionStage<Void> syncDraft(
-        @Nonnull final Map<String, Product> oldProductMap,
+        @Nonnull final Set<Product> oldProducts,
         @Nonnull final ProductDraft newProductDraft) {
 
-        final Product oldProduct = oldProductMap.get(newProductDraft.getKey());
+        final Map<String, Product> oldProductMap =
+            oldProducts.stream().collect(toMap(Product::getKey, identity()));
 
-        return ofNullable(oldProduct)
-            .map(product -> fetchProductAttributesMetadataAndUpdate(oldProduct, newProductDraft))
-            .orElseGet(() -> applyCallbackAndCreate(newProductDraft));
-    }
+        return productReferenceResolver
+            .resolveReferences(newProductDraft)
+            .thenCompose(resolvedDraft -> {
 
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
-    @Nonnull
-    private CompletionStage<Void> applyCallbackAndCreate(@Nonnull final ProductDraft productDraft) {
-        return syncOptions
-            .applyBeforeCreateCallBack(productDraft)
-            .map(draft -> productService
-                .createProduct(draft)
-                .thenAccept(productOptional -> {
-                    if (productOptional.isPresent()) {
-                        readyToResolve.add(productDraft.getKey());
-                        statistics.incrementCreated();
-                    } else {
-                        statistics.incrementFailed();
-                    }
-                })
-            )
-            .orElse(CompletableFuture.completedFuture(null));
+                final Product oldProduct = oldProductMap.get(newProductDraft.getKey());
+
+                return ofNullable(oldProduct)
+                    .map(product -> fetchProductAttributesMetadataAndUpdate(oldProduct, newProductDraft))
+                    .orElseGet(() -> applyCallbackAndCreate(newProductDraft));
+
+            })
+
+            .exceptionally(completionException -> {
+
+                final ReferenceResolutionException referenceResolutionException =
+                    (ReferenceResolutionException) completionException.getCause();
+                final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES, newProductDraft.getKey(),
+                    referenceResolutionException.getMessage());
+                handleError(errorMessage, referenceResolutionException, 1);
+
+                return null;
+            });
+
     }
 
     @Nonnull
@@ -455,6 +445,25 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                         return CompletableFuture.completedFuture(null);
                     });
             });
+    }
+
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
+    @Nonnull
+    private CompletionStage<Void> applyCallbackAndCreate(@Nonnull final ProductDraft productDraft) {
+        return syncOptions
+            .applyBeforeCreateCallBack(productDraft)
+            .map(draft -> productService
+                .createProduct(draft)
+                .thenAccept(productOptional -> {
+                    if (productOptional.isPresent()) {
+                        readyToResolve.add(productDraft.getKey());
+                        statistics.incrementCreated();
+                    } else {
+                        statistics.incrementFailed();
+                    }
+                })
+            )
+            .orElse(CompletableFuture.completedFuture(null));
     }
 
     /**
