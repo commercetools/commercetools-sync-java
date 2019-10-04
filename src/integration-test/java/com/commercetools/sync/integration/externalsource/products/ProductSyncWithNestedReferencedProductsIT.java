@@ -496,8 +496,9 @@ class ProductSyncWithNestedReferencedProductsIT {
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(actions).isEmpty();
 
-        final UnresolvedReferencesServiceImpl UnresolvedReferencesService = new UnresolvedReferencesServiceImpl(syncOptions);
-        final Set<WaitingToBeResolved> waitingToBeResolvedDrafts = UnresolvedReferencesService
+        final UnresolvedReferencesServiceImpl unresolvedReferencesService =
+            new UnresolvedReferencesServiceImpl(syncOptions);
+        final Set<WaitingToBeResolved> waitingToBeResolvedDrafts = unresolvedReferencesService
             .fetch(asSet(productDraftWithProductReference.getKey()))
             .toCompletableFuture()
             .join();
@@ -623,8 +624,9 @@ class ProductSyncWithNestedReferencedProductsIT {
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(actions).isEmpty();
 
-        final UnresolvedReferencesServiceImpl UnresolvedReferencesService = new UnresolvedReferencesServiceImpl(syncOptions);
-        final Set<WaitingToBeResolved> waitingToBeResolvedDrafts = UnresolvedReferencesService
+        final UnresolvedReferencesServiceImpl unresolvedReferencesService =
+            new UnresolvedReferencesServiceImpl(syncOptions);
+        final Set<WaitingToBeResolved> waitingToBeResolvedDrafts = unresolvedReferencesService
             .fetch(asSet(productDraftWithProductReference.getKey()))
             .toCompletableFuture()
             .join();

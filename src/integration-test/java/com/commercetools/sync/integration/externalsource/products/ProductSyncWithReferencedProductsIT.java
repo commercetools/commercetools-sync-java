@@ -342,7 +342,8 @@ class ProductSyncWithReferencedProductsIT {
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(actions).isEmpty();
 
-        final UnresolvedReferencesServiceImpl unresolvedReferencesService = new UnresolvedReferencesServiceImpl(syncOptions);
+        final UnresolvedReferencesServiceImpl unresolvedReferencesService =
+            new UnresolvedReferencesServiceImpl(syncOptions);
         final Set<WaitingToBeResolved> waitingToBeResolvedDrafts = unresolvedReferencesService
             .fetch(asSet(productDraftWithProductReference.getKey()))
             .toCompletableFuture()
@@ -477,7 +478,8 @@ class ProductSyncWithReferencedProductsIT {
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(actions).isEmpty();
 
-        final UnresolvedReferencesServiceImpl unresolvedReferencesService = new UnresolvedReferencesServiceImpl(syncOptions);
+        final UnresolvedReferencesServiceImpl unresolvedReferencesService =
+            new UnresolvedReferencesServiceImpl(syncOptions);
         final Set<WaitingToBeResolved> waitingToBeResolvedDrafts = unresolvedReferencesService
             .fetch(asSet(productDraftWithProductReference.getKey()))
             .toCompletableFuture()
