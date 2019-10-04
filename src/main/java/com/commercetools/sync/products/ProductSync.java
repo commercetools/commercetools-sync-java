@@ -327,8 +327,8 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                 final Product oldProduct = oldProductMap.get(newProductDraft.getKey());
 
                 return ofNullable(oldProduct)
-                    .map(product -> fetchProductAttributesMetadataAndUpdate(oldProduct, newProductDraft))
-                    .orElseGet(() -> applyCallbackAndCreate(newProductDraft));
+                    .map(product -> fetchProductAttributesMetadataAndUpdate(oldProduct, resolvedDraft))
+                    .orElseGet(() -> applyCallbackAndCreate(resolvedDraft));
 
             })
 
