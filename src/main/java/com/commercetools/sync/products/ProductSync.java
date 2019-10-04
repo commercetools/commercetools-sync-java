@@ -294,11 +294,13 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         @Nonnull final ProductDraft newProduct,
         @Nonnull final Map<String, String> keyToIdCache) {
 
-        final Set<String> referencedProductKeys = newProduct.getVariants()
-                                                            .stream()
-                                                            .map(ProductBatchProcessor::getReferencedProductKeys)
-                                                            .flatMap(Collection::stream)
-                                                            .collect(Collectors.toSet());
+        final Set<String> referencedProductKeys = newProduct
+            .getVariants()
+            .stream()
+            .map(ProductBatchProcessor::getReferencedProductKeys)
+            .flatMap(Collection::stream)
+            .collect(Collectors.toSet());
+
         // add also master variant keys
         ofNullable(newProduct.getMasterVariant())
             .map(ProductBatchProcessor::getReferencedProductKeys)

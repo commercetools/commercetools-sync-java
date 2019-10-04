@@ -3,16 +3,21 @@ package com.commercetools.sync.products.helpers;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.NullNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceWithId;
@@ -215,72 +220,6 @@ class ProductBatchProcessorTest {
         assertThat(isConsumerAccepted.get()).isTrue();
     }
 
-    /*
-    @Test
-    void getProductKeyFromReference_WithNullJsonNode_ShouldReturnEmptyOpt() {
-        final NullNode nullNode = JsonNodeFactory.instance.nullNode();
-        assertThat(getProductKeyFromReference(nullNode)).isEmpty();
-    }
-
-    @Test
-    void getProductKeyFromReference_WithoutAProductReference_ShouldReturnEmptyOpt() {
-        final ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
-        objectNode.put("key", "value");
-        assertThat(getProductKeyFromReference(objectNode)).isEmpty();
-    }
-
-    @Test
-    void getProductKeyFromReference_WithAProductReference_ShouldReturnOptWithRefText() {
-        assertThat(getProductKeyFromReference(getProductReferenceWithId("foo"))).contains("foo");
-    }
-
-    @Test
-    void getReferencedProductKeysFromSet_WithOnlyNullRefsInSet_ShouldReturnEmptySet() {
-        final AttributeDraft productReferenceSetAttribute =
-            getReferenceSetAttributeDraft("foo", null, null);
-        assertThat(getReferencedProductKeysFromSet(productReferenceSetAttribute.getValue())).isEmpty();
-    }
-
-    @Test
-    void getReferencedProductKeysFromSet_WithNullRefsInSet_ShouldReturnSetOfNonNullIds() {
-        final AttributeDraft productReferenceSetAttribute =
-            getReferenceSetAttributeDraft("foo", getProductReferenceWithId("foo"),
-                getProductReferenceWithId("bar"));
-        assertThat(getReferencedProductKeysFromSet(productReferenceSetAttribute.getValue()))
-            .containsExactlyInAnyOrder("foo", "bar");
-    }
-
-    @Test
-    void getReferencedProductKeysFromSet_WithNullAndOtherRefsInSet_ShouldReturnSetOfNonNullIds() {
-        final ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
-        objectNode.put("key", "value");
-
-        final AttributeDraft productReferenceSetAttribute =
-            getReferenceSetAttributeDraft("foo", getProductReferenceWithId("foo"),
-                getProductReferenceWithId("bar"), objectNode);
-        assertThat(getReferencedProductKeysFromSet(productReferenceSetAttribute.getValue()))
-            .containsExactlyInAnyOrder("foo", "bar");
-    }*/
-
-    @Test
-    void getReferencedProductKeys_WithNullDraftValue_ShouldReturnEmptySet() {
-        assertThat(getReferencedProductKeys(AttributeDraft.of("foo", null))).isEmpty();
-    }
-
-    @Test
-    void getReferencedProductKeys_WithSetAsValue_ShouldReturnSetKeys() {
-        final AttributeDraft productReferenceSetAttribute =
-            getReferenceSetAttributeDraft("foo", getProductReferenceWithId("foo"),
-                getProductReferenceWithId("bar"));
-        assertThat(getReferencedProductKeys(productReferenceSetAttribute)).containsExactlyInAnyOrder("foo", "bar");
-    }
-
-    @Test
-    void getReferencedProductKeys_WithProductRefAsValue_ShouldReturnKeyinSet() {
-        final AttributeDraft productReferenceAttribute = AttributeDraft.of("foo", getProductReferenceWithId("foo"));
-        assertThat(getReferencedProductKeys(productReferenceAttribute)).containsExactly("foo");
-    }
-
     @Test
     void getReferencedProductKeys_WithNullAttributes_ShouldReturnEmptySet() {
         assertThat(getReferencedProductKeys(ProductVariantDraftBuilder.of().build())).isEmpty();
@@ -310,6 +249,115 @@ class ProductBatchProcessorTest {
                                                                            .attributes(attributes)
                                                                            .build();
         assertThat(getReferencedProductKeys(variantDraft)).containsExactlyInAnyOrder("foo", "bar");
+    }
+
+    @Test
+    void getReferencedProductKeys_WithANullAttrValue_ShouldReturnEmptySet() {
+        final AttributeDraft attributeDraft = AttributeDraft.of("foo", null);
+        final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
+            .of()
+            .attributes(attributeDraft)
+            .build();
+
+        final Set<String> result = getReferencedProductKeys(productVariantDraft);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getReferencedProductKeys_WithSetAsValue_ShouldReturnSetKeys() {
+        final AttributeDraft productReferenceSetAttribute =
+            getReferenceSetAttributeDraft("foo", getProductReferenceWithId("foo"),
+                getProductReferenceWithId("bar"));
+
+        final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
+            .of()
+            .attributes(productReferenceSetAttribute)
+            .build();
+
+        final Set<String> result = getReferencedProductKeys(productVariantDraft);
+
+        assertThat(result).containsExactlyInAnyOrder("foo", "bar");
+    }
+
+    @Test
+    void getReferencedProductKeys_WithProductRefAsValue_ShouldReturnKeyInSet() {
+        final AttributeDraft productReferenceAttribute = AttributeDraft.of("foo", getProductReferenceWithId("foo"));
+
+        final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
+            .of()
+            .attributes(productReferenceAttribute)
+            .build();
+
+        final Set<String> result = getReferencedProductKeys(productVariantDraft);
+
+        assertThat(result).containsExactly("foo");
+    }
+
+    @Test
+    void getProductKeyFromReference_WithNullJsonNode_ShouldReturnEmptyOpt() {
+        final NullNode nullNode = JsonNodeFactory.instance.nullNode();
+        final AttributeDraft productReferenceAttribute = AttributeDraft.of("foo", nullNode);
+
+        final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
+            .of()
+            .attributes(productReferenceAttribute)
+            .build();
+
+        final Set<String> result = getReferencedProductKeys(productVariantDraft);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getProductKeyFromReference_WithoutAProductReference_ShouldReturnEmptyOpt() {
+        final ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
+        objectNode.put("key", "value");
+        final AttributeDraft productReferenceAttribute = AttributeDraft.of("foo", objectNode);
+
+        final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
+            .of()
+            .attributes(productReferenceAttribute)
+            .build();
+
+        final Set<String> result = getReferencedProductKeys(productVariantDraft);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Disabled("Fails due to bug on https://github.com/FasterXML/jackson-databind/issues/2442")
+    @Test
+    void getReferencedProductKeysFromSet_WithOnlyNullRefsInSet_ShouldReturnEmptySet() {
+        final AttributeDraft productReferenceSetAttribute =
+            getReferenceSetAttributeDraft("foo", null, null);
+
+        final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
+            .of()
+            .attributes(productReferenceSetAttribute)
+            .build();
+
+        final Set<String> result = getReferencedProductKeys(productVariantDraft);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void getReferencedProductKeysFromSet_WithNullAndOtherRefsInSet_ShouldReturnSetOfNonNullIds() {
+        final ObjectNode objectNode = JsonNodeFactory.instance.objectNode();
+        objectNode.put("key", "value");
+
+        final AttributeDraft productReferenceSetAttribute =
+            getReferenceSetAttributeDraft("foo", getProductReferenceWithId("foo"),
+                getProductReferenceWithId("bar"), objectNode);
+
+        final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
+            .of()
+            .attributes(productReferenceSetAttribute)
+            .build();
+
+        final Set<String> result = getReferencedProductKeys(productVariantDraft);
+
+        assertThat(result).containsExactlyInAnyOrder("foo", "bar");
     }
 
     @Test
