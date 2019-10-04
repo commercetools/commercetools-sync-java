@@ -273,15 +273,12 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                 waitingDrafts
                     .forEach(waitingDraft -> {
                         final Set<String> missingReferencedProductKeys = waitingDraft.getMissingReferencedProductKeys();
-
-                        final boolean setChanged = missingReferencedProductKeys.removeAll(readyToResolve);
+                        missingReferencedProductKeys.removeAll(readyToResolve);
 
                         if (missingReferencedProductKeys.isEmpty()) {
                             readyToSync.add(waitingDraft.getProductDraft());
                         } else {
-                            if (setChanged) {
-                                waitingDraftsToBeUpdated.add(waitingDraft);
-                            }
+                            waitingDraftsToBeUpdated.add(waitingDraft);
                         }
                     });
 
