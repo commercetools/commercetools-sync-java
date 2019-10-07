@@ -1,9 +1,12 @@
 package com.commercetools.sync.integration.externalsource.products;
 
+import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
+import com.commercetools.sync.services.UnresolvedReferencesService;
+import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -29,6 +32,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
@@ -45,6 +49,7 @@ import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ProductSyncWithReferencedProductsInAnyOrderIT {
@@ -401,7 +406,7 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
     }
 
     @Test
-    void sync_withMultipleHeirarchyProductReferenceAsAttribute_shouldCreateProductReferencingExistingProduct() {
+    void sync_withMultipleHierarchyProductReferenceAsAttribute_shouldCreateProductReferencingExistingProduct() {
         // preparation
         final String parentKey = "product-parent";
         final String parentKey1 = "product-parent-1";
@@ -644,5 +649,71 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
             assertThat(attribute.getValueAsJsonNode().get(REFERENCE_ID_FIELD).asText())
                 .isEqualTo(syncedParent.getId());
         });
+    }
+
+    @Test
+    void sync_withMissingParent_shouldSyncCorrectly() {
+        // preparation
+        final String productReferenceAttributeName = "product-reference";
+        final String parentProductKey = "parent-product-key";
+
+        final AttributeDraft productReferenceAttribute = AttributeDraft
+            .of(productReferenceAttributeName, Reference.of(Product.referenceTypeId(), parentProductKey));
+
+        final ProductDraft childDraft1 = ProductDraftBuilder
+            .of(productType, ofEnglish("foo"), ofEnglish("foo-slug"),
+                ProductVariantDraftBuilder
+                    .of()
+                    .key("foo")
+                    .sku("foo")
+                    .attributes(productReferenceAttribute)
+                    .build())
+            .key(product.getKey())
+            .build();
+
+        final ProductDraft childDraft2 = ProductDraftBuilder
+            .of(productType, ofEnglish("foo-2"), ofEnglish("foo-slug-2"),
+                ProductVariantDraftBuilder
+                    .of()
+                    .key("foo-2")
+                    .sku("foo-2")
+                    .attributes(productReferenceAttribute)
+                    .build())
+            .key("foo-2")
+            .build();
+
+        // test
+        final ProductSync productSync = new ProductSync(syncOptions);
+        final ProductSyncStatistics syncStatistics = productSync
+            .sync(asList(childDraft1, childDraft2))
+            .toCompletableFuture()
+            .join();
+
+        final Product syncedParent = CTP_TARGET_CLIENT
+            .execute(ProductByKeyGet.of(parentProductKey))
+            .toCompletableFuture()
+            .join();
+
+        // assertion
+        assertThat(syncedParent).isNull();
+        assertThat(syncStatistics).hasValues(2, 0, 0, 0, 2);
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(warningCallBackMessages).isEmpty();
+        assertThat(actions).isEmpty();
+
+
+        final UnresolvedReferencesService unresolvedReferencesService =
+            new UnresolvedReferencesServiceImpl(syncOptions);
+
+        final Set<WaitingToBeResolved> waitingDrafts = unresolvedReferencesService
+            .fetch(asSet(childDraft1.getKey(), childDraft2.getKey()))
+            .toCompletableFuture()
+            .join();
+
+        assertThat(waitingDrafts).containsExactlyInAnyOrder(
+            new WaitingToBeResolved(childDraft1, singleton(parentProductKey)),
+            new WaitingToBeResolved(childDraft2, singleton(parentProductKey))
+        );
     }
 }
