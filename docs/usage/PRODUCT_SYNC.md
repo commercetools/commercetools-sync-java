@@ -12,6 +12,8 @@ against a [ProductDraft](https://docs.commercetools.com/http-api-projects-produc
   - [Sync list of product drafts](#sync-list-of-product-drafts)
     - [Prerequisites](#prerequisites)
     - [Running the sync](#running-the-sync)
+      - [Persistence of ProductDrafts with Irresolvable References](#persistence-of-productdrafts-with-irresolvable-references)
+      - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)
   - [Build all update actions](#build-all-update-actions)
   - [Build particular update action(s)](#build-particular-update-actions)
 - [Caveats](#caveats)
