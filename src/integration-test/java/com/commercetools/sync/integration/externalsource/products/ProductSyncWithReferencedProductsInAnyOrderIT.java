@@ -656,9 +656,15 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
         // preparation
         final String productReferenceAttributeName = "product-reference";
         final String parentProductKey = "parent-product-key";
+        final String parentProductKey2 = "parent-product-key2";
 
         final AttributeDraft productReferenceAttribute = AttributeDraft
-            .of(productReferenceAttributeName, Reference.of(Product.referenceTypeId(), parentProductKey));
+            .of(
+                productReferenceAttributeName,
+                asSet(
+                    Reference.of(Product.referenceTypeId(), parentProductKey),
+                    Reference.of(Product.referenceTypeId(), parentProductKey2))
+            );
 
         final ProductDraft childDraft1 = ProductDraftBuilder
             .of(productType, ofEnglish("foo"), ofEnglish("foo-slug"),
@@ -682,10 +688,20 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
             .key("foo-2")
             .build();
 
+        final ProductDraft parentDraft = ProductDraftBuilder
+            .of(productType, ofEnglish(parentProductKey2), ofEnglish(parentProductKey2),
+                ProductVariantDraftBuilder
+                    .of()
+                    .sku(parentProductKey2)
+                    .key(parentProductKey2)
+                    .build())
+            .key(parentProductKey2)
+            .build();
+
         // test
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics = productSync
-            .sync(asList(childDraft1, childDraft2))
+            .sync(asList(childDraft1, childDraft2, parentDraft))
             .toCompletableFuture()
             .join();
 
@@ -696,7 +712,7 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
 
         // assertion
         assertThat(syncedParent).isNull();
-        assertThat(syncStatistics).hasValues(2, 0, 0, 0, 2);
+        assertThat(syncStatistics).hasValues(3, 1, 0, 0, 2);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
