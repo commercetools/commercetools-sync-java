@@ -84,7 +84,7 @@ __Note__ The statistics object contains the processing time of the last batch on
 
 ##### Persistence of ProductDrafts with Irresolvable References
 
-Since a productDraft X could be supplied in with an attribute referencing productDraft Y. 
+A productDraft X could be supplied in with an attribute referencing productDraft Y. 
 It could be that Y is not supplied before X, which means the sync could fail creating/updating X. 
 It could also be that Y is not supplied at all in this batch but at a later batch.
  
