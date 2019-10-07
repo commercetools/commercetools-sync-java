@@ -29,9 +29,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class LazyResolutionServiceImplTest {
+class UnresolvedReferencesServiceImplTest {
 
-    private LazyResolutionServiceImpl service;
+    private UnresolvedReferencesServiceImpl service;
     private ProductSyncOptions productSyncOptions;
     private List<String> errorMessages;
     private List<Throwable> errorExceptions;
@@ -46,13 +46,13 @@ public class LazyResolutionServiceImplTest {
                     errorExceptions.add(errorException);
                 })
                 .build();
-        service = new LazyResolutionServiceImpl(productSyncOptions);
+        service = new UnresolvedReferencesServiceImpl(productSyncOptions);
     }
 
     @Test
     void save_WithSuccessfulMockCtpResponse_ShouldReturnMock() {
         final CustomObject mock = mock(CustomObject.class);
-        when(mock.getContainer()).thenReturn("test-container-id");
+        when(mock.getContainer()).thenReturn("commercetools-sync-java.UnresolvedReferencesService.productDrafts");
 
         final ProductDraft productDraft = mock(ProductDraft.class);
         when(productDraft.getKey()).thenReturn("product-draft-key");
@@ -69,7 +69,7 @@ public class LazyResolutionServiceImplTest {
         assertThat(toBeResolvedOptional).containsSame(valueObj);
         final CustomObjectDraft<WaitingToBeResolved> customObjectDraft = CustomObjectDraft
                 .ofUnversionedUpsert(
-                        "commercetools-sync-java.LazyResolutionService",
+                        "commercetools-sync-java.UnresolvedReferencesService.productDrafts",
                         valueObj.getProductDraft().getKey(),
                         valueObj,
                         WaitingToBeResolved.class);
@@ -79,7 +79,7 @@ public class LazyResolutionServiceImplTest {
     @Test
     void save_WithUnsuccessfulMockCtpResponse_ShouldNotSaveMock() {
         final CustomObject mock = mock(CustomObject.class);
-        when(mock.getContainer()).thenReturn("test-container-id");
+        when(mock.getContainer()).thenReturn("commercetools-sync-java.UnresolvedReferencesService.productDrafts");
 
         final ProductDraft productDraft = mock(ProductDraft.class);
         when(productDraft.getKey()).thenReturn("product-draft-key");
@@ -136,7 +136,7 @@ public class LazyResolutionServiceImplTest {
     @Test
     void fetch_WithSuccessfulMockCtpResponse_ShouldReturnMock() {
         final CustomObject mock = mock(CustomObject.class);
-        when(mock.getContainer()).thenReturn("test-container-id");
+        when(mock.getContainer()).thenReturn("commercetools-sync-java.UnresolvedReferencesService.productDrafts");
 
         final ProductDraft productDraft = mock(ProductDraft.class);
         when(productDraft.getKey()).thenReturn("product-draft-key");
@@ -164,7 +164,7 @@ public class LazyResolutionServiceImplTest {
     @Test
     void delete_WithUnsuccessfulMockCtpResponse_ShouldReturnProperException() {
         final CustomObject mock = mock(CustomObject.class);
-        when(mock.getContainer()).thenReturn("test-container-id");
+        when(mock.getContainer()).thenReturn("commercetools-sync-java.UnresolvedReferencesService.productDrafts");
 
         final ProductDraft productDraft = mock(ProductDraft.class);
         when(productDraft.getKey()).thenReturn("product-draft-key");
@@ -172,9 +172,6 @@ public class LazyResolutionServiceImplTest {
         missingRefs.add("test-ref");
         WaitingToBeResolved valueObj = new WaitingToBeResolved(productDraft, missingRefs);
         when(mock.getValue()).thenReturn(valueObj);
-
-        Set<String> keys = new HashSet<>();
-        keys.add("product-draft-key");
 
         when(productSyncOptions.getCtpClient().execute(any()))
                 .thenReturn(CompletableFutureUtils.failed(new BadRequestException("bad request")));
