@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
-public interface LazyResolutionService {
+public interface UnresolvedReferencesService {
 
     /**
      * Given product draft keys, this method fetches the persisted drafts waiting to be resolved. If there is no

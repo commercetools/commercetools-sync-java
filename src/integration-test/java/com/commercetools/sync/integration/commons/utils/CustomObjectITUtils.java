@@ -14,7 +14,8 @@ import java.util.concurrent.CompletionStage;
 
 public final class CustomObjectITUtils {
 
-    private static final String CUSTOM_OBJECT_CONTAINER_KEY = "commercetools-sync-java.LazyResolutionService";
+    private static final String CUSTOM_OBJECT_CONTAINER_KEY =
+        "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
 
     /**
      * This method is expected to be used only by tests, it only works on projects with less than equal to 20 custom

@@ -20,7 +20,7 @@ class ProductSyncStatisticsTest {
         productSyncStatistics.incrementUpdated(1);
         productSyncStatistics.incrementProcessed(3);
 
-        assertThat(productSyncStatistics.getReportMessage()).isEqualTo("Summary: 3 products were processed in total "
-            + "(1 created, 1 updated, 1 failed to sync and 0 products with a missing reference).");
+        assertThat(productSyncStatistics.getReportMessage()).isEqualTo("Summary: 3 product(s) were processed in total "
+            + "(1 created, 1 updated, 1 failed to sync and 0 product(s) with missing reference(s)).");
     }
 }

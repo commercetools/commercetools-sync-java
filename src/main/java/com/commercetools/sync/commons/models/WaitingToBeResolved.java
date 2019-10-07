@@ -54,12 +54,12 @@ public final class WaitingToBeResolved {
             return false;
         }
         final WaitingToBeResolved that = (WaitingToBeResolved) other;
-        return getProductDraft().equals(that.getProductDraft())
+        return Objects.equals(getProductDraft().getKey(), that.getProductDraft().getKey())
             && getMissingReferencedProductKeys().equals(that.getMissingReferencedProductKeys());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getProductDraft(), getMissingReferencedProductKeys());
+        return Objects.hash(getProductDraft().getKey(), getMissingReferencedProductKeys());
     }
 }

@@ -72,7 +72,7 @@ human-readable format.
 ````java
 final ProductSyncStatistics stats = syncStatisticsStage.toCompletebleFuture().join();
 stats.getReportMessage(); 
-/*"Summary: 2000 products were processed in total (1000 created, 995 updated and 5 failed to sync)."*/
+/*Summary: 2000 product(s) were processed in total (1000 created, 995 updated, 5 failed to sync and 0 product(s) with missing reference(s)).*/
 ````
 
 __Note__ The statistics object contains the processing time of the last batch only. This is due to two reasons:
