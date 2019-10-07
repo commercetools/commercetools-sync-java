@@ -9,6 +9,7 @@ import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.queries.CustomObjectByKeyGet;
 import io.sphere.sdk.json.SphereJsonUtils;
 import io.sphere.sdk.products.ProductDraft;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -36,7 +37,7 @@ class UnresolvedReferencesServiceImplIT {
         "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
 
 
-    @BeforeEach
+    @AfterEach
     void setup() {
         deleteWaitingToBeResolvedCustomObjects(CTP_TARGET_CLIENT);
     }
@@ -90,6 +91,44 @@ class UnresolvedReferencesServiceImplIT {
             .join();
 
         assertThat(createdCustomObject.getValue()).isEqualTo(productDraftWithUnresolvedRefs);
+    }
+
+    @Test
+    void save_ExistingProductDraftWithoutException_overwriteOldCustomObjectValue() {
+        // preparation
+        final ProductDraft productDraft =
+            SphereJsonUtils.readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, ProductDraft.class);
+
+        final WaitingToBeResolved productDraftWithUnresolvedRefs =
+                new WaitingToBeResolved(productDraft, asSet("foo", "bar"));
+
+        unresolvedReferencesService
+                .save(productDraftWithUnresolvedRefs)
+                .toCompletableFuture()
+                .join();
+
+        final WaitingToBeResolved productDraftWithUnresolvedNewRefs =
+                new WaitingToBeResolved(productDraft, asSet("foo123", "bar123"));
+
+        // test
+        final Optional<WaitingToBeResolved> latestResult = unresolvedReferencesService
+            .save(productDraftWithUnresolvedNewRefs)
+            .toCompletableFuture()
+            .join();
+
+
+        // assertions
+        assertThat(latestResult).hasValueSatisfying(waitingToBeResolved ->
+            assertThat(waitingToBeResolved.getProductDraft()).isEqualTo(productDraft));
+
+        final CustomObjectByKeyGet<WaitingToBeResolved> customObjectByKeyGet = CustomObjectByKeyGet
+            .of(CUSTOM_OBJECT_CONTAINER_KEY, productDraft.getKey(), WaitingToBeResolved.class);
+        final CustomObject<WaitingToBeResolved> createdCustomObject = CTP_TARGET_CLIENT
+            .execute(customObjectByKeyGet)
+            .toCompletableFuture()
+            .join();
+
+        assertThat(createdCustomObject.getValue()).isEqualTo(productDraftWithUnresolvedNewRefs);
     }
 
     @Test
