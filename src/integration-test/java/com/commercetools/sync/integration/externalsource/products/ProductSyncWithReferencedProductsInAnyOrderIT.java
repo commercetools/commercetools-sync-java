@@ -10,7 +10,10 @@ import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.sphere.sdk.client.BadGatewayException;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
@@ -22,6 +25,7 @@ import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
 import io.sphere.sdk.products.queries.ProductByKeyGet;
 import io.sphere.sdk.producttypes.ProductType;
+import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -50,7 +54,11 @@ import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 class ProductSyncWithReferencedProductsInAnyOrderIT {
     private static ProductType productType;
@@ -731,5 +739,68 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
             new WaitingToBeResolved(childDraft1, singleton(parentProductKey)),
             new WaitingToBeResolved(childDraft2, singleton(parentProductKey))
         );
+    }
+
+    @SuppressWarnings("unchecked")
+    @Test
+    void sync_withFailToFetchCustomObject_shouldSyncCorrectly() {
+        // preparation
+        final String productReferenceAttributeName = "product-reference";
+        final String parentProductKey = "parent-product-key";
+
+        final AttributeDraft productReferenceAttribute = AttributeDraft
+            .of(productReferenceAttributeName, Reference.of(Product.referenceTypeId(), parentProductKey));
+
+        final ProductDraft childDraft1 = ProductDraftBuilder
+            .of(productType, ofEnglish("foo"), ofEnglish("foo-slug"),
+                ProductVariantDraftBuilder
+                    .of()
+                    .key("foo")
+                    .sku("foo")
+                    .attributes(productReferenceAttribute)
+                    .build())
+            .key(product.getKey())
+            .build();
+
+        final ProductDraft parentDraft = ProductDraftBuilder
+            .of(productType, ofEnglish(parentProductKey), ofEnglish(parentProductKey),
+                ProductVariantDraftBuilder
+                    .of()
+                    .sku(parentProductKey)
+                    .key(parentProductKey)
+                    .build())
+            .key(parentProductKey)
+            .build();
+
+        final SphereClient ctpClient = spy(CTP_TARGET_CLIENT);
+
+        final BadGatewayException gatewayException = new BadGatewayException("failed to respond.");
+        when(ctpClient.execute(any(CustomObjectQuery.class)))
+            .thenReturn(CompletableFutureUtils.failed(gatewayException));
+
+
+        syncOptions = ProductSyncOptionsBuilder
+            .of(ctpClient)
+            .errorCallback(this::collectErrors)
+            .beforeUpdateCallback(this::collectActions)
+            .build();
+
+        // test
+        final ProductSync productSync = new ProductSync(syncOptions);
+
+        final ProductSyncStatistics syncStatistics = productSync
+            .sync(singletonList(childDraft1))
+            .thenCompose(ignoredResult -> productSync.sync(singletonList(parentDraft)))
+            .toCompletableFuture()
+            .join();
+
+        // assertion
+        assertThat(syncStatistics).hasValues(2, 1, 0, 1, 0);
+        assertThat(errorCallBackMessages)
+            .containsExactly("Failed to fetch drafts waiting to be resolved with keys '[foo]'.");
+        assertThat(errorCallBackExceptions)
+            .hasOnlyOneElementSatisfying(exception -> assertThat(exception.getCause()).isEqualTo(gatewayException));
+        assertThat(warningCallBackMessages).isEmpty();
+        assertThat(actions).isEmpty();
     }
 }
