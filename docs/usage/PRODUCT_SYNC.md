@@ -80,6 +80,62 @@ __Note__ The statistics object contains the processing time of the last batch on
  1. The sync processing time should not take into account the time between supplying batches to the sync. 
  2. It is not known by the sync which batch is going to be the last one supplied.
 
+##### Persistence of ProductDrafts with Irresolvable References
+
+Since a productDraft X could be supplied in with an attribute referencing productDraft Y. 
+It could be that Y is not supplied before X, which means the sync could fail creating/updating X. 
+It could also be that Y is not supplied at all in this batch but at a later batch.
+ 
+The library keep tracks of such "referencing" drafts like X and persists them in storage 
+(**CTP `customObjects` in the target project** , in this case) 
+to keep them and create/update them accordingly whenever the referenced drafts exist in the target project.
+
+The `customObject` will have a `container:` **`"commercetools-sync-java.UnresolvedReferencesService.productDrafts"`**
+and a `key` representing the key of the productDraft that is waiting to be created/updated.
+
+
+Here is an example of a `CustomObject` in the target project that represents a productDraft with `productKey1`.  
+It being persisted as `CustomObject` means that the referenced productDrafts with keys `foo` and `bar` do not exist yet.
+
+```json
+{
+  "id": "d0fbb69e-76e7-4ec0-893e-3aaab6f4f6b6",
+  "version": 1,
+  "container": "commercetools-sync-java.UnresolvedReferencesService.productDrafts",
+  "key": "productKey1",
+  "value": {
+    "dependantProductKeys": [
+      "foo",
+      "bar"
+    ],
+    "productDraft": {
+      "taxCategory": {
+        "typeId": "tax-category",
+        "id": "ebbe95fb-2282-4f9a-8747-fbe440e02dc0"
+      },
+      "productType": {
+        "typeId": "product-type",
+        "id": "cda0dbf7-b42e-40bf-8453-241d5b587f93"
+      },
+      "key": "productKey1"
+    }
+  },
+  "createdAt": "2019-09-27T13:45:35.495Z",
+  "lastModifiedAt": "2019-09-27T13:45:35.495Z",
+  "lastModifiedBy": {
+    "clientId": "8bV3XSW-taCpi873-GQTa8lf",
+    "isPlatformClient": false
+  },
+  "createdBy": {
+    "clientId": "8bV3XSW-taCpi873-GQTa8lf",
+    "isPlatformClient": false
+  }
+}
+```
+
+As soon, as the referenced productDrafts are supplied to the sync, the draft will be created/updated and the 
+`CustomObject` will be removed from the target project.
+
 
 ##### More examples of how to use the sync
 
