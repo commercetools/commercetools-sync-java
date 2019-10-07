@@ -125,7 +125,6 @@ class UnresolvedReferencesServiceImplTest {
     @Test
     void fetch_WithEmptyKeySet_ShouldReturnEmptySet() {
         Set<String> keys = new HashSet<>();
-        keys.add("");
         final Set<WaitingToBeResolved> beResolvedOptional = service
                 .fetch(keys).toCompletableFuture().join();
 
