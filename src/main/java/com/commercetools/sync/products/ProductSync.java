@@ -120,6 +120,12 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         final ProductBatchProcessor batchProcessor = new ProductBatchProcessor(batch, this);
         batchProcessor.validateBatch();
 
+        final Set<ProductDraft> validDrafts = batchProcessor.getValidDrafts();
+        if (validDrafts.isEmpty()) {
+            statistics.incrementProcessed(batch.size());
+            return CompletableFuture.completedFuture(statistics);
+        }
+
         final Set<String> keysToCache = batchProcessor.getKeysToCache();
         return productService
             .cacheKeysToIds(keysToCache)
@@ -133,7 +139,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                     handleError("Failed to build a cache of keys to ids.", cachingException, keysToCache.size());
                     return CompletableFuture.completedFuture(null);
                 } else {
-                    return syncBatch(batchProcessor.getValidDrafts(), keyToIdCache);
+                    return syncBatch(validDrafts, keyToIdCache);
                 }
             })
             .thenApply(ignoredResult -> {
