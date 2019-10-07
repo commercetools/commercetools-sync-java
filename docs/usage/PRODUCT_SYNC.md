@@ -111,14 +111,32 @@ It being persisted as `CustomObject` means that the referenced productDrafts wit
       "bar"
     ],
     "productDraft": {
-      "taxCategory": {
-        "typeId": "tax-category",
-        "id": "ebbe95fb-2282-4f9a-8747-fbe440e02dc0"
-      },
       "productType": {
         "typeId": "product-type",
-        "id": "cda0dbf7-b42e-40bf-8453-241d5b587f93"
+        "id": "main-product-type"
       },
+      "masterVariant": {
+          "id": 1,
+          "sku": "white-shirt-1",
+          "key": "white-shirt-1",
+          "prices": [],
+          "images": [],
+          "attributes": [
+            {
+              "name": "product-reference-set",
+              "value": [
+                {
+                  "typeId": "product",
+                  "id": "foo"
+                },
+                {
+                  "typeId": "product",
+                  "id": "bar"
+                }
+              ]
+            }
+          ]
+        },
       "key": "productKey1"
     }
   },
