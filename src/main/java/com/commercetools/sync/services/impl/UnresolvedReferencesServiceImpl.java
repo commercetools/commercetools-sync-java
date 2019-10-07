@@ -20,7 +20,6 @@ import java.util.concurrent.CompletionStage;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesService {
@@ -39,7 +38,6 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
     @Nonnull
     @Override
     public CompletionStage<Set<WaitingToBeResolved>> fetch(@Nonnull final Set<String> keys) {
-        keys.remove(EMPTY);
 
         if (keys.isEmpty()) {
             return CompletableFuture.completedFuture(Collections.emptySet());
