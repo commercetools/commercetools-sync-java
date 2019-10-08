@@ -191,4 +191,36 @@ class UnresolvedReferencesServiceImplTest {
                 .hasOnlyOneElementSatisfying(exception ->
                         assertThat(exception).isExactlyInstanceOf(BadRequestException.class));
     }
+
+    @Test
+    void delete_WithSuccessfulMockCtpResponse_ShouldRemoveTheResourceObject() {
+        // preparation
+        final CustomObject mock = mock(CustomObject.class);
+        when(mock.getContainer()).thenReturn("commercetools-sync-java.UnresolvedReferencesService.productDrafts");
+
+        final ProductDraft productDraft = mock(ProductDraft.class);
+        when(productDraft.getKey()).thenReturn("product-draft-key");
+        final WaitingToBeResolved waitingDraft = new WaitingToBeResolved(productDraft, singleton("test-ref"));
+        when(mock.getValue()).thenReturn(waitingDraft);
+
+        when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mock));
+
+        // test
+        final Optional<WaitingToBeResolved> toBeResolvedOptional = service.delete("product-draft-key")
+                .toCompletableFuture().join();
+
+        // assertions
+        assertThat(toBeResolvedOptional).isNotEmpty();
+        assertThat(toBeResolvedOptional).contains(waitingDraft);
+
+        final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
+        when(pagedQueryResult.getCount()).thenReturn(0L);
+        when(pagedQueryResult.getOffset()).thenReturn(0L);
+        when(pagedQueryResult.getResults()).thenReturn(Collections.emptyList());
+        when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(pagedQueryResult));
+
+        final Set<WaitingToBeResolved> nonExistingObject = service.fetch(singleton("product-draft-key"))
+                .toCompletableFuture().join();
+        assertThat(nonExistingObject).isEmpty();
+    }
 }
