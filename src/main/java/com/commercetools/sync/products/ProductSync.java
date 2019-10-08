@@ -10,21 +10,21 @@ import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.CustomerGroupService;
-import com.commercetools.sync.services.UnresolvedReferencesService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.services.UnresolvedReferencesService;
 import com.commercetools.sync.services.impl.CategoryServiceImpl;
 import com.commercetools.sync.services.impl.ChannelServiceImpl;
 import com.commercetools.sync.services.impl.CustomerGroupServiceImpl;
-import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
 import com.commercetools.sync.services.impl.ProductServiceImpl;
 import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
 import com.commercetools.sync.services.impl.StateServiceImpl;
 import com.commercetools.sync.services.impl.TaxCategoryServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
+import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
@@ -47,6 +47,7 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.products.utils.ProductSyncUtils.buildActions;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.getAllVariants;
 import static io.sphere.sdk.states.StateType.PRODUCT_STATE;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
@@ -214,17 +215,11 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         @Nonnull final ProductDraft newProduct,
         @Nonnull final Map<String, String> keyToIdCache) {
 
-        final Set<String> referencedProductKeys = newProduct
-            .getVariants()
+        final Set<String> referencedProductKeys = getAllVariants(newProduct)
             .stream()
             .map(ProductBatchProcessor::getReferencedProductKeys)
             .flatMap(Collection::stream)
             .collect(Collectors.toSet());
-
-        // add also master variant keys
-        ofNullable(newProduct.getMasterVariant())
-            .map(ProductBatchProcessor::getReferencedProductKeys)
-            .ifPresent(referencedProductKeys::addAll);
 
         return referencedProductKeys
             .stream()

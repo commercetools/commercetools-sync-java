@@ -396,8 +396,7 @@ public final class ProductUpdateActionUtils {
         final Map<String, ProductVariant> oldProductVariantsWithMaster = new HashMap<>(oldProductVariantsNoMaster);
         oldProductVariantsWithMaster.put(oldMasterVariant.getKey(), oldMasterVariant);
 
-        final List<ProductVariantDraft> newAllProductVariants = new ArrayList<>(newProduct.getVariants());
-        newAllProductVariants.add(newProduct.getMasterVariant());
+        final List<ProductVariantDraft> newAllProductVariants = getAllVariants(newProduct);
 
         // Remove missing variants, but keep master variant (MV can't be removed)
         final List<UpdateAction<Product>> updateActions =
@@ -424,6 +423,19 @@ public final class ProductUpdateActionUtils {
 
         updateActions.addAll(buildChangeMasterVariantUpdateAction(oldProduct, newProduct, syncOptions));
         return updateActions;
+    }
+
+    /**
+     * Returns a list containing all the variants (including the master variant) of the supplied {@link ProductDraft}.
+     * @param productDraft the product draft that has the variants and master variant that should be returned.
+     * @return a list containing all the variants (including the master variant) of the supplied {@link ProductDraft}.
+     */
+    @Nonnull
+    public static List<ProductVariantDraft> getAllVariants(@Nonnull final ProductDraft productDraft) {
+        final List<ProductVariantDraft> allVariants = new ArrayList<>(1 + productDraft.getVariants().size());
+        allVariants.add(productDraft.getMasterVariant());
+        allVariants.addAll(productDraft.getVariants());
+        return allVariants;
     }
 
     @Nonnull
