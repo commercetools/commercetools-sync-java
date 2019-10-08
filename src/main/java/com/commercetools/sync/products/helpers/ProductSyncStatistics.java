@@ -5,11 +5,11 @@ import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.lang.String.format;
 
 public class ProductSyncStatistics extends BaseSyncStatistics {
@@ -68,16 +68,10 @@ public class ProductSyncStatistics extends BaseSyncStatistics {
      * @param childKey  the key of the product with a missing parent.
      */
     public void addMissingDependency(@Nonnull final String parentKey, @Nonnull final String childKey) {
-
-        final Set<String> missingParentProductChildrenKeys =
-            productKeysWithMissingParents.get(parentKey);
-        if (missingParentProductChildrenKeys != null) {
-            missingParentProductChildrenKeys.add(childKey);
-        } else {
-            final Set<String> newChildProductKeys = new HashSet<>();
-            newChildProductKeys.add(childKey);
-            productKeysWithMissingParents.put(parentKey, newChildProductKeys);
-        }
+        productKeysWithMissingParents.merge(parentKey, asSet(childKey), (existingSet, newChildAsSet) -> {
+            existingSet.addAll(newChildAsSet);
+            return existingSet;
+        });
     }
 
     @Nullable
