@@ -234,10 +234,11 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
     private CompletionStage<Optional<WaitingToBeResolved>> keepTrackOfMissingReferences(
         @Nonnull final ProductDraft newProduct,
-        @Nonnull final Set<String> referencedProductKeys) {
+        @Nonnull final Set<String> missingReferencedProductKeys) {
 
-        referencedProductKeys.forEach(parentKey -> statistics.addMissingDependency(parentKey, newProduct.getKey()));
-        return unresolvedReferencesService.save(new WaitingToBeResolved(newProduct, referencedProductKeys));
+        missingReferencedProductKeys.forEach(missingParentKey ->
+            statistics.addMissingDependency(missingParentKey, newProduct.getKey()));
+        return unresolvedReferencesService.save(new WaitingToBeResolved(newProduct, missingReferencedProductKeys));
     }
 
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
