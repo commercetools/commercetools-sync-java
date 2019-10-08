@@ -38,7 +38,7 @@ class UnresolvedReferencesServiceImplIT {
 
 
     @AfterEach
-    void setup() {
+    void tearDown() {
         deleteWaitingToBeResolvedCustomObjects(CTP_TARGET_CLIENT);
     }
 
