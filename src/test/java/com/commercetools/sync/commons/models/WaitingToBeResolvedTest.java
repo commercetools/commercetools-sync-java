@@ -19,18 +19,6 @@ class WaitingToBeResolvedTest {
     private final WaitingToBeResolved obj1 = new WaitingToBeResolved(productDraft, refSet);
 
     @Test
-    void testEquals() {
-        // preparation
-        WaitingToBeResolved obj2 = new WaitingToBeResolved(productDraft, refSet);
-
-        // test
-        boolean equalsResult = obj1.equals(obj2);
-
-        // assertions
-        assertTrue(equalsResult);
-    }
-
-    @Test
     void testEquals_withSameRef() {
 
         // test
