@@ -65,6 +65,7 @@ class UnresolvedReferencesServiceImplTest {
         assertThat(result).isEmpty();
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void fetch_OnSuccess_ShouldReturnMock() {
         // preparation
@@ -175,6 +176,7 @@ class UnresolvedReferencesServiceImplTest {
                         assertThat(exception).isExactlyInstanceOf(BadRequestException.class));
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     void delete_OnSuccess_ShouldRemoveTheResourceObject() {
         // preparation

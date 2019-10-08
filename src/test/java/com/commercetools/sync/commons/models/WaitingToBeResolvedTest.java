@@ -34,7 +34,6 @@ class WaitingToBeResolvedTest {
     @Test
     void setMissingReferencedProductKeys_WithNonNullSet_ShouldSetTheSet() {
         // preparation
-        final ProductDraft productDraft = mock(ProductDraft.class);
         final WaitingToBeResolved waitingToBeResolved = new WaitingToBeResolved();
 
         // test
