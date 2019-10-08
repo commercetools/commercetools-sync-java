@@ -119,7 +119,7 @@ class UnresolvedReferencesServiceImplIT {
 
 
     @Test
-    void deleteCustomObject_shouldReturnCorrectCustomObject() {
+    void deleteCustomObject_shouldDeleteCorrectCustomObject() {
         // preparation
         final ProductDraft productDraft =
             SphereJsonUtils.readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, ProductDraft.class);
