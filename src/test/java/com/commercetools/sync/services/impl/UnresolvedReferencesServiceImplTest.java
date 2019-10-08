@@ -51,6 +51,7 @@ class UnresolvedReferencesServiceImplTest {
 
     @Test
     void save_WithSuccessfulMockCtpResponse_ShouldReturnMock() {
+        // preparation
         final CustomObject mock = mock(CustomObject.class);
         when(mock.getContainer()).thenReturn("commercetools-sync-java.UnresolvedReferencesService.productDrafts");
 
@@ -63,8 +64,10 @@ class UnresolvedReferencesServiceImplTest {
 
         when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mock));
 
+        // test
         final Optional<WaitingToBeResolved> toBeResolvedOptional = service.save(valueObj).toCompletableFuture().join();
 
+        // assertions
         assertThat(toBeResolvedOptional).isNotEmpty();
         assertThat(toBeResolvedOptional).containsSame(valueObj);
         final CustomObjectDraft<WaitingToBeResolved> customObjectDraft = CustomObjectDraft
@@ -78,6 +81,7 @@ class UnresolvedReferencesServiceImplTest {
 
     @Test
     void save_WithUnsuccessfulMockCtpResponse_ShouldNotSaveMock() {
+        // preparation
         final CustomObject mock = mock(CustomObject.class);
         when(mock.getContainer()).thenReturn("commercetools-sync-java.UnresolvedReferencesService.productDrafts");
 
@@ -91,8 +95,10 @@ class UnresolvedReferencesServiceImplTest {
         when(productSyncOptions.getCtpClient().execute(any()))
                 .thenReturn(CompletableFutureUtils.failed(new BadRequestException("bad request")));
 
+        // test
         final Optional<WaitingToBeResolved> toBeResolvedOptional = service.save(valueObj).toCompletableFuture().join();
 
+        // assertions
         assertThat(toBeResolvedOptional).isEmpty();
         assertThat(errorMessages)
                 .hasSize(1)
@@ -109,16 +115,21 @@ class UnresolvedReferencesServiceImplTest {
 
     @Test
     void fetch_WithEmptyKeySet_ShouldReturnEmptySet() {
+        // preparation
         Set<String> keys = new HashSet<>();
+
+        // test
         final Set<WaitingToBeResolved> beResolvedOptional = service
                 .fetch(keys).toCompletableFuture().join();
 
+        // assertions
         assertThat(beResolvedOptional).isEmpty();
     }
 
 
     @Test
     void fetch_WithSuccessfulMockCtpResponse_ShouldReturnMock() {
+        // preparation
         final CustomObject mock = mock(CustomObject.class);
         when(mock.getContainer()).thenReturn("commercetools-sync-java.UnresolvedReferencesService.productDrafts");
 
@@ -139,14 +150,17 @@ class UnresolvedReferencesServiceImplTest {
 
         when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(pagedQueryResult));
 
+        // test
         final Set<WaitingToBeResolved> toBeResolvedOptional = service.fetch(keys).toCompletableFuture().join();
 
+        // assertions
         assertThat(toBeResolvedOptional).isNotEmpty();
         assertThat(toBeResolvedOptional).containsOnly(valueObj);
     }
 
     @Test
     void delete_WithUnsuccessfulMockCtpResponse_ShouldReturnProperException() {
+        // preparation
         final CustomObject mock = mock(CustomObject.class);
         when(mock.getContainer()).thenReturn("commercetools-sync-java.UnresolvedReferencesService.productDrafts");
 
@@ -160,9 +174,11 @@ class UnresolvedReferencesServiceImplTest {
         when(productSyncOptions.getCtpClient().execute(any()))
                 .thenReturn(CompletableFutureUtils.failed(new BadRequestException("bad request")));
 
+        // test
         final Optional<WaitingToBeResolved> toBeResolvedOptional = service.delete("product-draft-key")
                 .toCompletableFuture().join();
 
+        // assertions
         assertThat(toBeResolvedOptional).isEmpty();
         assertThat(errorMessages).hasSize(1);
         assertThat(errorExceptions).hasSize(1);
