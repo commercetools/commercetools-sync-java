@@ -141,9 +141,6 @@ class UnresolvedReferencesServiceImplTest {
         WaitingToBeResolved valueObj = new WaitingToBeResolved(productDraft, missingRefs);
         when(mock.getValue()).thenReturn(valueObj);
 
-        Set<String> keys = new HashSet<>();
-        keys.add("product-draft-key");
-
         PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
         when(pagedQueryResult.getCount()).thenReturn(1L);
         when(pagedQueryResult.getOffset()).thenReturn(0L);
@@ -152,7 +149,8 @@ class UnresolvedReferencesServiceImplTest {
         when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(pagedQueryResult));
 
         // test
-        final Set<WaitingToBeResolved> toBeResolvedOptional = service.fetch(keys).toCompletableFuture().join();
+        final Set<WaitingToBeResolved> toBeResolvedOptional = service.fetch(singleton("product-draft-key"))
+                .toCompletableFuture().join();
 
         // assertions
         assertThat(toBeResolvedOptional).isNotEmpty();
