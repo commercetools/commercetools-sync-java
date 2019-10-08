@@ -20,7 +20,6 @@ import java.util.concurrent.CompletionStage;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesService {
 
@@ -61,12 +60,6 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
     @Nonnull
     @Override
     public CompletionStage<Optional<WaitingToBeResolved>> save(@Nonnull final WaitingToBeResolved draft) {
-
-        if (isBlank(draft.getProductDraft().getKey())) {
-            syncOptions.applyErrorCallback(format(SAVE_FAILED, draft.getProductDraft().getKey(),
-                    "Draft key is blank!"));
-            return CompletableFuture.completedFuture(Optional.empty());
-        }
 
         final CustomObjectDraft<WaitingToBeResolved> customObjectDraft = CustomObjectDraft
             .ofUnversionedUpsert(

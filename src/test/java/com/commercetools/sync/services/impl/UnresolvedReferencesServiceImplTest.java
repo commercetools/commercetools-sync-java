@@ -107,21 +107,6 @@ class UnresolvedReferencesServiceImplTest {
                         assertThat(exception).isExactlyInstanceOf(BadRequestException.class));
     }
 
-
-    @Test
-    void save_WithDraftWithoutKey_ShouldNotSaveWaitingToBeResolved() {
-        final WaitingToBeResolved draft = mock(WaitingToBeResolved.class);
-        when(draft.getProductDraft()).thenReturn(mock(ProductDraft.class));
-        final Optional<WaitingToBeResolved> beResolvedOptional = service
-                .save(draft).toCompletableFuture().join();
-
-        assertThat(beResolvedOptional).isEmpty();
-        assertThat(errorMessages).hasSize(1);
-        assertThat(errorExceptions).hasSize(1);
-        assertThat(errorMessages.get(0))
-                .isEqualTo("Failed to save CustomObject with key: 'null'. Reason: Draft key is blank!");
-    }
-
     @Test
     void fetch_WithEmptyKeySet_ShouldReturnEmptySet() {
         Set<String> keys = new HashSet<>();
