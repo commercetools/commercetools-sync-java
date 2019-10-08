@@ -167,14 +167,13 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             .fetchMatchingProductsByKeys(productDraftKeys)
             .handle(ImmutablePair::new)
             .thenCompose(fetchResponse -> {
-                final Set<Product> matchingProducts = fetchResponse.getKey();
                 final Throwable fetchException = fetchResponse.getValue();
-
                 if (fetchException != null) {
                     final String errorMessage = format(CTP_PRODUCT_FETCH_FAILED, productDraftKeys);
                     handleError(errorMessage, fetchException, productDraftKeys.size());
                     return CompletableFuture.completedFuture(null);
                 } else {
+                    final Set<Product> matchingProducts = fetchResponse.getKey();
                     return syncOrKeepTrack(productDrafts, matchingProducts, keyToIdCache)
                         .thenCompose(aVoid -> resolveNowReadyReferences(keyToIdCache));
                 }
