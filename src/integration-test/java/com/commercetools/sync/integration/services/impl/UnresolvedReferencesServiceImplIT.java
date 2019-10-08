@@ -5,10 +5,9 @@ import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.UnresolvedReferencesService;
 import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
-import io.sphere.sdk.customobjects.CustomObject;
-import io.sphere.sdk.customobjects.queries.CustomObjectByKeyGet;
 import io.sphere.sdk.json.SphereJsonUtils;
 import io.sphere.sdk.products.ProductDraft;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -32,12 +31,9 @@ class UnresolvedReferencesServiceImplIT {
     private List<String> warningCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
 
-    private static final String CUSTOM_OBJECT_CONTAINER_KEY =
-        "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
 
-
-    @BeforeEach
-    void setup() {
+    @AfterEach
+    void tearDown() {
         deleteWaitingToBeResolvedCustomObjects(CTP_TARGET_CLIENT);
     }
 
@@ -64,7 +60,7 @@ class UnresolvedReferencesServiceImplIT {
     }
 
     @Test
-    void save_WithoutException_createsNewCustomObject() {
+    void saveFetchAndDelete_WithoutExceptions_shouldWorkCorrectly() {
         // preparation
         final ProductDraft productDraft =
             SphereJsonUtils.readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, ProductDraft.class);
@@ -82,74 +78,27 @@ class UnresolvedReferencesServiceImplIT {
         assertThat(result).hasValueSatisfying(waitingToBeResolved ->
             assertThat(waitingToBeResolved.getProductDraft()).isEqualTo(productDraft));
 
-        final CustomObjectByKeyGet<WaitingToBeResolved> customObjectByKeyGet = CustomObjectByKeyGet
-            .of(CUSTOM_OBJECT_CONTAINER_KEY, productDraft.getKey(), WaitingToBeResolved.class);
-        final CustomObject<WaitingToBeResolved> createdCustomObject = CTP_TARGET_CLIENT
-            .execute(customObjectByKeyGet)
-            .toCompletableFuture()
-            .join();
-
-        assertThat(createdCustomObject.getValue()).isEqualTo(productDraftWithUnresolvedRefs);
-    }
-
-    @Test
-    void fetchCustomObject_shouldReturnCorrectCustomObject() {
-        // preparation
-        final ProductDraft productDraft =
-            SphereJsonUtils.readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, ProductDraft.class);
-
-        final WaitingToBeResolved productDraftWithUnresolvedRefs =
-            new WaitingToBeResolved(productDraft, asSet("foo", "bar"));
-
-        unresolvedReferencesService
-            .save(productDraftWithUnresolvedRefs)
-            .toCompletableFuture()
-            .join();
-
         // test
-        final Set<WaitingToBeResolved> result = unresolvedReferencesService
+        final Set<WaitingToBeResolved> waitingDrafts = unresolvedReferencesService
             .fetch(singleton(productDraft.getKey()))
             .toCompletableFuture()
             .join();
 
         // assertions
-        assertThat(result).hasOnlyOneElementSatisfying(waitingToBeResolved ->
-            assertThat(waitingToBeResolved).isEqualTo(productDraftWithUnresolvedRefs));
-    }
-
-
-    @Test
-    void deleteCustomObject_shouldReturnCorrectCustomObject() {
-        // preparation
-        final ProductDraft productDraft =
-            SphereJsonUtils.readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, ProductDraft.class);
-
-        final WaitingToBeResolved productDraftWithUnresolvedRefs =
-            new WaitingToBeResolved(productDraft, asSet("foo", "bar"));
-
-        unresolvedReferencesService
-            .save(productDraftWithUnresolvedRefs)
-            .toCompletableFuture()
-            .join();
+        assertThat(waitingDrafts).containsExactly(productDraftWithUnresolvedRefs);
 
         // test
-        final Optional<WaitingToBeResolved> result = unresolvedReferencesService
+        final Optional<WaitingToBeResolved> deletionResult = unresolvedReferencesService
             .delete(productDraft.getKey())
             .toCompletableFuture()
             .join();
 
         // assertions
-        assertThat(result).hasValueSatisfying(waitingToBeResolved ->
+        assertThat(deletionResult).hasValueSatisfying(waitingToBeResolved ->
             assertThat(waitingToBeResolved.getProductDraft()).isEqualTo(productDraft));
 
-        final CustomObjectByKeyGet<WaitingToBeResolved> customObjectByKeyGet = CustomObjectByKeyGet
-            .of(CUSTOM_OBJECT_CONTAINER_KEY, productDraft.getKey(), WaitingToBeResolved.class);
-        final CustomObject<WaitingToBeResolved> createdCustomObject = CTP_TARGET_CLIENT
-            .execute(customObjectByKeyGet)
-            .toCompletableFuture()
-            .join();
-
-        assertThat(createdCustomObject).isNull();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(warningCallBackMessages).isEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
     }
-
 }
