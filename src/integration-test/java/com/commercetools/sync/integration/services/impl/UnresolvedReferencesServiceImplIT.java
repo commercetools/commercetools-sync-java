@@ -3,8 +3,8 @@ package com.commercetools.sync.integration.services.impl;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
-import com.commercetools.sync.services.LazyResolutionService;
-import com.commercetools.sync.services.impl.LazyResolutionServiceImpl;
+import com.commercetools.sync.services.UnresolvedReferencesService;
+import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.queries.CustomObjectByKeyGet;
 import io.sphere.sdk.json.SphereJsonUtils;
@@ -24,15 +24,16 @@ import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class LazyResolutionServiceImplIT {
+class UnresolvedReferencesServiceImplIT {
 
-    private LazyResolutionService lazyResolutionService;
+    private UnresolvedReferencesService unresolvedReferencesService;
 
     private List<String> errorCallBackMessages;
     private List<String> warningCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
 
-    private static final String CUSTOM_OBJECT_CONTAINER_KEY = "commercetools-sync-java.LazyResolutionService";
+    private static final String CUSTOM_OBJECT_CONTAINER_KEY =
+        "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
 
 
     @BeforeEach
@@ -59,7 +60,7 @@ class LazyResolutionServiceImplIT {
                             .add(warningMessage))
             .build();
 
-        lazyResolutionService = new LazyResolutionServiceImpl(productSyncOptions);
+        unresolvedReferencesService = new UnresolvedReferencesServiceImpl(productSyncOptions);
     }
 
     @Test
@@ -72,7 +73,7 @@ class LazyResolutionServiceImplIT {
                 new WaitingToBeResolved(productDraft, asSet("foo", "bar"));
 
         // test
-        final Optional<WaitingToBeResolved> result = lazyResolutionService
+        final Optional<WaitingToBeResolved> result = unresolvedReferencesService
             .save(productDraftWithUnresolvedRefs)
             .toCompletableFuture()
             .join();
@@ -100,13 +101,13 @@ class LazyResolutionServiceImplIT {
         final WaitingToBeResolved productDraftWithUnresolvedRefs =
             new WaitingToBeResolved(productDraft, asSet("foo", "bar"));
 
-        lazyResolutionService
+        unresolvedReferencesService
             .save(productDraftWithUnresolvedRefs)
             .toCompletableFuture()
             .join();
 
         // test
-        final Set<WaitingToBeResolved> result = lazyResolutionService
+        final Set<WaitingToBeResolved> result = unresolvedReferencesService
             .fetch(singleton(productDraft.getKey()))
             .toCompletableFuture()
             .join();
@@ -126,13 +127,13 @@ class LazyResolutionServiceImplIT {
         final WaitingToBeResolved productDraftWithUnresolvedRefs =
             new WaitingToBeResolved(productDraft, asSet("foo", "bar"));
 
-        lazyResolutionService
+        unresolvedReferencesService
             .save(productDraftWithUnresolvedRefs)
             .toCompletableFuture()
             .join();
 
         // test
-        final Optional<WaitingToBeResolved> result = lazyResolutionService
+        final Optional<WaitingToBeResolved> result = unresolvedReferencesService
             .delete(productDraft.getKey())
             .toCompletableFuture()
             .join();

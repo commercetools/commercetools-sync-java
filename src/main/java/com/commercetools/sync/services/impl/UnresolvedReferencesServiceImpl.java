@@ -2,7 +2,7 @@ package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.products.ProductSyncOptions;
-import com.commercetools.sync.services.LazyResolutionService;
+import com.commercetools.sync.services.UnresolvedReferencesService;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
 import io.sphere.sdk.customobjects.commands.CustomObjectDeleteCommand;
@@ -21,15 +21,16 @@ import java.util.concurrent.CompletionStage;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
-public class LazyResolutionServiceImpl implements LazyResolutionService {
+public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesService {
 
     private final ProductSyncOptions syncOptions;
 
     private static final String SAVE_FAILED = "Failed to save CustomObject with key: '%s'. Reason: %s";
     private static final String DELETE_FAILED = "Failed to delete CustomObject with key: '%s'. Reason: %s";
-    private static final String CUSTOM_OBJECT_CONTAINER_KEY = "commercetools-sync-java.LazyResolutionService";
+    private static final String CUSTOM_OBJECT_CONTAINER_KEY =
+        "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
 
-    public LazyResolutionServiceImpl(@Nonnull final ProductSyncOptions baseSyncOptions) {
+    public UnresolvedReferencesServiceImpl(@Nonnull final ProductSyncOptions baseSyncOptions) {
         this.syncOptions = baseSyncOptions;
     }
 

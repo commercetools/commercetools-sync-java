@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.isReferenceOfType;
 import static java.lang.String.format;
 import static java.util.Collections.emptySet;
 import static java.util.Objects.requireNonNull;
@@ -111,11 +112,12 @@ public class ProductBatchProcessor {
         if (attributeDrafts == null) {
             return emptySet();
         }
-        return attributeDrafts.stream()
-                              .filter(Objects::nonNull)
-                              .map(ProductBatchProcessor::getReferencedProductKeys)
-                              .flatMap(Collection::stream)
-                              .collect(Collectors.toSet());
+        return attributeDrafts
+            .stream()
+            .filter(Objects::nonNull)
+            .map(ProductBatchProcessor::getReferencedProductKeys)
+            .flatMap(Collection::stream)
+            .collect(Collectors.toSet());
     }
 
     /**
@@ -125,7 +127,7 @@ public class ProductBatchProcessor {
      * @return set of referenced product keys given an attribute draft.
      */
     @Nonnull
-    static Set<String> getReferencedProductKeys(@Nonnull final AttributeDraft attributeDraft) {
+    private static Set<String> getReferencedProductKeys(@Nonnull final AttributeDraft attributeDraft) {
 
         final JsonNode attributeDraftValue = attributeDraft.getValue();
         if (attributeDraftValue == null) {
@@ -136,8 +138,9 @@ public class ProductBatchProcessor {
 
         return allAttributeReferences
             .stream()
-            .filter(reference -> Product.referenceTypeId().equals(reference.get(REFERENCE_TYPE_ID_FIELD).asText()))
+            .filter(reference -> isReferenceOfType(reference, Product.referenceTypeId()))
             .map(reference -> reference.get(REFERENCE_ID_FIELD).asText())
+            .filter(Objects::nonNull)
             .collect(Collectors.toSet());
     }
 

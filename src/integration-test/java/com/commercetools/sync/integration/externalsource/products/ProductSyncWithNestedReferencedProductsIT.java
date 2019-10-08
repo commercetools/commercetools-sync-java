@@ -1,9 +1,11 @@
 package com.commercetools.sync.integration.externalsource.products;
 
+import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
+import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -35,6 +37,7 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
@@ -49,6 +52,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_
 import static com.commercetools.sync.products.ProductSyncMockUtils.createReferenceObject;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -491,6 +495,21 @@ class ProductSyncWithNestedReferencedProductsIT {
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(actions).isEmpty();
+
+        final UnresolvedReferencesServiceImpl unresolvedReferencesService =
+            new UnresolvedReferencesServiceImpl(syncOptions);
+        final Set<WaitingToBeResolved> waitingToBeResolvedDrafts = unresolvedReferencesService
+            .fetch(asSet(productDraftWithProductReference.getKey()))
+            .toCompletableFuture()
+            .join();
+
+        assertThat(waitingToBeResolvedDrafts)
+            .hasOnlyOneElementSatisfying(waitingToBeResolvedDraft -> {
+                assertThat(waitingToBeResolvedDraft.getProductDraft().getKey())
+                    .isEqualTo(productDraftWithProductReference.getKey());
+                assertThat(waitingToBeResolvedDraft.getMissingReferencedProductKeys())
+                    .containsExactly("nonExistingKey");
+            });
     }
 
     @Test
@@ -604,6 +623,21 @@ class ProductSyncWithNestedReferencedProductsIT {
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(actions).isEmpty();
+
+        final UnresolvedReferencesServiceImpl unresolvedReferencesService =
+            new UnresolvedReferencesServiceImpl(syncOptions);
+        final Set<WaitingToBeResolved> waitingToBeResolvedDrafts = unresolvedReferencesService
+            .fetch(asSet(productDraftWithProductReference.getKey()))
+            .toCompletableFuture()
+            .join();
+
+        assertThat(waitingToBeResolvedDrafts)
+            .hasOnlyOneElementSatisfying(waitingToBeResolvedDraft -> {
+                assertThat(waitingToBeResolvedDraft.getProductDraft().getKey())
+                    .isEqualTo(productDraftWithProductReference.getKey());
+                assertThat(waitingToBeResolvedDraft.getMissingReferencedProductKeys())
+                    .containsExactly("nonExistingKey");
+            });
     }
 
     @Test
