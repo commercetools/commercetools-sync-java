@@ -141,7 +141,7 @@ class UnresolvedReferencesServiceImplTest {
         WaitingToBeResolved valueObj = new WaitingToBeResolved(productDraft, missingRefs);
         when(mock.getValue()).thenReturn(valueObj);
 
-        PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
+        final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
         when(pagedQueryResult.getCount()).thenReturn(1L);
         when(pagedQueryResult.getOffset()).thenReturn(0L);
         when(pagedQueryResult.getResults()).thenReturn(Collections.singletonList(mock));
