@@ -821,7 +821,7 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
         // assertion
         assertThat(syncStatistics).hasValues(2, 1, 0, 1, 0);
         assertThat(errorCallBackMessages)
-            .containsExactly("Failed to fetch drafts waiting to be resolved with keys '[foo]'.");
+            .containsExactly("Failed to fetch ProductDrafts waiting to be resolved with keys '[foo]'.");
         assertThat(errorCallBackExceptions)
             .hasOnlyOneElementSatisfying(exception -> assertThat(exception.getCause()).isEqualTo(gatewayException));
         assertThat(warningCallBackMessages).isEmpty();
