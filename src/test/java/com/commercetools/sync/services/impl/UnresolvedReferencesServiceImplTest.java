@@ -51,7 +51,7 @@ class UnresolvedReferencesServiceImplTest {
     }
 
     @Test
-    void save_WithSuccessfulMockCtpResponse_ShouldReturnMock() {
+    void save_WithSuccessfulMockCtpResponse_ShouldSaveMock() {
         // preparation
         final CustomObject mock = mock(CustomObject.class);
         when(mock.getContainer()).thenReturn("commercetools-sync-java.UnresolvedReferencesService.productDrafts");
