@@ -51,6 +51,46 @@ class UnresolvedReferencesServiceImplTest {
     }
 
     @Test
+    void fetch_WithEmptyKeySet_ShouldReturnEmptySet() {
+        // preparation
+        final Set<String> keys = new HashSet<>();
+
+        // test
+        final Set<WaitingToBeResolved> result = service
+            .fetch(keys)
+            .toCompletableFuture()
+            .join();
+
+        // assertions
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void fetch_OnSuccess_ShouldReturnMock() {
+        // preparation
+        final CustomObject customObjectMock = mock(CustomObject.class);
+        final ProductDraft productDraftMock = mock(ProductDraft.class);
+        when(productDraftMock.getKey()).thenReturn("product-draft-key");
+
+        final WaitingToBeResolved waitingToBeResolved =
+            new WaitingToBeResolved(productDraftMock, singleton("test-ref"));
+        when(customObjectMock.getValue()).thenReturn(waitingToBeResolved);
+
+        final PagedQueryResult result = getMockPagedQueryResult(singletonList(customObjectMock));
+        when(productSyncOptions.getCtpClient().execute(any(CustomObjectQuery.class)))
+            .thenReturn(completedFuture(result));
+
+        // test
+        final Set<WaitingToBeResolved> toBeResolvedOptional = service
+            .fetch(singleton("product-draft-key"))
+            .toCompletableFuture()
+            .join();
+
+        // assertions
+        assertThat(toBeResolvedOptional).containsOnly(waitingToBeResolved);
+    }
+
+    @Test
     void save_OnSuccess_ShouldSaveMock() {
         // preparation
         final CustomObject customObjectMock = mock(CustomObject.class);
@@ -104,46 +144,6 @@ class UnresolvedReferencesServiceImplTest {
                 .hasSize(1)
                 .hasOnlyOneElementSatisfying(exception ->
                         assertThat(exception).isExactlyInstanceOf(BadRequestException.class));
-    }
-
-    @Test
-    void fetch_WithEmptyKeySet_ShouldReturnEmptySet() {
-        // preparation
-        final Set<String> keys = new HashSet<>();
-
-        // test
-        final Set<WaitingToBeResolved> result = service
-            .fetch(keys)
-            .toCompletableFuture()
-            .join();
-
-        // assertions
-        assertThat(result).isEmpty();
-    }
-
-    @Test
-    void fetch_OnSuccess_ShouldReturnMock() {
-        // preparation
-        final CustomObject customObjectMock = mock(CustomObject.class);
-        final ProductDraft productDraftMock = mock(ProductDraft.class);
-        when(productDraftMock.getKey()).thenReturn("product-draft-key");
-
-        final WaitingToBeResolved waitingToBeResolved =
-            new WaitingToBeResolved(productDraftMock, singleton("test-ref"));
-        when(customObjectMock.getValue()).thenReturn(waitingToBeResolved);
-
-        final PagedQueryResult result = getMockPagedQueryResult(singletonList(customObjectMock));
-        when(productSyncOptions.getCtpClient().execute(any(CustomObjectQuery.class)))
-            .thenReturn(completedFuture(result));
-
-        // test
-        final Set<WaitingToBeResolved> toBeResolvedOptional = service
-            .fetch(singleton("product-draft-key"))
-            .toCompletableFuture()
-            .join();
-
-        // assertions
-        assertThat(toBeResolvedOptional).containsOnly(waitingToBeResolved);
     }
 
     @Test
