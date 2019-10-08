@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static java.util.Collections.singleton;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -166,10 +167,8 @@ class UnresolvedReferencesServiceImplTest {
 
         final ProductDraft productDraft = mock(ProductDraft.class);
         when(productDraft.getKey()).thenReturn("product-draft-key");
-        final Set<String> missingRefs = new HashSet<>();
-        missingRefs.add("test-ref");
-        WaitingToBeResolved valueObj = new WaitingToBeResolved(productDraft, missingRefs);
-        when(mock.getValue()).thenReturn(valueObj);
+        final WaitingToBeResolved waitingDraft = new WaitingToBeResolved(productDraft, singleton("test-ref"));
+        when(mock.getValue()).thenReturn(waitingDraft);
 
         when(productSyncOptions.getCtpClient().execute(any()))
                 .thenReturn(CompletableFutureUtils.failed(new BadRequestException("bad request")));
