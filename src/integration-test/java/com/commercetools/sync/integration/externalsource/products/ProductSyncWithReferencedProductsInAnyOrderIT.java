@@ -44,6 +44,7 @@ import java.util.function.Consumer;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
+import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.deleteWaitingToBeResolvedCustomObjects;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
@@ -83,6 +84,7 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
     void setupTest() {
         clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
+        deleteWaitingToBeResolvedCustomObjects(CTP_TARGET_CLIENT);
         syncOptions = buildSyncOptions();
 
         final ProductDraft productDraft = ProductDraftBuilder
@@ -797,7 +799,8 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
 
         final BadGatewayException gatewayException = new BadGatewayException("failed to respond.");
         when(ctpClient.execute(any(CustomObjectQuery.class)))
-            .thenReturn(CompletableFutureUtils.failed(gatewayException));
+            .thenReturn(CompletableFutureUtils.failed(gatewayException))
+            .thenCallRealMethod();
 
 
         syncOptions = ProductSyncOptionsBuilder
