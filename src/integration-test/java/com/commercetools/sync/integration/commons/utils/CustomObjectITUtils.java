@@ -18,7 +18,7 @@ public final class CustomObjectITUtils {
         "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
 
     /**
-     * This method is expected to be used only by tests, it only works on projects with less than equal to 20 custom
+     * This method is expected to be used only by tests, it only works on projects with less than or equal to 20 custom
      * objects. Otherwise, it won't delete all the custom objects in the project of the client.
      *
      * @param ctpClient the client to delete the custom objects from.
