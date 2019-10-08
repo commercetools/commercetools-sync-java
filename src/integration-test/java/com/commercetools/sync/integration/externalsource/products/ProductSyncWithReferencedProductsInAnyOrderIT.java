@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.Product;
@@ -25,6 +26,7 @@ import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
 import io.sphere.sdk.products.queries.ProductByKeyGet;
 import io.sphere.sdk.producttypes.ProductType;
+import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -199,6 +201,19 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
                 .isEqualTo(Product.referenceTypeId());
             assertThat(attribute.getValueAsJsonNode().get(REFERENCE_ID_FIELD).asText()).isEqualTo(syncedParent.getId());
         });
+
+        assertNoWaitingDrafts(CTP_TARGET_CLIENT);
+    }
+
+    private void assertNoWaitingDrafts(@Nonnull final SphereClient client) {
+        final CustomObjectQuery<WaitingToBeResolved> customObjectQuery =
+            CustomObjectQuery.of(WaitingToBeResolved.class)
+                             .byContainer("commercetools-sync-java.UnresolvedReferencesService.productDrafts");
+
+        final PagedQueryResult<CustomObject<WaitingToBeResolved>> queryResult =
+            client.execute(customObjectQuery).toCompletableFuture().join();
+
+        assertThat(queryResult.getResults()).isEmpty();
     }
 
     @Test
@@ -308,6 +323,8 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
             assertThat(attribute.getValueAsJsonNode().get(1).get(REFERENCE_ID_FIELD).asText())
                 .isEqualTo(syncedParent2.getId());
         });
+
+        assertNoWaitingDrafts(CTP_TARGET_CLIENT);
     }
 
     @Test
@@ -411,6 +428,8 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
                 .isEqualTo(Product.referenceTypeId());
             assertThat(attribute.getValueAsJsonNode().get(REFERENCE_ID_FIELD).asText()).isEqualTo(syncedParent.getId());
         });
+
+        assertNoWaitingDrafts(CTP_TARGET_CLIENT);
     }
 
     @Test
@@ -657,6 +676,8 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
             assertThat(attribute.getValueAsJsonNode().get(REFERENCE_ID_FIELD).asText())
                 .isEqualTo(syncedParent.getId());
         });
+
+        assertNoWaitingDrafts(CTP_TARGET_CLIENT);
     }
 
     @Test
@@ -802,5 +823,17 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
             .hasOnlyOneElementSatisfying(exception -> assertThat(exception.getCause()).isEqualTo(gatewayException));
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(actions).isEmpty();
+
+        final UnresolvedReferencesService unresolvedReferencesService =
+            new UnresolvedReferencesServiceImpl(syncOptions);
+
+        final Set<WaitingToBeResolved> waitingDrafts = unresolvedReferencesService
+            .fetch(asSet(childDraft1.getKey()))
+            .toCompletableFuture()
+            .join();
+
+        assertThat(waitingDrafts).containsExactly(
+            new WaitingToBeResolved(childDraft1, singleton(parentProductKey))
+        );
     }
 }
