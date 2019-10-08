@@ -153,7 +153,6 @@ class UnresolvedReferencesServiceImplTest {
     @Test
     void delete_WithUnsuccessfulMockCtpResponse_ShouldReturnProperException() {
         // preparation
-        final CustomObject customObjectMock = mock(CustomObject.class);
         final ProductDraft productDraftMock = mock(ProductDraft.class);
         when(productDraftMock.getKey()).thenReturn("product-draft-key");
         when(productSyncOptions.getCtpClient().execute(any()))
