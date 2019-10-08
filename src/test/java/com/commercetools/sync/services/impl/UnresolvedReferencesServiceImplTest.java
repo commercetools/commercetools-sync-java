@@ -53,17 +53,18 @@ class UnresolvedReferencesServiceImplTest {
     @Test
     void save_WithSuccessfulMockCtpResponse_ShouldSaveMock() {
         // preparation
-        final CustomObject mock = mock(CustomObject.class);
-        when(mock.getContainer()).thenReturn("commercetools-sync-java.UnresolvedReferencesService.productDrafts");
+        final CustomObject customObjectMock = mock(CustomObject.class);
+        when(customObjectMock.getContainer())
+                .thenReturn("commercetools-sync-java.UnresolvedReferencesService.productDrafts");
 
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getKey()).thenReturn("product-draft-key");
+        final ProductDraft productDraftMock = mock(ProductDraft.class);
+        when(productDraftMock.getKey()).thenReturn("product-draft-key");
         final Set<String> missingRefs = new HashSet<>();
         missingRefs.add("test-ref");
-        WaitingToBeResolved valueObj = new WaitingToBeResolved(productDraft, missingRefs);
-        when(mock.getValue()).thenReturn(valueObj);
+        WaitingToBeResolved valueObj = new WaitingToBeResolved(productDraftMock, missingRefs);
+        when(customObjectMock.getValue()).thenReturn(valueObj);
 
-        when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mock));
+        when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(customObjectMock));
 
         // test
         final Optional<WaitingToBeResolved> toBeResolvedOptional = service.save(valueObj).toCompletableFuture().join();
@@ -83,15 +84,16 @@ class UnresolvedReferencesServiceImplTest {
     @Test
     void save_WithUnsuccessfulMockCtpResponse_ShouldNotSaveMock() {
         // preparation
-        final CustomObject mock = mock(CustomObject.class);
-        when(mock.getContainer()).thenReturn("commercetools-sync-java.UnresolvedReferencesService.productDrafts");
+        final CustomObject customObjectMock = mock(CustomObject.class);
+        when(customObjectMock.getContainer())
+                .thenReturn("commercetools-sync-java.UnresolvedReferencesService.productDrafts");
 
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getKey()).thenReturn("product-draft-key");
+        final ProductDraft productDraftMock = mock(ProductDraft.class);
+        when(productDraftMock.getKey()).thenReturn("product-draft-key");
         final Set<String> missingRefs = new HashSet<>();
         missingRefs.add("test-ref");
-        WaitingToBeResolved valueObj = new WaitingToBeResolved(productDraft, missingRefs);
-        when(mock.getValue()).thenReturn(valueObj);
+        WaitingToBeResolved valueObj = new WaitingToBeResolved(productDraftMock, missingRefs);
+        when(customObjectMock.getValue()).thenReturn(valueObj);
 
         when(productSyncOptions.getCtpClient().execute(any()))
                 .thenReturn(CompletableFutureUtils.failed(new BadRequestException("bad request")));
@@ -131,20 +133,21 @@ class UnresolvedReferencesServiceImplTest {
     @Test
     void fetch_WithSuccessfulMockCtpResponse_ShouldReturnMock() {
         // preparation
-        final CustomObject mock = mock(CustomObject.class);
-        when(mock.getContainer()).thenReturn("commercetools-sync-java.UnresolvedReferencesService.productDrafts");
+        final CustomObject customObjectMock = mock(CustomObject.class);
+        when(customObjectMock.getContainer())
+                .thenReturn("commercetools-sync-java.UnresolvedReferencesService.productDrafts");
 
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getKey()).thenReturn("product-draft-key");
+        final ProductDraft productDraftMock = mock(ProductDraft.class);
+        when(productDraftMock.getKey()).thenReturn("product-draft-key");
         final Set<String> missingRefs = new HashSet<>();
         missingRefs.add("test-ref");
-        WaitingToBeResolved valueObj = new WaitingToBeResolved(productDraft, missingRefs);
-        when(mock.getValue()).thenReturn(valueObj);
+        WaitingToBeResolved valueObj = new WaitingToBeResolved(productDraftMock, missingRefs);
+        when(customObjectMock.getValue()).thenReturn(valueObj);
 
         final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
         when(pagedQueryResult.getCount()).thenReturn(1L);
         when(pagedQueryResult.getOffset()).thenReturn(0L);
-        when(pagedQueryResult.getResults()).thenReturn(Collections.singletonList(mock));
+        when(pagedQueryResult.getResults()).thenReturn(Collections.singletonList(customObjectMock));
 
         when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(pagedQueryResult));
 
@@ -160,13 +163,14 @@ class UnresolvedReferencesServiceImplTest {
     @Test
     void delete_WithUnsuccessfulMockCtpResponse_ShouldReturnProperException() {
         // preparation
-        final CustomObject mock = mock(CustomObject.class);
-        when(mock.getContainer()).thenReturn("commercetools-sync-java.UnresolvedReferencesService.productDrafts");
+        final CustomObject customObjectMock = mock(CustomObject.class);
+        when(customObjectMock.getContainer())
+                .thenReturn("commercetools-sync-java.UnresolvedReferencesService.productDrafts");
 
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getKey()).thenReturn("product-draft-key");
-        final WaitingToBeResolved waitingDraft = new WaitingToBeResolved(productDraft, singleton("test-ref"));
-        when(mock.getValue()).thenReturn(waitingDraft);
+        final ProductDraft productDraftMock = mock(ProductDraft.class);
+        when(productDraftMock.getKey()).thenReturn("product-draft-key");
+        final WaitingToBeResolved waitingDraft = new WaitingToBeResolved(productDraftMock, singleton("test-ref"));
+        when(customObjectMock.getValue()).thenReturn(waitingDraft);
 
         when(productSyncOptions.getCtpClient().execute(any()))
                 .thenReturn(CompletableFutureUtils.failed(new BadRequestException("bad request")));
@@ -195,15 +199,16 @@ class UnresolvedReferencesServiceImplTest {
     @Test
     void delete_WithSuccessfulMockCtpResponse_ShouldRemoveTheResourceObject() {
         // preparation
-        final CustomObject mock = mock(CustomObject.class);
-        when(mock.getContainer()).thenReturn("commercetools-sync-java.UnresolvedReferencesService.productDrafts");
+        final CustomObject customObjectMock = mock(CustomObject.class);
+        when(customObjectMock.getContainer())
+                .thenReturn("commercetools-sync-java.UnresolvedReferencesService.productDrafts");
 
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getKey()).thenReturn("product-draft-key");
-        final WaitingToBeResolved waitingDraft = new WaitingToBeResolved(productDraft, singleton("test-ref"));
-        when(mock.getValue()).thenReturn(waitingDraft);
+        final ProductDraft productDraftMock = mock(ProductDraft.class);
+        when(productDraftMock.getKey()).thenReturn("product-draft-key");
+        final WaitingToBeResolved waitingDraft = new WaitingToBeResolved(productDraftMock, singleton("test-ref"));
+        when(customObjectMock.getValue()).thenReturn(waitingDraft);
 
-        when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mock));
+        when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(customObjectMock));
 
         // test
         final Optional<WaitingToBeResolved> toBeResolvedOptional = service.delete("product-draft-key")
