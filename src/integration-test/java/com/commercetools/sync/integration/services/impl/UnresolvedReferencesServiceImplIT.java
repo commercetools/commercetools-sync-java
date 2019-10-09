@@ -9,6 +9,7 @@ import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.queries.CustomObjectByKeyGet;
 import io.sphere.sdk.json.SphereJsonUtils;
 import io.sphere.sdk.products.ProductDraft;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -36,8 +37,9 @@ class UnresolvedReferencesServiceImplIT {
         "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
 
 
-    @BeforeEach
-    void setup() {
+
+    @AfterEach
+    void tearDown() {
         deleteWaitingToBeResolvedCustomObjects(CTP_TARGET_CLIENT);
     }
 
@@ -47,30 +49,26 @@ class UnresolvedReferencesServiceImplIT {
         errorCallBackExceptions = new ArrayList<>();
         warningCallBackMessages = new ArrayList<>();
 
-        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-            .errorCallback(
-                (errorMessage, exception) -> {
-                    errorCallBackMessages
-                            .add(errorMessage);
-                    errorCallBackExceptions
-                            .add(exception);
-                })
-            .warningCallback(warningMessage ->
-                    warningCallBackMessages
-                            .add(warningMessage))
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .errorCallback((errorMessage, exception) -> {
+                errorCallBackMessages.add(errorMessage);
+                errorCallBackExceptions.add(exception);
+            })
+            .warningCallback(warningMessage -> warningCallBackMessages.add(warningMessage))
             .build();
 
         unresolvedReferencesService = new UnresolvedReferencesServiceImpl(productSyncOptions);
     }
 
     @Test
-    void save_WithoutException_createsNewCustomObject() {
+    void saveFetchAndDelete_WithoutExceptions_shouldWorkCorrectly() {
         // preparation
         final ProductDraft productDraft =
             SphereJsonUtils.readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, ProductDraft.class);
 
         final WaitingToBeResolved productDraftWithUnresolvedRefs =
-                new WaitingToBeResolved(productDraft, asSet("foo", "bar"));
+            new WaitingToBeResolved(productDraft, asSet("foo", "bar"));
 
         // test
         final Optional<WaitingToBeResolved> result = unresolvedReferencesService
@@ -82,44 +80,34 @@ class UnresolvedReferencesServiceImplIT {
         assertThat(result).hasValueSatisfying(waitingToBeResolved ->
             assertThat(waitingToBeResolved.getProductDraft()).isEqualTo(productDraft));
 
-        final CustomObjectByKeyGet<WaitingToBeResolved> customObjectByKeyGet = CustomObjectByKeyGet
-            .of(CUSTOM_OBJECT_CONTAINER_KEY, productDraft.getKey(), WaitingToBeResolved.class);
-        final CustomObject<WaitingToBeResolved> createdCustomObject = CTP_TARGET_CLIENT
-            .execute(customObjectByKeyGet)
-            .toCompletableFuture()
-            .join();
-
-        assertThat(createdCustomObject.getValue()).isEqualTo(productDraftWithUnresolvedRefs);
-    }
-
-    @Test
-    void fetchCustomObject_shouldReturnCorrectCustomObject() {
-        // preparation
-        final ProductDraft productDraft =
-            SphereJsonUtils.readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, ProductDraft.class);
-
-        final WaitingToBeResolved productDraftWithUnresolvedRefs =
-            new WaitingToBeResolved(productDraft, asSet("foo", "bar"));
-
-        unresolvedReferencesService
-            .save(productDraftWithUnresolvedRefs)
-            .toCompletableFuture()
-            .join();
-
         // test
-        final Set<WaitingToBeResolved> result = unresolvedReferencesService
+        final Set<WaitingToBeResolved> waitingDrafts = unresolvedReferencesService
             .fetch(singleton(productDraft.getKey()))
             .toCompletableFuture()
             .join();
 
         // assertions
-        assertThat(result).hasOnlyOneElementSatisfying(waitingToBeResolved ->
-            assertThat(waitingToBeResolved).isEqualTo(productDraftWithUnresolvedRefs));
+        assertThat(waitingDrafts).containsExactly(productDraftWithUnresolvedRefs);
+
+        // test
+        final Optional<WaitingToBeResolved> deletionResult = unresolvedReferencesService
+            .delete(productDraft.getKey())
+            .toCompletableFuture()
+            .join();
+
+        // assertions
+        assertThat(deletionResult).hasValueSatisfying(waitingToBeResolved ->
+            assertThat(waitingToBeResolved.getProductDraft()).isEqualTo(productDraft));
+
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(warningCallBackMessages).isEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
+
+
     }
 
-
     @Test
-    void deleteCustomObject_shouldReturnCorrectCustomObject() {
+    void save_ExistingProductDraftWithoutException_overwritesOldCustomObjectValue() {
         // preparation
         final ProductDraft productDraft =
             SphereJsonUtils.readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, ProductDraft.class);
@@ -132,15 +120,23 @@ class UnresolvedReferencesServiceImplIT {
             .toCompletableFuture()
             .join();
 
+        final WaitingToBeResolved productDraftWithUnresolvedNewRefs =
+            new WaitingToBeResolved(productDraft, asSet("foo123", "bar123"));
+
         // test
-        final Optional<WaitingToBeResolved> result = unresolvedReferencesService
-            .delete(productDraft.getKey())
+        final Optional<WaitingToBeResolved> latestResult = unresolvedReferencesService
+            .save(productDraftWithUnresolvedNewRefs)
             .toCompletableFuture()
             .join();
 
+
         // assertions
-        assertThat(result).hasValueSatisfying(waitingToBeResolved ->
-            assertThat(waitingToBeResolved.getProductDraft()).isEqualTo(productDraft));
+        assertThat(latestResult).hasValueSatisfying(waitingToBeResolved -> {
+            assertThat(waitingToBeResolved.getProductDraft())
+                .isEqualTo(productDraft);
+            assertThat(waitingToBeResolved.getMissingReferencedProductKeys())
+                .isEqualTo(productDraftWithUnresolvedNewRefs);
+        });
 
         final CustomObjectByKeyGet<WaitingToBeResolved> customObjectByKeyGet = CustomObjectByKeyGet
             .of(CUSTOM_OBJECT_CONTAINER_KEY, productDraft.getKey(), WaitingToBeResolved.class);
@@ -149,7 +145,9 @@ class UnresolvedReferencesServiceImplIT {
             .toCompletableFuture()
             .join();
 
-        assertThat(createdCustomObject).isNull();
+        assertThat(createdCustomObject.getValue()).isEqualTo(productDraftWithUnresolvedNewRefs);
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(warningCallBackMessages).isEmpty();
     }
-
 }
