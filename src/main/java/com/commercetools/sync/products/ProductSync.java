@@ -58,8 +58,8 @@ import static java.util.stream.Collectors.toMap;
 public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, ProductSyncOptions> {
     private static final String CTP_PRODUCT_FETCH_FAILED = "Failed to fetch existing products with keys:"
         + " '%s'.";
-    private static final String UNRESOLVED_REFERENCES_STORE_FETCH_FAILED = "Failed to fetch drafts waiting to be "
-        + "resolved with keys '%s'.";
+    private static final String UNRESOLVED_REFERENCES_STORE_FETCH_FAILED = "Failed to fetch ProductDrafts waiting to "
+        + "be resolved with keys '%s'.";
     private static final String UPDATE_FAILED = "Failed to update Product with key: '%s'. Reason: %s";
     private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
         + "ProductDraft with key:'%s'. Reason: %s";
@@ -137,7 +137,8 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                 final Throwable cachingException = cachingResponse.getValue();
 
                 if (cachingException != null) {
-                    handleError("Failed to build a cache of keys to ids.", cachingException, keysToCache.size());
+                    handleError("Failed to build a cache of product keys to ids.", cachingException,
+                        keysToCache.size());
                     return CompletableFuture.completedFuture(null);
                 } else {
                     return syncBatch(validDrafts, keyToIdCache);

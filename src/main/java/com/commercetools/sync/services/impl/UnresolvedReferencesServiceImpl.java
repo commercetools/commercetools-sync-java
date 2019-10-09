@@ -60,6 +60,7 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
     @Nonnull
     @Override
     public CompletionStage<Optional<WaitingToBeResolved>> save(@Nonnull final WaitingToBeResolved draft) {
+
         final CustomObjectDraft<WaitingToBeResolved> customObjectDraft = CustomObjectDraft
             .ofUnversionedUpsert(
                 CUSTOM_OBJECT_CONTAINER_KEY,

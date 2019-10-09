@@ -134,7 +134,7 @@ class ProductSyncTest {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).contains("Failed to build a cache of keys to ids.")
+                assertThat(message).contains("Failed to build a cache of product keys to ids.")
             );
 
         assertThat(exceptions)
