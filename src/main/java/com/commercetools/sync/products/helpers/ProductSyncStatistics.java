@@ -4,14 +4,27 @@ import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.lang.String.format;
 
 public class ProductSyncStatistics extends BaseSyncStatistics {
 
+    /**
+     * The following {@link Map} ({@code productKeysWithMissingParents}) represents products with
+     * missing parents (other referenced products).
+     *
+     * <ul>
+     *     <li>key: key of the missing parent product</li>
+     *     <li>value: a set of the parent's children product keys</li>
+     * </ul>
+     *
+     * <p>The map is thread-safe (by instantiating it with {@link ConcurrentHashMap}).
+     *
+     */
     private ConcurrentHashMap<String, Set<String>> productKeysWithMissingParents = new ConcurrentHashMap<>();
 
     /**
@@ -53,16 +66,11 @@ public class ProductSyncStatistics extends BaseSyncStatistics {
      * @param childKey  the key of the product with a missing parent.
      */
     public void addMissingDependency(@Nonnull final String parentKey, @Nonnull final String childKey) {
+        productKeysWithMissingParents.merge(parentKey, asSet(childKey), (existingSet, newChildAsSet) -> {
+            existingSet.addAll(newChildAsSet);
+            return existingSet;
+        });
 
-        final Set<String> missingParentProductChildrenKeys =
-            productKeysWithMissingParents.get(parentKey);
-        if (missingParentProductChildrenKeys != null) {
-            missingParentProductChildrenKeys.add(childKey);
-        } else {
-            final Set<String> newChildProductKeys = new HashSet<>();
-            newChildProductKeys.add(childKey);
-            productKeysWithMissingParents.put(parentKey, newChildProductKeys);
-        }
     }
 
     @Nullable

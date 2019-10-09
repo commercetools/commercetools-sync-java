@@ -10,21 +10,21 @@ import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.CustomerGroupService;
-import com.commercetools.sync.services.UnresolvedReferencesService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.services.UnresolvedReferencesService;
 import com.commercetools.sync.services.impl.CategoryServiceImpl;
 import com.commercetools.sync.services.impl.ChannelServiceImpl;
 import com.commercetools.sync.services.impl.CustomerGroupServiceImpl;
-import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
 import com.commercetools.sync.services.impl.ProductServiceImpl;
 import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
 import com.commercetools.sync.services.impl.StateServiceImpl;
 import com.commercetools.sync.services.impl.TaxCategoryServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
+import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
@@ -47,6 +47,7 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.products.utils.ProductSyncUtils.buildActions;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.getAllVariants;
 import static io.sphere.sdk.states.StateType.PRODUCT_STATE;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
@@ -57,8 +58,8 @@ import static java.util.stream.Collectors.toMap;
 public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, ProductSyncOptions> {
     private static final String CTP_PRODUCT_FETCH_FAILED = "Failed to fetch existing products with keys:"
         + " '%s'.";
-    private static final String UNRESOLVED_REFERENCES_STORE_FETCH_FAILED = "Failed to fetch drafts waiting to be "
-        + "resolved with keys '%s'.";
+    private static final String UNRESOLVED_REFERENCES_STORE_FETCH_FAILED = "Failed to fetch ProductDrafts waiting to "
+        + "be resolved with keys '%s'.";
     private static final String UPDATE_FAILED = "Failed to update Product with key: '%s'. Reason: %s";
     private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
         + "ProductDraft with key:'%s'. Reason: %s";
@@ -136,7 +137,8 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                 final Throwable cachingException = cachingResponse.getValue();
 
                 if (cachingException != null) {
-                    handleError("Failed to build a cache of keys to ids.", cachingException, keysToCache.size());
+                    handleError("Failed to build a cache of product keys to ids.", cachingException,
+                        keysToCache.size());
                     return CompletableFuture.completedFuture(null);
                 } else {
                     return syncBatch(validDrafts, keyToIdCache);
@@ -167,14 +169,13 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             .fetchMatchingProductsByKeys(productDraftKeys)
             .handle(ImmutablePair::new)
             .thenCompose(fetchResponse -> {
-                final Set<Product> matchingProducts = fetchResponse.getKey();
                 final Throwable fetchException = fetchResponse.getValue();
-
                 if (fetchException != null) {
                     final String errorMessage = format(CTP_PRODUCT_FETCH_FAILED, productDraftKeys);
                     handleError(errorMessage, fetchException, productDraftKeys.size());
                     return CompletableFuture.completedFuture(null);
                 } else {
+                    final Set<Product> matchingProducts = fetchResponse.getKey();
                     return syncOrKeepTrack(productDrafts, matchingProducts, keyToIdCache)
                         .thenCompose(aVoid -> resolveNowReadyReferences(keyToIdCache));
                 }
@@ -215,17 +216,11 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         @Nonnull final ProductDraft newProduct,
         @Nonnull final Map<String, String> keyToIdCache) {
 
-        final Set<String> referencedProductKeys = newProduct
-            .getVariants()
+        final Set<String> referencedProductKeys = getAllVariants(newProduct)
             .stream()
             .map(ProductBatchProcessor::getReferencedProductKeys)
             .flatMap(Collection::stream)
             .collect(Collectors.toSet());
-
-        // add also master variant keys
-        ofNullable(newProduct.getMasterVariant())
-            .map(ProductBatchProcessor::getReferencedProductKeys)
-            .ifPresent(referencedProductKeys::addAll);
 
         return referencedProductKeys
             .stream()
@@ -235,10 +230,11 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
     private CompletionStage<Optional<WaitingToBeResolved>> keepTrackOfMissingReferences(
         @Nonnull final ProductDraft newProduct,
-        @Nonnull final Set<String> referencedProductKeys) {
+        @Nonnull final Set<String> missingReferencedProductKeys) {
 
-        referencedProductKeys.forEach(parentKey -> statistics.addMissingDependency(parentKey, newProduct.getKey()));
-        return unresolvedReferencesService.save(new WaitingToBeResolved(newProduct, referencedProductKeys));
+        missingReferencedProductKeys.forEach(missingParentKey ->
+            statistics.addMissingDependency(missingParentKey, newProduct.getKey()));
+        return unresolvedReferencesService.save(new WaitingToBeResolved(newProduct, missingReferencedProductKeys));
     }
 
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
