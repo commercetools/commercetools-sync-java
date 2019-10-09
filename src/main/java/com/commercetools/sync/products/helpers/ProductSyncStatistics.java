@@ -4,6 +4,7 @@ import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -44,16 +45,17 @@ public class ProductSyncStatistics extends BaseSyncStatistics {
     }
 
     /**
-     * Returns the total number of categories with missing parents.
+     * Returns the total number of products with missing parents.
      *
-     * @return the total number of categories with missing parents.
+     * @return the total number of products with missing parents.
      */
     public int getNumberOfProductsWithMissingParents() {
-        return productKeysWithMissingParents
+        return (int) productKeysWithMissingParents
             .values()
             .stream()
-            .mapToInt(Set::size)
-            .sum();
+            .flatMap(Collection::stream)
+            .distinct()
+            .count();
     }
 
     /**
@@ -70,7 +72,6 @@ public class ProductSyncStatistics extends BaseSyncStatistics {
             existingSet.addAll(newChildAsSet);
             return existingSet;
         });
-
     }
 
     @Nullable
