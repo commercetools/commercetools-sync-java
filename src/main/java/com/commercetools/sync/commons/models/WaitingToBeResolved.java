@@ -24,6 +24,8 @@ public final class WaitingToBeResolved {
         this.missingReferencedProductKeys = missingReferencedProductKeys;
     }
 
+    // Needed for the 'com.fasterxml.jackson' deserialization, for example, when fetching
+    // from CTP custom objects.
     public WaitingToBeResolved() {
     }
 
