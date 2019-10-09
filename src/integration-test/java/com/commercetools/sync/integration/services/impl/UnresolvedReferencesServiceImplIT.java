@@ -36,8 +36,6 @@ class UnresolvedReferencesServiceImplIT {
     private static final String CUSTOM_OBJECT_CONTAINER_KEY =
         "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
 
-
-
     @AfterEach
     void tearDown() {
         deleteWaitingToBeResolvedCustomObjects(CTP_TARGET_CLIENT);
@@ -45,6 +43,7 @@ class UnresolvedReferencesServiceImplIT {
 
     @BeforeEach
     void setupTest() {
+        deleteWaitingToBeResolvedCustomObjects(CTP_TARGET_CLIENT);
         errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
         warningCallBackMessages = new ArrayList<>();
@@ -135,7 +134,7 @@ class UnresolvedReferencesServiceImplIT {
             assertThat(waitingToBeResolved.getProductDraft())
                 .isEqualTo(productDraft);
             assertThat(waitingToBeResolved.getMissingReferencedProductKeys())
-                .isEqualTo(productDraftWithUnresolvedNewRefs);
+                .isEqualTo(productDraftWithUnresolvedNewRefs.getMissingReferencedProductKeys());
         });
 
         final CustomObjectByKeyGet<WaitingToBeResolved> customObjectByKeyGet = CustomObjectByKeyGet
