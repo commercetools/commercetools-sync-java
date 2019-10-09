@@ -105,7 +105,7 @@ class ProductReferenceResolverIT {
         final ProductSyncStatistics syncStatistics =
             executeBlocking(productSync.sync(singletonList(productDraft)));
 
-        assertThat(syncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
         assertThat(errorCallBackExceptions).hasSize(1);
         final Throwable exception = errorCallBackExceptions.get(0);
         assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class)
