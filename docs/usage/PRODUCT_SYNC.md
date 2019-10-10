@@ -212,5 +212,9 @@ attributes.
 (of `elementType: ReferenceType`) with any of the aforementioned `referenceTypeId`, accordingly applies.
 3. Support for syncing variant attributes with an `AttributeType` of `NestedType` which has an attribute inside of it of 
 `ReferenceType`  with any of the aforementioned `referenceTypeId`, accordingly applies.
+4. Syncing products with cyclic dependencies is not supported yet. An example of a cyclic dependency is 
+a product `a` which references a product `b` and at the same time product `b` references product `a`. Cycles can contain 
+more than 2 products. For example: `a` -> `b` -> `c` -> `a`. If there are such cycles, the sync will consider all the 
+products in the cycle as products with missing parents. They will be persisted as custom objects in the target project.
 
 
