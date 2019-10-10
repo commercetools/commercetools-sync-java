@@ -2,9 +2,9 @@
 # commercetools sync
 [![Build Status](https://travis-ci.org/commercetools/commercetools-sync-java.svg?branch=master)](https://travis-ci.org/commercetools/commercetools-sync-java)
 [![codecov](https://codecov.io/gh/commercetools/commercetools-sync-java/branch/master/graph/badge.svg)](https://codecov.io/gh/commercetools/commercetools-sync-java)
-[![Benchmarks 1.5.0](https://img.shields.io/badge/Benchmarks-1.5.0-orange.svg)](https://commercetools.github.io/commercetools-sync-java/benchmarks/)
+[![Benchmarks 1.6.0](https://img.shields.io/badge/Benchmarks-1.6.0-orange.svg)](https://commercetools.github.io/commercetools-sync-java/benchmarks/)
 [![Download](https://api.bintray.com/packages/commercetools/maven/commercetools-sync-java/images/download.svg) ](https://bintray.com/commercetools/maven/commercetools-sync-java/_latestVersion)
-[![Javadoc](http://javadoc-badge.appspot.com/com.commercetools/commercetools-sync-java.svg?label=Javadoc)](https://commercetools.github.io/commercetools-sync-java/v/1.5.0/)
+[![Javadoc](http://javadoc-badge.appspot.com/com.commercetools/commercetools-sync-java.svg?label=Javadoc)](https://commercetools.github.io/commercetools-sync-java/v/1.6.0/)
 [![Known Vulnerabilities](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646/badge.svg)](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646)
 
  
@@ -51,18 +51,18 @@ Here are the most popular ones:
 <dependency>
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
-  <version>1.5.0</version>
+  <version>1.6.0</version>
 </dependency>
 ````
 #### Gradle
 ````groovy
-implementation 'com.commercetools:commercetools-sync-java:1.5.0'
+implementation 'com.commercetools:commercetools-sync-java:1.6.0'
 ````
 #### SBT 
 ````
-libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "1.5.0"
+libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "1.6.0"
 ````
 #### Ivy 
 ````xml
-<dependency org="com.commercetools" name="commercetools-sync-java" rev="1.5.0"/>
+<dependency org="com.commercetools" name="commercetools-sync-java" rev="1.6.0"/>
 ````
