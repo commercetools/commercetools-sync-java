@@ -1,11 +1,12 @@
 package com.commercetools.sync.integration.externalsource.products;
 
+import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
+import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.Product;
@@ -30,6 +31,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
@@ -42,6 +44,7 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -144,7 +147,7 @@ class ProductSyncWithReferencedProductsIT {
                 .join();
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 1, 0, 0);
+        assertThat(syncStatistics).hasValues(1, 1, 0, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -212,7 +215,7 @@ class ProductSyncWithReferencedProductsIT {
                 .join();
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 0, 0, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 0, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -281,7 +284,7 @@ class ProductSyncWithReferencedProductsIT {
                 .join();
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -333,25 +336,26 @@ class ProductSyncWithReferencedProductsIT {
                 .join();
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 0, 0, 1);
-        assertThat(errorCallBackExceptions)
-            .hasSize(1)
-            .hasOnlyOneElementSatisfying(error -> {
-                assertThat(error).isInstanceOf(ErrorResponseException.class);
-                final ErrorResponseException errorResponseException = (ErrorResponseException) error;
-                assertThat(errorResponseException.getStatusCode()).isEqualTo(400);
-                assertThat(error.getMessage())
-                    .contains("The value '{\"typeId\":\"product\",\"id\":\"nonExistingKey\"}' "
-                        + "is not valid for field 'product-reference'");
-            });
-        assertThat(errorCallBackMessages)
-            .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
-                assertThat(message)
-                    .contains("The value '{\"typeId\":\"product\",\"id\":\"nonExistingKey\"}' "
-                        + "is not valid for field 'product-reference'"));
+        assertThat(syncStatistics).hasValues(1, 0, 0, 0, 1);
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(actions).isEmpty();
+
+        final UnresolvedReferencesServiceImpl unresolvedReferencesService =
+            new UnresolvedReferencesServiceImpl(syncOptions);
+        final Set<WaitingToBeResolved> waitingToBeResolvedDrafts = unresolvedReferencesService
+            .fetch(asSet(productDraftWithProductReference.getKey()))
+            .toCompletableFuture()
+            .join();
+
+        assertThat(waitingToBeResolvedDrafts)
+            .hasOnlyOneElementSatisfying(waitingToBeResolvedDraft -> {
+                assertThat(waitingToBeResolvedDraft.getProductDraft().getKey())
+                    .isEqualTo(productDraftWithProductReference.getKey());
+                assertThat(waitingToBeResolvedDraft.getMissingReferencedProductKeys())
+                    .containsExactly("nonExistingKey");
+            });
     }
 
     @Test
@@ -390,7 +394,7 @@ class ProductSyncWithReferencedProductsIT {
                 .join();
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 1, 0, 0);
+        assertThat(syncStatistics).hasValues(1, 1, 0, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -468,24 +472,25 @@ class ProductSyncWithReferencedProductsIT {
                 .join();
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 0, 0, 1);
-        assertThat(errorCallBackExceptions)
-            .hasSize(1)
-            .hasOnlyOneElementSatisfying(error -> {
-                assertThat(error).isInstanceOf(ErrorResponseException.class);
-                final ErrorResponseException errorResponseException = (ErrorResponseException) error;
-                assertThat(errorResponseException.getStatusCode()).isEqualTo(400);
-                assertThat(error.getMessage())
-                    .contains("The value '{\"typeId\":\"product\",\"id\":\"nonExistingKey\"}' "
-                        + "is not valid for field 'product-reference-set'");
-            });
-        assertThat(errorCallBackMessages)
-            .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
-                assertThat(message)
-                    .contains("The value '{\"typeId\":\"product\",\"id\":\"nonExistingKey\"}' "
-                        + "is not valid for field 'product-reference-set'"));
+        assertThat(syncStatistics).hasValues(1, 0, 0, 0, 1);
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(actions).isEmpty();
+
+        final UnresolvedReferencesServiceImpl unresolvedReferencesService =
+            new UnresolvedReferencesServiceImpl(syncOptions);
+        final Set<WaitingToBeResolved> waitingToBeResolvedDrafts = unresolvedReferencesService
+            .fetch(asSet(productDraftWithProductReference.getKey()))
+            .toCompletableFuture()
+            .join();
+
+        assertThat(waitingToBeResolvedDrafts)
+            .hasOnlyOneElementSatisfying(waitingToBeResolvedDraft -> {
+                assertThat(waitingToBeResolvedDraft.getProductDraft().getKey())
+                    .isEqualTo(productDraftWithProductReference.getKey());
+                assertThat(waitingToBeResolvedDraft.getMissingReferencedProductKeys())
+                    .containsExactly("nonExistingKey");
+            });
     }
 }

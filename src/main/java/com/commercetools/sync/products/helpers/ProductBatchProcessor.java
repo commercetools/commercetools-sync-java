@@ -11,23 +11,19 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.isReferenceOfType;
 import static java.lang.String.format;
 import static java.util.Collections.emptySet;
 import static java.util.Objects.requireNonNull;
-import static java.util.Optional.empty;
-import static java.util.Optional.ofNullable;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -110,16 +106,18 @@ public class ProductBatchProcessor {
      * @return the set of referenced product keys.
      */
     @Nonnull
-    static Set<String> getReferencedProductKeys(@Nonnull final ProductVariantDraft variantDraft) {
+    public static Set<String> getReferencedProductKeys(@Nonnull final ProductVariantDraft variantDraft) {
+
         final List<AttributeDraft> attributeDrafts = variantDraft.getAttributes();
         if (attributeDrafts == null) {
             return emptySet();
         }
-        return attributeDrafts.stream()
-                              .filter(Objects::nonNull)
-                              .map(ProductBatchProcessor::getReferencedProductKeys)
-                              .flatMap(Collection::stream)
-                              .collect(Collectors.toSet());
+        return attributeDrafts
+            .stream()
+            .filter(Objects::nonNull)
+            .map(ProductBatchProcessor::getReferencedProductKeys)
+            .flatMap(Collection::stream)
+            .collect(Collectors.toSet());
     }
 
     /**
@@ -129,44 +127,21 @@ public class ProductBatchProcessor {
      * @return set of referenced product keys given an attribute draft.
      */
     @Nonnull
-    static Set<String> getReferencedProductKeys(@Nonnull final AttributeDraft attributeDraft) {
+    private static Set<String> getReferencedProductKeys(@Nonnull final AttributeDraft attributeDraft) {
+
         final JsonNode attributeDraftValue = attributeDraft.getValue();
         if (attributeDraftValue == null) {
             return emptySet();
         }
-        return attributeDraftValue.isArray()
-            ? getReferencedProductKeysFromSet(attributeDraftValue) :
-            getProductKeyFromReference(attributeDraftValue).map(Collections::singleton)
-                                                           .orElse(emptySet());
-    }
 
-    /**
-     * Gets a set of referenced product keys (if any) given a JsonNode representing a
-     * reference set.
-     *
-     * @param referenceSet the product reference set JsonNode.
-     * @return set of referenced product keys given an attribute draft.
-     */
-    @Nonnull
-    static Set<String> getReferencedProductKeysFromSet(@Nonnull final JsonNode referenceSet) {
-        return StreamSupport.stream(referenceSet.spliterator(), false)
-                            .filter(Objects::nonNull)
-                            .map(ProductBatchProcessor::getProductKeyFromReference)
-                            .filter(Optional::isPresent)
-                            .map(Optional::get)
-                            .collect(Collectors.toSet());
-    }
+        final List<JsonNode> allAttributeReferences = attributeDraftValue.findParents(REFERENCE_TYPE_ID_FIELD);
 
-    /**
-     * Gets a referenced product key (if any) given a JsonNode representing a reference.
-     *
-     * @param referenceValue the product reference JsonNode.
-     * @return referenced product key given a JsonNode.
-     */
-    @Nonnull
-    static Optional<String> getProductKeyFromReference(@Nonnull final JsonNode referenceValue) {
-        return isReferenceOfType(referenceValue, Product.referenceTypeId())
-            ? ofNullable(referenceValue.get(REFERENCE_ID_FIELD)).map(JsonNode::asText) : empty();
+        return allAttributeReferences
+            .stream()
+            .filter(reference -> isReferenceOfType(reference, Product.referenceTypeId()))
+            .map(reference -> reference.get(REFERENCE_ID_FIELD).asText())
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
     }
 
     /**

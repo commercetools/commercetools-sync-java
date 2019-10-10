@@ -396,6 +396,8 @@ public final class ProductUpdateActionUtils {
         final Map<String, ProductVariant> oldProductVariantsWithMaster = new HashMap<>(oldProductVariantsNoMaster);
         oldProductVariantsWithMaster.put(oldMasterVariant.getKey(), oldMasterVariant);
 
+        // TODO: Should use getAllVariants as soon as https://github.com/commercetools/commercetools-sync-java/issues/13
+        // is fixed.
         final List<ProductVariantDraft> newAllProductVariants = new ArrayList<>(newProduct.getVariants());
         newAllProductVariants.add(newProduct.getMasterVariant());
 
@@ -424,6 +426,19 @@ public final class ProductUpdateActionUtils {
 
         updateActions.addAll(buildChangeMasterVariantUpdateAction(oldProduct, newProduct, syncOptions));
         return updateActions;
+    }
+
+    /**
+     * Returns a list containing all the variants (including the master variant) of the supplied {@link ProductDraft}.
+     * @param productDraft the product draft that has the variants and master variant that should be returned.
+     * @return a list containing all the variants (including the master variant) of the supplied {@link ProductDraft}.
+     */
+    @Nonnull
+    public static List<ProductVariantDraft> getAllVariants(@Nonnull final ProductDraft productDraft) {
+        final List<ProductVariantDraft> allVariants = new ArrayList<>(1 + productDraft.getVariants().size());
+        allVariants.add(productDraft.getMasterVariant());
+        allVariants.addAll(productDraft.getVariants());
+        return allVariants;
     }
 
     @Nonnull
