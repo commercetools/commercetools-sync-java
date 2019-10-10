@@ -350,6 +350,13 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#persistence-of-productdrafts-with-irresolvable-references" title="Persistence of ProductDrafts with Irresolvable References" class="md-nav__link">
+    Persistence of ProductDrafts with Irresolvable References
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#more-examples-of-how-to-use-the-sync" title="More examples of how to use the sync" class="md-nav__link">
     More examples of how to use the sync
   </a>
@@ -522,7 +529,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.5.0/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.6.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -628,6 +635,13 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#persistence-of-productdrafts-with-irresolvable-references" title="Persistence of ProductDrafts with Irresolvable References" class="md-nav__link">
+    Persistence of ProductDrafts with Irresolvable References
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#more-examples-of-how-to-use-the-sync" title="More examples of how to use the sync" class="md-nav__link">
     More examples of how to use the sync
   </a>
@@ -702,6 +716,8 @@ against a <a href="https://docs.commercetools.com/http-api-projects-products.htm
 <li><a href="#sync-list-of-product-drafts">Sync list of product drafts</a><ul>
 <li><a href="#prerequisites">Prerequisites</a></li>
 <li><a href="#running-the-sync">Running the sync</a></li>
+<li><a href="#persistence-of-productdrafts-with-irresolvable-references">Persistence of ProductDrafts with Irresolvable References</a></li>
+<li><a href="#more-examples-of-how-to-use-the-sync">More examples of how to use the sync</a></li>
 </ul>
 </li>
 <li><a href="#build-all-update-actions">Build all update actions</a></li>
@@ -735,7 +751,7 @@ order for the sync to resolve the actual ids of those references, those <code>ke
 <p>Provide the <code>key</code> value on the <code>id</code> field of the reference. This means that calling <code>getId()</code> on the
 reference would return its <code>key</code>. </p>
 <p><strong>Note</strong>: When syncing from a source commercetools project, you can use this util which this library provides: 
- <a href="https://commercetools.github.io/commercetools-sync-java/v/1.5.0/com/commercetools/sync/products/utils/ProductReferenceReplacementUtils.html#replaceProductsReferenceIdsWithKeys-java.util.List-"><code>replaceProductsReferenceIdsWithKeys</code></a>
+ <a href="https://commercetools.github.io/commercetools-sync-java/v/1.6.0/com/commercetools/sync/products/utils/ProductReferenceReplacementUtils.html#replaceProductsReferenceIdsWithKeys-java.util.List-"><code>replaceProductsReferenceIdsWithKeys</code></a>
  that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
  <div class="codehilite"><pre><span></span><span class="c1">// Puts the keys in the reference id fields to prepare for reference resolution</span>
 <span class="kd">final</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">ProductDraft</span><span class="o">&gt;</span> <span class="n">productDrafts</span> <span class="o">=</span> <span class="n">replaceProductsReferenceIdsWithKeys</span><span class="o">(</span><span class="n">products</span><span class="o">);</span>
@@ -768,13 +784,79 @@ failed, processed products and the processing time of the sync in different time
 human-readable format.
 <div class="codehilite"><pre><span></span><span class="kd">final</span> <span class="n">ProductSyncStatistics</span> <span class="n">stats</span> <span class="o">=</span> <span class="n">syncStatisticsStage</span><span class="o">.</span><span class="na">toCompletebleFuture</span><span class="o">().</span><span class="na">join</span><span class="o">();</span>
 <span class="n">stats</span><span class="o">.</span><span class="na">getReportMessage</span><span class="o">();</span> 
-<span class="cm">/*&quot;Summary: 2000 products were processed in total (1000 created, 995 updated and 5 failed to sync).&quot;*/</span>
+<span class="cm">/*Summary: 2000 product(s) were processed in total (1000 created, 995 updated, 5 failed to sync and 0 product(s) with missing reference(s)).*/</span>
 </pre></div></p>
 <p><strong>Note</strong> The statistics object contains the processing time of the last batch only. This is due to two reasons:</p>
 <ol>
 <li>The sync processing time should not take into account the time between supplying batches to the sync. </li>
 <li>It is not known by the sync which batch is going to be the last one supplied.</li>
 </ol>
+<h5 id="persistence-of-productdrafts-with-irresolvable-references">Persistence of ProductDrafts with Irresolvable References<a class="headerlink" href="#persistence-of-productdrafts-with-irresolvable-references" title="Permanent link">&para;</a></h5>
+<p>A productDraft X could be supplied in with an attribute referencing productDraft Y. 
+It could be that Y is not supplied before X, which means the sync could fail creating/updating X. 
+It could also be that Y is not supplied at all in this batch but at a later batch.</p>
+<p>The library keep tracks of such "referencing" drafts like X and persists them in storage 
+(<strong>CTP <code>customObjects</code> in the target project</strong> , in this case) 
+to keep them and create/update them accordingly whenever the referenced drafts exist in the target project.</p>
+<p>The <code>customObject</code> will have a <code>container:</code> <strong><code>"commercetools-sync-java.UnresolvedReferencesService.productDrafts"</code></strong>
+and a <code>key</code> representing the key of the productDraft that is waiting to be created/updated.</p>
+<p>Here is an example of a <code>CustomObject</code> in the target project that represents a productDraft with <code>productKey1</code>.<br />
+It being persisted as <code>CustomObject</code> means that the referenced productDrafts with keys <code>foo</code> and <code>bar</code> do not exist yet.</p>
+<div class="codehilite"><pre><span></span><span class="p">{</span>
+  <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d0fbb69e-76e7-4ec0-893e-3aaab6f4f6b6&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;version&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+  <span class="nt">&quot;container&quot;</span><span class="p">:</span> <span class="s2">&quot;commercetools-sync-java.UnresolvedReferencesService.productDrafts&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;productKey1&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;value&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;dependantProductKeys&quot;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="s2">&quot;foo&quot;</span><span class="p">,</span>
+      <span class="s2">&quot;bar&quot;</span>
+    <span class="p">],</span>
+    <span class="nt">&quot;productDraft&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;productType&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;typeId&quot;</span><span class="p">:</span> <span class="s2">&quot;product-type&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;main-product-type&quot;</span>
+      <span class="p">},</span>
+      <span class="nt">&quot;masterVariant&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+          <span class="nt">&quot;sku&quot;</span><span class="p">:</span> <span class="s2">&quot;white-shirt-1&quot;</span><span class="p">,</span>
+          <span class="nt">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;white-shirt-1&quot;</span><span class="p">,</span>
+          <span class="nt">&quot;prices&quot;</span><span class="p">:</span> <span class="p">[],</span>
+          <span class="nt">&quot;images&quot;</span><span class="p">:</span> <span class="p">[],</span>
+          <span class="nt">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;product-reference-set&quot;</span><span class="p">,</span>
+              <span class="nt">&quot;value&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span>
+                  <span class="nt">&quot;typeId&quot;</span><span class="p">:</span> <span class="s2">&quot;product&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;foo&quot;</span>
+                <span class="p">},</span>
+                <span class="p">{</span>
+                  <span class="nt">&quot;typeId&quot;</span><span class="p">:</span> <span class="s2">&quot;product&quot;</span><span class="p">,</span>
+                  <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;bar&quot;</span>
+                <span class="p">}</span>
+              <span class="p">]</span>
+            <span class="p">}</span>
+          <span class="p">]</span>
+        <span class="p">},</span>
+      <span class="nt">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;productKey1&quot;</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;createdAt&quot;</span><span class="p">:</span> <span class="s2">&quot;2019-09-27T13:45:35.495Z&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;lastModifiedAt&quot;</span><span class="p">:</span> <span class="s2">&quot;2019-09-27T13:45:35.495Z&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;lastModifiedBy&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;clientId&quot;</span><span class="p">:</span> <span class="s2">&quot;8bV3XSW-taCpi873-GQTa8lf&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;isPlatformClient&quot;</span><span class="p">:</span> <span class="kc">false</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;createdBy&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;clientId&quot;</span><span class="p">:</span> <span class="s2">&quot;8bV3XSW-taCpi873-GQTa8lf&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;isPlatformClient&quot;</span><span class="p">:</span> <span class="kc">false</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+<p>As soon, as the referenced productDrafts are supplied to the sync, the draft will be created/updated and the 
+<code>CustomObject</code> will be removed from the target project.</p>
 <h5 id="more-examples-of-how-to-use-the-sync">More examples of how to use the sync<a class="headerlink" href="#more-examples-of-how-to-use-the-sync" title="Permanent link">&para;</a></h5>
 <ol>
 <li><a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/ProductSyncIT.java">Sync from another CTP project as a source</a>.</li>
@@ -872,6 +954,22 @@ attributes.</p>
 </tr>
 <tr>
 <td><code>ReferenceType</code>  with any of the aforementioned <code>referenceTypeId</code>, accordingly applies.</td>
+<td></td>
+</tr>
+<tr>
+<td>4. Syncing products with cyclic dependencies is not supported yet. An example of a cyclic dependency is</td>
+<td></td>
+</tr>
+<tr>
+<td>a product <code>a</code> which references a product <code>b</code> and at the same time product <code>b</code> references product <code>a</code>. Cycles can contain</td>
+<td></td>
+</tr>
+<tr>
+<td>more than 2 products. For example: <code>a</code> -&gt; <code>b</code> -&gt; <code>c</code> -&gt; <code>a</code>. If there are such cycles, the sync will consider all the</td>
+<td></td>
+</tr>
+<tr>
+<td>products in the cycle as products with missing parents. They will be persisted as custom objects in the target project.</td>
 <td></td>
 </tr>
 </tbody>
