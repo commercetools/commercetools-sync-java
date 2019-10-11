@@ -27,6 +27,7 @@ import static com.commercetools.sync.commons.asserts.statistics.AssertionsForSta
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -41,6 +42,153 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class ProductTypeSyncTest {
+
+    @Test
+    void sync_WithEmptyAttributeDefinitions_ShouldSyncCorrectly() {
+        // preparation
+        final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
+            "foo",
+            "name",
+            "desc",
+            emptyList()
+        );
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+
+        final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
+            .of(mock(SphereClient.class))
+            .errorCallback((errorMessage, exception) -> {
+                errorMessages.add(errorMessage);
+                exceptions.add(exception);
+            })
+            .build();
+
+
+        final ProductTypeService mockProductTypeService = mock(ProductTypeServiceImpl.class);
+
+        final ProductType existingProductType = mock(ProductType.class);
+        when(existingProductType.getKey()).thenReturn(newProductTypeDraft.getKey());
+
+        when(mockProductTypeService.fetchMatchingProductTypesByKeys(singleton(newProductTypeDraft.getKey())))
+            .thenReturn(CompletableFuture.completedFuture(singleton(existingProductType)));
+        when(mockProductTypeService.fetchMatchingProductTypesByKeys(emptySet())).thenCallRealMethod();
+        when(mockProductTypeService.updateProductType(any(), any()))
+            .thenReturn(CompletableFuture.completedFuture(existingProductType));
+        when(mockProductTypeService.cacheKeysToIds(anySet()))
+            .thenReturn(CompletableFuture.completedFuture(emptyMap()));
+
+        final ProductTypeSync productTypeSync = new ProductTypeSync(syncOptions, mockProductTypeService);
+
+        // test
+        final ProductTypeSyncStatistics productTypeSyncStatistics = productTypeSync
+            .sync(singletonList(newProductTypeDraft))
+            .toCompletableFuture().join();
+
+        // assertions
+        assertThat(errorMessages).isEmpty();
+        assertThat(exceptions).isEmpty();
+
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0, 0);
+    }
+
+    @Test
+    void sync_WithNullAttributeDefinitions_ShouldSyncCorrectly() {
+        // preparation
+        final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
+            "foo",
+            "name",
+            "desc",
+            null
+        );
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+
+        final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
+            .of(mock(SphereClient.class))
+            .errorCallback((errorMessage, exception) -> {
+                errorMessages.add(errorMessage);
+                exceptions.add(exception);
+            })
+            .build();
+
+
+        final ProductTypeService mockProductTypeService = mock(ProductTypeServiceImpl.class);
+
+        final ProductType existingProductType = mock(ProductType.class);
+        when(existingProductType.getKey()).thenReturn(newProductTypeDraft.getKey());
+
+        when(mockProductTypeService.fetchMatchingProductTypesByKeys(singleton(newProductTypeDraft.getKey())))
+            .thenReturn(CompletableFuture.completedFuture(singleton(existingProductType)));
+        when(mockProductTypeService.fetchMatchingProductTypesByKeys(emptySet())).thenCallRealMethod();
+        when(mockProductTypeService.updateProductType(any(), any()))
+            .thenReturn(CompletableFuture.completedFuture(existingProductType));
+        when(mockProductTypeService.cacheKeysToIds(anySet()))
+            .thenReturn(CompletableFuture.completedFuture(emptyMap()));
+
+        final ProductTypeSync productTypeSync = new ProductTypeSync(syncOptions, mockProductTypeService);
+
+        // test
+        final ProductTypeSyncStatistics productTypeSyncStatistics = productTypeSync
+            .sync(singletonList(newProductTypeDraft))
+            .toCompletableFuture().join();
+
+        // assertions
+        assertThat(errorMessages).isEmpty();
+        assertThat(exceptions).isEmpty();
+
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0, 0);
+    }
+
+    @Test
+    void sync_WithNullInAttributeDefinitions_ShouldSyncCorrectly() {
+        // preparation
+        final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
+            "foo",
+            "name",
+            "desc",
+            singletonList(null)
+        );
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+
+        final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
+            .of(mock(SphereClient.class))
+            .errorCallback((errorMessage, exception) -> {
+                errorMessages.add(errorMessage);
+                exceptions.add(exception);
+            })
+            .build();
+
+
+        final ProductTypeService mockProductTypeService = mock(ProductTypeServiceImpl.class);
+
+        final ProductType existingProductType = mock(ProductType.class);
+        when(existingProductType.getKey()).thenReturn(newProductTypeDraft.getKey());
+
+        when(mockProductTypeService.fetchMatchingProductTypesByKeys(singleton(newProductTypeDraft.getKey())))
+            .thenReturn(CompletableFuture.completedFuture(singleton(existingProductType)));
+        when(mockProductTypeService.fetchMatchingProductTypesByKeys(emptySet())).thenCallRealMethod();
+        when(mockProductTypeService.updateProductType(any(), any()))
+            .thenReturn(CompletableFuture.completedFuture(existingProductType));
+        when(mockProductTypeService.cacheKeysToIds(anySet()))
+            .thenReturn(CompletableFuture.completedFuture(emptyMap()));
+
+        final ProductTypeSync productTypeSync = new ProductTypeSync(syncOptions, mockProductTypeService);
+
+        // test
+        final ProductTypeSyncStatistics productTypeSyncStatistics = productTypeSync
+            .sync(singletonList(newProductTypeDraft))
+            .toCompletableFuture().join();
+
+        // assertions
+        assertThat(errorMessages).isEmpty();
+        assertThat(exceptions).isEmpty();
+
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0, 0);
+    }
 
     @Test
     void sync_WithErrorFetchingExistingKeys_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
