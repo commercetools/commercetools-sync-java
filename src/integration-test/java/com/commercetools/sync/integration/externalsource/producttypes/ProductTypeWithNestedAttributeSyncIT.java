@@ -22,6 +22,7 @@ import io.sphere.sdk.producttypes.commands.updateactions.RemoveAttributeDefiniti
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -252,8 +253,9 @@ class ProductTypeWithNestedAttributeSyncIT {
         });
     }
 
+    @Disabled("Need to investigate since both with missing reference and failed gets counted up? Should it be the case")
     @Test
-    void sync_WithNewProductTypeWithFailedFetchOnResolvingMissingReferences_ShouldFail() {
+    void sync_WithNewProductTypeWithFailedFetchOnReferenceResolution_ShouldFail() {
         // preparation
         final AttributeDefinitionDraft nestedTypeAttr = AttributeDefinitionDraftBuilder
             .of(AttributeDefinitionBuilder
@@ -277,11 +279,12 @@ class ProductTypeWithNestedAttributeSyncIT {
             singletonList(ATTRIBUTE_DEFINITION_DRAFT_3));
 
         final SphereClient ctpClient = spy(CTP_TARGET_CLIENT);
+        final BadGatewayException badGatewayException = new BadGatewayException();
         when(ctpClient.execute(any(ProductTypeQuery.class)))
             .thenCallRealMethod() // should work on caching
             .thenCallRealMethod() // should work when fetching matching product types
-            .thenCallRealMethod() // should work on second fetching matching product types
-            .thenReturn(exceptionallyCompletedFuture(new BadGatewayException())) // fail on fetching during resolution
+            .thenCallRealMethod() // should work when second fetching matching product types
+            .thenReturn(exceptionallyCompletedFuture(badGatewayException)) // fail on fetching during resolution
             .thenCallRealMethod(); // call the real method for the rest of the calls
 
         productTypeSyncOptions = ProductTypeSyncOptionsBuilder
@@ -308,23 +311,15 @@ class ProductTypeWithNestedAttributeSyncIT {
         // assertions
         final Optional<ProductType> productType1 = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
         assert productType1.isPresent();
-        assertThat(errorMessages).isEmpty();
-        assertThat(exceptions).isEmpty();
-        assertThat(builtUpdateActions).containsExactly(
-            AddAttributeDefinition.of(AttributeDefinitionDraftBuilder
-                .of(AttributeDefinitionBuilder
-                    .of("nestedattr", ofEnglish("nestedattr"),
-                        NestedAttributeType.of(productType1.get()))
-                    .build())
-                // "isSearchable=true is not supported for attribute type 'nested'."
-                .searchable(false)
-                .build())
-        );
-        assertThat(productTypeSyncStatistics).hasValues(2, 1, 1, 0, 0);
+        assertThat(errorMessages).containsExactly("Failed to fetch existing product types with keys: '[key_1]'.");
+        assertThat(exceptions).hasOnlyOneElementSatisfying(exception ->
+            assertThat(exception).hasCause(badGatewayException));
+        assertThat(builtUpdateActions).isEmpty();
+        assertThat(productTypeSyncStatistics).hasValues(2, 1, 0, 1, 1);
         assertThat(productTypeSyncStatistics
             .getReportMessage())
             .isEqualTo("Summary: 2 product types were processed in total"
-                + " (1 created, 1 updated, 0 failed to sync and 0 product types with at least one NestedType or a Set"
+                + " (1 created, 0 updated, 1 failed to sync and 1 product types with at least one NestedType or a Set"
                 + " of NestedType attribute definition(s) referencing a missing product type).");
 
         assertThat(productTypeSyncStatistics.getProductTypeKeysWithMissingParents()).isEmpty();
