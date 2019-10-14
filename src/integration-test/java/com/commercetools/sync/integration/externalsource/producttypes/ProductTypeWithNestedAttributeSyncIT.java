@@ -404,7 +404,7 @@ class ProductTypeWithNestedAttributeSyncIT {
         final AttributeDefinitionDraft nestedTypeAttr = AttributeDefinitionDraftBuilder
             .of(AttributeDefinitionBuilder
                 .of("nestedattr", ofEnglish("nestedattr"),
-                    NestedAttributeType.of(ProductType.referenceOfId(PRODUCT_TYPE_KEY_4)))
+                    NestedAttributeType.of(ProductType.referenceOfId(PRODUCT_TYPE_KEY_1)))
                 .build())
             // "isSearchable=true is not supported for attribute type 'nested'."
             .searchable(false)
