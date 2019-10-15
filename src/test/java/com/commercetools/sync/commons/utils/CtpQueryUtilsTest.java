@@ -39,7 +39,7 @@ class CtpQueryUtilsTest {
     private ArgumentCaptor<CategoryQuery> sphereRequestArgumentCaptor;
 
     @BeforeEach
-    void init(){
+    void init() {
         MockitoAnnotations.initMocks(this);
     }
 
@@ -98,9 +98,9 @@ class CtpQueryUtilsTest {
         @Nonnull final Function<CategoryQueryModel, QueryPredicate<Category>> keyPredicate) {
 
         return CategoryQuery
-                .of()
-                .plusPredicates(keyPredicate).withSort(QuerySort.of("id asc"))
-                .withLimit(500);
+            .of()
+            .plusPredicates(keyPredicate).withSort(QuerySort.of("id asc"))
+            .withLimit(500);
     }
 
     @Nonnull
@@ -109,7 +109,7 @@ class CtpQueryUtilsTest {
         @Nonnull final List<Category> categoryPage) {
 
         final String lastCategoryIdInPage = categoryPage
-            .get(categoryPage.size()-1)
+            .get(categoryPage.size() - 1)
             .getId();
 
         return CategoryQuery
