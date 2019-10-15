@@ -164,7 +164,7 @@ final class QueryAll<T extends Resource, C extends QueryDsl<T, C>, S> {
     @Nonnull
     private CompletionStage<PagedQueryResult<T>> queryPage(@Nullable final QueryPredicate<T> queryPredicate) {
         final QueryDsl<T, C> query = baseQuery.withLimit(pageSize);
-        return client.execute(queryPredicate != null ? query.withPredicates(queryPredicate) : query);
+        return client.execute(queryPredicate != null ? query.plusPredicates(queryPredicate) : query);
     }
 
     /**
