@@ -159,7 +159,7 @@ class ProductSyncWithAssetsIT {
         final ProductSyncStatistics syncStatistics =
             executeBlocking(productSync.sync(singletonList(productDraft)));
 
-        assertThat(syncStatistics).hasValues(1, 1, 0, 0);
+        assertThat(syncStatistics).hasValues(1, 1, 0, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -190,7 +190,7 @@ class ProductSyncWithAssetsIT {
             executeBlocking(productSync.sync(singletonList(productDraft)));
 
         // Assert results of sync
-        assertThat(syncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(updateActionsFromSync).isEmpty();
         assertThat(errorCallBackMessages).hasSize(1);
@@ -234,7 +234,7 @@ class ProductSyncWithAssetsIT {
             executeBlocking(productSync.sync(singletonList(productDraft)));
 
         // Assert results of sync
-        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -293,7 +293,7 @@ class ProductSyncWithAssetsIT {
             executeBlocking(productSync.sync(singletonList(productDraft)));
 
         // Assert results of sync
-        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -352,7 +352,7 @@ class ProductSyncWithAssetsIT {
             executeBlocking(productSync.sync(singletonList(productDraft)));
 
         // Assert results of sync
-        assertThat(syncStatistics).hasValues(1, 0, 0, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 0, 0, 0);
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).matches("Failed to build update actions for the assets of the product "
