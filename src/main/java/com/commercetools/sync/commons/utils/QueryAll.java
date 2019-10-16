@@ -114,6 +114,7 @@ final class QueryAll<T extends Resource, C extends QueryDsl<T, C>, S> {
      *         the method returns a completed future containing null.
      */
     @Nonnull
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // `https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<PagedQueryResult<T>> processPageAndGetNext(@Nonnull final PagedQueryResult<T> page) {
         final List<T> currentPageElements = page.getResults();
         if (!currentPageElements.isEmpty()) {
