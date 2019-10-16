@@ -36,7 +36,7 @@
 -->
 
 
-### 1.6.1 -  Oct 16, 2019
+### 1.6.1 -  Oct 17, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.6.0...1.6.1) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.6.1/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.6.1)
