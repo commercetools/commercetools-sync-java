@@ -74,14 +74,15 @@ class CtpQueryUtilsTest {
 
     @Nonnull
     private List<Category> getMockCategoryPage() {
-        return IntStream
+        final List<Category> categories = IntStream
             .range(0, 500)
-            .mapToObj(i -> {
-                final Category category = mock(Category.class);
-                when(category.getId()).thenReturn(UUID.randomUUID().toString());
-                return category;
-            })
+            .mapToObj(i -> mock(Category.class))
             .collect(Collectors.toList());
+
+        // stub an id to the last category in the page.
+        final Category lastCategory = categories.get(categories.size() - 1);
+        when(lastCategory.getId()).thenReturn(UUID.randomUUID().toString());
+        return categories;
     }
 
     @Nonnull
