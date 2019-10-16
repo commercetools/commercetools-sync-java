@@ -267,7 +267,7 @@ class ProductTypeWithNestedAttributeSyncIT {
             .searchable(false)
             .build();
 
-        final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
+        final ProductTypeDraft withMissingNestedTypeRef = ProductTypeDraft.ofAttributeDefinitionDrafts(
             PRODUCT_TYPE_KEY_1,
             PRODUCT_TYPE_NAME_1,
             PRODUCT_TYPE_DESCRIPTION_1,
@@ -306,7 +306,7 @@ class ProductTypeWithNestedAttributeSyncIT {
 
         // tests
         final ProductTypeSyncStatistics productTypeSyncStatistics = productTypeSync
-            .sync(asList(newProductTypeDraft, productTypeDraft4))
+            .sync(asList(withMissingNestedTypeRef, productTypeDraft4))
             .toCompletableFuture().join();
 
         // assertions
