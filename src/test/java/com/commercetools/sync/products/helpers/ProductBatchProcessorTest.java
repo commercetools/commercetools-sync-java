@@ -12,7 +12,6 @@ import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -325,7 +324,6 @@ class ProductBatchProcessorTest {
         assertThat(result).isEmpty();
     }
 
-    @Disabled("Fails due to bug on https://github.com/FasterXML/jackson-databind/issues/2442")
     @Test
     void getReferencedProductKeysFromSet_WithOnlyNullRefsInSet_ShouldReturnEmptySet() {
         final AttributeDraft productReferenceSetAttribute =
