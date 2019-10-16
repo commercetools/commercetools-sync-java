@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_1;
@@ -323,7 +324,14 @@ class ProductTypeWithNestedAttributeSyncIT {
                 + " (1 created, 0 updated, 0 failed to sync and 1 product types with at least one NestedType or a Set"
                 + " of NestedType attribute definition(s) referencing a missing product type).");
 
-        assertThat(productTypeSyncStatistics.getProductTypeKeysWithMissingParents()).isEmpty();
+        assertThat(productTypeSyncStatistics.getProductTypeKeysWithMissingParents()).hasSize(1);
+        final ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>>
+            children = productTypeSyncStatistics
+            .getProductTypeKeysWithMissingParents().get(PRODUCT_TYPE_KEY_4);
+
+        assertThat(children).hasSize(1);
+        assertThat(children.get(PRODUCT_TYPE_KEY_1)).containsExactly(nestedTypeAttr);
+
         final Optional<ProductType> productType4 = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_4);
         assertThat(productType4).hasValueSatisfying(productType -> {
             assertThat(productType.getName()).isEqualTo(PRODUCT_TYPE_NAME_4);
@@ -331,7 +339,7 @@ class ProductTypeWithNestedAttributeSyncIT {
             assertThat(productType.getAttributes()).hasSize(1);
         });
 
-        assertThat(productType1).hasValueSatisfying(productType -> assertThat(productType.getAttributes()).hasSize(3));
+        assertThat(productType1).hasValueSatisfying(productType -> assertThat(productType.getAttributes()).hasSize(2));
     }
 
     @Test
