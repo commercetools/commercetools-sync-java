@@ -250,9 +250,9 @@ class ProductSyncWithAssetsIT {
             RemoveAsset.ofVariantIdWithKey(1, "1", true),
             ChangeAssetName.ofAssetKeyAndVariantId(1, "2", ofEnglish("new name"), true),
             SetAssetCustomType.ofVariantIdAndAssetKey(1, "2", null, true),
-            SetAssetCustomField.ofVariantIdAndAssetKey(1, "3", BOOLEAN_CUSTOM_FIELD_NAME,
+            SetAssetCustomField.ofVariantIdUsingJsonAndAssetKey(1, "3", BOOLEAN_CUSTOM_FIELD_NAME,
                 customFieldsJsonMap.get(BOOLEAN_CUSTOM_FIELD_NAME), true),
-            SetAssetCustomField.ofVariantIdAndAssetKey(1, "3", LOCALISED_STRING_CUSTOM_FIELD_NAME,
+            SetAssetCustomField.ofVariantIdUsingJsonAndAssetKey(1, "3", LOCALISED_STRING_CUSTOM_FIELD_NAME,
                 null, true),
             ChangeAssetOrder.ofVariantId(1, asList(assetsKeyToIdMap.get("3"), assetsKeyToIdMap.get("2")), true),
             AddAsset.ofVariantId(1, createAssetDraft("4", ofEnglish("4"), assetsCustomType.getId()))
@@ -316,9 +316,9 @@ class ProductSyncWithAssetsIT {
             RemoveAsset.ofVariantIdWithKey(1, "1", true),
             ChangeAssetName.ofAssetKeyAndVariantId(1, "2", ofEnglish("new name"), true),
             SetAssetCustomType.ofVariantIdAndAssetKey(1, "2", null, true),
-            SetAssetCustomField.ofVariantIdAndAssetKey(1, "3", BOOLEAN_CUSTOM_FIELD_NAME,
+            SetAssetCustomField.ofVariantIdUsingJsonAndAssetKey(1, "3", BOOLEAN_CUSTOM_FIELD_NAME,
                 customFieldsJsonMap.get(BOOLEAN_CUSTOM_FIELD_NAME), true),
-            SetAssetCustomField.ofVariantIdAndAssetKey(1, "3", LOCALISED_STRING_CUSTOM_FIELD_NAME,
+            SetAssetCustomField.ofVariantIdUsingJsonAndAssetKey(1, "3", LOCALISED_STRING_CUSTOM_FIELD_NAME,
                 null, true),
             ChangeAssetOrder.ofVariantId(1, asList(assetsKeyToIdMap.get("3"), assetsKeyToIdMap.get("2")), true),
             AddAsset.ofVariantId(1, createAssetDraft("4", ofEnglish("4"), assetsCustomType.getId()))
