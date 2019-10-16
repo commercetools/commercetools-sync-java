@@ -37,9 +37,17 @@
 
 
 ### 1.6.1 -  Oct 16, 2019
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.6.1...1.7.0) |
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.6.0...1.6.1) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.6.1/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.6.1)
+
+- 🐞 **Bug Fixes** (3)
+    - **Commons** - Fixed a bug in the `CtpQueryUtils` which was overwriting the query input query for every page after
+first page fetched, eventually fetching more than needed. [#463](https://github.com/commercetools/commercetools-sync-java/issues/463)
+    - **Product Sync** - Fixed a potential bug in reference resolution of attribute references in case a `null` reference
+passed in an attribute draft of type `Set` of `Reference`. [#441](https://github.com/commercetools/commercetools-sync-java/issues/441) 
+    - **ProductType Sync** - Fixed a bug in the productType sync where the statistics `failed` counter was being counted on
+failed fetches of missing references. [#426](https://github.com/commercetools/commercetools-sync-java/issues/426)
 
 - 🛠️ **Dependency Updates** (4)
     - `mockito-junit-jupiter` 3.0.0 -> [3.1.1](https://github.com/mockito/mockito/releases/tag/v3.1.1)
