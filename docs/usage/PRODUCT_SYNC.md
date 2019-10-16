@@ -208,6 +208,7 @@ attributes.
     | `“state”`  | ❌ |
     | `“shipping-method”`  | ❌ |
     | `“zone”`  | ❌ |
+
 2. Support for syncing variant attributes with an `AttributeType` of `SetType` of `ReferenceType` 
 (of `elementType: ReferenceType`) with any of the aforementioned `referenceTypeId`, accordingly applies.
 3. Support for syncing variant attributes with an `AttributeType` of `NestedType` which has an attribute inside of it of 
