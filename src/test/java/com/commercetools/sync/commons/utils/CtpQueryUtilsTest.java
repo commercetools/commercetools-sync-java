@@ -68,8 +68,40 @@ class CtpQueryUtilsTest {
         verify(sphereClient, times(2)).execute(sphereRequestArgumentCaptor.capture());
         assertThat(sphereRequestArgumentCaptor.getAllValues())
             .containsExactly(
-                getFirstPageQuery(keyPredicateFunction),
-                getSecondPageQuery(keyPredicateFunction, categories));
+                getFirstPageQuery(keyPredicateFunction, QuerySort.of("id asc")),
+                getSecondPageQuery(keyPredicateFunction, categories, QuerySort.of("id asc")));
+    }
+
+    @Test
+    void queryAll_WithCustomSort_ShouldNotSortByIdAsc() {
+        // preparation
+        final SphereClient sphereClient = mock(SphereClient.class);
+        final List<Category> categories = getMockCategoryPage();
+        final PagedQueryResult mockQueryResults = getMockQueryResults(categories);
+        when(sphereClient.execute(any())).thenReturn(completedFuture(mockQueryResults));
+
+        final List<String> keysToQuery = IntStream
+            .range(1, 510)
+            .mapToObj(i -> "key" + i)
+            .collect(Collectors.toList());
+
+        final Function<CategoryQueryModel, QueryPredicate<Category>> keyPredicateFunction =
+            categoryQueryModel -> categoryQueryModel.key().isIn(keysToQuery);
+
+        // test
+        queryAll(sphereClient, CategoryQuery
+            .of()
+            .withSort(QuerySort.of("id desc"))
+            .plusPredicates(keyPredicateFunction), identity())
+            .toCompletableFuture()
+            .join();
+
+        // assertions
+        verify(sphereClient, times(2)).execute(sphereRequestArgumentCaptor.capture());
+        assertThat(sphereRequestArgumentCaptor.getAllValues())
+            .containsExactly(
+                getFirstPageQuery(keyPredicateFunction, QuerySort.of("id desc")),
+                getSecondPageQuery(keyPredicateFunction, categories, QuerySort.of("id desc")));
     }
 
     @Nonnull
@@ -96,18 +128,20 @@ class CtpQueryUtilsTest {
 
     @Nonnull
     private CategoryQuery getFirstPageQuery(
-        @Nonnull final Function<CategoryQueryModel, QueryPredicate<Category>> keyPredicate) {
+        @Nonnull final Function<CategoryQueryModel, QueryPredicate<Category>> keyPredicate,
+        @Nonnull final QuerySort<Category> sort) {
 
         return CategoryQuery
             .of()
-            .plusPredicates(keyPredicate).withSort(QuerySort.of("id asc"))
+            .plusPredicates(keyPredicate).withSort(sort)
             .withLimit(500);
     }
 
     @Nonnull
     private CategoryQuery getSecondPageQuery(
         @Nonnull final Function<CategoryQueryModel, QueryPredicate<Category>> keyPredicateFunction,
-        @Nonnull final List<Category> categoryPage) {
+        @Nonnull final List<Category> categoryPage,
+        @Nonnull final QuerySort<Category> sort) {
 
         final String lastCategoryIdInPage = categoryPage
             .get(categoryPage.size() - 1)
@@ -115,7 +149,7 @@ class CtpQueryUtilsTest {
 
         return CategoryQuery
             .of()
-            .plusPredicates(keyPredicateFunction).withSort(QuerySort.of("id asc"))
+            .plusPredicates(keyPredicateFunction).withSort(sort)
             .plusPredicates(QueryPredicate.of(format("id > \"%s\"", lastCategoryIdInPage)))
             .withLimit(500);
     }
