@@ -320,7 +320,7 @@ class ProductTypeWithNestedAttributeSyncIT {
         assertThat(productTypeSyncStatistics
             .getReportMessage())
             .isEqualTo("Summary: 2 product types were processed in total"
-                + " (1 created, 0 updated, 1 failed to sync and 1 product types with at least one NestedType or a Set"
+                + " (1 created, 0 updated, 0 failed to sync and 1 product types with at least one NestedType or a Set"
                 + " of NestedType attribute definition(s) referencing a missing product type).");
 
         assertThat(productTypeSyncStatistics.getProductTypeKeysWithMissingParents()).isEmpty();
