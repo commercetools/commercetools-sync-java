@@ -149,7 +149,8 @@ class ProductTypeWithNestedAttributeSyncIT {
                 .of("nestedattr", ofEnglish("nestedattr"),
                     NestedAttributeType.of(ProductType.referenceOfId(PRODUCT_TYPE_KEY_1)))
                 .build())
-            // "isSearchable=true is not supported for attribute type 'nested'."
+            // isSearchable=true is not supported for attribute type 'nested' and AttributeDefinitionBuilder sets it to
+            // true by default
             .searchable(false)
             .build();
 
@@ -208,7 +209,8 @@ class ProductTypeWithNestedAttributeSyncIT {
                 .of("nestedattr", ofEnglish("nestedattr"),
                     SetAttributeType.of(NestedAttributeType.of(ProductType.referenceOfId("non-existing-ref"))))
                 .build())
-            // "isSearchable=true is not supported for attribute type 'nested'."
+            // isSearchable=true is not supported for attribute type 'nested' and AttributeDefinitionBuilder sets it to
+            // true by default
             .searchable(false)
             .build();
 
@@ -262,7 +264,8 @@ class ProductTypeWithNestedAttributeSyncIT {
                 .of("nestedattr", ofEnglish("nestedattr"),
                     NestedAttributeType.of(ProductType.referenceOfId(PRODUCT_TYPE_KEY_4)))
                 .build())
-            // "isSearchable=true is not supported for attribute type 'nested'."
+            // isSearchable=true is not supported for attribute type 'nested' and AttributeDefinitionBuilder sets it to
+            // true by default
             .searchable(false)
             .build();
 
@@ -341,7 +344,8 @@ class ProductTypeWithNestedAttributeSyncIT {
                 .of("nestedattr", ofEnglish("nestedattr"),
                     NestedAttributeType.of(ProductType.referenceOfId(PRODUCT_TYPE_KEY_1)))
                 .build())
-            // "isSearchable=true is not supported for attribute type 'nested'."
+            // isSearchable=true is not supported for attribute type 'nested' and AttributeDefinitionBuilder sets it to
+            // true by default
             .searchable(false)
             .build();
 
@@ -376,7 +380,8 @@ class ProductTypeWithNestedAttributeSyncIT {
                     .of("nestedattr", ofEnglish("nestedattr"),
                         NestedAttributeType.of(productType1.get()))
                     .build())
-                // "isSearchable=true is not supported for attribute type 'nested'."
+                // isSearchable=true is not supported for attribute type 'nested' and AttributeDefinitionBuilder sets it to
+                // true by default
                 .searchable(false)
                 .build())
         );
@@ -406,7 +411,8 @@ class ProductTypeWithNestedAttributeSyncIT {
                 .of("nestedattr", ofEnglish("nestedattr"),
                     NestedAttributeType.of(ProductType.referenceOfId(PRODUCT_TYPE_KEY_1)))
                 .build())
-            // "isSearchable=true is not supported for attribute type 'nested'."
+            // isSearchable=true is not supported for attribute type 'nested' and AttributeDefinitionBuilder sets it to
+            // true by default
             .searchable(false)
             .build();
 
@@ -454,7 +460,8 @@ class ProductTypeWithNestedAttributeSyncIT {
                     .of("nestedattr", ofEnglish("nestedattr"),
                         NestedAttributeType.of(productType1.get()))
                     .build())
-                // "isSearchable=true is not supported for attribute type 'nested'."
+                // isSearchable=true is not supported for attribute type 'nested' and AttributeDefinitionBuilder sets it to
+                // true by default
                 .searchable(false)
                 .build())
         );
@@ -484,7 +491,8 @@ class ProductTypeWithNestedAttributeSyncIT {
                 .of("newNested", ofEnglish("nestedattr"),
                     NestedAttributeType.of(ProductType.referenceOfId("non-existing-product-type")))
                 .build())
-            // "isSearchable=true is not supported for attribute type 'nested'."
+            // isSearchable=true is not supported for attribute type 'nested' and AttributeDefinitionBuilder sets it to
+            // true by default
             .searchable(false)
             .build();
 
