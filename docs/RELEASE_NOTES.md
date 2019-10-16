@@ -50,7 +50,7 @@ passed in an attribute draft of type `Set` of `Reference`. [#441](https://github
 failed fetches of missing references. [#426](https://github.com/commercetools/commercetools-sync-java/issues/426)
 
 - 🛠️ **Dependency Updates** (4)
-    - `mockito-junit-jupiter` 3.0.0 -> [3.1.1](https://github.com/mockito/mockito/releases/tag/v3.1.1)
+    - `mockito-junit-jupiter` 3.0.0 -> [3.1.0](https://github.com/mockito/mockito/releases/tag/v3.1.0)
     - `com.adarshr.test-logger` 1.7.1 -> [2.0.0](https://github.com/radarsh/gradle-test-logger-plugin/releases/tag/v2.0.0)
     - `com.github.ben-manes.versions` 0.25.0 -> [0.27.0](https://github.com/ben-manes/gradle-versions-plugin/releases/tag/v0.27.0) 
     - `commercetools-jvm-sdk` 1.46.0 -> [1.47.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_47_0)
