@@ -195,8 +195,6 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
         statistics.incrementFailed(failedTimes);
     }
 
-
-
     /**
      * Given a set of product type drafts, attempts to sync the drafts with the existing products types in the target
      * CTP project. The product type and the draft are considered to match if they have the same key.
@@ -403,7 +401,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                 final Throwable exception = fetchResponse.getValue();
                 if (exception != null) {
                     final String errorMessage = format(CTP_PRODUCT_TYPE_FETCH_FAILED, keys);
-                    handleError(errorMessage, exception, keys.size());
+                    syncOptions.applyErrorCallback(errorMessage, exception);
                     return CompletableFuture.completedFuture(null);
                 } else {
                     final Map<String, ProductType> keyToProductType =

@@ -22,7 +22,6 @@ import io.sphere.sdk.producttypes.commands.updateactions.RemoveAttributeDefiniti
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -255,7 +254,6 @@ class ProductTypeWithNestedAttributeSyncIT {
         });
     }
 
-    @Disabled("Need to investigate since both with missing reference and failed gets counted up? Should it be the case")
     @Test
     void sync_WithNewProductTypeWithFailedFetchOnReferenceResolution_ShouldFail() {
         // preparation
@@ -318,7 +316,7 @@ class ProductTypeWithNestedAttributeSyncIT {
         assertThat(exceptions).hasOnlyOneElementSatisfying(exception ->
             assertThat(exception).hasCause(badGatewayException));
         assertThat(builtUpdateActions).isEmpty();
-        assertThat(productTypeSyncStatistics).hasValues(2, 1, 0, 1, 1);
+        assertThat(productTypeSyncStatistics).hasValues(2, 1, 0, 0, 1);
         assertThat(productTypeSyncStatistics
             .getReportMessage())
             .isEqualTo("Summary: 2 product types were processed in total"
