@@ -134,8 +134,8 @@ public final class ProductTypeITUtils {
         final AttributeDefinition nestedTypeAttr1 = AttributeDefinitionBuilder
                 .of("nestedattr", ofEnglish("nestedattr"), NestedAttributeType.of(productType1))
                 .isSearchable(false)
-                // isSearchable=true is not supported for attribute type 'nested' and AttributeDefinitionBuilder sets it to
-                // true by default
+                // isSearchable=true is not supported for attribute type 'nested' and AttributeDefinitionBuilder sets
+                // it to true by default
                 .build();
 
         final AttributeDefinition nestedTypeAttr2 = AttributeDefinitionBuilder
@@ -180,8 +180,8 @@ public final class ProductTypeITUtils {
         final AttributeDefinition nestedTypeAttr1 = AttributeDefinitionBuilder
                 .of("nestedattr", ofEnglish("nestedattr"), NestedAttributeType.of(productType1))
                 .isSearchable(false)
-                // isSearchable=true is not supported for attribute type 'nested' and AttributeDefinitionBuilder sets it to
-                // true by default
+                // isSearchable=true is not supported for attribute type 'nested' and AttributeDefinitionBuilder sets
+                // it to true by default
                 .build();
 
         final AttributeDefinition nestedTypeAttr2 = AttributeDefinitionBuilder

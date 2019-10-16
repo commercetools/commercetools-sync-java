@@ -378,8 +378,8 @@ class ProductTypeWithNestedAttributeSyncIT {
                     .of("nestedattr", ofEnglish("nestedattr"),
                         NestedAttributeType.of(productType1.get()))
                     .build())
-                // isSearchable=true is not supported for attribute type 'nested' and AttributeDefinitionBuilder sets it to
-                // true by default
+                // isSearchable=true is not supported for attribute type 'nested' and AttributeDefinitionBuilder sets
+                // it to true by default
                 .searchable(false)
                 .build())
         );
@@ -458,8 +458,8 @@ class ProductTypeWithNestedAttributeSyncIT {
                     .of("nestedattr", ofEnglish("nestedattr"),
                         NestedAttributeType.of(productType1.get()))
                     .build())
-                // isSearchable=true is not supported for attribute type 'nested' and AttributeDefinitionBuilder sets it to
-                // true by default
+                // isSearchable=true is not supported for attribute type 'nested' and AttributeDefinitionBuilder sets
+                // it to true by default
                 .searchable(false)
                 .build())
         );
