@@ -29,9 +29,9 @@
 -->
 <!--
 ### 1.6.1 -  Oct 16, 2019
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.6.0...1.7.0) |
-[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.7.0/) | 
-[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.7.0)
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.6.0...1.1.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.6.1/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.6.1)
 
 - 🐞 **Bug Fixes** (1)
     - **Commons** - Fixed a bug in the `CtpQueryUtils` which was overwriting the query input query for every page after
