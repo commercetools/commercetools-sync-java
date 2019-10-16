@@ -22,6 +22,8 @@ Java library that imports commercetools platform data in the following ways:
  > Synchronise: Resources will either be created or updated. But they will **not** be deleted.
  
  ⚡ See the [Quick Start Guide](https://commercetools.github.io/commercetools-sync-java/doc/usage/QUICK_START/) for more information on building a product importer!
+ 
+ 🔛 Check out the [commercetools-project-sync](https://github.com/commercetools/commercetools-project-sync) for a ready-to-use CLI application that syncs your entire data catalogue between 2 commercetools projects! 
 
 The library supports synchronising the following entities in commercetools
     
