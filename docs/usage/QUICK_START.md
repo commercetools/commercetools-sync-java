@@ -20,17 +20,17 @@
 <dependency>
   <groupId>com.commercetools.sdk.jvm.core</groupId>
   <artifactId>commercetools-models</artifactId>
-  <version>1.46.0</version>
+  <version>1.47.0</version>
 </dependency>
 <dependency>
   <groupId>com.commercetools.sdk.jvm.core</groupId>
   <artifactId>commercetools-java-client</artifactId>
-  <version>1.46.0</version>
+  <version>1.47.0</version>
 </dependency>
 <dependency>
   <groupId>com.commercetools.sdk.jvm.core</groupId>
   <artifactId>commercetools-convenience</artifactId>
-  <version>1.46.0</version>
+  <version>1.47.0</version>
 </dependency>
 
 <!-- Add commercetools-sync-java dependency. -->
