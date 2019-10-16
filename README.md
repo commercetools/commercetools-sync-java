@@ -55,6 +55,8 @@ commercetools sync is a Java library that imports commercetools platform data in
 
 ⚡ See the [Quick Start Guide](/docs/usage/QUICK_START.md) for more information on building a product importer!
 
+🔛 Check out the [commercetools-project-sync](https://github.com/commercetools/commercetools-project-sync) for a ready-to-use CLI application that syncs your entire data catalogue between 2 commercetools projects!
+
 ### Prerequisites
  
  - Make sure you have `JDK 8` installed.
