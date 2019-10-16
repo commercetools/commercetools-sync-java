@@ -27,12 +27,25 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 
 -->
+
 <!--
-### 1.7.0 -  Oct 17, 2019
+### 1.7.0 -  Oct 31, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.6.1...1.7.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.7.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.7.0)
 -->
+
+
+### 1.6.1 -  Oct 16, 2019
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.6.1...1.7.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.6.1/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.6.1)
+
+- 🛠️ **Dependency Updates** (3)
+    - `mockito-junit-jupiter` 3.0.0 -> [3.1.1](https://github.com/mockito/mockito/releases/tag/v3.1.1)
+    - `com.adarshr.test-logger` 1.7.1 -> [2.0.0](https://github.com/radarsh/gradle-test-logger-plugin/releases/tag/v2.0.0)
+    - `com.github.ben-manes.versions` 0.25.0 -> [0.27.0](https://github.com/ben-manes/gradle-versions-plugin/releases/tag/v0.27.0) 
+
 
 ### 1.6.0 -  Oct 10, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.5.0...1.6.0) |
@@ -43,7 +56,7 @@
     - **Product Sync** - Introduced support for syncing products with other product references as attributes in any order. [#447](https://github.com/commercetools/commercetools-sync-java/issues/447)
 
 - 🛠️ **Dependency Updates** (1)
-    - `com.adarshr.test-logger` to 1.7.0 -> 1.7.1 [#456](https://github.com/commercetools/commercetools-sync-java/pull/456)
+    - `com.adarshr.test-logger` 1.7.0 -> 1.7.1 [#456](https://github.com/commercetools/commercetools-sync-java/pull/456)
 
 ### 1.5.0 -  Sept 13, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.4.1...1.5.0) |
