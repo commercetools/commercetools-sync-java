@@ -4,6 +4,7 @@ import com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
@@ -13,6 +14,8 @@ import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
 import io.sphere.sdk.producttypes.commands.ProductTypeUpdateCommand;
+import io.sphere.sdk.producttypes.commands.updateactions.ChangeDescription;
+import io.sphere.sdk.producttypes.commands.updateactions.ChangeName;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.queries.PagedQueryResult;
 import org.junit.jupiter.api.Test;
@@ -104,9 +107,14 @@ class ProductTypeSyncTest {
 
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> exceptions = new ArrayList<>();
+        final List<UpdateAction> actions = new ArrayList<>();
 
         final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
             .of(mock(SphereClient.class))
+            .beforeUpdateCallback((generatedActions, draft, productType) -> {
+                actions.addAll(generatedActions);
+                return generatedActions;
+            })
             .errorCallback((errorMessage, exception) -> {
                 errorMessages.add(errorMessage);
                 exceptions.add(exception);
@@ -137,7 +145,9 @@ class ProductTypeSyncTest {
         // assertions
         assertThat(errorMessages).isEmpty();
         assertThat(exceptions).isEmpty();
-
+        assertThat(actions).containsExactly(
+            ChangeName.of(newProductTypeDraft.getName()),
+            ChangeDescription.of(newProductTypeDraft.getDescription()));
         assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0, 0);
     }
 
