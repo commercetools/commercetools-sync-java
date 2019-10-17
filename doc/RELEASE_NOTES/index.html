@@ -415,7 +415,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.6.0/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.6.1/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -452,6 +452,13 @@
   
     <label class="md-nav__title" for="__toc">Table of contents</label>
     <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#161-oct-17-2019" title="1.6.1 -  Oct 17, 2019" class="md-nav__link">
+    1.6.1 -  Oct 17, 2019
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#160-oct-10-2019" title="1.6.0 -  Oct 10, 2019" class="md-nav__link">
@@ -709,6 +716,13 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#161-oct-17-2019" title="1.6.1 -  Oct 17, 2019" class="md-nav__link">
+    1.6.1 -  Oct 17, 2019
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#160-oct-10-2019" title="1.6.0 -  Oct 10, 2019" class="md-nav__link">
     1.6.0 -  Oct 10, 2019
   </a>
@@ -945,12 +959,38 @@
 -->
 
 <!--
-### 1.7.0 -  Oct 17, 2019
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.6.0...1.7.0) |
+### 1.7.0 -  Oct 31, 2019
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.6.1...1.7.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.7.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.7.0)
 -->
 
+<h3 id="161-oct-17-2019">1.6.1 -  Oct 17, 2019<a class="headerlink" href="#161-oct-17-2019" title="Permanent link">&para;</a></h3>
+<p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.6.0...1.6.1">Commits</a> |
+<a href="https://commercetools.github.io/commercetools-sync-java/v/1.6.1/">Javadoc</a> | 
+<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/1.6.1">Jar</a></p>
+<ul>
+<li>
+<p>🐞 <strong>Bug Fixes</strong> (3)</p>
+<ul>
+<li><strong>Commons</strong> - Fixed a bug in the <code>CtpQueryUtils</code> which was overwriting the query input query for every page after
+first page fetched, eventually fetching more than needed. <a href="https://github.com/commercetools/commercetools-sync-java/issues/463">#463</a></li>
+<li><strong>Product Sync</strong> - Fixed a potential bug in reference resolution of attribute references in case a <code>null</code> reference
+passed in an attribute draft of type <code>Set</code> of <code>Reference</code>. <a href="https://github.com/commercetools/commercetools-sync-java/issues/441">#441</a> </li>
+<li><strong>ProductType Sync</strong> - Fixed a bug in the productType sync where the statistics <code>failed</code> counter was being counted on
+failed fetches of missing references. <a href="https://github.com/commercetools/commercetools-sync-java/issues/426">#426</a></li>
+</ul>
+</li>
+<li>
+<p>🛠️ <strong>Dependency Updates</strong> (4)</p>
+<ul>
+<li><code>mockito-junit-jupiter</code> 3.0.0 -&gt; <a href="https://github.com/mockito/mockito/releases/tag/v3.1.0">3.1.0</a></li>
+<li><code>com.adarshr.test-logger</code> 1.7.1 -&gt; <a href="https://github.com/radarsh/gradle-test-logger-plugin/releases/tag/v2.0.0">2.0.0</a></li>
+<li><code>com.github.ben-manes.versions</code> 0.25.0 -&gt; <a href="https://github.com/ben-manes/gradle-versions-plugin/releases/tag/v0.27.0">0.27.0</a> </li>
+<li><code>commercetools-jvm-sdk</code> 1.46.0 -&gt; <a href="http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_47_0">1.47.0</a></li>
+</ul>
+</li>
+</ul>
 <h3 id="160-oct-10-2019">1.6.0 -  Oct 10, 2019<a class="headerlink" href="#160-oct-10-2019" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.5.0...1.6.0">Commits</a> |
 <a href="https://commercetools.github.io/commercetools-sync-java/v/1.6.0/">Javadoc</a> | 
@@ -965,7 +1005,7 @@
 <li>
 <p>🛠️ <strong>Dependency Updates</strong> (1)</p>
 <ul>
-<li><code>com.adarshr.test-logger</code> to 1.7.0 -&gt; 1.7.1 <a href="https://github.com/commercetools/commercetools-sync-java/pull/456">#456</a></li>
+<li><code>com.adarshr.test-logger</code> 1.7.0 -&gt; 1.7.1 <a href="https://github.com/commercetools/commercetools-sync-java/pull/456">#456</a></li>
 </ul>
 </li>
 </ul>

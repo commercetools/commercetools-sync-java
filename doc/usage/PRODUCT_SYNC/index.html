@@ -529,7 +529,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.6.0/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.6.1/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -751,7 +751,7 @@ order for the sync to resolve the actual ids of those references, those <code>ke
 <p>Provide the <code>key</code> value on the <code>id</code> field of the reference. This means that calling <code>getId()</code> on the
 reference would return its <code>key</code>. </p>
 <p><strong>Note</strong>: When syncing from a source commercetools project, you can use this util which this library provides: 
- <a href="https://commercetools.github.io/commercetools-sync-java/v/1.6.0/com/commercetools/sync/products/utils/ProductReferenceReplacementUtils.html#replaceProductsReferenceIdsWithKeys-java.util.List-"><code>replaceProductsReferenceIdsWithKeys</code></a>
+ <a href="https://commercetools.github.io/commercetools-sync-java/v/1.6.1/com/commercetools/sync/products/utils/ProductReferenceReplacementUtils.html#replaceProductsReferenceIdsWithKeys-java.util.List-"><code>replaceProductsReferenceIdsWithKeys</code></a>
  that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
  <div class="codehilite"><pre><span></span><span class="c1">// Puts the keys in the reference id fields to prepare for reference resolution</span>
 <span class="kd">final</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">ProductDraft</span><span class="o">&gt;</span> <span class="n">productDrafts</span> <span class="o">=</span> <span class="n">replaceProductsReferenceIdsWithKeys</span><span class="o">(</span><span class="n">products</span><span class="o">);</span>
@@ -940,41 +940,19 @@ attributes.</p>
 <td><code>“zone”</code></td>
 <td>❌</td>
 </tr>
-<tr>
-<td>2. Support for syncing variant attributes with an <code>AttributeType</code> of <code>SetType</code> of <code>ReferenceType</code></td>
-<td></td>
-</tr>
-<tr>
-<td>(of <code>elementType: ReferenceType</code>) with any of the aforementioned <code>referenceTypeId</code>, accordingly applies.</td>
-<td></td>
-</tr>
-<tr>
-<td>3. Support for syncing variant attributes with an <code>AttributeType</code> of <code>NestedType</code> which has an attribute inside of it of</td>
-<td></td>
-</tr>
-<tr>
-<td><code>ReferenceType</code>  with any of the aforementioned <code>referenceTypeId</code>, accordingly applies.</td>
-<td></td>
-</tr>
-<tr>
-<td>4. Syncing products with cyclic dependencies is not supported yet. An example of a cyclic dependency is</td>
-<td></td>
-</tr>
-<tr>
-<td>a product <code>a</code> which references a product <code>b</code> and at the same time product <code>b</code> references product <code>a</code>. Cycles can contain</td>
-<td></td>
-</tr>
-<tr>
-<td>more than 2 products. For example: <code>a</code> -&gt; <code>b</code> -&gt; <code>c</code> -&gt; <code>a</code>. If there are such cycles, the sync will consider all the</td>
-<td></td>
-</tr>
-<tr>
-<td>products in the cycle as products with missing parents. They will be persisted as custom objects in the target project.</td>
-<td></td>
-</tr>
 </tbody>
 </table>
 </li>
+<li>
+<p>Support for syncing variant attributes with an <code>AttributeType</code> of <code>SetType</code> of <code>ReferenceType</code> 
+(of <code>elementType: ReferenceType</code>) with any of the aforementioned <code>referenceTypeId</code>, accordingly applies.</p>
+</li>
+<li>Support for syncing variant attributes with an <code>AttributeType</code> of <code>NestedType</code> which has an attribute inside of it of 
+<code>ReferenceType</code>  with any of the aforementioned <code>referenceTypeId</code>, accordingly applies.</li>
+<li>Syncing products with cyclic dependencies is not supported yet. An example of a cyclic dependency is 
+a product <code>a</code> which references a product <code>b</code> and at the same time product <code>b</code> references product <code>a</code>. Cycles can contain 
+more than 2 products. For example: <code>a</code> -&gt; <code>b</code> -&gt; <code>c</code> -&gt; <code>a</code>. If there are such cycles, the sync will consider all the 
+products in the cycle as products with missing parents. They will be persisted as custom objects in the target project.</li>
 </ol>
                 
                   
