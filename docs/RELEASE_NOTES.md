@@ -43,9 +43,9 @@
 
 - 🐞 **Bug Fixes** (3)
     - **Commons** - Fixed a bug in the `CtpQueryUtils` which was overwriting the query input query for every page after
-first page fetched, eventually fetching more than needed. [#463](https://github.com/commercetools/commercetools-sync-java/issues/463)
+the first page is fetched, eventually fetching more than needed. [#463](https://github.com/commercetools/commercetools-sync-java/issues/463)
     - **Product Sync** - Fixed a potential bug in reference resolution of attribute references in case a `null` reference
-passed in an attribute draft of type `Set` of `Reference`. [#441](https://github.com/commercetools/commercetools-sync-java/issues/441) 
+is passed in an attribute draft of type `Set` of `Reference`. [#441](https://github.com/commercetools/commercetools-sync-java/issues/441) 
     - **ProductType Sync** - Fixed a bug in the productType sync where the statistics `failed` counter was being counted on
 failed fetches of missing references. [#426](https://github.com/commercetools/commercetools-sync-java/issues/426)
 
