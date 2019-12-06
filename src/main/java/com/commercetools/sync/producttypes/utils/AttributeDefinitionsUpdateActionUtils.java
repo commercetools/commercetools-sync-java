@@ -3,14 +3,16 @@ package com.commercetools.sync.producttypes.utils;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import com.commercetools.sync.commons.exceptions.DuplicateNameException;
-import com.commercetools.sync.producttypes.helpers.AttributeDefinitionCustomBuilder;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.AttributeType;
+import io.sphere.sdk.products.attributes.EnumAttributeType;
+import io.sphere.sdk.products.attributes.LocalizedEnumAttributeType;
+import io.sphere.sdk.products.attributes.SetAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.commands.updateactions.AddAttributeDefinition;
-import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeOrder;
+import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeOrderByName;
 import io.sphere.sdk.producttypes.commands.updateactions.RemoveAttributeDefinition;
 
 import javax.annotation.Nonnull;
@@ -195,6 +197,18 @@ final class AttributeDefinitionsUpdateActionUtils {
      * Compares the attribute types of the {@code attributeDefinitionA} and the {@code attributeDefinitionB} and
      * returns true if both attribute definitions have the same attribute type, false otherwise.
      *
+     * <p>Note:
+     * <ul>
+     *     <li>
+     *         It returns true if both attribute types are of {@link EnumAttributeType} type,
+     *         regardless of the enum values.
+     *     </li>
+     *     <li>
+     *         It returns true if both attribute types are of {@link LocalizedEnumAttributeType} type,
+     *         regardless of the localized enum values.
+     *     </li>
+     * </ul>
+     *
      * @param attributeTypeA the first attribute type to compare.
      * @param attributeTypeB the second attribute type to compare.
      * @return true if both attribute definitions have the same attribute type, false otherwise.
@@ -203,8 +217,26 @@ final class AttributeDefinitionsUpdateActionUtils {
         @Nonnull final AttributeType attributeTypeA,
         @Nonnull final AttributeType attributeTypeB) {
 
-        return attributeTypeA.getClass() == attributeTypeB.getClass();
+        if (attributeTypeA instanceof SetAttributeType && attributeTypeB instanceof SetAttributeType) {
+            return haveSameAttributeType(
+                ((SetAttributeType) attributeTypeA).getElementType(),
+                ((SetAttributeType) attributeTypeB).getElementType());
+        }
+
+        if (attributeTypeA instanceof EnumAttributeType
+            && attributeTypeB instanceof EnumAttributeType) {
+            return true;
+        }
+
+        if (attributeTypeA instanceof LocalizedEnumAttributeType
+            && attributeTypeB instanceof LocalizedEnumAttributeType) {
+            return true;
+        }
+
+        return Objects.equals(attributeTypeA, attributeTypeB);
     }
+
+
 
     /**
      * Compares the order of a list of old {@link AttributeDefinition}s and a list of new
@@ -238,9 +270,9 @@ final class AttributeDefinitionsUpdateActionUtils {
             .filter(newName -> !existingNames.contains(newName))
             .collect(toList());
 
-        final List<AttributeDefinition> newAttributeDefinitionsOrder = newAttributeDefinitionDrafts
+        final List<String> newAttributeDefinitionsOrder = newAttributeDefinitionDrafts
             .stream()
-            .map(AttributeDefinitionCustomBuilder::of)
+            .map(AttributeDefinitionDraft::getName)
             .collect(toList());
 
         final List<String> allNames = Stream.concat(existingNames.stream(), notExistingNames.stream())
@@ -249,7 +281,7 @@ final class AttributeDefinitionsUpdateActionUtils {
         return buildUpdateAction(
             allNames,
             newNames,
-            () -> ChangeAttributeOrder.of(newAttributeDefinitionsOrder)
+            () -> ChangeAttributeOrderByName.of(newAttributeDefinitionsOrder)
         );
 
 

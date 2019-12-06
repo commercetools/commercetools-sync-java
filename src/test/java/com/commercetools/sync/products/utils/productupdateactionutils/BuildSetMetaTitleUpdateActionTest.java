@@ -5,7 +5,7 @@ import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.updateactions.SetMetaTitle;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -19,12 +19,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class BuildSetMetaTitleUpdateActionTest {
+class BuildSetMetaTitleUpdateActionTest {
     private static final Product MOCK_OLD_PUBLISHED_PRODUCT = readObjectFromResource(
         PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
 
     @Test
-    public void buildSetMetaTitleUpdateAction_WithDifferentStagedValues_ShouldBuildUpdateAction() {
+    void buildSetMetaTitleUpdateAction_WithDifferentStagedValues_ShouldBuildUpdateAction() {
         final LocalizedString newTitle = LocalizedString.of(Locale.GERMAN, "newTitle");
         final UpdateAction<Product> setMetaTitleUpdateAction =
             getSetMetaTitleUpdateAction(MOCK_OLD_PUBLISHED_PRODUCT, newTitle).orElse(null);
@@ -35,7 +35,7 @@ public class BuildSetMetaTitleUpdateActionTest {
     }
 
     @Test
-    public void buildSetMetaTitleUpdateAction_WithSameStagedValues_ShouldNotBuildUpdateAction() {
+    void buildSetMetaTitleUpdateAction_WithSameStagedValues_ShouldNotBuildUpdateAction() {
         final Optional<UpdateAction<Product>> setMetaTitleUpdateAction =
             getSetMetaTitleUpdateAction(MOCK_OLD_PUBLISHED_PRODUCT, null);
 

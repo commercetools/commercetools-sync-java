@@ -1,6 +1,7 @@
 package com.commercetools.sync.commons.utils;
 
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -34,17 +35,47 @@ public final class SyncUtils {
      * it's result. Otherwise, it returns the supplied reference as is. Since, the reference could be {@code null}, this
      * method could also return null if the reference was not expanded.
      *
+     * <p>This method expects the passed supplier to either </p>
+     *
      * @param reference              the reference of the resource to check if it's expanded.
      * @param <T>                    the type of the resource.
      * @param keyInReferenceSupplier the supplier to execute and return its result if the {@code reference} was
      *                               expanded.
+     *
      * @return returns the result of the {@code keyInReferenceSupplier} if the {@code reference} was expanded.
      *         Otherwise, it returns the supplied reference as is.
      */
     @Nullable
-    public static <T> Reference<T> replaceReferenceIdWithKey(
+    public static <T> Reference<T> getReferenceWithKeyReplaced(
         @Nullable final Reference<T> reference,
         @Nonnull final Supplier<Reference<T>> keyInReferenceSupplier) {
+
+        if (reference != null && reference.getObj() != null) {
+            return keyInReferenceSupplier.get();
+        }
+        return reference;
+    }
+
+    /**
+     * Given a reference to a resource of type {@code T}, this method
+     * checks if the reference is expanded. If it is, then it executes the {@code keyInReferenceSupplier} and returns
+     * it's result. Otherwise, it returns the supplied reference as is. Since, the reference could be {@code null}, this
+     * method could also return null if the reference was not expanded.
+     *
+     * <p>This method expects the passed supplier to either </p>
+     *
+     * @param reference              the reference of the resource to check if it's expanded.
+     * @param <T>                    the type of the resource.
+     * @param keyInReferenceSupplier the supplier to execute and return its result if the {@code reference} was
+     *                               expanded.
+     *
+     * @return returns the result of the {@code keyInReferenceSupplier} if the {@code reference} was expanded.
+     *         Otherwise, it returns the supplied reference as is.
+     */
+    @Nullable
+    public static <T> ResourceIdentifier<T> getResourceIdentifierWithKeyReplaced(
+        @Nullable final Reference<T> reference,
+        @Nonnull final Supplier<ResourceIdentifier<T>> keyInReferenceSupplier) {
 
         if (reference != null && reference.getObj() != null) {
             return keyInReferenceSupplier.get();

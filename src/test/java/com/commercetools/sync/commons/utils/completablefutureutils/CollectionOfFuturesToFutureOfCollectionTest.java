@@ -1,6 +1,7 @@
 package com.commercetools.sync.commons.utils.completablefutureutils;
 
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -19,7 +20,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CollectionOfFuturesToFutureOfCollectionTest {
+class CollectionOfFuturesToFutureOfCollectionTest {
 
     /**
      * List to List : empty values.
@@ -29,27 +30,27 @@ public class CollectionOfFuturesToFutureOfCollectionTest {
      **/
 
     @Test
-    public void empty_ListToList_ReturnsFutureOfEmptyList() {
+    void empty_ListToList_ReturnsFutureOfEmptyList() {
         final CompletableFuture<List<String>> future = collectionOfFuturesToFutureOfCollection(
             new ArrayList<CompletableFuture<String>>(), toList());
         assertThat(future.join()).isEqualTo(emptyList());
     }
 
     @Test
-    public void empty_ListToSet_ReturnsFutureOfEmptySet() {
+    void empty_ListToSet_ReturnsFutureOfEmptySet() {
         final CompletableFuture<Set<String>> future = collectionOfFuturesToFutureOfCollection(
             new ArrayList<CompletableFuture<String>>(), toSet());
         assertThat(future.join()).isEqualTo(emptySet());
     }
 
     @Test
-    public void empty_SetToSet_ReturnsFutureOfEmptySet() {
+    void empty_SetToSet_ReturnsFutureOfEmptySet() {
         final CompletableFuture<Set<String>> future = collectionOfFuturesToFutureOfCollection(new HashSet<>(), toSet());
         assertThat(future.join()).isEqualTo(emptySet());
     }
 
     @Test
-    public void empty_SetToList_ReturnsFutureOfEmptySet() {
+    void empty_SetToList_ReturnsFutureOfEmptySet() {
         final CompletableFuture<List<String>> future =
             collectionOfFuturesToFutureOfCollection(new HashSet<>(), toList());
         assertThat(future.join()).isEqualTo(emptyList());
@@ -64,7 +65,7 @@ public class CollectionOfFuturesToFutureOfCollectionTest {
      */
 
     @Test
-    public void singleNull_ListToList_ReturnsFutureOfEmptyList() {
+    void singleNull_ListToList_ReturnsFutureOfEmptyList() {
         final CompletableFuture<String> nullFuture = null;
         final CompletableFuture<List<String>> future =
             collectionOfFuturesToFutureOfCollection(singletonList(nullFuture), toList());
@@ -72,7 +73,7 @@ public class CollectionOfFuturesToFutureOfCollectionTest {
     }
 
     @Test
-    public void singleNull_ListToSet_ReturnsFutureOfEmptySet() {
+    void singleNull_ListToSet_ReturnsFutureOfEmptySet() {
         final CompletableFuture<String> nullFuture = null;
         final CompletableFuture<Set<String>> future =
             collectionOfFuturesToFutureOfCollection(singletonList(nullFuture), toSet());
@@ -80,7 +81,7 @@ public class CollectionOfFuturesToFutureOfCollectionTest {
     }
 
     @Test
-    public void singleNull_SetToSet_ReturnsFutureOfEmptySet() {
+    void singleNull_SetToSet_ReturnsFutureOfEmptySet() {
         final CompletableFuture<String> nullFuture = null;
         final CompletableFuture<Set<String>> future =
             collectionOfFuturesToFutureOfCollection(singleton(nullFuture), toSet());
@@ -88,7 +89,7 @@ public class CollectionOfFuturesToFutureOfCollectionTest {
     }
 
     @Test
-    public void singleNull_SetToList_ReturnsFutureOfEmptyList() {
+    void singleNull_SetToList_ReturnsFutureOfEmptyList() {
         final CompletableFuture<String> nullFuture = null;
         final CompletableFuture<List<String>> future =
             collectionOfFuturesToFutureOfCollection(singleton(nullFuture), toList());
@@ -101,7 +102,7 @@ public class CollectionOfFuturesToFutureOfCollectionTest {
      */
 
     @Test
-    public void multipleNull_ListToList_ReturnsFutureOfEmptyList() {
+    void multipleNull_ListToList_ReturnsFutureOfEmptyList() {
         final CompletableFuture<String> nullFuture = null;
         final CompletableFuture<List<String>> future =
             collectionOfFuturesToFutureOfCollection(asList(nullFuture, nullFuture), toList());
@@ -109,7 +110,7 @@ public class CollectionOfFuturesToFutureOfCollectionTest {
     }
 
     @Test
-    public void multipleNull_ListToSet_ReturnsFutureOfEmptySet() {
+    void multipleNull_ListToSet_ReturnsFutureOfEmptySet() {
         final CompletableFuture<String> nullFuture = null;
         final CompletableFuture<Set<String>> future = collectionOfFuturesToFutureOfCollection(
             asList(nullFuture, nullFuture), toSet());
@@ -124,7 +125,7 @@ public class CollectionOfFuturesToFutureOfCollectionTest {
      */
 
     @Test
-    public void single_ListToList_ReturnsFutureOfList() {
+    void single_ListToList_ReturnsFutureOfList() {
         final String result = "value1";
         final CompletableFuture<List<String>> future =
             collectionOfFuturesToFutureOfCollection(singletonList(completedFuture(result)), toList());
@@ -132,7 +133,7 @@ public class CollectionOfFuturesToFutureOfCollectionTest {
     }
 
     @Test
-    public void single_ListToSet_ReturnsFutureOfSet() {
+    void single_ListToSet_ReturnsFutureOfSet() {
         final String result = "value1";
         final CompletableFuture<Set<String>> future =
             collectionOfFuturesToFutureOfCollection(singletonList(completedFuture(result)), toSet());
@@ -140,7 +141,7 @@ public class CollectionOfFuturesToFutureOfCollectionTest {
     }
 
     @Test
-    public void single_SetToSet_ReturnsFutureOfSet() {
+    void single_SetToSet_ReturnsFutureOfSet() {
         final String result = "value1";
         final CompletableFuture<Set<String>> future =
             collectionOfFuturesToFutureOfCollection(singleton(completedFuture(result)), toSet());
@@ -148,7 +149,7 @@ public class CollectionOfFuturesToFutureOfCollectionTest {
     }
 
     @Test
-    public void single_SetToList_ReturnsFutureOfList() {
+    void single_SetToList_ReturnsFutureOfList() {
         final String result = "value1";
         final CompletableFuture<List<String>> future =
             collectionOfFuturesToFutureOfCollection(singleton(completedFuture(result)), toList());
@@ -163,7 +164,7 @@ public class CollectionOfFuturesToFutureOfCollectionTest {
      */
 
     @Test
-    public void multiple_ListToListNoDuplicates_ReturnsFutureOfListOfCompletedValues() {
+    void multiple_ListToListNoDuplicates_ReturnsFutureOfListOfCompletedValues() {
         final CompletableFuture<List<String>> future =
             collectionOfFuturesToFutureOfCollection(asList(completedFuture("foo"), completedFuture("bar")), toList());
         final List<String> result = future.join();
@@ -172,7 +173,7 @@ public class CollectionOfFuturesToFutureOfCollectionTest {
     }
 
     @Test
-    public void multiple_ListToSetNoDuplicates_ReturnsFutureOfSetOfCompletedValues() {
+    void multiple_ListToSetNoDuplicates_ReturnsFutureOfSetOfCompletedValues() {
         final CompletableFuture<Set<String>> future =
             collectionOfFuturesToFutureOfCollection(asList(completedFuture("foo"), completedFuture("bar")), toSet());
         final Set<String> result = future.join();
@@ -181,7 +182,7 @@ public class CollectionOfFuturesToFutureOfCollectionTest {
     }
 
     @Test
-    public void multiple_SetToSetNoDuplicates_ReturnsFutureOfSetOfCompletedValues() {
+    void multiple_SetToSetNoDuplicates_ReturnsFutureOfSetOfCompletedValues() {
         final Set<CompletableFuture<String>> set = new HashSet<>();
         set.add(completedFuture("foo"));
         set.add(completedFuture("bar"));
@@ -193,7 +194,7 @@ public class CollectionOfFuturesToFutureOfCollectionTest {
     }
 
     @Test
-    public void multiple_SetToListMappingNoDuplicates_ReturnsFutureOfListOfCompletedValues() {
+    void multiple_SetToListMappingNoDuplicates_ReturnsFutureOfListOfCompletedValues() {
         final Set<CompletableFuture<String>> set = new HashSet<>();
         set.add(completedFuture("foo"));
         set.add(completedFuture("bar"));
@@ -212,7 +213,7 @@ public class CollectionOfFuturesToFutureOfCollectionTest {
      */
 
     @Test
-    public void multiple_ListToListDuplicates_ReturnsFutureOfListOfCompletedValuesDuplicates() {
+    void multiple_ListToListDuplicates_ReturnsFutureOfListOfCompletedValuesDuplicates() {
         final CompletableFuture<List<String>> future =
             collectionOfFuturesToFutureOfCollection(asList(completedFuture("foo"), completedFuture("foo")), toList());
         final List<String> result = future.join();
@@ -221,7 +222,7 @@ public class CollectionOfFuturesToFutureOfCollectionTest {
     }
 
     @Test
-    public void multiple_ListToSetDuplicates_ReturnsFutureOfSetOfCompletedValuesNoDuplicates() {
+    void multiple_ListToSetDuplicates_ReturnsFutureOfSetOfCompletedValuesNoDuplicates() {
         final CompletableFuture<Set<String>> future =
             collectionOfFuturesToFutureOfCollection(asList(completedFuture("foo"), completedFuture("foo")), toSet());
         final Set<String> result = future.join();
@@ -230,7 +231,7 @@ public class CollectionOfFuturesToFutureOfCollectionTest {
     }
 
     @Test
-    public void multiple_SetToSetDuplicates_ReturnsFutureOfSetOfCompletedValuesNoDuplicates() {
+    void multiple_SetToSetDuplicates_ReturnsFutureOfSetOfCompletedValuesNoDuplicates() {
         final Set<CompletableFuture<String>> set = new HashSet<>();
         set.add(completedFuture("foo"));
         set.add(completedFuture("foo"));
@@ -242,7 +243,7 @@ public class CollectionOfFuturesToFutureOfCollectionTest {
     }
 
     @Test
-    public void multiple_SetToListDuplicates_ReturnsFutureOfListOfCompletedValuesDuplicates() {
+    void multiple_SetToListDuplicates_ReturnsFutureOfListOfCompletedValuesDuplicates() {
         final Set<CompletableFuture<String>> set = new HashSet<>();
         set.add(completedFuture("foo"));
         set.add(completedFuture("foo"));

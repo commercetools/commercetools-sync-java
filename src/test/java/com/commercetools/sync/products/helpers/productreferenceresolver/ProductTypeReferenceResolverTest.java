@@ -12,8 +12,8 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.producttypes.ProductType;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -35,7 +35,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ProductTypeReferenceResolverTest {
+class ProductTypeReferenceResolverTest {
     private static final String CHANNEL_KEY = "channel-key_1";
     private static final String CHANNEL_ID = "1";
     private static final String PRODUCT_TYPE_ID = "productTypeId";
@@ -49,8 +49,8 @@ public class ProductTypeReferenceResolverTest {
     /**
      * Sets up the services and the options needed for reference resolution.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         productTypeService = getMockProductTypeService(PRODUCT_TYPE_ID);
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                                                                         .build();
@@ -62,7 +62,7 @@ public class ProductTypeReferenceResolverTest {
     }
 
     @Test
-    public void resolveProductTypeReference_WithKeys_ShouldResolveReference() {
+    void resolveProductTypeReference_WithKeys_ShouldResolveReference() {
         final ProductDraftBuilder productBuilder = getBuilderWithProductTypeRefId("productTypeKey");
 
         final ProductDraftBuilder resolvedDraft = referenceResolver.resolveProductTypeReference(productBuilder)
@@ -73,7 +73,7 @@ public class ProductTypeReferenceResolverTest {
     }
 
     @Test
-    public void resolveProductTypeReference_WithNonExistentProductType_ShouldNotResolveReference() {
+    void resolveProductTypeReference_WithNonExistentProductType_ShouldNotResolveReference() {
         final ProductDraftBuilder productBuilder = getBuilderWithProductTypeRefId("anyKey")
             .key("dummyKey");
 
@@ -88,7 +88,7 @@ public class ProductTypeReferenceResolverTest {
     }
 
     @Test
-    public void resolveProductTypeReference_WithNullIdOnProductTypeReference_ShouldNotResolveReference() {
+    void resolveProductTypeReference_WithNullIdOnProductTypeReference_ShouldNotResolveReference() {
         final ProductDraftBuilder productBuilder = getBuilderWithProductTypeRef(
             Reference.of(ProductType.referenceTypeId(), (String)null))
             .key("dummyKey");
@@ -97,12 +97,13 @@ public class ProductTypeReferenceResolverTest {
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format("Failed to resolve product type reference on ProductDraft"
-                + " with key:'%s'. Reason: %s", productBuilder.getKey(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+            .hasMessage(format("Failed to resolve '%s' resource identifier on ProductDraft"
+                + " with key:'%s'. Reason: %s", ProductType.referenceTypeId(),
+                productBuilder.getKey(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
-    public void resolveProductTypeReference_WithEmptyIdOnProductTypeReference_ShouldNotResolveReference() {
+    void resolveProductTypeReference_WithEmptyIdOnProductTypeReference_ShouldNotResolveReference() {
         final ProductDraftBuilder productBuilder = getBuilderWithProductTypeRefId("")
             .key("dummyKey");
 
@@ -110,12 +111,13 @@ public class ProductTypeReferenceResolverTest {
             .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format("Failed to resolve product type reference on ProductDraft"
-                + " with key:'%s'. Reason: %s", productBuilder.getKey(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+            .hasMessage(format("Failed to resolve '%s' resource identifier on ProductDraft"
+                + " with key:'%s'. Reason: %s", ProductType.referenceTypeId(), productBuilder.getKey(),
+                BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
-    public void resolveProductTypeReference_WithExceptionOnProductTypeFetch_ShouldNotResolveReference() {
+    void resolveProductTypeReference_WithExceptionOnProductTypeFetch_ShouldNotResolveReference() {
         final ProductDraftBuilder productBuilder = getBuilderWithProductTypeRefId(PRODUCT_TYPE_ID)
             .key("dummyKey");
 

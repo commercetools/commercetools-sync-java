@@ -36,8 +36,8 @@ otherwise they won't be matched.
     - Provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the
     reference would return its `key`.  
 
-   **Note**: This library provides you with a utility method 
-    [`replaceCategoriesReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/1.1.1/com/commercetools/sync/categories/utils/CategoryReferenceReplacementUtils.html#replaceCategoriesReferenceIdsWithKeys-java.util.List-)
+   **Note**: When syncing from a source commercetools project, you can use this util which this library provides: 
+    [`replaceCategoriesReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/1.6.1/com/commercetools/sync/categories/utils/CategoryReferenceReplacementUtils.html#replaceCategoriesReferenceIdsWithKeys-java.util.List-)
     that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
     ````java
     // Puts the keys in the reference id fields to prepare for reference resolution

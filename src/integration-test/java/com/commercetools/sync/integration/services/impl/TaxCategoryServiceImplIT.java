@@ -8,9 +8,9 @@ import io.sphere.sdk.taxcategories.TaxCategory;
 import io.sphere.sdk.taxcategories.TaxCategoryDraft;
 import io.sphere.sdk.taxcategories.TaxCategoryDraftBuilder;
 import io.sphere.sdk.taxcategories.commands.TaxCategoryCreateCommand;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -24,7 +24,7 @@ import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class TaxCategoryServiceImplIT {
+class TaxCategoryServiceImplIT {
     private TaxCategoryService taxCategoryService;
     private TaxCategory oldTaxCategory;
     private ArrayList<String> warnings;
@@ -32,8 +32,8 @@ public class TaxCategoryServiceImplIT {
     /**
      * Deletes tax categories from the target CTP projects, then it populates target CTP project with test data.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         deleteTaxCategories(CTP_TARGET_CLIENT);
         warnings = new ArrayList<>();
         oldTaxCategory = createTaxCategory(CTP_TARGET_CLIENT);
@@ -46,13 +46,13 @@ public class TaxCategoryServiceImplIT {
     /**
      * Cleans up the target and source test data that were built in this test class.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteTaxCategories(CTP_TARGET_CLIENT);
     }
 
     @Test
-    public void fetchCachedTaxCategoryId_WithNonExistingTaxCategory_ShouldNotFetchATaxCategory() {
+    void fetchCachedTaxCategoryId_WithNonExistingTaxCategory_ShouldNotFetchATaxCategory() {
         final Optional<String> taxCategoryId = taxCategoryService.fetchCachedTaxCategoryId("non-existing-key")
                                                                  .toCompletableFuture()
                                                                  .join();
@@ -61,7 +61,7 @@ public class TaxCategoryServiceImplIT {
     }
 
     @Test
-    public void fetchCachedTaxCategoryId_WithExistingTaxCategory_ShouldFetchProductTypeAndCache() {
+    void fetchCachedTaxCategoryId_WithExistingTaxCategory_ShouldFetchProductTypeAndCache() {
         final Optional<String> taxCategoryId = taxCategoryService.fetchCachedTaxCategoryId(oldTaxCategory.getKey())
                                                                  .toCompletableFuture()
                                                                  .join();
@@ -70,7 +70,7 @@ public class TaxCategoryServiceImplIT {
     }
 
     @Test
-    public void fetchCachedTaxCategoryId_OnSecondTime_ShouldNotFindProductTypeInCache() {
+    void fetchCachedTaxCategoryId_OnSecondTime_ShouldNotFindProductTypeInCache() {
         // Fetch any key to populate cache
         taxCategoryService.fetchCachedTaxCategoryId("anyKey").toCompletableFuture().join();
 
@@ -92,7 +92,7 @@ public class TaxCategoryServiceImplIT {
     }
 
     @Test
-    public void fetchCachedTaxCategoryId_WithTaxCategoryExistingWithNoKey_ShouldTriggerWarningCallback() {
+    void fetchCachedTaxCategoryId_WithTaxCategoryExistingWithNoKey_ShouldTriggerWarningCallback() {
         // Create new taxCategory without key
         final TaxCategoryDraft taxCategoryDraft = TaxCategoryDraftBuilder
             .of("newTaxCategory", singletonList(createTaxRateDraft()), oldTaxCategory.getDescription())
@@ -110,7 +110,7 @@ public class TaxCategoryServiceImplIT {
     }
 
     @Test
-    public void fetchCachedTaxCategoryId_WithWithNullKey_ShouldReturnFutureWithEmptyOptional() {
+    void fetchCachedTaxCategoryId_WithWithNullKey_ShouldReturnFutureWithEmptyOptional() {
         final Optional<String> taxCategoryId = taxCategoryService.fetchCachedTaxCategoryId(null)
                                                                  .toCompletableFuture()
                                                                  .join();

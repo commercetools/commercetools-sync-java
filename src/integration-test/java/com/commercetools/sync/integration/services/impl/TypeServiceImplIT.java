@@ -18,9 +18,9 @@ import io.sphere.sdk.types.commands.updateactions.ChangeName;
 import io.sphere.sdk.types.queries.TypeQuery;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -49,7 +49,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class TypeServiceImplIT {
+class TypeServiceImplIT {
     private TypeService typeService;
     private static final String OLD_TYPE_KEY = "old_type_key";
     private static final String OLD_TYPE_NAME = "old_type_name";
@@ -61,8 +61,8 @@ public class TypeServiceImplIT {
     /**
      * Deletes types from the target CTP project, then it populates the project with test data.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
 
@@ -82,13 +82,13 @@ public class TypeServiceImplIT {
     /**
      * Cleans up the target test data that were built in this test class.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteTypes(CTP_TARGET_CLIENT);
     }
 
     @Test
-    public void fetchCachedTypeId_WithNonExistingType_ShouldNotFetchAType() {
+    void fetchCachedTypeId_WithNonExistingType_ShouldNotFetchAType() {
         final Optional<String> typeId = typeService.fetchCachedTypeId("non-existing-type-key")
                                                    .toCompletableFuture()
                                                    .join();
@@ -98,7 +98,7 @@ public class TypeServiceImplIT {
     }
 
     @Test
-    public void fetchCachedTypeId_WithExistingType_ShouldFetchTypeAndCache() {
+    void fetchCachedTypeId_WithExistingType_ShouldFetchTypeAndCache() {
         final Optional<String> typeId = typeService.fetchCachedTypeId(OLD_TYPE_KEY)
                                                    .toCompletableFuture()
                                                    .join();
@@ -108,7 +108,7 @@ public class TypeServiceImplIT {
     }
 
     @Test
-    public void fetchMatchingTypesByKeys_WithEmptySetOfKeys_ShouldReturnEmptySet() {
+    void fetchMatchingTypesByKeys_WithEmptySetOfKeys_ShouldReturnEmptySet() {
         final Set<String> typeKeys = new HashSet<>();
         final Set<Type> matchingTypes = typeService.fetchMatchingTypesByKeys(typeKeys)
                                                    .toCompletableFuture()
@@ -120,7 +120,7 @@ public class TypeServiceImplIT {
     }
 
     @Test
-    public void fetchMatchingTypesByKeys_WithNonExistingKeys_ShouldReturnEmptySet() {
+    void fetchMatchingTypesByKeys_WithNonExistingKeys_ShouldReturnEmptySet() {
         final Set<String> typeKeys = new HashSet<>();
         typeKeys.add("type_key_1");
         typeKeys.add("type_key_2");
@@ -135,7 +135,7 @@ public class TypeServiceImplIT {
     }
 
     @Test
-    public void fetchMatchingTypesByKeys_WithAnyExistingKeys_ShouldReturnASetOfTypes() {
+    void fetchMatchingTypesByKeys_WithAnyExistingKeys_ShouldReturnASetOfTypes() {
         final Set<String> typeKeys = new HashSet<>();
         typeKeys.add(OLD_TYPE_KEY);
 
@@ -149,7 +149,7 @@ public class TypeServiceImplIT {
     }
 
     @Test
-    public void fetchMatchingTypesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
+    void fetchMatchingTypesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
         // Mock sphere client to return BadGatewayException on any request.
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         when(spyClient.execute(any(TypeQuery.class)))
@@ -179,7 +179,7 @@ public class TypeServiceImplIT {
     }
 
     @Test
-    public void fetchMatchingTypesByKeys_WithAllExistingSetOfKeys_ShouldCacheFetchedTypeIds() {
+    void fetchMatchingTypesByKeys_WithAllExistingSetOfKeys_ShouldCacheFetchedTypeIds() {
         final Set<Type> fetchedTypes = typeService.fetchMatchingTypesByKeys(singleton(OLD_TYPE_KEY))
                                                   .toCompletableFuture().join();
         assertThat(fetchedTypes).hasSize(1);
@@ -210,7 +210,7 @@ public class TypeServiceImplIT {
     }
 
     @Test
-    public void createType_WithValidType_ShouldCreateTypeAndCacheId() {
+    void createType_WithValidType_ShouldCreateTypeAndCacheId() {
         final TypeDraft newTypeDraft = TypeDraftBuilder.of(
                 TYPE_KEY_1,
                 TYPE_NAME_1,
@@ -256,7 +256,7 @@ public class TypeServiceImplIT {
     }
 
     @Test
-    public void createType_WithInvalidType_ShouldHaveEmptyOptionalAsAResult() {
+    void createType_WithInvalidType_ShouldHaveEmptyOptionalAsAResult() {
         //preparation
         final TypeDraft newTypeDraft = TypeDraftBuilder.of(
                 "",
@@ -288,7 +288,7 @@ public class TypeServiceImplIT {
     }
 
     @Test
-    public void createType_WithDuplicateKey_ShouldHaveEmptyOptionalAsAResult() {
+    void createType_WithDuplicateKey_ShouldHaveEmptyOptionalAsAResult() {
         //preparation
         final TypeDraft newTypeDraft = TypeDraftBuilder.of(
             OLD_TYPE_KEY,
@@ -337,7 +337,7 @@ public class TypeServiceImplIT {
     }
 
     @Test
-    public void updateType_WithValidChanges_ShouldUpdateTypeCorrectly() {
+    void updateType_WithValidChanges_ShouldUpdateTypeCorrectly() {
         final Optional<Type> typeOptional = CTP_TARGET_CLIENT
                 .execute(TypeQuery.of()
                                   .withPredicates(typeQueryModel -> typeQueryModel.key().is(OLD_TYPE_KEY)))
@@ -364,7 +364,7 @@ public class TypeServiceImplIT {
     }
 
     @Test
-    public void updateType_WithInvalidChanges_ShouldCompleteExceptionally() {
+    void updateType_WithInvalidChanges_ShouldCompleteExceptionally() {
         final Optional<Type> typeOptional = CTP_TARGET_CLIENT
                 .execute(TypeQuery.of()
                                   .withPredicates(typeQueryModel -> typeQueryModel.key().is(OLD_TYPE_KEY)))
@@ -382,7 +382,7 @@ public class TypeServiceImplIT {
     }
 
     @Test
-    public void fetchType_WithExistingTypeKey_ShouldFetchType() {
+    void fetchType_WithExistingTypeKey_ShouldFetchType() {
         final Optional<Type> typeOptional = CTP_TARGET_CLIENT
             .execute(TypeQuery.of()
                               .withPredicates(typeQueryModel -> typeQueryModel.key().is(OLD_TYPE_KEY)))
@@ -395,14 +395,14 @@ public class TypeServiceImplIT {
     }
 
     @Test
-    public void fetchType_WithBlankKey_ShouldNotFetchType() {
+    void fetchType_WithBlankKey_ShouldNotFetchType() {
         final Optional<Type> fetchedTypeOptional =
             executeBlocking(typeService.fetchType(StringUtils.EMPTY));
         assertThat(fetchedTypeOptional).isEmpty();
     }
 
     @Test
-    public void fetchType_WithNullKey_ShouldNotFetchType() {
+    void fetchType_WithNullKey_ShouldNotFetchType() {
         final Optional<Type> fetchedTypeOptional =
             executeBlocking(typeService.fetchType(null));
         assertThat(fetchedTypeOptional).isEmpty();

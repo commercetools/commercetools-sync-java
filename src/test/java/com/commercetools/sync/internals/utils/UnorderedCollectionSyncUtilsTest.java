@@ -6,7 +6,7 @@ import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.commands.updateactions.RemoveVariant;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,10 +20,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class UnorderedCollectionSyncUtilsTest {
+class UnorderedCollectionSyncUtilsTest {
 
     @Test
-    public void buildRemoveUpdateActions_withNullNewDraftsAndEmptyOldCollection_ShouldNotBuildActions() {
+    void buildRemoveUpdateActions_withNullNewDraftsAndEmptyOldCollection_ShouldNotBuildActions() {
         // preparation
         final List<ProductVariant> oldVariants = new ArrayList<>();
         final List<ProductVariantDraft> newDrafts = null;
@@ -38,7 +38,7 @@ public class UnorderedCollectionSyncUtilsTest {
     }
 
     @Test
-    public void buildRemoveUpdateActions_withNullNewDrafts_ShouldBuildRemoveActionsForEveryDraft() {
+    void buildRemoveUpdateActions_withNullNewDrafts_ShouldBuildRemoveActionsForEveryDraft() {
         // preparation
         final ProductVariant productVariant = mock(ProductVariant.class);
         when(productVariant.getId()).thenReturn(1);
@@ -57,7 +57,7 @@ public class UnorderedCollectionSyncUtilsTest {
     }
 
     @Test
-    public void buildRemoveUpdateActions_withEmptyNewDrafts_ShouldBuildRemoveActionsForEveryDraft() {
+    void buildRemoveUpdateActions_withEmptyNewDrafts_ShouldBuildRemoveActionsForEveryDraft() {
         // preparation
         final ProductVariant productVariant = mock(ProductVariant.class);
         when(productVariant.getId()).thenReturn(1);
@@ -76,7 +76,7 @@ public class UnorderedCollectionSyncUtilsTest {
     }
 
     @Test
-    public void buildRemoveUpdateActions_withSomeMatchingDrafts_ShouldBuildRemoveActionsForEveryMissingDraft() {
+    void buildRemoveUpdateActions_withSomeMatchingDrafts_ShouldBuildRemoveActionsForEveryMissingDraft() {
         // preparation
         final ProductVariant productVariant = mock(ProductVariant.class);
         when(productVariant.getId()).thenReturn(1);
@@ -101,7 +101,7 @@ public class UnorderedCollectionSyncUtilsTest {
     }
 
     @Test
-    public void buildRemoveUpdateActions_withDraftsWithNullKeys_ShouldNotBuildRemoveActionsForDraftsWithNullKeys() {
+    void buildRemoveUpdateActions_withDraftsWithNullKeys_ShouldNotBuildRemoveActionsForDraftsWithNullKeys() {
         // preparation
         final ProductVariant productVariant = mock(ProductVariant.class);
         when(productVariant.getId()).thenReturn(1);
@@ -123,7 +123,7 @@ public class UnorderedCollectionSyncUtilsTest {
     }
 
     @Test
-    public void buildRemoveUpdateActions_withNullDrafts_ShouldNotBuildRemoveActions() {
+    void buildRemoveUpdateActions_withNullDrafts_ShouldNotBuildRemoveActions() {
         // preparation
         final ProductVariant productVariant = mock(ProductVariant.class);
         when(productVariant.getId()).thenReturn(1);
@@ -144,7 +144,7 @@ public class UnorderedCollectionSyncUtilsTest {
     }
 
     @Test
-    public void buildRemoveUpdateActions_withNullReturningActionMapper_ShouldBuildActionsWithNoNullElement() {
+    void buildRemoveUpdateActions_withNullReturningActionMapper_ShouldBuildActionsWithNoNullElement() {
         // preparation
         final ProductVariant productVariant = mock(ProductVariant.class);
         when(productVariant.getId()).thenReturn(1);
@@ -176,7 +176,7 @@ public class UnorderedCollectionSyncUtilsTest {
     }
 
     @Test
-    public void buildRemoveUpdateActions_withIdenticalNewDraftsAndOldMap_ShouldNotBuildRemoveActions() {
+    void buildRemoveUpdateActions_withIdenticalNewDraftsAndOldMap_ShouldNotBuildRemoveActions() {
         // preparation
         final ProductVariant productVariant = mock(ProductVariant.class);
         when(productVariant.getId()).thenReturn(1);

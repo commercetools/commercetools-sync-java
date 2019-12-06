@@ -11,7 +11,7 @@ repo_url: http://github.com/commercetools/commercetools-sync-java
 #edit_uri: edit/master/src/docs/docs/
 
 #Copyright (shown at the footer)
-copyright: 'Copyright &copy; 2018 commercetools'
+copyright: 'Copyright &copy; 2019 commercetools'
 
 theme:
   name: 'material'
@@ -52,10 +52,11 @@ nav:
       - Type Sync: usage/TYPE_SYNC.md
       - Category Sync: usage/CATEGORY_SYNC.md
       - InventoryEntry Sync: usage/INVENTORY_SYNC.md
+      - CartDiscount Sync: usage/CART_DISCOUNT_SYNC.md
       - Advanced:
         - Sync Options: usage/SYNC_OPTIONS.md
         - Usage Tips: usage/IMPORTANT_USAGE_TIPS.md
-  - Javadoc: https://commercetools.github.io/commercetools-sync-java/v/1.1.1/
+  - Javadoc: https://commercetools.github.io/commercetools-sync-java/v/1.6.1/
   - Release notes: RELEASE_NOTES.md
   - Roadmap: https://github.com/commercetools/commercetools-sync-java/milestones
   - Issues: https://github.com/commercetools/commercetools-sync-java/issues

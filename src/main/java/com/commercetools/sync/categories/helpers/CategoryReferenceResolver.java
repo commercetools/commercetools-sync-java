@@ -55,14 +55,14 @@ public final class CategoryReferenceResolver
     /**
      * Given a {@link CategoryDraft} this method attempts to resolve the custom type and parent category references to
      * return a {@link CompletionStage} which contains a new instance of the draft with the resolved
-     * references. The keys of the references are either taken from the expanded references or
-     * taken from the id field of the references.
+     * references. The keys of the references are taken from the id field of the references.
      *
-     * @param categoryDraft the categoryDraft to resolve it's references.
+     * @param categoryDraft the categoryDraft to resolve its references.
      * @return a {@link CompletionStage} that contains as a result a new categoryDraft instance with resolved
      *          category references or, in case an error occurs during reference resolution,
      *          a {@link ReferenceResolutionException}.
      */
+    @Override
     @Nonnull
     public CompletionStage<CategoryDraft> resolveReferences(@Nonnull final CategoryDraft categoryDraft) {
         return resolveCustomTypeReference(CategoryDraftBuilder.of(categoryDraft))

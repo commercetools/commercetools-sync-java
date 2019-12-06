@@ -16,7 +16,7 @@ import io.sphere.sdk.products.attributes.AttributeAccess;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -61,10 +61,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class VariantReferenceReplacementUtilsTest {
+class VariantReferenceReplacementUtilsTest {
 
     @Test
-    public void replaceVariantsReferenceIdsWithKeys_WithExpandedReferences_ShouldReturnVariantDraftsWithReplacedKeys() {
+    void replaceVariantsReferenceIdsWithKeys_WithExpandedReferences_ShouldReturnVariantDraftsWithReplacedKeys() {
         final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
 
         final String channelKey = "channelKey";
@@ -88,7 +88,7 @@ public class VariantReferenceReplacementUtilsTest {
 
         assertThat(variantDrafts).hasSize(1);
         assertThat(variantDrafts.get(0).getPrices()).hasSize(1);
-        final Reference<Channel> channelReferenceAfterReplacement =
+        final ResourceIdentifier<Channel> channelReferenceAfterReplacement =
             variantDrafts.get(0).getPrices().get(0).getChannel();
         assertThat(channelReferenceAfterReplacement).isNotNull();
         // Assert that price channel reference id is replaced with key.
@@ -110,7 +110,7 @@ public class VariantReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceVariantsReferenceIdsWithKeys_WithSomeExpandedReferences_ShouldReplaceSomeKeys() {
+    void replaceVariantsReferenceIdsWithKeys_WithSomeExpandedReferences_ShouldReplaceSomeKeys() {
         final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
 
         final Reference<Type> priceCustomTypeReference1 =
@@ -155,8 +155,9 @@ public class VariantReferenceReplacementUtilsTest {
 
         assertThat(variantDrafts).hasSize(2);
         assertThat(variantDrafts.get(0).getPrices()).hasSize(1);
-        final Reference<Channel> channel1ReferenceAfterReplacement = variantDrafts.get(0).getPrices().get(0)
-                                                                                  .getChannel();
+
+        final ResourceIdentifier<Channel> channel1ReferenceAfterReplacement =
+            variantDrafts.get(0).getPrices().get(0).getChannel();
         assertThat(channel1ReferenceAfterReplacement).isNotNull();
         assertThat(channel1ReferenceAfterReplacement.getId()).isEqualTo(channelKey1);
 
@@ -175,8 +176,9 @@ public class VariantReferenceReplacementUtilsTest {
         assertThat(asset1CustomType.getId()).isEqualTo(customType.getKey());
 
         assertThat(variantDrafts.get(1).getPrices()).hasSize(1);
-        final Reference<Channel> channel2ReferenceAfterReplacement = variantDrafts.get(1).getPrices().get(0)
-                                                                                  .getChannel();
+
+        final ResourceIdentifier<Channel> channel2ReferenceAfterReplacement =
+            variantDrafts.get(1).getPrices().get(0).getChannel();
         assertThat(channel2ReferenceAfterReplacement).isNotNull();
         // Asset price channel reference id is not replaced.
         assertThat(channel2ReferenceAfterReplacement.getId()).isEqualTo(channelReference2.getId());
@@ -209,7 +211,7 @@ public class VariantReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceVariantsReferenceIdsWithKeys_WithNoExpandedReferences_ShouldNotReplaceIds() {
+    void replaceVariantsReferenceIdsWithKeys_WithNoExpandedReferences_ShouldNotReplaceIds() {
         final Reference<Channel> channelReference = Channel.referenceOfId(UUID.randomUUID().toString());
         final Reference<Type> customTypeReference = Type.referenceOfId(UUID.randomUUID().toString());
 
@@ -224,8 +226,9 @@ public class VariantReferenceReplacementUtilsTest {
 
         assertThat(variantDrafts).hasSize(1);
         assertThat(variantDrafts.get(0).getPrices()).hasSize(1);
-        final Reference<Channel> channelReferenceAfterReplacement = variantDrafts.get(0).getPrices().get(0)
-                                                                                 .getChannel();
+
+        final ResourceIdentifier<Channel> channelReferenceAfterReplacement =
+            variantDrafts.get(0).getPrices().get(0).getChannel();
         assertThat(channelReferenceAfterReplacement).isNotNull();
         // Assert price channel reference id is not replaced.
         assertThat(channelReferenceAfterReplacement.getId()).isEqualTo(channelReference.getId());
@@ -247,7 +250,7 @@ public class VariantReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replacePricesReferencesIdsWithKeys_WithNoExpandedReferences_ShouldNotReplaceIds() {
+    void replacePricesReferencesIdsWithKeys_WithNoExpandedReferences_ShouldNotReplaceIds() {
         final Reference<Channel> channelReference = Channel.referenceOfId(UUID.randomUUID().toString());
         final Reference<Type> typeReference = Type.referenceOfId(UUID.randomUUID().toString());
 
@@ -259,7 +262,7 @@ public class VariantReferenceReplacementUtilsTest {
         assertThat(priceDrafts).hasSize(1);
         final PriceDraft priceDraftAfterReplacement = priceDrafts.get(0);
 
-        final Reference<Channel> channelReferenceAfterReplacement = priceDraftAfterReplacement.getChannel();;
+        final ResourceIdentifier<Channel> channelReferenceAfterReplacement = priceDraftAfterReplacement.getChannel();
         assertThat(channelReferenceAfterReplacement).isNotNull();
         // Assert Id is not replaced with key.
         assertThat(channelReferenceAfterReplacement.getId()).isEqualTo(channelReference.getId());
@@ -274,7 +277,7 @@ public class VariantReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replacePricesReferencesIdsWithKeys_WithAllExpandedReferences_ShouldReplaceIds() {
+    void replacePricesReferencesIdsWithKeys_WithAllExpandedReferences_ShouldReplaceIds() {
         final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
 
         final String channelKey1 = "channelKey1";
@@ -300,7 +303,7 @@ public class VariantReferenceReplacementUtilsTest {
         assertThat(priceDrafts).hasSize(2);
 
         final PriceDraft priceDraft1AfterReplacement = priceDrafts.get(0);
-        final Reference<Channel> channelReference1AfterReplacement = priceDraft1AfterReplacement.getChannel();
+        final ResourceIdentifier<Channel> channelReference1AfterReplacement = priceDraft1AfterReplacement.getChannel();
         assertThat(channelReference1AfterReplacement).isNotNull();
         // Assert id is replaced with key.
         assertThat(channelReference1AfterReplacement.getId()).isEqualTo(channelKey1);
@@ -314,7 +317,7 @@ public class VariantReferenceReplacementUtilsTest {
 
 
         final PriceDraft priceDraft2AfterReplacement = priceDrafts.get(1);
-        final Reference<Channel> channelReference2AfterReplacement = priceDraft2AfterReplacement.getChannel();
+        final ResourceIdentifier<Channel> channelReference2AfterReplacement = priceDraft2AfterReplacement.getChannel();
         assertThat(channelReference2AfterReplacement).isNotNull();
         // Assert id is replaced with key.
         assertThat(channelReference2AfterReplacement.getId()).isEqualTo(channelKey2);
@@ -328,7 +331,7 @@ public class VariantReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replacePricesReferencesIdsWithKeys_WithSomeExpandedReferences_ShouldReplaceOnlyExpandedIds() {
+    void replacePricesReferencesIdsWithKeys_WithSomeExpandedReferences_ShouldReplaceOnlyExpandedIds() {
         final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
         final String channelKey1 = "channelKey1";
 
@@ -350,12 +353,12 @@ public class VariantReferenceReplacementUtilsTest {
 
         assertThat(priceDrafts).hasSize(2);
 
-        final Reference<Channel> channelReference1AfterReplacement = priceDrafts.get(0).getChannel();
+        final ResourceIdentifier<Channel> channelReference1AfterReplacement = priceDrafts.get(0).getChannel();
         assertThat(channelReference1AfterReplacement).isNotNull();
         // Assert expanded reference has id replaced with key.
         assertThat(channelReference1AfterReplacement.getId()).isEqualTo(channelKey1);
 
-        final Reference<Channel> channelReference2AfterReplacement = priceDrafts.get(1).getChannel();
+        final ResourceIdentifier<Channel> channelReference2AfterReplacement = priceDrafts.get(1).getChannel();
         assertThat(channelReference2AfterReplacement).isNotNull();
         // Assert non expanded reference has id not replaced.
         assertThat(channelReference2AfterReplacement.getId()).isEqualTo(channelReference2.getId());
@@ -374,19 +377,19 @@ public class VariantReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceChannelReferenceIdWithKey_WithNonExpandedReferences_ShouldReturnReferenceWithoutReplacedKeys() {
+    void replaceChannelReferenceIdWithKey_WithNonExpandedReferences_ShouldReturnReferenceWithoutReplacedKeys() {
         final String channelId = UUID.randomUUID().toString();
         final Reference<Channel> channelReference = Channel.referenceOfId(channelId);
         final Price price = getPriceMockWithReferences(channelReference, null);
 
-        final Reference<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(price);
+        final ResourceIdentifier<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(price);
 
         assertThat(channelReferenceWithKey).isNotNull();
         assertThat(channelReferenceWithKey.getId()).isEqualTo(channelId);
     }
 
     @Test
-    public void replaceChannelReferenceIdWithKey_WithExpandedReferences_ShouldReturnReplaceReferenceIdsWithKey() {
+    void replaceChannelReferenceIdWithKey_WithExpandedReferences_ShouldReturnReplaceReferenceIdsWithKey() {
         final String channelKey = "channelKey";
         final Channel channel = getChannelMock(channelKey);
 
@@ -395,23 +398,23 @@ public class VariantReferenceReplacementUtilsTest {
         final Price price = getPriceMockWithReferences(channelReference, null);
 
 
-        final Reference<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(price);
+        final ResourceIdentifier<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(price);
 
         assertThat(channelReferenceWithKey).isNotNull();
         assertThat(channelReferenceWithKey.getId()).isEqualTo(channelKey);
     }
 
     @Test
-    public void replaceChannelReferenceIdWithKey_WithNullChannelReference_ShouldReturnNull() {
+    void replaceChannelReferenceIdWithKey_WithNullChannelReference_ShouldReturnNull() {
         final Price price = getPriceMockWithReferences(null, null);
 
-        final Reference<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(price);
+        final ResourceIdentifier<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(price);
 
         assertThat(channelReferenceWithKey).isNull();
     }
 
     @Test
-    public void replaceAttributeReferenceIdWithKey_WithTextAttribute_ShouldReturnEmptyOptional() {
+    void replaceAttributeReferenceIdWithKey_WithTextAttribute_ShouldReturnEmptyOptional() {
         final Attribute attribute = Attribute.of("attrName", AttributeAccess.ofText(), "value");
         final Optional<Reference<Product>> attributeReferenceIdWithKey = replaceAttributeReferenceIdWithKey(attribute);
 
@@ -419,7 +422,7 @@ public class VariantReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceAttributeReferenceIdWithKey_WithProductReferenceSetAttribute_ShouldReturnEmptyOptional() {
+    void replaceAttributeReferenceIdWithKey_WithProductReferenceSetAttribute_ShouldReturnEmptyOptional() {
         final Attribute attribute =
             Attribute.of("attrName", AttributeAccess.ofProductReferenceSet(), new HashSet<>());
         final Optional<Reference<Product>> attributeReferenceIdWithKey = replaceAttributeReferenceIdWithKey(attribute);
@@ -428,7 +431,7 @@ public class VariantReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceAttributeReferenceIdWithKey_WithNonExpandedProductReferenceAttribute_ShouldNotReplaceId() {
+    void replaceAttributeReferenceIdWithKey_WithNonExpandedProductReferenceAttribute_ShouldNotReplaceId() {
         final Reference<Product> nonExpandedReference = Product.referenceOfId(UUID.randomUUID().toString());
         final Attribute attribute =
             Attribute.of("attrName", AttributeAccess.ofProductReference(), nonExpandedReference);
@@ -438,7 +441,7 @@ public class VariantReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceAttributeReferenceIdWithKey_WithExpandedProductReferenceAttribute_ShouldReplaceId() {
+    void replaceAttributeReferenceIdWithKey_WithExpandedProductReferenceAttribute_ShouldReplaceId() {
         final Product product = readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
         final Reference<Product> expandedReference =
             Reference.ofResourceTypeIdAndIdAndObj(Product.referenceTypeId(), UUID.randomUUID().toString(), product);
@@ -449,7 +452,7 @@ public class VariantReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceAttributeReferenceSetIdsWithKeys_WithTextAttribute_ShouldReturnEmptyOptional() {
+    void replaceAttributeReferenceSetIdsWithKeys_WithTextAttribute_ShouldReturnEmptyOptional() {
         final Attribute attribute = Attribute.of("attrName", AttributeAccess.ofText(), "value");
         final Optional<Set<Reference<Product>>> attributeReferenceSetIdsWithKeys =
             replaceAttributeReferenceSetIdsWithKeys(attribute);
@@ -458,7 +461,7 @@ public class VariantReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceAttributesReferencesIdsWithKeys_WithNoAttributes_ShouldNotReplaceIds() {
+    void replaceAttributesReferencesIdsWithKeys_WithNoAttributes_ShouldNotReplaceIds() {
         final ProductVariant variant = mock(ProductVariant.class);
         when(variant.getAttributes()).thenReturn(new ArrayList<>());
         final List<AttributeDraft> replacedDrafts = replaceAttributesReferencesIdsWithKeys(variant);
@@ -466,7 +469,7 @@ public class VariantReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceAttributesReferencesIdsWithKeys_WithAttributesWithNoReferences_ShouldNotChangeAttributes() {
+    void replaceAttributesReferencesIdsWithKeys_WithAttributesWithNoReferences_ShouldNotChangeAttributes() {
         final Product product = readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
         final ProductVariant masterVariant = product.getMasterData().getStaged().getMasterVariant();
         final List<AttributeDraft> replacedDrafts = replaceAttributesReferencesIdsWithKeys(masterVariant);
@@ -479,7 +482,7 @@ public class VariantReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void isProductReference_WithDifferentAttributeTypes_ShouldBeTrueForProductReferenceAttributeOnly() {
+    void isProductReference_WithDifferentAttributeTypes_ShouldBeTrueForProductReferenceAttributeOnly() {
         assertThat(isProductReference(BOOLEAN_ATTRIBUTE_TRUE)).isFalse();
         assertThat(isProductReference(TEXT_ATTRIBUTE_BAR)).isFalse();
         assertThat(isProductReference(LTEXT_ATTRIBUTE_EN_BAR)).isFalse();
@@ -498,7 +501,7 @@ public class VariantReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void isProductReferenceSet_WithDifferentAttributeTypes_ShouldBeTrueForProductReferenceSetAttributeOnly() {
+    void isProductReferenceSet_WithDifferentAttributeTypes_ShouldBeTrueForProductReferenceSetAttributeOnly() {
         assertThat(isProductReferenceSet(BOOLEAN_ATTRIBUTE_TRUE)).isFalse();
         assertThat(isProductReferenceSet(TEXT_ATTRIBUTE_BAR)).isFalse();
         assertThat(isProductReferenceSet(LTEXT_ATTRIBUTE_EN_BAR)).isFalse();

@@ -11,8 +11,8 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Objects;
@@ -29,21 +29,21 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class AssetReferenceResolverTest {
+class AssetReferenceResolverTest {
     private TypeService typeService;
     private ProductSyncOptions syncOptions;
 
     /**
      * Sets up the services and the options needed for reference resolution.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         typeService = getMockTypeService();
         syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
     }
 
     @Test
-    public void resolveCustomTypeReference_WithNonExistentCustomType_ShouldNotResolveCustomTypeReference() {
+    void resolveCustomTypeReference_WithNonExistentCustomType_ShouldNotResolveCustomTypeReference() {
         final String customTypeKey = "customTypeKey";
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeIdAndJson(customTypeKey, new HashMap<>());
         final AssetDraftBuilder assetDraftBuilder = AssetDraftBuilder.of(emptyList(), ofEnglish("assetName"))
@@ -64,7 +64,7 @@ public class AssetReferenceResolverTest {
     }
 
     @Test
-    public void resolveCustomTypeReference_WithNullIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
+    void resolveCustomTypeReference_WithNullIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
         final CustomFieldsDraft customFieldsDraft = mock(CustomFieldsDraft.class);
         final ResourceIdentifier<Type> typeReference = ResourceIdentifier.ofId(null);
         when(customFieldsDraft.getType()).thenReturn(typeReference);
@@ -84,7 +84,7 @@ public class AssetReferenceResolverTest {
     }
 
     @Test
-    public void resolveCustomTypeReference_WithEmptyIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
+    void resolveCustomTypeReference_WithEmptyIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeIdAndJson("", new HashMap<>());
         final AssetDraftBuilder assetDraftBuilder = AssetDraftBuilder.of(emptyList(), ofEnglish("assetName"))
                                                                      .key("assetKey")
@@ -101,7 +101,7 @@ public class AssetReferenceResolverTest {
     }
 
     @Test
-    public void resolveCustomTypeReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
+    void resolveCustomTypeReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
         final String customTypeKey = "customTypeKey";
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeIdAndJson(customTypeKey, new HashMap<>());
         final AssetDraftBuilder assetDraftBuilder = AssetDraftBuilder.of(emptyList(), ofEnglish("assetName"))
@@ -122,7 +122,7 @@ public class AssetReferenceResolverTest {
     }
 
     @Test
-    public void resolveReferences_WithNoCustomTypeReference_ShouldNotResolveReferences() {
+    void resolveReferences_WithNoCustomTypeReference_ShouldNotResolveReferences() {
         final AssetDraft assetDraft = AssetDraftBuilder.of(emptyList(), ofEnglish("assetName"))
                                                        .key("assetKey")
                                                        .build();

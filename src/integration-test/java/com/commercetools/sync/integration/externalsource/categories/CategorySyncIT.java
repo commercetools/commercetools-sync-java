@@ -16,14 +16,15 @@ import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.utils.CompletableFutureUtils;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -54,15 +55,15 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 
-public class CategorySyncIT {
+class CategorySyncIT {
     private CategorySync categorySync;
     private static final String oldCategoryKey = "oldCategoryKey";
 
     /**
      * Delete all categories and types from target project. Then create custom types for target CTP project categories.
      */
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
         createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH,
@@ -72,8 +73,8 @@ public class CategorySyncIT {
     /**
      * Deletes Categories and Types from target CTP project, then it populates it with category test data.
      */
-    @Before
-    public void setupTest() {
+    @BeforeEach
+    void setupTest() {
         deleteAllCategories(CTP_TARGET_CLIENT);
 
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -94,22 +95,22 @@ public class CategorySyncIT {
     /**
      * Cleans up the target test data that were built in each test.
      */
-    @After
-    public void tearDownTest() {
+    @AfterEach
+    void tearDownTest() {
         deleteAllCategories(CTP_TARGET_CLIENT);
     }
 
     /**
      * Cleans up the entire target test data that were built in this test class.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
     }
 
     @Test
-    public void syncDrafts_WithANewCategoryWithNewSlug_ShouldCreateCategory() {
+    void syncDrafts_WithANewCategoryWithNewSlug_ShouldCreateCategory() {
         // Category draft coming from external source.
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "new-furniture"))
@@ -124,7 +125,7 @@ public class CategorySyncIT {
     }
 
     @Test
-    public void syncDrafts_WithANewCategoryWithDuplicateSlug_ShouldNotCreateCategory() {
+    void syncDrafts_WithANewCategoryWithDuplicateSlug_ShouldNotCreateCategory() {
         // Category draft coming from external source.
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "furniture"))
@@ -139,7 +140,7 @@ public class CategorySyncIT {
     }
 
     @Test
-    public void syncDrafts_WithCategoryWithNoChanges_ShouldNotUpdateCategory() {
+    void syncDrafts_WithCategoryWithNoChanges_ShouldNotUpdateCategory() {
         // Category draft coming from external source.
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"),
@@ -155,7 +156,7 @@ public class CategorySyncIT {
     }
 
     @Test
-    public void syncDrafts_WithChangedCategory_ShouldUpdateCategory() {
+    void syncDrafts_WithChangedCategory_ShouldUpdateCategory() {
         // Category draft coming from external source.
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
@@ -171,7 +172,7 @@ public class CategorySyncIT {
     }
 
     @Test
-    public void syncDrafts_WithConcurrentModificationException_ShouldRetryToUpdateNewCategoryWithSuccess() {
+    void syncDrafts_WithConcurrentModificationException_ShouldRetryToUpdateNewCategoryWithSuccess() {
         // Preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdate();
 
@@ -219,7 +220,7 @@ public class CategorySyncIT {
     }
 
     @Test
-    public void syncDrafts_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
+    void syncDrafts_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
         // Preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
 
@@ -277,7 +278,7 @@ public class CategorySyncIT {
     }
 
     @Test
-    public void syncDrafts_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
+    void syncDrafts_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
         // Preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
 
@@ -334,13 +335,13 @@ public class CategorySyncIT {
     }
 
     @Test
-    public void syncDrafts_WithNewCategoryWithExistingParent_ShouldCreateCategory() {
+    void syncDrafts_WithNewCategoryWithExistingParent_ShouldCreateCategory() {
         // Category draft coming from external source.
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key("newCategory")
-            .parent(Category.referenceOfId(oldCategoryKey).toResourceIdentifier())
+            .parent(ResourceIdentifier.ofId(oldCategoryKey))
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
@@ -351,7 +352,7 @@ public class CategorySyncIT {
     }
 
     @Test
-    public void syncDraft_withARemovedCustomType_ShouldUpdateCategory() {
+    void syncDraft_withARemovedCustomType_ShouldUpdateCategory() {
         // Category draft coming from external source.
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "furniture"))
@@ -365,7 +366,7 @@ public class CategorySyncIT {
     }
 
     @Test
-    public void syncDrafts_WithMultipleBatchSyncing_ShouldSync() {
+    void syncDrafts_WithMultipleBatchSyncing_ShouldSync() {
         // Existing array of [1, 2, 3, oldCategoryKey]
         final CategoryDraft oldCategoryDraft1 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "cat1"), LocalizedString.of(Locale.ENGLISH, "furniture1"))
@@ -401,7 +402,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "oldCategoryKey"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key(oldCategoryKey)
-            .parent(Category.referenceOfId("cat7").toResourceIdentifier())
+            .parent(ResourceIdentifier.ofId("cat7"))
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
@@ -422,7 +423,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat6"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture2"))
             .key("cat6")
-            .parent(Category.referenceOfId("cat5").toResourceIdentifier())
+            .parent(ResourceIdentifier.ofId("cat5"))
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
@@ -450,7 +451,7 @@ public class CategorySyncIT {
     }
 
     @Test
-    public void syncDrafts_WithMultipleBatchSyncingWithAlreadyProcessedDrafts_ShouldSync() {
+    void syncDrafts_WithMultipleBatchSyncingWithAlreadyProcessedDrafts_ShouldSync() {
         // Category draft coming from external source.
         CategoryDraft categoryDraft1 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "new name"),
@@ -485,7 +486,7 @@ public class CategorySyncIT {
     }
 
     @Test
-    public void syncDrafts_WithOneBatchSyncing_ShouldSync() {
+    void syncDrafts_WithOneBatchSyncing_ShouldSync() {
         final List<CategoryDraft> newCategoryDrafts = new ArrayList<>();
 
         // Category draft coming from external source.
@@ -508,7 +509,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat2"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture2"))
             .key("cat2")
-            .parent(Category.referenceOfId("cat1").toResourceIdentifier())
+            .parent(ResourceIdentifier.ofId("cat1"))
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
@@ -516,7 +517,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat3"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture3"))
             .key("cat3")
-            .parent(Category.referenceOfId("cat1").toResourceIdentifier())
+            .parent(ResourceIdentifier.ofId("cat1"))
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
@@ -531,7 +532,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat5"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture5"))
             .key("cat5")
-            .parent(Category.referenceOfId("cat4").toResourceIdentifier())
+            .parent(ResourceIdentifier.ofId("cat4"))
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
@@ -548,7 +549,7 @@ public class CategorySyncIT {
     }
 
     @Test
-    public void syncDrafts_WithSameSlugDraft_ShouldNotSyncIt() {
+    void syncDrafts_WithSameSlugDraft_ShouldNotSyncIt() {
         final List<CategoryDraft> newCategoryDrafts = new ArrayList<>();
 
         // Category draft coming from external source.
@@ -571,7 +572,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat2"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture2"))
             .key("cat2")
-            .parent(Category.referenceOfId("cat1").toResourceIdentifier())
+            .parent(ResourceIdentifier.ofId("cat1"))
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
@@ -579,7 +580,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat3"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture3"))
             .key("cat3")
-            .parent(Category.referenceOfId("cat1").toResourceIdentifier())
+            .parent(ResourceIdentifier.ofId("cat1"))
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
@@ -594,7 +595,7 @@ public class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat5"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture5"))
             .key("cat5")
-            .parent(Category.referenceOfId("cat4").toResourceIdentifier())
+            .parent(ResourceIdentifier.ofId("cat4"))
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
@@ -612,7 +613,7 @@ public class CategorySyncIT {
 
 
     @Test
-    public void syncDrafts_WithValidAndInvalidCustomTypeKeys_ShouldSyncCorrectly() {
+    void syncDrafts_WithValidAndInvalidCustomTypeKeys_ShouldSyncCorrectly() {
         final List<CategoryDraft> newCategoryDrafts = new ArrayList<>();
         final String newCustomTypeKey = "newKey";
         createCategoriesCustomType(newCustomTypeKey, Locale.ENGLISH, "newCustomTypeName", CTP_TARGET_CLIENT);
@@ -640,7 +641,7 @@ public class CategorySyncIT {
     }
 
     @Test
-    public void syncDrafts_WithValidCustomFieldsChange_ShouldSyncIt() {
+    void syncDrafts_WithValidCustomFieldsChange_ShouldSyncIt() {
         final List<CategoryDraft> newCategoryDrafts = new ArrayList<>();
 
         final Map<String, JsonNode> customFieldsJsons = new HashMap<>();
@@ -666,7 +667,7 @@ public class CategorySyncIT {
     }
 
     @Test
-    public void syncDrafts_WithDraftWithAMissingParentKey_ShouldNotSyncIt() {
+    void syncDrafts_WithDraftWithAMissingParentKey_ShouldNotSyncIt() {
         // Category draft coming from external source.
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "new-furniture"))
@@ -678,7 +679,7 @@ public class CategorySyncIT {
         final CategoryDraft categoryDraftWithMissingParent = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "new-furniture1"))
             .key("cat1")
-            .parent(Category.referenceOfId(nonExistingParentKey).toResourceIdentifier())
+            .parent(ResourceIdentifier.ofId(nonExistingParentKey))
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 

@@ -16,9 +16,9 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +40,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class CategoryReferenceResolverTest {
+class CategoryReferenceResolverTest {
 
     private TypeService typeService;
     private CategoryService categoryService;
@@ -54,8 +54,8 @@ public class CategoryReferenceResolverTest {
     /**
      * Sets up the services and the options needed for reference resolution.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         typeService = getMockTypeService();
         categoryService = mock(CategoryService.class);
         when(categoryService.fetchCachedCategoryId(CACHED_CATEGORY_KEY))
@@ -65,7 +65,7 @@ public class CategoryReferenceResolverTest {
     }
 
     @Test
-    public void resolveAssetsReferences_WithEmptyAssets_ShouldNotResolveAssets() {
+    void resolveAssetsReferences_WithEmptyAssets_ShouldNotResolveAssets() {
         final CategoryDraftBuilder categoryDraftBuilder =
             getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key", CACHED_CATEGORY_KEY,
                 "customTypeId", new HashMap<>())
@@ -79,7 +79,7 @@ public class CategoryReferenceResolverTest {
     }
 
     @Test
-    public void resolveAssetsReferences_WithNullAssets_ShouldNotResolveAssets() {
+    void resolveAssetsReferences_WithNullAssets_ShouldNotResolveAssets() {
         final CategoryDraftBuilder categoryDraftBuilder =
             getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key", CACHED_CATEGORY_KEY,
                 "customTypeId", new HashMap<>())
@@ -93,7 +93,7 @@ public class CategoryReferenceResolverTest {
     }
 
     @Test
-    public void resolveAssetsReferences_WithANullAsset_ShouldNotResolveAssets() {
+    void resolveAssetsReferences_WithANullAsset_ShouldNotResolveAssets() {
         final CategoryDraftBuilder categoryDraftBuilder =
             getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key", CACHED_CATEGORY_KEY,
                 "customTypeId", new HashMap<>()).assets(singletonList(null));
@@ -106,7 +106,7 @@ public class CategoryReferenceResolverTest {
     }
 
     @Test
-    public void resolveAssetsReferences_WithAssetReferences_ShouldResolveAssets() {
+    void resolveAssetsReferences_WithAssetReferences_ShouldResolveAssets() {
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
             .ofTypeIdAndJson("customTypeId", new HashMap<>());
 
@@ -131,9 +131,9 @@ public class CategoryReferenceResolverTest {
     }
 
 
-    @Ignore("TODO: SHOULD COMPLETE EXCEPTIONALLY. GITHUB ISSUE#219")
+    @Disabled("TODO: SHOULD COMPLETE EXCEPTIONALLY. GITHUB ISSUE#219")
     @Test
-    public void resolveParentReference_WithNonExistentParentCategory_ShouldNotResolveParentReference() {
+    void resolveParentReference_WithNonExistentParentCategory_ShouldNotResolveParentReference() {
         final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
             CACHED_CATEGORY_KEY, "customTypeId", new HashMap<>());
         when(categoryService.fetchCachedCategoryId(CACHED_CATEGORY_KEY))
@@ -148,7 +148,7 @@ public class CategoryReferenceResolverTest {
     }
 
     @Test
-    public void resolveCustomTypeReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
+    void resolveCustomTypeReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
         final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
             CACHED_CATEGORY_KEY, "customTypeId", new HashMap<>());
 
@@ -165,7 +165,7 @@ public class CategoryReferenceResolverTest {
     }
 
     @Test
-    public void resolveCustomTypeReference_WithNonExistentCustomType_ShouldNotResolveCustomTypeReference() {
+    void resolveCustomTypeReference_WithNonExistentCustomType_ShouldNotResolveCustomTypeReference() {
         final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
             CACHED_CATEGORY_KEY, "customTypeId", new HashMap<>());
         when(typeService.fetchCachedTypeId(anyString()))
@@ -181,7 +181,7 @@ public class CategoryReferenceResolverTest {
     }
 
     @Test
-    public void resolveParentReference_WithEmptyIdOnParentReference_ShouldNotResolveParentReference() {
+    void resolveParentReference_WithEmptyIdOnParentReference_ShouldNotResolveParentReference() {
         final CategoryDraftBuilder categoryDraft = CategoryDraftBuilder.of(ofEnglish("foo"), ofEnglish("bar"));
         categoryDraft.key("key");
         categoryDraft.parent(Category.referenceOfId("").toResourceIdentifier());
@@ -196,7 +196,7 @@ public class CategoryReferenceResolverTest {
     }
 
     @Test
-    public void resolveParentReference_WithNullIdOnParentReference_ShouldNotResolveParentReference() {
+    void resolveParentReference_WithNullIdOnParentReference_ShouldNotResolveParentReference() {
         final CategoryDraftBuilder categoryDraft = CategoryDraftBuilder.of(ofEnglish("foo"), ofEnglish("bar"));
         categoryDraft.key("key");
         categoryDraft.parent(Category.referenceOfId(null).toResourceIdentifier());
@@ -211,7 +211,7 @@ public class CategoryReferenceResolverTest {
     }
 
     @Test
-    public void resolveCustomTypeReference_WithNullIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
+    void resolveCustomTypeReference_WithNullIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
         final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
             "parentKey", "customTypeId", new HashMap<>());
 
@@ -232,7 +232,7 @@ public class CategoryReferenceResolverTest {
     }
 
     @Test
-    public void resolveCustomTypeReference_WithEmptyIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
+    void resolveCustomTypeReference_WithEmptyIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
         final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
             "parentKey", "customTypeId", new HashMap<>());
 
@@ -248,7 +248,7 @@ public class CategoryReferenceResolverTest {
     }
 
     @Test
-    public void resolveReferences_WithNoCustomTypeReferenceAndNoParentReference_ShouldNotResolveReferences() {
+    void resolveReferences_WithNoCustomTypeReferenceAndNoParentReference_ShouldNotResolveReferences() {
         final CategoryDraft categoryDraft = mock(CategoryDraft.class);
         when(categoryDraft.getName()).thenReturn(LocalizedString.of(Locale.ENGLISH, "myDraft"));
         when(categoryDraft.getKey()).thenReturn("key");

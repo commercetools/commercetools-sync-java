@@ -23,7 +23,7 @@ import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -48,10 +48,10 @@ import static org.assertj.core.data.MapEntry.entry;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ProductReferenceReplacementUtilsTest {
+class ProductReferenceReplacementUtilsTest {
 
     @Test
-    public void replaceProductsReferenceIdsWithKeys_WithSomeExpandedReferences_ShouldReplaceReferencesWhereExpanded() {
+    void replaceProductsReferenceIdsWithKeys_WithSomeExpandedReferences_ShouldReplaceReferencesWhereExpanded() {
         final String resourceKey = "key";
         final ProductType productType = getProductTypeMock(resourceKey);
         final Reference<ProductType> productTypeReference =
@@ -139,7 +139,7 @@ public class ProductReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceProductsReferenceIdsWithKeys_WithNullProducts_ShouldSkipNullProducts() {
+    void replaceProductsReferenceIdsWithKeys_WithNullProducts_ShouldSkipNullProducts() {
         final String resourceKey = "key";
         final ProductType productType = getProductTypeMock(resourceKey);
         final Reference<ProductType> productTypeReference =
@@ -207,19 +207,18 @@ public class ProductReferenceReplacementUtilsTest {
         assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getMasterVariant)
                                                      .flatExtracting(ProductVariantDraft::getPrices)
                                                      .extracting(PriceDraft::getChannel)
-                                                     .extracting(Reference::getId)
+                                                     .extracting(ResourceIdentifier::getId)
                                                      .containsExactly(channel.getKey(), channel.getKey());
     }
 
     @Test
-    public void
-        replaceProductTypeReferenceIdWithKey_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
+    void replaceProductTypeReferenceIdWithKey_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
         final String productTypeId = UUID.randomUUID().toString();
         final Reference<ProductType> productTypeReference = ProductType.referenceOfId(productTypeId);
         final Product product = mock(Product.class);
         when(product.getProductType()).thenReturn(productTypeReference);
 
-        final Reference<ProductType> productTypeReferenceWithKey = ProductReferenceReplacementUtils
+        final ResourceIdentifier<ProductType> productTypeReferenceWithKey = ProductReferenceReplacementUtils
             .replaceProductTypeReferenceIdWithKey(product);
 
         assertThat(productTypeReferenceWithKey).isNotNull();
@@ -227,7 +226,7 @@ public class ProductReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceProductTypeReferenceIdWithKey_WithExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
+    void replaceProductTypeReferenceIdWithKey_WithExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
         final String productTypeKey = "productTypeKey";
 
         final ProductType productType = getProductTypeMock(productTypeKey);
@@ -238,7 +237,7 @@ public class ProductReferenceReplacementUtilsTest {
         final Product product = mock(Product.class);
         when(product.getProductType()).thenReturn(productTypeReference);
 
-        final Reference<ProductType> productTypeReferenceWithKey = ProductReferenceReplacementUtils
+        final ResourceIdentifier<ProductType> productTypeReferenceWithKey = ProductReferenceReplacementUtils
             .replaceProductTypeReferenceIdWithKey(product);
 
         assertThat(productTypeReferenceWithKey).isNotNull();
@@ -246,25 +245,24 @@ public class ProductReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceProductTypeReferenceIdWithKey_WithNullReferences_ShouldReturnNull() {
+    void replaceProductTypeReferenceIdWithKey_WithNullReferences_ShouldReturnNull() {
         final Product product = mock(Product.class);
         when(product.getProductType()).thenReturn(null);
 
-        final Reference<ProductType> productTypeReferenceWithKey = ProductReferenceReplacementUtils
+        final ResourceIdentifier<ProductType> productTypeReferenceWithKey = ProductReferenceReplacementUtils
             .replaceProductTypeReferenceIdWithKey(product);
 
         assertThat(productTypeReferenceWithKey).isNull();
     }
 
     @Test
-    public void
-        replaceTaxCategoryReferenceIdWithKey_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
+    void replaceTaxCategoryReferenceIdWithKey_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
         final String taxCategoryId = UUID.randomUUID().toString();
         final Reference<TaxCategory> taxCategoryReference = TaxCategory.referenceOfId(taxCategoryId);
         final Product product = mock(Product.class);
         when(product.getTaxCategory()).thenReturn(taxCategoryReference);
 
-        final Reference<TaxCategory> taxCategoryReferenceWithKey = ProductReferenceReplacementUtils
+        final ResourceIdentifier<TaxCategory> taxCategoryReferenceWithKey = ProductReferenceReplacementUtils
             .replaceTaxCategoryReferenceIdWithKey(product);
 
         assertThat(taxCategoryReferenceWithKey).isNotNull();
@@ -272,7 +270,7 @@ public class ProductReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceTaxCategoryReferenceIdWithKey_WithExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
+    void replaceTaxCategoryReferenceIdWithKey_WithExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
         final String taxCategoryKey = "taxCategoryKey";
         final TaxCategory taxCategory = getTaxCategoryMock(taxCategoryKey);
         final Reference<TaxCategory> taxCategoryReference = Reference
@@ -281,7 +279,7 @@ public class ProductReferenceReplacementUtilsTest {
         final Product product = mock(Product.class);
         when(product.getTaxCategory()).thenReturn(taxCategoryReference);
 
-        final Reference<TaxCategory> taxCategoryReferenceWithKey = ProductReferenceReplacementUtils
+        final ResourceIdentifier<TaxCategory> taxCategoryReferenceWithKey = ProductReferenceReplacementUtils
             .replaceTaxCategoryReferenceIdWithKey(product);
 
         assertThat(taxCategoryReferenceWithKey).isNotNull();
@@ -289,18 +287,18 @@ public class ProductReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceTaxCategoryReferenceIdWithKey_WithNullReference_ShouldReturnNull() {
+    void replaceTaxCategoryReferenceIdWithKey_WithNullReference_ShouldReturnNull() {
         final Product product = mock(Product.class);
         when(product.getTaxCategory()).thenReturn(null);
 
-        final Reference<TaxCategory> taxCategoryReferenceWithKey = ProductReferenceReplacementUtils
+        final ResourceIdentifier<TaxCategory> taxCategoryReferenceWithKey = ProductReferenceReplacementUtils
             .replaceTaxCategoryReferenceIdWithKey(product);
 
         assertThat(taxCategoryReferenceWithKey).isNull();
     }
 
     @Test
-    public void replaceStateReferenceIdWithKey_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
+    void replaceStateReferenceIdWithKey_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
         final String stateId = UUID.randomUUID().toString();
         final Reference<State> stateReference = State.referenceOfId(stateId);
         final Product product = mock(Product.class);
@@ -314,7 +312,7 @@ public class ProductReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceStateReferenceIdWithKey_WithExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
+    void replaceStateReferenceIdWithKey_WithExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
         final String stateKey = "stateKey";
         final State state = getStateMock(stateKey);
         final Reference<State> stateReference = Reference
@@ -331,7 +329,7 @@ public class ProductReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceStateReferenceIdWithKey_WithNullReferences_ShouldReturnNull() {
+    void replaceStateReferenceIdWithKey_WithNullReferences_ShouldReturnNull() {
         final Product product = mock(Product.class);
         when(product.getState()).thenReturn(null);
 
@@ -342,7 +340,7 @@ public class ProductReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void buildProductQuery_Always_ShouldReturnQueryWithAllNeededReferencesExpanded() {
+    void buildProductQuery_Always_ShouldReturnQueryWithAllNeededReferencesExpanded() {
         final ProductQuery productQuery = ProductReferenceReplacementUtils.buildProductQuery();
         assertThat(productQuery.expansionPaths())
             .containsExactly(ExpansionPath.of("productType"), ExpansionPath.of("taxCategory"),
@@ -360,8 +358,7 @@ public class ProductReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void
-        replaceCategoryReferencesIdsWithKeys_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
+    void replaceCategoryReferencesIdsWithKeys_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
         final String categoryId = UUID.randomUUID().toString();
         final Set<Reference<Category>> categoryReferences = singleton(Category.referenceOfId(categoryId));
         final CategoryOrderHints categoryOrderHints = getCategoryOrderHintsMock(categoryReferences);
@@ -383,8 +380,7 @@ public class ProductReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void
-        replaceCategoryReferencesIdsWithKeys_WithNonExpandedReferencesAndNoCategoryOrderHints_ShouldNotReplaceIds() {
+    void replaceCategoryReferencesIdsWithKeys_WithNonExpandedReferencesAndNoCategoryOrderHints_ShouldNotReplaceIds() {
         final String categoryId = UUID.randomUUID().toString();
         final Set<Reference<Category>> categoryReferences = singleton(Category.referenceOfId(categoryId));
         final Product product = getProductMock(categoryReferences, null);
@@ -404,7 +400,7 @@ public class ProductReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceCategoryReferencesIdsWithKeys_WithExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
+    void replaceCategoryReferencesIdsWithKeys_WithExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
         final String categoryKey = "categoryKey";
         final Category category = getCategoryMock(categoryKey);
         final Reference<Category> categoryReference =
@@ -425,7 +421,7 @@ public class ProductReferenceReplacementUtilsTest {
         final CategoryOrderHints categoryOrderHintsWithKeys = categoryReferencePair.getCategoryOrderHints();
 
         assertThat(categoryReferencesWithKeys).containsExactlyInAnyOrderElementsOf(
-            singleton(Reference.ofResourceTypeIdAndId(Category.referenceTypeId(), categoryKey)));
+            singleton(ResourceIdentifier.ofId(categoryKey)));
 
         assertThat(categoryOrderHintsWithKeys).isNotNull();
         assertThat(categoryOrderHintsWithKeys.getAsMap()).containsOnly(entry(categoryKey,
@@ -433,7 +429,7 @@ public class ProductReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceCategoryReferencesIdsWithKeys_WithExpandedReferencesAndNoCategoryOrderHints_ShouldReplaceIds() {
+    void replaceCategoryReferencesIdsWithKeys_WithExpandedReferencesAndNoCategoryOrderHints_ShouldReplaceIds() {
         final String categoryKey = "categoryKey";
         final Category category = getCategoryMock(categoryKey);
         final Reference<Category> categoryReference =
@@ -455,8 +451,7 @@ public class ProductReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void
-        replaceCategoryReferencesIdsWithKeys_WithExpandedReferencesAndSomeCategoryOrderHintsSet_ShouldReplaceIds() {
+    void replaceCategoryReferencesIdsWithKeys_WithExpandedReferencesAndSomeCategoryOrderHintsSet_ShouldReplaceIds() {
         final String categoryKey1 = "categoryKey1";
         final String categoryKey2 = "categoryKey2";
 
@@ -495,7 +490,7 @@ public class ProductReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void replaceCategoryReferencesIdsWithKeys_WithNoReferences_ShouldNotReplaceIds() {
+    void replaceCategoryReferencesIdsWithKeys_WithNoReferences_ShouldNotReplaceIds() {
         final Product product = getProductMock(Collections.emptySet(), null);
 
         final CategoryReferencePair categoryReferencePair =
@@ -509,8 +504,6 @@ public class ProductReferenceReplacementUtilsTest {
         assertThat(categoryReferencesWithKeys).isEmpty();
         assertThat(categoryOrderHintsWithKeys).isNull();
     }
-
-
 
     @Nonnull
     private static Product getProductMock(@Nonnull final Set<Reference<Category>> references,

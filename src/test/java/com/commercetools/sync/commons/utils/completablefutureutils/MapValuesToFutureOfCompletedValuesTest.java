@@ -1,6 +1,7 @@
 package com.commercetools.sync.commons.utils.completablefutureutils;
 
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -19,7 +20,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class MapValuesToFutureOfCompletedValuesTest {
+class MapValuesToFutureOfCompletedValuesTest {
     /**
      * List to List : empty values.
      * List to Set : empty values.
@@ -28,28 +29,28 @@ public class MapValuesToFutureOfCompletedValuesTest {
      **/
 
     @Test
-    public void empty_ListToList_ReturnsFutureOfEmptyList() {
+    void empty_ListToList_ReturnsFutureOfEmptyList() {
         final CompletableFuture<List<String>> futureList = mapValuesToFutureOfCompletedValues(
             new ArrayList<String>(), CompletableFuture::completedFuture, toList());
         assertThat(futureList.join()).isEqualTo(emptyList());
     }
 
     @Test
-    public void empty_ListToSet_ReturnsFutureOfEmptySet() {
+    void empty_ListToSet_ReturnsFutureOfEmptySet() {
         final CompletableFuture<Set<String>> futureSet = mapValuesToFutureOfCompletedValues(
             new ArrayList<String>(), CompletableFuture::completedFuture, toSet());
         assertThat(futureSet.join()).isEqualTo(emptySet());
     }
 
     @Test
-    public void empty_SetToSet_ReturnsFutureOfEmptyList() {
+    void empty_SetToSet_ReturnsFutureOfEmptyList() {
         final CompletableFuture<List<String>> futureList = mapValuesToFutureOfCompletedValues(
             new HashSet<String>(), CompletableFuture::completedFuture, toList());
         assertThat(futureList.join()).isEqualTo(emptyList());
     }
 
     @Test
-    public void empty_SetToList_ReturnsFutureOfEmptySet() {
+    void empty_SetToList_ReturnsFutureOfEmptySet() {
         final CompletableFuture<Set<String>> futureSet = mapValuesToFutureOfCompletedValues(
             new HashSet<String>(), CompletableFuture::completedFuture, toSet());
         assertThat(futureSet.join()).isEqualTo(emptySet());
@@ -64,7 +65,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
      */
 
     @Test
-    public void singleNull_ListToList_ReturnsFutureOfEmptyList() {
+    void singleNull_ListToList_ReturnsFutureOfEmptyList() {
         final String nullString = null;
         final CompletableFuture<List<String>> futureList = mapValuesToFutureOfCompletedValues(
             singletonList(nullString), CompletableFuture::completedFuture, toList());
@@ -72,7 +73,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     @Test
-    public void singleNull_ListToSet_ReturnsFutureOfEmptySet() {
+    void singleNull_ListToSet_ReturnsFutureOfEmptySet() {
         final String nullString = null;
         final CompletableFuture<Set<String>> futureSet = mapValuesToFutureOfCompletedValues(
             singletonList(nullString), CompletableFuture::completedFuture, toSet());
@@ -80,7 +81,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     @Test
-    public void singleNull_SetToSet_ReturnsFutureOfEmptyList() {
+    void singleNull_SetToSet_ReturnsFutureOfEmptyList() {
         final String nullString = null;
         final CompletableFuture<List<String>> futureList = mapValuesToFutureOfCompletedValues(
             singleton(nullString), CompletableFuture::completedFuture, toList());
@@ -88,7 +89,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     @Test
-    public void singleNull_SetToList_ReturnsFutureOfEmptySet() {
+    void singleNull_SetToList_ReturnsFutureOfEmptySet() {
         final String nullString = null;
         final CompletableFuture<Set<String>> futureSet = mapValuesToFutureOfCompletedValues(
             singleton(nullString), CompletableFuture::completedFuture, toSet());
@@ -101,7 +102,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
      */
 
     @Test
-    public void multipleNull_ListToList_ReturnsFutureOfEmptyList() {
+    void multipleNull_ListToList_ReturnsFutureOfEmptyList() {
         final String nullString = null;
         final CompletableFuture<List<String>> futureList = mapValuesToFutureOfCompletedValues(
             asList(nullString, nullString), CompletableFuture::completedFuture, toList());
@@ -109,7 +110,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     @Test
-    public void multipleNull_ListToSet_ReturnsFutureOfEmptySet() {
+    void multipleNull_ListToSet_ReturnsFutureOfEmptySet() {
         final String nullString = null;
         final CompletableFuture<Set<String>> futureSet = mapValuesToFutureOfCompletedValues(
             asList(nullString, nullString), CompletableFuture::completedFuture, toSet());
@@ -129,7 +130,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
      */
 
     @Test
-    public void single_ListToListWithSameTypeMapping_ReturnsFutureOfListOfMappedValue() {
+    void single_ListToListWithSameTypeMapping_ReturnsFutureOfListOfMappedValue() {
         final CompletableFuture<List<String>> future = mapValuesToFutureOfCompletedValues(
             singletonList("foo"), element -> completedFuture(element.concat("POSTFIX")), toList());
         final List<String> result = future.join();
@@ -138,7 +139,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     @Test
-    public void single_ListToSetWithSameTypeMapping_ReturnsFutureOfSetOfMappedValue() {
+    void single_ListToSetWithSameTypeMapping_ReturnsFutureOfSetOfMappedValue() {
         final CompletableFuture<Set<String>> future = mapValuesToFutureOfCompletedValues(
             singletonList("foo"), element -> completedFuture(element.concat("POSTFIX")), toSet());
         final Set<String> result = future.join();
@@ -147,7 +148,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     @Test
-    public void single_SetToSetWithSameTypeMapping_ReturnsFutureOfSetOfMappedValue() {
+    void single_SetToSetWithSameTypeMapping_ReturnsFutureOfSetOfMappedValue() {
         final CompletableFuture<Set<String>> future = mapValuesToFutureOfCompletedValues(
             singleton("foo"), element -> completedFuture(element.concat("POSTFIX")), toSet());
         final Set<String> result = future.join();
@@ -156,7 +157,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     @Test
-    public void single_SetToListWithSameTypeMapping_ReturnsFutureOfListOfMappedValue() {
+    void single_SetToListWithSameTypeMapping_ReturnsFutureOfListOfMappedValue() {
         final CompletableFuture<List<String>> future = mapValuesToFutureOfCompletedValues(
             singleton("foo"), element -> completedFuture(element.concat("POSTFIX")), toList());
         final List<String> result = future.join();
@@ -165,7 +166,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     @Test
-    public void single_ListToListWithDiffTypeMapping_ReturnsFutureOfListOfMappedValue() {
+    void single_ListToListWithDiffTypeMapping_ReturnsFutureOfListOfMappedValue() {
         final CompletableFuture<List<Integer>> future = mapValuesToFutureOfCompletedValues(
             singletonList("foo"), element -> completedFuture(element.length()), toList());
         final List<Integer> result = future.join();
@@ -174,7 +175,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     @Test
-    public void single_ListToSetWithDiffTypeMapping_ReturnsFutureOfSetOfMappedValue() {
+    void single_ListToSetWithDiffTypeMapping_ReturnsFutureOfSetOfMappedValue() {
         final CompletableFuture<Set<Integer>> future = mapValuesToFutureOfCompletedValues(
             singletonList("foo"), element -> completedFuture(element.length()), toSet());
         final Set<Integer> result = future.join();
@@ -183,7 +184,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     @Test
-    public void single_SetToSetWithDiffTypeMapping_ReturnsFutureOfSetOfMappedValue() {
+    void single_SetToSetWithDiffTypeMapping_ReturnsFutureOfSetOfMappedValue() {
         final CompletableFuture<Set<Integer>> future = mapValuesToFutureOfCompletedValues(
             singleton("foo"), element -> completedFuture(element.length()), toSet());
         final Set<Integer> result = future.join();
@@ -192,7 +193,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     @Test
-    public void single_SetToListWithDiffTypeMapping_ReturnsFutureOfListOfMappedValue() {
+    void single_SetToListWithDiffTypeMapping_ReturnsFutureOfListOfMappedValue() {
         final CompletableFuture<List<Integer>> future = mapValuesToFutureOfCompletedValues(
             singleton("foo"), element -> completedFuture(element.length()), toList());
         final List<Integer> result = future.join();
@@ -213,7 +214,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
      */
 
     @Test
-    public void multiple_ListToListWithSameTypeMappingNoDuplicates_ReturnsFutureOfListOfMappedValues() {
+    void multiple_ListToListWithSameTypeMappingNoDuplicates_ReturnsFutureOfListOfMappedValues() {
         final CompletableFuture<List<String>> future = mapValuesToFutureOfCompletedValues(
             asList("foo", "bar"), element -> completedFuture(element.concat("POSTFIX")), toList());
         final List<String> result = future.join();
@@ -222,7 +223,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     @Test
-    public void multiple_ListToSetWithSameTypeMappingNoDuplicates_ReturnsFutureOfSetOfMappedValues() {
+    void multiple_ListToSetWithSameTypeMappingNoDuplicates_ReturnsFutureOfSetOfMappedValues() {
         final CompletableFuture<Set<String>> future = mapValuesToFutureOfCompletedValues(asList("foo", "bar"),
             element -> completedFuture(element.concat("POSTFIX")), toSet());
         final Set<String> result = future.join();
@@ -231,7 +232,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     @Test
-    public void multiple_SetToSetWithSameTypeMappingNoDuplicates_ReturnsFutureOfSetOfMappedValues() {
+    void multiple_SetToSetWithSameTypeMappingNoDuplicates_ReturnsFutureOfSetOfMappedValues() {
         final Set<String> set = new HashSet<>();
         set.add("foo");
         set.add("bar");
@@ -244,7 +245,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     @Test
-    public void multiple_SetToListWithSameTypeMappingNoDuplicates_ReturnsFutureOfListOfMappedValues() {
+    void multiple_SetToListWithSameTypeMappingNoDuplicates_ReturnsFutureOfListOfMappedValues() {
         final Set<String> set = new HashSet<>();
         set.add("foo");
         set.add("bar");
@@ -257,7 +258,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     @Test
-    public void multiple_ListToListWithDiffTypeMappingNoDuplicates_ReturnsFutureOfListOfMappedValues() {
+    void multiple_ListToListWithDiffTypeMappingNoDuplicates_ReturnsFutureOfListOfMappedValues() {
         final CompletableFuture<List<Integer>> future = mapValuesToFutureOfCompletedValues(
             asList("john", "smith"), element -> completedFuture(element.length()), toList());
         final List<Integer> result = future.join();
@@ -266,7 +267,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     @Test
-    public void multiple_ListToSetWithDiffTypeMappingNoDuplicates_ReturnsFutureOfSetOfMappedValues() {
+    void multiple_ListToSetWithDiffTypeMappingNoDuplicates_ReturnsFutureOfSetOfMappedValues() {
         final CompletableFuture<Set<Integer>> future = mapValuesToFutureOfCompletedValues(asList("john", "smith"),
             element -> completedFuture(element.length()), toSet());
         final Set<Integer> result = future.join();
@@ -275,7 +276,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     @Test
-    public void multiple_SetToSetWithDiffTypeMappingNoDuplicates_ReturnsFutureOfSetOfMappedValues() {
+    void multiple_SetToSetWithDiffTypeMappingNoDuplicates_ReturnsFutureOfSetOfMappedValues() {
         final Set<String> set = new HashSet<>();
         set.add("john");
         set.add("smith");
@@ -288,7 +289,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     @Test
-    public void multiple_SetToListWithDiffTypeMappingNoDuplicates_ReturnsFutureOfListOfMappedValues() {
+    void multiple_SetToListWithDiffTypeMappingNoDuplicates_ReturnsFutureOfListOfMappedValues() {
         final Set<String> set = new HashSet<>();
         set.add("john");
         set.add("smith");
@@ -313,7 +314,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
      */
 
     @Test
-    public void multiple_ListToListWithSameTypeMappingDuplicates_ReturnsFutureOfListOfMappedValuesWithDuplicates() {
+    void multiple_ListToListWithSameTypeMappingDuplicates_ReturnsFutureOfListOfMappedValuesWithDuplicates() {
         final CompletableFuture<List<String>> future = mapValuesToFutureOfCompletedValues(
             asList("foo", "foo"), element -> completedFuture(element.concat("POSTFIX")), toList());
         final List<String> result = future.join();
@@ -322,7 +323,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     @Test
-    public void multiple_ListToSetWithSameTypeMappingDuplicates_ReturnsFutureOfSetOfMappedValuesNoDuplicates() {
+    void multiple_ListToSetWithSameTypeMappingDuplicates_ReturnsFutureOfSetOfMappedValuesNoDuplicates() {
         final CompletableFuture<Set<String>> future = mapValuesToFutureOfCompletedValues(asList("foo", "foo"),
             element -> completedFuture(element.concat("POSTFIX")), toSet());
         final Set<String> result = future.join();
@@ -331,7 +332,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     @Test
-    public void multiple_SetToSetWithSameTypeMappingDuplicates_ReturnsFutureOfSetOfMappedValuesNoDuplicates() {
+    void multiple_SetToSetWithSameTypeMappingDuplicates_ReturnsFutureOfSetOfMappedValuesNoDuplicates() {
         final Set<String> set = new HashSet<>();
         set.add("foo");
         set.add("bar");
@@ -344,7 +345,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     @Test
-    public void multiple_SetToListWithSameTypeMappingDuplicates_ReturnsFutureOfListOfMappedValuesWithDuplicates() {
+    void multiple_SetToListWithSameTypeMappingDuplicates_ReturnsFutureOfListOfMappedValuesWithDuplicates() {
         final Set<String> set = new HashSet<>();
         set.add("foo");
         set.add("bar");
@@ -357,7 +358,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     @Test
-    public void multiple_ListToListWithDiffTypeMappingDuplicates_ReturnsFutureOfListOfMappedValuesWithDuplicates() {
+    void multiple_ListToListWithDiffTypeMappingDuplicates_ReturnsFutureOfListOfMappedValuesWithDuplicates() {
         final CompletableFuture<List<Integer>> future = mapValuesToFutureOfCompletedValues(
             asList("john", "john"), element -> completedFuture(element.length()), toList());
         final List<Integer> result = future.join();
@@ -366,7 +367,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     @Test
-    public void multiple_ListToSetWithDiffTypeMappingDuplicates_ReturnsFutureOfSetOfMappedValuesNoDuplicates() {
+    void multiple_ListToSetWithDiffTypeMappingDuplicates_ReturnsFutureOfSetOfMappedValuesNoDuplicates() {
         final CompletableFuture<Set<Integer>> future = mapValuesToFutureOfCompletedValues(asList("john", "john"),
             element -> completedFuture(element.length()), toSet());
         final Set<Integer> result = future.join();
@@ -375,7 +376,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     @Test
-    public void multiple_SetToSetWithDiffTypeMappingDuplicates_ReturnsFutureOfSetOfMappedValuesNoDuplicates() {
+    void multiple_SetToSetWithDiffTypeMappingDuplicates_ReturnsFutureOfSetOfMappedValuesNoDuplicates() {
         final Set<String> set = new HashSet<>();
         set.add("foo");
         set.add("bar");
@@ -388,7 +389,7 @@ public class MapValuesToFutureOfCompletedValuesTest {
     }
 
     @Test
-    public void multiple_SetToListWithDiffTypeMappingDuplicates_ReturnsFutureOfListOfMappedValuesWithDuplicates() {
+    void multiple_SetToListWithDiffTypeMappingDuplicates_ReturnsFutureOfListOfMappedValuesWithDuplicates() {
         final Set<String> set = new HashSet<>();
         set.add("foo");
         set.add("bar");

@@ -25,9 +25,9 @@ import io.sphere.sdk.types.TypeDraftBuilder;
 import io.sphere.sdk.types.commands.TypeCreateCommand;
 import io.sphere.sdk.types.commands.TypeUpdateCommand;
 import io.sphere.sdk.types.queries.TypeQuery;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -66,14 +66,14 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 
-public class TypeSyncIT {
+class TypeSyncIT {
 
     /**
      * Deletes types from the target CTP projects.
      * Populates the target CTP project with test data.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         deleteTypes(CTP_TARGET_CLIENT);
         populateTargetProject();
     }
@@ -82,14 +82,14 @@ public class TypeSyncIT {
      * Deletes all the test data from the {@code CTP_SOURCE_CLIENT} and the {@code CTP_SOURCE_CLIENT} projects that
      * were set up in this test class.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteTypes(CTP_TARGET_CLIENT);
     }
 
 
     @Test
-    public void sync_WithUpdatedType_ShouldUpdateType() {
+    void sync_WithUpdatedType_ShouldUpdateType() {
         // preparation
         final Optional<Type> oldTypeBefore = getTypeByKey(CTP_TARGET_CLIENT, TYPE_KEY_1);
         assertThat(oldTypeBefore).isNotEmpty();
@@ -129,7 +129,7 @@ public class TypeSyncIT {
     }
 
     @Test
-    public void sync_WithNewType_ShouldCreateType() {
+    void sync_WithNewType_ShouldCreateType() {
         //preparation
         final TypeDraft newTypeDraft = TypeDraftBuilder.of(
                 TYPE_KEY_2,
@@ -165,7 +165,7 @@ public class TypeSyncIT {
     }
 
     @Test
-    public void sync_WithUpdatedType_WithNewFieldDefinitions_ShouldUpdateTypeAddingFieldDefinition() {
+    void sync_WithUpdatedType_WithNewFieldDefinitions_ShouldUpdateTypeAddingFieldDefinition() {
         //preparation
         final TypeDraft newTypeDraft = TypeDraftBuilder.of(
                 TYPE_KEY_1,
@@ -199,7 +199,7 @@ public class TypeSyncIT {
     }
 
     @Test
-    public void sync_WithUpdatedType_WithoutOldFieldDefinition_ShouldUpdateTypeRemovingFieldDefinition() {
+    void sync_WithUpdatedType_WithoutOldFieldDefinition_ShouldUpdateTypeRemovingFieldDefinition() {
         final Optional<Type> oldTypeBefore = getTypeByKey(CTP_TARGET_CLIENT, TYPE_KEY_1);
         assertThat(oldTypeBefore).isNotEmpty();
 
@@ -230,7 +230,7 @@ public class TypeSyncIT {
     }
 
     @Test
-    public void sync_WithUpdatedType_ChangingFieldDefinitionOrder_ShouldUpdateTypeChangingFieldDefinitionOrder() {
+    void sync_WithUpdatedType_ChangingFieldDefinitionOrder_ShouldUpdateTypeChangingFieldDefinitionOrder() {
         //preparation
         final TypeDraft newTypeDraft = TypeDraftBuilder.of(
                 TYPE_KEY_1,
@@ -262,7 +262,7 @@ public class TypeSyncIT {
     }
 
     @Test
-    public void sync_WithUpdatedType_WithUpdatedFieldDefinition_ShouldUpdateTypeUpdatingFieldDefinition() {
+    void sync_WithUpdatedType_WithUpdatedFieldDefinition_ShouldUpdateTypeUpdatingFieldDefinition() {
         //preparation
         final FieldDefinition fieldDefinitionUpdated = FieldDefinition.of(
                 StringFieldType.of(),
@@ -301,7 +301,7 @@ public class TypeSyncIT {
     }
 
     @Test
-    public void sync_WithoutKey_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    void sync_WithoutKey_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         final TypeDraft newTypeDraft = TypeDraftBuilder.of(
                 null,
                 TYPE_NAME_1,
@@ -344,7 +344,7 @@ public class TypeSyncIT {
     }
 
     @Test
-    public void sync_WithNullDraft_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    void sync_WithNullDraft_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         //preparation
         final TypeDraft newTypeDraft = null;
         final List<String> errorMessages = new ArrayList<>();
@@ -381,7 +381,7 @@ public class TypeSyncIT {
     }
 
     @Test
-    public void sync_WithoutName_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    void sync_WithoutName_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         // preparation
         // Draft without "name" throws a commercetools exception because "name" is a required value
         final TypeDraft newTypeDraft = TypeDraftBuilder.of(
@@ -430,7 +430,7 @@ public class TypeSyncIT {
     }
 
     @Test
-    public void sync_WithoutFieldDefinitionType_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    void sync_WithoutFieldDefinitionType_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         //preparation
         final FieldDefinition fieldDefinition = FieldDefinition.of(
                 null,
@@ -485,7 +485,7 @@ public class TypeSyncIT {
     }
 
     @Test
-    public void sync_WithSeveralBatches_ShouldReturnProperStatistics() {
+    void sync_WithSeveralBatches_ShouldReturnProperStatistics() {
         // preparation
         // Default batch size is 50 (check TypeSyncOptionsBuilder) so we have 2 batches of 50
         final List<TypeDraft> typeDrafts = IntStream
@@ -571,7 +571,7 @@ public class TypeSyncIT {
     }
 
     @Test
-    public void sync_WithConcurrentModificationException_ShouldRetryToUpdateNewTypeWithSuccess() {
+    void sync_WithConcurrentModificationException_ShouldRetryToUpdateNewTypeWithSuccess() {
         // Preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdate();
 
@@ -622,7 +622,7 @@ public class TypeSyncIT {
     }
 
     @Test
-    public void sync_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
+    void sync_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
         //preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
 
@@ -686,7 +686,7 @@ public class TypeSyncIT {
     }
 
     @Test
-    public void sync__WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
+    void sync__WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
         //preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
 
@@ -748,7 +748,7 @@ public class TypeSyncIT {
     }
 
     @Test
-    public void sync_WithSetOfEnumsAndSetOfLenumsChanges_ShouldUpdateTypeAddingFieldDefinition() {
+    void sync_WithSetOfEnumsAndSetOfLenumsChanges_ShouldUpdateTypeAddingFieldDefinition() {
         //preparation
         final FieldDefinition withSetOfEnumsOld = FieldDefinition.of(
             SetFieldType.of(

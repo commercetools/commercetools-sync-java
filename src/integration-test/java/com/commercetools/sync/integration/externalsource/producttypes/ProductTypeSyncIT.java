@@ -1,6 +1,7 @@
 package com.commercetools.sync.integration.externalsource.producttypes;
 
 
+import com.commercetools.sync.commons.exceptions.InvalidProductTypeDraftException;
 import com.commercetools.sync.producttypes.ProductTypeSync;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
@@ -9,11 +10,11 @@ import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.models.LocalizedEnumValue;
 import io.sphere.sdk.models.TextInputHint;
 import io.sphere.sdk.products.attributes.AttributeConstraint;
-import io.sphere.sdk.products.attributes.AttributeDefinition;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraftDsl;
@@ -27,11 +28,12 @@ import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
 import io.sphere.sdk.producttypes.commands.ProductTypeUpdateCommand;
+import io.sphere.sdk.producttypes.commands.updateactions.ChangeAttributeOrderByName;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.queries.PagedQueryResult;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -52,6 +54,7 @@ import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtil
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_KEY_2;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_1;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_2;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.assertAttributesAreEqual;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypes;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.getProductTypeByKey;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.populateTargetProject;
@@ -61,21 +64,20 @@ import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedF
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static java.util.Optional.ofNullable;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.util.Lists.emptyList;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-public class ProductTypeSyncIT {
+class ProductTypeSyncIT {
 
     /**
      * Deletes product types from the target CTP project.
      * Populates target CTP project with test data.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         deleteProductTypes(CTP_TARGET_CLIENT);
         populateTargetProject();
     }
@@ -84,13 +86,13 @@ public class ProductTypeSyncIT {
      * Deletes all the test data from the {@code CTP_TARGET_CLIENT} project that
      * were set up in this test class.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteProductTypes(CTP_TARGET_CLIENT);
     }
 
     @Test
-    public void sync_WithUpdatedProductType_ShouldUpdateProductType() {
+    void sync_WithUpdatedProductType_ShouldUpdateProductType() {
         // preparation
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
             PRODUCT_TYPE_KEY_1,
@@ -112,7 +114,7 @@ public class ProductTypeSyncIT {
             .join();
 
         // assertion
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0, 0);
 
         final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
 
@@ -124,7 +126,7 @@ public class ProductTypeSyncIT {
     }
 
     @Test
-    public void sync_WithNewProductType_ShouldCreateProductType() {
+    void sync_WithNewProductType_ShouldCreateProductType() {
         // preparation
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
             PRODUCT_TYPE_KEY_2,
@@ -146,7 +148,7 @@ public class ProductTypeSyncIT {
 
 
         // assertions
-        assertThat(productTypeSyncStatistics).hasValues(1, 1, 0, 0);
+        assertThat(productTypeSyncStatistics).hasValues(1, 1, 0, 0, 0);
 
 
         final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_2);
@@ -159,7 +161,7 @@ public class ProductTypeSyncIT {
     }
 
     @Test
-    public void sync_WithUpdatedProductType_WithNewAttribute_ShouldUpdateProductTypeAddingAttribute() {
+    void sync_WithUpdatedProductType_WithNewAttribute_ShouldUpdateProductTypeAddingAttribute() {
         // preparation
         // Adding ATTRIBUTE_DEFINITION_DRAFT_3
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
@@ -181,7 +183,7 @@ public class ProductTypeSyncIT {
             .toCompletableFuture().join();
 
         // assertions
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0, 0);
 
         final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
 
@@ -193,7 +195,7 @@ public class ProductTypeSyncIT {
     }
 
     @Test
-    public void sync_WithUpdatedProductType_WithoutOldAttribute_ShouldUpdateProductTypeRemovingAttribute() {
+    void sync_WithUpdatedProductType_WithoutOldAttribute_ShouldUpdateProductTypeRemovingAttribute() {
         // Removing ATTRIBUTE_DEFINITION_DRAFT_2
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
             PRODUCT_TYPE_KEY_1,
@@ -212,7 +214,7 @@ public class ProductTypeSyncIT {
             .sync(singletonList(newProductTypeDraft))
             .toCompletableFuture().join();
 
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0, 0);
 
 
         final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
@@ -222,7 +224,7 @@ public class ProductTypeSyncIT {
     }
 
     @Test
-    public void sync_WithUpdatedProductType_ChangingAttributeOrder_ShouldUpdateProductTypeChangingAttributeOrder() {
+    void sync_WithUpdatedProductType_ChangingAttributeOrder_ShouldUpdateProductTypeChangingAttributeOrder() {
         // Changing order from ATTRIBUTE_DEFINITION_DRAFT_1, ATTRIBUTE_DEFINITION_DRAFT_2 to
         // ATTRIBUTE_DEFINITION_DRAFT_2, ATTRIBUTE_DEFINITION_DRAFT_1
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
@@ -232,8 +234,14 @@ public class ProductTypeSyncIT {
             asList(ATTRIBUTE_DEFINITION_DRAFT_2, ATTRIBUTE_DEFINITION_DRAFT_1)
         );
 
+        final ArrayList<UpdateAction<ProductType>> builtUpdateActions = new ArrayList<>();
+
         final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
+            .beforeUpdateCallback((actions, draft, oldProductType) -> {
+                builtUpdateActions.addAll(actions);
+                return actions;
+            })
             .build();
 
         final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
@@ -242,7 +250,7 @@ public class ProductTypeSyncIT {
             .sync(singletonList(newProductTypeDraft))
             .toCompletableFuture().join();
 
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0, 0);
 
         final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
 
@@ -252,10 +260,15 @@ public class ProductTypeSyncIT {
                     ATTRIBUTE_DEFINITION_DRAFT_2,
                     ATTRIBUTE_DEFINITION_DRAFT_1)
             ));
+
+        assertThat(builtUpdateActions).containsExactly(
+            ChangeAttributeOrderByName.of(
+                asList(ATTRIBUTE_DEFINITION_DRAFT_2.getName(), ATTRIBUTE_DEFINITION_DRAFT_1.getName())
+            ));
     }
 
     @Test
-    public void sync_WithUpdatedAttributeDefinition_ShouldUpdateProductTypeUpdatingAttribute() {
+    void sync_WithUpdatedAttributeDefinition_ShouldUpdateProductTypeUpdatingAttribute() {
         // Updating ATTRIBUTE_DEFINITION_1 (name = "attr_name_1") changing the label, attribute constraint, input tip,
         // input hint, isSearchable fields.
         final AttributeDefinitionDraft attributeDefinitionDraftUpdated = AttributeDefinitionDraftBuilder
@@ -288,7 +301,7 @@ public class ProductTypeSyncIT {
             .sync(singletonList(newProductTypeDraft))
             .toCompletableFuture().join();
 
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0, 0);
 
 
         final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
@@ -298,7 +311,7 @@ public class ProductTypeSyncIT {
     }
 
     @Test
-    public void sync_WithoutKey_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    void sync_WithoutKey_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         // Draft without key throws an error
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
             null,
@@ -325,22 +338,26 @@ public class ProductTypeSyncIT {
             .sync(singletonList(newProductTypeDraft))
             .toCompletableFuture().join();
 
+
+        final String expectedErrorMessage = format("ProductTypeDraft with name: %s doesn't have a key. "
+            + "Please make sure all productType drafts have keys.", newProductTypeDraft.getName());
         // assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).isEqualTo("Failed to process product type draft without key.")
-            );
+            .hasOnlyOneElementSatisfying(message -> assertThat(message).isEqualTo(expectedErrorMessage));
 
         assertThat(exceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable).isNull());
+            .hasOnlyOneElementSatisfying(throwable -> {
+                assertThat(throwable).isInstanceOf(InvalidProductTypeDraftException.class);
+                assertThat(throwable.getMessage()).isEqualTo(expectedErrorMessage);
+            });
 
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
     }
 
     @Test
-    public void sync_WithNullDraft_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    void sync_WithNullDraft_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         // preparation
         final ProductTypeDraft newProductTypeDraft = null;
         final List<String> errorMessages = new ArrayList<>();
@@ -365,18 +382,21 @@ public class ProductTypeSyncIT {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).isEqualTo("Failed to process null product type draft.")
+                assertThat(message).isEqualTo("ProductTypeDraft is null.")
             );
 
         assertThat(exceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable).isNull());
+            .hasOnlyOneElementSatisfying(throwable -> {
+                assertThat(throwable).isInstanceOf(InvalidProductTypeDraftException.class);
+                assertThat(throwable.getMessage()).isEqualTo("ProductTypeDraft is null.");
+            });
 
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
     }
 
     @Test
-    public void sync_WithErrorCreatingTheProductType_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    void sync_WithErrorCreatingTheProductType_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         // preparation
 
         // Invalid attribute definition due to having the same name as an already existing one but different
@@ -427,11 +447,11 @@ public class ProductTypeSyncIT {
                 assertThat(throwable).hasMessageContaining("AttributeDefinitionTypeConflict");
             });
 
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
     }
 
     @Test
-    public void sync_WithErrorUpdatingTheProductType_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    void sync_WithErrorUpdatingTheProductType_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         // preparation
 
         // Invalid attribute definition due to having an invalid name.
@@ -480,11 +500,11 @@ public class ProductTypeSyncIT {
                 assertThat(throwable).hasMessageContaining("InvalidInput");
             });
 
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
     }
 
     @Test
-    public void sync_WithoutName_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    void sync_WithoutName_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         // preparation
         // Draft without "name" throws a commercetools exception because "name" is a required value
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
@@ -527,11 +547,11 @@ public class ProductTypeSyncIT {
                 assertThat(throwable).hasMessageContaining("Missing required value");
             });
 
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
     }
 
     @Test
-    public void sync_WithoutAttributeType_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+    void sync_WithoutAttributeType_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         // preparation
         final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
             .of(
@@ -586,11 +606,11 @@ public class ProductTypeSyncIT {
                 assertThat(throwable).hasMessageContaining("Missing required value");
             });
 
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
     }
 
     @Test
-    public void syncDrafts_WithConcurrentModificationException_ShouldRetryToUpdateNewProductTypeWithSuccess() {
+    void syncDrafts_WithConcurrentModificationException_ShouldRetryToUpdateNewProductTypeWithSuccess() {
         // Preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdate();
 
@@ -616,7 +636,7 @@ public class ProductTypeSyncIT {
                                                                     .join();
 
         // Assertion
-        assertThat(statistics).hasValues(1, 0, 1, 0);
+        assertThat(statistics).hasValues(1, 0, 1, 0, 0);
 
         // Assert CTP state.
         final PagedQueryResult<ProductType> queryResult =
@@ -644,7 +664,7 @@ public class ProductTypeSyncIT {
     }
 
     @Test
-    public void syncDrafts_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
+    void syncDrafts_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
         // Preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
 
@@ -679,7 +699,7 @@ public class ProductTypeSyncIT {
                                                                     .join();
 
         // Assertion
-        assertThat(statistics).hasValues(1, 0, 0, 1);
+        assertThat(statistics).hasValues(1, 0, 0, 1, 0);
 
         assertThat(errorMessages).hasSize(1);
         assertThat(errors).hasSize(1);
@@ -708,7 +728,7 @@ public class ProductTypeSyncIT {
     }
 
     @Test
-    public void syncDrafts_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
+    void syncDrafts_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
         // Preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
 
@@ -743,7 +763,7 @@ public class ProductTypeSyncIT {
                                                                     .join();
 
         // Assertion
-        assertThat(statistics).hasValues(1, 0, 0, 1);
+        assertThat(statistics).hasValues(1, 0, 0, 1, 0);
 
         assertThat(errorMessages).hasSize(1);
         assertThat(errors).hasSize(1);
@@ -771,7 +791,7 @@ public class ProductTypeSyncIT {
     }
 
     @Test
-    public void sync_WithSeveralBatches_ShouldReturnProperStatistics() {
+    void sync_WithSeveralBatches_ShouldReturnProperStatistics() {
         // Default batch size is 50 (check ProductTypeSyncOptionsBuilder) so we have 2 batches of 50
         final List<ProductTypeDraft> productTypeDrafts = IntStream
             .range(0, 100)
@@ -793,11 +813,11 @@ public class ProductTypeSyncIT {
             .sync(productTypeDrafts)
             .toCompletableFuture().join();
 
-        assertThat(productTypeSyncStatistics).hasValues(100, 100, 0, 0);
+        assertThat(productTypeSyncStatistics).hasValues(100, 100, 0, 0, 0);
     }
 
     @Test
-    public void sync_WithSetOfEnumsAndSetOfLenumsChanges_ShouldUpdateProductType() {
+    void sync_WithSetOfEnumsAndSetOfLenumsChanges_ShouldUpdateProductType() {
         // preparation
         final AttributeDefinitionDraft withSetOfEnumsOld = AttributeDefinitionDraftBuilder
             .of(
@@ -890,7 +910,7 @@ public class ProductTypeSyncIT {
             .toCompletableFuture().join();
 
         // assertions
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0, 0);
 
         final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, "withSetOfEnums");
 
@@ -898,73 +918,5 @@ public class ProductTypeSyncIT {
             assertAttributesAreEqual(productType.getAttributes(),
                 asList(withSetOfEnumsNew, withSetOfSetOfLEnumsNew)
             ));
-    }
-
-    private static void assertAttributesAreEqual(@Nonnull final List<AttributeDefinition> attributes,
-                                                 @Nonnull final List<AttributeDefinitionDraft> attributesDrafts) {
-
-        IntStream.range(0, attributesDrafts.size())
-                 .forEach(index -> {
-                     final AttributeDefinition attribute = attributes.get(index);
-                     final AttributeDefinitionDraft attributeDraft = attributesDrafts.get(index);
-
-                     assertThat(attribute.getName()).isEqualTo(attributeDraft.getName());
-
-                     assertThat(attribute.getLabel()).isEqualTo(attributeDraft.getLabel());
-
-                     assertThat(attribute.getAttributeType()).isEqualTo(attributeDraft.getAttributeType());
-
-                     assertThat(attribute.getInputHint())
-                         .isEqualTo(ofNullable(attributeDraft.getInputHint()).orElse(TextInputHint.SINGLE_LINE));
-
-                     assertThat(attribute.getInputTip()).isEqualTo(attributeDraft.getInputTip());
-
-                     assertThat(attribute.isRequired()).isEqualTo(attributeDraft.isRequired());
-
-                     assertThat(attribute.isSearchable())
-                         .isEqualTo(ofNullable(attributeDraft.isSearchable()).orElse(true));
-
-                     assertThat(attribute.getAttributeConstraint())
-                         .isEqualTo(ofNullable(attributeDraft.getAttributeConstraint())
-                             .orElse(AttributeConstraint.NONE));
-
-                     if (attribute.getAttributeType().getClass() == EnumAttributeType.class) {
-                         assertPlainEnumsValuesAreEqual(
-                             ((EnumAttributeType) attribute.getAttributeType()).getValues(),
-                             ((EnumAttributeType) attributeDraft.getAttributeType()).getValues()
-                         );
-                     } else if (attribute.getAttributeType().getClass() == LocalizedEnumAttributeType.class) {
-                         assertLocalizedEnumsValuesAreEqual(
-                             ((LocalizedEnumAttributeType) attribute.getAttributeType()).getValues(),
-                             ((LocalizedEnumAttributeType) attributeDraft.getAttributeType()).getValues()
-                         );
-                     }
-                 });
-    }
-
-    private static void assertPlainEnumsValuesAreEqual(@Nonnull final List<EnumValue> enumValues,
-                                                       @Nonnull final List<EnumValue> enumValuesDrafts) {
-
-        IntStream.range(0, enumValuesDrafts.size())
-                 .forEach(index -> {
-                     final EnumValue enumValue = enumValues.get(index);
-                     final EnumValue enumValueDraft = enumValuesDrafts.get(index);
-
-                     assertThat(enumValue.getKey()).isEqualTo(enumValueDraft.getKey());
-                     assertThat(enumValue.getLabel()).isEqualTo(enumValueDraft.getLabel());
-                 });
-    }
-
-    private static void assertLocalizedEnumsValuesAreEqual(@Nonnull final List<LocalizedEnumValue> enumValues,
-                                                           @Nonnull final List<LocalizedEnumValue> enumValuesDrafts) {
-
-        IntStream.range(0, enumValuesDrafts.size())
-                 .forEach(index -> {
-                     final LocalizedEnumValue enumValue = enumValues.get(index);
-                     final LocalizedEnumValue enumValueDraft = enumValuesDrafts.get(index);
-
-                     assertThat(enumValue.getKey()).isEqualTo(enumValueDraft.getKey());
-                     assertThat(enumValue.getLabel()).isEqualTo(enumValueDraft.getLabel());
-                 });
     }
 }

@@ -9,6 +9,7 @@ import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.PriceDraftBuilder;
 import io.sphere.sdk.utils.CompletableFutureUtils;
@@ -106,9 +107,8 @@ public final class PriceReferenceResolver
      */
     @Nonnull
     CompletionStage<PriceDraftBuilder> resolveChannelReference(@Nonnull final PriceDraftBuilder draftBuilder) {
-
         return resolveReference(draftBuilder, draftBuilder.getChannel(), channelService::fetchCachedChannelId,
-            Channel::referenceOfId,
+            ResourceIdentifier::ofId,
             (priceDraftBuilder, reference) -> completedFuture(priceDraftBuilder.channel(reference)),
             (priceDraftBuilder, channelKey) -> {
                 final CompletableFuture<PriceDraftBuilder> result = new CompletableFuture<>();
@@ -141,12 +141,12 @@ public final class PriceReferenceResolver
      * @return {@link CompletionStage} containing {@link PriceDraftBuilder} with resolved &lt;T&gt; reference.
      */
     @Nonnull
-    private <T> CompletionStage<PriceDraftBuilder> resolveReference(
+    private <T, S extends ResourceIdentifier<T>> CompletionStage<PriceDraftBuilder> resolveReference(
         @Nonnull final PriceDraftBuilder draftBuilder,
-        @Nullable final Reference<T> reference,
+        @Nullable final S reference,
         @Nonnull final Function<String, CompletionStage<Optional<String>>> keyToIdMapper,
-        @Nonnull final Function<String, Reference<T>> idToReferenceMapper,
-        @Nonnull final BiFunction<PriceDraftBuilder, Reference<T>, CompletionStage<PriceDraftBuilder>> referenceSetter,
+        @Nonnull final Function<String, S> idToReferenceMapper,
+        @Nonnull final BiFunction<PriceDraftBuilder, S, CompletionStage<PriceDraftBuilder>> referenceSetter,
         @Nonnull final BiFunction<PriceDraftBuilder, String, CompletionStage<PriceDraftBuilder>>
             nonExistingReferenceDraftMapper) {
 

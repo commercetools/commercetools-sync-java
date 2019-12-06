@@ -9,7 +9,7 @@ import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.Type;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,10 +22,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class CategoryReferenceReplacementUtilsTest {
+class CategoryReferenceReplacementUtilsTest {
 
     @Test
-    public void
+    void
         replaceCategoryReferenceIdsWithKeys_WithAllExpandedCategoryReferences_ShouldReturnReferencesWithReplacedKeys() {
         final String parentId = UUID.randomUUID().toString();
         final Type mockCustomType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
@@ -80,7 +80,7 @@ public class CategoryReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void
+    void
         replaceCategoryReferenceIdsWithKeys_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
         final String parentId = UUID.randomUUID().toString();
         final String customTypeId = UUID.randomUUID().toString();
@@ -131,7 +131,7 @@ public class CategoryReferenceReplacementUtilsTest {
     }
 
     @Test
-    public void buildCategoryQuery_Always_ShouldReturnQueryWithAllNeededReferencesExpanded() {
+    void buildCategoryQuery_Always_ShouldReturnQueryWithAllNeededReferencesExpanded() {
         final CategoryQuery categoryQuery = CategoryReferenceReplacementUtils.buildCategoryQuery();
         assertThat(categoryQuery.expansionPaths()).containsExactly(
             ExpansionPath.of("custom.type"),

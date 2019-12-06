@@ -6,7 +6,7 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Asset;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,10 +18,10 @@ import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.buil
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-public class GenericUpdateActionUtilsTest {
+class GenericUpdateActionUtilsTest {
 
     @Test
-    public void buildTypedSetCustomTypeUpdateAction_WithNullNewIdCategoryAsset_ShouldNotBuildCategoryUpdateAction() {
+    void buildTypedSetCustomTypeUpdateAction_WithNullNewIdCategoryAsset_ShouldNotBuildCategoryUpdateAction() {
         final ArrayList<String> errorMessages = new ArrayList<>();
         final BiConsumer<String, Throwable> updateActionErrorCallBack =
             (errorMessage, exception) -> errorMessages.add(errorMessage);

@@ -4,10 +4,10 @@ package com.commercetools.sync.integration.commons;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.queries.CategoryQuery;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -26,13 +26,13 @@ import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTyp
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CtpQueryUtilsIT {
+class CtpQueryUtilsIT {
 
     /**
      * Delete all categories and types from target project. Then create custom types for target CTP project categories.
      */
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
         createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH, "anyName", CTP_TARGET_CLIENT);
@@ -42,22 +42,22 @@ public class CtpQueryUtilsIT {
      * Deletes Categories and Types from target CTP projects, then it populates target CTP project with category test
      * data.
      */
-    @Before
-    public void setupTest() {
+    @BeforeEach
+    void setupTest() {
         deleteAllCategories(CTP_TARGET_CLIENT);
     }
 
     /**
      * Cleans up the target test data that were built in this test class.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
     }
 
     @Test
-    public void queryAll_WithKeyCollectorConsumerOn100CategoriesWithCustomPageSize_ShouldCollectKeys() {
+    void queryAll_WithKeyCollectorConsumerOn100CategoriesWithCustomPageSize_ShouldCollectKeys() {
         final int numberOfCategories = 100;
         createCategories(CTP_TARGET_CLIENT, getCategoryDraftsWithPrefix(Locale.ENGLISH, "new",
             null, numberOfCategories));
@@ -71,7 +71,7 @@ public class CtpQueryUtilsIT {
     }
 
     @Test
-    public void queryAll_WithKeyCollectorConsumerOn600Categories_ShouldCollectKeys() {
+    void queryAll_WithKeyCollectorConsumerOn600Categories_ShouldCollectKeys() {
         final int numberOfCategories = 600;
         final List<CategoryDraft> categoryDrafts = getCategoryDraftsWithPrefix(Locale.ENGLISH, "new",
             null, numberOfCategories);
@@ -87,7 +87,7 @@ public class CtpQueryUtilsIT {
     }
 
     @Test
-    public void queryAll_WithCategoryCollectorCallbackWithUniformPageSplitting_ShouldFetchAllCategories() {
+    void queryAll_WithCategoryCollectorCallbackWithUniformPageSplitting_ShouldFetchAllCategories() {
         final int numberOfCategories = 10;
         createCategories(CTP_TARGET_CLIENT, getCategoryDraftsWithPrefix(Locale.ENGLISH, "new",
             null, numberOfCategories));
@@ -110,7 +110,7 @@ public class CtpQueryUtilsIT {
     }
 
     @Test
-    public void queryAll_WithCategoryCollectorCallbackWithNonUniformPageSplitting_ShouldFetchAllCategories() {
+    void queryAll_WithCategoryCollectorCallbackWithNonUniformPageSplitting_ShouldFetchAllCategories() {
         final int numberOfCategories = 7;
         createCategories(CTP_TARGET_CLIENT, getCategoryDraftsWithPrefix(Locale.ENGLISH, "new",
             null, numberOfCategories));
@@ -128,7 +128,7 @@ public class CtpQueryUtilsIT {
     }
 
     @Test
-    public void queryAll_WithCategoryCollectorCallbackOn600Categories_ShouldFetchAllCategories() {
+    void queryAll_WithCategoryCollectorCallbackOn600Categories_ShouldFetchAllCategories() {
         final int numberOfCategories = 600;
         createCategories(CTP_TARGET_CLIENT, getCategoryDraftsWithPrefix(Locale.ENGLISH, "new",
             null, numberOfCategories));

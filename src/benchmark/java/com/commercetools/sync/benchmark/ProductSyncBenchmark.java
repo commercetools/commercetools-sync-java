@@ -15,10 +15,11 @@ import io.sphere.sdk.products.queries.ProductProjectionQuery;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.queries.PagedQueryResult;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -51,23 +52,23 @@ import static java.lang.String.format;
 import static java.util.Locale.ENGLISH;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ProductSyncBenchmark {
+class ProductSyncBenchmark {
     private static ProductType productType;
     private ProductSyncOptions syncOptions;
     private List<String> errorCallBackMessages;
     private List<String> warningCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
 
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, ENGLISH,
             OLD_CATEGORY_CUSTOM_TYPE_NAME, CTP_TARGET_CLIENT);
         productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
     }
 
-    @Before
-    public void setupTest() {
+    @BeforeEach
+    void setupTest() {
         clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
         syncOptions = buildSyncOptions();
@@ -92,13 +93,13 @@ public class ProductSyncBenchmark {
                                         .build();
     }
 
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
 
     @Test
-    public void sync_NewProducts_ShouldCreateProducts() throws IOException {
+    void sync_NewProducts_ShouldCreateProducts() throws IOException {
         final List<ProductDraft> productDrafts = buildProductDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
 
         // Sync drafts
@@ -132,7 +133,7 @@ public class ProductSyncBenchmark {
     }
 
     @Test
-    public void sync_ExistingProducts_ShouldUpdateProducts() throws IOException {
+    void sync_ExistingProducts_ShouldUpdateProducts() throws IOException {
         final List<ProductDraft> productDrafts = buildProductDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
         // Create drafts to target project with different descriptions
         CompletableFuture.allOf(productDrafts.stream()
@@ -191,7 +192,7 @@ public class ProductSyncBenchmark {
     }
 
     @Test
-    public void sync_WithSomeExistingProducts_ShouldSyncProducts() throws IOException {
+    void sync_WithSomeExistingProducts_ShouldSyncProducts() throws IOException {
         final List<ProductDraft> productDrafts = buildProductDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
         final int halfNumberOfDrafts = productDrafts.size() / 2;
         final List<ProductDraft> firstHalf = productDrafts.subList(0, halfNumberOfDrafts);

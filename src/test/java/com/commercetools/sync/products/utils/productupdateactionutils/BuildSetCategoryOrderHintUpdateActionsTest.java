@@ -5,7 +5,7 @@ import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.updateactions.SetCategoryOrderHint;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
@@ -19,12 +19,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class BuildSetCategoryOrderHintUpdateActionsTest {
+class BuildSetCategoryOrderHintUpdateActionsTest {
     private static final Product MOCK_OLD_PUBLISHED_PRODUCT = readObjectFromResource(
         PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
 
     @Test
-    public void buildSetCategoryOrderHintUpdateActions_WithDifferentStagedValues_ShouldBuildUpdateAction() {
+    void buildSetCategoryOrderHintUpdateActions_WithDifferentStagedValues_ShouldBuildUpdateAction() {
         final Map<String, String> categoryOrderHintsMap = new HashMap<>();
         categoryOrderHintsMap.put("1dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f", "0.33");
         final CategoryOrderHints newProductCategoryOrderHints = CategoryOrderHints.of(categoryOrderHintsMap);
@@ -38,7 +38,7 @@ public class BuildSetCategoryOrderHintUpdateActionsTest {
     }
 
     @Test
-    public void buildSetCategoryOrderHintUpdateActions_WithSameStagedValues_ShouldNotBuildUpdateAction() {
+    void buildSetCategoryOrderHintUpdateActions_WithSameStagedValues_ShouldNotBuildUpdateAction() {
         final Map<String, String> categoryOrderHintsMap = new HashMap<>();
         categoryOrderHintsMap.put("1dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f", "0.43");
         categoryOrderHintsMap.put("2dfc8bea-84f2-45bc-b3c2-cdc94bf96f1f", "0.53");

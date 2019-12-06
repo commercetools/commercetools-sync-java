@@ -9,7 +9,7 @@ import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.commands.updateactions.AddExternalImage;
 import io.sphere.sdk.products.commands.updateactions.MoveImageToPosition;
 import io.sphere.sdk.products.commands.updateactions.RemoveImage;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,9 +23,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class BuildProductVariantImagesUpdateActionsTest {
+class BuildProductVariantImagesUpdateActionsTest {
     @Test
-    public void buildProductVariantImagesUpdateActions_WithNullImageLists_ShouldNotBuildUpdateActions() {
+    void buildProductVariantImagesUpdateActions_WithNullImageLists_ShouldNotBuildUpdateActions() {
         final ProductVariant oldVariant = mock(ProductVariant.class);
         final ProductVariantDraft newVariantDraft = mock(ProductVariantDraft.class);
 
@@ -35,7 +35,7 @@ public class BuildProductVariantImagesUpdateActionsTest {
     }
 
     @Test
-    public void buildProductVariantImagesUpdateActions_WithNullNewImageList_ShouldBuildRemoveImageUpdateActions() {
+    void buildProductVariantImagesUpdateActions_WithNullNewImageList_ShouldBuildRemoveImageUpdateActions() {
         final ProductVariant oldVariant = mock(ProductVariant.class);
         final ProductVariantDraft newVariantDraft = mock(ProductVariantDraft.class);
 
@@ -56,7 +56,7 @@ public class BuildProductVariantImagesUpdateActionsTest {
     }
 
     @Test
-    public void buildProductVariantImagesUpdateActions_WithNullOldImageList_ShouldBuildAddExternalImageActions() {
+    void buildProductVariantImagesUpdateActions_WithNullOldImageList_ShouldBuildAddExternalImageActions() {
         final ProductVariant oldVariant = mock(ProductVariant.class);
         final ProductVariantDraft newVariantDraft = mock(ProductVariantDraft.class);
 
@@ -77,7 +77,7 @@ public class BuildProductVariantImagesUpdateActionsTest {
     }
 
     @Test
-    public void buildProductVariantImagesUpdateActions_WithIdenticalImageLists_ShouldNotBuildUpdateActions() {
+    void buildProductVariantImagesUpdateActions_WithIdenticalImageLists_ShouldNotBuildUpdateActions() {
         final ProductVariant oldVariant = mock(ProductVariant.class);
         final ProductVariantDraft newVariantDraft = mock(ProductVariantDraft.class);
 
@@ -97,7 +97,7 @@ public class BuildProductVariantImagesUpdateActionsTest {
     }
 
     @Test
-    public void buildProductVariantImagesUpdateActions_WithDifferentImageLists_ShouldBuildAddExternalImageAction() {
+    void buildProductVariantImagesUpdateActions_WithDifferentImageLists_ShouldBuildAddExternalImageAction() {
         final ProductVariant oldVariant = mock(ProductVariant.class);
         final ProductVariantDraft newVariantDraft = mock(ProductVariantDraft.class);
 
@@ -122,7 +122,7 @@ public class BuildProductVariantImagesUpdateActionsTest {
     }
 
     @Test
-    public void buildProductVariantImagesUpdateActions_WithDifferentImageLists_ShouldBuildRemoveImageAction() {
+    void buildProductVariantImagesUpdateActions_WithDifferentImageLists_ShouldBuildRemoveImageAction() {
         final ProductVariant oldVariant = mock(ProductVariant.class);
         final ProductVariantDraft newVariantDraft = mock(ProductVariantDraft.class);
 
@@ -147,7 +147,7 @@ public class BuildProductVariantImagesUpdateActionsTest {
     }
 
     @Test
-    public void buildProductVariantImagesUpdateActions_WithDifferentOrderImageLists_ShouldBuildMovePositionActions() {
+    void buildProductVariantImagesUpdateActions_WithDifferentOrderImageLists_ShouldBuildMovePositionActions() {
         final ProductVariant oldVariant = mock(ProductVariant.class);
         final ProductVariantDraft newVariantDraft = mock(ProductVariantDraft.class);
 
@@ -183,7 +183,7 @@ public class BuildProductVariantImagesUpdateActionsTest {
     }
 
     @Test
-    public void buildProductVariantImagesUpdateActions_WithDifferentOrderAndImages_ShouldBuildActions() {
+    void buildProductVariantImagesUpdateActions_WithDifferentOrderAndImages_ShouldBuildActions() {
         final ProductVariant oldVariant = mock(ProductVariant.class);
         final ProductVariantDraft newVariantDraft = mock(ProductVariantDraft.class);
 
@@ -241,7 +241,7 @@ public class BuildProductVariantImagesUpdateActionsTest {
     }
 
     @Test
-    public void buildMoveImageToPositionUpdateActions_WithDifferentOrder_ShouldBuildActions() {
+    void buildMoveImageToPositionUpdateActions_WithDifferentOrder_ShouldBuildActions() {
         final Image image2 = Image.of("https://image2.url.com", ImageDimensions.of(2, 2), "image2Label");
         final Image image3 = Image.of("https://image3.url.com", ImageDimensions.of(2, 2), "image3Label");
         final Image image4 = Image.of("https://image4.url.com", ImageDimensions.of(2, 2), "image4Label");
@@ -270,7 +270,7 @@ public class BuildProductVariantImagesUpdateActionsTest {
     }
 
     @Test
-    public void buildMoveImageToPositionUpdateActions_WithSameOrder_ShouldNotBuildActions() {
+    void buildMoveImageToPositionUpdateActions_WithSameOrder_ShouldNotBuildActions() {
         final Image image2 = Image.of("https://image2.url.com", ImageDimensions.of(2, 2), "image2Label");
         final Image image3 = Image.of("https://image3.url.com", ImageDimensions.of(2, 2), "image3Label");
         final Image image4 = Image.of("https://image4.url.com", ImageDimensions.of(2, 2), "image4Label");
@@ -294,7 +294,7 @@ public class BuildProductVariantImagesUpdateActionsTest {
     }
 
     @Test
-    public void buildMoveImageToPositionUpdateActions_WitEmptyArrays_ShouldNotBuildActions() {
+    void buildMoveImageToPositionUpdateActions_WitEmptyArrays_ShouldNotBuildActions() {
         final List<Image> oldImages = new ArrayList<>();
         final List<Image> newImages = new ArrayList<>();
 
@@ -304,7 +304,7 @@ public class BuildProductVariantImagesUpdateActionsTest {
     }
 
     @Test
-    public void buildMoveImageToPositionUpdateActions_WithDifferentImages_ShouldThrowException() {
+    void buildMoveImageToPositionUpdateActions_WithDifferentImages_ShouldThrowException() {
         final Image image2 = Image.of("https://image2.url.com", ImageDimensions.of(2, 2), "image2Label");
         final Image image3 = Image.of("https://image3.url.com", ImageDimensions.of(2, 2), "image3Label");
         final Image image4 = Image.of("https://image4.url.com", ImageDimensions.of(2, 2), "image4Label");

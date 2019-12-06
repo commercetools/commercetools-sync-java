@@ -1,22 +1,23 @@
 package com.commercetools.sync.products.utils.productupdateactionutils;
 
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.updateactions.SetTaxCategory;
 import io.sphere.sdk.taxcategories.TaxCategory;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetTaxCategoryUpdateAction;
 import static io.sphere.sdk.json.SphereJsonUtils.readObject;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
-@RunWith(MockitoJUnitRunner.class)
-public class BuildSetTaxCategoryUpdateActionTest {
+@ExtendWith(MockitoExtension.class)
+class BuildSetTaxCategoryUpdateActionTest {
 
     @Mock
     private Product oldProduct;
@@ -29,15 +30,17 @@ public class BuildSetTaxCategoryUpdateActionTest {
         "{\"typeId\": \"tax-category\",\"id\": \"11111111-1111-1111-1111-111111111111\"}", Reference.class);
 
     @SuppressWarnings("unchecked")
-    private static final Reference<TaxCategory> newSameTaxCategory = readObject(
-        "{\"typeId\": \"tax-category\",\"id\": \"11111111-1111-1111-1111-111111111111\"}", Reference.class);
+    private static final ResourceIdentifier<TaxCategory> newSameTaxCategory = readObject(
+        "{\"typeId\": \"tax-category\",\"id\": \"11111111-1111-1111-1111-111111111111\"}",
+        ResourceIdentifier.class);
 
     @SuppressWarnings("unchecked")
-    private static final Reference<TaxCategory> newChangedTaxCategory = readObject(
-        "{\"typeId\": \"tax-category\",\"id\": \"22222222-2222-2222-2222-222222222222\"}", Reference.class);
+    private static final ResourceIdentifier<TaxCategory> newChangedTaxCategory = readObject(
+        "{\"typeId\": \"tax-category\",\"id\": \"22222222-2222-2222-2222-222222222222\"}",
+        ResourceIdentifier.class);
 
     @Test
-    public void buildSetTaxCategoryUpdateAction_withEmptyOld_containsNewCategory() throws Exception {
+    void buildSetTaxCategoryUpdateAction_withEmptyOld_containsNewCategory() {
         assertThat(buildSetTaxCategoryUpdateAction(oldProduct, newProduct)).isEmpty();
 
         when(newProduct.getTaxCategory()).thenReturn(newSameTaxCategory);
@@ -46,7 +49,7 @@ public class BuildSetTaxCategoryUpdateActionTest {
     }
 
     @Test
-    public void buildSetTaxCategoryUpdateAction_withEmptyNew_ShouldUnset() throws Exception {
+    void buildSetTaxCategoryUpdateAction_withEmptyNew_ShouldUnset() {
         assertThat(buildSetTaxCategoryUpdateAction(oldProduct, newProduct)).isEmpty();
 
         when(oldProduct.getTaxCategory()).thenReturn(oldTaxCategory);
@@ -54,14 +57,14 @@ public class BuildSetTaxCategoryUpdateActionTest {
     }
 
     @Test
-    public void buildSetTaxCategoryUpdateAction_withEqual_isEmpty() throws Exception {
+    void buildSetTaxCategoryUpdateAction_withEqual_isEmpty() {
         when(oldProduct.getTaxCategory()).thenReturn(oldTaxCategory);
         when(newProduct.getTaxCategory()).thenReturn(newSameTaxCategory);
         assertThat(buildSetTaxCategoryUpdateAction(oldProduct, newProduct)).isEmpty();
     }
 
     @Test
-    public void buildSetTaxCategoryUpdateAction_withDifferent_containsNew() throws Exception {
+    void buildSetTaxCategoryUpdateAction_withDifferent_containsNew() {
         when(oldProduct.getTaxCategory()).thenReturn(oldTaxCategory);
         when(newProduct.getTaxCategory()).thenReturn(newChangedTaxCategory);
         assertThat(buildSetTaxCategoryUpdateAction(oldProduct, newProduct))

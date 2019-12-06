@@ -14,8 +14,8 @@ import io.sphere.sdk.products.commands.updateactions.ChangePrice;
 import io.sphere.sdk.products.commands.updateactions.RemovePrice;
 import io.sphere.sdk.products.commands.updateactions.SetProductPriceCustomField;
 import io.sphere.sdk.products.commands.updateactions.SetProductPriceCustomType;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class BuildProductVariantPricesUpdateActionsTest {
+class BuildProductVariantPricesUpdateActionsTest {
 
     private final ProductVariant oldProductVariant = mock(ProductVariant.class);
     private final ProductVariantDraft newProductVariant = mock(ProductVariantDraft.class);
@@ -41,13 +41,14 @@ public class BuildProductVariantPricesUpdateActionsTest {
                                                                                        errorMessages.add(msg))
                                                                                    .build();
 
-    @Before
-    public void setupMethod() {
+    @BeforeEach
+    void setupMethod() {
         errorMessages = new ArrayList<>();
     }
 
+    
     @Test
-    public void withNullNewPricesAndEmptyExistingPrices_ShouldNotBuildActions() {
+    void withNullNewPricesAndEmptyExistingPrices_ShouldNotBuildActions() {
         // Preparation
         when(newProductVariant.getPrices()).thenReturn(null);
         when(oldProductVariant.getPrices()).thenReturn(emptyList());
@@ -61,7 +62,7 @@ public class BuildProductVariantPricesUpdateActionsTest {
     }
 
     @Test
-    public void withSomeNullNewPricesAndExistingPrices_ShouldBuildActionsAndTriggerErrorCallback() {
+    void withSomeNullNewPricesAndExistingPrices_ShouldBuildActionsAndTriggerErrorCallback() {
         // Preparation
         final List<PriceDraft> newPrices = asList(
             DRAFT_US_111_USD,
@@ -88,7 +89,7 @@ public class BuildProductVariantPricesUpdateActionsTest {
     }
 
     @Test
-    public void withEmptyNewPricesAndEmptyExistingPrices_ShouldNotBuildActions() {
+    void withEmptyNewPricesAndEmptyExistingPrices_ShouldNotBuildActions() {
         // Preparation
         when(oldProductVariant.getPrices()).thenReturn(emptyList());
         when(newProductVariant.getPrices()).thenReturn(emptyList());
@@ -102,7 +103,7 @@ public class BuildProductVariantPricesUpdateActionsTest {
     }
 
     @Test
-    public void withAllMatchingPrices_ShouldNotBuildActions() {
+    void withAllMatchingPrices_ShouldNotBuildActions() {
         // Preparation
         final List<PriceDraft> newPrices = asList(
             DRAFT_US_111_USD,
@@ -127,7 +128,7 @@ public class BuildProductVariantPricesUpdateActionsTest {
     }
 
     @Test
-    public void withNonEmptyNewPricesButEmptyExistingPrices_ShouldBuildAddPriceActions()  {
+    void withNonEmptyNewPricesButEmptyExistingPrices_ShouldBuildAddPriceActions()  {
         // Preparation
         final List<PriceDraft> newPrices = asList(
             DRAFT_US_111_USD,
@@ -154,7 +155,7 @@ public class BuildProductVariantPricesUpdateActionsTest {
     }
     
     @Test
-    public void withSomeNonChangedMatchingPricesAndNewPrices_ShouldBuildAddPriceActions() {
+    void withSomeNonChangedMatchingPricesAndNewPrices_ShouldBuildAddPriceActions() {
         // Preparation
         final List<PriceDraft> newPrices = asList(
             DRAFT_DE_111_EUR,
@@ -182,7 +183,7 @@ public class BuildProductVariantPricesUpdateActionsTest {
     }
 
     @Test
-    public void withNullNewPrices_ShouldBuildRemovePricesAction() {
+    void withNullNewPrices_ShouldBuildRemovePricesAction() {
         // Preparation
         when(newProductVariant.getPrices()).thenReturn(null);
         final List<Price> prices = asList(
@@ -205,7 +206,7 @@ public class BuildProductVariantPricesUpdateActionsTest {
     }
 
     @Test
-    public void withEmptyNewPrices_ShouldBuildRemovePricesAction() {
+    void withEmptyNewPrices_ShouldBuildRemovePricesAction() {
         // Preparation
         when(newProductVariant.getPrices()).thenReturn(emptyList());
         final List<Price> prices = asList(
@@ -228,7 +229,7 @@ public class BuildProductVariantPricesUpdateActionsTest {
     }
 
     @Test
-    public void withSomeNonChangedMatchingPricesAndNoNewPrices_ShouldBuildRemovePriceActions() {
+    void withSomeNonChangedMatchingPricesAndNoNewPrices_ShouldBuildRemovePriceActions() {
         // Preparation
         final List<PriceDraft> newPrices = singletonList(DRAFT_US_111_USD);
         when(newProductVariant.getPrices()).thenReturn(newPrices);
@@ -252,7 +253,7 @@ public class BuildProductVariantPricesUpdateActionsTest {
     }
 
     @Test
-    public void withNoMatchingPrices_ShouldBuildRemoveAndAddPricesActions() {
+    void withNoMatchingPrices_ShouldBuildRemoveAndAddPricesActions() {
         // Preparation
         final List<PriceDraft> newPrices = asList(
             DRAFT_DE_111_EUR,
@@ -281,7 +282,7 @@ public class BuildProductVariantPricesUpdateActionsTest {
     }
 
     @Test
-    public void withSomeChangedMatchingPrices_ShouldBuildRemoveAndAddPricesActions() {
+    void withSomeChangedMatchingPrices_ShouldBuildRemoveAndAddPricesActions() {
         // Preparation
         final List<PriceDraft> newPrices = asList(
             DRAFT_DE_111_EUR,
@@ -314,7 +315,7 @@ public class BuildProductVariantPricesUpdateActionsTest {
     }
 
     @Test
-    public void withPricesWithOverlappingValidityDates_ShouldBuildRemoveAndAddPricesActions() {
+    void withPricesWithOverlappingValidityDates_ShouldBuildRemoveAndAddPricesActions() {
         // Preparation
         final List<PriceDraft> newPrices = asList(
             DRAFT_DE_111_EUR_01_02,
@@ -362,7 +363,7 @@ public class BuildProductVariantPricesUpdateActionsTest {
     }
 
     @Test
-    public void withAllMatchingChangedPrices_ShouldBuildChangePriceActions() {
+    void withAllMatchingChangedPrices_ShouldBuildChangePriceActions() {
         // Preparation
         final List<PriceDraft> newPrices = asList(
             DRAFT_DE_111_EUR,
@@ -414,7 +415,7 @@ public class BuildProductVariantPricesUpdateActionsTest {
     }
 
     @Test
-    public void withDifferentPriceActions_ShouldBuildActionsInCorrectOrder() {
+    void withDifferentPriceActions_ShouldBuildActionsInCorrectOrder() {
         // Preparation
         final List<PriceDraft> newPrices = asList(
             DRAFT_DE_111_EUR_01_02,
@@ -440,7 +441,7 @@ public class BuildProductVariantPricesUpdateActionsTest {
     }
 
     @Test
-    public void withMixedCasesOfPriceMatches_ShouldBuildActions() {
+    void withMixedCasesOfPriceMatches_ShouldBuildActions() {
         // Preparation
         final List<PriceDraft> newPrices = asList(
             DRAFT_DE_111_EUR,

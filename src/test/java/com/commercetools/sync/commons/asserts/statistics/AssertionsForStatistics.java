@@ -1,5 +1,6 @@
 package com.commercetools.sync.commons.asserts.statistics;
 
+import com.commercetools.sync.cartdiscounts.helpers.CartDiscountSyncStatistics;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
@@ -66,5 +67,16 @@ public final class AssertionsForStatistics {
     @Nonnull
     public static TypeSyncStatisticsAssert assertThat(@Nullable final TypeSyncStatistics statistics) {
         return new TypeSyncStatisticsAssert(statistics);
+    }
+
+    /**
+     * Create assertion for {@link CartDiscountSyncStatistics}.
+     *
+     * @param statistics the actual value.
+     * @return the created assertion object.
+     */
+    @Nonnull
+    public static CartDiscountSyncStatisticsAssert assertThat(@Nullable final CartDiscountSyncStatistics statistics) {
+        return new CartDiscountSyncStatisticsAssert(statistics);
     }
 }

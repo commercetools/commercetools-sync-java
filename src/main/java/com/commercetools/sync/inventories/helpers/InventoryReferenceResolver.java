@@ -8,7 +8,7 @@ import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
-import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 
 import javax.annotation.Nonnull;
@@ -22,10 +22,10 @@ public final class InventoryReferenceResolver
         extends CustomReferenceResolver<InventoryEntryDraft, InventoryEntryDraftBuilder, InventorySyncOptions> {
 
     private static final String CHANNEL_DOES_NOT_EXIST = "Channel with key '%s' does not exist.";
-    private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
+    private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type resource identifier on "
         + "InventoryEntryDraft with SKU:'%s'.";
-    private static final String FAILED_TO_RESOLVE_SUPPLY_CHANNEL = "Failed to resolve supply channel reference on "
-        + "InventoryEntryDraft with SKU:'%s'. Reason: %s";
+    private static final String FAILED_TO_RESOLVE_SUPPLY_CHANNEL = "Failed to resolve supply channel "
+        + "resource identifier on InventoryEntryDraft with SKU:'%s'. Reason: %s";
     private ChannelService channelService;
 
     public InventoryReferenceResolver(@Nonnull final InventorySyncOptions options,
@@ -37,13 +37,13 @@ public final class InventoryReferenceResolver
 
     /**
      * Given a {@link InventoryEntryDraft} this method attempts to resolve the custom type and supply channel
-     * references to return a {@link CompletionStage} which contains a new instance of the draft with the resolved
-     * references. The keys of the references are either taken from the expanded references or
-     * taken from the id field of the references.
+     * resource identifiers to return a {@link CompletionStage} which contains a new instance of the draft with the
+     * resolved resource identifiers. The keys of the resolved resources are taken from the id fields of the resource
+     * identifiers.
      *
-     * @param draft the inventoryEntryDraft to resolve it's references.
+     * @param draft the inventoryEntryDraft to resolve its resource identifiers.
      * @return a {@link CompletionStage} that contains as a result a new inventoryEntryDraft instance with resolved
-     *          references or, in case an error occurs during reference resolution,
+     *          resource identifiers or, in case an error occurs during reference resolution,
      *          a {@link ReferenceResolutionException}.
      */
     public CompletionStage<InventoryEntryDraft> resolveReferences(@Nonnull final InventoryEntryDraft draft) {
@@ -64,10 +64,10 @@ public final class InventoryReferenceResolver
     }
 
     /**
-     * Given a {@link InventoryEntryDraftBuilder} this method attempts to resolve the supply channel reference to return
-     * a {@link CompletionStage} which contains a new instance of the draft builder with the resolved
-     * supply channel reference. The key of the supply channel is either taken from the expanded reference or
-     * taken from the id field of the reference.
+     * Given a {@link InventoryEntryDraftBuilder} this method attempts to resolve the supply channel resource identifier
+     * to return a {@link CompletionStage} which contains a new instance of the draft builder with the resolved
+     * supply channel resource identifier. The key of the supply channel taken from the id field of the resource
+     * identifier.
      *
      * <p>The method then tries to fetch the key of the supply channel, optimistically from a
      * cache. If the id is not found in cache nor the CTP project and {@code ensureChannel}
@@ -76,7 +76,7 @@ public final class InventoryReferenceResolver
      * {@link ReferenceResolutionException}.
      *
      * @param draftBuilder the inventory draft builder to read it's values (key, sku, channel)
-     *                     and then to write resolved references.
+     *                     and then to write resolved resource identifier.
      * @return a {@link CompletionStage} that contains as a result the same {@code draftBuilder} inventory draft builder
      *         instance with resolved supply channel or, in case an error occurs during reference resolution,
      *         a {@link ReferenceResolutionException}.
@@ -84,7 +84,8 @@ public final class InventoryReferenceResolver
     @Nonnull
     CompletionStage<InventoryEntryDraftBuilder> resolveSupplyChannelReference(
             @Nonnull final InventoryEntryDraftBuilder draftBuilder) {
-        final Reference<Channel> channelReference = draftBuilder.getSupplyChannel();
+
+        final ResourceIdentifier<Channel> channelReference = draftBuilder.getSupplyChannel();
         if (channelReference != null) {
             try {
                 final String channelKey = getKeyFromResourceIdentifier(channelReference);
@@ -108,10 +109,10 @@ public final class InventoryReferenceResolver
      * {@link ReferenceResolutionException}.
      *
      * @param draftBuilder the inventory draft builder to read it's values (key, sku, channel)
-     *                     and then to write resolved references.
+     *                     and then to write resolved resource identifiers.
      * @param channelKey the key of the channel to resolve it's actual id on the draft.
      * @return a {@link CompletionStage} that contains as a result the same {@code draftBuilder} inventory draft builder
-     *         instance with resolved supply channel reference or an exception.
+     *         instance with resolved supply channel resource identifier or an exception.
      */
     @Nonnull
     private CompletionStage<InventoryEntryDraftBuilder> fetchOrCreateAndResolveReference(
@@ -140,37 +141,38 @@ public final class InventoryReferenceResolver
 
 
     /**
-     * Helper method that returns a completed CompletionStage with a resolved channel reference
+     * Helper method that returns a completed CompletionStage with a resolved channel resource identifier
      * {@link InventoryEntryDraftBuilder} object as a result of setting the passed {@code channelId}
-     * as the id of channel reference.
+     * as the id of channel resource identifier.
      *
-     * @param channelId    the channel id to set on the inventory entry supply channel reference id field.
-     * @param draftBuilder the inventory draft builder where to write resolved references.
-     * @return a completed CompletionStage with a resolved channel reference with the same
+     * @param channelId    the channel id to set on the inventory entry supply channel resource identifier id field.
+     * @param draftBuilder the inventory draft builder where to write resolved resource identifier.
+     * @return a completed CompletionStage with a resolved channel resource identifier with the same
      *         {@link InventoryEntryDraftBuilder} instance as a result of setting the passed {@code channelId}
-     *         as the id of channel reference.
+     *         as the id of channel resource identifier.
      */
     @Nonnull
     private static CompletionStage<InventoryEntryDraftBuilder> setChannelReference(
             @Nonnull final String channelId,
             @Nonnull final InventoryEntryDraftBuilder draftBuilder) {
-        return completedFuture(draftBuilder.supplyChannel(Channel.referenceOfId(channelId)));
+        return completedFuture(draftBuilder.supplyChannel(ResourceIdentifier.ofId(channelId)));
     }
 
     /**
      * Helper method that creates a new {@link Channel} on the CTP project with the specified {@code channelKey} and of
      * the role {@code "InventorySupply"}. Only if the {@code ensureChannels} options is set to {@code true} on the
-     * {@code options} instance of {@code this} class. Then it resolves the supply channel reference on the supplied
-     * {@code inventoryEntryDraft} by setting the id of it's supply channel reference with the newly created Channel.
+     * {@code options} instance of {@code this} class. Then it resolves the supply channel resource identifier on the
+     * supplied {@code inventoryEntryDraft} by setting the id of its supply channel resource identifier with the newly
+     * created Channel.
      *
      * <p>If the {@code ensureChannels} options is set to {@code false} on the {@code options} instance of {@code this}
      * class, the future is completed exceptionally with a {@link ReferenceResolutionException}.
      *
-     * <p>The method then returns a CompletionStage with a resolved channel reference {@link InventoryEntryDraftBuilder}
-     * object.
+     * <p>The method then returns a CompletionStage with a resolved channel resource identifiers
+     * {@link InventoryEntryDraftBuilder} object.
      *
      * @param channelKey   the key to create the new channel with.
-     * @param draftBuilder the inventory draft builder where to write resolved references.
+     * @param draftBuilder the inventory draft builder where to write resolved resource identifiers.
      * @return a CompletionStage with the same {@code draftBuilder} inventory draft builder instance where channel
      *         channels are resolved.
      */

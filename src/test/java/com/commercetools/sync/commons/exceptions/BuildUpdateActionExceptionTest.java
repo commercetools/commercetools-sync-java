@@ -1,13 +1,14 @@
 package com.commercetools.sync.commons.exceptions;
 
-import org.junit.Test;
+
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-public class BuildUpdateActionExceptionTest {
+class BuildUpdateActionExceptionTest {
 
     @Test
-    public void buildUpdateActionException_WithMessageOnly_ShouldBuildExceptionCorrectly() {
+    void buildUpdateActionException_WithMessageOnly_ShouldBuildExceptionCorrectly() {
         final String message = "foo";
 
         assertThatThrownBy(() -> {
@@ -18,7 +19,7 @@ public class BuildUpdateActionExceptionTest {
     }
 
     @Test
-    public void buildUpdateActionException_WithMessageAndCause_ShouldBuildExceptionCorrectly() {
+    void buildUpdateActionException_WithMessageAndCause_ShouldBuildExceptionCorrectly() {
         final String message = "foo";
         final IllegalArgumentException cause = new IllegalArgumentException();
 
@@ -30,7 +31,7 @@ public class BuildUpdateActionExceptionTest {
     }
 
     @Test
-    public void buildUpdateActionException_WithCauseOnly_ShouldBuildExceptionCorrectly() {
+    void buildUpdateActionException_WithCauseOnly_ShouldBuildExceptionCorrectly() {
         final IllegalArgumentException cause = new IllegalArgumentException();
 
         assertThatThrownBy(() -> {

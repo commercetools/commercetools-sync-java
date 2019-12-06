@@ -6,8 +6,8 @@ import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereRequest;
 import io.sphere.sdk.queries.PagedQueryResult;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +24,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class QueryAllTest {
+class QueryAllTest {
     private static final String CATEGORY_KEY = "catKey";
     private static final String CATEGORY_ID = UUID.randomUUID().toString();
     private static final SphereClient sphereClient = mock(SphereClient.class);
@@ -34,8 +34,8 @@ public class QueryAllTest {
      * to always return a {@link PagedQueryResult} containing 4 identical mock categories on every call of
      * {@link SphereClient#execute(SphereRequest)}.
      */
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         final Category mockCategory = mock(Category.class);
         when(mockCategory.getKey()).thenReturn(CATEGORY_KEY);
         when(mockCategory.getId()).thenReturn(CATEGORY_ID);
@@ -47,7 +47,7 @@ public class QueryAllTest {
     }
 
     @Test
-    public void run_WithCallback_ShouldApplyCallback() {
+    void run_WithCallback_ShouldApplyCallback() {
         final QueryAll<Category, CategoryQuery, Optional<Category>> query =
             QueryAll.of(sphereClient, CategoryQuery.of(), DEFAULT_PAGE_SIZE);
 
@@ -64,7 +64,7 @@ public class QueryAllTest {
     }
 
     @Test
-    public void run_WithConsumer_ShouldApplyConsumer() {
+    void run_WithConsumer_ShouldApplyConsumer() {
         final QueryAll<Category, CategoryQuery, Void> query =
             QueryAll.of(sphereClient, CategoryQuery.of(), DEFAULT_PAGE_SIZE);
         final List<String> categoryIds = new ArrayList<>();

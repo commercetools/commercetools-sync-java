@@ -9,9 +9,9 @@ import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
 import io.sphere.sdk.types.TypeDraftBuilder;
 import io.sphere.sdk.types.queries.TypeQuery;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,14 +25,14 @@ import static com.commercetools.sync.integration.commons.utils.TypeITUtils.popul
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.populateTargetProject;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class TypeSyncIT {
+class TypeSyncIT {
 
     /**
      * Deletes types from source and target CTP projects.
      * Populates source and target CTP projects with test data.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         deleteTypesFromTargetAndSource();
         populateSourceProject();
         populateTargetProject();
@@ -42,13 +42,13 @@ public class TypeSyncIT {
      * Deletes all the test data from the {@code CTP_SOURCE_CLIENT} and the {@code CTP_SOURCE_CLIENT} projects that
      * were set up in this test class.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteTypesFromTargetAndSource();
     }
 
     @Test
-    public void sync_WithoutUpdates_ShouldReturnProperStatistics() {
+    void sync_WithoutUpdates_ShouldReturnProperStatistics() {
         // preparation
         final List<Type> types = CTP_SOURCE_CLIENT
             .execute(TypeQuery.of())
@@ -92,7 +92,7 @@ public class TypeSyncIT {
     }
 
     @Test
-    public void sync_WithUpdates_ShouldReturnProperStatistics() {
+    void sync_WithUpdates_ShouldReturnProperStatistics() {
         // preparation
         final List<Type> types = CTP_SOURCE_CLIENT
             .execute(TypeQuery.of())

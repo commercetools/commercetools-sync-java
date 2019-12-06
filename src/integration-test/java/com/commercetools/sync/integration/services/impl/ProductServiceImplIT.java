@@ -28,10 +28,10 @@ import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -73,7 +73,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class ProductServiceImplIT {
+class ProductServiceImplIT {
     private ProductService productService;
     private static ProductType productType;
     private static List<Reference<Category>> categoryReferencesWithIds;
@@ -89,8 +89,8 @@ public class ProductServiceImplIT {
      * Delete all product related test data from target project. Then creates custom types for target CTP project
      * categories.
      */
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         createCategoriesCustomType(OLD_CATEGORY_CUSTOM_TYPE_KEY, Locale.ENGLISH,
             OLD_CATEGORY_CUSTOM_TYPE_NAME, CTP_TARGET_CLIENT);
@@ -103,8 +103,8 @@ public class ProductServiceImplIT {
      * Deletes Products and Types from target CTP projects, then it populates target CTP project with product test
      * data.
      */
-    @Before
-    public void setupTest() {
+    @BeforeEach
+    void setupTest() {
         errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
         warningCallBackMessages = new ArrayList<>();
@@ -136,13 +136,13 @@ public class ProductServiceImplIT {
     /**
      * Cleans up the target test data that were built in this test class.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
 
     @Test
-    public void getIdFromCacheOrFetch_WithNotCachedExistingProduct_ShouldFetchProduct() {
+    void getIdFromCacheOrFetch_WithNotCachedExistingProduct_ShouldFetchProduct() {
         final Optional<String> productId = productService.getIdFromCacheOrFetch(product.getKey())
                                                          .toCompletableFuture()
                                                          .join();
@@ -152,7 +152,7 @@ public class ProductServiceImplIT {
     }
 
     @Test
-    public void getIdFromCacheOrFetch_WithNullProductKey_ShouldReturnEmptyOptional() {
+    void getIdFromCacheOrFetch_WithNullProductKey_ShouldReturnEmptyOptional() {
         final Optional<String> productId = productService.getIdFromCacheOrFetch(null)
                                                          .toCompletableFuture()
                                                          .join();
@@ -162,7 +162,7 @@ public class ProductServiceImplIT {
     }
 
     @Test
-    public void getIdFromCacheOrFetch_WithCachedExistingProduct_ShouldFetchFromCache() {
+    void getIdFromCacheOrFetch_WithCachedExistingProduct_ShouldFetchFromCache() {
         final String oldKey = product.getKey();
         final Optional<String> oldProductId = productService.getIdFromCacheOrFetch(oldKey)
                                                             .toCompletableFuture()
@@ -194,7 +194,7 @@ public class ProductServiceImplIT {
     }
 
     @Test
-    public void cacheKeysToIds_WithEmptyKeys_ShouldReturnCurrentCache() {
+    void cacheKeysToIds_WithEmptyKeys_ShouldReturnCurrentCache() {
         Map<String, String> cache = productService.cacheKeysToIds(emptySet()).toCompletableFuture().join();
         assertThat(cache).hasSize(0); // Since cache is empty
 
@@ -209,7 +209,7 @@ public class ProductServiceImplIT {
     }
 
     @Test
-    public void cacheKeysToIds_WithAlreadyCachedKeys_ShouldNotMakeRequestsAndReturnCurrentCache() {
+    void cacheKeysToIds_WithAlreadyCachedKeys_ShouldNotMakeRequestsAndReturnCurrentCache() {
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(spyClient)
                                                                                .errorCallback(
@@ -242,7 +242,7 @@ public class ProductServiceImplIT {
     }
 
     @Test
-    public void cacheKeysToIds_WithSomeEmptyKeys_ShouldReturnCorrectCache() {
+    void cacheKeysToIds_WithSomeEmptyKeys_ShouldReturnCorrectCache() {
         final Set<String> productKeys = new HashSet<>();
         productKeys.add(product.getKey());
         productKeys.add(null);
@@ -255,7 +255,7 @@ public class ProductServiceImplIT {
     }
 
     @Test
-    public void fetchMatchingProductsByKeys_WithEmptySetOfKeys_ShouldReturnEmptySet() {
+    void fetchMatchingProductsByKeys_WithEmptySetOfKeys_ShouldReturnEmptySet() {
         final Set<Product> fetchedProducts = productService.fetchMatchingProductsByKeys(Collections.emptySet())
                                                            .toCompletableFuture().join();
         assertThat(fetchedProducts).isEmpty();
@@ -264,7 +264,7 @@ public class ProductServiceImplIT {
     }
 
     @Test
-    public void fetchMatchingProductsByKeys_WithAllExistingSetOfKeys_ShouldReturnSetOfProducts() {
+    void fetchMatchingProductsByKeys_WithAllExistingSetOfKeys_ShouldReturnSetOfProducts() {
         final Set<Product> fetchedProducts = productService.fetchMatchingProductsByKeys(singleton(product.getKey()))
                                                            .toCompletableFuture().join();
         assertThat(fetchedProducts).hasSize(1);
@@ -273,7 +273,7 @@ public class ProductServiceImplIT {
     }
 
     @Test
-    public void fetchMatchingProductsByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
+    void fetchMatchingProductsByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
         // preparation
         // Mock sphere client to return BadGatewayException on any request.
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
@@ -302,7 +302,7 @@ public class ProductServiceImplIT {
     }
 
     @Test
-    public void fetchMatchingProductsByKeys_WithSomeExistingSetOfKeys_ShouldReturnSetOfProducts() {
+    void fetchMatchingProductsByKeys_WithSomeExistingSetOfKeys_ShouldReturnSetOfProducts() {
         final Set<String> keys =  new HashSet<>();
         keys.add(product.getKey());
         keys.add("new-key");
@@ -314,7 +314,7 @@ public class ProductServiceImplIT {
     }
 
     @Test
-    public void fetchMatchingProductsByKeys_WithAllExistingSetOfKeys_ShouldCacheFetchedProductsIds() {
+    void fetchMatchingProductsByKeys_WithAllExistingSetOfKeys_ShouldCacheFetchedProductsIds() {
         final String oldKey = product.getKey();
         final Set<Product> fetchedProducts = productService.fetchMatchingProductsByKeys(singleton(oldKey))
                                                            .toCompletableFuture().join();
@@ -337,7 +337,7 @@ public class ProductServiceImplIT {
     }
 
     @Test
-    public void createProduct_WithValidProduct_ShouldCreateProductAndCacheId() {
+    void createProduct_WithValidProduct_ShouldCreateProductAndCacheId() {
         // preparation
         final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             productType.toReference())
@@ -391,7 +391,7 @@ public class ProductServiceImplIT {
     }
 
     @Test
-    public void createProduct_WithBlankKey_ShouldNotCreateProduct() {
+    void createProduct_WithBlankKey_ShouldNotCreateProduct() {
         // preparation
         final String newKey = "";
         final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
@@ -416,7 +416,7 @@ public class ProductServiceImplIT {
     }
 
     @Test
-    public void createProduct_WithDuplicateSlug_ShouldNotCreateProduct() {
+    void createProduct_WithDuplicateSlug_ShouldNotCreateProduct() {
         // Create product with same slug as existing product
         final String newKey = "newKey";
         final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_1_RESOURCE_PATH,
@@ -475,7 +475,7 @@ public class ProductServiceImplIT {
 
     @Test
     @SuppressWarnings("ConstantConditions")
-    public void updateProduct_WithValidChanges_ShouldUpdateProductCorrectly() {
+    void updateProduct_WithValidChanges_ShouldUpdateProductCorrectly() {
         final String newProductName = "This is my new name!";
         final ChangeName changeNameUpdateAction = ChangeName
             .of(LocalizedString.of(Locale.GERMAN, newProductName));
@@ -504,7 +504,7 @@ public class ProductServiceImplIT {
 
     @Test
     @SuppressWarnings("ConstantConditions")
-    public void updateProduct_WithInvalidChanges_ShouldNotUpdateProduct() {
+    void updateProduct_WithInvalidChanges_ShouldNotUpdateProduct() {
         final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             productType.toReference())
             .categories(emptyList())
@@ -557,7 +557,7 @@ public class ProductServiceImplIT {
 
     @Test
     @SuppressWarnings("ConstantConditions")
-    public void updateProduct_WithMoreThan500Actions_ShouldNotFail() {
+    void updateProduct_WithMoreThan500Actions_ShouldNotFail() {
         // Update the product 501 times with a different name every time.
         final int numberOfUpdateActions = 501;
         final List<UpdateAction<Product>> updateActions =
@@ -588,7 +588,7 @@ public class ProductServiceImplIT {
 
     @Test
     @SuppressWarnings("ConstantConditions")
-    public void updateProduct_WithMoreThan500ImageAdditions_ShouldHaveAllNewImages() {
+    void updateProduct_WithMoreThan500ImageAdditions_ShouldHaveAllNewImages() {
         final Integer productMasterVariantId = product.getMasterData().getStaged().getMasterVariant().getId();
 
         // Update the product by adding 600 images in separate update actions
@@ -625,7 +625,7 @@ public class ProductServiceImplIT {
     }
 
     @Test
-    public void fetchProduct_WithExistingKey_ShouldReturnProduct() {
+    void fetchProduct_WithExistingKey_ShouldReturnProduct() {
         final Optional<Product> fetchedProductOptional = productService.fetchProduct(product.getKey())
                                                                        .toCompletableFuture()
                                                                        .join();
@@ -636,7 +636,7 @@ public class ProductServiceImplIT {
     }
 
     @Test
-    public void fetchProduct_WithNonExistingKey_ShouldNotReturnProduct() {
+    void fetchProduct_WithNonExistingKey_ShouldNotReturnProduct() {
         final Optional<Product> fetchedProductOptional = productService.fetchProduct("someNonExistingKey")
                                                                        .toCompletableFuture()
                                                                        .join();
@@ -646,7 +646,7 @@ public class ProductServiceImplIT {
     }
 
     @Test
-    public void fetchProduct_WithNullKey_ShouldNotReturnProduct() {
+    void fetchProduct_WithNullKey_ShouldNotReturnProduct() {
         final Optional<Product> fetchedProductOptional = productService.fetchProduct(null)
                                                                        .toCompletableFuture()
                                                                        .join();
@@ -656,7 +656,7 @@ public class ProductServiceImplIT {
     }
 
     @Test
-    public void fetchProduct_WithBlankKey_ShouldNotReturnProduct() {
+    void fetchProduct_WithBlankKey_ShouldNotReturnProduct() {
         final Optional<Product> fetchedProductOptional = productService.fetchProduct(StringUtils.EMPTY)
                                                                        .toCompletableFuture()
                                                                        .join();
@@ -666,7 +666,7 @@ public class ProductServiceImplIT {
     }
 
     @Test
-    public void fetchProduct_WithBadGatewayException_ShouldFail() {
+    void fetchProduct_WithBadGatewayException_ShouldFail() {
         // preparation
         // Mock sphere client to return BadGatewayException on any request.
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);

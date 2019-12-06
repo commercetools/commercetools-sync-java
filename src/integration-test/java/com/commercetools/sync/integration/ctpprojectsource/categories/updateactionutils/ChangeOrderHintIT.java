@@ -9,10 +9,10 @@ import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.categories.commands.updateactions.ChangeOrderHint;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +26,7 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ChangeOrderHintIT {
+class ChangeOrderHintIT {
     private static Category oldCategory;
     private List<String> callBackResponses = new ArrayList<>();
     private CategorySyncOptions categorySyncOptions;
@@ -35,8 +35,8 @@ public class ChangeOrderHintIT {
      * Deletes Categories and Types from source and target CTP projects, then it populates target CTP project with
      * category test data.
      */
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         deleteAllCategories(CTP_SOURCE_CLIENT);
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypesFromTargetAndSource();
@@ -55,8 +55,8 @@ public class ChangeOrderHintIT {
     /**
      * Deletes all the categories in the source CTP project and the callback response collector.
      */
-    @Before
-    public void setupTest() {
+    @BeforeEach
+    void setupTest() {
         deleteAllCategories(CTP_SOURCE_CLIENT);
         callBackResponses = new ArrayList<>();
         categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -67,15 +67,15 @@ public class ChangeOrderHintIT {
     /**
      * Cleans up the target and source test data that were built in this test class.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteAllCategories(CTP_SOURCE_CLIENT);
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypesFromTargetAndSource();
     }
 
     @Test
-    public void buildChangeOrderHintUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
+    void buildChangeOrderHintUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         final CategoryDraft newCategoryDraft = CategoryDraftBuilder
             .of(oldCategory.getName(), oldCategory.getSlug())
             .orderHint("0.2")
@@ -100,7 +100,7 @@ public class ChangeOrderHintIT {
     }
 
     @Test
-    public void buildChangeOrderHintUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
+    void buildChangeOrderHintUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final CategoryDraft newCategoryDraft = CategoryDraftBuilder
             .of(oldCategory.getName(), oldCategory.getSlug())
             .orderHint(oldCategory.getOrderHint())
@@ -123,7 +123,7 @@ public class ChangeOrderHintIT {
     }
 
     @Test
-    public void buildChangeOrderHintUpdateAction_WithNullValue_ShouldNotBuildUpdateAction() {
+    void buildChangeOrderHintUpdateAction_WithNullValue_ShouldNotBuildUpdateAction() {
         final CategoryDraft newCategoryDraft = CategoryDraftBuilder
             .of(oldCategory.getName(), oldCategory.getSlug())
             .orderHint(null)

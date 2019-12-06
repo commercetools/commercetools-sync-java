@@ -3,17 +3,17 @@ package com.commercetools.sync.products.utils.productvariantupdateactionutils;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.commands.updateactions.SetSku;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantSkuUpdateAction;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ProductVariantUpdateActionUtilsTest {
+class ProductVariantUpdateActionUtilsTest {
 
     @Test
-    public void buildProductVariantSkuUpdateAction_WithBothNullSkus_ShouldNotBuildAction() {
+    void buildProductVariantSkuUpdateAction_WithBothNullSkus_ShouldNotBuildAction() {
         final ProductVariant variantOld = mock(ProductVariant.class);
         final ProductVariantDraft variantDraftNew = mock(ProductVariantDraft.class);
 
@@ -21,7 +21,7 @@ public class ProductVariantUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildProductVariantSkuUpdateAction_WithNullNewSku_ShouldBuildUpdateAction() {
+    void buildProductVariantSkuUpdateAction_WithNullNewSku_ShouldBuildUpdateAction() {
         final ProductVariant variantOld = mock(ProductVariant.class);
         final ProductVariantDraft variantDraftNew = mock(ProductVariantDraft.class);
 
@@ -33,7 +33,7 @@ public class ProductVariantUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildProductVariantSkuUpdateAction_WithNewSku_ShouldBuildUpdateAction() {
+    void buildProductVariantSkuUpdateAction_WithNewSku_ShouldBuildUpdateAction() {
         final ProductVariant variantOld = mock(ProductVariant.class);
         final ProductVariantDraft variantDraftNew = mock(ProductVariantDraft.class);
 
@@ -47,7 +47,7 @@ public class ProductVariantUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildProductVariantSkuUpdateAction_WithSameSku_ShouldNotBuildUpdateAction() {
+    void buildProductVariantSkuUpdateAction_WithSameSku_ShouldNotBuildUpdateAction() {
         final ProductVariant variantOld = mock(ProductVariant.class);
         final ProductVariantDraft variantDraftNew = mock(ProductVariantDraft.class);
 
@@ -58,7 +58,7 @@ public class ProductVariantUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildProductVariantSkuUpdateAction_WithNullOldSku_ShouldBuildUpdateAction() {
+    void buildProductVariantSkuUpdateAction_WithNullOldSku_ShouldBuildUpdateAction() {
         final ProductVariant variantOld = mock(ProductVariant.class);
         final ProductVariantDraft variantDraftNew = mock(ProductVariantDraft.class);
 

@@ -29,10 +29,10 @@ import io.sphere.sdk.products.commands.updateactions.SetAssetCustomType;
 import io.sphere.sdk.products.queries.ProductProjectionByKeyGet;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.types.Type;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -62,7 +62,7 @@ import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ProductSyncWithAssetsIT {
+class ProductSyncWithAssetsIT {
     private static final String ASSETS_CUSTOM_TYPE_KEY = "assetsCustomTypeKey";
 
     private static ProductType productType;
@@ -79,8 +79,8 @@ public class ProductSyncWithAssetsIT {
      * Delete all product related test data from the target project. Then creates for the target CTP project a product
      * type and an asset custom type.
      */
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
         assetsCustomType = createAssetsCustomType(ASSETS_CUSTOM_TYPE_KEY, Locale.ENGLISH,
             "assetsCustomTypeName", CTP_TARGET_CLIENT);
@@ -92,8 +92,8 @@ public class ProductSyncWithAssetsIT {
      * Deletes Products and Types from the target CTP project, then it populates target CTP project with product test
      * data.
      */
-    @Before
-    public void setupTest() {
+    @BeforeEach
+    void setupTest() {
         clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
         productSync = new ProductSync(buildSyncOptions());
@@ -140,13 +140,13 @@ public class ProductSyncWithAssetsIT {
                                         .build();
     }
 
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
 
     @Test
-    public void sync_withNewProductWithAssets_shouldCreateProduct() {
+    void sync_withNewProductWithAssets_shouldCreateProduct() {
         final List<AssetDraft> assetDrafts =
             singletonList(createAssetDraft("4", ofEnglish("4"), ASSETS_CUSTOM_TYPE_KEY));
 
@@ -159,7 +159,7 @@ public class ProductSyncWithAssetsIT {
         final ProductSyncStatistics syncStatistics =
             executeBlocking(productSync.sync(singletonList(productDraft)));
 
-        assertThat(syncStatistics).hasValues(1, 1, 0, 0);
+        assertThat(syncStatistics).hasValues(1, 1, 0, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -175,7 +175,7 @@ public class ProductSyncWithAssetsIT {
     }
 
     @Test
-    public void sync_withNewProductWithAssetsWithDuplicateKeys_shouldNotCreateProductAndTriggerErrorCallback() {
+    void sync_withNewProductWithAssetsWithDuplicateKeys_shouldNotCreateProductAndTriggerErrorCallback() {
         final List<AssetDraft> assetDrafts = asList(
             createAssetDraft("4", ofEnglish("4"), ASSETS_CUSTOM_TYPE_KEY),
             createAssetDraft("4", ofEnglish("duplicate asset"), ASSETS_CUSTOM_TYPE_KEY));
@@ -190,7 +190,7 @@ public class ProductSyncWithAssetsIT {
             executeBlocking(productSync.sync(singletonList(productDraft)));
 
         // Assert results of sync
-        assertThat(syncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(updateActionsFromSync).isEmpty();
         assertThat(errorCallBackMessages).hasSize(1);
@@ -211,7 +211,7 @@ public class ProductSyncWithAssetsIT {
     }
 
     @Test
-    public void sync_withMatchingProductWithAssetChanges_shouldUpdateProduct() {
+    void sync_withMatchingProductWithAssetChanges_shouldUpdateProduct() {
 
         final Map<String, JsonNode> customFieldsJsonMap = new HashMap<>();
         customFieldsJsonMap.put(BOOLEAN_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.booleanNode(true));
@@ -234,7 +234,7 @@ public class ProductSyncWithAssetsIT {
             executeBlocking(productSync.sync(singletonList(productDraft)));
 
         // Assert results of sync
-        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -250,9 +250,9 @@ public class ProductSyncWithAssetsIT {
             RemoveAsset.ofVariantIdWithKey(1, "1", true),
             ChangeAssetName.ofAssetKeyAndVariantId(1, "2", ofEnglish("new name"), true),
             SetAssetCustomType.ofVariantIdAndAssetKey(1, "2", null, true),
-            SetAssetCustomField.ofVariantIdAndAssetKey(1, "3", BOOLEAN_CUSTOM_FIELD_NAME,
+            SetAssetCustomField.ofVariantIdUsingJsonAndAssetKey(1, "3", BOOLEAN_CUSTOM_FIELD_NAME,
                 customFieldsJsonMap.get(BOOLEAN_CUSTOM_FIELD_NAME), true),
-            SetAssetCustomField.ofVariantIdAndAssetKey(1, "3", LOCALISED_STRING_CUSTOM_FIELD_NAME,
+            SetAssetCustomField.ofVariantIdUsingJsonAndAssetKey(1, "3", LOCALISED_STRING_CUSTOM_FIELD_NAME,
                 null, true),
             ChangeAssetOrder.ofVariantId(1, asList(assetsKeyToIdMap.get("3"), assetsKeyToIdMap.get("2")), true),
             AddAsset.ofVariantId(1, createAssetDraft("4", ofEnglish("4"), assetsCustomType.getId()))
@@ -269,7 +269,7 @@ public class ProductSyncWithAssetsIT {
     }
 
     @Test
-    public void sync_withMatchingProductWithNewVariantWithAssets_shouldUpdateAddAssetsToNewVariant() {
+    void sync_withMatchingProductWithNewVariantWithAssets_shouldUpdateAddAssetsToNewVariant() {
 
         final Map<String, JsonNode> customFieldsJsonMap = new HashMap<>();
         customFieldsJsonMap.put(BOOLEAN_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.booleanNode(true));
@@ -293,7 +293,7 @@ public class ProductSyncWithAssetsIT {
             executeBlocking(productSync.sync(singletonList(productDraft)));
 
         // Assert results of sync
-        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -316,9 +316,9 @@ public class ProductSyncWithAssetsIT {
             RemoveAsset.ofVariantIdWithKey(1, "1", true),
             ChangeAssetName.ofAssetKeyAndVariantId(1, "2", ofEnglish("new name"), true),
             SetAssetCustomType.ofVariantIdAndAssetKey(1, "2", null, true),
-            SetAssetCustomField.ofVariantIdAndAssetKey(1, "3", BOOLEAN_CUSTOM_FIELD_NAME,
+            SetAssetCustomField.ofVariantIdUsingJsonAndAssetKey(1, "3", BOOLEAN_CUSTOM_FIELD_NAME,
                 customFieldsJsonMap.get(BOOLEAN_CUSTOM_FIELD_NAME), true),
-            SetAssetCustomField.ofVariantIdAndAssetKey(1, "3", LOCALISED_STRING_CUSTOM_FIELD_NAME,
+            SetAssetCustomField.ofVariantIdUsingJsonAndAssetKey(1, "3", LOCALISED_STRING_CUSTOM_FIELD_NAME,
                 null, true),
             ChangeAssetOrder.ofVariantId(1, asList(assetsKeyToIdMap.get("3"), assetsKeyToIdMap.get("2")), true),
             AddAsset.ofVariantId(1, createAssetDraft("4", ofEnglish("4"), assetsCustomType.getId()))
@@ -335,7 +335,7 @@ public class ProductSyncWithAssetsIT {
     }
 
     @Test
-    public void sync_withMatchingProductWithDuplicateAssets_shouldFailToUpdateProductAndTriggerErrorCallback() {
+    void sync_withMatchingProductWithDuplicateAssets_shouldFailToUpdateProductAndTriggerErrorCallback() {
         final List<AssetDraft> assetDrafts = asList(
             createAssetDraft("4", ofEnglish("4"), ASSETS_CUSTOM_TYPE_KEY),
             createAssetDraft("4", ofEnglish("4"), ASSETS_CUSTOM_TYPE_KEY),
@@ -352,7 +352,7 @@ public class ProductSyncWithAssetsIT {
             executeBlocking(productSync.sync(singletonList(productDraft)));
 
         // Assert results of sync
-        assertThat(syncStatistics).hasValues(1, 0, 0, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 0, 0, 0);
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).matches("Failed to build update actions for the assets of the product "

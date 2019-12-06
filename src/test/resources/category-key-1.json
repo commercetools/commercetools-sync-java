@@ -3,12 +3,16 @@
   "name": {
     "en": "category-name-1"
   },
-  "key" : "categoryKey1",
+  "key": "categoryKey1",
   "slug": {
     "en": "category-slug-1"
   },
   "description": {
     "en": "description-1"
   },
-  "assets": []
+  "assets": [],
+  "parent": {
+    "id": "53c4a8b4-754f-4b95-b6f2-3e1e70e3d0c3",
+    "typeId": "category"
+  }
 }

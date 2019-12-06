@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.customergroups.CustomerGroup;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.PriceDraftBuilder;
@@ -247,14 +248,14 @@ public final class PriceDraftFixtures {
                                            @Nullable final ZonedDateTime validUntil,
                                            @Nullable final String channelId,
                                            @Nullable final CustomFieldsDraft customFieldsDraft) {
-
         return PriceDraftBuilder.of(Price.of(value, currencyUnits))
                                 .country(countryCode)
                                 .customerGroup(
                                     ofNullable(customerGroupId).map(CustomerGroup::referenceOfId).orElse(null))
                                 .validFrom(validFrom)
                                 .validUntil(validUntil)
-                                .channel(ofNullable(channelId).map(Channel::referenceOfId).orElse(null))
+                                .channel(ofNullable(channelId).map(ResourceIdentifier::<Channel>ofId)
+                                                              .orElse(null))
                                 .custom(customFieldsDraft)
                                 .build();
     }

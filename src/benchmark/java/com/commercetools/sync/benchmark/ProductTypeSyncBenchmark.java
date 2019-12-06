@@ -11,9 +11,9 @@ import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.queries.PagedQueryResult;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -42,20 +42,20 @@ import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ProductTypeSyncBenchmark {
+class ProductTypeSyncBenchmark {
 
     private ProductTypeSyncOptions productTypeSyncOptions;
     private List<String> errorCallBackMessages;
     private List<String> warningCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
 
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteProductTypes(CTP_TARGET_CLIENT);
     }
 
-    @Before
-    public void setupTest() {
+    @BeforeEach
+    void setupTest() {
         clearSyncTestCollections();
         deleteProductTypes(CTP_TARGET_CLIENT);
         productTypeSyncOptions = buildSyncOptions();
@@ -82,7 +82,7 @@ public class ProductTypeSyncBenchmark {
     }
 
     @Test
-    public void sync_NewProductTypes_ShouldCreateProductTypes() throws IOException {
+    void sync_NewProductTypes_ShouldCreateProductTypes() throws IOException {
         // preparation
         final List<ProductTypeDraft> productTypeDrafts = buildProductTypeDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
         final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
@@ -117,7 +117,7 @@ public class ProductTypeSyncBenchmark {
     }
 
     @Test
-    public void sync_ExistingProductTypes_ShouldUpdateProductTypes() throws IOException {
+    void sync_ExistingProductTypes_ShouldUpdateProductTypes() throws IOException {
         // preparation
         final List<ProductTypeDraft> productTypeDrafts = buildProductTypeDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
         // Create drafts to target project with different attribute definition name
@@ -175,7 +175,7 @@ public class ProductTypeSyncBenchmark {
     }
 
     @Test
-    public void sync_WithSomeExistingProductTypes_ShouldSyncProductTypes() throws IOException {
+    void sync_WithSomeExistingProductTypes_ShouldSyncProductTypes() throws IOException {
         // preparation
         final List<ProductTypeDraft> productTypeDrafts = buildProductTypeDrafts(NUMBER_OF_RESOURCE_UNDER_TEST);
         final int halfNumberOfDrafts = productTypeDrafts.size() / 2;

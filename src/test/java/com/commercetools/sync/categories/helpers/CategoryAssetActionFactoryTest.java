@@ -6,14 +6,14 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.commands.updateactions.AddAsset;
 import io.sphere.sdk.categories.commands.updateactions.ChangeAssetOrder;
 import io.sphere.sdk.categories.commands.updateactions.RemoveAsset;
+import io.sphere.sdk.categories.commands.updateactions.SetAssetTags;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.AssetDraftBuilder;
-import io.sphere.sdk.categories.commands.updateactions.SetAssetTags;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
 import java.util.List;
@@ -24,11 +24,11 @@ import static org.assertj.core.util.Lists.emptyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class CategoryAssetActionFactoryTest {
+class CategoryAssetActionFactoryTest {
     private CategoryAssetActionFactory categoryAssetActionFactory;
 
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class))
                                                                           .build();
 
@@ -36,7 +36,7 @@ public class CategoryAssetActionFactoryTest {
     }
 
     @Test
-    public void buildRemoveAssetAction_always_ShouldBuildCorrectAction() {
+    void buildRemoveAssetAction_always_ShouldBuildCorrectAction() {
         final UpdateAction<Category> action = categoryAssetActionFactory.buildRemoveAssetAction("foo");
         assertThat(action).isNotNull();
         assertThat(action).isInstanceOf(RemoveAsset.class);
@@ -46,7 +46,7 @@ public class CategoryAssetActionFactoryTest {
     }
 
     @Test
-    public void buildChangeAssetOrderAction_always_ShouldBuildCorrectAction() {
+    void buildChangeAssetOrderAction_always_ShouldBuildCorrectAction() {
         final UpdateAction<Category> action = categoryAssetActionFactory.buildChangeAssetOrderAction(emptyList());
         assertThat(action).isNotNull();
         assertThat(action).isInstanceOf(ChangeAssetOrder.class);
@@ -55,7 +55,7 @@ public class CategoryAssetActionFactoryTest {
     }
 
     @Test
-    public void buildAddAssetAction_always_ShouldBuildCorrectAction() {
+    void buildAddAssetAction_always_ShouldBuildCorrectAction() {
         final AssetDraft assetDraft = AssetDraftBuilder.of(emptyList(), ofEnglish("assetName"))
                                                        .build();
 
@@ -70,7 +70,7 @@ public class CategoryAssetActionFactoryTest {
     }
 
     @Test
-    public void buildAssetActions_always_ShouldBuildCorrectAction() {
+    void buildAssetActions_always_ShouldBuildCorrectAction() {
         final Asset asset = mock(Asset.class);
         when(asset.getKey()).thenReturn("assetKey");
         when(asset.getName()).thenReturn(ofEnglish("assetName"));

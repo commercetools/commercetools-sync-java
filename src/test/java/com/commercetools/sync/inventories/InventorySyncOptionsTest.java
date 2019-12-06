@@ -1,15 +1,15 @@
 package com.commercetools.sync.inventories;
 
 import io.sphere.sdk.client.SphereClient;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-public class InventorySyncOptionsTest {
+class InventorySyncOptionsTest {
 
     @Test
-    public void build_WithOnlyRequiredFieldsSet_ShouldReturnProperOptionsInstance() {
+    void build_WithOnlyRequiredFieldsSet_ShouldReturnProperOptionsInstance() {
         final InventorySyncOptions options = InventorySyncOptionsBuilder.of(mock(SphereClient.class)).build();
         assertThat(options).isNotNull();
         assertThat(options.getBatchSize()).isEqualTo(InventorySyncOptionsBuilder.BATCH_SIZE_DEFAULT);
@@ -17,7 +17,7 @@ public class InventorySyncOptionsTest {
     }
 
     @Test
-    public void build_WithAllFieldsSet_ShouldReturnProperOptionsInstance() {
+    void build_WithAllFieldsSet_ShouldReturnProperOptionsInstance() {
         final InventorySyncOptions options = InventorySyncOptionsBuilder.of(mock(SphereClient.class))
                 .batchSize(10)
                 .ensureChannels(true)
@@ -28,7 +28,7 @@ public class InventorySyncOptionsTest {
     }
 
     @Test
-    public void setBatchSize_WithZeroOrNegativePassed_ShouldNotSetBatchSize() {
+    void setBatchSize_WithZeroOrNegativePassed_ShouldNotSetBatchSize() {
         final InventorySyncOptionsBuilder builder = InventorySyncOptionsBuilder.of(mock(SphereClient.class));
         final InventorySyncOptions optionsWithZero = builder.batchSize(0).build();
         final InventorySyncOptions optionsWithNegative = builder.batchSize(-1).build();

@@ -13,8 +13,8 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.products.PriceDraftBuilder;
 import io.sphere.sdk.utils.MoneyImpl;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.Objects;
@@ -32,7 +32,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class PriceCustomerGroupReferenceResolverTest {
+class PriceCustomerGroupReferenceResolverTest {
     private static final String CUSTOMER_GROUP_KEY = "customer-group-key_1";
     private static final String CUSTOMER_GROUP_ID = "1";
 
@@ -42,8 +42,8 @@ public class PriceCustomerGroupReferenceResolverTest {
     /**
      * Sets up the services and the options needed for reference resolution.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         customerGroupService = getMockCustomerGroupService(getMockCustomerGroup(CUSTOMER_GROUP_ID, CUSTOMER_GROUP_KEY));
         ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
         referenceResolver = new PriceReferenceResolver(syncOptions, mock(TypeService.class), mock(ChannelService.class),
@@ -51,7 +51,7 @@ public class PriceCustomerGroupReferenceResolverTest {
     }
 
     @Test
-    public void resolveCustomerGroupReference_WithKeys_ShouldResolveReference() {
+    void resolveCustomerGroupReference_WithKeys_ShouldResolveReference() {
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
             .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .customerGroup(CustomerGroup.referenceOfId("anyKey"));
@@ -64,7 +64,7 @@ public class PriceCustomerGroupReferenceResolverTest {
     }
 
     @Test
-    public void resolveCustomerGroupReference_WithNullCustomerGroup_ShouldNotResolveReference() {
+    void resolveCustomerGroupReference_WithNullCustomerGroup_ShouldNotResolveReference() {
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
             .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR));
 
@@ -74,7 +74,7 @@ public class PriceCustomerGroupReferenceResolverTest {
     }
 
     @Test
-    public void resolveCustomerGroupReference_WithNonExistentCustomerGroup_ShouldNotResolveReference() {
+    void resolveCustomerGroupReference_WithNonExistentCustomerGroup_ShouldNotResolveReference() {
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
             .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .customerGroup(CustomerGroup.referenceOfId("nonExistentKey"));
@@ -89,7 +89,7 @@ public class PriceCustomerGroupReferenceResolverTest {
     }
 
     @Test
-    public void resolveCustomerGroupReference_WithNullIdOnCustomerGroupReference_ShouldNotResolveReference() {
+    void resolveCustomerGroupReference_WithNullIdOnCustomerGroupReference_ShouldNotResolveReference() {
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
             .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .customerGroup(Reference.of(CustomerGroup.referenceTypeId(), (String)null));
@@ -104,7 +104,7 @@ public class PriceCustomerGroupReferenceResolverTest {
     }
 
     @Test
-    public void resolveCustomerGroupReference_WithEmptyIdOnCustomerGroupReference_ShouldNotResolveReference() {
+    void resolveCustomerGroupReference_WithEmptyIdOnCustomerGroupReference_ShouldNotResolveReference() {
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
             .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .customerGroup(CustomerGroup.referenceOfId(""));
@@ -119,7 +119,7 @@ public class PriceCustomerGroupReferenceResolverTest {
     }
 
     @Test
-    public void resolveCustomerGroupReference_WithExceptionOnFetch_ShouldNotResolveReference() {
+    void resolveCustomerGroupReference_WithExceptionOnFetch_ShouldNotResolveReference() {
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
             .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .customerGroup(CustomerGroup.referenceOfId("CustomerGroupKey"));

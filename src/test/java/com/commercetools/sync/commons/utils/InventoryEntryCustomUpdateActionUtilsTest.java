@@ -9,9 +9,10 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.commands.updateactions.SetCustomField;
 import io.sphere.sdk.inventory.commands.updateactions.SetCustomType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
+import java.util.UUID;
 
 import static com.commercetools.sync.commons.asserts.actions.AssertionsForUpdateActions.assertThat;
 import static io.sphere.sdk.models.ResourceIdentifier.ofId;
@@ -19,11 +20,11 @@ import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
-public class InventoryEntryCustomUpdateActionUtilsTest {
+class InventoryEntryCustomUpdateActionUtilsTest {
 
     @Test
-    public void buildTypedSetCustomTypeUpdateAction_WithInventoryResource_ShouldBuildInventoryUpdateAction() {
-        final String newCustomTypeId = "key";
+    void buildTypedSetCustomTypeUpdateAction_WithInventoryResource_ShouldBuildInventoryUpdateAction() {
+        final String newCustomTypeId = UUID.randomUUID().toString();
 
         final UpdateAction<InventoryEntry> updateAction =
             GenericUpdateActionUtils.buildTypedSetCustomTypeUpdateAction(newCustomTypeId,
@@ -37,7 +38,7 @@ public class InventoryEntryCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildRemoveCustomTypeAction_WithInventoryResource_ShouldBuildChannelUpdateAction() {
+    void buildRemoveCustomTypeAction_WithInventoryResource_ShouldBuildChannelUpdateAction() {
         final UpdateAction<InventoryEntry> updateAction =
             new InventoryCustomActionBuilder().buildRemoveCustomTypeAction(null, null);
 
@@ -46,7 +47,7 @@ public class InventoryEntryCustomUpdateActionUtilsTest {
     }
 
     @Test
-    public void buildSetCustomFieldAction_WithInventoryResource_ShouldBuildInventoryUpdateAction() {
+    void buildSetCustomFieldAction_WithInventoryResource_ShouldBuildInventoryUpdateAction() {
         final JsonNode customFieldValue = JsonNodeFactory.instance.textNode("foo");
         final String customFieldName = "name";
 

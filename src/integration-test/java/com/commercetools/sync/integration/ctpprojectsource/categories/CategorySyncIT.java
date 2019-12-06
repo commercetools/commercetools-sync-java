@@ -14,11 +14,11 @@ import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.errors.DuplicateFieldError;
 import io.sphere.sdk.types.CustomFieldsDraft;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,7 +48,7 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class CategorySyncIT {
+class CategorySyncIT {
     private CategorySync categorySync;
 
     private List<String> callBackErrorResponses = new ArrayList<>();
@@ -59,8 +59,8 @@ public class CategorySyncIT {
      * Delete all categories and types from source and target project. Then create custom types for source and target
      * CTP project categories.
      */
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteAllCategories(CTP_SOURCE_CLIENT);
         deleteTypesFromTargetAndSource();
@@ -72,8 +72,8 @@ public class CategorySyncIT {
      * Deletes Categories and Types from source and target CTP projects, then it populates target CTP project with
      * category test data.
      */
-    @Before
-    public void setupTest() {
+    @BeforeEach
+    void setupTest() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteAllCategories(CTP_SOURCE_CLIENT);
 
@@ -97,15 +97,15 @@ public class CategorySyncIT {
     /**
      * Cleans up the target and source test data that were built in this test class.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteAllCategories(CTP_SOURCE_CLIENT);
         deleteTypesFromTargetAndSource();
     }
 
     @Test
-    public void syncDrafts_withChangesOnly_ShouldUpdateCategories() {
+    void syncDrafts_withChangesOnly_ShouldUpdateCategories() {
         createCategories(CTP_SOURCE_CLIENT, getCategoryDraftsWithPrefix(Locale.ENGLISH, "new",
             null, 2));
 
@@ -124,7 +124,7 @@ public class CategorySyncIT {
     }
 
     @Test
-    public void syncDrafts_withNewCategories_ShouldCreateCategories() {
+    void syncDrafts_withNewCategories_ShouldCreateCategories() {
         createCategories(CTP_SOURCE_CLIENT, getCategoryDraftsWithPrefix(Locale.ENGLISH, "new",
             null, 3));
 
@@ -142,9 +142,9 @@ public class CategorySyncIT {
         assertThat(callBackWarningResponses).isEmpty();
     }
 
-    @Ignore("TODO - GITHUB ISSUE#138: Test should be adjusted after reference resolution refactoring")
+    @Disabled("TODO - GITHUB ISSUE#138: Test should be adjusted after reference resolution refactoring")
     @Test
-    public void syncDrafts_WithUpdatedCategoriesWithoutReferenceKeys_ShouldNotSyncCategories() {
+    void syncDrafts_WithUpdatedCategoriesWithoutReferenceKeys_ShouldNotSyncCategories() {
         createCategories(CTP_SOURCE_CLIENT, getCategoryDraftsWithPrefix(Locale.ENGLISH, "new",
             null, 2));
 
@@ -188,7 +188,7 @@ public class CategorySyncIT {
 
     @Test
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
-    public void syncDrafts_withNewShuffledBatchOfCategories_ShouldCreateCategories() {
+    void syncDrafts_withNewShuffledBatchOfCategories_ShouldCreateCategories() {
         //-----------------Test Setup------------------------------------
         // Delete all categories in target project
         deleteAllCategories(CTP_TARGET_CLIENT);
@@ -229,7 +229,7 @@ public class CategorySyncIT {
 
     @Test
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
-    public void syncDrafts_withExistingShuffledCategoriesWithChangingCategoryHierarchy_ShouldUpdateCategories() {
+    void syncDrafts_withExistingShuffledCategoriesWithChangingCategoryHierarchy_ShouldUpdateCategories() {
         //-----------------Test Setup------------------------------------
         // Delete all categories in target project
         deleteAllCategories(CTP_TARGET_CLIENT);
@@ -283,7 +283,7 @@ public class CategorySyncIT {
 
     @Test
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
-    public void syncDrafts_withExistingCategoriesThatChangeParents_ShouldUpdateCategories() {
+    void syncDrafts_withExistingCategoriesThatChangeParents_ShouldUpdateCategories() {
         //-----------------Test Setup------------------------------------
         // Delete all categories in target project
         deleteAllCategories(CTP_TARGET_CLIENT);
@@ -326,7 +326,7 @@ public class CategorySyncIT {
 
     @Test
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
-    public void syncDrafts_withANonExistingNewParent_ShouldUpdateCategories() {
+    void syncDrafts_withANonExistingNewParent_ShouldUpdateCategories() {
         //-----------------Test Setup------------------------------------
         // Delete all categories in target project
         deleteAllCategories(CTP_TARGET_CLIENT);
@@ -394,7 +394,7 @@ public class CategorySyncIT {
     }
 
     @Test
-    public void syncDrafts_fromCategoriesWithoutKeys_ShouldNotUpdateCategories() {
+    void syncDrafts_fromCategoriesWithoutKeys_ShouldNotUpdateCategories() {
         final CategoryDraft oldCategoryDraft1 = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "cat1"), LocalizedString.of(Locale.ENGLISH, "furniture1"))
             .custom(getCustomFieldsDraft())

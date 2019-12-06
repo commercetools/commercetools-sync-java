@@ -180,7 +180,7 @@ public abstract class BaseSyncStatistics {
         latestBatchProcessingTimeInMillis = System.currentTimeMillis() - this.latestBatchStartTime;
         latestBatchProcessingTimeInDays = TimeUnit.MILLISECONDS.toDays(latestBatchProcessingTimeInMillis);
         latestBatchProcessingTimeInHours = TimeUnit.MILLISECONDS.toHours(latestBatchProcessingTimeInMillis);
-        latestBatchProcessingTimeInMinutes = TimeUnit.MILLISECONDS.toMinutes(latestBatchProcessingTimeInHours);
+        latestBatchProcessingTimeInMinutes = TimeUnit.MILLISECONDS.toMinutes(latestBatchProcessingTimeInMillis);
         latestBatchProcessingTimeInSeconds = TimeUnit.MILLISECONDS.toSeconds(latestBatchProcessingTimeInMillis);
     }
 
@@ -235,7 +235,7 @@ public abstract class BaseSyncStatistics {
 
     /**
      * Gets the number of hours it took to process.
-     * 
+     *
      * <p>Note: This method isn't thread-safe and shouldn't be used in a concurrent context.
      *
      * @return number of hours taken to process.

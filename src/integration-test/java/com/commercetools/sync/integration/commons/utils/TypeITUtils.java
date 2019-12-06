@@ -134,6 +134,5 @@ public final class TypeITUtils {
     }
 
     private TypeITUtils() {
-
     }
 }

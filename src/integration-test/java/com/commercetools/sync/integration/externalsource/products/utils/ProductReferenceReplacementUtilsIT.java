@@ -29,9 +29,9 @@ import io.sphere.sdk.taxcategories.TaxCategory;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.utils.MoneyImpl;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -54,8 +54,8 @@ import static com.commercetools.sync.integration.commons.utils.StateITUtils.crea
 import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.createTaxCategory;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.SUPPLY_CHANNEL_KEY_1;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceSetAttributeDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceWithId;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getReferenceSetAttributeDraft;
 import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.buildProductQuery;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
@@ -66,25 +66,25 @@ import static java.util.Collections.singletonList;
 import static java.util.Locale.ENGLISH;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ProductReferenceReplacementUtilsIT {
+class ProductReferenceReplacementUtilsIT {
     /**
      * Delete all product related test data from the target project.
      */
-    @BeforeClass
-    public static void setup() {
+    @BeforeAll
+    static void setup() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
 
     /**
      * Delete all product related test data from the target project.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteProductSyncTestData(CTP_TARGET_CLIENT);
     }
 
     @Test
-    public void buildProductQuery_Always_ShouldFetchProductWithAllExpandedReferences() {
+    void buildProductQuery_Always_ShouldFetchProductWithAllExpandedReferences() {
         final ProductType productType = createProductType(PRODUCT_TYPE_RESOURCE_PATH, CTP_TARGET_CLIENT);
         final TaxCategory taxCategory = createTaxCategory(CTP_TARGET_CLIENT);
         final State state = createState(CTP_TARGET_CLIENT, StateType.PRODUCT_STATE);
@@ -129,7 +129,7 @@ public class ProductReferenceReplacementUtilsIT {
         final AttributeDraft productRefAttr = AttributeDraft.of(attribute1Name,
             getProductReferenceWithId(parentProduct.getId()));
         final String attribute2Name = "product-reference-set";
-        final AttributeDraft productSetRefAttr = getProductReferenceSetAttributeDraft(attribute2Name,
+        final AttributeDraft productSetRefAttr = getReferenceSetAttributeDraft(attribute2Name,
             getProductReferenceWithId(parentProduct.getId()));
         final List<AttributeDraft> attributeDrafts = Arrays.asList(productRefAttr, productSetRefAttr);
 

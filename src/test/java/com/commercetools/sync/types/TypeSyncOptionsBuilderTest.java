@@ -7,7 +7,7 @@ import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
 import io.sphere.sdk.types.TypeDraftBuilder;
 import io.sphere.sdk.types.commands.updateactions.ChangeName;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,19 +25,19 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class TypeSyncOptionsBuilderTest {
+class TypeSyncOptionsBuilderTest {
 
     private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
     private TypeSyncOptionsBuilder typeSyncOptionsBuilder = TypeSyncOptionsBuilder.of(CTP_CLIENT);
 
     @Test
-    public void of_WithClient_ShouldCreateTypeSyncOptionsBuilder() {
+    void of_WithClient_ShouldCreateTypeSyncOptionsBuilder() {
         final TypeSyncOptionsBuilder builder = TypeSyncOptionsBuilder.of(CTP_CLIENT);
         assertThat(builder).isNotNull();
     }
 
     @Test
-    public void build_WithClient_ShouldBuildSyncOptions() {
+    void build_WithClient_ShouldBuildSyncOptions() {
         final TypeSyncOptions typeSyncOptions = typeSyncOptionsBuilder.build();
         assertThat(typeSyncOptions).isNotNull();
         assertThat(typeSyncOptions.getBeforeUpdateCallback()).isNull();
@@ -49,7 +49,7 @@ public class TypeSyncOptionsBuilderTest {
     }
 
     @Test
-    public void beforeUpdateCallback_WithFilterAsCallback_ShouldSetCallback() {
+    void beforeUpdateCallback_WithFilterAsCallback_ShouldSetCallback() {
         final TriFunction<List<UpdateAction<Type>>, TypeDraft, Type, List<UpdateAction<Type>>>
                 beforeUpdateCallback = (updateActions, newType, oldType) -> emptyList();
 
@@ -60,7 +60,7 @@ public class TypeSyncOptionsBuilderTest {
     }
 
     @Test
-    public void beforeCreateCallback_WithFilterAsCallback_ShouldSetCallback() {
+    void beforeCreateCallback_WithFilterAsCallback_ShouldSetCallback() {
         typeSyncOptionsBuilder.beforeCreateCallback((newType) -> null);
 
         final TypeSyncOptions typeSyncOptions = typeSyncOptionsBuilder.build();
@@ -68,7 +68,7 @@ public class TypeSyncOptionsBuilderTest {
     }
 
     @Test
-    public void errorCallBack_WithCallBack_ShouldSetCallBack() {
+    void errorCallBack_WithCallBack_ShouldSetCallBack() {
         final BiConsumer<String, Throwable> mockErrorCallBack = (errorMessage, errorException) -> {
         };
         typeSyncOptionsBuilder.errorCallback(mockErrorCallBack);
@@ -78,7 +78,7 @@ public class TypeSyncOptionsBuilderTest {
     }
 
     @Test
-    public void warningCallBack_WithCallBack_ShouldSetCallBack() {
+    void warningCallBack_WithCallBack_ShouldSetCallBack() {
         final Consumer<String> mockWarningCallBack = (warningMessage) -> {
         };
         typeSyncOptionsBuilder.warningCallback(mockWarningCallBack);
@@ -88,7 +88,7 @@ public class TypeSyncOptionsBuilderTest {
     }
 
     @Test
-    public void getThis_ShouldReturnCorrectInstance() {
+    void getThis_ShouldReturnCorrectInstance() {
         final TypeSyncOptionsBuilder instance = typeSyncOptionsBuilder.getThis();
         assertThat(instance).isNotNull();
         assertThat(instance).isInstanceOf(TypeSyncOptionsBuilder.class);
@@ -96,7 +96,7 @@ public class TypeSyncOptionsBuilderTest {
     }
 
     @Test
-    public void typeSyncOptionsBuilderSetters_ShouldBeCallableAfterBaseSyncOptionsBuildSetters() {
+    void typeSyncOptionsBuilderSetters_ShouldBeCallableAfterBaseSyncOptionsBuildSetters() {
         final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
                 .of(CTP_CLIENT)
                 .batchSize(30)
@@ -107,7 +107,7 @@ public class TypeSyncOptionsBuilderTest {
     }
 
     @Test
-    public void batchSize_WithPositiveValue_ShouldSetBatchSize() {
+    void batchSize_WithPositiveValue_ShouldSetBatchSize() {
         final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(CTP_CLIENT)
                 .batchSize(10)
                 .build();
@@ -115,7 +115,7 @@ public class TypeSyncOptionsBuilderTest {
     }
 
     @Test
-    public void batchSize_WithZeroOrNegativeValue_ShouldFallBackToDefaultValue() {
+    void batchSize_WithZeroOrNegativeValue_ShouldFallBackToDefaultValue() {
         final TypeSyncOptions typeSyncOptionsWithZeroBatchSize = TypeSyncOptionsBuilder.of(CTP_CLIENT)
                 .batchSize(0)
                 .build();
@@ -131,7 +131,7 @@ public class TypeSyncOptionsBuilderTest {
     }
 
     @Test
-    public void applyBeforeUpdateCallBack_WithNullCallback_ShouldReturnIdenticalList() {
+    void applyBeforeUpdateCallBack_WithNullCallback_ShouldReturnIdenticalList() {
         final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(CTP_CLIENT)
                 .build();
         assertThat(typeSyncOptions.getBeforeUpdateCallback()).isNull();
@@ -145,7 +145,7 @@ public class TypeSyncOptionsBuilderTest {
     }
 
     @Test
-    public void applyBeforeUpdateCallBack_WithNullReturnCallback_ShouldReturnEmptyList() {
+    void applyBeforeUpdateCallBack_WithNullReturnCallback_ShouldReturnEmptyList() {
         final TriFunction<List<UpdateAction<Type>>, TypeDraft, Type, List<UpdateAction<Type>>>
                 beforeUpdateCallback = (updateActions, newType, oldType) -> null;
         final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(CTP_CLIENT)
@@ -166,7 +166,7 @@ public class TypeSyncOptionsBuilderTest {
     }
 
     @Test
-    public void applyBeforeUpdateCallBack_WithEmptyUpdateActions_ShouldNotApplyBeforeUpdateCallback() {
+    void applyBeforeUpdateCallBack_WithEmptyUpdateActions_ShouldNotApplyBeforeUpdateCallback() {
         final MockTriFunction beforeUpdateCallback = mock(MockTriFunction.class);
 
         final TypeSyncOptions typeSyncOptions =
@@ -185,7 +185,7 @@ public class TypeSyncOptionsBuilderTest {
     }
 
     @Test
-    public void applyBeforeUpdateCallBack_WithCallback_ShouldReturnFilteredList() {
+    void applyBeforeUpdateCallBack_WithCallback_ShouldReturnFilteredList() {
         final TriFunction<List<UpdateAction<Type>>, TypeDraft, Type, List<UpdateAction<Type>>>
                 beforeUpdateCallback = (updateActions, newType, oldType) -> emptyList();
 
@@ -203,7 +203,7 @@ public class TypeSyncOptionsBuilderTest {
     }
 
     @Test
-    public void applyBeforeCreateCallBack_WithCallback_ShouldReturnFilteredDraft() {
+    void applyBeforeCreateCallBack_WithCallback_ShouldReturnFilteredDraft() {
         final Function<TypeDraft, TypeDraft> draftFunction =
             typeDraft -> TypeDraftBuilder.of(typeDraft).key(typeDraft.getKey() + "_filteredKey").build();
 
@@ -224,7 +224,7 @@ public class TypeSyncOptionsBuilderTest {
     }
 
     @Test
-    public void applyBeforeCreateCallBack_WithNullCallback_ShouldReturnIdenticalDraftInOptional() {
+    void applyBeforeCreateCallBack_WithNullCallback_ShouldReturnIdenticalDraftInOptional() {
         final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(CTP_CLIENT).build();
         assertThat(typeSyncOptions.getBeforeCreateCallback()).isNull();
 
@@ -235,7 +235,7 @@ public class TypeSyncOptionsBuilderTest {
     }
 
     @Test
-    public void applyBeforeCreateCallBack_WithCallbackReturningNull_ShouldReturnEmptyOptional() {
+    void applyBeforeCreateCallBack_WithCallbackReturningNull_ShouldReturnEmptyOptional() {
         final Function<TypeDraft, TypeDraft> draftFunction = typeDraft -> null;
         final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(CTP_CLIENT)
                 .beforeCreateCallback(draftFunction)

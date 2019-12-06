@@ -1,7 +1,7 @@
 package com.commercetools.sync.commons.utils;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,16 +20,16 @@ import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.entry;
 
-public class CollectionUtilsTest {
+class CollectionUtilsTest {
 
     @Test
-    public void filterCollection_emptyCases() throws Exception {
+    void filterCollection_emptyCases() {
         assertThat(filterCollection(null, i -> true)).isEmpty();
         assertThat(filterCollection(Collections.emptyList(), i -> true)).isEmpty();
     }
 
     @Test
-    public void filterCollection_normalCases() throws Exception {
+    void filterCollection_normalCases() {
         List<String> abcd = asList("a", "b", "c", "d");
         assertThat(filterCollection(abcd, s -> true)).containsExactlyInAnyOrder("a", "b", "c", "d");
         assertThat(filterCollection(abcd, s -> false)).isEmpty();
@@ -37,7 +37,7 @@ public class CollectionUtilsTest {
     }
 
     @Test
-    public void filterCollection_duplicates() throws Exception {
+    void filterCollection_duplicates() {
         List<String> abcd = asList("a", "b", "c", "d", "d", "c", "g", "a");
         assertThat(filterCollection(abcd, s -> true)).containsExactlyInAnyOrder("a", "a", "b", "c", "c", "d", "d", "g");
         assertThat(filterCollection(abcd, s -> false)).isEmpty();
@@ -45,13 +45,13 @@ public class CollectionUtilsTest {
     }
 
     @Test
-    public void collectionToSet_emptyCases() throws Exception {
+    void collectionToSet_emptyCases() {
         assertThat(collectionToSet(null, i -> i)).isEmpty();
         assertThat(collectionToSet(Collections.emptyList(), i -> i)).isEmpty();
     }
 
     @Test
-    public void collectionToSet_normalCases() throws Exception {
+    void collectionToSet_normalCases() {
         List<Pair<String, Integer>> abcd = asList(
                 Pair.of("a", 1), Pair.of("b", 2), Pair.of("c", 3), Pair.of("d", 4));
         assertThat(collectionToSet(abcd, Pair::getKey)).containsExactlyInAnyOrder("a", "b", "c", "d");
@@ -59,7 +59,7 @@ public class CollectionUtilsTest {
     }
 
     @Test
-    public void collectionToSet_duplicates() throws Exception {
+    void collectionToSet_duplicates() {
         List<Pair<String, Integer>> abcd = asList(
                 Pair.of("a", 1), Pair.of("b", 2), Pair.of("c", 3), Pair.of("d", 4), Pair.of("d", 5), Pair.of("b", 6));
         // 2 duplicate keys should be suppressed
@@ -69,7 +69,7 @@ public class CollectionUtilsTest {
     }
 
     @Test
-    public void collectionToMap_emptyCases() throws Exception {
+    void collectionToMap_emptyCases() {
         assertThat(collectionToMap(null, k -> k)).isEmpty();
         assertThat(collectionToMap(null, k -> k, v -> v)).isEmpty();
         assertThat(collectionToMap(Collections.emptyList(), k -> k)).isEmpty();
@@ -77,7 +77,7 @@ public class CollectionUtilsTest {
     }
 
     @Test
-    public void collectionToMap_normalCases() throws Exception {
+    void collectionToMap_normalCases() {
         List<Pair<String, Integer>> abcd = asList(
                 Pair.of("a", 1), Pair.of("b", 2), Pair.of("c", 3), Pair.of("d", 4));
 
@@ -97,7 +97,7 @@ public class CollectionUtilsTest {
     }
 
     @Test
-    public void collectionToMap_duplicates() throws Exception {
+    void collectionToMap_duplicates() {
         List<Pair<String, Integer>> abcd = asList(
                 Pair.of("a", 1), Pair.of("b", 2), Pair.of("c", 3), Pair.of("d", 4), Pair.of("d", 5), Pair.of("b", 6));
 
@@ -117,7 +117,7 @@ public class CollectionUtilsTest {
     }
 
     @Test
-    public void emptyIfNull_withNullInstances_returnsNonNullInstances() {
+    void emptyIfNull_withNullInstances_returnsNonNullInstances() {
         Collection<String> nonNullEmptyCollection = emptyIfNull((Collection<String>)null);
         assertThat(nonNullEmptyCollection).isNotNull();
         assertThat(nonNullEmptyCollection).isEmpty();
@@ -136,7 +136,7 @@ public class CollectionUtilsTest {
     }
 
     @Test
-    public void emptyIfNull_withArrayList_returnsSameInstance() {
+    void emptyIfNull_withArrayList_returnsSameInstance() {
         ArrayList<String> arrayListCollection = new ArrayList<>();
         arrayListCollection.add("a");
         arrayListCollection.add("b");
@@ -147,7 +147,7 @@ public class CollectionUtilsTest {
     }
 
     @Test
-    public void emptyIfNull_withHashSet_returnsSameInstance() {
+    void emptyIfNull_withHashSet_returnsSameInstance() {
         HashSet<String> arrayListCollection = new HashSet<>();
         arrayListCollection.add("woot");
         arrayListCollection.add("hack");
@@ -158,7 +158,7 @@ public class CollectionUtilsTest {
     }
 
     @Test
-    public void emptyIfNull_withListInstances_returnsNonNullList() {
+    void emptyIfNull_withListInstances_returnsNonNullList() {
         List<String> originalListToTest = asList("a", "b");
 
         List<String> actualListToTest = emptyIfNull(originalListToTest);
@@ -167,7 +167,7 @@ public class CollectionUtilsTest {
     }
 
     @Test
-    public void emptyIfNull_withMapInstances_returnsNonNullMap() {
+    void emptyIfNull_withMapInstances_returnsNonNullMap() {
         Map<String, Integer> mapToTest = new HashMap<>();
         mapToTest.put("X", 10);
         mapToTest.put("Y", 11);

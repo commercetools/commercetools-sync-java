@@ -10,9 +10,9 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,14 +26,14 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class ProductTypeSyncIT {
+class ProductTypeSyncIT {
 
     /**
      * Deletes product types from source and target CTP projects.
      * Populates source and target CTP projects with test data.
      */
-    @Before
-    public void setup() {
+    @BeforeEach
+    void setup() {
         deleteProductTypesFromTargetAndSource();
         populateSourceProject();
         populateTargetProject();
@@ -43,13 +43,13 @@ public class ProductTypeSyncIT {
      * Deletes all the test data from the {@code CTP_SOURCE_CLIENT} and the {@code CTP_SOURCE_CLIENT} projects that
      * were set up in this test class.
      */
-    @AfterClass
-    public static void tearDown() {
+    @AfterAll
+    static void tearDown() {
         deleteProductTypesFromTargetAndSource();
     }
 
     @Test
-    public void sync_WithoutUpdates_ShouldReturnProperStatistics() {
+    void sync_WithoutUpdates_ShouldReturnProperStatistics() {
         // preparation
         final List<ProductType> productTypes = CTP_SOURCE_CLIENT
             .execute(ProductTypeQuery.of())
@@ -82,15 +82,16 @@ public class ProductTypeSyncIT {
         // assertion
         assertThat(errorMessages).isEmpty();
         assertThat(exceptions).isEmpty();
-        assertThat(productTypeSyncStatistics).hasValues(2, 1, 0, 0);
+        assertThat(productTypeSyncStatistics).hasValues(2, 1, 0, 0, 0);
         assertThat(productTypeSyncStatistics
             .getReportMessage())
             .isEqualTo("Summary: 2 product types were processed in total"
-                + " (1 created, 0 updated and 0 failed to sync).");
+                + " (1 created, 0 updated, 0 failed to sync and 0 product types with at least one NestedType or a Set"
+                + " of NestedType attribute definition(s) referencing a missing product type).");
     }
 
     @Test
-    public void sync_WithUpdates_ShouldReturnProperStatistics() {
+    void sync_WithUpdates_ShouldReturnProperStatistics() {
         // preparation
         final List<ProductType> productTypes = CTP_SOURCE_CLIENT
             .execute(ProductTypeQuery.of())
@@ -136,10 +137,11 @@ public class ProductTypeSyncIT {
         // assertion
         assertThat(errorMessages).isEmpty();
         assertThat(exceptions).isEmpty();
-        assertThat(productTypeSyncStatistics).hasValues(2, 1, 1, 0);
+        assertThat(productTypeSyncStatistics).hasValues(2, 1, 1, 0, 0);
         assertThat(productTypeSyncStatistics
             .getReportMessage())
             .isEqualTo("Summary: 2 product types were processed in total"
-                + " (1 created, 1 updated and 0 failed to sync).");
+                + " (1 created, 1 updated, 0 failed to sync and 0 product types with at least one NestedType or a Set"
+                + " of NestedType attribute definition(s) referencing a missing product type).");
     }
 }
