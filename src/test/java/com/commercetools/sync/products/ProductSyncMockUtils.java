@@ -1,5 +1,6 @@
 package com.commercetools.sync.products;
 
+import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
@@ -45,10 +46,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -64,6 +68,7 @@ public class ProductSyncMockUtils {
     public static final String PRODUCT_WITH_VARS_RESOURCE_PATH = "product-with-variants.json";
     public static final String PRODUCT_NO_VARS_RESOURCE_PATH = "product-with-no-variants.json";
     public static final String PRODUCT_TYPE_RESOURCE_PATH = "product-type.json";
+    public static final String PRODUCT_TYPE_WITH_REFERENCES_RESOURCE_PATH = "product-type-with-references.json";
     public static final String PRODUCT_TYPE_NO_KEY_RESOURCE_PATH = "product-type-no-key.json";
     public static final String CATEGORY_KEY_1_RESOURCE_PATH = "category-key-1.json";
 
@@ -92,7 +97,7 @@ public class ProductSyncMockUtils {
      * @param jsonResourcePath     the path of the JSON resource to build the product draft from.
      * @param productTypeReference the reference of the product type that the product draft belongs to.
      * @return a {@link ProductDraftBuilder} instance containing the data from the current projection of the specified
-     *          JSON resource and the product type.
+     *         JSON resource and the product type.
      */
     public static ProductDraftBuilder createProductDraftBuilder(@Nonnull final String jsonResourcePath,
                                                                 @Nonnull final Reference<ProductType>
@@ -268,7 +273,8 @@ public class ProductSyncMockUtils {
 
     /**
      * Creates a mock {@link CustomerGroup} with the supplied {@code id} and {@code key}.
-     * @param id the id of the created mock {@link CustomerGroup}.
+     *
+     * @param id  the id of the created mock {@link CustomerGroup}.
      * @param key the key of the created mock {@link CustomerGroup}.
      * @return a mock customerGroup with the supplied id and key.
      */
@@ -314,13 +320,29 @@ public class ProductSyncMockUtils {
     }
 
     /**
+     * Creates a mock {@link CategoryService} that returns a completed {@link CompletableFuture} containing an
+     * {@link Optional} containing the id of the supplied value whenever the following method is called on the service:
+     * <ul>
+     * <li>{@link CategoryService#fetchCachedCategoryId(String)}</li>
+     * </ul>
+     *
+     * @return the created mock of the {@link CategoryService}.
+     */
+    public static CategoryService getMockCategoryService(@Nonnull final String id) {
+        final CategoryService categoryService = mock(CategoryService.class);
+        when(categoryService.fetchCachedCategoryId(any()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.of(id)));
+        return categoryService;
+    }
+
+    /**
      * Creates a mock {@link Price} with the supplied {@link Channel} {@link Reference} and custom {@link Type}
      * {@link Reference}.
      *
      * <p>If the supplied {@code customTypeReference} is {@code null}, no custom fields are stubbed on the
      * resulting price mock.
      *
-     * @param channelReference the channel reference to attach on the mock {@link Price}.
+     * @param channelReference    the channel reference to attach on the mock {@link Price}.
      * @param customTypeReference the custom type reference to attach on the mock {@link Price}.
      * @return a mock price with the supplied references.
      */
@@ -343,6 +365,7 @@ public class ProductSyncMockUtils {
 
     /**
      * Creates a mock {@link ProductVariant} with the supplied {@link Price} {@link List}.
+     *
      * @param prices the prices to attach on the mock {@link ProductVariant}.
      * @return a mock product variant with the supplied prices.
      */
@@ -355,6 +378,7 @@ public class ProductSyncMockUtils {
 
     /**
      * Creates a mock {@link ProductVariant} with the supplied {@link Price} and {@link Asset} {@link List}.
+     *
      * @param prices the prices to attach on the mock {@link ProductVariant}.
      * @param assets the assets to attach on the mock {@link ProductVariant}.
      * @return a mock product variant with the supplied prices and assets.
@@ -370,6 +394,7 @@ public class ProductSyncMockUtils {
 
     /**
      * Creates a mock {@link Channel} with the supplied {@code key}..
+     *
      * @param key the key to to set on the mock {@link Channel}.
      * @return a mock channel with the supplied key.
      */
@@ -383,13 +408,14 @@ public class ProductSyncMockUtils {
 
     /**
      * Creates an {@link AttributeDraft} with the supplied {@code attributeName} and {@code references}.
+     *
      * @param attributeName the name to set on the {@link AttributeDraft}.
-     * @param references the references to set on the {@link AttributeDraft}.
+     * @param references    the references to set on the {@link AttributeDraft}.
      * @return an {@link AttributeDraft} with the supplied {@code attributeName} and {@code references}.
      */
     @Nonnull
-    public static AttributeDraft getProductReferenceSetAttributeDraft(@Nonnull final String attributeName,
-                                                                      @Nonnull final ObjectNode... references) {
+    public static AttributeDraft getReferenceSetAttributeDraft(@Nonnull final String attributeName,
+                                                               @Nonnull final ObjectNode... references) {
         final ArrayNode referenceSet = JsonNodeFactory.instance.arrayNode();
         referenceSet.addAll(Arrays.asList(references));
         return AttributeDraft.of(attributeName, referenceSet);
@@ -397,6 +423,7 @@ public class ProductSyncMockUtils {
 
     /**
      * Creates an {@link ObjectNode} that represents a product reference with a random uuid in the id field.
+     *
      * @return an {@link ObjectNode} that represents a product reference with a random uuid in the id field.
      */
     @Nonnull
@@ -409,14 +436,27 @@ public class ProductSyncMockUtils {
 
     /**
      * Creates an {@link ObjectNode} that represents a product reference with the  supplied {@code id} in the id field.
+     *
      * @return an {@link ObjectNode} that represents a product reference with the  supplied {@code id} in the id field.
      */
     @Nonnull
     public static ObjectNode getProductReferenceWithId(@Nonnull final String id) {
-        final ObjectNode productReference = JsonNodeFactory.instance.objectNode();
-        productReference.put("typeId", "product");
-        productReference.put("id", id);
-        return productReference;
+        return createReferenceObject(id, Product.referenceTypeId());
+    }
+
+    /**
+     * Creates an {@link ObjectNode} that represents a reference with the  supplied {@code id} in the id field and
+     * {@code typeId} field in the typeId field.
+     *
+     * @return an {@link ObjectNode} that represents a product reference with the  supplied {@code id} in the id field
+     *         and {@code typeId} field in the typeId field.
+     */
+    @Nonnull
+    public static ObjectNode createReferenceObject(@Nonnull final String id, @Nonnull final String typeId) {
+        final ObjectNode reference = JsonNodeFactory.instance.objectNode();
+        reference.put(REFERENCE_TYPE_ID_FIELD, typeId);
+        reference.put(REFERENCE_ID_FIELD, id);
+        return reference;
     }
 
     @Nonnull
@@ -424,7 +464,7 @@ public class ProductSyncMockUtils {
         return ProductDraftBuilder.of(ProductType.referenceOfId(refId),
             LocalizedString.ofEnglish("testName"),
             LocalizedString.ofEnglish("testSlug"),
-            (ProductVariantDraft)null);
+            (ProductVariantDraft) null);
     }
 
     @Nonnull
@@ -438,6 +478,6 @@ public class ProductSyncMockUtils {
         return ProductDraftBuilder.of(reference,
             LocalizedString.ofEnglish("testName"),
             LocalizedString.ofEnglish("testSlug"),
-            (ProductVariantDraft)null);
+            (ProductVariantDraft) null);
     }
 }

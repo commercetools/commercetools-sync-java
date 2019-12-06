@@ -1,0 +1,39 @@
+{
+  "key": "key",
+  "sku": "sku",
+  "attributes": [
+    {
+      "name": "attribute-name",
+      "value": [
+        {
+          "value": [
+            {
+              "id": "nonExistingProductTypeKey1",
+              "typeId": "product-type"
+            },
+            {
+              "id": "key1",
+              "typeId": "product-type"
+            }
+          ],
+          "name": "nested-attribute-1-name"
+        },
+        {
+          "value": {
+            "id": "key1",
+            "typeId": "product-type"
+          },
+          "name": "nested-attribute-2-name"
+        },
+        {
+          "value": {
+            "id": "nonExistingProductTypeKey3",
+            "typeId": "product-type"
+          },
+          "name": "nested-attribute-3-name"
+        }
+      ]
+    }
+  ]
+}
+

@@ -9,11 +9,14 @@ import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.services.UnresolvedReferencesService;
 import com.commercetools.sync.services.impl.ProductServiceImpl;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import org.junit.jupiter.api.Test;
@@ -31,6 +34,8 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_2_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
+import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
@@ -44,9 +49,41 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 class ProductSyncTest {
+
+    @Test
+    void sync_WithNoValidDrafts_ShouldCompleteWithoutAnyProcessing() {
+        // preparation
+        final SphereClient ctpClient = mock(SphereClient.class);
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder
+            .of(ctpClient)
+            .build();
+
+        final ProductService productService = mock(ProductService.class);
+        final ProductSync productSync = new ProductSync(productSyncOptions, productService,
+            mock(ProductTypeService.class), mock(CategoryService.class), mock(TypeService.class),
+            mock(ChannelService.class), mock(CustomerGroupService.class), mock(TaxCategoryService.class),
+            mock(StateService.class),
+            mock(UnresolvedReferencesService.class));
+
+        final ProductDraft productDraftWithoutKey = ProductDraftBuilder
+            .of(ResourceIdentifier.ofKey("productTypeKey"), ofEnglish("name"), ofEnglish("slug"), emptyList())
+            .build();
+
+        // test
+        final ProductSyncStatistics statistics = productSync
+            .sync(singletonList(productDraftWithoutKey))
+            .toCompletableFuture()
+            .join();
+
+        // assertion
+        verifyZeroInteractions(ctpClient);
+        verifyZeroInteractions(productService);
+        assertThat(statistics).hasValues(1, 0, 0, 1, 0);
+    }
 
     @Test
     void sync_WithErrorCachingKeys_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
@@ -85,7 +122,8 @@ class ProductSyncTest {
         final ProductSync productSync = new ProductSync(syncOptions, productService,
             productTypeService, categoryService, mock(TypeService.class),
             mock(ChannelService.class), mock(CustomerGroupService.class), mock(TaxCategoryService.class),
-            mock(StateService.class));
+            mock(StateService.class),
+            mock(UnresolvedReferencesService.class));
 
         // test
         final ProductSyncStatistics productSyncStatistics = productSync
@@ -96,7 +134,7 @@ class ProductSyncTest {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).contains("Failed to build a cache of keys to ids.")
+                assertThat(message).contains("Failed to build a cache of product keys to ids.")
             );
 
         assertThat(exceptions)
@@ -149,7 +187,8 @@ class ProductSyncTest {
         final ProductSync productSync = new ProductSync(syncOptions, productService,
                 productTypeService, categoryService, mock(TypeService.class),
                 mock(ChannelService.class), mock(CustomerGroupService.class), mock(TaxCategoryService.class),
-                mock(StateService.class));
+                mock(StateService.class),
+            mock(UnresolvedReferencesService.class));
 
         // test
         final ProductSyncStatistics productSyncStatistics = productSync
@@ -203,7 +242,8 @@ class ProductSyncTest {
         final ProductSync productSync = new ProductSync(spyProductSyncOptions, productService,
             productTypeService, categoryService, mock(TypeService.class),
             mock(ChannelService.class), mock(CustomerGroupService.class), mock(TaxCategoryService.class),
-            mock(StateService.class));
+            mock(StateService.class),
+            mock(UnresolvedReferencesService.class));
 
         // test
         productSync.sync(singletonList(productDraft)).toCompletableFuture().join();
@@ -252,7 +292,8 @@ class ProductSyncTest {
         final ProductSync productSync = new ProductSync(spyProductSyncOptions, productService,
             productTypeService, categoryService, mock(TypeService.class),
             mock(ChannelService.class), mock(CustomerGroupService.class), mock(TaxCategoryService.class),
-            mock(StateService.class));
+            mock(StateService.class),
+            mock(UnresolvedReferencesService.class));
 
         // test
         productSync.sync(singletonList(productDraft)).toCompletableFuture().join();

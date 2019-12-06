@@ -159,7 +159,7 @@ class ProductSyncWithAssetsIT {
         final ProductSyncStatistics syncStatistics =
             executeBlocking(productSync.sync(singletonList(productDraft)));
 
-        assertThat(syncStatistics).hasValues(1, 1, 0, 0);
+        assertThat(syncStatistics).hasValues(1, 1, 0, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -190,7 +190,7 @@ class ProductSyncWithAssetsIT {
             executeBlocking(productSync.sync(singletonList(productDraft)));
 
         // Assert results of sync
-        assertThat(syncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(updateActionsFromSync).isEmpty();
         assertThat(errorCallBackMessages).hasSize(1);
@@ -234,7 +234,7 @@ class ProductSyncWithAssetsIT {
             executeBlocking(productSync.sync(singletonList(productDraft)));
 
         // Assert results of sync
-        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -250,9 +250,9 @@ class ProductSyncWithAssetsIT {
             RemoveAsset.ofVariantIdWithKey(1, "1", true),
             ChangeAssetName.ofAssetKeyAndVariantId(1, "2", ofEnglish("new name"), true),
             SetAssetCustomType.ofVariantIdAndAssetKey(1, "2", null, true),
-            SetAssetCustomField.ofVariantIdAndAssetKey(1, "3", BOOLEAN_CUSTOM_FIELD_NAME,
+            SetAssetCustomField.ofVariantIdUsingJsonAndAssetKey(1, "3", BOOLEAN_CUSTOM_FIELD_NAME,
                 customFieldsJsonMap.get(BOOLEAN_CUSTOM_FIELD_NAME), true),
-            SetAssetCustomField.ofVariantIdAndAssetKey(1, "3", LOCALISED_STRING_CUSTOM_FIELD_NAME,
+            SetAssetCustomField.ofVariantIdUsingJsonAndAssetKey(1, "3", LOCALISED_STRING_CUSTOM_FIELD_NAME,
                 null, true),
             ChangeAssetOrder.ofVariantId(1, asList(assetsKeyToIdMap.get("3"), assetsKeyToIdMap.get("2")), true),
             AddAsset.ofVariantId(1, createAssetDraft("4", ofEnglish("4"), assetsCustomType.getId()))
@@ -293,7 +293,7 @@ class ProductSyncWithAssetsIT {
             executeBlocking(productSync.sync(singletonList(productDraft)));
 
         // Assert results of sync
-        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -316,9 +316,9 @@ class ProductSyncWithAssetsIT {
             RemoveAsset.ofVariantIdWithKey(1, "1", true),
             ChangeAssetName.ofAssetKeyAndVariantId(1, "2", ofEnglish("new name"), true),
             SetAssetCustomType.ofVariantIdAndAssetKey(1, "2", null, true),
-            SetAssetCustomField.ofVariantIdAndAssetKey(1, "3", BOOLEAN_CUSTOM_FIELD_NAME,
+            SetAssetCustomField.ofVariantIdUsingJsonAndAssetKey(1, "3", BOOLEAN_CUSTOM_FIELD_NAME,
                 customFieldsJsonMap.get(BOOLEAN_CUSTOM_FIELD_NAME), true),
-            SetAssetCustomField.ofVariantIdAndAssetKey(1, "3", LOCALISED_STRING_CUSTOM_FIELD_NAME,
+            SetAssetCustomField.ofVariantIdUsingJsonAndAssetKey(1, "3", LOCALISED_STRING_CUSTOM_FIELD_NAME,
                 null, true),
             ChangeAssetOrder.ofVariantId(1, asList(assetsKeyToIdMap.get("3"), assetsKeyToIdMap.get("2")), true),
             AddAsset.ofVariantId(1, createAssetDraft("4", ofEnglish("4"), assetsCustomType.getId()))
@@ -352,7 +352,7 @@ class ProductSyncWithAssetsIT {
             executeBlocking(productSync.sync(singletonList(productDraft)));
 
         // Assert results of sync
-        assertThat(syncStatistics).hasValues(1, 0, 0, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 0, 0, 0);
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).matches("Failed to build update actions for the assets of the product "

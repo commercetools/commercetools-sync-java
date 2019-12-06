@@ -319,6 +319,9 @@ public final class CustomUpdateActionUtils {
      * value or the addition of a new one. It returns a {@link List}&lt;{@link UpdateAction}&gt; as a result.
      * If no update action is needed an empty {@link List}&lt;{@link UpdateAction}&gt; is returned.
      *
+     * <p>Note: Null value custom fields are filtered out. In other words,
+     * no update actions would be built for fields with null values.
+     *
      * @param <T>                    the type of the old {@link Resource} which has the custom fields.
      * @param <U>                    the type of the resource in which the update actions will be applied on.
      * @param oldCustomFields        the old resource's custom fields map of JSON values.
@@ -333,7 +336,8 @@ public final class CustomUpdateActionUtils {
      *         needed.
      */
     @Nonnull
-    static <T extends Custom, U extends Resource<U>> List<UpdateAction<U>> buildNewOrModifiedCustomFieldsUpdateActions(
+    private static <T extends Custom, U extends Resource<U>> List<UpdateAction<U>>
+        buildNewOrModifiedCustomFieldsUpdateActions(
         @Nonnull final Map<String, JsonNode> oldCustomFields,
         @Nonnull final Map<String, JsonNode> newCustomFields,
         @Nonnull final T resource,
@@ -341,13 +345,24 @@ public final class CustomUpdateActionUtils {
         @Nullable final Integer variantId,
         @Nonnull final Function<T, String> updateIdGetter) {
 
-        return newCustomFields.keySet().stream()
-                              .filter(newCustomFieldName -> !Objects.equals(newCustomFields.get(newCustomFieldName),
-                                  oldCustomFields.get(newCustomFieldName)))
-                              .map(newCustomFieldName -> customActionBuilder.buildSetCustomFieldAction(variantId,
-                                  updateIdGetter.apply(resource), newCustomFieldName,
-                                  newCustomFields.get(newCustomFieldName)))
-                              .collect(Collectors.toList());
+        return newCustomFields
+            .keySet()
+            .stream()
+            .filter(newCustomFieldName -> {
+                final JsonNode newCustomFieldValue = newCustomFields.get(newCustomFieldName);
+                final JsonNode oldCustomFieldValue = oldCustomFields.get(newCustomFieldName);
+
+                return !isNullJsonValue(newCustomFieldValue)
+                    && !Objects.equals(newCustomFieldValue, oldCustomFieldValue);
+            })
+            .map(newCustomFieldName -> customActionBuilder.buildSetCustomFieldAction(variantId,
+                updateIdGetter.apply(resource), newCustomFieldName,
+                newCustomFields.get(newCustomFieldName)))
+            .collect(Collectors.toList());
+    }
+
+    private static boolean isNullJsonValue(@Nullable final JsonNode value) {
+        return !Objects.nonNull(value) || value.isNull();
     }
 
     /**
@@ -370,7 +385,8 @@ public final class CustomUpdateActionUtils {
      *         needed.
      */
     @Nonnull
-    static <T extends Custom, U extends Resource<U>> List<UpdateAction<U>> buildRemovedCustomFieldsUpdateActions(
+    private static <T extends Custom, U extends Resource<U>> List<UpdateAction<U>>
+        buildRemovedCustomFieldsUpdateActions(
         @Nonnull final Map<String, JsonNode> oldCustomFields,
         @Nonnull final Map<String, JsonNode> newCustomFields,
         @Nonnull final T resource,
@@ -378,11 +394,13 @@ public final class CustomUpdateActionUtils {
         @Nullable final Integer variantId,
         @Nonnull final Function<T, String> updateIdGetter) {
 
-        return oldCustomFields.keySet().stream()
-                              .filter(oldCustomFieldsName -> Objects.isNull(newCustomFields.get(oldCustomFieldsName)))
-                              .map(oldCustomFieldsName -> customActionBuilder.buildSetCustomFieldAction(variantId,
-                                  updateIdGetter.apply(resource), oldCustomFieldsName, null))
-                              .collect(Collectors.toList());
+        return oldCustomFields
+            .keySet()
+            .stream()
+            .filter(oldCustomFieldsName -> isNullJsonValue(newCustomFields.get(oldCustomFieldsName)))
+            .map(oldCustomFieldsName -> customActionBuilder.buildSetCustomFieldAction(variantId,
+                updateIdGetter.apply(resource), oldCustomFieldsName, null))
+            .collect(Collectors.toList());
     }
 
     private CustomUpdateActionUtils() {

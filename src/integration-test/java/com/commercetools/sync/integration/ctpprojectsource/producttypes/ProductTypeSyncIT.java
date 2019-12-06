@@ -82,11 +82,12 @@ class ProductTypeSyncIT {
         // assertion
         assertThat(errorMessages).isEmpty();
         assertThat(exceptions).isEmpty();
-        assertThat(productTypeSyncStatistics).hasValues(2, 1, 0, 0);
+        assertThat(productTypeSyncStatistics).hasValues(2, 1, 0, 0, 0);
         assertThat(productTypeSyncStatistics
             .getReportMessage())
             .isEqualTo("Summary: 2 product types were processed in total"
-                + " (1 created, 0 updated and 0 failed to sync).");
+                + " (1 created, 0 updated, 0 failed to sync and 0 product types with at least one NestedType or a Set"
+                + " of NestedType attribute definition(s) referencing a missing product type).");
     }
 
     @Test
@@ -136,10 +137,11 @@ class ProductTypeSyncIT {
         // assertion
         assertThat(errorMessages).isEmpty();
         assertThat(exceptions).isEmpty();
-        assertThat(productTypeSyncStatistics).hasValues(2, 1, 1, 0);
+        assertThat(productTypeSyncStatistics).hasValues(2, 1, 1, 0, 0);
         assertThat(productTypeSyncStatistics
             .getReportMessage())
             .isEqualTo("Summary: 2 product types were processed in total"
-                + " (1 created, 1 updated and 0 failed to sync).");
+                + " (1 created, 1 updated, 0 failed to sync and 0 product types with at least one NestedType or a Set"
+                + " of NestedType attribute definition(s) referencing a missing product type).");
     }
 }

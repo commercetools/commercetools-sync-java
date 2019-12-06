@@ -166,11 +166,10 @@ class ProductReferenceResolverIT {
         final ProductSyncStatistics syncStatistics =  productSync.sync(productDrafts).toCompletableFuture().join();
 
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
-        assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on ProductDraft with"
-                + " key:'%s'. Reason: %s: Failed to resolve 'product-type' resource identifier on ProductDraft with "
+        assertThat(errorCallBackMessages).containsExactly(format("Failed to resolve references on ProductDraft with"
+                + " key:'%s'. Reason: Failed to resolve 'product-type' resource identifier on ProductDraft with "
                 + "key:'%s'. Reason: %s",
-            productDraft.getKey(), ReferenceResolutionException.class.getCanonicalName(), productDraft.getKey(),
+            productDraft.getKey(), productDraft.getKey(),
             BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);

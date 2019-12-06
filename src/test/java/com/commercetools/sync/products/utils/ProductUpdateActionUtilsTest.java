@@ -13,6 +13,7 @@ import io.sphere.sdk.products.Image;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
@@ -26,6 +27,7 @@ import io.sphere.sdk.products.commands.updateactions.RemoveImage;
 import io.sphere.sdk.products.commands.updateactions.RemoveVariant;
 import io.sphere.sdk.products.commands.updateactions.SetAttribute;
 import io.sphere.sdk.products.commands.updateactions.SetSku;
+import io.sphere.sdk.producttypes.ProductType;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -43,7 +45,9 @@ import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.BLA
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildAddVariantUpdateActionFromDraft;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildChangeMasterVariantUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildVariantsUpdateActions;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.getAllVariants;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
@@ -358,5 +362,59 @@ class ProductUpdateActionUtilsTest {
         );
 
         assertThat(result).containsExactlyElementsOf(expectedActions);
+    }
+
+    @Test
+    void getAllVariants_WithNoVariants_ShouldReturnListWithNullMasterVariant() {
+        final ProductDraft productDraft = ProductDraftBuilder
+            .of(mock(ProductType.class), ofEnglish("name"), ofEnglish("slug"), emptyList())
+            .build();
+
+        final List<ProductVariantDraft> allVariants = getAllVariants(productDraft);
+
+        assertThat(allVariants).hasSize(1).containsOnlyNulls();
+    }
+
+    @Test
+    void getAllVariants_WithOnlyMasterVariant_ShouldReturnListWithMasterVariant() {
+        final ProductVariantDraft masterVariant = ProductVariantDraftBuilder.of().build();
+
+        final ProductDraft productDraft = ProductDraftBuilder
+            .of(mock(ProductType.class), ofEnglish("name"), ofEnglish("slug"), masterVariant)
+            .build();
+
+        final List<ProductVariantDraft> allVariants = getAllVariants(productDraft);
+
+        assertThat(allVariants).containsExactly(masterVariant);
+    }
+
+    @Test
+    void getAllVariants_WithOnlyVariants_ShouldReturnListWithVariants() {
+        final ProductVariantDraft variant1 = ProductVariantDraftBuilder.of().build();
+        final ProductVariantDraft variant2 = ProductVariantDraftBuilder.of().build();
+        final List<ProductVariantDraft> variants = asList(variant1, variant2);
+
+        final ProductDraft productDraft = ProductDraftBuilder
+            .of(mock(ProductType.class), ofEnglish("name"), ofEnglish("slug"), variants)
+            .build();
+
+        final List<ProductVariantDraft> allVariants = getAllVariants(productDraft);
+
+        assertThat(allVariants).containsExactlyElementsOf(variants);
+    }
+
+    @Test
+    void getAllVariants_WithNullInVariants_ShouldReturnListWithVariants() {
+        final ProductVariantDraft variant1 = ProductVariantDraftBuilder.of().build();
+        final ProductVariantDraft variant2 = ProductVariantDraftBuilder.of().build();
+        final List<ProductVariantDraft> variants = asList(variant1, variant2, null);
+
+        final ProductDraft productDraft = ProductDraftBuilder
+            .of(mock(ProductType.class), ofEnglish("name"), ofEnglish("slug"), variants)
+            .build();
+
+        final List<ProductVariantDraft> allVariants = getAllVariants(productDraft);
+
+        assertThat(allVariants).containsExactlyElementsOf(variants);
     }
 }

@@ -52,10 +52,11 @@ If it fails to create the supply channel, the inventory entry/product won't sync
 
 ````java
  final Logger logger = LoggerFactory.getLogger(MySync.class);
- final ProductSyncOptions productsyncOptions = ProductSyncOptionsBuilder.of(sphereClient)
-                                                                        .errorCallBack(logger::error)
-                                                                        .warningCallBack(logger::warn)
-                                                                        .build();
+ final ProductSyncOptions productsyncOptions = ProductSyncOptionsBuilder
+         .of(sphereClient)
+         .errorCallBack(logger::error)
+         .warningCallBack(logger::warn)
+         .build();
 ````
  
 #### 2. [Using `beforeUpdateCallback` for syncing a single locale](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/SyncSingleLocaleIT.java).

@@ -8,6 +8,10 @@ import io.sphere.sdk.types.CustomFieldsDraftBuilder;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * Util class which provides utilities that can be used when syncing resources from a source commercetools project
+ * to a target one.
+ */
 public final class CustomTypeReferenceReplacementUtils {
     /**
      * Given a resource of type {@code T} that extends {@link Custom} (i.e. it has {@link CustomFields}, this method
