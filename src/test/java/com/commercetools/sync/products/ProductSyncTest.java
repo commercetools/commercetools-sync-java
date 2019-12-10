@@ -49,7 +49,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 class ProductSyncTest {
@@ -80,8 +80,8 @@ class ProductSyncTest {
             .join();
 
         // assertion
-        verifyZeroInteractions(ctpClient);
-        verifyZeroInteractions(productService);
+        verifyNoMoreInteractions(ctpClient);
+        verifyNoMoreInteractions(productService);
         assertThat(statistics).hasValues(1, 0, 0, 1, 0);
     }
 
