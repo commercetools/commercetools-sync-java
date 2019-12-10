@@ -1,7 +1,6 @@
 package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
-import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.services.CartDiscountService;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
@@ -15,16 +14,10 @@ import io.sphere.sdk.commands.UpdateAction;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-
-import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.toSet;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class CartDiscountServiceImpl extends BaseService<CartDiscountDraft, CartDiscount, CartDiscountSyncOptions,
     CartDiscountQuery, CartDiscountQueryModel, CartDiscountExpansionModel<CartDiscount>>
@@ -35,51 +28,22 @@ public class CartDiscountServiceImpl extends BaseService<CartDiscountDraft, Cart
     }
 
     @Nonnull
-    CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
-        return CompletableFuture.completedFuture(Optional.empty());
-    }
-
-    @Nonnull
     @Override
     public CompletionStage<Set<CartDiscount>> fetchMatchingCartDiscountsByKeys(@Nonnull final Set<String> keys) {
-        if (keys.isEmpty()) {
-            return CompletableFuture.completedFuture(Collections.emptySet());
-        }
 
-        final CartDiscountQuery cartDiscountQuery = CartDiscountQueryBuilder
-            .of()
-            .plusPredicates(queryModel -> queryModel.key().isIn(keys))
-            .build();
-
-
-        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), cartDiscountQuery, identity())
-                            .thenApply(cartDiscounts -> cartDiscounts
-                                .stream()
-                                .flatMap(List::stream)
-                                .peek(cartDiscount -> keyToIdCache.put(cartDiscount.getKey(), cartDiscount.getId()))
-                                .collect(toSet()));
+        return fetchMatchingResources(keys,
+            () -> CartDiscountQueryBuilder
+                .of()
+                .plusPredicates(queryModel -> queryModel.key().isIn(keys))
+                .build());
     }
 
     @Nonnull
     @Override
     public CompletionStage<Optional<CartDiscount>> fetchCartDiscount(@Nullable final String key) {
-        if (isBlank(key)) {
-            return CompletableFuture.completedFuture(Optional.empty());
-        }
 
-        final CartDiscountQuery cartDiscountQuery = CartDiscountQuery
-            .of().plusPredicates(cartDiscountQueryModel -> cartDiscountQueryModel.key().is(key));
-
-        return syncOptions
-            .getCtpClient()
-            .execute(cartDiscountQuery)
-            .thenApply(cartDiscountPagedQueryResult ->
-                cartDiscountPagedQueryResult
-                    .head()
-                    .map(cartDiscount -> {
-                        keyToIdCache.put(cartDiscount.getKey(), cartDiscount.getId());
-                        return cartDiscount;
-                    }));
+        return fetchResource(key, () -> CartDiscountQuery
+            .of().plusPredicates(cartDiscountQueryModel -> cartDiscountQueryModel.key().is(key)));
     }
 
     @Nonnull

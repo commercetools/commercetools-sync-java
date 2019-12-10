@@ -7,6 +7,7 @@ import io.sphere.sdk.commands.DraftBasedCreateCommand;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.commands.UpdateCommand;
 import io.sphere.sdk.models.Resource;
+import io.sphere.sdk.models.WithKey;
 import io.sphere.sdk.queries.MetaModelQueryDsl;
 import org.apache.commons.lang3.StringUtils;
 
@@ -42,7 +43,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  * @param <E> Expansion Model (e.g. {@link io.sphere.sdk.products.expansion.ProductExpansionModel},
  *            {@link io.sphere.sdk.categories.expansion.CategoryExpansionModel}, etc..
  */
-abstract class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions,
+abstract class BaseService<T, U extends Resource<U> & WithKey, S extends BaseSyncOptions,
     Q extends MetaModelQueryDsl<U, Q, M, E>, M, E> {
 
     final S syncOptions;
@@ -163,61 +164,68 @@ abstract class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions,
      * was found in the CTP project with this key.
      *
      * @param key the key by which a resource id should be fetched from the CTP project.
+     * @param querySupplier supplies the query to fetch the resource with the given key.
      * @return {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt; in which the result of it's
      *         completion could contain an {@link Optional} with the id inside of it or an empty {@link Optional} if no
      *         resource was found in the CTP project with this key.
      */
     @Nonnull
-    CompletionStage<Optional<String>> fetchCachedResourceId(@Nullable final String key) {
+    CompletionStage<Optional<String>> fetchCachedResourceId(
+        @Nullable final String key,
+        @Nonnull final Supplier<Q> querySupplier) {
+
         if (isBlank(key)) {
             return CompletableFuture.completedFuture(Optional.empty());
         }
-        if (keyToIdCache.isEmpty()) {
-            return fetchAndCache(key);
+        if (keyToIdCache.containsKey(key)) {
+            return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
         }
-        return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
+        return fetchAndCache(key, querySupplier);
+    }
+
+    private CompletionStage<Optional<String>> fetchAndCache(
+        @Nullable final String key,
+        @Nonnull final Supplier<Q> querySupplier) {
+
+        final Consumer<List<U>> pageConsumer = page -> page.forEach(resource ->
+            keyToIdCache.put(resource.getKey(), resource.getId()));
+
+
+        return CtpQueryUtils
+            .queryAll(syncOptions.getCtpClient(), querySupplier.get(), pageConsumer)
+            .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
     }
 
     /**
-     * Given a {@code key}, this method queries a CTP project and fetches all available resource of given type.
-     * Next it stores key - id pair in the {@code keyToIdCache}.
+     * Given a set of keys this method caches a mapping of the keys to ids of such keys only for the keys which are
+     * not already in the cache.
      *
-     * @param key the key by which a resource id should be fetched from the CTP project
-     * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion contains an
-     *         {@link Optional} that contains the matching id if exists, otherwise empty.
+     * @param keys keys to cache.
+     * @param keysQueryMapper function that accepts a set of keys which are not cached and maps it to a query object
+     *                        representing the query to CTP on such keys.
+     * @return a map of key to ids of the requested keys.
      */
-    abstract CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key);
+    @Nonnull
+    CompletionStage<Map<String, String>> cacheKeysToIds(
+        @Nonnull final Set<String> keys,
+        @Nonnull final Function<Set<String>, Q> keysQueryMapper) {
 
-    /**
-     * The default implementation of the {@link #fetchAndCache(String)} abstract method.
-     *
-     * @param key           the key by which a resource id should be fetched from the CTP project
-     * @param querySupplier a function to get a query
-     * @param keyMapper     a function to get the key from the returned resource
-     * @param typeName      a resource type name, f.e.: <i>ProductType</i>
-     * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion contains an
-     *         {@link Optional} that contains the matching id if exists, otherwise empty.
-     */
-    // TODO get rid of keyMapper when https://github.com/commercetools/commercetools-jvm-sdk/issues/1957 will be done
-    CompletionStage<Optional<String>> fetchAndCache(@Nullable final String key,
-                                                    @Nonnull final Supplier<Q> querySupplier,
-                                                    @Nonnull final Function<U, String> keyMapper,
-                                                    @Nonnull final String typeName) {
-        final Consumer<List<U>> resourcePageConsumer = resourcePage ->
-            resourcePage.forEach(resource -> {
-                final String fetchedResourceKey = keyMapper.apply(resource);
-                final String id = resource.getId();
-                if (StringUtils.isNotBlank(fetchedResourceKey)) {
-                    keyToIdCache.put(fetchedResourceKey, id);
-                } else {
-                    syncOptions.applyWarningCallback(format("%s with id: '%s' has no key set. Keys are"
-                        + " required for resource matching.", typeName, id));
-                }
-            });
+        final Set<String> keysNotCached = keys
+            .stream()
+            .filter(StringUtils::isNotBlank)
+            .filter(key -> !keyToIdCache.containsKey(key))
+            .collect(Collectors.toSet());
+
+        if (keysNotCached.isEmpty()) {
+            return CompletableFuture.completedFuture(keyToIdCache);
+        }
+
+        final Consumer<List<U>> pageConsumer = page -> page.forEach(resource ->
+            keyToIdCache.put(resource.getKey(), resource.getId()));
 
         return CtpQueryUtils
-            .queryAll(syncOptions.getCtpClient(), querySupplier.get(), resourcePageConsumer)
-            .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
+            .queryAll(syncOptions.getCtpClient(), keysQueryMapper.apply(keysNotCached), pageConsumer)
+            .thenApply(result -> keyToIdCache);
     }
 
     /**
@@ -225,18 +233,17 @@ abstract class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions,
      * keys in the CTP project, defined in an injected {@link SphereClient}. A mapping of the key to the id
      * of the fetched resources is persisted in an in-memory map.
      *
-     * @param resourceKeys  set of state keys to fetch matching states by
-     * @param querySupplier a function to get query
-     * @param keyMapper     a function to get the key from the returned resource
+     * @param keys  set of state keys to fetch matching states by
+     * @param querySupplier supplies the query to fetch the resources with the given keys.
      * @return {@link CompletionStage}&lt;{@link Set}&lt;{@code U}&gt;&gt; in which the result of it's completion
      *         contains a {@link Set} of all matching resources.
      */
     @Nonnull
-    // TODO get rid of keyMapper when https://github.com/commercetools/commercetools-jvm-sdk/issues/1957 will be done
-    CompletionStage<Set<U>> fetchMatchingResources(@Nonnull final Set<String> resourceKeys,
-                                                   @Nonnull final Supplier<Q> querySupplier,
-                                                   @Nonnull final Function<U, String> keyMapper) {
-        if (resourceKeys.isEmpty()) {
+    CompletionStage<Set<U>> fetchMatchingResources(
+        @Nonnull final Set<String> keys,
+        @Nonnull final Supplier<Q> querySupplier) {
+
+        if (keys.isEmpty()) {
             return CompletableFuture.completedFuture(Collections.emptySet());
         }
 
@@ -245,7 +252,7 @@ abstract class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions,
             .thenApply(fetchedResources -> fetchedResources
                 .stream()
                 .flatMap(List::stream)
-                .peek(resource -> keyToIdCache.put(keyMapper.apply(resource), resource.getId()))
+                .peek(resource -> keyToIdCache.put(resource.getKey(), resource.getId()))
                 .collect(Collectors.toSet()));
     }
 
@@ -256,13 +263,15 @@ abstract class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions,
      * -memory map.
      *
      * @param key           the key of the resource to fetch
-     * @param querySupplier a function to get query
+     * @param querySupplier supplies the query to fetch the resource with the given key.
      * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion contains an
      *         {@link Optional} that contains the matching {@code T} if exists, otherwise empty.
      */
     @Nonnull
-    CompletionStage<Optional<U>> fetchResource(@Nullable final String key,
-                                               @Nonnull final Supplier<Q> querySupplier) {
+    CompletionStage<Optional<U>> fetchResource(
+        @Nullable final String key,
+        @Nonnull final Supplier<Q> querySupplier) {
+
         if (isBlank(key)) {
             return CompletableFuture.completedFuture(Optional.empty());
         }
