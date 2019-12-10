@@ -9,8 +9,10 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
 import io.sphere.sdk.producttypes.commands.ProductTypeUpdateCommand;
+import io.sphere.sdk.producttypes.expansion.ProductTypeExpansionModel;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.producttypes.queries.ProductTypeQueryBuilder;
+import io.sphere.sdk.producttypes.queries.ProductTypeQueryModel;
 import io.sphere.sdk.queries.QueryPredicate;
 import org.apache.commons.lang3.StringUtils;
 
@@ -32,8 +34,8 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-public final class ProductTypeServiceImpl
-    extends BaseService<ProductTypeDraft, ProductType, BaseSyncOptions> implements ProductTypeService {
+public final class ProductTypeServiceImpl extends BaseService<ProductTypeDraft, ProductType, BaseSyncOptions,
+    ProductTypeQuery, ProductTypeQueryModel, ProductTypeExpansionModel<ProductType>> implements ProductTypeService {
 
     private final Map<String, Map<String, AttributeMetaData>> productsAttributesMetaData = new ConcurrentHashMap<>();
 
@@ -87,7 +89,7 @@ public final class ProductTypeServiceImpl
     }
 
     @Nonnull
-    private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
+    CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
 
         final Consumer<List<ProductType>> productTypePageConsumer = productTypePage ->
                 productTypePage.forEach(type -> {

@@ -8,8 +8,10 @@ import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
 import io.sphere.sdk.types.commands.TypeCreateCommand;
 import io.sphere.sdk.types.commands.TypeUpdateCommand;
+import io.sphere.sdk.types.expansion.TypeExpansionModel;
 import io.sphere.sdk.types.queries.TypeQuery;
 import io.sphere.sdk.types.queries.TypeQueryBuilder;
+import io.sphere.sdk.types.queries.TypeQueryModel;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -29,7 +31,8 @@ import static org.apache.http.util.TextUtils.isBlank;
  * Implementation of TypeService interface.
  * TODO: USE graphQL to get only keys. GITHUB ISSUE#84
  */
-public final class TypeServiceImpl extends BaseService<TypeDraft, Type, BaseSyncOptions> implements TypeService {
+public final class TypeServiceImpl extends BaseService<TypeDraft, Type, BaseSyncOptions, TypeQuery, TypeQueryModel,
+    TypeExpansionModel<Type>> implements TypeService {
 
     public TypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
         super(syncOptions);
@@ -46,7 +49,7 @@ public final class TypeServiceImpl extends BaseService<TypeDraft, Type, BaseSync
     }
 
     @Nonnull
-    private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
+    CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
 
         final Consumer<List<Type>> typePageConsumer = typePage ->
             typePage.forEach(type -> keyToIdCache.put(type.getKey(), type.getId()));
