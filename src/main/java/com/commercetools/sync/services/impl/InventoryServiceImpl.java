@@ -27,10 +27,11 @@ public final class InventoryServiceImpl implements InventoryService {
     @Nonnull
     @Override
     public CompletionStage<List<InventoryEntry>> fetchInventoryEntriesBySkus(@Nonnull final Set<String> skus) {
-        final InventoryEntryQuery query = InventoryEntryQueryBuilder.of()
-                                                                    .plusPredicates(
-                                                                        queryModel -> queryModel.sku().isIn(skus))
-                                                                    .build();
+        final InventoryEntryQuery query = InventoryEntryQueryBuilder
+            .of()
+            .plusPredicates(queryModel -> queryModel.sku().isIn(skus))
+            .build();
+
         return QueryExecutionUtils.queryAll(ctpClient, query);
     }
 
