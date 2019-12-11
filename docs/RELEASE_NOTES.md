@@ -37,12 +37,15 @@
 
 - ✨ **Enhancements** (2)
     - **Product Sync** - Only cache the needed keys of `Category`, `ProductType` and `Type` references instead of 
-    caching all keys of such resources. [#418](https://github.com/commercetools/commercetools-sync-java/issues/418)
+    caching all keys of such resources. [#418](https://github.com/commercetools/commercetools-sync-java/issues/418) 
+    
+    **Note**: This might have performance implications on the product sync, since now every non cached key-id entry will be individually fetched. 
+    However, issue [#235](https://github.com/commercetools/commercetools-sync-java/issues/235) should address this.
+    
     - **Commons** - Refactor duplicate implementations in concrete services and generalise it in the `BaseService`. 
-    Thanks @jarzynp [#418](https://github.com/commercetools/commercetools-sync-java/issues/418)
+    Thanks @jarzynp for the contributions! [#418](https://github.com/commercetools/commercetools-sync-java/issues/418)
 
 -->
-
 
 ### 1.6.1 -  Oct 17, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.6.0...1.6.1) |
