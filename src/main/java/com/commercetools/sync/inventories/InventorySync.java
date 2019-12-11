@@ -93,11 +93,13 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      */
     @Nonnull
     @Override
-    protected CompletionStage<InventorySyncStatistics> process(@Nonnull final List<InventoryEntryDraft>
-                                                                       inventories) {
+    protected CompletionStage<InventorySyncStatistics> process(
+        @Nonnull final List<InventoryEntryDraft> inventories) {
+
         final List<InventoryEntryDraft> validInventories = inventories.stream()
             .filter(this::validateDraft)
             .collect(toList());
+
         return allOf(IntStream
             .range(0, calculateNumberOfBatches(validInventories.size()))
             .mapToObj(batchIndex -> getBatch(batchIndex, validInventories))
@@ -164,6 +166,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      */
     protected CompletionStage<InventorySyncStatistics> processBatch(
         @Nonnull final List<InventoryEntryDraft> batchOfDrafts) {
+
         return fetchExistingInventories(batchOfDrafts)
             .thenCompose(oldInventoriesOptional -> oldInventoriesOptional
                 .map(oldInventories -> syncBatch(oldInventories, batchOfDrafts))
@@ -179,8 +182,9 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @param drafts {@link List} of inventory entry drafts
      * @return a future which contains an {@link Optional} that may contain list of inventory entries
      */
-    private CompletionStage<Optional<List<InventoryEntry>>> fetchExistingInventories(@Nonnull final
-                                                                                     List<InventoryEntryDraft> drafts) {
+    private CompletionStage<Optional<List<InventoryEntry>>> fetchExistingInventories(
+        @Nonnull final List<InventoryEntryDraft> drafts) {
+
         final Set<String> skus = extractSkus(drafts);
         return inventoryService.fetchInventoryEntriesBySkus(skus)
             .thenApply(Optional::of)
@@ -201,25 +205,30 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @param inventoryEntryDrafts drafts that need to be synced
      * @return a future which contains an empty result after execution of the update
      */
-    private CompletionStage<InventorySyncStatistics> syncBatch(@Nonnull final List<InventoryEntry> oldInventories,
-                                            @Nonnull final List<InventoryEntryDraft> inventoryEntryDrafts) {
-        final Map<InventoryEntryIdentifier , InventoryEntry> identifierToOldInventoryEntry = oldInventories
-            .stream().collect(toMap(InventoryEntryIdentifier::of, identity()));
+    private CompletionStage<InventorySyncStatistics> syncBatch(
+        @Nonnull final List<InventoryEntry> oldInventories,
+        @Nonnull final List<InventoryEntryDraft> inventoryEntryDrafts) {
+
+        final Map<InventoryEntryIdentifier , InventoryEntry> identifierToOldInventoryEntry =
+            oldInventories.stream().collect(toMap(InventoryEntryIdentifier::of, identity()));
+
         final List<CompletableFuture<Void>> futures = new ArrayList<>(inventoryEntryDrafts.size());
+
         inventoryEntryDrafts.forEach(inventoryEntryDraft ->
-            futures.add(referenceResolver.resolveReferences(inventoryEntryDraft)
-                                         .thenCompose(resolvedDraft ->
-                                             syncDraft(identifierToOldInventoryEntry, resolvedDraft))
-                                         .exceptionally(referenceResolutionException -> {
-                                             final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES,
-                                                 inventoryEntryDraft.getSku(),
-                                                 referenceResolutionException.getMessage());
-                                             handleError(errorMessage, referenceResolutionException, 1);
-                                             return null;
-                                         })
-                                         .toCompletableFuture()));
-        return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]))
-                                .thenApply(result -> statistics);
+            futures.add(
+                referenceResolver
+                    .resolveReferences(inventoryEntryDraft)
+                    .thenCompose(resolvedDraft -> syncDraft(identifierToOldInventoryEntry, resolvedDraft))
+                    .exceptionally(referenceResolutionException -> {
+                        final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES,
+                            inventoryEntryDraft.getSku(), referenceResolutionException.getMessage());
+                        handleError(errorMessage, referenceResolutionException, 1);
+                        return null;
+                    })
+                    .toCompletableFuture()));
+
+        return CompletableFuture
+            .allOf(futures.toArray(new CompletableFuture[futures.size()])).thenApply(result -> statistics);
     }
 
     /**
