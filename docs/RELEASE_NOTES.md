@@ -33,6 +33,14 @@
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.6.1...1.7.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.7.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.7.0)
+
+
+- ✨ **Enhancements** (2)
+    - **Product Sync** - Only cache the needed keys of `Category`, `ProductType` and `Type` references instead of 
+    caching all keys of such resources. [#418](https://github.com/commercetools/commercetools-sync-java/issues/418)
+    - **Commons** - Refactor duplicate implementations in concrete services and generalise it in the `BaseService`. 
+    Thanks @jarzynp [#418](https://github.com/commercetools/commercetools-sync-java/issues/418)
+
 -->
 
 
