@@ -43,9 +43,10 @@ public final class ChannelServiceImpl extends KeyBasedService<ChannelDraft, Chan
 
         return fetchCachedResourceId(
             key,
-            () -> ChannelQueryBuilder.of()
-                                     .plusPredicates(queryModel -> queryModel.key().is(key))
-                                     .build());
+            () -> ChannelQueryBuilder
+                .of()
+                .plusPredicates(queryModel -> queryModel.key().is(key))
+                .build());
 
     }
 
@@ -53,9 +54,10 @@ public final class ChannelServiceImpl extends KeyBasedService<ChannelDraft, Chan
     @Override
     public CompletionStage<Optional<Channel>> createChannel(@Nonnull final String key) {
 
-        final ChannelDraft draft = ChannelDraftBuilder.of(key)
-                                                      .roles(channelRoles)
-                                                      .build();
+        final ChannelDraft draft = ChannelDraftBuilder
+            .of(key)
+            .roles(channelRoles)
+            .build();
 
         return createResource(draft, ChannelCreateCommand::of);
     }

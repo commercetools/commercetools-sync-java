@@ -60,9 +60,10 @@ public final class CategoryServiceImpl extends KeyBasedService<CategoryDraft, Ca
                 }
             });
 
-        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), CategoryQuery.of(), categoryPageConsumer)
-                            .thenAccept(result -> isCached = true)
-                            .thenApply(result -> keyToIdCache);
+        return CtpQueryUtils
+            .queryAll(syncOptions.getCtpClient(), CategoryQuery.of(), categoryPageConsumer)
+            .thenAccept(result -> isCached = true)
+            .thenApply(result -> keyToIdCache);
     }
 
     @Nonnull

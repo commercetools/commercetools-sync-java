@@ -16,7 +16,6 @@ import io.sphere.sdk.products.commands.ProductDeleteCommand;
 import io.sphere.sdk.products.commands.ProductUpdateCommand;
 import io.sphere.sdk.products.commands.updateactions.Unpublish;
 import io.sphere.sdk.products.queries.ProductQuery;
-import io.sphere.sdk.states.StateType;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
 import io.sphere.sdk.types.Type;
@@ -54,7 +53,7 @@ public final class ProductITUtils {
         deleteAllCategories(ctpClient);
         deleteTypes(ctpClient);
         deleteChannels(ctpClient);
-        deleteStates(ctpClient, StateType.PRODUCT_STATE);
+        deleteStates(ctpClient);
         deleteTaxCategories(ctpClient);
         deleteCustomerGroups(ctpClient);
         deleteWaitingToBeResolvedCustomObjects(ctpClient);

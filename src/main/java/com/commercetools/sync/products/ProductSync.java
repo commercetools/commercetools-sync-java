@@ -48,7 +48,6 @@ import java.util.stream.Collectors;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.products.utils.ProductSyncUtils.buildActions;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.getAllVariants;
-import static io.sphere.sdk.states.StateType.PRODUCT_STATE;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.allOf;
@@ -89,7 +88,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             new ChannelServiceImpl(productSyncOptions),
             new CustomerGroupServiceImpl(productSyncOptions),
             new TaxCategoryServiceImpl(productSyncOptions),
-            new StateServiceImpl(productSyncOptions, PRODUCT_STATE),
+            new StateServiceImpl(productSyncOptions),
             new UnresolvedReferencesServiceImpl(productSyncOptions));
     }
 
