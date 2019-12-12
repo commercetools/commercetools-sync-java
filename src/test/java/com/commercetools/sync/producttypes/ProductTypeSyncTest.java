@@ -21,6 +21,7 @@ import io.sphere.sdk.queries.PagedQueryResult;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -75,7 +76,8 @@ class ProductTypeSyncTest {
 
         when(mockProductTypeService.fetchMatchingProductTypesByKeys(singleton(newProductTypeDraft.getKey())))
             .thenReturn(CompletableFuture.completedFuture(singleton(existingProductType)));
-        when(mockProductTypeService.fetchMatchingProductTypesByKeys(emptySet())).thenCallRealMethod();
+        when(mockProductTypeService.fetchMatchingProductTypesByKeys(emptySet()))
+            .thenReturn(CompletableFuture.completedFuture(Collections.emptySet()));
         when(mockProductTypeService.updateProductType(any(), any()))
             .thenReturn(CompletableFuture.completedFuture(existingProductType));
         when(mockProductTypeService.cacheKeysToIds(anySet()))
@@ -129,7 +131,8 @@ class ProductTypeSyncTest {
 
         when(mockProductTypeService.fetchMatchingProductTypesByKeys(singleton(newProductTypeDraft.getKey())))
             .thenReturn(CompletableFuture.completedFuture(singleton(existingProductType)));
-        when(mockProductTypeService.fetchMatchingProductTypesByKeys(emptySet())).thenCallRealMethod();
+        when(mockProductTypeService.fetchMatchingProductTypesByKeys(emptySet()))
+            .thenReturn(CompletableFuture.completedFuture(Collections.emptySet()));
         when(mockProductTypeService.updateProductType(any(), any()))
             .thenReturn(CompletableFuture.completedFuture(existingProductType));
         when(mockProductTypeService.cacheKeysToIds(anySet()))
@@ -180,7 +183,8 @@ class ProductTypeSyncTest {
 
         when(mockProductTypeService.fetchMatchingProductTypesByKeys(singleton(newProductTypeDraft.getKey())))
             .thenReturn(CompletableFuture.completedFuture(singleton(existingProductType)));
-        when(mockProductTypeService.fetchMatchingProductTypesByKeys(emptySet())).thenCallRealMethod();
+        when(mockProductTypeService.fetchMatchingProductTypesByKeys(emptySet()))
+            .thenReturn(CompletableFuture.completedFuture(Collections.emptySet()));
         when(mockProductTypeService.updateProductType(any(), any()))
             .thenReturn(CompletableFuture.completedFuture(existingProductType));
         when(mockProductTypeService.cacheKeysToIds(anySet()))

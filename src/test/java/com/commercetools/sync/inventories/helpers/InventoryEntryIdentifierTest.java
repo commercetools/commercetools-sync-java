@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryEntry;
+import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class InventoryEntryIdentifierTest {
@@ -24,7 +25,7 @@ class InventoryEntryIdentifierTest {
         final InventoryEntryIdentifier inventoryEntryIdentifier = InventoryEntryIdentifier.of(draft);
         assertThat(inventoryEntryIdentifier).isNotNull();
         assertThat(inventoryEntryIdentifier.getInventoryEntrySku()).isEqualTo(SKU);
-        assertThat(inventoryEntryIdentifier.getInventoryEntryChannelId()).isNull();
+        assertThat(inventoryEntryIdentifier.getInventoryEntryChannelKey()).isNull();
     }
 
     @Test
@@ -34,7 +35,7 @@ class InventoryEntryIdentifierTest {
         final InventoryEntryIdentifier inventoryEntryIdentifier = InventoryEntryIdentifier.of(draft);
         assertThat(inventoryEntryIdentifier).isNotNull();
         assertThat(inventoryEntryIdentifier.getInventoryEntrySku()).isEqualTo(SKU);
-        assertThat(inventoryEntryIdentifier.getInventoryEntryChannelId()).isEqualTo(CHANNEL_ID);
+        assertThat(inventoryEntryIdentifier.getInventoryEntryChannelKey()).isEqualTo(CHANNEL_ID);
     }
 
     @Test
@@ -43,7 +44,7 @@ class InventoryEntryIdentifierTest {
         final InventoryEntryIdentifier inventoryEntryIdentifier = InventoryEntryIdentifier.of(inventoryEntry);
         assertThat(inventoryEntryIdentifier).isNotNull();
         assertThat(inventoryEntryIdentifier.getInventoryEntrySku()).isEqualTo(SKU);
-        assertThat(inventoryEntryIdentifier.getInventoryEntryChannelId()).isNull();
+        assertThat(inventoryEntryIdentifier.getInventoryEntryChannelKey()).isNull();
     }
 
     @Test
@@ -53,7 +54,7 @@ class InventoryEntryIdentifierTest {
         final InventoryEntryIdentifier inventoryEntryIdentifier = InventoryEntryIdentifier.of(inventoryEntry);
         assertThat(inventoryEntryIdentifier).isNotNull();
         assertThat(inventoryEntryIdentifier.getInventoryEntrySku()).isEqualTo(SKU);
-        assertThat(inventoryEntryIdentifier.getInventoryEntryChannelId()).isEqualTo(CHANNEL_ID);
+        assertThat(inventoryEntryIdentifier.getInventoryEntryChannelKey()).isEqualTo(CHANNEL_ID);
     }
 
     @Test
@@ -61,7 +62,7 @@ class InventoryEntryIdentifierTest {
         final InventoryEntryIdentifier inventoryEntryIdentifier = InventoryEntryIdentifier.of(SKU, null);
         assertThat(inventoryEntryIdentifier).isNotNull();
         assertThat(inventoryEntryIdentifier.getInventoryEntrySku()).isEqualTo(SKU);
-        assertThat(inventoryEntryIdentifier.getInventoryEntryChannelId()).isNull();
+        assertThat(inventoryEntryIdentifier.getInventoryEntryChannelKey()).isNull();
     }
 
     @Test
@@ -69,7 +70,7 @@ class InventoryEntryIdentifierTest {
         final InventoryEntryIdentifier inventoryEntryIdentifier = InventoryEntryIdentifier.of(SKU, CHANNEL_ID);
         assertThat(inventoryEntryIdentifier).isNotNull();
         assertThat(inventoryEntryIdentifier.getInventoryEntrySku()).isEqualTo(SKU);
-        assertThat(inventoryEntryIdentifier.getInventoryEntryChannelId()).isEqualTo(CHANNEL_ID);
+        assertThat(inventoryEntryIdentifier.getInventoryEntryChannelKey()).isEqualTo(CHANNEL_ID);
     }
 
     @Test
@@ -159,5 +160,19 @@ class InventoryEntryIdentifierTest {
 
         assertThat(map.containsKey(inventoryEntryIdentifier)).isTrue();
         assertThat(map.get(inventoryEntryIdentifier)).isEqualTo(inventoryEntry);
+    }
+
+    @Test
+    void toString_WithBothSkuAndChannelKey_ShouldReturnCorrectString() {
+        // preparation
+        final InventoryEntry inventoryEntry = getMockInventoryEntry(SKU, null, null, null,
+            Channel.referenceOfId(CHANNEL_ID), null);
+        final InventoryEntryIdentifier inventoryEntryIdentifier = InventoryEntryIdentifier.of(inventoryEntry);
+
+        // test
+        final String result = inventoryEntryIdentifier.toString();
+
+        // assertion
+        assertThat(result).isEqualTo(format("{sku='%s', channelKey='%s'}", SKU, CHANNEL_ID));
     }
 }

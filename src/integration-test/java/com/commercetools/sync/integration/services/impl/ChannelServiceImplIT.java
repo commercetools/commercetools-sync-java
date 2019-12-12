@@ -90,14 +90,20 @@ class ChannelServiceImplIT {
 
     @Test
     void createChannel_ShouldCreateChannel() {
+        // preparation
         final String newChannelKey = "new_channel_key";
-        final Channel result = channelService.createChannel(newChannelKey)
-                                             .toCompletableFuture()
-                                             .join();
 
-        assertThat(result).isNotNull();
-        assertThat(result.getRoles()).containsExactly(ChannelRole.INVENTORY_SUPPLY);
-        assertThat(result.getKey()).isEqualTo(newChannelKey);
+        // test
+        final Optional<Channel> result = channelService
+            .createChannel(newChannelKey)
+            .toCompletableFuture()
+            .join();
+
+        // assertion
+        assertThat(result).hasValueSatisfying(channel -> {
+            assertThat(channel.getRoles()).containsExactly(ChannelRole.INVENTORY_SUPPLY);
+            assertThat(channel.getKey()).isEqualTo(newChannelKey);
+        });
 
         //assert CTP state
         final Optional<Channel> createdChannelOptional = CTP_TARGET_CLIENT
@@ -105,19 +111,25 @@ class ChannelServiceImplIT {
             .toCompletableFuture()
             .join()
             .head();
-        assertThat(createdChannelOptional).contains(result);
+        assertThat(createdChannelOptional).isEqualTo(result);
     }
 
     @Test
     void createAndCacheChannel_ShouldCreateChannelAndCacheIt() {
+        // preparation
         final String newChannelKey = "new_channel_key";
-        final Channel result = channelService.createAndCacheChannel(newChannelKey)
-                                             .toCompletableFuture()
-                                             .join();
 
-        assertThat(result).isNotNull();
-        assertThat(result.getRoles()).containsExactly(ChannelRole.INVENTORY_SUPPLY);
-        assertThat(result.getKey()).isEqualTo(newChannelKey);
+        // test
+        final Optional<Channel> result = channelService
+            .createAndCacheChannel(newChannelKey)
+            .toCompletableFuture()
+            .join();
+
+        // assertion
+        assertThat(result).hasValueSatisfying(channel -> {
+            assertThat(channel.getRoles()).containsExactly(ChannelRole.INVENTORY_SUPPLY);
+            assertThat(channel.getKey()).isEqualTo(newChannelKey);
+        });
 
         //assert CTP state
         final Optional<Channel> createdChannelOptional = CTP_TARGET_CLIENT
@@ -125,11 +137,11 @@ class ChannelServiceImplIT {
             .toCompletableFuture()
             .join()
             .head();
-        assertThat(createdChannelOptional).contains(result);
+        assertThat(createdChannelOptional).isEqualTo(result);
 
         //assert cache state
         final Optional<String> newChannelId =
             channelService.fetchCachedChannelId(newChannelKey).toCompletableFuture().join();
-        assertThat(newChannelId).contains(result.getId());
+        assertThat(newChannelId).contains(result.get().getId());
     }
 }
