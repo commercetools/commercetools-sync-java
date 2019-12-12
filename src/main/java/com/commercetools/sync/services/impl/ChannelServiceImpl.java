@@ -19,15 +19,15 @@ import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
 
-public final class ChannelServiceImpl extends BaseService<ChannelDraft, Channel, BaseSyncOptions, ChannelQuery,
+public final class ChannelServiceImpl extends KeyBasedService<ChannelDraft, Channel, BaseSyncOptions, ChannelQuery,
     ChannelQueryModel, ChannelExpansionModel<Channel>> implements ChannelService {
 
     private final Set<ChannelRole> channelRoles;
 
+
     public ChannelServiceImpl(
         @Nonnull final BaseSyncOptions syncOptions,
         @Nonnull final Set<ChannelRole> channelRoles) {
-
         super(syncOptions);
         this.channelRoles = channelRoles;
     }
@@ -51,30 +51,23 @@ public final class ChannelServiceImpl extends BaseService<ChannelDraft, Channel,
 
     @Nonnull
     @Override
-    public CompletionStage<Channel> createChannel(@Nonnull final String key) {
-
-
+    public CompletionStage<Optional<Channel>> createChannel(@Nonnull final String key) {
 
         final ChannelDraft draft = ChannelDraftBuilder.of(key)
                                                       .roles(channelRoles)
                                                       .build();
 
-        createResource(draft, ChannelDraft::getKey, ChannelCreateCommand::of);
-
-        return syncOptions.getCtpClient().execute(ChannelCreateCommand.of(draft));
+        return createResource(draft, ChannelCreateCommand::of);
     }
 
     @Nonnull
     @Override
-    public CompletionStage<Channel> createAndCacheChannel(@Nonnull final String key) {
-        return createChannel(key).thenApply(channel -> {
-            cacheChannel(channel);
-            return channel;
-        });
-    }
+    public CompletionStage<Optional<Channel>> createAndCacheChannel(@Nonnull final String key) {
 
-    @Override
-    public void cacheChannel(@Nonnull final Channel channel) {
-        keyToIdCache.put(channel.getKey(), channel.getId());
+        return createChannel(key)
+            .thenApply(channelOptional -> {
+                channelOptional.ifPresent(channel -> keyToIdCache.put(key, channel.getId()));
+                return channelOptional;
+            });
     }
 }

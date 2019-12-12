@@ -12,7 +12,6 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.PriceDraftBuilder;
-import io.sphere.sdk.utils.CompletableFutureUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -192,12 +191,21 @@ public final class PriceReferenceResolver
         @Nonnull final PriceDraftBuilder draftBuilder) {
 
         if (options.shouldEnsurePriceChannels()) {
-            return channelService.createAndCacheChannel(channelKey)
-                                 .thenApply(draftBuilder::channel);
+            return channelService
+                .createAndCacheChannel(channelKey)
+                .thenCompose(createdChannelOptional -> {
+                    if (createdChannelOptional.isPresent()) {
+                        return completedFuture(draftBuilder.channel(createdChannelOptional.get()));
+                    } else {
+                        final ReferenceResolutionException referenceResolutionException =
+                            new ReferenceResolutionException(format(CHANNEL_DOES_NOT_EXIST, channelKey));
+                        return exceptionallyCompletedFuture(referenceResolutionException);
+                    }
+                });
         } else {
             final ReferenceResolutionException referenceResolutionException =
                 new ReferenceResolutionException(format(CHANNEL_DOES_NOT_EXIST, channelKey));
-            return CompletableFutureUtils.exceptionallyCompletedFuture(referenceResolutionException);
+            return exceptionallyCompletedFuture(referenceResolutionException);
         }
     }
 

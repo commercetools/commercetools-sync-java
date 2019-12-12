@@ -19,7 +19,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
-public class CartDiscountServiceImpl extends BaseService<CartDiscountDraft, CartDiscount, CartDiscountSyncOptions,
+public class CartDiscountServiceImpl extends KeyBasedService<CartDiscountDraft, CartDiscount, CartDiscountSyncOptions,
     CartDiscountQuery, CartDiscountQueryModel, CartDiscountExpansionModel<CartDiscount>>
     implements CartDiscountService {
 
@@ -51,7 +51,7 @@ public class CartDiscountServiceImpl extends BaseService<CartDiscountDraft, Cart
     public CompletionStage<Optional<CartDiscount>> createCartDiscount(
         @Nonnull final CartDiscountDraft cartDiscountDraft) {
 
-        return createResource(cartDiscountDraft, CartDiscountDraft::getKey, CartDiscountCreateCommand::of);
+        return createResource(cartDiscountDraft, CartDiscountCreateCommand::of);
     }
 
     @Nonnull
