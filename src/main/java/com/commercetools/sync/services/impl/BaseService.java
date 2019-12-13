@@ -233,7 +233,7 @@ abstract class BaseService<T, U extends Resource<U> & WithKey, S extends BaseSyn
      * keys in the CTP project, defined in an injected {@link SphereClient}. A mapping of the key to the id
      * of the fetched resources is persisted in an in-memory map.
      *
-     * @param keys  set of state keys to fetch matching states by
+     * @param          keys set of state keys to fetch matching states by
      * @param querySupplier supplies the query to fetch the resources with the given keys.
      * @return {@link CompletionStage}&lt;{@link Set}&lt;{@code U}&gt;&gt; in which the result of it's completion
      *         contains a {@link Set} of all matching resources.
