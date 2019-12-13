@@ -114,8 +114,7 @@ class InventoryServiceImplIT {
         // assert CTP state
         final Optional<InventoryEntry> updatedInventoryEntry =
             getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_2, null);
-        assertThat(updatedInventoryEntry).isNotEmpty();
-        assertThat(updatedInventoryEntry.get()).isEqualTo(result);
+        assertThat(updatedInventoryEntry).isEqualTo(result);
     }
 
     @Test
