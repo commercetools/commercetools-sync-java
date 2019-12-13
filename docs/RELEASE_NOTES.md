@@ -43,7 +43,7 @@
     However, issue [#235](https://github.com/commercetools/commercetools-sync-java/issues/235) should address this.
     
     - **Commons** - Refactor duplicate implementations in concrete services and generalise it in the `BaseService`. 
-    Thanks @jarzynp for the contributions! [#418](https://github.com/commercetools/commercetools-sync-java/issues/418)
+    Thanks, @jarzynp, for the contributions! [#418](https://github.com/commercetools/commercetools-sync-java/issues/418)
 
 -->
 
