@@ -200,7 +200,7 @@ abstract class BaseService<T, U extends Resource<U> & WithKey, S extends BaseSyn
      * Given a set of keys this method caches a mapping of the keys to ids of such keys only for the keys which are
      * not already in the cache.
      *
-     * @param keys keys to cache.
+     * @param keys            keys to cache.
      * @param keysQueryMapper function that accepts a set of keys which are not cached and maps it to a query object
      *                        representing the query to CTP on such keys.
      * @return a map of key to ids of the requested keys.
