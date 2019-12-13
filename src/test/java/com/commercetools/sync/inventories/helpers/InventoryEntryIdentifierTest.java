@@ -74,16 +74,28 @@ class InventoryEntryIdentifierTest {
     }
 
     @Test
-    void equals_WithSimilarEntryAndDraft_ShouldBeTrue() {
+    void equals_WithSameIdentifier_ShouldBeTrue() {
+        // preparation
+        final InventoryEntry inventoryEntry = getMockInventoryEntry(SKU, null, null, null,
+            Channel.referenceOfId(CHANNEL_ID), null);
+        final InventoryEntryIdentifier entryIdentifier = InventoryEntryIdentifier.of(inventoryEntry);
+
+        // test
+        assertThat(entryIdentifier).isEqualTo(entryIdentifier);
+    }
+
+    @Test
+    void equals_WithEqualSkuAndChannelKey_ShouldBeTrue() {
+        // preparation
         final InventoryEntry inventoryEntry = getMockInventoryEntry(SKU, null, null, null,
             Channel.referenceOfId(CHANNEL_ID), null);
         final InventoryEntryIdentifier entryIdentifier = InventoryEntryIdentifier.of(inventoryEntry);
         final InventoryEntryIdentifier draftIdentifier = InventoryEntryIdentifier
             .of(InventoryEntryDraft.of(SKU, 1L, null, null, Channel.referenceOfId(CHANNEL_ID)));
 
+        // test
         assertThat(entryIdentifier).isEqualTo(draftIdentifier);
     }
-
 
     @Test
     void equals_WithDifferentEntryAndDraft_ShouldBeFalse() {
@@ -120,15 +132,6 @@ class InventoryEntryIdentifierTest {
         final InventoryEntryIdentifier entryIdentifier = InventoryEntryIdentifier.of(inventoryEntry);
 
         assertThat(entryIdentifier).isNotEqualTo(inventoryEntry);
-    }
-
-    @Test
-    void equals_WithNullIdentifier_ShouldBeFalse() {
-        final InventoryEntry inventoryEntry = getMockInventoryEntry(SKU, null, null, null,
-            Channel.referenceOfId(CHANNEL_ID), null);
-        final InventoryEntryIdentifier entryIdentifier = InventoryEntryIdentifier.of(inventoryEntry);
-
-        assertThat(entryIdentifier).isNotEqualTo(null);
     }
 
     @Test
