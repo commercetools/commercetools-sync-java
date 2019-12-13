@@ -37,7 +37,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  * @param <U> Resource (e.g. {@link io.sphere.sdk.products.Product}, {@link io.sphere.sdk.categories.Category}, etc..
  * @param <S> Subclass of {@link BaseSyncOptions}
  * @param <Q> Query (e.g. {@link io.sphere.sdk.products.queries.ProductQuery},
- *            {@link io.sphere.sdk.categories.queries.CategoryQuery}, etc..
+ *            {@link io.sphere.sdk.categories.queries.CategoryQuery}, etc.. )
  * @param <M> Query Model (e.g. {@link io.sphere.sdk.products.queries.ProductQueryModel},
  *            {@link io.sphere.sdk.categories.queries.CategoryQueryModel}, etc..
  * @param <E> Expansion Model (e.g. {@link io.sphere.sdk.products.expansion.ProductExpansionModel},
