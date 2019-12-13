@@ -213,7 +213,7 @@ class BaseServiceImplTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    void fetchResource_WithKey_ShouldFetchResource() {
+    void fetchResource_WithExistingProductKey_ShouldFetchResource() {
         //preparation
         final String resourceId = RandomStringUtils.random(15);
         final String resourceKey = RandomStringUtils.random(15);
