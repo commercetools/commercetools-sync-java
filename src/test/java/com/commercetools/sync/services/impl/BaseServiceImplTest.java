@@ -95,7 +95,7 @@ class BaseServiceImplTest {
     }
 
     @Test
-    void fetchCachedResourceId_WithCachedResource_ShouldReturnResourceIdWithoutMakingRequest() {
+    void fetchCachedResourceId_WithCachedKey_ShouldReturnResourceIdWithoutMakingRequest() {
         //preparation
         final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
         final Product mockProductResult = mock(Product.class);
