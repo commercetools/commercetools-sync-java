@@ -1,35 +1,30 @@
 package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
-import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
 import io.sphere.sdk.types.commands.TypeCreateCommand;
 import io.sphere.sdk.types.commands.TypeUpdateCommand;
+import io.sphere.sdk.types.expansion.TypeExpansionModel;
 import io.sphere.sdk.types.queries.TypeQuery;
 import io.sphere.sdk.types.queries.TypeQueryBuilder;
+import io.sphere.sdk.types.queries.TypeQueryModel;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
-import static java.util.stream.Collectors.toSet;
-import static org.apache.http.util.TextUtils.isBlank;
 
 /**
  * Implementation of TypeService interface.
  * TODO: USE graphQL to get only keys. GITHUB ISSUE#84
  */
-public final class TypeServiceImpl extends BaseService<TypeDraft, Type, BaseSyncOptions> implements TypeService {
+public final class TypeServiceImpl extends BaseService<TypeDraft, Type, BaseSyncOptions, TypeQuery, TypeQueryModel,
+    TypeExpansionModel<Type>> implements TypeService {
 
     public TypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
         super(syncOptions);
@@ -39,64 +34,30 @@ public final class TypeServiceImpl extends BaseService<TypeDraft, Type, BaseSync
     @Override
     public CompletionStage<Optional<String>> fetchCachedTypeId(@Nonnull final String key) {
 
-        if (keyToIdCache.containsKey(key)) {
-            return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
-        }
-        return fetchAndCache(key);
-    }
-
-    @Nonnull
-    private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
-
-        final Consumer<List<Type>> typePageConsumer = typePage ->
-            typePage.forEach(type -> keyToIdCache.put(type.getKey(), type.getId()));
-
-        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), TypeQuery.of(), typePageConsumer)
-                            .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
+        return fetchCachedResourceId(
+            key,
+            () -> TypeQueryBuilder.of()
+                                  .plusPredicates(queryModel -> queryModel.key().is(key))
+                                  .build());
     }
 
     @Nonnull
     @Override
     public CompletionStage<Set<Type>> fetchMatchingTypesByKeys(@Nonnull final Set<String> keys) {
 
-        if (keys.isEmpty()) {
-            return CompletableFuture.completedFuture(Collections.emptySet());
-        }
-
-        final TypeQuery typeQuery = TypeQueryBuilder
-            .of()
-            .plusPredicates(queryModel -> queryModel.key().isIn(keys))
-            .build();
-
-        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), typeQuery, Function.identity())
-                                  .thenApply(types -> types
-                                      .stream()
-                                      .flatMap(List::stream)
-                                      .peek(type -> keyToIdCache.put(type.getKey(), type.getId()))
-                                      .collect(toSet()));
+        return fetchMatchingResources(keys,
+            () -> TypeQueryBuilder
+                .of()
+                .plusPredicates(queryModel -> queryModel.key().isIn(keys))
+                .build());
     }
 
     @Nonnull
     @Override
     public CompletionStage<Optional<Type>> fetchType(@Nullable final String key) {
 
-        if (isBlank(key)) {
-            return CompletableFuture.completedFuture(Optional.empty());
-        }
-
-        final TypeQuery typeQuery =
-            TypeQueryBuilder.of().plusPredicates(queryModel -> queryModel.key().is(key)).build();
-
-        return syncOptions
-            .getCtpClient()
-            .execute(typeQuery)
-            .thenApply(typePagedQueryResult ->
-                typePagedQueryResult
-                    .head()
-                    .map(type -> {
-                        keyToIdCache.put(type.getKey(), type.getId());
-                        return type;
-                    }));
+        return fetchResource(key,
+            () -> TypeQueryBuilder.of().plusPredicates(queryModel -> queryModel.key().is(key)).build());
     }
 
     @Nonnull

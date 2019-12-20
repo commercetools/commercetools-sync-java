@@ -8,12 +8,14 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.categories.commands.CategoryUpdateCommand;
+import io.sphere.sdk.categories.expansion.CategoryExpansionModel;
 import io.sphere.sdk.categories.queries.CategoryQuery;
+import io.sphere.sdk.categories.queries.CategoryQueryBuilder;
+import io.sphere.sdk.categories.queries.CategoryQueryModel;
 import io.sphere.sdk.commands.UpdateAction;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,19 +23,17 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static java.lang.String.format;
-import static org.apache.commons.lang3.StringUtils.isBlank;
+import static java.util.Collections.singleton;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
  * Implementation of CategoryService interface.
  * TODO: USE graphQL to get only keys. GITHUB ISSUE#84
  */
-public final class CategoryServiceImpl extends BaseService<CategoryDraft, Category, CategorySyncOptions>
-    implements CategoryService {
+public final class CategoryServiceImpl extends BaseService<CategoryDraft, Category, CategorySyncOptions,
+    CategoryQuery, CategoryQueryModel, CategoryExpansionModel<Category>> implements CategoryService {
 
     private static final String CATEGORY_KEY_NOT_SET = "Category with id: '%s' has no key set. Keys are required for "
         + "category matching.";
@@ -68,61 +68,30 @@ public final class CategoryServiceImpl extends BaseService<CategoryDraft, Catego
     @Nonnull
     @Override
     public CompletionStage<Set<Category>> fetchMatchingCategoriesByKeys(@Nonnull final Set<String> categoryKeys) {
-        if (categoryKeys.isEmpty()) {
-            return CompletableFuture.completedFuture(Collections.emptySet());
-        }
 
-        final CategoryQuery categoryQuery = CategoryQuery
-                .of().plusPredicates(categoryQueryModel -> categoryQueryModel.key().isIn(categoryKeys));
-
-        return CtpQueryUtils
-                .queryAll(syncOptions.getCtpClient(), categoryQuery, Function.identity())
-                .thenApply(fetchedCategories -> fetchedCategories
-                        .stream()
-                        .flatMap(List::stream)
-                        .peek(category -> keyToIdCache.put(category.getKey(), category.getId()))
-                        .collect(Collectors.toSet()));
+        return fetchMatchingResources(categoryKeys,
+            () -> CategoryQuery
+                .of()
+                .plusPredicates(categoryQueryModel -> categoryQueryModel.key().isIn(categoryKeys)));
     }
 
     @Nonnull
     @Override
     public CompletionStage<Optional<Category>> fetchCategory(@Nullable final String key) {
 
-        if (isBlank(key)) {
-            return CompletableFuture.completedFuture(Optional.empty());
-        }
-
-        final CategoryQuery categoryQuery = CategoryQuery
-                .of().plusPredicates(categoryQueryModel -> categoryQueryModel.key().is(key));
-
-        return syncOptions
-                .getCtpClient()
-                .execute(categoryQuery)
-                .thenApply(categoryPagedQueryResult ->
-                        categoryPagedQueryResult
-                                .head()
-                                .map(category -> {
-                                    keyToIdCache.put(category.getKey(), category.getId());
-                                    return category;
-                                }));
+        return fetchResource(key,
+            () -> CategoryQuery.of().plusPredicates(categoryQueryModel -> categoryQueryModel.key().is(key)));
     }
 
     @Nonnull
     @Override
     public CompletionStage<Optional<String>> fetchCachedCategoryId(@Nonnull final String key) {
 
-        if (isBlank(key)) {
-            return CompletableFuture.completedFuture(Optional.empty());
-        }
-        if (keyToIdCache.containsKey(key)) {
-            return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
-        }
-        return fetchAndCache(key);
-    }
-
-    private CompletionStage<Optional<String>> fetchAndCache(@Nonnull final String key) {
-        return cacheKeysToIds()
-            .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
+        return fetchCachedResourceId(key,
+            () -> CategoryQueryBuilder
+                .of()
+                .plusPredicates(queryModel -> queryModel.key().isIn(singleton(key)))
+                .build());
     }
 
     @Nonnull
