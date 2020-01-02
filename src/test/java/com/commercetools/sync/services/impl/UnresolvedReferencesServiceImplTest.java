@@ -21,9 +21,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static java.lang.String.format;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.apache.commons.codec.digest.DigestUtils.sha1Hex;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -117,8 +119,9 @@ class UnresolvedReferencesServiceImplTest {
     @Test
     void save_WithUnsuccessfulMockCtpResponse_ShouldNotSaveMock() {
         // preparation
+        String productKey = "product-draft-key";
         final ProductDraft productDraftMock = mock(ProductDraft.class);
-        when(productDraftMock.getKey()).thenReturn("product-draft-key");
+        when(productDraftMock.getKey()).thenReturn(productKey);
         final WaitingToBeResolved waitingToBeResolved =
             new WaitingToBeResolved(productDraftMock, singleton("test-ref"));
 
@@ -136,8 +139,7 @@ class UnresolvedReferencesServiceImplTest {
         assertThat(errorMessages)
                 .hasSize(1)
                 .hasOnlyOneElementSatisfying(message -> {
-                    assertThat(message)
-                            .contains("Failed to save CustomObject with key: 'product-draft-key'.");
+                    assertThat(message).contains(format("Failed to save CustomObject with key: '%s' (hash of product key: '%s').", sha1Hex(productKey), productKey));
                     assertThat(message).contains("BadRequestException");
                 });
 

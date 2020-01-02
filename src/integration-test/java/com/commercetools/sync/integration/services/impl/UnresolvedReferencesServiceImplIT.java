@@ -23,6 +23,7 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
 import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.util.Collections.singleton;
+import static org.apache.commons.codec.digest.DigestUtils.sha1Hex;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class UnresolvedReferencesServiceImplIT {
@@ -108,7 +109,7 @@ class UnresolvedReferencesServiceImplIT {
     @Test
     void save_ExistingProductDraftWithoutException_overwritesOldCustomObjectValue() {
         // preparation
-        final ProductDraft productDraft =
+         final ProductDraft productDraft =
             SphereJsonUtils.readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, ProductDraft.class);
 
         final WaitingToBeResolved productDraftWithUnresolvedRefs =
@@ -138,7 +139,7 @@ class UnresolvedReferencesServiceImplIT {
         });
 
         final CustomObjectByKeyGet<WaitingToBeResolved> customObjectByKeyGet = CustomObjectByKeyGet
-            .of(CUSTOM_OBJECT_CONTAINER_KEY, productDraft.getKey(), WaitingToBeResolved.class);
+            .of(CUSTOM_OBJECT_CONTAINER_KEY, sha1Hex(productDraft.getKey()), WaitingToBeResolved.class);
         final CustomObject<WaitingToBeResolved> createdCustomObject = CTP_TARGET_CLIENT
             .execute(customObjectByKeyGet)
             .toCompletableFuture()
