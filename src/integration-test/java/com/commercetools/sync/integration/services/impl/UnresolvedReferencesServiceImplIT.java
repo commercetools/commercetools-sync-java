@@ -108,7 +108,7 @@ class UnresolvedReferencesServiceImplIT {
     @Test
     void saveFetchAndDelete_WithKeyWithSpecialCharacter_shouldWorkCorrectly() {
         // preparation
-        ProductDraft productDraft =
+        final ProductDraft productDraft =
             SphereJsonUtils.readObjectFromResource(PRODUCT_KEY_SPECIAL_CHARS_RESOURCE_PATH, ProductDraft.class);
 
         final WaitingToBeResolved productDraftWithUnresolvedRefs =
