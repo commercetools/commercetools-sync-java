@@ -29,9 +29,9 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
     private final ProductSyncOptions syncOptions;
 
     private static final String SAVE_FAILED =
-        "Failed to save CustomObject with key: '%s' (hash of product key: '%s'). Reason: %s";
+        "Failed to save CustomObject with key: '%s' (hash of product key: '%s').";
     private static final String DELETE_FAILED =
-        "Failed to delete CustomObject with key: '%s' (hash of product key: '%s'). Reason: %s";
+        "Failed to delete CustomObject with key: '%s' (hash of product key: '%s').";
     private static final String CUSTOM_OBJECT_CONTAINER_KEY =
         "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
 
@@ -90,8 +90,7 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
                     return Optional.of(resource.getValue());
                 } else {
                     syncOptions.applyErrorCallback(
-                        format(SAVE_FAILED, customObjectDraft.getKey(), draft.getProductDraft().getKey(),
-                            exception.getMessage()), exception);
+                        format(SAVE_FAILED, customObjectDraft.getKey(), draft.getProductDraft().getKey()), exception);
                     return Optional.empty();
                 }
             });
@@ -110,7 +109,7 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
                     return Optional.of(resource.getValue());
                 } else {
                     syncOptions.applyErrorCallback(
-                        format(DELETE_FAILED, hash(key), key, exception.getMessage()), exception);
+                        format(DELETE_FAILED, hash(key), key), exception);
                     return Optional.empty();
                 }
             });

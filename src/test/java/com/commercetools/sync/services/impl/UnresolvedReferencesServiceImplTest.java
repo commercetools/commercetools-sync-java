@@ -207,12 +207,9 @@ class UnresolvedReferencesServiceImplTest {
         assertThat(result).isEmpty();
         assertThat(errorMessages)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(message -> {
-                    assertThat(message).contains(
-                        format("Failed to save CustomObject with key: '%s' (hash of product key: '%s').",
-                            sha1Hex(productKey), productKey));
-                    assertThat(message).contains("BadRequestException");
-                });
+                .hasOnlyOneElementSatisfying(message -> assertThat(message).contains(
+                    format("Failed to save CustomObject with key: '%s' (hash of product key: '%s').",
+                        sha1Hex(productKey), productKey)));
 
         assertThat(errorExceptions)
                 .hasSize(1)
@@ -239,12 +236,9 @@ class UnresolvedReferencesServiceImplTest {
         assertThat(errorExceptions).hasSize(1);
         assertThat(errorMessages)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(message -> {
-                    assertThat(message)
-                            .contains(format("Failed to delete CustomObject with key: '%s' (hash of product key: '%s')",
-                                sha1Hex(key), key));
-                    assertThat(message).contains("BadRequestException");
-                });
+                .hasOnlyOneElementSatisfying(message -> assertThat(message)
+                        .contains(format("Failed to delete CustomObject with key: '%s' (hash of product key: '%s')",
+                            sha1Hex(key), key)));
         assertThat(errorExceptions)
                 .hasSize(1)
                 .hasOnlyOneElementSatisfying(exception ->
