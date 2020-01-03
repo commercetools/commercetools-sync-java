@@ -59,6 +59,7 @@ import static org.mockito.Mockito.when;
 
 public class ProductSyncMockUtils {
     public static final String PRODUCT_KEY_1_RESOURCE_PATH = "product-key-1.json";
+    public static final String PRODUCT_KEY_SPECIAL_CHARS_RESOURCE_PATH = "product-key-with-special-character.json";
     public static final String PRODUCT_KEY_1_CHANGED_RESOURCE_PATH = "product-key-1-changed.json";
     public static final String PRODUCT_KEY_1_CHANGED_ATTRIBUTES_RESOURCE_PATH = "product-key-1-changed-attributes.json";
     public static final String PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH = "product-key-1-with-prices.json";
