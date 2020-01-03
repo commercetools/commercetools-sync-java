@@ -29,7 +29,15 @@
 -->
 
 <!--
-### 1.7.0 -  Oct 31, 2019
+### 1.8.0 -  Oct 31, 2019
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.7.0...1.8.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.8.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.8.0)
+
+-->
+
+
+### 1.7.0 -  Jan 3, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.6.1...1.7.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.7.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.7.0)
@@ -38,9 +46,8 @@
 - ✨ **Enhancements** (2)
     - **Product Sync** - Only cache the needed keys of `Category`, `ProductType` and `Type` references instead of 
     caching all keys of such resources. [#418](https://github.com/commercetools/commercetools-sync-java/issues/418) 
-    
-    **Note**: This might have performance implications on the product sync, since now every non cached key-id entry will be individually fetched. 
-    However, issue [#235](https://github.com/commercetools/commercetools-sync-java/issues/235) should address this.
+        **Note**: This might have performance implications on the product sync, since now every non cached key-id entry will be individually fetched. 
+        However, issue [#235](https://github.com/commercetools/commercetools-sync-java/issues/235) should address this.
     
     - **Commons** - Refactor duplicate implementations in concrete services and generalise it in the `BaseService`. 
     Thanks, @jarzynp, for the contributions! [#418](https://github.com/commercetools/commercetools-sync-java/issues/418)
@@ -49,8 +56,6 @@
     - **Product Sync** - Fixed a bug in the Product Sync where keys with special characters failed to be saved 
     for `CustomObject`s, as the characters weren't allowed on the commmercetools platform. 
     [#474](https://github.com/commercetools/commercetools-sync-java/issues/474)
-
--->
 
 ### 1.6.1 -  Oct 17, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.6.0...1.6.1) |
