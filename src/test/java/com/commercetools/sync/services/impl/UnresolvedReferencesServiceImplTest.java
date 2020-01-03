@@ -208,7 +208,9 @@ class UnresolvedReferencesServiceImplTest {
         assertThat(errorMessages)
                 .hasSize(1)
                 .hasOnlyOneElementSatisfying(message -> {
-                    assertThat(message).contains(format("Failed to save CustomObject with key: '%s' (hash of product key: '%s').", sha1Hex(productKey), productKey));
+                    assertThat(message).contains(
+                        format("Failed to save CustomObject with key: '%s' (hash of product key: '%s').",
+                            sha1Hex(productKey), productKey));
                     assertThat(message).contains("BadRequestException");
                 });
 
