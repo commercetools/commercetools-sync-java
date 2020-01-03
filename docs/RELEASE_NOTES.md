@@ -44,6 +44,11 @@
     
     - **Commons** - Refactor duplicate implementations in concrete services and generalise it in the `BaseService`. 
     Thanks, @jarzynp, for the contributions! [#418](https://github.com/commercetools/commercetools-sync-java/issues/418)
+    
+- 🐞 **Bug Fixes** (1)
+    - **Product Sync** - Fixed a bug in the Product Sync where keys with special characters failed to be saved 
+    for `CustomObject`s, as the characters weren't allowed on the commmercetools platform. 
+    [#474](https://github.com/commercetools/commercetools-sync-java/issues/474)
 
 -->
 
