@@ -37,7 +37,7 @@
 -->
 
 
-### 1.7.0 -  Jan 3, 2020
+### 1.7.0 -  Jan 7, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.6.1...1.7.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.7.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.7.0)
@@ -58,11 +58,11 @@
     [#474](https://github.com/commercetools/commercetools-sync-java/issues/474)
 
 - 🛠️ **Dependency Updates** (5)
-    - `org.ajoberstar.grgit` `3.1.1` ->  `4.0.1`
-    - `org.ajoberstar.git-publish` `2.1.1` ->  `2.1.3`
+    - `org.ajoberstar.grgit` `3.1.1` ->  [`4.0.1`](https://github.com/ajoberstar/grgit/releases/tag/4.0.1)
+    - `org.ajoberstar.git-publish` `2.1.1` ->  [`2.1.3`](https://github.com/ajoberstar/gradle-git-publish/releases/tag/2.1.3)
     - `mockito-junit-jupiter` `3.1.0` -> [`3.2.4`](https://github.com/mockito/mockito/releases/tag/v3.2.4)
     - `commercetools-jvm-sdk` `1.47.0` -> [`1.48.0`](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_48_0)
-    - `org.assertj.assertj-core` `3.13.2` ->  `3.14.0`
+    - `org.assertj.assertj-core` `3.13.2` ->  [`3.14.0`](https://assertj.github.io/doc/#assertj-core-3-14-0-release-notes)
 
 ### 1.6.1 -  Oct 17, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.6.0...1.6.1) |
