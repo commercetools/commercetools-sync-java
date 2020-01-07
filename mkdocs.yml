@@ -11,7 +11,7 @@ repo_url: http://github.com/commercetools/commercetools-sync-java
 #edit_uri: edit/master/src/docs/docs/
 
 #Copyright (shown at the footer)
-copyright: 'Copyright &copy; 2019 commercetools'
+copyright: 'Copyright &copy; 2020 commercetools'
 
 theme:
   name: 'material'
@@ -56,7 +56,7 @@ nav:
       - Advanced:
         - Sync Options: usage/SYNC_OPTIONS.md
         - Usage Tips: usage/IMPORTANT_USAGE_TIPS.md
-  - Javadoc: https://commercetools.github.io/commercetools-sync-java/v/1.6.1/
+  - Javadoc: https://commercetools.github.io/commercetools-sync-java/v/1.7.0/
   - Release notes: RELEASE_NOTES.md
   - Roadmap: https://github.com/commercetools/commercetools-sync-java/milestones
   - Issues: https://github.com/commercetools/commercetools-sync-java/issues

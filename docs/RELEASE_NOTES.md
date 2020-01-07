@@ -29,7 +29,15 @@
 -->
 
 <!--
-### 1.7.0 -  Oct 31, 2019
+### 1.8.0 -  Oct 31, 2019
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.7.0...1.8.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.8.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.8.0)
+
+-->
+
+
+### 1.7.0 -  Jan 3, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.6.1...1.7.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.7.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.7.0)
@@ -38,9 +46,8 @@
 - ✨ **Enhancements** (2)
     - **Product Sync** - Only cache the needed keys of `Category`, `ProductType` and `Type` references instead of 
     caching all keys of such resources. [#418](https://github.com/commercetools/commercetools-sync-java/issues/418) 
-    
-    **Note**: This might have performance implications on the product sync, since now every non cached key-id entry will be individually fetched. 
-    However, issue [#235](https://github.com/commercetools/commercetools-sync-java/issues/235) should address this.
+        **Note**: This might have performance implications on the product sync, since now every non cached key-id entry will be individually fetched. 
+        However, issue [#235](https://github.com/commercetools/commercetools-sync-java/issues/235) should address this.
     
     - **Commons** - Refactor duplicate implementations in concrete services and generalise it in the `BaseService`. 
     Thanks, @jarzynp, for the contributions! [#418](https://github.com/commercetools/commercetools-sync-java/issues/418)
@@ -50,7 +57,12 @@
     for `CustomObject`s, as the characters weren't allowed on the commmercetools platform. 
     [#474](https://github.com/commercetools/commercetools-sync-java/issues/474)
 
--->
+- 🛠️ **Dependency Updates** (5)
+    - `org.ajoberstar.grgit` `3.1.1` ->  `4.0.1`
+    - `org.ajoberstar.git-publish` `2.1.1` ->  `2.1.3`
+    - `mockito-junit-jupiter` `3.1.0` -> [`3.2.4`](https://github.com/mockito/mockito/releases/tag/v3.2.4)
+    - `commercetools-jvm-sdk` `1.47.0` -> [`1.48.0`](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_48_0)
+    - `org.assertj.assertj-core` `3.13.2` ->  `3.14.0`
 
 ### 1.6.1 -  Oct 17, 2019
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.6.0...1.6.1) |
@@ -66,10 +78,10 @@ is passed in an attribute draft of type `Set` of `Reference`. [#441](https://git
 failed fetches of missing references. [#426](https://github.com/commercetools/commercetools-sync-java/issues/426)
 
 - 🛠️ **Dependency Updates** (4)
-    - `mockito-junit-jupiter` 3.0.0 -> [3.1.0](https://github.com/mockito/mockito/releases/tag/v3.1.0)
-    - `com.adarshr.test-logger` 1.7.1 -> [2.0.0](https://github.com/radarsh/gradle-test-logger-plugin/releases/tag/v2.0.0)
-    - `com.github.ben-manes.versions` 0.25.0 -> [0.27.0](https://github.com/ben-manes/gradle-versions-plugin/releases/tag/v0.27.0) 
-    - `commercetools-jvm-sdk` 1.46.0 -> [1.47.0](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_47_0)
+    - `mockito-junit-jupiter` `3.0.0` -> [`3.1.0`](https://github.com/mockito/mockito/releases/tag/v3.1.0)
+    - `com.adarshr.test-logger` `1.7.1` -> [`2.0.0`](https://github.com/radarsh/gradle-test-logger-plugin/releases/tag/v2.0.0)
+    - `com.github.ben-manes.versions` `0.25.0` -> [`0.27.0`](https://github.com/ben-manes/gradle-versions-plugin/releases/tag/v0.27.0) 
+    - `commercetools-jvm-sdk` `1.46.0` -> [`1.47.0`](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_47_0)
 
 
 ### 1.6.0 -  Oct 10, 2019
