@@ -529,7 +529,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.6.1/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.7.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -751,7 +751,7 @@ order for the sync to resolve the actual ids of those references, those <code>ke
 <p>Provide the <code>key</code> value on the <code>id</code> field of the reference. This means that calling <code>getId()</code> on the
 reference would return its <code>key</code>. </p>
 <p><strong>Note</strong>: When syncing from a source commercetools project, you can use this util which this library provides: 
- <a href="https://commercetools.github.io/commercetools-sync-java/v/1.6.1/com/commercetools/sync/products/utils/ProductReferenceReplacementUtils.html#replaceProductsReferenceIdsWithKeys-java.util.List-"><code>replaceProductsReferenceIdsWithKeys</code></a>
+ <a href="https://commercetools.github.io/commercetools-sync-java/v/1.7.0/com/commercetools/sync/products/utils/ProductReferenceReplacementUtils.html#replaceProductsReferenceIdsWithKeys-java.util.List-"><code>replaceProductsReferenceIdsWithKeys</code></a>
  that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
  <div class="codehilite"><pre><span></span><span class="c1">// Puts the keys in the reference id fields to prepare for reference resolution</span>
 <span class="kd">final</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">ProductDraft</span><span class="o">&gt;</span> <span class="n">productDrafts</span> <span class="o">=</span> <span class="n">replaceProductsReferenceIdsWithKeys</span><span class="o">(</span><span class="n">products</span><span class="o">);</span>
@@ -1011,7 +1011,7 @@ products in the cycle as products with missing parents. They will be persisted a
       <div class="md-footer-copyright">
         
           <div class="md-footer-copyright__highlight">
-            Copyright &copy; 2019 commercetools
+            Copyright &copy; 2020 commercetools
           </div>
         
         powered by

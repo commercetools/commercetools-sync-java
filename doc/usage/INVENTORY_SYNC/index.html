@@ -509,7 +509,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.6.1/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.7.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -703,11 +703,11 @@ against a <a href="https://docs.commercetools.com/http-api-projects-inventory.ht
 <p>Provide the <code>key</code> value on the <code>id</code> field of the reference. This means that calling <code>getId()</code> on the
    reference would return its <code>key</code>. </p>
 <div class="codehilite"><pre><span></span>**Note**: When syncing from a source commercetools project, you can use this util which this library provides: 
- [`replaceInventoriesReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/1.6.1/com/commercetools/sync/inventories/utils/InventoryReferenceReplacementUtils.html#replaceInventoriesReferenceIdsWithKeys-java.util.List-)
+ [`replaceInventoriesReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/1.7.0/com/commercetools/sync/inventories/utils/InventoryReferenceReplacementUtils.html#replaceInventoriesReferenceIdsWithKeys-java.util.List-)
  that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
  ````java
  // Puts the keys in the reference id fields to prepare for reference resolution
- final List&amp;lt;InventoryEntryDraft&amp;gt; inventoryEntryDrafts = replaceInventoriesReferenceIdsWithKeys(inventoryEntries);
+ final List&lt;InventoryEntryDraft&gt; inventoryEntryDrafts = replaceInventoriesReferenceIdsWithKeys(inventoryEntries);
  ````
 </pre></div>
 
@@ -821,7 +821,7 @@ human readable format.
       <div class="md-footer-copyright">
         
           <div class="md-footer-copyright__highlight">
-            Copyright &copy; 2019 commercetools
+            Copyright &copy; 2020 commercetools
           </div>
         
         powered by
