@@ -36,7 +36,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  * @param <U> Resource (e.g. {@link io.sphere.sdk.products.Product}, {@link io.sphere.sdk.categories.Category}, etc..
  * @param <S> Subclass of {@link BaseSyncOptions}
  * @param <Q> Query (e.g. {@link io.sphere.sdk.products.queries.ProductQuery},
- *            {@link io.sphere.sdk.categories.queries.CategoryQuery}, etc..
+ *            {@link io.sphere.sdk.categories.queries.CategoryQuery}, etc.. )
  * @param <M> Query Model (e.g. {@link io.sphere.sdk.products.queries.ProductQueryModel},
  *            {@link io.sphere.sdk.categories.queries.CategoryQueryModel}, etc..
  * @param <E> Expansion Model (e.g. {@link io.sphere.sdk.products.expansion.ProductExpansionModel},
@@ -164,12 +164,12 @@ abstract class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions,
      * could contain an {@link Optional} with the id inside of it or an empty {@link Optional} if no resource
      * was found in the CTP project with this key.
      *
-     * @param key the key by which a resource id should be fetched from the CTP project.
+     * @param key           the key by which a resource id should be fetched from the CTP project.
      * @param keyMapper     a function to get the key from the resource.
      * @param querySupplier supplies the query to fetch the resource with the given key.
      * @return {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt; in which the result of it's
-     *         completion could contain an {@link Optional} with the id inside of it or an empty {@link Optional} if no
-     *         resource was found in the CTP project with this key.
+     *          completion could contain an {@link Optional} with the id inside of it or an empty {@link Optional} if no
+     *          resource was found in the CTP project with this key.
      */
     @Nonnull
     CompletionStage<Optional<String>> fetchCachedResourceId(
@@ -194,7 +194,6 @@ abstract class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions,
         final Consumer<List<U>> pageConsumer = page -> page.forEach(resource ->
             keyToIdCache.put(keyMapper.apply(resource), resource.getId()));
 
-
         return CtpQueryUtils
             .queryAll(syncOptions.getCtpClient(), querySupplier.get(), pageConsumer)
             .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
@@ -204,8 +203,8 @@ abstract class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions,
      * Given a set of keys this method caches a mapping of the keys to ids of such keys only for the keys which are
      * not already in the cache.
      *
-     * @param keys keys to cache.
-     * @param keyMapper     a function to get the key from the resource.
+     * @param keys            keys to cache.
+     * @param keyMapper       a function to get the key from the resource.
      * @param keysQueryMapper function that accepts a set of keys which are not cached and maps it to a query object
      *                        representing the query to CTP on such keys.
      * @return a map of key to ids of the requested keys.
@@ -239,7 +238,7 @@ abstract class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions,
      * keys in the CTP project, defined in an injected {@link SphereClient}. A mapping of the key to the id
      * of the fetched resources is persisted in an in-memory map.
      *
-     * @param keys  set of state keys to fetch matching states by
+     * @param keys          set of state keys to fetch matching states by
      * @param keyMapper     a function to get the key from the resource.
      * @param querySupplier supplies the query to fetch the resources with the given keys.
      * @return {@link CompletionStage}&lt;{@link Set}&lt;{@code U}&gt;&gt; in which the result of it's completion

@@ -21,20 +21,20 @@ import java.util.Set;
 import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.deleteWaitingToBeResolvedCustomObjects;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_SPECIAL_CHARS_RESOURCE_PATH;
 import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.util.Collections.singleton;
+import static org.apache.commons.codec.digest.DigestUtils.sha1Hex;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class UnresolvedReferencesServiceImplIT {
 
+    private static final String CUSTOM_OBJECT_CONTAINER_KEY =
+        "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
     private UnresolvedReferencesService unresolvedReferencesService;
-
     private List<String> errorCallBackMessages;
     private List<String> warningCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
-
-    private static final String CUSTOM_OBJECT_CONTAINER_KEY =
-        "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
 
     @AfterEach
     void tearDown() {
@@ -106,6 +106,61 @@ class UnresolvedReferencesServiceImplIT {
     }
 
     @Test
+    void saveFetchAndDelete_WithKeyWithSpecialCharacter_shouldWorkCorrectly() {
+        // preparation
+        final ProductDraft productDraft =
+            SphereJsonUtils.readObjectFromResource(PRODUCT_KEY_SPECIAL_CHARS_RESOURCE_PATH, ProductDraft.class);
+
+        final WaitingToBeResolved productDraftWithUnresolvedRefs =
+            new WaitingToBeResolved(productDraft, asSet("foo", "bar"));
+
+        // test
+        final Optional<WaitingToBeResolved> result = unresolvedReferencesService
+            .save(productDraftWithUnresolvedRefs)
+            .toCompletableFuture()
+            .join();
+
+        // assertions
+        assertThat(result).hasValueSatisfying(waitingToBeResolved ->
+            assertThat(waitingToBeResolved.getProductDraft()).isEqualTo(productDraft));
+
+        // test
+        final CustomObjectByKeyGet<WaitingToBeResolved> customObjectByKeyGet = CustomObjectByKeyGet
+            .of(CUSTOM_OBJECT_CONTAINER_KEY, sha1Hex(productDraft.getKey()), WaitingToBeResolved.class);
+        final CustomObject<WaitingToBeResolved> createdCustomObject = CTP_TARGET_CLIENT
+            .execute(customObjectByKeyGet)
+            .toCompletableFuture()
+            .join();
+        // assertions
+        assertThat(createdCustomObject.getKey()).isEqualTo(sha1Hex(productDraft.getKey()));
+
+        // test
+        final Set<WaitingToBeResolved> waitingDrafts = unresolvedReferencesService
+            .fetch(singleton(productDraft.getKey()))
+            .toCompletableFuture()
+            .join();
+
+        // assertions
+        assertThat(waitingDrafts).containsExactly(productDraftWithUnresolvedRefs);
+
+        // test
+        final Optional<WaitingToBeResolved> deletionResult = unresolvedReferencesService
+            .delete(productDraft.getKey())
+            .toCompletableFuture()
+            .join();
+
+        // assertions
+        assertThat(deletionResult).hasValueSatisfying(waitingToBeResolved ->
+            assertThat(waitingToBeResolved.getProductDraft()).isEqualTo(productDraft));
+
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(warningCallBackMessages).isEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
+
+
+    }
+
+    @Test
     void save_ExistingProductDraftWithoutException_overwritesOldCustomObjectValue() {
         // preparation
         final ProductDraft productDraft =
@@ -138,7 +193,7 @@ class UnresolvedReferencesServiceImplIT {
         });
 
         final CustomObjectByKeyGet<WaitingToBeResolved> customObjectByKeyGet = CustomObjectByKeyGet
-            .of(CUSTOM_OBJECT_CONTAINER_KEY, productDraft.getKey(), WaitingToBeResolved.class);
+            .of(CUSTOM_OBJECT_CONTAINER_KEY, sha1Hex(productDraft.getKey()), WaitingToBeResolved.class);
         final CustomObject<WaitingToBeResolved> createdCustomObject = CTP_TARGET_CLIENT
             .execute(customObjectByKeyGet)
             .toCompletableFuture()

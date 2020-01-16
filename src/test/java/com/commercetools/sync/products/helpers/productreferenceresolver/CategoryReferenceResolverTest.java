@@ -84,7 +84,7 @@ class CategoryReferenceResolverTest {
         // assertion
         assertThat(resolvedDraft.getCategories()).isNotNull();
         assertThat(resolvedDraft.getCategories()).hasSize(nCategories);
-        assertThat(resolvedDraft.getCategories()).containsOnlyElementsOf(categoryReferences);
+        assertThat(resolvedDraft.getCategories()).hasSameElementsAs(categoryReferences);
         assertThat(resolvedDraft.getCategoryOrderHints()).isNotNull();
         assertThat(resolvedDraft.getCategoryOrderHints().getAsMap()).hasSize(categoryOrderHintValues.size());
     }
@@ -118,7 +118,7 @@ class CategoryReferenceResolverTest {
         // assertion
         assertThat(resolvedDraft.getCategories()).isNotNull();
         assertThat(resolvedDraft.getCategories()).hasSize(nCategories);
-        assertThat(resolvedDraft.getCategories()).containsOnlyElementsOf(categoryReferences);
+        assertThat(resolvedDraft.getCategories()).hasSameElementsAs(categoryReferences);
         assertThat(resolvedDraft.getCategoryOrderHints()).isNotNull();
         assertThat(resolvedDraft.getCategoryOrderHints().getAsMap()).isEmpty();
     }
@@ -157,7 +157,7 @@ class CategoryReferenceResolverTest {
         // assertion
         assertThat(resolvedDraft.getCategories()).isNotNull();
         assertThat(resolvedDraft.getCategories()).hasSize(nCategories);
-        assertThat(resolvedDraft.getCategories()).containsOnlyElementsOf(categoryReferences);
+        assertThat(resolvedDraft.getCategories()).hasSameElementsAs(categoryReferences);
         assertThat(resolvedDraft.getCategoryOrderHints()).isNotNull();
         assertThat(resolvedDraft.getCategoryOrderHints().getAsMap()).hasSize(3);
     }
