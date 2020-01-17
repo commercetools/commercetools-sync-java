@@ -9,7 +9,7 @@ import java.util.concurrent.CompletionStage;
 
 public interface StateService {
     /**
-     * Given a {@code key}, this method first checks if a cached map of state keys -&gt; ids contains the key.
+     * Given a {@code key}, this method first checks if a cached map of State keys -&gt; ids contains the key.
      * If not, it returns a completed future that contains an {@link Optional} that contains what this key maps to in
      * the cache. If the cache doesn't contain the key; this method attempts to fetch the id of the key from the CTP
      * project, caches it and returns a {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt;
