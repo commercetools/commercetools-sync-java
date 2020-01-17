@@ -16,7 +16,6 @@ import io.sphere.sdk.producttypes.queries.ProductTypeQueryModel;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -25,13 +24,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.singleton;
-import static java.util.stream.Collectors.toSet;
 
-public final class ProductTypeServiceImpl extends BaseService<ProductTypeDraft, ProductType, BaseSyncOptions,
+public final class ProductTypeServiceImpl extends BaseServiceWithKey<ProductTypeDraft, ProductType, BaseSyncOptions,
     ProductTypeQuery, ProductTypeQueryModel, ProductTypeExpansionModel<ProductType>> implements ProductTypeService {
 
     private final Map<String, Map<String, AttributeMetaData>> productsAttributesMetaData = new ConcurrentHashMap<>();
@@ -104,29 +101,17 @@ public final class ProductTypeServiceImpl extends BaseService<ProductTypeDraft, 
     @Nonnull
     @Override
     public CompletionStage<Set<ProductType>> fetchMatchingProductTypesByKeys(@Nonnull final Set<String> keys) {
-
-        if (keys.isEmpty()) {
-            return CompletableFuture.completedFuture(Collections.emptySet());
-        }
-
-        final ProductTypeQuery productTypeQuery = ProductTypeQueryBuilder
-            .of()
-            .plusPredicates(queryModel -> queryModel.key().isIn(keys))
-            .build();
-
-        return CtpQueryUtils
-            .queryAll(syncOptions.getCtpClient(), productTypeQuery, Function.identity())
-            .thenApply(productTypes -> productTypes
-                .stream()
-                .flatMap(List::stream)
-                .peek(productType -> keyToIdCache.put(productType.getKey(), productType.getId()))
-                .collect(toSet()));
+        return fetchMatchingResources(keys,
+            () -> ProductTypeQueryBuilder
+                .of()
+                .plusPredicates(queryModel -> queryModel.key().isIn(keys))
+                .build());
     }
 
     @Nonnull
     @Override
     public CompletionStage<Optional<ProductType>> createProductType(@Nonnull final ProductTypeDraft productTypeDraft) {
-        return createResource(productTypeDraft, ProductTypeDraft::getKey, ProductTypeCreateCommand::of);
+        return createResource(productTypeDraft, ProductTypeCreateCommand::of);
     }
 
     @Nonnull

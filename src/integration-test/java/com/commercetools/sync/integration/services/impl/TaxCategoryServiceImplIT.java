@@ -5,9 +5,6 @@ import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.impl.TaxCategoryServiceImpl;
 import io.sphere.sdk.taxcategories.TaxCategory;
-import io.sphere.sdk.taxcategories.TaxCategoryDraft;
-import io.sphere.sdk.taxcategories.TaxCategoryDraftBuilder;
-import io.sphere.sdk.taxcategories.commands.TaxCategoryCreateCommand;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,11 +14,7 @@ import java.util.Optional;
 
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.createTaxCategory;
-import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.createTaxRateDraft;
 import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.deleteTaxCategories;
-import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
-import static java.lang.String.format;
-import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class TaxCategoryServiceImplIT {
@@ -67,46 +60,6 @@ class TaxCategoryServiceImplIT {
                                                                  .join();
         assertThat(taxCategoryId).isNotEmpty();
         assertThat(warnings).isEmpty();
-    }
-
-    @Test
-    void fetchCachedTaxCategoryId_OnSecondTime_ShouldNotFindProductTypeInCache() {
-        // Fetch any key to populate cache
-        taxCategoryService.fetchCachedTaxCategoryId("anyKey").toCompletableFuture().join();
-
-        // Create new taxCategory
-        final String newTaxCategoryKey = "new_tax_category_key";
-        final TaxCategoryDraft taxCategoryDraft = TaxCategoryDraftBuilder
-            .of("newTaxCategory", singletonList(createTaxRateDraft()), oldTaxCategory.getDescription())
-            .key(newTaxCategoryKey)
-            .build();
-        executeBlocking(CTP_TARGET_CLIENT.execute(TaxCategoryCreateCommand.of(taxCategoryDraft)));
-
-
-        final Optional<String> taxCategoryId = taxCategoryService.fetchCachedTaxCategoryId(newTaxCategoryKey)
-                                                                 .toCompletableFuture()
-                                                                 .join();
-
-        assertThat(taxCategoryId).isEmpty();
-        assertThat(warnings).isEmpty();
-    }
-
-    @Test
-    void fetchCachedTaxCategoryId_WithTaxCategoryExistingWithNoKey_ShouldTriggerWarningCallback() {
-        // Create new taxCategory without key
-        final TaxCategoryDraft taxCategoryDraft = TaxCategoryDraftBuilder
-            .of("newTaxCategory", singletonList(createTaxRateDraft()), oldTaxCategory.getDescription())
-            .build();
-        final TaxCategory newTaxCategory = executeBlocking(
-            CTP_TARGET_CLIENT.execute(TaxCategoryCreateCommand.of(taxCategoryDraft)));
-
-        final Optional<String> taxCategoryId = taxCategoryService.fetchCachedTaxCategoryId(oldTaxCategory.getKey())
-                                                                 .toCompletableFuture()
-                                                                 .join();
-
-        assertThat(taxCategoryId).isNotEmpty();
-        assertThat(warnings).contains(format("TaxCategory with id: '%s' has no key"
-            + " set. Keys are required for taxCategory matching.", newTaxCategory.getId()));
     }
 
     @Test

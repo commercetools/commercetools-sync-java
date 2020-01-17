@@ -7,7 +7,6 @@ import io.sphere.sdk.commands.DraftBasedCreateCommand;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.commands.UpdateCommand;
 import io.sphere.sdk.models.Resource;
-import io.sphere.sdk.models.WithKey;
 import io.sphere.sdk.queries.MetaModelQueryDsl;
 import org.apache.commons.lang3.StringUtils;
 
@@ -43,7 +42,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  * @param <E> Expansion Model (e.g. {@link io.sphere.sdk.products.expansion.ProductExpansionModel},
  *            {@link io.sphere.sdk.categories.expansion.CategoryExpansionModel}, etc..
  */
-abstract class BaseService<T, U extends Resource<U> & WithKey, S extends BaseSyncOptions,
+abstract class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions,
     Q extends MetaModelQueryDsl<U, Q, M, E>, M, E> {
 
     final S syncOptions;
@@ -74,6 +73,7 @@ abstract class BaseService<T, U extends Resource<U> & WithKey, S extends BaseSyn
         @Nonnull final U resource,
         @Nonnull final BiFunction<U, List<? extends UpdateAction<U>>, UpdateCommand<U>> updateCommandFunction,
         @Nonnull final List<UpdateAction<U>> updateActions) {
+
         final List<List<UpdateAction<U>>> actionBatches = batchElements(updateActions, MAXIMUM_ALLOWED_UPDATE_ACTIONS);
         return updateBatches(CompletableFuture.completedFuture(resource), updateCommandFunction, actionBatches);
     }
@@ -97,6 +97,7 @@ abstract class BaseService<T, U extends Resource<U> & WithKey, S extends BaseSyn
         @Nonnull final CompletionStage<U> result,
         @Nonnull final BiFunction<U, List<? extends UpdateAction<U>>, UpdateCommand<U>> updateCommandFunction,
         @Nonnull final List<List<UpdateAction<U>>> batches) {
+
         CompletionStage<U> resultStage = result;
         for (final List<UpdateAction<U>> batch : batches) {
             resultStage = resultStage.thenCompose(updatedProduct ->
@@ -164,14 +165,16 @@ abstract class BaseService<T, U extends Resource<U> & WithKey, S extends BaseSyn
      * was found in the CTP project with this key.
      *
      * @param key           the key by which a resource id should be fetched from the CTP project.
+     * @param keyMapper     a function to get the key from the resource.
      * @param querySupplier supplies the query to fetch the resource with the given key.
      * @return {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt; in which the result of it's
-     *         completion could contain an {@link Optional} with the id inside of it or an empty {@link Optional} if no
-     *         resource was found in the CTP project with this key.
+     *          completion could contain an {@link Optional} with the id inside of it or an empty {@link Optional} if no
+     *          resource was found in the CTP project with this key.
      */
     @Nonnull
     CompletionStage<Optional<String>> fetchCachedResourceId(
         @Nullable final String key,
+        @Nonnull final Function<U, String> keyMapper,
         @Nonnull final Supplier<Q> querySupplier) {
 
         if (isBlank(key)) {
@@ -180,16 +183,16 @@ abstract class BaseService<T, U extends Resource<U> & WithKey, S extends BaseSyn
         if (keyToIdCache.containsKey(key)) {
             return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
         }
-        return fetchAndCache(key, querySupplier);
+        return fetchAndCache(key, keyMapper, querySupplier);
     }
 
     private CompletionStage<Optional<String>> fetchAndCache(
         @Nullable final String key,
+        @Nonnull final Function<U, String> keyMapper,
         @Nonnull final Supplier<Q> querySupplier) {
 
         final Consumer<List<U>> pageConsumer = page -> page.forEach(resource ->
-            keyToIdCache.put(resource.getKey(), resource.getId()));
-
+            keyToIdCache.put(keyMapper.apply(resource), resource.getId()));
 
         return CtpQueryUtils
             .queryAll(syncOptions.getCtpClient(), querySupplier.get(), pageConsumer)
@@ -201,6 +204,7 @@ abstract class BaseService<T, U extends Resource<U> & WithKey, S extends BaseSyn
      * not already in the cache.
      *
      * @param keys            keys to cache.
+     * @param keyMapper       a function to get the key from the resource.
      * @param keysQueryMapper function that accepts a set of keys which are not cached and maps it to a query object
      *                        representing the query to CTP on such keys.
      * @return a map of key to ids of the requested keys.
@@ -208,6 +212,7 @@ abstract class BaseService<T, U extends Resource<U> & WithKey, S extends BaseSyn
     @Nonnull
     CompletionStage<Map<String, String>> cacheKeysToIds(
         @Nonnull final Set<String> keys,
+        @Nonnull final Function<U, String> keyMapper,
         @Nonnull final Function<Set<String>, Q> keysQueryMapper) {
 
         final Set<String> keysNotCached = keys
@@ -221,7 +226,7 @@ abstract class BaseService<T, U extends Resource<U> & WithKey, S extends BaseSyn
         }
 
         final Consumer<List<U>> pageConsumer = page -> page.forEach(resource ->
-            keyToIdCache.put(resource.getKey(), resource.getId()));
+            keyToIdCache.put(keyMapper.apply(resource), resource.getId()));
 
         return CtpQueryUtils
             .queryAll(syncOptions.getCtpClient(), keysQueryMapper.apply(keysNotCached), pageConsumer)
@@ -233,7 +238,8 @@ abstract class BaseService<T, U extends Resource<U> & WithKey, S extends BaseSyn
      * keys in the CTP project, defined in an injected {@link SphereClient}. A mapping of the key to the id
      * of the fetched resources is persisted in an in-memory map.
      *
-     * @param          keys set of state keys to fetch matching states by
+     * @param keys          set of keys to fetch matching resources by.
+     * @param keyMapper     a function to get the key from the resource.
      * @param querySupplier supplies the query to fetch the resources with the given keys.
      * @return {@link CompletionStage}&lt;{@link Set}&lt;{@code U}&gt;&gt; in which the result of it's completion
      *         contains a {@link Set} of all matching resources.
@@ -241,6 +247,7 @@ abstract class BaseService<T, U extends Resource<U> & WithKey, S extends BaseSyn
     @Nonnull
     CompletionStage<Set<U>> fetchMatchingResources(
         @Nonnull final Set<String> keys,
+        @Nonnull final Function<U, String> keyMapper,
         @Nonnull final Supplier<Q> querySupplier) {
 
         if (keys.isEmpty()) {
@@ -252,7 +259,7 @@ abstract class BaseService<T, U extends Resource<U> & WithKey, S extends BaseSyn
             .thenApply(fetchedResources -> fetchedResources
                 .stream()
                 .flatMap(List::stream)
-                .peek(resource -> keyToIdCache.put(resource.getKey(), resource.getId()))
+                .peek(resource -> keyToIdCache.put(keyMapper.apply(resource), resource.getId()))
                 .collect(Collectors.toSet()));
     }
 

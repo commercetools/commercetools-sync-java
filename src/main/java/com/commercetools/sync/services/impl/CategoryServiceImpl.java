@@ -32,7 +32,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
  * Implementation of CategoryService interface.
  * TODO: USE graphQL to get only keys. GITHUB ISSUE#84
  */
-public final class CategoryServiceImpl extends BaseService<CategoryDraft, Category, CategorySyncOptions,
+public final class CategoryServiceImpl extends BaseServiceWithKey<CategoryDraft, Category, CategorySyncOptions,
     CategoryQuery, CategoryQueryModel, CategoryExpansionModel<Category>> implements CategoryService {
 
     private static final String CATEGORY_KEY_NOT_SET = "Category with id: '%s' has no key set. Keys are required for "
@@ -60,9 +60,10 @@ public final class CategoryServiceImpl extends BaseService<CategoryDraft, Catego
                 }
             });
 
-        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), CategoryQuery.of(), categoryPageConsumer)
-                            .thenAccept(result -> isCached = true)
-                            .thenApply(result -> keyToIdCache);
+        return CtpQueryUtils
+            .queryAll(syncOptions.getCtpClient(), CategoryQuery.of(), categoryPageConsumer)
+            .thenAccept(result -> isCached = true)
+            .thenApply(result -> keyToIdCache);
     }
 
     @Nonnull
@@ -97,7 +98,7 @@ public final class CategoryServiceImpl extends BaseService<CategoryDraft, Catego
     @Nonnull
     @Override
     public CompletionStage<Optional<Category>> createCategory(@Nonnull final CategoryDraft categoryDraft) {
-        return createResource(categoryDraft, CategoryDraft::getKey, CategoryCreateCommand::of);
+        return createResource(categoryDraft, CategoryCreateCommand::of);
     }
 
     @Nonnull

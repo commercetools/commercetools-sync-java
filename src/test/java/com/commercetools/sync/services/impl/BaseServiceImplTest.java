@@ -95,7 +95,7 @@ class BaseServiceImplTest {
     }
 
     @Test
-    void fetchCachedResourceId_WithCachedKey_ShouldReturnResourceIdWithoutMakingRequest() {
+    void fetchCachedResourceId_WithCachedResource_ShouldReturnResourceIdWithoutMakingRequest() {
         //preparation
         final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
         final Product mockProductResult = mock(Product.class);
@@ -213,7 +213,7 @@ class BaseServiceImplTest {
 
     @SuppressWarnings("unchecked")
     @Test
-    void fetchResource_WithExistingProductKey_ShouldFetchResource() {
+    void fetchResource_WithKey_ShouldFetchResource() {
         //preparation
         final String resourceId = RandomStringUtils.random(15);
         final String resourceKey = RandomStringUtils.random(15);

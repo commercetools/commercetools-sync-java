@@ -23,8 +23,8 @@ import java.util.concurrent.CompletionStage;
  * Implementation of TypeService interface.
  * TODO: USE graphQL to get only keys. GITHUB ISSUE#84
  */
-public final class TypeServiceImpl extends BaseService<TypeDraft, Type, BaseSyncOptions, TypeQuery, TypeQueryModel,
-    TypeExpansionModel<Type>> implements TypeService {
+public final class TypeServiceImpl extends BaseServiceWithKey<TypeDraft, Type, BaseSyncOptions, TypeQuery,
+    TypeQueryModel, TypeExpansionModel<Type>> implements TypeService {
 
     public TypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
         super(syncOptions);
@@ -63,7 +63,7 @@ public final class TypeServiceImpl extends BaseService<TypeDraft, Type, BaseSync
     @Nonnull
     @Override
     public CompletionStage<Optional<Type>> createType(@Nonnull final TypeDraft typeDraft) {
-        return createResource(typeDraft, TypeDraft::getKey, TypeCreateCommand::of);
+        return createResource(typeDraft, TypeCreateCommand::of);
     }
 
     @Nonnull
