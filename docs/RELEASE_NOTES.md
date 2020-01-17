@@ -66,6 +66,8 @@
     - **Product Sync** - Fixed a bug in the Product Sync where keys with special characters failed to be saved 
     for `CustomObject`s, as the characters weren't allowed on the commmercetools platform. 
     [#474](https://github.com/commercetools/commercetools-sync-java/issues/474)
+    **Note**: 🚧 This is a breaking change. Previously stored custom objects representing product drafts with unresolved references, won't be   
+    synced with this version, since the key is now treated differently. Make sure to sync such drafts again with this version of the library.
 
 - 🛠️ **Dependency Updates** (5)
     - `org.ajoberstar.grgit` `3.1.1` ->  [`4.0.1`](https://github.com/ajoberstar/grgit/releases/tag/4.0.1)
