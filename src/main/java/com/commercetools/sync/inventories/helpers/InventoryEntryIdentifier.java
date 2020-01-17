@@ -11,6 +11,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Objects;
 
+import static java.lang.String.format;
+
 /**
  * This class provides as a container of the unique identifier of an {@link InventoryEntry} for the sync which is a
  * combination of both the SKU of the inventory entry and the supply channel key of this inventory entry.
@@ -75,7 +77,7 @@ public final class InventoryEntryIdentifier {
 
     @Override
     public String toString() {
-        return "{" + "sku='" + inventoryEntrySku + '\'' + ", channelKey='" + inventoryEntryChannelKey + '\'' + '}';
+        return format("{sku='%s', channelKey='%s'}", inventoryEntrySku, inventoryEntryChannelKey);
     }
 
     @Override
