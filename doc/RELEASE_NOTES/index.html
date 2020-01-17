@@ -415,7 +415,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.7.0/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.8.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -452,6 +452,13 @@
   
     <label class="md-nav__title" for="__toc">Table of contents</label>
     <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#180-jan-17-2020" title="1.8.0 -  Jan 17, 2020" class="md-nav__link">
+    1.8.0 -  Jan 17, 2020
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#170-jan-7-2020" title="1.7.0 -  Jan 7, 2020" class="md-nav__link">
@@ -723,6 +730,13 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#180-jan-17-2020" title="1.8.0 -  Jan 17, 2020" class="md-nav__link">
+    1.8.0 -  Jan 17, 2020
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#170-jan-7-2020" title="1.7.0 -  Jan 7, 2020" class="md-nav__link">
     1.7.0 -  Jan 7, 2020
   </a>
@@ -973,13 +987,26 @@
 -->
 
 <!--
-### 1.8.0 -  Oct 31, 2019
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.7.0...1.8.0) |
-[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.8.0/) | 
-[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.8.0)
+### 1.9.0 -  Oct 31, 2019
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.8.0...1.9.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.9.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.9.0)
 
 -->
 
+<h3 id="180-jan-17-2020">1.8.0 -  Jan 17, 2020<a class="headerlink" href="#180-jan-17-2020" title="Permanent link">&para;</a></h3>
+<p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.7.0...1.8.0">Commits</a> |
+<a href="https://commercetools.github.io/commercetools-sync-java/v/1.8.0/">Javadoc</a> | 
+<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/1.8.0">Jar</a></p>
+<ul>
+<li>✨ <strong>Enhancements</strong> (1)<ul>
+<li><strong>Inventory Sync</strong> - Only cache the needed keys of <code>Channel</code> references instead of 
+caching all keys of such resources. <a href="https://github.com/commercetools/commercetools-sync-java/issues/198">#198</a> 
+    <strong>Note</strong>: This might have performance implications on the inventory sync, since now every non cached key-id entry will be individually fetched. 
+    However, issue <a href="https://github.com/commercetools/commercetools-sync-java/issues/235">#235</a> should address this.</li>
+</ul>
+</li>
+</ul>
 <h3 id="170-jan-7-2020">1.7.0 -  Jan 7, 2020<a class="headerlink" href="#170-jan-7-2020" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.6.1...1.7.0">Commits</a> |
 <a href="https://commercetools.github.io/commercetools-sync-java/v/1.7.0/">Javadoc</a> | 
@@ -1005,7 +1032,9 @@ Thanks, @jarzynp, for the contributions! <a href="https://github.com/commercetoo
 <ul>
 <li><strong>Product Sync</strong> - Fixed a bug in the Product Sync where keys with special characters failed to be saved 
 for <code>CustomObject</code>s, as the characters weren't allowed on the commmercetools platform. 
-<a href="https://github.com/commercetools/commercetools-sync-java/issues/474">#474</a></li>
+<a href="https://github.com/commercetools/commercetools-sync-java/issues/474">#474</a>
+<strong>Note</strong>: 🚧 This is a breaking change. Previously stored custom objects representing product drafts with unresolved references, won't be <br />
+synced with this version, since the key is now treated differently. Make sure to sync such drafts again with this version of the library.</li>
 </ul>
 </li>
 <li>
