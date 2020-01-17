@@ -19,8 +19,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
-public class CartDiscountServiceImpl extends BaseServiceWithKey<CartDiscountDraft, CartDiscount, CartDiscountSyncOptions,
-    CartDiscountQuery, CartDiscountQueryModel, CartDiscountExpansionModel<CartDiscount>>
+public class CartDiscountServiceImpl extends BaseServiceWithKey<CartDiscountDraft, CartDiscount,
+    CartDiscountSyncOptions, CartDiscountQuery, CartDiscountQueryModel, CartDiscountExpansionModel<CartDiscount>>
     implements CartDiscountService {
 
     public CartDiscountServiceImpl(@Nonnull final CartDiscountSyncOptions syncOptions) {

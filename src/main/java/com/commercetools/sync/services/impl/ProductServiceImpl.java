@@ -26,8 +26,8 @@ import static java.lang.String.format;
 import static java.util.Collections.singleton;
 
 
-public final class ProductServiceImpl extends BaseServiceWithKey<ProductDraft, Product, ProductSyncOptions, ProductQuery,
-    ProductQueryModel, ProductExpansionModel<Product>> implements ProductService {
+public final class ProductServiceImpl extends BaseServiceWithKey<ProductDraft, Product, ProductSyncOptions,
+    ProductQuery, ProductQueryModel, ProductExpansionModel<Product>> implements ProductService {
 
     public ProductServiceImpl(@Nonnull final ProductSyncOptions syncOptions) {
         super(syncOptions);
