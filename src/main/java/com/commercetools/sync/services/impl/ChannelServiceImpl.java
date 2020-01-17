@@ -19,7 +19,7 @@ import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
 
-public final class ChannelServiceImpl extends KeyBasedService<ChannelDraft, Channel, BaseSyncOptions, ChannelQuery,
+public final class ChannelServiceImpl extends BaseServiceWithKey<ChannelDraft, Channel, BaseSyncOptions, ChannelQuery,
     ChannelQueryModel, ChannelExpansionModel<Channel>> implements ChannelService {
 
     private final Set<ChannelRole> channelRoles;

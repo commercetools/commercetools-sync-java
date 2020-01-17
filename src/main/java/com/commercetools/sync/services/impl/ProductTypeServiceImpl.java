@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Collections.singleton;
 
-public final class ProductTypeServiceImpl extends KeyBasedService<ProductTypeDraft, ProductType, BaseSyncOptions,
+public final class ProductTypeServiceImpl extends BaseServiceWithKey<ProductTypeDraft, ProductType, BaseSyncOptions,
     ProductTypeQuery, ProductTypeQueryModel, ProductTypeExpansionModel<ProductType>> implements ProductTypeService {
 
     private final Map<String, Map<String, AttributeMetaData>> productsAttributesMetaData = new ConcurrentHashMap<>();

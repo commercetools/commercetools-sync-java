@@ -32,7 +32,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
  * Implementation of CategoryService interface.
  * TODO: USE graphQL to get only keys. GITHUB ISSUE#84
  */
-public final class CategoryServiceImpl extends KeyBasedService<CategoryDraft, Category, CategorySyncOptions,
+public final class CategoryServiceImpl extends BaseServiceWithKey<CategoryDraft, Category, CategorySyncOptions,
     CategoryQuery, CategoryQueryModel, CategoryExpansionModel<Category>> implements CategoryService {
 
     private static final String CATEGORY_KEY_NOT_SET = "Category with id: '%s' has no key set. Keys are required for "

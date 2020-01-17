@@ -17,8 +17,8 @@ import java.util.concurrent.CompletionStage;
 import static java.util.Collections.singleton;
 
 public final class TaxCategoryServiceImpl
-    extends KeyBasedService<TaxCategoryDraft, TaxCategory, ProductSyncOptions, TaxCategoryQuery, TaxCategoryQueryModel,
-    TaxCategoryExpansionModel<TaxCategory>> implements TaxCategoryService {
+    extends BaseServiceWithKey<TaxCategoryDraft, TaxCategory, ProductSyncOptions, TaxCategoryQuery, TaxCategoryQueryModel,
+        TaxCategoryExpansionModel<TaxCategory>> implements TaxCategoryService {
 
     public TaxCategoryServiceImpl(@Nonnull final ProductSyncOptions syncOptions) {
         super(syncOptions);

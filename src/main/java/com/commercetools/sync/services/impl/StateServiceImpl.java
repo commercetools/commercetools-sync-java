@@ -17,8 +17,8 @@ import java.util.concurrent.CompletionStage;
 import static java.util.Collections.singleton;
 
 public final class StateServiceImpl
-    extends KeyBasedService<StateDraft, State, ProductSyncOptions, StateQuery, StateQueryModel,
-    StateExpansionModel<State>> implements StateService {
+    extends BaseServiceWithKey<StateDraft, State, ProductSyncOptions, StateQuery, StateQueryModel,
+        StateExpansionModel<State>> implements StateService {
 
     public StateServiceImpl(@Nonnull final ProductSyncOptions syncOptions) {
         super(syncOptions);

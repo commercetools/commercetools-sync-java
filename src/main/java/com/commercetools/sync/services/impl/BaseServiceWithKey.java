@@ -28,10 +28,10 @@ import java.util.function.Supplier;
  * @param <E> Expansion Model (e.g. {@link io.sphere.sdk.products.expansion.ProductExpansionModel},
  *            {@link io.sphere.sdk.categories.expansion.CategoryExpansionModel}, etc..
  */
-abstract class KeyBasedService<T extends WithKey, U extends Resource<U> & WithKey, S extends BaseSyncOptions,
+abstract class BaseServiceWithKey<T extends WithKey, U extends Resource<U> & WithKey, S extends BaseSyncOptions,
     Q extends MetaModelQueryDsl<U, Q, M, E>, M, E> extends BaseService<T, U , S, Q, M, E> {
 
-    KeyBasedService(@Nonnull final S syncOptions) {
+    BaseServiceWithKey(@Nonnull final S syncOptions) {
         super(syncOptions);
     }
 

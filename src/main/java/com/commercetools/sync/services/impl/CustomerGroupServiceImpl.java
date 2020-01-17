@@ -17,8 +17,8 @@ import java.util.concurrent.CompletionStage;
 import static java.util.Collections.singleton;
 
 public final class CustomerGroupServiceImpl
-    extends KeyBasedService<CustomerGroupDraft, CustomerGroup, BaseSyncOptions, CustomerGroupQuery,
-    CustomerGroupQueryModel, CustomerGroupExpansionModel<CustomerGroup>> implements CustomerGroupService {
+    extends BaseServiceWithKey<CustomerGroupDraft, CustomerGroup, BaseSyncOptions, CustomerGroupQuery,
+        CustomerGroupQueryModel, CustomerGroupExpansionModel<CustomerGroup>> implements CustomerGroupService {
 
     public CustomerGroupServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
         super(syncOptions);
