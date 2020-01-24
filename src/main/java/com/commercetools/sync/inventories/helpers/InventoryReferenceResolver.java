@@ -118,6 +118,7 @@ public final class InventoryReferenceResolver
     private CompletionStage<InventoryEntryDraftBuilder> fetchOrCreateAndResolveReference(
         @Nonnull final InventoryEntryDraftBuilder draftBuilder,
         @Nonnull final String channelKey) {
+
         final CompletionStage<InventoryEntryDraftBuilder> inventoryEntryDraftCompletionStage = channelService
             .fetchCachedChannelId(channelKey)
             .thenCompose(resolvedChannelIdOptional -> resolvedChannelIdOptional
@@ -180,10 +181,19 @@ public final class InventoryReferenceResolver
     private CompletionStage<InventoryEntryDraftBuilder> createChannelAndSetReference(
             @Nonnull final String channelKey,
             @Nonnull final InventoryEntryDraftBuilder draftBuilder) {
+
         if (options.shouldEnsureChannels()) {
             return channelService
                 .createAndCacheChannel(channelKey)
-                .thenCompose(createdChannel -> setChannelReference(createdChannel.getId(), draftBuilder));
+                .thenCompose(createdChannelOptional -> {
+                    if (createdChannelOptional.isPresent()) {
+                        return setChannelReference(createdChannelOptional.get().getId(), draftBuilder);
+                    } else {
+                        final ReferenceResolutionException referenceResolutionException =
+                            new ReferenceResolutionException(format(CHANNEL_DOES_NOT_EXIST, channelKey));
+                        return CompletableFutureUtils.exceptionallyCompletedFuture(referenceResolutionException);
+                    }
+                });
         } else {
             final ReferenceResolutionException referenceResolutionException =
                 new ReferenceResolutionException(format(CHANNEL_DOES_NOT_EXIST, channelKey));

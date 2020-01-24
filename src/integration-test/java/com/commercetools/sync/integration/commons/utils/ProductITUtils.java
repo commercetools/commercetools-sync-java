@@ -16,7 +16,6 @@ import io.sphere.sdk.products.commands.ProductDeleteCommand;
 import io.sphere.sdk.products.commands.ProductUpdateCommand;
 import io.sphere.sdk.products.commands.updateactions.Unpublish;
 import io.sphere.sdk.products.queries.ProductQuery;
-import io.sphere.sdk.states.StateType;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
 import io.sphere.sdk.types.Type;
@@ -29,6 +28,7 @@ import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
 import static com.commercetools.sync.integration.commons.utils.ChannelITUtils.deleteChannels;
+import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.deleteWaitingToBeResolvedCustomObjects;
 import static com.commercetools.sync.integration.commons.utils.CustomerGroupITUtils.deleteCustomerGroups;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createTypeIfNotAlreadyExisting;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
@@ -53,9 +53,10 @@ public final class ProductITUtils {
         deleteAllCategories(ctpClient);
         deleteTypes(ctpClient);
         deleteChannels(ctpClient);
-        deleteStates(ctpClient, StateType.PRODUCT_STATE);
+        deleteStates(ctpClient);
         deleteTaxCategories(ctpClient);
         deleteCustomerGroups(ctpClient);
+        deleteWaitingToBeResolvedCustomObjects(ctpClient);
     }
 
     /**

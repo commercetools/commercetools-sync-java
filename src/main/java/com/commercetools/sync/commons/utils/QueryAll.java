@@ -9,7 +9,6 @@ import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.queries.QuerySort;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
@@ -34,9 +33,17 @@ final class QueryAll<T extends Resource, C extends QueryDsl<T, C>, S> {
                      final long pageSize) {
 
         this.client = client;
-        this.baseQuery = !baseQuery.sort().isEmpty() ? baseQuery : baseQuery.withSort(QuerySort.of("id asc"));
+        this.baseQuery = withDefaults(baseQuery, pageSize);
         this.pageSize = pageSize;
         this.mappedResultsTillNow = new ArrayList<>();
+    }
+
+    @Nonnull
+    private static <T extends Resource, C extends QueryDsl<T, C>> QueryDsl<T, C> withDefaults(
+        @Nonnull final QueryDsl<T, C> query, final long pageSize) {
+
+        final C withLimit = query.withLimit(pageSize);
+        return !withLimit.sort().isEmpty() ? withLimit : withLimit.withSort(QuerySort.of("id asc"));
     }
 
     @Nonnull
@@ -59,7 +66,7 @@ final class QueryAll<T extends Resource, C extends QueryDsl<T, C>, S> {
     @Nonnull
     CompletionStage<List<S>> run(@Nonnull final Function<List<T>, S> pageMapper) {
         this.pageMapper = pageMapper;
-        final CompletionStage<PagedQueryResult<T>> firstPage = queryPage();
+        final CompletionStage<PagedQueryResult<T>> firstPage = client.execute(baseQuery);
         return queryNextPages(firstPage)
             .thenApply(voidResult -> this.mappedResultsTillNow);
     }
@@ -75,7 +82,7 @@ final class QueryAll<T extends Resource, C extends QueryDsl<T, C>, S> {
     @Nonnull
     CompletionStage<Void> run(@Nonnull final Consumer<List<T>> pageConsumer) {
         this.pageConsumer = pageConsumer;
-        final CompletionStage<PagedQueryResult<T>> firstPage = queryPage();
+        final CompletionStage<PagedQueryResult<T>> firstPage = client.execute(baseQuery);
         return queryNextPages(firstPage).thenAccept(voidResult -> { });
     }
 
@@ -107,12 +114,14 @@ final class QueryAll<T extends Resource, C extends QueryDsl<T, C>, S> {
      *         the method returns a completed future containing null.
      */
     @Nonnull
+    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // `https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<PagedQueryResult<T>> processPageAndGetNext(@Nonnull final PagedQueryResult<T> page) {
         final List<T> currentPageElements = page.getResults();
-        if (currentPageElements.size() > 0) {
+        if (!currentPageElements.isEmpty()) {
             mapOrConsume(currentPageElements);
+            return getNextPageStage(currentPageElements);
         }
-        return getNextPageStage(currentPageElements);
+        return completedFuture(null);
     }
 
     /**
@@ -148,32 +157,8 @@ final class QueryAll<T extends Resource, C extends QueryDsl<T, C>, S> {
         if (pageElements.size() == pageSize) {
             final String lastElementId = pageElements.get(pageElements.size() - 1).getId();
             final QueryPredicate<T> queryPredicate = QueryPredicate.of(format("id > \"%s\"", lastElementId));
-            return queryPage(queryPredicate);
+            return client.execute(baseQuery.plusPredicates(queryPredicate));
         }
         return completedFuture(null);
-    }
-
-    /**
-     * Gets the results of {@link this} instance's query with a limit of this instance's {@code pageSize} and optionally
-     * appending the {@code queryPredicate} if it is not null.
-     *
-     * @param queryPredicate query predicate to append if not null.
-     * @return a future containing the results of the requested page of applying the query with a limit of this
-     *         instance's {@code pageSize} and optionally appending the {@code queryPredicate} if it is not null.
-     */
-    @Nonnull
-    private CompletionStage<PagedQueryResult<T>> queryPage(@Nullable final QueryPredicate<T> queryPredicate) {
-        final QueryDsl<T, C> query = baseQuery.withLimit(pageSize);
-        return client.execute(queryPredicate != null ? query.withPredicates(queryPredicate) : query);
-    }
-
-    /**
-     * Gets the results of {@link this} instance's query with a limit of this instance's {@code pageSize}.
-     *
-     * @return a future containing the results of the requested page of applying the query with {@code pageSize}.
-     */
-    @Nonnull
-    private CompletionStage<PagedQueryResult<T>> queryPage() {
-        return queryPage(null);
     }
 }

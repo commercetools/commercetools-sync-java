@@ -17,6 +17,7 @@ import io.sphere.sdk.types.CustomFieldsDraft;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nonnull;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
@@ -35,6 +37,7 @@ import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockI
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
 import static io.sphere.sdk.utils.CompletableFutureUtils.failed;
+import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -74,7 +77,7 @@ class InventorySyncTest {
     private static final ZonedDateTime DATE_2 = ZonedDateTime.of(2017, 5, 1, 20, 0, 0, 0, ZoneId.of("UTC"));
 
     private List<InventoryEntryDraft> drafts;
-    private List<InventoryEntry> existingInventories;
+    private Set<InventoryEntry> existingInventories;
     private List<String> errorCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
 
@@ -90,7 +93,7 @@ class InventorySyncTest {
         final Reference<Channel> reference1 = Channel.referenceOfId(REF_1);
         final Reference<Channel> reference2 = Channel.referenceOfId(REF_2);
 
-        existingInventories = asList(
+        existingInventories = asSet(
                 getMockInventoryEntry(SKU_1, QUANTITY_1, RESTOCKABLE_1, DATE_1, null, null),
                 getMockInventoryEntry(SKU_1, QUANTITY_1, RESTOCKABLE_1, DATE_1, reference2, null),
                 getMockInventoryEntry(SKU_2, QUANTITY_1, RESTOCKABLE_1, DATE_1, null, null),
@@ -99,22 +102,30 @@ class InventorySyncTest {
         );
 
         drafts = asList(
-            InventoryEntryDraftBuilder.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, null)
-                                      .build(),
-            InventoryEntryDraftBuilder.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, ResourceIdentifier.ofId(KEY_2))
-                                      .build(),
-            InventoryEntryDraftBuilder.of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2, null)
-                                      .build(),
-            InventoryEntryDraftBuilder.of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2, ResourceIdentifier.ofId(KEY_1))
-                                      .build(),
-            InventoryEntryDraftBuilder.of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2, ResourceIdentifier.ofId(KEY_2))
-                                      .build(),
-            InventoryEntryDraftBuilder.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, null)
-                                      .build(),
-            InventoryEntryDraftBuilder.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, expandedReference1)
-                                      .build(),
-            InventoryEntryDraftBuilder.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, ResourceIdentifier.ofId(KEY_2))
-                                      .build()
+            InventoryEntryDraftBuilder
+                .of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, null)
+                .build(),
+            InventoryEntryDraftBuilder
+                .of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, ResourceIdentifier.ofId(KEY_2))
+                .build(),
+            InventoryEntryDraftBuilder
+                .of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2, null)
+                .build(),
+            InventoryEntryDraftBuilder
+                .of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2, ResourceIdentifier.ofId(KEY_1))
+                .build(),
+            InventoryEntryDraftBuilder
+                .of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2, ResourceIdentifier.ofId(KEY_2))
+                .build(),
+            InventoryEntryDraftBuilder
+                .of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, null)
+                .build(),
+            InventoryEntryDraftBuilder
+                .of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, expandedReference1)
+                .build(),
+            InventoryEntryDraftBuilder
+                .of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, ResourceIdentifier.ofId(KEY_2))
+                .build()
         );
 
         errorCallBackMessages = new ArrayList<>();
@@ -123,16 +134,44 @@ class InventorySyncTest {
 
     @Test
     void getStatistics_ShouldReturnProperStatistics() {
+        // preparation
         final InventorySync inventorySync = getInventorySync(30, false);
-        inventorySync.sync(drafts)
-                .toCompletableFuture()
-                .join();
-        final InventorySyncStatistics stats = inventorySync.getStatistics();
-        assertThat(stats).isNotNull();
+        inventorySync
+            .sync(drafts)
+            .toCompletableFuture()
+            .join();
 
+        // test
+        final InventorySyncStatistics stats = inventorySync.getStatistics();
+
+        // assertion
         assertThat(stats).hasValues(8, 3, 3, 0);
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
+    }
+
+    @Nonnull
+    private InventorySync getInventorySync(final int batchSize, final boolean ensureChannels) {
+
+        final InventorySyncOptions options = getInventorySyncOptions(batchSize, ensureChannels);
+        final InventoryService inventoryService = getMockInventoryService(existingInventories,
+            mock(InventoryEntry.class), mock(InventoryEntry.class));
+        final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_2, KEY_2));
+        return new InventorySync(options, inventoryService, channelService, mock(TypeService.class));
+    }
+
+    @Nonnull
+    private InventorySyncOptions getInventorySyncOptions(final int batchSize, final boolean ensureChannels) {
+
+        return InventorySyncOptionsBuilder
+            .of(mock(SphereClient.class))
+            .batchSize(batchSize)
+            .ensureChannels(ensureChannels)
+            .errorCallback((callBackError, exception) -> {
+                errorCallBackMessages.add(callBackError);
+                errorCallBackExceptions.add(exception);
+            })
+            .build();
     }
 
     @Test
@@ -289,36 +328,7 @@ class InventorySyncTest {
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(
             format("Failed to update inventory entry of SKU '%s' and supply channel id '%s'.", SKU_2, REF_2));
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
-        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(RuntimeException.class);
-    }
-
-    @Test
-    void sync_WithExceptionWhenCreatingEntries_ShouldNotSync() {
-        final InventorySyncOptions options = getInventorySyncOptions(3, false);
-        final InventoryService inventoryService = getMockInventoryService(existingInventories,
-            mock(InventoryEntry.class), mock(InventoryEntry.class));
-        when(inventoryService.createInventoryEntry(any())).thenReturn(getCompletionStageWithException());
-
-        final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_1, KEY_1));
-
-        final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
-            mock(TypeService.class));
-
-        final InventoryEntryDraft inventoryEntryDraft = InventoryEntryDraftBuilder
-            .of(SKU_3, QUANTITY_2, DATE_1, RESTOCKABLE_1, Channel.referenceOfId(REF_1)).build();
-
-        final InventorySyncStatistics stats = inventorySync.sync(Collections.singletonList(inventoryEntryDraft))
-                                                           .toCompletableFuture()
-                                                           .join();
-
-        assertThat(stats).hasValues(1, 0, 0, 1);
-        assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo(
-            format("Failed to create inventory entry of SKU '%s' and supply channel id '%s'.", SKU_3, REF_1));
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
-        assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(RuntimeException.class);
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(RuntimeException.class);
     }
 
     @Test
@@ -476,24 +486,5 @@ class InventorySyncTest {
         // assertion
         verify(optionsSpy).applyBeforeCreateCallBack(any());
         verify(optionsSpy, never()).applyBeforeUpdateCallBack(any(), any(), any());
-    }
-
-    private InventorySync getInventorySync(int batchSize, boolean ensureChannels) {
-        final InventorySyncOptions options = getInventorySyncOptions(batchSize, ensureChannels);
-        final InventoryService inventoryService = getMockInventoryService(existingInventories,
-            mock(InventoryEntry.class), mock(InventoryEntry.class));
-        final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_2, KEY_2));
-        return new InventorySync(options, inventoryService, channelService, mock(TypeService.class));
-    }
-
-    private InventorySyncOptions getInventorySyncOptions(int batchSize, boolean ensureChannels) {
-        return InventorySyncOptionsBuilder.of(mock(SphereClient.class))
-                                          .batchSize(batchSize)
-                                          .ensureChannels(ensureChannels)
-                                          .errorCallback((callBackError, exception) -> {
-                                              errorCallBackMessages.add(callBackError);
-                                              errorCallBackExceptions.add(exception);
-                                          })
-                                          .build();
     }
 }
