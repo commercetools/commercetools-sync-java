@@ -25,7 +25,7 @@ public interface CartDiscountService {
      *          of all matching CartDiscounts.
      */
     @Nonnull
-    CompletionStage<Set<CartDiscount>> fetchMatchingCartDiscountsByKeys(@Nonnull final Set<String> keys);
+    CompletionStage<Set<CartDiscount>> fetchMatchingCartDiscountsByKeys(@Nonnull Set<String> keys);
 
 
     /**
@@ -39,7 +39,7 @@ public interface CartDiscountService {
      * {@link Optional} that contains the matching {@link CartDiscount} if exists, otherwise empty.
      */
     @Nonnull
-    CompletionStage<Optional<CartDiscount>> fetchCartDiscount(@Nullable final String key);
+    CompletionStage<Optional<CartDiscount>> fetchCartDiscount(@Nullable String key);
 
     /**
      * Given a resource draft of type {@link CartDiscountDraft}, this method attempts to create a resource
@@ -61,7 +61,7 @@ public interface CartDiscountService {
      *         otherwise an empty optional.
      */
     @Nonnull
-    CompletionStage<Optional<CartDiscount>> createCartDiscount(@Nonnull final CartDiscountDraft cartDiscountDraft);
+    CompletionStage<Optional<CartDiscount>> createCartDiscount(@Nonnull CartDiscountDraft cartDiscountDraft);
 
     /**
      * Given a {@link CartDiscount} and a {@link List}&lt;{@link UpdateAction}&lt;{@link CartDiscount}&gt;&gt;, this
@@ -76,6 +76,6 @@ public interface CartDiscountService {
      *         instance of the {@link CartDiscount} which was updated in the CTP project or a {@link SphereException}.
      */
     @Nonnull
-    CompletionStage<CartDiscount> updateCartDiscount(@Nonnull final CartDiscount cartDiscount,
-                                                     @Nonnull final List<UpdateAction<CartDiscount>> updateActions);
+    CompletionStage<CartDiscount> updateCartDiscount(@Nonnull CartDiscount cartDiscount,
+                                                     @Nonnull List<UpdateAction<CartDiscount>> updateActions);
 }

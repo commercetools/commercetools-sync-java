@@ -24,5 +24,5 @@ public interface StateService {
      *         {@link State} was found in the CTP project with this key.
      */
     @Nonnull
-    CompletionStage<Optional<String>> fetchCachedStateId(@Nullable final String key);
+    CompletionStage<Optional<String>> fetchCachedStateId(@Nullable String key);
 }

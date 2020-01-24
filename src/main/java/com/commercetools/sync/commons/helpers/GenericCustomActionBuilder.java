@@ -30,7 +30,7 @@ public interface GenericCustomActionBuilder<T extends Resource<T>> {
      * @return a setCustomType update action that removes the custom type from the resource it's requested on.
      */
     @Nonnull
-    UpdateAction<T> buildRemoveCustomTypeAction(@Nullable final Integer variantId, @Nullable final String objectId);
+    UpdateAction<T> buildRemoveCustomTypeAction(@Nullable Integer variantId, @Nullable String objectId);
 
     /**
      * Creates a CTP "setCustomType" update action on the given resource {@code T}. If the resource that has the custom
@@ -47,10 +47,10 @@ public interface GenericCustomActionBuilder<T extends Resource<T>> {
      * @return a setCustomType update action of the type of the resource it's requested on.
      */
     @Nonnull
-    UpdateAction<T> buildSetCustomTypeAction(@Nullable final Integer variantId,
-                                             @Nullable final String objectId,
-                                             @Nonnull final String customTypeId,
-                                             @Nullable final Map<String, JsonNode> customFieldsJsonMap);
+    UpdateAction<T> buildSetCustomTypeAction(@Nullable Integer variantId,
+                                             @Nullable String objectId,
+                                             @Nonnull String customTypeId,
+                                             @Nullable Map<String, JsonNode> customFieldsJsonMap);
 
     /**
      * Creates a CTP "setCustomField" update action on the given resource {@code T} that updates a custom field with
@@ -69,8 +69,8 @@ public interface GenericCustomActionBuilder<T extends Resource<T>> {
      *         on the resource it's requested on.
      */
     @Nonnull
-    UpdateAction<T> buildSetCustomFieldAction(@Nullable final Integer variantId,
-                                              @Nullable final String objectId,
-                                              @Nullable final String customFieldName,
-                                              @Nullable final JsonNode customFieldValue);
+    UpdateAction<T> buildSetCustomFieldAction(@Nullable Integer variantId,
+                                              @Nullable String objectId,
+                                              @Nullable String customFieldName,
+                                              @Nullable JsonNode customFieldValue);
 }
