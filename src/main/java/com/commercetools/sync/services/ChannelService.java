@@ -24,7 +24,7 @@ public interface ChannelService {
      *         {@link Channel} was found in the CTP project with this external id.
      */
     @Nonnull
-    CompletionStage<Optional<String>> fetchCachedChannelId(@Nonnull final String key);
+    CompletionStage<Optional<String>> fetchCachedChannelId(@Nonnull String key);
 
     /**
      * Creates a new channel with the supplied {@code key}.

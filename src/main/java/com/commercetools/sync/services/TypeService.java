@@ -29,7 +29,7 @@ public interface TypeService {
      *         {@link Type} was found in the CTP project with this key.
      */
     @Nonnull
-    CompletionStage<Optional<String>> fetchCachedTypeId(@Nonnull final String key);
+    CompletionStage<Optional<String>> fetchCachedTypeId(@Nonnull String key);
 
     /**
      * Given a {@link Set} of Type keys, this method fetches a set of all the Types, matching this given
@@ -41,7 +41,7 @@ public interface TypeService {
      *          of all matching Types.
      */
     @Nonnull
-    CompletionStage<Set<Type>> fetchMatchingTypesByKeys(@Nonnull final Set<String> keys);
+    CompletionStage<Set<Type>> fetchMatchingTypesByKeys(@Nonnull Set<String> keys);
 
     /**
      * Given a type key, this method fetches a type that matches this given key in the CTP project defined in an
@@ -53,7 +53,7 @@ public interface TypeService {
      *         {@link Optional} that contains the matching {@link Type} if exists, otherwise empty.
      */
     @Nonnull
-    CompletionStage<Optional<Type>> fetchType(@Nullable final String key);
+    CompletionStage<Optional<Type>> fetchType(@Nullable String key);
 
     /**
      * Given a resource draft of type {@link TypeDraft}, this method attempts to create a resource
@@ -74,7 +74,7 @@ public interface TypeService {
      *         empty optional.
      */
     @Nonnull
-    CompletionStage<Optional<Type>> createType(@Nonnull final TypeDraft typeDraft);
+    CompletionStage<Optional<Type>> createType(@Nonnull TypeDraft typeDraft);
 
     /**
      * Given a {@link Type} and a {@link List}&lt;{@link UpdateAction}&lt;{@link Type}&gt;&gt;, this method
@@ -89,6 +89,6 @@ public interface TypeService {
      *         the {@link Type} which was updated in the CTP project or a {@link io.sphere.sdk.models.SphereException}.
      */
     @Nonnull
-    CompletionStage<Type> updateType(@Nonnull final Type type,
-                                     @Nonnull final List<UpdateAction<Type>> updateActions);
+    CompletionStage<Type> updateType(@Nonnull Type type,
+                                     @Nonnull List<UpdateAction<Type>> updateActions);
 }
