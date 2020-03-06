@@ -15,7 +15,7 @@ ext{
     checkstyleVersion = '8.2'
     pmdVersion = '6.14.0'
     jacocoVersion = '0.8.4'
-    findbugsVersion = '3.0.1'
+    findbugsVersion = '3.0.1u2'
 }
 
 apply from: "$rootDir/gradle-scripts/plugins.gradle"
