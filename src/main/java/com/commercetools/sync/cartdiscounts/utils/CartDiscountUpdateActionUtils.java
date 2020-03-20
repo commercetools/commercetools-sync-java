@@ -123,10 +123,12 @@ public final class CartDiscountUpdateActionUtils {
             return Optional.of(ChangeValue.of(newValue));
         }
 
-        final boolean areEqual = oldValue.getMoney().containsAll(newValue.getMoney())
-            && newValue.getMoney().containsAll(oldValue.getMoney());
+        final boolean allOldValuesFoundInNewValues = oldValue.getMoney().stream().allMatch(oldAmount -> 
+                newValue.getMoney().stream()
+                        .filter(newAmount -> newAmount.getCurrency().equals(oldAmount.getCurrency()))
+                        .anyMatch(newAmount -> newAmount.isEqualTo(oldAmount)));
 
-        return areEqual ? empty() : Optional.of(ChangeValue.of(newValue));
+        return allOldValuesFoundInNewValues ? empty() : Optional.of(ChangeValue.of(newValue));
     }
 
     /**
