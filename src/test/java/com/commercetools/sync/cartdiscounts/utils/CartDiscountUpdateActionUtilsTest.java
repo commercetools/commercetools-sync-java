@@ -308,7 +308,7 @@ class CartDiscountUpdateActionUtilsTest {
     }
 
     @Test
-    void buildChangeValueUpdateAction_WithSameAbsoluteValuesUsingDifferentMonetaryAmountImplementation_ShouldNotBuildUpdateAction() {
+    void buildChangeValueUpdateAction_WithSameValuesUsingDifferentMonetaryAmount_ShouldNotBuildUpdateAction() {
         final CartDiscountValue values =
                 CartDiscountValue.ofAbsolute(asList(MoneyImpl.of(10, EUR), MoneyImpl.of(10, USD)));
         final CartDiscountValue values2 =
