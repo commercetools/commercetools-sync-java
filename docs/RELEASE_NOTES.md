@@ -36,6 +36,25 @@
 
 -->
 
+### 1.8.1 -  March 23, 2020
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.8.0...1.8.1) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.8.1/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.8.1)
+
+- ✨ **Enhancements** (1)
+    - **Commons** - Remove final keyword on interface/abstract method params. [#165](https://github.com/commercetools/commercetools-sync-java/issues/165)
+        
+- 🐞 **Bug Fixes** (1)
+    - **CartDiscount Sync** - Fixed a bug in the `CartDiscountSync` which generates a `changeValue` action when there is no change, causing the sync to fail for that cart discount.
+    Thanks, @michaelbannister, for the contributions! [#494](https://github.com/commercetools/commercetools-sync-java/issues/494)
+
+- 🛠️ **Dependency Updates** (5)
+    - `junit.jupiterApiVersion` `5.5.2` ->  [`5.6.0`](https://github.com/junit-team/junit5/releases/tag/r5.6.0)
+    - `commercetools-jvm-sdk` `1.48.0` -> [`1.50.0`](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_50_0)
+    - `org.assertj.assertj-core` `3.14.0` ->  [`3.15.0`](https://assertj.github.io/doc/#assertj-core-3-15-0-release-notes)
+    - `mockito-junit-jupiter` `3.2.4` -> [`3.3.3`](https://github.com/mockito/mockito/releases/tag/v3.3.3)
+    - `com.github.ben-manes.versions` `0.27.0` -> [`0.28.0`](https://github.com/ben-manes/gradle-versions-plugin/releases/tag/v0.28.0) 
+    
 ### 1.8.0 -  Jan 17, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.7.0...1.8.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.8.0/) | 
