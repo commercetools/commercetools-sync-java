@@ -52,7 +52,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
         + " Reason: %s";
     private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
             + "productTypeDraft with key:'%s'. Reason: %s";
-    private static final String FAILED_TO_SYNC_DRAFT_FAILED = "Failed to sync draft on"
+    private static final String FAILED_TO_SYNC_DRAFT = "Failed to sync draft on"
             + "productTypeDraft with key:'%s'. Reason: %s";
 
     private final ProductTypeService productTypeService;
