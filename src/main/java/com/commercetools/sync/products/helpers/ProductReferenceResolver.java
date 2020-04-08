@@ -147,10 +147,10 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
             return resolveResourceIdentifier(draftBuilder, draftBuilder.getProductType(),
                 productTypeService::fetchCachedProductTypeId, ResourceIdentifier::ofId,
                 ProductDraftBuilder::productType);
-        } catch (ReferenceResolutionException referenceResolutionException) {
+        } catch (Exception exception) {
             return exceptionallyCompletedFuture(new ReferenceResolutionException(
                 format(FAILED_TO_RESOLVE_REFERENCE, ProductType.referenceTypeId(), draftBuilder.getKey(),
-                    referenceResolutionException.getMessage())));
+                    exception.getMessage())));
         }
     }
 
@@ -205,8 +205,8 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
 
         final Map<String, String> categoryOrderHintsMap = new HashMap<>();
         final CategoryOrderHints categoryOrderHints = draftBuilder.getCategoryOrderHints();
-
-        return categoryService.fetchMatchingCategoriesByKeys(categoryKeys)
+        try {
+            return categoryService.fetchMatchingCategoriesByKeys(categoryKeys)
                               .thenApply(categories ->
                                   categories.stream().map(category -> {
                                       if (categoryOrderHints != null) {
@@ -219,6 +219,12 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
                               .thenApply(categoryReferences -> draftBuilder
                                   .categories(categoryReferences)
                                   .categoryOrderHints(CategoryOrderHints.of(categoryOrderHintsMap)));
+        } catch (Exception exception) {
+            return exceptionallyCompletedFuture(
+                new ReferenceResolutionException(
+                    format(FAILED_TO_RESOLVE_REFERENCE, Category.referenceTypeId(),
+                        draftBuilder.getKey(), exception.getMessage())));
+        }
     }
 
     /**
@@ -239,10 +245,10 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
             return resolveResourceIdentifier(draftBuilder, draftBuilder.getTaxCategory(),
                 taxCategoryService::fetchCachedTaxCategoryId, ResourceIdentifier::ofId,
                 ProductDraftBuilder::taxCategory);
-        } catch (ReferenceResolutionException referenceResolutionException) {
+        } catch (Exception exception) {
             return exceptionallyCompletedFuture(new ReferenceResolutionException(
                 format(FAILED_TO_RESOLVE_REFERENCE, TaxCategory.referenceTypeId(), draftBuilder.getKey(),
-                    referenceResolutionException.getMessage())));
+                    exception.getMessage())));
         }
     }
 
@@ -262,10 +268,10 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         try {
             return resolveResourceIdentifier(draftBuilder, draftBuilder.getState(),
                 stateService::fetchCachedStateId, State::referenceOfId, ProductDraftBuilder::state);
-        } catch (ReferenceResolutionException referenceResolutionException) {
+        } catch (Exception exception) {
             return exceptionallyCompletedFuture(new ReferenceResolutionException(
                 format(FAILED_TO_RESOLVE_REFERENCE, State.referenceTypeId(), draftBuilder.getKey(),
-                    referenceResolutionException.getMessage())));
+                    exception.getMessage())));
         }
     }
 

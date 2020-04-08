@@ -62,6 +62,8 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     private static final String UPDATE_FAILED = "Failed to update Product with key: '%s'. Reason: %s";
     private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
         + "ProductDraft with key:'%s'. Reason: %s";
+    private static final String FAILED_TO_SYNC_DRAFT  = "Failed to sync draft on"
+            + "ProductDraft with key:'%s'. Reason: %s";
     private static final String FAILED_TO_FETCH_PRODUCT_TYPE = "Failed to fetch a productType for the product to "
         + "build the products' attributes metadata.";
 
@@ -323,24 +325,25 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
         return productReferenceResolver
             .resolveReferences(newProductDraft)
+            .exceptionally(completionException -> {
+                final ReferenceResolutionException referenceResolutionException =
+                        (ReferenceResolutionException) completionException.getCause();
+                final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES, newProductDraft.getKey(),
+                        referenceResolutionException.getMessage());
+                handleError(errorMessage, referenceResolutionException, 1);
+                return null;
+            })
             .thenCompose(resolvedDraft -> {
-
                 final Product oldProduct = oldProductMap.get(newProductDraft.getKey());
-
                 return ofNullable(oldProduct)
                     .map(product -> fetchProductAttributesMetadataAndUpdate(oldProduct, resolvedDraft))
                     .orElseGet(() -> applyCallbackAndCreate(resolvedDraft));
-
             })
-
             .exceptionally(completionException -> {
-
-                final ReferenceResolutionException referenceResolutionException =
-                    (ReferenceResolutionException) completionException.getCause();
-                final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES, newProductDraft.getKey(),
-                    referenceResolutionException.getMessage());
-                handleError(errorMessage, referenceResolutionException, 1);
-
+                final Throwable resolvedDraftException = completionException.getCause();
+                final String errorMessage = format(FAILED_TO_SYNC_DRAFT, newProductDraft.getKey(),
+                        resolvedDraftException.getMessage());
+                handleError(errorMessage, resolvedDraftException, 1);
                 return null;
             });
 
