@@ -240,7 +240,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                 .thenCompose(resolvedDraft -> syncDraft(oldProductTypeMap, resolvedDraft))
                 .exceptionally(completionException -> {
                     final Throwable syncDraftException = completionException.getCause();
-                    final String errorMessage = format(FAILED_TO_SYNC_DRAFT_FAILED,
+                    final String errorMessage = format(FAILED_TO_SYNC_DRAFT,
                             draftWithoutMissingRefAttrs.getKey(),
                             syncDraftException.getMessage());
                     handleError(errorMessage, syncDraftException, 1);
