@@ -228,23 +228,24 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                 removeAndKeepTrackOfMissingNestedAttributes(newProductType, keyToIdCache))
             .map(draftWithoutMissingRefAttrs -> referenceResolver
                 .resolveReferences(draftWithoutMissingRefAttrs)
-                .exceptionally(completionException -> {
-                    final ReferenceResolutionException referenceResolutionException =
-                            (ReferenceResolutionException) completionException.getCause();
-                    final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES,
-                            draftWithoutMissingRefAttrs.getKey(),
-                            referenceResolutionException.getMessage());
-                    handleError(errorMessage, referenceResolutionException, 1);
-                    return null;
-                })
                 .thenCompose(resolvedDraft -> syncDraft(oldProductTypeMap, resolvedDraft))
                 .exceptionally(completionException -> {
-                    final Throwable syncDraftException = completionException.getCause();
-                    final String errorMessage = format(FAILED_TO_SYNC_DRAFT,
-                            draftWithoutMissingRefAttrs.getKey(),
-                            syncDraftException.getMessage());
-                    handleError(errorMessage, syncDraftException, 1);
-                    return null;
+                    if (completionException instanceof ReferenceResolutionException) {
+                        final ReferenceResolutionException referenceResolutionException =
+                                (ReferenceResolutionException) completionException.getCause();
+                        final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES,
+                                draftWithoutMissingRefAttrs.getKey(),
+                                referenceResolutionException.getMessage());
+                        handleError(errorMessage, referenceResolutionException, 1);
+                        return null;
+                    } else {
+                        final Throwable syncDraftException = completionException.getCause();
+                        final String errorMessage = format(FAILED_TO_SYNC_DRAFT,
+                                draftWithoutMissingRefAttrs.getKey(),
+                                syncDraftException.getMessage());
+                        handleError(errorMessage, syncDraftException, 1);
+                        return null;
+                    }
                 }))
             .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
