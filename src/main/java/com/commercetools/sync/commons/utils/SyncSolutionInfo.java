@@ -7,7 +7,7 @@ public final class SyncSolutionInfo extends SolutionInfo {
     /**
      * This value is injected by the script at gradle-scripts/set-library-version.gradle.
      */
-    public static final String LIB_VERSION = "#{LIB_VERSION}";
+    public static final String LIB_VERSION = "dev-version";
 
     /**
      * Extends {@link SolutionInfo} class of the JVM SDK to append to the User-Agent header with information of the
