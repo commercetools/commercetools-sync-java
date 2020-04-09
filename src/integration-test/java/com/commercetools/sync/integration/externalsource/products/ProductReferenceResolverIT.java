@@ -1,6 +1,5 @@
 package com.commercetools.sync.integration.externalsource.products;
 
-import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -19,9 +18,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
@@ -37,7 +36,6 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.createProduct
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.producttypes.ProductType.referenceOfId;
-import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -107,15 +105,19 @@ class ProductReferenceResolverIT {
 
         assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
         assertThat(errorCallBackExceptions).hasSize(1);
-        final Throwable exception = errorCallBackExceptions.get(0);
-        assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class)
-                             .hasMessageContaining("Failed to resolve 'category' resource identifier on ProductDraft "
-                                 + "with key:'productKey1'")
-                             .hasMessageContaining(format("Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+
+        // assertion
+        String expectedErrorMessageRegEx = "Failed to (.+) on ProductDraft with key:'productKey1'(.+)";
+        Pattern pattern = Pattern.compile(expectedErrorMessageRegEx);
+
+        assertThat(syncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(errorCallBackMessages)
+                .hasSize(1)
+                .hasOnlyOneElementSatisfying(message -> assertThat(message).containsPattern(pattern));
 
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0))
-            .contains("Failed to resolve references on ProductDraft with key:'productKey1'");
         assertThat(warningCallBackMessages).isEmpty();
     }
+
+
 }

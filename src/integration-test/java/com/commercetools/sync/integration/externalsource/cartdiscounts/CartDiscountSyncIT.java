@@ -36,6 +36,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -307,13 +308,13 @@ class CartDiscountSyncIT {
             .join();
 
         //assertions
-        String expectedResolveReferenceErrorMessage =
-                "Failed to resolve references on CartDiscountDraft with key:'key_1'. Reason: ";
+        String expectedErrorMessageRegEx = "Failed to (.+) on CartDiscountDraft with key:'key_1'(.+)";
+        Pattern pattern = Pattern.compile(expectedErrorMessageRegEx);
 
-        String expectedSyncDraftErrorMessage =
-                "Failed to sync draft on CartDiscountDraft with key:'key_1'. Reason: ";
+        assertThat(errorMessages)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(message -> assertThat(message).containsPattern(pattern));
 
-        assertThat(errorMessages).containsAnyOf(expectedResolveReferenceErrorMessage, expectedSyncDraftErrorMessage);
         assertThat(exceptions).hasSize(1);
 
         assertThat(updateActionsList).isEmpty();

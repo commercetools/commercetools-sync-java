@@ -206,7 +206,8 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
                             if (completionException instanceof ReferenceResolutionException) {
                                 final ReferenceResolutionException referenceResolutionException =
                                         (ReferenceResolutionException) completionException.getCause();
-                                final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES, newCartDiscount.getKey(),
+                                final String errorMessage =
+                                        format(FAILED_TO_RESOLVE_REFERENCES, newCartDiscount.getKey(),
                                         referenceResolutionException.getMessage());
                                 handleError(errorMessage, referenceResolutionException, 1);
                                 return null;

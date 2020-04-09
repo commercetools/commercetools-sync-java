@@ -1,6 +1,5 @@
 package com.commercetools.sync.integration.ctpprojectsource.products;
 
-import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -23,9 +22,9 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
@@ -166,14 +165,16 @@ class ProductReferenceResolverIT {
         final ProductSyncStatistics syncStatistics =  productSync.sync(productDrafts).toCompletableFuture().join();
 
         // assertion
+        String expectedErrorMessageRegEx =
+            format("Failed to (.+) on ProductDraft with key:'%s'(.+)", productDraft.getKey());
+        Pattern pattern = Pattern.compile(expectedErrorMessageRegEx);
+
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
-        assertThat(errorCallBackMessages).containsExactly(format("Failed to resolve references on ProductDraft with"
-                + " key:'%s'. Reason: Failed to resolve 'product-type' resource identifier on ProductDraft with "
-                + "key:'%s'. Reason: %s",
-            productDraft.getKey(), productDraft.getKey(),
-            BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+        assertThat(errorCallBackMessages)
+                .hasSize(1)
+                .hasOnlyOneElementSatisfying(message -> assertThat(message).containsPattern(pattern));
+
         assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
         assertThat(warningCallBackMessages).isEmpty();
     }
 }
