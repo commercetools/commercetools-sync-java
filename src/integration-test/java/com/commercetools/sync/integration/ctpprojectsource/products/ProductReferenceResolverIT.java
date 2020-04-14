@@ -167,13 +167,18 @@ class ProductReferenceResolverIT {
 
         // assertion
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
-        assertThat(errorCallBackMessages).containsExactly(format("Failed to resolve references on ProductDraft with"
-                + " key:'%s'. Reason: Failed to resolve 'product-type' resource identifier on ProductDraft with "
-                + "key:'%s'. Reason: %s",
-            productDraft.getKey(), productDraft.getKey(),
-            BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
         assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
+        if (errorCallBackExceptions.get(0) instanceof ReferenceResolutionException) {
+            assertThat(errorCallBackMessages).containsExactly(
+                    format("Failed to resolve references on ProductDraft with"
+                    + " key:'%s'. Reason: Failed to resolve 'product-type' resource identifier on ProductDraft with "
+                    + "key:'%s'. Reason: %s",
+                productDraft.getKey(), productDraft.getKey(),
+                BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+        } else {
+            assertThat(errorCallBackMessages).contains(
+                format("Failed to sync draft on ProductDraft with key:'%s'.", productDraft.getKey()));
+        }
         assertThat(warningCallBackMessages).isEmpty();
     }
 }
