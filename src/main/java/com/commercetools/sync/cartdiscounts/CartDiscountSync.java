@@ -48,6 +48,8 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
         "Failed to process null cart discount draft.";
     private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
         + "CartDiscountDraft with key:'%s'. Reason: %s";
+    private static final String FAILED_TO_SYNC_DRAFT = "Failed to sync draft on "
+            + "CartDiscountDraft with key:'%s'. Reason: %s";
 
 
     private final CartDiscountService cartDiscountService;
@@ -202,12 +204,21 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
                         .resolveReferences(newCartDiscount)
                         .thenCompose(resolvedDraft -> syncDraft(oldCartDiscountMap, resolvedDraft))
                         .exceptionally(completionException -> {
-                            final ReferenceResolutionException referenceResolutionException =
-                                (ReferenceResolutionException) completionException.getCause();
-                            final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES, newCartDiscount.getKey(),
-                                             referenceResolutionException.getMessage());
-                            handleError(errorMessage, referenceResolutionException, 1);
-                            return null;
+                            if (completionException.getCause() instanceof ReferenceResolutionException) {
+                                final ReferenceResolutionException referenceResolutionException =
+                                        (ReferenceResolutionException) completionException.getCause();
+                                final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES,
+                                        newCartDiscount.getKey(),
+                                        referenceResolutionException.getMessage());
+                                handleError(errorMessage, referenceResolutionException, 1);
+                                return null;
+                            } else {
+                                final Throwable syncDraftException = completionException.getCause();
+                                final String errorMessage = format(FAILED_TO_SYNC_DRAFT, newCartDiscount.getKey(),
+                                        syncDraftException.getMessage());
+                                handleError(errorMessage, syncDraftException, 1);
+                                return null;
+                            }
                         })
                 )
                 .map(CompletionStage::toCompletableFuture)
