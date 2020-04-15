@@ -237,30 +237,7 @@ class CategoryServiceImplIT {
         final Optional<String> categoryId = categoryService.fetchCachedCategoryId(oldCategory.getKey())
                                                            .toCompletableFuture()
                                                            .join();
-        assertThat(categoryId).isNotEmpty();
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-    }
-
-    @Test
-    void fetchCachedCategoryId_ShouldCacheCategoryKeysOnlyFirstTime() {
-        // Fetch any category to populate cache
-        categoryService.fetchCachedCategoryId("anyKey").toCompletableFuture().join();
-
-        // Create new category
-        final String newCategoryKey = "newCategoryKey";
-        final CategoryDraft categoryDraft = CategoryDraftBuilder
-            .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
-                LocalizedString.of(Locale.ENGLISH, "classic-furniture", Locale.GERMAN, "klassische-moebel"))
-            .key(newCategoryKey)
-            .build();
-
-        CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(categoryDraft)).toCompletableFuture().join();
-
-        final Optional<String> newCategoryId =
-            categoryService.fetchCachedCategoryId(newCategoryKey).toCompletableFuture().join();
-
-        assertThat(newCategoryId).isEmpty();
+        assertThat(categoryId).contains(oldCategory.getId());
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
     }

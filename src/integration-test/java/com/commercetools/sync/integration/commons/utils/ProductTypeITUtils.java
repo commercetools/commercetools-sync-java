@@ -35,6 +35,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -133,7 +134,9 @@ public final class ProductTypeITUtils {
 
         final AttributeDefinition nestedTypeAttr1 = AttributeDefinitionBuilder
                 .of("nestedattr", ofEnglish("nestedattr"), NestedAttributeType.of(productType1))
-                .isSearchable(false) // "isSearchable=true is not supported for attribute type 'nested'."
+                .isSearchable(false)
+                // isSearchable=true is not supported for attribute type 'nested' and AttributeDefinitionBuilder sets
+                // it to true by default
                 .build();
 
         final AttributeDefinition nestedTypeAttr2 = AttributeDefinitionBuilder
@@ -177,7 +180,9 @@ public final class ProductTypeITUtils {
 
         final AttributeDefinition nestedTypeAttr1 = AttributeDefinitionBuilder
                 .of("nestedattr", ofEnglish("nestedattr"), NestedAttributeType.of(productType1))
-                .isSearchable(false) // "isSearchable=true is not supported for attribute type 'nested'."
+                .isSearchable(false)
+                // isSearchable=true is not supported for attribute type 'nested' and AttributeDefinitionBuilder sets
+                // it to true by default
                 .build();
 
         final AttributeDefinition nestedTypeAttr2 = AttributeDefinitionBuilder
@@ -211,7 +216,30 @@ public final class ProductTypeITUtils {
      */
     public static void deleteProductTypes(@Nonnull final SphereClient ctpClient) {
         deleteProductTypeAttributes(ctpClient);
-        queryAndExecute(ctpClient, ProductTypeQuery.of(), ProductTypeDeleteCommand::of);
+        /* Why we are retrying ?
+        It appears that the deleteProductTypeAttributes method removes an attribute then deletes the type moments later.
+        In CTP, there is background processing that cleans up products and
+        then increments the version on the product type when it's finished.
+        Here we're providing a retry with backoff (3 times) in that tests to avoid potential
+        concurrent modification 409 errors also we are waiting 3 seconds before retry...
+         */
+        deleteProductTypesWithRetry(ctpClient, 0);
+    }
+
+    private static void deleteProductTypesWithRetry(@Nonnull final SphereClient ctpClient, final int retryCount) {
+        try {
+            queryAndExecute(ctpClient, ProductTypeQuery.of(), ProductTypeDeleteCommand::of);
+        } catch (CompletionException ce) {
+            if (retryCount == 2) {
+                throw ce;
+            }
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException expected) { }
+
+            int newRetryCount = retryCount + 1;
+            deleteProductTypesWithRetry(ctpClient, newRetryCount);
+        }
     }
 
     /**

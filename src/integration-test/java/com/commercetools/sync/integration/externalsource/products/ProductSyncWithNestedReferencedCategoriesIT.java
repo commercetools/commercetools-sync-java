@@ -192,7 +192,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
                 .join();
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 1, 0, 0);
+        assertThat(syncStatistics).hasValues(1, 1, 0, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -281,7 +281,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
                 .join();
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 0, 0, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 0, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -369,7 +369,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
                 .join();
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -441,7 +441,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
                 .join();
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
         assertThat(errorCallBackExceptions)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(error -> {
@@ -494,7 +494,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
                 .join();
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 1, 0, 0);
+        assertThat(syncStatistics).hasValues(1, 1, 0, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -568,7 +568,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
                 .join();
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
         assertThat(errorCallBackExceptions)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(error -> {
@@ -622,7 +622,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
                 .join();
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 1, 0, 0);
+        assertThat(syncStatistics).hasValues(1, 1, 0, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();

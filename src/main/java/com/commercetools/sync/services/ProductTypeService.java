@@ -30,15 +30,13 @@ public interface ProductTypeService {
      *          productType keys -&gt; ids
      */
     @Nonnull
-    CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> keys);
+    CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull Set<String> keys);
 
     /**
-     * Given a {@code key}, this method first checks if a cached map of ProductType keys -&gt; ids is not empty.
-     * If not, it returns a completed future that contains an optional that contains what this key maps to in
-     * the cache. If the cache is empty, the method populates the cache with the mapping of all ProductType keys to ids
-     * in the CTP project, by querying the CTP project for all ProductTypes.
-     *
-     * <p>After that, the method returns a {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt;
+     * Given a {@code key}, this method first checks if a cached map of ProductType keys -&gt; ids contains the key.
+     * If not, it returns a completed future that contains an {@link Optional} that contains what this key maps to in
+     * the cache. If the cache doesn't contain the key; this method attempts to fetch the id of the key from the CTP
+     * project, caches it and returns a {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt;
      * in which the result of it's completion could contain an
      * {@link Optional} with the id inside of it or an empty {@link Optional} if no {@link ProductType} was
      * found in the CTP project with this key.
@@ -49,7 +47,7 @@ public interface ProductTypeService {
      *         {@link ProductType} was found in the CTP project with this key.
      */
     @Nonnull
-    CompletionStage<Optional<String>> fetchCachedProductTypeId(@Nonnull final String key);
+    CompletionStage<Optional<String>> fetchCachedProductTypeId(@Nonnull String key);
 
     /**
      * TODO FIX JAVADOC AND TEST METHOD
@@ -72,7 +70,7 @@ public interface ProductTypeService {
      */
     @Nonnull
     CompletionStage<Optional<Map<String, AttributeMetaData>>> fetchCachedProductAttributeMetaDataMap(
-            @Nonnull final String productTypeId);
+            @Nonnull String productTypeId);
 
     /**
      * Given a {@link Set} of ProductType keys, this method fetches a set of all the ProductTypes, matching this given
@@ -84,7 +82,7 @@ public interface ProductTypeService {
      *          of all matching ProductType.
      */
     @Nonnull
-    CompletionStage<Set<ProductType>> fetchMatchingProductTypesByKeys(@Nonnull final Set<String> keys);
+    CompletionStage<Set<ProductType>> fetchMatchingProductTypesByKeys(@Nonnull Set<String> keys);
 
     /**
      * Given a resource draft of type {@link ProductTypeDraft}, this method attempts to create a resource
@@ -105,7 +103,7 @@ public interface ProductTypeService {
      *         empty optional.
      */
     @Nonnull
-    CompletionStage<Optional<ProductType>> createProductType(@Nonnull final ProductTypeDraft productTypeDraft);
+    CompletionStage<Optional<ProductType>> createProductType(@Nonnull ProductTypeDraft productTypeDraft);
 
     /**
      * Updates existing product type with {@code updateActions}.
@@ -115,8 +113,8 @@ public interface ProductTypeService {
      * @return {@link CompletionStage} with updated {@link ProductType}.
      */
     @Nonnull
-    CompletionStage<ProductType> updateProductType(@Nonnull final ProductType productType,
-                                                   @Nonnull final List<UpdateAction<ProductType>> updateActions);
+    CompletionStage<ProductType> updateProductType(@Nonnull ProductType productType,
+                                                   @Nonnull List<UpdateAction<ProductType>> updateActions);
 
     /**
      * Given a productType key, this method fetches a productType that matches this given key in the CTP project defined
@@ -128,5 +126,5 @@ public interface ProductTypeService {
      *         {@link Optional} that contains the matching {@link ProductType} if exists, otherwise empty.
      */
     @Nonnull
-    CompletionStage<Optional<ProductType>> fetchProductType(@Nullable final String key);
+    CompletionStage<Optional<ProductType>> fetchProductType(@Nullable String key);
 }

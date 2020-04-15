@@ -204,7 +204,7 @@ class ProductSyncWithPricesIT {
             executeBlocking(productSync.sync(singletonList(newProductDraft)));
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 0, 0, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 0, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -247,7 +247,7 @@ class ProductSyncWithPricesIT {
             executeBlocking(productSync.sync(singletonList(newProductDraft)));
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 0, 0, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 0, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -292,7 +292,7 @@ class ProductSyncWithPricesIT {
             executeBlocking(productSync.sync(singletonList(newProductDraft)));
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -345,7 +345,7 @@ class ProductSyncWithPricesIT {
             executeBlocking(productSync.sync(singletonList(newProductDraft)));
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
 
         assertThat(errorCallBackExceptions).hasSize(1)
                                            .extracting(Throwable::getMessage)
@@ -407,7 +407,7 @@ class ProductSyncWithPricesIT {
             executeBlocking(productSync.sync(singletonList(newProductDraft)));
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
 
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
@@ -474,7 +474,7 @@ class ProductSyncWithPricesIT {
             executeBlocking(productSync.sync(singletonList(newProductDraft)));
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
 
         final Integer masterVariantId = product.getMasterData().getStaged().getMasterVariant().getId();
         assertThat(errorCallBackExceptions).isEmpty();
@@ -540,7 +540,7 @@ class ProductSyncWithPricesIT {
             executeBlocking(productSync.sync(singletonList(newProductDraft)));
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
 
         final Integer masterVariantId = product.getMasterData().getStaged().getMasterVariant().getId();
         assertThat(errorCallBackExceptions).isEmpty();
@@ -642,7 +642,7 @@ class ProductSyncWithPricesIT {
             executeBlocking(productSync.sync(singletonList(newProductDraft)));
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
         assertThat(updateActionsFromSync).filteredOn(action -> action instanceof SetProductPriceCustomField)
                                          .hasSize(3);
 
@@ -711,7 +711,7 @@ class ProductSyncWithPricesIT {
             executeBlocking(productSync.sync(singletonList(newProductDraft)));
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
         assertThat(updateActionsFromSync).filteredOn(action -> action instanceof SetProductPriceCustomField)
                                          .hasSize(4);
 
@@ -779,7 +779,7 @@ class ProductSyncWithPricesIT {
             executeBlocking(productSync.sync(singletonList(newProductDraft)));
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
         assertThat(updateActionsFromSync).filteredOn(action -> action instanceof SetProductPriceCustomField)
                                          .hasSize(2);
 
@@ -839,7 +839,7 @@ class ProductSyncWithPricesIT {
             executeBlocking(productSync.sync(singletonList(newProductDraft)));
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
         assertThat(updateActionsFromSync).filteredOn(action -> action instanceof SetProductPriceCustomField)
                                          .hasSize(2);
 

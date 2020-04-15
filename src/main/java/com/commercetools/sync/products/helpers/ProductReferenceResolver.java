@@ -110,7 +110,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
 
     @Nonnull
     private CompletionStage<ProductDraftBuilder> resolveAllVariantsReferences(
-            @Nonnull final ProductDraftBuilder draftBuilder) {
+        @Nonnull final ProductDraftBuilder draftBuilder) {
         final ProductVariantDraft masterVariantDraft = draftBuilder.getMasterVariant();
         if (masterVariantDraft != null) {
             return variantReferenceResolver.resolveReferences(masterVariantDraft)
@@ -170,7 +170,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
 
         final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers = draftBuilder.getCategories();
         final Set<String> categoryKeys = new HashSet<>();
-        for (ResourceIdentifier<Category> categoryResourceIdentifier: categoryResourceIdentifiers) {
+        for (ResourceIdentifier<Category> categoryResourceIdentifier : categoryResourceIdentifiers) {
             if (categoryResourceIdentifier != null) {
                 try {
                     final String categoryKey = getKeyFromResourceIdentifier(categoryResourceIdentifier);
@@ -179,7 +179,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
                     return exceptionallyCompletedFuture(
                         new ReferenceResolutionException(
                             format(FAILED_TO_RESOLVE_REFERENCE, Category.referenceTypeId(),
-                                draftBuilder.getKey(),referenceResolutionException.getMessage())));
+                                draftBuilder.getKey(), referenceResolutionException.getMessage())));
                 }
             }
         }
@@ -196,28 +196,29 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
      * @param draftBuilder the product draft builder to resolve it's category references.
      * @param categoryKeys the category keys of to resolve their actual id on the draft.
      * @return a {@link CompletionStage} that contains as a result a new productDraft instance with resolved category
-     *          references or an exception.
+     *         references or an exception.
      */
     @Nonnull
     private CompletionStage<ProductDraftBuilder> fetchAndResolveCategoryReferences(
-            @Nonnull final ProductDraftBuilder draftBuilder,
-            @Nonnull final Set<String> categoryKeys) {
+        @Nonnull final ProductDraftBuilder draftBuilder,
+        @Nonnull final Set<String> categoryKeys) {
 
         final Map<String, String> categoryOrderHintsMap = new HashMap<>();
         final CategoryOrderHints categoryOrderHints = draftBuilder.getCategoryOrderHints();
 
         return categoryService.fetchMatchingCategoriesByKeys(categoryKeys)
-            .thenApply(categories ->
-                categories.stream().map(category -> {
-                    if (categoryOrderHints != null) {
-                        ofNullable(categoryOrderHints.get(category.getKey()))
-                            .ifPresent(orderHintValue -> categoryOrderHintsMap.put(category.getId(), orderHintValue));
-                    }
-                    return category.toReference();
-                }).collect(toList()))
-            .thenApply(categoryReferences -> draftBuilder
-                .categories(categoryReferences)
-                .categoryOrderHints(CategoryOrderHints.of(categoryOrderHintsMap)));
+                              .thenApply(categories ->
+                                  categories.stream().map(category -> {
+                                      if (categoryOrderHints != null) {
+                                          ofNullable(categoryOrderHints.get(category.getKey()))
+                                              .ifPresent(orderHintValue -> categoryOrderHintsMap
+                                                  .put(category.getId(), orderHintValue));
+                                      }
+                                      return category.toReference();
+                                  }).collect(toList()))
+                              .thenApply(categoryReferences -> draftBuilder
+                                  .categories(categoryReferences)
+                                  .categoryOrderHints(CategoryOrderHints.of(categoryOrderHintsMap)));
     }
 
     /**
@@ -271,12 +272,12 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     /**
      * Common function to resolve references from key.
      *
-     * @param draftBuilder        {@link ProductDraftBuilder} to update
-     * @param resourceIdentifier  resourceIdentifier instance from which key is read
-     * @param keyToIdMapper       function which calls respective service to fetch the reference by key
+     * @param draftBuilder                 {@link ProductDraftBuilder} to update
+     * @param resourceIdentifier           resourceIdentifier instance from which key is read
+     * @param keyToIdMapper                function which calls respective service to fetch the reference by key
      * @param idToResourceIdentifierMapper function which creates {@link ResourceIdentifier} instance from fetched id
      * @param resourceIdentifierSetter     function which will set the resolved reference to the {@code productDraft}
-     * @param <T>                 type of reference (e.g. {@link State}, {@link TaxCategory}
+     * @param <T>                          type of reference (e.g. {@link State}, {@link TaxCategory}
      * @return {@link CompletionStage} containing {@link ProductDraftBuilder} with resolved &lt;T&gt; reference.
      */
     @Nonnull
@@ -294,12 +295,12 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
 
         final String resourceKey = getKeyFromResourceIdentifier(resourceIdentifier);
 
-        return keyToIdMapper.apply(resourceKey)
-                            .thenApply(optId -> optId
-                                .map(idToResourceIdentifierMapper)
-                                .map(resourceIdentifierToSet ->
-                                    resourceIdentifierSetter.apply(draftBuilder, resourceIdentifierToSet))
-                                .orElse(draftBuilder));
+        return keyToIdMapper
+            .apply(resourceKey)
+            .thenApply(optId -> optId
+                .map(idToResourceIdentifierMapper)
+                .map(resourceIdentifierToSet -> resourceIdentifierSetter.apply(draftBuilder, resourceIdentifierToSet))
+                .orElse(draftBuilder));
     }
 
 }

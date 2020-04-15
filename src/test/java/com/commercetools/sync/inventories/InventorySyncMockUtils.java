@@ -83,12 +83,13 @@ public class InventorySyncMockUtils {
      *      {@link InventoryService#updateInventoryEntry(InventoryEntry, List)}
      * @return mock instance of {@link InventoryService}
      */
-    static InventoryService getMockInventoryService(final List<InventoryEntry> inventoryEntries,
+    static InventoryService getMockInventoryService(final Set<InventoryEntry> inventoryEntries,
                                                     final InventoryEntry createdInventoryEntry,
                                                     final InventoryEntry updatedInventoryEntry) {
         final InventoryService inventoryService = mock(InventoryService.class);
         when(inventoryService.fetchInventoryEntriesBySkus(any())).thenReturn(completedFuture(inventoryEntries));
-        when(inventoryService.createInventoryEntry(any())).thenReturn(completedFuture(createdInventoryEntry));
+        when(inventoryService.createInventoryEntry(any()))
+            .thenReturn(completedFuture(Optional.of(createdInventoryEntry)));
         when(inventoryService.updateInventoryEntry(any(), any())).thenReturn(completedFuture(updatedInventoryEntry));
         return inventoryService;
     }
@@ -110,7 +111,7 @@ public class InventorySyncMockUtils {
         when(channelService.fetchCachedChannelId(anyString()))
             .thenReturn(completedFuture(Optional.of(createdSupplyChannelId)));
         when(channelService.createAndCacheChannel(any()))
-            .thenReturn(completedFuture(createdSupplyChannel));
+            .thenReturn(completedFuture(Optional.of(createdSupplyChannel)));
         return channelService;
     }
 

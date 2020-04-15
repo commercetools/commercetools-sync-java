@@ -24,7 +24,6 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.utils.MoneyImpl;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -334,7 +333,6 @@ class VariantReferenceResolverTest {
             .isEqualTo(Customer.referenceTypeId());
     }
 
-    @Disabled("Fails due to possible bug on https://github.com/FasterXML/jackson-databind/issues/2442")
     @Test
     void resolveReferences_WithNullReferenceInSetAttribute_ShouldResolveReferences() {
         // preparation
@@ -370,7 +368,7 @@ class VariantReferenceResolverTest {
         final ObjectNode resolvedReference = JsonNodeFactory.instance.objectNode();
         resolvedReference.put(REFERENCE_TYPE_ID_FIELD, Product.referenceTypeId());
         resolvedReference.put(REFERENCE_ID_FIELD, PRODUCT_ID);
-        assertThat(resolvedSet).containsExactly(resolvedReference);
+        assertThat(resolvedSet).containsExactlyInAnyOrder(resolvedReference, JsonNodeFactory.instance.nullNode());
     }
 
     @Test

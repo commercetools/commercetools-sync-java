@@ -20,24 +20,24 @@
 <dependency>
   <groupId>com.commercetools.sdk.jvm.core</groupId>
   <artifactId>commercetools-models</artifactId>
-  <version>1.46.0</version>
+  <version>1.47.0</version>
 </dependency>
 <dependency>
   <groupId>com.commercetools.sdk.jvm.core</groupId>
   <artifactId>commercetools-java-client</artifactId>
-  <version>1.46.0</version>
+  <version>1.47.0</version>
 </dependency>
 <dependency>
   <groupId>com.commercetools.sdk.jvm.core</groupId>
   <artifactId>commercetools-convenience</artifactId>
-  <version>1.46.0</version>
+  <version>1.47.0</version>
 </dependency>
 
 <!-- Add commercetools-sync-java dependency. -->
 <dependency>
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
-  <version>1.5.0</version>
+  <version>1.8.1</version>
 </dependency>
 ````
 - For Gradle users:
@@ -48,7 +48,7 @@ implementation 'com.commercetools.sdk.jvm.core:commercetools-java-client:1.37.0'
 implementation 'com.commercetools.sdk.jvm.core:commercetools-convenience:1.37.0'
 
 // Add commercetools-sync-java dependency.
-implementation 'com.commercetools:commercetools-sync-java:1.5.0'
+implementation 'com.commercetools:commercetools-sync-java:1.8.1'
 ````
 
 ### 2. Setup Syncing Options
@@ -77,11 +77,12 @@ implementation 'com.commercetools:commercetools-sync-java:1.5.0'
  final ProductSyncStatistics stats = syncStatisticsStage.toCompletebleFuture()
                                                         .join();
  stats.getReportMessage(); 
- /*"Summary: 2000 products were processed in total (1000 created, 995 updated and 5 failed to sync)."*/
+ /*"Summary: 2000 product(s) were processed in total (1000 created, 995 updated, 5 failed to sync and 0 
+ product(s) with missing reference(s))."*/
  ````
 
 
 #### More Details
 *[Product Sync](PRODUCT_SYNC.md), [ProductType Sync](PRODUCT_TYPE_SYNC.md), 
 [Category Sync](CATEGORY_SYNC.md), [Inventory Sync](INVENTORY_SYNC.md), 
-[Type Sync](TYPE_SYNC.md)*
+[Type Sync](TYPE_SYNC.md), [CartDiscount Sync](CART_DISCOUNT_SYNC.md)*

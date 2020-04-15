@@ -1,6 +1,5 @@
 package com.commercetools.sync.integration.externalsource.products;
 
-import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -58,9 +57,9 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.O
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.geResourceIdentifiersWithKeys;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDrafts;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getReferencesWithIds;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.geResourceIdentifiersWithKeys;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.replaceCategoryOrderHintCategoryIdsWithKeys;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
@@ -174,7 +173,7 @@ class ProductSyncIT {
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(singletonList(productDraft)));
 
-        assertThat(syncStatistics).hasValues(1, 1, 0, 0);
+        assertThat(syncStatistics).hasValues(1, 1, 0, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -198,7 +197,7 @@ class ProductSyncIT {
         final ProductSync productSync = new ProductSync(options);
         final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(singletonList(productDraft)));
 
-        assertThat(syncStatistics).hasValues(1, 1, 0, 0);
+        assertThat(syncStatistics).hasValues(1, 1, 0, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -237,7 +236,7 @@ class ProductSyncIT {
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(singletonList(productDraft)));
 
-        assertThat(syncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
 
         final String duplicatedSlug = product.getMasterData().getStaged().getSlug().get(Locale.ENGLISH);
         assertThat(errorCallBackExceptions)
@@ -283,7 +282,7 @@ class ProductSyncIT {
         final ProductSyncStatistics syncStatistics =
                 executeBlocking(productSync.sync(singletonList(productDraft)));
 
-        assertThat(syncStatistics).hasValues(1, 0, 0, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 0, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -300,7 +299,7 @@ class ProductSyncIT {
         final ProductSyncStatistics syncStatistics =
                 executeBlocking(productSync.sync(singletonList(productDraft)));
 
-        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -328,7 +327,7 @@ class ProductSyncIT {
         final ProductSyncStatistics syncStatistics =
                 executeBlocking(spyProductSync.sync(singletonList(productDraft)));
 
-        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -370,7 +369,7 @@ class ProductSyncIT {
             executeBlocking(spyProductSync.sync(singletonList(productDraft)));
 
         // Test and assertion
-        assertThat(syncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackExceptions).hasSize(1);
 
@@ -421,7 +420,7 @@ class ProductSyncIT {
             executeBlocking(spyProductSync.sync(singletonList(productDraft)));
 
         // Test and assertion
-        AssertionsForStatistics.assertThat(syncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackExceptions).hasSize(1);
 
@@ -511,7 +510,7 @@ class ProductSyncIT {
                                        .thenCompose(result -> productSync.sync(batch2))
                                        .thenCompose(result -> productSync.sync(batch3)));
 
-        assertThat(syncStatistics).hasValues(3, 1, 2, 0);
+        assertThat(syncStatistics).hasValues(3, 1, 2, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -579,7 +578,7 @@ class ProductSyncIT {
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(batch));
 
-        assertThat(syncStatistics).hasValues(5, 4, 1, 0);
+        assertThat(syncStatistics).hasValues(5, 4, 1, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -643,7 +642,7 @@ class ProductSyncIT {
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(batch));
 
-        assertThat(syncStatistics).hasValues(5, 1, 1, 3);
+        assertThat(syncStatistics).hasValues(5, 1, 1, 3, 0);
 
         final String duplicatedSlug = key3Draft.getSlug().get(Locale.ENGLISH);
         assertThat(errorCallBackExceptions).hasSize(3);
@@ -716,7 +715,7 @@ class ProductSyncIT {
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(batch));
 
-        assertThat(syncStatistics).hasValues(3, 0, 1, 2);
+        assertThat(syncStatistics).hasValues(3, 0, 1, 2, 0);
         assertThat(errorCallBackExceptions).hasSize(2);
         assertThat(errorCallBackMessages).hasSize(2);
         assertThat(errorCallBackMessages.get(0))
@@ -740,7 +739,7 @@ class ProductSyncIT {
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(batch));
 
-        assertThat(syncStatistics).hasValues(2, 0, 1, 1);
+        assertThat(syncStatistics).hasValues(2, 0, 1, 1, 0);
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualToIgnoringCase("ProductDraft is null.");
@@ -773,7 +772,7 @@ class ProductSyncIT {
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(batch));
 
-        assertThat(syncStatistics).hasValues(2, 0, 2, 0);
+        assertThat(syncStatistics).hasValues(2, 0, 2, 0, 0);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -829,7 +828,7 @@ class ProductSyncIT {
             executeBlocking(productSync.sync(singletonList(productDraftWithChangedAttributes)));
 
         // assertion
-        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
 
         final String causeErrorMessage = format(ATTRIBUTE_NOT_IN_ATTRIBUTE_METADATA, unknownAttrDraft.getName());
         final String expectedErrorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, unknownAttrDraft.getName(),

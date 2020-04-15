@@ -31,6 +31,7 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.utils.MoneyImpl;
+import org.javamoney.moneta.Money;
 import org.junit.jupiter.api.Test;
 
 import javax.money.MonetaryAmount;
@@ -293,6 +294,25 @@ class CartDiscountUpdateActionUtilsTest {
                 CartDiscountValue.ofAbsolute(asList(MoneyImpl.of(10, EUR), MoneyImpl.of(10, USD)));
         final CartDiscountValue values2 =
                 CartDiscountValue.ofAbsolute(asList(MoneyImpl.of(10, EUR), MoneyImpl.of(10, USD)));
+
+        final CartDiscount oldCartDiscount = mock(CartDiscount.class);
+        when(oldCartDiscount.getValue()).thenReturn(values);
+
+        final CartDiscountDraft newCartDiscountDraft = mock(CartDiscountDraft.class);
+        when(newCartDiscountDraft.getValue()).thenReturn(values2);
+
+        final Optional<UpdateAction<CartDiscount>> changeValueUpdateAction =
+                buildChangeValueUpdateAction(oldCartDiscount, newCartDiscountDraft);
+
+        assertThat(changeValueUpdateAction).isNotPresent();
+    }
+
+    @Test
+    void buildChangeValueUpdateAction_WithSameValuesUsingDifferentMonetaryAmount_ShouldNotBuildUpdateAction() {
+        final CartDiscountValue values =
+                CartDiscountValue.ofAbsolute(asList(MoneyImpl.of(10, EUR), MoneyImpl.of(10, USD)));
+        final CartDiscountValue values2 =
+                CartDiscountValue.ofAbsolute(asList(Money.of(10, EUR), Money.of(10, USD)));
 
         final CartDiscount oldCartDiscount = mock(CartDiscount.class);
         when(oldCartDiscount.getValue()).thenReturn(values);

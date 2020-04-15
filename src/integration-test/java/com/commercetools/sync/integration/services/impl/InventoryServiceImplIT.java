@@ -1,5 +1,6 @@
 package com.commercetools.sync.integration.services.impl;
 
+import com.commercetools.sync.inventories.InventorySyncOptionsBuilder;
 import com.commercetools.sync.services.InventoryService;
 import com.commercetools.sync.services.impl.InventoryServiceImpl;
 import io.sphere.sdk.commands.UpdateAction;
@@ -50,7 +51,7 @@ class InventoryServiceImplIT {
         deleteTypesFromTargetAndSource();
         deleteChannelsFromTargetAndSource();
         populateTargetProject();
-        inventoryService = new InventoryServiceImpl(CTP_TARGET_CLIENT);
+        inventoryService = new InventoryServiceImpl(InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT).build());
     }
 
     /**
@@ -65,10 +66,16 @@ class InventoryServiceImplIT {
 
     @Test
     void fetchInventoryEntriesBySku_ShouldReturnCorrectInventoryEntriesWithoutReferenceExpansion() {
+        // preparation
         final Set<String> skus = singleton(SKU_1);
-        final List<InventoryEntry> result = inventoryService.fetchInventoryEntriesBySkus(skus)
-                                                            .toCompletableFuture()
-                                                            .join();
+
+        // test
+        final Set<InventoryEntry> result = inventoryService
+            .fetchInventoryEntriesBySkus(skus)
+            .toCompletableFuture()
+            .join();
+
+        // assertion
         assertThat(result).isNotNull();
         assertThat(result).hasSize(2);
 
@@ -91,19 +98,23 @@ class InventoryServiceImplIT {
             .of(SKU_2, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, null)
             .build();
 
-        final InventoryEntry result = inventoryService.createInventoryEntry(inventoryEntryDraft)
-                                                      .toCompletableFuture()
-                                                      .join();
-        assertThat(result).isNotNull();
-        assertThat(result.getQuantityOnStock()).isEqualTo(QUANTITY_ON_STOCK_2);
-        assertThat(result.getRestockableInDays()).isEqualTo(RESTOCKABLE_IN_DAYS_2);
-        assertThat(result.getExpectedDelivery()).isEqualTo(EXPECTED_DELIVERY_2);
+        final Optional<InventoryEntry> result = inventoryService
+            .createInventoryEntry(inventoryEntryDraft)
+            .toCompletableFuture()
+            .join();
 
-        //assert CTP state
+        // assertions
+        assertThat(result).hasValueSatisfying(inventoryEntry -> {
+            assertThat(inventoryEntry.getQuantityOnStock()).isEqualTo(QUANTITY_ON_STOCK_2);
+            assertThat(inventoryEntry.getRestockableInDays()).isEqualTo(RESTOCKABLE_IN_DAYS_2);
+            assertThat(inventoryEntry.getExpectedDelivery()).isEqualTo(EXPECTED_DELIVERY_2);
+        });
+
+
+        // assert CTP state
         final Optional<InventoryEntry> updatedInventoryEntry =
             getInventoryEntryBySkuAndSupplyChannel(CTP_TARGET_CLIENT, SKU_2, null);
-        assertThat(updatedInventoryEntry).isNotEmpty();
-        assertThat(updatedInventoryEntry.get()).isEqualTo(result);
+        assertThat(updatedInventoryEntry).isEqualTo(result);
     }
 
     @Test

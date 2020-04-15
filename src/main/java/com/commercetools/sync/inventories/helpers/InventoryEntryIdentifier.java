@@ -11,27 +11,30 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Objects;
 
+import static java.lang.String.format;
+
 /**
  * This class provides as a container of the unique identifier of an {@link InventoryEntry} for the sync which is a
- * combination of both the SKU of the inventory entry and the supply channel if of this inventory entry.
+ * combination of both the SKU of the inventory entry and the supply channel key of this inventory entry.
  */
 public final class InventoryEntryIdentifier {
     private String inventoryEntrySku;
-    private String inventoryEntryChannelId;
+    private String inventoryEntryChannelKey;
 
     private InventoryEntryIdentifier(@Nonnull final String inventoryEntrySku,
-                                     @Nullable final String inventoryEntryChannelId) {
+                                     @Nullable final String inventoryEntryChannelKey) {
         this.inventoryEntrySku = inventoryEntrySku;
-        this.inventoryEntryChannelId = inventoryEntryChannelId;
+        this.inventoryEntryChannelKey = inventoryEntryChannelKey;
     }
 
     /**
-     * Builds an {@link InventoryEntryIdentifier} instance given an {@link InventoryEntryDraft} using it's sku and
-     * supply channel id.
-     * @param inventoryEntryDraft the draft to take the sku and channel id value from.
+     * Builds an {@link InventoryEntryIdentifier} instance given an {@link InventoryEntryDraft} using its sku and
+     * supply channel key.
+     * @param inventoryEntryDraft the draft to take the sku and channel key value from.
      * @return an instance of {@link InventoryEntryIdentifier} for the given draft.
      */
     public static InventoryEntryIdentifier of(@Nonnull final InventoryEntryDraft inventoryEntryDraft) {
+
         final ResourceIdentifier<Channel> supplyChannelIdentifier = inventoryEntryDraft.getSupplyChannel();
         return new InventoryEntryIdentifier(inventoryEntryDraft.getSku(),
             supplyChannelIdentifier != null ? supplyChannelIdentifier.getId() : null);
@@ -44,6 +47,7 @@ public final class InventoryEntryIdentifier {
      * @return an instance of {@link InventoryEntryIdentifier} for the given entry.
      */
     public static InventoryEntryIdentifier of(@Nonnull final InventoryEntry inventoryEntry) {
+
         final Reference<Channel> supplyChannel = inventoryEntry.getSupplyChannel();
         return new InventoryEntryIdentifier(inventoryEntry.getSku(),
             supplyChannel != null ? supplyChannel.getId() : null);
@@ -53,34 +57,46 @@ public final class InventoryEntryIdentifier {
      * Builds an {@link InventoryEntryIdentifier} instance given an sku and supply channel id.
      *
      * @param inventoryEntrySku the SKU of the inventory entry.
-     * @param inventoryEntryChannelId the channel id of the inventory entry.
+     * @param inventoryEntryChannelKey the channel key of the inventory entry.
      * @return an instance of {@link InventoryEntryIdentifier} for the given entry.
      */
-    public static InventoryEntryIdentifier of(@Nonnull final String inventoryEntrySku,
-                                              @Nullable final String inventoryEntryChannelId) {
-        return new InventoryEntryIdentifier(inventoryEntrySku, inventoryEntryChannelId);
-    }
+    public static InventoryEntryIdentifier of(
+        @Nonnull final String inventoryEntrySku,
+        @Nullable final String inventoryEntryChannelKey) {
 
-    public String getInventoryEntryChannelId() {
-        return inventoryEntryChannelId;
+        return new InventoryEntryIdentifier(inventoryEntrySku, inventoryEntryChannelKey);
     }
 
     public String getInventoryEntrySku() {
         return inventoryEntrySku;
     }
 
+    public String getInventoryEntryChannelKey() {
+        return inventoryEntryChannelKey;
+    }
+
     @Override
-    public boolean equals(final Object obj) {
-        if (obj instanceof  InventoryEntryIdentifier) {
-            final InventoryEntryIdentifier that = (InventoryEntryIdentifier) obj;
-            return Objects.equals(that.getInventoryEntryChannelId(), inventoryEntryChannelId)
-                && Objects.equals(that.getInventoryEntrySku(), inventoryEntrySku);
+    public String toString() {
+        return format("{sku='%s', channelKey='%s'}", inventoryEntrySku, inventoryEntryChannelKey);
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (this == other) {
+            return true;
         }
-        return false;
+        if (!(other instanceof InventoryEntryIdentifier)) {
+            return false;
+        }
+
+        final InventoryEntryIdentifier that = (InventoryEntryIdentifier) other;
+
+        return getInventoryEntrySku().equals(that.getInventoryEntrySku())
+            && Objects.equals(getInventoryEntryChannelKey(), that.getInventoryEntryChannelKey());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(inventoryEntrySku, inventoryEntryChannelId);
+        return Objects.hash(getInventoryEntrySku(), getInventoryEntryChannelKey());
     }
 }
