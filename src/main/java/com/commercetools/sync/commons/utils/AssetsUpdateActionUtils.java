@@ -1,6 +1,6 @@
 package com.commercetools.sync.commons.utils;
 
-import com.commercetools.sync.categories.CategorySyncOptions;
+
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
@@ -12,7 +12,15 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
@@ -20,7 +28,10 @@ import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOpti
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+
 
 public final class AssetsUpdateActionUtils {
 
@@ -41,6 +52,8 @@ public final class AssetsUpdateActionUtils {
      * @param newAssetDrafts                the new list of asset drafts.
      * @param assetActionFactory            factory responsible for building asset update actions.
      * @param <T>                           the type of the resource the asset update actions are built for.
+     * @param syncOptions                   responsible for supplying the sync options to the sync utility method.
+     *                                      It is used for triggering the warn callback within the utility
      * @return a list of asset update actions on the resource of type T if the list of assets is not identical.
      *         Otherwise, if the assets are identical, an empty list is returned.
      * @throws BuildUpdateActionException in case there are asset drafts with duplicate keys.
@@ -54,7 +67,8 @@ public final class AssetsUpdateActionUtils {
         throws BuildUpdateActionException {
 
         if (newAssetDrafts != null) {
-            return buildAssetsUpdateActionsWithNewAssetDrafts(oldAssets, newAssetDrafts, assetActionFactory, syncOptions);
+            return buildAssetsUpdateActionsWithNewAssetDrafts(oldAssets, newAssetDrafts, assetActionFactory,
+                syncOptions);
         } else {
             return oldAssets.stream()
                             .map(Asset::getKey)
@@ -73,6 +87,8 @@ public final class AssetsUpdateActionUtils {
      * @param newAssetDrafts                the new list of asset drafts.
      * @param assetActionFactory            factory responsible for building asset update actions.
      * @param <T>                           the type of the resource the asset update actions are built for.
+     * @param syncOptions                   responsible for supplying the sync options to the sync utility method.
+     *                                      It is used for triggering the warn callback within the utility
      * @return a list of asset update actions on the resource of type T if the list of assets is not identical.
      *         Otherwise, if the assets are identical, an empty list is returned.
      * @throws BuildUpdateActionException in case there are asset drafts with duplicate keys.
@@ -92,7 +108,7 @@ public final class AssetsUpdateActionUtils {
 
         final Map<String, Asset> oldAssetsKeyMap = new HashMap<>();
 
-        oldAssets.stream().forEach(asset -> {
+        oldAssets.forEach(asset -> {
             String assetKey = asset.getKey();
             if (StringUtils.isNotBlank(assetKey)) {
                 oldAssetsKeyMap.put(assetKey, asset);
