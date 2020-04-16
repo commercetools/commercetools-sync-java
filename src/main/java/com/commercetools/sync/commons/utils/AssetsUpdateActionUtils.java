@@ -1,33 +1,32 @@
 package com.commercetools.sync.commons.utils;
 
+import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import com.commercetools.sync.commons.helpers.AssetActionFactory;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.IntStream;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
+import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toCollection;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.*;
 
 public final class AssetsUpdateActionUtils {
+
+    private static final String ASSET_KEY_NOT_SET = "Asset with id: '%s' has no key set. Keys are required for "
+        + "asset matching.";
+
 
     /**
      * Compares a list of {@link Asset}s with a list of {@link AssetDraft}s. The method serves as a generic
@@ -50,11 +49,12 @@ public final class AssetsUpdateActionUtils {
     public static <T> List<UpdateAction<T>> buildAssetsUpdateActions(
         @Nonnull final List<Asset> oldAssets,
         @Nullable final List<AssetDraft> newAssetDrafts,
-        @Nonnull final AssetActionFactory<T> assetActionFactory)
+        @Nonnull final AssetActionFactory<T> assetActionFactory,
+        @Nonnull final BaseSyncOptions syncOptions)
         throws BuildUpdateActionException {
 
         if (newAssetDrafts != null) {
-            return buildAssetsUpdateActionsWithNewAssetDrafts(oldAssets, newAssetDrafts, assetActionFactory);
+            return buildAssetsUpdateActionsWithNewAssetDrafts(oldAssets, newAssetDrafts, assetActionFactory, syncOptions);
         } else {
             return oldAssets.stream()
                             .map(Asset::getKey)
@@ -81,7 +81,8 @@ public final class AssetsUpdateActionUtils {
     private static <T> List<UpdateAction<T>> buildAssetsUpdateActionsWithNewAssetDrafts(
         @Nonnull final List<Asset> oldAssets,
         @Nonnull final List<AssetDraft> newAssetDrafts,
-        @Nonnull final AssetActionFactory<T> assetActionFactory)
+        @Nonnull final AssetActionFactory<T> assetActionFactory,
+        @Nonnull final BaseSyncOptions syncOptions)
         throws BuildUpdateActionException {
 
         // Asset set that has only the keys of the assets which should be removed, this is used in the method
@@ -89,8 +90,16 @@ public final class AssetsUpdateActionUtils {
         // have already been applied.
         final HashSet<String> removedAssetKeys = new HashSet<>();
 
-        final Map<String, Asset> oldAssetsKeyMap = oldAssets.stream().collect(toMap(Asset::getKey, asset -> asset));
+        final Map<String, Asset> oldAssetsKeyMap = new HashMap<>();
 
+        oldAssets.stream().forEach(asset -> {
+            String assetKey = asset.getKey();
+            if (StringUtils.isNotBlank(assetKey)) {
+                oldAssetsKeyMap.put(assetKey, asset);
+            } else {
+                syncOptions.applyWarningCallback(format(ASSET_KEY_NOT_SET, asset.getId()));
+            }
+        });
         final Map<String, AssetDraft> newAssetDraftsKeyMap;
         try {
             newAssetDraftsKeyMap =
