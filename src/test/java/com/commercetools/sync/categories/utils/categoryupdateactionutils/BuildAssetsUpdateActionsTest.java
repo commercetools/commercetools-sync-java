@@ -7,16 +7,12 @@ import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
-import io.sphere.sdk.categories.commands.updateactions.AddAsset;
-import io.sphere.sdk.categories.commands.updateactions.ChangeAssetName;
-import io.sphere.sdk.categories.commands.updateactions.ChangeAssetOrder;
-import io.sphere.sdk.categories.commands.updateactions.RemoveAsset;
-import io.sphere.sdk.categories.commands.updateactions.SetAssetSources;
-import io.sphere.sdk.categories.commands.updateactions.SetAssetTags;
+import io.sphere.sdk.categories.commands.updateactions.*;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.AssetDraftBuilder;
 import io.sphere.sdk.models.AssetSourceBuilder;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -27,9 +23,7 @@ import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singletonList;
+import static java.util.Collections.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -37,6 +31,7 @@ import static org.mockito.Mockito.when;
 class BuildAssetsUpdateActionsTest {
     private static final String RES_ROOT =
         "com/commercetools/sync/categories/utils/categoryupdateactionutils/assets/";
+    private static final String CATEGORY_DRAFT_WITH_ASSETS_WITHOUT_KEY = RES_ROOT + "category-draft-with-assets-abc-without-key-for-c.json";
     private static final String CATEGORY_DRAFT_WITH_ASSETS_ABC = RES_ROOT + "category-draft-with-assets-abc.json";
     private static final String CATEGORY_DRAFT_WITH_ASSETS_ABB = RES_ROOT + "category-draft-with-assets-abb.json";
     private static final String CATEGORY_DRAFT_WITH_ASSETS_ABC_WITH_CHANGES =
@@ -51,8 +46,17 @@ class BuildAssetsUpdateActionsTest {
     private static final String CATEGORY_DRAFT_WITH_ASSETS_CBD = RES_ROOT + "category-draft-with-assets-cbd.json";
     private static final String CATEGORY_DRAFT_WITH_ASSETS_CBD_WITH_CHANGES =
         RES_ROOT + "category-draft-with-assets-cbd-with-changes.json";
-    private static final CategorySyncOptions SYNC_OPTIONS = CategorySyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                                      .build();
+
+    private List<String> warningCallBackMessages;
+    private CategorySyncOptions syncOptions;
+
+    @BeforeEach
+    void setupTest() {
+        warningCallBackMessages = new ArrayList<>();
+        syncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class)).
+            warningCallback((warning) -> warningCallBackMessages.add(warning))
+            .build();
+    }
 
     @Test
     void buildAssetsUpdateActions_WithNullNewAssetsAndExistingAssets_ShouldBuild3RemoveActions() {
@@ -60,7 +64,7 @@ class BuildAssetsUpdateActionsTest {
 
         final List<UpdateAction<Category>> updateActions =
             buildAssetsUpdateActions(oldCategory,
-                CategoryDraftBuilder.of(ofEnglish("name"), ofEnglish("slug")).assets(null).build(), SYNC_OPTIONS);
+                CategoryDraftBuilder.of(ofEnglish("name"), ofEnglish("slug")).assets(null).build(), syncOptions);
 
         assertThat(updateActions).containsExactlyInAnyOrder(
             RemoveAsset.ofKey("a"),
@@ -75,7 +79,7 @@ class BuildAssetsUpdateActionsTest {
 
         final List<UpdateAction<Category>> updateActions =
             buildAssetsUpdateActions(oldCategory,
-                CategoryDraftBuilder.of(ofEnglish("name"), ofEnglish("slug")).assets(null).build(), SYNC_OPTIONS);
+                CategoryDraftBuilder.of(ofEnglish("name"), ofEnglish("slug")).assets(null).build(), syncOptions);
 
         assertThat(updateActions).isEmpty();
     }
@@ -89,20 +93,88 @@ class BuildAssetsUpdateActionsTest {
             CategoryDraft.class);
 
         final List<UpdateAction<Category>> updateActions =
-            buildAssetsUpdateActions(oldCategory, newCategoryDraft, SYNC_OPTIONS);
+            buildAssetsUpdateActions(oldCategory, newCategoryDraft, syncOptions);
 
         assertThat(updateActions).containsExactlyInAnyOrder(
             AddAsset.of(
                 AssetDraftBuilder.of(singletonList(AssetSourceBuilder.ofUri("uri").build()), ofEnglish("asset name"))
-                                 .key("a").tags(emptySet()).build(), 0),
+                    .key("a").tags(emptySet()).build(), 0),
             AddAsset.of(
                 AssetDraftBuilder.of(singletonList(AssetSourceBuilder.ofUri("uri").build()), ofEnglish("asset name"))
-                                 .key("b").tags(emptySet()).build(), 1),
+                    .key("b").tags(emptySet()).build(), 1),
             AddAsset.of(
                 AssetDraftBuilder.of(singletonList(AssetSourceBuilder.ofUri("uri").build()), ofEnglish("asset name"))
-                                 .key("c").tags(emptySet()).build(), 2)
+                    .key("c").tags(emptySet()).build(), 2)
         );
     }
+
+    @Test
+    void buildAssetsUpdateActions_WithNewAssetsAndOneWithoutKeyAndNoOldAssets_ShouldTriggerWarningCallBack() {
+        final Category oldCategory = mock(Category.class);
+        when(oldCategory.getAssets()).thenReturn(emptyList());
+
+        final CategoryDraft newCategoryDraft = readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_WITHOUT_KEY,
+            CategoryDraft.class);
+
+        final List<UpdateAction<Category>> updateActions =
+            buildAssetsUpdateActions(oldCategory, newCategoryDraft, syncOptions);
+
+        assertThat(updateActions).containsExactlyInAnyOrder(
+            AddAsset.of(
+                AssetDraftBuilder.of(singletonList(AssetSourceBuilder.ofUri("uri").build()), ofEnglish("asset name"))
+                    .key("a").tags(emptySet()).build(), 0),
+            AddAsset.of(
+                AssetDraftBuilder.of(singletonList(AssetSourceBuilder.ofUri("uri").build()), ofEnglish("asset name"))
+                    .key("b").tags(emptySet()).build(), 1)
+
+
+        );
+        assertThat(warningCallBackMessages.get(0)).isEqualTo("Asset with Name: LocalizedString(en -> asset name) "
+            + "has no key set. Keys are required for asset matching.");
+
+    }
+
+
+    @Test
+    void buildAssetsUpdateActions_WithNewAssetsAndOneWithoutKeyAndOldAssets_ShouldTriggerWarningCallBack() {
+        final Category oldCategory = readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_ABC, Category.class);
+        final CategoryDraft newCategoryDraft = readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_WITHOUT_KEY,
+            CategoryDraft.class);
+
+        final List<UpdateAction<Category>> updateActions =
+            buildAssetsUpdateActions(oldCategory, newCategoryDraft, syncOptions);
+
+        assertThat(updateActions).containsExactlyInAnyOrder(
+            RemoveAsset.ofKey("c")
+
+        );
+        assertThat(warningCallBackMessages.get(0)).isEqualTo("Asset with Name: LocalizedString(en -> asset name) "
+            + "has no key set. Keys are required for asset matching.");
+
+    }
+
+    @Test
+    void buildAssetsUpdateActions_WithNewAssetsAndOldAssetsAndOneWithoutKey_ShouldTriggerWarningCallBack() {
+        final Category oldCategory = readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_WITHOUT_KEY, Category.class);
+        final CategoryDraft newCategoryDraft = readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_ABC,
+            CategoryDraft.class);
+
+        final List<UpdateAction<Category>> updateActions =
+            buildAssetsUpdateActions(oldCategory, newCategoryDraft, syncOptions);
+
+        assertThat(updateActions).containsExactlyInAnyOrder(
+            AddAsset.of(
+                AssetDraftBuilder.of(singletonList(AssetSourceBuilder.ofUri("uri").build()), ofEnglish("asset name"))
+                    .key("c").tags(emptySet()).build(), 2)
+
+        );
+        assertThat(warningCallBackMessages.get(0)).isEqualTo("Asset with Id: 3 has no key set. Keys are "
+            + "required for asset matching.");
+
+    }
+
+
+
 
     @Test
     void buildAssetsUpdateActions_WithIdenticalAssets_ShouldNotBuildUpdateActions() {
@@ -112,7 +184,7 @@ class BuildAssetsUpdateActionsTest {
 
 
         final List<UpdateAction<Category>> updateActions =
-            buildAssetsUpdateActions(oldCategory, newCategoryDraft, SYNC_OPTIONS);
+            buildAssetsUpdateActions(oldCategory, newCategoryDraft, syncOptions);
 
         assertThat(updateActions).isEmpty();
     }
@@ -126,11 +198,11 @@ class BuildAssetsUpdateActionsTest {
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> exceptions = new ArrayList<>();
         final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                          .errorCallback((errorMessage, exception) -> {
-                                                                              errorMessages.add(errorMessage);
-                                                                              exceptions.add(exception);
-                                                                          })
-                                                                          .build();
+            .errorCallback((errorMessage, exception) -> {
+                errorMessages.add(errorMessage);
+                exceptions.add(exception);
+            })
+            .build();
 
         final List<UpdateAction<Category>> updateActions =
             buildAssetsUpdateActions(oldCategory, newCategoryDraft, syncOptions);
@@ -154,7 +226,7 @@ class BuildAssetsUpdateActionsTest {
             CategoryDraft.class);
 
         final List<UpdateAction<Category>> updateActions =
-            buildAssetsUpdateActions(oldCategory, newCategoryDraft, SYNC_OPTIONS);
+            buildAssetsUpdateActions(oldCategory, newCategoryDraft, syncOptions);
 
         final HashSet<String> expectedNewTags = new HashSet<>();
         expectedNewTags.add("new tag");
@@ -180,7 +252,7 @@ class BuildAssetsUpdateActionsTest {
 
 
         final List<UpdateAction<Category>> updateActions =
-            buildAssetsUpdateActions(oldCategory, newCategoryDraft, SYNC_OPTIONS);
+            buildAssetsUpdateActions(oldCategory, newCategoryDraft, syncOptions);
 
         assertThat(updateActions).containsExactly(RemoveAsset.ofKey("c"));
     }
@@ -192,14 +264,14 @@ class BuildAssetsUpdateActionsTest {
             readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_ABCD, CategoryDraft.class);
 
         final List<UpdateAction<Category>> updateActions =
-            buildAssetsUpdateActions(oldCategory, newCategoryDraft, SYNC_OPTIONS);
+            buildAssetsUpdateActions(oldCategory, newCategoryDraft, syncOptions);
 
         assertThat(updateActions).containsExactly(
             AddAsset.of(
                 AssetDraftBuilder.of(singletonList(AssetSourceBuilder.ofUri("uri").build()), ofEnglish("asset name"))
-                                 .key("d")
-                                 .tags(emptySet())
-                                 .build(), 3));
+                    .key("d")
+                    .tags(emptySet())
+                    .build(), 3));
     }
 
     @Test
@@ -209,13 +281,13 @@ class BuildAssetsUpdateActionsTest {
             CategoryDraft.class);
 
         final List<UpdateAction<Category>> updateActions =
-            buildAssetsUpdateActions(oldCategory, newCategoryDraft, SYNC_OPTIONS);
+            buildAssetsUpdateActions(oldCategory, newCategoryDraft, syncOptions);
 
         assertThat(updateActions).containsExactly(
             RemoveAsset.ofKey("c"),
             AddAsset.of(
                 AssetDraftBuilder.of(singletonList(AssetSourceBuilder.ofUri("uri").build()), ofEnglish("asset name"))
-                                 .key("d").tags(emptySet()).build(), 2)
+                    .key("d").tags(emptySet()).build(), 2)
         );
 
     }
@@ -227,7 +299,7 @@ class BuildAssetsUpdateActionsTest {
             readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_CAB, CategoryDraft.class);
 
         final List<UpdateAction<Category>> updateActions =
-            buildAssetsUpdateActions(oldCategory, newCategoryDraft, SYNC_OPTIONS);
+            buildAssetsUpdateActions(oldCategory, newCategoryDraft, syncOptions);
 
         assertThat(updateActions).containsExactly(ChangeAssetOrder.of(asList("3", "1", "2")));
     }
@@ -239,7 +311,7 @@ class BuildAssetsUpdateActionsTest {
             readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_CB, CategoryDraft.class);
 
         final List<UpdateAction<Category>> updateActions =
-            buildAssetsUpdateActions(oldCategory, newCategoryDraft, SYNC_OPTIONS);
+            buildAssetsUpdateActions(oldCategory, newCategoryDraft, syncOptions);
 
         assertThat(updateActions).containsExactly(RemoveAsset.ofKey("a"), ChangeAssetOrder.of(asList("3", "2")));
     }
@@ -251,13 +323,13 @@ class BuildAssetsUpdateActionsTest {
             readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_ACBD, CategoryDraft.class);
 
         final List<UpdateAction<Category>> updateActions =
-            buildAssetsUpdateActions(oldCategory, newCategoryDraft, SYNC_OPTIONS);
+            buildAssetsUpdateActions(oldCategory, newCategoryDraft, syncOptions);
 
         assertThat(updateActions).containsExactly(
             ChangeAssetOrder.of(asList("1", "3", "2")),
             AddAsset.of(
                 AssetDraftBuilder.of(singletonList(AssetSourceBuilder.ofUri("uri").build()), ofEnglish("asset name"))
-                                 .key("d").tags(emptySet()).build(), 3)
+                    .key("d").tags(emptySet()).build(), 3)
         );
     }
 
@@ -268,12 +340,12 @@ class BuildAssetsUpdateActionsTest {
             readObjectFromResource(CATEGORY_DRAFT_WITH_ASSETS_ADBC, CategoryDraft.class);
 
         final List<UpdateAction<Category>> updateActions =
-            buildAssetsUpdateActions(oldCategory, newCategoryDraft, SYNC_OPTIONS);
+            buildAssetsUpdateActions(oldCategory, newCategoryDraft, syncOptions);
 
         assertThat(updateActions).containsExactly(
             AddAsset.of(
                 AssetDraftBuilder.of(singletonList(AssetSourceBuilder.ofUri("uri").build()), ofEnglish("asset name"))
-                                 .key("d").tags(emptySet()).build(), 1)
+                    .key("d").tags(emptySet()).build(), 1)
         );
     }
 
@@ -285,14 +357,14 @@ class BuildAssetsUpdateActionsTest {
 
 
         final List<UpdateAction<Category>> updateActions =
-            buildAssetsUpdateActions(oldCategory, newCategoryDraft, SYNC_OPTIONS);
+            buildAssetsUpdateActions(oldCategory, newCategoryDraft, syncOptions);
 
         assertThat(updateActions).containsExactly(
             RemoveAsset.ofKey("a"),
             ChangeAssetOrder.of(asList("3", "2")),
             AddAsset.of(
                 AssetDraftBuilder.of(singletonList(AssetSourceBuilder.ofUri("uri").build()), ofEnglish("asset name"))
-                                 .key("d").tags(emptySet()).build(), 2)
+                    .key("d").tags(emptySet()).build(), 2)
         );
     }
 
@@ -303,7 +375,7 @@ class BuildAssetsUpdateActionsTest {
             CategoryDraft.class);
 
         final List<UpdateAction<Category>> updateActions =
-            buildAssetsUpdateActions(oldCategory, newCategoryDraft, SYNC_OPTIONS);
+            buildAssetsUpdateActions(oldCategory, newCategoryDraft, syncOptions);
 
         assertThat(updateActions).containsExactly(
             RemoveAsset.ofKey("a"),
@@ -311,7 +383,7 @@ class BuildAssetsUpdateActionsTest {
             ChangeAssetOrder.of(asList("3", "2")),
             AddAsset.of(
                 AssetDraftBuilder.of(singletonList(AssetSourceBuilder.ofUri("uri").build()), ofEnglish("asset name"))
-                                 .key("d").tags(emptySet()).build(), 2)
+                    .key("d").tags(emptySet()).build(), 2)
         );
     }
 }

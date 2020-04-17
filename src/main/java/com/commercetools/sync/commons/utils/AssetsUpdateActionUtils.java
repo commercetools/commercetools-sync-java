@@ -12,15 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.IntStream;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
@@ -28,14 +20,13 @@ import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOpti
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.toCollection;
-import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.*;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 
 public final class AssetsUpdateActionUtils {
 
-    private static final String ASSET_KEY_NOT_SET = "Asset with id: '%s' has no key set. Keys are required for "
+    private static final String ASSET_KEY_NOT_SET = "Asset with %s has no key set. Keys are required for "
         + "asset matching.";
 
 
@@ -110,21 +101,29 @@ public final class AssetsUpdateActionUtils {
 
         oldAssets.forEach(asset -> {
             String assetKey = asset.getKey();
-            if (StringUtils.isNotBlank(assetKey)) {
+            if (isNotBlank(assetKey)) {
                 oldAssetsKeyMap.put(assetKey, asset);
             } else {
-                syncOptions.applyWarningCallback(format(ASSET_KEY_NOT_SET, asset.getId()));
+                syncOptions.applyWarningCallback(format(ASSET_KEY_NOT_SET, "Id: " + asset.getId()));
             }
         });
-        final Map<String, AssetDraft> newAssetDraftsKeyMap;
+        final Map<String, AssetDraft> newAssetDraftsKeyMap = new HashMap<>();
+        ;
         try {
-            newAssetDraftsKeyMap =
-                newAssetDrafts.stream().collect(
-                    toMap(AssetDraft::getKey, assetDraft -> assetDraft, (assetDraftA, assetDraftB) -> {
+            newAssetDrafts.forEach(newAsset -> {
+                String assetKey = newAsset.getKey();
+                if (isNotBlank(assetKey)) {
+                    newAssetDraftsKeyMap.merge(assetKey, newAsset, (assetDraftA, assetDraftB) -> {
                             throw new DuplicateKeyException("Supplied asset drafts have duplicate keys. Asset keys are"
                                 + " expected to be unique inside their container (a product variant or a category).");
                         }
-                    ));
+                    );
+
+                } else {
+                    syncOptions.applyWarningCallback(format(ASSET_KEY_NOT_SET, "Name: " + newAsset.getName()));
+                }
+            });
+
         } catch (final DuplicateKeyException exception) {
             throw new BuildUpdateActionException(exception);
         }
@@ -174,6 +173,7 @@ public final class AssetsUpdateActionUtils {
         // actions.
         return oldAssets
             .stream()
+            .filter(asset -> isNotBlank(asset.getKey()))
             .map(oldAsset -> {
                 final String oldAssetKey = oldAsset.getKey();
                 final AssetDraft matchingNewAssetDraft = newAssetDraftsKeyMap.get(oldAssetKey);
@@ -211,15 +211,18 @@ public final class AssetsUpdateActionUtils {
         @Nonnull final AssetActionFactory<T> assetActionFactory) {
 
         final Map<String, String> oldAssetKeyToIdMap = oldAssets.stream()
+                                                                .filter(asset -> isNotBlank(asset.getKey()))
                                                                 .collect(toMap(Asset::getKey, Asset::getId));
 
         final List<String> newOrder = newAssetDrafts.stream()
+                                                    .filter(asset -> isNotBlank(asset.getKey()))
                                                     .map(AssetDraft::getKey)
                                                     .map(oldAssetKeyToIdMap::get)
                                                     .filter(Objects::nonNull)
                                                     .collect(toList());
 
         final List<String> oldOrder = oldAssets.stream()
+                                               .filter(asset -> isNotBlank(asset.getKey()))
                                                .filter(asset -> !removedAssetKeys.contains(asset.getKey()))
                                                .map(Asset::getId)
                                                .collect(toList());
@@ -250,7 +253,7 @@ public final class AssetsUpdateActionUtils {
             IntStream.range(0, newAssetDrafts.size())
                      .mapToObj(assetDraftIndex ->
                              ofNullable(newAssetDrafts.get(assetDraftIndex))
-                                 .filter(assetDraft -> !oldAssetsKeyMap.containsKey(assetDraft.getKey()))
+                                 .filter(assetDraft -> isNotBlank(assetDraft.getKey()) && !oldAssetsKeyMap.containsKey(assetDraft.getKey()))
                                  .map(assetDraft -> assetActionFactory.buildAddAssetAction(assetDraft, assetDraftIndex))
                      )
                      .collect(toCollection(ArrayList::new));
