@@ -30,6 +30,7 @@ import io.sphere.sdk.products.commands.updateactions.SetMetaDescription;
 import io.sphere.sdk.products.commands.updateactions.SetMetaKeywords;
 import io.sphere.sdk.products.commands.updateactions.SetMetaTitle;
 import io.sphere.sdk.products.commands.updateactions.SetSearchKeywords;
+import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
 import io.sphere.sdk.products.commands.updateactions.SetTaxCategory;
 import io.sphere.sdk.products.commands.updateactions.TransitionState;
 import io.sphere.sdk.products.commands.updateactions.Unpublish;
@@ -46,6 +47,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.CollectionUtils.collectionToMap;
 import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
@@ -416,8 +418,8 @@ public final class ProductUpdateActionUtils {
                 } else {
                     final ProductVariant matchingOldVariant = oldProductVariantsWithMaster.get(newProductVariantKey);
                     final List<UpdateAction<Product>> updateOrAddVariant = ofNullable(matchingOldVariant)
-                        .map(oldVariant -> collectAllVariantUpdateActions(oldProduct, oldVariant, newProductVariant,
-                            attributesMetaData, syncOptions))
+                        .map(oldVariant -> collectAllVariantUpdateActions(updateActions, oldProduct, oldVariant,
+                                newProductVariant, attributesMetaData, syncOptions))
                         .orElseGet(() -> buildAddVariantUpdateActionFromDraft(newProductVariant));
                     updateActions.addAll(updateOrAddVariant);
                 }
@@ -439,6 +441,36 @@ public final class ProductUpdateActionUtils {
         allVariants.add(productDraft.getMasterVariant());
         allVariants.addAll(productDraft.getVariants());
         return allVariants;
+    }
+
+    private static boolean filterDuplicateSameForAllAction(
+            final List<UpdateAction<Product>> updateActions, final UpdateAction<Product> collectedUpdateAction) {
+        return !(collectedUpdateAction instanceof SetAttributeInAllVariants)
+                || isSameForAllActionNew(updateActions, collectedUpdateAction);
+    }
+
+    private static boolean isSameForAllActionNew(
+            final List<UpdateAction<Product>> updateActions, final UpdateAction<Product> productUpdateAction) {
+        return updateActions.stream()
+                .noneMatch(previouslyAddedAction ->
+                                previouslyAddedAction instanceof SetAttributeInAllVariants
+                                        && previouslyAddedAction.getAction().equals(productUpdateAction.getAction()));
+    }
+
+    private static List<UpdateAction<Product>> collectAllVariantUpdateActions(
+            @Nonnull final List<UpdateAction<Product>> updateActions,
+            @Nonnull final Product oldProduct,
+            @Nonnull final ProductVariant oldProductVariant,
+            @Nonnull final ProductVariantDraft newProductVariant,
+            @Nonnull final Map<String, AttributeMetaData> attributesMetaData,
+            @Nonnull final ProductSyncOptions syncOptions) {
+        return emptyIfNull(
+                collectAllVariantUpdateActions(
+                        oldProduct, oldProductVariant, newProductVariant, attributesMetaData, syncOptions))
+                .stream()
+                .filter(collectedUpdateAction ->
+                                filterDuplicateSameForAllAction(updateActions, collectedUpdateAction))
+                .collect(Collectors.toList());
     }
 
     @Nonnull
