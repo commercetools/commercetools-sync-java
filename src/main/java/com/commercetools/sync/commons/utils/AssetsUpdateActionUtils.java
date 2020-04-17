@@ -8,11 +8,19 @@ import com.commercetools.sync.commons.helpers.AssetActionFactory;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
-import org.apache.commons.lang3.StringUtils;
+
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
@@ -20,7 +28,9 @@ import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOpti
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.toCollection;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 
@@ -253,7 +263,8 @@ public final class AssetsUpdateActionUtils {
             IntStream.range(0, newAssetDrafts.size())
                      .mapToObj(assetDraftIndex ->
                              ofNullable(newAssetDrafts.get(assetDraftIndex))
-                                 .filter(assetDraft -> isNotBlank(assetDraft.getKey()) && !oldAssetsKeyMap.containsKey(assetDraft.getKey()))
+                                 .filter(assetDraft -> isNotBlank(assetDraft.getKey())
+                                     && !oldAssetsKeyMap.containsKey(assetDraft.getKey()))
                                  .map(assetDraft -> assetActionFactory.buildAddAssetAction(assetDraft, assetDraftIndex))
                      )
                      .collect(toCollection(ArrayList::new));

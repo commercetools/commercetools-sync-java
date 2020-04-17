@@ -7,7 +7,12 @@ import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
-import io.sphere.sdk.categories.commands.updateactions.*;
+import io.sphere.sdk.categories.commands.updateactions.AddAsset;
+import io.sphere.sdk.categories.commands.updateactions.ChangeAssetName;
+import io.sphere.sdk.categories.commands.updateactions.ChangeAssetOrder;
+import io.sphere.sdk.categories.commands.updateactions.RemoveAsset;
+import io.sphere.sdk.categories.commands.updateactions.SetAssetSources;
+import io.sphere.sdk.categories.commands.updateactions.SetAssetTags;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.AssetDraftBuilder;
@@ -23,7 +28,9 @@ import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
-import static java.util.Collections.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -31,7 +38,8 @@ import static org.mockito.Mockito.when;
 class BuildAssetsUpdateActionsTest {
     private static final String RES_ROOT =
         "com/commercetools/sync/categories/utils/categoryupdateactionutils/assets/";
-    private static final String CATEGORY_DRAFT_WITH_ASSETS_WITHOUT_KEY = RES_ROOT + "category-draft-with-assets-abc-without-key-for-c.json";
+    private static final String CATEGORY_DRAFT_WITH_ASSETS_WITHOUT_KEY = RES_ROOT
+        + "category-draft-with-assets-abc-without-key-for-c.json";
     private static final String CATEGORY_DRAFT_WITH_ASSETS_ABC = RES_ROOT + "category-draft-with-assets-abc.json";
     private static final String CATEGORY_DRAFT_WITH_ASSETS_ABB = RES_ROOT + "category-draft-with-assets-abb.json";
     private static final String CATEGORY_DRAFT_WITH_ASSETS_ABC_WITH_CHANGES =
@@ -53,8 +61,8 @@ class BuildAssetsUpdateActionsTest {
     @BeforeEach
     void setupTest() {
         warningCallBackMessages = new ArrayList<>();
-        syncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class)).
-            warningCallback((warning) -> warningCallBackMessages.add(warning))
+        syncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class))
+            .warningCallback((warning) -> warningCallBackMessages.add(warning))
             .build();
     }
 
