@@ -6,10 +6,7 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.AssetDraft;
-import io.sphere.sdk.models.AssetDraftBuilder;
-import io.sphere.sdk.models.AssetSourceBuilder;
-import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.*;
 import io.sphere.sdk.products.Image;
 import io.sphere.sdk.products.ImageDimensions;
 import io.sphere.sdk.products.Price;
@@ -96,8 +93,8 @@ class ProductSyncUtilsTest {
         final ProductDraftBuilder draftBuilder = createProductDraftBuilder(
             PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH, ProductType.referenceOfId("anyProductType"));
 
-        final AssetDraft assetDraft = AssetDraftBuilder.of(singletonList(AssetSourceBuilder.ofUri("uri").build()),
-            ofEnglish("assetName")).build();
+       AssetDraft assetDraft = AssetDraftBuilder.of(singletonList(AssetSourceBuilder.ofUri("uri").build()),
+            ofEnglish("assetName")).build().withKey("anyKey");
 
         final ProductVariantDraft masterVariantDraftWithAssets =
             ProductVariantDraftBuilder.of(draftBuilder.getMasterVariant())
