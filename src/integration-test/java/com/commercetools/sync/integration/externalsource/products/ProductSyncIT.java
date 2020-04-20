@@ -7,6 +7,9 @@ import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
+import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.channels.ChannelRole;
+import io.sphere.sdk.channels.queries.ChannelByIdGet;
 import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.ErrorResponseException;
@@ -17,6 +20,7 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.errors.DuplicateFieldError;
 import io.sphere.sdk.products.CategoryOrderHints;
+import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.PriceDraftBuilder;
 import io.sphere.sdk.products.PriceDraftDsl;
 import io.sphere.sdk.products.Product;
@@ -32,6 +36,7 @@ import io.sphere.sdk.products.commands.updateactions.RemoveFromCategory;
 import io.sphere.sdk.products.commands.updateactions.SetAttribute;
 import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
 import io.sphere.sdk.products.commands.updateactions.SetTaxCategory;
+import io.sphere.sdk.products.queries.ProductByKeyGet;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.queries.PagedQueryResult;
@@ -52,6 +57,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -219,6 +225,15 @@ class ProductSyncIT {
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
+
+        Product productFromTargetProject = executeBlocking(
+                CTP_TARGET_CLIENT.execute(ProductByKeyGet.of(productDraft.getKey())));
+        List<Price> prices = productFromTargetProject.getMasterData().getStaged().getMasterVariant().getPrices();
+        assertThat(prices.size()).isEqualTo(1);
+
+        Channel channel = executeBlocking(CTP_TARGET_CLIENT.execute(ChannelByIdGet.of(
+                Objects.requireNonNull(Objects.requireNonNull(prices.get(0).getChannel()).getId()))));
+        assertThat(channel.getRoles()).containsOnly(ChannelRole.PRODUCT_DISTRIBUTION);
     }
 
     @Test
