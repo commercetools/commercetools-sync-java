@@ -106,10 +106,10 @@ public final class ProductSyncUtils {
         // lastly publish/unpublish product
         buildPublishUpdateAction(oldProduct, newProduct).ifPresent(updateActions::add);
 
-        return prioritizeSFAUpdateActions(updateActions);
+        return prioritizeUpdateActions(updateActions);
     }
 
-    private static List<UpdateAction<Product>> prioritizeSFAUpdateActions(
+    private static List<UpdateAction<Product>> prioritizeUpdateActions(
             final List<UpdateAction<Product>> updateActions) {
 
         final List<UpdateAction<Product>> sameForAllUpdateActions =
