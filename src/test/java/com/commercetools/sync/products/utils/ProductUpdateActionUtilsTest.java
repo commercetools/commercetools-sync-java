@@ -176,15 +176,24 @@ class ProductUpdateActionUtilsTest {
                 AttributeDefinitionBuilder.of("priceInfo", null, null)
                         .attributeConstraint(AttributeConstraint.SAME_FOR_ALL)
                         .build());
+        final AttributeMetaData size = AttributeMetaData.of(
+                AttributeDefinitionBuilder.of("size", null, null)
+                        .build());
         attributesMetaData.put("priceInfo", priceInfo);
+        attributesMetaData.put("size", size);
 
         final List<UpdateAction<Product>> updateActions =
                 buildVariantsUpdateActions(productOld, productDraftNew, productSyncOptions, attributesMetaData);
 
         // check that we only have one generated action for all the variants and no duplicates
-        assertThat(updateActions.size()).isEqualTo(1);
+        assertThat(updateActions.size()).isEqualTo(3);
         assertThat(updateActions).containsOnlyOnce(SetAttributeInAllVariants.of(
                 AttributeDraft.of("priceInfo", "74,90/kg"), true));
+        // Other update actions can be duplicated per variant
+        assertThat(updateActions).containsOnlyOnce(SetAttribute.of(2,
+                AttributeDraft.of("size", "ca. 1 x 1200 g"), true));
+        assertThat(updateActions).containsOnlyOnce(SetAttribute.of(3,
+                AttributeDraft.of("size", "ca. 1 x 1200 g"), true));
     }
 
     @Test
