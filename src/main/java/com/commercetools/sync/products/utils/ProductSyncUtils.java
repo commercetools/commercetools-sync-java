@@ -12,7 +12,9 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildActionIfPassesFilter;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildActionsIfPassesFilter;
@@ -104,7 +106,24 @@ public final class ProductSyncUtils {
         // lastly publish/unpublish product
         buildPublishUpdateAction(oldProduct, newProduct).ifPresent(updateActions::add);
 
-        return updateActions;
+        return prioritizeSFAUpdateActions(updateActions);
+    }
+
+    private static List<UpdateAction<Product>> prioritizeSFAUpdateActions(
+            final List<UpdateAction<Product>> updateActions) {
+
+        final List<UpdateAction<Product>> sameForAllUpdateActions =
+                emptyIfNull(updateActions)
+                        .parallelStream()
+                        .filter(action -> action.getAction().equals("setAttributeInAllVariants"))
+                        .collect(Collectors.toList());
+
+        updateActions.removeAll(sameForAllUpdateActions);
+
+        final List<UpdateAction<Product>> updateActionList = new ArrayList<>(sameForAllUpdateActions);
+        updateActionList.addAll(updateActions);
+
+        return updateActionList;
     }
 
     /**

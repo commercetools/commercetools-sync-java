@@ -1,5 +1,6 @@
 package com.commercetools.sync.products.utils;
 
+import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import io.sphere.sdk.categories.Category;
@@ -18,7 +19,11 @@ import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.ProductVariantDraft;
+import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
+import io.sphere.sdk.products.attributes.AttributeConstraint;
+import io.sphere.sdk.products.attributes.AttributeDefinitionBuilder;
+import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.updateactions.AddAsset;
 import io.sphere.sdk.products.commands.updateactions.AddExternalImage;
 import io.sphere.sdk.products.commands.updateactions.AddPrice;
@@ -28,6 +33,7 @@ import io.sphere.sdk.products.commands.updateactions.ChangeSlug;
 import io.sphere.sdk.products.commands.updateactions.RemoveFromCategory;
 import io.sphere.sdk.products.commands.updateactions.RemoveImage;
 import io.sphere.sdk.products.commands.updateactions.RemovePrice;
+import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
 import io.sphere.sdk.products.commands.updateactions.SetCategoryOrderHint;
 import io.sphere.sdk.products.commands.updateactions.SetDescription;
 import io.sphere.sdk.products.commands.updateactions.SetMetaDescription;
@@ -45,6 +51,7 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH;
@@ -229,5 +236,44 @@ class ProductSyncUtilsTest {
             ProductSyncUtils.buildActions(oldProduct, newProductDraft, productSyncOptions, new HashMap<>());
 
         assertThat(updateActions).isEmpty();
+    }
+
+    @Test
+    void buildActions_FromDraftsWithSameForAllAttribute_ShouldBuildUpdateActions() {
+
+        final ProductVariant masterVariant = oldProduct.getMasterData().getStaged().getMasterVariant();
+        final AttributeDraft brandNameAttribute = AttributeDraft.of("brandName", "sameForAllBrand");
+        final ProductVariantDraft newMasterVariant = ProductVariantDraftBuilder.of(masterVariant)
+                .plusAttribute(brandNameAttribute)
+                .build();
+        final ProductVariantDraft variant = ProductVariantDraftBuilder.of()
+                .key("v2")
+                .sku("3065834")
+                .plusAttribute(brandNameAttribute)
+                .build();
+
+        final ProductDraft newProductDraft =
+                createProductDraftBuilder(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH,
+                        ProductType.referenceOfId("anyProductType"))
+                        .masterVariant(newMasterVariant)
+                        .plusVariants(variant)
+                        .build();
+
+        final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
+        final AttributeMetaData brandName = AttributeMetaData.of(
+                AttributeDefinitionBuilder.of("brandName", null, null)
+                        .attributeConstraint(AttributeConstraint.SAME_FOR_ALL)
+                        .build());
+        attributesMetaData.put("brandName", brandName);
+
+        final List<UpdateAction<Product>> updateActions =
+                ProductSyncUtils.buildActions(oldProduct, newProductDraft, productSyncOptions, attributesMetaData);
+
+        // check that we only have one generated action for all the variants and no duplicates
+        assertThat(updateActions.size()).isEqualTo(2);
+        assertThat(updateActions).containsOnlyOnce(SetAttributeInAllVariants.of(
+                AttributeDraft.of("brandName", "sameForAllBrand"), true));
+        assertThat(updateActions.get(0)).isEqualTo(SetAttributeInAllVariants.of(
+                AttributeDraft.of("brandName", "sameForAllBrand"), true));
     }
 }

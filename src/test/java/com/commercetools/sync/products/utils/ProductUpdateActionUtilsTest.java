@@ -181,7 +181,7 @@ class ProductUpdateActionUtilsTest {
         final List<UpdateAction<Product>> updateActions =
                 buildVariantsUpdateActions(productOld, productDraftNew, productSyncOptions, attributesMetaData);
 
-        // check remove variants are the first in the list, but not the master variant
+        // check that we only have one generated action for all the variants and no duplicates
         assertThat(updateActions.size()).isEqualTo(1);
         assertThat(updateActions).containsOnlyOnce(SetAttributeInAllVariants.of(
                 AttributeDraft.of("priceInfo", "74,90/kg"), true));
