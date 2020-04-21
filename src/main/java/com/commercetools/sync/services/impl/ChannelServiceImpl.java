@@ -32,11 +32,6 @@ public final class ChannelServiceImpl extends BaseServiceWithKey<ChannelDraft, C
         this.channelRoles = channelRoles;
     }
 
-    public ChannelServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
-        super(syncOptions);
-        this.channelRoles = Collections.emptySet();
-    }
-
     @Nonnull
     @Override
     public CompletionStage<Optional<String>> fetchCachedChannelId(@Nonnull final String key) {
