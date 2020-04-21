@@ -118,7 +118,6 @@ public final class AssetsUpdateActionUtils {
             }
         });
         final Map<String, AssetDraft> newAssetDraftsKeyMap = new HashMap<>();
-        ;
         try {
             newAssetDrafts.forEach(newAsset -> {
                 String assetKey = newAsset.getKey();
