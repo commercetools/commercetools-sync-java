@@ -138,7 +138,7 @@ class BuildAssetsUpdateActionsTest {
 
         );
         assertThat(warningCallBackMessages.get(0)).isEqualTo("Asset with Name: LocalizedString(en -> asset name) "
-            + "has no key set. Keys are required for asset matching.");
+            + "has no defined key. Keys are required for asset matching.");
 
     }
 
