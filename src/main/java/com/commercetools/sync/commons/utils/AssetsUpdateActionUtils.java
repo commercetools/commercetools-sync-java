@@ -35,7 +35,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public final class AssetsUpdateActionUtils {
 
-    private static final String ASSET_KEY_NOT_SET = "Asset with %s has no defined key. Keys are required for "
+    public static final String ASSET_KEY_NOT_SET = "Asset with %s has no defined key. Keys are required for "
         + "asset matching.";
 
 

@@ -25,8 +25,10 @@ import java.util.HashSet;
 import java.util.List;
 
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildAssetsUpdateActions;
+import static com.commercetools.sync.commons.utils.AssetsUpdateActionUtils.ASSET_KEY_NOT_SET;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
@@ -137,9 +139,8 @@ class BuildAssetsUpdateActionsTest {
 
 
         );
-        assertThat(warningCallBackMessages.get(0)).isEqualTo("Asset with Name: LocalizedString(en -> asset name) "
-            + "has no defined key. Keys are required for asset matching.");
-
+        assertThat(warningCallBackMessages.get(0)).isEqualTo(format(ASSET_KEY_NOT_SET,
+            "name: LocalizedString(en -> asset name)"));
     }
 
 
@@ -153,9 +154,8 @@ class BuildAssetsUpdateActionsTest {
             buildAssetsUpdateActions(oldCategory, newCategoryDraft, syncOptions);
 
         assertThat(updateActions).containsExactlyInAnyOrder(RemoveAsset.ofKey("c"));
-        assertThat(warningCallBackMessages.get(0)).isEqualTo("Asset with Name: LocalizedString(en -> asset name) "
-            + "has no defined key. Keys are required for asset matching.");
-
+        assertThat(warningCallBackMessages.get(0)).isEqualTo(format(ASSET_KEY_NOT_SET,
+            "name: LocalizedString(en -> asset name)"));
     }
 
     @Test
@@ -173,8 +173,7 @@ class BuildAssetsUpdateActionsTest {
                     .key("c").tags(emptySet()).build(), 2)
 
         );
-        assertThat(warningCallBackMessages.get(0)).isEqualTo("Asset with Id: 3 has no key set. Keys are "
-            + "required for asset matching.");
+        assertThat(warningCallBackMessages.get(0)).isEqualTo(format(ASSET_KEY_NOT_SET, "id: 3" ));
 
     }
 
