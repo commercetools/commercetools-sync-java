@@ -130,7 +130,7 @@ public final class AssetsUpdateActionUtils {
                     );
 
                 } else {
-                    syncOptions.applyWarningCallback(format(ASSET_KEY_NOT_SET, "Name: " + newAsset.getName()));
+                    syncOptions.applyWarningCallback(format(ASSET_KEY_NOT_SET, "name: " + newAsset.getName()));
                 }
             });
 
