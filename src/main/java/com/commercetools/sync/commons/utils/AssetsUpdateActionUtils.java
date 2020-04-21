@@ -114,7 +114,7 @@ public final class AssetsUpdateActionUtils {
             if (isNotBlank(assetKey)) {
                 oldAssetsKeyMap.put(assetKey, asset);
             } else {
-                syncOptions.applyWarningCallback(format(ASSET_KEY_NOT_SET, "Id: " + asset.getId()));
+                syncOptions.applyWarningCallback(format(ASSET_KEY_NOT_SET, "id: " + asset.getId()));
             }
         });
         final Map<String, AssetDraft> newAssetDraftsKeyMap = new HashMap<>();
