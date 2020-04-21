@@ -1,6 +1,5 @@
 package com.commercetools.sync.commons.utils;
 
-
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
