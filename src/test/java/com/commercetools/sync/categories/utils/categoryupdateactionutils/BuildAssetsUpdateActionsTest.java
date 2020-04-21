@@ -152,10 +152,7 @@ class BuildAssetsUpdateActionsTest {
         final List<UpdateAction<Category>> updateActions =
             buildAssetsUpdateActions(oldCategory, newCategoryDraft, syncOptions);
 
-        assertThat(updateActions).containsExactlyInAnyOrder(
-            RemoveAsset.ofKey("c")
-
-        );
+        assertThat(updateActions).containsExactlyInAnyOrder(RemoveAsset.ofKey("c"));
         assertThat(warningCallBackMessages.get(0)).isEqualTo("Asset with Name: LocalizedString(en -> asset name) "
             + "has no defined key. Keys are required for asset matching.");
 
