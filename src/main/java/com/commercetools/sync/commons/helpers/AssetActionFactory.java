@@ -28,7 +28,7 @@ public abstract class AssetActionFactory<T> {
                                                             @Nonnull AssetDraft newAssetDraft);
 
     /**
-     * Takes an asset  to build a RemoveAsset action of the type T.
+     * Takes an asset key to build a RemoveAsset action of the type T.
      *
      * @param assetKey the key of the asset used un building the update action.
      * @return the built remove asset update action.
