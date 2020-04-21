@@ -96,7 +96,7 @@ class ProductSyncUtilsTest {
         final ProductDraftBuilder draftBuilder = createProductDraftBuilder(
             PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH, ProductType.referenceOfId("anyProductType"));
 
-        AssetDraft assetDraft = AssetDraftBuilder.of(singletonList(AssetSourceBuilder.ofUri("uri").build()),
+       final AssetDraft assetDraft = AssetDraftBuilder.of(singletonList(AssetSourceBuilder.ofUri("uri").build()),
             ofEnglish("assetName")).build().withKey("anyKey");
 
         final ProductVariantDraft masterVariantDraftWithAssets =
