@@ -7,15 +7,7 @@ import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.utils.AssetsUpdateActionUtils;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.categories.commands.updateactions.ChangeName;
-import io.sphere.sdk.categories.commands.updateactions.ChangeOrderHint;
-import io.sphere.sdk.categories.commands.updateactions.ChangeParent;
-import io.sphere.sdk.categories.commands.updateactions.ChangeSlug;
-import io.sphere.sdk.categories.commands.updateactions.SetDescription;
-import io.sphere.sdk.categories.commands.updateactions.SetExternalId;
-import io.sphere.sdk.categories.commands.updateactions.SetMetaDescription;
-import io.sphere.sdk.categories.commands.updateactions.SetMetaKeywords;
-import io.sphere.sdk.categories.commands.updateactions.SetMetaTitle;
+import io.sphere.sdk.categories.commands.updateactions.*;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
@@ -251,8 +243,7 @@ public final class CategoryUpdateActionUtils {
             return AssetsUpdateActionUtils.buildAssetsUpdateActions(
                 oldCategory.getAssets(),
                 newCategory.getAssets(),
-                new CategoryAssetActionFactory(syncOptions),
-                syncOptions);
+                new CategoryAssetActionFactory(syncOptions), syncOptions);
         } catch (final BuildUpdateActionException exception) {
             syncOptions.applyErrorCallback(format("Failed to build update actions for the assets "
                 + "of the category with the key '%s'. Reason: %s", oldCategory.getKey(), exception), exception);
