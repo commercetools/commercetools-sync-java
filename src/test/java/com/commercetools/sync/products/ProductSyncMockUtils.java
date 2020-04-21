@@ -66,6 +66,7 @@ public class ProductSyncMockUtils {
     public static final String PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH =
         "product-key-1-changed-with-prices.json";
     public static final String PRODUCT_KEY_2_RESOURCE_PATH = "product-key-2.json";
+    public static final String PRODUCT_KEY_2_CHANGED_ATTRIBUTES_RESOURCE_PATH = "product-key-2-changed-attributes.json";
     public static final String PRODUCT_WITH_VARS_RESOURCE_PATH = "product-with-variants.json";
     public static final String PRODUCT_NO_VARS_RESOURCE_PATH = "product-with-no-variants.json";
     public static final String PRODUCT_TYPE_RESOURCE_PATH = "product-type.json";

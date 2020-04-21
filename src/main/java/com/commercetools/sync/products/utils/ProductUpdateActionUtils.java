@@ -418,8 +418,8 @@ public final class ProductUpdateActionUtils {
                 } else {
                     final ProductVariant matchingOldVariant = oldProductVariantsWithMaster.get(newProductVariantKey);
                     final List<UpdateAction<Product>> updateOrAddVariant = ofNullable(matchingOldVariant)
-                        .map(oldVariant -> collectAllVariantUpdateActions(updateActions, oldProduct, oldVariant,
-                                newProductVariant, attributesMetaData, syncOptions))
+                        .map(oldVariant -> collectAllVariantUpdateActions(getSameForAllUpdateActions(updateActions),
+                                oldProduct, oldVariant, newProductVariant, attributesMetaData, syncOptions))
                         .orElseGet(() -> buildAddVariantUpdateActionFromDraft(newProductVariant));
                     updateActions.addAll(updateOrAddVariant);
                 }
@@ -428,6 +428,13 @@ public final class ProductUpdateActionUtils {
 
         updateActions.addAll(buildChangeMasterVariantUpdateAction(oldProduct, newProduct, syncOptions));
         return updateActions;
+    }
+
+    private static List<UpdateAction<Product>> getSameForAllUpdateActions(
+            final List<UpdateAction<Product>> updateActions) {
+        return emptyIfNull(updateActions).stream().filter(productUpdateAction ->
+                productUpdateAction instanceof SetAttributeInAllVariants)
+                .collect(toList());
     }
 
     /**
@@ -458,18 +465,18 @@ public final class ProductUpdateActionUtils {
     }
 
     private static List<UpdateAction<Product>> collectAllVariantUpdateActions(
-            @Nonnull final List<UpdateAction<Product>> updateActions,
+            @Nonnull final List<UpdateAction<Product>> sameForAllUpdateActions,
             @Nonnull final Product oldProduct,
             @Nonnull final ProductVariant oldProductVariant,
-            @Nonnull final ProductVariantDraft newProductVariant,
+            @Nonnull final ProductVariantDraft newProductVariantDraft,
             @Nonnull final Map<String, AttributeMetaData> attributesMetaData,
             @Nonnull final ProductSyncOptions syncOptions) {
         return emptyIfNull(
                 collectAllVariantUpdateActions(
-                        oldProduct, oldProductVariant, newProductVariant, attributesMetaData, syncOptions))
+                        oldProduct, oldProductVariant, newProductVariantDraft, attributesMetaData, syncOptions))
                 .stream()
                 .filter(collectedUpdateAction ->
-                                filterDuplicateSameForAllAction(updateActions, collectedUpdateAction))
+                                filterDuplicateSameForAllAction(sameForAllUpdateActions, collectedUpdateAction))
                 .collect(Collectors.toList());
     }
 

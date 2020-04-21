@@ -33,6 +33,7 @@ import io.sphere.sdk.products.commands.updateactions.ChangeSlug;
 import io.sphere.sdk.products.commands.updateactions.RemoveFromCategory;
 import io.sphere.sdk.products.commands.updateactions.RemoveImage;
 import io.sphere.sdk.products.commands.updateactions.RemovePrice;
+import io.sphere.sdk.products.commands.updateactions.SetAttribute;
 import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
 import io.sphere.sdk.products.commands.updateactions.SetCategoryOrderHint;
 import io.sphere.sdk.products.commands.updateactions.SetDescription;
@@ -55,6 +56,8 @@ import java.util.Map;
 
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_2_CHANGED_ATTRIBUTES_RESOURCE_PATH;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_2_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
@@ -275,5 +278,58 @@ class ProductSyncUtilsTest {
                 AttributeDraft.of("brandName", "sameForAllBrand"), true));
         assertThat(updateActions.get(0)).isEqualTo(SetAttributeInAllVariants.of(
                 AttributeDraft.of("brandName", "sameForAllBrand"), true));
+    }
+
+    @Test
+    void buildActions_FromDraftsWithDifferentAttributes_ShouldBuildUpdateActions() {
+        // Reloading the oldProduct object with a specific file for this test
+        oldProduct = readObjectFromResource(PRODUCT_KEY_2_CHANGED_ATTRIBUTES_RESOURCE_PATH, Product.class);
+        final AttributeDraft brandNameAttribute = AttributeDraft.of("brandName", "myBrand");
+        final AttributeDraft orderLimitAttribute = AttributeDraft.of("orderLimit", "5");
+        final AttributeDraft priceInfoAttribute = AttributeDraft.of("priceInfo", "80,20/kg");
+        final ProductVariantDraft variant = ProductVariantDraftBuilder.of()
+                .key("v3")
+                .sku("1065834")
+                .plusAttribute(orderLimitAttribute)
+                .plusAttribute(priceInfoAttribute)
+                .plusAttribute(brandNameAttribute)
+                .build();
+
+        final ProductDraft newProductDraft =
+                createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
+                        ProductType.referenceOfId("anyProductType"))
+                        .plusVariants(variant)
+                        .build();
+
+        final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
+        final AttributeMetaData brandName = AttributeMetaData.of(
+                AttributeDefinitionBuilder.of("brandName", null, null)
+                        .build());
+        final AttributeMetaData orderLimit = AttributeMetaData.of(
+                AttributeDefinitionBuilder.of("orderLimit", null, null)
+                        .build());
+        final AttributeMetaData priceInfo = AttributeMetaData.of(
+                AttributeDefinitionBuilder.of("priceInfo", null, null)
+                        .build());
+        final AttributeMetaData size = AttributeMetaData.of(
+                AttributeDefinitionBuilder.of("size", null, null)
+                        .build());
+        attributesMetaData.put("brandName", brandName);
+        attributesMetaData.put("orderLimit", orderLimit);
+        attributesMetaData.put("priceInfo", priceInfo);
+        attributesMetaData.put("size", size);
+
+        final List<UpdateAction<Product>> updateActions =
+                ProductSyncUtils.buildActions(oldProduct, newProductDraft, productSyncOptions, attributesMetaData);
+
+        // check the generated attribute update actions
+        assertThat(updateActions.size()).isEqualTo(6);
+        assertThat(updateActions).containsExactlyInAnyOrder(
+                SetAttribute.of(2, AttributeDraft.of("priceInfo", "80,20/kg"), true),
+                SetAttribute.of(2, AttributeDraft.of("orderLimit", "5"), true),
+                SetAttribute.of(2, AttributeDraft.of("brandName", "myBrand"), true),
+                SetAttribute.of(2, AttributeDraft.of("size", null), true),
+                SetAttribute.of(1, AttributeDraft.of("priceInfo", "64,90/kg"), true),
+                SetAttribute.of(1, AttributeDraft.of("size", "ca. 1 x 1000 g"), true));
     }
 }

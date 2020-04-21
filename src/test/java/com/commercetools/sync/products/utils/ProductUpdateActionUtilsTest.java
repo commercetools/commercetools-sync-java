@@ -69,7 +69,7 @@ class ProductUpdateActionUtilsTest {
         RES_ROOT + "productDraftNew_changeRemoveMasterVariant.json";
 
     // this product's variants contain only attribute update
-    private static final String NEW_PROD_DRAFT_WITH_MATCHING_VARIANTS =
+    private static final String NEW_PROD_DRAFT_WITH_MATCHING_VARIANTS_WITH_UPDATED_ATTR_VALUES =
         RES_ROOT + "productDraftNew_matchingVariants.json";
 
     // this product's variants contain old master variant, but not as master any more
@@ -165,7 +165,8 @@ class ProductUpdateActionUtilsTest {
     void buildVariantsUpdateActions_updateVariantsWithSameForAll() {
         // preparation
         final Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
-        final ProductDraft productDraftNew = createProductDraftFromJson(NEW_PROD_DRAFT_WITH_MATCHING_VARIANTS);
+        final ProductDraft productDraftNew = createProductDraftFromJson(
+                NEW_PROD_DRAFT_WITH_MATCHING_VARIANTS_WITH_UPDATED_ATTR_VALUES);
 
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
                 .syncFilter(SyncFilter.of())
