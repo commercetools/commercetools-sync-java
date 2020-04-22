@@ -26,6 +26,7 @@ import com.commercetools.sync.services.impl.TaxCategoryServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
@@ -34,6 +35,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -85,7 +87,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             new ProductTypeServiceImpl(productSyncOptions),
             new CategoryServiceImpl(CategorySyncOptionsBuilder.of(productSyncOptions.getCtpClient()).build()),
             new TypeServiceImpl(productSyncOptions),
-            new ChannelServiceImpl(productSyncOptions),
+            new ChannelServiceImpl(productSyncOptions, Collections.singleton(ChannelRole.PRODUCT_DISTRIBUTION)),
             new CustomerGroupServiceImpl(productSyncOptions),
             new TaxCategoryServiceImpl(productSyncOptions),
             new StateServiceImpl(productSyncOptions),

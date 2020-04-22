@@ -7,6 +7,9 @@ import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
+import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.channels.ChannelRole;
+import io.sphere.sdk.channels.queries.ChannelByIdGet;
 import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.ErrorResponseException;
@@ -17,11 +20,15 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.errors.DuplicateFieldError;
 import io.sphere.sdk.products.CategoryOrderHints;
+import io.sphere.sdk.products.Price;
+import io.sphere.sdk.products.PriceDraftBuilder;
+import io.sphere.sdk.products.PriceDraftDsl;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
+import io.sphere.sdk.products.ProductVariantDraftDsl;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.ProductUpdateCommand;
@@ -29,6 +36,7 @@ import io.sphere.sdk.products.commands.updateactions.RemoveFromCategory;
 import io.sphere.sdk.products.commands.updateactions.SetAttribute;
 import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
 import io.sphere.sdk.products.commands.updateactions.SetTaxCategory;
+import io.sphere.sdk.products.queries.ProductByKeyGet;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.queries.PagedQueryResult;
@@ -37,6 +45,7 @@ import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateType;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import io.sphere.sdk.utils.CompletableFutureUtils;
+import io.sphere.sdk.utils.MoneyImpl;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,9 +53,11 @@ import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -177,6 +188,52 @@ class ProductSyncIT {
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
+    }
+
+    @Test
+    void sync_withMissingPriceChannel_shouldCreateProductDistributionPriceChannel() {
+        PriceDraftDsl priceDraftWithMissingChannelRef = PriceDraftBuilder.of(MoneyImpl.of("20", "EUR"))
+                .channel(ResourceIdentifier.ofId("missingId")).build();
+
+        ProductVariantDraftDsl masterVariantDraft = ProductVariantDraftBuilder.of(
+                ProductVariantDraftDsl.of()
+                        .withKey("v2")
+                        .withSku("1065833")
+                        .withPrices(Collections.singletonList(priceDraftWithMissingChannelRef)))
+                .build();
+
+        final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
+                ProductType.referenceOfId(productType.getKey()))
+                .masterVariant(masterVariantDraft)
+                .taxCategory(null)
+                .state(null)
+                .build();
+
+
+        final Consumer<String> warningCallBack = warningMessage -> warningCallBackMessages.add(warningMessage);
+
+        ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+                .errorCallback(this::collectErrors)
+                .warningCallback(warningCallBack)
+                .ensurePriceChannels(true)
+                .build();
+
+        final ProductSync productSync = new ProductSync(syncOptions);
+        final ProductSyncStatistics syncStatistics = executeBlocking(productSync.sync(singletonList(productDraft)));
+
+        assertThat(syncStatistics).hasValues(1, 1, 0, 0, 0);
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(warningCallBackMessages).isEmpty();
+
+        Product productFromTargetProject = executeBlocking(
+                CTP_TARGET_CLIENT.execute(ProductByKeyGet.of(productDraft.getKey())));
+        List<Price> prices = productFromTargetProject.getMasterData().getStaged().getMasterVariant().getPrices();
+        assertThat(prices.size()).isEqualTo(1);
+
+        Channel channel = executeBlocking(CTP_TARGET_CLIENT.execute(ChannelByIdGet.of(
+                Objects.requireNonNull(Objects.requireNonNull(prices.get(0).getChannel()).getId()))));
+        assertThat(channel.getRoles()).containsOnly(ChannelRole.PRODUCT_DISTRIBUTION);
     }
 
     @Test

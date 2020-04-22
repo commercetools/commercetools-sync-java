@@ -13,7 +13,6 @@ import io.sphere.sdk.channels.queries.ChannelQueryBuilder;
 import io.sphere.sdk.channels.queries.ChannelQueryModel;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
@@ -30,11 +29,6 @@ public final class ChannelServiceImpl extends BaseServiceWithKey<ChannelDraft, C
         @Nonnull final Set<ChannelRole> channelRoles) {
         super(syncOptions);
         this.channelRoles = channelRoles;
-    }
-
-    public ChannelServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
-        super(syncOptions);
-        this.channelRoles = Collections.emptySet();
     }
 
     @Nonnull
