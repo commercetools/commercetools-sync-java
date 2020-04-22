@@ -253,8 +253,7 @@ public final class ProductVariantUpdateActionUtils {
             return buildAssetsUpdateActions(
                 oldProductVariant.getAssets(),
                 newProductVariant.getAssets(),
-                new ProductAssetActionFactory(oldProductVariant.getId(), syncOptions));
-
+                new ProductAssetActionFactory(oldProductVariant.getId(), syncOptions), syncOptions);
         } catch (final BuildUpdateActionException exception) {
             syncOptions.applyErrorCallback(format("Failed to build update actions for the assets "
                     + "of the product variant with the sku '%s'. Reason: %s", oldProductVariant.getSku(), exception),

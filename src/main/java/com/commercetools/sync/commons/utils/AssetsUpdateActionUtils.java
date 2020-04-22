@@ -1,5 +1,6 @@
 package com.commercetools.sync.commons.utils;
 
+import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import com.commercetools.sync.commons.helpers.AssetActionFactory;
@@ -7,10 +8,12 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
 
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -21,13 +24,20 @@ import java.util.stream.IntStream;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
+import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 
 public final class AssetsUpdateActionUtils {
+
+    public static final String ASSET_KEY_NOT_SET = "Asset with %s has no defined key. Keys are required for "
+        + "asset matching.";
+
 
     /**
      * Compares a list of {@link Asset}s with a list of {@link AssetDraft}s. The method serves as a generic
@@ -42,6 +52,8 @@ public final class AssetsUpdateActionUtils {
      * @param newAssetDrafts                the new list of asset drafts.
      * @param assetActionFactory            factory responsible for building asset update actions.
      * @param <T>                           the type of the resource the asset update actions are built for.
+     * @param syncOptions                   responsible for supplying the sync options to the sync utility method.
+     *                                      It is used for triggering the warn callback within the utility
      * @return a list of asset update actions on the resource of type T if the list of assets is not identical.
      *         Otherwise, if the assets are identical, an empty list is returned.
      * @throws BuildUpdateActionException in case there are asset drafts with duplicate keys.
@@ -50,11 +62,13 @@ public final class AssetsUpdateActionUtils {
     public static <T> List<UpdateAction<T>> buildAssetsUpdateActions(
         @Nonnull final List<Asset> oldAssets,
         @Nullable final List<AssetDraft> newAssetDrafts,
-        @Nonnull final AssetActionFactory<T> assetActionFactory)
+        @Nonnull final AssetActionFactory<T> assetActionFactory,
+        @Nonnull final BaseSyncOptions syncOptions)
         throws BuildUpdateActionException {
 
         if (newAssetDrafts != null) {
-            return buildAssetsUpdateActionsWithNewAssetDrafts(oldAssets, newAssetDrafts, assetActionFactory);
+            return buildAssetsUpdateActionsWithNewAssetDrafts(oldAssets, newAssetDrafts, assetActionFactory,
+                syncOptions);
         } else {
             return oldAssets.stream()
                             .map(Asset::getKey)
@@ -73,6 +87,8 @@ public final class AssetsUpdateActionUtils {
      * @param newAssetDrafts                the new list of asset drafts.
      * @param assetActionFactory            factory responsible for building asset update actions.
      * @param <T>                           the type of the resource the asset update actions are built for.
+     * @param syncOptions                   responsible for supplying the sync options to the sync utility method.
+     *                                      It is used for triggering the warn callback within the utility
      * @return a list of asset update actions on the resource of type T if the list of assets is not identical.
      *         Otherwise, if the assets are identical, an empty list is returned.
      * @throws BuildUpdateActionException in case there are asset drafts with duplicate keys.
@@ -81,7 +97,8 @@ public final class AssetsUpdateActionUtils {
     private static <T> List<UpdateAction<T>> buildAssetsUpdateActionsWithNewAssetDrafts(
         @Nonnull final List<Asset> oldAssets,
         @Nonnull final List<AssetDraft> newAssetDrafts,
-        @Nonnull final AssetActionFactory<T> assetActionFactory)
+        @Nonnull final AssetActionFactory<T> assetActionFactory,
+        @Nonnull final BaseSyncOptions syncOptions)
         throws BuildUpdateActionException {
 
         // Asset set that has only the keys of the assets which should be removed, this is used in the method
@@ -89,17 +106,32 @@ public final class AssetsUpdateActionUtils {
         // have already been applied.
         final HashSet<String> removedAssetKeys = new HashSet<>();
 
-        final Map<String, Asset> oldAssetsKeyMap = oldAssets.stream().collect(toMap(Asset::getKey, asset -> asset));
+        final Map<String, Asset> oldAssetsKeyMap = new HashMap<>();
 
-        final Map<String, AssetDraft> newAssetDraftsKeyMap;
+        oldAssets.forEach(asset -> {
+            String assetKey = asset.getKey();
+            if (isNotBlank(assetKey)) {
+                oldAssetsKeyMap.put(assetKey, asset);
+            } else {
+                syncOptions.applyWarningCallback(format(ASSET_KEY_NOT_SET, "id: " + asset.getId()));
+            }
+        });
+        final Map<String, AssetDraft> newAssetDraftsKeyMap = new HashMap<>();
         try {
-            newAssetDraftsKeyMap =
-                newAssetDrafts.stream().collect(
-                    toMap(AssetDraft::getKey, assetDraft -> assetDraft, (assetDraftA, assetDraftB) -> {
+            newAssetDrafts.forEach(newAsset -> {
+                String assetKey = newAsset.getKey();
+                if (isNotBlank(assetKey)) {
+                    newAssetDraftsKeyMap.merge(assetKey, newAsset, (assetDraftA, assetDraftB) -> {
                             throw new DuplicateKeyException("Supplied asset drafts have duplicate keys. Asset keys are"
                                 + " expected to be unique inside their container (a product variant or a category).");
                         }
-                    ));
+                    );
+
+                } else {
+                    syncOptions.applyWarningCallback(format(ASSET_KEY_NOT_SET, "name: " + newAsset.getName()));
+                }
+            });
+
         } catch (final DuplicateKeyException exception) {
             throw new BuildUpdateActionException(exception);
         }
@@ -149,6 +181,7 @@ public final class AssetsUpdateActionUtils {
         // actions.
         return oldAssets
             .stream()
+            .filter(asset -> isNotBlank(asset.getKey()))
             .map(oldAsset -> {
                 final String oldAssetKey = oldAsset.getKey();
                 final AssetDraft matchingNewAssetDraft = newAssetDraftsKeyMap.get(oldAssetKey);
@@ -186,15 +219,18 @@ public final class AssetsUpdateActionUtils {
         @Nonnull final AssetActionFactory<T> assetActionFactory) {
 
         final Map<String, String> oldAssetKeyToIdMap = oldAssets.stream()
+                                                                .filter(asset -> isNotBlank(asset.getKey()))
                                                                 .collect(toMap(Asset::getKey, Asset::getId));
 
         final List<String> newOrder = newAssetDrafts.stream()
+                                                    .filter(asset -> isNotBlank(asset.getKey()))
                                                     .map(AssetDraft::getKey)
                                                     .map(oldAssetKeyToIdMap::get)
                                                     .filter(Objects::nonNull)
                                                     .collect(toList());
 
         final List<String> oldOrder = oldAssets.stream()
+                                               .filter(asset -> isNotBlank(asset.getKey()))
                                                .filter(asset -> !removedAssetKeys.contains(asset.getKey()))
                                                .map(Asset::getId)
                                                .collect(toList());
@@ -225,7 +261,8 @@ public final class AssetsUpdateActionUtils {
             IntStream.range(0, newAssetDrafts.size())
                      .mapToObj(assetDraftIndex ->
                              ofNullable(newAssetDrafts.get(assetDraftIndex))
-                                 .filter(assetDraft -> !oldAssetsKeyMap.containsKey(assetDraft.getKey()))
+                                 .filter(assetDraft -> isNotBlank(assetDraft.getKey())
+                                     && !oldAssetsKeyMap.containsKey(assetDraft.getKey()))
                                  .map(assetDraft -> assetActionFactory.buildAddAssetAction(assetDraft, assetDraftIndex))
                      )
                      .collect(toCollection(ArrayList::new));
