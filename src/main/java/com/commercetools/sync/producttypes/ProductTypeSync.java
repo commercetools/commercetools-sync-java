@@ -2,7 +2,6 @@ package com.commercetools.sync.producttypes;
 
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.commons.exceptions.InvalidReferenceException;
-import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.producttypes.helpers.AttributeDefinitionReferenceResolver;
 import com.commercetools.sync.producttypes.helpers.ProductTypeBatchProcessor;
 import com.commercetools.sync.producttypes.helpers.ProductTypeReferenceResolver;
@@ -51,8 +50,6 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     private static final String CTP_PRODUCT_TYPE_UPDATE_FAILED = "Failed to update product type with key: '%s'."
         + " Reason: %s";
     private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
-            + "productTypeDraft with key:'%s'. Reason: %s";
-    private static final String FAILED_TO_SYNC_DRAFT = "Failed to sync draft on"
             + "productTypeDraft with key:'%s'. Reason: %s";
 
     private final ProductTypeService productTypeService;
@@ -230,21 +227,12 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                 .resolveReferences(draftWithoutMissingRefAttrs)
                 .thenCompose(resolvedDraft -> syncDraft(oldProductTypeMap, resolvedDraft))
                 .exceptionally(completionException -> {
-                    if (completionException.getCause() instanceof ReferenceResolutionException) {
-                        final ReferenceResolutionException referenceResolutionException =
-                                (ReferenceResolutionException) completionException.getCause();
-                        final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES,
-                                draftWithoutMissingRefAttrs.getKey(),
-                                referenceResolutionException.getMessage());
-                        handleError(errorMessage, referenceResolutionException, 1);
-                        return null;
-                    } else {
-                        final Throwable syncDraftException = completionException.getCause();
-                        final String errorMessage = format(FAILED_TO_SYNC_DRAFT, draftWithoutMissingRefAttrs.getKey(),
-                                syncDraftException.getMessage());
-                        handleError(errorMessage, syncDraftException, 1);
-                        return null;
-                    }
+                    final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES,
+                            draftWithoutMissingRefAttrs.getKey(),
+                            completionException.getMessage());
+                    handleError(errorMessage, completionException, 1);
+                    return null;
+
                 })
             )
             .map(CompletionStage::toCompletableFuture)
