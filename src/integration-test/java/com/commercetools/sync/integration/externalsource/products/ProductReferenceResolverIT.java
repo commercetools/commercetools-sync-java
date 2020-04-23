@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.CompletionException;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -110,13 +109,20 @@ class ProductReferenceResolverIT {
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackMessages).hasSize(1);
         final Throwable exception = errorCallBackExceptions.get(0);
+        final String errorMessage = errorCallBackMessages.get(0);
+        if (exception instanceof ReferenceResolutionException) {
             assertThat(exception)
-                    .isExactlyInstanceOf(CompletionException.class)
                     .hasMessageContaining("Failed to resolve 'category' resource identifier on ProductDraft "
                             + "with key:'productKey1'")
                     .hasMessageContaining(format("Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
-            assertThat(errorCallBackMessages.get(0))
+            assertThat(errorMessage)
                     .contains("Failed to resolve references on ProductDraft with key:'productKey1'");
+        } else {
+            assertThat(errorMessage)
+                .contains("Failed to sync draft on ProductDraft with key:'productKey1'");
+        }
+
+
         assertThat(warningCallBackMessages).isEmpty();
     }
 }
