@@ -107,10 +107,11 @@ public abstract class CustomReferenceResolver
         try {
             final String customTypeKey = getKeyFromResourceIdentifier(custom.getType());
             return typeService.fetchCachedTypeId(customTypeKey);
-        } catch (Exception exception) {
+        } catch (ReferenceResolutionException referenceResolutionException) {
             final String errorMessage =
-                format("%s Reason: %s", referenceResolutionErrorMessage, exception.getMessage());
-            return exceptionallyCompletedFuture(new ReferenceResolutionException(errorMessage, exception));
+                format("%s Reason: %s", referenceResolutionErrorMessage, referenceResolutionException.getMessage());
+            return exceptionallyCompletedFuture(new ReferenceResolutionException(errorMessage,
+                referenceResolutionException));
         }
     }
 

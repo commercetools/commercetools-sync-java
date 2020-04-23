@@ -147,10 +147,10 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
             return resolveResourceIdentifier(draftBuilder, draftBuilder.getProductType(),
                 productTypeService::fetchCachedProductTypeId, ResourceIdentifier::ofId,
                 ProductDraftBuilder::productType);
-        } catch (Exception exception) {
+        } catch (ReferenceResolutionException referenceResolutionException) {
             return exceptionallyCompletedFuture(new ReferenceResolutionException(
                 format(FAILED_TO_RESOLVE_REFERENCE, ProductType.referenceTypeId(), draftBuilder.getKey(),
-                    exception.getMessage())));
+                    referenceResolutionException.getMessage())));
         }
     }
 
@@ -205,25 +205,21 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
 
         final Map<String, String> categoryOrderHintsMap = new HashMap<>();
         final CategoryOrderHints categoryOrderHints = draftBuilder.getCategoryOrderHints();
-        try {
-            return categoryService.fetchMatchingCategoriesByKeys(categoryKeys)
-                    .thenApply(categories ->
-                            categories.stream().map(category -> {
-                                if (categoryOrderHints != null) {
-                                    ofNullable(categoryOrderHints.get(category.getKey()))
-                                            .ifPresent(orderHintValue -> categoryOrderHintsMap
-                                                    .put(category.getId(), orderHintValue));
-                                }
-                                return category.toReference();
-                            }).collect(toList()))
-                    .thenApply(categoryReferences -> draftBuilder
-                            .categories(categoryReferences)
-                            .categoryOrderHints(CategoryOrderHints.of(categoryOrderHintsMap)));
-        } catch (Exception exception) {
-            return exceptionallyCompletedFuture(new ReferenceResolutionException(
-                format(FAILED_TO_RESOLVE_REFERENCE, ProductType.referenceTypeId(), draftBuilder.getKey(),
-                    exception.getMessage())));
-        }
+
+        return categoryService.fetchMatchingCategoriesByKeys(categoryKeys)
+                .thenApply(categories ->
+                        categories.stream().map(category -> {
+                            if (categoryOrderHints != null) {
+                                ofNullable(categoryOrderHints.get(category.getKey()))
+                                        .ifPresent(orderHintValue -> categoryOrderHintsMap
+                                                .put(category.getId(), orderHintValue));
+                            }
+                            return category.toReference();
+                        }).collect(toList()))
+                .thenApply(categoryReferences -> draftBuilder
+                        .categories(categoryReferences)
+                        .categoryOrderHints(CategoryOrderHints.of(categoryOrderHintsMap)));
+
     }
 
     /**

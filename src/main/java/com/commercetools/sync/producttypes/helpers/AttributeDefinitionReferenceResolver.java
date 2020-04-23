@@ -112,12 +112,12 @@ public class AttributeDefinitionReferenceResolver
         final String resourceKey;
         try {
             resourceKey = getKeyFromResourceIdentifier(typeReference);
-            return productTypeService.fetchCachedProductTypeId(resourceKey)
-                    .thenApply(optionalId -> optionalId.map(ProductType::referenceOfId));
-        } catch (Exception exception) {
+        } catch (ReferenceResolutionException exception) {
             return exceptionallyCompletedFuture(
                 new ReferenceResolutionException("Failed to resolve NestedType productType reference.", exception));
         }
+        return productTypeService.fetchCachedProductTypeId(resourceKey)
+                .thenApply(optionalId -> optionalId.map(ProductType::referenceOfId));
     }
 
 }
