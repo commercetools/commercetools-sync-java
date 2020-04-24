@@ -333,8 +333,8 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             })
             .exceptionally(completionException -> {
                 final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES, newProductDraft.getKey(),
-                        completionException.getMessage());
-                handleError(errorMessage, completionException, 1);
+                        completionException.getCause().getMessage());
+                handleError(errorMessage, completionException.getCause(), 1);
                 return null;
             });
 

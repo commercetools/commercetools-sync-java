@@ -23,7 +23,6 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.CompletionException;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
@@ -168,15 +167,13 @@ class ProductReferenceResolverIT {
 
         // assertion
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
-        assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
-        assertThat(errorCallBackMessages).containsExactly(
-                    format("Failed to resolve references on ProductDraft with"
-                    + " key:'%s'. Reason: " + ReferenceResolutionException.class.getCanonicalName() + ": "
-                    + "Failed to resolve 'product-type' resource identifier on ProductDraft with "
-                    + "key:'%s'. Reason: %s",
+        assertThat(errorCallBackMessages).containsExactly(format("Failed to resolve references on ProductDraft with"
+                    + " key:'%s'. Reason: Failed to resolve 'product-type' resource identifier on ProductDraft with "
+                        + "key:'%s'. Reason: %s",
                 productDraft.getKey(), productDraft.getKey(),
                 BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+        assertThat(errorCallBackExceptions).hasSize(1);
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
         assertThat(warningCallBackMessages).isEmpty();
     }
 }
