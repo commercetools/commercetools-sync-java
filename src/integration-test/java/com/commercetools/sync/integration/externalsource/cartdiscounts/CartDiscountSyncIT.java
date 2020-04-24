@@ -309,7 +309,7 @@ class CartDiscountSyncIT {
 
         //assertions
         assertThat(errorMessages).containsExactly(
-                "Failed to resolve references on CartDiscountDraft with key:'key_1'. Reason: "
+                "Failed to run sync draft process on CartDiscountDraft with key:'key_1'. Reason: "
                         + "Failed to resolve custom type reference on CartDiscountDraft with key:'key_1'. Reason: "
                         + "The value of the 'id' field of the Resource Identifier/Reference is blank (null/empty).");
         assertThat(exceptions)

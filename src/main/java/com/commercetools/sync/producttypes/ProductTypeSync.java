@@ -49,7 +49,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
         + " '%s'.";
     private static final String CTP_PRODUCT_TYPE_UPDATE_FAILED = "Failed to update product type with key: '%s'."
         + " Reason: %s";
-    private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
+    private static final String FAILED_TO_RUN_SYNC_DRAFT = "Failed to run sync draft process on "
             + "productTypeDraft with key:'%s'. Reason: %s";
 
     private final ProductTypeService productTypeService;
@@ -123,7 +123,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      *
      * @param batch batch of drafts that need to be synced
      * @return a {@link CompletionStage} containing an instance
-     *         of {@link ProductTypeSyncStatistics} which contains information about the result of syncing the supplied
+     *         of {@link ProductTypeSyncStatistics} which contains information about the result of syncing the supplied 
      *         batch to the target project.
      */
     @Override
@@ -227,7 +227,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                 .resolveReferences(draftWithoutMissingRefAttrs)
                 .thenCompose(resolvedDraft -> syncDraft(oldProductTypeMap, resolvedDraft))
                 .exceptionally(completionException -> {
-                    final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES,
+                    final String errorMessage = format(FAILED_TO_RUN_SYNC_DRAFT,
                             draftWithoutMissingRefAttrs.getKey(),
                             completionException.getCause().getMessage());
                     handleError(errorMessage, completionException.getCause(), 1);

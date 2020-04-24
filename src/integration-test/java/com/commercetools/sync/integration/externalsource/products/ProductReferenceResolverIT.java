@@ -115,7 +115,7 @@ class ProductReferenceResolverIT {
                 .hasMessageContaining(format("Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0))
-                .contains("Failed to resolve references on ProductDraft with key:'productKey1'");
+                .contains("Failed to run sync draft process on ProductDraft with key:'productKey1'");
         assertThat(warningCallBackMessages).isEmpty();
     }
 }
