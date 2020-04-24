@@ -168,10 +168,10 @@ class ProductReferenceResolverIT {
         // assertion
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).containsExactly(format("Failed to run sync draft process on ProductDraft with"
-                    + " key:'%s'. Reason: Failed to resolve 'product-type' resource identifier on ProductDraft with "
-                        + "key:'%s'. Reason: %s",
-                productDraft.getKey(), productDraft.getKey(),
-                BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+                + " key:'%s'. Reason: Failed to resolve 'product-type' resource identifier on ProductDraft with "
+                + "key:'%s'. Reason: %s",
+            productDraft.getKey(), productDraft.getKey(),
+            BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
         assertThat(warningCallBackMessages).isEmpty();

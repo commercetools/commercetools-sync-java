@@ -123,7 +123,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      *
      * @param batch batch of drafts that need to be synced
      * @return a {@link CompletionStage} containing an instance
-     *         of {@link ProductTypeSyncStatistics} which contains information about the result of syncing the supplied 
+     *         of {@link ProductTypeSyncStatistics} which contains information about the result of syncing the supplied
      *         batch to the target project.
      */
     @Override

@@ -110,9 +110,9 @@ class ProductReferenceResolverIT {
 
         final Throwable exception = errorCallBackExceptions.get(0);
         assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class)
-                .hasMessageContaining("Failed to resolve 'category' resource identifier on ProductDraft "
-                        + "with key:'productKey1'")
-                .hasMessageContaining(format("Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+                             .hasMessageContaining("Failed to resolve 'category' resource identifier on ProductDraft "
+                                 + "with key:'productKey1'")
+                             .hasMessageContaining(format("Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0))
                 .contains("Failed to run sync draft process on ProductDraft with key:'productKey1'");
