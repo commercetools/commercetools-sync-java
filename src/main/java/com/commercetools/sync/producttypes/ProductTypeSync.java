@@ -50,7 +50,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     private static final String CTP_PRODUCT_TYPE_UPDATE_FAILED = "Failed to update product type with key: '%s'."
         + " Reason: %s";
     private static final String FAILED_TO_RUN_SYNC_DRAFT = "Failed to run sync draft process on "
-            + "productTypeDraft with key:'%s'. Reason: %s";
+        + "productTypeDraft with key:'%s'. Reason: %s";
 
     private final ProductTypeService productTypeService;
     private final ProductTypeReferenceResolver referenceResolver;
@@ -123,7 +123,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      *
      * @param batch batch of drafts that need to be synced
      * @return a {@link CompletionStage} containing an instance
-     *         of {@link ProductTypeSyncStatistics} which contains information about the result of syncing the supplied
+     *         of {@link ProductTypeSyncStatistics} which contains information about the result of syncing the supplied 
      *         batch to the target project.
      */
     @Override

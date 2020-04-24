@@ -205,6 +205,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
 
         final Map<String, String> categoryOrderHintsMap = new HashMap<>();
         final CategoryOrderHints categoryOrderHints = draftBuilder.getCategoryOrderHints();
+
         return categoryService.fetchMatchingCategoriesByKeys(categoryKeys)
                               .thenApply(categories ->
                                   categories.stream().map(category -> {

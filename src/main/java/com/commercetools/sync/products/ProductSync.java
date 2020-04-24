@@ -60,7 +60,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         + "be resolved with keys '%s'.";
     private static final String UPDATE_FAILED = "Failed to update Product with key: '%s'. Reason: %s";
     private static final String FAILED_TO_RUN_SYNC_DRAFT = "Failed to run sync draft process on "
-            + "ProductDraft with key:'%s'. Reason: %s";
+        + "ProductDraft with key:'%s'. Reason: %s";
     private static final String FAILED_TO_FETCH_PRODUCT_TYPE = "Failed to fetch a productType for the product to "
         + "build the products' attributes metadata.";
 
