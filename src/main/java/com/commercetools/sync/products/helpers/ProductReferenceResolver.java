@@ -206,18 +206,18 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         final Map<String, String> categoryOrderHintsMap = new HashMap<>();
         final CategoryOrderHints categoryOrderHints = draftBuilder.getCategoryOrderHints();
         return categoryService.fetchMatchingCategoriesByKeys(categoryKeys)
-                    .thenApply(categories ->
-                            categories.stream().map(category -> {
-                                if (categoryOrderHints != null) {
-                                    ofNullable(categoryOrderHints.get(category.getKey()))
-                                            .ifPresent(orderHintValue -> categoryOrderHintsMap
-                                                    .put(category.getId(), orderHintValue));
-                                }
-                                return category.toReference();
-                            }).collect(toList()))
-                    .thenApply(categoryReferences -> draftBuilder
-                            .categories(categoryReferences)
-                            .categoryOrderHints(CategoryOrderHints.of(categoryOrderHintsMap)));
+                              .thenApply(categories ->
+                                  categories.stream().map(category -> {
+                                      if (categoryOrderHints != null) {
+                                          ofNullable(categoryOrderHints.get(category.getKey()))
+                                              .ifPresent(orderHintValue -> categoryOrderHintsMap
+                                                  .put(category.getId(), orderHintValue));
+                                      }
+                                      return category.toReference();
+                                  }).collect(toList()))
+                              .thenApply(categoryReferences -> draftBuilder
+                                  .categories(categoryReferences)
+                                  .categoryOrderHints(CategoryOrderHints.of(categoryOrderHintsMap)));
     }
 
     /**

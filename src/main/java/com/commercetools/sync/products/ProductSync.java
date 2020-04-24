@@ -331,6 +331,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                     .orElseGet(() -> applyCallbackAndCreate(resolvedDraft));
 
             })
+
             .exceptionally(completionException -> {
                 final String errorMessage = format(FAILED_TO_RUN_SYNC_DRAFT, newProductDraft.getKey(),
                         completionException.getCause().getMessage());
