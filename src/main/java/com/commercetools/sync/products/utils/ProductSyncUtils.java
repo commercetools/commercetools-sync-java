@@ -7,11 +7,14 @@ import com.commercetools.sync.products.SyncFilter;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
+import io.sphere.sdk.products.ProductVariant;
+import io.sphere.sdk.products.commands.updateactions.RemoveVariant;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
@@ -34,6 +37,12 @@ import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.bui
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildVariantsUpdateActions;
 
 public final class ProductSyncUtils {
+
+    public static final String REMOVE_VARIANT_ACTION_NAME = "removeVariant";
+    public static final String SET_ATTRIBUTE_IN_ALL_VARIANTS_ACTION_NAME = "setAttributeInAllVariants";
+    public static final String ADD_VARIANT_ACTION_NAME = "addVariant";
+    public static final String CHANGE_MASTER_VARIANT_ACTION_NAME = "changeMasterVariant";
+
     /**
      * Compares all the fields (including the variants see
      * {@link ProductUpdateActionUtils#buildVariantsUpdateActions(Product, ProductDraft, ProductSyncOptions, Map)})
@@ -106,24 +115,68 @@ public final class ProductSyncUtils {
         // lastly publish/unpublish product
         buildPublishUpdateAction(oldProduct, newProduct).ifPresent(updateActions::add);
 
-        return prioritizeUpdateActions(updateActions);
+        return prioritizeUpdateActions(updateActions, oldProduct.getMasterData().getStaged().getMasterVariant());
     }
 
+    /**
+     *
+     * @param updateActions All generated update actions for all variants
+     * @param oldMasterVariant The masterVariant of the old product fetched from Target
+     * @return An ordered list of UpdateActions as follows:
+     *              1 removeVariant actions except master
+     *              2 sameForAll Actions before executing addVariant to avoid possible errors
+     *              3 addVariant actions
+     *              4 changeMasterVariant if any
+     *              5 removeVariant for old master
+     *              6 the rest comes in
+     */
     private static List<UpdateAction<Product>> prioritizeUpdateActions(
-            final List<UpdateAction<Product>> updateActions) {
+            final List<UpdateAction<Product>> updateActions, final ProductVariant oldMasterVariant) {
+
+        final RemoveVariant removeMasterVariantUpdateAction = RemoveVariant.ofVariantId(oldMasterVariant.getId());
+
+        final List<UpdateAction<Product>> removeVariantUpdateActionsNoMaster =
+                getActionsByActionName(updateActions, action -> action.getAction().equals(REMOVE_VARIANT_ACTION_NAME)
+                        && ! action.equals(removeMasterVariantUpdateAction));
 
         final List<UpdateAction<Product>> sameForAllUpdateActions =
-                emptyIfNull(updateActions)
-                        .parallelStream()
-                        .filter(action -> action.getAction().equals("setAttributeInAllVariants"))
-                        .collect(Collectors.toList());
+                getActionsByActionName(updateActions, action ->
+                        action.getAction().equals(SET_ATTRIBUTE_IN_ALL_VARIANTS_ACTION_NAME));
 
-        updateActions.removeAll(sameForAllUpdateActions);
+        final List<UpdateAction<Product>> addVariantUpdateActions =
+                getActionsByActionName(updateActions, action ->
+                        action.getAction().equals(ADD_VARIANT_ACTION_NAME));
 
-        final List<UpdateAction<Product>> updateActionList = new ArrayList<>(sameForAllUpdateActions);
+        final List<UpdateAction<Product>> changeMasterUpdateActions =
+                getActionsByActionName(updateActions, action ->
+                        action.getAction().equals(CHANGE_MASTER_VARIANT_ACTION_NAME));
+
+        final List<UpdateAction<Product>> removeOldMasterVariantUpdateAction =
+                getActionsByActionName(updateActions, action ->
+                        action.getAction().equals(REMOVE_VARIANT_ACTION_NAME)
+                                && action.equals(removeMasterVariantUpdateAction));
+
+        final List<UpdateAction<Product>> updateActionList = new ArrayList<>(removeVariantUpdateActionsNoMaster);
+        updateActionList.addAll(sameForAllUpdateActions);
+        updateActionList.addAll(addVariantUpdateActions);
+        updateActionList.addAll(changeMasterUpdateActions);
+        updateActionList.addAll(removeOldMasterVariantUpdateAction);
         updateActionList.addAll(updateActions);
 
         return updateActionList;
+    }
+
+    private static List<UpdateAction<Product>> getActionsByActionName(
+            final List<UpdateAction<Product>> updateActions,
+            final Predicate<UpdateAction<Product>> updateActionPredicate) {
+
+        final List<UpdateAction<Product>> filteredUpdateActions = emptyIfNull(updateActions)
+                .stream()
+                .filter(updateActionPredicate)
+                .collect(Collectors.toList());
+        updateActions.removeAll(filteredUpdateActions);
+
+        return filteredUpdateActions;
     }
 
     /**

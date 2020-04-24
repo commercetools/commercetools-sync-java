@@ -450,38 +450,27 @@ public final class ProductUpdateActionUtils {
         return allVariants;
     }
 
-    private static boolean filterDuplicateSameForAllAction(
-            final List<UpdateAction<Product>> updateActions, final UpdateAction<Product> collectedUpdateAction) {
+    private static boolean hasDuplicateSameForAllAction(
+            final List<UpdateAction<Product>> sameForAllUpdateActions,
+            final UpdateAction<Product> collectedUpdateAction) {
+
         return !(collectedUpdateAction instanceof SetAttributeInAllVariants)
-                || isSameForAllActionNew(updateActions, collectedUpdateAction);
+                || isSameForAllActionNew(sameForAllUpdateActions, collectedUpdateAction);
     }
 
     private static boolean isSameForAllActionNew(
-            final List<UpdateAction<Product>> updateActions, final UpdateAction<Product> productUpdateAction) {
-        return updateActions.stream()
+            final List<UpdateAction<Product>> sameForAllUpdateActions,
+            final UpdateAction<Product> productUpdateAction) {
+
+        return sameForAllUpdateActions.stream()
                 .noneMatch(previouslyAddedAction ->
                                 previouslyAddedAction instanceof SetAttributeInAllVariants
                                         && previouslyAddedAction.getAction().equals(productUpdateAction.getAction()));
     }
 
-    private static List<UpdateAction<Product>> collectAllVariantUpdateActions(
-            @Nonnull final List<UpdateAction<Product>> sameForAllUpdateActions,
-            @Nonnull final Product oldProduct,
-            @Nonnull final ProductVariant oldProductVariant,
-            @Nonnull final ProductVariantDraft newProductVariantDraft,
-            @Nonnull final Map<String, AttributeMetaData> attributesMetaData,
-            @Nonnull final ProductSyncOptions syncOptions) {
-        return emptyIfNull(
-                collectAllVariantUpdateActions(
-                        oldProduct, oldProductVariant, newProductVariantDraft, attributesMetaData, syncOptions))
-                .stream()
-                .filter(collectedUpdateAction ->
-                                filterDuplicateSameForAllAction(sameForAllUpdateActions, collectedUpdateAction))
-                .collect(Collectors.toList());
-    }
-
     @Nonnull
     private static List<UpdateAction<Product>> collectAllVariantUpdateActions(
+            @Nonnull final List<UpdateAction<Product>> sameForAllUpdateActions,
             @Nonnull final Product oldProduct,
             @Nonnull final ProductVariant oldProductVariant,
             @Nonnull final ProductVariantDraft newProductVariant,
@@ -493,8 +482,11 @@ public final class ProductUpdateActionUtils {
 
         updateActions.addAll(
             buildActionsIfPassesFilter(syncFilter, ATTRIBUTES, () ->
-                buildProductVariantAttributesUpdateActions(oldProduct.getKey(), oldProductVariant,
-                    newProductVariant, attributesMetaData, syncOptions)));
+                emptyIfNull(buildProductVariantAttributesUpdateActions(oldProduct.getKey(), oldProductVariant,
+                    newProductVariant, attributesMetaData, syncOptions)).stream()
+                        .filter(collectedUpdateAction ->
+                                hasDuplicateSameForAllAction(sameForAllUpdateActions, collectedUpdateAction))
+                        .collect(Collectors.toList())));
 
         updateActions.addAll(
             buildActionsIfPassesFilter(syncFilter, IMAGES, () ->

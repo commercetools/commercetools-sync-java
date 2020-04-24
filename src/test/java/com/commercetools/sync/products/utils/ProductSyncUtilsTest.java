@@ -28,11 +28,14 @@ import io.sphere.sdk.products.commands.updateactions.AddAsset;
 import io.sphere.sdk.products.commands.updateactions.AddExternalImage;
 import io.sphere.sdk.products.commands.updateactions.AddPrice;
 import io.sphere.sdk.products.commands.updateactions.AddToCategory;
+import io.sphere.sdk.products.commands.updateactions.AddVariant;
+import io.sphere.sdk.products.commands.updateactions.ChangeMasterVariant;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import io.sphere.sdk.products.commands.updateactions.ChangeSlug;
 import io.sphere.sdk.products.commands.updateactions.RemoveFromCategory;
 import io.sphere.sdk.products.commands.updateactions.RemoveImage;
 import io.sphere.sdk.products.commands.updateactions.RemovePrice;
+import io.sphere.sdk.products.commands.updateactions.RemoveVariant;
 import io.sphere.sdk.products.commands.updateactions.SetAttribute;
 import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
 import io.sphere.sdk.products.commands.updateactions.SetCategoryOrderHint;
@@ -49,6 +52,8 @@ import io.sphere.sdk.utils.MoneyImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -56,8 +61,8 @@ import java.util.Map;
 
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_2_CHANGED_ATTRIBUTES_RESOURCE_PATH;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_2_RESOURCE_PATH;
+import static com.commercetools.sync.products.ProductSyncMockUtils.SIMPLE_PRODUCT_WITH_MULTIPLE_VARIANTS_RESOURCE_PATH;
+import static com.commercetools.sync.products.ProductSyncMockUtils.SIMPLE_PRODUCT_WITH_MASTER_VARIANT_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
@@ -273,17 +278,21 @@ class ProductSyncUtilsTest {
                 ProductSyncUtils.buildActions(oldProduct, newProductDraft, productSyncOptions, attributesMetaData);
 
         // check that we only have one generated action for all the variants and no duplicates
+        // and is ordered correctly before addVariant action
         assertThat(updateActions.size()).isEqualTo(2);
         assertThat(updateActions).containsOnlyOnce(SetAttributeInAllVariants.of(
                 AttributeDraft.of("brandName", "sameForAllBrand"), true));
         assertThat(updateActions.get(0)).isEqualTo(SetAttributeInAllVariants.of(
                 AttributeDraft.of("brandName", "sameForAllBrand"), true));
+        assertThat(updateActions.get(1)).isEqualTo(AddVariant.of(Arrays.asList(
+                AttributeDraft.of("brandName", "sameForAllBrand")),
+                null, "3065834", true).withKey("v2"));
     }
 
     @Test
     void buildActions_FromDraftsWithDifferentAttributes_ShouldBuildUpdateActions() {
         // Reloading the oldProduct object with a specific file for this test
-        oldProduct = readObjectFromResource(PRODUCT_KEY_2_CHANGED_ATTRIBUTES_RESOURCE_PATH, Product.class);
+        oldProduct = readObjectFromResource(SIMPLE_PRODUCT_WITH_MULTIPLE_VARIANTS_RESOURCE_PATH, Product.class);
         final AttributeDraft brandNameAttribute = AttributeDraft.of("brandName", "myBrand");
         final AttributeDraft orderLimitAttribute = AttributeDraft.of("orderLimit", "5");
         final AttributeDraft priceInfoAttribute = AttributeDraft.of("priceInfo", "80,20/kg");
@@ -296,7 +305,7 @@ class ProductSyncUtilsTest {
                 .build();
 
         final ProductDraft newProductDraft =
-                createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
+                createProductDraftBuilder(SIMPLE_PRODUCT_WITH_MASTER_VARIANT_RESOURCE_PATH,
                         ProductType.referenceOfId("anyProductType"))
                         .plusVariants(variant)
                         .build();
@@ -323,13 +332,17 @@ class ProductSyncUtilsTest {
                 ProductSyncUtils.buildActions(oldProduct, newProductDraft, productSyncOptions, attributesMetaData);
 
         // check the generated attribute update actions
-        assertThat(updateActions.size()).isEqualTo(6);
-        assertThat(updateActions).containsExactlyInAnyOrder(
-                SetAttribute.of(2, AttributeDraft.of("priceInfo", "80,20/kg"), true),
-                SetAttribute.of(2, AttributeDraft.of("orderLimit", "5"), true),
-                SetAttribute.of(2, AttributeDraft.of("brandName", "myBrand"), true),
+        assertThat(updateActions.size()).isEqualTo(8);
+        assertThat(updateActions).containsSequence(
+                RemoveVariant.ofVariantId(5, true),
+                AddVariant.of(Arrays.asList(AttributeDraft.of("priceInfo", "64,90/kg"),
+                        AttributeDraft.of("size", "ca. 1 x 1000 g")), Collections.emptyList(),
+                        "1065833", true).withKey("v2").withImages(Collections.emptyList()),
+                ChangeMasterVariant.ofSku("1065833", true),
+                RemoveVariant.ofVariantId(1),
                 SetAttribute.of(2, AttributeDraft.of("size", null), true),
-                SetAttribute.of(1, AttributeDraft.of("priceInfo", "64,90/kg"), true),
-                SetAttribute.of(1, AttributeDraft.of("size", "ca. 1 x 1000 g"), true));
+                SetAttribute.of(2, AttributeDraft.of("orderLimit", "5"), true),
+                SetAttribute.of(2, AttributeDraft.of("priceInfo", "80,20/kg"), true),
+                SetAttribute.of(2, AttributeDraft.of("brandName", "myBrand"), true));
     }
 }
