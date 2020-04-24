@@ -7,7 +7,6 @@ import com.commercetools.sync.products.SyncFilter;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.commands.updateactions.RemoveVariant;
 
 import javax.annotation.Nonnull;
@@ -115,13 +114,14 @@ public final class ProductSyncUtils {
         // lastly publish/unpublish product
         buildPublishUpdateAction(oldProduct, newProduct).ifPresent(updateActions::add);
 
-        return prioritizeUpdateActions(updateActions, oldProduct.getMasterData().getStaged().getMasterVariant());
+        return prioritizeUpdateActions(updateActions,
+                oldProduct.getMasterData().getStaged().getMasterVariant().getId());
     }
 
     /**
      *
      * @param updateActions All generated update actions for all variants
-     * @param oldMasterVariant The masterVariant of the old product fetched from Target
+     * @param oldMasterVariantId The masterVariant of the old product fetched from Target
      * @return An ordered list of UpdateActions as follows:
      *              1 removeVariant actions except master
      *              2 sameForAll Actions before executing addVariant to avoid possible errors
@@ -131,9 +131,9 @@ public final class ProductSyncUtils {
      *              6 the rest comes in
      */
     private static List<UpdateAction<Product>> prioritizeUpdateActions(
-            final List<UpdateAction<Product>> updateActions, final ProductVariant oldMasterVariant) {
+            final List<UpdateAction<Product>> updateActions, final Integer oldMasterVariantId) {
 
-        final RemoveVariant removeMasterVariantUpdateAction = RemoveVariant.ofVariantId(oldMasterVariant.getId());
+        final RemoveVariant removeMasterVariantUpdateAction = RemoveVariant.ofVariantId(oldMasterVariantId);
 
         final List<UpdateAction<Product>> removeVariantUpdateActionsNoMaster =
                 getActionsByActionName(updateActions, action -> action.getAction().equals(REMOVE_VARIANT_ACTION_NAME)
