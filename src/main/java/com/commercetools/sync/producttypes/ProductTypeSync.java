@@ -228,8 +228,8 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                 .exceptionally(completionException -> {
                     final String errorMessage = format(FAILED_TO_PROCESS,
                             draftWithoutMissingRefAttrs.getKey(),
-                            completionException.getCause().getMessage());
-                    handleError(errorMessage, completionException.getCause(), 1);
+                            completionException.getMessage());
+                    handleError(errorMessage, completionException, 1);
                     return null;
                 })
             )

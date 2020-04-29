@@ -333,8 +333,8 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
             .exceptionally(completionException -> {
                 final String errorMessage = format(FAILED_TO_PROCESS, newProductDraft.getKey(),
-                        completionException.getCause().getMessage());
-                handleError(errorMessage, completionException.getCause(), 1);
+                        completionException.getMessage());
+                handleError(errorMessage, completionException, 1);
                 return null;
             });
 

@@ -1,6 +1,5 @@
 package com.commercetools.sync.integration.externalsource.products;
 
-import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -17,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CompletionException;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -108,7 +108,7 @@ class ProductReferenceResolverIT {
         assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
         assertThat(errorCallBackExceptions).hasSize(1);
         final Throwable exception = errorCallBackExceptions.get(0);
-        assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class)
+        assertThat(exception).isExactlyInstanceOf(CompletionException.class)
                              .hasMessageContaining("Failed to resolve 'category' resource identifier on ProductDraft "
                                  + "with key:'productKey1'")
                              .hasMessageContaining(format("Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));

@@ -200,8 +200,8 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
                         .thenCompose(resolvedDraft -> syncDraft(oldCartDiscountMap, resolvedDraft))
                         .exceptionally(completionException -> {
                             final String errorMessage = format(FAILED_TO_PROCESS, newCartDiscount.getKey(),
-                                completionException.getCause().getMessage());
-                            handleError(errorMessage, completionException.getCause(), 1);
+                                completionException.getMessage());
+                            handleError(errorMessage, completionException, 1);
                             return null;
                         })
                 )
