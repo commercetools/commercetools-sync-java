@@ -137,7 +137,7 @@ public final class ProductSyncUtils {
 
         final List<UpdateAction<Product>> removeVariantUpdateActionsNoMaster =
                 getActionsByActionName(updateActions, action -> action.getAction().equals(REMOVE_VARIANT_ACTION_NAME)
-                        && ! action.equals(removeMasterVariantUpdateAction));
+                        && !action.equals(removeMasterVariantUpdateAction));
 
         final List<UpdateAction<Product>> sameForAllUpdateActions =
                 getActionsByActionName(updateActions, action ->
