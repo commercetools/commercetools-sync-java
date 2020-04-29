@@ -1,5 +1,6 @@
 package com.commercetools.sync.products.utils;
 
+import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import io.sphere.sdk.categories.Category;
@@ -18,16 +19,25 @@ import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.ProductVariantDraft;
+import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
+import io.sphere.sdk.products.attributes.AttributeConstraint;
+import io.sphere.sdk.products.attributes.AttributeDefinitionBuilder;
+import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.updateactions.AddAsset;
 import io.sphere.sdk.products.commands.updateactions.AddExternalImage;
 import io.sphere.sdk.products.commands.updateactions.AddPrice;
 import io.sphere.sdk.products.commands.updateactions.AddToCategory;
+import io.sphere.sdk.products.commands.updateactions.AddVariant;
+import io.sphere.sdk.products.commands.updateactions.ChangeMasterVariant;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import io.sphere.sdk.products.commands.updateactions.ChangeSlug;
 import io.sphere.sdk.products.commands.updateactions.RemoveFromCategory;
 import io.sphere.sdk.products.commands.updateactions.RemoveImage;
 import io.sphere.sdk.products.commands.updateactions.RemovePrice;
+import io.sphere.sdk.products.commands.updateactions.RemoveVariant;
+import io.sphere.sdk.products.commands.updateactions.SetAttribute;
+import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
 import io.sphere.sdk.products.commands.updateactions.SetCategoryOrderHint;
 import io.sphere.sdk.products.commands.updateactions.SetDescription;
 import io.sphere.sdk.products.commands.updateactions.SetMetaDescription;
@@ -42,12 +52,17 @@ import io.sphere.sdk.utils.MoneyImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_CHANGED_WITH_PRICES_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH;
+import static com.commercetools.sync.products.ProductSyncMockUtils.SIMPLE_PRODUCT_WITH_MULTIPLE_VARIANTS_RESOURCE_PATH;
+import static com.commercetools.sync.products.ProductSyncMockUtils.SIMPLE_PRODUCT_WITH_MASTER_VARIANT_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
@@ -229,5 +244,105 @@ class ProductSyncUtilsTest {
             ProductSyncUtils.buildActions(oldProduct, newProductDraft, productSyncOptions, new HashMap<>());
 
         assertThat(updateActions).isEmpty();
+    }
+
+    @Test
+    void buildActions_FromDraftsWithSameForAllAttribute_ShouldBuildUpdateActions() {
+
+        final ProductVariant masterVariant = oldProduct.getMasterData().getStaged().getMasterVariant();
+        final AttributeDraft brandNameAttribute = AttributeDraft.of("brandName", "sameForAllBrand");
+        final ProductVariantDraft newMasterVariant = ProductVariantDraftBuilder.of(masterVariant)
+                .plusAttribute(brandNameAttribute)
+                .build();
+        final ProductVariantDraft variant = ProductVariantDraftBuilder.of()
+                .key("v2")
+                .sku("3065834")
+                .plusAttribute(brandNameAttribute)
+                .build();
+
+        final ProductDraft newProductDraft =
+                createProductDraftBuilder(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH,
+                        ProductType.referenceOfId("anyProductType"))
+                        .masterVariant(newMasterVariant)
+                        .plusVariants(variant)
+                        .build();
+
+        final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
+        final AttributeMetaData brandName = AttributeMetaData.of(
+                AttributeDefinitionBuilder.of("brandName", null, null)
+                        .attributeConstraint(AttributeConstraint.SAME_FOR_ALL)
+                        .build());
+        attributesMetaData.put("brandName", brandName);
+
+        final List<UpdateAction<Product>> updateActions =
+                ProductSyncUtils.buildActions(oldProduct, newProductDraft, productSyncOptions, attributesMetaData);
+
+        // check that we only have one generated action for all the variants and no duplicates
+        // and is ordered correctly before addVariant action
+        assertThat(updateActions.size()).isEqualTo(2);
+        assertThat(updateActions).containsOnlyOnce(SetAttributeInAllVariants.of(
+                AttributeDraft.of("brandName", "sameForAllBrand"), true));
+        assertThat(updateActions.get(0)).isEqualTo(SetAttributeInAllVariants.of(
+                AttributeDraft.of("brandName", "sameForAllBrand"), true));
+        assertThat(updateActions.get(1)).isEqualTo(AddVariant.of(Arrays.asList(
+                AttributeDraft.of("brandName", "sameForAllBrand")),
+                null, "3065834", true).withKey("v2"));
+    }
+
+    @Test
+    void buildActions_FromDraftsWithDifferentAttributes_ShouldBuildUpdateActions() {
+        // Reloading the oldProduct object with a specific file for this test
+        oldProduct = readObjectFromResource(SIMPLE_PRODUCT_WITH_MULTIPLE_VARIANTS_RESOURCE_PATH, Product.class);
+        final AttributeDraft brandNameAttribute = AttributeDraft.of("brandName", "myBrand");
+        final AttributeDraft orderLimitAttribute = AttributeDraft.of("orderLimit", "5");
+        final AttributeDraft priceInfoAttribute = AttributeDraft.of("priceInfo", "80,20/kg");
+        final ProductVariantDraft variant = ProductVariantDraftBuilder.of()
+                .key("v3")
+                .sku("1065834")
+                .plusAttribute(orderLimitAttribute)
+                .plusAttribute(priceInfoAttribute)
+                .plusAttribute(brandNameAttribute)
+                .build();
+
+        final ProductDraft newProductDraft =
+                createProductDraftBuilder(SIMPLE_PRODUCT_WITH_MASTER_VARIANT_RESOURCE_PATH,
+                        ProductType.referenceOfId("anyProductType"))
+                        .plusVariants(variant)
+                        .build();
+
+        final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
+        final AttributeMetaData brandName = AttributeMetaData.of(
+                AttributeDefinitionBuilder.of("brandName", null, null)
+                        .build());
+        final AttributeMetaData orderLimit = AttributeMetaData.of(
+                AttributeDefinitionBuilder.of("orderLimit", null, null)
+                        .build());
+        final AttributeMetaData priceInfo = AttributeMetaData.of(
+                AttributeDefinitionBuilder.of("priceInfo", null, null)
+                        .build());
+        final AttributeMetaData size = AttributeMetaData.of(
+                AttributeDefinitionBuilder.of("size", null, null)
+                        .build());
+        attributesMetaData.put("brandName", brandName);
+        attributesMetaData.put("orderLimit", orderLimit);
+        attributesMetaData.put("priceInfo", priceInfo);
+        attributesMetaData.put("size", size);
+
+        final List<UpdateAction<Product>> updateActions =
+                ProductSyncUtils.buildActions(oldProduct, newProductDraft, productSyncOptions, attributesMetaData);
+
+        // check the generated attribute update actions
+        assertThat(updateActions.size()).isEqualTo(8);
+        assertThat(updateActions).containsSequence(
+                RemoveVariant.ofVariantId(5, true),
+                AddVariant.of(Arrays.asList(AttributeDraft.of("priceInfo", "64,90/kg"),
+                        AttributeDraft.of("size", "ca. 1 x 1000 g")), Collections.emptyList(),
+                        "1065833", true).withKey("v2").withImages(Collections.emptyList()),
+                ChangeMasterVariant.ofSku("1065833", true),
+                RemoveVariant.ofVariantId(1),
+                SetAttribute.of(2, AttributeDraft.of("size", null), true),
+                SetAttribute.of(2, AttributeDraft.of("orderLimit", "5"), true),
+                SetAttribute.of(2, AttributeDraft.of("priceInfo", "80,20/kg"), true),
+                SetAttribute.of(2, AttributeDraft.of("brandName", "myBrand"), true));
     }
 }

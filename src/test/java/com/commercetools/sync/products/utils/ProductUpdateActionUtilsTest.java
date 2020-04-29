@@ -17,6 +17,7 @@ import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
+import io.sphere.sdk.products.attributes.AttributeConstraint;
 import io.sphere.sdk.products.attributes.AttributeDefinitionBuilder;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.updateactions.AddAsset;
@@ -27,6 +28,7 @@ import io.sphere.sdk.products.commands.updateactions.RemoveImage;
 import io.sphere.sdk.products.commands.updateactions.RemoveVariant;
 import io.sphere.sdk.products.commands.updateactions.SetAttribute;
 import io.sphere.sdk.products.commands.updateactions.SetSku;
+import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
 import io.sphere.sdk.producttypes.ProductType;
 import org.junit.jupiter.api.Test;
 
@@ -65,6 +67,10 @@ class ProductUpdateActionUtilsTest {
     // this product's variants don't contain old master variant
     private static final String NEW_PROD_DRAFT_WITH_VARIANTS_REMOVE_MASTER =
         RES_ROOT + "productDraftNew_changeRemoveMasterVariant.json";
+
+    // this product's variants contain only attribute update
+    private static final String NEW_PROD_DRAFT_WITH_MATCHING_VARIANTS_WITH_UPDATED_ATTR_VALUES =
+        RES_ROOT + "productDraftNew_matchingVariants.json";
 
     // this product's variants contain old master variant, but not as master any more
     private static final String NEW_PROD_DRAFT_WITH_VARIANTS_MOVE_MASTER =
@@ -153,6 +159,42 @@ class ProductUpdateActionUtilsTest {
         assertThat(updateActions.subList(size - 2, size)).containsExactly(
             ChangeMasterVariant.ofSku("var-7-sku", true),
             RemoveVariant.of(productOld.getMasterData().getStaged().getMasterVariant()));
+    }
+
+    @Test
+    void buildVariantsUpdateActions_updateVariantsWithSameForAll() {
+        // preparation
+        final Product productOld = createProductFromJson(OLD_PROD_WITH_VARIANTS);
+        final ProductDraft productDraftNew = createProductDraftFromJson(
+                NEW_PROD_DRAFT_WITH_MATCHING_VARIANTS_WITH_UPDATED_ATTR_VALUES);
+
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                .syncFilter(SyncFilter.of())
+                .build();
+
+        final Map<String, AttributeMetaData> attributesMetaData = new HashMap<>();
+        final AttributeMetaData priceInfo = AttributeMetaData.of(
+                AttributeDefinitionBuilder.of("priceInfo", null, null)
+                        .attributeConstraint(AttributeConstraint.SAME_FOR_ALL)
+                        .build());
+        final AttributeMetaData size = AttributeMetaData.of(
+                AttributeDefinitionBuilder.of("size", null, null)
+                        .build());
+        attributesMetaData.put("priceInfo", priceInfo);
+        attributesMetaData.put("size", size);
+
+        final List<UpdateAction<Product>> updateActions =
+                buildVariantsUpdateActions(productOld, productDraftNew, productSyncOptions, attributesMetaData);
+
+        // check that we only have one generated action for all the variants and no duplicates
+        assertThat(updateActions.size()).isEqualTo(3);
+        assertThat(updateActions).containsOnlyOnce(SetAttributeInAllVariants.of(
+                AttributeDraft.of("priceInfo", "74,90/kg"), true));
+        // Other update actions can be duplicated per variant
+        assertThat(updateActions).containsOnlyOnce(SetAttribute.of(2,
+                AttributeDraft.of("size", "ca. 1 x 1200 g"), true));
+        assertThat(updateActions).containsOnlyOnce(SetAttribute.of(3,
+                AttributeDraft.of("size", "ca. 1 x 1200 g"), true));
     }
 
     @Test
