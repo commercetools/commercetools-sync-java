@@ -210,7 +210,7 @@ class CategorySyncTest {
 
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to process the CategoryDraft with"
                 + " key:'key'. Reason: %s: Failed to resolve parent reference on CategoryDraft"
                 + " with key:'key'. Reason: %s",
             ReferenceResolutionException.class.getCanonicalName(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
@@ -255,7 +255,7 @@ class CategorySyncTest {
 
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to process the CategoryDraft with"
                 + " key:'key'. Reason: %s: Failed to resolve parent reference on CategoryDraft with key:'key'. "
                 + "Reason: %s", ReferenceResolutionException.class.getCanonicalName(),
             BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
@@ -278,7 +278,7 @@ class CategorySyncTest {
 
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to process the CategoryDraft with"
             + " key:'key'. Reason: %s: Failed to resolve custom type reference on CategoryDraft with key:'key'. Reason:"
             + " %s", ReferenceResolutionException.class.getCanonicalName(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
         assertThat(errorCallBackExceptions).hasSize(1);
