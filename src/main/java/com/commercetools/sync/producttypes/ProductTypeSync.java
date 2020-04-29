@@ -49,6 +49,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
         + " '%s'.";
     private static final String CTP_PRODUCT_TYPE_UPDATE_FAILED = "Failed to update product type with key: '%s'."
         + " Reason: %s";
+    private static final String FAILED_TO_PROCESS = "Failed to process the productTypeDraft with key:'%s'. Reason: %s";
 
     private final ProductTypeService productTypeService;
     private final ProductTypeReferenceResolver referenceResolver;
@@ -223,7 +224,15 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                 removeAndKeepTrackOfMissingNestedAttributes(newProductType, keyToIdCache))
             .map(draftWithoutMissingRefAttrs -> referenceResolver
                 .resolveReferences(draftWithoutMissingRefAttrs)
-                .thenCompose(resolvedDraft -> syncDraft(oldProductTypeMap, resolvedDraft)))
+                .thenCompose(resolvedDraft -> syncDraft(oldProductTypeMap, resolvedDraft))
+                .exceptionally(completionException -> {
+                    final String errorMessage = format(FAILED_TO_PROCESS,
+                            draftWithoutMissingRefAttrs.getKey(),
+                            completionException.getMessage());
+                    handleError(errorMessage, completionException, 1);
+                    return null;
+                })
+            )
             .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
     }

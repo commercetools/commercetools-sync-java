@@ -2,7 +2,6 @@ package com.commercetools.sync.products;
 
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.BaseSync;
-import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.products.helpers.ProductBatchProcessor;
 import com.commercetools.sync.products.helpers.ProductReferenceResolver;
@@ -62,8 +61,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     private static final String UNRESOLVED_REFERENCES_STORE_FETCH_FAILED = "Failed to fetch ProductDrafts waiting to "
         + "be resolved with keys '%s'.";
     private static final String UPDATE_FAILED = "Failed to update Product with key: '%s'. Reason: %s";
-    private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
-        + "ProductDraft with key:'%s'. Reason: %s";
+    private static final String FAILED_TO_PROCESS = "Failed to process the ProductDraft with key:'%s'. Reason: %s";
     private static final String FAILED_TO_FETCH_PRODUCT_TYPE = "Failed to fetch a productType for the product to "
         + "build the products' attributes metadata.";
 
@@ -336,13 +334,9 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             })
 
             .exceptionally(completionException -> {
-
-                final ReferenceResolutionException referenceResolutionException =
-                    (ReferenceResolutionException) completionException.getCause();
-                final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES, newProductDraft.getKey(),
-                    referenceResolutionException.getMessage());
-                handleError(errorMessage, referenceResolutionException, 1);
-
+                final String errorMessage = format(FAILED_TO_PROCESS, newProductDraft.getKey(),
+                        completionException.getMessage());
+                handleError(errorMessage, completionException, 1);
                 return null;
             });
 
