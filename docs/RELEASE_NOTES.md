@@ -42,7 +42,7 @@
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.8.2)
 
 - 🐞 **Bug Fixes** (2)
-    - **Commons** - Fixed a bug in the Sync implementations when the Sync classes were throwing `ClassCastException` when handling `ReferenceResolutionException`.
+    - **Commons** - Fixed a bug in the Sync implementations causing the sync fail with throwing `ClassCastException`.
     - **Product Sync** - Fixed a bug in the `ProductSync` related to the ordering of variant update actions, which was not correct when there is `SetAttributeInAllVariants` action in update actions.
     Thanks, @ahmed-ali225, for the contributions! [#513](https://github.com/commercetools/commercetools-sync-java/issues/513)
 
