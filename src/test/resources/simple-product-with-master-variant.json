@@ -1,0 +1,58 @@
+{
+  "id": "2a81a6da-cf83-435b-a89e-2afab579846f",
+  "version": 10,
+  "key": "productKey2",
+  "productType": {
+    "typeId": "product-type",
+    "id": "cda0dbf7-b42e-40bf-8453-241d5b587f93"
+  },
+  "catalogs": [],
+  "masterData": {
+    "staged": {
+      "name": {
+        "en": "Rehrücken ohne Knochen"
+      },
+      "description": {
+        "en": "Die Rückenstücke des Rehs gelten als wahres Geschmackserlebnis und beherbergen die edelsten Teile des Rehs. Aus dem Rücken können Sie feine Filets herausschneiden, die sich hervorragend zum Kurzbraten oder Grillen eignen. Da der Knochen von uns bereits schonend entfernt wurde, können Sie sich voll und ganz auf den einzigartigen Geschmack konzentrieren."
+      },
+      "categories": [
+      ],
+      "categoryOrderHints": {},
+      "slug": {
+        "en": "1ehruecken-o-kn"
+      },
+      "masterVariant": {
+        "id": 1,
+        "key": "v2",
+        "sku": "1065833",
+        "prices": [
+        ],
+        "images": [],
+        "attributes": [
+          {
+            "name": "priceInfo",
+            "value": "64,90/kg"
+          },
+          {
+            "name": "size",
+            "value": "ca. 1 x 1000 g"
+          }
+        ],
+        "assets": []
+      },
+      "variants": [],
+      "searchKeywords": {}
+    },
+    "published": true,
+    "hasStagedChanges": false
+  },
+  "catalogData": {},
+  "taxCategory": {
+    "typeId": "tax-category",
+    "id": "ebbe95fb-2282-4f9a-8747-fbe440e02dc0"
+  },
+  "lastVariantId": 1,
+  "createdAt": "2016-11-21T09:32:41.261Z",
+  "lastModifiedAt": "2016-12-05T16:09:03.307Z",
+  "lastMessageSequenceNumber": 3
+}

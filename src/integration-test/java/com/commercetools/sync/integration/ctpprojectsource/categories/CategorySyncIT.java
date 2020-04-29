@@ -160,14 +160,14 @@ class CategorySyncIT {
         assertThat(syncStatistics).hasValues(2, 0, 0, 2, 0);
         assertThat(callBackErrorResponses).hasSize(2);
         final String key1 = categoryDrafts.get(0).getKey();
-        assertThat(callBackErrorResponses.get(0)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
+        assertThat(callBackErrorResponses.get(0)).isEqualTo(format("Failed to process the CategoryDraft with"
                 + " key:'%s'. Reason: %s: Failed to resolve custom type reference on "
                 + "CategoryDraft with key:'%s'. "
                 + "Reason: Found a UUID in the id field. Expecting a key without a UUID value. If you want to allow"
                 + " UUID values for reference keys, please use the allowUuidKeys(true) option in the sync options.",
             key1, ReferenceResolutionException.class.getCanonicalName(), key1));
         final String key2 = categoryDrafts.get(1).getKey();
-        assertThat(callBackErrorResponses.get(1)).isEqualTo(format("Failed to resolve references on CategoryDraft with"
+        assertThat(callBackErrorResponses.get(1)).isEqualTo(format("Failed to process the CategoryDraft with"
                 + " key:'%s'. Reason: %s: Failed to resolve custom type reference on "
                 + "CategoryDraft with key:'%s'. Reason: "
                 + "Found a UUID in the id field. Expecting a key without a UUID value. If you want to allow UUID values"

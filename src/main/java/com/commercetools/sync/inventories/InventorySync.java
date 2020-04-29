@@ -50,8 +50,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         + "supply channel id '%s'.";
     private static final String INVENTORY_DRAFT_HAS_NO_SKU = "Failed to process inventory entry without SKU.";
     private static final String INVENTORY_DRAFT_IS_NULL = "Failed to process null inventory draft.";
-    private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
-        + "InventoryEntryDraft with SKU:'%s'. Reason: %s";
+    private static final String FAILED_TO_PROCESS = "Failed to process the InventoryEntryDraft with SKU:'%s'. "
+        + "Reason: %s";
 
     private final InventoryService inventoryService;
     private final InventoryReferenceResolver referenceResolver;
@@ -183,10 +183,10 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                 referenceResolver
                     .resolveReferences(newInventoryEntry)
                     .thenCompose(resolvedDraft -> syncDraft(oldInventoryMap, resolvedDraft))
-                    .exceptionally(referenceResolutionException -> {
-                        final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES,
-                            newInventoryEntry.getSku(), referenceResolutionException.getMessage());
-                        handleError(errorMessage, referenceResolutionException, 1);
+                    .exceptionally(completionException -> {
+                        final String errorMessage = format(FAILED_TO_PROCESS,
+                            newInventoryEntry.getSku(), completionException.getMessage());
+                        handleError(errorMessage, completionException, 1);
                         return Optional.empty();
                     })
             )

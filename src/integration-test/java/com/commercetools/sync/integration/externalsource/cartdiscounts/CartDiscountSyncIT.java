@@ -309,18 +309,20 @@ class CartDiscountSyncIT {
 
         //assertions
         assertThat(errorMessages).containsExactly(
-            "Failed to resolve references on CartDiscountDraft with key:'key_1'. Reason: "
+            "Failed to process the CartDiscountDraft with key:'key_1'. Reason: "
+                + ReferenceResolutionException.class.getCanonicalName() + ": "
                 + "Failed to resolve custom type reference on CartDiscountDraft with key:'key_1'. Reason: "
                 + "The value of the 'id' field of the Resource Identifier/Reference is blank (null/empty).");
         assertThat(exceptions)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(exception -> {
-                assertThat(exception).isInstanceOf(ReferenceResolutionException.class);
+                assertThat(exception).isInstanceOf(CompletionException.class);
                 assertThat(exception.getMessage())
                     .contains("Failed to resolve custom type reference on CartDiscountDraft with key:'key_1'");
                 assertThat(exception.getCause()).isInstanceOf(ReferenceResolutionException.class);
                 assertThat(exception.getCause().getMessage()).isEqualTo(
-                    "The value of the 'id' field of the Resource Identifier/Reference is blank (null/empty).");
+                    "Failed to resolve custom type reference on CartDiscountDraft with key:'key_1'. Reason: "
+                    +   "The value of the 'id' field of the Resource Identifier/Reference is blank (null/empty).");
             });
         assertThat(updateActionsList).isEmpty();
         assertThat(cartDiscountSyncStatistics

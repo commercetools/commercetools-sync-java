@@ -30,6 +30,7 @@ import io.sphere.sdk.products.commands.updateactions.SetMetaDescription;
 import io.sphere.sdk.products.commands.updateactions.SetMetaKeywords;
 import io.sphere.sdk.products.commands.updateactions.SetMetaTitle;
 import io.sphere.sdk.products.commands.updateactions.SetSearchKeywords;
+import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
 import io.sphere.sdk.products.commands.updateactions.SetTaxCategory;
 import io.sphere.sdk.products.commands.updateactions.TransitionState;
 import io.sphere.sdk.products.commands.updateactions.Unpublish;
@@ -46,6 +47,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.CollectionUtils.collectionToMap;
 import static com.commercetools.sync.commons.utils.CollectionUtils.emptyIfNull;
@@ -416,8 +418,8 @@ public final class ProductUpdateActionUtils {
                 } else {
                     final ProductVariant matchingOldVariant = oldProductVariantsWithMaster.get(newProductVariantKey);
                     final List<UpdateAction<Product>> updateOrAddVariant = ofNullable(matchingOldVariant)
-                        .map(oldVariant -> collectAllVariantUpdateActions(oldProduct, oldVariant, newProductVariant,
-                            attributesMetaData, syncOptions))
+                        .map(oldVariant -> collectAllVariantUpdateActions(getSameForAllUpdateActions(updateActions),
+                                oldProduct, oldVariant, newProductVariant, attributesMetaData, syncOptions))
                         .orElseGet(() -> buildAddVariantUpdateActionFromDraft(newProductVariant));
                     updateActions.addAll(updateOrAddVariant);
                 }
@@ -426,6 +428,13 @@ public final class ProductUpdateActionUtils {
 
         updateActions.addAll(buildChangeMasterVariantUpdateAction(oldProduct, newProduct, syncOptions));
         return updateActions;
+    }
+
+    private static List<UpdateAction<Product>> getSameForAllUpdateActions(
+            final List<UpdateAction<Product>> updateActions) {
+        return emptyIfNull(updateActions).stream().filter(productUpdateAction ->
+                productUpdateAction instanceof SetAttributeInAllVariants)
+                .collect(toList());
     }
 
     /**
@@ -441,8 +450,27 @@ public final class ProductUpdateActionUtils {
         return allVariants;
     }
 
+    private static boolean hasDuplicateSameForAllAction(
+            final List<UpdateAction<Product>> sameForAllUpdateActions,
+            final UpdateAction<Product> collectedUpdateAction) {
+
+        return !(collectedUpdateAction instanceof SetAttributeInAllVariants)
+                || isSameForAllActionNew(sameForAllUpdateActions, collectedUpdateAction);
+    }
+
+    private static boolean isSameForAllActionNew(
+            final List<UpdateAction<Product>> sameForAllUpdateActions,
+            final UpdateAction<Product> productUpdateAction) {
+
+        return sameForAllUpdateActions.stream()
+                .noneMatch(previouslyAddedAction ->
+                                previouslyAddedAction instanceof SetAttributeInAllVariants
+                                        && previouslyAddedAction.getAction().equals(productUpdateAction.getAction()));
+    }
+
     @Nonnull
     private static List<UpdateAction<Product>> collectAllVariantUpdateActions(
+            @Nonnull final List<UpdateAction<Product>> sameForAllUpdateActions,
             @Nonnull final Product oldProduct,
             @Nonnull final ProductVariant oldProductVariant,
             @Nonnull final ProductVariantDraft newProductVariant,
@@ -454,8 +482,11 @@ public final class ProductUpdateActionUtils {
 
         updateActions.addAll(
             buildActionsIfPassesFilter(syncFilter, ATTRIBUTES, () ->
-                buildProductVariantAttributesUpdateActions(oldProduct.getKey(), oldProductVariant,
-                    newProductVariant, attributesMetaData, syncOptions)));
+                emptyIfNull(buildProductVariantAttributesUpdateActions(oldProduct.getKey(), oldProductVariant,
+                    newProductVariant, attributesMetaData, syncOptions)).stream()
+                        .filter(collectedUpdateAction ->
+                                hasDuplicateSameForAllAction(sameForAllUpdateActions, collectedUpdateAction))
+                        .collect(Collectors.toList())));
 
         updateActions.addAll(
             buildActionsIfPassesFilter(syncFilter, IMAGES, () ->
