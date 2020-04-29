@@ -36,6 +36,16 @@
 
 -->
 
+### 1.8.2 -  April 29, 2020
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.8.1...1.8.2) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.8.2/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.8.2)
+
+- 🐞 **Bug Fixes** (2)
+    - **Commons** - Fixed a bug in the Sync implementations when the Sync classes were throwing `ClassCastException` when handling `ReferenceResolutionException`.
+    - **Product Sync** - Fixed a bug in the `ProductSync` related to the ordering of variant update actions, which was not correct when there is `SetAttributeInAllVariants` action in update actions.
+    Thanks, @ahmed-ali225, for the contributions! [#513](https://github.com/commercetools/commercetools-sync-java/issues/513)
+
 ### 1.8.1 -  April 22, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.8.0...1.8.1) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.8.1/) | 
