@@ -39,7 +39,7 @@ public final class ProductSyncUtils {
 
     private static final String REMOVE_VARIANT_ACTION_NAME = "removeVariant";
     private static final String SET_ATTRIBUTE_IN_ALL_VARIANTS_ACTION_NAME = "setAttributeInAllVariants";
-    public static final String ADD_VARIANT_ACTION_NAME = "addVariant";
+    private static final String ADD_VARIANT_ACTION_NAME = "addVariant";
     private static final String CHANGE_MASTER_VARIANT_ACTION_NAME = "changeMasterVariant";
 
     /**
