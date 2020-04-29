@@ -59,8 +59,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     private static final String UNRESOLVED_REFERENCES_STORE_FETCH_FAILED = "Failed to fetch ProductDrafts waiting to "
         + "be resolved with keys '%s'.";
     private static final String UPDATE_FAILED = "Failed to update Product with key: '%s'. Reason: %s";
-    private static final String FAILED_TO_RUN_SYNC_DRAFT = "Failed to run sync draft process on "
-        + "ProductDraft with key:'%s'. Reason: %s";
+    private static final String FAILED_TO_PROCESS = "Failed to process the ProductDraft with key:'%s'. Reason: %s";
     private static final String FAILED_TO_FETCH_PRODUCT_TYPE = "Failed to fetch a productType for the product to "
         + "build the products' attributes metadata.";
 
@@ -333,7 +332,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             })
 
             .exceptionally(completionException -> {
-                final String errorMessage = format(FAILED_TO_RUN_SYNC_DRAFT, newProductDraft.getKey(),
+                final String errorMessage = format(FAILED_TO_PROCESS, newProductDraft.getKey(),
                         completionException.getCause().getMessage());
                 handleError(errorMessage, completionException.getCause(), 1);
                 return null;

@@ -115,7 +115,7 @@ class ProductReferenceResolverIT {
 
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0))
-            .contains("Failed to run sync draft process on ProductDraft with key:'productKey1'");
+            .contains("Failed to process the ProductDraft with key:'productKey1'");
         assertThat(warningCallBackMessages).isEmpty();
     }
 }

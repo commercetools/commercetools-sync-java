@@ -45,8 +45,7 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
         "Failed to process cart discount draft without key.";
     private static final String CART_DISCOUNT_DRAFT_IS_NULL =
         "Failed to process null cart discount draft.";
-    private static final String FAILED_TO_RUN_SYNC_DRAFT = "Failed to run sync draft process on "
-            + "CartDiscountDraft with key:'%s'. Reason: %s";
+    private static final String FAILED_TO_PROCESS = "Failed to process the CartDiscountDraft with key:'%s'. Reason: %s";
 
     private final CartDiscountService cartDiscountService;
     private final CartDiscountReferenceResolver referenceResolver;
@@ -200,7 +199,7 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
                         .resolveReferences(newCartDiscount)
                         .thenCompose(resolvedDraft -> syncDraft(oldCartDiscountMap, resolvedDraft))
                         .exceptionally(completionException -> {
-                            final String errorMessage = format(FAILED_TO_RUN_SYNC_DRAFT, newCartDiscount.getKey(),
+                            final String errorMessage = format(FAILED_TO_PROCESS, newCartDiscount.getKey(),
                                 completionException.getCause().getMessage());
                             handleError(errorMessage, completionException.getCause(), 1);
                             return null;
