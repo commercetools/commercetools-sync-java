@@ -36,7 +36,7 @@
 
 -->
 
-### 1.8.2 -  April 29, 2020
+### 1.8.2 -  April 30, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.8.1...1.8.2) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.8.2/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.8.2)
