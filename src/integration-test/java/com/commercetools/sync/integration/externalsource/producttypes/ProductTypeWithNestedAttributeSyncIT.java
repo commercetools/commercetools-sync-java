@@ -43,7 +43,7 @@ import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtil
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_3;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.PRODUCT_TYPE_NAME_4;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.assertAttributesAreEqual;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypes;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteAttributeReferencesAndProductTypes;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.getProductTypeByKey;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.populateTargetProjectWithNestedAttributes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
@@ -70,7 +70,7 @@ class ProductTypeWithNestedAttributeSyncIT {
      */
     @BeforeEach
     void setup() {
-        deleteProductTypes(CTP_TARGET_CLIENT);
+        deleteAttributeReferencesAndProductTypes(CTP_TARGET_CLIENT);
         populateTargetProjectWithNestedAttributes();
 
         builtUpdateActions = new ArrayList<>();
@@ -96,7 +96,7 @@ class ProductTypeWithNestedAttributeSyncIT {
      */
     @AfterAll
     static void tearDown() {
-        deleteProductTypes(CTP_TARGET_CLIENT);
+        deleteAttributeReferencesAndProductTypes(CTP_TARGET_CLIENT);
     }
 
     @Test

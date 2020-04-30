@@ -1,12 +1,15 @@
 package com.commercetools.sync.integration.commons.utils;
 
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
+import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.client.SphereRequest;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.models.LocalizedEnumValue;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.TextInputHint;
+import io.sphere.sdk.models.Versioned;
 import io.sphere.sdk.products.attributes.AttributeConstraint;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
 import io.sphere.sdk.products.attributes.AttributeDefinitionBuilder;
@@ -35,12 +38,12 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndExecute;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
@@ -215,31 +218,46 @@ public final class ProductTypeITUtils {
      * @param ctpClient defines the CTP project to delete the product types from.
      */
     public static void deleteProductTypes(@Nonnull final SphereClient ctpClient) {
-        deleteProductTypeAttributes(ctpClient);
-        /* Why we are retrying ?
-        It appears that the deleteProductTypeAttributes method removes an attribute then deletes the type moments later.
-        In CTP, there is background processing that cleans up products and
-        then increments the version on the product type when it's finished.
-        Here we're providing a retry with backoff (3 times) in that tests to avoid potential
-        concurrent modification 409 errors also we are waiting 3 seconds before retry...
-         */
-        deleteProductTypesWithRetry(ctpClient, 0);
+        deleteProductTypesWithRetry(ctpClient);
     }
 
-    private static void deleteProductTypesWithRetry(@Nonnull final SphereClient ctpClient, final int retryCount) {
-        try {
-            queryAndExecute(ctpClient, ProductTypeQuery.of(), ProductTypeDeleteCommand::of);
-        } catch (CompletionException ce) {
-            if (retryCount == 2) {
-                throw ce;
-            }
-            try {
-                Thread.sleep(3000);
-            } catch (InterruptedException expected) { }
+    /**
+     * Deletes all attributes with references and
+     * then product types from the CTP project defined by the {@code ctpClient}.
+     *
+     * @param ctpClient defines the CTP project to delete the product types from.
+     */
+    public static void deleteAttributeReferencesAndProductTypes(@Nonnull final SphereClient ctpClient) {
+        deleteProductTypeAttributes(ctpClient);
+        deleteProductTypes(ctpClient);
+    }
 
-            int newRetryCount = retryCount + 1;
-            deleteProductTypesWithRetry(ctpClient, newRetryCount);
-        }
+    private static void deleteProductTypesWithRetry(@Nonnull final SphereClient ctpClient) {
+        final Consumer<List<ProductType>> pageConsumer =
+            pageElements -> CompletableFuture.allOf(pageElements.stream()
+                .map(productType -> deleteProductTypeWithRetry(ctpClient, productType))
+                .map(CompletionStage::toCompletableFuture)
+                .toArray(CompletableFuture[]::new))
+                .join();
+
+        CtpQueryUtils.queryAll(ctpClient, ProductTypeQuery.of(), pageConsumer, 50)
+                .toCompletableFuture()
+                .join();
+    }
+
+    private static CompletionStage<ProductType> deleteProductTypeWithRetry(@Nonnull final SphereClient ctpClient,
+                                                                           @Nonnull final ProductType productType) {
+        return ctpClient.execute(ProductTypeDeleteCommand.of(productType))
+                .handle((result, throwable) -> {
+                    if (throwable instanceof ConcurrentModificationException) {
+                        Long currentVersion = ((ConcurrentModificationException)throwable).getCurrentVersion();
+                        SphereRequest<ProductType> retry =
+                                ProductTypeDeleteCommand.of(Versioned.of(productType.getId(), currentVersion));
+
+                        ctpClient.execute(retry);
+                    }
+                    return result;
+                });
     }
 
     /**
