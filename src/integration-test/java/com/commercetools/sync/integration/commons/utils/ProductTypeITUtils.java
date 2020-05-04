@@ -35,6 +35,7 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -227,7 +228,7 @@ public final class ProductTypeITUtils {
      *
      * @param ctpClient defines the CTP project to delete the product types from.
      */
-    public static void deleteAttributeReferencesAndProductTypes(@Nonnull final SphereClient ctpClient) {
+    public static void removeAttributeReferencesAndDeleteProductTypes(@Nonnull final SphereClient ctpClient) {
         deleteProductTypeAttributes(ctpClient);
         deleteProductTypes(ctpClient);
     }
@@ -288,13 +289,41 @@ public final class ProductTypeITUtils {
                 CompletableFuture.allOf(productTypesToUpdate
                     .entrySet()
                     .stream()
-                    .map(entry ->
-                        ctpClient.execute(
-                            ProductTypeUpdateCommand.of(entry.getKey(), new ArrayList<>(entry.getValue()))))
+                        .map(entry -> removeAttributeDefinitionWithRetry(ctpClient, entry)
+                        )
                     .toArray(CompletableFuture[]::new))
             )
             .toCompletableFuture()
             .join();
+
+        try {
+            // The removal of the attributes is eventually consistent.
+            // Here with one second break we are slowing down the ITs a little bit so CTP could remove the attributes.
+            // see: SUPPORT-8408
+            Thread.sleep(1000);
+        } catch (InterruptedException expected) { }
+    }
+
+    private static CompletionStage<ProductType> removeAttributeDefinitionWithRetry(
+        @Nonnull final SphereClient ctpClient,
+        @Nonnull final Map.Entry<ProductType, Set<UpdateAction<ProductType>>> entry) {
+
+        return ctpClient.execute(
+                ProductTypeUpdateCommand.of(entry.getKey(), new ArrayList<>(entry.getValue())))
+                .handle((result, throwable) -> {
+                    if (throwable instanceof ConcurrentModificationException) {
+                        Long currentVersion =
+                                ((ConcurrentModificationException) throwable).getCurrentVersion();
+                        Versioned<ProductType> versioned =
+                                Versioned.of(entry.getKey().getId(), currentVersion);
+                        SphereRequest<ProductType> retry =
+                                ProductTypeUpdateCommand.of(versioned,
+                                        new ArrayList<>(entry.getValue()));
+
+                        ctpClient.execute(retry);
+                    }
+                    return result;
+                });
     }
 
     /**
