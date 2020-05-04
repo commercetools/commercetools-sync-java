@@ -1,0 +1,13 @@
+/target
+/.idea
+.DS_Store
+*.iml
+
+# gradle specific
+.gradle/
+build/
+
+# Benchmarks
+benchmarks.json
+
+out
