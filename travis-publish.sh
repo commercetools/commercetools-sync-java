@@ -7,6 +7,7 @@ export TAG=`if [ "$TRAVIS_PULL_REQUEST" = "false" -a -n "$TRAVIS_TAG" ] ; then e
 
 if [ "$TAG" ]; then
   echo "Build is tagged. Uploading artifact $TAG to Bintray."
+  ./gradlew --info -Dbuild.version="$TAG" benchmarkCommit || exit 1
   ./gradlew --info -Dbuild.version="$TAG" mkdocsPublish || exit 1
   ./gradlew --info -Dbuild.version="$TAG" bintrayUpload
   if [[ $? != 0 ]]; then
