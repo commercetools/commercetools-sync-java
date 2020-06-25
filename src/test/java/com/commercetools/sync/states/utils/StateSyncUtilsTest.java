@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 
 class StateSyncUtilsTest {
 
-    private static String KEY = "key1";
+    private static final String KEY = "key1";
 
     @Test
     void buildActions_WithSameValues_ShouldNotBuildUpdateActions() {

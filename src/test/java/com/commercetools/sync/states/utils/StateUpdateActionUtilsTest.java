@@ -42,7 +42,7 @@ import static org.mockito.Mockito.when;
 
 class StateUpdateActionUtilsTest {
 
-    private static String KEY = "key1";
+    private static final String KEY = "key1";
 
     private State state;
     private StateDraft newSameStateDraft;

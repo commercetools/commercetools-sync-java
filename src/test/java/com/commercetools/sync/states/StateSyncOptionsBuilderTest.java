@@ -18,7 +18,7 @@ import static org.mockito.Mockito.mock;
 
 class StateSyncOptionsBuilderTest {
 
-    private static SphereClient CTP_CLIENT = mock(SphereClient.class);
+    private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
     private StateSyncOptionsBuilder stateSyncOptionsBuilder = StateSyncOptionsBuilder.of(CTP_CLIENT);
 
     @Test

@@ -10,7 +10,7 @@ import javax.annotation.Nonnull;
 public final class StateSyncOptionsBuilder extends BaseSyncOptionsBuilder<StateSyncOptionsBuilder, StateSyncOptions,
     State, StateDraft> {
 
-    public static final int BATCH_SIZE_DEFAULT = 500;
+    public static final int BATCH_SIZE_DEFAULT = 50;
 
     private StateSyncOptionsBuilder(@Nonnull final SphereClient ctpClient) {
         this.ctpClient = ctpClient;
