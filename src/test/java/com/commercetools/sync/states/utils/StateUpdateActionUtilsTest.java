@@ -33,6 +33,7 @@ import static com.commercetools.sync.states.utils.StateUpdateActionUtils.buildSe
 import static com.commercetools.sync.states.utils.StateUpdateActionUtils.buildSetNameAction;
 import static com.commercetools.sync.states.utils.StateUpdateActionUtils.buildSetTransitionsAction;
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,17 +43,19 @@ import static org.mockito.Mockito.when;
 
 class StateUpdateActionUtilsTest {
 
-    private static final String KEY = "key1";
+    private static final String KEY = "state-1";
 
     private State state;
     private StateDraft newSameStateDraft;
     private StateDraft newDifferentStateDraft;
+    private
 
     @BeforeEach
     void setup() {
         final StateType type = StateType.LINE_ITEM_STATE;
         final LocalizedString name = LocalizedString.of(Locale.GERMANY, "name");
         final LocalizedString description = LocalizedString.of(Locale.GERMANY, "description");
+        final Set<StateRole> roles = new HashSet<>(singletonList(StateRole.REVIEW_INCLUDED_IN_STATISTICS));
 
         state = mock(State.class);
         when(state.getKey()).thenReturn(KEY);
@@ -60,15 +63,18 @@ class StateUpdateActionUtilsTest {
         when(state.getName()).thenReturn(name);
         when(state.getDescription()).thenReturn(description);
         when(state.isInitial()).thenReturn(true);
+        when(state.getRoles()).thenReturn(roles);
 
         newSameStateDraft = StateDraft.of(KEY, type)
             .withName(name)
             .withDescription(description)
+            .withRoles(roles)
             .withInitial(true);
 
         newDifferentStateDraft = StateDraft.of("key2", StateType.PRODUCT_STATE)
-            .withName(LocalizedString.of(Locale.GERMANY, "whatever"))
-            .withDescription(LocalizedString.of(Locale.GERMANY, "changed"))
+            .withName(LocalizedString.of(Locale.GERMANY, "new name"))
+            .withDescription(LocalizedString.of(Locale.GERMANY, "new desc"))
+            .withRoles(new HashSet<>(singletonList(StateRole.RETURN)))
             .withInitial(false);
     }
 
@@ -136,19 +142,38 @@ class StateUpdateActionUtilsTest {
     }
 
     @Test
-    void buildRolesUpdateActions_WithDifferentValues_ShouldReturnAction() {
-        final Set<StateRole> oldRoles = new HashSet<>(singletonList(StateRole.RETURN));
-        final Set<StateRole> newRoles = new HashSet<>(singletonList(StateRole.REVIEW_INCLUDED_IN_STATISTICS));
+    void buildRolesUpdateActions_WithDifferentValues_ShouldReturnActionWithRightOrder() {
+        final List<UpdateAction<State>> result = buildRolesUpdateActions(state, newDifferentStateDraft);
 
-        when(state.getRoles()).thenReturn(oldRoles);
-        final StateDraft newDifferent = StateDraft.of(KEY, StateType.LINE_ITEM_STATE).withRoles(newRoles);
+        assertThat(result).containsExactly(
+            RemoveRoles.of(state.getRoles()),
+            AddRoles.of(newDifferentStateDraft.getRoles()));
+    }
 
-        final List<UpdateAction<State>> result = buildRolesUpdateActions(state, newDifferent);
+    @Test
+    void buildRolesUpdateActions_WithNewValues_ShouldReturnAction() {
+        StateDraft newState = StateDraft.of(KEY, StateType.PRODUCT_STATE)
+            .withRoles(new HashSet<>(asList(StateRole.RETURN, StateRole.REVIEW_INCLUDED_IN_STATISTICS)));
 
-        assertAll(
-            () -> assertThat(result).contains(AddRoles.of(newRoles)),
-            () -> assertThat(result).contains(RemoveRoles.of(oldRoles))
-        );
+        final List<UpdateAction<State>> result = buildRolesUpdateActions(state, newState);
+
+        assertThat(result).containsExactly(AddRoles.of(new HashSet<>(singletonList(StateRole.RETURN))));
+    }
+
+    @Test
+    void buildRolesUpdateActions_WithRemovedRoles_ShouldReturnOnlyRemoveAction() {
+        final Set<StateRole> roles = new HashSet<>(asList(StateRole.RETURN, StateRole.REVIEW_INCLUDED_IN_STATISTICS));
+
+        State oldState = mock(State.class);
+        when(oldState.getKey()).thenReturn(KEY);
+        when(oldState.getRoles()).thenReturn(roles);
+
+        StateDraft newState = StateDraft.of(KEY, StateType.PRODUCT_STATE)
+            .withRoles(new HashSet<>(singletonList(StateRole.REVIEW_INCLUDED_IN_STATISTICS)));
+
+        final List<UpdateAction<State>> result = buildRolesUpdateActions(oldState, newState);
+
+        assertThat(result).containsExactly(RemoveRoles.of(new HashSet<>(singletonList(StateRole.RETURN))));
     }
 
     @Test
