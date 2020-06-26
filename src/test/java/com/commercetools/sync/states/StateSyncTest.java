@@ -38,7 +38,7 @@ import static org.mockito.Mockito.when;
 
 class StateSyncTest {
 
-    private StateService stateService = mock(StateService.class);
+    private final StateService stateService = mock(StateService.class);
 
     @AfterEach
     void cleanup() {

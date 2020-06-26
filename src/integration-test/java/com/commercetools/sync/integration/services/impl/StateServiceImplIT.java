@@ -13,7 +13,6 @@ import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateDraft;
 import io.sphere.sdk.states.StateDraftBuilder;
 import io.sphere.sdk.states.StateType;
-import io.sphere.sdk.states.commands.StateCreateCommand;
 import io.sphere.sdk.states.commands.updateactions.ChangeKey;
 import io.sphere.sdk.states.commands.updateactions.ChangeType;
 import io.sphere.sdk.states.commands.updateactions.SetName;

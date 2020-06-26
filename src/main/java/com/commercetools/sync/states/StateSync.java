@@ -36,7 +36,10 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSyncOptions> {
 
+    private static final String CTP_STATE_FETCH_FAILED = "Failed to fetch existing states with keys: '%s'.";
     private static final String CTP_STATE_UPDATE_FAILED = "Failed to update state with key: '%s'. Reason: %s";
+    private static final String STATE_DRAFT_HAS_NO_KEY = "Failed to process state draft without key.";
+    private static final String STATE_DRAFT_IS_NULL = "Failed to process null state draft.";
 
     private final StateService stateService;
 
@@ -87,8 +90,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
                     final Throwable exception = fetchResponse.getValue();
 
                     if (exception != null) {
-                        final String errorMessage = format("Failed to fetch existing states with keys: '%s'.",
-                            keys);
+                        final String errorMessage = format(CTP_STATE_FETCH_FAILED, keys);
                         handleError(errorMessage, exception, keys.size());
                         return completedFuture(null);
                     } else {
@@ -112,9 +114,9 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
      */
     private boolean validateDraft(@Nullable final StateDraft draft) {
         if (draft == null) {
-            handleError("Failed to process null state draft.", null, 1);
+            handleError(STATE_DRAFT_IS_NULL, null, 1);
         } else if (isBlank(draft.getKey())) {
-            handleError("Failed to process state draft without key.", null, 1);
+            handleError(STATE_DRAFT_HAS_NO_KEY, null, 1);
         } else {
             return true;
         }
@@ -139,8 +141,12 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
 
     /**
      * Given a set of state drafts, attempts to sync the drafts with the existing states in the CTP
-     * project. The state and the draft are considered to match if they have the same key. When there will be no error
-     * it will attempt to sync the drafts transitions. {@code newStates} transitions have to be expanded.
+     * project. The state and the draft are considered to match if they have the same key.
+     *
+     * <p>
+     * When there will be no error it will attempt to sync the drafts transitions.
+     * {@code newStates} transitions have to be expanded.
+     * </p>
      *
      * @param oldStates old states.
      * @param newStates drafts that need to be synced.
@@ -155,6 +161,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
             .stream()
             .map(newState -> {
                 final State oldState = oldStateMap.get(newState.getKey());
+
                 return ofNullable(oldState)
                     .map(state -> buildActionsAndUpdate(oldState, newState))
                     .orElseGet(() -> applyCallbackAndCreate(newState));
@@ -224,7 +231,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
      */
     @Nonnull
     private CompletionStage<Optional<State>> applyCallbackAndCreate(@Nonnull final StateDraft stateDraft) {
-        // we can't create state with transitions - they might be not there yet
+        //TODO: we can't create state with transitions - they might be not there yet
         final StateDraft createStateDraft = StateDraftBuilder.of(stateDraft.getKey(), stateDraft.getType())
             .description(stateDraft.getDescription())
             .initial(stateDraft.isInitial())

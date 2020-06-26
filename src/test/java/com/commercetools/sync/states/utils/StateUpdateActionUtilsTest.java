@@ -48,7 +48,6 @@ class StateUpdateActionUtilsTest {
     private State state;
     private StateDraft newSameStateDraft;
     private StateDraft newDifferentStateDraft;
-    private
 
     @BeforeEach
     void setup() {
