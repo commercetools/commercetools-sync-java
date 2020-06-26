@@ -10,6 +10,7 @@ import io.sphere.sdk.states.StateDraftBuilder;
 import io.sphere.sdk.states.StateType;
 import io.sphere.sdk.states.commands.StateCreateCommand;
 import io.sphere.sdk.states.commands.StateDeleteCommand;
+import io.sphere.sdk.states.queries.StateQuery;
 import io.sphere.sdk.states.queries.StateQueryBuilder;
 import io.sphere.sdk.states.commands.StateUpdateCommand;
 import io.sphere.sdk.states.commands.updateactions.SetTransitions;
@@ -24,6 +25,7 @@ import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndE
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
+import static java.lang.String.format;
 
 public final class StateITUtils {
 
@@ -64,7 +66,10 @@ public final class StateITUtils {
      */
     public static void deleteStates(@Nonnull final SphereClient ctpClient,
                                     @Nonnull final StateType stateType) {
-        queryAndExecute(ctpClient, buildStateQuery(stateType), StateDeleteCommand::of);
+        final QueryPredicate<State> stateQueryPredicate =
+            QueryPredicate.of(format("type= \"%s\"", stateType.toSphereName()));
+        final StateQuery stateQuery = StateQuery.of().withPredicates(stateQueryPredicate);
+        queryAndExecute(ctpClient, stateQuery, StateDeleteCommand::of);
     }
 
     /**

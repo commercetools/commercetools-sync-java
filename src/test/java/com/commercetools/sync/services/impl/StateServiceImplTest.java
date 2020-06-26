@@ -6,6 +6,7 @@ import io.sphere.sdk.client.BadRequestException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.queries.PagedQueryResult;
+import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateDraft;
 import io.sphere.sdk.states.StateType;
@@ -29,6 +30,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
+import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
@@ -93,7 +95,9 @@ class StateServiceImplTest {
 
     @Test
     void buildStateQuery_WithType_ShouldBuildQuery() {
-        final StateQuery stateQuery = StateServiceImpl.buildStateQuery(StateType.LINE_ITEM_STATE);
+        final QueryPredicate<State> stateQueryPredicate =
+            QueryPredicate.of(format("type= \"%s\"", StateType.LINE_ITEM_STATE.toSphereName()));
+        final StateQuery stateQuery = StateQuery.of().withPredicates(stateQueryPredicate);
 
         assertThat(stateQuery).isNotNull();
         assertThat(stateQuery.toString()).contains(StateType.LINE_ITEM_STATE.toSphereName());
