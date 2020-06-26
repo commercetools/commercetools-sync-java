@@ -113,26 +113,6 @@ class StateServiceImplIT {
     }
 
     @Test
-    void fetchCachedStateId_OnSecondTime_ShouldNotFindStateInCache() {
-        // Fetch any key to populate cache
-        stateService.fetchCachedStateId("anyKey").toCompletableFuture().join();
-
-        // Create new state
-        final String newStateKey = "new_state_key";
-        final StateDraft stateDraft = StateDraftBuilder.of(newStateKey, STATE_TYPE)
-            .build();
-        executeBlocking(CTP_TARGET_CLIENT.execute(StateCreateCommand.of(stateDraft)));
-
-
-        final Optional<String> stateId = stateService.fetchCachedStateId(newStateKey)
-            .toCompletableFuture()
-            .join();
-
-        assertThat(stateId).isEmpty();
-        assertThat(warnings).isEmpty();
-    }
-
-    @Test
     void fetchCachedStateId_WithNullKey_ShouldReturnFutureWithEmptyOptional() {
         final Optional<String> stateId = stateService.fetchCachedStateId(null)
             .toCompletableFuture()
