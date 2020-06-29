@@ -71,9 +71,9 @@ class TypeServiceImplIT {
 
         final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .errorCallback((errorMessage, exception) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(exception);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
             .build();
         typeService = new TypeServiceImpl(typeSyncOptions);
@@ -158,9 +158,9 @@ class TypeServiceImplIT {
 
         final TypeSyncOptions spyOptions =
                 TypeSyncOptionsBuilder.of(spyClient)
-                                      .errorCallback((errorMessage, exception) -> {
-                                          errorCallBackMessages.add(errorMessage);
-                                          errorCallBackExceptions.add(exception);
+                                      .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                                          errorCallBackMessages.add(exception.getMessage());
+                                          errorCallBackExceptions.add(exception.getCause());
                                       })
                                       .build();
 
@@ -222,9 +222,9 @@ class TypeServiceImplIT {
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         final TypeSyncOptions spyOptions = TypeSyncOptionsBuilder
             .of(spyClient)
-            .errorCallback((errorMessage, exception) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(exception);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
             .build();
 
@@ -268,9 +268,9 @@ class TypeServiceImplIT {
 
         final TypeSyncOptions options = TypeSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .errorCallback((errorMessage, exception) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(exception);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
             .build();
 
@@ -300,9 +300,9 @@ class TypeServiceImplIT {
 
         final TypeSyncOptions options = TypeSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .errorCallback((errorMessage, exception) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(exception);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
             .build();
 

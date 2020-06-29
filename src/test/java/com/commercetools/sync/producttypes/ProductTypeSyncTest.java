@@ -219,9 +219,9 @@ class ProductTypeSyncTest {
 
         final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
             .of(mock(SphereClient.class))
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
-                exceptions.add(exception);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception.getCause());
             })
             .build();
 
@@ -395,8 +395,8 @@ class ProductTypeSyncTest {
             .sync(singletonList(newProductTypeDraft)).toCompletableFuture().join();
 
         // assertion
-        verify(spyProductTypeSyncOptions).applyBeforeCreateCallBack(newProductTypeDraft);
-        verify(spyProductTypeSyncOptions, never()).applyBeforeUpdateCallBack(any(), any(), any());
+        verify(spyProductTypeSyncOptions).applyBeforeCreateCallback(newProductTypeDraft);
+        verify(spyProductTypeSyncOptions, never()).applyBeforeUpdateCallback(any(), any(), any());
     }
 
     @Test
@@ -430,8 +430,8 @@ class ProductTypeSyncTest {
             .sync(singletonList(newProductTypeDraft)).toCompletableFuture().join();
 
         // assertion
-        verify(spyProductTypeSyncOptions).applyBeforeUpdateCallBack(any(), any(), any());
-        verify(spyProductTypeSyncOptions, never()).applyBeforeCreateCallBack(newProductTypeDraft);
+        verify(spyProductTypeSyncOptions).applyBeforeUpdateCallback(any(), any(), any());
+        verify(spyProductTypeSyncOptions, never()).applyBeforeCreateCallback(newProductTypeDraft);
     }
 
 }

@@ -1,5 +1,6 @@
 package com.commercetools.sync.products.utils;
 
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.CustomUpdateActionUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.helpers.PriceCustomActionBuilder;
@@ -78,7 +79,9 @@ public final class ProductVariantPriceUpdateActionUtils {
         final MonetaryAmount newPriceValue = newPrice.getValue();
 
         if (newPriceValue == null) {
-            syncOptions.applyWarningCallback(format(VARIANT_CHANGE_PRICE_EMPTY_VALUE, oldPrice.getId()));
+            syncOptions.applyWarningCallback(
+                    new SyncException(format(VARIANT_CHANGE_PRICE_EMPTY_VALUE, oldPrice.getId())),
+                    null, null);
             return Optional.empty();
         }
 

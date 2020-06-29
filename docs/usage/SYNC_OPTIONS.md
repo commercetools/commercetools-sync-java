@@ -1,10 +1,10 @@
 # Sync Options
 
-#### `errorCallBack`
+#### `errorCallback`
 a callback that is called whenever an error event occurs during the sync process. It contains information about the 
 error message and the exception.
 
-#### `warningCallBack` 
+#### `warningCallback`
 a callback that is called whenever a warning event occurs during the sync process. It contains information about the 
 warning message.
 
@@ -48,14 +48,14 @@ If it fails to create the supply channel, the inventory entry/product won't sync
 
 ### Examples
 
-#### 1. Using `errorCallBack` and `warningCallBack` for logging
+#### 1. Using `errorCallback` and `warningCallback` for logging
 
 ````java
  final Logger logger = LoggerFactory.getLogger(MySync.class);
  final ProductSyncOptions productsyncOptions = ProductSyncOptionsBuilder
          .of(sphereClient)
-         .errorCallBack(logger::error)
-         .warningCallBack(logger::warn)
+         .errorCallback(logger::error)
+         .warningCallback(logger::warn)
          .build();
 ````
  

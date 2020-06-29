@@ -201,21 +201,26 @@ class BuildAssetsUpdateActionsTest {
 
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> exceptions = new ArrayList<>();
-        final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
-                exceptions.add(exception);
-            })
-            .build();
+        final CategorySyncOptions syncOptions =
+            CategorySyncOptionsBuilder.of(mock(SphereClient.class))
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorMessages.add(exception.getMessage());
+                    if (exception.getCause() != null) {
+                        errorMessages.add(exception.getCause().getMessage());
+                    }
+                    exceptions.add(exception.getCause());
+                })
+                .build();
 
         final List<UpdateAction<Category>> updateActions =
             buildAssetsUpdateActions(oldCategory, newCategoryDraft, syncOptions);
 
         assertThat(updateActions).isEmpty();
-        assertThat(errorMessages).hasSize(1);
+        assertThat(errorMessages).hasSize(2);
         assertThat(errorMessages.get(0)).matches("Failed to build update actions for the assets of the category with "
-            + "the key 'null'. Reason: .*DuplicateKeyException: Supplied asset drafts have duplicate keys. Asset "
-            + "keys are expected to be unique inside their container \\(a product variant or a category\\).");
+            + "the key 'null'.");
+        assertThat(errorMessages.get(1)).matches(".*DuplicateKeyException: Supplied asset drafts have duplicate keys. "
+            + "Asset keys are expected to be unique inside their container \\(a product variant or a category\\).");
         assertThat(exceptions).hasSize(1);
         assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
         assertThat(exceptions.get(0).getMessage()).contains("Supplied asset drafts have duplicate "

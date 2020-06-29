@@ -2,6 +2,7 @@ package com.commercetools.sync.types.utils;
 
 
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.types.TypeSyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
@@ -92,9 +93,10 @@ public final class TypeUpdateActionUtils {
                 newType.getFieldDefinitions()
             );
         } catch (final BuildUpdateActionException exception) {
-            syncOptions.applyErrorCallback(format("Failed to build update actions for the field definitions "
+            syncOptions.applyErrorCallback(
+                new SyncException(format("Failed to build update actions for the field definitions "
                     + "of the type with the key '%s'. Reason: %s", newType.getKey(), exception),
-                exception);
+                exception), oldType, newType, null);
             return emptyList();
         }
     }

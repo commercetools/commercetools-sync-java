@@ -33,9 +33,10 @@ class CustomerGroupServiceImplIT {
         deleteCustomerGroups(CTP_TARGET_CLIENT);
         warnings = new ArrayList<>();
         oldCustomerGroup = createCustomerGroup(CTP_TARGET_CLIENT, CUSTOMER_GROUP_NAME, CUSTOMER_GROUP_KEY);
-        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                                                               .warningCallback(warnings::add)
-                                                                               .build();
+        final ProductSyncOptions productSyncOptions =
+            ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+                .warningCallback((exception, oldResource, newResource) -> warnings.add(exception.getMessage()))
+                .build();
         customerGroupService = new CustomerGroupServiceImpl(productSyncOptions);
     }
 

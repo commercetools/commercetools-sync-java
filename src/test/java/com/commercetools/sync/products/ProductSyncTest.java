@@ -103,9 +103,9 @@ class ProductSyncTest {
 
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder
             .of(mockClient)
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
-                exceptions.add(exception);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception.getCause());
             })
             .build();
 
@@ -165,9 +165,9 @@ class ProductSyncTest {
 
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder
                 .of(mockClient)
-                .errorCallback((errorMessage, exception) -> {
-                    errorMessages.add(errorMessage);
-                    exceptions.add(exception);
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorMessages.add(exception.getMessage());
+                    exceptions.add(exception.getCause());
                 })
                 .build();
 
@@ -250,8 +250,8 @@ class ProductSyncTest {
 
 
         // assertion
-        verify(spyProductSyncOptions).applyBeforeCreateCallBack(any());
-        verify(spyProductSyncOptions, never()).applyBeforeUpdateCallBack(any(), any(), any());
+        verify(spyProductSyncOptions).applyBeforeCreateCallback(any());
+        verify(spyProductSyncOptions, never()).applyBeforeUpdateCallback(any(), any(), any());
     }
 
     @Test
@@ -299,7 +299,7 @@ class ProductSyncTest {
         productSync.sync(singletonList(productDraft)).toCompletableFuture().join();
 
         // assertion
-        verify(spyProductSyncOptions).applyBeforeUpdateCallBack(any(), any(), any());
-        verify(spyProductSyncOptions, never()).applyBeforeCreateCallBack(any());
+        verify(spyProductSyncOptions).applyBeforeUpdateCallback(any(), any(), any());
+        verify(spyProductSyncOptions, never()).applyBeforeCreateCallback(any());
     }
 }

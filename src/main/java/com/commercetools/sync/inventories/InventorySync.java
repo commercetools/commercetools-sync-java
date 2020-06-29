@@ -1,6 +1,7 @@
 package com.commercetools.sync.inventories;
 
 import com.commercetools.sync.commons.BaseSync;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.inventories.helpers.InventoryEntryIdentifier;
 import com.commercetools.sync.inventories.helpers.InventoryReferenceResolver;
 import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
@@ -222,8 +223,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * out successfully or not. If an exception was thrown on executing the request to CTP, the error handling method
      * is called.
      *
-     * @param entry existing inventory entry that could be updated.
-     * @param draft draft containing data that could differ from data in {@code entry}.
+     * @param oldInventoryEntry existing inventory entry that could be updated.
+     * @param newInventoryEntry draft containing data that could differ from data in {@code entry}.
      *              <strong>Sku isn't compared</strong>
      * @return a future which contains an empty result after execution of the update.
      */
@@ -235,7 +236,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         final List<UpdateAction<InventoryEntry>> updateActions = buildActions(entry, draft, syncOptions);
 
         final List<UpdateAction<InventoryEntry>> beforeUpdateCallBackApplied =
-            syncOptions.applyBeforeUpdateCallBack(updateActions, draft, entry);
+            syncOptions.applyBeforeUpdateCallback(updateActions, newInventoryEntry, oldInventoryEntry);
 
         if (!beforeUpdateCallBackApplied.isEmpty()) {
             return inventoryService
@@ -248,7 +249,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                         final ResourceIdentifier<Channel> supplyChannel = draft.getSupplyChannel();
                         final String errorMessage = format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
                             supplyChannel != null ? supplyChannel.getId() : null);
-                        handleError(errorMessage, sphereException, 1);
+                        handleError(errorMessage, sphereException, 1, entry, draft, updateActions);
                         return CompletableFuture.completedFuture(Optional.empty());
                     } else {
                         statistics.incrementUpdated();
@@ -299,7 +300,29 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      */
     private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
                              final int failedTimes) {
-        syncOptions.applyErrorCallback(errorMessage, exception);
+        SyncException syncException = exception != null ? new SyncException(errorMessage, exception)
+            : new SyncException(errorMessage);
+        syncOptions.applyErrorCallback(syncException, null, null, null);
+        statistics.incrementFailed(failedTimes);
+    }
+
+    /**
+     * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this method calls the
+     * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
+     * incrementing the total number of failed categories to sync.
+     *
+     * @param errorMessage The error message describing the reason(s) of failure.
+     * @param exception    The exception that called caused the failure, if any.
+     * @param entry existing inventory entry that could be updated.
+     * @param draft draft containing data that could differ from data in {@code entry}.
+     * @param updateActions the update actions to update the {@link InventoryEntry} with.
+     */
+    private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
+        final int failedTimes, @Nullable final InventoryEntry entry, @Nullable final InventoryEntryDraft draft,
+        @Nullable final List<UpdateAction<InventoryEntry>> updateActions) {
+        SyncException syncException = exception != null ? new SyncException(errorMessage, exception)
+            : new SyncException(errorMessage);
+        syncOptions.applyErrorCallback(syncException, entry, draft, updateActions);
         statistics.incrementFailed(failedTimes);
     }
 }

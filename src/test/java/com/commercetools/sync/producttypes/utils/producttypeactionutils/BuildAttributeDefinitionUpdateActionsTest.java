@@ -247,12 +247,11 @@ class BuildAttributeDefinitionUpdateActionsTest {
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> exceptions = new ArrayList<>();
         final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                                .errorCallback(
-                                                                                    (errorMessage, exception) -> {
-                                                                                        errorMessages.add(errorMessage);
-                                                                                        exceptions.add(exception);
-                                                                                    })
-                                                                                .build();
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception.getCause());
+            })
+            .build();
 
         final List<UpdateAction<ProductType>> updateActions = buildAttributesUpdateActions(
             oldProductType,

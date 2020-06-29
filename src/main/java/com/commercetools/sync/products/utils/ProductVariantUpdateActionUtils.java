@@ -1,6 +1,7 @@
 package com.commercetools.sync.products.utils;
 
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.internals.helpers.PriceCompositeId;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.products.ProductSyncOptions;
@@ -11,6 +12,7 @@ import io.sphere.sdk.products.Image;
 import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.Product;
+import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.attributes.Attribute;
@@ -82,6 +84,8 @@ public final class ProductVariantUpdateActionUtils {
      * {@link ProductVariantDraft} and the {@link ProductVariant} have identical list of prices, then no update action
      * is needed and hence an empty {@link List} is returned.
      *
+     * @param oldProduct the product which should be updated.
+     * @param newProduct the product draft.
      * @param oldProductVariant the {@link ProductVariant} which should be updated.
      * @param newProductVariant the {@link ProductVariantDraft} where we get the new list of prices.
      * @param syncOptions the sync options wrapper which contains options related to the sync process supplied by
@@ -93,6 +97,8 @@ public final class ProductVariantUpdateActionUtils {
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildProductVariantPricesUpdateActions(
+        @Nullable final Product oldProduct,
+        @Nonnull final ProductDraft newProduct,
         @Nonnull final ProductVariant oldProductVariant,
         @Nonnull final ProductVariantDraft newProductVariant,
         @Nonnull final ProductSyncOptions syncOptions) {
@@ -108,9 +114,9 @@ public final class ProductVariantUpdateActionUtils {
 
         emptyIfNull(newPrices).forEach(newPrice -> {
             if (newPrice == null) {
-                syncOptions.applyErrorCallback(format("Failed to build prices update actions for one price on the "
-                        + "variant with id '%d' and key '%s'. Reason: %s", variantId, oldProductVariant.getKey(),
-                    NULL_PRODUCT_VARIANT_PRICE));
+                syncOptions.applyErrorCallback(new SyncException(format("Failed to build prices update actions "
+                    + "for one price on the variant with id '%d' and key '%s'. Reason: %s", variantId,
+                    oldProductVariant.getKey(), NULL_PRODUCT_VARIANT_PRICE)), oldProduct, newProduct, null);
             } else {
                 final PriceCompositeId newPriceCompositeId = PriceCompositeId.of(newPrice);
                 final Price matchingOldPrice = oldPricesMap.get(newPriceCompositeId);
@@ -255,9 +261,9 @@ public final class ProductVariantUpdateActionUtils {
                 newProductVariant.getAssets(),
                 new ProductAssetActionFactory(oldProductVariant.getId(), syncOptions), syncOptions);
         } catch (final BuildUpdateActionException exception) {
-            syncOptions.applyErrorCallback(format("Failed to build update actions for the assets "
+            syncOptions.applyErrorCallback(new SyncException(format("Failed to build update actions for the assets "
                     + "of the product variant with the sku '%s'. Reason: %s", oldProductVariant.getSku(), exception),
-                exception);
+                exception), null, null, null);
             return emptyList();
         }
     }
@@ -270,8 +276,9 @@ public final class ProductVariantUpdateActionUtils {
      * If both the {@link ProductVariantDraft} and the {@link ProductVariant} have identical list of attributes, then
      * no update action is needed and hence an empty {@link List} is returned.
      *
-     * @param productKey         the key of the product that the variants belong to. It is used only in the error
+     * @param oldProduct         the product that the variants belong to. It is used only in the error
      *                           messages if any.
+     * @param newProduct         the new product draft.
      * @param oldProductVariant  the {@link ProductVariant} which should be updated.
      * @param newProductVariant  the {@link ProductVariantDraft} where we get the new list of attributes.
      * @param attributesMetaData a map of attribute name -&gt; {@link AttributeMetaData}; which defines attribute
@@ -286,11 +293,14 @@ public final class ProductVariantUpdateActionUtils {
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildProductVariantAttributesUpdateActions(
-        @Nullable final String productKey,
+        @Nullable final Product oldProduct,
+        @Nonnull final ProductDraft newProduct,
         @Nonnull final ProductVariant oldProductVariant,
         @Nonnull final ProductVariantDraft newProductVariant,
         @Nonnull final Map<String, AttributeMetaData> attributesMetaData,
         @Nonnull final ProductSyncOptions syncOptions) {
+
+        final String productKey = oldProduct != null ? oldProduct.getKey() : null;
 
         final Integer oldProductVariantId = oldProductVariant.getId();
         final List<AttributeDraft> newProductVariantAttributes = newProductVariant.getAttributes();
@@ -304,8 +314,9 @@ public final class ProductVariantUpdateActionUtils {
                 } catch (final BuildUpdateActionException buildUpdateActionException) {
                     final String errorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, attribute.getName(),
                         newProductVariant.getKey(), productKey, buildUpdateActionException.getMessage());
-                    syncOptions.applyErrorCallback(errorMessage,
-                        new BuildUpdateActionException(errorMessage, buildUpdateActionException));
+                    syncOptions.applyErrorCallback(new SyncException(errorMessage,
+                        new BuildUpdateActionException(errorMessage, buildUpdateActionException)), oldProduct,
+                            newProduct, null);
                     return null;
                 }
             });
@@ -317,7 +328,8 @@ public final class ProductVariantUpdateActionUtils {
             if (newAttribute == null) {
                 final String errorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, null,
                     newProductVariant.getKey(), productKey, NULL_PRODUCT_VARIANT_ATTRIBUTE);
-                syncOptions.applyErrorCallback(errorMessage, new BuildUpdateActionException(errorMessage));
+                syncOptions.applyErrorCallback(new SyncException(errorMessage,
+                    new BuildUpdateActionException(errorMessage)), oldProduct, newProduct, updateActions);
             } else {
                 final String newAttributeName = newAttribute.getName();
                 final Attribute matchingOldAttribute = oldAttributesMap.get(newAttributeName);
@@ -331,8 +343,8 @@ public final class ProductVariantUpdateActionUtils {
                 } catch (final BuildUpdateActionException buildUpdateActionException) {
                     final String errorMessage = format(FAILED_TO_BUILD_ATTRIBUTE_UPDATE_ACTION, newAttributeName,
                         newProductVariant.getKey(), productKey, buildUpdateActionException.getMessage());
-                    syncOptions.applyErrorCallback(errorMessage,
-                        new BuildUpdateActionException(errorMessage, buildUpdateActionException));
+                    syncOptions.applyErrorCallback(new SyncException(errorMessage,
+                        new BuildUpdateActionException(errorMessage, buildUpdateActionException)), null, null, null);
                 }
             }
 

@@ -47,13 +47,12 @@ class ProductBatchProcessorTest {
         errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
         final SphereClient ctpClient = mock(SphereClient.class);
-        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder
-            .of(ctpClient)
-            .errorCallback((errorMessage, exception) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(exception);
-            })
-            .build();
+        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(ctpClient)
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorCallBackMessages.add(exception.getMessage());
+                    errorCallBackExceptions.add(exception.getCause());
+                })
+                .build();
         productSync = new ProductSync(syncOptions);
     }
 

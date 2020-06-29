@@ -72,8 +72,8 @@ class ProductUpdateActionUtilsIT {
         final List<String> warnings = new ArrayList<>();
 
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-            .errorCallback((str, thr) -> errors.add(str))
-            .warningCallback(warnings::add)
+            .errorCallback((exception, oldResource, newResource, updateActions) -> errors.add(exception.getMessage()))
+            .warningCallback((exception, oldResource, newResource) -> warnings.add(exception.getMessage()))
             .build();
 
         final ProductSync productSync = new ProductSync(productSyncOptions);

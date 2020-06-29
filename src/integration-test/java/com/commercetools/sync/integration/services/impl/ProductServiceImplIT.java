@@ -110,18 +110,17 @@ class ProductServiceImplIT {
         warningCallBackMessages = new ArrayList<>();
         deleteAllProducts(CTP_TARGET_CLIENT);
 
-        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                                                               .errorCallback(
-                                                                                   (errorMessage, exception) -> {
-                                                                                       errorCallBackMessages
-                                                                                           .add(errorMessage);
-                                                                                       errorCallBackExceptions
-                                                                                           .add(exception);
-                                                                                   })
-                                                                               .warningCallback(warningMessage ->
-                                                                                   warningCallBackMessages
-                                                                                       .add(warningMessage))
-                                                                               .build();
+        final ProductSyncOptions productSyncOptions =
+            ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+                .errorCallback(
+                    (exception, oldResource, newResource, updateActions) -> {
+                        errorCallBackMessages.add(exception.getMessage());
+                        errorCallBackExceptions.add(exception.getCause());
+                    })
+                .warningCallback(
+                    (exception, oldResource, newResource) -> warningCallBackMessages
+                        .add(exception.getMessage()))
+                .build();
 
         // Create a mock new product in the target project.
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
@@ -211,18 +210,17 @@ class ProductServiceImplIT {
     @Test
     void cacheKeysToIds_WithAlreadyCachedKeys_ShouldNotMakeRequestsAndReturnCurrentCache() {
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(spyClient)
-                                                                               .errorCallback(
-                                                                                   (errorMessage, exception) -> {
-                                                                                       errorCallBackMessages
-                                                                                           .add(errorMessage);
-                                                                                       errorCallBackExceptions
-                                                                                           .add(exception);
-                                                                                   })
-                                                                               .warningCallback(warningMessage ->
-                                                                                   warningCallBackMessages
-                                                                                       .add(warningMessage))
-                                                                               .build();
+        final ProductSyncOptions productSyncOptions =
+            ProductSyncOptionsBuilder.of(spyClient)
+                .errorCallback(
+                    (exception, oldResource, newResource, updateActions) -> {
+                        errorCallBackMessages.add(exception.getMessage());
+                        errorCallBackExceptions.add(exception.getCause());
+                    })
+                .warningCallback(
+                    (exception, oldResource, newResource)
+                        -> warningCallBackMessages.add(exception.getMessage()))
+                .build();
         final ProductService spyProductService = new ProductServiceImpl(productSyncOptions);
 
 
@@ -282,9 +280,9 @@ class ProductServiceImplIT {
             .thenCallRealMethod();
         final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder
             .of(spyClient)
-            .errorCallback((errorMessage, exception) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(exception);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
             .build();
         final ProductService spyProductService = new ProductServiceImpl(spyOptions);
@@ -350,9 +348,9 @@ class ProductServiceImplIT {
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder
             .of(spyClient)
-            .errorCallback((errorMessage, exception) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(exception);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
             .build();
 
@@ -673,15 +671,17 @@ class ProductServiceImplIT {
         when(spyClient.execute(any(ProductQuery.class)))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
             .thenCallRealMethod();
-        final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder.of(spyClient)
-                                                                       .errorCallback(
-                                                                           (errorMessage, exception) -> {
-                                                                               errorCallBackMessages
-                                                                                   .add(errorMessage);
-                                                                               errorCallBackExceptions
-                                                                                   .add(exception);
-                                                                           })
-                                                                       .build();
+        final ProductSyncOptions spyOptions =
+            ProductSyncOptionsBuilder.of(spyClient)
+                .errorCallback(
+                    (exception, oldResource, newResource, updateActions) -> {
+                        errorCallBackMessages.add(exception.getMessage());
+                        errorCallBackExceptions.add(exception.getCause());
+                    })
+                .warningCallback(
+                    (exception, oldResource, newResource)
+                        -> warningCallBackMessages.add(exception.getMessage()))
+                .build();
         final ProductService spyProductService = new ProductServiceImpl(spyOptions);
 
 

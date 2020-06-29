@@ -34,8 +34,9 @@ class StateServiceImplIT {
         warnings = new ArrayList<>();
         oldState = createState(CTP_TARGET_CLIENT, STATE_TYPE);
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                                                               .warningCallback(warnings::add)
-                                                                               .build();
+                                                                                .warningCallback((exception, oldResource, newResource)
+                                                                                    -> warnings.add(exception.getMessage()))
+                                                                                .build();
         stateService = new StateServiceImpl(productSyncOptions);
     }
 
