@@ -108,7 +108,8 @@ class CartDiscountServiceImplTest {
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
                 .of(mock(SphereClient.class))
-                .errorCallback(errors::put)
+                .errorCallback((exception, oldResource, newResource, actions) ->
+                        errors.put(exception.getMessage(), exception))
                 .build();
         final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
 
@@ -133,7 +134,8 @@ class CartDiscountServiceImplTest {
 
         final CartDiscountSyncOptions options = CartDiscountSyncOptionsBuilder
             .of(sphereClient)
-            .errorCallback(errors::put)
+            .errorCallback((exception, oldResource, newResource, actions) ->
+                    errors.put(exception.getMessage(), exception))
             .build();
 
         final CartDiscountServiceImpl cartDiscountService = new CartDiscountServiceImpl(options);
@@ -158,7 +160,8 @@ class CartDiscountServiceImplTest {
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
                 .of(mock(SphereClient.class))
-                .errorCallback(errors::put)
+                .errorCallback((exception, oldResource, newResource, actions) ->
+                        errors.put(exception.getMessage(), exception))
                 .build();
 
         final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);

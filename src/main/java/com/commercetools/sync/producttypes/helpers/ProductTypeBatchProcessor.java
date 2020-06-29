@@ -2,6 +2,7 @@ package com.commercetools.sync.producttypes.helpers;
 
 import com.commercetools.sync.commons.exceptions.InvalidProductTypeDraftException;
 import com.commercetools.sync.commons.exceptions.InvalidReferenceException;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.producttypes.ProductTypeSync;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.AttributeType;
@@ -142,7 +143,7 @@ public class ProductTypeBatchProcessor {
     }
 
     private void handleError(@Nonnull final Throwable throwable) {
-        productTypeSync.getSyncOptions().applyErrorCallback(throwable.getMessage(), throwable);
+        productTypeSync.getSyncOptions().applyErrorCallback(new SyncException(throwable.getMessage(), throwable));
         productTypeSync.getStatistics().incrementFailed();
     }
 

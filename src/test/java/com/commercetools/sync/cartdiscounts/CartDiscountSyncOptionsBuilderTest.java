@@ -1,5 +1,8 @@
 package com.commercetools.sync.cartdiscounts;
 
+import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.commons.utils.QuadConsumer;
+import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
@@ -11,8 +14,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
@@ -43,8 +44,8 @@ class CartDiscountSyncOptionsBuilderTest {
         assertThat(cartDiscountSyncOptions).isNotNull();
         assertThat(cartDiscountSyncOptions.getBeforeUpdateCallback()).isNull();
         assertThat(cartDiscountSyncOptions.getBeforeCreateCallback()).isNull();
-        assertThat(cartDiscountSyncOptions.getErrorCallBack()).isNull();
-        assertThat(cartDiscountSyncOptions.getWarningCallBack()).isNull();
+        assertThat(cartDiscountSyncOptions.getErrorCallback()).isNull();
+        assertThat(cartDiscountSyncOptions.getWarningCallback()).isNull();
         assertThat(cartDiscountSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
         assertThat(cartDiscountSyncOptions.getBatchSize()).isEqualTo(CartDiscountSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
     }
@@ -71,22 +72,24 @@ class CartDiscountSyncOptionsBuilderTest {
 
     @Test
     void errorCallBack_WithCallBack_ShouldSetCallBack() {
-        final BiConsumer<String, Throwable> mockErrorCallBack = (errorMessage, errorException) -> {
-        };
+        final QuadConsumer<SyncException, Optional<CartDiscountDraft>,
+                Optional<CartDiscount>, List<UpdateAction<CartDiscount>>> mockErrorCallBack
+                = (syncException, draft, cartDiscount, updateActions) -> {
+                };
         cartDiscountSyncOptionsBuilder.errorCallback(mockErrorCallBack);
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = cartDiscountSyncOptionsBuilder.build();
-        assertThat(cartDiscountSyncOptions.getErrorCallBack()).isNotNull();
+        assertThat(cartDiscountSyncOptions.getErrorCallback()).isNotNull();
     }
 
     @Test
     void warningCallBack_WithCallBack_ShouldSetCallBack() {
-        final Consumer<String> mockWarningCallBack = (warningMessage) -> {
-        };
+        final TriConsumer<SyncException, Optional<CartDiscountDraft>, Optional<CartDiscount>> mockWarningCallBack
+                = (syncException, draft, cartDiscount) -> { };
         cartDiscountSyncOptionsBuilder.warningCallback(mockWarningCallBack);
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = cartDiscountSyncOptionsBuilder.build();
-        assertThat(cartDiscountSyncOptions.getWarningCallBack()).isNotNull();
+        assertThat(cartDiscountSyncOptions.getWarningCallback()).isNotNull();
     }
 
     @Test
@@ -143,7 +146,7 @@ class CartDiscountSyncOptionsBuilderTest {
         final List<UpdateAction<CartDiscount>> updateActions = singletonList(ChangeName.of(ofEnglish("name")));
 
         final List<UpdateAction<CartDiscount>> filteredList =
-            cartDiscountSyncOptions.applyBeforeUpdateCallBack(
+            cartDiscountSyncOptions.applyBeforeUpdateCallback(
                 updateActions, mock(CartDiscountDraft.class), mock(CartDiscount.class));
 
         assertThat(filteredList).isSameAs(updateActions);
@@ -164,7 +167,7 @@ class CartDiscountSyncOptionsBuilderTest {
         final List<UpdateAction<CartDiscount>> updateActions = singletonList(ChangeName.of(ofEnglish("name")));
         final List<UpdateAction<CartDiscount>> filteredList =
             cartDiscountSyncOptions
-                .applyBeforeUpdateCallBack(updateActions, mock(CartDiscountDraft.class), mock(CartDiscount.class));
+                .applyBeforeUpdateCallback(updateActions, mock(CartDiscountDraft.class), mock(CartDiscount.class));
         assertThat(filteredList).isNotEqualTo(updateActions);
         assertThat(filteredList).isEmpty();
     }
@@ -188,7 +191,7 @@ class CartDiscountSyncOptionsBuilderTest {
         final List<UpdateAction<CartDiscount>> updateActions = emptyList();
         final List<UpdateAction<CartDiscount>> filteredList =
             cartDiscountSyncOptions
-                .applyBeforeUpdateCallBack(updateActions, mock(CartDiscountDraft.class), mock(CartDiscount.class));
+                .applyBeforeUpdateCallback(updateActions, mock(CartDiscountDraft.class), mock(CartDiscount.class));
 
         assertThat(filteredList).isEmpty();
         verify(beforeUpdateCallback, never()).apply(any(), any(), any());
@@ -209,7 +212,7 @@ class CartDiscountSyncOptionsBuilderTest {
         final List<UpdateAction<CartDiscount>> updateActions = singletonList(ChangeName.of(ofEnglish("name")));
         final List<UpdateAction<CartDiscount>> filteredList =
             cartDiscountSyncOptions
-                .applyBeforeUpdateCallBack(updateActions, mock(CartDiscountDraft.class), mock(CartDiscount.class));
+                .applyBeforeUpdateCallback(updateActions, mock(CartDiscountDraft.class), mock(CartDiscount.class));
         assertThat(filteredList).isNotEqualTo(updateActions);
         assertThat(filteredList).isEmpty();
     }
@@ -233,7 +236,7 @@ class CartDiscountSyncOptionsBuilderTest {
 
 
         final Optional<CartDiscountDraft> filteredDraft = cartDiscountSyncOptions
-                .applyBeforeCreateCallBack(resourceDraft);
+                .applyBeforeCreateCallback(resourceDraft);
 
         assertThat(filteredDraft).hasValueSatisfying(cartDiscountDraft ->
             assertThat(cartDiscountDraft.getKey()).isEqualTo("myKey_filteredKey"));
@@ -245,7 +248,7 @@ class CartDiscountSyncOptionsBuilderTest {
         assertThat(cartDiscountSyncOptions.getBeforeCreateCallback()).isNull();
 
         final CartDiscountDraft resourceDraft = mock(CartDiscountDraft.class);
-        final Optional<CartDiscountDraft> filteredDraft = cartDiscountSyncOptions.applyBeforeCreateCallBack(
+        final Optional<CartDiscountDraft> filteredDraft = cartDiscountSyncOptions.applyBeforeCreateCallback(
             resourceDraft);
 
         assertThat(filteredDraft).containsSame(resourceDraft);
@@ -262,7 +265,7 @@ class CartDiscountSyncOptionsBuilderTest {
 
         final CartDiscountDraft resourceDraft = mock(CartDiscountDraft.class);
         final Optional<CartDiscountDraft> filteredDraft =
-            cartDiscountSyncOptions.applyBeforeCreateCallBack(resourceDraft);
+            cartDiscountSyncOptions.applyBeforeCreateCallback(resourceDraft);
 
         assertThat(filteredDraft).isEmpty();
     }

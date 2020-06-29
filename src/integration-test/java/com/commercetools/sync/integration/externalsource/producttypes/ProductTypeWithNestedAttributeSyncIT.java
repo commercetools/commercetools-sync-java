@@ -83,8 +83,8 @@ class ProductTypeWithNestedAttributeSyncIT {
                 builtUpdateActions.addAll(actions);
                 return actions;
             })
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
+            .errorCallback((exception, oldResource, newResource, actions) -> {
+                errorMessages.add(exception.getMessage());
                 exceptions.add(exception);
             })
             .build();
@@ -296,8 +296,8 @@ class ProductTypeWithNestedAttributeSyncIT {
                 builtUpdateActions.addAll(actions);
                 return actions;
             })
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
+            .errorCallback((exception, oldResource, newResource, actions) -> {
+                errorMessages.add(exception.getMessage());
                 exceptions.add(exception);
             })
             .build();
@@ -441,8 +441,8 @@ class ProductTypeWithNestedAttributeSyncIT {
                 builtUpdateActions.addAll(actions);
                 return actions;
             })
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
+            .errorCallback((exception, oldResource, newResource, actions) -> {
+                errorMessages.add(exception.getMessage());
                 exceptions.add(exception);
             })
             .build();

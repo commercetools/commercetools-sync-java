@@ -1,5 +1,6 @@
 package com.commercetools.sync.services.impl;
 
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.UnresolvedReferencesService;
@@ -90,7 +91,8 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
                     return Optional.of(resource.getValue());
                 } else {
                     syncOptions.applyErrorCallback(
-                        format(SAVE_FAILED, customObjectDraft.getKey(), draft.getProductDraft().getKey()), exception);
+                        new SyncException(format(SAVE_FAILED, customObjectDraft.getKey(),
+                                draft.getProductDraft().getKey()), exception));
                     return Optional.empty();
                 }
             });
@@ -109,7 +111,7 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
                     return Optional.of(resource.getValue());
                 } else {
                     syncOptions.applyErrorCallback(
-                        format(DELETE_FAILED, hash(key), key), exception);
+                        new SyncException(format(DELETE_FAILED, hash(key), key), exception));
                     return Optional.empty();
                 }
             });

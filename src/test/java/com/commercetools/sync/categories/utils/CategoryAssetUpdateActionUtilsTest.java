@@ -425,11 +425,11 @@ class CategoryAssetUpdateActionUtilsTest {
 
         final List<String> errors = new ArrayList<>();
 
-        final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                          .errorCallback((errorMessage, throwable) ->
-                                                                              errors.add(errorMessage))
-                                                                          .build();
-
+        final CategorySyncOptions syncOptions =
+            CategorySyncOptionsBuilder.of(mock(SphereClient.class))
+                .errorCallback((exception, oldResource, newResource, updateActions) ->
+                    errors.add(exception.getMessage()))
+                .build();
 
         final List<UpdateAction<Category>> updateActions =
             buildCustomUpdateActions(oldAsset, newAssetDraft, syncOptions);

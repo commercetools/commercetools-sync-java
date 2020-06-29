@@ -1,6 +1,7 @@
 package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.DraftBasedCreateCommand;
@@ -126,6 +127,7 @@ abstract class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions,
      * @return a {@link CompletionStage} containing an optional with the created resource if successful otherwise an
      *         empty optional.
      */
+    @SuppressWarnings("unchecked")
     @Nonnull
     CompletionStage<Optional<U>> createResource(
         @Nonnull final T draft,
@@ -135,7 +137,9 @@ abstract class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions,
         final String draftKey = keyMapper.apply(draft);
 
         if (isBlank(draftKey)) {
-            syncOptions.applyErrorCallback(format(CREATE_FAILED, draftKey, "Draft key is blank!"));
+            syncOptions.applyErrorCallback(
+                new SyncException(format(CREATE_FAILED, draftKey, "Draft key is blank!")),
+                null, draft, null);
             return CompletableFuture.completedFuture(Optional.empty());
         } else {
             return syncOptions
@@ -147,7 +151,8 @@ abstract class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions,
                         return Optional.of(resource);
                     } else {
                         syncOptions.applyErrorCallback(
-                            format(CREATE_FAILED, draftKey, exception.getMessage()), exception);
+                            new SyncException(format(CREATE_FAILED, draftKey, exception.getMessage()), exception),
+                            null, draft, null);
                         return Optional.empty();
                     }
                 }));

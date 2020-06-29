@@ -2,7 +2,9 @@ package com.commercetools.sync.commons.utils;
 
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.helpers.AssetCustomActionBuilder;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Asset;
@@ -10,8 +12,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 
 import static com.commercetools.sync.categories.CategorySyncOptionsBuilder.of;
 import static com.commercetools.sync.commons.utils.GenericUpdateActionUtils.buildTypedSetCustomTypeUpdateAction;
@@ -23,14 +25,15 @@ class GenericUpdateActionUtilsTest {
     @Test
     void buildTypedSetCustomTypeUpdateAction_WithNullNewIdCategoryAsset_ShouldNotBuildCategoryUpdateAction() {
         final ArrayList<String> errorMessages = new ArrayList<>();
-        final BiConsumer<String, Throwable> updateActionErrorCallBack =
-            (errorMessage, exception) -> errorMessages.add(errorMessage);
+        final QuadConsumer<SyncException, Optional<CategoryDraft>, Optional<Category>,
+                    List<UpdateAction<Category>>> errorCallback =
+                        (exception, oldResource, newResource, updateActions) -> errorMessages
+                                .add(exception.getMessage());
 
         // Mock sync options
         final CategorySyncOptions categorySyncOptions =
-            of(mock(SphereClient.class)).errorCallback(updateActionErrorCallBack)
+            of(mock(SphereClient.class)).errorCallback(errorCallback)
                                         .build();
-
 
         final Optional<UpdateAction<Category>> updateAction =
             buildTypedSetCustomTypeUpdateAction(null, new HashMap<>(), mock(Asset.class),

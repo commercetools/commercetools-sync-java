@@ -2,6 +2,7 @@ package com.commercetools.sync.services.impl;
 
 
 import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.services.CategoryService;
 import io.sphere.sdk.categories.Category;
@@ -56,7 +57,8 @@ public final class CategoryServiceImpl extends BaseServiceWithKey<CategoryDraft,
                 if (isNotBlank(key)) {
                     keyToIdCache.put(key, id);
                 } else {
-                    syncOptions.applyWarningCallback(format(CATEGORY_KEY_NOT_SET, id));
+                    syncOptions.applyWarningCallback(new SyncException(format(CATEGORY_KEY_NOT_SET, id)),
+                        category, null);
                 }
             });
 

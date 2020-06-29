@@ -48,9 +48,9 @@ class UnresolvedReferencesServiceImplTest {
         errorExceptions = new ArrayList<>();
         productSyncOptions = ProductSyncOptionsBuilder
             .of(mock(SphereClient.class))
-            .errorCallback((errorMessage, errorException) -> {
-                errorMessages.add(errorMessage);
-                errorExceptions.add(errorException);
+            .errorCallback((exception, oldResource, newResource, actions) -> {
+                errorMessages.add(exception.getMessage());
+                errorExceptions.add(exception);
             })
             .build();
         service = new UnresolvedReferencesServiceImpl(productSyncOptions);

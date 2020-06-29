@@ -49,9 +49,9 @@ class TypeSyncTest {
 
         final TypeSyncOptions syncOptions = TypeSyncOptionsBuilder
             .of(mock(SphereClient.class))
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
-                exceptions.add(exception);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception.getCause());
             })
             .build();
 
@@ -107,8 +107,8 @@ class TypeSyncTest {
             .sync(singletonList(newTypeDraft)).toCompletableFuture().join();
 
         // assertion
-        verify(spyTypeSyncOptions).applyBeforeCreateCallBack(newTypeDraft);
-        verify(spyTypeSyncOptions, never()).applyBeforeUpdateCallBack(any(), any(), any());
+        verify(spyTypeSyncOptions).applyBeforeCreateCallback(newTypeDraft);
+        verify(spyTypeSyncOptions, never()).applyBeforeUpdateCallback(any(), any(), any());
     }
 
     @Test
@@ -136,8 +136,8 @@ class TypeSyncTest {
             .sync(singletonList(newTypeDraft)).toCompletableFuture().join();
 
         // assertion
-        verify(spyTypeSyncOptions).applyBeforeUpdateCallBack(any(), any(), any());
-        verify(spyTypeSyncOptions, never()).applyBeforeCreateCallBack(newTypeDraft);
+        verify(spyTypeSyncOptions).applyBeforeUpdateCallback(any(), any(), any());
+        verify(spyTypeSyncOptions, never()).applyBeforeCreateCallback(newTypeDraft);
     }
 
 }

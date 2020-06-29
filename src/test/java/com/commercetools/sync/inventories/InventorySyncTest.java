@@ -17,7 +17,6 @@ import io.sphere.sdk.types.CustomFieldsDraft;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.annotation.Nonnull;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -148,30 +147,6 @@ class InventorySyncTest {
         assertThat(stats).hasValues(8, 3, 3, 0);
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
-    }
-
-    @Nonnull
-    private InventorySync getInventorySync(final int batchSize, final boolean ensureChannels) {
-
-        final InventorySyncOptions options = getInventorySyncOptions(batchSize, ensureChannels);
-        final InventoryService inventoryService = getMockInventoryService(existingInventories,
-            mock(InventoryEntry.class), mock(InventoryEntry.class));
-        final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_2, KEY_2));
-        return new InventorySync(options, inventoryService, channelService, mock(TypeService.class));
-    }
-
-    @Nonnull
-    private InventorySyncOptions getInventorySyncOptions(final int batchSize, final boolean ensureChannels) {
-
-        return InventorySyncOptionsBuilder
-            .of(mock(SphereClient.class))
-            .batchSize(batchSize)
-            .ensureChannels(ensureChannels)
-            .errorCallback((callBackError, exception) -> {
-                errorCallBackMessages.add(callBackError);
-                errorCallBackExceptions.add(exception);
-            })
-            .build();
     }
 
     @Test
@@ -460,8 +435,8 @@ class InventorySyncTest {
         inventorySync.sync(singletonList(inventoryEntryDraft)).toCompletableFuture().join();
 
         // assertion
-        verify(optionsSpy).applyBeforeUpdateCallBack(any(), any(), any());
-        verify(optionsSpy, never()).applyBeforeCreateCallBack(any());
+        verify(optionsSpy).applyBeforeUpdateCallback(any(), any(), any());
+        verify(optionsSpy, never()).applyBeforeCreateCallback(any());
     }
 
     @Test
@@ -484,7 +459,26 @@ class InventorySyncTest {
                      .toCompletableFuture().join();
 
         // assertion
-        verify(optionsSpy).applyBeforeCreateCallBack(any());
-        verify(optionsSpy, never()).applyBeforeUpdateCallBack(any(), any(), any());
+        verify(optionsSpy).applyBeforeCreateCallback(any());
+        verify(optionsSpy, never()).applyBeforeUpdateCallback(any(), any(), any());
+    }
+
+    private InventorySync getInventorySync(int batchSize, boolean ensureChannels) {
+        final InventorySyncOptions options = getInventorySyncOptions(batchSize, ensureChannels);
+        final InventoryService inventoryService = getMockInventoryService(existingInventories,
+            mock(InventoryEntry.class), mock(InventoryEntry.class));
+        final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_2, KEY_2));
+        return new InventorySync(options, inventoryService, channelService, mock(TypeService.class));
+    }
+
+    private InventorySyncOptions getInventorySyncOptions(int batchSize, boolean ensureChannels) {
+        return InventorySyncOptionsBuilder.of(mock(SphereClient.class))
+                                          .batchSize(batchSize)
+                                          .ensureChannels(ensureChannels)
+                                          .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                                              errorCallBackMessages.add(exception.getMessage());
+                                              errorCallBackExceptions.add(exception.getCause());
+                                          })
+                                          .build();
     }
 }

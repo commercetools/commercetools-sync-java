@@ -3,6 +3,7 @@ package com.commercetools.sync.commons.utils;
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.helpers.AssetActionFactory;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Asset;
@@ -113,7 +114,8 @@ public final class AssetsUpdateActionUtils {
             if (isNotBlank(assetKey)) {
                 oldAssetsKeyMap.put(assetKey, asset);
             } else {
-                syncOptions.applyWarningCallback(format(ASSET_KEY_NOT_SET, "id: " + asset.getId()));
+                syncOptions.applyWarningCallback(new SyncException(format(ASSET_KEY_NOT_SET, "id: " + asset.getId())),
+                        asset, null);
             }
         });
         final Map<String, AssetDraft> newAssetDraftsKeyMap = new HashMap<>();
@@ -128,7 +130,8 @@ public final class AssetsUpdateActionUtils {
                     );
 
                 } else {
-                    syncOptions.applyWarningCallback(format(ASSET_KEY_NOT_SET, "name: " + newAsset.getName()));
+                    syncOptions.applyWarningCallback(new SyncException(format(ASSET_KEY_NOT_SET,
+                            "name: " + newAsset.getName())), null, newAsset);
                 }
             });
 

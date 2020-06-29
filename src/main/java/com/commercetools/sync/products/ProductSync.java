@@ -2,6 +2,7 @@ package com.commercetools.sync.products;
 
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.BaseSync;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.products.helpers.ProductBatchProcessor;
 import com.commercetools.sync.products.helpers.ProductReferenceResolver;
@@ -356,7 +357,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                             buildActions(oldProduct, newProduct, syncOptions, attributeMetaDataMap);
 
                         final List<UpdateAction<Product>> beforeUpdateCallBackApplied =
-                            syncOptions.applyBeforeUpdateCallBack(updateActions, newProduct, oldProduct);
+                            syncOptions.applyBeforeUpdateCallback(updateActions, newProduct, oldProduct);
 
                         if (!beforeUpdateCallBackApplied.isEmpty()) {
                             return updateProduct(oldProduct, newProduct, beforeUpdateCallBackApplied);
@@ -368,7 +369,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                     .orElseGet(() -> {
                         final String errorMessage =
                             format(UPDATE_FAILED, oldProduct.getKey(), FAILED_TO_FETCH_PRODUCT_TYPE);
-                        handleError(errorMessage);
+                        handleError(errorMessage, oldProduct, newProduct);
                         return CompletableFuture.completedFuture(null);
                     })
             );
@@ -390,7 +391,8 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                         () -> fetchAndUpdate(oldProduct, newProduct),
                         () -> {
                             final String productKey = oldProduct.getKey();
-                            handleError(format(UPDATE_FAILED, productKey, sphereException), sphereException);
+                            handleError(format(UPDATE_FAILED, productKey, sphereException), sphereException,
+                                    oldProduct, newProduct, updateActions);
                             return CompletableFuture.completedFuture(null);
                         });
                 } else {
@@ -426,7 +428,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                 if (exception != null) {
                     final String errorMessage = format(UPDATE_FAILED, key, "Failed to fetch from CTP while "
                         + "retrying after concurrency modification.");
-                    handleError(errorMessage, exception);
+                    handleError(errorMessage, exception, oldProduct, newProduct, null);
                     return CompletableFuture.completedFuture(null);
                 }
 
@@ -435,7 +437,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                     .orElseGet(() -> {
                         final String errorMessage = format(UPDATE_FAILED, key, "Not found when attempting to fetch "
                             + "while retrying after concurrency modification.");
-                        handleError(errorMessage);
+                        handleError(errorMessage, oldProduct, newProduct);
                         return CompletableFuture.completedFuture(null);
                     });
             });
@@ -445,7 +447,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     @Nonnull
     private CompletionStage<Void> applyCallbackAndCreate(@Nonnull final ProductDraft productDraft) {
         return syncOptions
-            .applyBeforeCreateCallBack(productDraft)
+            .applyBeforeCreateCallback(productDraft)
             .map(draft -> productService
                 .createProduct(draft)
                 .thenAccept(productOptional -> {
@@ -467,8 +469,9 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
      *
      * @param errorMessage The error message describing the reason(s) of failure.
      */
-    private void handleError(@Nonnull final String errorMessage) {
-        handleError(errorMessage, null);
+    private void handleError(@Nonnull final String errorMessage, @Nullable final Product oldResource,
+        @Nullable final ProductDraft newResource) {
+        handleError(errorMessage, null, oldResource, newResource, null);
     }
 
     /**
@@ -478,9 +481,16 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
      *
      * @param errorMessage The error message describing the reason(s) of failure.
      * @param exception    The exception that called caused the failure, if any.
+     * @param oldProduct the product which could be updated.
+     * @param newProduct the product draft where we get the new data.
+     * @param updateActions the update actions to update the {@link Product} with.
      */
-    private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception) {
-        syncOptions.applyErrorCallback(errorMessage, exception);
+    private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
+        @Nullable final Product oldProduct, @Nullable final ProductDraft newProduct,
+        @Nullable final List<UpdateAction<Product>> updateActions) {
+        SyncException syncException = exception != null ? new SyncException(errorMessage, exception)
+            : new SyncException(errorMessage);
+        syncOptions.applyErrorCallback(syncException, oldProduct, newProduct, updateActions);
         statistics.incrementFailed();
     }
 
@@ -496,8 +506,9 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     private void handleError(@Nonnull final String errorMessage,
                              @Nullable final Throwable exception,
                              final int failedTimes) {
-
-        syncOptions.applyErrorCallback(errorMessage, exception);
+        SyncException syncException = exception != null ? new SyncException(errorMessage, exception)
+            : new SyncException(errorMessage);
+        syncOptions.applyErrorCallback(syncException);
         statistics.incrementFailed(failedTimes);
     }
 }

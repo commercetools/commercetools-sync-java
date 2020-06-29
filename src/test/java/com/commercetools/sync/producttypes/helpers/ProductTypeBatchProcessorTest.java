@@ -47,8 +47,8 @@ class ProductTypeBatchProcessorTest {
         final SphereClient ctpClient = mock(SphereClient.class);
         final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
             .of(ctpClient)
-            .errorCallback((errorMessage, exception) -> {
-                errorCallBackMessages.add(errorMessage);
+            .errorCallback((exception, oldResource, newResource, actions) -> {
+                errorCallBackMessages.add(exception.getMessage());
                 errorCallBackExceptions.add(exception);
             })
             .build();

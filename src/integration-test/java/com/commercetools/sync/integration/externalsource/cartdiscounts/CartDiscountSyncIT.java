@@ -110,9 +110,9 @@ class CartDiscountSyncIT {
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .errorCallback((error, throwable) -> {
-                errorMessages.add(error);
-                exceptions.add(throwable);
+            .errorCallback((exception, oldResource, newResource, actions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception);
             })
             .beforeUpdateCallback((updateActions, newCartDiscount, oldCartDiscount) -> {
                 updateActionsList.addAll(updateActions);
@@ -153,9 +153,9 @@ class CartDiscountSyncIT {
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .errorCallback((error, throwable) -> {
-                errorMessages.add(error);
-                exceptions.add(throwable);
+            .errorCallback((exception, oldResource, newResource, actions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception);
             })
             .beforeUpdateCallback((updateActions, newCartDiscount, oldCartDiscount) -> {
                 updateActionsList.addAll(updateActions);
@@ -196,9 +196,9 @@ class CartDiscountSyncIT {
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .errorCallback((error, throwable) -> {
-                errorMessages.add(error);
-                exceptions.add(throwable);
+            .errorCallback((exception, oldResource, newResource, actions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception);
             })
             .beforeUpdateCallback((updateActions, newCartDiscount, oldCartDiscount) -> {
                 updateActionsList.addAll(updateActions);
@@ -242,9 +242,9 @@ class CartDiscountSyncIT {
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .errorCallback((error, throwable) -> {
-                errorMessages.add(error);
-                exceptions.add(throwable);
+            .errorCallback((exception, oldResource, newResource, actions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception);
             })
             .beforeUpdateCallback((updateActions, newCartDiscount, oldCartDiscount) -> {
                 updateActionsList.addAll(updateActions);
@@ -289,9 +289,9 @@ class CartDiscountSyncIT {
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .errorCallback((error, throwable) -> {
-                errorMessages.add(error);
-                exceptions.add(throwable);
+            .errorCallback((exception, oldResource, newResource, actions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception);
             })
             .beforeUpdateCallback((updateActions, newCartDiscount, oldCartDiscount) -> {
                 updateActionsList.addAll(updateActions);
@@ -350,9 +350,9 @@ class CartDiscountSyncIT {
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .errorCallback((error, throwable) -> {
-                errorMessages.add(error);
-                exceptions.add(throwable);
+            .errorCallback((exception, oldResource, newResource, actions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception);
             })
             .beforeUpdateCallback((updateActions, newCartDiscount, oldCartDiscount) -> {
                 updateActionsList.addAll(updateActions);
@@ -431,8 +431,8 @@ class CartDiscountSyncIT {
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
+            .errorCallback((exception, oldResource, newResource, actions) -> {
+                errorMessages.add(exception.getMessage());
                 exceptions.add(exception);
             })
             .build();
@@ -486,8 +486,8 @@ class CartDiscountSyncIT {
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
+            .errorCallback((exception, oldResource, newResource, actions) -> {
+                errorMessages.add(exception.getMessage());
                 exceptions.add(exception);
             })
             .build();
@@ -637,8 +637,8 @@ class CartDiscountSyncIT {
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
             .of(spyClient)
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
+            .errorCallback((exception, oldResource, newResource, actions) -> {
+                errorMessages.add(exception.getMessage());
                 exceptions.add(exception);
             })
             .build();
@@ -704,8 +704,8 @@ class CartDiscountSyncIT {
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
             .of(spyClient)
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
+            .errorCallback((exception, oldResource, newResource, actions) -> {
+                errorMessages.add(exception.getMessage());
                 exceptions.add(exception);
             })
             .build();

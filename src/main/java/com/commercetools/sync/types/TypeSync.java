@@ -1,6 +1,7 @@
 package com.commercetools.sync.types;
 
 import com.commercetools.sync.commons.BaseSync;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import com.commercetools.sync.types.helpers.TypeSyncStatistics;
@@ -159,8 +160,30 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      */
     private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
                              final int failedTimes) {
+        SyncException syncException = exception != null ? new SyncException(errorMessage, exception)
+            : new SyncException(errorMessage);
+        syncOptions.applyErrorCallback(syncException);
+        statistics.incrementFailed(failedTimes);
+    }
 
-        syncOptions.applyErrorCallback(errorMessage, exception);
+    /**
+     * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this method calls the
+     * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
+     * incrementing the total number of failed types to sync.
+     *
+     * @param errorMessage The error message describing the reason(s) of failure.
+     * @param exception    The exception that called caused the failure, if any.
+     * @param failedTimes  The number of times that the failed types counter is incremented.
+     * @param oldType       existing type that could be updated.
+     * @param newType       draft containing data that could differ from data in {@code oldType}.
+     * @param updateActions the update actions to update the {@link Type} with.
+     */
+    private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
+        final int failedTimes, @Nullable final Type oldType, @Nullable final TypeDraft newType,
+        @Nullable final List<UpdateAction<Type>> updateActions) {
+        SyncException syncException = exception != null ? new SyncException(errorMessage, exception)
+            : new SyncException(errorMessage);
+        syncOptions.applyErrorCallback(syncException, oldType, newType, updateActions);
         statistics.incrementFailed(failedTimes);
     }
 
@@ -204,7 +227,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
         @Nonnull final TypeDraft typeDraft) {
 
         return syncOptions
-            .applyBeforeCreateCallBack(typeDraft)
+            .applyBeforeCreateCallback(typeDraft)
             .map(draft -> typeService
                 .createType(draft)
                 .thenApply(typeOptional -> {
@@ -228,7 +251,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
         final List<UpdateAction<Type>> updateActions = buildActions(oldType, newType, syncOptions);
 
         final List<UpdateAction<Type>> updateActionsAfterCallback =
-            syncOptions.applyBeforeUpdateCallBack(updateActions, newType, oldType);
+            syncOptions.applyBeforeUpdateCallback(updateActions, newType, oldType);
 
         if (!updateActionsAfterCallback.isEmpty()) {
             return updateType(oldType, newType, updateActionsAfterCallback);
@@ -272,7 +295,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
                             final String errorMessage =
                                 format(CTP_TYPE_UPDATE_FAILED, newType.getKey(),
                                     sphereException.getMessage());
-                            handleError(errorMessage, sphereException, 1);
+                            handleError(errorMessage, sphereException, 1, oldType, newType, updateActions);
                             return CompletableFuture.completedFuture(Optional.empty());
                         });
                 } else {
@@ -298,7 +321,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
                 if (exception != null) {
                     final String errorMessage = format(CTP_TYPE_UPDATE_FAILED, key,
                         "Failed to fetch from CTP while retrying after concurrency modification.");
-                    handleError(errorMessage, exception, 1);
+                    handleError(errorMessage, exception, 1, oldType, newType, null);
                     return CompletableFuture.completedFuture(null);
                 }
 
@@ -309,7 +332,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
                             format(CTP_TYPE_UPDATE_FAILED, key,
                                 "Not found when attempting to fetch while retrying "
                                     + "after concurrency modification.");
-                        handleError(errorMessage, null, 1);
+                        handleError(errorMessage, null, 1, oldType, newType, null);
                         return CompletableFuture.completedFuture(null);
                     });
             });

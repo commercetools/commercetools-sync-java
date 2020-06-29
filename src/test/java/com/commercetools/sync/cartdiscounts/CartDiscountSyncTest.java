@@ -69,8 +69,8 @@ class CartDiscountSyncTest {
 
         final CartDiscountSyncOptions syncOptions = CartDiscountSyncOptionsBuilder
             .of(mock(SphereClient.class))
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
+            .errorCallback((exception, oldResource, newResource, actions) -> {
+                errorMessages.add(exception.getMessage());
                 exceptions.add(exception);
             })
             .build();
@@ -128,8 +128,8 @@ class CartDiscountSyncTest {
             .sync(singletonList(newCartDiscount)).toCompletableFuture().join();
 
         // assertion
-        verify(spyCartDiscountSyncOptions).applyBeforeCreateCallBack(newCartDiscount);
-        verify(spyCartDiscountSyncOptions, never()).applyBeforeUpdateCallBack(any(), any(), any());
+        verify(spyCartDiscountSyncOptions).applyBeforeCreateCallback(newCartDiscount);
+        verify(spyCartDiscountSyncOptions, never()).applyBeforeUpdateCallback(any(), any(), any());
     }
 
     @Test
@@ -156,8 +156,8 @@ class CartDiscountSyncTest {
             .sync(singletonList(newCartDiscount)).toCompletableFuture().join();
 
         // assertion
-        verify(spyCartDiscountSyncOptions).applyBeforeUpdateCallBack(any(), any(), any());
-        verify(spyCartDiscountSyncOptions, never()).applyBeforeCreateCallBack(newCartDiscount);
+        verify(spyCartDiscountSyncOptions).applyBeforeUpdateCallback(any(), any(), any());
+        verify(spyCartDiscountSyncOptions, never()).applyBeforeCreateCallback(newCartDiscount);
     }
 
     @Test
@@ -170,8 +170,8 @@ class CartDiscountSyncTest {
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
                 .of(mock(SphereClient.class))
-                .errorCallback((errorMessage, exception) -> {
-                    errorMessages.add(errorMessage);
+                .errorCallback((exception, oldResource, newResource, actions) -> {
+                    errorMessages.add(exception.getMessage());
                     exceptions.add(exception);
                 })
                 .build();
@@ -209,8 +209,8 @@ class CartDiscountSyncTest {
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
             .of(mock(SphereClient.class))
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
+            .errorCallback((exception, oldResource, newResource, actions) -> {
+                errorMessages.add(exception.getMessage());
                 exceptions.add(exception);
             })
             .build();

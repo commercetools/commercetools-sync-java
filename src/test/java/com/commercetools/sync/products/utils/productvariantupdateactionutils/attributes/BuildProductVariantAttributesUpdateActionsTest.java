@@ -6,6 +6,7 @@ import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
+import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.attributes.Attribute;
@@ -46,13 +47,16 @@ import static org.mockito.Mockito.when;
 
 class BuildProductVariantAttributesUpdateActionsTest {
 
+    private final Product oldProduct = mock(Product.class);
+    private final ProductDraft newProductDraft = mock(ProductDraft.class);
     private final ProductVariant oldProductVariant = mock(ProductVariant.class);
     private final ProductVariantDraft newProductVariant = mock(ProductVariantDraft.class);
     private List<String> errorMessages;
-    private final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                            .errorCallback((msg, throwable) ->
-                                                                                errorMessages.add(msg))
-                                                                            .build();
+    private final ProductSyncOptions syncOptions =
+        ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+            .errorCallback((exception, oldResource, newResource, updateActions) ->
+                errorMessages.add(exception.getMessage()))
+            .build();
 
     @BeforeEach
     void setupMethod() {
@@ -66,8 +70,8 @@ class BuildProductVariantAttributesUpdateActionsTest {
         when(oldProductVariant.getAttributes()).thenReturn(emptyList());
 
         // Test
-        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions("foo",
-            oldProductVariant, newProductVariant, new HashMap<>(), syncOptions);
+        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(oldProduct,
+            newProductDraft, oldProductVariant, newProductVariant, new HashMap<>(), syncOptions);
 
         // Assertion
         assertThat(updateActions).isEmpty();
@@ -78,6 +82,7 @@ class BuildProductVariantAttributesUpdateActionsTest {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
+        when(oldProduct.getKey()).thenReturn(productKey);
         final List<AttributeDraft> newAttributes = asList(
             AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build(), null);
         when(newProductVariant.getAttributes()).thenReturn(newAttributes);
@@ -98,8 +103,8 @@ class BuildProductVariantAttributesUpdateActionsTest {
         attributesMetaData.put(TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
 
         // Test
-        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(productKey,
-            oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
+        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(oldProduct,
+            newProductDraft, oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
 
         // Assertion
         assertThat(updateActions).containsExactly(SetAttribute.ofUnsetAttribute(oldProductVariant.getId(),
@@ -113,14 +118,15 @@ class BuildProductVariantAttributesUpdateActionsTest {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
+        when(oldProduct.getKey()).thenReturn(productKey);
         when(oldProductVariant.getAttributes()).thenReturn(emptyList());
         when(oldProductVariant.getKey()).thenReturn(variantKey);
         when(newProductVariant.getAttributes()).thenReturn(emptyList());
         when(newProductVariant.getKey()).thenReturn(variantKey);
 
         // Test
-        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(productKey,
-            oldProductVariant, newProductVariant, new HashMap<>(), syncOptions);
+        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(oldProduct,
+            newProductDraft, oldProductVariant, newProductVariant, new HashMap<>(), syncOptions);
 
         // Assertion
         assertThat(updateActions).isEmpty();
@@ -131,6 +137,7 @@ class BuildProductVariantAttributesUpdateActionsTest {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
+        when(oldProduct.getKey()).thenReturn(productKey);
         final List<AttributeDraft> newAttributes = asList(
             AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build(),
             AttributeDraftBuilder.of(TEXT_ATTRIBUTE_BAR).build());
@@ -152,8 +159,8 @@ class BuildProductVariantAttributesUpdateActionsTest {
         attributesMetaData.put(TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
 
         // Test
-        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(productKey,
-            oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
+        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(oldProduct,
+            newProductDraft, oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
 
         // Assertion
         assertThat(updateActions).isEmpty();
@@ -164,6 +171,7 @@ class BuildProductVariantAttributesUpdateActionsTest {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
+        when(oldProduct.getKey()).thenReturn(productKey);
         final List<AttributeDraft> newAttributes = asList(
             AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build(),
             AttributeDraftBuilder.of(TEXT_ATTRIBUTE_BAR).build());
@@ -184,8 +192,8 @@ class BuildProductVariantAttributesUpdateActionsTest {
         attributesMetaData.put(TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
 
         // Test
-        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(productKey,
-            oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
+        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(oldProduct,
+            newProductDraft, oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
 
 
         // Assertion
@@ -200,6 +208,7 @@ class BuildProductVariantAttributesUpdateActionsTest {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
+        when(oldProduct.getKey()).thenReturn(productKey);
         final List<AttributeDraft> newAttributes = asList(
             AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build(),
             AttributeDraftBuilder.of(TEXT_ATTRIBUTE_BAR).build(),
@@ -226,8 +235,8 @@ class BuildProductVariantAttributesUpdateActionsTest {
         attributesMetaData.put(TIME_ATTRIBUTE_10_08_46.getName(), AttributeMetaData.of(timeAttributeDefinition));
 
         // Test
-        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(productKey,
-            oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
+        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(oldProduct,
+            newProductDraft, oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
 
         // Assertion
         assertThat(updateActions).containsExactly(
@@ -240,6 +249,7 @@ class BuildProductVariantAttributesUpdateActionsTest {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
+        when(oldProduct.getKey()).thenReturn(productKey);
         when(newProductVariant.getAttributes()).thenReturn(null);
         when(newProductVariant.getKey()).thenReturn(variantKey);
 
@@ -258,8 +268,8 @@ class BuildProductVariantAttributesUpdateActionsTest {
         attributesMetaData.put(TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
 
         // Test
-        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(productKey,
-            oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
+        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(oldProduct,
+            newProductDraft, oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
 
         // Assertion
         assertThat(updateActions).containsExactly(
@@ -273,6 +283,7 @@ class BuildProductVariantAttributesUpdateActionsTest {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
+        when(oldProduct.getKey()).thenReturn(productKey);
         when(newProductVariant.getAttributes()).thenReturn(null);
         when(newProductVariant.getKey()).thenReturn(variantKey);
 
@@ -294,8 +305,8 @@ class BuildProductVariantAttributesUpdateActionsTest {
         attributesMetaData.put(TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
 
         // Test
-        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(productKey,
-            oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
+        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(oldProduct,
+            newProductDraft, oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
 
         // Assertion
         assertThat(updateActions).containsExactly(
@@ -309,6 +320,7 @@ class BuildProductVariantAttributesUpdateActionsTest {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
+        when(oldProduct.getKey()).thenReturn(productKey);
         when(newProductVariant.getAttributes()).thenReturn(emptyList());
         when(newProductVariant.getKey()).thenReturn(variantKey);
 
@@ -327,8 +339,8 @@ class BuildProductVariantAttributesUpdateActionsTest {
         attributesMetaData.put(TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
 
         // Test
-        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(productKey,
-            oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
+        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(oldProduct,
+            newProductDraft, oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
 
         // Assertion
         assertThat(updateActions).containsExactly(
@@ -342,6 +354,7 @@ class BuildProductVariantAttributesUpdateActionsTest {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
+        when(oldProduct.getKey()).thenReturn(productKey);
         when(newProductVariant.getAttributes()).thenReturn(emptyList());
         when(newProductVariant.getKey()).thenReturn(variantKey);
 
@@ -352,8 +365,8 @@ class BuildProductVariantAttributesUpdateActionsTest {
         final HashMap<String, AttributeMetaData> attributesMetaData = new HashMap<>();
 
         // Test
-        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(productKey,
-            oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
+        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(oldProduct,
+            newProductDraft, oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
 
         // Assertion
         assertThat(updateActions).isEmpty();
@@ -369,6 +382,7 @@ class BuildProductVariantAttributesUpdateActionsTest {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
+        when(oldProduct.getKey()).thenReturn(productKey);
         final List<AttributeDraft> newAttributes =
             singletonList(AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build());
         when(newProductVariant.getAttributes()).thenReturn(newAttributes);
@@ -389,8 +403,8 @@ class BuildProductVariantAttributesUpdateActionsTest {
         attributesMetaData.put(TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
 
         // Test
-        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(productKey,
-            oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
+        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(oldProduct,
+            newProductDraft, oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
 
         // Assertion
         assertThat(updateActions).containsExactly(
@@ -403,6 +417,7 @@ class BuildProductVariantAttributesUpdateActionsTest {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
+        when(oldProduct.getKey()).thenReturn(productKey);
         final List<AttributeDraft> newAttributes =
             singletonList(AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build());
         when(newProductVariant.getAttributes()).thenReturn(newAttributes);
@@ -423,8 +438,8 @@ class BuildProductVariantAttributesUpdateActionsTest {
         attributesMetaData.put(TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
 
         // Test
-        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(productKey,
-            oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
+        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(oldProduct,
+            newProductDraft, oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
 
         // Assertion
         assertThat(updateActions).containsExactlyInAnyOrder(
@@ -438,6 +453,7 @@ class BuildProductVariantAttributesUpdateActionsTest {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
+        when(oldProduct.getKey()).thenReturn(productKey);
         final List<AttributeDraft> newAttributes =
             singletonList(AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build());
         when(newProductVariant.getAttributes()).thenReturn(newAttributes);
@@ -454,8 +470,8 @@ class BuildProductVariantAttributesUpdateActionsTest {
         attributesMetaData.put(TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
 
         // Test
-        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(productKey,
-            oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
+        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(oldProduct,
+            newProductDraft, oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
 
         // Assertion
         assertThat(updateActions).containsExactly(
@@ -471,6 +487,7 @@ class BuildProductVariantAttributesUpdateActionsTest {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
+        when(oldProduct.getKey()).thenReturn(productKey);
         final List<AttributeDraft> newAttributes =
             singletonList(AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build());
         when(newProductVariant.getAttributes()).thenReturn(newAttributes);
@@ -483,8 +500,8 @@ class BuildProductVariantAttributesUpdateActionsTest {
         final HashMap<String, AttributeMetaData> attributesMetaData = new HashMap<>();
 
         // Test
-        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(productKey,
-            oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
+        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(oldProduct,
+            newProductDraft, oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
 
         // Assertion
         assertThat(updateActions).isEmpty();
@@ -500,6 +517,7 @@ class BuildProductVariantAttributesUpdateActionsTest {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
+        when(oldProduct.getKey()).thenReturn(productKey);
         final List<AttributeDraft> newAttributes = asList(
             AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build(),
             AttributeDraftBuilder.of(TEXT_ATTRIBUTE_FOO).build());
@@ -521,8 +539,8 @@ class BuildProductVariantAttributesUpdateActionsTest {
         attributesMetaData.put(TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
 
         // Test
-        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(productKey,
-            oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
+        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(oldProduct,
+            newProductDraft, oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
 
         // Assertion
         assertThat(updateActions).containsExactlyInAnyOrder(
@@ -536,6 +554,7 @@ class BuildProductVariantAttributesUpdateActionsTest {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
+        when(oldProduct.getKey()).thenReturn(productKey);
         final List<AttributeDraft> newAttributes = asList(
             AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build(),
             AttributeDraftBuilder.of(TEXT_ATTRIBUTE_FOO).build());
@@ -553,8 +572,8 @@ class BuildProductVariantAttributesUpdateActionsTest {
         attributesMetaData.put(TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
 
         // Test
-        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(productKey,
-            oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
+        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(oldProduct,
+            newProductDraft, oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
 
         // Assertion
         assertThat(updateActions).containsExactly(
@@ -570,6 +589,7 @@ class BuildProductVariantAttributesUpdateActionsTest {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
+        when(oldProduct.getKey()).thenReturn(productKey);
         final List<AttributeDraft> newAttributes = asList(
             AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build(),
             AttributeDraftBuilder.of(TEXT_ATTRIBUTE_FOO).build());
@@ -591,8 +611,8 @@ class BuildProductVariantAttributesUpdateActionsTest {
         attributesMetaData.put(TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
 
         // Test
-        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(productKey,
-            oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
+        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(oldProduct,
+            newProductDraft, oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
 
         // Assertion
         assertThat(updateActions).containsExactly(
@@ -605,6 +625,7 @@ class BuildProductVariantAttributesUpdateActionsTest {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
+        when(oldProduct.getKey()).thenReturn(productKey);
         final List<AttributeDraft> newAttributes = asList(
             AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build(),
             AttributeDraftBuilder.of(TEXT_ATTRIBUTE_FOO).build());
@@ -618,8 +639,8 @@ class BuildProductVariantAttributesUpdateActionsTest {
         final HashMap<String, AttributeMetaData> attributesMetaData = new HashMap<>();
 
         // Test
-        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(productKey,
-            oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
+        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(oldProduct,
+            newProductDraft, oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
 
         // Assertion
         assertThat(updateActions).isEmpty();
@@ -635,6 +656,7 @@ class BuildProductVariantAttributesUpdateActionsTest {
         // Preparation
         final String productKey = "foo";
         final String variantKey = "foo";
+        when(oldProduct.getKey()).thenReturn(productKey);
         final List<AttributeDraft> newAttributes =
             singletonList(AttributeDraftBuilder.of(BOOLEAN_ATTRIBUTE_TRUE).build());
         when(newProductVariant.getAttributes()).thenReturn(newAttributes);
@@ -655,8 +677,8 @@ class BuildProductVariantAttributesUpdateActionsTest {
         attributesMetaData.put(TEXT_ATTRIBUTE_BAR.getName(), AttributeMetaData.of(textAttributeDefinition));
 
         // Test
-        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(productKey,
-            oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
+        final List<UpdateAction<Product>> updateActions = buildProductVariantAttributesUpdateActions(oldProduct,
+            newProductDraft, oldProductVariant, newProductVariant, attributesMetaData, syncOptions);
 
         // Assertion
         assertThat(updateActions).containsExactly(

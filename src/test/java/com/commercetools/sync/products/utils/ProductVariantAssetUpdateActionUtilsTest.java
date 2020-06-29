@@ -428,10 +428,11 @@ class ProductVariantAssetUpdateActionUtilsTest {
 
         final List<String> errors = new ArrayList<>();
 
-        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                          .errorCallback((errorMessage, throwable) ->
-                                                                              errors.add(errorMessage))
-                                                                          .build();
+        final ProductSyncOptions syncOptions =
+            ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                .errorCallback((exception, oldResource, newResource, updateActions) ->
+                    errors.add(exception.getMessage()))
+                .build();
 
         final List<UpdateAction<Product>> updateActions =
             buildCustomUpdateActions(1, oldAsset, newAssetDraft, syncOptions);
@@ -476,8 +477,8 @@ class ProductVariantAssetUpdateActionUtilsTest {
         final List<String> errors = new ArrayList<>();
 
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
-                .errorCallback((errorMessage, throwable) ->
-                        errors.add(errorMessage))
+                .errorCallback((exception, oldResource, newResource, actions) ->
+                        errors.add(exception.getMessage()))
                 .build();
         // test
         final List<UpdateAction<Product>> updateActions =
@@ -521,8 +522,8 @@ class ProductVariantAssetUpdateActionUtilsTest {
         final List<String> errors = new ArrayList<>();
 
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
-                .errorCallback((errorMessage, throwable) ->
-                        errors.add(errorMessage))
+                .errorCallback((exception, oldResource, newResource, actions) ->
+                        errors.add(exception.getMessage()))
                 .build();
         // test
         final List<UpdateAction<Product>> updateActions =

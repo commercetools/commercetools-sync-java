@@ -87,10 +87,11 @@ class CategorySyncTest {
         errorCallBackExceptions = new ArrayList<>();
         final SphereClient ctpClient = mock(SphereClient.class);
         categorySyncOptions = CategorySyncOptionsBuilder.of(ctpClient)
-                                                        .errorCallback((errorMessage, exception) -> {
-                                                            errorCallBackMessages.add(errorMessage);
-                                                            errorCallBackExceptions.add(exception);
-                                                        })
+                                                        .errorCallback(
+                                                            (exception, oldResource, newResource, updateActions) -> {
+                                                                errorCallBackMessages.add(exception.getMessage());
+                                                                errorCallBackExceptions.add(exception.getCause());
+                                                            })
                                                         .build();
     }
 
@@ -333,9 +334,9 @@ class CategorySyncTest {
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
             .of(mock(SphereClient.class))
             .errorCallback(
-                (errorMessage, exception) -> {
-                    errorCallBackMessages.add(errorMessage);
-                    errorCallBackExceptions.add(exception);
+                (exception, oldResource, newResource, updateActions) -> {
+                    errorCallBackMessages.add(exception.getMessage());
+                    errorCallBackExceptions.add(exception.getCause());
                 })
             .batchSize(batchSize)
             .build();
@@ -413,9 +414,9 @@ class CategorySyncTest {
 
         final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder
                 .of(mockClient)
-                .errorCallback((errorMessage, exception) -> {
-                    errorCallBackMessages.add(errorMessage);
-                    errorCallBackExceptions.add(exception);
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorCallBackMessages.add(exception.getMessage());
+                    errorCallBackExceptions.add(exception.getCause());
                 })
                 .build();
 
@@ -472,9 +473,9 @@ class CategorySyncTest {
 
         final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder
             .of(mockClient)
-            .errorCallback((errorMessage, exception) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(exception);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
             .build();
 
@@ -528,8 +529,8 @@ class CategorySyncTest {
             .sync(singletonList(categoryDraft)).toCompletableFuture().join();
 
         // assertion
-        verify(spyCategorySyncOptions).applyBeforeCreateCallBack(any());
-        verify(spyCategorySyncOptions, never()).applyBeforeUpdateCallBack(any(), any(), any());
+        verify(spyCategorySyncOptions).applyBeforeCreateCallback(any());
+        verify(spyCategorySyncOptions, never()).applyBeforeUpdateCallback(any(), any(), any());
     }
 
     @Test
@@ -558,7 +559,7 @@ class CategorySyncTest {
             .sync(singletonList(categoryDraft)).toCompletableFuture().join();
 
         // assertion
-        verify(spyCategorySyncOptions).applyBeforeUpdateCallBack(any(), any(), any());
-        verify(spyCategorySyncOptions, never()).applyBeforeCreateCallBack(any());
+        verify(spyCategorySyncOptions).applyBeforeUpdateCallback(any(), any(), any());
+        verify(spyCategorySyncOptions, never()).applyBeforeCreateCallback(any());
     }
 }
