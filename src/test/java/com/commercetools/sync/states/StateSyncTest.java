@@ -1,387 +1,241 @@
 package com.commercetools.sync.states;
 
 import com.commercetools.sync.services.StateService;
+import com.commercetools.sync.services.impl.StateServiceImpl;
 import com.commercetools.sync.states.helpers.StateSyncStatistics;
-import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateDraft;
 import io.sphere.sdk.states.StateDraftBuilder;
 import io.sphere.sdk.states.StateType;
-import org.junit.jupiter.api.AfterEach;
+import io.sphere.sdk.states.queries.StateQuery;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.UUID;
+import java.util.concurrent.CompletionException;
 
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
+import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
-import static java.util.Optional.empty;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 class StateSyncTest {
 
-    private final StateService stateService = mock(StateService.class);
-
-    @AfterEach
-    void cleanup() {
-        reset(stateService);
-    }
-
     @Test
-    void sync_WithInvalidDrafts_ShouldApplyErrorCallbackAndIncrementFailed() {
+    void sync_WithInvalidDrafts_ShouldCompleteWithoutAnyProcessing() {
+        // preparation
+        final SphereClient ctpClient = mock(SphereClient.class);
         final List<String> errors = new ArrayList<>();
-
-        final StateSyncOptions options = StateSyncOptionsBuilder.of(mock(SphereClient.class))
+        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+            .of(ctpClient)
             .errorCallback((msg, error) -> errors.add(msg))
             .build();
-        final StateSync sync = new StateSync(options, stateService);
 
-        final StateDraft withoutKeyDraft = StateDraftBuilder.of(null, StateType.LINE_ITEM_STATE).build();
+        final StateService stateService = mock(StateService.class);
+        final StateSync stateSync = new StateSync(stateSyncOptions, stateService);
 
-        StateSyncStatistics result = sync.sync(asList(null, withoutKeyDraft)).toCompletableFuture().join();
-
-        assertAll(
-            () -> assertThat(result.getProcessed().get()).isEqualTo(2),
-            () -> assertThat(result.getFailed().get()).isEqualTo(2),
-            () -> assertThat(errors).hasSize(2),
-            () -> assertThat(errors)
-                .contains("Failed to process null state draft.", "Failed to process state draft without key.")
-        );
-        verifyNoMoreInteractions(stateService);
-    }
-
-    @Test
-    void sync_WithErrorFetchingExistingKeys_ShouldApplyErrorCallbackAndIncrementFailed() {
-        final List<String> errors = new ArrayList<>();
-
-        final StateSyncOptions options = StateSyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallback((msg, error) -> errors.add(msg))
+        final StateDraft stateDraftWithoutKey = StateDraftBuilder
+            .of(null, StateType.LINE_ITEM_STATE)
             .build();
-        final StateSync sync = new StateSync(options, stateService);
 
-        final StateDraft draft = StateDraftBuilder.of("someKey", StateType.LINE_ITEM_STATE).build();
+        // test
+        final StateSyncStatistics statistics = stateSync
+            .sync(asList(stateDraftWithoutKey, null))
+            .toCompletableFuture()
+            .join();
 
-        when(stateService.fetchMatchingStatesByKeys(any())).thenReturn(supplyAsync(() -> {
-            throw new SphereException();
-        }));
-
-        StateSyncStatistics result = sync.sync(singletonList(draft)).toCompletableFuture().join();
-
-        assertAll(
-            () -> assertThat(result.getProcessed().get()).isEqualTo(1),
-            () -> assertThat(errors).hasSize(1),
-            () -> assertThat(errors).contains("Failed to fetch existing states with keys: '[someKey]'.")
-        );
-        verify(stateService, times(1)).fetchMatchingStatesByKeys(any());
+        // assertion
+        verifyNoMoreInteractions(ctpClient);
         verifyNoMoreInteractions(stateService);
+        assertThat(errors).hasSize(2);
+        assertThat(errors).containsExactly(
+            "StateDraft with name: null doesn't have a key. "
+                + "Please make sure all state transitions have keys.",
+            "StateDraft is null.");
+
+        assertThat(statistics).hasValues(2, 0, 0, 2, 0);
     }
 
     @Test
-    void sync_WithErrorCreating_ShouldIncrementFailedButNotApplyErrorCallback() {
-        final List<String> errors = new ArrayList<>();
-
-        final StateSyncOptions options = StateSyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallback((msg, error) -> errors.add(msg))
+    void sync_WithErrorCachingKeys_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+        // preparation
+        final StateDraft stateDraft = StateDraftBuilder
+            .of("state-1", StateType.LINE_ITEM_STATE)
             .build();
-        final StateSync sync = new StateSync(options, stateService);
 
-        final StateDraft draft = StateDraftBuilder.of("key", StateType.LINE_ITEM_STATE).build();
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
 
-        when(stateService.fetchMatchingStatesByKeys(any())).thenReturn(completedFuture(emptySet()));
-        when(stateService.createState(any())).thenReturn(completedFuture(empty()));
-
-        StateSyncStatistics result = sync.sync(singletonList(draft)).toCompletableFuture().join();
-
-        assertAll(
-            () -> assertThat(result.getProcessed().get()).isEqualTo(1),
-            () -> assertThat(result.getFailed().get()).isEqualTo(1),
-            () -> assertThat(errors).isEmpty()
-        );
-        verify(stateService, times(1)).fetchMatchingStatesByKeys(any());
-        verify(stateService, times(1)).createState(any());
-        verifyNoMoreInteractions(stateService);
-    }
-
-    @Test
-    void sync_WithErrorFetchingTransitionsKeys_ShouldApplyBeforeCreateCallbackAndIncrementBothCreatedAndFailed() {
-        final AtomicBoolean callbackApplied = new AtomicBoolean(false);
-
-        final StateSyncOptions options = StateSyncOptionsBuilder.of(mock(SphereClient.class))
-            .beforeCreateCallback((draft) -> {
-                callbackApplied.set(true);
-                return draft;
+        final StateSyncOptions syncOptions = StateSyncOptionsBuilder
+            .of(mock(SphereClient.class))
+            .errorCallback((errorMessage, exception) -> {
+                errorMessages.add(errorMessage);
+                exceptions.add(exception);
             })
             .build();
-        final StateSync sync = new StateSync(options, stateService);
 
-        final StateDraft draft = StateDraftBuilder.of("key", StateType.LINE_ITEM_STATE).build();
-        final State state = mock(State.class);
+        final StateService stateService = spy(new StateServiceImpl(syncOptions));
+        when(stateService.cacheKeysToIds(anySet()))
+            .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
 
-        when(stateService.fetchMatchingStatesByKeys(any())).thenReturn(completedFuture(emptySet()));
-        when(stateService.createState(any())).thenReturn(completedFuture(Optional.of(state)));
-        when(stateService.fetchMatchingStatesByKeysWithTransitions(any())).thenReturn(completedFuture(emptySet()));
+        final StateSync stateSync = new StateSync(syncOptions, stateService);
 
-        StateSyncStatistics result = sync.sync(singletonList(draft)).toCompletableFuture().join();
+        // test
+        final StateSyncStatistics stateSyncStatistics = stateSync
+            .sync(singletonList(stateDraft))
+            .toCompletableFuture().join();
 
-        assertAll(
-            () -> assertThat(result.getProcessed().get()).isEqualTo(1),
-            () -> assertThat(result.getCreated().get()).isEqualTo(1),
-            () -> assertThat(result.getFailed().get()).isEqualTo(1),
-            () -> assertThat(callbackApplied.get()).isTrue()
-        );
-        verify(stateService, times(1)).fetchMatchingStatesByKeys(any());
-        verify(stateService, times(1)).createState(any());
-        verify(stateService, times(1)).fetchMatchingStatesByKeysWithTransitions(any());
-        verifyNoMoreInteractions(stateService);
+        // assertions
+        assertThat(errorMessages)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(message ->
+                assertThat(message).contains("Failed to build a cache of state keys to ids.")
+            );
+
+        assertThat(exceptions)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(throwable -> {
+                assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
+                assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
+            });
+
+        assertThat(stateSyncStatistics).hasValues(1, 0, 0, 1);
     }
 
     @Test
-    void sync_WithNoError_ShouldIncrementCreatedAndUpdated() {
-        final StateSyncOptions options = StateSyncOptionsBuilder.of(mock(SphereClient.class)).build();
-        final StateSync sync = new StateSync(options, stateService);
-
-        final State ref = mock(State.class);
-        when(ref.getId()).thenReturn("id");
-        when(ref.getKey()).thenReturn("key");
-
-        final Set<Reference<State>> newTransitions = new HashSet<>(singletonList(
-            State.referenceOfId("id").filled(ref)));
-
-        final StateDraft draft = StateDraftBuilder.of("key", StateType.LINE_ITEM_STATE)
-            .transitions(newTransitions)
+    void sync_WithErrorFetchingExistingKeys_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+        // preparation
+        final StateDraft stateDraft = StateDraftBuilder
+            .of("state-1", StateType.LINE_ITEM_STATE)
             .build();
 
-        final State state = mock(State.class);
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
 
-        when(stateService.fetchMatchingStatesByKeys(any())).thenReturn(completedFuture(emptySet()));
-        when(stateService.createState(any())).thenReturn(completedFuture(Optional.of(state)));
-        when(stateService.fetchMatchingStatesByKeysWithTransitions(any()))
-            .thenReturn(completedFuture(new HashSet<>(singletonList(ref))));
-        when(stateService.updateState(any(), any())).thenReturn(completedFuture(ref));
+        final SphereClient mockClient = mock(SphereClient.class);
+        when(mockClient.execute(any(StateQuery.class)))
+                .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
 
-        StateSyncStatistics result = sync.sync(singletonList(draft)).toCompletableFuture().join();
-
-        assertAll(
-            () -> assertThat(result.getProcessed().get()).isEqualTo(1),
-            () -> assertThat(result.getCreated().get()).isEqualTo(1),
-            () -> assertThat(result.getFailed().get()).isEqualTo(0),
-            () -> assertThat(result.getUpdated().get()).isEqualTo(1)
-        );
-        verify(stateService, times(1)).fetchMatchingStatesByKeys(any());
-        verify(stateService, times(1)).createState(any());
-        verify(stateService, times(1)).fetchMatchingStatesByKeysWithTransitions(any());
-        verify(stateService, times(1)).updateState(any(), any());
-        verifyNoMoreInteractions(stateService);
-    }
-
-    @Test
-    void sync_WithErrorFetchingTransitionsKeys_ShouldApplyErrorCallbackAndIncrementBothCreatedAndFailed() {
-        final List<String> errors = new ArrayList<>();
-
-        final StateSyncOptions options = StateSyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallback((msg, error) -> errors.add(msg))
-            .build();
-        final StateSync sync = new StateSync(options, stateService);
-
-        final State ref = mock(State.class);
-        when(ref.getId()).thenReturn("id");
-        when(ref.getKey()).thenReturn("key");
-
-        final Set<Reference<State>> newTransitions = new HashSet<>(singletonList(State.referenceOfId("id1")));
-        final Set<Reference<State>> oldTransitions = new HashSet<>(singletonList(State.referenceOfId("id2")));
-
-        final StateDraft draft = StateDraftBuilder.of("key", StateType.LINE_ITEM_STATE)
-            .transitions(newTransitions)
-            .build();
-
-        final State state = mock(State.class);
-        when(state.getTransitions()).thenReturn(oldTransitions);
-
-        when(stateService.fetchMatchingStatesByKeys(any())).thenReturn(completedFuture(emptySet()));
-        when(stateService.createState(any())).thenReturn(completedFuture(Optional.of(state)));
-        when(stateService.fetchMatchingStatesByKeysWithTransitions(any()))
-            .thenReturn(completedFuture(new HashSet<>(singletonList(ref))));
-
-        StateSyncStatistics result = sync.sync(singletonList(draft)).toCompletableFuture().join();
-
-        assertAll(
-            () -> assertThat(result.getProcessed().get()).isEqualTo(1),
-            () -> assertThat(result.getCreated().get()).isEqualTo(1),
-            () -> assertThat(result.getFailed().get()).isEqualTo(1),
-            () -> assertThat(result.getUpdated().get()).isEqualTo(0),
-            () -> assertThat(errors).hasSize(1)
-        );
-        verify(stateService, times(1)).fetchMatchingStatesByKeys(any());
-        verify(stateService, times(1)).createState(any());
-        verify(stateService, times(1)).fetchMatchingStatesByKeysWithTransitions(any());
-        verifyNoMoreInteractions(stateService);
-    }
-
-    @Test
-    void sync_WithErrorUpdating_ShouldApplyErrorCallbackAndIncrementFailed() {
-        final List<String> errors = new ArrayList<>();
-
-        final StateSyncOptions options = StateSyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallback((msg, error) -> errors.add(msg))
-            .build();
-        final StateSync sync = new StateSync(options, stateService);
-
-        final StateDraft draft = StateDraftBuilder.of("key", StateType.LINE_ITEM_STATE).initial(true).build();
-
-        final State state = mock(State.class);
-        when(state.getKey()).thenReturn("key");
-
-        when(stateService.fetchMatchingStatesByKeys(any()))
-            .thenReturn(completedFuture(new HashSet<>(singletonList(state))));
-        when(stateService.updateState(any(), any())).thenReturn(supplyAsync(() -> {
-            throw new SphereException();
-        }));
-
-        StateSyncStatistics result = sync.sync(singletonList(draft)).toCompletableFuture().join();
-
-        assertAll(
-            () -> assertThat(result.getProcessed().get()).isEqualTo(1),
-            () -> assertThat(result.getUpdated().get()).isEqualTo(0),
-            () -> assertThat(result.getFailed().get()).isEqualTo(1),
-            () -> assertThat(errors).hasSize(1)
-        );
-        verify(stateService, times(1)).fetchMatchingStatesByKeys(any());
-        verify(stateService, times(1)).updateState(any(), any());
-        verifyNoMoreInteractions(stateService);
-    }
-
-    @Test
-    void sync_WithErrorUpdatingAndTryingToRecoverWithFetchException_ShouldApplyErrorCallbackAndIncrementFailed() {
-        final List<String> errors = new ArrayList<>();
-
-        final StateSyncOptions options = StateSyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallback((msg, error) -> errors.add(msg))
-            .build();
-        final StateSync sync = new StateSync(options, stateService);
-
-        final StateDraft draft = StateDraftBuilder.of("key", StateType.LINE_ITEM_STATE).initial(true).build();
-
-        final State state = mock(State.class);
-        when(state.getKey()).thenReturn("key");
-
-        when(stateService.fetchMatchingStatesByKeys(any()))
-            .thenReturn(completedFuture(new HashSet<>(singletonList(state))));
-        when(stateService.updateState(any(), any())).thenReturn(supplyAsync(() -> {
-            throw new ConcurrentModificationException();
-        }));
-        when(stateService.fetchState(any())).thenReturn(supplyAsync(() -> {
-            throw new SphereException();
-        }));
-
-        StateSyncStatistics result = sync.sync(singletonList(draft)).toCompletableFuture().join();
-
-        assertAll(
-            () -> assertThat(result.getProcessed().get()).isEqualTo(1),
-            () -> assertThat(result.getUpdated().get()).isEqualTo(0),
-            () -> assertThat(result.getFailed().get()).isEqualTo(1),
-            () -> assertThat(errors).hasSize(1),
-            () -> assertThat(errors).hasOnlyOneElementSatisfying(msg -> assertThat(msg)
-                .contains("Failed to fetch from CTP while retrying after concurrency modification."))
-        );
-        verify(stateService, times(1)).fetchMatchingStatesByKeys(any());
-        verify(stateService, times(1)).updateState(any(), any());
-        verify(stateService, times(1)).fetchState(any());
-        verifyNoMoreInteractions(stateService);
-    }
-
-    @Test
-    void sync_WithErrorUpdatingAndTryingToRecoverWithEmptyResponse_ShouldApplyErrorCallbackAndIncrementFailed() {
-        final List<String> errors = new ArrayList<>();
-
-        final StateSyncOptions options = StateSyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallback((msg, error) -> errors.add(msg))
-            .build();
-        final StateSync sync = new StateSync(options, stateService);
-
-        final StateDraft draft = StateDraftBuilder.of("key", StateType.LINE_ITEM_STATE).initial(true).build();
-
-        final State state = mock(State.class);
-        when(state.getKey()).thenReturn("key");
-
-        when(stateService.fetchMatchingStatesByKeys(any()))
-            .thenReturn(completedFuture(new HashSet<>(singletonList(state))));
-        when(stateService.updateState(any(), any())).thenReturn(supplyAsync(() -> {
-            throw new ConcurrentModificationException();
-        }));
-        when(stateService.fetchState(any())).thenReturn(completedFuture(Optional.empty()));
-
-        StateSyncStatistics result = sync.sync(singletonList(draft)).toCompletableFuture().join();
-
-        assertAll(
-            () -> assertThat(result.getProcessed().get()).isEqualTo(1),
-            () -> assertThat(result.getUpdated().get()).isEqualTo(0),
-            () -> assertThat(result.getFailed().get()).isEqualTo(1),
-            () -> assertThat(errors).hasSize(1),
-            () -> assertThat(errors).hasOnlyOneElementSatisfying(msg -> assertThat(msg)
-                .contains("Not found when attempting to fetch while retrying after "
-                    + "concurrency modification."))
-        );
-        verify(stateService, times(1)).fetchMatchingStatesByKeys(any());
-        verify(stateService, times(1)).updateState(any(), any());
-        verify(stateService, times(1)).fetchState(any());
-        verifyNoMoreInteractions(stateService);
-    }
-
-    @Test
-    void sync_WithNoError_ShouldApplyBeforeUpdateCallbackAndIncrementUpdated() {
-        final AtomicBoolean callbackApplied = new AtomicBoolean(false);
-
-        final StateSyncOptions options = StateSyncOptionsBuilder.of(mock(SphereClient.class))
-            .beforeUpdateCallback((actions, draft, old) -> {
-                callbackApplied.set(true);
-                return actions;
+        final StateSyncOptions syncOptions = StateSyncOptionsBuilder
+            .of(mockClient)
+            .errorCallback((errorMessage, exception) -> {
+                errorMessages.add(errorMessage);
+                exceptions.add(exception);
             })
             .build();
-        final StateSync sync = new StateSync(options, stateService);
 
-        final StateDraft draft = StateDraftBuilder.of("key", StateType.LINE_ITEM_STATE).initial(true).build();
+        final StateService stateService = spy(new StateServiceImpl(syncOptions));
+        final Map<String, String> keyToIds = new HashMap<>();
+        keyToIds.put(stateDraft.getKey(), UUID.randomUUID().toString());
+        when(stateService.cacheKeysToIds(anySet())).thenReturn(completedFuture(keyToIds));
 
-        final State state = mock(State.class);
-        when(state.getId()).thenReturn("id");
-        when(state.getKey()).thenReturn("key");
-        when(state.getTransitions()).thenReturn(null);
+        final StateSync stateSync = new StateSync(syncOptions, stateService);
 
-        when(stateService.fetchMatchingStatesByKeys(any()))
-            .thenReturn(completedFuture(new HashSet<>(singletonList(state))));
-        when(stateService.updateState(any(), any())).thenReturn(completedFuture(state));
-        when(stateService.fetchMatchingStatesByKeysWithTransitions(any()))
-            .thenReturn(completedFuture(new HashSet<>(singletonList(state))));
+        // test
+        final StateSyncStatistics stateSyncStatistics = stateSync
+            .sync(singletonList(stateDraft))
+            .toCompletableFuture().join();
 
-        StateSyncStatistics result = sync.sync(singletonList(draft)).toCompletableFuture().join();
+        // assertions
+        assertThat(errorMessages)
+                .hasSize(1)
+                .hasOnlyOneElementSatisfying(message ->
+                        assertThat(message).contains("Failed to fetch existing states")
+            );
 
-        assertAll(
-            () -> assertThat(result.getProcessed().get()).isEqualTo(1),
-            () -> assertThat(result.getUpdated().get()).isEqualTo(1),
-            () -> assertThat(result.getFailed().get()).isEqualTo(0),
-            () -> assertThat(callbackApplied.get()).isTrue()
-        );
-        verify(stateService, times(1)).fetchMatchingStatesByKeys(any());
-        verify(stateService, times(1)).updateState(any(), any());
-        verify(stateService, times(1)).fetchMatchingStatesByKeysWithTransitions(any());
-        verifyNoMoreInteractions(stateService);
+        assertThat(exceptions)
+                .hasSize(1)
+                .hasOnlyOneElementSatisfying(throwable -> {
+                    assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
+                    assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
+                });
+
+        assertThat(stateSyncStatistics).hasValues(1, 0, 0, 1);
     }
 
+    @Test
+    void sync_WithOnlyDraftsToCreate_ShouldCallBeforeCreateCallback() {
+        // preparation
+        final StateDraft stateDraft = StateDraftBuilder
+            .of("state-1", StateType.LINE_ITEM_STATE)
+            .build();
+
+        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+            .of(mock(SphereClient.class))
+            .build();
+
+        final StateService stateService = mock(StateService.class);
+        when(stateService.cacheKeysToIds(anySet())).thenReturn(completedFuture(emptyMap()));
+        when(stateService.fetchMatchingStatesByKeysWithTransitions(anySet())).thenReturn(completedFuture(emptySet()));
+        when(stateService.createState(any())).thenReturn(completedFuture(Optional.empty()));
+
+        final StateSyncOptions spyStateSyncOptions = spy(stateSyncOptions);
+
+        final StateSync stateSync = new StateSync(spyStateSyncOptions, stateService);
+
+        // test
+        stateSync.sync(singletonList(stateDraft)).toCompletableFuture().join();
+
+        // assertion
+        verify(spyStateSyncOptions).applyBeforeCreateCallBack(any());
+        verify(spyStateSyncOptions, never()).applyBeforeUpdateCallBack(any(), any(), any());
+    }
+
+    @Test
+    void sync_WithOnlyDraftsToUpdate_ShouldOnlyCallBeforeUpdateCallback() {
+        // preparation
+        final StateDraft stateDraft = StateDraftBuilder
+            .of("state-1", StateType.LINE_ITEM_STATE)
+            .name(LocalizedString.ofEnglish("foo"))
+            .transitions(null)
+            .build();
+
+        final State mockedExistingState = mock(State.class);
+        when(mockedExistingState.getKey()).thenReturn(stateDraft.getKey());
+        when(mockedExistingState.getName()).thenReturn(LocalizedString.ofEnglish("bar"));
+        when(mockedExistingState.getTransitions()).thenReturn(null);
+
+        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+            .of(mock(SphereClient.class))
+            .build();
+
+        final StateService stateService = mock(StateService.class);
+        final Map<String, String> keyToIds = new HashMap<>();
+        keyToIds.put(stateDraft.getKey(), UUID.randomUUID().toString());
+        when(stateService.cacheKeysToIds(anySet())).thenReturn(completedFuture(keyToIds));
+        when(stateService.fetchMatchingStatesByKeysWithTransitions(anySet()))
+            .thenReturn(completedFuture(singleton(mockedExistingState)));
+        when(stateService.updateState(any(), any())).thenReturn(completedFuture(mockedExistingState));
+
+        final StateSyncOptions spyStateSyncOptions = spy(stateSyncOptions);
+
+        final StateSync stateSync = new StateSync(spyStateSyncOptions, stateService);
+
+        // test
+        stateSync.sync(singletonList(stateDraft)).toCompletableFuture().join();
+
+        // assertion
+        verify(spyStateSyncOptions).applyBeforeUpdateCallBack(any(), any(), any());
+        verify(spyStateSyncOptions, never()).applyBeforeCreateCallBack(any());
+    }
 }

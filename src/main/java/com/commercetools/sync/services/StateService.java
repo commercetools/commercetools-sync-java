@@ -16,6 +16,22 @@ import java.util.concurrent.CompletionStage;
 public interface StateService {
 
     /**
+     * Filters out the keys which are already cached and fetches only the not-cached state keys from the CTP
+     * project defined in an injected {@link SphereClient} and stores a mapping for every state to id in
+     * the cached map of keys -&gt; ids and returns this cached map.
+     *
+     * <p>Note: If all the supplied keys are already cached, the cached map is returned right away with no request to
+     * CTP.
+     *
+     * @param keys the state keys to fetch and cache the ids for.
+     *
+     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a map of all
+     *          state keys -&gt; ids
+     */
+    @Nonnull
+    CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull Set<String> keys);
+
+    /**
      * Given a {@code key}, this method first checks if a cached map of state keys -&gt; ids is not empty.
      * If not, it returns a completed future that contains an optional that contains what this key maps to in
      * the cache. If the cache is empty, the method populates the cache with the mapping of all state keys to ids
@@ -62,7 +78,7 @@ public interface StateService {
     /**
      * Given a state key, this method fetches a state that matches given key in the CTP project defined in a
      * potentially injected {@link SphereClient}. If there is no matching state an empty {@link Optional} will be
-     * returned in the returned future. A mapping of the key to the id of the fetched category is persisted in an in
+     * returned in the returned future. A mapping of the key to the id of the fetched state is persisted in an in
      * -memory map.
      *
      * @param key the key of the state to fetch.

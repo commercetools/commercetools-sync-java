@@ -1,5 +1,6 @@
 package com.commercetools.sync.states.utils;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.states.State;
@@ -107,8 +108,11 @@ public final class StateUpdateActionUtils {
         @Nonnull final State oldState,
         @Nonnull final StateDraft newState) {
 
-        return buildUpdateAction(oldState.isInitial(), newState.isInitial(),
-            () -> ChangeInitial.of(Optional.ofNullable(newState.isInitial()).orElse(false)));
+        final boolean isNewStateInitial = toBoolean(newState.isInitial());
+        final boolean isOldStateInitial = toBoolean(oldState.isInitial());
+
+        return buildUpdateAction(isOldStateInitial, isNewStateInitial,
+            () -> ChangeInitial.of(isNewStateInitial));
     }
 
     /**
@@ -175,8 +179,13 @@ public final class StateUpdateActionUtils {
         @Nonnull final Map<String, String> keyToId,
         @Nonnull final Consumer<String> errorCallback) {
 
-        boolean emptyNew = newState.getTransitions() == null || newState.getTransitions().isEmpty();
-        boolean emptyOld = oldState.getTransitions() == null || oldState.getTransitions().isEmpty();
+        boolean emptyNew = newState.getTransitions() == null
+            || newState.getTransitions().isEmpty()
+            || newState.getTransitions().stream().noneMatch(Objects::nonNull);
+
+        boolean emptyOld = oldState.getTransitions() == null
+            || oldState.getTransitions().isEmpty()
+            || oldState.getTransitions().stream().noneMatch(Objects::nonNull);
 
         if (emptyNew && emptyOld) {
             return Optional.empty();

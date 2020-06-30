@@ -191,9 +191,7 @@ class StateUpdateActionUtilsTest {
         when(state.getTransitions()).thenReturn(oldTransitions);
 
         final Map<String, String> keyToId = new HashMap<>();
-        final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, newSameStateDraft, keyToId,
-            msg -> {
-            });
+        final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, newSameStateDraft, keyToId);
 
         assertThat(result).contains(SetTransitions.of(emptySet()));
     }
@@ -221,18 +219,18 @@ class StateUpdateActionUtilsTest {
 
     @Test
     void buildSetTransitionsAction_WithSameValues_ShouldReturnEmptyOptional() {
-        final Set<Reference<State>> oldTransitions = new HashSet<>(singletonList(State.referenceOfId("id")
-            .filled(state)));
-        final Set<Reference<State>> newTransitions = new HashSet<>(singletonList(State.referenceOfId("id")
-            .filled(state)));
+        final Set<Reference<State>> oldTransitions = new HashSet<>(asList(
+            State.referenceOfId("state-key-1"),
+            State.referenceOfId("state-key-2")));
+        final Set<Reference<State>> newTransitions = new HashSet<>(asList(
+            State.referenceOfId("state-key-1"),
+            State.referenceOfId("state-key-2")));
 
         when(state.getTransitions()).thenReturn(oldTransitions);
         final StateDraft newDifferent = StateDraft.of(KEY, StateType.LINE_ITEM_STATE).withTransitions(newTransitions);
 
-        final AtomicReference<String> callback = new AtomicReference<>(null);
-
         final Map<String, String> keyToId = new HashMap<>();
-        keyToId.put(KEY, "id");
+        final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, newDifferent, keyToId);
 
         final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, newDifferent, keyToId,
             callback::set);
@@ -265,6 +263,51 @@ class StateUpdateActionUtilsTest {
                 State.referenceOfId("id"))))),
             () -> assertThat(callback.get()).isNull()
         );
+    }
+
+    @Test
+    void buildSetTransitionsAction_WitMissingKeyToIdMap_ShouldReturnAction() {
+        final Set<Reference<State>> oldTransitions = new HashSet<>(asList(
+            State.referenceOfId("old-state-1"),
+            State.referenceOfId("old-state-2")));
+
+        final Set<Reference<State>> newTransitions = new HashSet<>(asList(
+            State.referenceOfId("new-state-1"),
+            State.referenceOfId("new-state-2")));
+
+        when(state.getTransitions()).thenReturn(oldTransitions);
+        final StateDraft newDifferent = StateDraft.of(KEY, StateType.LINE_ITEM_STATE).withTransitions(newTransitions);
+
+        final Map<String, String> keyToId = new HashMap<>();
+        keyToId.put("new-state-1", "id-1");
+
+        final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, newDifferent, keyToId);
+        HashSet<Reference<State>> expectedTransitions = new HashSet<>(singletonList(
+            State.referenceOfId("id-1")));
+        assertThat(result).contains(SetTransitions.of(expectedTransitions));
+    }
+
+    @Test
+    void buildSetTransitionsAction_WitNullTransitions_ShouldReturnAction() {
+        final Set<Reference<State>> oldTransitions = new HashSet<>(asList(
+            State.referenceOfId("old-state-1"),
+            State.referenceOfId("old-state-2")));
+
+        final Set<Reference<State>> newTransitions = new HashSet<>(asList(
+            null,
+            State.referenceOfId("new-state-2")));
+
+        when(state.getTransitions()).thenReturn(oldTransitions);
+        final StateDraft newDifferent = StateDraft.of(KEY, StateType.LINE_ITEM_STATE).withTransitions(newTransitions);
+
+        final Map<String, String> keyToId = new HashMap<>();
+        keyToId.put("new-state-1", "id-1");
+        keyToId.put("new-state-2", "id-2");
+
+        final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, newDifferent, keyToId);
+        HashSet<Reference<State>> expectedTransitions = new HashSet<>(singletonList(
+            State.referenceOfId("id-2")));
+        assertThat(result).contains(SetTransitions.of(expectedTransitions));
     }
 
 }

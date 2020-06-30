@@ -1,22 +1,24 @@
 package com.commercetools.sync.integration.commons.utils;
 
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateDraft;
 import io.sphere.sdk.states.StateDraftBuilder;
+import io.sphere.sdk.states.StateRole;
 import io.sphere.sdk.states.StateType;
 import io.sphere.sdk.states.commands.StateCreateCommand;
 import io.sphere.sdk.states.commands.StateDeleteCommand;
-import io.sphere.sdk.states.queries.StateQuery;
-import io.sphere.sdk.states.queries.StateQueryBuilder;
 import io.sphere.sdk.states.commands.StateUpdateCommand;
 import io.sphere.sdk.states.commands.updateactions.SetTransitions;
+import io.sphere.sdk.states.queries.StateQuery;
+import io.sphere.sdk.states.queries.StateQueryBuilder;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -121,6 +123,59 @@ public final class StateITUtils {
 
         SetTransitions setTransitions = SetTransitions.of(stateTransitions);
         executeBlocking(ctpClient.execute(StateUpdateCommand.of(state, setTransitions)));
+    }
+
+
+    public static void populateTargetProject() {
+        final StateDraft stateDraft2 = StateDraftBuilder.of("state-2-key", StateType.REVIEW_STATE)
+            .name(LocalizedString.ofEnglish("state-2-name"))
+            .description(LocalizedString.ofEnglish("state-2-desc"))
+            .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
+            .initial(false)
+            .build();
+        final State state2 = executeBlocking(CTP_TARGET_CLIENT.execute(StateCreateCommand.of(stateDraft2)));
+
+        final StateDraft stateDraft3 = StateDraftBuilder.of("state-3-key", StateType.REVIEW_STATE)
+            .name(LocalizedString.ofEnglish("state-3-name"))
+            .description(LocalizedString.ofEnglish("state-3-desc"))
+            .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
+            .initial(false)
+            .build();
+        final State state3 = executeBlocking(CTP_TARGET_CLIENT.execute(StateCreateCommand.of(stateDraft3)));
+
+        final Set<Reference<State>> stateTransitions = new HashSet<>();
+        stateTransitions.add(State.referenceOfId(state2.getId()));
+        stateTransitions.add(State.referenceOfId(state3.getId()));
+
+        final StateDraft stateDraft1 = StateDraftBuilder.of("state-1-key", StateType.REVIEW_STATE)
+            .name(LocalizedString.ofEnglish("state-1-name"))
+            .description(LocalizedString.ofEnglish("state-1-desc"))
+            .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
+            .transitions(stateTransitions)
+            .initial(true)
+            .build();
+
+        executeBlocking(CTP_TARGET_CLIENT.execute(StateCreateCommand.of(stateDraft1)));
+    }
+
+    public static void deletePopulatedStates() {
+        final Optional<State> state1 = getStateByKey(CTP_TARGET_CLIENT, "state-1-key");
+        executeBlocking(CTP_TARGET_CLIENT.execute(StateDeleteCommand.of(state1.get())));
+
+        deleteStates(CTP_TARGET_CLIENT);
+    }
+
+
+    public static Optional<State> getStateByKey(
+        @Nonnull final SphereClient sphereClient,
+        @Nonnull final String key) {
+
+        final StateQuery query = StateQueryBuilder
+            .of()
+            .plusPredicates(queryModel -> queryModel.key().is(key))
+            .build();
+
+        return sphereClient.execute(query).toCompletableFuture().join().head();
     }
 
     private StateITUtils() {
