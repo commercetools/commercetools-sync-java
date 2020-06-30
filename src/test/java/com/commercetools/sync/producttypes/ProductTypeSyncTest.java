@@ -1,5 +1,6 @@
 package com.commercetools.sync.producttypes;
 
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
@@ -221,7 +222,7 @@ class ProductTypeSyncTest {
             .of(mock(SphereClient.class))
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorMessages.add(exception.getMessage());
-                exceptions.add(exception.getCause());
+                exceptions.add(exception);
             })
             .build();
 
@@ -250,8 +251,9 @@ class ProductTypeSyncTest {
         assertThat(exceptions)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(throwable -> {
-                assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
-                assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
+                assertThat(throwable).isExactlyInstanceOf(SyncException.class);
+                assertThat(throwable).hasCauseExactlyInstanceOf(CompletionException.class);
+                assertThat(throwable.getCause()).hasCauseExactlyInstanceOf(SphereException.class);
             });
 
         assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
@@ -304,8 +306,9 @@ class ProductTypeSyncTest {
         assertThat(exceptions)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(throwable -> {
-                assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
-                assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
+                assertThat(throwable).isExactlyInstanceOf(SyncException.class);
+                assertThat(throwable).hasCauseExactlyInstanceOf(CompletionException.class);
+                assertThat(throwable.getCause()).hasCauseExactlyInstanceOf(SphereException.class);
             });
 
         assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
@@ -362,8 +365,9 @@ class ProductTypeSyncTest {
         assertThat(exceptions)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(throwable -> {
-                assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
-                assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
+                assertThat(throwable).isExactlyInstanceOf(SyncException.class);
+                assertThat(throwable).hasCauseExactlyInstanceOf(CompletionException.class);
+                assertThat(throwable.getCause()).hasCauseExactlyInstanceOf(SphereException.class);
             });
 
         assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);

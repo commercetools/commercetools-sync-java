@@ -1,7 +1,7 @@
 package com.commercetools.sync.integration.externalsource.producttypes;
 
 
-import com.commercetools.sync.commons.exceptions.InvalidProductTypeDraftException;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.producttypes.ProductTypeSync;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
@@ -349,7 +349,7 @@ class ProductTypeSyncIT {
         assertThat(exceptions)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(throwable -> {
-                assertThat(throwable).isInstanceOf(InvalidProductTypeDraftException.class);
+                assertThat(throwable).isInstanceOf(SyncException.class);
                 assertThat(throwable.getMessage()).isEqualTo(expectedErrorMessage);
             });
 
@@ -388,7 +388,7 @@ class ProductTypeSyncIT {
         assertThat(exceptions)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(throwable -> {
-                assertThat(throwable).isInstanceOf(InvalidProductTypeDraftException.class);
+                assertThat(throwable).isInstanceOf(SyncException.class);
                 assertThat(throwable.getMessage()).isEqualTo("ProductTypeDraft is null.");
             });
 

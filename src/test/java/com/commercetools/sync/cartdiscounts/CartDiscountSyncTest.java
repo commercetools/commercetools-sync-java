@@ -1,6 +1,7 @@
 package com.commercetools.sync.cartdiscounts;
 
 import com.commercetools.sync.cartdiscounts.helpers.CartDiscountSyncStatistics;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.services.CartDiscountService;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
@@ -103,8 +104,9 @@ class CartDiscountSyncTest {
         assertThat(exceptions)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(throwable -> {
-                assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
-                assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
+                assertThat(throwable).isExactlyInstanceOf(SyncException.class);
+                assertThat(throwable).hasCauseExactlyInstanceOf(CompletionException.class);
+                assertThat(throwable.getCause()).hasCauseExactlyInstanceOf(SphereException.class);
             });
 
         assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
@@ -193,7 +195,7 @@ class CartDiscountSyncTest {
 
         assertThat(exceptions)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable).isNull());
+                .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable.getCause()).isNull());
 
         assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
     }
@@ -232,7 +234,7 @@ class CartDiscountSyncTest {
 
         assertThat(exceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable).isNull());
+            .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable.getCause()).isNull());
 
         assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
     }

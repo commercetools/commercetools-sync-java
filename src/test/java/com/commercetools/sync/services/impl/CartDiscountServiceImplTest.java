@@ -2,6 +2,7 @@ package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.services.CartDiscountService;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
@@ -183,8 +184,10 @@ class CartDiscountServiceImplTest {
 
         assertThat(errors.values())
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(exception ->
-                        assertThat(exception).isExactlyInstanceOf(InternalServerErrorException.class));
+                .hasOnlyOneElementSatisfying(exception -> {
+                    assertThat(exception).isExactlyInstanceOf(SyncException.class);
+                    assertThat(exception.getCause()).isExactlyInstanceOf(InternalServerErrorException.class);
+                });
     }
 
     @Test
