@@ -1,6 +1,5 @@
 package com.commercetools.sync.states.utils;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.states.State;
@@ -13,7 +12,6 @@ import io.sphere.sdk.states.commands.updateactions.RemoveRoles;
 import io.sphere.sdk.states.commands.updateactions.SetDescription;
 import io.sphere.sdk.states.commands.updateactions.SetName;
 import io.sphere.sdk.states.commands.updateactions.SetTransitions;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -23,13 +21,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollection;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
-import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
+import static org.apache.commons.lang3.BooleanUtils.toBoolean;
 
 public final class StateUpdateActionUtils {
 
@@ -161,14 +159,11 @@ public final class StateUpdateActionUtils {
      * Compares the {@code transitions} values of a {@link State} and a {@link StateDraft}
      * and returns an {@link Optional} of update action, which would contain the {@code "setTransitions"}
      * {@link UpdateAction}. If both {@link State} and {@link StateDraft} have the same
-     * {@code transitions} values, then no update action is needed and empty optional will be returned. Empty optional
-     * will albo be returned if an error occur while trying to create update action.
+     * {@code transitions} values, then no update action is needed and empty optional will be returned.
      *
      * @param oldState      the {@link State} which should be updated.
      * @param newState      the {@link StateDraft} where we get the new data.
-     * @param keyToId       the {@link Map} containing {@link State} key to id mapping
-     * @param errorCallback the error callback which will be called in case there was an error while trying to create
-     *                      update action.
+     * @param keyToId  a map of key to id. It represents a cache of the existing states in the target project.
      * @return optional containing update action or empty optional if there are no changes detected or there was
      *         an error.
      */
@@ -176,8 +171,7 @@ public final class StateUpdateActionUtils {
     public static Optional<UpdateAction<State>> buildSetTransitionsAction(
         @Nonnull final State oldState,
         @Nonnull final StateDraft newState,
-        @Nonnull final Map<String, String> keyToId,
-        @Nonnull final Consumer<String> errorCallback) {
+        @Nonnull final Map<String, String> keyToId) {
 
         boolean emptyNew = newState.getTransitions() == null
             || newState.getTransitions().isEmpty()
@@ -193,37 +187,37 @@ public final class StateUpdateActionUtils {
             return Optional.of(SetTransitions.of(emptySet()));
         }
 
-        Set<String> newTransitionStateKeys = new HashSet<>();
-        Set<Reference<State>> transitions = newState.getTransitions().stream()
-            .filter(ref -> ref.getObj() != null && StringUtils.isNotEmpty(ref.getObj().getKey()))
-            .filter(ref -> Objects.nonNull(keyToId.get(ref.getObj().getKey())))
-            .map(ref -> {
-                newTransitionStateKeys.add(ref.getObj().getKey());
-                return State.referenceOfId(keyToId.get(ref.getObj().getKey()));
-            })
-            .collect(Collectors.toSet());
+        final Set<Reference<State>> newTransitions = newState.getTransitions()
+                                                             .stream()
+                                                             .filter(Objects::nonNull)
+                                                             .collect(Collectors.toSet());
 
-        if (transitions.size() != newState.getTransitions().size()) {
-            errorCallback.accept(format("Failed to build transition action for state '%s' because "
-                + "not all of states id were available", newState.getKey()));
-            return Optional.empty();
-        }
+        final Set<Reference<State>> oldTransitions = oldState.getTransitions()
+                                                             .stream()
+                                                             .filter(Objects::nonNull)
+                                                             .collect(Collectors.toSet());
 
-        if (!emptyOld) {
-            boolean sizeMatch = newState.getTransitions().size() == oldState.getTransitions().size();
+        return buildUpdateAction(oldTransitions, newTransitions,
+            () -> {
+                final long newCount =
+                    filterCollection(newTransitions, newStateTransitionRef ->
+                        oldTransitions.stream()
+                                      .map(Reference::toResourceIdentifier)
+                                      .noneMatch(oldResourceIdentifier ->
+                                          oldResourceIdentifier.equals(newStateTransitionRef)))
+                    .count();
 
-            long count = oldState.getTransitions().stream()
-                .filter(ref -> ref.getObj() != null && StringUtils.isNotEmpty(ref.getObj().getKey())
-                    && newTransitionStateKeys.contains(ref.getObj().getKey()))
-                .count();
-            boolean elementsMatch = count == newTransitionStateKeys.size();
+                if (newCount > 0) {
+                    Set<Reference<State>> transitions = newTransitions
+                        .stream()
+                        .filter(transition -> transition != null && keyToId.containsKey(transition.getId()))
+                        .map(transition -> State.referenceOfId(keyToId.get(transition.getId())))
+                        .collect(Collectors.toSet());
+                    return SetTransitions.of(transitions);
+                }
 
-            if (sizeMatch && elementsMatch) {
-                return Optional.empty();
-            }
-        }
-
-        return Optional.of(SetTransitions.of(transitions));
+                return null;
+            });
     }
 
     private static Set<StateRole> diffRoles(final Set<StateRole> src, final Set<StateRole> dst) {
