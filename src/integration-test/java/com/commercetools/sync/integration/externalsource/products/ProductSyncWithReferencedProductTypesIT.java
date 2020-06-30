@@ -334,8 +334,8 @@ class ProductSyncWithReferencedProductTypesIT {
         assertThat(errorCallBackExceptions)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(error -> {
-                assertThat(error).isInstanceOf(ErrorResponseException.class);
-                final ErrorResponseException errorResponseException = (ErrorResponseException) error;
+                assertThat(error).hasCauseExactlyInstanceOf(ErrorResponseException.class);
+                final ErrorResponseException errorResponseException = (ErrorResponseException) error.getCause();
                 assertThat(errorResponseException.getStatusCode()).isEqualTo(400);
                 assertThat(error.getMessage())
                     .contains("The value '{\"typeId\":\"product-type\",\"id\":\"nonExistingKey\"}' "
@@ -474,8 +474,8 @@ class ProductSyncWithReferencedProductTypesIT {
         assertThat(errorCallBackExceptions)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(error -> {
-                assertThat(error).isInstanceOf(ErrorResponseException.class);
-                final ErrorResponseException errorResponseException = (ErrorResponseException) error;
+                assertThat(error).hasCauseExactlyInstanceOf(ErrorResponseException.class);
+                final ErrorResponseException errorResponseException = (ErrorResponseException) error.getCause();
                 assertThat(errorResponseException.getStatusCode()).isEqualTo(400);
                 assertThat(error.getMessage())
                     .contains("The value '{\"typeId\":\"product-type\",\"id\":\"nonExistingKey\"}' "

@@ -5,6 +5,7 @@ import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
 import com.commercetools.sync.cartdiscounts.helpers.CartDiscountSyncStatistics;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
@@ -316,11 +317,11 @@ class CartDiscountSyncIT {
         assertThat(exceptions)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(exception -> {
-                assertThat(exception).isInstanceOf(CompletionException.class);
+                assertThat(exception).hasCauseExactlyInstanceOf(CompletionException.class);
                 assertThat(exception.getMessage())
                     .contains("Failed to resolve custom type reference on CartDiscountDraft with key:'key_1'");
-                assertThat(exception.getCause()).isInstanceOf(ReferenceResolutionException.class);
-                assertThat(exception.getCause().getMessage()).isEqualTo(
+                assertThat(exception.getCause()).hasCauseExactlyInstanceOf(ReferenceResolutionException.class);
+                assertThat(exception.getCause().getCause().getMessage()).isEqualTo(
                     "Failed to resolve custom type reference on CartDiscountDraft with key:'key_1'. Reason: "
                     +   "The value of the 'id' field of the Resource Identifier/Reference is blank (null/empty).");
             });
@@ -455,9 +456,10 @@ class CartDiscountSyncIT {
         assertThat(exceptions)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(throwable -> {
-                assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
-                assertThat(throwable).hasCauseExactlyInstanceOf(ErrorResponseException.class);
-                assertThat(throwable).hasMessageContaining("cartPredicate: Missing required value");
+                assertThat(throwable).isExactlyInstanceOf(SyncException.class);
+                assertThat(throwable).hasCauseExactlyInstanceOf(CompletionException.class);
+                assertThat(throwable.getCause()).hasCauseExactlyInstanceOf(ErrorResponseException.class);
+                assertThat(throwable.getCause()).hasMessageContaining("cartPredicate: Missing required value");
             });
 
         assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
@@ -510,9 +512,10 @@ class CartDiscountSyncIT {
         assertThat(exceptions)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(throwable -> {
-                assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
-                assertThat(throwable).hasCauseExactlyInstanceOf(ErrorResponseException.class);
-                assertThat(throwable).hasMessageContaining("value: Missing required value");
+                assertThat(throwable).isExactlyInstanceOf(SyncException.class);
+                assertThat(throwable).hasCauseExactlyInstanceOf(CompletionException.class);
+                assertThat(throwable.getCause()).hasCauseExactlyInstanceOf(ErrorResponseException.class);
+                assertThat(throwable.getCause()).hasMessageContaining("value: Missing required value");
             });
 
         assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
@@ -656,7 +659,7 @@ class CartDiscountSyncIT {
         assertThat(errorMessages).hasSize(1);
         assertThat(exceptions).hasSize(1);
 
-        assertThat(exceptions.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);
+        assertThat(exceptions.get(0).getCause()).hasCauseExactlyInstanceOf(BadGatewayException.class);
         assertThat(errorMessages.get(0)).contains(
             format("Failed to update cart discount with key: '%s'. Reason: Failed to fetch from CTP while retrying "
                 + "after concurrency modification.", CART_DISCOUNT_KEY_2));

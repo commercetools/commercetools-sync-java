@@ -448,8 +448,8 @@ class ProductSyncWithNestedReferencedCategoriesIT {
         assertThat(errorCallBackExceptions)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(error -> {
-                assertThat(error).isInstanceOf(ErrorResponseException.class);
-                final ErrorResponseException errorResponseException = (ErrorResponseException) error;
+                assertThat(error).hasCauseExactlyInstanceOf(ErrorResponseException.class);
+                final ErrorResponseException errorResponseException = (ErrorResponseException) error.getCause();
                 assertThat(errorResponseException.getStatusCode()).isEqualTo(400);
                 assertThat(error.getMessage())
                     .contains("The value '{\"typeId\":\"category\",\"id\":\"nonExistingKey\"}' "
@@ -575,8 +575,8 @@ class ProductSyncWithNestedReferencedCategoriesIT {
         assertThat(errorCallBackExceptions)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(error -> {
-                assertThat(error).isInstanceOf(ErrorResponseException.class);
-                final ErrorResponseException errorResponseException = (ErrorResponseException) error;
+                assertThat(error).hasCauseExactlyInstanceOf(ErrorResponseException.class);
+                final ErrorResponseException errorResponseException = (ErrorResponseException) error.getCause();
                 assertThat(errorResponseException.getStatusCode()).isEqualTo(400);
                 assertThat(error.getMessage())
                     .contains("The value '{\"typeId\":\"category\",\"id\":\"nonExistingKey\"}' "

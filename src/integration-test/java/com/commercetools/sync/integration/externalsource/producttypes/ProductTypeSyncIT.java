@@ -327,7 +327,7 @@ class ProductTypeSyncIT {
             .of(CTP_TARGET_CLIENT)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorMessages.add(exception.getMessage());
-                exceptions.add(exception.getCause());
+                exceptions.add(exception);
             })
             .build();
 
@@ -367,7 +367,7 @@ class ProductTypeSyncIT {
             .of(CTP_TARGET_CLIENT)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorMessages.add(exception.getMessage());
-                exceptions.add(exception.getCause());
+                exceptions.add(exception);
             })
             .build();
 
@@ -421,7 +421,7 @@ class ProductTypeSyncIT {
             .of(CTP_TARGET_CLIENT)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorMessages.add(exception.getMessage());
-                exceptions.add(exception.getCause());
+                exceptions.add(exception);
             })
             .build();
 
@@ -443,7 +443,7 @@ class ProductTypeSyncIT {
         assertThat(exceptions)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(throwable -> {
-                assertThat(throwable).isExactlyInstanceOf(ErrorResponseException.class);
+                assertThat(throwable).hasCauseExactlyInstanceOf(ErrorResponseException.class);
                 assertThat(throwable).hasMessageContaining("AttributeDefinitionTypeConflict");
             });
 

@@ -827,7 +827,8 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
         assertThat(errorCallBackMessages)
             .containsExactly("Failed to fetch ProductDrafts waiting to be resolved with keys '[foo]'.");
         assertThat(errorCallBackExceptions)
-            .hasOnlyOneElementSatisfying(exception -> assertThat(exception.getCause()).isEqualTo(gatewayException));
+            .hasOnlyOneElementSatisfying(exception ->
+                assertThat(exception.getCause()).hasCauseExactlyInstanceOf(BadGatewayException.class));
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(actions).isEmpty();
 

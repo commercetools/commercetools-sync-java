@@ -266,8 +266,8 @@ class CartDiscountServiceImplIT {
         assertThat(errorCallBackExceptions)
                 .hasSize(1)
                 .hasOnlyOneElementSatisfying(exception -> {
-                    assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class);
-                    final ErrorResponseException errorResponseException = (ErrorResponseException) exception;
+                    assertThat(exception).hasCauseExactlyInstanceOf(ErrorResponseException.class);
+                    final ErrorResponseException errorResponseException = (ErrorResponseException) exception.getCause();
 
                     final List<DuplicateFieldError> fieldErrors = errorResponseException
                             .getErrors()

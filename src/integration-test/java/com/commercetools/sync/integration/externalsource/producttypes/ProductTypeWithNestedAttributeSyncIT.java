@@ -315,7 +315,7 @@ class ProductTypeWithNestedAttributeSyncIT {
         assert productType1.isPresent();
         assertThat(errorMessages).containsExactly("Failed to fetch existing product types with keys: '[key_1]'.");
         assertThat(exceptions).hasOnlyOneElementSatisfying(exception ->
-            assertThat(exception).hasCause(badGatewayException));
+            assertThat(exception.getCause()).hasCauseExactlyInstanceOf(BadGatewayException.class));
         assertThat(builtUpdateActions).isEmpty();
         assertThat(productTypeSyncStatistics).hasValues(2, 1, 0, 0, 1);
         assertThat(productTypeSyncStatistics
