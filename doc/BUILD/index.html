@@ -42,7 +42,7 @@
     
     
       
-        <title>Build and release workflow - commercetools-sync-java</title>
+        <title>BUILD - commercetools-sync-java</title>
       
     
     
@@ -91,7 +91,7 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" data-md-component="overlay" for="__drawer"></label>
     
-      <a href="#build-and-release-workflow" tabindex="0" class="md-skip">
+      <a href="#release-workflow" tabindex="0" class="md-skip">
         Skip to content
       </a>
     
@@ -117,7 +117,7 @@
             </span>
             <span class="md-header-nav__topic">
               
-                Build and release workflow
+                BUILD
               
             </span>
           
@@ -467,6 +467,56 @@
     
   
   
+    <label class="md-nav__title" for="__toc">Table of contents</label>
+    <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#step-1-release" class="md-nav__link">
+    Step 1: Release
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-2-publish" class="md-nav__link">
+    Step 2: Publish
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-3-sync" class="md-nav__link">
+    Step 3: Sync
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#final-step" class="md-nav__link">
+    Final Step
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#checklist" class="md-nav__link">
+    Checklist
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+      
+      
+      
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -480,113 +530,65 @@
                   <a href="http://github.com/commercetools/commercetools-sync-java/edit/master/docs/BUILD.md" title="Edit this page" class="md-icon md-content__icon">&#xE3C9;</a>
                 
                 
-                <h1 id="build-and-release-workflow">Build and release workflow<a class="headerlink" href="#build-and-release-workflow" title="Permanent link">&para;</a></h1>
-<p>The main goal of the build process is to publish the artifacts to public repositories, 
-like <a href="https://jcenter.bintray.com/">JCenter</a> and <a href="https://search.maven.org/">Maven Central</a>.</p>
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+                <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
+<p><strong>Table of Contents</strong> </p>
 <ul>
-<li><a href="#release-a-new-version">Release a new version</a></li>
-<li><a href="#publish-workflow">Publish workflow</a></li>
-<li><a href="#full-build-with-tests-documentation-publishing-and-bintray-upload">Full build with tests, documentation publishing and Bintray upload</a></li>
-<li><a href="#publish-to-local-maven-repo">Publish to local maven repo</a></li>
-<li><a href="#publish-snapshots-to-osssonatypeorg">Publish snapshots to oss.sonatype.org</a></li>
-<li><a href="#publish-to-bintray">Publish to Bintray</a></li>
-<li><a href="#publish-to-maven">Publish to Maven</a></li>
+<li><a href="#release-workflow">Release workflow</a></li>
+<li><a href="#step-1-release">Step 1: Release</a></li>
+<li><a href="#step-2-publish">Step 2: Publish</a></li>
+<li><a href="#step-3-sync">Step 3: Sync</a></li>
+<li><a href="#final-step">Final Step</a><ul>
+<li><a href="#checklist">Checklist</a></li>
+</ul>
+</li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
-<h1 id="release-a-new-version">Release a new version<a class="headerlink" href="#release-a-new-version" title="Permanent link">&para;</a></h1>
-<h3 id="before-release">Before Release<a class="headerlink" href="#before-release" title="Permanent link">&para;</a></h3>
-<p>Before making a new release make sure to:
- - Create a new PR to prepare for the new release. In this PR, you should make sure all
- the dependencies are up-to-date and make sure the new release's version is updated 
- everywhere in the docs and the project files where needed.
- - Make sure the squashed commit message when merging this PR to master contains the words 
- <code>"Prepare for release "</code>. For example, before releasing version <code>1.10.0</code>, this commit message should be
-  <code>"Prepare for release 1.10.0"</code>. This is important to trigger and publish new benchmarks
- for the library.</p>
-<h3 id="release">Release<a class="headerlink" href="#release" title="Permanent link">&para;</a></h3>
-<p>To release the library, you need to create a new git commit tag.</p>
-<p>This will trigger a new Travis build. The tag can be created via the command line</p>
-<div class="codehilite"><pre><span></span><code>git tag -a <span class="o">{</span>version<span class="o">}</span> -m <span class="s2">&quot;Minor text adjustments.&quot;</span>
-git push --tags
-</code></pre></div>
-
-<p>or github UI "Draft new Release":
-<a href="https://github.com/commercetools/commercetools-sync-java/releases">https://github.com/commercetools/commercetools-sync-java/releases</a></p>
-<p>Having a tag in the commit will cause Travis to call the <code>bintrayUpload</code> task specified in the Gradle build scripts, which uploads
-the artifacts to Bintray. The artifacts have to be then promoted/published from Bintray to <em>JCenter</em> and/or 
-<em>Maven Central</em>. See <a href="#publish-workflow">Publish workflow</a> below for more details.</p>
-<p>Please make sure to add a section for the release in the <a href="/docs/RELEASE_NOTES.md">release notes</a>. </p>
-<h1 id="publish-workflow">Publish workflow<a class="headerlink" href="#publish-workflow" title="Permanent link">&para;</a></h1>
-<h2 id="full-build-with-tests-documentation-publishing-and-bintray-upload">Full build with tests, documentation publishing and Bintray upload<a class="headerlink" href="#full-build-with-tests-documentation-publishing-and-bintray-upload" title="Permanent link">&para;</a></h2>
-<div class="codehilite"><pre><span></span><code>./gradlew clean build gitPublishPush bintrayUpload -Dbuild.version={version}
-</code></pre></div>
-
-<h2 id="publish-to-local-maven-repo">Publish to local maven repo<a class="headerlink" href="#publish-to-local-maven-repo" title="Permanent link">&para;</a></h2>
-<p>This step may be used for local test versions:
-<div class="codehilite"><pre><span></span><code>./gradlew clean install -Dbuild.version={version}
+<h1 id="release-workflow">Release workflow<a class="headerlink" href="#release-workflow" title="Permanent link">&para;</a></h1>
+<p>The main goal of the build process is to publish the artifacts to public repositories <a href="https://bintray.com/commercetools/maven/commercetools-sync-java">JCenter</a> and <a href="https://mvnrepository.com/artifact/com.commercetools/commercetools-sync-java">Maven Central</a>.</p>
+<h2 id="step-1-release">Step 1: Release<a class="headerlink" href="#step-1-release" title="Permanent link">&para;</a></h2>
+<p>Create a new PR for the new release: 
+- Increment the release version to the new library version, please follow the <a href="https://semver.org/">semantic versioning</a> for finding the new version.
+- Make sure all the dependencies are up-to-date everywhere in the documentation files and the project files where needed.
+- Make sure to add a section for the release in the <a href="/docs/RELEASE_NOTES.md">release notes</a>. 
+- Ask for review for this PR and then "squash and merge" to master.</p>
+<p>For example PR, see: <a href="https://github.com/commercetools/commercetools-sync-java/pull/412">https://github.com/commercetools/commercetools-sync-java/pull/412</a></p>
+<hr />
+<p>To release the library, you need to <a href="https://github.com/commercetools/commercetools-sync-java/releases/new">"create a new release"</a> with Github, 
+describe the new release as below and publish it. </p>
+<p>For example, define the link to the release notes pointing to a released version:
+<div class="codehilite"><pre><span></span><code>#### 1.8.2
+- [Release notes](https://github.com/commercetools/commercetools-sync-java/blob/master/docs/RELEASE_NOTES.md#182----april-30-2020)
+- [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.8.2/)
 </code></pre></div></p>
-<p>If you want to review full generated <code>pom.xml</code> (with license, scm, developers) like it will be published, then use:
-<div class="codehilite"><pre><span></span><code>./gradlew clean publishToMavenLocal -Dbuild.version={version}
-</code></pre></div></p>
-<p>where <code>publishToMavenLocal</code> is a task from 
-<a href="https://docs.gradle.org/3.3/userguide/publishing_maven.html#publishing_maven:install"><code>maven-publish</code></a>
-plugin.</p>
-<h2 id="publish-snapshots-to-osssonatypeorg">Publish snapshots to oss.sonatype.org<a class="headerlink" href="#publish-snapshots-to-osssonatypeorg" title="Permanent link">&para;</a></h2>
-<p>To publish to <a href="https://oss.sonatype.org/content/repositories/snapshots/com/commercetools/">OSS Sonatype snapshots</a>
-repo the following command is used:</p>
-<div class="codehilite"><pre><span></span><code>./gradlew clean build uploadArchives -Dbuild.version<span class="o">={</span>version<span class="o">}</span>-SNAPSHOT
-</code></pre></div>
-
-<p>The <code>-SNAPSHOT</code> suffix is mandatory. </p>
-<p><strong>Note</strong>: for publishing to OSS Sonatype you need to specify <strong>API</strong> User/Key (not login credentials) for<br />
-<code>OSS_USER</code>/<code>OSS_KEY</code> environment variables or <code>ossUser</code>/<code>ossKey</code> Gradle build properties 
-(the properties have precedence over environment variables). </p>
-<p>See more configuration details of the oss uploading in <a href="/gradle-scripts/oss-publish.gradle">oss-publish.gradle</a> file.</p>
-<h2 id="publish-to-bintray">Publish to Bintray<a class="headerlink" href="#publish-to-bintray" title="Permanent link">&para;</a></h2>
-<p><a href="https://blog.bintray.com/2014/02/11/bintray-as-pain-free-gateway-to-maven-central/">Bintray documentation about the publishing process</a></p>
-<p>Bintray publish is performed by <a href="https://github.com/bintray/gradle-bintray-plugin"><code>gradle-bintray-plugin</code></a>. 
-The artifacts are published to <a href="https://bintray.com/commercetools/maven/commercetools-sync-java">bintray commercetools maven repo</a>.</p>
-<p>If you are a new developer in the project - update contributors list in 
-<a href="/gradle-scripts/maven-publish.gradle"><code>maven-publish.gradle</code></a><code>-&gt; pomConfig -&gt; developers</code>.</p>
-<p>To initiate publish call:
-<div class="codehilite"><pre><span></span><code>./gradlew clean build bintrayUpload -Dbuild.version={version}
-</code></pre></div></p>
-<p><strong>NOTE</strong>: Bintray does not allow to publish snapshots thus <code>{version}</code> should not contain <em>SNAPSHOT</em>.
-If you wish to use snapshots, <a href="https://oss.jfrog.com">https://oss.jfrog.com</a> account should be configured.
-See <a href="https://blog.bintray.com/2014/02/11/bintray-as-pain-free-gateway-to-maven-central/">https://blog.bintray.com/2014/02/11/bintray-as-pain-free-gateway-to-maven-central/</a> for more info.</p>
-<p>To publish the artifacts to Bintray:
-1. Go to <a href="https://bintray.com/commercetools/maven/commercetools-sync-java">https://bintray.com/commercetools/maven/commercetools-sync-java</a>
-2. Make sure you are logged in with the commercetools account.
-3. You will see a notice <em>Notice: You have 24 unpublished item(s) for this package (expiring in 6 days and 22 hours)</em>
-4. Click <em>Publish</em></p>
-<p>After publishing to Bintray artifacts are available in <a href="http://dl.bintray.com/commercetools/maven/com/commercetools/commercetools-sync-java/">Bintray Download</a>
-but still not available in <a href="https://jcenter.bintray.com/com/commercetools/commercetools-sync-java/">JCenter</a>. </p>
-<p>To publish the artifacts to JCenter do the next:
-  1. On the version page go to the Maven Central tab.
-  2. Enter the commercetools Sonatype Maven Central API Key and password.
-  3. Click <em>Sync</em> and you’re done! </p>
-<p>Your package should now be available in <a href="https://jcenter.bintray.com/com/commercetools/commercetools-sync-java/">JCenter commercetools-sync-java</a> 
-and will be synced to Maven Central (and they usually take their time). In case of a sync problem, Bintray will automatically take care of any needed cleanup. </p>
-<h2 id="publish-to-maven">Publish to Maven<a class="headerlink" href="#publish-to-maven" title="Permanent link">&para;</a></h2>
-<p>Publishing to Maven Central requires the following steps:</p>
-<ol>
-<li>Build the app and upload to Bintray (see the steps above for integration tests)</li>
-<li><a href="https://blog.bintray.com/2013/08/06/fight-crime-with-gpg/">Signing up the app with PGP key</a>: for now we use Bintray's 
-    "a stock built-in key-pair so that it can auto-sign every file you upload"</li>
-<li><a href="https://blog.bintray.com/2015/09/17/publishing-your-maven-project-to-bintray/">Manually release from Bintray web page to Maven Central</a></li>
-</ol>
-<p><strong>Note</strong>: Maven Central has much stricter requirements to published artifacts, e.g. it should have mandatory POM fields 
-(like developers list, SCM references; this is configured in the <a href="/maven-publish.gradle">build script</a>) 
-and mandatory signed by GPG key (could be performed by Bintray settings). For more info about Maven Central 
-requirements see <a href="http://central.sonatype.org/pages/requirements.html">Requirements</a> page.</p>
-<p>As soon as artifacts are synced you will be able to find them in the Maven Central repo and mirrors:</p>
-<p><a href="https://repo1.maven.org/maven2/com/commercetools/commercetools-sync-java/">https://repo1.maven.org/maven2/com/commercetools/commercetools-sync-java/</a>
-<a href="http://repo2.maven.org/maven2/com/commercetools/commercetools-sync-java/">http://repo2.maven.org/maven2/com/commercetools/commercetools-sync-java/</a></p>
+<blockquote>
+<p>Additionally define important changes, breaking changes or important new features into the description.</p>
+</blockquote>
+<p>After the release build status is <strong>success</strong> follow the next steps below. Check <a href="https://travis-ci.org/commercetools/commercetools-sync-java">here</a> for Travis build status.</p>
+<h2 id="step-2-publish">Step 2: Publish<a class="headerlink" href="#step-2-publish" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Go to <a href="https://bintray.com/commercetools/maven/commercetools-sync-java">https://bintray.com/commercetools/maven/commercetools-sync-java</a></li>
+<li>You will see a notice <em>Notice: You have 24 unpublished item(s) for this package (expiring in 6 days and 22 hours)</em></li>
+<li>Click the <em>Publish</em> button.</li>
+</ul>
+<h2 id="step-3-sync">Step 3: Sync<a class="headerlink" href="#step-3-sync" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Click to the Maven Central tab.</li>
+<li>Enter the commercetools Sonatype Maven Central API Key and password (into User token key and User token password fields)</li>
+<li>Click the <em>Sync</em> button and check the <code>Sync Status</code>. </li>
+</ul>
+<p><img width="600" alt="Screenshot 2020-07-02 at 09 48 57" src="https://user-images.githubusercontent.com/3469524/86331559-906e3e80-bc49-11ea-9390-e813bc12c163.png"></p>
+<h2 id="final-step">Final Step<a class="headerlink" href="#final-step" title="Permanent link">&para;</a></h2>
+<p>Ensure the new version is publicly available at <a href="https://bintray.com/commercetools/maven/commercetools-sync-java">JCenter</a> and <a href="https://mvnrepository.com/artifact/com.commercetools/commercetools-sync-java">Maven Central</a>. </p>
+<h3 id="checklist">Checklist<a class="headerlink" href="#checklist" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="#step-2-publish">Publish</a> and <a href="#step-3-sync">Sync</a> completed without an issue.</li>
+<li>The new version is available in the bintray: <a href="https://dl.bintray.com/commercetools/maven/com/commercetools/commercetools-sync-java/">https://dl.bintray.com/commercetools/maven/com/commercetools/commercetools-sync-java/</a></li>
+<li>The new version is available in the maven: <a href="https://repo1.maven.org/maven2/com/commercetools/commercetools-sync-java/">https://repo1.maven.org/maven2/com/commercetools/commercetools-sync-java/</a></li>
+</ul>
                 
                   
                 
