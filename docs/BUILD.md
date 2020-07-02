@@ -44,8 +44,9 @@ After the release build status is **success** follow the next steps below. Check
 ## Step 2: Publish
 
 - Go to [https://bintray.com/commercetools/maven/commercetools-sync-java](https://bintray.com/commercetools/maven/commercetools-sync-java)
-- You will see a notice _Notice: You have 24 unpublished item(s) for this package (expiring in 6 days and 22 hours)_
-- Click the _Publish_ button.
+- Click the _Publish_ button as shown below:
+
+<img width="600" alt="Screenshot-1" src="https://user-images.githubusercontent.com/3469524/86367568-671ad600-bc7c-11ea-84e9-786f9f850d96.png">
 
 ## Step 3: Sync
 
@@ -53,7 +54,7 @@ After the release build status is **success** follow the next steps below. Check
 - Enter the commercetools Sonatype Maven Central API Key and password (into User token key and User token password fields)
 - Click the _Sync_ button and check the `Sync Status`. 
 
-<img width="600" alt="Screenshot 2020-07-02 at 09 48 57" src="https://user-images.githubusercontent.com/3469524/86331559-906e3e80-bc49-11ea-9390-e813bc12c163.png">
+<img width="600" alt="Screenshot-2" src="https://user-images.githubusercontent.com/3469524/86331559-906e3e80-bc49-11ea-9390-e813bc12c163.png">
 
 ## Final Step
 
