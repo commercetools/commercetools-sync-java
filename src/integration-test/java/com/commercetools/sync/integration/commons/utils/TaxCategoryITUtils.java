@@ -20,11 +20,15 @@ import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static java.util.Collections.singletonList;
 
 public final class TaxCategoryITUtils {
-    private static final String TAXCATEGORY_KEY = "old_tax_category_key";
+    public static final String TAXCATEGORY_KEY = "old_tax_category_key";
     private static final String TAXCATEGORY_NAME = "old_tax_category_name";
     private static final String TAXCATEGORY_DESCRIPTION = "old_tax_category_desc";
     private static final String TAXCATEGORY_TAXRATE_NAME = "old_tax_rate_name";
     private static final double TAXCATEGORY_TAXRATE_AMOUNT = 0.2;
+
+    public static final String TAXCATEGORY_KEY_1 = "key_1";
+    public static final String TAXCATEGORY_NAME_1 = "name_1";
+    public static final String TAXCATEGORY_DESCRIPTION_1 = "description_1";
 
     /**
      * Deletes all Tax categories from CTP projects defined by the {@code CTP_SOURCE_CLIENT} and
@@ -74,4 +78,5 @@ public final class TaxCategoryITUtils {
 
     private TaxCategoryITUtils() {
     }
+
 }
