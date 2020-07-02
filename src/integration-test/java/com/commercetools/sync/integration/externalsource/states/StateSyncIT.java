@@ -58,7 +58,7 @@ class StateSyncIT {
             .initial(false)
             .build();
 
-        final State state = executeBlocking(CTP_TARGET_CLIENT.execute(StateCreateCommand.of(stateDraft)));
+        executeBlocking(CTP_TARGET_CLIENT.execute(StateCreateCommand.of(stateDraft)));
     }
 
     @AfterAll
