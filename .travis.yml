@@ -13,7 +13,7 @@ install: true # skips travis' default installation step which executes gradle as
 jobs:
   include:
     - stage: benchmark
-      if: branch = master
+      if: branch = master OR tag IS present
       script: ./gradlew clean setLibraryVersion benchmark
     - stage: full build
       script: ./gradlew clean dependencyUpdates setLibraryVersion build
