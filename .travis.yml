@@ -12,11 +12,11 @@ before_install:
 install: true # skips travis' default installation step which executes gradle assemble.
 jobs:
   include:
+    - stage: build
+      script: ./gradlew clean dependencyUpdates setLibraryVersion build
     - stage: benchmark
       if: branch = benchmark-commit
       script: ./gradlew clean setLibraryVersion benchmark
-    - stage: full build
-      script: ./gradlew clean dependencyUpdates setLibraryVersion build
       after_success:
       - bash <(curl -s https://codecov.io/bash)
       - ./travis-publish.sh || travis_terminate 1
