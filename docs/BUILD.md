@@ -13,8 +13,7 @@
 
 # Release workflow
 
-The main goal of the build process is to publish the artifacts to public repositories, 
-like [JCenter](https://bintray.com/commercetools/maven/commercetools-sync-java) and [Maven Central](https://mvnrepository.com/artifact/com.commercetools/commercetools-sync-java).
+The main goal of the build process is to publish the artifacts to public repositories [JCenter](https://bintray.com/commercetools/maven/commercetools-sync-java) and [Maven Central](https://mvnrepository.com/artifact/com.commercetools/commercetools-sync-java).
      
 ## Step 1: Release
 
@@ -38,14 +37,14 @@ For example, define the link to the release notes pointing to a released version
 - [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.8.2/)
 ```
 
-> Additionally define important changes like breaking changes or important new features into the description.
+> Additionally define important changes, breaking changes or important new features into the description.
 
 After the release build status is **success** follow the next steps below. Check [here](https://travis-ci.org/commercetools/commercetools-sync-java) for Travis build status.
 
 ## Step 2: Publish
 
 - Go to [https://bintray.com/commercetools/maven/commercetools-sync-java](https://bintray.com/commercetools/maven/commercetools-sync-java)
-- You will see a notice like _Notice: You have 24 unpublished item(s) for this package (expiring in 6 days and 22 hours)_
+- You will see a notice _Notice: You have 24 unpublished item(s) for this package (expiring in 6 days and 22 hours)_
 - Click the _Publish_ button.
 
 ## Step 3: Sync
