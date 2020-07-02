@@ -25,9 +25,20 @@ Create a new PR for the new release:
 - Ask for review for this PR and then "squash and merge" to master.
 
 For example PR, see: https://github.com/commercetools/commercetools-sync-java/pull/412
+
+------
     
 To release the library, you need to ["create a new release"](https://github.com/commercetools/commercetools-sync-java/releases/new) with Github, 
-describe the new release and publish it. 
+describe the new release as below and publish it. 
+
+For example, define the link to the release notes pointing to a released version:
+```markdown
+#### 1.8.2
+- [Release notes](https://github.com/commercetools/commercetools-sync-java/blob/master/docs/RELEASE_NOTES.md#182----april-30-2020)
+- [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.8.2/)
+```
+
+> Additionally define important changes like breaking changes or important new features into the description.
 
 After the release build status is **success** follow the next steps below. Check [here](https://travis-ci.org/commercetools/commercetools-sync-java) for Travis build status.
 
