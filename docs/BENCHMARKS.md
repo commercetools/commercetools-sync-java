@@ -12,10 +12,7 @@ the gh-pages branch of the repo.
 3. Every time a release is made or the build has a git tag, the benchmarks are run and the results are added to 
 [benchmarks.json](https://commercetools.github.io/commercetools-sync-java/benchmarks/benchmarks.json).
 
-4. Using Travis stages, each benchmark is run 5 times, producing 5 results in which the averages of the results is 
-calculated for more accurate results.
-
-5. The average results in [benchmarks.json](https://commercetools.github.io/commercetools-sync-java/benchmarks/benchmarks.json)
+4. The average results in [benchmarks.json](https://commercetools.github.io/commercetools-sync-java/benchmarks/benchmarks.json)
 are used to display the results in the form of this [graph](https://commercetools.github.io/commercetools-sync-java/benchmarks/). 
 
 
