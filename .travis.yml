@@ -15,7 +15,6 @@ jobs:
     - stage: build
       script: ./gradlew clean dependencyUpdates setLibraryVersion build
     - stage: benchmark
-      if: branch = benchmark-commit
       script: ./gradlew clean setLibraryVersion benchmark
       after_success:
       - bash <(curl -s https://codecov.io/bash)
