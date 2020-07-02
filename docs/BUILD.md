@@ -3,7 +3,7 @@
 **Table of Contents** 
 
 - [Release workflow](#release-workflow)
-  - [Step 1: Prepare Release](#step-1-prepare-release)
+  - [Step 1: Release](#step-1-release)
   - [Step 2: Publish](#step-2-publish)
   - [Step 3: Sync](#step-3-sync)
   - [Final Step](#final-step)
@@ -16,7 +16,7 @@
 The main goal of the build process is to publish the artifacts to public repositories, 
 like [JCenter](https://bintray.com/commercetools/maven/commercetools-sync-java) and [Maven Central](https://mvnrepository.com/artifact/com.commercetools/commercetools-sync-java).
      
-## Step 1: Prepare Release
+## Step 1: Release
 
 Create a new PR for the new release: 
 - Increment the release version to the new library version, please follow the [semantic versioning](https://semver.org/) for finding the new version.
@@ -28,6 +28,8 @@ For example PR, see: https://github.com/commercetools/commercetools-sync-java/pu
     
 To release the library, you need to ["create a new release"](https://github.com/commercetools/commercetools-sync-java/releases/new) with Github, 
 describe the new release and publish it. 
+
+After the release build status is **success** follow the next steps below. Check [here](https://travis-ci.org/commercetools/commercetools-sync-java) for Travis build status.
 
 ## Step 2: Publish
 
