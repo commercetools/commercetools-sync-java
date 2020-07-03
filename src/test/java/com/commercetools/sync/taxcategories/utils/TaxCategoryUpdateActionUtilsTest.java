@@ -5,6 +5,7 @@ import com.commercetools.sync.taxcategories.TaxCategorySyncOptionsBuilder;
 import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.taxcategories.SubRate;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import io.sphere.sdk.taxcategories.TaxCategoryDraft;
 import io.sphere.sdk.taxcategories.TaxCategoryDraftBuilder;
@@ -19,7 +20,6 @@ import io.sphere.sdk.taxcategories.commands.updateactions.SetDescription;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
@@ -28,6 +28,7 @@ import static com.commercetools.sync.taxcategories.utils.TaxCategoryUpdateAction
 import static com.commercetools.sync.taxcategories.utils.TaxCategoryUpdateActionUtils.buildSetDescriptionAction;
 import static com.commercetools.sync.taxcategories.utils.TaxCategoryUpdateActionUtils.buildTaxRateUpdateActions;
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -67,7 +68,7 @@ class TaxCategoryUpdateActionUtilsTest {
         when(taxRate2.getCountry()).thenReturn(CountryCode.US);
         when(taxRate2.isIncludedInPrice()).thenReturn(false);
 
-        final List<TaxRate> oldTaxRates = Arrays.asList(taxRate1, taxRate2);
+        final List<TaxRate> oldTaxRates = asList(taxRate1, taxRate2);
 
         when(taxCategory.getTaxRates()).thenReturn(oldTaxRates);
 
@@ -112,7 +113,7 @@ class TaxCategoryUpdateActionUtilsTest {
     @Test
     void buildRatesUpdateActions_WithDuplicatedCountryCodes_ShouldNotBuildActionAndTriggerErrorCallback() {
         final String name = "DuplicatedName";
-        newDifferentTaxCategoryDraft = TaxCategoryDraftBuilder.of(name, Arrays.asList(
+        newDifferentTaxCategoryDraft = TaxCategoryDraftBuilder.of(name, asList(
             // replace
             TaxRateDraftBuilder.of(name, 2.0, false, CountryCode.DE).build(),
             TaxRateDraftBuilder.of(name, 3.0, false, CountryCode.DE).build()
@@ -235,7 +236,7 @@ class TaxCategoryUpdateActionUtilsTest {
         when(taxRate3.getCountry()).thenReturn(CountryCode.ES);
         when(taxRate3.isIncludedInPrice()).thenReturn(false);
 
-        when(taxCategory.getTaxRates()).thenReturn(Arrays.asList(taxRate1, taxRate2, taxRate3));
+        when(taxCategory.getTaxRates()).thenReturn(asList(taxRate1, taxRate2, taxRate3));
 
         //Update: Price is included.
         TaxRateDraft taxRateDraft1 = TaxRateDraftBuilder
@@ -254,7 +255,7 @@ class TaxCategoryUpdateActionUtilsTest {
             .build();
 
         TaxCategoryDraft taxCategoryDraft = TaxCategoryDraftBuilder
-            .of(null, Arrays.asList(taxRateDraft1, taxRateDraft4, taxRateDraft3), null)
+            .of(null, asList(taxRateDraft1, taxRateDraft4, taxRateDraft3), null)
             .key("tax-category-key")
             .build();
 
@@ -262,10 +263,47 @@ class TaxCategoryUpdateActionUtilsTest {
         final List<UpdateAction<TaxCategory>> result =
             buildTaxRateUpdateActions(taxCategory, taxCategoryDraft, mock(TaxCategorySyncOptions.class));
 
-        assertThat(result).isEqualTo(Arrays.asList(
+        assertThat(result).isEqualTo(asList(
             ReplaceTaxRate.of("taxRate-1", taxRateDraft1),
             RemoveTaxRate.of("taxRate-2"),
             AddTaxRate.of(taxRateDraft4)));
     }
 
+    @Test
+    void buildTaxRatesUpdateActions_WithOnlyDifferentSubRates_ShouldReturnOnlyReplaceAction() {
+
+        TaxCategory taxCategory = mock(TaxCategory.class);
+        when(taxCategory.getKey()).thenReturn("tax-category-key");
+
+        final TaxRate taxRate1 = mock(TaxRate.class);
+        when(taxRate1.getName()).thenReturn("11% US");
+        when(taxRate1.getId()).thenReturn("taxRate-1");
+        when(taxRate1.getAmount()).thenReturn(0.11);
+        when(taxRate1.getCountry()).thenReturn(CountryCode.US);
+        when(taxRate1.isIncludedInPrice()).thenReturn(false);
+
+        final SubRate oldSubRate1 = SubRate.of("subRate-1", 0.19);
+        final SubRate oldSubRate2 = SubRate.of("subRate-2", 0.21);
+
+        when(taxRate1.getSubRates()).thenReturn(asList(oldSubRate1, oldSubRate2));
+        when(taxCategory.getTaxRates()).thenReturn(singletonList(taxRate1));
+
+        final SubRate subRate1 = SubRate.of("subRate-1", 0.16);
+        final SubRate subRate2 = SubRate.of("subRate-2", 0.21);
+
+        TaxRateDraft taxRateDraft = TaxRateDraftBuilder
+            .of("11% US", 0.11, false, CountryCode.US)
+            .subRates(asList(subRate1, subRate2))
+            .build();
+
+        TaxCategoryDraft taxCategoryDraft = TaxCategoryDraftBuilder
+            .of(null, singletonList(taxRateDraft), null)
+            .key("tax-category-key")
+            .build();
+
+        final List<UpdateAction<TaxCategory>> result =
+            buildTaxRateUpdateActions(taxCategory, taxCategoryDraft, mock(TaxCategorySyncOptions.class));
+
+        assertThat(result).isEqualTo(singletonList(ReplaceTaxRate.of("taxRate-1", taxRateDraft)));
+    }
 }
