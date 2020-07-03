@@ -282,14 +282,14 @@ class TaxCategoryUpdateActionUtilsTest {
         when(taxRate1.getCountry()).thenReturn(CountryCode.US);
         when(taxRate1.isIncludedInPrice()).thenReturn(false);
 
-        final SubRate oldSubRate1 = SubRate.of("subRate-1", 0.19);
-        final SubRate oldSubRate2 = SubRate.of("subRate-2", 0.21);
+        final SubRate oldSubRate1 = SubRate.of("subRate-1", 0.07);
+        final SubRate oldSubRate2 = SubRate.of("subRate-2", 0.04);
 
         when(taxRate1.getSubRates()).thenReturn(asList(oldSubRate1, oldSubRate2));
         when(taxCategory.getTaxRates()).thenReturn(singletonList(taxRate1));
 
-        final SubRate subRate1 = SubRate.of("subRate-1", 0.16);
-        final SubRate subRate2 = SubRate.of("subRate-2", 0.21);
+        final SubRate subRate1 = SubRate.of("subRate-1", 0.06);
+        final SubRate subRate2 = SubRate.of("subRate-2", 0.05);
 
         TaxRateDraft taxRateDraft = TaxRateDraftBuilder
             .of("11% US", 0.11, false, CountryCode.US)

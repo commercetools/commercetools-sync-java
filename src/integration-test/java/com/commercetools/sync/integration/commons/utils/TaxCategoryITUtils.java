@@ -10,8 +10,11 @@ import io.sphere.sdk.taxcategories.TaxRateDraftBuilder;
 import io.sphere.sdk.taxcategories.commands.TaxCategoryCreateCommand;
 import io.sphere.sdk.taxcategories.commands.TaxCategoryDeleteCommand;
 import io.sphere.sdk.taxcategories.queries.TaxCategoryQuery;
+import io.sphere.sdk.taxcategories.queries.TaxCategoryQueryBuilder;
 
 import javax.annotation.Nonnull;
+
+import java.util.Optional;
 
 import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndExecute;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
@@ -74,6 +77,16 @@ public final class TaxCategoryITUtils {
     public static TaxRateDraft createTaxRateDraft() {
         return TaxRateDraftBuilder.of(TAXCATEGORY_TAXRATE_NAME, TAXCATEGORY_TAXRATE_AMOUNT, true, CountryCode.DE)
                                   .build();
+    }
+
+    public static Optional<TaxCategory> getTaxCategoryByKey(
+        @Nonnull final SphereClient sphereClient,
+        @Nonnull final String key) {
+        final TaxCategoryQuery query = TaxCategoryQueryBuilder
+            .of()
+            .plusPredicates(queryModel -> queryModel.key().is(key))
+            .build();
+        return sphereClient.execute(query).toCompletableFuture().join().head();
     }
 
     private TaxCategoryITUtils() {
