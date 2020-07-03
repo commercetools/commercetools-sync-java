@@ -33,6 +33,7 @@
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.8.0...1.9.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.9.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.9.0)
+-->
 
 ### 1.9.0 -  July 3, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.8.2...1.9.0) |
@@ -49,7 +50,7 @@
     - `com.adarshr.test-logger` `2.0.0` -> [`2.1.0`](https://github.com/radarsh/gradle-test-logger-plugin/releases/tag/v2.1.0)
     - `org.assertj.assertj-core` `3.15.0` ->  [`3.16.0`](https://assertj.github.io/doc/#assertj-core-3-16-1-release-notes)
     - `junit.jupiterApiVersion` `5.6.1` ->  [`5.6.2`](https://github.com/junit-team/junit5/releases/tag/r5.6.2)
--->
+
 ### 1.8.2 -  April 30, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.8.1...1.8.2) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.8.2/) | 
