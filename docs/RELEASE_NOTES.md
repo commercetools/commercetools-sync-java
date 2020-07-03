@@ -43,6 +43,7 @@
     - **TaxCategory Sync** - Added support for syncing tax categories. [#417](https://github.com/commercetools/commercetools-sync-java/issues/417) For more info how to use it please refer to [TaxCategory usage doc](/docs/usage/TAX_CATEGORY_SYNC.md).
     - **TaxCategory Sync** - Exposed `TaxCategorySyncUtils#buildActions` which calculates all needed update actions after comparing a `TaxCategory` and a `TaxCategoryDraft`. [#417](https://github.com/commercetools/commercetools-sync-java/issues/417)
     - **TaxCategory Sync** - Exposed `TaxCategoryUpdateActionUtils` which contains utils for calculating needed update actions after comparing individual fields of a `TaxCategory` and a `TaxCategoryDraft`. [#417](https://github.com/commercetools/commercetools-sync-java/issues/417)
+   Thanks, @jarzynp for the contributions!
         
 - 🛠️ **Dependency Updates** (3)
     - `com.adarshr.test-logger` `2.0.0` -> [`2.1.0`](https://github.com/radarsh/gradle-test-logger-plugin/releases/tag/v2.1.0)
