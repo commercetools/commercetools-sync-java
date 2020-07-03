@@ -259,27 +259,6 @@ class TaxCategoryUpdateActionUtilsTest {
             .build();
 
 
-        /*
-const expected = [
-      {
-        action: 'replaceTaxRate',
-        taxRate: {
-          amount: '0.11',
-          country: 'US', // added country to an existing rate
-          id: 'taxRate-1',
-          name: '11% US',
-        },
-        taxRateId: 'taxRate-1',
-      },
-      { action: 'removeTaxRate', taxRateId: 'taxRate-2' }, // removed second tax rate
-      {
-        action: 'addTaxRate',
-        taxRate: { amount: '0.15', id: 'taxRate-4', name: '15% FR' }, // adds new tax rate
-      },
-    ]
-
-         */
-
         final List<UpdateAction<TaxCategory>> result =
             buildTaxRateUpdateActions(taxCategory, taxCategoryDraft, mock(TaxCategorySyncOptions.class));
 
