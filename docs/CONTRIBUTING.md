@@ -98,7 +98,9 @@ data will be tested to be synced on from the source to the target project.
 
 #### Running
 
-To run the integration tests with CTP credentials you have 2 options:
+To run the integration tests, CTP credentials are required. Credential can be obtained once you create a CTP project.
+For details, please refer to following link:
+https://docs.commercetools.com/merchant-center/projects.html#creating-a-project 
 
   1. Use credentials Java properties file `/src/integration-test/resources/it.properties`:
     

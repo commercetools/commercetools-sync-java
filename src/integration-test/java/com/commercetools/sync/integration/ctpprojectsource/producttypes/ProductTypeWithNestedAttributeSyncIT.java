@@ -21,9 +21,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.populateSourcesProjectWithNestedAttributes;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.populateTargetProjectWithNestedAttributes;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.removeAttributeReferencesAndDeleteProductTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.producttypes.utils.ProductTypeReferenceReplacementUtils.buildProductTypeQuery;
@@ -43,7 +43,8 @@ class ProductTypeWithNestedAttributeSyncIT {
      */
     @BeforeEach
     void setup() {
-        deleteProductTypesFromTargetAndSource();
+        removeAttributeReferencesAndDeleteProductTypes(CTP_SOURCE_CLIENT);
+        removeAttributeReferencesAndDeleteProductTypes(CTP_TARGET_CLIENT);
         populateSourcesProjectWithNestedAttributes();
 
         builtUpdateActions = new ArrayList<>();
@@ -69,7 +70,8 @@ class ProductTypeWithNestedAttributeSyncIT {
      */
     @AfterAll
     static void tearDown() {
-        deleteProductTypesFromTargetAndSource();
+        removeAttributeReferencesAndDeleteProductTypes(CTP_SOURCE_CLIENT);
+        removeAttributeReferencesAndDeleteProductTypes(CTP_TARGET_CLIENT);
     }
 
     @Test

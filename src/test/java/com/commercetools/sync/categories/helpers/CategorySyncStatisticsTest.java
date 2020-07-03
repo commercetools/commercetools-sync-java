@@ -91,7 +91,7 @@ class CategorySyncStatisticsTest {
         categoryKeysWithMissingParents.put("parent2", emptySet());
 
         categorySyncStatistics.setCategoryKeysWithMissingParents(categoryKeysWithMissingParents);
-        assertThat(categorySyncStatistics.getNumberOfCategoriesWithMissingParents()).isEqualTo(0);
+        assertThat(categorySyncStatistics.getNumberOfCategoriesWithMissingParents()).isZero();
     }
 
     @Test

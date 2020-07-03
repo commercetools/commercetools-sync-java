@@ -23,6 +23,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CompletionException;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
@@ -108,18 +109,15 @@ class ProductReferenceResolverIT {
         errorCallBackExceptions = new ArrayList<>();
         warningCallBackMessages = new ArrayList<>();
 
-        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                                                        .errorCallback(
-                                                                            (errorMessage, exception) -> {
-                                                                                errorCallBackMessages
-                                                                                    .add(errorMessage);
-                                                                                errorCallBackExceptions
-                                                                                    .add(exception);
-                                                                            })
-                                                                        .warningCallback(warningMessage ->
-                                                                            warningCallBackMessages
-                                                                                .add(warningMessage))
-                                                                        .build();
+        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .errorCallback((errorMessage, exception) -> {
+                errorCallBackMessages.add(errorMessage);
+                errorCallBackExceptions.add(exception);
+            })
+            .warningCallback(warningMessage ->
+                warningCallBackMessages.add(warningMessage))
+            .build();
         productSync = new ProductSync(syncOptions);
     }
 
@@ -131,6 +129,7 @@ class ProductReferenceResolverIT {
 
     @Test
     void sync_withNewProductWithExistingCategoryAndProductTypeReferences_ShouldCreateProduct() {
+        // preparation
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
             productTypeSource.toReference(), oldTaxCategory.toReference(), oldProductState.toReference(),
             categoryReferencesWithIds, createRandomCategoryOrderHints(categoryReferencesWithIds));
@@ -141,18 +140,19 @@ class ProductReferenceResolverIT {
 
         final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
 
+        // test
         final ProductSyncStatistics syncStatistics =  productSync.sync(productDrafts).toCompletableFuture().join();
 
+        // assertion
         assertThat(syncStatistics).hasValues(1, 1, 0, 0);
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(warningCallBackMessages).hasSize(1);
-        assertThat(warningCallBackMessages.get(0)).matches("ProductType with id: '.*' has no key"
-            + " set. Keys are required for productType matching.");
+        assertThat(warningCallBackMessages).isEmpty();
     }
 
     @Test
     void sync_withNewProductWithNoProductTypeKey_ShouldFailCreatingTheProduct() {
+        // preparation
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
             noKeyProductTypeSource.toReference(), oldTaxCategory.toReference(), oldProductState.toReference(),
             categoryReferencesWithIds, createRandomCategoryOrderHints(categoryReferencesWithIds));
@@ -163,17 +163,20 @@ class ProductReferenceResolverIT {
 
         final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
 
+        // test
         final ProductSyncStatistics syncStatistics =  productSync.sync(productDrafts).toCompletableFuture().join();
 
+        // assertion
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
-        assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to resolve references on ProductDraft with"
-                + " key:'%s'. Reason: %s: Failed to resolve 'product-type' resource identifier on ProductDraft with "
+        assertThat(errorCallBackMessages).containsExactly(format("Failed to process the ProductDraft with"
+                + " key:'%s'. Reason: "
+                + ReferenceResolutionException.class.getCanonicalName() + ": "
+                + "Failed to resolve 'product-type' resource identifier on ProductDraft with "
                 + "key:'%s'. Reason: %s",
-            productDraft.getKey(), ReferenceResolutionException.class.getCanonicalName(), productDraft.getKey(),
+            productDraft.getKey(), productDraft.getKey(),
             BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
         assertThat(errorCallBackExceptions).hasSize(1);
-        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
+        assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(warningCallBackMessages).isEmpty();
     }
 }

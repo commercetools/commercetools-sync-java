@@ -145,7 +145,7 @@ class ProductSyncFilterIT {
         final ProductSyncStatistics syncStatistics =
                 executeBlocking(productSync.sync(singletonList(productDraft)));
 
-        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
         assertThat(updateActionsFromSync.stream()
                 .noneMatch(updateAction -> updateAction instanceof RemoveFromCategory)).isTrue();
         assertThat(updateActionsFromSync.stream()
@@ -170,7 +170,7 @@ class ProductSyncFilterIT {
         final ProductSyncStatistics syncStatistics =
                 executeBlocking(productSync.sync(singletonList(productDraft)));
 
-        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
         assertThat(updateActionsFromSync).hasSize(1);
         final UpdateAction<Product> updateAction = updateActionsFromSync.get(0);
         assertThat(updateAction.getAction()).isEqualTo("changeName");

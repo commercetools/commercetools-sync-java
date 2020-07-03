@@ -26,7 +26,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
+
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -44,8 +44,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
 
     private static final String CATEGORY_DRAFT_KEY_NOT_SET = "CategoryDraft with name: %s doesn't have a key.";
     private static final String CATEGORY_DRAFT_IS_NULL = "CategoryDraft is null.";
-    private static final String FAILED_TO_RESOLVE_REFERENCES = "Failed to resolve references on "
-        + "CategoryDraft with key:'%s'. Reason: %s";
+    private static final String FAILED_TO_PROCESS  = "Failed to process the CategoryDraft with key:'%s'. Reason: %s";
     private static final String UPDATE_FAILED = "Failed to update Category with key: '%s'. Reason: %s";
 
     private final CategoryService categoryService;
@@ -290,20 +289,16 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                                                  newCategoryDrafts.add(referencesResolvedDraft);
                                              }
                                          })
-                                         .exceptionally(referenceResolutionException -> {
-                                             Throwable actualException = referenceResolutionException;
-                                             if (referenceResolutionException instanceof CompletionException) {
-                                                 actualException = referenceResolutionException.getCause();
-                                             }
-                                             final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES,
-                                                 categoryKey, actualException);
-                                             handleError(errorMessage, referenceResolutionException);
+                                         .exceptionally(completionException -> {
+                                             final String errorMessage = format(FAILED_TO_PROCESS, categoryKey,
+                                                 completionException.getMessage());
+                                             handleError(errorMessage, completionException);
                                              return null;
                                          }).toCompletableFuture().join();
-                    } catch (ReferenceResolutionException referenceResolutionException) {
-                        final String errorMessage = format(FAILED_TO_RESOLVE_REFERENCES, categoryKey,
-                            referenceResolutionException);
-                        handleError(errorMessage, referenceResolutionException);
+                    } catch (Exception exception) {
+                        final String errorMessage = format(FAILED_TO_PROCESS, categoryKey,
+                            exception);
+                        handleError(errorMessage, exception);
                     }
                 } else {
                     final String errorMessage = format(CATEGORY_DRAFT_KEY_NOT_SET, categoryDraft.getName());

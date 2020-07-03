@@ -24,8 +24,8 @@ public abstract class AssetActionFactory<T> {
      * @param newAssetDraft the matching new asset draft.
      * @return update actions needed to sync the two assets.
      */
-    public abstract List<UpdateAction<T>> buildAssetActions(@Nonnull final Asset oldAsset,
-                                                            @Nonnull final AssetDraft newAssetDraft);
+    public abstract List<UpdateAction<T>> buildAssetActions(@Nonnull Asset oldAsset,
+                                                            @Nonnull AssetDraft newAssetDraft);
 
     /**
      * Takes an asset key to build a RemoveAsset action of the type T.
@@ -33,7 +33,7 @@ public abstract class AssetActionFactory<T> {
      * @param assetKey the key of the asset used un building the update action.
      * @return the built remove asset update action.
      */
-    public abstract UpdateAction<T> buildRemoveAssetAction(@Nonnull final String assetKey);
+    public abstract UpdateAction<T> buildRemoveAssetAction(@Nonnull String assetKey);
 
     /**
      * Takes a list of asset ids to build a ChangeAssetOrder action of the type T.
@@ -41,7 +41,7 @@ public abstract class AssetActionFactory<T> {
      * @param newAssetOrder the new asset order needed to build the action.
      * @return the built update action.
      */
-    public abstract UpdateAction<T> buildChangeAssetOrderAction(@Nonnull final List<String> newAssetOrder);
+    public abstract UpdateAction<T> buildChangeAssetOrderAction(@Nonnull List<String> newAssetOrder);
 
     /**
      * Takes an asset draft and an asset position to build an AddAsset action of the type T.
@@ -50,6 +50,6 @@ public abstract class AssetActionFactory<T> {
      * @param position      the position to add the new asset to.
      * @return the built update action.
      */
-    public abstract UpdateAction<T> buildAddAssetAction(@Nonnull final AssetDraft newAssetDraft,
-                                                        @Nonnull final Integer position);
+    public abstract UpdateAction<T> buildAddAssetAction(@Nonnull AssetDraft newAssetDraft,
+                                                        @Nonnull Integer position);
 }

@@ -1,12 +1,15 @@
 package com.commercetools.sync.integration.commons.utils;
 
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
+import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.client.SphereRequest;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.EnumValue;
 import io.sphere.sdk.models.LocalizedEnumValue;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.TextInputHint;
+import io.sphere.sdk.models.Versioned;
 import io.sphere.sdk.products.attributes.AttributeConstraint;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
 import io.sphere.sdk.products.attributes.AttributeDefinitionBuilder;
@@ -32,14 +35,16 @@ import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndExecute;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
@@ -133,7 +138,9 @@ public final class ProductTypeITUtils {
 
         final AttributeDefinition nestedTypeAttr1 = AttributeDefinitionBuilder
                 .of("nestedattr", ofEnglish("nestedattr"), NestedAttributeType.of(productType1))
-                .isSearchable(false) // "isSearchable=true is not supported for attribute type 'nested'."
+                .isSearchable(false)
+                // isSearchable=true is not supported for attribute type 'nested' and AttributeDefinitionBuilder sets
+                // it to true by default
                 .build();
 
         final AttributeDefinition nestedTypeAttr2 = AttributeDefinitionBuilder
@@ -177,7 +184,9 @@ public final class ProductTypeITUtils {
 
         final AttributeDefinition nestedTypeAttr1 = AttributeDefinitionBuilder
                 .of("nestedattr", ofEnglish("nestedattr"), NestedAttributeType.of(productType1))
-                .isSearchable(false) // "isSearchable=true is not supported for attribute type 'nested'."
+                .isSearchable(false)
+                // isSearchable=true is not supported for attribute type 'nested' and AttributeDefinitionBuilder sets
+                // it to true by default
                 .build();
 
         final AttributeDefinition nestedTypeAttr2 = AttributeDefinitionBuilder
@@ -210,8 +219,46 @@ public final class ProductTypeITUtils {
      * @param ctpClient defines the CTP project to delete the product types from.
      */
     public static void deleteProductTypes(@Nonnull final SphereClient ctpClient) {
+        deleteProductTypesWithRetry(ctpClient);
+    }
+
+    /**
+     * Deletes all attributes with references and
+     * then product types from the CTP project defined by the {@code ctpClient}.
+     *
+     * @param ctpClient defines the CTP project to delete the product types from.
+     */
+    public static void removeAttributeReferencesAndDeleteProductTypes(@Nonnull final SphereClient ctpClient) {
         deleteProductTypeAttributes(ctpClient);
-        queryAndExecute(ctpClient, ProductTypeQuery.of(), ProductTypeDeleteCommand::of);
+        deleteProductTypes(ctpClient);
+    }
+
+    private static void deleteProductTypesWithRetry(@Nonnull final SphereClient ctpClient) {
+        final Consumer<List<ProductType>> pageConsumer =
+            pageElements -> CompletableFuture.allOf(pageElements.stream()
+                .map(productType -> deleteProductTypeWithRetry(ctpClient, productType))
+                .map(CompletionStage::toCompletableFuture)
+                .toArray(CompletableFuture[]::new))
+                .join();
+
+        CtpQueryUtils.queryAll(ctpClient, ProductTypeQuery.of(), pageConsumer, 50)
+                .toCompletableFuture()
+                .join();
+    }
+
+    private static CompletionStage<ProductType> deleteProductTypeWithRetry(@Nonnull final SphereClient ctpClient,
+                                                                           @Nonnull final ProductType productType) {
+        return ctpClient.execute(ProductTypeDeleteCommand.of(productType))
+                .handle((result, throwable) -> {
+                    if (throwable instanceof ConcurrentModificationException) {
+                        Long currentVersion = ((ConcurrentModificationException)throwable).getCurrentVersion();
+                        SphereRequest<ProductType> retry =
+                                ProductTypeDeleteCommand.of(Versioned.of(productType.getId(), currentVersion));
+
+                        ctpClient.execute(retry);
+                    }
+                    return result;
+                });
     }
 
     /**
@@ -242,13 +289,41 @@ public final class ProductTypeITUtils {
                 CompletableFuture.allOf(productTypesToUpdate
                     .entrySet()
                     .stream()
-                    .map(entry ->
-                        ctpClient.execute(
-                            ProductTypeUpdateCommand.of(entry.getKey(), new ArrayList<>(entry.getValue()))))
+                        .map(entry -> removeAttributeDefinitionWithRetry(ctpClient, entry)
+                        )
                     .toArray(CompletableFuture[]::new))
             )
             .toCompletableFuture()
             .join();
+
+        try {
+            // The removal of the attributes is eventually consistent.
+            // Here with one second break we are slowing down the ITs a little bit so CTP could remove the attributes.
+            // see: SUPPORT-8408
+            Thread.sleep(1000);
+        } catch (InterruptedException expected) { }
+    }
+
+    private static CompletionStage<ProductType> removeAttributeDefinitionWithRetry(
+        @Nonnull final SphereClient ctpClient,
+        @Nonnull final Map.Entry<ProductType, Set<UpdateAction<ProductType>>> entry) {
+
+        return ctpClient.execute(
+                ProductTypeUpdateCommand.of(entry.getKey(), new ArrayList<>(entry.getValue())))
+                .handle((result, throwable) -> {
+                    if (throwable instanceof ConcurrentModificationException) {
+                        Long currentVersion =
+                                ((ConcurrentModificationException) throwable).getCurrentVersion();
+                        Versioned<ProductType> versioned =
+                                Versioned.of(entry.getKey().getId(), currentVersion);
+                        SphereRequest<ProductType> retry =
+                                ProductTypeUpdateCommand.of(versioned,
+                                        new ArrayList<>(entry.getValue()));
+
+                        ctpClient.execute(retry);
+                    }
+                    return result;
+                });
     }
 
     /**

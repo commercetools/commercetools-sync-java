@@ -6,6 +6,7 @@ import io.sphere.sdk.inventory.InventoryEntryDraft;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
@@ -18,7 +19,8 @@ public interface InventoryService {
      * @return {@link List} of matching entries or empty list when there was no entry of sku matching to {@code skus}.
      */
     @Nonnull
-    CompletionStage<List<InventoryEntry>> fetchInventoryEntriesBySkus(@Nonnull final Set<String> skus);
+    CompletionStage<Set<InventoryEntry>> fetchInventoryEntriesBySkus(
+        @Nonnull final Set<String> skus);
 
     /**
      * Creates new inventory entry from {@code inventoryEntryDraft}.
@@ -27,7 +29,8 @@ public interface InventoryService {
      * @return {@link CompletionStage} with created {@link InventoryEntry} or an exception
      */
     @Nonnull
-    CompletionStage<InventoryEntry> createInventoryEntry(@Nonnull final InventoryEntryDraft inventoryEntryDraft);
+    CompletionStage<Optional<InventoryEntry>> createInventoryEntry(
+        @Nonnull final InventoryEntryDraft inventoryEntryDraft);
 
     /**
      * Updates existing inventory entry with {@code updateActions}.
@@ -37,7 +40,7 @@ public interface InventoryService {
      * @return {@link CompletionStage} with updated {@link InventoryEntry} or an exception
      */
     @Nonnull
-    CompletionStage<InventoryEntry> updateInventoryEntry(@Nonnull final InventoryEntry inventoryEntry,
-                                                         @Nonnull final List<UpdateAction<InventoryEntry>>
-                                                             updateActions);
+    CompletionStage<InventoryEntry> updateInventoryEntry(
+        @Nonnull final InventoryEntry inventoryEntry,
+        @Nonnull final List<UpdateAction<InventoryEntry>> updateActions);
 }
