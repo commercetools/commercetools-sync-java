@@ -20,8 +20,7 @@ public final class TaxCategorySyncUtils {
     }
 
     /**
-     * Compares all the fields (including the tax rates see
-     * {@link TaxRatesUpdateActionUtils#buildTaxRatesUpdateActions(List, List)}) of a {@link TaxCategory} and a
+     * Compares all the fields of a {@link TaxCategory} and a
      * {@link TaxCategoryDraft}. It returns a {@link List} of {@link UpdateAction}&lt;{@link TaxCategory}&gt; as a
      * result. If no update action is needed, for example in case where both the {@link TaxCategory} and the
      * {@link TaxCategoryDraft} have the same fields, an empty {@link List} is returned.

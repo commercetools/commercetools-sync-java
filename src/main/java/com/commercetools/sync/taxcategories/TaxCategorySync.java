@@ -1,9 +1,9 @@
 package com.commercetools.sync.taxcategories;
 
-import com.commercetools.sync.taxcategories.helpers.TaxCategorySyncStatistics;
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.impl.TaxCategoryServiceImpl;
+import com.commercetools.sync.taxcategories.helpers.TaxCategorySyncStatistics;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.taxcategories.TaxCategory;
@@ -19,8 +19,8 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
-import static com.commercetools.sync.taxcategories.utils.TaxCategorySyncUtils.buildActions;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
+import static com.commercetools.sync.taxcategories.utils.TaxCategorySyncUtils.buildActions;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.allOf;
@@ -32,7 +32,10 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncStatistics, TaxCategorySyncOptions> {
 
-    private static final String CTP_STATE_UPDATE_FAILED = "Failed to update tax category with key: '%s'. Reason: %s";
+    private static final String TAX_CATEGORY_FETCH_FAILED = "Failed to fetch existing tax categories with keys: '%s'.";
+    private static final String TAX_CATEGORY_UPDATE_FAILED = "Failed to update tax category with key: '%s'. Reason: %s";
+    private static final String TAX_CATEGORY_DRAFT_HAS_NO_KEY = "Failed to process tax category draft without key.";
+    private static final String TAX_CATEGORY_DRAFT_IS_NULL = "Failed to process null tax category draft.";
 
     private final TaxCategoryService taxCategoryService;
 
@@ -49,8 +52,8 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
      *
      * @param taxCategorySyncOptions the container of all the options of the sync process including the CTP project
      *                               client and/or configuration and other sync-specific options.
-     * @param taxCategoryService     the type service which is responsible for fetching/caching the Types from the CTP
-     *                               project.
+     * @param taxCategoryService     the tax category service which is responsible for fetching/caching the
+     *                               tax categories from the CTP project.
      */
     TaxCategorySync(@Nonnull final TaxCategorySyncOptions taxCategorySyncOptions,
                     @Nonnull final TaxCategoryService taxCategoryService) {
@@ -64,6 +67,22 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
         return syncBatches(batches, completedFuture(statistics));
     }
 
+    /**
+     * This method first creates a new {@link Set} of valid {@link TaxCategoryDraft} elements. For more on the rules of
+     * validation, check: {@link TaxCategorySync#validateDraft(TaxCategoryDraft)}. Using the resulting set of
+     * {@code validTaxCategoryDrafts}, the matching tax categories in the target CTP project are fetched then the method
+     * {@link TaxCategorySync#syncBatch(Set, Set)} is called to perform the sync (<b>update</b> or <b>create</b>
+     * requests accordingly) on the target project.
+     *
+     * <p> In case of error during of fetching of existing tax categories, the error callback will be triggered.
+     * And the sync process would stop for the given batch.
+     * </p>
+     *
+     * @param batch batch of drafts that need to be synced
+     * @return a {@link CompletionStage} containing an instance
+     *         of {@link TaxCategorySyncStatistics} which contains information about the result of syncing the supplied
+     *         batch to the target project.
+     */
     @Override
     protected CompletionStage<TaxCategorySyncStatistics> processBatch(@Nonnull final List<TaxCategoryDraft> batch) {
         final Set<TaxCategoryDraft> validTaxCategoryDrafts = batch.stream()
@@ -79,17 +98,15 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
                 .fetchMatchingTaxCategoriesByKeys(keys)
                 .handle(ImmutablePair::new)
                 .thenCompose(fetchResponse -> {
-                    Set<TaxCategory> fetchedTaxCategorys = fetchResponse.getKey();
+                    Set<TaxCategory> fetchedTaxCategories = fetchResponse.getKey();
                     final Throwable exception = fetchResponse.getValue();
 
                     if (exception != null) {
-                        final String errorMessage = format(
-                            "Failed to fetch existing taxCategories with keys: '%s'.",
-                            keys);
+                        final String errorMessage = format(TAX_CATEGORY_FETCH_FAILED, keys);
                         handleError(errorMessage, exception, keys.size());
                         return completedFuture(null);
                     } else {
-                        return syncBatch(fetchedTaxCategorys, validTaxCategoryDrafts);
+                        return syncBatch(fetchedTaxCategories, validTaxCategoryDrafts);
                     }
                 })
                 .thenApply(ignored -> {
@@ -109,9 +126,9 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
      */
     private boolean validateDraft(@Nullable final TaxCategoryDraft draft) {
         if (draft == null) {
-            handleError("Failed to process null tax category draft.", null, 1);
+            handleError(TAX_CATEGORY_DRAFT_IS_NULL, null, 1);
         } else if (isBlank(draft.getKey())) {
-            handleError("Failed to process tax category draft without key.", null, 1);
+            handleError(TAX_CATEGORY_DRAFT_HAS_NO_KEY, null, 1);
         } else {
             return true;
         }
@@ -139,20 +156,24 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
      * project. The tax category and the draft are considered to match if they have the same key. When there will be no
      * error it will attempt to sync the drafts transactions.
      *
-     * @param oldTaxCategorys old tax categories.
-     * @param newTaxCategorys drafts that need to be synced.
+     * @param oldTaxCategories old tax categories.
+     * @param newTaxCategories drafts that need to be synced.
      * @return a {@link CompletionStage} which contains an empty result after execution of the update
      */
     @Nonnull
-    private CompletionStage<Void> syncBatch(@Nonnull final Set<TaxCategory> oldTaxCategorys,
-                                            @Nonnull final Set<TaxCategoryDraft> newTaxCategorys) {
-        final Map<String, TaxCategory> oldTaxCategoryMap = oldTaxCategorys.stream()
+    private CompletionStage<Void> syncBatch(
+        @Nonnull final Set<TaxCategory> oldTaxCategories,
+        @Nonnull final Set<TaxCategoryDraft> newTaxCategories) {
+
+        final Map<String, TaxCategory> oldTaxCategoryMap = oldTaxCategories
+            .stream()
             .collect(toMap(TaxCategory::getKey, identity()));
 
-        return allOf(newTaxCategorys
+        return allOf(newTaxCategories
             .stream()
             .map(newTaxCategory -> {
                 final TaxCategory oldTaxCategory = oldTaxCategoryMap.get(newTaxCategory.getKey());
+
                 return ofNullable(oldTaxCategory)
                     .map(taxCategory -> buildActionsAndUpdate(oldTaxCategory, newTaxCategory))
                     .orElseGet(() -> applyCallbackAndCreate(newTaxCategory));
@@ -171,6 +192,7 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
     @Nonnull
     private CompletionStage<Optional<TaxCategory>> applyCallbackAndCreate(
         @Nonnull final TaxCategoryDraft taxCategoryDraft) {
+
         return syncOptions
             .applyBeforeCreateCallBack(taxCategoryDraft)
             .map(draft -> taxCategoryService
@@ -192,7 +214,9 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
     private CompletionStage<Optional<TaxCategory>> buildActionsAndUpdate(
         @Nonnull final TaxCategory oldTaxCategory,
         @Nonnull final TaxCategoryDraft newTaxCategory) {
+
         final List<UpdateAction<TaxCategory>> updateActions = buildActions(oldTaxCategory, newTaxCategory, syncOptions);
+
         List<UpdateAction<TaxCategory>> updateActionsAfterCallback =
             syncOptions.applyBeforeUpdateCallBack(updateActions, newTaxCategory, oldTaxCategory);
 
@@ -236,7 +260,7 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
                         () -> fetchAndUpdate(oldTaxCategory, newTaxCategory),
                         () -> {
                             final String errorMessage =
-                                format(CTP_STATE_UPDATE_FAILED, newTaxCategory.getKey(),
+                                format(TAX_CATEGORY_UPDATE_FAILED, newTaxCategory.getKey(),
                                     sphereException.getMessage());
                             handleError(errorMessage, sphereException, 1);
                             return completedFuture(Optional.empty());
@@ -252,16 +276,17 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
     private CompletionStage<Optional<TaxCategory>> fetchAndUpdate(
         @Nonnull final TaxCategory oldTaxCategory,
         @Nonnull final TaxCategoryDraft newTaxCategory) {
+
         final String key = oldTaxCategory.getKey();
         return taxCategoryService
             .fetchTaxCategory(key)
             .handle(ImmutablePair::new)
             .thenCompose(fetchResponse -> {
-                Optional<TaxCategory> fetchedTaxCategoryOptional = fetchResponse.getKey();
+                final Optional<TaxCategory> fetchedTaxCategoryOptional = fetchResponse.getKey();
                 final Throwable exception = fetchResponse.getValue();
 
                 if (exception != null) {
-                    final String errorMessage = format(CTP_STATE_UPDATE_FAILED, key,
+                    final String errorMessage = format(TAX_CATEGORY_UPDATE_FAILED, key,
                         "Failed to fetch from CTP while retrying after concurrency modification.");
                     handleError(errorMessage, exception, 1);
                     return completedFuture(null);
@@ -270,7 +295,7 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
                 return fetchedTaxCategoryOptional
                     .map(fetchedTaxCategory -> buildActionsAndUpdate(fetchedTaxCategory, newTaxCategory))
                     .orElseGet(() -> {
-                        final String errorMessage = format(CTP_STATE_UPDATE_FAILED, key,
+                        final String errorMessage = format(TAX_CATEGORY_UPDATE_FAILED, key,
                             "Not found when attempting to fetch while retrying "
                                 + "after concurrency modification.");
                         handleError(errorMessage, null, 1);

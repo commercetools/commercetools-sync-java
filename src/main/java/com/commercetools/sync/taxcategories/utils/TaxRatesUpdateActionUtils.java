@@ -1,7 +1,8 @@
 package com.commercetools.sync.taxcategories.utils;
 
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
-import com.commercetools.sync.commons.exceptions.DuplicateNameException;
+import com.commercetools.sync.commons.exceptions.DuplicateCountryCodeException;
+import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.taxcategories.SubRate;
 import io.sphere.sdk.taxcategories.TaxCategory;
@@ -49,16 +50,15 @@ final class TaxRatesUpdateActionUtils {
      * @param newTaxRatesDrafts the new list of tax rates drafts.
      * @return a list of tax rates update actions if the list of tax rates are not identical.
      *         Otherwise, if the tax rates are identical, an empty list is returned.
-     * @throws BuildUpdateActionException in case there are tax rates drafts with duplicate names or enums
-     *                                    duplicate keys.
+     * @throws BuildUpdateActionException in case there are tax rates drafts with duplicate country codes.
      */
     @Nonnull
     static List<UpdateAction<TaxCategory>> buildTaxRatesUpdateActions(
         @Nonnull final List<TaxRate> oldTaxRates,
-        @Nonnull final List<TaxRateDraft> newTaxRatesDrafts)
+        final List<TaxRateDraft> newTaxRatesDrafts)
         throws BuildUpdateActionException {
 
-        if (!newTaxRatesDrafts.isEmpty()) {
+        if (newTaxRatesDrafts != null && !newTaxRatesDrafts.isEmpty()) {
             return buildUpdateActions(
                 oldTaxRates,
                 newTaxRatesDrafts.stream().filter(Objects::nonNull).collect(toList())
@@ -83,7 +83,7 @@ final class TaxRatesUpdateActionUtils {
      * @param newTaxRatesDrafts the new list of tax rates drafts.
      * @return a list of tax rates update actions if the list of tax rates is not identical.
      *         Otherwise, if the tax rates are identical, an empty list is returned.
-     * @throws BuildUpdateActionException in case there are tax rates drafts with duplicate names.
+     * @throws BuildUpdateActionException in case there are tax rates drafts with duplicate country codes.
      */
     @Nonnull
     private static List<UpdateAction<TaxCategory>> buildUpdateActions(
@@ -106,7 +106,7 @@ final class TaxRatesUpdateActionUtils {
             );
 
             return updateActions;
-        } catch (final DuplicateNameException exception) {
+        } catch (final DuplicateCountryCodeException exception) {
             throw new BuildUpdateActionException(exception);
         }
     }
@@ -123,34 +123,47 @@ final class TaxRatesUpdateActionUtils {
      *         in the new draft. If the tax rate still exists in the new draft, then compare the fields, and add
      *         the computed actions to the list of update actions.
      *         Otherwise, if the tax rates are identical, an empty list is returned.
-     * @throws DuplicateNameException in case there are tax rates drafts with duplicate names.
+     * @throws DuplicateCountryCodeException in case there are tax rates drafts with duplicate country codes.
      */
     @Nonnull
     private static List<UpdateAction<TaxCategory>> buildRemoveOrReplaceTaxRateUpdateActions(
         @Nonnull final List<TaxRate> oldTaxRates,
         @Nonnull final List<TaxRateDraft> newTaxRatesDrafts) {
 
-        final Map<String, TaxRateDraft> newTaxRatesDraftsNameMap =
+        /*
+        For TaxRates only unique field is country code. So we are using country code for matching.
+        Representation of CTP error,
+            {
+                "statusCode": 400,
+                "message": "A duplicate value '{\"country\":\"DE\"}' exists for field 'country'.",
+                "errors": [
+                    {
+                        "code": "DuplicateField",
+                        ....
+                ]
+            }
+        * */
+        final Map<CountryCode, TaxRateDraft> newTaxRatesDraftsCountryMap =
             newTaxRatesDrafts
                 .stream().collect(
-                toMap(TaxRateDraft::getName, taxRateDraft -> taxRateDraft,
+                toMap(TaxRateDraft::getCountry, taxRateDraft -> taxRateDraft,
                     (taxRateDraftA, taxRateDraftB) -> {
-                        throw new DuplicateNameException(
-                            format("Tax rates drafts have duplicated names. Duplicated tax rate "
-                                    + "name: '%s'.  Tax rates names are expected to be unique "
+                        throw new DuplicateCountryCodeException(
+                            format("Tax rates drafts have duplicated country codes. Duplicated tax rate "
+                                    + "country code: '%s'. Tax rates country codes are expected to be unique "
                                     + "inside their tax category.",
-                                taxRateDraftA.getName()));
+                                taxRateDraftA.getCountry()));
                     }
                 ));
 
         return oldTaxRates
             .stream()
             .map(oldTaxRate -> {
-                final String oldTaxRateName = oldTaxRate.getName();
-                final TaxRateDraft matchingNewTaxRateDraft = newTaxRatesDraftsNameMap.get(oldTaxRateName);
+                final CountryCode oldTaxRateCountryCode = oldTaxRate.getCountry();
+                final TaxRateDraft matchingNewTaxRateDraft = newTaxRatesDraftsCountryMap.get(oldTaxRateCountryCode);
                 return ofNullable(matchingNewTaxRateDraft)
                     .map(taxRateDraft -> {
-                        if (!same(oldTaxRate, taxRateDraft)) {
+                        if (!hasSameFields(oldTaxRate, taxRateDraft)) {
                             return singletonList(ReplaceTaxRate.of(oldTaxRate.getId(), taxRateDraft));
                         } else {
                             return new ArrayList<UpdateAction<TaxCategory>>();
@@ -177,19 +190,20 @@ final class TaxRatesUpdateActionUtils {
         @Nonnull final List<TaxRate> oldTaxRates,
         @Nonnull final List<TaxRateDraft> newTaxRateDrafts) {
 
-        final Map<String, TaxRate> oldTaxRateNameMap = oldTaxRates.stream()
-            .collect(toMap(TaxRate::getName, Function.identity()));
+        final Map<CountryCode, TaxRate> countryCodeTaxRateMap = oldTaxRates
+            .stream()
+            .collect(toMap(TaxRate::getCountry, Function.identity()));
 
         return newTaxRateDrafts
             .stream()
-            .filter(taxRateDraft -> !oldTaxRateNameMap.containsKey(taxRateDraft.getName()))
+            .filter(taxRateDraft -> !countryCodeTaxRateMap.containsKey(taxRateDraft.getCountry()))
             .map(AddTaxRate::of)
             .collect(Collectors.toList());
     }
 
-    private static boolean same(@Nonnull final TaxRate oldTaxRate, @Nonnull final TaxRateDraft newTaxRate) {
+    private static boolean hasSameFields(@Nonnull final TaxRate oldTaxRate, @Nonnull final TaxRateDraft newTaxRate) {
         return Objects.equals(oldTaxRate.getAmount(), newTaxRate.getAmount())
-            && Objects.equals(oldTaxRate.getCountry(), newTaxRate.getCountry())
+            && Objects.equals(oldTaxRate.getName(), newTaxRate.getName())
             && Objects.equals(oldTaxRate.getState(), newTaxRate.getState())
             && Objects.equals(oldTaxRate.isIncludedInPrice(), newTaxRate.isIncludedInPrice())
             && sameSubRates(oldTaxRate.getSubRates().stream().filter(Objects::nonNull).collect(toList()),

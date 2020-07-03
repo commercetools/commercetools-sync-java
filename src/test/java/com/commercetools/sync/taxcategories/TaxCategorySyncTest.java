@@ -36,7 +36,7 @@ import static org.mockito.Mockito.when;
 
 class TaxCategorySyncTest {
 
-    private TaxCategoryService taxCategoryService = mock(TaxCategoryService.class);
+    private final TaxCategoryService taxCategoryService = mock(TaxCategoryService.class);
 
     @AfterEach
     void cleanup() {
@@ -82,7 +82,7 @@ class TaxCategorySyncTest {
         assertAll(
             () -> assertThat(result.getProcessed().get()).isEqualTo(1),
             () -> assertThat(errors).hasSize(1),
-            () -> assertThat(errors).contains("Failed to fetch existing taxCategories with keys: '[someKey]'.")
+            () -> assertThat(errors).contains("Failed to fetch existing tax categories with keys: '[someKey]'.")
         );
         verify(taxCategoryService, times(1)).fetchMatchingTaxCategoriesByKeys(any());
         verifyNoMoreInteractions(taxCategoryService);
