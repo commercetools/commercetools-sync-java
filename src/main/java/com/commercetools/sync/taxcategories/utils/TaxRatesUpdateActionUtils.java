@@ -1,7 +1,7 @@
 package com.commercetools.sync.taxcategories.utils;
 
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
-import com.commercetools.sync.commons.exceptions.DuplicateCountryCodeException;
+import com.commercetools.sync.commons.exceptions.DuplicateCountryCodeAndStateException;
 import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.taxcategories.SubRate;
@@ -106,7 +106,7 @@ final class TaxRatesUpdateActionUtils {
             );
 
             return updateActions;
-        } catch (final DuplicateCountryCodeException exception) {
+        } catch (final DuplicateCountryCodeAndStateException exception) {
             throw new BuildUpdateActionException(exception);
         }
     }
@@ -123,7 +123,7 @@ final class TaxRatesUpdateActionUtils {
      *         in the new draft. If the tax rate still exists in the new draft, then compare the fields, and add
      *         the computed actions to the list of update actions.
      *         Otherwise, if the tax rates are identical, an empty list is returned.
-     * @throws DuplicateCountryCodeException in case there are tax rates drafts with duplicate country codes.
+     * @throws DuplicateCountryCodeAndStateException in case there are tax rates drafts with duplicate country codes.
      */
     @Nonnull
     private static List<UpdateAction<TaxCategory>> buildRemoveOrReplaceTaxRateUpdateActions(
@@ -143,24 +143,19 @@ final class TaxRatesUpdateActionUtils {
                 ]
             }
         * */
-        final Map<CountryCode, TaxRateDraft> newTaxRatesDraftsCountryMap =
-            newTaxRatesDrafts
-                .stream().collect(
-                toMap(TaxRateDraft::getCountry, taxRateDraft -> taxRateDraft,
-                    (taxRateDraftA, taxRateDraftB) -> {
-                        throw new DuplicateCountryCodeException(
-                            format("Tax rates drafts have duplicated country codes. Duplicated tax rate "
-                                    + "country code: '%s'. Tax rates country codes are expected to be unique "
-                                    + "inside their tax category.",
-                                taxRateDraftA.getCountry()));
-                    }
-                ));
+        final Map<String, TaxRateDraft> taxRateDraftCountryStateMap = newTaxRatesDrafts
+                .stream()
+                .collect(
+                    toMap(taxRateDraft -> taxRateDraft.getCountry() + "_" + taxRateDraft.getState(),
+                        taxRateDraft -> taxRateDraft));
 
         return oldTaxRates
             .stream()
             .map(oldTaxRate -> {
                 final CountryCode oldTaxRateCountryCode = oldTaxRate.getCountry();
-                final TaxRateDraft matchingNewTaxRateDraft = newTaxRatesDraftsCountryMap.get(oldTaxRateCountryCode);
+                final String oldTaxRateState = oldTaxRate.getState();
+                final TaxRateDraft matchingNewTaxRateDraft = taxRateDraftCountryStateMap
+                        .get(oldTaxRateCountryCode+"_"+oldTaxRateState);
                 return ofNullable(matchingNewTaxRateDraft)
                     .map(taxRateDraft -> {
                         if (!hasSameFields(oldTaxRate, taxRateDraft)) {

@@ -1,6 +1,7 @@
 package com.commercetools.sync.taxcategories;
 
 import com.commercetools.sync.commons.BaseSync;
+import com.commercetools.sync.commons.exceptions.DuplicateCountryCodeAndStateException;
 import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.impl.TaxCategoryServiceImpl;
 import com.commercetools.sync.taxcategories.helpers.TaxCategorySyncStatistics;
@@ -8,6 +9,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import io.sphere.sdk.taxcategories.TaxCategoryDraft;
+import io.sphere.sdk.taxcategories.TaxRateDraft;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
@@ -209,11 +211,31 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
             .orElse(completedFuture(Optional.empty()));
     }
 
+    @Nonnull
+    private static Map<String, TaxRateDraft> checkDuplicateNewTaxRateDraft(final List<TaxRateDraft> taxRateDrafts) {
+        return taxRateDrafts
+            .stream().collect(
+            toMap(taxRateDraft -> taxRateDraft.getCountry() + "_" + taxRateDraft.getState(),
+                    taxRateDraft -> taxRateDraft,
+                    (taxRateDraftA, taxRateDraftB) -> {
+                        throw new DuplicateCountryCodeAndStateException(
+                            format("Tax rates drafts have duplicated country codes and states. Duplicated tax rate "
+                                    + "country code: '%s'. state : '%s'. Tax rates country codes and state are "
+                                    + "expected to be unique inside their tax category.",
+                                    taxRateDraftA.getCountry(), taxRateDraftA.getState()));
+                        }
+        ));
+    }
+
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
     private CompletionStage<Optional<TaxCategory>> buildActionsAndUpdate(
         @Nonnull final TaxCategory oldTaxCategory,
         @Nonnull final TaxCategoryDraft newTaxCategory) {
+
+        Map<String, TaxRateDraft> newTaxRateDraftCountryStateMap = new HashMap<String, TaxRateDraft>();
+        if (newTaxCategory.getTaxRates().size()>0)
+            newTaxRateDraftCountryStateMap = checkDuplicateNewTaxRateDraft(newTaxCategory.getTaxRates());
 
         final List<UpdateAction<TaxCategory>> updateActions = buildActions(oldTaxCategory, newTaxCategory, syncOptions);
 
