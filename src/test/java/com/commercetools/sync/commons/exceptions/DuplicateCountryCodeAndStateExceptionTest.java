@@ -5,15 +5,15 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-class DuplicateCountryCodeExceptionTest {
+class DuplicateCountryCodeAndStateExceptionTest {
 
     @Test
     void duplicateCountryCodeException_WithMessageOnly_ShouldBuildExceptionCorrectly() {
         final String message = "foo";
 
         assertThatThrownBy(() -> {
-            throw new DuplicateCountryCodeException(message);
-        }).isExactlyInstanceOf(DuplicateCountryCodeException.class)
+            throw new DuplicateCountryCodeAndStateException(message);
+        }).isExactlyInstanceOf(DuplicateCountryCodeAndStateException.class)
           .hasNoCause()
           .hasMessage(message);
     }
@@ -24,8 +24,8 @@ class DuplicateCountryCodeExceptionTest {
         final IllegalArgumentException cause = new IllegalArgumentException();
 
         assertThatThrownBy(() -> {
-            throw new DuplicateCountryCodeException(message, cause);
-        }).isExactlyInstanceOf(DuplicateCountryCodeException.class)
+            throw new DuplicateCountryCodeAndStateException(message, cause);
+        }).isExactlyInstanceOf(DuplicateCountryCodeAndStateException.class)
           .hasCause(cause)
           .hasMessage(message);
     }
@@ -35,8 +35,8 @@ class DuplicateCountryCodeExceptionTest {
         final IllegalArgumentException cause = new IllegalArgumentException();
 
         assertThatThrownBy(() -> {
-            throw new DuplicateCountryCodeException(cause);
-        }).isExactlyInstanceOf(DuplicateCountryCodeException.class)
+            throw new DuplicateCountryCodeAndStateException(cause);
+        }).isExactlyInstanceOf(DuplicateCountryCodeAndStateException.class)
           .hasCause(cause)
           .hasMessage(cause.toString());
 
