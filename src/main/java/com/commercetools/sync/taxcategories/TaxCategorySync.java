@@ -219,11 +219,10 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
     }
 
     @Nonnull
-    private static Map<String, TaxRateDraft> checkDuplicateCountryStateForNewTaxRateDraft(
+    private static void checkDuplicateCountryStateForNewTaxRateDraft(
             final List<TaxRateDraft> taxRateDrafts) {
 
-        return taxRateDrafts
-            .stream().collect(
+         taxRateDrafts.stream().collect(
             toMap(taxRateDraft -> taxRateDraft.getCountry() + "_" + taxRateDraft.getState(),
                     taxRateDraft -> taxRateDraft,
                     (taxRateDraftA, taxRateDraftB) -> {
@@ -242,8 +241,7 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
         @Nonnull final TaxCategory oldTaxCategory,
         @Nonnull final TaxCategoryDraft newTaxCategory) {
 
-        Map<String, TaxRateDraft> newTaxRateDraftCountryStateMap = new HashMap<String, TaxRateDraft>();
-        if (newTaxCategory.getTaxRates().size() > 0)
+        if (newTaxCategory.getTaxRates()!=null && newTaxCategory.getTaxRates().size() > 0)
             checkDuplicateCountryStateForNewTaxRateDraft(newTaxCategory.getTaxRates());
 
         final List<UpdateAction<TaxCategory>> updateActions = buildActions(oldTaxCategory, newTaxCategory, syncOptions);
