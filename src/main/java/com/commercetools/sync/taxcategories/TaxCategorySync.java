@@ -14,7 +14,6 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -222,16 +221,16 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
     private static void checkDuplicateCountryStateForNewTaxRateDraft(
             final List<TaxRateDraft> taxRateDrafts) {
 
-         taxRateDrafts.stream().collect(
+        taxRateDrafts.stream().collect(
             toMap(taxRateDraft -> taxRateDraft.getCountry() + "_" + taxRateDraft.getState(),
-                    taxRateDraft -> taxRateDraft,
-                    (taxRateDraftA, taxRateDraftB) -> {
-                        throw new DuplicateCountryCodeAndStateException(
+                taxRateDraft -> taxRateDraft,
+                (taxRateDraftA, taxRateDraftB) -> {
+                    throw new DuplicateCountryCodeAndStateException(
                             format("Tax rates drafts have duplicated country codes and states. Duplicated tax rate "
                                     + "country code: '%s'. state : '%s'. Tax rates country codes and states are "
                                     + "expected to be unique inside their tax category.",
                                     taxRateDraftA.getCountry(), taxRateDraftA.getState()));
-                        }
+                }
         ));
     }
 
@@ -241,8 +240,9 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
         @Nonnull final TaxCategory oldTaxCategory,
         @Nonnull final TaxCategoryDraft newTaxCategory) {
 
-        if (newTaxCategory.getTaxRates()!=null && newTaxCategory.getTaxRates().size() > 0)
+        if (newTaxCategory.getTaxRates() != null && newTaxCategory.getTaxRates().size() > 0) {
             checkDuplicateCountryStateForNewTaxRateDraft(newTaxCategory.getTaxRates());
+        }
 
         final List<UpdateAction<TaxCategory>> updateActions = buildActions(oldTaxCategory, newTaxCategory, syncOptions);
 

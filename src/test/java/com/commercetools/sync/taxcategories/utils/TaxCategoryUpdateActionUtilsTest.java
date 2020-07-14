@@ -1,9 +1,7 @@
 package com.commercetools.sync.taxcategories.utils;
 
 import com.commercetools.sync.taxcategories.TaxCategorySyncOptions;
-import com.commercetools.sync.taxcategories.TaxCategorySyncOptionsBuilder;
 import com.neovisionaries.i18n.CountryCode;
-import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.taxcategories.SubRate;
 import io.sphere.sdk.taxcategories.TaxCategory;
@@ -22,12 +20,10 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static com.commercetools.sync.taxcategories.utils.TaxCategoryUpdateActionUtils.buildChangeNameAction;
 import static com.commercetools.sync.taxcategories.utils.TaxCategoryUpdateActionUtils.buildSetDescriptionAction;
 import static com.commercetools.sync.taxcategories.utils.TaxCategoryUpdateActionUtils.buildTaxRateUpdateActions;
-import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;

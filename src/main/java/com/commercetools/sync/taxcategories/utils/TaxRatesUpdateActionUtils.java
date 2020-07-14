@@ -21,7 +21,6 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static java.lang.String.format;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
@@ -155,7 +154,7 @@ final class TaxRatesUpdateActionUtils {
                 final CountryCode oldTaxRateCountryCode = oldTaxRate.getCountry();
                 final String oldTaxRateState = oldTaxRate.getState();
                 final TaxRateDraft matchingNewTaxRateDraft = taxRateDraftCountryStateMap
-                        .get(oldTaxRateCountryCode+"_"+oldTaxRateState);
+                        .get(oldTaxRateCountryCode + "_" + oldTaxRateState);
                 return ofNullable(matchingNewTaxRateDraft)
                     .map(taxRateDraft -> {
                         if (!hasSameFields(oldTaxRate, taxRateDraft)) {
