@@ -14,6 +14,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -108,7 +109,13 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
                         handleError(errorMessage, exception, keys.size());
                         return completedFuture(null);
                     } else {
-                        return syncBatch(fetchedTaxCategories, validTaxCategoryDrafts);
+                        try {
+                            return syncBatch(fetchedTaxCategories, validTaxCategoryDrafts);
+                        } catch (DuplicateCountryCodeAndStateException duplicateCountryException) {
+                            handleError(duplicateCountryException.getMessage(), duplicateCountryException, keys.size());
+                            return completedFuture(null);
+                        }
+
                     }
                 })
                 .thenApply(ignored -> {
@@ -212,7 +219,9 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
     }
 
     @Nonnull
-    private static Map<String, TaxRateDraft> checkDuplicateNewTaxRateDraft(final List<TaxRateDraft> taxRateDrafts) {
+    private static Map<String, TaxRateDraft> checkDuplicateCountryStateForNewTaxRateDraft(
+            final List<TaxRateDraft> taxRateDrafts) {
+
         return taxRateDrafts
             .stream().collect(
             toMap(taxRateDraft -> taxRateDraft.getCountry() + "_" + taxRateDraft.getState(),
@@ -220,7 +229,7 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
                     (taxRateDraftA, taxRateDraftB) -> {
                         throw new DuplicateCountryCodeAndStateException(
                             format("Tax rates drafts have duplicated country codes and states. Duplicated tax rate "
-                                    + "country code: '%s'. state : '%s'. Tax rates country codes and state are "
+                                    + "country code: '%s'. state : '%s'. Tax rates country codes and states are "
                                     + "expected to be unique inside their tax category.",
                                     taxRateDraftA.getCountry(), taxRateDraftA.getState()));
                         }
@@ -234,8 +243,8 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
         @Nonnull final TaxCategoryDraft newTaxCategory) {
 
         Map<String, TaxRateDraft> newTaxRateDraftCountryStateMap = new HashMap<String, TaxRateDraft>();
-        if (newTaxCategory.getTaxRates().size()>0)
-            newTaxRateDraftCountryStateMap = checkDuplicateNewTaxRateDraft(newTaxCategory.getTaxRates());
+        if (newTaxCategory.getTaxRates().size() > 0)
+            checkDuplicateCountryStateForNewTaxRateDraft(newTaxCategory.getTaxRates());
 
         final List<UpdateAction<TaxCategory>> updateActions = buildActions(oldTaxCategory, newTaxCategory, syncOptions);
 
