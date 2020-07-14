@@ -109,32 +109,7 @@ class TaxCategoryUpdateActionUtilsTest {
 
         assertThat(result).isEmpty();
     }
-
-    @Test
-    void buildRatesUpdateActions_WithDuplicatedCountryCodes_ShouldNotBuildActionAndTriggerErrorCallback() {
-        final String name = "DuplicatedName";
-        newDifferentTaxCategoryDraft = TaxCategoryDraftBuilder.of(name, asList(
-            // replace
-            TaxRateDraftBuilder.of(name, 2.0, false, CountryCode.DE).build(),
-            TaxRateDraftBuilder.of(name, 3.0, false, CountryCode.DE).build()
-        ), "desc").build();
-
-        final AtomicReference<String> callback = new AtomicReference<>(null);
-
-        final TaxCategorySyncOptions syncOptions = TaxCategorySyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallback((errorMsg, exception) -> callback.set(errorMsg))
-            .build();
-
-        final List<UpdateAction<TaxCategory>> result = buildTaxRateUpdateActions(taxCategory,
-            newDifferentTaxCategoryDraft, syncOptions);
-
-        assertThat(result).isEmpty();
-        assertThat(callback.get())
-            .contains(format("Tax rates drafts have duplicated country codes. Duplicated tax rate "
-                    + "country code: '%s'. Tax rates country codes are expected to be unique "
-                    + "inside their tax category.", CountryCode.DE
-                ));
-    }
+    
 
     @Test
     void buildRatesUpdateActions_OnlyWithNewRate_ShouldBuildOnlyAddTaxRateAction() {
