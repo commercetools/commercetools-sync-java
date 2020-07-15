@@ -2,12 +2,14 @@ package com.commercetools.sync.taxcategories;
 
 import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.taxcategories.helpers.TaxCategorySyncStatistics;
+import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import io.sphere.sdk.taxcategories.TaxCategoryDraft;
 import io.sphere.sdk.taxcategories.TaxCategoryDraftBuilder;
+import io.sphere.sdk.taxcategories.TaxRateDraftBuilder;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -16,7 +18,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
@@ -313,4 +317,40 @@ class TaxCategorySyncTest {
         verifyNoMoreInteractions(taxCategoryService);
     }
 
+    @Test
+    void sync_WithDuplicatedCountryCodes_ShouldNotBuildActionAndTriggerErrorCallback() {
+        final String name = "DuplicatedName";
+        final TaxCategoryDraft draft = TaxCategoryDraftBuilder.of(name, asList(
+                // replace
+                TaxRateDraftBuilder.of(name, 2.0, false, CountryCode.DE).build(),
+                TaxRateDraftBuilder.of(name, 3.0, false, CountryCode.DE).build()
+        ), "desc").key("someKey").build();
+
+        final AtomicReference<String> callback = new AtomicReference<>(null);
+        final TaxCategorySyncOptions syncOptions = TaxCategorySyncOptionsBuilder.of(mock(SphereClient.class))
+                .errorCallback((errorMsg, exception) -> callback.set(errorMsg))
+                .build();
+        final TaxCategorySync sync = new TaxCategorySync(syncOptions, taxCategoryService);
+        final TaxCategory taxCategory = mock(TaxCategory.class);
+
+        when(taxCategory.getId()).thenReturn("id");
+        when(taxCategory.getKey()).thenReturn("someKey");
+
+        when(taxCategoryService.fetchMatchingTaxCategoriesByKeys(any()))
+                .thenReturn(completedFuture(new HashSet<>(singletonList(taxCategory))));
+        when(taxCategoryService.updateTaxCategory(any(), any())).thenReturn(completedFuture(taxCategory));
+
+        final TaxCategorySyncStatistics result = sync.sync(singletonList(draft)).toCompletableFuture().join();
+
+        assertAll(
+            () -> assertThat(result.getProcessed().get()).isEqualTo(1),
+            () -> assertThat(result.getUpdated().get()).isEqualTo(0),
+            () -> assertThat(result.getFailed().get()).isEqualTo(1),
+            () -> assertThat(callback.get())
+                    .contains(format("Tax rates drafts have duplicated country codes and states. Duplicated "
+                            + "tax rate country code: '%s'. state : '%s'. Tax rates country codes and states are "
+                            + "expected to be unique inside their tax category.", CountryCode.DE, null))
+        );
+
+    }
 }

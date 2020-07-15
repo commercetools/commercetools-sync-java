@@ -337,47 +337,4 @@ class TaxCategorySyncIT {
 
         return spyClient;
     }
-
-    @Test
-    void sync_WithDuplicatedCountryCodes_ShouldFailToSyncTaxCategory() {
-        List<String> errorCallBackMessages = new ArrayList<>();
-        List<Throwable> errorCallBackExceptions = new ArrayList<>();
-        final TaxCategorySyncOptions spyOptions = TaxCategorySyncOptionsBuilder
-                .of(CTP_TARGET_CLIENT)
-                .errorCallback((errorMessage, throwable) -> {
-                    errorCallBackMessages.add(errorMessage);
-                    errorCallBackExceptions.add(throwable);
-                })
-                .build();
-
-
-        final TaxCategorySync taxCategorySync = new TaxCategorySync(spyOptions);
-
-        final String name = "DuplicatedName";
-        final TaxCategoryDraft taxCategoryDraft = TaxCategoryDraftBuilder
-                .of("tax-category-name-updated", asList(
-                        // replace
-                        TaxRateDraftBuilder.of(name, 2.0, false, CountryCode.DE).build(),
-                        TaxRateDraftBuilder.of(name, 3.0, false, CountryCode.DE).build()
-                ), "tax-category-description-updated")
-                .key("tax-category-key")
-                .build();
-
-        final TaxCategorySyncStatistics taxCategorySyncStatistics = taxCategorySync
-                .sync(singletonList(taxCategoryDraft))
-                .toCompletableFuture()
-                .join();
-
-        // Test and assertion
-        assertThat(taxCategorySyncStatistics).hasValues(1, 0, 0, 1);
-        Assertions.assertThat(errorCallBackMessages).hasSize(1);
-        Assertions.assertThat(errorCallBackExceptions).hasSize(1);
-
-        Assertions.assertThat(errorCallBackMessages.get(0)).contains(
-                format("Tax rates drafts have duplicated country codes and states. Duplicated tax rate "
-                        + "country code: '%s'. state : '%s'. Tax rates country codes and states are expected to be "
-                        + "unique inside their tax category.", CountryCode.DE, null));
-
-    }
-
 }
