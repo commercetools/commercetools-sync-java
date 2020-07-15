@@ -1,6 +1,6 @@
 # Tax Category Sync
 
-Module used for importing/syncing TaxCategory into a commercetools project. 
+Allows importing/syncing TaxCategory into a commercetools project. 
 It also provides utilities for generating update actions based on the comparison of a [TaxCategory](https://docs.commercetools.com/http-api-projects-taxCategories#taxcategory) 
 against a [TaxCategoryDraft](https://docs.commercetools.com/http-api-projects-taxCategories#taxcategorydraft).
 
