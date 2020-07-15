@@ -38,6 +38,9 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
     private static final String TAX_CATEGORY_UPDATE_FAILED = "Failed to update tax category with key: '%s'. Reason: %s";
     private static final String TAX_CATEGORY_DRAFT_HAS_NO_KEY = "Failed to process tax category draft without key.";
     private static final String TAX_CATEGORY_DRAFT_IS_NULL = "Failed to process null tax category draft.";
+    private static final String TAX_CATEGORY_DUPLICATED_COUNTRY_STATE = "Tax rates drafts have duplicated country "
+            + "codes and states. Duplicated tax rate country code: '%s'. state : '%s'. Tax rates country codes and "
+            + "states are expected to be unique inside their tax category.";
 
     private final TaxCategoryService taxCategoryService;
 
@@ -224,10 +227,8 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
                 taxRateDraft -> taxRateDraft,
                 (taxRateDraftA, taxRateDraftB) -> {
                     throw new DuplicateCountryCodeAndStateException(
-                            format("Tax rates drafts have duplicated country codes and states. Duplicated tax rate "
-                                    + "country code: '%s'. state : '%s'. Tax rates country codes and states are "
-                                    + "expected to be unique inside their tax category.",
-                                    taxRateDraftA.getCountry(), taxRateDraftA.getState()));
+                            format(TAX_CATEGORY_DUPLICATED_COUNTRY_STATE, taxRateDraftA.getCountry(),
+                                    taxRateDraftA.getState()));
                 }
         ));
     }
