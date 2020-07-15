@@ -14,7 +14,9 @@ import io.sphere.sdk.taxcategories.commands.updateactions.ReplaceTaxRate;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -205,24 +207,13 @@ final class TaxRatesUpdateActionUtils {
     }
 
     private static boolean sameSubRates(final List<SubRate> oldSubRates, final List<SubRate> newSubRates) {
-        boolean same = false;
-
         if (Objects.nonNull(oldSubRates) && Objects.nonNull(newSubRates)) {
             if (oldSubRates.size() == newSubRates.size()) {
-                Map<String, SubRate> osr = oldSubRates.stream().collect(toMap(SubRate::getName, subRate -> subRate));
-                Map<String, SubRate> nsr = newSubRates.stream().collect(toMap(SubRate::getName, subRate -> subRate));
-
-                same = true;
-                for (final Map.Entry<String, SubRate> entry : osr.entrySet()) {
-                    if (!Objects.equals(entry.getValue(), nsr.get(entry.getKey()))) {
-                        same = false;
-                        break;
-                    }
-                }
+                oldSubRates.sort(Comparator.comparing(subRate -> subRate.getName() + subRate.getAmount()));
+                newSubRates.sort(Comparator.comparing(subRate -> subRate.getName() + subRate.getAmount()));
+                return Arrays.equals(oldSubRates.toArray(), newSubRates.toArray());
             }
         }
-
-        return same;
+        return false;
     }
-
 }
