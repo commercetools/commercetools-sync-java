@@ -105,13 +105,13 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
 
                     if (exception != null) {
                         final String errorMessage = format(TAX_CATEGORY_FETCH_FAILED, keys);
-                        handleError(errorMessage, exception, keys.size());
+                        handleError(errorMessage, exception);
                         return completedFuture(null);
                     } else {
                         try {
                             return syncBatch(fetchedTaxCategories, validTaxCategoryDrafts);
                         } catch (DuplicateCountryCodeAndStateException duplicateCountryException) {
-                            handleError(duplicateCountryException.getMessage(), duplicateCountryException, keys.size());
+                            handleError(duplicateCountryException.getMessage(), duplicateCountryException);
                             return completedFuture(null);
                         }
 
@@ -134,9 +134,9 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
      */
     private boolean validateDraft(@Nullable final TaxCategoryDraft draft) {
         if (draft == null) {
-            handleError(TAX_CATEGORY_DRAFT_IS_NULL, null, 1);
+            handleError(TAX_CATEGORY_DRAFT_IS_NULL, null);
         } else if (isBlank(draft.getKey())) {
-            handleError(TAX_CATEGORY_DRAFT_HAS_NO_KEY, null, 1);
+            handleError(TAX_CATEGORY_DRAFT_HAS_NO_KEY, null);
         } else {
             return true;
         }
@@ -151,12 +151,10 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
      *
      * @param errorMessage The error message describing the reason(s) of failure.
      * @param exception    The exception that called caused the failure, if any.
-     * @param failedTimes  The number of times that the failed tax categories counter is incremented.
      */
-    private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
-                             final int failedTimes) {
+    private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception) {
         syncOptions.applyErrorCallback(errorMessage, exception);
-        statistics.incrementFailed(failedTimes);
+        statistics.incrementFailed();
     }
 
     /**
@@ -291,7 +289,7 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
                             final String errorMessage =
                                 format(TAX_CATEGORY_UPDATE_FAILED, newTaxCategory.getKey(),
                                     sphereException.getMessage());
-                            handleError(errorMessage, sphereException, 1);
+                            handleError(errorMessage, sphereException);
                             return completedFuture(Optional.empty());
                         });
                 } else {
@@ -317,7 +315,7 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
                 if (exception != null) {
                     final String errorMessage = format(TAX_CATEGORY_UPDATE_FAILED, key,
                         "Failed to fetch from CTP while retrying after concurrency modification.");
-                    handleError(errorMessage, exception, 1);
+                    handleError(errorMessage, exception);
                     return completedFuture(null);
                 }
 
@@ -327,7 +325,7 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
                         final String errorMessage = format(TAX_CATEGORY_UPDATE_FAILED, key,
                             "Not found when attempting to fetch while retrying "
                                 + "after concurrency modification.");
-                        handleError(errorMessage, null, 1);
+                        handleError(errorMessage, null);
                         return completedFuture(null);
                     });
             });
