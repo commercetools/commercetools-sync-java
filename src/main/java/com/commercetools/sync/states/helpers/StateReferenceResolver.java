@@ -104,7 +104,7 @@ public final class StateReferenceResolver
     @Nonnull
     private CompletionStage<StateDraftBuilder> fetchAndResolveStateTransitions(
         @Nonnull final StateDraftBuilder draftBuilder,
-        @Nonnull final Set<String> stateKeys) {
+        @Nonnull final Set<String> stateKeys ) {
 
         return stateService.fetchMatchingStatesByKeysWithTransitions(stateKeys)
                               .thenApply(states -> states.stream()

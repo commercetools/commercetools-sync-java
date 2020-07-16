@@ -59,6 +59,7 @@ public final class StateITUtils {
             StateDeleteCommand::of);
     }
 
+
     /**
      * Deletes all states with {@code stateType} from the CTP project defined by the {@code ctpClient}.
      *

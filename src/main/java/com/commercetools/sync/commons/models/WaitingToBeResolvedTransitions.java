@@ -11,7 +11,7 @@ public final class WaitingToBeResolvedTransitions {
     private Set<String> missingTransitionStateKeys;
 
     /**
-     * Represents a productDraft that is waiting for some state references, which are on this stateDraft as
+     * Represents a statedraft that is waiting for some state references, which are on this stateDraft as
      * transitions, to be resolved.
      *
      * @param stateDraft  state draft which has irresolvable references as transitions.

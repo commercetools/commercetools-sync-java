@@ -4,6 +4,8 @@ import com.commercetools.sync.states.helpers.StateSyncStatistics;
 
 import javax.annotation.Nullable;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public final class StateSyncStatisticsAssert
     extends AbstractSyncStatisticsAssert<StateSyncStatisticsAssert, StateSyncStatistics> {
 
@@ -29,8 +31,7 @@ public final class StateSyncStatisticsAssert
                                                final int updated, final int failed,
                                                final int numberOfStatesWithMissingParents) {
         super.hasValues(processed, created, updated, failed);
-        org.assertj.core.api.Assertions.assertThat(
-            actual.getNumberOfStatesWithMissingParents()).isEqualTo(numberOfStatesWithMissingParents);
+        assertThat(actual.getNumberOfStatesWithMissingParents()).isEqualTo(numberOfStatesWithMissingParents);
         return myself;
     }
 }

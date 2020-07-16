@@ -138,7 +138,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
 
     @Nonnull
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION")
-    private CompletionStage<Void> syncBatch(@Nonnull final Set<StateDraft> stateDrafts) {
+    private CompletionStage<Void>   syncBatch(@Nonnull final Set<StateDraft> stateDrafts) {
 
         if (stateDrafts.isEmpty()) {
             return CompletableFuture.completedFuture(null);
@@ -201,22 +201,23 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
         if (newState.getTransitions() == null || newState.getTransitions().isEmpty()) {
             return Collections.emptySet();
         }
+
         return newState.getTransitions()
-            .stream()
-            .map(Reference::getId)
-            .filter(key -> !keyToIdCache.containsKey(key))
-            .collect(Collectors.toSet());
+                .stream()
+                .map(Reference::getId)
+                .filter(key -> !keyToIdCache.containsKey(key))
+                .collect(Collectors.toSet());
     }
 
     private CompletionStage<Optional<WaitingToBeResolvedTransitions>> keepTrackOfMissingTransitionStates(
         @Nonnull final StateDraft newState,
-        @Nonnull final Set<String> missingTransitionStateKeys) {
+        @Nonnull final Set<String> missingTransitionParentStateKeys) {
 
-        missingTransitionStateKeys.forEach(missingParentKey ->
+        missingTransitionParentStateKeys.forEach(missingParentKey ->
             statistics.addMissingDependency(missingParentKey, newState.getKey()));
 
         return unresolvedTransitionsService.save(
-            new WaitingToBeResolvedTransitions(newState, missingTransitionStateKeys));
+            new WaitingToBeResolvedTransitions(newState, missingTransitionParentStateKeys));
     }
 
     @Nonnull
