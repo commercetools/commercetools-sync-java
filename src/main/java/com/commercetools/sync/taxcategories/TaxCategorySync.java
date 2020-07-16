@@ -16,6 +16,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -111,13 +112,7 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
                         handleError(errorMessage, exception, keys.size());
                         return completedFuture(null);
                     } else {
-                        try {
-                            return syncBatch(fetchedTaxCategories, validTaxCategoryDrafts);
-                        } catch (DuplicateCountryCodeAndStateException duplicateCountryException) {
-                            handleError(duplicateCountryException.getMessage(), duplicateCountryException);
-                            return completedFuture(null);
-                        }
-
+                        return syncBatch(fetchedTaxCategories, validTaxCategoryDrafts);
                     }
                 })
                 .thenApply(ignored -> {
@@ -140,6 +135,13 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
             handleError(TAX_CATEGORY_DRAFT_IS_NULL, null);
         } else if (isBlank(draft.getKey())) {
             handleError(TAX_CATEGORY_DRAFT_HAS_NO_KEY, null);
+        } else if (Objects.nonNull(draft.getTaxRates())) {
+            try {
+                return checkDuplicateCountryStateForNewTaxRateDraft(draft.getTaxRates());
+            } catch (DuplicateCountryCodeAndStateException ex) {
+                handleError(ex.getMessage(), ex);
+                return false;
+            }
         } else {
             return true;
         }
@@ -233,7 +235,7 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
     }
 
     @Nonnull
-    private static void checkDuplicateCountryStateForNewTaxRateDraft(
+    private boolean checkDuplicateCountryStateForNewTaxRateDraft(
             final List<TaxRateDraft> taxRateDrafts) {
 
         taxRateDrafts.stream().collect(
@@ -245,6 +247,7 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
                                     taxRateDraftA.getState()));
                 }
         ));
+        return true;
     }
 
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
@@ -252,10 +255,6 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
     private CompletionStage<Optional<TaxCategory>> buildActionsAndUpdate(
         @Nonnull final TaxCategory oldTaxCategory,
         @Nonnull final TaxCategoryDraft newTaxCategory) {
-
-        if (newTaxCategory.getTaxRates() != null && newTaxCategory.getTaxRates().size() > 0) {
-            checkDuplicateCountryStateForNewTaxRateDraft(newTaxCategory.getTaxRates());
-        }
 
         final List<UpdateAction<TaxCategory>> updateActions = buildActions(oldTaxCategory, newTaxCategory, syncOptions);
 
