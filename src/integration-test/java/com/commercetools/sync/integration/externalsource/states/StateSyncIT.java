@@ -53,8 +53,6 @@ class StateSyncIT {
     @BeforeEach
     void setup() {
         deleteStatesFromTargetAndSourceByType();
-
-
         final StateDraft stateDraft = StateDraftBuilder
             .of("state-1-key", StateType.LINE_ITEM_STATE)
             .name(LocalizedString.ofEnglish("state-name"))

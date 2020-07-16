@@ -3,6 +3,7 @@ package com.commercetools.sync.integration.commons.utils;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateDraft;
@@ -17,15 +18,18 @@ import io.sphere.sdk.states.queries.StateQueryBuilder;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndExecute;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
+import static io.sphere.sdk.states.commands.updateactions.SetTransitions.of;
+import static io.sphere.sdk.utils.CompletableFutureUtils.listOfFuturesToFutureOfList;
 import static java.lang.String.format;
+import static java.util.Collections.EMPTY_SET;
 
 public final class StateITUtils {
 
@@ -51,12 +55,24 @@ public final class StateITUtils {
      *
      * @param ctpClient defines the CTP project to delete the states from.
      */
-    public static void deleteStates(@Nonnull final SphereClient ctpClient) {
-        queryAndExecute(ctpClient, StateQueryBuilder
-            .of()
-            .plusPredicates(QueryPredicate.of("builtIn = false"))
-            .build(),
-            StateDeleteCommand::of);
+    public static <T extends State> void deleteStates(@Nonnull final SphereClient ctpClient) {
+        //delete transitions
+        QueryExecutionUtils.queryAll(ctpClient, StateQueryBuilder
+                .of()
+                .plusPredicates(QueryPredicate.of("builtIn = false")).build()).
+                thenCompose(result -> {
+                    final List<CompletionStage<State>> clearStates = new ArrayList<>();
+                    result.stream().forEach(state -> {
+                        if (state.getTransitions() != null && !state.getTransitions().isEmpty()) {
+                            clearStates.add(ctpClient.execute(StateUpdateCommand.of(state, of(EMPTY_SET))));
+                        } else {
+                            clearStates.add(CompletableFuture.completedFuture(state));
+                        }
+                    });
+                    return listOfFuturesToFutureOfList(clearStates);
+                }).thenAccept(clearedStates -> clearedStates.forEach(stateToRemove ->
+                ctpClient.execute(StateDeleteCommand.of(stateToRemove)))
+        ).toCompletableFuture().join();
     }
 
 
@@ -68,7 +84,7 @@ public final class StateITUtils {
     public static void deleteStates(@Nonnull final SphereClient ctpClient,
                                     @Nonnull final StateType stateType) {
         final QueryPredicate<State> stateQueryPredicate =
-            QueryPredicate.of(format("type= \"%s\"", stateType.toSphereName()));
+                QueryPredicate.of(format("type= \"%s\"", stateType.toSphereName()));
         final StateQuery stateQuery = StateQuery.of().withPredicates(stateQueryPredicate);
         queryAndExecute(ctpClient, stateQuery, StateDeleteCommand::of);
     }
@@ -99,12 +115,12 @@ public final class StateITUtils {
     public static State createState(@Nonnull final SphereClient ctpClient, @Nonnull final String stateKey,
                                     @Nonnull final StateType stateType, @Nullable final State transitionState) {
         final StateDraft stateDraft = StateDraftBuilder.of(stateKey, stateType)
-            .transitions(Optional.ofNullable(transitionState).map(state -> {
-                final Set<Reference<State>> stateTransitions = new HashSet<>();
-                stateTransitions.add(State.referenceOfId(state.getId()));
-                return stateTransitions;
-            }).orElse(null))
-            .build();
+                .transitions(Optional.ofNullable(transitionState).map(state -> {
+                    final Set<Reference<State>> stateTransitions = new HashSet<>();
+                    stateTransitions.add(State.referenceOfId(state.getId()));
+                    return stateTransitions;
+                }).orElse(null))
+                .build();
         return executeBlocking(ctpClient.execute(StateCreateCommand.of(stateDraft)));
     }
 
@@ -116,22 +132,22 @@ public final class StateITUtils {
      */
     public static void clearTransitions(@Nonnull final SphereClient ctpClient, @Nonnull final State state) {
         final Set<Reference<State>> stateTransitions = Optional
-            .ofNullable(state.getTransitions())
-            .orElse(new HashSet<>());
+                .ofNullable(state.getTransitions())
+                .orElse(new HashSet<>());
         stateTransitions.clear();
 
-        SetTransitions setTransitions = SetTransitions.of(stateTransitions);
+        SetTransitions setTransitions = of(stateTransitions);
         executeBlocking(ctpClient.execute(StateUpdateCommand.of(state, setTransitions)));
     }
 
     public static Optional<State> getStateByKey(
-        @Nonnull final SphereClient sphereClient,
-        @Nonnull final String key) {
+            @Nonnull final SphereClient sphereClient,
+            @Nonnull final String key) {
 
         final StateQuery query = StateQueryBuilder
-            .of()
-            .plusPredicates(queryModel -> queryModel.key().is(key))
-            .build();
+                .of()
+                .plusPredicates(queryModel -> queryModel.key().is(key))
+                .build();
 
         return sphereClient.execute(query).toCompletableFuture().join().head();
     }
