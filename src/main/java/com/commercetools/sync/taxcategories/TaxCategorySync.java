@@ -248,7 +248,6 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
                             Collectors.counting())));
 
         for (Map.Entry<String, Map<String, Long>> countryEntry : map.entrySet()) {
-            System.out.println(countryEntry.getKey() + " : " + countryEntry.getValue());
             countryEntry.getValue().entrySet().forEach(stateEntry -> {
                 if (stateEntry.getValue() > 1L) {
                     throw new DuplicateCountryCodeAndStateException(
