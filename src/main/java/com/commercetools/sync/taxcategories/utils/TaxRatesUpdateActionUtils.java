@@ -209,9 +209,14 @@ final class TaxRatesUpdateActionUtils {
     private static boolean sameSubRates(final List<SubRate> oldSubRates, final List<SubRate> newSubRates) {
         if (Objects.nonNull(oldSubRates) && Objects.nonNull(newSubRates)) {
             if (oldSubRates.size() == newSubRates.size()) {
-                oldSubRates.sort(Comparator.comparing(subRate -> subRate.getName() + subRate.getAmount()));
-                newSubRates.sort(Comparator.comparing(subRate -> subRate.getName() + subRate.getAmount()));
-                return Arrays.equals(oldSubRates.toArray(), newSubRates.toArray());
+                return newSubRates.stream().allMatch(newSubRateItem -> {
+                         oldSubRates.stream().anyMatch(oldSubRateItem -> {
+                            return Objects.toString(newSubRateItem.getName(), "").trim()
+                                    .equals(Objects.toString(oldSubRateItem.getName(), "").trim()) &&
+                                    (newSubRateItem.getAmount() == null ? 0 : newSubRateItem.getAmount()) ==
+                                            (oldSubRateItem.getAmount() == null ? 0 : oldSubRateItem.getAmount());
+                        });
+                });
             }
         }
         return false;
