@@ -488,25 +488,26 @@ class StateSyncIT {
 
         QueryExecutionUtils.queryAll(CTP_TARGET_CLIENT, StateQueryBuilder
             .of()
-            .plusPredicates(q -> q.key().is(keyA)).build()).
-            thenAccept(resultStates -> {
+            .plusPredicates(q -> q.key().is(keyA)).build())
+            .thenAccept(resultStates -> {
                 Assertions.assertThat(resultStates.size()).isEqualTo(1);
                 Assertions.assertThat(resultStates.get(0).getTransitions().size()).isEqualTo(2);
             }).toCompletableFuture().join();
     }
 
-    private State createStateInSource(StateDraft draft) {
+    private State createStateInSource(final StateDraft draft) {
         return executeBlocking(CTP_SOURCE_CLIENT.execute(StateCreateCommand.of(draft)
             .withExpansionPaths(StateExpansionModel::transitions)));
     }
 
-    private State createStateInTarget(StateDraft draft) {
+    private State createStateInTarget(final StateDraft draft) {
         return executeBlocking(CTP_TARGET_CLIENT.execute(StateCreateCommand.of(draft)
             .withExpansionPaths(StateExpansionModel::transitions)));
     }
 
 
-    private StateDraft createStateDraftReferencingStateDrafts(String key, StateDraft... transitionStatesDraft) {
+    private StateDraft createStateDraftReferencingStateDrafts(final String key,
+                                                              final StateDraft... transitionStatesDraft) {
         List<Reference<State>> references = new ArrayList<>();
         if (transitionStatesDraft.length > 0) {
             for (StateDraft transitionState : transitionStatesDraft) {
@@ -516,7 +517,7 @@ class StateSyncIT {
         return createStateDraftWithReference(key, references);
     }
 
-    private StateDraft createStateDraft(String key, State... transitionStates) {
+    private StateDraft createStateDraft(final String key,final State... transitionStates) {
         List<Reference<State>> references = new ArrayList<>();
         if (transitionStates.length > 0) {
             for (State transitionState : transitionStates) {
@@ -526,7 +527,7 @@ class StateSyncIT {
         return createStateDraftWithReference(key, references);
     }
 
-    private StateDraft createStateDraftWithReference(String key, List<Reference<State>> references) {
+    private StateDraft createStateDraftWithReference(final  String key, final  List<Reference<State>> references) {
         return StateDraftBuilder
             .of(key, StateType.REVIEW_STATE)
             .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))

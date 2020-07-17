@@ -64,8 +64,8 @@ public final class StateITUtils {
         //delete transitions
         QueryExecutionUtils.queryAll(ctpClient, StateQueryBuilder
             .of()
-            .plusPredicates(QueryPredicate.of("builtIn = false")).build()).
-            thenCompose(result -> {
+            .plusPredicates(QueryPredicate.of("builtIn = false")).build())
+            .thenCompose(result -> {
                 final List<CompletionStage<State>> clearStates = new ArrayList<>();
                 result.stream().forEach(state -> {
                     if (state.getTransitions() != null && !state.getTransitions().isEmpty()) {
