@@ -29,6 +29,7 @@ import javax.annotation.Nonnull;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -50,12 +51,16 @@ import static org.mockito.Mockito.when;
 
 class StateSyncIT {
 
+    
+    String stateKey="";
+    
     @BeforeEach
     void setup() {
+        stateKey = "state-"+ ThreadLocalRandom.current().nextInt();
         deleteStates(CTP_TARGET_CLIENT);
         deleteStates(CTP_SOURCE_CLIENT);
         final StateDraft stateDraft = StateDraftBuilder
-            .of("state-1-key", StateType.LINE_ITEM_STATE)
+            .of(stateKey, StateType.LINE_ITEM_STATE)
             .name(LocalizedString.ofEnglish("state-name"))
             .description(LocalizedString.ofEnglish("state-desc"))
             .roles(Collections.singleton(StateRole.RETURN))
@@ -97,7 +102,7 @@ class StateSyncIT {
     @Test
     void sync_WithUpdatedState_ShouldUpdateState() {
         // preparation
-        String key= "state-1-key";
+        String key= stateKey;
         final StateDraft stateDraft = StateDraftBuilder
             .of(key, StateType.REVIEW_STATE)
             .name(ofEnglish("state-name-updated"))
@@ -137,7 +142,7 @@ class StateSyncIT {
     @Test
     void sync_withEqualState_shouldNotUpdateState() {
         StateDraft stateDraft = StateDraftBuilder
-            .of("state-1-key", StateType.LINE_ITEM_STATE)
+            .of(stateKey, StateType.LINE_ITEM_STATE)
             .name(ofEnglish("state-name"))
             .description(ofEnglish("state-desc"))
             .roles(Collections.singleton(StateRole.RETURN))
@@ -179,7 +184,7 @@ class StateSyncIT {
         final StateSync stateSync = new StateSync(spyOptions);
 
         final StateDraft stateDraft = StateDraftBuilder
-            .of("state-1-key", StateType.REVIEW_STATE)
+            .of(stateKey, StateType.REVIEW_STATE)
             .name(ofEnglish("state-name-updated"))
             .description(ofEnglish("state-desc-updated"))
             .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
@@ -227,7 +232,7 @@ class StateSyncIT {
         final StateSync stateSync = new StateSync(spyOptions);
 
         final StateDraft stateDraft = StateDraftBuilder
-            .of("state-1-key", StateType.REVIEW_STATE)
+            .of(stateKey, StateType.REVIEW_STATE)
             .name(ofEnglish("state-name-updated"))
             .description(ofEnglish("state-desc-updated"))
             .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
@@ -286,7 +291,7 @@ class StateSyncIT {
         final StateSync stateSync = new StateSync(spyOptions);
 
         final StateDraft stateDraft = StateDraftBuilder
-            .of("state-1-key", StateType.REVIEW_STATE)
+            .of(stateKey, StateType.REVIEW_STATE)
             .name(ofEnglish("state-name-updated"))
             .description(ofEnglish("state-desc-updated"))
             .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
