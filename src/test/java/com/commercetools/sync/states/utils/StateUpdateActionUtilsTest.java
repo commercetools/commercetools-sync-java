@@ -174,8 +174,7 @@ class StateUpdateActionUtilsTest {
 
     @Test
     void buildSetTransitionsAction_WithEmptyValues_ShouldReturnEmptyOptional() {
-        final Map<String, String> keyToId = new HashMap<>();
-        final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, newSameStateDraft, keyToId);
+        final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, newSameStateDraft);
 
         assertThat(result).isEmpty();
     }
@@ -186,7 +185,7 @@ class StateUpdateActionUtilsTest {
         when(state.getTransitions()).thenReturn(oldTransitions);
 
         final Map<String, String> keyToId = new HashMap<>();
-        final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, newSameStateDraft, keyToId);
+        final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, newSameStateDraft);
 
         assertThat(result).contains(SetTransitions.of(emptySet()));
     }
@@ -204,7 +203,7 @@ class StateUpdateActionUtilsTest {
         final StateDraft newDifferent = StateDraft.of(KEY, StateType.LINE_ITEM_STATE).withTransitions(newTransitions);
 
         final Map<String, String> keyToId = new HashMap<>();
-        final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, newDifferent, keyToId);
+        final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, newDifferent);
 
         assertThat(result).isEmpty();
     }
@@ -222,14 +221,10 @@ class StateUpdateActionUtilsTest {
         when(state.getTransitions()).thenReturn(oldTransitions);
         final StateDraft newDifferent = StateDraft.of(KEY, StateType.LINE_ITEM_STATE).withTransitions(newTransitions);
 
-        final Map<String, String> keyToId = new HashMap<>();
-        keyToId.put("new-state-1", "id-1");
-        keyToId.put("new-state-2", "id-2");
-
-        final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, newDifferent, keyToId);
+        final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, newDifferent);
         HashSet<Reference<State>> expectedTransitions = new HashSet<>(asList(
-            State.referenceOfId("id-1"),
-            State.referenceOfId("id-2")));
+            State.referenceOfId("new-state-1"),
+            State.referenceOfId("new-state-2")));
         assertThat(result).contains(SetTransitions.of(expectedTransitions));
     }
 
@@ -246,38 +241,15 @@ class StateUpdateActionUtilsTest {
         when(state.getTransitions()).thenReturn(oldTransitions);
         final StateDraft newDifferent = StateDraft.of(KEY, StateType.LINE_ITEM_STATE).withTransitions(newTransitions);
 
-        final Map<String, String> keyToId = new HashMap<>();
-        keyToId.put("old-state-1", "id-1");
-        keyToId.put("new-state-2", "id-2");
 
-        final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, newDifferent, keyToId);
+        final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, newDifferent);
         HashSet<Reference<State>> expectedTransitions = new HashSet<>(asList(
-            State.referenceOfId("id-1"),
-            State.referenceOfId("id-2")));
-        assertThat(result).contains(SetTransitions.of(expectedTransitions));
-    }
-
-    @Test
-    void buildSetTransitionsAction_WitMissingKeyToIdMap_ShouldReturnAction() {
-        final Set<Reference<State>> oldTransitions = new HashSet<>(asList(
             State.referenceOfId("old-state-1"),
-            State.referenceOfId("old-state-2")));
-
-        final Set<Reference<State>> newTransitions = new HashSet<>(asList(
-            State.referenceOfId("new-state-1"),
             State.referenceOfId("new-state-2")));
-
-        when(state.getTransitions()).thenReturn(oldTransitions);
-        final StateDraft newDifferent = StateDraft.of(KEY, StateType.LINE_ITEM_STATE).withTransitions(newTransitions);
-
-        final Map<String, String> keyToId = new HashMap<>();
-        keyToId.put("new-state-1", "id-1");
-
-        final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, newDifferent, keyToId);
-        HashSet<Reference<State>> expectedTransitions = new HashSet<>(singletonList(
-            State.referenceOfId("id-1")));
         assertThat(result).contains(SetTransitions.of(expectedTransitions));
     }
+
+
 
     @Test
     void buildSetTransitionsAction_WitNullTransitions_ShouldReturnAction() {
@@ -292,13 +264,10 @@ class StateUpdateActionUtilsTest {
         when(state.getTransitions()).thenReturn(oldTransitions);
         final StateDraft newDifferent = StateDraft.of(KEY, StateType.LINE_ITEM_STATE).withTransitions(newTransitions);
 
-        final Map<String, String> keyToId = new HashMap<>();
-        keyToId.put("new-state-1", "id-1");
-        keyToId.put("new-state-2", "id-2");
 
-        final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, newDifferent, keyToId);
+        final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, newDifferent);
         HashSet<Reference<State>> expectedTransitions = new HashSet<>(singletonList(
-            State.referenceOfId("id-2")));
+            State.referenceOfId("new-state-2")));
         assertThat(result).contains(SetTransitions.of(expectedTransitions));
     }
 

@@ -280,7 +280,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
         @Nonnull final StateDraft newState) {
 
         final List<UpdateAction<State>> updateActions = buildActions(oldState, newState);
-        buildSetTransitionsAction(oldState, newState, keyToIdCache).ifPresent(updateActions::add);
+        buildSetTransitionsAction(oldState, newState).ifPresent(updateActions::add);
 
         List<UpdateAction<State>> updateActionsAfterCallback =
             syncOptions.applyBeforeUpdateCallBack(updateActions, newState, oldState);

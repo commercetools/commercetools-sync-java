@@ -48,7 +48,7 @@ public final class StateReferenceResolver
      * references. The keys of the references are taken from the id field of the references.
      *
      * @param stateDraft the stateDraft to resolve its references.
-     * @return a {@link CompletionStage} that contains as a result a new categoryDraft instance with resolved
+     * @return a {@link CompletionStage} that contains as a result a new Statedraft instance with resolved
      *          category references or, in case an error occurs during reference resolution,
      *          a {@link ReferenceResolutionException}.
      */

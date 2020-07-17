@@ -12,6 +12,7 @@ import io.sphere.sdk.states.commands.updateactions.RemoveRoles;
 import io.sphere.sdk.states.commands.updateactions.SetDescription;
 import io.sphere.sdk.states.commands.updateactions.SetName;
 import io.sphere.sdk.states.commands.updateactions.SetTransitions;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -160,18 +161,17 @@ public final class StateUpdateActionUtils {
      * and returns an {@link Optional} of update action, which would contain the {@code "setTransitions"}
      * {@link UpdateAction}. If both {@link State} and {@link StateDraft} have the same
      * {@code transitions} values, then no update action is needed and empty optional will be returned.
+     * if not, the transition of the old State gets overwritten with the transitions of the statedraft
      *
      * @param oldState      the {@link State} which should be updated.
      * @param newState      the {@link StateDraft} where we get the new data.
-     * @param keyToId  a map of key to id. It represents a cache of the existing states in the target project.
      * @return optional containing update action or empty optional if there are no changes detected or there was
      *         an error.
      */
     @Nonnull
     public static Optional<UpdateAction<State>> buildSetTransitionsAction(
         @Nonnull final State oldState,
-        @Nonnull final StateDraft newState,
-        @Nonnull final Map<String, String> keyToId) {
+        @Nonnull final StateDraft newState) {
 
         boolean emptyNew = newState.getTransitions() == null
             || newState.getTransitions().isEmpty()
@@ -210,8 +210,7 @@ public final class StateUpdateActionUtils {
                 if (newCount > 0) {
                     Set<Reference<State>> transitions = newTransitions
                         .stream()
-                        .filter(transition -> transition != null && keyToId.containsKey(transition.getId()))
-                        .map(transition -> State.referenceOfId(keyToId.get(transition.getId())))
+                        .map(transition -> State.referenceOfId(transition.getId()))
                         .collect(Collectors.toSet());
                     return SetTransitions.of(transitions);
                 }
