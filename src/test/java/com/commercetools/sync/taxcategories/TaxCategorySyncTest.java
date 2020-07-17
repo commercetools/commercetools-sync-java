@@ -322,8 +322,10 @@ class TaxCategorySyncTest {
         final String name = "DuplicatedName";
         final TaxCategoryDraft draft = TaxCategoryDraftBuilder.of(name, asList(
                 // replace
-                TaxRateDraftBuilder.of(name, 2.0, false, CountryCode.DE).build(),
-                TaxRateDraftBuilder.of(name, 3.0, false, CountryCode.DE).build()
+                TaxRateDraftBuilder.of(name, 2.0, false, CountryCode.FR).state("NYON").build(),
+                TaxRateDraftBuilder.of(name, 2.0, false, CountryCode.FR).state("PARIS").build(),
+                TaxRateDraftBuilder.of(name, 3.0, false, CountryCode.DE).state("BERLIN").build(),
+                TaxRateDraftBuilder.of(name, 3.0, false, CountryCode.DE).state("BERLIN").build()
         ), "desc").key("someKey").build();
 
         final AtomicReference<String> callback = new AtomicReference<>(null);
@@ -349,7 +351,7 @@ class TaxCategorySyncTest {
             () -> assertThat(callback.get())
                     .contains(format("Tax rates drafts have duplicated country codes and states. Duplicated "
                             + "tax rate country code: '%s'. state : '%s'. Tax rates country codes and states are "
-                            + "expected to be unique inside their tax category.", CountryCode.DE, null))
+                            + "expected to be unique inside their tax category.", CountryCode.DE, "BERLIN"))
         );
 
     }

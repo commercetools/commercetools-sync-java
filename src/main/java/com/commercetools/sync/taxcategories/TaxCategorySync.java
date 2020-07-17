@@ -5,6 +5,7 @@ import com.commercetools.sync.commons.exceptions.DuplicateCountryCodeAndStateExc
 import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.impl.TaxCategoryServiceImpl;
 import com.commercetools.sync.taxcategories.helpers.TaxCategorySyncStatistics;
+
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.taxcategories.TaxCategory;
@@ -14,13 +15,15 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
 import java.util.Map;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
+
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.taxcategories.utils.TaxCategorySyncUtils.buildActions;
@@ -29,8 +32,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.toMap;
-import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Collectors.*;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncStatistics, TaxCategorySyncOptions> {
@@ -238,15 +240,24 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
     private boolean checkDuplicateCountryStateForNewTaxRateDraft(
             final List<TaxRateDraft> taxRateDrafts) {
 
-        taxRateDrafts.stream().collect(
-            toMap(taxRateDraft -> taxRateDraft.getCountry() + "_" + taxRateDraft.getState(),
-                taxRateDraft -> taxRateDraft,
-                (taxRateDraftA, taxRateDraftB) -> {
+        Map<String,Map<String, Long>> map = taxRateDrafts.stream().collect(
+                Collectors.groupingBy(draft ->
+                    Objects.toString(draft.getCountry(), ""),
+                    Collectors.groupingBy(draft ->
+                            Objects.toString(draft.getState(), ""),
+                            Collectors.counting())));
+
+        for (Map.Entry<String, Map<String, Long>> countryEntry : map.entrySet()) {
+            System.out.println(countryEntry.getKey() + " : " + countryEntry.getValue());
+            countryEntry.getValue().entrySet().forEach(stateEntry -> {
+                if (stateEntry.getValue() > 1L) {
                     throw new DuplicateCountryCodeAndStateException(
-                            format(TAX_CATEGORY_DUPLICATED_COUNTRY_STATE, taxRateDraftA.getCountry(),
-                                    taxRateDraftA.getState()));
+                            format(TAX_CATEGORY_DUPLICATED_COUNTRY_STATE, countryEntry.getKey(),
+                                    stateEntry.getKey()));
+
                 }
-        ));
+            });
+        }
         return true;
     }
 
@@ -344,5 +355,4 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
                     });
             });
     }
-
 }
