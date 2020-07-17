@@ -9,14 +9,11 @@ against a [StateDraft](https://docs.commercetools.com/http-api-projects-states#s
 
 
 - [Usage](#usage)
-  - [Sync list of product drafts](#sync-list-of-product-drafts)
+  - [Sync list of State drafts](#sync-list-of-state-drafts)
     - [Prerequisites](#prerequisites)
     - [Running the sync](#running-the-sync)
-      - [Persistence of StateDrafts with Irresolvable References](#persistence-of-StateDrafts-with-irresolvable-references)
-      - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)
+      - [Persistence of StateDrafts with Irresolvable References](#persistence-of-statedrafts-with-irresolvable-references)
   - [Build all update actions](#build-all-update-actions)
-  - [Build particular update action(s)](#build-particular-update-actions)
-- [Caveats](#caveats)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
