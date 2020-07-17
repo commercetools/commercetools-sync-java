@@ -32,7 +32,8 @@ import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.*;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncStatistics, TaxCategorySyncOptions> {
