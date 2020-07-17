@@ -14,11 +14,14 @@ import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.queries.PagedQueryResult;
+import io.sphere.sdk.queries.QueryExecutionUtils;
+import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.states.*;
 import io.sphere.sdk.states.commands.StateCreateCommand;
 import io.sphere.sdk.states.commands.StateUpdateCommand;
 import io.sphere.sdk.states.expansion.StateExpansionModel;
 import io.sphere.sdk.states.queries.StateQuery;
+import io.sphere.sdk.states.queries.StateQueryBuilder;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
@@ -414,32 +417,20 @@ class StateSyncIT {
 
     @Test
     void sync_WithAllExistentStates_ShouldResolveAllStates() {
-        // prepare the source project
-        deleteStates(CTP_TARGET_CLIENT);
         String keyB = "state-B";
         String keyC = "state-C";
-        final StateDraft stateCDraft = StateDraftBuilder
-                .of(keyC, StateType.REVIEW_STATE)
-                .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
-                .build();
+        String keyA = "state-A";
+
+        final StateDraft stateCDraft = createStateDraft(keyC, null);
         final State stateC = createStateInSource(stateCDraft);
-        final Set<Reference<State>> transitionsBC = new HashSet<>(asList(referenceOfId(stateC.getId())));
-        final StateDraft stateBDraft = StateDraftBuilder
-                .of(keyB, StateType.REVIEW_STATE)
-                .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
-                .transitions(transitionsBC)
-                .build();
+
+
+        final StateDraft stateBDraft = createStateDraft(keyB, stateC);
         final State stateB = createStateInSource(stateBDraft);
 
-        String keyA = "state-A";
-        final Set<Reference<State>> transitions_ab_ac = new HashSet<>(asList(referenceOfId(stateC.getId()), referenceOfId(stateC.getId())));
-        final StateDraft stateADraft = StateDraftBuilder
-                .of(keyA, StateType.REVIEW_STATE)
-                .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
-                .transitions(transitions_ab_ac)
-                .initial(true)
-                .build();
+        final StateDraft stateADraft = createStateDraft(keyA, stateB, stateC);
         final State stateA = createStateInSource(stateADraft);
+
         final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
                 .of(CTP_TARGET_CLIENT)
                 .batchSize(3)
@@ -459,9 +450,79 @@ class StateSyncIT {
         Assertions.assertThat(result.size()).isEqualTo(0);
     }
 
+    @Test
+    void sync_WithUpdatedTransition_ShouldUpdateTransitions() {
+        String keyA = "state-A";
+        String keyB = "state-B";
+        String keyC = "state-C";
+
+
+        final StateDraft stateCDraft = createStateDraft(keyC, null);
+        final State stateC = createStateInSource(stateCDraft);
+        final StateDraft tagetStateCDraft = createStateDraft(keyC, null);
+        final State targetStateC = createStateInTarget(tagetStateCDraft);
+
+        final StateDraft stateBDraft = createStateDraft(keyB, stateC);
+        final State stateB = createStateInSource(stateBDraft);
+        final StateDraft tagetStateBDraft = createStateDraft(keyB, targetStateC);
+        final State targetStateB = createStateInTarget(tagetStateBDraft);
+
+        final StateDraft stateADraft = createStateDraft(keyA, stateB, stateC);
+        final State stateA = createStateInSource(stateADraft);
+        final StateDraft tagetStateADraft = createStateDraft(keyA, targetStateB);
+        final State targetStateA = createStateInTarget(tagetStateADraft);
+
+        Assertions.assertThat(targetStateA.getTransitions().size()).isEqualTo(1);
+        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+                .of(CTP_TARGET_CLIENT)
+                .batchSize(3)
+                .build();
+
+        final StateSync stateSync = new StateSync(stateSyncOptions);
+        final List<StateDraft> stateDrafts = replaceStateTransitionIdsWithKeys(Arrays.asList(stateA, stateB, stateC));
+        // test
+        final StateSyncStatistics stateSyncStatistics = stateSync
+                .sync(stateDrafts)
+                .toCompletableFuture()
+                .join();
+
+        assertThat(stateSyncStatistics).hasValues(3, 0, 1, 0, 0);
+        UnresolvedTransitionsServiceImpl unresolvedTransitionsService = new UnresolvedTransitionsServiceImpl(stateSyncOptions);
+        Set<WaitingToBeResolvedTransitions> result = unresolvedTransitionsService.fetch(new HashSet<>(asList(keyA))).toCompletableFuture().join();
+        Assertions.assertThat(result.size()).isEqualTo(0);
+
+        QueryExecutionUtils.queryAll(CTP_TARGET_CLIENT, StateQueryBuilder
+                .of()
+                .plusPredicates(q -> q.key().is(keyA)).build()).
+                thenAccept(resultStates -> {
+                    Assertions.assertThat(resultStates.size()).isEqualTo(1);
+                    Assertions.assertThat(resultStates.get(0).getTransitions()).isEqualTo(2);
+                }).toCompletableFuture().join();
+    }
+
     private State createStateInSource(StateDraft draft) {
         return executeBlocking(CTP_SOURCE_CLIENT.execute(StateCreateCommand.of(draft)
                 .withExpansionPaths(StateExpansionModel::transitions)));
+    }
+
+    private State createStateInTarget(StateDraft draft) {
+        return executeBlocking(CTP_TARGET_CLIENT.execute(StateCreateCommand.of(draft)
+                .withExpansionPaths(StateExpansionModel::transitions)));
+    }
+
+    private StateDraft createStateDraft(String key, State... transitionStates) {
+        List<Reference<State>> references = new ArrayList<>();
+        if (transitionStates != null) {
+            for (State transitionState : transitionStates) {
+                references.add(referenceOfId(transitionState.getId()));
+            }
+        }
+        return StateDraftBuilder
+                .of(key, StateType.REVIEW_STATE)
+                .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
+                .transitions(new HashSet<>(references))
+                .initial(true)
+                .build();
     }
 }
 
