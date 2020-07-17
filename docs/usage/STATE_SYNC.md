@@ -2,7 +2,7 @@
 
 Module used for importing/syncing State into a commercetools project. 
 It also provides utilities for generating update actions based on the comparison of a [State](https://docs.commercetools.com/http-api-projects-states#states) 
-against a [StateDraft](https://docs.commercetools.com/http-api-projects-states#states).
+against a [StateDraft](https://docs.commercetools.com/http-api-projects-states#statedraft).
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -47,18 +47,18 @@ otherwise they won't be matched.
 5. After the `sphereClient` is set up, a `StateSyncOptions` should be built as follows: 
 ````java
 // instantiating a StateSyncOptions
-     final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder.of(sphereClient).build();
+   final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder.of(sphereClient).build();
 ````
 [More information about Sync Options](SYNC_OPTIONS.md). 
 
 #### Running the sync
 After all the aforementioned points in the previous section have been fulfilled, to run the sync:
 ````java
-/ / instantiating a State sync
-  final StateSync stateSync = new StateSync(stateSyncOptions);
+// instantiating a State sync
+   final StateSync stateSync = new StateSync(stateSyncOptions);
 
 // execute the sync on your list of Statedraft
- final CompletionStage<StateSyncStatistics> stateSyncStatisticsStage = stateSync.sync(StateDrafts);
+  final CompletionStage<StateSyncStatistics> stateSyncStatisticsStage = stateSync.sync(StateDrafts);
 ````
 The result of the completing the `StateSyncStatistics` in the previous code snippet contains a `StateSyncStatistics`
 which contains all the stats of the sync process; which includes a report message, the total number of updated, created, 
@@ -67,7 +67,7 @@ human-readable format.
 ````java
 final StateSyncStatistics stats = stateSyncStatisticsStage.toCompletebleFuture().join();
 stats.getReportMessage(); 
-/*Summary: 3 state(s) were processed in total (3 created, 0 updated, 0 failed to sync and 0 state(s) with missing transition(s).*/
+// Summary: 3 state(s) were processed in total (3 created, 0 updated, 0 failed to sync and 0 state(s) with missing transition(s).
 ````
 
 
@@ -122,7 +122,7 @@ As soon, as the referenced StateDrafts are supplied to the sync, the draft will 
 
 ### Build all update actions
 
-A utility method provided by the library to compare a give state with a new StateDraft and update the given state accordently
+A utility method provided by the library to compare a give state with a new statedraft and update the given state accordently
  update actions. 
 ```java
  private CompletionStage<Void> buildActionsAndUpdate(
