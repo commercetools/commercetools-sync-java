@@ -14,9 +14,7 @@ import io.sphere.sdk.taxcategories.commands.updateactions.ReplaceTaxRate;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -210,12 +208,12 @@ final class TaxRatesUpdateActionUtils {
         if (Objects.nonNull(oldSubRates) && Objects.nonNull(newSubRates)) {
             if (oldSubRates.size() == newSubRates.size()) {
                 return newSubRates.stream().allMatch(newSubRateItem -> {
-                         oldSubRates.stream().anyMatch(oldSubRateItem -> {
-                            return Objects.toString(newSubRateItem.getName(), "").trim()
-                                    .equals(Objects.toString(oldSubRateItem.getName(), "").trim()) &&
-                                    (newSubRateItem.getAmount() == null ? 0 : newSubRateItem.getAmount()) ==
-                                            (oldSubRateItem.getAmount() == null ? 0 : oldSubRateItem.getAmount());
-                        });
+                    return oldSubRates.stream().anyMatch(oldSubRateItem -> {
+                        return Objects.toString(newSubRateItem.getName(), "").trim()
+                                    .equals(Objects.toString(oldSubRateItem.getName(), "").trim())
+                                     && (newSubRateItem.getAmount() == null ? 0 : newSubRateItem.getAmount())
+                                     == (oldSubRateItem.getAmount() == null ? 0 : oldSubRateItem.getAmount());
+                    });
                 });
             }
         }
