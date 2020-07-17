@@ -138,7 +138,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
 
     @Nonnull
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION")
-    private CompletionStage<Void>   syncBatch(@Nonnull final Set<StateDraft> stateDrafts) {
+    private CompletionStage<Void> syncBatch(@Nonnull final Set<StateDraft> stateDrafts) {
 
         if (stateDrafts.isEmpty()) {
             return CompletableFuture.completedFuture(null);

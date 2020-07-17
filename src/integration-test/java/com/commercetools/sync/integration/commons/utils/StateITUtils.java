@@ -1,8 +1,13 @@
 package com.commercetools.sync.integration.commons.utils;
 
+import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.client.SphereRequest;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.Versioned;
+import io.sphere.sdk.producttypes.ProductType;
+import io.sphere.sdk.producttypes.commands.ProductTypeDeleteCommand;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.states.State;
@@ -72,7 +77,12 @@ public final class StateITUtils {
                     return listOfFuturesToFutureOfList(clearStates);
                 }).thenAccept(clearedStates -> clearedStates.forEach(stateToRemove ->
                 ctpClient.execute(StateDeleteCommand.of(stateToRemove)))
-        ).toCompletableFuture().join();
+        ).handle((result, throwable) -> {
+            if (throwable != null) {
+                throwable.printStackTrace();
+            }
+            return result;
+        }).toCompletableFuture().join();
     }
 
 

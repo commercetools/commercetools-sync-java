@@ -52,7 +52,8 @@ class StateSyncIT {
 
     @BeforeEach
     void setup() {
-        deleteStatesFromTargetAndSourceByType();
+        deleteStates(CTP_TARGET_CLIENT);
+        deleteStates(CTP_SOURCE_CLIENT);
         final StateDraft stateDraft = StateDraftBuilder
             .of("state-1-key", StateType.LINE_ITEM_STATE)
             .name(LocalizedString.ofEnglish("state-name"))
@@ -67,6 +68,7 @@ class StateSyncIT {
     @AfterAll
     static void tearDown() {
         deleteStates(CTP_TARGET_CLIENT);
+        deleteStates(CTP_SOURCE_CLIENT);
     }
 
     @Test
@@ -95,8 +97,9 @@ class StateSyncIT {
     @Test
     void sync_WithUpdatedState_ShouldUpdateState() {
         // preparation
+        String key= "state-1-key";
         final StateDraft stateDraft = StateDraftBuilder
-            .of("state-1-key", StateType.REVIEW_STATE)
+            .of(key, StateType.REVIEW_STATE)
             .name(ofEnglish("state-name-updated"))
             .description(ofEnglish("state-desc-updated"))
             .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
@@ -118,7 +121,7 @@ class StateSyncIT {
         // assertion
         assertThat(stateSyncStatistics).hasValues(1, 0, 1, 0, 0);
 
-        final Optional<State> oldStateAfter = getStateByKey(CTP_TARGET_CLIENT, "state-1-key");
+        final Optional<State> oldStateAfter = getStateByKey(CTP_TARGET_CLIENT, key);
 
         Assertions.assertThat(oldStateAfter).hasValueSatisfying(state -> {
             Assertions.assertThat(state.getType()).isEqualTo(StateType.REVIEW_STATE);
@@ -128,6 +131,7 @@ class StateSyncIT {
                       .isEqualTo(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS));
             Assertions.assertThat(state.isInitial()).isEqualTo(true);
         });
+        deleteStates(CTP_TARGET_CLIENT);
     }
 
     @Test
@@ -406,6 +410,7 @@ class StateSyncIT {
     @Test
     void sync_WithAllExistentStates_ShouldResolveAllStates() {
         // prepare the source project
+        deleteStates(CTP_TARGET_CLIENT);
         String keyB = "state-B";
         String keyC = "state-C";
         final StateDraft stateCDraft = StateDraftBuilder
