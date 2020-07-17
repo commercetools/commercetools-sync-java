@@ -3,6 +3,7 @@ package com.commercetools.sync.integration.commons.utils;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereRequest;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.Versioned;
@@ -69,7 +70,8 @@ public final class StateITUtils {
                     final List<CompletionStage<State>> clearStates = new ArrayList<>();
                     result.stream().forEach(state -> {
                         if (state.getTransitions() != null && !state.getTransitions().isEmpty()) {
-                            clearStates.add(ctpClient.execute(StateUpdateCommand.of(state, of(EMPTY_SET))));
+                            List<? extends UpdateAction<State>> emptyUpdateActions = Collections.emptyList();
+                            clearStates.add(ctpClient.execute(StateUpdateCommand.of(state, emptyUpdateActions)));
                         } else {
                             clearStates.add(CompletableFuture.completedFuture(state));
                         }

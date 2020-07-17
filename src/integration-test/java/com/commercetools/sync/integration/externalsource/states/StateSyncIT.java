@@ -60,8 +60,7 @@ class StateSyncIT {
     @BeforeEach
     void setup() {
         stateKey = "state-" + ThreadLocalRandom.current().nextInt();
-        deleteStates(CTP_TARGET_CLIENT);
-        deleteStates(CTP_SOURCE_CLIENT);
+        deleteStatesFromTargetAndSourceByType();
         final StateDraft stateDraft = StateDraftBuilder
                 .of(stateKey, StateType.LINE_ITEM_STATE)
                 .name(LocalizedString.ofEnglish("state-name"))
@@ -363,34 +362,18 @@ class StateSyncIT {
     @Test
     void sync_WithNotExistentStates_ShouldResolveStateLater() {
         // prepare the target project
-        String keyA = "state-A";
         String keyB = "state-B";
         String keyC = "state-C";
-        final StateDraft stateCDraft = StateDraftBuilder
-                .of(keyC, StateType.REVIEW_STATE)
-                .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
-                .build();
-        final State stateC = executeBlocking(CTP_SOURCE_CLIENT.execute(StateCreateCommand.of(stateCDraft)));
+        String keyA = "state-A";
 
-        final Set<Reference<State>> transitionsBC = new HashSet<>(asList(referenceOfId(stateC.getId())));
-        final StateDraft stateBDraft = StateDraftBuilder
-                .of(keyB, StateType.REVIEW_STATE)
-                .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
-                .transitions(transitionsBC)
-                .build();
-        final State stateB = executeBlocking(CTP_SOURCE_CLIENT.execute(StateCreateCommand.of(stateBDraft)));
-        // prepare the sync
-        // TODO: replacement utils needs to be tested from project to target.
-        final List<StateDraft> transitionStateDrafts = replaceStateTransitionIdsWithKeys(Arrays.asList(stateB, stateC));
-        final Set<Reference<State>> transitions_ab_ac = new HashSet<>(asList(
-                referenceOfId(transitionStateDrafts.get(0).getKey()),
-                referenceOfId(transitionStateDrafts.get(1).getKey())));
-        final StateDraft stateADraft = StateDraftBuilder
-                .of(keyA, StateType.REVIEW_STATE)
-                .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
-                .transitions(transitions_ab_ac)
-                .initial(true)
-                .build();
+        final StateDraft stateCDraft = createStateDraft(keyC);
+        final State stateC = createStateInSource(stateCDraft);
+
+        final StateDraft stateBDraft = createStateDraft(keyB, stateC);
+        final State stateB = createStateInSource(stateBDraft);
+
+        StateDraft[] draftsWithReplacesKeys = replaceStateTransitionIdsWithKeys(asList(stateB, stateC)).toArray(new StateDraft[2]);
+        final StateDraft stateADraft = createStateDraftReferencingStateDrafts(keyA, draftsWithReplacesKeys);
         final List<StateDraft> stateDrafts = asList(stateADraft);
 
         final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
@@ -487,8 +470,6 @@ class StateSyncIT {
 
         assertThat(stateSyncStatistics).hasValues(3, 0, 1, 0, 0);
         UnresolvedTransitionsServiceImpl unresolvedTransitionsService = new UnresolvedTransitionsServiceImpl(stateSyncOptions);
-        Set<WaitingToBeResolvedTransitions> result = unresolvedTransitionsService.fetch(new HashSet<>(asList(keyA))).toCompletableFuture().join();
-        //Assertions.assertThat(result.size()).isEqualTo(0);
 
         QueryExecutionUtils.queryAll(CTP_TARGET_CLIENT, StateQueryBuilder
                 .of()
@@ -510,17 +491,27 @@ class StateSyncIT {
     }
 
 
-    private StateDraft createStateDraft(String key) {
-        return createStateDraft(key, null);
+    private StateDraft createStateDraftReferencingStateDrafts(String key, StateDraft... transitionStatesDraft) {
+        List<Reference<State>> references = new ArrayList<>();
+        if (transitionStatesDraft.length > 0) {
+            for (StateDraft transitionState : transitionStatesDraft) {
+                references.add(referenceOfId(transitionState.getKey()));
+            }
+        }
+        return createStateDraftWithReference(key, references);
     }
 
     private StateDraft createStateDraft(String key, State... transitionStates) {
         List<Reference<State>> references = new ArrayList<>();
-        if (transitionStates != null) {
+        if (transitionStates.length > 0) {
             for (State transitionState : transitionStates) {
                 references.add(referenceOfId(transitionState.getId()));
             }
         }
+        return createStateDraftWithReference(key, references);
+    }
+
+    private StateDraft createStateDraftWithReference(String key, List<Reference<State>> references) {
         return StateDraftBuilder
                 .of(key, StateType.REVIEW_STATE)
                 .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
