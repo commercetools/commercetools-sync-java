@@ -184,7 +184,6 @@ class StateUpdateActionUtilsTest {
         final Set<Reference<State>> oldTransitions = new HashSet<>(singletonList(State.referenceOfId("id")));
         when(state.getTransitions()).thenReturn(oldTransitions);
 
-        final Map<String, String> keyToId = new HashMap<>();
         final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, newSameStateDraft);
 
         assertThat(result).contains(SetTransitions.of(emptySet()));
@@ -202,7 +201,6 @@ class StateUpdateActionUtilsTest {
         when(state.getTransitions()).thenReturn(oldTransitions);
         final StateDraft newDifferent = StateDraft.of(KEY, StateType.LINE_ITEM_STATE).withTransitions(newTransitions);
 
-        final Map<String, String> keyToId = new HashMap<>();
         final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, newDifferent);
 
         assertThat(result).isEmpty();
@@ -240,6 +238,7 @@ class StateUpdateActionUtilsTest {
 
         when(state.getTransitions()).thenReturn(oldTransitions);
         final StateDraft newDifferent = StateDraft.of(KEY, StateType.LINE_ITEM_STATE).withTransitions(newTransitions);
+
 
 
         final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, newDifferent);
