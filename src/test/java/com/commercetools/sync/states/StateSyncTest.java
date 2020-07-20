@@ -70,7 +70,7 @@ class StateSyncTest {
         assertThat(errors).hasSize(2);
         assertThat(errors).containsExactly(
             "StateDraft with name: null doesn't have a key. "
-                + "Please make sure all state transitions have keys.",
+                + "Please make sure all states have keys.",
             "StateDraft is null.");
 
         assertThat(statistics).hasValues(2, 0, 0, 2, 0);
