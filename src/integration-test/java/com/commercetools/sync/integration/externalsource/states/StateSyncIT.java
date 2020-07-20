@@ -483,8 +483,6 @@ class StateSyncIT {
             .join();
 
         assertThat(stateSyncStatistics).hasValues(3, 0, 1, 0, 0);
-        UnresolvedTransitionsServiceImpl unresolvedTransitionsService =
-            new UnresolvedTransitionsServiceImpl(stateSyncOptions);
 
         QueryExecutionUtils.queryAll(CTP_TARGET_CLIENT, StateQueryBuilder
             .of()
