@@ -1,6 +1,5 @@
 package com.commercetools.sync.taxcategories.utils;
 
-import com.commercetools.sync.taxcategories.TaxCategorySyncOptions;
 import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.taxcategories.SubRate;
@@ -105,7 +104,7 @@ class TaxCategoryUpdateActionUtilsTest {
 
         assertThat(result).isEmpty();
     }
-    
+
 
     @Test
     void buildRatesUpdateActions_OnlyWithNewRate_ShouldBuildOnlyAddTaxRateAction() {
@@ -122,7 +121,7 @@ class TaxCategoryUpdateActionUtilsTest {
             .build();
 
         final List<UpdateAction<TaxCategory>> result =
-            buildTaxRateUpdateActions(taxCategory, taxCategoryDraft, mock(TaxCategorySyncOptions.class));
+            buildTaxRateUpdateActions(taxCategory, taxCategoryDraft);
 
         assertThat(result).isEqualTo(singletonList(AddTaxRate.of(taxRateDraft)));
     }
@@ -153,7 +152,7 @@ class TaxCategoryUpdateActionUtilsTest {
             .build();
 
         final List<UpdateAction<TaxCategory>> result =
-            buildTaxRateUpdateActions(taxCategory, taxCategoryDraft, mock(TaxCategorySyncOptions.class));
+            buildTaxRateUpdateActions(taxCategory, taxCategoryDraft);
 
         assertThat(result).isEqualTo(singletonList(ReplaceTaxRate.of("taxRate-1", taxRateDraft)));
     }
@@ -180,7 +179,7 @@ class TaxCategoryUpdateActionUtilsTest {
             .build();
 
         final List<UpdateAction<TaxCategory>> result =
-            buildTaxRateUpdateActions(taxCategory, taxCategoryDraft, mock(TaxCategorySyncOptions.class));
+            buildTaxRateUpdateActions(taxCategory, taxCategoryDraft);
 
         assertThat(result).isEqualTo(singletonList(RemoveTaxRate.of("taxRate-1")));
     }
@@ -238,7 +237,7 @@ class TaxCategoryUpdateActionUtilsTest {
 
 
         final List<UpdateAction<TaxCategory>> result =
-            buildTaxRateUpdateActions(taxCategory, taxCategoryDraft, mock(TaxCategorySyncOptions.class));
+            buildTaxRateUpdateActions(taxCategory, taxCategoryDraft);
 
         assertThat(result).isEqualTo(asList(
             ReplaceTaxRate.of("taxRate-1", taxRateDraft1),
@@ -283,7 +282,7 @@ class TaxCategoryUpdateActionUtilsTest {
             .build();
 
         final List<UpdateAction<TaxCategory>> result =
-            buildTaxRateUpdateActions(taxCategory, taxCategoryDraft, mock(TaxCategorySyncOptions.class));
+            buildTaxRateUpdateActions(taxCategory, taxCategoryDraft);
 
         assertThat(result).isEqualTo(singletonList(ReplaceTaxRate.of("taxRate-1", taxRateDraft)));
     }
@@ -324,7 +323,7 @@ class TaxCategoryUpdateActionUtilsTest {
             .build();
 
         final List<UpdateAction<TaxCategory>> result =
-            buildTaxRateUpdateActions(taxCategory, taxCategoryDraft, mock(TaxCategorySyncOptions.class));
+            buildTaxRateUpdateActions(taxCategory, taxCategoryDraft);
 
         assertThat(result).isEqualTo(singletonList(ReplaceTaxRate.of("taxRate-1", taxRateDraft)));
     }

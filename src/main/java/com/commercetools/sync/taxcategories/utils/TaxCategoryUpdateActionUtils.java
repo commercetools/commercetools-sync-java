@@ -1,7 +1,5 @@
 package com.commercetools.sync.taxcategories.utils;
 
-import com.commercetools.sync.taxcategories.TaxCategorySyncOptions;
-
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import io.sphere.sdk.taxcategories.TaxCategoryDraft;
@@ -68,16 +66,12 @@ public final class TaxCategoryUpdateActionUtils {
      *
      * @param oldTaxCategory the tax category which should be updated.
      * @param newTaxCategory the tax category draft where we get the key.
-     * @param syncOptions    responsible for supplying the sync options to the sync utility method.
-     *                       It is used for triggering the error callback within the utility, in case of
-     *                       errors.
      * @return A list with the update actions or an empty list if the tax rates are identical.
      */
     @Nonnull
     public static List<UpdateAction<TaxCategory>> buildTaxRateUpdateActions(
         @Nonnull final TaxCategory oldTaxCategory,
-        @Nonnull final TaxCategoryDraft newTaxCategory,
-        @Nonnull final TaxCategorySyncOptions syncOptions) {
+        @Nonnull final TaxCategoryDraft newTaxCategory) {
 
         return buildTaxRatesUpdateActions(oldTaxCategory.getTaxRates(), newTaxCategory.getTaxRates());
     }

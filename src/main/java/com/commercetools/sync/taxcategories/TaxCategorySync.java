@@ -267,7 +267,7 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
         @Nonnull final TaxCategory oldTaxCategory,
         @Nonnull final TaxCategoryDraft newTaxCategory) {
 
-        final List<UpdateAction<TaxCategory>> updateActions = buildActions(oldTaxCategory, newTaxCategory, syncOptions);
+        final List<UpdateAction<TaxCategory>> updateActions = buildActions(oldTaxCategory, newTaxCategory);
 
         List<UpdateAction<TaxCategory>> updateActionsAfterCallback =
             syncOptions.applyBeforeUpdateCallBack(updateActions, newTaxCategory, oldTaxCategory);

@@ -1,6 +1,5 @@
 package com.commercetools.sync.taxcategories.utils;
 
-import com.commercetools.sync.taxcategories.TaxCategorySyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import io.sphere.sdk.taxcategories.TaxCategoryDraft;
@@ -34,8 +33,7 @@ class TaxCategorySyncUtilsTest {
             .key("tax-cat-key")
             .build();
 
-        final List<UpdateAction<TaxCategory>> result = buildActions(taxCategory, taxCategoryDraft,
-            mock(TaxCategorySyncOptions.class));
+        final List<UpdateAction<TaxCategory>> result = buildActions(taxCategory, taxCategoryDraft);
 
         assertThat(result).isEmpty();
     }
@@ -52,8 +50,7 @@ class TaxCategorySyncUtilsTest {
             .key("tax-cat-key")
             .build();
 
-        final List<UpdateAction<TaxCategory>> result = buildActions(taxCategory, taxCategoryDraft,
-            mock(TaxCategorySyncOptions.class));
+        final List<UpdateAction<TaxCategory>> result = buildActions(taxCategory, taxCategoryDraft);
 
         assertAll(
             () -> assertThat(result).contains(ChangeName.of(taxCategoryDraft.getName())),

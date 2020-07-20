@@ -1,6 +1,5 @@
 package com.commercetools.sync.taxcategories.utils;
 
-import com.commercetools.sync.taxcategories.TaxCategorySyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import io.sphere.sdk.taxcategories.TaxCategoryDraft;
@@ -27,17 +26,12 @@ public final class TaxCategorySyncUtils {
      *
      * @param oldTaxCategory the {@link TaxCategory} which should be updated.
      * @param newTaxCategory the {@link TaxCategoryDraft} where we get the new data.
-     * @param syncOptions    the sync options wrapper which contains options related to the sync process supplied
-     *                       by the user. For example, custom callbacks to call in case of warnings or errors occurring
-     *                       on the build update action process. And other options (See {@link TaxCategorySyncOptions}
-     *                       for more info.
      * @return A list of tax category-specific update actions.
      */
     @Nonnull
     public static List<UpdateAction<TaxCategory>> buildActions(
         @Nonnull final TaxCategory oldTaxCategory,
-        @Nonnull final TaxCategoryDraft newTaxCategory,
-        @Nonnull final TaxCategorySyncOptions syncOptions) {
+        @Nonnull final TaxCategoryDraft newTaxCategory) {
 
         final List<UpdateAction<TaxCategory>> updateActions = new ArrayList<>(
             filterEmptyOptionals(
@@ -46,7 +40,7 @@ public final class TaxCategorySyncUtils {
             )
         );
 
-        updateActions.addAll(buildTaxRateUpdateActions(oldTaxCategory, newTaxCategory, syncOptions));
+        updateActions.addAll(buildTaxRateUpdateActions(oldTaxCategory, newTaxCategory));
 
         return updateActions;
     }
