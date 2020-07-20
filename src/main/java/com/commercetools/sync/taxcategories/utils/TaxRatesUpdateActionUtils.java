@@ -49,13 +49,11 @@ final class TaxRatesUpdateActionUtils {
      * @param newTaxRatesDrafts the new list of tax rates drafts.
      * @return a list of tax rates update actions if the list of tax rates are not identical.
      *         Otherwise, if the tax rates are identical, an empty list is returned.
-     * @throws BuildUpdateActionException in case there are tax rates drafts with duplicate country codes.
+
      */
     @Nonnull
     static List<UpdateAction<TaxCategory>> buildTaxRatesUpdateActions(
-        @Nonnull final List<TaxRate> oldTaxRates,
-        final List<TaxRateDraft> newTaxRatesDrafts)
-        throws BuildUpdateActionException {
+        @Nonnull final List<TaxRate> oldTaxRates, final List<TaxRateDraft> newTaxRatesDrafts) {
 
         if (newTaxRatesDrafts != null && !newTaxRatesDrafts.isEmpty()) {
             return buildUpdateActions(
@@ -87,26 +85,21 @@ final class TaxRatesUpdateActionUtils {
     @Nonnull
     private static List<UpdateAction<TaxCategory>> buildUpdateActions(
         @Nonnull final List<TaxRate> oldTaxRates,
-        @Nonnull final List<TaxRateDraft> newTaxRatesDrafts)
-        throws BuildUpdateActionException {
+        @Nonnull final List<TaxRateDraft> newTaxRatesDrafts) {
 
-        try {
-            final List<UpdateAction<TaxCategory>> updateActions =
-                buildRemoveOrReplaceTaxRateUpdateActions(
-                    oldTaxRates,
-                    newTaxRatesDrafts
-                );
 
-            updateActions.addAll(
-                buildAddTaxRateUpdateActions(
-                    oldTaxRates,
-                    newTaxRatesDrafts
-                )
+        final List<UpdateAction<TaxCategory>> updateActions =
+            buildRemoveOrReplaceTaxRateUpdateActions(
+                oldTaxRates,
+                newTaxRatesDrafts
             );
-            return updateActions;
-        } catch (final RuntimeException exception) {
-            throw new BuildUpdateActionException(exception);
-        }
+        updateActions.addAll(
+            buildAddTaxRateUpdateActions(
+                oldTaxRates,
+                newTaxRatesDrafts
+            )
+        );
+        return updateActions;
     }
 
     /**

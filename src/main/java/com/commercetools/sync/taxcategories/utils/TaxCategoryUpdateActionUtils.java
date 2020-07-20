@@ -1,7 +1,7 @@
 package com.commercetools.sync.taxcategories.utils;
 
 import com.commercetools.sync.taxcategories.TaxCategorySyncOptions;
-import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import io.sphere.sdk.taxcategories.TaxCategoryDraft;
@@ -14,8 +14,7 @@ import java.util.Optional;
 
 import static com.commercetools.sync.taxcategories.utils.TaxRatesUpdateActionUtils.buildTaxRatesUpdateActions;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
-import static java.lang.String.format;
-import static java.util.Collections.emptyList;
+
 
 public final class TaxCategoryUpdateActionUtils {
 
@@ -80,17 +79,7 @@ public final class TaxCategoryUpdateActionUtils {
         @Nonnull final TaxCategoryDraft newTaxCategory,
         @Nonnull final TaxCategorySyncOptions syncOptions) {
 
-        try {
-            return buildTaxRatesUpdateActions(
-                oldTaxCategory.getTaxRates(),
-                newTaxCategory.getTaxRates()
-            );
-        } catch (final BuildUpdateActionException exception) {
-            syncOptions.applyErrorCallback(format("Failed to build update actions for the tax rates "
-                    + "of the tax category with the key '%s'. Reason: %s", oldTaxCategory.getKey(), exception),
-                exception);
-            return emptyList();
-        }
+        return buildTaxRatesUpdateActions(oldTaxCategory.getTaxRates(), newTaxCategory.getTaxRates());
     }
 
 }
