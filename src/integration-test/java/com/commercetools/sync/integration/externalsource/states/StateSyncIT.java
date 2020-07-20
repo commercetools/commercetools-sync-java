@@ -7,11 +7,13 @@ import com.commercetools.sync.states.StateSyncOptions;
 import com.commercetools.sync.states.StateSyncOptionsBuilder;
 import com.commercetools.sync.states.helpers.StateSyncStatistics;
 import io.sphere.sdk.client.BadGatewayException;
+import io.sphere.sdk.client.BadRequestException;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.queries.PagedQueryResult;
+import io.sphere.sdk.queries.QueryDsl;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateDraft;
@@ -61,7 +63,13 @@ import static org.mockito.Mockito.when;
 
 class StateSyncIT {
 
+    String keyA;
+    String keyB;
+    String keyC = "state-A";
 
+    List<String> errorCallBackMessages;
+    List<String> warningCallBackMessages;
+    List<Throwable> errorCallBackExceptions;
     String stateKey = "";
 
     @AfterAll
@@ -73,6 +81,9 @@ class StateSyncIT {
     @BeforeEach
     void setup() {
         stateKey = "state-" + ThreadLocalRandom.current().nextInt();
+        keyA = "state-A-" + ThreadLocalRandom.current().nextInt();
+        keyB = "state-B-" + ThreadLocalRandom.current().nextInt();
+        keyC = "state-C-" + ThreadLocalRandom.current().nextInt();
         deleteStatesFromTargetAndSourceByType();
         final StateDraft stateDraft = StateDraftBuilder
             .of(stateKey, StateType.LINE_ITEM_STATE)
@@ -83,6 +94,9 @@ class StateSyncIT {
             .build();
 
         executeBlocking(CTP_TARGET_CLIENT.execute(StateCreateCommand.of(stateDraft)));
+        errorCallBackMessages = new ArrayList<>();
+        warningCallBackMessages = new ArrayList<>();
+        errorCallBackExceptions = new ArrayList<>();
     }
 
     @Test
@@ -226,9 +240,7 @@ class StateSyncIT {
         // preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
 
-        List<String> errorCallBackMessages = new ArrayList<>();
-        List<String> warningCallBackMessages = new ArrayList<>();
-        List<Throwable> errorCallBackExceptions = new ArrayList<>();
+
         final StateSyncOptions spyOptions = StateSyncOptionsBuilder
             .of(spyClient)
             .errorCallback((errorMessage, throwable) -> {
@@ -368,11 +380,6 @@ class StateSyncIT {
 
     @Test
     void sync_WithNotExistentStates_ShouldResolveStateLater() {
-        // prepare the target project
-        String keyB = "state-B";
-        String keyC = "state-C";
-        String keyA = "state-A";
-
         final StateDraft stateCDraft = createStateDraft(keyC);
         final State stateC = createStateInSource(stateCDraft);
 
@@ -412,9 +419,6 @@ class StateSyncIT {
 
     @Test
     void sync_WithAllExistentStates_ShouldResolveAllStates() {
-        String keyB = "state-B";
-        String keyC = "state-C";
-        String keyA = "state-A";
 
         final StateDraft stateCDraft = createStateDraft(keyC);
         final State stateC = createStateInSource(stateCDraft);
@@ -449,9 +453,6 @@ class StateSyncIT {
 
     @Test
     void sync_WithUpdatedTransition_ShouldUpdateTransitions() {
-        String keyA = "state-A";
-        String keyB = "state-B";
-        String keyC = "state-C";
 
         final StateDraft stateCDraft = createStateDraft(keyC);
         final State stateC = createStateInSource(stateCDraft);
@@ -493,6 +494,148 @@ class StateSyncIT {
             }).toCompletableFuture().join();
     }
 
+
+    @Test
+    void sync_WithStateWithoutKey_ShouldAddErrorMessage() {
+        String nameA = "state-A";
+        final StateDraft stateADraft = StateDraftBuilder
+            .of(null, StateType.REVIEW_STATE)
+            .name(LocalizedString.ofEnglish(nameA))
+            .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
+            .initial(true)
+            .build();
+
+        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .batchSize(3)
+            .errorCallback((errorMessage, throwable) -> {
+                errorCallBackMessages.add(errorMessage);
+                errorCallBackExceptions.add(throwable);
+            })
+            .warningCallback(warningCallBackMessages::add)
+            .build();
+        final StateSync stateSync = new StateSync(stateSyncOptions);
+        // test
+        final StateSyncStatistics stateSyncStatistics = stateSync
+            .sync(Arrays.asList(stateADraft))
+            .toCompletableFuture()
+            .join();
+
+        assertThat(stateSyncStatistics).hasValues(1, 0, 0, 1, 0);
+        Assertions.assertThat(errorCallBackExceptions).isNotEmpty();
+        Assertions.assertThat(errorCallBackMessages).isNotEmpty();
+        Assertions.assertThat(errorCallBackMessages.get(0)).contains("StateDraft with name:"
+            + " LocalizedString(en -> state-A) doesn't have a key.");
+        Assertions.assertThat(warningCallBackMessages).isEmpty();
+    }
+
+
+    @Test
+    void sync_WithUpdatedTransitionAndClientThrowsError_ShouldAddErrorMessage() {
+        final StateDraft stateCDraft = createStateDraft(keyC);
+        final State stateC = createStateInSource(stateCDraft);
+        final StateDraft tagetStateCDraft = createStateDraft(keyC);
+        final State targetStateC = createStateInTarget(tagetStateCDraft);
+
+        final StateDraft stateBDraft = createStateDraft(keyB, stateC);
+        final State stateB = createStateInSource(stateBDraft);
+        final StateDraft tagetStateBDraft = createStateDraft(keyB, targetStateC);
+        final State targetStateB = createStateInTarget(tagetStateBDraft);
+
+        final StateDraft stateADraft = createStateDraft(keyA, stateB, stateC);
+        final State stateA = createStateInSource(stateADraft);
+        final StateDraft tagetStateADraft = createStateDraft(keyA, targetStateB);
+        final State targetStateA = createStateInTarget(tagetStateADraft);
+        Assertions.assertThat(targetStateB.getTransitions().size()).isEqualTo(1);
+        Assertions.assertThat(targetStateA.getTransitions().size()).isEqualTo(1);
+
+
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+
+        final StateUpdateCommand updateCommand = any(StateUpdateCommand.class);
+        when(spyClient.execute(updateCommand))
+            .thenReturn(
+                CompletableFutureUtils.exceptionallyCompletedFuture(new BadRequestException("a test exception")))
+            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()))
+            .thenCallRealMethod();
+
+
+        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+            .of(spyClient)
+            .batchSize(3)
+            .errorCallback((errorMessage, throwable) -> {
+                errorCallBackMessages.add(errorMessage);
+                errorCallBackExceptions.add(throwable);
+            })
+            .warningCallback(warningCallBackMessages::add)
+            .build();
+        final StateSync stateSync = new StateSync(stateSyncOptions);
+        final List<StateDraft> stateDrafts = replaceStateTransitionIdsWithKeys(Arrays.asList(stateA, stateB, stateC));
+        // test
+        final StateSyncStatistics stateSyncStatistics = stateSync
+            .sync(stateDrafts)
+            .toCompletableFuture()
+            .join();
+
+        assertThat(stateSyncStatistics).hasValues(3, 0, 0, 1, 0);
+        Assertions.assertThat(errorCallBackExceptions).isNotEmpty();
+        Assertions.assertThat(errorCallBackMessages).isNotEmpty();
+        Assertions.assertThat(warningCallBackMessages).isEmpty();
+    }
+
+    @Test
+    void sync_WithFailureInKeysToIdCreation_ShouldAddErrorMessage() {
+        final StateDraft stateCDraft = createStateDraft(keyC);
+        final State stateC = createStateInSource(stateCDraft);
+        final StateDraft tagetStateCDraft = createStateDraft(keyC);
+        final State targetStateC = createStateInTarget(tagetStateCDraft);
+
+        final StateDraft stateBDraft = createStateDraft(keyB, stateC);
+        final State stateB = createStateInSource(stateBDraft);
+        final StateDraft tagetStateBDraft = createStateDraft(keyB, targetStateC);
+        final State targetStateB = createStateInTarget(tagetStateBDraft);
+
+        final StateDraft stateADraft = createStateDraft(keyA, stateB, stateC);
+        final State stateA = createStateInSource(stateADraft);
+        final StateDraft tagetStateADraft = createStateDraft(keyA, targetStateB);
+        final State targetStateA = createStateInTarget(tagetStateADraft);
+        Assertions.assertThat(targetStateB.getTransitions().size()).isEqualTo(1);
+        Assertions.assertThat(targetStateA.getTransitions().size()).isEqualTo(1);
+
+
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final QueryDsl queryCommand = any(QueryDsl.class);
+        when(spyClient.execute(queryCommand))
+            .thenReturn(
+                CompletableFutureUtils.exceptionallyCompletedFuture(new BadRequestException("a test exception")))
+            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()))
+            .thenCallRealMethod();
+
+
+        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+            .of(spyClient)
+            .batchSize(3)
+            .errorCallback((errorMessage, throwable) -> {
+                errorCallBackMessages.add(errorMessage);
+                errorCallBackExceptions.add(throwable);
+            })
+            .warningCallback(warningCallBackMessages::add)
+            .build();
+
+        final List<StateDraft> stateDrafts = replaceStateTransitionIdsWithKeys(Arrays.asList(stateA, stateB, stateC));
+        // test
+        final StateSyncStatistics stateSyncStatistics = new StateSync(stateSyncOptions)
+            .sync(stateDrafts)
+            .toCompletableFuture()
+            .join();
+
+        assertThat(stateSyncStatistics).hasValues(3, 0, 0, 3, 0);
+        Assertions.assertThat(errorCallBackExceptions).isNotEmpty();
+        Assertions.assertThat(errorCallBackMessages).isNotEmpty();
+        Assertions.assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to build a cache of state keys to ids.");
+        Assertions.assertThat(warningCallBackMessages).isEmpty();
+    }
+
     private State createStateInSource(final StateDraft draft) {
         return executeBlocking(CTP_SOURCE_CLIENT.execute(StateCreateCommand.of(draft)
             .withExpansionPaths(StateExpansionModel::transitions)));
@@ -515,7 +658,7 @@ class StateSyncIT {
         return createStateDraftWithReference(key, references);
     }
 
-    private StateDraft createStateDraft(final String key,final State... transitionStates) {
+    private StateDraft createStateDraft(final String key, final State... transitionStates) {
         List<Reference<State>> references = new ArrayList<>();
         if (transitionStates.length > 0) {
             for (State transitionState : transitionStates) {
@@ -525,7 +668,7 @@ class StateSyncIT {
         return createStateDraftWithReference(key, references);
     }
 
-    private StateDraft createStateDraftWithReference(final  String key, final  List<Reference<State>> references) {
+    private StateDraft createStateDraftWithReference(final String key, final List<Reference<State>> references) {
         return StateDraftBuilder
             .of(key, StateType.REVIEW_STATE)
             .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))

@@ -21,7 +21,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class StateBatchProcessor {
     static final String STATE_DRAFT_KEY_NOT_SET = "StateDraft with name: %s doesn't have a key. "
-        + "Please make sure all state transitions have keys.";
+        + "Please make sure all state have keys.";
     static final String STATE_DRAFT_IS_NULL = "StateDraft is null.";
     static final String STATE_HAS_INVALID_REFERENCES = "StateDraft with key: '%s' has invalid state transitions";
 
