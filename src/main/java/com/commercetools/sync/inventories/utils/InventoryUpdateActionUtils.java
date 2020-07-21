@@ -37,7 +37,7 @@ public final class InventoryUpdateActionUtils {
      * @return optional containing update action or empty optional if quantities on stock are identical
      */
     @Nonnull
-    public static Optional<UpdateAction<InventoryEntry>>  buildChangeQuantityAction(@Nonnull final InventoryEntry
+    public static Optional<UpdateAction<InventoryEntry>> buildChangeQuantityAction(@Nonnull final InventoryEntry
                                                                                            oldEntry,
                                                                                    @Nonnull final InventoryEntryDraft
                                                                                        newEntry) {
