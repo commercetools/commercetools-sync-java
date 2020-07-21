@@ -50,7 +50,7 @@ public final class StateITUtils {
      * Deletes all states from CTP projects defined
      * by the {@code CTP_SOURCE_CLIENT} and {@code CTP_TARGET_CLIENT}.
      */
-    public static void deleteStatesFromTargetAndSourceByType() {
+    public static void deleteStatesFromTargetAndSource() {
         deleteStates(CTP_TARGET_CLIENT);
         deleteStates(CTP_SOURCE_CLIENT);
     }

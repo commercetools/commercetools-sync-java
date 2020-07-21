@@ -47,7 +47,7 @@ import static com.commercetools.sync.commons.asserts.statistics.AssertionsForSta
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.StateITUtils.deleteStates;
-import static com.commercetools.sync.integration.commons.utils.StateITUtils.deleteStatesFromTargetAndSourceByType;
+import static com.commercetools.sync.integration.commons.utils.StateITUtils.deleteStatesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.StateITUtils.getStateByKey;
 import static com.commercetools.sync.states.utils.StateTransitionReferenceReplacementUtils.replaceStateTransitionIdsWithKeys;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
@@ -84,7 +84,7 @@ class StateSyncIT {
         keyA = "state-A-" + current().nextInt();
         keyB = "state-B-" + current().nextInt();
         keyC = "state-C-" + current().nextInt();
-        deleteStatesFromTargetAndSourceByType();
+        deleteStatesFromTargetAndSource();
         final StateDraft stateDraft = StateDraftBuilder
             .of(key, StateType.LINE_ITEM_STATE)
             .name(LocalizedString.ofEnglish("state-name"))
