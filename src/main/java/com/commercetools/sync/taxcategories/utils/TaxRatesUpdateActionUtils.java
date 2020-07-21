@@ -2,13 +2,14 @@ package com.commercetools.sync.taxcategories.utils;
 
 import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.taxcategories.SubRate;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import io.sphere.sdk.taxcategories.TaxRate;
 import io.sphere.sdk.taxcategories.TaxRateDraft;
+import io.sphere.sdk.taxcategories.TaxRateDraftBuilder;
 import io.sphere.sdk.taxcategories.commands.updateactions.AddTaxRate;
 import io.sphere.sdk.taxcategories.commands.updateactions.RemoveTaxRate;
 import io.sphere.sdk.taxcategories.commands.updateactions.ReplaceTaxRate;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -16,11 +17,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.singletonList;
-import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
@@ -40,8 +39,16 @@ final class TaxRatesUpdateActionUtils {
      * <p>If the list of new {@link TaxRateDraft}s is empty, then remove actions are built for
      * every existing tax rate in the {@code oldTaxRates} list.
      *
-     * <p>Note: The method will ignore/filter out {@code null} tax rates drafts from the passed
-     * {@code newTaxRateDrafts}.</p>
+     * <p>Notes: The method will ignore/filter out:
+     * <ul>
+     *     <li>
+     *       the {@code null} tax rates drafts from the passed {@code newTaxRateDrafts}.
+     *     </li>
+     *     <li>
+     *       the duplicated (has same country code and state) tax rates drafts from the passed {@code newTaxRateDrafts}
+     *       and will create update action only for the first tax rate draft in the {@code newTaxRateDrafts}.
+     *     </li>
+     * </ul>
      *
      * @param oldTaxRates       the old list of tax rates.
      * @param newTaxRatesDrafts the new list of tax rates drafts.
@@ -84,16 +91,17 @@ final class TaxRatesUpdateActionUtils {
         @Nonnull final List<TaxRate> oldTaxRates,
         @Nonnull final List<TaxRateDraft> newTaxRatesDrafts) {
 
+        List<TaxRateDraft> newTaxRateDraftsCopy = new ArrayList<>(newTaxRatesDrafts);
 
         final List<UpdateAction<TaxCategory>> updateActions =
             buildRemoveOrReplaceTaxRateUpdateActions(
                 oldTaxRates,
-                newTaxRatesDrafts
+                newTaxRateDraftsCopy
             );
         updateActions.addAll(
             buildAddTaxRateUpdateActions(
                 oldTaxRates,
-                newTaxRatesDrafts
+                newTaxRateDraftsCopy
             )
         );
         return updateActions;
@@ -116,29 +124,25 @@ final class TaxRatesUpdateActionUtils {
     private static List<UpdateAction<TaxCategory>> buildRemoveOrReplaceTaxRateUpdateActions(
         @Nonnull final List<TaxRate> oldTaxRates,
         @Nonnull final List<TaxRateDraft> newTaxRatesDrafts) {
-        final Map<String, TaxRateDraft> taxRateDraftCountryStateMap = newTaxRatesDrafts
-                .stream()
-                .collect(
-                    toMap(taxRateDraft -> taxRateDraft.getCountry() + "_" + taxRateDraft.getState(),
-                        taxRateDraft -> taxRateDraft));
 
         return oldTaxRates
             .stream()
-            .map(oldTaxRate -> {
-                final CountryCode oldTaxRateCountryCode = oldTaxRate.getCountry();
-                final String oldTaxRateState = oldTaxRate.getState();
-                final TaxRateDraft matchingNewTaxRateDraft = taxRateDraftCountryStateMap
-                        .get(oldTaxRateCountryCode + "_" + oldTaxRateState);
-                return ofNullable(matchingNewTaxRateDraft)
-                    .map(taxRateDraft -> {
-                        if (!hasSameFields(oldTaxRate, taxRateDraft)) {
-                            return singletonList(ReplaceTaxRate.of(oldTaxRate.getId(), taxRateDraft));
-                        } else {
-                            return new ArrayList<UpdateAction<TaxCategory>>();
-                        }
-                    })
-                    .orElseGet(() -> singletonList(RemoveTaxRate.of(oldTaxRate.getId())));
-            })
+            .map(oldTaxRate -> newTaxRatesDrafts
+                .stream()
+                .filter(taxRateDraft -> Objects.equals(oldTaxRate.getCountry(), taxRateDraft.getCountry()))
+                .filter(taxRateDraft -> oldTaxRate.getState() == null
+                    || (oldTaxRate.getState() != null && taxRateDraft.getState() == null)
+                    || Objects.equals(oldTaxRate.getState(), taxRateDraft.getState()))
+                .findFirst()
+                .map(matchedTaxRateDraft ->  {
+                    if (!hasSameFields(oldTaxRate, matchedTaxRateDraft)) {
+                        newTaxRatesDrafts.remove(matchedTaxRateDraft);
+                        return singletonList(ReplaceTaxRate.of(oldTaxRate.getId(), matchedTaxRateDraft));
+                    } else {
+                        return new ArrayList<UpdateAction<TaxCategory>>();
+                    }
+                })
+                .orElseGet(() -> singletonList(RemoveTaxRate.of(oldTaxRate.getId()))))
             .flatMap(Collection::stream)
             .collect(Collectors.toList());
     }
@@ -158,39 +162,28 @@ final class TaxRatesUpdateActionUtils {
         @Nonnull final List<TaxRate> oldTaxRates,
         @Nonnull final List<TaxRateDraft> newTaxRateDrafts) {
 
-        final Map<CountryCode, TaxRate> countryCodeTaxRateMap = oldTaxRates
+        final Map<String, TaxRate> taxRateDraftMap = oldTaxRates
             .stream()
-            .collect(toMap(TaxRate::getCountry, Function.identity()));
+            .collect(toMap(taxRate -> getTaxRateDraftMapKey(taxRate.getCountry(), taxRate.getState()),
+                taxRateDraft -> taxRateDraft));
 
         return newTaxRateDrafts
             .stream()
-            .filter(taxRateDraft -> !countryCodeTaxRateMap.containsKey(taxRateDraft.getCountry()))
+            .filter(taxRateDraft -> taxRateDraft.getCountry() != null
+                && !taxRateDraftMap.containsKey(
+                    getTaxRateDraftMapKey(taxRateDraft.getCountry(), taxRateDraft.getState())))
             .map(AddTaxRate::of)
-            .collect(Collectors.toList());
+            .collect(toList());
+    }
+
+    @Nonnull
+    private static String getTaxRateDraftMapKey(final CountryCode countryCode, final String state) {
+        return StringUtils.isEmpty(state)
+            ? countryCode.toString()
+            : String.format("%s_%s", countryCode, state);
     }
 
     private static boolean hasSameFields(@Nonnull final TaxRate oldTaxRate, @Nonnull final TaxRateDraft newTaxRate) {
-        return Objects.equals(oldTaxRate.getAmount(), newTaxRate.getAmount())
-            && Objects.equals(oldTaxRate.getName(), newTaxRate.getName())
-            && Objects.equals(oldTaxRate.getState(), newTaxRate.getState())
-            && Objects.equals(oldTaxRate.isIncludedInPrice(), newTaxRate.isIncludedInPrice())
-            && sameSubRates(oldTaxRate.getSubRates().stream().filter(Objects::nonNull).collect(toList()),
-            newTaxRate.getSubRates().stream().filter(Objects::nonNull).collect(toList()));
-    }
-
-    private static boolean sameSubRates(final List<SubRate> oldSubRates, final List<SubRate> newSubRates) {
-        if (Objects.nonNull(oldSubRates) && Objects.nonNull(newSubRates)) {
-            if (oldSubRates.size() == newSubRates.size()) {
-                return newSubRates.stream().allMatch(newSubRateItem -> {
-                    return oldSubRates.stream().anyMatch(oldSubRateItem -> {
-                        return Objects.toString(newSubRateItem.getName(), "").trim()
-                                    .equals(Objects.toString(oldSubRateItem.getName(), "").trim())
-                                     && (newSubRateItem.getAmount() == null ? 0 : newSubRateItem.getAmount())
-                                     == (oldSubRateItem.getAmount() == null ? 0 : oldSubRateItem.getAmount());
-                    });
-                });
-            }
-        }
-        return false;
+        return TaxRateDraftBuilder.of(oldTaxRate).build().equals(newTaxRate);
     }
 }
