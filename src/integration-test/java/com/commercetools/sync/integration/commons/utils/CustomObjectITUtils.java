@@ -15,10 +15,8 @@ import java.util.concurrent.CompletionStage;
 
 public final class CustomObjectITUtils {
 
-    private static final String CUSTOM_OBJECT_CONTAINER_KEY =
+    private static final String PRODUCT_CUSTOM_OBJECT_CONTAINER_KEY =
         "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
-    private static final String TRANSITIONS_CUSTOM_OBJECT_CONTAINER_KEY =
-        "commercetools-sync-java.UnresolvedTransitionsService.stateDrafts";
 
 
     /**
@@ -32,7 +30,7 @@ public final class CustomObjectITUtils {
         final CustomObjectQuery<WaitingToBeResolved> customObjectQuery =
             CustomObjectQuery
                 .of(WaitingToBeResolved.class)
-                .byContainer(CUSTOM_OBJECT_CONTAINER_KEY);
+                .byContainer(PRODUCT_CUSTOM_OBJECT_CONTAINER_KEY);
 
         ctpClient
             .execute(customObjectQuery)
@@ -61,7 +59,7 @@ public final class CustomObjectITUtils {
         final CustomObjectQuery<WaitingToBeResolvedTransitions> customObjectQuery =
             CustomObjectQuery
                 .of(WaitingToBeResolvedTransitions.class)
-                .byContainer(CUSTOM_OBJECT_CONTAINER_KEY);
+                .byContainer(PRODUCT_CUSTOM_OBJECT_CONTAINER_KEY);
 
         ctpClient
             .execute(customObjectQuery)
