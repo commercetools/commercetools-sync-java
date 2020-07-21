@@ -1,6 +1,6 @@
 # State Sync
 
-Module used for importing/syncing State into a commercetools project. 
+Module used for importing/syncing States into a commercetools project. 
 It also provides utilities for generating update actions based on the comparison of a [State](https://docs.commercetools.com/http-api-projects-states#states) 
 against a [StateDraft](https://docs.commercetools.com/http-api-projects-states#statedraft).
 
@@ -13,8 +13,9 @@ against a [StateDraft](https://docs.commercetools.com/http-api-projects-states#s
     - [Prerequisites](#prerequisites)
     - [Running the sync](#running-the-sync)
       - [Persistence of StateDrafts with Irresolvable References](#persistence-of-statedrafts-with-irresolvable-references)
+    - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)  
   - [Build all update actions](#build-all-update-actions)
-
+  - [Build particular update action(s)](#build-particular-update-actions)
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Usage
@@ -61,7 +62,7 @@ After all the aforementioned points in the previous section have been fulfilled,
 ````
 The result of the completing the `StateSyncStatistics` in the previous code snippet contains a `StateSyncStatistics`
 which contains all the stats of the sync process; which includes a report message, the total number of updated, created, 
-failed, processed products, the missing parent of transitions and the processing time of the sync in different time units and in a
+failed, processed states, the missing parent of transitions and the processing time of the sync in different time units and in a
 human-readable format.
 ````java
 final StateSyncStatistics stats = stateSyncStatisticsStage.toCompletebleFuture().join();
@@ -69,7 +70,10 @@ stats.getReportMessage();
 // Summary: 3 state(s) were processed in total (3 created, 0 updated, 0 failed to sync and 0 state(s) with missing transition(s).
 ````
 
+__Note__ The statistics object contains the processing time of the last batch only. This is due to two reasons:
 
+ 1. The sync processing time should not take into account the time between supplying batches to the sync.
+ 2. It is not known by the sync which batch is going to be the last one supplied.
 
 ##### Persistence of StateDrafts with Irresolvable References
 
@@ -117,16 +121,28 @@ It being persisted as `CustomObject` means that the referenced StateDrafts with 
 As soon, as the referenced StateDrafts are supplied to the sync, the draft will be created/updated and the 
 `CustomObject` will be removed from the target project.
 
+#### More examples of how to use the sync
+ 
+ 1. [Sync usages](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/states/StateSyncIT.java).
+
+*Make sure to read the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md) for optimal performance.*
+
 
 ### Build all update actions
 
-A utility method provided by the library to compare a give state with a new statedraft and update the given state accordently
+A utility method provided by the library to compare a `State` with a new `StateDraft` and results in a list of state update actions.
  update actions. 
 ```java
- private CompletionStage<Void> buildActionsAndUpdate(
-        @Nonnull final State oldState,
-        @Nonnull final StateDraft newState) {
+List<UpdateAction<State>> updateActions = StateSyncUtils.buildActions(state, stateDraft, stateSyncOptions);
 ```
 
+### Build particular update action(s)
+
+Utility methods provided by the library to compare the specific fields of a `State` and a new `StateDraft`, and in turn builds
+ the update action. One example is the `buildSetNameAction` which compares names:
+````java
+Optional<UpdateAction<State>> updateAction = StateUpdateActionUtils.buildSetNameAction(oldState, stateDraft);
+````
+More examples of those utils for different types can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/states/utils/StateUpdateActionUtilsTest.java).
 
 
