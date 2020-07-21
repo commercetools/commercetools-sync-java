@@ -74,11 +74,11 @@ stats.getReportMessage();
 
 ##### Persistence of StateDrafts with Irresolvable References
 
-A StateDraft X could be supplied in with an transition referencing StateDraft Y. 
-It could be that Y is not supplied before X, which means the sync could fail creating/updating X. 
-It could also be that Y is not supplied at all in this batch but at a later batch.
+A StateDraft (state-A) could be supplied in with a transition referencing StateDraft (state-B). 
+It could be that (state-B) is not supplied before (state-A), which means the sync could fail creating/updating (state-A). 
+It could also be that (state-B) is not supplied at all in this batch but at a later batch.
  
-The library keep tracks of such "referencing" states like X and persists them in storage 
+The library keep tracks of such "referencing" states like (state-A) and persists them in storage 
 (**CTP `customObjects` in the target project** , in this case) 
 to keep them and create/update them accordingly whenever the referenced state exist in the target project.
 
