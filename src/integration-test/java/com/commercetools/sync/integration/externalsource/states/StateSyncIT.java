@@ -65,7 +65,7 @@ class StateSyncIT {
 
     String keyA;
     String keyB;
-    String keyC = "state-A";
+    String keyC;
 
     List<String> errorCallBackMessages;
     List<String> warningCallBackMessages;
