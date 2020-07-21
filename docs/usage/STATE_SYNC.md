@@ -90,30 +90,29 @@ Here is an example of a `CustomObject` in the target project that represents a S
 It being persisted as `CustomObject` means that the referenced StateDrafts with keys `state-C`  do not exist yet.
 
 ```json
-    {
-            "id": "46ab3e17-2c35-41cd-9bf5-d2660c275262",
-            "version": 1,
-            "container": "commercetools-sync-java.UnresolvedTransitionsService.stateDrafts",
-            "key": "518ea82bb78755c0cdd67909dd3206d56186f7e5",
-            "value": {
-              "missingTransitionStateKeys": [
-                "state-C"
-              ],
-              "stateDraft": {
-                "type": "ReviewState",
-                "transitions": [
-                  {
-                    "id": "state-C",
-                    "typeId": "state"
-                  }
-                ],
-                "roles": [
-                  "ReviewIncludedInStatistics"
-                ],
-                "key": "state-A",
-                "initial": true
-              }
-            }
+{
+  "container": "commercetools-sync-java.UnresolvedTransitionsService.stateDrafts",
+  "key": "518ea82bb78755c0cdd67909dd3206d56186f7e5",
+  "value": {
+    "missingTransitionStateKeys": [
+      "state-C"
+    ],
+    "stateDraft": {
+      "type": "ReviewState",
+      "transitions": [
+        {
+          "id": "state-C",
+          "typeId": "state"
+        }
+      ],
+      "roles": [
+        "ReviewIncludedInStatistics"
+      ],
+      "key": "state-A",
+      "initial": true
+    }
+  }
+}
 ```
 
 As soon, as the referenced StateDrafts are supplied to the sync, the draft will be created/updated and the 
