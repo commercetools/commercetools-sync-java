@@ -87,7 +87,7 @@ and a `key` representing the key of the StateDraft that is waiting to be created
 
 
 Here is an example of a `CustomObject` in the target project that represents a StateDraft with key `state-A`.  
-It being persisted as `CustomObject` means that the referenced StateDrafts with keys `state-C`  do not exist yet.
+It being persisted as `CustomObject` means that the referenced StateDrafts with keys `state-B`  do not exist yet.
 
 ```json
 {
@@ -95,13 +95,13 @@ It being persisted as `CustomObject` means that the referenced StateDrafts with 
   "key": "518ea82bb78755c0cdd67909dd3206d56186f7e5",
   "value": {
     "missingTransitionStateKeys": [
-      "state-C"
+      "state-B"
     ],
     "stateDraft": {
       "type": "ReviewState",
       "transitions": [
         {
-          "id": "state-C",
+          "id": "state-B",
           "typeId": "state"
         }
       ],
