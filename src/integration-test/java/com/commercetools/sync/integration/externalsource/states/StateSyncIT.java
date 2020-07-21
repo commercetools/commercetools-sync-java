@@ -40,7 +40,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -57,6 +56,7 @@ import static io.sphere.sdk.states.State.referenceOfId;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static java.util.concurrent.ThreadLocalRandom.current;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -70,7 +70,7 @@ class StateSyncIT {
     List<String> errorCallBackMessages;
     List<String> warningCallBackMessages;
     List<Throwable> errorCallBackExceptions;
-    String stateKey = "";
+    String key = "";
 
     @AfterAll
     static void tearDown() {
@@ -80,13 +80,13 @@ class StateSyncIT {
 
     @BeforeEach
     void setup() {
-        stateKey = "state-" + ThreadLocalRandom.current().nextInt();
-        keyA = "state-A-" + ThreadLocalRandom.current().nextInt();
-        keyB = "state-B-" + ThreadLocalRandom.current().nextInt();
-        keyC = "state-C-" + ThreadLocalRandom.current().nextInt();
+        key = "state-" + current().nextInt();
+        keyA = "state-A-" + current().nextInt();
+        keyB = "state-B-" + current().nextInt();
+        keyC = "state-C-" + current().nextInt();
         deleteStatesFromTargetAndSourceByType();
         final StateDraft stateDraft = StateDraftBuilder
-            .of(stateKey, StateType.LINE_ITEM_STATE)
+            .of(key, StateType.LINE_ITEM_STATE)
             .name(LocalizedString.ofEnglish("state-name"))
             .description(LocalizedString.ofEnglish("state-desc"))
             .roles(Collections.singleton(StateRole.RETURN))
@@ -125,7 +125,7 @@ class StateSyncIT {
     @Test
     void sync_WithUpdatedState_ShouldUpdateState() {
         // preparation
-        String key = stateKey;
+        String key = this.key;
         final StateDraft stateDraft = StateDraftBuilder
             .of(key, StateType.REVIEW_STATE)
             .name(ofEnglish("state-name-updated"))
@@ -165,7 +165,7 @@ class StateSyncIT {
     @Test
     void sync_withEqualState_shouldNotUpdateState() {
         StateDraft stateDraft = StateDraftBuilder
-            .of(stateKey, StateType.LINE_ITEM_STATE)
+            .of(key, StateType.LINE_ITEM_STATE)
             .name(ofEnglish("state-name"))
             .description(ofEnglish("state-desc"))
             .roles(Collections.singleton(StateRole.RETURN))
@@ -207,7 +207,7 @@ class StateSyncIT {
         final StateSync stateSync = new StateSync(spyOptions);
 
         final StateDraft stateDraft = StateDraftBuilder
-            .of(stateKey, StateType.REVIEW_STATE)
+            .of(key, StateType.REVIEW_STATE)
             .name(ofEnglish("state-name-updated"))
             .description(ofEnglish("state-desc-updated"))
             .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
@@ -253,7 +253,7 @@ class StateSyncIT {
         final StateSync stateSync = new StateSync(spyOptions);
 
         final StateDraft stateDraft = StateDraftBuilder
-            .of(stateKey, StateType.REVIEW_STATE)
+            .of(key, StateType.REVIEW_STATE)
             .name(ofEnglish("state-name-updated"))
             .description(ofEnglish("state-desc-updated"))
             .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
@@ -312,7 +312,7 @@ class StateSyncIT {
         final StateSync stateSync = new StateSync(spyOptions);
 
         final StateDraft stateDraft = StateDraftBuilder
-            .of(stateKey, StateType.REVIEW_STATE)
+            .of(key, StateType.REVIEW_STATE)
             .name(ofEnglish("state-name-updated"))
             .description(ofEnglish("state-desc-updated"))
             .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
