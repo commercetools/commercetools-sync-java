@@ -78,7 +78,6 @@ final class TaxRatesUpdateActionUtils {
      * @param newTaxRatesDrafts the new list of tax rates drafts.
      * @return a list of tax rates update actions if the list of tax rates is not identical.
      *         Otherwise, if the tax rates are identical, an empty list is returned.
-     * @throws BuildUpdateActionException in case there are runtime exception occurs.
      */
     @Nonnull
     private static List<UpdateAction<TaxCategory>> buildUpdateActions(

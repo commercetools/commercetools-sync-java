@@ -61,8 +61,7 @@ public final class TaxCategoryUpdateActionUtils {
      * Compares the tax rates of a {@link TaxCategory} and a {@link TaxCategoryDraft} and returns a list of
      * {@link UpdateAction}&lt;{@link TaxCategory}&gt; as a result. If both the {@link TaxCategory} and
      * the {@link TaxCategoryDraft} have identical tax rates, then no update action is needed and hence an empty
-     * {@link List} is returned. In case, the new tax category draft has a list of attributes in which a duplicate name
-     * exists, the error callback is triggered and an empty list is returned.
+     * {@link List} is returned.
      *
      * @param oldTaxCategory the tax category which should be updated.
      * @param newTaxCategory the tax category draft where we get the key.

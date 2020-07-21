@@ -162,17 +162,8 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
         statistics.incrementFailed(failedTimes);
     }
 
-    /**
-     * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this method calls the
-     * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
-     * incrementing the total number of failed tax categories to sync.
-     *
-     * @param errorMessage The error message describing the reason(s) of failure.
-     * @param exception    The exception that called caused the failure, if any.
-     */
     private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception) {
-        syncOptions.applyErrorCallback(errorMessage, exception);
-        statistics.incrementFailed();
+        handleError(errorMessage, exception, 1);
     }
 
     /**
