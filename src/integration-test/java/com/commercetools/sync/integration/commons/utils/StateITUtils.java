@@ -101,7 +101,7 @@ public final class StateITUtils {
 
     /**
      * Creates a {@link State} with the {@link StateType} supplied in the CTP project defined by the {@code ctpClient}
-     * in a blocking fashion. The create state will have a key with the value {@value #STATE_KEY}.
+     * in a blocking fashion. The created state will have a key with the value {@value STATE_KEY}.
      *
      * @param ctpClient defines the CTP project to create the state in.
      * @param stateType defines the state type to create the state with.
