@@ -25,9 +25,8 @@ against a [StateDraft](https://docs.commercetools.com/http-api-projects-states#s
 
 #### Prerequisites
 1. The sync expects a list of `StateDraft`s that have their `key` fields set to be matched with
-states in the target CTP project. Also, the states in the target project are expected to have the `key` fields set,
+states in the target commercetools project. Also, the states in the target project are expected to have the `key` fields set,
 otherwise they won't be matched.
-
 
 2. Every state may have several `transitions` to other states. Therefore, in order for the sync to resolve the actual ids of those transitions,
  those `key`s have to be supplied in the following way:
@@ -39,7 +38,7 @@ otherwise they won't be matched.
          that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
          ````java
          // Puts the keys in the reference id fields to prepare for reference resolution
-         final List<StateDraft> StateDrafts = replaceStateTransitionIdsWithKeys(products);
+         final List<StateDraft> stateDrafts = replaceStateTransitionIdsWithKeys(states);
          ````
      
 4. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
@@ -57,8 +56,8 @@ After all the aforementioned points in the previous section have been fulfilled,
 // instantiating a State sync
    final StateSync stateSync = new StateSync(stateSyncOptions);
 
-// execute the sync on your list of Statedraft
-  final CompletionStage<StateSyncStatistics> stateSyncStatisticsStage = stateSync.sync(StateDrafts);
+// execute the sync on your list of StateDraft
+  final CompletionStage<StateSyncStatistics> stateSyncStatisticsStage = stateSync.sync(stateDrafts);
 ````
 The result of the completing the `StateSyncStatistics` in the previous code snippet contains a `StateSyncStatistics`
 which contains all the stats of the sync process; which includes a report message, the total number of updated, created, 
@@ -79,7 +78,7 @@ It could be that (state-B) is not supplied before (state-A), which means the syn
 It could also be that (state-B) is not supplied at all in this batch but at a later batch.
  
 The library keep tracks of such "referencing" states like (state-A) and persists them in storage 
-(**CTP `customObjects` in the target project** , in this case) 
+(**commercetools `customObjects` in the target project** , in this case) 
 to keep them and create/update them accordingly whenever the referenced state exist in the target project.
 
 The `customObject` will have a `container:` **`"commercetools-sync-java.UnresolvedTransitionsService.stateDrafts"`**
