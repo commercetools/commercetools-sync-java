@@ -78,12 +78,7 @@ public final class StateITUtils {
                 return listOfFuturesToFutureOfList(clearStates);
             }).thenAccept(clearedStates -> clearedStates.forEach(stateToRemove ->
             ctpClient.execute(StateDeleteCommand.of(stateToRemove)))
-        ).handle((result, throwable) -> {
-            if (throwable != null) {
-                throwable.printStackTrace();
-            }
-            return result;
-        }).toCompletableFuture().join();
+        ).toCompletableFuture().join();
     }
 
     /**
