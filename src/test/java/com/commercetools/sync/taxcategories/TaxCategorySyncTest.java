@@ -349,8 +349,8 @@ class TaxCategorySyncTest {
             () -> assertThat(result.getUpdated().get()).isEqualTo(0),
             () -> assertThat(result.getFailed().get()).isEqualTo(1),
             () -> assertThat(callback.get())
-                    .contains(format("Tax rates drafts have duplicated country codes and states. Duplicated "
-                            + "tax rate country code: '%s'. state : '%s'. Tax rates country codes and states are "
+                    .contains(format("Tax rate drafts have duplicated country codes and states. Duplicated "
+                            + "tax rate country code: '%s'. state : '%s'. Tax rate country codes and states are "
                             + "expected to be unique inside their tax category.", CountryCode.DE, "BERLIN"))
         );
 
@@ -387,9 +387,9 @@ class TaxCategorySyncTest {
             () -> assertThat(result.getUpdated().get()).isEqualTo(0),
             () -> assertThat(result.getFailed().get()).isEqualTo(1),
             () -> assertThat(callback.get())
-                    .contains(format("Tax rates drafts have duplicated country codes and states. Duplicated "
-                            + "tax rate country code: '%s'. state : '%s'. Tax rates country codes and states are "
-                            + "expected to be unique inside their tax category.", CountryCode.FR, ""))
+                    .contains(format("Tax rate drafts have duplicated country codes. Duplicated "
+                            + "tax rate country code: '%s'. Tax rate country codes and states are "
+                            + "expected to be unique inside their tax category.", CountryCode.FR))
         );
 
     }

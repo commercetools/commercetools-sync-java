@@ -1,29 +1,27 @@
 package com.commercetools.sync.taxcategories;
 
 import com.commercetools.sync.commons.BaseSync;
-import com.commercetools.sync.commons.exceptions.DuplicateCountryCodeAndStateException;
 import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.impl.TaxCategoryServiceImpl;
 import com.commercetools.sync.taxcategories.helpers.TaxCategorySyncStatistics;
-
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import io.sphere.sdk.taxcategories.TaxCategoryDraft;
 import io.sphere.sdk.taxcategories.TaxRateDraft;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
-
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.taxcategories.utils.TaxCategorySyncUtils.buildActions;
@@ -42,9 +40,12 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
     private static final String TAX_CATEGORY_UPDATE_FAILED = "Failed to update tax category with key: '%s'. Reason: %s";
     private static final String TAX_CATEGORY_DRAFT_HAS_NO_KEY = "Failed to process tax category draft without key.";
     private static final String TAX_CATEGORY_DRAFT_IS_NULL = "Failed to process null tax category draft.";
-    private static final String TAX_CATEGORY_DUPLICATED_COUNTRY_STATE = "Tax rates drafts have duplicated country "
-            + "codes and states. Duplicated tax rate country code: '%s'. state : '%s'. Tax rates country codes and "
+    private static final String TAX_CATEGORY_DUPLICATED_COUNTRY = "Tax rate drafts have duplicated country "
+            + "codes. Duplicated tax rate country code: '%s'. Tax rate country codes and "
             + "states are expected to be unique inside their tax category.";
+    private static final String TAX_CATEGORY_DUPLICATED_COUNTRY_AND_STATE = "Tax rate drafts have duplicated country "
+        + "codes and states. Duplicated tax rate country code: '%s'. state : '%s'. Tax rate country codes and "
+        + "states are expected to be unique inside their tax category.";
 
     private final TaxCategoryService taxCategoryService;
 
@@ -128,7 +129,7 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
     /**
      * Checks if a draft is valid for further processing. If so, then returns {@code true}. Otherwise handles an error
      * and returns {@code false}. A valid draft is a {@link TaxCategoryDraft} object that is not {@code null} and its
-     * key is not empty.
+     * key is not empty and tax rates are not duplicated.
      *
      * @param draft nullable draft
      * @return boolean that indicate if given {@code draft} is valid for sync
@@ -138,13 +139,8 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
             handleError(TAX_CATEGORY_DRAFT_IS_NULL, null);
         } else if (isBlank(draft.getKey())) {
             handleError(TAX_CATEGORY_DRAFT_HAS_NO_KEY, null);
-        } else if (Objects.nonNull(draft.getTaxRates())) {
-            try {
-                return checkDuplicateCountryStateForNewTaxRateDraft(draft.getTaxRates());
-            } catch (DuplicateCountryCodeAndStateException ex) {
-                handleError(ex.getMessage(), ex);
-                return false;
-            }
+        } else if (draft.getTaxRates() != null && !draft.getTaxRates().isEmpty()) {
+            return validateIfDuplicateCountryAndState(draft.getTaxRates());
         } else {
             return true;
         }
@@ -237,27 +233,39 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
             .orElse(completedFuture(Optional.empty()));
     }
 
-    @Nonnull
-    private boolean checkDuplicateCountryStateForNewTaxRateDraft(
-            final List<TaxRateDraft> taxRateDrafts) {
+    private boolean validateIfDuplicateCountryAndState(final List<TaxRateDraft> taxRateDrafts) {
+        /*
+        For TaxRates uniqueness could be ensured by country code and states.
+        So in tax category sync are using country code and states for matching.
 
+        Representation of the commercetools platform error when country code is duplicated,
+            {
+                "statusCode": 400,
+                "message": "A duplicate value '{\"country\":\"DE\"}' exists for field 'country'.",
+                "errors": [
+                    {
+                        "code": "DuplicateField",
+                        ....
+                ]
+            }
+        */
         Map<String,Map<String, Long>> map = taxRateDrafts.stream().collect(
-                Collectors.groupingBy(draft ->
-                    Objects.toString(draft.getCountry(), ""),
-                    Collectors.groupingBy(draft ->
-                            Objects.toString(draft.getState(), ""),
-                            Collectors.counting())));
+                Collectors.groupingBy(draft -> Objects.toString(draft.getCountry(), ""),
+                    Collectors.groupingBy(draft -> Objects.toString(draft.getState(), ""),
+                        Collectors.counting())));
 
         for (Map.Entry<String, Map<String, Long>> countryEntry : map.entrySet()) {
-            countryEntry.getValue().entrySet().forEach(stateEntry -> {
+            for (Map.Entry<String, Long> stateEntry: countryEntry.getValue().entrySet()) {
                 if (stateEntry.getValue() > 1L) {
-                    throw new DuplicateCountryCodeAndStateException(
-                            format(TAX_CATEGORY_DUPLICATED_COUNTRY_STATE, countryEntry.getKey(),
-                                    stateEntry.getKey()));
-
+                    String errorMessage = StringUtils.isBlank(stateEntry.getKey())
+                        ? format(TAX_CATEGORY_DUPLICATED_COUNTRY, countryEntry.getKey())
+                        : format(TAX_CATEGORY_DUPLICATED_COUNTRY_AND_STATE, countryEntry.getKey(), stateEntry.getKey());
+                    handleError(errorMessage, null);
+                    return false;
                 }
-            });
+            }
         }
+
         return true;
     }
 

@@ -1,7 +1,5 @@
 package com.commercetools.sync.taxcategories.utils;
 
-import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
-import com.commercetools.sync.commons.exceptions.DuplicateCountryCodeAndStateException;
 import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.taxcategories.SubRate;
@@ -114,26 +112,11 @@ final class TaxRatesUpdateActionUtils {
      *         in the new draft. If the tax rate still exists in the new draft, then compare the fields, and add
      *         the computed actions to the list of update actions.
      *         Otherwise, if the tax rates are identical, an empty list is returned.
-     * @throws DuplicateCountryCodeAndStateException in case there are tax rates drafts with duplicate country codes.
      */
     @Nonnull
     private static List<UpdateAction<TaxCategory>> buildRemoveOrReplaceTaxRateUpdateActions(
         @Nonnull final List<TaxRate> oldTaxRates,
         @Nonnull final List<TaxRateDraft> newTaxRatesDrafts) {
-
-        /*
-        For TaxRates only unique field is country code. So we are using country code for matching.
-        Representation of CTP error,
-            {
-                "statusCode": 400,
-                "message": "A duplicate value '{\"country\":\"DE\"}' exists for field 'country'.",
-                "errors": [
-                    {
-                        "code": "DuplicateField",
-                        ....
-                ]
-            }
-        * */
         final Map<String, TaxRateDraft> taxRateDraftCountryStateMap = newTaxRatesDrafts
                 .stream()
                 .collect(
