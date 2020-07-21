@@ -444,6 +444,9 @@ class StateSyncIT {
             .join();
 
         assertThat(stateSyncStatistics).hasValues(3, 3, 0, 0, 0);
+        Assertions.assertThat(stateSyncStatistics.getReportMessage())
+            .isEqualTo("Summary: 3 state(s) were processed in total "
+                + "(3 created, 0 updated, 0 failed to sync and 0 state(s) with missing transition(s)).");
         UnresolvedTransitionsServiceImpl unresolvedTransitionsService =
             new UnresolvedTransitionsServiceImpl(stateSyncOptions);
         Set<WaitingToBeResolvedTransitions> result =
@@ -580,6 +583,7 @@ class StateSyncIT {
         assertThat(stateSyncStatistics).hasValues(3, 0, 0, 1, 0);
         Assertions.assertThat(errorCallBackExceptions).isNotEmpty();
         Assertions.assertThat(errorCallBackMessages).isNotEmpty();
+        Assertions.assertThat(errorCallBackMessages.get(0)).contains(" detailMessage: a test exception");
         Assertions.assertThat(warningCallBackMessages).isEmpty();
     }
 
