@@ -10,6 +10,7 @@ import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.BadRequestException;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.queries.PagedQueryResult;
@@ -503,6 +504,10 @@ class StateSyncIT {
         final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
             .batchSize(1)
+            .errorCallback((errorMessage, throwable) -> {
+                errorCallBackMessages.add(errorMessage);
+                errorCallBackExceptions.add(throwable);
+            })
             .build();
 
         final StateSync stateSync = new StateSync(stateSyncOptions);
@@ -531,7 +536,6 @@ class StateSyncIT {
 
         final StateDraft stateCDraft = createStateDraft(keyC);
         final State stateC = createStateInSource(stateCDraft);
-
 
         final StateDraft stateBDraft = createStateDraft(keyB, stateC);
         final State stateB = createStateInSource(stateBDraft);
@@ -562,6 +566,54 @@ class StateSyncIT {
             unresolvedTransitionsService.fetch(new HashSet<>(asList(keyA))).toCompletableFuture().join();
         Assertions.assertThat(result.size()).isEqualTo(0);
     }
+
+    @Test
+    void sync_WithExecptionWhenFetchingUnresolveTransition_ShouldPrintErrorMessage() {
+
+        final StateDraft stateCDraft = createStateDraft(keyC);
+        final State stateC = createStateInSource(stateCDraft);
+
+        final StateDraft stateBDraft = createStateDraft(keyB, stateC);
+        final State stateB = createStateInSource(stateBDraft);
+
+        final StateDraft stateADraft = createStateDraft(keyA, stateB, stateC);
+        final State stateA = createStateInSource(stateADraft);
+
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+
+        final CustomObjectQuery<WaitingToBeResolvedTransitions> customObjectQuery = any(CustomObjectQuery.class);
+        when(spyClient.execute(customObjectQuery))
+            .thenReturn(
+                exceptionallyCompletedFuture(new BadRequestException("a test exception")))
+            .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
+            .thenCallRealMethod();
+
+
+        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+            .of(spyClient)
+            .batchSize(3)
+            .errorCallback((errorMessage, throwable) -> {
+                errorCallBackMessages.add(errorMessage);
+                errorCallBackExceptions.add(throwable);
+            })
+            .build();
+
+        final StateSync stateSync = new StateSync(stateSyncOptions);
+        final List<StateDraft> stateDrafts = replaceStateTransitionIdsWithKeys(Arrays.asList(stateA, stateB, stateC));
+        // test
+        final StateSyncStatistics stateSyncStatistics = stateSync
+            .sync(stateDrafts)
+            .toCompletableFuture()
+            .join();
+
+        assertThat(stateSyncStatistics).hasValues(3, 1, 0, 2, 1);
+        Assertions.assertThat(errorCallBackExceptions).isNotEmpty();
+        Assertions.assertThat(errorCallBackMessages).isNotEmpty();
+        Assertions.assertThat(errorCallBackMessages.get(0))
+            .isEqualTo(format("Failed to fetch StateDrafts waiting to be resolved with keys '[%s, %s]'.", keyA, keyB));
+    }
+
+
 
     @Test
     void sync_WithUpdatedTransition_ShouldUpdateTransitions() {
@@ -775,7 +827,7 @@ class StateSyncIT {
         Assertions.assertThat(errorCallBackExceptions).isNotEmpty();
         Assertions.assertThat(errorCallBackMessages).isNotEmpty();
         Assertions.assertThat(errorCallBackMessages.get(0))
-            .isEqualTo(String.format("StateDraft with key: '%s' has invalid state transitions", keyC));
+            .isEqualTo(format("StateDraft with key: '%s' has invalid state transitions", keyC));
         Assertions.assertThat(warningCallBackMessages).isEmpty();
     }
 
