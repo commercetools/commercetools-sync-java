@@ -25,7 +25,6 @@ import io.sphere.sdk.states.commands.StateUpdateCommand;
 import io.sphere.sdk.states.expansion.StateExpansionModel;
 import io.sphere.sdk.states.queries.StateQuery;
 import io.sphere.sdk.states.queries.StateQueryBuilder;
-import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,6 +52,7 @@ import static com.commercetools.sync.states.utils.StateTransitionReferenceReplac
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static io.sphere.sdk.states.State.referenceOfId;
+import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -228,7 +228,7 @@ class StateSyncIT {
 
         final StateUpdateCommand updateCommand = any(StateUpdateCommand.class);
         when(spyClient.execute(updateCommand))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()))
+            .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
             .thenCallRealMethod();
 
         return spyClient;
@@ -279,14 +279,14 @@ class StateSyncIT {
 
         final StateUpdateCommand updateCommand = any(StateUpdateCommand.class);
         when(spyClient.execute(updateCommand))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()))
+            .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
             .thenCallRealMethod();
 
         final StateQuery stateQuery = any(StateQuery.class);
         when(spyClient.execute(stateQuery))
             .thenCallRealMethod() // cache state keys
             .thenCallRealMethod() // Call real fetch on fetching matching states
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
+            .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()));
 
         return spyClient;
     }
@@ -337,7 +337,7 @@ class StateSyncIT {
 
         final StateUpdateCommand stateUpdateCommand = any(StateUpdateCommand.class);
         when(spyClient.execute(stateUpdateCommand))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()))
+            .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
             .thenCallRealMethod();
 
         final StateQuery stateQuery = any(StateQuery.class);
@@ -557,8 +557,8 @@ class StateSyncIT {
         final StateUpdateCommand updateCommand = any(StateUpdateCommand.class);
         when(spyClient.execute(updateCommand))
             .thenReturn(
-                CompletableFutureUtils.exceptionallyCompletedFuture(new BadRequestException("a test exception")))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()))
+                exceptionallyCompletedFuture(new BadRequestException("a test exception")))
+            .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
             .thenCallRealMethod();
 
 
@@ -609,9 +609,8 @@ class StateSyncIT {
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         final QueryDsl queryCommand = any(QueryDsl.class);
         when(spyClient.execute(queryCommand))
-            .thenReturn (
-                CompletableFutureUtils.exceptionallyCompletedFuture(new BadRequestException("a test exception")))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()))
+            .thenReturn(exceptionallyCompletedFuture(new BadRequestException("a test exception")))
+            .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
             .thenCallRealMethod();
 
 
