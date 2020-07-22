@@ -23,7 +23,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.commons.utils.CollectionUtils.filterCollection;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
@@ -198,23 +197,11 @@ public final class StateUpdateActionUtils {
 
         return buildUpdateAction(oldTransitions, newTransitions,
             () -> {
-                SetTransitions setTransitions = null;
-                final long newCount =
-                    filterCollection(newTransitions, newStateTransitionRef ->
-                        oldTransitions.stream()
-                                      .map(Reference::toResourceIdentifier)
-                                      .noneMatch(oldResourceIdentifier ->
-                                          oldResourceIdentifier.equals(newStateTransitionRef)))
-                    .count();
-
-                if (newCount > 0) {
-                    Set<Reference<State>> transitions = newTransitions
-                        .stream()
-                        .map(transition -> State.referenceOfId(transition.getId()))
-                        .collect(Collectors.toSet());
-                    setTransitions = SetTransitions.of(transitions);
-                }
-                return setTransitions;
+                Set<Reference<State>> transitions = newTransitions
+                    .stream()
+                    .map(transition -> State.referenceOfId(transition.getId()))
+                    .collect(Collectors.toSet());
+                return SetTransitions.of(transitions);
             });
     }
 

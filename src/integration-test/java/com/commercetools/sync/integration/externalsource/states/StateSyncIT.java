@@ -647,8 +647,6 @@ class StateSyncIT {
             .contains(format("Failed to fetch StateDrafts waiting to be resolved with keys"));
     }
 
-
-
     @Test
     void sync_WithUpdatedTransition_ShouldUpdateTransitions() {
 
@@ -692,6 +690,91 @@ class StateSyncIT {
             }).toCompletableFuture().join();
     }
 
+    @Test
+    void sync_WithDeletedTransition_ShouldRemoveTransitions() {
+
+        final StateDraft stateCDraft = createStateDraft(keyC);
+        final State stateC = createStateInSource(stateCDraft);
+        final StateDraft tagetStateCDraft = createStateDraft(keyC);
+        final State targetStateC = createStateInTarget(tagetStateCDraft);
+
+        final StateDraft stateBDraft = createStateDraft(keyB, stateC);
+        final State stateB = createStateInSource(stateBDraft);
+        final StateDraft tagetStateBDraft = createStateDraft(keyB, targetStateC);
+        final State targetStateB = createStateInTarget(tagetStateBDraft);
+
+        final StateDraft stateADraft = createStateDraft(keyA, stateB);
+        final State stateA = createStateInSource(stateADraft);
+        final StateDraft tagetStateADraft = createStateDraft(keyA, targetStateB, targetStateC);
+        final State targetStateA = createStateInTarget(tagetStateADraft);
+        Assertions.assertThat(targetStateB.getTransitions().size()).isEqualTo(1);
+        Assertions.assertThat(targetStateA.getTransitions().size()).isEqualTo(2);
+        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .batchSize(3)
+            .build();
+
+        final StateSync stateSync = new StateSync(stateSyncOptions);
+        final List<StateDraft> stateDrafts = replaceStateTransitionIdsWithKeys(Arrays.asList(stateA, stateB, stateC));
+        // test
+        final StateSyncStatistics stateSyncStatistics = stateSync
+            .sync(stateDrafts)
+            .toCompletableFuture()
+            .join();
+
+        assertThat(stateSyncStatistics).hasValues(3, 0, 1, 0, 0);
+
+        QueryExecutionUtils.queryAll(CTP_TARGET_CLIENT, StateQueryBuilder
+            .of()
+            .plusPredicates(q -> q.key().is(keyA)).build())
+            .thenAccept(resultStates -> {
+                Assertions.assertThat(resultStates.size()).isEqualTo(1);
+                Assertions.assertThat(resultStates.get(0).getTransitions().size()).isEqualTo(1);
+            }).toCompletableFuture().join();
+    }
+
+    @Test
+    void sync_WithEmptyNewransition_ShouldRemoveTransitions() {
+
+        final StateDraft stateCDraft = createStateDraft(keyC);
+        final State stateC = createStateInSource(stateCDraft);
+        final StateDraft tagetStateCDraft = createStateDraft(keyC);
+        final State targetStateC = createStateInTarget(tagetStateCDraft);
+
+        final StateDraft stateBDraft = createStateDraft(keyB, stateC);
+        final State stateB = createStateInSource(stateBDraft);
+        final StateDraft tagetStateBDraft = createStateDraft(keyB, targetStateC);
+        final State targetStateB = createStateInTarget(tagetStateBDraft);
+
+        final StateDraft stateADraft = createStateDraft(keyA);
+        final State stateA = createStateInSource(stateADraft);
+        final StateDraft tagetStateADraft = createStateDraft(keyA, targetStateB, targetStateC);
+        final State targetStateA = createStateInTarget(tagetStateADraft);
+        Assertions.assertThat(targetStateB.getTransitions().size()).isEqualTo(1);
+        Assertions.assertThat(targetStateA.getTransitions().size()).isEqualTo(2);
+        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .batchSize(3)
+            .build();
+
+        final StateSync stateSync = new StateSync(stateSyncOptions);
+        final List<StateDraft> stateDrafts = replaceStateTransitionIdsWithKeys(Arrays.asList(stateA, stateB, stateC));
+        // test
+        final StateSyncStatistics stateSyncStatistics = stateSync
+            .sync(stateDrafts)
+            .toCompletableFuture()
+            .join();
+
+        assertThat(stateSyncStatistics).hasValues(3, 0, 1, 0, 0);
+
+        QueryExecutionUtils.queryAll(CTP_TARGET_CLIENT, StateQueryBuilder
+            .of()
+            .plusPredicates(q -> q.key().is(keyA)).build())
+            .thenAccept(resultStates -> {
+                Assertions.assertThat(resultStates.size()).isEqualTo(1);
+                Assertions.assertThat(resultStates.get(0).getTransitions()).isNull();
+            }).toCompletableFuture().join();
+    }
 
     @Test
     void sync_WithStateWithoutKey_ShouldAddErrorMessage() {
