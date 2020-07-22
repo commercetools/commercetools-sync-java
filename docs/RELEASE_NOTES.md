@@ -52,7 +52,7 @@
     - `junit.jupiterApiVersion` `5.6.1` ->  [`5.6.2`](https://github.com/junit-team/junit5/releases/tag/r5.6.2)
     - `commercetools-jvm-sdk` `1.51.0` -> [`1.52.0`](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_52_0)
     - `mockito-junit-jupiter` `3.3.3` -> [`3.4.4`](https://github.com/mockito/mockito/releases/tag/v3.4.4)
-    - `com.github.ben-manes.versions` `0.28.0` -> [`0.29.0`](https://github.com/ben-manes/gradle-versions-plugin/releases/tag/v0.28.0) 
+    - `com.github.ben-manes.versions` `0.28.0` -> [`0.29.0`](https://github.com/ben-manes/gradle-versions-plugin/releases/tag/v0.29.0) 
         
 ### 1.8.2 -  April 30, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.8.1...1.8.2) |
