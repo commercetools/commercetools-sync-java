@@ -53,6 +53,7 @@ import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static io.sphere.sdk.states.State.referenceOfId;
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
+import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -119,6 +120,115 @@ class StateSyncIT {
             .join();
 
         assertThat(stateSyncStatistics).hasValues(1, 1, 0, 0, 0);
+    }
+
+    @Test
+    void sync_withNewStateWithoutRole_shouldRemoveRole() {
+        final StateDraft stateDraft = StateDraftBuilder
+            .of(keyA, StateType.REVIEW_STATE)
+            .roles(Collections.emptySet())
+            .build();
+
+        final StateDraft stateDraftTarget = StateDraftBuilder
+            .of(keyA, StateType.REVIEW_STATE)
+            .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
+            .build();
+        createStateInTarget(stateDraftTarget);
+
+        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .build();
+
+        final StateSync stateSync = new StateSync(stateSyncOptions);
+
+        // test
+        final StateSyncStatistics stateSyncStatistics = stateSync
+            .sync(singletonList(stateDraft))
+            .toCompletableFuture()
+            .join();
+
+        assertThat(stateSyncStatistics).hasValues(1, 0, 1, 0, 0);
+        QueryExecutionUtils.queryAll(CTP_TARGET_CLIENT, StateQueryBuilder
+            .of()
+            .plusPredicates(q -> q.key().is(keyA)).build())
+            .thenAccept(resultStates -> {
+                Assertions.assertThat(resultStates.size()).isEqualTo(1);
+                Assertions.assertThat(resultStates.get(0).getRoles().isEmpty()).isTrue();
+            }).toCompletableFuture().join();
+    }
+
+    @Test
+    void sync_withNewStateWithoutRole_shouldDoNothing() {
+        final StateDraft stateDraft = StateDraftBuilder
+            .of(keyA, StateType.REVIEW_STATE)
+            .roles(Collections.emptySet())
+            .build();
+
+        final StateDraft stateDraftTarget = StateDraftBuilder
+            .of(keyA, StateType.REVIEW_STATE)
+            .roles(Collections.emptySet())
+            .build();
+        createStateInTarget(stateDraftTarget);
+
+        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .build();
+
+        final StateSync stateSync = new StateSync(stateSyncOptions);
+
+        // test
+        final StateSyncStatistics stateSyncStatistics = stateSync
+            .sync(singletonList(stateDraft))
+            .toCompletableFuture()
+            .join();
+
+        assertThat(stateSyncStatistics).hasValues(1, 0, 1, 0, 0);
+        QueryExecutionUtils.queryAll(CTP_TARGET_CLIENT, StateQueryBuilder
+            .of()
+            .plusPredicates(q -> q.key().is(keyA)).build())
+            .thenAccept(resultStates -> {
+                Assertions.assertThat(resultStates.size()).isEqualTo(1);
+                Assertions.assertThat(resultStates.get(0).getRoles().isEmpty()).isTrue();
+            }).toCompletableFuture().join();
+    }
+
+    @Test
+    void sync_withNewStateWithNewRole_shouldAddRole() {
+        final StateDraft stateDraft = StateDraftBuilder
+            .of(keyA, StateType.REVIEW_STATE)
+            .roles(asSet(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
+            .build();
+
+        final StateDraft stateDraftTarget = StateDraftBuilder
+            .of(keyA, StateType.REVIEW_STATE)
+            .roles(Collections.emptySet())
+            .build();
+        createStateInTarget(stateDraftTarget);
+
+        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .errorCallback((errorMessage, throwable) -> {
+                errorCallBackMessages.add(errorMessage);
+                errorCallBackExceptions.add(throwable);
+            })
+            .build();
+
+        final StateSync stateSync = new StateSync(stateSyncOptions);
+
+        // test
+        final StateSyncStatistics stateSyncStatistics = stateSync
+            .sync(singletonList(stateDraft))
+            .toCompletableFuture()
+            .join();
+
+        assertThat(stateSyncStatistics).hasValues(1, 0, 1, 0, 0);
+        QueryExecutionUtils.queryAll(CTP_TARGET_CLIENT, StateQueryBuilder
+            .of()
+            .plusPredicates(q -> q.key().is(keyA)).build())
+            .thenAccept(resultStates -> {
+                Assertions.assertThat(resultStates.size()).isEqualTo(1);
+                Assertions.assertThat(resultStates.get(0).getRoles().size()).isEqualTo(1);
+            }).toCompletableFuture().join();
     }
 
     @Test
