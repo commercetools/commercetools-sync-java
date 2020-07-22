@@ -198,6 +198,7 @@ public final class StateUpdateActionUtils {
 
         return buildUpdateAction(oldTransitions, newTransitions,
             () -> {
+                SetTransitions setTransitions = null;
                 final long newCount =
                     filterCollection(newTransitions, newStateTransitionRef ->
                         oldTransitions.stream()
@@ -211,10 +212,9 @@ public final class StateUpdateActionUtils {
                         .stream()
                         .map(transition -> State.referenceOfId(transition.getId()))
                         .collect(Collectors.toSet());
-                    return SetTransitions.of(transitions);
+                    setTransitions = SetTransitions.of(transitions);
                 }
-
-                return null;
+                return setTransitions;
             });
     }
 
