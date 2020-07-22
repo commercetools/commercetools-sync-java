@@ -640,6 +640,37 @@ class StateSyncIT {
         Assertions.assertThat(warningCallBackMessages).isEmpty();
     }
 
+    @Test
+    void sync_WithStateWithEmptyTransition_ShouldAddErrorMessage() {
+        final StateDraft stateCDraft = StateDraftBuilder
+            .of(keyC, StateType.REVIEW_STATE)
+            .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
+            .transitions(new HashSet<>(Arrays.asList(Reference.of(State.referenceTypeId(), ""))))
+            .initial(true)
+            .build();
+        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .batchSize(3)
+            .errorCallback((errorMessage, throwable) -> {
+                errorCallBackMessages.add(errorMessage);
+                errorCallBackExceptions.add(throwable);
+            })
+            .warningCallback(warningCallBackMessages::add)
+            .build();
+        // test
+        final StateSyncStatistics stateSyncStatistics = new StateSync(stateSyncOptions)
+            .sync(Arrays.asList(stateCDraft))
+            .toCompletableFuture()
+            .join();
+
+        assertThat(stateSyncStatistics).hasValues(1, 0, 0, 1, 0);
+        Assertions.assertThat(errorCallBackExceptions).isNotEmpty();
+        Assertions.assertThat(errorCallBackMessages).isNotEmpty();
+        Assertions.assertThat(errorCallBackMessages.get(0))
+            .isEqualTo(String.format("StateDraft with key: '%s' has invalid state transitions", keyC));
+        Assertions.assertThat(warningCallBackMessages).isEmpty();
+    }
+
     private State createStateInSource(final StateDraft draft) {
         return executeBlocking(CTP_SOURCE_CLIENT.execute(StateCreateCommand.of(draft)
             .withExpansionPaths(StateExpansionModel::transitions)));
@@ -657,6 +688,7 @@ class StateSyncIT {
         if (transitionStatesDraft.length > 0) {
             for (StateDraft transitionState : transitionStatesDraft) {
                 references.add(referenceOfId(transitionState.getKey()));
+
             }
         }
         return createStateDraftWithReference(key, references);
