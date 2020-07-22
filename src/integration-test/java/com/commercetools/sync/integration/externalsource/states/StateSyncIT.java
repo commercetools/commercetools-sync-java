@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -231,6 +232,43 @@ class StateSyncIT {
                 Assertions.assertThat(resultStates.get(0).getRoles().size()).isEqualTo(1);
             }).toCompletableFuture().join();
     }
+
+
+    @Test
+    void sync_withNewStateWihCreationException_shouldPrintErrorMessage() {
+        final StateDraft stateDraft = StateDraftBuilder
+            .of(keyA, StateType.REVIEW_STATE)
+            .roles(asSet(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
+            .build();
+
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final StateCreateCommand command = any(StateCreateCommand.class);
+        when(spyClient.execute(command))
+            .thenReturn((CompletionStage) CompletableFuture.completedFuture(Optional.empty()));
+        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+            .of(spyClient)
+            .errorCallback((errorMessage, throwable) -> {
+                errorCallBackMessages.add(errorMessage);
+                errorCallBackExceptions.add(throwable);
+            })
+            .build();
+
+        final StateSync stateSync = new StateSync(stateSyncOptions);
+
+        // test
+        final StateSyncStatistics stateSyncStatistics = stateSync
+            .sync(singletonList(stateDraft))
+            .toCompletableFuture()
+            .join();
+
+        assertThat(stateSyncStatistics).hasValues(1, 0, 0, 1, 0);
+        Assertions.assertThat(errorCallBackExceptions).isNotEmpty();
+        Assertions.assertThat(errorCallBackMessages).isNotEmpty();
+        Assertions.assertThat(errorCallBackMessages.get(0))
+            .contains(format("Failed to process the StateDraft with key: '%s'", keyA));
+        Assertions.assertThat(warningCallBackMessages).isEmpty();
+    }
+
 
     @Test
     void sync_WithUpdatedState_ShouldUpdateState() {
@@ -504,10 +542,6 @@ class StateSyncIT {
         final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
             .batchSize(1)
-            .errorCallback((errorMessage, throwable) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(throwable);
-            })
             .build();
 
         final StateSync stateSync = new StateSync(stateSyncOptions);
@@ -568,7 +602,7 @@ class StateSyncIT {
     }
 
     @Test
-    void sync_WithExecptionWhenFetchingUnresolveTransition_ShouldPrintErrorMessage() {
+    void sync_WithExceptionWhenFetchingUnresolveTransition_ShouldPrintErrorMessage() {
 
         final StateDraft stateCDraft = createStateDraft(keyC);
         final State stateC = createStateInSource(stateCDraft);
@@ -610,7 +644,7 @@ class StateSyncIT {
         Assertions.assertThat(errorCallBackExceptions).isNotEmpty();
         Assertions.assertThat(errorCallBackMessages).isNotEmpty();
         Assertions.assertThat(errorCallBackMessages.get(0))
-            .isEqualTo(format("Failed to fetch StateDrafts waiting to be resolved with keys '[%s, %s]'.", keyA, keyB));
+            .contains(format("Failed to fetch StateDrafts waiting to be resolved with keys"));
     }
 
 

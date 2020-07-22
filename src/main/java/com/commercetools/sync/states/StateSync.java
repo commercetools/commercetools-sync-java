@@ -45,7 +45,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
     private static final String CTP_STATE_FETCH_FAILED = "Failed to fetch existing states with keys: '%s'.";
     private static final String CTP_STATE_UPDATE_FAILED = "Failed to update state with key: '%s'. Reason: %s";
 
-    private static final String FAILED_TO_PROCESS = "Failed to process the StateDraft with key:'%s'. Reason: %s";
+    private static final String FAILED_TO_PROCESS = "Failed to process the StateDraft with key: '%s'. Reason: %s";
     private static final String UNRESOLVED_TRANSITIONS_STORE_FETCH_FAILED = "Failed to fetch StateDrafts waiting to "
         + "be resolved with keys '%s'.";
 
