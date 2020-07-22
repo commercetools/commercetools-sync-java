@@ -1,13 +1,9 @@
 package com.commercetools.sync.states.utils;
 
 import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateDraft;
 import io.sphere.sdk.states.StateDraftBuilder;
-import io.sphere.sdk.states.expansion.StateExpansionModel;
-import io.sphere.sdk.states.queries.StateQuery;
-
 import javax.annotation.Nonnull;
 import java.util.HashSet;
 import java.util.List;
