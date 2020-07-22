@@ -74,8 +74,7 @@ class StateSyncIT {
 
     @AfterAll
     static void tearDown() {
-        deleteStates(CTP_TARGET_CLIENT);
-        deleteStates(CTP_SOURCE_CLIENT);
+        deleteStatesFromTargetAndSource();
     }
 
     @BeforeEach
@@ -84,7 +83,7 @@ class StateSyncIT {
         keyA = "state-A-" + current().nextInt();
         keyB = "state-B-" + current().nextInt();
         keyC = "state-C-" + current().nextInt();
-        deleteStatesFromTargetAndSource();
+
         final StateDraft stateDraft = StateDraftBuilder
             .of(key, StateType.LINE_ITEM_STATE)
             .name(LocalizedString.ofEnglish("state-name"))
@@ -610,7 +609,7 @@ class StateSyncIT {
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         final QueryDsl queryCommand = any(QueryDsl.class);
         when(spyClient.execute(queryCommand))
-            .thenReturn(
+            .thenReturn (
                 CompletableFutureUtils.exceptionallyCompletedFuture(new BadRequestException("a test exception")))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()))
             .thenCallRealMethod();
