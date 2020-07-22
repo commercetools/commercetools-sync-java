@@ -65,20 +65,6 @@ public final class StateTransitionReferenceReplacementUtils {
         return newTransitions;
     }
 
-    /**
-     * Builds a {@link StateQuery} for fetching states from a source CTP project with all the needed transitions
-     * expanded for the sync.
-     *
-     * @return the query for fetching states from the source CTP project with all the aforementioned transitions
-     *         expanded.
-     */
-    @Nonnull
-    public static StateQuery buildStateQuery() {
-        return StateQuery.of()
-                     .withLimit(QueryExecutionUtils.DEFAULT_PAGE_SIZE)
-                     .withExpansionPaths(StateExpansionModel::transitions);
-    }
-
     private StateTransitionReferenceReplacementUtils() {
     }
 }
