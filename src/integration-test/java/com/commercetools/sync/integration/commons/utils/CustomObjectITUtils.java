@@ -54,12 +54,14 @@ public final class CustomObjectITUtils {
                 .toArray(CompletableFuture[]::new));
     }
 
-    public static void deleteWaitingToBeResolvedTransitionsCustomObjects(@Nonnull final SphereClient ctpClient) {
+    public static void deleteWaitingToBeResolvedTransitionsCustomObjects(
+        @Nonnull final SphereClient ctpClient,
+        @Nonnull final String customObjectKey) {
 
         final CustomObjectQuery<WaitingToBeResolvedTransitions> customObjectQuery =
             CustomObjectQuery
                 .of(WaitingToBeResolvedTransitions.class)
-                .byContainer(PRODUCT_CUSTOM_OBJECT_CONTAINER_KEY);
+                .byContainer(customObjectKey);
 
         ctpClient
             .execute(customObjectQuery)

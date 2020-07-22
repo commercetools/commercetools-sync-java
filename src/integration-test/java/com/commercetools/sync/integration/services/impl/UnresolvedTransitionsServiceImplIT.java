@@ -41,12 +41,12 @@ class UnresolvedTransitionsServiceImplIT {
 
     @AfterEach
     void tearDown() {
-        deleteWaitingToBeResolvedTransitionsCustomObjects(CTP_TARGET_CLIENT);
+        deleteWaitingToBeResolvedTransitionsCustomObjects(CTP_TARGET_CLIENT, CUSTOM_OBJECT_CONTAINER_KEY);
     }
 
     @BeforeEach
     void setupTest() {
-        deleteWaitingToBeResolvedTransitionsCustomObjects(CTP_TARGET_CLIENT);
+        deleteWaitingToBeResolvedTransitionsCustomObjects(CTP_TARGET_CLIENT, CUSTOM_OBJECT_CONTAINER_KEY);
 
         errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
