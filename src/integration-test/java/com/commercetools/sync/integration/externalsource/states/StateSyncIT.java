@@ -692,6 +692,54 @@ class StateSyncIT {
             }).toCompletableFuture().join();
     }
 
+
+    @Test
+    void sync_WithExceptionOnResolvingTransition_ShouldUpdateTransitions() {
+
+        final StateDraft stateCDraft = createStateDraft(keyC);
+        final State stateC = createStateInSource(stateCDraft);
+        final StateDraft tagetStateCDraft = createStateDraft(keyC);
+        final State targetStateC = createStateInTarget(tagetStateCDraft);
+
+        final StateDraft stateBDraft = createStateDraft(keyB, stateC);
+        final State stateB = createStateInSource(stateBDraft);
+        final StateDraft tagetStateBDraft = createStateDraft(keyB);
+        final State targetStateB = createStateInTarget(tagetStateBDraft);
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+
+
+        final StateQuery stateQuery = any(StateQuery.class);
+
+        when(spyClient.execute(stateQuery))
+            .thenCallRealMethod()
+            .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()));
+
+        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+            .of(spyClient)
+            .batchSize(3)
+            .errorCallback((errorMessage, throwable) -> {
+                errorCallBackMessages.add(errorMessage);
+                errorCallBackExceptions.add(throwable);
+            })
+            .build();
+
+        final StateSync stateSync = new StateSync(stateSyncOptions);
+        final List<StateDraft> stateDrafts = replaceStateTransitionIdsWithKeys(Arrays.asList(stateB, stateC));
+        // test
+        final StateSyncStatistics stateSyncStatistics = stateSync
+            .sync(stateDrafts)
+            .toCompletableFuture()
+            .join();
+
+        assertThat(stateSyncStatistics).hasValues(2, 0, 0, 2, 0);
+        Assertions.assertThat(errorCallBackExceptions).isNotEmpty();
+        Assertions.assertThat(errorCallBackMessages).isNotEmpty();
+        Assertions.assertThat(errorCallBackMessages.get(0))
+            .contains("Failed to fetch existing states with keys");
+        Assertions.assertThat(warningCallBackMessages).isEmpty();
+    }
+
+
     @Test
     void sync_WithDeletedTransition_ShouldRemoveTransitions() {
 
@@ -865,6 +913,23 @@ class StateSyncIT {
         Assertions.assertThat(errorCallBackMessages).isNotEmpty();
         Assertions.assertThat(errorCallBackMessages.get(0)).contains(" detailMessage: a test exception");
         Assertions.assertThat(warningCallBackMessages).isEmpty();
+    }
+
+    @Test
+    void sync_WithoutAnyNewStateDraft_ShouldProcessNothing() {
+
+        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .batchSize(3)
+            .build();
+        final StateSync stateSync = new StateSync(stateSyncOptions);
+        final StateSyncStatistics stateSyncStatistics = stateSync
+            .sync(Collections.emptyList())
+            .toCompletableFuture()
+            .join();
+
+        assertThat(stateSyncStatistics).hasValues(0, 0, 0, 0, 0);
+
     }
 
     @Test
