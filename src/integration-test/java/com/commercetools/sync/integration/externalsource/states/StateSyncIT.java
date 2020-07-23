@@ -1,10 +1,12 @@
 package com.commercetools.sync.integration.externalsource.states;
 
 import com.commercetools.sync.commons.models.WaitingToBeResolvedTransitions;
+import com.commercetools.sync.services.impl.StateServiceImpl;
 import com.commercetools.sync.services.impl.UnresolvedTransitionsServiceImpl;
 import com.commercetools.sync.states.StateSync;
 import com.commercetools.sync.states.StateSyncOptions;
 import com.commercetools.sync.states.StateSyncOptionsBuilder;
+import com.commercetools.sync.states.helpers.StateReferenceResolver;
 import com.commercetools.sync.states.helpers.StateSyncStatistics;
 import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.BadRequestException;
@@ -947,6 +949,39 @@ class StateSyncIT {
             .isEqualTo(format("StateDraft with key: '%s' has invalid state transitions", keyC));
         Assertions.assertThat(warningCallBackMessages).isEmpty();
     }
+
+
+    @Test
+    void sync_WithStateWithEmptyTransitionShouldBeResolved_ShouldAddErrorMessage() {
+        final StateDraft stateCDraft = StateDraftBuilder
+            .of(keyC, StateType.REVIEW_STATE)
+            .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
+            .transitions(new HashSet<>(Arrays.asList(Reference.of(State.referenceTypeId(), ""))))
+            .initial(true)
+            .build();
+        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .batchSize(3)
+            .errorCallback((errorMessage, throwable) -> {
+                errorCallBackMessages.add(errorMessage);
+                errorCallBackExceptions.add(throwable);
+            })
+            .warningCallback(warningCallBackMessages::add)
+            .build();
+        // test
+        StateServiceImpl stateService = new StateServiceImpl(stateSyncOptions);
+        final StateReferenceResolver stateReferenceResolver = new StateReferenceResolver(stateSyncOptions,
+            stateService);
+
+        CompletionStage<StateDraft> result = stateReferenceResolver.resolveReferences(stateCDraft);
+        result.exceptionally(exception -> {
+                Assertions.assertThat(exception.getMessage())
+                    .contains(format("Failed to resolve 'transition' reference on StateDraft with key:'%s", keyC));
+                return null;
+            }
+        ).toCompletableFuture().join();
+    }
+
 
     private State createStateInSource(final StateDraft draft) {
         return executeBlocking(CTP_SOURCE_CLIENT.execute(StateCreateCommand.of(draft)

@@ -21,8 +21,7 @@ import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedF
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
 
-public final class StateReferenceResolver
-        extends BaseReferenceResolver<StateDraft, StateSyncOptions> {
+public final class StateReferenceResolver extends BaseReferenceResolver<StateDraft, StateSyncOptions> {
     private final StateService stateService;
     private static final String FAILED_TO_RESOLVE_REFERENCE = "Failed to resolve 'transition' reference on "
         + "StateDraft with key:'%s'. Reason: %s";
