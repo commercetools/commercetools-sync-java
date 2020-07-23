@@ -75,7 +75,7 @@ __Note__ The statistics object contains the processing time of the last batch on
  1. The sync processing time should not take into account the time between supplying batches to the sync.
  2. It is not known by the sync which batch is going to be the last one supplied.
 
-##### Persistence of StateDrafts with Irresolvable References
+##### Persistence of StateDrafts with missing references
 
 A StateDraft (state-A) could be supplied in with a transition referencing StateDraft (state-B). 
 It could be that (state-B) is not supplied before (state-A), which means the sync could fail creating/updating (state-A). 
