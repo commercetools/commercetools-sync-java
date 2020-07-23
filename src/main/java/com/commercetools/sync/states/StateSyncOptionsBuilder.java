@@ -24,6 +24,7 @@ public final class StateSyncOptionsBuilder extends BaseSyncOptionsBuilder<StateS
      * @return new instance of {@link StateSyncOptionsBuilder}
      */
     public static StateSyncOptionsBuilder of(@Nonnull final SphereClient ctpClient) {
+
         return new StateSyncOptionsBuilder(ctpClient).batchSize(BATCH_SIZE_DEFAULT);
     }
 

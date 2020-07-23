@@ -698,18 +698,10 @@ class StateSyncIT {
 
         final StateDraft stateCDraft = createStateDraft(keyC);
         final State stateC = createStateInSource(stateCDraft);
-        final StateDraft tagetStateCDraft = createStateDraft(keyC);
-        final State targetStateC = createStateInTarget(tagetStateCDraft);
-
         final StateDraft stateBDraft = createStateDraft(keyB, stateC);
         final State stateB = createStateInSource(stateBDraft);
-        final StateDraft tagetStateBDraft = createStateDraft(keyB);
-        final State targetStateB = createStateInTarget(tagetStateBDraft);
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-
-
         final StateQuery stateQuery = any(StateQuery.class);
-
         when(spyClient.execute(stateQuery))
             .thenCallRealMethod()
             .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()));
