@@ -28,6 +28,7 @@ import io.sphere.sdk.states.commands.StateUpdateCommand;
 import io.sphere.sdk.states.expansion.StateExpansionModel;
 import io.sphere.sdk.states.queries.StateQuery;
 import io.sphere.sdk.states.queries.StateQueryBuilder;
+import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,6 +62,8 @@ import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static java.util.Optional.empty;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.ThreadLocalRandom.current;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
@@ -124,6 +127,44 @@ class StateSyncIT {
             .join();
 
         assertThat(stateSyncStatistics).hasValues(1, 1, 0, 0, 0);
+    }
+
+
+
+    @Test
+    void sync_withCreateStateException_shouldPrintMessage() {
+        final StateDraft stateDraft = StateDraftBuilder
+            .of(keyA, StateType.REVIEW_STATE)
+            .roles(Collections.singleton(
+                StateRole.REVIEW_INCLUDED_IN_STATISTICS))
+            .build();
+
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final StateCreateCommand command = any(StateCreateCommand.class);
+        when(spyClient.execute(command))
+            .thenReturn(exceptionallyCompletedFuture(new BadRequestException("test error message")));
+
+        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+            .of(spyClient)
+            .errorCallback((errorMessage, throwable) -> {
+                errorCallBackMessages.add(errorMessage);
+                errorCallBackExceptions.add(throwable);
+            })
+            .build();
+
+        final StateSync stateSync = new StateSync(stateSyncOptions);
+
+        // test
+        final StateSyncStatistics stateSyncStatistics = stateSync
+            .sync(singletonList(stateDraft))
+            .toCompletableFuture()
+            .join();
+
+        assertThat(stateSyncStatistics).hasValues(1, 0, 0, 1, 0);
+        Assertions.assertThat(errorCallBackExceptions).isNotEmpty();
+        Assertions.assertThat(errorCallBackMessages).isNotEmpty();
+        Assertions.assertThat(errorCallBackMessages.get(0))
+            .contains(format("Failed to create draft with key: '%s'", keyA));
     }
 
     @Test
@@ -211,10 +252,6 @@ class StateSyncIT {
 
         final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .errorCallback((errorMessage, throwable) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(throwable);
-            })
             .build();
 
         final StateSync stateSync = new StateSync(stateSyncOptions);
@@ -246,7 +283,7 @@ class StateSyncIT {
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         final StateCreateCommand command = any(StateCreateCommand.class);
         when(spyClient.execute(command))
-            .thenReturn((CompletionStage) CompletableFuture.completedFuture(Optional.empty()));
+            .thenReturn((CompletionStage) completedFuture(empty()));
         final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
             .of(spyClient)
             .errorCallback((errorMessage, throwable) -> {
@@ -347,10 +384,6 @@ class StateSyncIT {
         List<Throwable> errorCallBackExceptions = new ArrayList<>();
         final StateSyncOptions spyOptions = StateSyncOptionsBuilder
             .of(spyClient)
-            .errorCallback((errorMessage, throwable) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(throwable);
-            })
             .warningCallback(warningCallBackMessages::add)
             .build();
 
@@ -496,7 +529,7 @@ class StateSyncIT {
         when(spyClient.execute(stateQuery))
             .thenCallRealMethod() // cache state keys
             .thenCallRealMethod() // Call real fetch on fetching matching states
-            .thenReturn(CompletableFuture.completedFuture(PagedQueryResult.empty()));
+            .thenReturn(completedFuture(PagedQueryResult.empty()));
 
         return spyClient;
     }
