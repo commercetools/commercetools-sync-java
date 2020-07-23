@@ -83,7 +83,7 @@ It could also be that (state-B) is not supplied at all in this batch but at a la
  
 The library keep tracks of such "referencing" states like (state-A) and persists them in storage 
 (**commercetools `customObjects` in the target project** , in this case) 
-to keep them and create/update them accordingly whenever the referenced state exist in the target project.
+to keep them and create/update them accordingly whenever the referenced state has been provided at some point.
 
 The `customObject` will have a `container:` **`"commercetools-sync-java.UnresolvedTransitionsService.stateDrafts"`**
 and a `key` representing the key of the StateDraft that is waiting to be created/updated.
