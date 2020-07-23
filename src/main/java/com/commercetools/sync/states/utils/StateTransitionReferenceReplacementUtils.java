@@ -60,7 +60,4 @@ public final class StateTransitionReferenceReplacementUtils {
         }
         return newTransitions;
     }
-
-    private StateTransitionReferenceReplacementUtils() {
-    }
 }
