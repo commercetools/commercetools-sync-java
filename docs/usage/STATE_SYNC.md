@@ -12,7 +12,7 @@ against a [StateDraft](https://docs.commercetools.com/http-api-projects-states#s
   - [Sync list of State drafts](#sync-list-of-state-drafts)
     - [Prerequisites](#prerequisites)
     - [Running the sync](#running-the-sync)
-      - [Persistence of StateDrafts with Irresolvable References](#persistence-of-statedrafts-with-irresolvable-references)
+      - [Persistence of StateDrafts with missing references](#persistence-of-statedrafts-with-irresolvable-references)
     - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)  
   - [Build all update actions](#build-all-update-actions)
   - [Build particular update action(s)](#build-particular-update-actions)
