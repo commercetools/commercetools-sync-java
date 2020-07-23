@@ -52,7 +52,7 @@ otherwise they won't be matched.
 [More information about Sync Options](SYNC_OPTIONS.md). 
 
 #### Running the sync
-After all the aforementioned points in the previous section have been fulfilled, to run the sync:
+After all the aforementioned points in the previous section have been fulfilled, run the sync as follows:
 ````java
 // instantiating a State sync
    final StateSync stateSync = new StateSync(stateSyncOptions);
