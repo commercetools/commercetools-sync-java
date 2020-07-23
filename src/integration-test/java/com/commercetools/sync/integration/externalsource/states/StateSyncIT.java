@@ -650,6 +650,31 @@ class StateSyncIT {
     }
 
     @Test
+    void sync_WithListOfNullElements_ShouldPrintErrorMessage() {
+
+        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .batchSize(3)
+            .errorCallback((errorMessage, throwable) -> {
+                errorCallBackMessages.add(errorMessage);
+                errorCallBackExceptions.add(throwable);
+            })
+            .build();
+
+        final StateSync stateSync = new StateSync(stateSyncOptions);
+        // test
+        final StateSyncStatistics stateSyncStatistics = stateSync
+            .sync(Collections.singletonList(null))
+            .toCompletableFuture()
+            .join();
+
+        assertThat(stateSyncStatistics).hasValues(1 , 0, 0, 1, 0);
+        Assertions.assertThat(errorCallBackExceptions).isNotEmpty();
+        Assertions.assertThat(errorCallBackMessages).isNotEmpty();
+        Assertions.assertThat(errorCallBackMessages.get(0)).contains("StateDraft is null.");
+    }
+
+    @Test
     void sync_WithUpdatedTransition_ShouldUpdateTransitions() {
 
         final StateDraft stateCDraft = createStateDraft(keyC);
