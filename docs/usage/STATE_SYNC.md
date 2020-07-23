@@ -1,7 +1,7 @@
 # State Sync
 
 Module used for importing/syncing States into a commercetools project. 
-It also provides utilities for generating update actions based on the comparison of a [State](https://docs.commercetools.com/http-api-projects-states#states) 
+It also provides utilities for generating update actions based on the comparison a [State](https://docs.commercetools.com/http-api-projects-states#states) (which basically represents what commercetools already has)
 against a [StateDraft](https://docs.commercetools.com/http-api-projects-states#statedraft).
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -144,5 +144,4 @@ Utility methods provided by the library to compare the specific fields of a `Sta
 Optional<UpdateAction<State>> updateAction = StateUpdateActionUtils.buildSetNameAction(oldState, stateDraft);
 ````
 More examples of those utils for different types can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/states/utils/StateUpdateActionUtilsTest.java).
-
 
