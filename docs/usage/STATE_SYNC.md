@@ -86,7 +86,7 @@ The library keep tracks of such "referencing" states like (state-A) and persists
 to keep them and create/update them accordingly whenever the referenced state has been provided at some point.
 
 The `customObject` will have a `container:` **`"commercetools-sync-java.UnresolvedTransitionsService.stateDrafts"`**
-and a `key` representing the key of the StateDraft that is waiting to be created/updated.
+and a `key` representing a hash value of the StateDraft key that is waiting to be created/updated.
 
 
 Here is an example of a `CustomObject` in the target project that represents a StateDraft with key `state-A`.  
