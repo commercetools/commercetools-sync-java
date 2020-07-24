@@ -37,7 +37,7 @@
 <dependency>
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
-  <version>1.8.2</version>
+  <version>1.9.0</version>
 </dependency>
 ````
 - For Gradle users:
@@ -48,7 +48,7 @@ implementation 'com.commercetools.sdk.jvm.core:commercetools-java-client:1.51.0'
 implementation 'com.commercetools.sdk.jvm.core:commercetools-convenience:1.51.0'
 
 // Add commercetools-sync-java dependency.
-implementation 'com.commercetools:commercetools-sync-java:1.8.2'
+implementation 'com.commercetools:commercetools-sync-java:1.9.0'
 ````
 
 ### 2. Setup Syncing Options
@@ -85,4 +85,5 @@ implementation 'com.commercetools:commercetools-sync-java:1.8.2'
 #### More Details
 *[Product Sync](PRODUCT_SYNC.md), [ProductType Sync](PRODUCT_TYPE_SYNC.md), 
 [Category Sync](CATEGORY_SYNC.md), [Inventory Sync](INVENTORY_SYNC.md), 
-[Type Sync](TYPE_SYNC.md), [CartDiscount Sync](CART_DISCOUNT_SYNC.md)*
+[Type Sync](TYPE_SYNC.md), [CartDiscount Sync](CART_DISCOUNT_SYNC.md),
+[TaxCategory Sync](/docs/usage/TAX_CATEGORY_SYNC.md)*

@@ -33,9 +33,27 @@
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.8.0...1.9.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.9.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.9.0)
-
 -->
 
+### 1.9.0 -  July 22, 2020
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.8.2...1.9.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.9.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.9.0)
+
+- 🎉 **New Features** (3)
+    - **TaxCategory Sync** - Added support for syncing tax categories. [#417](https://github.com/commercetools/commercetools-sync-java/issues/417) For more info how to use it please refer to [TaxCategory usage doc](/docs/usage/TAX_CATEGORY_SYNC.md).
+    - **TaxCategory Sync** - Exposed `TaxCategorySyncUtils#buildActions` which calculates all needed update actions after comparing a `TaxCategory` and a `TaxCategoryDraft`. [#417](https://github.com/commercetools/commercetools-sync-java/issues/417)
+    - **TaxCategory Sync** - Exposed `TaxCategoryUpdateActionUtils` which contains utils for calculating needed update actions after comparing individual fields of a `TaxCategory` and a `TaxCategoryDraft`. [#417](https://github.com/commercetools/commercetools-sync-java/issues/417)
+   Thanks, @jarzynp for the contributions!
+        
+- 🛠️ **Dependency Updates** (3)
+    - `com.adarshr.test-logger` `2.0.0` -> [`2.1.0`](https://github.com/radarsh/gradle-test-logger-plugin/releases/tag/v2.1.0)
+    - `org.assertj.assertj-core` `3.15.0` ->  [`3.16.0`](https://assertj.github.io/doc/#assertj-core-3-16-1-release-notes)
+    - `junit.jupiterApiVersion` `5.6.1` ->  [`5.6.2`](https://github.com/junit-team/junit5/releases/tag/r5.6.2)
+    - `commercetools-jvm-sdk` `1.51.0` -> [`1.52.0`](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_52_0)
+    - `mockito-junit-jupiter` `3.3.3` -> [`3.4.4`](https://github.com/mockito/mockito/releases/tag/v3.4.4)
+    - `com.github.ben-manes.versions` `0.28.0` -> [`0.29.0`](https://github.com/ben-manes/gradle-versions-plugin/releases/tag/v0.29.0) 
+        
 ### 1.8.2 -  April 30, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.8.1...1.8.2) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.8.2/) | 
