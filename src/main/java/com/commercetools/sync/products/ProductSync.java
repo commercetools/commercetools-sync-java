@@ -25,6 +25,7 @@ import com.commercetools.sync.services.impl.TaxCategoryServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
 import com.commercetools.sync.taxcategories.TaxCategorySyncOptionsBuilder;
+import com.commercetools.sync.states.StateSyncOptionsBuilder;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.commands.UpdateAction;
@@ -89,7 +90,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             new ChannelServiceImpl(productSyncOptions, Collections.singleton(ChannelRole.PRODUCT_DISTRIBUTION)),
             new CustomerGroupServiceImpl(productSyncOptions),
             new TaxCategoryServiceImpl(TaxCategorySyncOptionsBuilder.of(productSyncOptions.getCtpClient()).build()),
-            new StateServiceImpl(productSyncOptions),
+            new StateServiceImpl(StateSyncOptionsBuilder.of(productSyncOptions.getCtpClient()).build()),
             new UnresolvedReferencesServiceImpl(productSyncOptions));
     }
 

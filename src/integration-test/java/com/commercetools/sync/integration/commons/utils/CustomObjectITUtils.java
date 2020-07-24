@@ -1,6 +1,7 @@
 package com.commercetools.sync.integration.commons.utils;
 
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
+import com.commercetools.sync.commons.models.WaitingToBeResolvedTransitions;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.commands.CustomObjectDeleteCommand;
@@ -14,8 +15,9 @@ import java.util.concurrent.CompletionStage;
 
 public final class CustomObjectITUtils {
 
-    private static final String CUSTOM_OBJECT_CONTAINER_KEY =
+    private static final String PRODUCT_CUSTOM_OBJECT_CONTAINER_KEY =
         "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
+
 
     /**
      * This method is expected to be used only by tests, it only works on projects with less than or equal to 20 custom
@@ -28,7 +30,7 @@ public final class CustomObjectITUtils {
         final CustomObjectQuery<WaitingToBeResolved> customObjectQuery =
             CustomObjectQuery
                 .of(WaitingToBeResolved.class)
-                .byContainer(CUSTOM_OBJECT_CONTAINER_KEY);
+                .byContainer(PRODUCT_CUSTOM_OBJECT_CONTAINER_KEY);
 
         ctpClient
             .execute(customObjectQuery)
@@ -48,6 +50,37 @@ public final class CustomObjectITUtils {
                 .stream()
                 .map(customObject -> ctpClient
                     .execute(CustomObjectDeleteCommand.of(customObject, WaitingToBeResolved.class)))
+                .map(CompletionStage::toCompletableFuture)
+                .toArray(CompletableFuture[]::new));
+    }
+
+    public static void deleteWaitingToBeResolvedTransitionsCustomObjects(
+        @Nonnull final SphereClient ctpClient,
+        @Nonnull final String customObjectKey) {
+
+        final CustomObjectQuery<WaitingToBeResolvedTransitions> customObjectQuery =
+            CustomObjectQuery
+                .of(WaitingToBeResolvedTransitions.class)
+                .byContainer(customObjectKey);
+
+        ctpClient
+            .execute(customObjectQuery)
+            .thenApply(PagedQueryResult::getResults)
+            .thenCompose(customObjects -> deleteWaitingToBeResolvedTransitionsCustomObjects(ctpClient, customObjects))
+            .toCompletableFuture()
+            .join();
+    }
+
+    @Nonnull
+    private static CompletableFuture<Void> deleteWaitingToBeResolvedTransitionsCustomObjects(
+        @Nonnull final SphereClient ctpClient,
+        @Nonnull final List<CustomObject<WaitingToBeResolvedTransitions>> customObjects) {
+
+        return CompletableFuture.allOf(
+            customObjects
+                .stream()
+                .map(customObject -> ctpClient
+                    .execute(CustomObjectDeleteCommand.of(customObject, WaitingToBeResolvedTransitions.class)))
                 .map(CompletionStage::toCompletableFuture)
                 .toArray(CompletableFuture[]::new));
     }

@@ -35,18 +35,21 @@
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.9.0)
 -->
 
-### 1.9.0 -  July 22, 2020
+### 1.9.0 -  July 24, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.8.2...1.9.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.9.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.9.0)
 
-- 🎉 **New Features** (3)
+- 🎉 **New Features** (6)
     - **TaxCategory Sync** - Added support for syncing tax categories. [#417](https://github.com/commercetools/commercetools-sync-java/issues/417) For more info how to use it please refer to [TaxCategory usage doc](/docs/usage/TAX_CATEGORY_SYNC.md).
     - **TaxCategory Sync** - Exposed `TaxCategorySyncUtils#buildActions` which calculates all needed update actions after comparing a `TaxCategory` and a `TaxCategoryDraft`. [#417](https://github.com/commercetools/commercetools-sync-java/issues/417)
     - **TaxCategory Sync** - Exposed `TaxCategoryUpdateActionUtils` which contains utils for calculating needed update actions after comparing individual fields of a `TaxCategory` and a `TaxCategoryDraft`. [#417](https://github.com/commercetools/commercetools-sync-java/issues/417)
+    - **State Sync** - Added support for syncing states. [#409](https://github.com/commercetools/commercetools-sync-java/issues/409) For more info how to use it please refer to [States usage doc](/docs/usage/STATE_SYNC.md).
+    - **State Sync** - Exposed `StateSyncUtils#buildActions` which calculates all needed update actions after comparing a `State` and a `StateDraft`. [#409](https://github.com/commercetools/commercetools-sync-java/issues/409)
+    - **State Sync** - Exposed `StateUpdateActionUtils` which contains utils for calculating needed update actions after comparing individual fields of a `State` and a `StateDraft`. [#409](https://github.com/commercetools/commercetools-sync-java/issues/409)
    Thanks, @jarzynp for the contributions!
         
-- 🛠️ **Dependency Updates** (3)
+- 🛠️ **Dependency Updates** (6)
     - `com.adarshr.test-logger` `2.0.0` -> [`2.1.0`](https://github.com/radarsh/gradle-test-logger-plugin/releases/tag/v2.1.0)
     - `org.assertj.assertj-core` `3.15.0` ->  [`3.16.0`](https://assertj.github.io/doc/#assertj-core-3-16-1-release-notes)
     - `junit.jupiterApiVersion` `5.6.1` ->  [`5.6.2`](https://github.com/junit-team/junit5/releases/tag/r5.6.2)

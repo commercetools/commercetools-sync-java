@@ -19,6 +19,7 @@ The library supports synchronising the following entities in commercetools
  - [ProductTypes](/docs/usage/PRODUCT_TYPE_SYNC.md)
  - [Types](/docs/usage/TYPE_SYNC.md)
  - [CartDiscounts](/docs/usage/CART_DISCOUNT_SYNC.md)
+ - [States](/docs/usage/STATE_SYNC.md)
  - [TaxCategories](/docs/usage/TAX_CATEGORY_SYNC.md)
 
 ![commercetools-java-sync-final 001](https://user-images.githubusercontent.com/9512131/31230702-0f2255a6-a9e5-11e7-9412-04ed52641dde.png)
