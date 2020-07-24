@@ -106,16 +106,16 @@ public final class StateReferenceResolver extends BaseReferenceResolver<StateDra
         @Nonnull final Set<String> stateKeys ) {
 
         return stateService.fetchMatchingStatesByKeysWithTransitions(stateKeys)
-                              .thenApply(states -> states.stream()
-                                                         .map(State::toReference)
-                                                         .filter(Objects::nonNull)
-                                                         .collect(toSet()))
-                              .thenApply(references -> {
-                                  if (!references.isEmpty()) {
-                                      draftBuilder.transitions(references);
-                                  }
-                                  return draftBuilder;
-                              });
+                           .thenApply(states -> states.stream()
+                                                      .map(State::toReference)
+                                                      .filter(Objects::nonNull)
+                                                      .collect(toSet()))
+                           .thenApply(references -> {
+                               if (!references.isEmpty()) {
+                                   draftBuilder.transitions(references);
+                               }
+                               return draftBuilder;
+                           });
     }
 
 }
