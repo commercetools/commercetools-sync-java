@@ -54,7 +54,6 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
     private final UnresolvedTransitionsService unresolvedTransitionsService;
 
     private ConcurrentHashMap.KeySetView<String, Boolean> readyToResolve;
-    private Map<String, String> keyToIdCache;
 
     public StateSync(@Nonnull final StateSyncOptions stateSyncOptions) {
         this(stateSyncOptions, new StateServiceImpl(stateSyncOptions));
@@ -105,7 +104,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
             .cacheKeysToIds(keysToCache)
             .handle(ImmutablePair::new)
             .thenCompose(cachingResponse -> {
-                keyToIdCache = cachingResponse.getKey();
+                final Map<String, String> keyToIdCache = cachingResponse.getKey();
                 final Throwable cachingException = cachingResponse.getValue();
                 if (cachingException != null) {
                     handleError("Failed to build a cache of state keys to ids.", cachingException,
@@ -113,7 +112,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
                     return CompletableFuture.completedFuture(null);
                 }
 
-                return syncBatch(validDrafts);
+                return syncBatch(validDrafts, keyToIdCache);
             })
             .thenApply(ignored -> {
                 statistics.incrementProcessed(batch.size());
@@ -138,7 +137,8 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
 
     @Nonnull
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION")
-    private CompletionStage<Void> syncBatch(@Nonnull final Set<StateDraft> stateDrafts) {
+    private CompletionStage<Void> syncBatch(@Nonnull final Set<StateDraft> stateDrafts,
+                                            @Nonnull final Map<String, String> keyToIdCache) {
 
         if (stateDrafts.isEmpty()) {
             return CompletableFuture.completedFuture(null);
@@ -160,8 +160,8 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
                     return CompletableFuture.completedFuture(null);
                 } else {
                     final Set<State> matchingStates = fetchResponse.getKey();
-                    return syncOrKeepTrack(stateDrafts, matchingStates)
-                        .thenCompose(aVoid -> resolveNowReadyReferences());
+                    return syncOrKeepTrack(stateDrafts, matchingStates, keyToIdCache)
+                        .thenCompose(aVoid -> resolveNowReadyReferences(keyToIdCache));
                 }
             });
     }
@@ -170,20 +170,22 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
      * Given a set of state drafts, for each new draft: if it doesn't have any state references which are missing,
      * it syncs the new draft. However, if it does have missing references, it keeps track of it by persisting it.
      *
-     * @param newStates drafts that need to be synced.
-     * @param oldStates old states.
+     * @param newStates      drafts that need to be synced.
+     * @param oldStates      old states.
+     * @param keyToIdCache   the cache containing the mapping of all existing state keys to ids.
      * @return a {@link CompletionStage} which contains an empty result after execution of the update
      */
     @Nonnull
     private CompletionStage<Void> syncOrKeepTrack(
         @Nonnull final Set<StateDraft> newStates,
-        @Nonnull final Set<State> oldStates) {
+        @Nonnull final Set<State> oldStates,
+        @Nonnull final Map<String, String> keyToIdCache) {
 
         return allOf(newStates
             .stream()
             .map(newDraft -> {
                 final Set<String> missingTransitionStateKeys =
-                    getMissingTransitionStateKeys(newDraft);
+                    getMissingTransitionStateKeys(newDraft, keyToIdCache);
 
                 if (!missingTransitionStateKeys.isEmpty()) {
                     return keepTrackOfMissingTransitionStates(newDraft, missingTransitionStateKeys);
@@ -196,7 +198,8 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
     }
 
     private Set<String> getMissingTransitionStateKeys(
-        @Nonnull final StateDraft newState) {
+        @Nonnull final StateDraft newState,
+        @Nonnull final Map<String, String> keyToIdCache) {
 
         if (newState.getTransitions() == null || newState.getTransitions().isEmpty()) {
             return Collections.emptySet();
@@ -369,7 +372,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
 
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
-    private CompletionStage<Void> resolveNowReadyReferences() {
+    private CompletionStage<Void> resolveNowReadyReferences(@Nonnull final Map<String, String> keyToIdCache) {
 
         // We delete anyways the keys from the statistics before we attempt resolution, because even if resolution fails
         // the states that failed to be synced would be counted as failed.
@@ -416,7 +419,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
 
 
                 return updateWaitingDrafts(waitingDraftsToBeUpdated)
-                    .thenCompose(aVoid -> syncBatch(readyToSync))
+                    .thenCompose(aVoid -> syncBatch(readyToSync, keyToIdCache))
                     .thenCompose(aVoid -> removeFromWaiting(readyToSync));
             });
     }
