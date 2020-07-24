@@ -16,7 +16,6 @@ import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.queries.PagedQueryResult;
-import io.sphere.sdk.queries.QueryDsl;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateDraft;
@@ -60,7 +59,6 @@ import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static java.util.Optional.empty;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.ThreadLocalRandom.current;
 import static org.mockito.ArgumentMatchers.any;
@@ -278,7 +276,7 @@ class StateSyncIT {
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         final StateCreateCommand command = any(StateCreateCommand.class);
         when(spyClient.execute(command))
-            .thenReturn((CompletionStage) completedFuture(empty()));
+            .thenReturn(completedFuture(any(State.class)));
         final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
             .of(spyClient)
             .errorCallback((errorMessage, throwable) -> {
@@ -630,7 +628,7 @@ class StateSyncIT {
     }
 
     @Test
-    void sync_WithExceptionWhenFetchingUnresolveTransition_ShouldPrintErrorMessage() {
+    void sync_WithExceptionWhenFetchingUnresolvedTransition_ShouldPrintErrorMessage() {
 
         final StateDraft stateCDraft = createStateDraft(keyC);
         final State stateC = createStateInSource(stateCDraft);
@@ -643,8 +641,7 @@ class StateSyncIT {
 
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
 
-        final CustomObjectQuery<WaitingToBeResolvedTransitions> customObjectQuery = any(CustomObjectQuery.class);
-        when(spyClient.execute(customObjectQuery))
+        when(spyClient.execute(any(CustomObjectQuery.class)))
             .thenReturn(
                 exceptionallyCompletedFuture(new BadRequestException("a test exception")))
             .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
@@ -993,8 +990,7 @@ class StateSyncIT {
 
 
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        final QueryDsl queryCommand = any(QueryDsl.class);
-        when(spyClient.execute(queryCommand))
+        when(spyClient.execute(any(StateQuery.class)))
             .thenReturn(exceptionallyCompletedFuture(new BadRequestException("a test exception")))
             .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
             .thenCallRealMethod();
