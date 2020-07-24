@@ -127,8 +127,6 @@ class StateSyncIT {
         assertThat(stateSyncStatistics).hasValues(1, 1, 0, 0, 0);
     }
 
-
-
     @Test
     void sync_withCreateStateException_shouldPrintMessage() {
         final StateDraft stateDraft = StateDraftBuilder
@@ -270,7 +268,6 @@ class StateSyncIT {
             }).toCompletableFuture().join();
     }
 
-
     @Test
     void sync_withNewStateWihCreationException_shouldPrintErrorMessage() {
         final StateDraft stateDraft = StateDraftBuilder
@@ -305,7 +302,6 @@ class StateSyncIT {
             .contains(format("Failed to process the StateDraft with key: '%s'", keyA));
         Assertions.assertThat(warningCallBackMessages).isEmpty();
     }
-
 
     @Test
     void sync_WithUpdatedState_ShouldUpdateState() {
@@ -558,7 +554,6 @@ class StateSyncIT {
         assertThat(stateSyncStatistics).hasValues(10, 10, 0, 0, 0);
     }
 
-
     @Test
     void sync_WithNotExistentStates_ShouldResolveStateLater() {
         final StateDraft stateCDraft = createStateDraft(keyC);
@@ -748,7 +743,6 @@ class StateSyncIT {
             }).toCompletableFuture().join();
     }
 
-
     @Test
     void sync_WithExceptionOnResolvingTransition_ShouldUpdateTransitions() {
 
@@ -786,7 +780,6 @@ class StateSyncIT {
             .contains("Failed to fetch existing states with keys");
         Assertions.assertThat(warningCallBackMessages).isEmpty();
     }
-
 
     @Test
     void sync_WithDeletedTransition_ShouldRemoveTransitions() {
@@ -907,7 +900,6 @@ class StateSyncIT {
             + " LocalizedString(en -> state-A) doesn't have a key.");
         Assertions.assertThat(warningCallBackMessages).isEmpty();
     }
-
 
     @Test
     void sync_WithUpdatedTransitionAndClientThrowsError_ShouldAddErrorMessage() {
@@ -1063,7 +1055,6 @@ class StateSyncIT {
         Assertions.assertThat(warningCallBackMessages).isEmpty();
     }
 
-
     @Test
     void sync_WithStateWithEmptyTransitionShouldBeResolved_ShouldAddErrorMessage() {
         final StateDraft stateCDraft = StateDraftBuilder
@@ -1094,7 +1085,6 @@ class StateSyncIT {
             }
         ).toCompletableFuture().join();
     }
-
 
     private State createStateInSource(final StateDraft draft) {
         return executeBlocking(CTP_SOURCE_CLIENT.execute(StateCreateCommand.of(draft)

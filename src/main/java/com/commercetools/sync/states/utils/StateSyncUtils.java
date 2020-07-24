@@ -13,6 +13,7 @@ import static com.commercetools.sync.states.utils.StateUpdateActionUtils.buildRo
 import static com.commercetools.sync.states.utils.StateUpdateActionUtils.buildSetDescriptionAction;
 import static com.commercetools.sync.states.utils.StateUpdateActionUtils.buildSetNameAction;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
+import static com.commercetools.sync.states.utils.StateUpdateActionUtils.buildSetTransitionsAction;
 
 public final class StateSyncUtils {
 
@@ -44,6 +45,7 @@ public final class StateSyncUtils {
             );
 
         updateActions.addAll(buildRolesUpdateActions(oldState, newState));
+        buildSetTransitionsAction(oldState, newState).ifPresent(updateActions::add);
 
         return updateActions;
     }

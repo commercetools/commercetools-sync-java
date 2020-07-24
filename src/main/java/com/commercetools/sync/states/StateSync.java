@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.states.utils.StateSyncUtils.buildActions;
-import static com.commercetools.sync.states.utils.StateUpdateActionUtils.buildSetTransitionsAction;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.allOf;
@@ -283,7 +282,6 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
         @Nonnull final StateDraft newState) {
 
         final List<UpdateAction<State>> updateActions = buildActions(oldState, newState);
-        buildSetTransitionsAction(oldState, newState).ifPresent(updateActions::add);
 
         List<UpdateAction<State>> updateActionsAfterCallback =
             syncOptions.applyBeforeUpdateCallBack(updateActions, newState, oldState);
