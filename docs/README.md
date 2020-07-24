@@ -2,9 +2,9 @@
 # commercetools sync
 [![Build Status](https://travis-ci.org/commercetools/commercetools-sync-java.svg?branch=master)](https://travis-ci.org/commercetools/commercetools-sync-java)
 [![codecov](https://codecov.io/gh/commercetools/commercetools-sync-java/branch/master/graph/badge.svg)](https://codecov.io/gh/commercetools/commercetools-sync-java)
-[![Benchmarks 1.8.2](https://img.shields.io/badge/Benchmarks-1.8.2-orange.svg)](https://commercetools.github.io/commercetools-sync-java/benchmarks/)
+[![Benchmarks 1.9.0](https://img.shields.io/badge/Benchmarks-1.9.0-orange.svg)](https://commercetools.github.io/commercetools-sync-java/benchmarks/)
 [![Download](https://api.bintray.com/packages/commercetools/maven/commercetools-sync-java/images/download.svg) ](https://bintray.com/commercetools/maven/commercetools-sync-java/_latestVersion)
-[![Javadoc](http://javadoc-badge.appspot.com/com.commercetools/commercetools-sync-java.svg?label=Javadoc)](https://commercetools.github.io/commercetools-sync-java/v/1.8.2/)
+[![Javadoc](http://javadoc-badge.appspot.com/com.commercetools/commercetools-sync-java.svg?label=Javadoc)](https://commercetools.github.io/commercetools-sync-java/v/1.9.0/)
 [![Known Vulnerabilities](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646/badge.svg)](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646)
 
  
@@ -33,6 +33,7 @@ The library supports synchronising the following entities in commercetools
  - [ProductTypes](usage/PRODUCT_TYPE_SYNC.md)
  - [Types](usage/TYPE_SYNC.md)
  - [CartDiscounts](usage/CART_DISCOUNT_SYNC.md)
+ - [TaxCategories](/docs/usage/TAX_CATEGORY_SYNC.md)
 
 ![commercetools-java-sync-final 001](https://user-images.githubusercontent.com/9512131/31230702-0f2255a6-a9e5-11e7-9412-04ed52641dde.png)
 
@@ -53,18 +54,18 @@ Here are the most popular ones:
 <dependency>
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
-  <version>1.8.2</version>
+  <version>1.9.0</version>
 </dependency>
 ````
 #### Gradle
 ````groovy
-implementation 'com.commercetools:commercetools-sync-java:1.8.2'
+implementation 'com.commercetools:commercetools-sync-java:1.9.0'
 ````
 #### SBT 
 ````
-libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "1.8.2"
+libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "1.9.0"
 ````
 #### Ivy 
 ````xml
-<dependency org="com.commercetools" name="commercetools-sync-java" rev="1.8.2"/>
+<dependency org="com.commercetools" name="commercetools-sync-java" rev="1.9.0"/>
 ````
