@@ -18,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -172,9 +173,47 @@ class StateUpdateActionUtilsTest {
     }
 
     @Test
+    void buildRolesUpdateActions_WithNullRoles_ShouldNotReturnAction() {
+        StateDraft newState = StateDraft.of(KEY, StateType.PRODUCT_STATE).withRoles((Set<StateRole>)null);
+
+        State oldState = mock(State.class);
+        when(oldState.getKey()).thenReturn(KEY);
+        when(oldState.getRoles()).thenReturn(null);
+
+        final List<UpdateAction<State>> result = buildRolesUpdateActions(oldState, newState);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void buildRolesUpdateActions_WithEmptyRoles_ShouldNotReturnAction() {
+        StateDraft newState = StateDraft.of(KEY, StateType.PRODUCT_STATE).withRoles(Collections.emptySet());
+
+        State oldState = mock(State.class);
+        when(oldState.getKey()).thenReturn(KEY);
+        when(oldState.getRoles()).thenReturn(Collections.emptySet());
+
+        final List<UpdateAction<State>> result = buildRolesUpdateActions(oldState, newState);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
     void buildSetTransitionsAction_WithEmptyValues_ShouldReturnEmptyOptional() {
         final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, newSameStateDraft);
 
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void buildSetTransitionsAction_WithNullValuesInList_ShouldReturnEmptyOptional() {
+        final Set<Reference<State>> oldTransitions = new HashSet<>(singletonList(null));
+        when(state.getTransitions()).thenReturn(oldTransitions);
+
+        final StateDraft stateDraft = StateDraft.of(KEY, StateType.LINE_ITEM_STATE)
+                                                  .withTransitions(new HashSet<>(singletonList(null)));
+
+        final Optional<UpdateAction<State>> result = buildSetTransitionsAction(state, stateDraft);
         assertThat(result).isEmpty();
     }
 
@@ -246,8 +285,6 @@ class StateUpdateActionUtilsTest {
             State.referenceOfId("new-state-2")));
         assertThat(result).contains(SetTransitions.of(expectedTransitions));
     }
-
-
 
     @Test
     void buildSetTransitionsAction_WitNullTransitions_ShouldReturnAction() {

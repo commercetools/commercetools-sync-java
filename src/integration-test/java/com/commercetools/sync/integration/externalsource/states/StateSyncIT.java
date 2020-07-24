@@ -825,7 +825,7 @@ class StateSyncIT {
     }
 
     @Test
-    void sync_WithEmptyNewransition_ShouldRemoveTransitions() {
+    void sync_WithEmptyNewTransition_ShouldRemoveTransitions() {
 
         final StateDraft stateCDraft = createStateDraft(keyC);
         final State stateC = createStateInSource(stateCDraft);
