@@ -203,10 +203,10 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
         }
 
         return newState.getTransitions()
-                .stream()
-                .map(Reference::getId)
-                .filter(key -> !keyToIdCache.containsKey(key))
-                .collect(Collectors.toSet());
+                       .stream()
+                       .map(Reference::getId)
+                       .filter(key -> !keyToIdCache.containsKey(key))
+                       .collect(Collectors.toSet());
     }
 
     private CompletionStage<Optional<WaitingToBeResolvedTransitions>> keepTrackOfMissingTransitionStates(
