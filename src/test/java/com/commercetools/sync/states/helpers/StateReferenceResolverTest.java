@@ -181,4 +181,26 @@ class StateReferenceResolverTest {
             .isExactlyInstanceOf(SphereException.class)
             .hasMessageContaining("CTP error on fetch");
     }
+
+    @Test
+    void resolveReferences_WithNullTransitionOnTransitionsList_ShouldNotFail() {
+        // preparation
+        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                         .build();
+        final StateService mockStateService = mock(StateService.class);
+        when(mockStateService.fetchMatchingStatesByKeysWithTransitions(any()))
+            .thenReturn(CompletableFuture.completedFuture(new HashSet<>()));
+
+        final StateDraft stateDraft = StateDraftBuilder
+            .of("state-key", StateType.LINE_ITEM_STATE)
+            .transitions(singleton(null))
+            .build();
+
+        final StateReferenceResolver stateReferenceResolver = new StateReferenceResolver(stateSyncOptions,
+            mockStateService);
+
+        assertThat(stateReferenceResolver.resolveReferences(stateDraft).toCompletableFuture())
+            .hasNotFailed()
+            .isCompleted();
+    }
 }
