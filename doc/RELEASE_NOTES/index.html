@@ -342,15 +342,39 @@
           
 
 
+  <li class="md-nav__item">
+    <a href="../usage/TAX_CATEGORY_SYNC/" title="TaxCategory Sync" class="md-nav__link">
+      TaxCategory Sync
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../usage/STATE_SYNC/" title="State Sync" class="md-nav__link">
+      State Sync
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
   <li class="md-nav__item md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-8" type="checkbox" id="nav-2-8">
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-10" type="checkbox" id="nav-2-10">
     
-    <label class="md-nav__link" for="nav-2-8">
+    <label class="md-nav__link" for="nav-2-10">
       Advanced
     </label>
     <nav class="md-nav" data-md-component="collapsible" data-md-level="2">
-      <label class="md-nav__title" for="nav-2-8">
+      <label class="md-nav__title" for="nav-2-10">
         Advanced
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
@@ -396,7 +420,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.8.2/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.9.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -433,6 +457,13 @@
   
     <label class="md-nav__title" for="__toc">Table of contents</label>
     <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#190-july-27-2020" class="md-nav__link">
+    1.9.0 -  July 27, 2020
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#182-april-30-2020" class="md-nav__link">
@@ -725,6 +756,13 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#190-july-27-2020" class="md-nav__link">
+    1.9.0 -  July 27, 2020
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#182-april-30-2020" class="md-nav__link">
     1.8.2 -  April 30, 2020
   </a>
@@ -1000,9 +1038,37 @@
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.8.0...1.9.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.9.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.9.0)
-
 -->
 
+<h3 id="190-july-27-2020">1.9.0 -  July 27, 2020<a class="headerlink" href="#190-july-27-2020" title="Permanent link">&para;</a></h3>
+<p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.8.2...1.9.0">Commits</a> |
+<a href="https://commercetools.github.io/commercetools-sync-java/v/1.9.0/">Javadoc</a> | 
+<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/1.9.0">Jar</a></p>
+<ul>
+<li>
+<p>🎉 <strong>New Features</strong> (6)</p>
+<ul>
+<li><strong>TaxCategory Sync</strong> - Added support for syncing tax categories. <a href="https://github.com/commercetools/commercetools-sync-java/issues/417">#417</a> For more info how to use it please refer to <a href="/docs/usage/TAX_CATEGORY_SYNC.md">TaxCategory usage doc</a>.</li>
+<li><strong>TaxCategory Sync</strong> - Exposed <code>TaxCategorySyncUtils#buildActions</code> which calculates all needed update actions after comparing a <code>TaxCategory</code> and a <code>TaxCategoryDraft</code>. <a href="https://github.com/commercetools/commercetools-sync-java/issues/417">#417</a></li>
+<li><strong>TaxCategory Sync</strong> - Exposed <code>TaxCategoryUpdateActionUtils</code> which contains utils for calculating needed update actions after comparing individual fields of a <code>TaxCategory</code> and a <code>TaxCategoryDraft</code>. <a href="https://github.com/commercetools/commercetools-sync-java/issues/417">#417</a></li>
+<li><strong>State Sync</strong> - Added support for syncing states. <a href="https://github.com/commercetools/commercetools-sync-java/issues/409">#409</a> For more info how to use it please refer to <a href="/docs/usage/STATE_SYNC.md">States usage doc</a>.</li>
+<li><strong>State Sync</strong> - Exposed <code>StateSyncUtils#buildActions</code> which calculates all needed update actions after comparing a <code>State</code> and a <code>StateDraft</code>. <a href="https://github.com/commercetools/commercetools-sync-java/issues/409">#409</a></li>
+<li><strong>State Sync</strong> - Exposed <code>StateUpdateActionUtils</code> which contains utils for calculating needed update actions after comparing individual fields of a <code>State</code> and a <code>StateDraft</code>. <a href="https://github.com/commercetools/commercetools-sync-java/issues/409">#409</a>
+   Thanks, @jarzynp for the contributions!</li>
+</ul>
+</li>
+<li>
+<p>🛠️ <strong>Dependency Updates</strong> (6)</p>
+<ul>
+<li><code>com.adarshr.test-logger</code> <code>2.0.0</code> -&gt; <a href="https://github.com/radarsh/gradle-test-logger-plugin/releases/tag/v2.1.0"><code>2.1.0</code></a></li>
+<li><code>org.assertj.assertj-core</code> <code>3.15.0</code> -&gt;  <a href="https://assertj.github.io/doc/#assertj-core-3-16-1-release-notes"><code>3.16.0</code></a></li>
+<li><code>junit.jupiterApiVersion</code> <code>5.6.1</code> -&gt;  <a href="https://github.com/junit-team/junit5/releases/tag/r5.6.2"><code>5.6.2</code></a></li>
+<li><code>commercetools-jvm-sdk</code> <code>1.51.0</code> -&gt; <a href="http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_52_0"><code>1.52.0</code></a></li>
+<li><code>mockito-junit-jupiter</code> <code>3.3.3</code> -&gt; <a href="https://github.com/mockito/mockito/releases/tag/v3.4.4"><code>3.4.4</code></a></li>
+<li><code>com.github.ben-manes.versions</code> <code>0.28.0</code> -&gt; <a href="https://github.com/ben-manes/gradle-versions-plugin/releases/tag/v0.29.0"><code>0.29.0</code></a> </li>
+</ul>
+</li>
+</ul>
 <h3 id="182-april-30-2020">1.8.2 -  April 30, 2020<a class="headerlink" href="#182-april-30-2020" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/1.8.1...1.8.2">Commits</a> |
 <a href="https://commercetools.github.io/commercetools-sync-java/v/1.8.2/">Javadoc</a> | 
