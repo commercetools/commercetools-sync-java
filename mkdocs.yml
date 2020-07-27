@@ -54,6 +54,7 @@ nav:
       - InventoryEntry Sync: usage/INVENTORY_SYNC.md
       - CartDiscount Sync: usage/CART_DISCOUNT_SYNC.md
       - TaxCategory Sync: usage/TAX_CATEGORY_SYNC.md
+      - State Sync: usage/STATE_SYNC.md
       - Advanced:
         - Sync Options: usage/SYNC_OPTIONS.md
         - Usage Tips: usage/IMPORTANT_USAGE_TIPS.md

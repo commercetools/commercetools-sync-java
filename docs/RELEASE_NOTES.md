@@ -35,7 +35,7 @@
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.9.0)
 -->
 
-### 1.9.0 -  July 24, 2020
+### 1.9.0 -  July 27, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.8.2...1.9.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.9.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.9.0)
