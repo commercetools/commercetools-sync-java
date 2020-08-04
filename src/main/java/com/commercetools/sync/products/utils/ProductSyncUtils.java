@@ -112,7 +112,8 @@ public final class ProductSyncUtils {
         updateActions.addAll(buildVariantsUpdateActions(oldProduct, newProduct, syncOptions, attributesMetaData));
 
         // lastly publish/unpublish product
-        buildPublishOrUnpublishUpdateAction(oldProduct, newProduct).ifPresent(updateActions::add);
+        final boolean hasNewUpdateActions = updateActions.size() > 0;
+        buildPublishOrUnpublishUpdateAction(oldProduct, newProduct, hasNewUpdateActions).ifPresent(updateActions::add);
 
         return prioritizeUpdateActions(updateActions,
                 oldProduct.getMasterData().getStaged().getMasterVariant().getId());
