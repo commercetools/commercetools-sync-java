@@ -16,7 +16,7 @@ import static org.mockito.Mockito.when;
 
 class BuildPublishOrUnpublishUpdateActionTest {
     @Test
-    void buildPublishUpdateAction_WithDifferentStagedValues_ShouldBuildUpdateAction() {
+    void buildPublishOrUnpublishUpdateAction_WithDifferentStagedValues_ShouldBuildUpdateAction() {
         final UpdateAction<Product> action =
             getPublishOrUnpublishUpdateAction(true, false).orElse(null);
 
@@ -25,7 +25,7 @@ class BuildPublishOrUnpublishUpdateActionTest {
     }
 
     @Test
-    void buildPublishUpdateAction_WithSameStagedValues_ShouldNotBuildUpdateAction() {
+    void buildPublishOrUnpublishUpdateAction_WithSameStagedValues_ShouldNotBuildUpdateAction() {
         final Optional<UpdateAction<Product>> action =
             getPublishOrUnpublishUpdateAction(false, false);
 
