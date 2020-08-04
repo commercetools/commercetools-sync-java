@@ -522,8 +522,8 @@ public final class ProductUpdateActionUtils {
      * @return A filled optional with the update action or an empty optional if the flag values are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<Product>> buildPublishUpdateAction(@Nonnull final Product oldProduct,
-                                                                           @Nonnull final ProductDraft newProduct) {
+    public static Optional<UpdateAction<Product>> buildPublishOrUnpublishUpdateAction(@Nonnull final Product oldProduct,
+                                                                                      @Nonnull final ProductDraft newProduct) {
         final Boolean isNewProductPublished = toBoolean(newProduct.isPublish());
         final Boolean isOldProductPublished = toBoolean(oldProduct.getMasterData().isPublished());
         if (Boolean.TRUE.equals(isNewProductPublished)) {
