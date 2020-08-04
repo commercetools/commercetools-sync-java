@@ -129,6 +129,6 @@ class KeepOtherVariantsSyncIT {
 
         assertThat(productOptional).isNotEmpty();
         final Product fetchedProduct = productOptional.get();
-        assertThat(fetchedProduct.getMasterData().getCurrent().getVariants()).hasSize(1);
+        assertThat(fetchedProduct.getMasterData().getCurrent().getVariants()).hasSize(2);
     }
 }

@@ -445,7 +445,8 @@ class ProductSyncIT {
 
         assertThat(updateActions).containsExactlyInAnyOrder(
             SetAttributeInAllVariants.of(targetProductRefAttr.getName(), targetProductRefAttr.getValue(), true),
-            SetAttributeInAllVariants.of(targetProductSetRefAttr.getName(), targetProductSetRefAttr.getValue(), true)
+            SetAttributeInAllVariants.of(targetProductSetRefAttr.getName(), targetProductSetRefAttr.getValue(), true),
+            Publish.of()
         );
     }
 
@@ -512,7 +513,8 @@ class ProductSyncIT {
             SetAttributeInAllVariants.ofUnsetAttribute("verpackung", true),
             SetAttributeInAllVariants.ofUnsetAttribute("anlieferung", true),
             SetAttributeInAllVariants.ofUnsetAttribute("zubereitung", true),
-            SetAttribute.ofUnsetAttribute(1, "localisedText", true)
+            SetAttribute.ofUnsetAttribute(1, "localisedText", true),
+            Publish.of()
         );
     }
 
@@ -616,9 +618,9 @@ class ProductSyncIT {
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
-        assertThat(updateActions)
-            .containsExactly(SetAttributeInAllVariants
-                .of(productSetRefAttr.getName(), JsonNodeFactory.instance.arrayNode(), true));
+        assertThat(updateActions).containsExactly(
+            SetAttributeInAllVariants.of(productSetRefAttr.getName(), JsonNodeFactory.instance.arrayNode(), true),
+            Publish.of());
 
         final Product targetProduct = CTP_TARGET_CLIENT.execute(ProductByKeyGet.of(sourceProductDraft.getKey()))
                                                        .toCompletableFuture()

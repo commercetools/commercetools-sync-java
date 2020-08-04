@@ -15,6 +15,7 @@ import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.updateactions.AddToCategory;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
+import io.sphere.sdk.products.commands.updateactions.Publish;
 import io.sphere.sdk.products.commands.updateactions.RemoveFromCategory;
 import io.sphere.sdk.products.commands.updateactions.SetCategoryOrderHint;
 import io.sphere.sdk.producttypes.ProductType;
@@ -171,11 +172,13 @@ class ProductSyncFilterIT {
                 executeBlocking(productSync.sync(singletonList(productDraft)));
 
         assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
-        assertThat(updateActionsFromSync).hasSize(1);
+        assertThat(updateActionsFromSync).hasSize(2);
         final UpdateAction<Product> updateAction = updateActionsFromSync.get(0);
         assertThat(updateAction.getAction()).isEqualTo("changeName");
         assertThat(updateAction).isExactlyInstanceOf(ChangeName.class);
         assertThat(((ChangeName) updateAction).getName()).isEqualTo(LocalizedString.of(Locale.ENGLISH, "new name"));
+        final UpdateAction<Product> updateAction2 = updateActionsFromSync.get(1);
+        assertThat(updateAction2).isEqualTo(Publish.of());
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();

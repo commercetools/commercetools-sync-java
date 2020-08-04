@@ -32,6 +32,7 @@ import io.sphere.sdk.products.ProductVariantDraftDsl;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.ProductUpdateCommand;
+import io.sphere.sdk.products.commands.updateactions.Publish;
 import io.sphere.sdk.products.commands.updateactions.RemoveFromCategory;
 import io.sphere.sdk.products.commands.updateactions.SetAttribute;
 import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
@@ -913,7 +914,8 @@ class ProductSyncIT {
                 SetAttributeInAllVariants.ofUnsetAttribute("verpackung", true),
                 SetAttributeInAllVariants.ofUnsetAttribute("anlieferung", true),
                 SetAttributeInAllVariants.ofUnsetAttribute("zubereitung", true),
-                SetAttribute.ofUnsetAttribute(1, "localisedText", true)
+                SetAttribute.ofUnsetAttribute(1, "localisedText", true),
+                Publish.of()
             );
     }
 
