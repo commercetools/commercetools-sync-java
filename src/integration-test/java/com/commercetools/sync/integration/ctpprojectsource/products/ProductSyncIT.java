@@ -21,6 +21,7 @@ import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.Attribute;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
+import io.sphere.sdk.products.commands.updateactions.Publish;
 import io.sphere.sdk.products.commands.updateactions.SetAttribute;
 import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
 import io.sphere.sdk.products.queries.ProductByKeyGet;
@@ -33,7 +34,6 @@ import io.sphere.sdk.types.Type;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
@@ -250,29 +250,39 @@ class ProductSyncIT {
         assertThat(warningCallBackMessages).isEmpty();
     }
 
-    @Disabled("new product draft has a publish flag set to true and the existing product is published already")
     @Test
-    void sync_withUpdatedDraftAndPublishFlagSetToTrue_ShouldPublishAProductEvenItWasPublishedBefore() {
+    void sync_withUpdatedDraftAndPublishFlagSetToTrue_ShouldPublishProductEvenItWasPublishedBefore() {
         final ProductDraft publishedProductDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
             targetProductType.toReference(), targetTaxCategory.toReference(), targetProductState.toReference(),
             targetCategoryReferencesWithIds, createRandomCategoryOrderHints(targetCategoryReferencesWithIds));
         CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(publishedProductDraft)).toCompletableFuture().join();
 
         // new product draft has a publish flag set to true and the existing product is published already
-        final ProductDraft productDraft =  ProductDraftBuilder.of(publishedProductDraft)
-                           .name(ofEnglish("updated-name"))
-                           .publish(true)
-                           .build();
+        final ProductDraft newProductDraft = createProductDraftBuilder(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
+            sourceProductType.toReference())
+            .taxCategory(sourceTaxCategory)
+            .state(sourceProductState)
+            .categories(sourceCategoryReferencesWithIds)
+            .categoryOrderHints(createRandomCategoryOrderHints(sourceCategoryReferencesWithIds))
+            .publish(true)
+            .build();
 
-        final ProductSyncStatistics syncStatistics = productSync.sync(singletonList(productDraft))
-                                                                .toCompletableFuture()
-                                                                .join();
+        CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(newProductDraft)).toCompletableFuture().join();
+
+        final List<Product> products = CTP_SOURCE_CLIENT.execute(buildProductQuery())
+                                                        .toCompletableFuture().join().getResults();
+
+        final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
+
+        final ProductSyncStatistics syncStatistics = productSync.sync(productDrafts).toCompletableFuture().join();
 
         assertThat(syncStatistics).hasValues(1, 0, 1, 0);
-
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
+
+        // last action is publish
+        assertThat(updateActions.get(updateActions.size() - 1)).isEqualTo(Publish.of());
     }
 
     @Test
