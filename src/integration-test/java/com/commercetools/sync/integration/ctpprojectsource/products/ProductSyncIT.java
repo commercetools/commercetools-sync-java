@@ -33,6 +33,7 @@ import io.sphere.sdk.types.Type;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
@@ -244,6 +245,31 @@ class ProductSyncIT {
         final ProductSyncStatistics syncStatistics = productSync.sync(productDrafts).toCompletableFuture().join();
 
         assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(warningCallBackMessages).isEmpty();
+    }
+
+    @Disabled("new product draft has a publish flag set to true and the existing product is published already")
+    @Test
+    void sync_withUpdatedDraftAndPublishFlagSetToTrue_ShouldPublishAProductEvenItWasPublishedBefore() {
+        final ProductDraft publishedProductDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
+            targetProductType.toReference(), targetTaxCategory.toReference(), targetProductState.toReference(),
+            targetCategoryReferencesWithIds, createRandomCategoryOrderHints(targetCategoryReferencesWithIds));
+        CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(publishedProductDraft)).toCompletableFuture().join();
+
+        // new product draft has a publish flag set to true and the existing product is published already
+        final ProductDraft productDraft =  ProductDraftBuilder.of(publishedProductDraft)
+                           .name(ofEnglish("updated-name"))
+                           .publish(true)
+                           .build();
+
+        final ProductSyncStatistics syncStatistics = productSync.sync(singletonList(productDraft))
+                                                                .toCompletableFuture()
+                                                                .join();
+
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
