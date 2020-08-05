@@ -32,6 +32,7 @@ import io.sphere.sdk.products.commands.updateactions.AddVariant;
 import io.sphere.sdk.products.commands.updateactions.ChangeMasterVariant;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import io.sphere.sdk.products.commands.updateactions.ChangeSlug;
+import io.sphere.sdk.products.commands.updateactions.Publish;
 import io.sphere.sdk.products.commands.updateactions.RemoveFromCategory;
 import io.sphere.sdk.products.commands.updateactions.RemoveImage;
 import io.sphere.sdk.products.commands.updateactions.RemovePrice;
@@ -102,7 +103,7 @@ class ProductSyncUtilsTest {
             ProductSyncUtils.buildActions(oldProduct, newProductDraft, productSyncOptions, new HashMap<>());
 
 
-        assertThat(updateActions).containsExactly(ChangeName.of(newName, true));
+        assertThat(updateActions).containsExactly(ChangeName.of(newName, true), Publish.of());
     }
 
     @Test
@@ -172,7 +173,8 @@ class ProductSyncUtilsTest {
                 PriceDraft.of(MoneyImpl.ofCents(100, createCurrencyByCode("EGP")))
                           .withChannel(Channel.referenceOfId("channel-key_1")), true),
             AddAsset.ofVariantId(1, assetDraft).withPosition(0).withStaged(true),
-            SetSku.of(1, "3065831", true)
+            SetSku.of(1, "3065831", true),
+            Publish.of()
         );
     }
 
@@ -279,7 +281,7 @@ class ProductSyncUtilsTest {
 
         // check that we only have one generated action for all the variants and no duplicates
         // and is ordered correctly before addVariant action
-        assertThat(updateActions.size()).isEqualTo(2);
+        assertThat(updateActions.size()).isEqualTo(3);
         assertThat(updateActions).containsOnlyOnce(SetAttributeInAllVariants.of(
                 AttributeDraft.of("brandName", "sameForAllBrand"), true));
         assertThat(updateActions.get(0)).isEqualTo(SetAttributeInAllVariants.of(
@@ -287,6 +289,7 @@ class ProductSyncUtilsTest {
         assertThat(updateActions.get(1)).isEqualTo(AddVariant.of(Arrays.asList(
                 AttributeDraft.of("brandName", "sameForAllBrand")),
                 null, "3065834", true).withKey("v2"));
+        assertThat(updateActions.get(2)).isEqualTo(Publish.of());
     }
 
     @Test
@@ -332,7 +335,7 @@ class ProductSyncUtilsTest {
                 ProductSyncUtils.buildActions(oldProduct, newProductDraft, productSyncOptions, attributesMetaData);
 
         // check the generated attribute update actions
-        assertThat(updateActions.size()).isEqualTo(8);
+        assertThat(updateActions.size()).isEqualTo(9);
         assertThat(updateActions).containsSequence(
                 RemoveVariant.ofVariantId(5, true),
                 AddVariant.of(Arrays.asList(AttributeDraft.of("priceInfo", "64,90/kg"),
@@ -343,6 +346,7 @@ class ProductSyncUtilsTest {
                 SetAttribute.of(2, AttributeDraft.of("size", null), true),
                 SetAttribute.of(2, AttributeDraft.of("orderLimit", "5"), true),
                 SetAttribute.of(2, AttributeDraft.of("priceInfo", "80,20/kg"), true),
-                SetAttribute.of(2, AttributeDraft.of("brandName", "myBrand"), true));
+                SetAttribute.of(2, AttributeDraft.of("brandName", "myBrand"), true),
+                Publish.of());
     }
 }

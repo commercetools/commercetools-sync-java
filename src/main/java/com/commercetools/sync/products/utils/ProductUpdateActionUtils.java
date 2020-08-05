@@ -24,13 +24,13 @@ import io.sphere.sdk.products.commands.updateactions.ChangeSlug;
 import io.sphere.sdk.products.commands.updateactions.Publish;
 import io.sphere.sdk.products.commands.updateactions.RemoveFromCategory;
 import io.sphere.sdk.products.commands.updateactions.RemoveVariant;
+import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
 import io.sphere.sdk.products.commands.updateactions.SetCategoryOrderHint;
 import io.sphere.sdk.products.commands.updateactions.SetDescription;
 import io.sphere.sdk.products.commands.updateactions.SetMetaDescription;
 import io.sphere.sdk.products.commands.updateactions.SetMetaKeywords;
 import io.sphere.sdk.products.commands.updateactions.SetMetaTitle;
 import io.sphere.sdk.products.commands.updateactions.SetSearchKeywords;
-import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
 import io.sphere.sdk.products.commands.updateactions.SetTaxCategory;
 import io.sphere.sdk.products.commands.updateactions.TransitionState;
 import io.sphere.sdk.products.commands.updateactions.Unpublish;
@@ -508,28 +508,181 @@ public final class ProductUpdateActionUtils {
     }
 
     /**
-     * Compares the 'published' field of a {@link ProductDraft} and a {@link Product} and accordingly returns
-     * a {@link Publish} or {@link Unpublish} update action as a result in an {@link Optional}. If the new product's
-     * 'published' field is null, then the default false value is assumed.
+     * Compares the 'published' field of a {@link ProductDraft} and a {@link Product} with the new update actions
+     * and hasStagedChanges of the old product. Accordingly it returns a {@link Publish} or {@link Unpublish}
+     * update action as a result in an {@link Optional}.
+     * Check the calculation table below for all different combinations named as states.
      *
-     * <p>If both the {@link Product} and the {@link ProductDraft} have the same 'published' flag value, then no update
-     * action is needed and hence an empty {@link Optional} is returned.
+     * <p>
+     * <table summary="Mapping of product publish/unpublish update action calculation">
+     * <thead>
+     * <tr>
+     * <th align="center">State</th>
+     * <th align="center">New draft publish</th>
+     * <th align="center">Old product publish</th>
+     * <th align="center">New update actions</th>
+     * <th align="center">Old product hasStagedChanges</th>
+     * <th align="center">Action</th>
+     * </tr>
+     * </thead>
+     * <tbody>
+     * <tr>
+     * <td>State 1</td>
+     * <td align="center">false</td>
+     * <td align="center">false</td>
+     * <td align="center">false</td>
+     * <td align="center">false</td>
+     * <td align="center">-</td>
+     * </tr>
+     * <tr>
+     * <td>State 2</td>
+     * <td align="center">false</td>
+     * <td align="center">false</td>
+     * <td align="center">false</td>
+     * <td align="center">true</td>
+     * <td align="center">-</td>
+     * </tr>
+     * <tr>
+     * <td>State 3</td>
+     * <td align="center">false</td>
+     * <td align="center">false</td>
+     * <td align="center">true</td>
+     * <td align="center">false</td>
+     * <td align="center">-</td>
+     * </tr>
+     * <tr>
+     * <td>State 4</td>
+     * <td align="center">false</td>
+     * <td align="center">false</td>
+     * <td align="center">true</td>
+     * <td align="center">true</td>
+     * <td align="center">-</td>
+     * </tr>
+     * <tr>
+     * <td>State 5</td>
+     * <td align="center">false</td>
+     * <td align="center">true</td>
+     * <td align="center">false</td>
+     * <td align="center">false</td>
+     * <td align="center">unpublish</td>
+     * </tr>
+     * <tr>
+     * <td>State 6</td>
+     * <td align="center">false</td>
+     * <td align="center">true</td>
+     * <td align="center">false</td>
+     * <td align="center">true</td>
+     * <td align="center">unpublish</td>
+     * </tr>
+     * <tr>
+     * <td>State 7</td>
+     * <td align="center">false</td>
+     * <td align="center">true</td>
+     * <td align="center">true</td>
+     * <td align="center">false</td>
+     * <td align="center">unpublish</td>
+     * </tr>
+     * <tr>
+     * <td>State 8</td>
+     * <td align="center">false</td>
+     * <td align="center">true</td>
+     * <td align="center">true</td>
+     * <td align="center">true</td>
+     * <td align="center">unpublish</td>
+     * </tr>
+     * <tr>
+     * <td>State 9</td>
+     * <td align="center">true</td>
+     * <td align="center">false</td>
+     * <td align="center">false</td>
+     * <td align="center">false</td>
+     * <td align="center">publish</td>
+     * </tr>
+     * <tr>
+     * <td>State 10</td>
+     * <td align="center">true</td>
+     * <td align="center">false</td>
+     * <td align="center">false</td>
+     * <td align="center">true</td>
+     * <td align="center">publish</td>
+     * </tr>
+     * <tr>
+     * <td>State 11</td>
+     * <td align="center">true</td>
+     * <td align="center">false</td>
+     * <td align="center">true</td>
+     * <td align="center">false</td>
+     * <td align="center">publish</td>
+     * </tr>
+     * <tr>
+     * <td>State 12</td>
+     * <td align="center">true</td>
+     * <td align="center">false</td>
+     * <td align="center">true</td>
+     * <td align="center">true</td>
+     * <td align="center">publish</td>
+     * </tr>
+     * <tr>
+     * <td>State 13</td>
+     * <td align="center">true</td>
+     * <td align="center">true</td>
+     * <td align="center">false</td>
+     * <td align="center">false</td>
+     * <td align="center">-</td>
+     * </tr>
+     * <tr>
+     * <td>State 14</td>
+     * <td align="center">true</td>
+     * <td align="center">true</td>
+     * <td align="center">false</td>
+     * <td align="center">true</td>
+     * <td align="center">publish</td>
+     * </tr>
+     * <tr>
+     * <td>State 15</td>
+     * <td align="center">true</td>
+     * <td align="center">true</td>
+     * <td align="center">true</td>
+     * <td align="center">false</td>
+     * <td align="center">publish</td>
+     * </tr>
+     * <tr>
+     * <td>State 16</td>
+     * <td align="center">true</td>
+     * <td align="center">true</td>
+     * <td align="center">true</td>
+     * <td align="center">true</td>
+     * <td align="center">publish</td>
+     * </tr>
+     * </tbody>
+     * </table>
+     * </p>
      *
-     * <p>NOTE: Comparison is done against the staged projection of the old product.
+     * <p>NOTE: Comparison is done against the staged projection of the old product. If the new product's 'published'
+     * field is null, then the default false value is assumed. </p>
      *
      * @param oldProduct the product which should be updated.
      * @param newProduct the product draft where we get the new published field value.
+     * @param hasNewUpdateActions the product draft has other update actions set.
      * @return A filled optional with the update action or an empty optional if the flag values are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<Product>> buildPublishUpdateAction(@Nonnull final Product oldProduct,
-                                                                           @Nonnull final ProductDraft newProduct) {
-        final Boolean isNewProductPublished = toBoolean(newProduct.isPublish());
-        final Boolean isOldProductPublished = toBoolean(oldProduct.getMasterData().isPublished());
-        if (Boolean.TRUE.equals(isNewProductPublished)) {
-            return buildUpdateAction(isOldProductPublished, isNewProductPublished, Publish::of);
+    public static Optional<UpdateAction<Product>> buildPublishOrUnpublishUpdateAction(
+        @Nonnull final Product oldProduct,
+        @Nonnull final ProductDraft newProduct,
+        final boolean hasNewUpdateActions) {
+
+        final boolean isNewProductPublished = toBoolean(newProduct.isPublish());
+        final boolean isOldProductPublished = toBoolean(oldProduct.getMasterData().isPublished());
+
+        if (isNewProductPublished) {
+            if (isOldProductPublished && (hasNewUpdateActions || oldProduct.getMasterData().hasStagedChanges())) {
+                // covers the state 14, state 15 and state 16.
+                return Optional.of(Publish.of());
+            }
+            return buildUpdateAction(isOldProductPublished, true, Publish::of);
         }
-        return buildUpdateAction(isOldProductPublished, isNewProductPublished, Unpublish::of);
+        return buildUpdateAction(isOldProductPublished, false, Unpublish::of);
     }
 
 

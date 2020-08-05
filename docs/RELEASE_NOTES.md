@@ -35,6 +35,16 @@
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.9.0)
 -->
 
+### 1.9.1 -  Aug 5, 2020
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.9.0...1.9.1) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.9.1/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/1.9.1)
+
+- 🐞 **Bug Fixes** (1)
+    - **Product Sync** - Fixed a bug in the `ProductSync` related to publish/unpublish of the product update actions,
+    when a new product draft has publish flag set to true and the existing product is published already then no publish action will be created 
+    which was not correct [#530](https://github.com/commercetools/commercetools-sync-java/issues/530)
+
 ### 1.9.0 -  July 27, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.8.2...1.9.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.9.0/) | 

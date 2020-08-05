@@ -21,6 +21,7 @@ import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.Attribute;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
+import io.sphere.sdk.products.commands.updateactions.Publish;
 import io.sphere.sdk.products.commands.updateactions.SetAttribute;
 import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
 import io.sphere.sdk.products.queries.ProductByKeyGet;
@@ -250,6 +251,41 @@ class ProductSyncIT {
     }
 
     @Test
+    void sync_withUpdatedDraftAndPublishFlagSetToTrue_ShouldPublishProductEvenItWasPublishedBefore() {
+        final ProductDraft publishedProductDraft = createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH,
+            targetProductType.toReference(), targetTaxCategory.toReference(), targetProductState.toReference(),
+            targetCategoryReferencesWithIds, createRandomCategoryOrderHints(targetCategoryReferencesWithIds));
+        CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(publishedProductDraft)).toCompletableFuture().join();
+
+        // new product draft has a publish flag set to true and the existing product is published already
+        final ProductDraft newProductDraft = createProductDraftBuilder(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
+            sourceProductType.toReference())
+            .taxCategory(sourceTaxCategory)
+            .state(sourceProductState)
+            .categories(sourceCategoryReferencesWithIds)
+            .categoryOrderHints(createRandomCategoryOrderHints(sourceCategoryReferencesWithIds))
+            .publish(true)
+            .build();
+
+        CTP_SOURCE_CLIENT.execute(ProductCreateCommand.of(newProductDraft)).toCompletableFuture().join();
+
+        final List<Product> products = CTP_SOURCE_CLIENT.execute(buildProductQuery())
+                                                        .toCompletableFuture().join().getResults();
+
+        final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
+
+        final ProductSyncStatistics syncStatistics = productSync.sync(productDrafts).toCompletableFuture().join();
+
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(warningCallBackMessages).isEmpty();
+
+        // last action is publish
+        assertThat(updateActions.get(updateActions.size() - 1)).isEqualTo(Publish.of());
+    }
+
+    @Test
     void sync_withPriceReferences_ShouldUpdateProducts() {
         final ProductDraft existingProductDraft = createProductDraft(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH,
             targetProductType.toReference(), targetTaxCategory.toReference(), targetProductState.toReference(),
@@ -409,7 +445,8 @@ class ProductSyncIT {
 
         assertThat(updateActions).containsExactlyInAnyOrder(
             SetAttributeInAllVariants.of(targetProductRefAttr.getName(), targetProductRefAttr.getValue(), true),
-            SetAttributeInAllVariants.of(targetProductSetRefAttr.getName(), targetProductSetRefAttr.getValue(), true)
+            SetAttributeInAllVariants.of(targetProductSetRefAttr.getName(), targetProductSetRefAttr.getValue(), true),
+            Publish.of()
         );
     }
 
@@ -476,7 +513,8 @@ class ProductSyncIT {
             SetAttributeInAllVariants.ofUnsetAttribute("verpackung", true),
             SetAttributeInAllVariants.ofUnsetAttribute("anlieferung", true),
             SetAttributeInAllVariants.ofUnsetAttribute("zubereitung", true),
-            SetAttribute.ofUnsetAttribute(1, "localisedText", true)
+            SetAttribute.ofUnsetAttribute(1, "localisedText", true),
+            Publish.of()
         );
     }
 
@@ -580,9 +618,9 @@ class ProductSyncIT {
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
-        assertThat(updateActions)
-            .containsExactly(SetAttributeInAllVariants
-                .of(productSetRefAttr.getName(), JsonNodeFactory.instance.arrayNode(), true));
+        assertThat(updateActions).containsExactly(
+            SetAttributeInAllVariants.of(productSetRefAttr.getName(), JsonNodeFactory.instance.arrayNode(), true),
+            Publish.of());
 
         final Product targetProduct = CTP_TARGET_CLIENT.execute(ProductByKeyGet.of(sourceProductDraft.getKey()))
                                                        .toCompletableFuture()
