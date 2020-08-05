@@ -672,19 +672,17 @@ public final class ProductUpdateActionUtils {
         @Nonnull final ProductDraft newProduct,
         final boolean hasNewUpdateActions) {
 
-        final Boolean isNewProductPublished = toBoolean(newProduct.isPublish());
-        final Boolean isOldProductPublished = toBoolean(oldProduct.getMasterData().isPublished());
+        final boolean isNewProductPublished = toBoolean(newProduct.isPublish());
+        final boolean isOldProductPublished = toBoolean(oldProduct.getMasterData().isPublished());
 
-        if (Boolean.TRUE.equals(isNewProductPublished)) {
-            if (Boolean.TRUE.equals(isOldProductPublished)
-                && (hasNewUpdateActions || oldProduct.getMasterData().hasStagedChanges())) {
-
+        if (isNewProductPublished) {
+            if (isOldProductPublished && (hasNewUpdateActions || oldProduct.getMasterData().hasStagedChanges())) {
                 // covers the state 14, state 15 and state 16.
                 return Optional.of(Publish.of());
             }
-            return buildUpdateAction(isOldProductPublished, isNewProductPublished, Publish::of);
+            return buildUpdateAction(isOldProductPublished, true, Publish::of);
         }
-        return buildUpdateAction(isOldProductPublished, isNewProductPublished, Unpublish::of);
+        return buildUpdateAction(isOldProductPublished, false, Unpublish::of);
     }
 
 
