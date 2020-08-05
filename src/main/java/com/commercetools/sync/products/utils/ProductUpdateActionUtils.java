@@ -509,8 +509,8 @@ public final class ProductUpdateActionUtils {
 
     /**
      * Compares the 'published' field of a {@link ProductDraft} and a {@link Product} with the new update actions
-     * and hasStagedChanges of the old product accordingly returns a {@link Publish} or {@link Unpublish} update action
-     * as a result in an {@link Optional}.
+     * and hasStagedChanges of the old product. Accordingly it returns a {@link Publish} or {@link Unpublish}
+     * update action as a result in an {@link Optional}.
      * Check the calculation table below for all different combinations named as states.
      *
      * <p>
