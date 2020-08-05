@@ -20,35 +20,35 @@
 <dependency>
   <groupId>com.commercetools.sdk.jvm.core</groupId>
   <artifactId>commercetools-models</artifactId>
-  <version>1.51.0</version>
+  <version>1.52.0</version>
 </dependency>
 <dependency>
   <groupId>com.commercetools.sdk.jvm.core</groupId>
   <artifactId>commercetools-java-client</artifactId>
-  <version>1.51.0</version>
+  <version>1.52.0</version>
 </dependency>
 <dependency>
   <groupId>com.commercetools.sdk.jvm.core</groupId>
   <artifactId>commercetools-convenience</artifactId>
-  <version>1.51.0</version>
+  <version>1.52.0</version>
 </dependency>
 
 <!-- Add commercetools-sync-java dependency. -->
 <dependency>
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
-  <version>1.9.0</version>
+  <version>1.9.1</version>
 </dependency>
 ````
 - For Gradle users:
 ````groovy
 // Add commercetools-jvm-sdk dependencies.
-implementation 'com.commercetools.sdk.jvm.core:commercetools-models:1.51.0'
-implementation 'com.commercetools.sdk.jvm.core:commercetools-java-client:1.51.0'
-implementation 'com.commercetools.sdk.jvm.core:commercetools-convenience:1.51.0'
+implementation 'com.commercetools.sdk.jvm.core:commercetools-models:1.52.0'
+implementation 'com.commercetools.sdk.jvm.core:commercetools-java-client:1.52.0'
+implementation 'com.commercetools.sdk.jvm.core:commercetools-convenience:1.52.0'
 
 // Add commercetools-sync-java dependency.
-implementation 'com.commercetools:commercetools-sync-java:1.9.0'
+implementation 'com.commercetools:commercetools-sync-java:1.9.1'
 ````
 
 ### 2. Setup Syncing Options
@@ -86,4 +86,4 @@ implementation 'com.commercetools:commercetools-sync-java:1.9.0'
 *[Product Sync](PRODUCT_SYNC.md), [ProductType Sync](PRODUCT_TYPE_SYNC.md), 
 [Category Sync](CATEGORY_SYNC.md), [Inventory Sync](INVENTORY_SYNC.md), 
 [Type Sync](TYPE_SYNC.md), [CartDiscount Sync](CART_DISCOUNT_SYNC.md),
-[TaxCategory Sync](/docs/usage/TAX_CATEGORY_SYNC.md)*
+[TaxCategory Sync](/docs/usage/TAX_CATEGORY_SYNC.md), [State Sync](/docs/usage/STATE_SYNC.md)*
