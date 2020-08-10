@@ -251,6 +251,8 @@ public final class ProductVariantUpdateActionUtils {
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildProductVariantAssetsUpdateActions(
+        @Nonnull final Product oldProduct,
+        @Nonnull final ProductDraft newProduct,
         @Nonnull final ProductVariant oldProductVariant,
         @Nonnull final ProductVariantDraft newProductVariant,
         @Nonnull final ProductSyncOptions syncOptions) {
@@ -261,9 +263,10 @@ public final class ProductVariantUpdateActionUtils {
                 newProductVariant.getAssets(),
                 new ProductAssetActionFactory(oldProductVariant.getId(), syncOptions), syncOptions);
         } catch (final BuildUpdateActionException exception) {
-            syncOptions.applyErrorCallback(new SyncException(format("Failed to build update actions for the assets "
-                    + "of the product variant with the sku '%s'. Reason: %s", oldProductVariant.getSku(), exception),
-                exception));
+            SyncException syncException = new SyncException(format("Failed to build update actions for the assets "
+                + "of the product variant with the sku '%s'. Reason: %s", oldProductVariant.getSku(), exception),
+                exception);
+            syncOptions.applyErrorCallback(syncException, oldProduct, newProduct, null);
             return emptyList();
         }
     }

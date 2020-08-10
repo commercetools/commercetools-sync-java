@@ -25,13 +25,13 @@ import io.sphere.sdk.products.commands.updateactions.ChangeSlug;
 import io.sphere.sdk.products.commands.updateactions.Publish;
 import io.sphere.sdk.products.commands.updateactions.RemoveFromCategory;
 import io.sphere.sdk.products.commands.updateactions.RemoveVariant;
+import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
 import io.sphere.sdk.products.commands.updateactions.SetCategoryOrderHint;
 import io.sphere.sdk.products.commands.updateactions.SetDescription;
 import io.sphere.sdk.products.commands.updateactions.SetMetaDescription;
 import io.sphere.sdk.products.commands.updateactions.SetMetaKeywords;
 import io.sphere.sdk.products.commands.updateactions.SetMetaTitle;
 import io.sphere.sdk.products.commands.updateactions.SetSearchKeywords;
-import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
 import io.sphere.sdk.products.commands.updateactions.SetTaxCategory;
 import io.sphere.sdk.products.commands.updateactions.TransitionState;
 import io.sphere.sdk.products.commands.updateactions.Unpublish;
@@ -501,7 +501,8 @@ public final class ProductUpdateActionUtils {
 
         updateActions.addAll(
             buildActionsIfPassesFilter(syncFilter, ASSETS, () ->
-                buildProductVariantAssetsUpdateActions(oldProductVariant, newProductVariant, syncOptions)));
+                buildProductVariantAssetsUpdateActions(oldProduct, newProduct, oldProductVariant, newProductVariant,
+                    syncOptions)));
 
         buildActionIfPassesFilter(syncFilter, SKU, () ->
             buildProductVariantSkuUpdateAction(oldProductVariant, newProductVariant))

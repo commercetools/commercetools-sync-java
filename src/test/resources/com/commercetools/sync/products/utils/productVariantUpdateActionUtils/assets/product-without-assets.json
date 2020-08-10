@@ -1,0 +1,24 @@
+{
+  "key": "product-without-assets",
+  "masterData": {
+    "staged": {
+      "name": {
+        "en": "english name"
+      },
+      "categories": [
+      ],
+      "slug": {
+        "en": "english-slug"
+      },
+      "masterVariant": {
+        "id": 1,
+        "key": "mv-key",
+        "sku": "mv-sku",
+        "assets": []
+      },
+      "variants": []
+    },
+    "published": true,
+    "hasStagedChanges": true
+  }
+}
