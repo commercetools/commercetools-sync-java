@@ -72,19 +72,16 @@ class CategoryAssetActionFactoryTest {
 
     @Test
     void buildAssetActions_always_ShouldBuildCorrectAction() {
-        Category category = mock(Category.class);
-        CategoryDraft categoryDraft = mock(CategoryDraft.class);
+        final HashSet<String> newTags = new HashSet<>();
+        newTags.add("newTag");
         final Asset asset = mock(Asset.class);
         when(asset.getKey()).thenReturn("assetKey");
         when(asset.getName()).thenReturn(ofEnglish("assetName"));
-
-        final HashSet<String> newTags = new HashSet<>();
-        newTags.add("newTag");
-
         final AssetDraft assetDraft = AssetDraftBuilder.of(asset)
                                                        .tags(newTags)
                                                        .build();
-
+        Category category = mock(Category.class);
+        CategoryDraft categoryDraft = mock(CategoryDraft.class);
         final List<UpdateAction<Category>> updateActions = categoryAssetActionFactory
             .buildAssetActions(category, categoryDraft, asset, assetDraft);
 

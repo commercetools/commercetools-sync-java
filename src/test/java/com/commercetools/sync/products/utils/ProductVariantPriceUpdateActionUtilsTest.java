@@ -127,7 +127,8 @@ class ProductVariantPriceUpdateActionUtilsTest {
                 .build();
 
         // test
-        final List<UpdateAction<Product>> result = buildActions(mainProduct, mainProductDraft,0, oldPrice, newPrice, syncOptions);
+        final List<UpdateAction<Product>> result = buildActions(mainProduct, mainProductDraft,0, oldPrice,
+            newPrice, syncOptions);
 
         // assertion
         assertEquals(expectedResult, result);

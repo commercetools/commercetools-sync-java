@@ -95,7 +95,8 @@ class ProductVariantAssetUpdateActionUtilsTest {
                                                           .build();
 
 
-        final List<UpdateAction<Product>> updateActions = buildActions(null,null,1, oldAsset, newAssetDraft, SYNC_OPTIONS);
+        final List<UpdateAction<Product>> updateActions = buildActions(null,null,1,
+            oldAsset, newAssetDraft, SYNC_OPTIONS);
 
         assertThat(updateActions).hasSize(5);
         assertThat(updateActions).containsExactlyInAnyOrder(
@@ -137,7 +138,8 @@ class ProductVariantAssetUpdateActionUtilsTest {
         final AssetDraft newAssetDraft = AssetDraftBuilder.of(oldAsset).build();
 
 
-        final List<UpdateAction<Product>> updateActions = buildActions(product, productDraft,1, oldAsset, newAssetDraft, SYNC_OPTIONS);
+        final List<UpdateAction<Product>> updateActions = buildActions(product, productDraft,1, oldAsset,
+            newAssetDraft, SYNC_OPTIONS);
 
         assertThat(updateActions).isEmpty();
     }
