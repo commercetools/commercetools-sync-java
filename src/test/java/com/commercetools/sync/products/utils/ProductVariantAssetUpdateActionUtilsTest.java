@@ -94,8 +94,9 @@ class ProductVariantAssetUpdateActionUtilsTest {
                                                           .custom(newCustomFieldsDraft)
                                                           .build();
 
-
-        final List<UpdateAction<Product>> updateActions = buildActions(null,null,1,
+        Product product = mock(Product.class);
+        ProductDraft productDraft = mock(ProductDraft.class);
+        final List<UpdateAction<Product>> updateActions = buildActions(product,productDraft,1,
             oldAsset, newAssetDraft, SYNC_OPTIONS);
 
         assertThat(updateActions).hasSize(5);
