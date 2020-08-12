@@ -3,6 +3,7 @@ package com.commercetools.sync.categories.helpers;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.commands.updateactions.AddAsset;
 import io.sphere.sdk.categories.commands.updateactions.ChangeAssetOrder;
 import io.sphere.sdk.categories.commands.updateactions.RemoveAsset;
@@ -71,6 +72,8 @@ class CategoryAssetActionFactoryTest {
 
     @Test
     void buildAssetActions_always_ShouldBuildCorrectAction() {
+        Category category = mock(Category.class);
+        CategoryDraft categoryDraft = mock(CategoryDraft.class);
         final Asset asset = mock(Asset.class);
         when(asset.getKey()).thenReturn("assetKey");
         when(asset.getName()).thenReturn(ofEnglish("assetName"));
@@ -83,7 +86,7 @@ class CategoryAssetActionFactoryTest {
                                                        .build();
 
         final List<UpdateAction<Category>> updateActions = categoryAssetActionFactory
-            .buildAssetActions(asset, assetDraft);
+            .buildAssetActions(category, categoryDraft, asset, assetDraft);
 
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).containsExactly(

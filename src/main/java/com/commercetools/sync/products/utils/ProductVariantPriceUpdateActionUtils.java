@@ -8,6 +8,7 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.Product;
+import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.updateactions.ChangePrice;
 
 import javax.annotation.Nonnull;
@@ -37,6 +38,8 @@ public final class ProductVariantPriceUpdateActionUtils {
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildActions(
+        @Nonnull final Product oldProduct,
+        @Nonnull final ProductDraft newProduct,
         @Nonnull final Integer variantId,
         @Nonnull final Price oldPrice,
         @Nonnull final PriceDraft newPrice,
@@ -45,7 +48,8 @@ public final class ProductVariantPriceUpdateActionUtils {
         final List<UpdateAction<Product>> updateActions = new ArrayList<>();
 
         buildChangePriceUpdateAction(oldPrice, newPrice, syncOptions).ifPresent(updateActions::add);
-        updateActions.addAll(buildCustomUpdateActions(variantId, oldPrice, newPrice, syncOptions));
+        updateActions.addAll(buildCustomUpdateActions(oldProduct, newProduct, variantId, oldPrice, newPrice,
+            syncOptions));
 
         return updateActions;
     }
@@ -111,12 +115,16 @@ public final class ProductVariantPriceUpdateActionUtils {
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildCustomUpdateActions(
+        @Nonnull final Product oldProduct,
+        @Nonnull final ProductDraft newProduct,
         @Nonnull final Integer variantId,
         @Nonnull final Price oldPrice,
         @Nonnull final PriceDraft newPrice,
         @Nonnull final ProductSyncOptions syncOptions) {
 
         return CustomUpdateActionUtils.buildCustomUpdateActions(
+            oldProduct,
+            newProduct,
             oldPrice,
             newPrice,
             new PriceCustomActionBuilder(),

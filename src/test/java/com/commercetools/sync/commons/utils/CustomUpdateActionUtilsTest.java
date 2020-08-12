@@ -18,6 +18,7 @@ import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.AssetDraftBuilder;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.Resource;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.Product;
@@ -53,6 +54,8 @@ import static org.mockito.Mockito.when;
 class CustomUpdateActionUtilsTest {
     private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
     private static final CategorySyncOptions CATEGORY_SYNC_OPTIONS = CategorySyncOptionsBuilder.of(CTP_CLIENT).build();
+    Resource mainOldResource = mock(Resource.class);
+    Resource maiNewResource = mock(Resource.class);
 
     @Test
     void buildCustomUpdateActions_WithNonNullCustomFieldsWithDifferentTypes_ShouldBuildUpdateActions() {
@@ -70,8 +73,9 @@ class CustomUpdateActionUtilsTest {
         when(newAssetDraft.getCustom()).thenReturn(newAssetCustomFieldsDraft);
 
 
-        final List<UpdateAction<Product>> updateActions = buildCustomUpdateActions(oldAsset, newAssetDraft,
-            new AssetCustomActionBuilder(), 10, Asset::getId, asset -> Asset.resourceTypeId(), Asset::getKey,
+        final List<UpdateAction<Product>> updateActions = buildCustomUpdateActions(mainOldResource, maiNewResource,
+            oldAsset, newAssetDraft,new AssetCustomActionBuilder(), 10, Asset::getId,
+            asset -> Asset.resourceTypeId(), Asset::getKey,
             ProductSyncOptionsBuilder.of(CTP_CLIENT).build());
 
         // Should set custom type of old asset.
@@ -94,7 +98,8 @@ class CustomUpdateActionUtilsTest {
                                                           .build();
 
         final List<UpdateAction<Product>> updateActions =
-            buildCustomUpdateActions(oldAsset, newAssetDraft, new AssetCustomActionBuilder(), 10,
+            buildCustomUpdateActions(mainOldResource, maiNewResource, oldAsset, newAssetDraft,
+                new AssetCustomActionBuilder(), 10,
                 Asset::getId, asset -> Asset.resourceTypeId(), Asset::getKey,
                 ProductSyncOptionsBuilder.of(CTP_CLIENT).build());
 
@@ -131,8 +136,9 @@ class CustomUpdateActionUtilsTest {
                                                                                .build();
 
         final List<UpdateAction<Product>> updateActions =
-            buildCustomUpdateActions(oldAsset, newAssetDraft, new AssetCustomActionBuilder(), 10,
-                Asset::getId, asset -> Asset.resourceTypeId(), Asset::getKey, productSyncOptions);
+            buildCustomUpdateActions(mainOldResource, maiNewResource, oldAsset, newAssetDraft,
+                new AssetCustomActionBuilder(), 10, Asset::getId, asset -> Asset.resourceTypeId(),
+                Asset::getKey, productSyncOptions);
 
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(0);
@@ -153,9 +159,9 @@ class CustomUpdateActionUtilsTest {
                                                           .build();
 
         final List<UpdateAction<Product>> updateActions =
-            buildCustomUpdateActions(oldAsset, newAssetDraft, new AssetCustomActionBuilder(), 10,
-                Asset::getId, asset -> Asset.resourceTypeId(), Asset::getKey,
-                ProductSyncOptionsBuilder.of(CTP_CLIENT).build());
+            buildCustomUpdateActions(mainOldResource, maiNewResource, oldAsset, newAssetDraft,
+                new AssetCustomActionBuilder(), 10,  Asset::getId, asset -> Asset.resourceTypeId(),
+                Asset::getKey, ProductSyncOptionsBuilder.of(CTP_CLIENT).build());
 
         // Should remove custom type from old asset.
         assertThat(updateActions).isNotNull();
@@ -203,8 +209,9 @@ class CustomUpdateActionUtilsTest {
                                                                                .build();
 
         final List<UpdateAction<Product>> updateActions =
-            buildCustomUpdateActions(oldAsset, newAssetDraft, new AssetCustomActionBuilder(), 10,
-                Asset::getId, asset -> Asset.resourceTypeId(), Asset::getKey, productSyncOptions);
+            buildCustomUpdateActions(mainOldResource, maiNewResource, oldAsset,
+                newAssetDraft, new AssetCustomActionBuilder(), 10,   Asset::getId,
+                asset -> Asset.resourceTypeId(), Asset::getKey, productSyncOptions);
 
         assertThat(callBackResponses).hasSize(2);
         assertThat(callBackResponses.get(0)).isEqualTo("Failed to build custom fields update actions on the asset"
@@ -236,8 +243,9 @@ class CustomUpdateActionUtilsTest {
                                                                                .build();
 
         final List<UpdateAction<Product>> updateActions =
-            buildCustomUpdateActions(oldAsset, newAssetDraft, new AssetCustomActionBuilder(), 10,
-                Asset::getId, asset -> Asset.resourceTypeId(), Asset::getKey, productSyncOptions);
+            buildCustomUpdateActions(mainOldResource, maiNewResource, oldAsset, newAssetDraft,
+                new AssetCustomActionBuilder(), 10,  Asset::getId, asset -> Asset.resourceTypeId(),
+                Asset::getKey, productSyncOptions);
 
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).isEmpty();

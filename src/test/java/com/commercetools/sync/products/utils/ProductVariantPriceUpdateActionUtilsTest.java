@@ -13,6 +13,7 @@ import io.sphere.sdk.products.PriceDraftBuilder;
 import io.sphere.sdk.products.PriceTier;
 import io.sphere.sdk.products.PriceTierBuilder;
 import io.sphere.sdk.products.Product;
+import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.updateactions.ChangePrice;
 import io.sphere.sdk.products.commands.updateactions.SetProductPriceCustomField;
 import io.sphere.sdk.products.commands.updateactions.SetProductPriceCustomType;
@@ -54,6 +55,8 @@ import static org.mockito.Mockito.when;
 class ProductVariantPriceUpdateActionUtilsTest {
     private static final ProductSyncOptions SYNC_OPTIONS = ProductSyncOptionsBuilder
         .of(mock(SphereClient.class)).build();
+    final Product mainProduct = mock(Product.class);
+    final ProductDraft mainProductDraft = mock(ProductDraft.class);
 
     private static final MonetaryAmount EUR_10 = MoneyImpl.of(BigDecimal.TEN, EUR);
     private static final MonetaryAmount EUR_20 = MoneyImpl.of(BigDecimal.valueOf(20), EUR);
@@ -124,7 +127,7 @@ class ProductVariantPriceUpdateActionUtilsTest {
                 .build();
 
         // test
-        final List<UpdateAction<Product>> result = buildActions(0, oldPrice, newPrice, syncOptions);
+        final List<UpdateAction<Product>> result = buildActions(mainProduct, mainProductDraft,0, oldPrice, newPrice, syncOptions);
 
         // assertion
         assertEquals(expectedResult, result);
@@ -249,7 +252,7 @@ class ProductVariantPriceUpdateActionUtilsTest {
                                                      .build();
 
         final List<UpdateAction<Product>> updateActions =
-            buildCustomUpdateActions(1, oldPrice, newPrice, SYNC_OPTIONS);
+            buildCustomUpdateActions(mainProduct, mainProductDraft, 1, oldPrice, newPrice, SYNC_OPTIONS);
 
         assertThat(updateActions).isEmpty();
     }
@@ -284,7 +287,7 @@ class ProductVariantPriceUpdateActionUtilsTest {
                                                      .build();
 
         final List<UpdateAction<Product>> updateActions =
-            buildCustomUpdateActions(1, oldPrice, newPrice, SYNC_OPTIONS);
+            buildCustomUpdateActions(mainProduct, mainProductDraft,1, oldPrice, newPrice, SYNC_OPTIONS);
 
         assertThat(updateActions).hasSize(2);
     }
@@ -311,7 +314,7 @@ class ProductVariantPriceUpdateActionUtilsTest {
                                                      .build();
 
         final List<UpdateAction<Product>> updateActions =
-            buildCustomUpdateActions(1, oldPrice, newPrice, SYNC_OPTIONS);
+            buildCustomUpdateActions(mainProduct, mainProductDraft,1, oldPrice, newPrice, SYNC_OPTIONS);
 
         assertThat(updateActions).containsExactly(
             SetProductPriceCustomType.ofTypeIdAndJson("1", newCustomFieldsMap, oldPrice.getId(), true)
@@ -357,7 +360,7 @@ class ProductVariantPriceUpdateActionUtilsTest {
                 .build();
 
         final List<UpdateAction<Product>> updateActions =
-            buildCustomUpdateActions(1, oldPrice, newPrice, syncOptions);
+            buildCustomUpdateActions(mainProduct, mainProductDraft,1, oldPrice, newPrice, syncOptions);
 
 
         assertThat(updateActions).isEmpty();

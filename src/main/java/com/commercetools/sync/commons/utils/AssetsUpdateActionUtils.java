@@ -8,7 +8,7 @@ import com.commercetools.sync.commons.helpers.AssetActionFactory;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
-
+import io.sphere.sdk.models.Resource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -60,7 +60,9 @@ public final class AssetsUpdateActionUtils {
      * @throws BuildUpdateActionException in case there are asset drafts with duplicate keys.
      */
     @Nonnull
-    public static <T> List<UpdateAction<T>> buildAssetsUpdateActions(
+    public static <D, T> List<UpdateAction<T>> buildAssetsUpdateActions(
+        @Nonnull final Resource oldRessource,
+        @Nonnull final D newRessource,
         @Nonnull final List<Asset> oldAssets,
         @Nullable final List<AssetDraft> newAssetDrafts,
         @Nonnull final AssetActionFactory<T> assetActionFactory,
@@ -68,7 +70,8 @@ public final class AssetsUpdateActionUtils {
         throws BuildUpdateActionException {
 
         if (newAssetDrafts != null) {
-            return buildAssetsUpdateActionsWithNewAssetDrafts(oldAssets, newAssetDrafts, assetActionFactory,
+            return buildAssetsUpdateActionsWithNewAssetDrafts(oldRessource, newRessource, oldAssets, newAssetDrafts,
+                assetActionFactory,
                 syncOptions);
         } else {
             return oldAssets.stream()
@@ -95,7 +98,9 @@ public final class AssetsUpdateActionUtils {
      * @throws BuildUpdateActionException in case there are asset drafts with duplicate keys.
      */
     @Nonnull
-    private static <T> List<UpdateAction<T>> buildAssetsUpdateActionsWithNewAssetDrafts(
+    private static <D, T> List<UpdateAction<T>> buildAssetsUpdateActionsWithNewAssetDrafts(
+        @Nonnull final Resource oldRessource,
+        @Nonnull final D newRessource,
         @Nonnull final List<Asset> oldAssets,
         @Nonnull final List<AssetDraft> newAssetDrafts,
         @Nonnull final AssetActionFactory<T> assetActionFactory,
@@ -146,7 +151,8 @@ public final class AssetsUpdateActionUtils {
 
         //1. Remove or compare if matching.
         final List<UpdateAction<T>> updateActions =
-            buildRemoveAssetOrAssetUpdateActions(oldAssets, removedAssetKeys, newAssetDraftsKeyMap, assetActionFactory);
+            buildRemoveAssetOrAssetUpdateActions(oldRessource, newRessource, oldAssets, removedAssetKeys,
+                newAssetDraftsKeyMap, assetActionFactory);
 
         //2. Compare ordering of assets and add a ChangeAssetOrder action if needed.
         buildChangeAssetOrderUpdateAction(oldAssets, newAssetDrafts, removedAssetKeys, assetActionFactory)
@@ -173,7 +179,9 @@ public final class AssetsUpdateActionUtils {
      *         Otherwise, if the assets order is identical, an empty optional is returned.
      */
     @Nonnull
-    private static <T> List<UpdateAction<T>> buildRemoveAssetOrAssetUpdateActions(
+    private static <D,T> List<UpdateAction<T>> buildRemoveAssetOrAssetUpdateActions(
+        @Nonnull final Resource oldRessource,
+        @Nonnull final D newRessource,
         @Nonnull final List<Asset> oldAssets,
         @Nonnull final Set<String> removedAssetKeys,
         @Nonnull final Map<String, AssetDraft> newAssetDraftsKeyMap,
@@ -190,7 +198,7 @@ public final class AssetsUpdateActionUtils {
                 final AssetDraft matchingNewAssetDraft = newAssetDraftsKeyMap.get(oldAssetKey);
                 return ofNullable(matchingNewAssetDraft)
                     .map(assetDraft -> // If asset exists, compare the two assets.
-                        assetActionFactory.buildAssetActions(oldAsset, assetDraft))
+                        assetActionFactory.buildAssetActions(oldRessource,newRessource,oldAsset, assetDraft))
                     .orElseGet(() -> { // If asset doesn't exist, remove asset.
                         removedAssetKeys.add(oldAssetKey);
                         return singletonList(assetActionFactory.buildRemoveAssetAction(oldAssetKey));

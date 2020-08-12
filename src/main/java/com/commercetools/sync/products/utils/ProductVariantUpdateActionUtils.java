@@ -121,7 +121,7 @@ public final class ProductVariantUpdateActionUtils {
                 final PriceCompositeId newPriceCompositeId = PriceCompositeId.of(newPrice);
                 final Price matchingOldPrice = oldPricesMap.get(newPriceCompositeId);
                 final List<UpdateAction<Product>> updateOrAddPrice = ofNullable(matchingOldPrice)
-                    .map(oldPrice -> buildActions(variantId, oldPrice, newPrice, syncOptions))
+                    .map(oldPrice -> buildActions(oldProduct, newProduct, variantId, oldPrice, newPrice, syncOptions))
                     .orElseGet(() -> singletonList(AddPrice.ofVariantId(variantId, newPrice, true)));
                 updateActions.addAll(updateOrAddPrice);
             }
@@ -259,6 +259,8 @@ public final class ProductVariantUpdateActionUtils {
 
         try {
             return buildAssetsUpdateActions(
+                oldProduct,
+                newProduct,
                 oldProductVariant.getAssets(),
                 newProductVariant.getAssets(),
                 new ProductAssetActionFactory(oldProductVariant.getId(), syncOptions), syncOptions);

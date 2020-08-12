@@ -7,6 +7,7 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.Resource;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.commands.updateactions.ChangeAssetName;
 import io.sphere.sdk.products.commands.updateactions.SetAssetDescription;
@@ -35,7 +36,9 @@ public final class ProductVariantAssetUpdateActionUtils {
      * @return A list with the update actions or an empty list if the asset fields are identical.
      */
     @Nonnull
-    public static List<UpdateAction<Product>> buildActions(
+    public static <D> List<UpdateAction<Product>> buildActions(
+        @Nonnull final Resource oldRessource,
+        @Nonnull final D newRessource,
         @Nonnull final Integer variantId,
         @Nonnull final Asset oldAsset,
         @Nonnull final AssetDraft newAsset,
@@ -49,7 +52,8 @@ public final class ProductVariantAssetUpdateActionUtils {
                 buildSetAssetSourcesUpdateAction(variantId, oldAsset, newAsset)
             );
 
-        updateActions.addAll(buildCustomUpdateActions(variantId, oldAsset, newAsset, syncOptions));
+        updateActions.addAll(buildCustomUpdateActions(oldRessource, newRessource, variantId, oldAsset, newAsset,
+            syncOptions));
         return updateActions;
     }
 
@@ -152,13 +156,17 @@ public final class ProductVariantAssetUpdateActionUtils {
      *         identical.
      */
     @Nonnull
-    public static List<UpdateAction<Product>> buildCustomUpdateActions(
+    public static <D> List<UpdateAction<Product>> buildCustomUpdateActions(
+        @Nonnull final Resource oldRessource,
+        @Nonnull final D newRessource,
         @Nonnull final Integer variantId,
         @Nonnull final Asset oldAsset,
         @Nonnull final AssetDraft newAsset,
         @Nonnull final ProductSyncOptions syncOptions) {
 
         return CustomUpdateActionUtils.buildCustomUpdateActions(
+            oldRessource,
+            newRessource,
             oldAsset,
             newAsset,
             new AssetCustomActionBuilder(),

@@ -25,6 +25,9 @@ import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifi
  */
 public final class CategoryReferenceReplacementUtils {
 
+    private CategoryReferenceReplacementUtils() {
+    }
+
     /**
      * Takes a list of Categories that are supposed to have their custom type, parent category and asset custom type
      * references expanded in order to be able to fetch the keys and replace the resource identifier ids with the
@@ -48,10 +51,10 @@ public final class CategoryReferenceReplacementUtils {
                     replaceAssetsReferencesIdsWithKeys(category.getAssets());
 
                 return CategoryDraftBuilder.of(category)
-                                           .custom(customTypeWithKeysInReference)
-                                           .parent(parentWithKeyInReference)
-                                           .assets(assetDraftsWithKeyInReference)
-                                           .build();
+                    .custom(customTypeWithKeysInReference)
+                    .parent(parentWithKeyInReference)
+                    .assets(assetDraftsWithKeyInReference)
+                    .build();
             })
             .collect(Collectors.toList());
     }
@@ -74,12 +77,9 @@ public final class CategoryReferenceReplacementUtils {
      */
     public static CategoryQuery buildCategoryQuery() {
         return CategoryQuery.of()
-                            .withLimit(QueryExecutionUtils.DEFAULT_PAGE_SIZE)
-                            .withExpansionPaths(ExpansionPath.of("custom.type"))
-                            .plusExpansionPaths(ExpansionPath.of("assets[*].custom.type"))
-                            .plusExpansionPaths(CategoryExpansionModel::parent);
-    }
-
-    private CategoryReferenceReplacementUtils() {
+            .withLimit(QueryExecutionUtils.DEFAULT_PAGE_SIZE)
+            .withExpansionPaths(ExpansionPath.of("custom.type"))
+            .plusExpansionPaths(ExpansionPath.of("assets[*].custom.type"))
+            .plusExpansionPaths(CategoryExpansionModel::parent);
     }
 }

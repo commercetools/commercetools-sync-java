@@ -4,6 +4,7 @@ import com.commercetools.sync.commons.BaseSyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
+import io.sphere.sdk.models.Resource;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -24,8 +25,10 @@ public abstract class AssetActionFactory<T> {
      * @param newAssetDraft the matching new asset draft.
      * @return update actions needed to sync the two assets.
      */
-    public abstract List<UpdateAction<T>> buildAssetActions(@Nonnull Asset oldAsset,
-                                                            @Nonnull AssetDraft newAssetDraft);
+    public abstract <D> List<UpdateAction<T>> buildAssetActions(@Nonnull final Resource oldRessource,
+                                                                @Nonnull final D newRessource,
+                                                                @Nonnull Asset oldAsset,
+                                                                @Nonnull AssetDraft newAssetDraft);
 
     /**
      * Takes an asset key to build a RemoveAsset action of the type T.

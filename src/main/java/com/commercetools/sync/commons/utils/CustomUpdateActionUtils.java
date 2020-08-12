@@ -17,7 +17,6 @@ import io.sphere.sdk.types.CustomFieldsDraft;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.lang.reflect.ParameterizedType;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -38,10 +37,11 @@ public final class CustomUpdateActionUtils {
     private static final String CUSTOM_TYPE_ID_IS_BLANK = "New resource's custom type id is blank (empty/null).";
 
     /**
-     * This method is a syntactic sugar for the method {@link #buildCustomUpdateActions(Custom, CustomDraft,
-     * GenericCustomActionBuilder, Integer, Function, Function, Function, BaseSyncOptions)}, but this one is only for
-     * primary resources (i.e resources which have their own endpoints for example channels, categories, inventory
-     * entries. For more details of the inner logic and different scenarios, check the Javadoc of the other method.
+     * This method is a syntactic sugar for the method {@link #buildCustomUpdateActions(Resource, Object, Custom,
+     * CustomDraft, GenericCustomActionBuilder, Integer, Function, Function, Function, BaseSyncOptions)}
+     * but this one is only for primary resources (i.e resources which have their own endpoints for example channels,
+     * categories, inventory entries. For more details of the inner logic and different scenarios, check the Javadoc of
+     * the other method.
      *
      * @param <T>                 the type of the old {@link Resource} which has the custom fields.
      * @param <S>                 the type of the new resource {@link CustomDraft}.
@@ -51,8 +51,8 @@ public final class CustomUpdateActionUtils {
      * @param syncOptions         responsible for supplying the sync options to the sync utility method.
      * @return a list that contains all the update actions needed, otherwise an empty list if no update actions are
      *         needed.
-     * @see #buildCustomUpdateActions(Custom, CustomDraft, GenericCustomActionBuilder, Integer, Function, Function,
-     *      Function, BaseSyncOptions)  )
+     * @see #buildCustomUpdateActions(Resource, Object, Custom, CustomDraft, GenericCustomActionBuilder, Integer,
+     * Function, Function, Function, BaseSyncOptions)  )
      */
     @Nonnull
     public static <T extends Custom & Resource<T>, S extends CustomDraft> List<UpdateAction<T>>
@@ -61,8 +61,10 @@ public final class CustomUpdateActionUtils {
         @Nonnull final S newResource,
         @Nonnull final GenericCustomActionBuilder<T> customActionBuilder,
         @Nonnull final BaseSyncOptions syncOptions) {
-
-        return buildCustomUpdateActions(oldResource, newResource, customActionBuilder, null,
+        return buildCustomUpdateActions(
+            null,
+            null,
+            oldResource, newResource, customActionBuilder, null,
             resource -> resource.getId(),
             resource -> resource.toReference().getTypeId(),
             resource -> null, // No update ID needed for primary resources.
@@ -111,8 +113,8 @@ public final class CustomUpdateActionUtils {
      * @param <S> the type of the new resource {@link CustomDraft}.
      * @param <U> the type of the resource in which the update actions will be applied on.
      *
-     * @param oldResource the resource which should be updated.
-     * @param newResource the resource draft where we get the new custom fields.
+     * @param oldMainRessource the resource which should be updated.
+     * @param newMainRessourceDraft the resource draft where we get the new custom fields.
      * @param customActionBuilder the builder instance responsible for building the custom update actions.
      * @param variantId optional field representing the variant id in case the oldResource is an asset.
      * @param resourceIdGetter a function used to get the id of the resource being updated.
@@ -125,10 +127,12 @@ public final class CustomUpdateActionUtils {
      */
     @SuppressWarnings("unchecked")
     @Nonnull
-    public static <T extends Custom, S extends CustomDraft, U extends Resource<U>> List<UpdateAction<U>>
+    public static <D, T extends Custom, S extends CustomDraft, U extends Resource<U>> List<UpdateAction<U>>
         buildCustomUpdateActions(
+        @Nullable final Resource oldMainRessource,
+        @Nullable final D newMainRessourceDraft,
         @Nonnull final T oldResource,
-        @Nonnull final S newResource,
+        @Nonnull final S newResourceDraft,
         @Nonnull final GenericCustomActionBuilder<U> customActionBuilder,
         @Nullable final Integer variantId,
         @Nonnull final Function<T, String> resourceIdGetter,
@@ -136,14 +140,8 @@ public final class CustomUpdateActionUtils {
         @Nonnull final Function<T, String> updateIdGetter,
         @Nonnull final BaseSyncOptions syncOptions) {
 
-        // oldResource/newResource types can be different than declared in syncOptions, thus can't
-        // be used in errorCallback; example:
-        // ProductSyncOptions<Product, ProductDraft> but oldResource/newResource can be Asset/AssetDraft
-        boolean resourceMatchWithSyncOptions = ((ParameterizedType) syncOptions.getClass().getGenericSuperclass())
-            .getActualTypeArguments()[0].getClass().isInstance(oldResource);
-
         final CustomFields oldResourceCustomFields = oldResource.getCustom();
-        final CustomFieldsDraft newResourceCustomFields = newResource.getCustom();
+        final CustomFieldsDraft newResourceCustomFields = newResourceDraft.getCustom();
         if (oldResourceCustomFields != null && newResourceCustomFields != null) {
             try {
                 return buildNonNullCustomFieldsUpdateActions(oldResourceCustomFields, newResourceCustomFields,
@@ -153,13 +151,10 @@ public final class CustomUpdateActionUtils {
                 final String errorMessage = format(CUSTOM_FIELDS_UPDATE_ACTIONS_BUILD_FAILED,
                     resourceTypeIdGetter.apply(oldResource),
                     resourceIdGetter.apply(oldResource), exception.getMessage());
-
-                if (resourceMatchWithSyncOptions) {
-                    syncOptions
-                        .applyErrorCallback(new SyncException(errorMessage, exception), oldResource, newResource, null);
-                } else {
-                    syncOptions.applyErrorCallback(new SyncException(errorMessage, exception));
-                }
+                syncOptions.applyErrorCallback(new SyncException(errorMessage, exception),
+                    oldMainRessource != null ? oldMainRessource : oldResource,
+                    newMainRessourceDraft != null ? newMainRessourceDraft : newResourceDraft,
+                    null);
             }
         } else {
             if (oldResourceCustomFields == null) {
@@ -171,14 +166,10 @@ public final class CustomUpdateActionUtils {
                         final String errorMessage = format(CUSTOM_FIELDS_UPDATE_ACTIONS_BUILD_FAILED,
                             resourceTypeIdGetter.apply(oldResource), resourceIdGetter.apply(oldResource),
                             CUSTOM_TYPE_ID_IS_BLANK);
-                        if (resourceMatchWithSyncOptions) {
-                            //noinspection unchecked
-                            syncOptions
-                                .applyErrorCallback(new SyncException(errorMessage), oldResource, newResource, null);
-                        } else {
-                            //noinspection unchecked
-                            syncOptions.applyErrorCallback(new SyncException(errorMessage));
-                        }
+                        syncOptions.applyErrorCallback(new SyncException(errorMessage, null),
+                            oldMainRessource != null ? oldMainRessource : oldResource,
+                            newMainRessourceDraft != null ? newMainRessourceDraft : newResourceDraft,
+                            null);
                     } else {
                         final Map<String, JsonNode> newCustomFieldsJsonMap = newResourceCustomFields.getFields();
                         final Optional<UpdateAction<U>> updateAction = buildTypedSetCustomTypeUpdateAction(
