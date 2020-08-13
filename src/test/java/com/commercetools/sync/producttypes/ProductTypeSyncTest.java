@@ -6,6 +6,7 @@ import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraftBuilder;
@@ -260,6 +261,69 @@ class ProductTypeSyncTest {
     }
 
     @Test
+    void sync_WithErrorsOnSyncing_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
+        // preparation
+        final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
+            "foo",
+            "name",
+            "desc",
+            emptyList()
+        );
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+
+        final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
+            .of(mock(SphereClient.class))
+            .errorCallback((exception, oldResource, newResource, actions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception);
+            })
+            .build();
+
+
+        final ProductTypeService mockProductTypeService = mock(ProductTypeServiceImpl.class);
+
+        final ProductType existingProductType = mock(ProductType.class);
+        when(existingProductType.getKey()).thenReturn(null);
+
+        when(mockProductTypeService.fetchMatchingProductTypesByKeys(singleton(newProductTypeDraft.getKey())))
+            .thenReturn(CompletableFuture.completedFuture(singleton(existingProductType)));
+        when(mockProductTypeService.fetchMatchingProductTypesByKeys(emptySet()))
+            .thenReturn(CompletableFuture.completedFuture(Collections.emptySet()));
+
+
+        when(mockProductTypeService.cacheKeysToIds(anySet()))
+            .thenReturn(CompletableFuture.completedFuture(emptyMap()));
+
+        final ProductTypeSync productTypeSync = new ProductTypeSync(syncOptions, mockProductTypeService);
+
+
+        // test
+        final ProductTypeSyncStatistics productTypeSyncStatistics = productTypeSync
+            .sync(singletonList(newProductTypeDraft))
+            .toCompletableFuture().join();
+
+        // assertions
+        assertThat(errorMessages)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(message ->
+                assertThat(message).contains("Failed to process the productTypeDraft with key:'foo'."
+                    + " Reason: java.lang.NullPointerException")
+            );
+
+        assertThat(exceptions)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(throwable -> {
+                assertThat(throwable).isExactlyInstanceOf(SyncException.class);
+                assertThat(throwable).hasCauseExactlyInstanceOf(CompletionException.class);
+                assertThat(throwable.getCause()).hasCauseExactlyInstanceOf(NullPointerException.class);
+            });
+
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
+    }
+
+    @Test
     void sync_WithErrorCachingKeysButNoKeysToCache_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         // preparation
 
@@ -310,6 +374,75 @@ class ProductTypeSyncTest {
                 assertThat(throwable).hasCauseExactlyInstanceOf(CompletionException.class);
                 assertThat(throwable.getCause()).hasCauseExactlyInstanceOf(SphereException.class);
             });
+
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
+    }
+
+
+    @Test
+    void sync_WithInvalidAttributeDefinitions_ShouldThrowError() {
+        // preparation
+        NestedAttributeType nestedAttributeType = spy(NestedAttributeType.of(ProductType.referenceOfId("x")));
+        Reference reference = spy(Reference.class);
+        when(reference.getId())
+            .thenReturn("x1")
+            .thenReturn(null);
+
+        when(nestedAttributeType.getTypeReference()).thenReturn(reference);
+        final AttributeDefinitionDraft nestedTypeAttrDefDraft = AttributeDefinitionDraftBuilder
+            .of(nestedAttributeType, "validNested", ofEnglish("koko"), true)
+            .build();
+
+
+        // preparation
+        final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
+            "foo",
+            "name",
+            "desc",
+            singletonList(nestedTypeAttrDefDraft)
+        );
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+
+        final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
+            .of(mock(SphereClient.class))
+            .errorCallback((exception, oldResource, newResource, actions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception);
+            })
+            .build();
+
+
+        final ProductTypeService mockProductTypeService = mock(ProductTypeServiceImpl.class);
+
+        final ProductType existingProductType = mock(ProductType.class);
+        when(existingProductType.getKey()).thenReturn(newProductTypeDraft.getKey());
+
+        when(mockProductTypeService.fetchMatchingProductTypesByKeys(singleton(newProductTypeDraft.getKey())))
+            .thenReturn(CompletableFuture.completedFuture(singleton(existingProductType)));
+        when(mockProductTypeService.fetchMatchingProductTypesByKeys(emptySet()))
+            .thenReturn(CompletableFuture.completedFuture(Collections.emptySet()));
+        when(mockProductTypeService.updateProductType(any(), any()))
+            .thenReturn(CompletableFuture.completedFuture(existingProductType));
+        when(mockProductTypeService.cacheKeysToIds(anySet()))
+            .thenReturn(CompletableFuture.completedFuture(emptyMap()));
+
+        final ProductTypeSync productTypeSync = new ProductTypeSync(syncOptions, mockProductTypeService);
+
+        // test
+        final ProductTypeSyncStatistics productTypeSyncStatistics = productTypeSync
+            .sync(singletonList(newProductTypeDraft))
+            .toCompletableFuture().join();
+
+        // assertions
+        assertThat(errorMessages.get(0))
+            .contains("This exception is unexpectedly thrown since the draft batch has been"
+                + "already validated for blank keys" );
+        assertThat(errorMessages.get(1))
+            .contains("Failed to process the productTypeDraft with key:'foo'" );
+        assertThat(exceptions.size()).isEqualTo(2);
+
 
         assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
     }

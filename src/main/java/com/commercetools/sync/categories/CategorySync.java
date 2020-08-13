@@ -179,7 +179,8 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                     final Throwable cachingException = cachingResponse.getValue();
 
                     if (cachingException != null) {
-                        handleError("Failed to build a cache of keys to ids.", cachingException, categoryDrafts.size());
+                        handleError(new SyncException("Failed to build a cache of keys to ids.", cachingException),
+                            categoryDrafts.size());
                         return CompletableFuture.completedFuture(null);
                     }
 
@@ -210,7 +211,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                 if (exception != null) {
                     final String errorMessage =
                         format("Failed to fetch existing categories with keys: '%s'.", categoryKeysToFetch);
-                    handleError(errorMessage, exception, categoryKeysToFetch.size());
+                    handleError(new SyncException(errorMessage, exception), categoryKeysToFetch.size());
                     return CompletableFuture.completedFuture(null);
                 }
 
@@ -711,12 +712,8 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @param exception    The exception that called caused the failure, if any.
      * @param failedTimes  The number of times that the failed category counter is incremented.
      */
-    private void handleError(@Nonnull final String errorMessage,
-                             @Nullable final Throwable exception,
+    private void handleError(@Nonnull final SyncException syncException,
                              final int failedTimes) {
-
-        SyncException syncException = exception != null ? new SyncException(errorMessage, exception)
-            : new SyncException(errorMessage);
         syncOptions.applyErrorCallback(syncException);
         statistics.incrementFailed(failedTimes);
     }

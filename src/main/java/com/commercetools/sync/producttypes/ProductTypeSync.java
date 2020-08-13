@@ -144,7 +144,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                 final Throwable cachingException = cachingResponse.getValue();
 
                 if (cachingException != null) {
-                    handleError("Failed to build a cache of keys to ids.", cachingException,
+                    handleError(new SyncException("Failed to build a cache of keys to ids.", cachingException),
                         keysToCache.size());
                     return CompletableFuture.completedFuture(null);
                 }
@@ -165,7 +165,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
 
                         if (exception != null) {
                             final String errorMessage = format(CTP_PRODUCT_TYPE_FETCH_FAILED, batchDraftKeys);
-                            handleError(errorMessage, exception, batchDraftKeys.size());
+                            handleError( new SyncException(errorMessage, exception), batchDraftKeys.size());
                             return CompletableFuture.completedFuture(null);
                         } else {
                             return syncBatch(matchingProductTypes, batchProcessor.getValidDrafts(), keyToIdCache)
@@ -186,14 +186,11 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
      * incrementing the total number of failed product types to sync.
      *
-     * @param errorMessage The error message describing the reason(s) of failure.
-     * @param exception    The exception that called caused the failure, if any.
+     *
+     * @param syncException    The exception that called caused the failure, if any.
      * @param failedTimes  The number of times that the failed product types counter is incremented.
      */
-    private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
-                             final int failedTimes) {
-        SyncException syncException = exception != null ? new SyncException(errorMessage, exception)
-            : new SyncException(errorMessage);
+    private void handleError(@Nonnull SyncException syncException, final int failedTimes) {
         syncOptions.applyErrorCallback(syncException);
         statistics.incrementFailed(failedTimes);
     }
@@ -245,16 +242,14 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
 
         return CompletableFuture.allOf(newProductTypes
             .stream()
-            .map(newProductType ->
-                removeAndKeepTrackOfMissingNestedAttributes(newProductType, keyToIdCache))
-            .map(draftWithoutMissingRefAttrs -> referenceResolver
-                .resolveReferences(draftWithoutMissingRefAttrs)
+            .map(newProductType -> removeAndKeepTrackOfMissingNestedAttributes(newProductType, keyToIdCache))
+            .map(draftWithoutMissingRefAttrs -> referenceResolver.resolveReferences(draftWithoutMissingRefAttrs)
                 .thenCompose(resolvedDraft -> syncDraft(oldProductTypeMap, resolvedDraft))
                 .exceptionally(completionException -> {
                     final String errorMessage = format(FAILED_TO_PROCESS,
                             draftWithoutMissingRefAttrs.getKey(),
                             completionException.getMessage());
-                    handleError(errorMessage, completionException, 1);
+                    handleError(new SyncException(errorMessage, completionException), 1);
                     return null;
                 })
             )
@@ -348,10 +343,10 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                     }
                 });
         } catch (InvalidReferenceException invalidReferenceException) {
-            handleError("This exception is unexpectedly thrown since the draft batch has been"
+            handleError(new SyncException("This exception is unexpectedly thrown since the draft batch has been"
                     + "already validated for blank keys at an earlier stage, which means this draft should"
                     + " have a valid reference. Please communicate this error with the maintainer of the library.",
-                invalidReferenceException, 1);
+                invalidReferenceException), 0);
         }
     }
 
@@ -498,7 +493,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                             final String errorMessage =
                                 format(CTP_PRODUCT_TYPE_UPDATE_FAILED, oldProductType.getKey(),
                                     sphereException.getMessage());
-                            handleError(errorMessage, sphereException, 1);
+                            handleError( new SyncException(errorMessage, sphereException), 1);
                             return CompletableFuture.completedFuture(null);
                         });
                 } else {
