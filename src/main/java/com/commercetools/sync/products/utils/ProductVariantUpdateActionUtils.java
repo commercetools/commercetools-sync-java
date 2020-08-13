@@ -298,14 +298,14 @@ public final class ProductVariantUpdateActionUtils {
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildProductVariantAttributesUpdateActions(
-        @Nullable final Product oldProduct,
+        @Nonnull final Product oldProduct,
         @Nonnull final ProductDraft newProduct,
         @Nonnull final ProductVariant oldProductVariant,
         @Nonnull final ProductVariantDraft newProductVariant,
         @Nonnull final Map<String, AttributeMetaData> attributesMetaData,
         @Nonnull final ProductSyncOptions syncOptions) {
 
-        final String productKey = oldProduct != null ? oldProduct.getKey() : null;
+        final String productKey = oldProduct.getKey();
 
         final Integer oldProductVariantId = oldProductVariant.getId();
         final List<AttributeDraft> newProductVariantAttributes = newProductVariant.getAttributes();
