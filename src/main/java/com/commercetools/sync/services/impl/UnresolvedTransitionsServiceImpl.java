@@ -110,7 +110,8 @@ public class UnresolvedTransitionsServiceImpl implements UnresolvedTransitionsSe
                 if (exception == null) {
                     return Optional.of(resource.getValue());
                 } else {
-                    syncOptions.applyErrorCallback( new SyncException( format(DELETE_FAILED, hash(key), key), exception));
+                    syncOptions.applyErrorCallback( new SyncException( format(DELETE_FAILED, hash(key), key),
+                        exception));
                     return Optional.empty();
                 }
             });

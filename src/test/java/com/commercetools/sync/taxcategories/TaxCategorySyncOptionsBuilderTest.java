@@ -12,8 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
+
 
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -92,8 +91,7 @@ class TaxCategorySyncOptionsBuilderTest {
     @Test
     void build_WithWarningCallback_ShouldSetWarningCallback() {
         final TriConsumer<SyncException, Optional<TaxCategoryDraft>, Optional<TaxCategory>>
-            mockWarningCallBack = (warningMessage, draft, entry) -> {
-        };
+            mockWarningCallBack = (warningMessage, draft, entry) -> { };
         taxCategorySyncOptionsBuilder.warningCallback(mockWarningCallBack);
 
         final TaxCategorySyncOptions taxCategorySyncOptions = taxCategorySyncOptionsBuilder.build();

@@ -4,20 +4,14 @@ import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
-import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateDraft;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -82,8 +76,7 @@ class StateSyncOptionsBuilderTest {
     @Test
     void build_WithErrorCallback_ShouldSetErrorCallback() {
         final QuadConsumer<SyncException, Optional<StateDraft>, Optional<State>,
-            List<UpdateAction<State>>> mockErrorCallback = (exception, newDraft, old, actions) -> {
-        };
+            List<UpdateAction<State>>> mockErrorCallback = (exception, newDraft, old, actions) -> { };
         stateSyncOptionsBuilder.errorCallback(mockErrorCallback);
 
         StateSyncOptions stateSyncOptions = stateSyncOptionsBuilder.build();
