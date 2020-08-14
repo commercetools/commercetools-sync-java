@@ -249,7 +249,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                         final ResourceIdentifier<Channel> supplyChannel = draft.getSupplyChannel();
                         final String errorMessage = format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
                             supplyChannel != null ? supplyChannel.getId() : null);
-                        handleError(errorMessage, sphereException, 1, entry, draft, updateActions);
+                        handleError(new SyncException(errorMessage, sphereException), 1, entry, draft, updateActions);
                         return CompletableFuture.completedFuture(Optional.empty());
                     } else {
                         statistics.incrementUpdated();
@@ -317,11 +317,9 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @param draft draft containing data that could differ from data in {@code entry}.
      * @param updateActions the update actions to update the {@link InventoryEntry} with.
      */
-    private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
+    private void handleError(@Nonnull final SyncException syncException,
         final int failedTimes, @Nullable final InventoryEntry entry, @Nullable final InventoryEntryDraft draft,
         @Nullable final List<UpdateAction<InventoryEntry>> updateActions) {
-        SyncException syncException = exception != null ? new SyncException(errorMessage, exception)
-            : new SyncException(errorMessage);
         syncOptions.applyErrorCallback(syncException, entry, draft, updateActions);
         statistics.incrementFailed(failedTimes);
     }
