@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -39,6 +40,8 @@ import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.util.Lists.list;
+import static org.assertj.core.util.Sets.newLinkedHashSet;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.mock;
@@ -445,6 +448,79 @@ class ProductTypeSyncTest {
 
 
         assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
+    }
+
+    @Test
+    void sync_WithErrorOnResolvingMissingReference_ShouldThrowError() {
+        String draftKey = "key2";
+        // preparation
+        final ProductTypeDraft newProductTypeDraft2 = ProductTypeDraft.ofAttributeDefinitionDrafts(
+            draftKey,
+            "name",
+            "desc",
+            emptyList()
+        );
+        NestedAttributeType nestedTypeAttrDefDraft1 = NestedAttributeType
+            .of(ProductType.referenceOfId(draftKey));
+        final AttributeDefinitionDraft nestedTypeAttrDefDraft = AttributeDefinitionDraftBuilder
+            .of(nestedTypeAttrDefDraft1, "validNested", ofEnglish("koko"), true)
+            .build();
+
+        // preparation
+        final ProductTypeDraft newProductTypeDraft1 = ProductTypeDraft.ofAttributeDefinitionDrafts(
+            "key1",
+            "name",
+            "desc",
+            singletonList(nestedTypeAttrDefDraft)
+        );
+
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+
+        final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
+            .of(mock(SphereClient.class))
+            .errorCallback((exception, oldResource, newResource, actions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception);
+            })
+            .build();
+
+
+        final ProductTypeService mockProductTypeService = mock(ProductTypeServiceImpl.class);
+
+        final ProductType existingProductType = mock(ProductType.class);
+        when(existingProductType.getKey()).thenReturn(newProductTypeDraft1.getKey());
+
+        when(mockProductTypeService.fetchMatchingProductTypesByKeys(newLinkedHashSet(newProductTypeDraft2.getKey(),
+            newProductTypeDraft1.getKey()))).thenReturn(CompletableFuture.completedFuture(Collections.emptySet()),
+            CompletableFuture.completedFuture(singleton(existingProductType)));
+
+        when(mockProductTypeService.fetchMatchingProductTypesByKeys(newLinkedHashSet(newProductTypeDraft1.getKey())))
+            .thenReturn(CompletableFuture.completedFuture(singleton(existingProductType)));
+        when(mockProductTypeService.fetchMatchingProductTypesByKeys(emptySet()))
+            .thenReturn(CompletableFuture.completedFuture(Collections.emptySet()));
+        when(mockProductTypeService.updateProductType(any(), any()))
+            .thenReturn(
+                supplyAsync(() -> { throw new SphereException(); }));
+        when(mockProductTypeService.cacheKeysToIds(anySet()))
+            .thenReturn(CompletableFuture.completedFuture(emptyMap()));
+        when(mockProductTypeService.createProductType(any()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.of(existingProductType)));
+        when(mockProductTypeService.fetchCachedProductTypeId(any()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.of("key1")));
+
+        final ProductTypeSync productTypeSync = new ProductTypeSync(syncOptions, mockProductTypeService);
+
+        // test
+        final ProductTypeSyncStatistics productTypeSyncStatistics = productTypeSync
+            .sync(list(newProductTypeDraft2, newProductTypeDraft1))
+            .toCompletableFuture().join();
+
+        // assertions
+        assertThat(errorMessages.get(0))
+            .contains("Failed to update product type with key: 'key1'. Reason: io.sphere.sdk.models.SphereException:");
+
     }
 
     @Test
