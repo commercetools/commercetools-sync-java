@@ -23,7 +23,7 @@ import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.bui
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildAddToCategoryUpdateActions;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildChangeNameUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildChangeSlugUpdateAction;
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildPublishUpdateAction;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildPublishOrUnpublishUpdateAction;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildRemoveFromCategoryUpdateActions;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetCategoryOrderHintUpdateActions;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.buildSetDescriptionUpdateAction;
@@ -112,7 +112,8 @@ public final class ProductSyncUtils {
         updateActions.addAll(buildVariantsUpdateActions(oldProduct, newProduct, syncOptions, attributesMetaData));
 
         // lastly publish/unpublish product
-        buildPublishUpdateAction(oldProduct, newProduct).ifPresent(updateActions::add);
+        final boolean hasNewUpdateActions = updateActions.size() > 0;
+        buildPublishOrUnpublishUpdateAction(oldProduct, newProduct, hasNewUpdateActions).ifPresent(updateActions::add);
 
         return prioritizeUpdateActions(updateActions,
                 oldProduct.getMasterData().getStaged().getMasterVariant().getId());

@@ -79,6 +79,12 @@ class ProductTypeSyncIT {
     @BeforeEach
     void setup() {
         deleteProductTypes(CTP_TARGET_CLIENT);
+        try {
+            // The removal of the attributes is eventually consistent.
+            // Here with one second break we are slowing down the ITs a little bit so CTP could remove the attributes.
+            // see: SUPPORT-8408
+            Thread.sleep(1000);
+        } catch (InterruptedException expected) { }
         populateTargetProject();
     }
 
