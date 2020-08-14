@@ -137,7 +137,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                 final Throwable cachingException = cachingResponse.getValue();
 
                 if (cachingException != null) {
-                    handleError("Failed to build a cache of product keys to ids.", cachingException,
+                    handleError(new SyncException("Failed to build a cache of product keys to ids.", cachingException),
                         keysToCache.size());
                     return CompletableFuture.completedFuture(null);
                 } else {
@@ -172,7 +172,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                 final Throwable fetchException = fetchResponse.getValue();
                 if (fetchException != null) {
                     final String errorMessage = format(CTP_PRODUCT_FETCH_FAILED, productDraftKeys);
-                    handleError(errorMessage, fetchException, productDraftKeys.size());
+                    handleError( new SyncException(errorMessage, fetchException), productDraftKeys.size());
                     return CompletableFuture.completedFuture(null);
                 } else {
                     final Set<Product> matchingProducts = fetchResponse.getKey();
@@ -268,7 +268,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
                 if (fetchException != null) {
                     final String errorMessage = format(UNRESOLVED_REFERENCES_STORE_FETCH_FAILED, referencingDraftKeys);
-                    handleError(errorMessage, fetchException, referencingDraftKeys.size());
+                    handleError(new SyncException(errorMessage, fetchException), referencingDraftKeys.size());
                     return CompletableFuture.completedFuture(null);
                 }
 
@@ -337,7 +337,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             .exceptionally(completionException -> {
                 final String errorMessage = format(FAILED_TO_PROCESS, newProductDraft.getKey(),
                         completionException.getMessage());
-                handleError(errorMessage, completionException, 1);
+                handleError(new SyncException(errorMessage, completionException), 1);
                 return null;
             });
 
@@ -349,7 +349,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         @Nonnull final ProductDraft newProduct) {
 
         return productTypeService
-            .fetchCachedProductAttributeMetaDataMap(oldProduct.getProductType().getId())
+                .fetchCachedProductAttributeMetaDataMap(oldProduct.getProductType().getId())
             .thenCompose(optionalAttributesMetaDataMap ->
                 optionalAttributesMetaDataMap
                     .map(attributeMetaDataMap -> {
@@ -503,11 +503,8 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
      * @param exception    The exception that called caused the failure, if any.
      * @param failedTimes  The number of times that the failed products counter is incremented.
      */
-    private void handleError(@Nonnull final String errorMessage,
-                             @Nullable final Throwable exception,
+    private void handleError(@Nonnull final SyncException syncException,
                              final int failedTimes) {
-        SyncException syncException = exception != null ? new SyncException(errorMessage, exception)
-            : new SyncException(errorMessage);
         syncOptions.applyErrorCallback(syncException);
         statistics.incrementFailed(failedTimes);
     }
