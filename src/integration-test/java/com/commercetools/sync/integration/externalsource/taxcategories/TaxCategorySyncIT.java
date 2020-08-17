@@ -228,7 +228,6 @@ class TaxCategorySyncIT {
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
 
         List<String> errorCallBackMessages = new ArrayList<>();
-        List<String> warningCallBackMessages = new ArrayList<>();
         List<Throwable> errorCallBackExceptions = new ArrayList<>();
         final TaxCategorySyncOptions spyOptions = TaxCategorySyncOptionsBuilder
             .of(spyClient)
@@ -286,7 +285,6 @@ class TaxCategorySyncIT {
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
 
         List<String> errorCallBackMessages = new ArrayList<>();
-        List<String> warningCallBackMessages = new ArrayList<>();
         List<Throwable> errorCallBackExceptions = new ArrayList<>();
         final TaxCategorySyncOptions spyOptions = TaxCategorySyncOptionsBuilder
             .of(spyClient)
