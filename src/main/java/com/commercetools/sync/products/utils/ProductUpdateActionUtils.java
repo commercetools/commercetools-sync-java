@@ -517,7 +517,6 @@ public final class ProductUpdateActionUtils {
      * update action as a result in an {@link Optional}.
      * Check the calculation table below for all different combinations named as states.
      *
-     * <p>
      * <table summary="Mapping of product publish/unpublish update action calculation">
      * <thead>
      * <tr>
@@ -660,7 +659,6 @@ public final class ProductUpdateActionUtils {
      * </tr>
      * </tbody>
      * </table>
-     * </p>
      *
      * <p>NOTE: Comparison is done against the staged projection of the old product. If the new product's 'published'
      * field is null, then the default false value is assumed. </p>

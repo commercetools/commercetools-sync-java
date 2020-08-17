@@ -48,7 +48,9 @@ public final class AssetsUpdateActionUtils {
      *
      * <p>If the list of new {@link AssetDraft}s is {@code null}, then remove actions are built for every existing asset
      * in the {@code oldAssets} list.
-     *
+     * @param <D>                           Type of the mainresource draft
+     * @param oldRessource                  mainresource, whose asset should be updated.
+     * @param newRessource                  new mainresource draft, which contains the asset to update.
      * @param oldAssets                     the old list of assets.
      * @param newAssetDrafts                the new list of asset drafts.
      * @param assetActionFactory            factory responsible for building asset update actions.

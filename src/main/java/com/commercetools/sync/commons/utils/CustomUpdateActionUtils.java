@@ -109,12 +109,15 @@ public final class CustomUpdateActionUtils {
      * <li>Custom field values are identical.</li>
      * </ol>
      *
+     * @param <D> the type of the new {@link Resource} which is the super {@link Resource} of the Resource to update.
      * @param <T> the type of the old {@link Resource} which has the custom fields.
      * @param <S> the type of the new resource {@link CustomDraft}.
      * @param <U> the type of the resource in which the update actions will be applied on.
      *
-     * @param oldMainRessource the resource which should be updated.
-     * @param newMainRessourceDraft the resource draft where we get the new custom fields.
+     * @param oldMainRessource the main resource of the resource which should be updated.
+     * @param newMainRessourceDraft the main resource of the resource draft where we get the new custom fields.
+     * @param oldResource the resource which should be updated.
+     * @param newResourceDraft the resource draft where we get the new custom fields.
      * @param customActionBuilder the builder instance responsible for building the custom update actions.
      * @param variantId optional field representing the variant id in case the oldResource is an asset.
      * @param resourceIdGetter a function used to get the id of the resource being updated.

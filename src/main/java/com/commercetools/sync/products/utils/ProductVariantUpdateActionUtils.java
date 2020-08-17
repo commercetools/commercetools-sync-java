@@ -242,6 +242,8 @@ public final class ProductVariantUpdateActionUtils {
      * is needed and hence an empty {@link List} is returned. In case, the new product variant draft has a list of
      * assets in which a duplicate key exists, the error callback is triggered and an empty list is returned.
      *
+     * @param oldProduct        old Product, whose variant assets should be updated.
+     * @param newProduct        new product draft, which provides the assets to update.
      * @param oldProductVariant the {@link ProductVariant} which should be updated.
      * @param newProductVariant the {@link ProductVariantDraft} where we get the new list of assets.
      * @param syncOptions       responsible for supplying the sync options to the sync utility method. It is used for

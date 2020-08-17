@@ -27,12 +27,14 @@ public final class ProductVariantAssetUpdateActionUtils {
      * Compares all the fields of an {@link Asset} and an {@link AssetDraft} and returns a list of
      * {@link UpdateAction}&lt;{@link Product}&gt; as a result. If both the {@link Asset} and the {@link AssetDraft}
      * have identical fields, then no update action is needed and hence an empty {@link List} is returned.
-     *
-     * @param variantId   the variantId needed for building the update action.
-     * @param oldAsset    the asset which should be updated.
-     * @param newAsset    the asset draft where we get the new fields.
-     * @param syncOptions responsible for supplying the sync options to the sync utility method. It is used for
-     *                    triggering the error callback within the utility, in case of errors.
+     * @param <D>            Type of the mainresource draft
+     * @param oldRessource   mainresource, whose asset should be updated.
+     * @param newRessource   new mainresource draft, which contains the asset to update.
+     * @param variantId      the variantId needed for building the update action.
+     * @param oldAsset       the asset which should be updated.
+     * @param newAsset       the asset draft where we get the new fields.
+     * @param syncOptions    responsible for supplying the sync options to the sync utility method. It is used for
+     *                       triggering the error callback within the utility, in case of errors.
      * @return A list with the update actions or an empty list if the asset fields are identical.
      */
     @Nonnull
@@ -146,12 +148,15 @@ public final class ProductVariantAssetUpdateActionUtils {
      * {@link UpdateAction}&lt;{@link Product}&gt; as a result. If both the {@link Asset} and the {@link AssetDraft}
      * have identical custom fields and types, then no update action is needed and hence an empty {@link List} is
      * returned.
-     *
-     * @param variantId   the variantId needed for building the update action.
-     * @param oldAsset    the asset which should be updated.
-     * @param newAsset    the asset draft where we get the new custom fields and types.
-     * @param syncOptions responsible for supplying the sync options to the sync utility method. It is used for
-     *                    triggering the error callback within the utility, in case of errors.
+
+     * @param <D>           Type of the mainresource draft
+     * @param oldRessource  mainresource, whose asset should be updated.
+     * @param newRessource  new mainresource draft, which contains the asset to update.
+     * @param variantId     the variantId needed for building the update action.
+     * @param oldAsset      the asset which should be updated.
+     * @param newAsset      the asset draft where we get the new custom fields and types.
+     * @param syncOptions   responsible for supplying the sync options to the sync utility method. It is used for
+     *                     triggering the error callback within the utility, in case of errors.
      * @return A list with the custom field/type update actions or an empty list if the custom fields/types are
      *         identical.
      */

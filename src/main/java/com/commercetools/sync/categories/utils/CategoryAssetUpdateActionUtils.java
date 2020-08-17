@@ -28,10 +28,13 @@ public final class CategoryAssetUpdateActionUtils {
      * {@link UpdateAction}&lt;{@link Category}&gt; as a result. If both the {@link Asset} and the {@link AssetDraft}
      * have identical fields, then no update action is needed and hence an empty {@link List} is returned.
      *
-     * @param oldAsset    the asset which should be updated.
-     * @param newAsset    the asset draft where we get the new fields.
-     * @param syncOptions responsible for supplying the sync options to the sync utility method. It is used for
-     *                    triggering the error callback within the utility, in case of errors.
+     * @param <D>           Type of the mainresource draft
+     * @param oldRessource  mainresource, whose asset should be updated.
+     * @param newRessource  new mainresource draft, which contains the asset to update.
+     * @param oldAsset      the asset which should be updated.
+     * @param newAsset      the asset draft where we get the new fields.
+     * @param syncOptions   responsible for supplying the sync options to the sync utility method. It is used for
+     *                      triggering the error callback within the utility, in case of errors.
      * @return A list with the update actions or an empty list if the asset fields are identical.
      */
     @Nonnull
@@ -132,6 +135,7 @@ public final class CategoryAssetUpdateActionUtils {
      * have identical custom fields and types, then no update action is needed and hence an empty {@link List} is
      * returned.
      *
+     * @param <D>         Type of the mainresource draft
      * @param oldCategory mainresource, whose asset should be updated.
      * @param newCategory new mainresourceDraft, which contains the updated asset.
      * @param oldAsset    the asset which should be updated.
@@ -142,7 +146,7 @@ public final class CategoryAssetUpdateActionUtils {
      *         identical.
      */
     @Nonnull
-    public static <M, D> List<UpdateAction<Category>> buildCustomUpdateActions(
+    public static  <D> List<UpdateAction<Category>> buildCustomUpdateActions(
         @Nonnull final Resource oldCategory,
         @Nonnull final D newCategory,
         @Nonnull final Asset oldAsset,
