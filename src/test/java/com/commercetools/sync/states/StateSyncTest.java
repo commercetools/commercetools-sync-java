@@ -71,9 +71,10 @@ class StateSyncTest {
         verifyNoMoreInteractions(stateService);
         assertThat(errors).hasSize(2);
         assertThat(errors).containsExactly(
-            "StateDraft with name: null doesn't have a key. "
+            "com.commercetools.sync.commons.exceptions.InvalidStateDraftException: "
+               + "StateDraft with name: null doesn't have a key. "
                 + "Please make sure all states have keys.",
-            "StateDraft is null.");
+            "com.commercetools.sync.commons.exceptions.InvalidStateDraftException: StateDraft is null.");
 
         assertThat(statistics).hasValues(2, 0, 0, 2, 0);
     }
