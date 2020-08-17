@@ -512,9 +512,7 @@ class ProductTypeSyncTest {
 
         final ProductTypeSync productTypeSync = new ProductTypeSync(syncOptions, mockProductTypeService);
 
-        // test
-        final ProductTypeSyncStatistics productTypeSyncStatistics = productTypeSync
-            .sync(list(newProductTypeDraft2, newProductTypeDraft1))
+        productTypeSync.sync(list(newProductTypeDraft2, newProductTypeDraft1))
             .toCompletableFuture().join();
 
         // assertions
