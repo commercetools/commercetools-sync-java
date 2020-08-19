@@ -136,8 +136,8 @@ public final class CategoryAssetUpdateActionUtils {
      * returned.
      *
      * @param <D>         Type of the mainresource draft
-     * @param oldCategory mainresource, whose asset should be updated.
-     * @param newCategory new mainresourceDraft, which contains the updated asset.
+     * @param oldCategory category in a target project, whose asset should be updated.
+     * @param newCategory category in a source project, which contains the updated asset.
      * @param oldAsset    the asset which should be updated.
      * @param newAsset    the asset draft where we get the new custom fields and types.
      * @param syncOptions responsible for supplying the sync options to the sync utility method. It is used for
