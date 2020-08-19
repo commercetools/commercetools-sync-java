@@ -62,8 +62,6 @@ public final class CustomUpdateActionUtils {
         @Nonnull final GenericCustomActionBuilder<T> customActionBuilder,
         @Nonnull final BaseSyncOptions syncOptions) {
         return buildCustomUpdateActions(
-            null,
-            null,
             oldResource, newResource, customActionBuilder, null,
             resource -> resource.getId(),
             resource -> resource.toReference().getTypeId(),
@@ -190,6 +188,30 @@ public final class CustomUpdateActionUtils {
             }
         }
         return Collections.emptyList();
+    }
+
+    @Nonnull
+    private static <D, T extends Custom, S extends CustomDraft, U extends Resource<U>> List<UpdateAction<U>>
+        buildCustomUpdateActions(
+            @Nonnull final T oldResource,
+            @Nonnull final S newResourceDraft,
+            @Nonnull final GenericCustomActionBuilder<U> customActionBuilder,
+            @Nullable final Integer variantId,
+            @Nonnull final Function<T, String> resourceIdGetter,
+            @Nonnull final Function<T, String> resourceTypeIdGetter,
+            @Nonnull final Function<T, String> updateIdGetter,
+            @Nonnull final BaseSyncOptions syncOptions) {
+        return buildCustomUpdateActions(
+            null,
+            null,
+            oldResource,
+            newResourceDraft,
+            customActionBuilder,
+            variantId,
+            resourceIdGetter,
+            resourceTypeIdGetter,
+            updateIdGetter, // No update ID needed for primary resources.
+            syncOptions);
     }
 
     /**
