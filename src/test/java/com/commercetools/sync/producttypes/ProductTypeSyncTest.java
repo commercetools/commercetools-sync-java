@@ -455,6 +455,7 @@ class ProductTypeSyncTest {
     @Test
     void sync_WithErrorUpdatingProductType_ShouldCallErrorCallback() {
         String draftKey = "key2";
+
         // preparation
         final ProductTypeDraft newProductTypeDraft2 = ProductTypeDraft.ofAttributeDefinitionDrafts(
             draftKey,
@@ -468,15 +469,12 @@ class ProductTypeSyncTest {
             .of(nestedTypeAttrDefDraft1, "validNested", ofEnglish("koko"), true)
             .build();
 
-        // preparation
         final ProductTypeDraft newProductTypeDraft1 = ProductTypeDraft.ofAttributeDefinitionDrafts(
             "key1",
             "name",
             "desc",
             singletonList(nestedTypeAttrDefDraft)
         );
-
-
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> exceptions = new ArrayList<>();
 
@@ -488,23 +486,18 @@ class ProductTypeSyncTest {
             })
             .build();
 
-
         final ProductTypeService mockProductTypeService = mock(ProductTypeServiceImpl.class);
-
         final ProductType existingProductType = mock(ProductType.class);
         when(existingProductType.getKey()).thenReturn(newProductTypeDraft1.getKey());
-
         when(mockProductTypeService.fetchMatchingProductTypesByKeys(newLinkedHashSet(newProductTypeDraft2.getKey(),
             newProductTypeDraft1.getKey()))).thenReturn(CompletableFuture.completedFuture(Collections.emptySet()),
             CompletableFuture.completedFuture(singleton(existingProductType)));
-
         when(mockProductTypeService.fetchMatchingProductTypesByKeys(newLinkedHashSet(newProductTypeDraft1.getKey())))
             .thenReturn(CompletableFuture.completedFuture(singleton(existingProductType)));
         when(mockProductTypeService.fetchMatchingProductTypesByKeys(emptySet()))
             .thenReturn(CompletableFuture.completedFuture(Collections.emptySet()));
         when(mockProductTypeService.updateProductType(any(), any()))
-            .thenReturn(
-                supplyAsync(() -> { throw new SphereException(); }));
+            .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
         when(mockProductTypeService.cacheKeysToIds(anySet()))
             .thenReturn(CompletableFuture.completedFuture(emptyMap()));
         when(mockProductTypeService.createProductType(any()))
@@ -512,8 +505,8 @@ class ProductTypeSyncTest {
         when(mockProductTypeService.fetchCachedProductTypeId(any()))
             .thenReturn(CompletableFuture.completedFuture(Optional.of("key1")));
 
+        // test
         final ProductTypeSync productTypeSync = new ProductTypeSync(syncOptions, mockProductTypeService);
-
         productTypeSync.sync(list(newProductTypeDraft2, newProductTypeDraft1))
             .toCompletableFuture().join();
 
