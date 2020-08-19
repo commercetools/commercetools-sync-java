@@ -447,7 +447,7 @@ class ProductTypeSyncTest {
         assertThat(exceptions.size()).isEqualTo(2);
 
 
-        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 1, 0);
+        assertThat(productTypeSyncStatistics).hasValues(1, 0, 0, 2, 0);
     }
 
     @Test

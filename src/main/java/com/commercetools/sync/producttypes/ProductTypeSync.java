@@ -346,7 +346,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
             handleError(new SyncException("This exception is unexpectedly thrown since the draft batch has been"
                     + "already validated for blank keys at an earlier stage, which means this draft should"
                     + " have a valid reference. Please communicate this error with the maintainer of the library.",
-                invalidReferenceException), 0);
+                invalidReferenceException), 1);
         }
     }
 
