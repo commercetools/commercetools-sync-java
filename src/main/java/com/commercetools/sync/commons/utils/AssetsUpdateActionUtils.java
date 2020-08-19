@@ -200,7 +200,7 @@ public final class AssetsUpdateActionUtils {
                 final AssetDraft matchingNewAssetDraft = newAssetDraftsKeyMap.get(oldAssetKey);
                 return ofNullable(matchingNewAssetDraft)
                     .map(assetDraft -> // If asset exists, compare the two assets.
-                        assetActionFactory.buildAssetActions(oldResource,newResource,oldAsset, assetDraft))
+                        assetActionFactory.buildAssetActions(oldResource, newResource, oldAsset, assetDraft))
                     .orElseGet(() -> { // If asset doesn't exist, remove asset.
                         removedAssetKeys.add(oldAssetKey);
                         return singletonList(assetActionFactory.buildRemoveAssetAction(oldAssetKey));
