@@ -453,7 +453,7 @@ class ProductTypeSyncTest {
     }
 
     @Test
-    void sync_WithErrorOnResolvingMissingReference_ShouldCallErrorCallback() {
+    void sync_WithErrorUpdatingProductType_ShouldCallErrorCallback() {
         String draftKey = "key2";
         // preparation
         final ProductTypeDraft newProductTypeDraft2 = ProductTypeDraft.ofAttributeDefinitionDrafts(
