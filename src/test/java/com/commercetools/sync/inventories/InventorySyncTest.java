@@ -176,7 +176,7 @@ class InventorySyncTest {
     }
 
     @Test
-    void sync_WithErrorOnCreatingInventory_ShouldCallErrorCallbacl() {
+    void sync_WithErrorOnCreatingInventory_ShouldCallErrorCallback() {
         final InventoryEntryDraft draftWithNewChannel = InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1,
             Channel.referenceOfId(KEY_3));
         final InventorySyncOptions options = getInventorySyncOptions(30, true);
