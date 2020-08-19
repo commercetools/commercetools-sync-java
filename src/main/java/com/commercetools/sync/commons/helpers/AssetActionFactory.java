@@ -21,14 +21,14 @@ public abstract class AssetActionFactory<T> {
     /**
      * Takes a matching old asset and a new asset and computes the update actions needed to sync them.
      *
-     * @param oldRessource  mainresource, whose asset should be updated.
-     * @param newRessource  new mainresource draft, which contains the asset to update.
+     * @param oldResource  mainresource, whose asset should be updated.
+     * @param newResource  new mainresource draft, which contains the asset to update.
      * @param oldAsset      the old asset to compare.
      * @param newAssetDraft the matching new asset draft.
      * @return update actions needed to sync the two assets.
      */
-    public abstract List<UpdateAction<T>> buildAssetActions(@Nonnull final Resource oldRessource,
-                                                            @Nonnull final Object newRessource,
+    public abstract List<UpdateAction<T>> buildAssetActions(@Nonnull final Resource oldResource,
+                                                            @Nonnull final Object newResource,
                                                             @Nonnull Asset oldAsset,
                                                             @Nonnull AssetDraft newAssetDraft);
 

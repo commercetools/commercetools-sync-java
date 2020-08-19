@@ -161,7 +161,7 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
      * incrementing the total number of failed states to sync.
      *
      * @param SyncException The exception describing the reason(s) of failure.
-     * @param entry         The ressource, which should be updated
+     * @param entry         The Resource, which should be updated
      * @param draft         The draft, which should be sync
      * @param updateActions Generated update actions
      * @param failedTimes  The number of times that the failed states counter is incremented.

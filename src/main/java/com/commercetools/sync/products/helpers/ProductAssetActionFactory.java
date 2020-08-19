@@ -28,11 +28,11 @@ public  final class  ProductAssetActionFactory<R extends Product, D extends Prod
     }
 
     @Override
-    public  List<UpdateAction<Product>> buildAssetActions(@Nonnull final Resource oldRessource,
-                                                          @Nonnull final Object newRessource,
+    public  List<UpdateAction<Product>> buildAssetActions(@Nonnull final Resource oldResource,
+                                                          @Nonnull final Object newResource,
                                                           @Nonnull final Asset oldAsset,
                                                           @Nonnull final AssetDraft newAssetDraft) {
-        return buildActions(oldRessource, newRessource, variantId, oldAsset, newAssetDraft,
+        return buildActions(oldResource, newResource, variantId, oldAsset, newAssetDraft,
             (ProductSyncOptions) syncOptions);
     }
 

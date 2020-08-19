@@ -29,8 +29,8 @@ public final class CategoryAssetUpdateActionUtils {
      * have identical fields, then no update action is needed and hence an empty {@link List} is returned.
      *
      * @param <D>           Type of the mainresource draft
-     * @param oldRessource  mainresource, whose asset should be updated.
-     * @param newRessource  new mainresource draft, which contains the asset to update.
+     * @param oldResource  mainresource, whose asset should be updated.
+     * @param newResource  new mainresource draft, which contains the asset to update.
      * @param oldAsset      the asset which should be updated.
      * @param newAsset      the asset draft where we get the new fields.
      * @param syncOptions   responsible for supplying the sync options to the sync utility method. It is used for
@@ -39,8 +39,8 @@ public final class CategoryAssetUpdateActionUtils {
      */
     @Nonnull
     public static  <D> List<UpdateAction<Category>> buildActions(
-        @Nonnull final Resource oldRessource,
-        @Nonnull final D newRessource,
+        @Nonnull final Resource oldResource,
+        @Nonnull final D newResource,
         @Nonnull final Asset oldAsset,
         @Nonnull final AssetDraft newAsset,
         @Nonnull final CategorySyncOptions syncOptions) {
@@ -52,7 +52,7 @@ public final class CategoryAssetUpdateActionUtils {
             buildSetAssetSourcesUpdateAction(oldAsset, newAsset)
         );
 
-        updateActions.addAll(buildCustomUpdateActions(oldRessource, newRessource, oldAsset, newAsset, syncOptions));
+        updateActions.addAll(buildCustomUpdateActions(oldResource, newResource, oldAsset, newAsset, syncOptions));
         return updateActions;
     }
 

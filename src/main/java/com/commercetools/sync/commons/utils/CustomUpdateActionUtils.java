@@ -114,8 +114,8 @@ public final class CustomUpdateActionUtils {
      * @param <S> the type of the new resource {@link CustomDraft}.
      * @param <U> the type of the resource in which the update actions will be applied on.
      *
-     * @param oldMainRessource the main resource of the resource which should be updated.
-     * @param newMainRessourceDraft the main resource of the resource draft where we get the new custom fields.
+     * @param oldMainResource the main resource of the resource which should be updated.
+     * @param newMainResourceDraft the main resource of the resource draft where we get the new custom fields.
      * @param oldResource the resource which should be updated.
      * @param newResourceDraft the resource draft where we get the new custom fields.
      * @param customActionBuilder the builder instance responsible for building the custom update actions.
@@ -132,8 +132,8 @@ public final class CustomUpdateActionUtils {
     @Nonnull
     public static <D, T extends Custom, S extends CustomDraft, U extends Resource<U>> List<UpdateAction<U>>
         buildCustomUpdateActions(
-        @Nullable final Resource oldMainRessource,
-        @Nullable final D newMainRessourceDraft,
+        @Nullable final Resource oldMainResource,
+        @Nullable final D newMainResourceDraft,
         @Nonnull final T oldResource,
         @Nonnull final S newResourceDraft,
         @Nonnull final GenericCustomActionBuilder<U> customActionBuilder,
@@ -155,8 +155,8 @@ public final class CustomUpdateActionUtils {
                     resourceTypeIdGetter.apply(oldResource),
                     resourceIdGetter.apply(oldResource), exception.getMessage());
                 syncOptions.applyErrorCallback(new SyncException(errorMessage, exception),
-                    oldMainRessource != null ? oldMainRessource : oldResource,
-                    newMainRessourceDraft != null ? newMainRessourceDraft : newResourceDraft,
+                    oldMainResource != null ? oldMainResource : oldResource,
+                    newMainResourceDraft != null ? newMainResourceDraft : newResourceDraft,
                     null);
             }
         } else {
@@ -170,8 +170,8 @@ public final class CustomUpdateActionUtils {
                             resourceTypeIdGetter.apply(oldResource), resourceIdGetter.apply(oldResource),
                             CUSTOM_TYPE_ID_IS_BLANK);
                         syncOptions.applyErrorCallback(new SyncException(errorMessage, null),
-                            oldMainRessource != null ? oldMainRessource : oldResource,
-                            newMainRessourceDraft != null ? newMainRessourceDraft : newResourceDraft,
+                            oldMainResource != null ? oldMainResource : oldResource,
+                            newMainResourceDraft != null ? newMainResourceDraft : newResourceDraft,
                             null);
                     } else {
                         final Map<String, JsonNode> newCustomFieldsJsonMap = newResourceCustomFields.getFields();

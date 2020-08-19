@@ -23,11 +23,11 @@ public final class CategoryAssetActionFactory extends AssetActionFactory<Categor
 
     @Override
 
-    public List<UpdateAction<Category>> buildAssetActions(@Nonnull final Resource oldRessource,
-                                                          @Nonnull final Object newRessource,
+    public List<UpdateAction<Category>> buildAssetActions(@Nonnull final Resource oldResource,
+                                                          @Nonnull final Object newResource,
                                                           @Nonnull final Asset oldAsset,
                                                           @Nonnull final AssetDraft newAssetDraft) {
-        return buildActions(oldRessource, newRessource, oldAsset, newAssetDraft, (CategorySyncOptions) syncOptions);
+        return buildActions(oldResource, newResource, oldAsset, newAssetDraft, (CategorySyncOptions) syncOptions);
     }
 
     @Override

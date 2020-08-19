@@ -28,8 +28,8 @@ public final class ProductVariantAssetUpdateActionUtils {
      * {@link UpdateAction}&lt;{@link Product}&gt; as a result. If both the {@link Asset} and the {@link AssetDraft}
      * have identical fields, then no update action is needed and hence an empty {@link List} is returned.
      * @param <D>            Type of the mainresource draft
-     * @param oldRessource   mainresource, whose asset should be updated.
-     * @param newRessource   new mainresource draft, which contains the asset to update.
+     * @param oldResource   mainresource, whose asset should be updated.
+     * @param newResource   new mainresource draft, which contains the asset to update.
      * @param variantId      the variantId needed for building the update action.
      * @param oldAsset       the asset which should be updated.
      * @param newAsset       the asset draft where we get the new fields.
@@ -39,8 +39,8 @@ public final class ProductVariantAssetUpdateActionUtils {
      */
     @Nonnull
     public static <D> List<UpdateAction<Product>> buildActions(
-        @Nonnull final Resource oldRessource,
-        @Nonnull final D newRessource,
+        @Nonnull final Resource oldResource,
+        @Nonnull final D newResource,
         @Nonnull final Integer variantId,
         @Nonnull final Asset oldAsset,
         @Nonnull final AssetDraft newAsset,
@@ -54,7 +54,7 @@ public final class ProductVariantAssetUpdateActionUtils {
                 buildSetAssetSourcesUpdateAction(variantId, oldAsset, newAsset)
             );
 
-        updateActions.addAll(buildCustomUpdateActions(oldRessource, newRessource, variantId, oldAsset, newAsset,
+        updateActions.addAll(buildCustomUpdateActions(oldResource, newResource, variantId, oldAsset, newAsset,
             syncOptions));
         return updateActions;
     }
@@ -150,8 +150,8 @@ public final class ProductVariantAssetUpdateActionUtils {
      * returned.
 
      * @param <D>           Type of the mainresource draft
-     * @param oldRessource  mainresource, whose asset should be updated.
-     * @param newRessource  new mainresource draft, which contains the asset to update.
+     * @param oldResource  mainresource, whose asset should be updated.
+     * @param newResource  new mainresource draft, which contains the asset to update.
      * @param variantId     the variantId needed for building the update action.
      * @param oldAsset      the asset which should be updated.
      * @param newAsset      the asset draft where we get the new custom fields and types.
@@ -162,16 +162,16 @@ public final class ProductVariantAssetUpdateActionUtils {
      */
     @Nonnull
     public static <D> List<UpdateAction<Product>> buildCustomUpdateActions(
-        @Nonnull final Resource oldRessource,
-        @Nonnull final D newRessource,
+        @Nonnull final Resource oldResource,
+        @Nonnull final D newResource,
         @Nonnull final Integer variantId,
         @Nonnull final Asset oldAsset,
         @Nonnull final AssetDraft newAsset,
         @Nonnull final ProductSyncOptions syncOptions) {
 
         return CustomUpdateActionUtils.buildCustomUpdateActions(
-            oldRessource,
-            newRessource,
+            oldResource,
+            newResource,
             oldAsset,
             newAsset,
             new AssetCustomActionBuilder(),
