@@ -28,7 +28,7 @@ public abstract class AssetActionFactory<T, D> {
      * @return update actions needed to sync the two assets.
      */
     public abstract List<UpdateAction<T>> buildAssetActions(@Nonnull final Resource oldResource,
-                                                            @Nonnull final Object newResource,
+                                                            @Nonnull final D newResource,
                                                             @Nonnull Asset oldAsset,
                                                             @Nonnull AssetDraft newAssetDraft);
 

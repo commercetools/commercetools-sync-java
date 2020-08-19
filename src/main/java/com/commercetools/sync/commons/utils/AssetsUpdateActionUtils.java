@@ -62,12 +62,12 @@ public final class AssetsUpdateActionUtils {
      * @throws BuildUpdateActionException in case there are asset drafts with duplicate keys.
      */
     @Nonnull
-    public static <D, T> List<UpdateAction<T>> buildAssetsUpdateActions(
+    public static <T, D> List<UpdateAction<T>> buildAssetsUpdateActions(
         @Nonnull final Resource oldResource,
         @Nonnull final D newResource,
         @Nonnull final List<Asset> oldAssets,
         @Nullable final List<AssetDraft> newAssetDrafts,
-        @Nonnull final AssetActionFactory<T> assetActionFactory,
+        @Nonnull final AssetActionFactory<T, D> assetActionFactory,
         @Nonnull final BaseSyncOptions syncOptions)
         throws BuildUpdateActionException {
 
@@ -100,12 +100,12 @@ public final class AssetsUpdateActionUtils {
      * @throws BuildUpdateActionException in case there are asset drafts with duplicate keys.
      */
     @Nonnull
-    private static <D, T> List<UpdateAction<T>> buildAssetsUpdateActionsWithNewAssetDrafts(
+    private static <T, D> List<UpdateAction<T>> buildAssetsUpdateActionsWithNewAssetDrafts(
         @Nonnull final Resource oldResource,
         @Nonnull final D newResource,
         @Nonnull final List<Asset> oldAssets,
         @Nonnull final List<AssetDraft> newAssetDrafts,
-        @Nonnull final AssetActionFactory<T> assetActionFactory,
+        @Nonnull final AssetActionFactory<T, D>  assetActionFactory,
         @Nonnull final BaseSyncOptions syncOptions)
         throws BuildUpdateActionException {
 
@@ -181,13 +181,13 @@ public final class AssetsUpdateActionUtils {
      *         Otherwise, if the assets order is identical, an empty optional is returned.
      */
     @Nonnull
-    private static <D,T> List<UpdateAction<T>> buildRemoveAssetOrAssetUpdateActions(
+    private static <T, D> List<UpdateAction<T>> buildRemoveAssetOrAssetUpdateActions(
         @Nonnull final Resource oldResource,
         @Nonnull final D newResource,
         @Nonnull final List<Asset> oldAssets,
         @Nonnull final Set<String> removedAssetKeys,
         @Nonnull final Map<String, AssetDraft> newAssetDraftsKeyMap,
-        @Nonnull final AssetActionFactory<T> assetActionFactory) {
+        @Nonnull final AssetActionFactory<T, D> assetActionFactory) {
         // For every old asset, If it doesn't exist anymore in the new asset drafts,
         // then add a RemoveAsset action to the list of update actions. If the asset still exists in the new draft,
         // then compare the asset fields (name, desc, etc..), and add the computed actions to the list of update
@@ -225,11 +225,11 @@ public final class AssetsUpdateActionUtils {
      *         identical. Otherwise, if the assets order is identical, an empty optional is returned.
      */
     @Nonnull
-    private static <T> Optional<UpdateAction<T>> buildChangeAssetOrderUpdateAction(
+    private static <T, D> Optional<UpdateAction<T>> buildChangeAssetOrderUpdateAction(
         @Nonnull final List<Asset> oldAssets,
         @Nonnull final List<AssetDraft> newAssetDrafts,
         @Nonnull final Set<String> removedAssetKeys,
-        @Nonnull final AssetActionFactory<T> assetActionFactory) {
+        @Nonnull final AssetActionFactory<T, D> assetActionFactory) {
 
         final Map<String, String> oldAssetKeyToIdMap = oldAssets.stream()
                                                                 .filter(asset -> isNotBlank(asset.getKey()))
@@ -264,10 +264,10 @@ public final class AssetsUpdateActionUtils {
      *         Otherwise, if the assets order is identical, an empty optional is returned.
      */
     @Nonnull
-    private static <T> List<UpdateAction<T>> buildAddAssetUpdateActions(
+    private static <T, D> List<UpdateAction<T>> buildAddAssetUpdateActions(
         @Nonnull final List<AssetDraft> newAssetDrafts,
         @Nonnull final Map<String, Asset> oldAssetsKeyMap,
-        @Nonnull final AssetActionFactory<T> assetActionFactory) {
+        @Nonnull final AssetActionFactory<T, D> assetActionFactory) {
 
 
         final ArrayList<Optional<UpdateAction<T>>> optionalActions =
