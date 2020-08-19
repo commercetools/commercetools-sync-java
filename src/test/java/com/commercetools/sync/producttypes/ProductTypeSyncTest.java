@@ -32,6 +32,7 @@ import java.util.concurrent.CompletionException;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static io.sphere.sdk.producttypes.ProductType.referenceOfId;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
@@ -385,10 +386,11 @@ class ProductTypeSyncTest {
     @Test
     void sync_WithInvalidAttributeDefinitions_ShouldThrowError() {
         // preparation
-        NestedAttributeType nestedAttributeType = spy(NestedAttributeType.of(ProductType.referenceOfId("x")));
+        String nestedAttributeTypeID = "attributeId";
+        NestedAttributeType nestedAttributeType = spy(NestedAttributeType.of(referenceOfId(nestedAttributeTypeID)));
         Reference reference = spy(Reference.class);
         when(reference.getId())
-            .thenReturn("x1")
+            .thenReturn(nestedAttributeTypeID)
             .thenReturn(null);
 
         when(nestedAttributeType.getTypeReference()).thenReturn(reference);
@@ -461,7 +463,7 @@ class ProductTypeSyncTest {
             emptyList()
         );
         NestedAttributeType nestedTypeAttrDefDraft1 = NestedAttributeType
-            .of(ProductType.referenceOfId(draftKey));
+            .of(referenceOfId(draftKey));
         final AttributeDefinitionDraft nestedTypeAttrDefDraft = AttributeDefinitionDraftBuilder
             .of(nestedTypeAttrDefDraft1, "validNested", ofEnglish("koko"), true)
             .build();
@@ -525,7 +527,7 @@ class ProductTypeSyncTest {
     void sync_WithErrorCachingKeys_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         // preparation
         final AttributeDefinitionDraft nestedTypeAttrDefDraft = AttributeDefinitionDraftBuilder
-            .of(NestedAttributeType.of(ProductType.referenceOfId("x")), "validNested", ofEnglish("koko"), true)
+            .of(NestedAttributeType.of(referenceOfId("x")), "validNested", ofEnglish("koko"), true)
             .build();
 
 
