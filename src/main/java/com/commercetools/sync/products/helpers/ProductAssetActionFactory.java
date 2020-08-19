@@ -27,7 +27,7 @@ public  final class  ProductAssetActionFactory extends AssetActionFactory<Produc
     }
 
     @Override
-    public List<UpdateAction<Product>> buildAssetActions(@Nonnull final Resource oldResource,
+    public List<UpdateAction<Product>> buildAssetActions(@Nonnull final Product oldResource,
                                                           @Nonnull final ProductDraft newResource,
                                                           @Nonnull final Asset oldAsset,
                                                           @Nonnull final AssetDraft newAssetDraft) {

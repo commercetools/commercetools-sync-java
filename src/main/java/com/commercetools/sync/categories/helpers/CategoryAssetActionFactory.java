@@ -10,12 +10,9 @@ import io.sphere.sdk.categories.commands.updateactions.RemoveAsset;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
-import io.sphere.sdk.models.Resource;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-
-import static com.commercetools.sync.categories.utils.CategoryAssetUpdateActionUtils.buildActions;
 
 public final class CategoryAssetActionFactory extends AssetActionFactory<Category, CategoryDraft> {
 
@@ -23,12 +20,13 @@ public final class CategoryAssetActionFactory extends AssetActionFactory<Categor
         this.syncOptions = syncOptions;
     }
 
+
+
     @Override
-   public List<UpdateAction<Category>> buildAssetActions(@Nonnull final Resource oldResource,
-                                                          @Nonnull final CategoryDraft newResource,
-                                                          @Nonnull final Asset oldAsset,
-                                                          @Nonnull final AssetDraft newAssetDraft) {
-        return buildActions(oldResource, newResource, oldAsset, newAssetDraft, (CategorySyncOptions) syncOptions);
+    public List<UpdateAction<Category>> buildAssetActions(@Nonnull Category oldResource,
+                                                          @Nonnull CategoryDraft newResource,
+                                                          @Nonnull Asset oldAsset, @Nonnull AssetDraft newAssetDraft) {
+        return null;
     }
 
     @Override

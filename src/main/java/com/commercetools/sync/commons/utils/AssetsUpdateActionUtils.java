@@ -62,8 +62,8 @@ public final class AssetsUpdateActionUtils {
      * @throws BuildUpdateActionException in case there are asset drafts with duplicate keys.
      */
     @Nonnull
-    public static <T, D> List<UpdateAction<T>> buildAssetsUpdateActions(
-        @Nonnull final Resource oldResource,
+    public static <T extends Resource, D> List<UpdateAction<T>> buildAssetsUpdateActions(
+        @Nonnull final T oldResource,
         @Nonnull final D newResource,
         @Nonnull final List<Asset> oldAssets,
         @Nullable final List<AssetDraft> newAssetDrafts,
@@ -100,8 +100,8 @@ public final class AssetsUpdateActionUtils {
      * @throws BuildUpdateActionException in case there are asset drafts with duplicate keys.
      */
     @Nonnull
-    private static <T, D> List<UpdateAction<T>> buildAssetsUpdateActionsWithNewAssetDrafts(
-        @Nonnull final Resource oldResource,
+    private static <T extends Resource, D> List<UpdateAction<T>> buildAssetsUpdateActionsWithNewAssetDrafts(
+        @Nonnull final T oldResource,
         @Nonnull final D newResource,
         @Nonnull final List<Asset> oldAssets,
         @Nonnull final List<AssetDraft> newAssetDrafts,
@@ -181,8 +181,8 @@ public final class AssetsUpdateActionUtils {
      *         Otherwise, if the assets order is identical, an empty optional is returned.
      */
     @Nonnull
-    private static <T, D> List<UpdateAction<T>> buildRemoveAssetOrAssetUpdateActions(
-        @Nonnull final Resource oldResource,
+    private static <T  extends Resource, D> List<UpdateAction<T>> buildRemoveAssetOrAssetUpdateActions(
+        @Nonnull final T oldResource,
         @Nonnull final D newResource,
         @Nonnull final List<Asset> oldAssets,
         @Nonnull final Set<String> removedAssetKeys,
@@ -225,7 +225,7 @@ public final class AssetsUpdateActionUtils {
      *         identical. Otherwise, if the assets order is identical, an empty optional is returned.
      */
     @Nonnull
-    private static <T, D> Optional<UpdateAction<T>> buildChangeAssetOrderUpdateAction(
+    private static <T  extends Resource, D> Optional<UpdateAction<T>> buildChangeAssetOrderUpdateAction(
         @Nonnull final List<Asset> oldAssets,
         @Nonnull final List<AssetDraft> newAssetDrafts,
         @Nonnull final Set<String> removedAssetKeys,
@@ -264,7 +264,7 @@ public final class AssetsUpdateActionUtils {
      *         Otherwise, if the assets order is identical, an empty optional is returned.
      */
     @Nonnull
-    private static <T, D> List<UpdateAction<T>> buildAddAssetUpdateActions(
+    private static <T  extends Resource, D> List<UpdateAction<T>> buildAddAssetUpdateActions(
         @Nonnull final List<AssetDraft> newAssetDrafts,
         @Nonnull final Map<String, Asset> oldAssetsKeyMap,
         @Nonnull final AssetActionFactory<T, D> assetActionFactory) {

@@ -15,7 +15,7 @@ import java.util.List;
  *
  * @param <T> the type of the resource the asset update actions are built for.
  */
-public abstract class AssetActionFactory<T, D> {
+public abstract class AssetActionFactory<T extends Resource, D> {
     public BaseSyncOptions syncOptions = null;
 
     /**
@@ -27,7 +27,7 @@ public abstract class AssetActionFactory<T, D> {
      * @param newAssetDraft the matching new asset draft.
      * @return update actions needed to sync the two assets.
      */
-    public abstract List<UpdateAction<T>> buildAssetActions(@Nonnull final Resource oldResource,
+    public abstract List<UpdateAction<T>> buildAssetActions(@Nonnull final T oldResource,
                                                             @Nonnull final D newResource,
                                                             @Nonnull Asset oldAsset,
                                                             @Nonnull AssetDraft newAssetDraft);
