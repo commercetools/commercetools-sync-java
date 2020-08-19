@@ -28,7 +28,7 @@ public final class CategoryAssetActionFactory<T,D extends CategoryDraft>
                                                               @Nonnull final D newRessource,
                                                               @Nonnull final Asset oldAsset,
                                                               @Nonnull final AssetDraft newAssetDraft) {
-        return buildActions( oldRessource, newRessource, oldAsset, newAssetDraft, (CategorySyncOptions) syncOptions);
+        return buildActions(oldRessource, newRessource, oldAsset, newAssetDraft, (CategorySyncOptions) syncOptions);
     }
 
 
