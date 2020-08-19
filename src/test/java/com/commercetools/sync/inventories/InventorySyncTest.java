@@ -176,7 +176,7 @@ class InventorySyncTest {
     }
 
     @Test
-    void sync_WithErrorOnCreatingInventory_ShouldCallErrorCallback() {
+    void sync_WithNoNewCreatedInventory_ShouldIncrementFailedStatic() {
         final InventoryEntryDraft draftWithNewChannel = InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1,
             Channel.referenceOfId(KEY_3));
         final InventorySyncOptions options = getInventorySyncOptions(30, true);
@@ -189,9 +189,9 @@ class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(draftWithNewChannel))
             .toCompletableFuture()
             .join();
-
+        assertThat(errorCallBackMessages).hasSize(0);
+        assertThat(errorCallBackExceptions).hasSize(0);
         assertThat(stats).hasValues(1, 0, 0, 1);
-
     }
 
     @Test
