@@ -30,8 +30,6 @@ public final class CategoryAssetActionFactory extends AssetActionFactory<Categor
         return buildActions( oldRessource, newRessource, oldAsset, newAssetDraft, (CategorySyncOptions) syncOptions);
     }
 
-
-
     @Override
     public UpdateAction<Category> buildRemoveAssetAction(@Nonnull final String assetKey) {
         return RemoveAsset.ofKey(assetKey);
