@@ -311,8 +311,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
      * incrementing the total number of failed categories to sync.
      *
-     * @param errorMessage The error message describing the reason(s) of failure.
-     * @param exception    The exception that called caused the failure, if any.
+     * @param syncException The exception that  caused the failure.
+     * @param failedTimes The number of times that the failed statistic counter is incremented
      * @param entry existing inventory entry that could be updated.
      * @param draft draft containing data that could differ from data in {@code entry}.
      * @param updateActions the update actions to update the {@link InventoryEntry} with.

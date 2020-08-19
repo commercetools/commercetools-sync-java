@@ -125,8 +125,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
      * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
      * incrementing the total number of failed states to sync.
      *
-     * @param errorMessage The error message describing the reason(s) of failure.
-     * @param exception    The exception that called caused the failure, if any.
+     * @param syncException The exception that  caused the failure.
      * @param failedTimes  The number of times that the failed states counter is incremented.
      */
     private void handleError(@Nonnull final SyncException syncException,@Nullable final State entry,

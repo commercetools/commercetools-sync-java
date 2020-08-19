@@ -141,8 +141,8 @@ public class ProductTypeBatchProcessor {
         return key;
     }
 
-    private void handleError(@Nonnull final SyncException throwable) {
-        productTypeSync.getSyncOptions().applyErrorCallback(throwable);
+    private void handleError(@Nonnull final SyncException syncException) {
+        productTypeSync.getSyncOptions().applyErrorCallback(syncException);
         productTypeSync.getStatistics().incrementFailed();
     }
 

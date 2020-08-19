@@ -187,8 +187,8 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * incrementing the total number of failed product types to sync.
      *
      *
-     * @param syncException    The exception that called caused the failure, if any.
-     * @param failedTimes  The number of times that the failed product types counter is incremented.
+     * @param syncException The exception that called caused the failure.
+     * @param failedTimes   The number of times that the failed product types counter is incremented.
      */
     private void handleError(@Nonnull final SyncException syncException, final int failedTimes) {
         syncOptions.applyErrorCallback(syncException);
