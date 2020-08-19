@@ -3,7 +3,6 @@ package com.commercetools.sync.categories.helpers;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.commons.helpers.AssetActionFactory;
 import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.commands.updateactions.AddAsset;
 import io.sphere.sdk.categories.commands.updateactions.ChangeAssetOrder;
 import io.sphere.sdk.categories.commands.updateactions.RemoveAsset;
@@ -23,10 +22,10 @@ public final class CategoryAssetActionFactory extends AssetActionFactory<Categor
     }
 
     @Override
-    public <D> List<UpdateAction<Category>> buildAssetActions(@Nonnull final Resource oldRessource,
-                                                              @Nonnull final D newRessource,
-                                                              @Nonnull final Asset oldAsset,
-                                                              @Nonnull final AssetDraft newAssetDraft) {
+    public List<UpdateAction<Category>> buildAssetActions(@Nonnull final Resource oldRessource,
+                                                          @Nonnull final Object newRessource,
+                                                          @Nonnull final Asset oldAsset,
+                                                          @Nonnull final AssetDraft newAssetDraft) {
         return buildActions( oldRessource, newRessource, oldAsset, newAssetDraft, (CategorySyncOptions) syncOptions);
     }
 
