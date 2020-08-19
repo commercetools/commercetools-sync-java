@@ -17,8 +17,7 @@ import java.util.List;
 
 import static com.commercetools.sync.categories.utils.CategoryAssetUpdateActionUtils.buildActions;
 
-public final class CategoryAssetActionFactory<T,D extends CategoryDraft>
-    extends AssetActionFactory<Category> {
+public final class CategoryAssetActionFactory extends AssetActionFactory<Category> {
     public CategoryAssetActionFactory(@Nonnull final CategorySyncOptions syncOptions) {
         this.syncOptions = syncOptions;
     }
