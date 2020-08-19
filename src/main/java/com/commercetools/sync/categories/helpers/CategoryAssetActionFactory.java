@@ -3,6 +3,7 @@ package com.commercetools.sync.categories.helpers;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.commons.helpers.AssetActionFactory;
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.commands.updateactions.AddAsset;
 import io.sphere.sdk.categories.commands.updateactions.ChangeAssetOrder;
 import io.sphere.sdk.categories.commands.updateactions.RemoveAsset;
@@ -16,7 +17,8 @@ import java.util.List;
 
 import static com.commercetools.sync.categories.utils.CategoryAssetUpdateActionUtils.buildActions;
 
-public final class CategoryAssetActionFactory extends AssetActionFactory<Category> {
+public final class CategoryAssetActionFactory extends AssetActionFactory<Category, CategoryDraft> {
+
     public CategoryAssetActionFactory(@Nonnull final CategorySyncOptions syncOptions) {
         this.syncOptions = syncOptions;
     }

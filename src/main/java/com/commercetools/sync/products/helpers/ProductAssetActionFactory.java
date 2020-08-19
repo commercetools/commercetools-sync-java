@@ -17,8 +17,7 @@ import java.util.List;
 
 import static com.commercetools.sync.products.utils.ProductVariantAssetUpdateActionUtils.buildActions;
 
-public  final class  ProductAssetActionFactory<R extends Product, D extends ProductDraft>
-    extends AssetActionFactory<Product> {
+public  final class  ProductAssetActionFactory extends AssetActionFactory<Product, ProductDraft> {
     private Integer variantId;
 
     public ProductAssetActionFactory(@Nonnull final Integer variantId,
