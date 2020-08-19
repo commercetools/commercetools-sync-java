@@ -72,7 +72,7 @@ public final class AssetsUpdateActionUtils {
         throws BuildUpdateActionException {
 
         if (newAssetDrafts != null) {
-            return buildAssetsUpdateActionsWithNewAssetDrafts(oldRessource, newRessource, oldAssets, newAssetDrafts,
+            return buildAssetsUpdateActionsWithNewAssetDrafts(oldResource, newResource, oldAssets, newAssetDrafts,
                 assetActionFactory,
                 syncOptions);
         } else {
