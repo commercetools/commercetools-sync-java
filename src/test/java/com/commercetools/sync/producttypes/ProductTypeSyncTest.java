@@ -386,11 +386,11 @@ class ProductTypeSyncTest {
     @Test
     void sync_WithInvalidAttributeDefinitions_ShouldThrowError() {
         // preparation
-        String nestedAttributeTypeID = "attributeId";
-        NestedAttributeType nestedAttributeType = spy(NestedAttributeType.of(referenceOfId(nestedAttributeTypeID)));
+        String nestedAttributeTypeId = "attributeId";
+        NestedAttributeType nestedAttributeType = spy(NestedAttributeType.of(referenceOfId(nestedAttributeTypeId)));
         Reference reference = spy(Reference.class);
         when(reference.getId())
-            .thenReturn(nestedAttributeTypeID)
+            .thenReturn(nestedAttributeTypeId)
             .thenReturn(null);
 
         when(nestedAttributeType.getTypeReference()).thenReturn(reference);
