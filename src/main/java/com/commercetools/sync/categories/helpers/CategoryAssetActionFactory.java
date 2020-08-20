@@ -14,6 +14,8 @@ import io.sphere.sdk.models.AssetDraft;
 import javax.annotation.Nonnull;
 import java.util.List;
 
+import static com.commercetools.sync.categories.utils.CategoryAssetUpdateActionUtils.buildActions;
+
 public final class CategoryAssetActionFactory extends AssetActionFactory<Category, CategoryDraft> {
 
     public CategoryAssetActionFactory(@Nonnull final CategorySyncOptions syncOptions) {
@@ -23,10 +25,11 @@ public final class CategoryAssetActionFactory extends AssetActionFactory<Categor
 
 
     @Override
-    public List<UpdateAction<Category>> buildAssetActions(@Nonnull Category oldResource,
-                                                          @Nonnull CategoryDraft newResource,
-                                                          @Nonnull Asset oldAsset, @Nonnull AssetDraft newAssetDraft) {
-        return null;
+    public List<UpdateAction<Category>> buildAssetActions(@Nonnull final Category oldResource,
+                                                          @Nonnull final CategoryDraft newResource,
+                                                          @Nonnull final Asset oldAsset,
+                                                          @Nonnull final AssetDraft newAssetDraft) {
+        return buildActions(oldResource, newResource, oldAsset, newAssetDraft, (CategorySyncOptions) syncOptions);
     }
 
     @Override
