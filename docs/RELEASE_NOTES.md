@@ -29,7 +29,7 @@
 -->
 
 <!--
-### 1.9.0 -  Oct 31, 2019
+### 2.x.x - MM xx, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/2.0.0...2.0.1) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.0.1/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.0.1)
