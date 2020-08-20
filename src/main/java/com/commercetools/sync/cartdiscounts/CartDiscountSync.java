@@ -3,6 +3,7 @@ package com.commercetools.sync.cartdiscounts;
 import com.commercetools.sync.cartdiscounts.helpers.CartDiscountReferenceResolver;
 import com.commercetools.sync.cartdiscounts.helpers.CartDiscountSyncStatistics;
 import com.commercetools.sync.commons.BaseSync;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.services.CartDiscountService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.CartDiscountServiceImpl;
@@ -171,7 +172,7 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
     private void handleError(@Nonnull final String errorMessage,
                              @Nullable final Throwable exception,
                              final int failedTimes) {
-        syncOptions.applyErrorCallback(errorMessage, exception);
+        syncOptions.applyErrorCallback(new SyncException(errorMessage, exception));
         statistics.incrementFailed(failedTimes);
     }
 
@@ -231,7 +232,7 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
                 buildActions(oldCartDiscount, newCartDiscount, syncOptions);
 
         final List<UpdateAction<CartDiscount>> updateActionsAfterCallback =
-                syncOptions.applyBeforeUpdateCallBack(updateActions, newCartDiscount, oldCartDiscount);
+                syncOptions.applyBeforeUpdateCallback(updateActions, newCartDiscount, oldCartDiscount);
 
         if (!updateActionsAfterCallback.isEmpty()) {
             return updateCartDiscount(oldCartDiscount, newCartDiscount, updateActionsAfterCallback);
@@ -251,7 +252,7 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
     private CompletionStage<Void> applyCallbackAndCreate(@Nonnull final CartDiscountDraft cartDiscountDraft) {
 
         return syncOptions
-            .applyBeforeCreateCallBack(cartDiscountDraft)
+            .applyBeforeCreateCallback(cartDiscountDraft)
             .map(draft -> cartDiscountService
                 .createCartDiscount(draft)
                 .thenAccept(cartDiscountOptional -> {

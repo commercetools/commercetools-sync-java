@@ -1,5 +1,6 @@
 package com.commercetools.sync.services.impl;
 
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -48,9 +49,9 @@ class UnresolvedReferencesServiceImplTest {
         errorExceptions = new ArrayList<>();
         productSyncOptions = ProductSyncOptionsBuilder
             .of(mock(SphereClient.class))
-            .errorCallback((errorMessage, errorException) -> {
-                errorMessages.add(errorMessage);
-                errorExceptions.add(errorException);
+            .errorCallback((exception, oldResource, newResource, actions) -> {
+                errorMessages.add(exception.getMessage());
+                errorExceptions.add(exception);
             })
             .build();
         service = new UnresolvedReferencesServiceImpl(productSyncOptions);
@@ -213,8 +214,10 @@ class UnresolvedReferencesServiceImplTest {
 
         assertThat(errorExceptions)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(exception ->
-                        assertThat(exception).isExactlyInstanceOf(BadRequestException.class));
+                .hasOnlyOneElementSatisfying(exception -> {
+                    assertThat(exception).isExactlyInstanceOf(SyncException.class);
+                    assertThat(exception).hasCauseExactlyInstanceOf(BadRequestException.class);
+                });
     }
 
     @Test
@@ -241,8 +244,10 @@ class UnresolvedReferencesServiceImplTest {
                             sha1Hex(key), key)));
         assertThat(errorExceptions)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(exception ->
-                        assertThat(exception).isExactlyInstanceOf(BadRequestException.class));
+                .hasOnlyOneElementSatisfying(exception -> {
+                    assertThat(exception).isExactlyInstanceOf(SyncException.class);
+                    assertThat(exception).hasCauseExactlyInstanceOf(BadRequestException.class);
+                });
     }
 
     @SuppressWarnings("unchecked")

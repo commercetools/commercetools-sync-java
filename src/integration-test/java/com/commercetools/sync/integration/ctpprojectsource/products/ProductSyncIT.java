@@ -171,8 +171,11 @@ class ProductSyncIT {
 
     private ProductSyncOptions buildSyncOptions() {
         return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                        .errorCallback(this::errorCallback)
-                                        .warningCallback(warningCallBackMessages::add)
+                                        .errorCallback(
+                                            (exception, oldResource, newResource, updateActions) -> errorCallback(
+                                                exception.getMessage(), exception.getCause()))
+                                        .warningCallback((exception, oldResource, newResources) ->
+                                            warningCallBackMessages.add(exception.getMessage()))
                                         .beforeUpdateCallback(this::beforeUpdateCallback)
                                         .build();
     }
@@ -332,8 +335,10 @@ class ProductSyncIT {
         // Create custom options with whitelisting and action filter callback..
         final ProductSyncOptions customSyncOptions =
             ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                     .errorCallback(this::errorCallback)
-                                     .warningCallback(warningCallBackMessages::add)
+                                     .errorCallback((exception, oldResource, newResource, updateActions) ->
+                                            errorCallback(exception.getMessage(), exception.getCause()))
+                                     .warningCallback((exception, oldResource, newResources) ->
+                                        warningCallBackMessages.add(exception.getMessage()))
                                      .beforeUpdateCallback(this::beforeUpdateCallback)
                                      .syncFilter(SyncFilter.ofWhiteList(ATTRIBUTES))
                                      .build();
@@ -456,8 +461,10 @@ class ProductSyncIT {
         // Create custom options with whitelisting and action filter callback..
         final ProductSyncOptions customSyncOptions =
             ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                     .errorCallback(this::errorCallback)
-                                     .warningCallback(warningCallBackMessages::add)
+                                     .errorCallback((exception, oldResource, newResource, updateActions) ->
+                                            errorCallback(exception.getMessage(), exception.getCause()))
+                                     .warningCallback((exception, oldResource, newResources) ->
+                                        warningCallBackMessages.add(exception.getMessage()))
                                      .beforeUpdateCallback(this::beforeUpdateCallback)
                                      .syncFilter(SyncFilter.ofWhiteList(ATTRIBUTES))
                                      .build();
@@ -524,8 +531,12 @@ class ProductSyncIT {
         // Create custom options with whitelisting and action filter callback..
         final ProductSyncOptions customSyncOptions =
             ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                     .errorCallback(this::errorCallback)
-                                     .warningCallback(warningCallBackMessages::add)
+                                     .errorCallback((exception, newResource, oldResource, updateActions) -> {
+                                         errorCallBackMessages.add(exception.getMessage());
+                                         errorCallBackExceptions.add(exception.getCause());
+                                     })
+                                     .warningCallback(((exception, newResource, oldResource) ->
+                                             warningCallBackMessages.add(exception.getMessage())))
                                      .beforeUpdateCallback(this::beforeUpdateCallback)
                                      .syncFilter(SyncFilter.ofWhiteList(ATTRIBUTES))
                                      .build();

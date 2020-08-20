@@ -1,5 +1,6 @@
 package com.commercetools.sync.products.utils;
 
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.CustomUpdateActionUtils;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.helpers.PriceCustomActionBuilder;
@@ -7,6 +8,7 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.Product;
+import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.updateactions.ChangePrice;
 
 import javax.annotation.Nonnull;
@@ -27,6 +29,8 @@ public final class ProductVariantPriceUpdateActionUtils {
      * {@link UpdateAction}&lt;{@link Product}&gt; as a result. If both the {@link Price} and the {@link PriceDraft}
      * have identical fields, then no update action is needed and hence an empty {@link List} is returned.
      *
+     * @param oldProduct  old Product, whose prices should be updated.
+     * @param newProduct  new product draft, which provides the prices to update.
      * @param variantId   the variantId needed for building the update action.
      * @param oldPrice    the price which should be updated.
      * @param newPrice    the price draft where we get the new fields.
@@ -36,6 +40,8 @@ public final class ProductVariantPriceUpdateActionUtils {
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildActions(
+        @Nonnull final Product oldProduct,
+        @Nonnull final ProductDraft newProduct,
         @Nonnull final Integer variantId,
         @Nonnull final Price oldPrice,
         @Nonnull final PriceDraft newPrice,
@@ -44,7 +50,8 @@ public final class ProductVariantPriceUpdateActionUtils {
         final List<UpdateAction<Product>> updateActions = new ArrayList<>();
 
         buildChangePriceUpdateAction(oldPrice, newPrice, syncOptions).ifPresent(updateActions::add);
-        updateActions.addAll(buildCustomUpdateActions(variantId, oldPrice, newPrice, syncOptions));
+        updateActions.addAll(buildCustomUpdateActions(oldProduct, newProduct, variantId, oldPrice, newPrice,
+            syncOptions));
 
         return updateActions;
     }
@@ -78,7 +85,9 @@ public final class ProductVariantPriceUpdateActionUtils {
         final MonetaryAmount newPriceValue = newPrice.getValue();
 
         if (newPriceValue == null) {
-            syncOptions.applyWarningCallback(format(VARIANT_CHANGE_PRICE_EMPTY_VALUE, oldPrice.getId()));
+            syncOptions.applyWarningCallback(
+                    new SyncException(format(VARIANT_CHANGE_PRICE_EMPTY_VALUE, oldPrice.getId())),
+                    null, null);
             return Optional.empty();
         }
 
@@ -98,6 +107,8 @@ public final class ProductVariantPriceUpdateActionUtils {
      * have identical custom fields and types, then no update action is needed and hence an empty {@link List} is
      * returned.
      *
+     * @param oldProduct  old Product, whose prices should be updated.
+     * @param newProduct  new product draft, which provides the prices to update.
      * @param variantId   the variantId needed for building the update action.
      * @param oldPrice    the price which should be updated.
      * @param newPrice    the price draft where we get the new custom fields and types.
@@ -108,12 +119,16 @@ public final class ProductVariantPriceUpdateActionUtils {
      */
     @Nonnull
     public static List<UpdateAction<Product>> buildCustomUpdateActions(
+        @Nonnull final Product oldProduct,
+        @Nonnull final ProductDraft newProduct,
         @Nonnull final Integer variantId,
         @Nonnull final Price oldPrice,
         @Nonnull final PriceDraft newPrice,
         @Nonnull final ProductSyncOptions syncOptions) {
 
         return CustomUpdateActionUtils.buildCustomUpdateActions(
+            oldProduct,
+            newProduct,
             oldPrice,
             newPrice,
             new PriceCustomActionBuilder(),

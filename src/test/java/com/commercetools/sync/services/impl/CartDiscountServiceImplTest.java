@@ -2,6 +2,7 @@ package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.services.CartDiscountService;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
@@ -108,7 +109,8 @@ class CartDiscountServiceImplTest {
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
                 .of(mock(SphereClient.class))
-                .errorCallback(errors::put)
+                .errorCallback((exception, oldResource, newResource, actions) ->
+                        errors.put(exception.getMessage(), exception))
                 .build();
         final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
 
@@ -133,7 +135,8 @@ class CartDiscountServiceImplTest {
 
         final CartDiscountSyncOptions options = CartDiscountSyncOptionsBuilder
             .of(sphereClient)
-            .errorCallback(errors::put)
+            .errorCallback((exception, oldResource, newResource, actions) ->
+                    errors.put(exception.getMessage(), exception))
             .build();
 
         final CartDiscountServiceImpl cartDiscountService = new CartDiscountServiceImpl(options);
@@ -158,7 +161,8 @@ class CartDiscountServiceImplTest {
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
                 .of(mock(SphereClient.class))
-                .errorCallback(errors::put)
+                .errorCallback((exception, oldResource, newResource, actions) ->
+                        errors.put(exception.getMessage(), exception))
                 .build();
 
         final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
@@ -180,8 +184,10 @@ class CartDiscountServiceImplTest {
 
         assertThat(errors.values())
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(exception ->
-                        assertThat(exception).isExactlyInstanceOf(InternalServerErrorException.class));
+                .hasOnlyOneElementSatisfying(exception -> {
+                    assertThat(exception).isExactlyInstanceOf(SyncException.class);
+                    assertThat(exception.getCause()).isExactlyInstanceOf(InternalServerErrorException.class);
+                });
     }
 
     @Test

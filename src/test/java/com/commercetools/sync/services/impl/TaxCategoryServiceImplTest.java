@@ -57,9 +57,9 @@ class TaxCategoryServiceImplTest {
         errorMessages = new ArrayList<>();
         errorExceptions = new ArrayList<>();
         TaxCategorySyncOptions taxCategorySyncOptions = TaxCategorySyncOptionsBuilder.of(client)
-            .errorCallback((errorMessage, errorException) -> {
-                errorMessages.add(errorMessage);
-                errorExceptions.add(errorException);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
+                errorExceptions.add(exception.getCause());
             })
             .build();
         service = new TaxCategoryServiceImpl(taxCategorySyncOptions);

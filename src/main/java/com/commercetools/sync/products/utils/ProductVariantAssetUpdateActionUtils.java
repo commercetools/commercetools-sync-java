@@ -7,6 +7,7 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.Resource;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.commands.updateactions.ChangeAssetName;
 import io.sphere.sdk.products.commands.updateactions.SetAssetDescription;
@@ -26,16 +27,20 @@ public final class ProductVariantAssetUpdateActionUtils {
      * Compares all the fields of an {@link Asset} and an {@link AssetDraft} and returns a list of
      * {@link UpdateAction}&lt;{@link Product}&gt; as a result. If both the {@link Asset} and the {@link AssetDraft}
      * have identical fields, then no update action is needed and hence an empty {@link List} is returned.
-     *
-     * @param variantId   the variantId needed for building the update action.
-     * @param oldAsset    the asset which should be updated.
-     * @param newAsset    the asset draft where we get the new fields.
-     * @param syncOptions responsible for supplying the sync options to the sync utility method. It is used for
-     *                    triggering the error callback within the utility, in case of errors.
+     * @param <D>            Type of the mainresource draft
+     * @param oldResource   mainresource, whose asset should be updated.
+     * @param newResource   new mainresource draft, which contains the asset to update.
+     * @param variantId      the variantId needed for building the update action.
+     * @param oldAsset       the asset which should be updated.
+     * @param newAsset       the asset draft where we get the new fields.
+     * @param syncOptions    responsible for supplying the sync options to the sync utility method. It is used for
+     *                       triggering the error callback within the utility, in case of errors.
      * @return A list with the update actions or an empty list if the asset fields are identical.
      */
     @Nonnull
-    public static List<UpdateAction<Product>> buildActions(
+    public static <D> List<UpdateAction<Product>> buildActions(
+        @Nonnull final Resource oldResource,
+        @Nonnull final D newResource,
         @Nonnull final Integer variantId,
         @Nonnull final Asset oldAsset,
         @Nonnull final AssetDraft newAsset,
@@ -49,7 +54,8 @@ public final class ProductVariantAssetUpdateActionUtils {
                 buildSetAssetSourcesUpdateAction(variantId, oldAsset, newAsset)
             );
 
-        updateActions.addAll(buildCustomUpdateActions(variantId, oldAsset, newAsset, syncOptions));
+        updateActions.addAll(buildCustomUpdateActions(oldResource, newResource, variantId, oldAsset, newAsset,
+            syncOptions));
         return updateActions;
     }
 
@@ -142,23 +148,30 @@ public final class ProductVariantAssetUpdateActionUtils {
      * {@link UpdateAction}&lt;{@link Product}&gt; as a result. If both the {@link Asset} and the {@link AssetDraft}
      * have identical custom fields and types, then no update action is needed and hence an empty {@link List} is
      * returned.
-     *
-     * @param variantId   the variantId needed for building the update action.
-     * @param oldAsset    the asset which should be updated.
-     * @param newAsset    the asset draft where we get the new custom fields and types.
-     * @param syncOptions responsible for supplying the sync options to the sync utility method. It is used for
-     *                    triggering the error callback within the utility, in case of errors.
+
+     * @param <D>           Type of the mainresource draft
+     * @param oldResource  mainresource, whose asset should be updated.
+     * @param newResource  new mainresource draft, which contains the asset to update.
+     * @param variantId     the variantId needed for building the update action.
+     * @param oldAsset      the asset which should be updated.
+     * @param newAsset      the asset draft where we get the new custom fields and types.
+     * @param syncOptions   responsible for supplying the sync options to the sync utility method. It is used for
+     *                     triggering the error callback within the utility, in case of errors.
      * @return A list with the custom field/type update actions or an empty list if the custom fields/types are
      *         identical.
      */
     @Nonnull
-    public static List<UpdateAction<Product>> buildCustomUpdateActions(
+    public static <D> List<UpdateAction<Product>> buildCustomUpdateActions(
+        @Nonnull final Resource oldResource,
+        @Nonnull final D newResource,
         @Nonnull final Integer variantId,
         @Nonnull final Asset oldAsset,
         @Nonnull final AssetDraft newAsset,
         @Nonnull final ProductSyncOptions syncOptions) {
 
         return CustomUpdateActionUtils.buildCustomUpdateActions(
+            oldResource,
+            newResource,
             oldAsset,
             newAsset,
             new AssetCustomActionBuilder(),

@@ -82,19 +82,17 @@ class CategoryServiceImplIT {
         warningCallBackMessages = new ArrayList<>();
         deleteAllCategories(CTP_TARGET_CLIENT);
 
-        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                                                                  .errorCallback(
-                                                                                      (errorMessage, exception) -> {
-                                                                                          errorCallBackMessages
-                                                                                              .add(errorMessage);
-                                                                                          errorCallBackExceptions
-                                                                                              .add(exception);
-                                                                                      })
-                                                                                  .warningCallback(
-                                                                                      warningMessage ->
-                                                                                          warningCallBackMessages
-                                                                                              .add(warningMessage))
-                                                                                  .build();
+        final CategorySyncOptions categorySyncOptions =
+            CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+                .errorCallback(
+                    (exception, oldResource, newResource, updateActions) -> {
+                        errorCallBackMessages.add(exception.getMessage());
+                        errorCallBackExceptions.add(exception.getCause());
+                    })
+                .warningCallback(
+                    (exception, oldResource, newResource) -> warningCallBackMessages
+                        .add(exception.getMessage()))
+                .build();
 
         // Create a mock new category in the target project.
 
@@ -187,15 +185,14 @@ class CategoryServiceImplIT {
         when(spyClient.execute(any(CategoryQuery.class)))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
             .thenCallRealMethod();
-        final CategorySyncOptions spyOptions = CategorySyncOptionsBuilder.of(spyClient)
-                                                                         .errorCallback(
-                                                                             (errorMessage, exception) -> {
-                                                                                 errorCallBackMessages
-                                                                                     .add(errorMessage);
-                                                                                 errorCallBackExceptions
-                                                                                     .add(exception);
-                                                                             })
-                                                                         .build();
+        final CategorySyncOptions spyOptions =
+            CategorySyncOptionsBuilder.of(spyClient)
+                .errorCallback(
+                    (exception, oldResource, newResource, updateActions) -> {
+                        errorCallBackMessages.add(exception.getMessage());
+                        errorCallBackExceptions.add(exception.getCause());
+                    })
+                .build();
         final CategoryService spyCategoryService = new CategoryServiceImpl(spyOptions);
 
 
@@ -267,9 +264,9 @@ class CategoryServiceImplIT {
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         final CategorySyncOptions spyOptions = CategorySyncOptionsBuilder
             .of(spyClient)
-            .errorCallback((errorMessage, exception) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(exception);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
             .build();
 
@@ -501,15 +498,14 @@ class CategoryServiceImplIT {
         when(spyClient.execute(any(CategoryQuery.class)))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
             .thenCallRealMethod();
-        final CategorySyncOptions spyOptions = CategorySyncOptionsBuilder.of(spyClient)
-                                                                         .errorCallback(
-                                                                             (errorMessage, exception) -> {
-                                                                                 errorCallBackMessages
-                                                                                     .add(errorMessage);
-                                                                                 errorCallBackExceptions
-                                                                                     .add(exception);
-                                                                             })
-                                                                         .build();
+        final CategorySyncOptions spyOptions =
+            CategorySyncOptionsBuilder.of(spyClient)
+                .errorCallback(
+                    (exception, oldResource, newResource, updateActions) -> {
+                        errorCallBackMessages.add(exception.getMessage());
+                        errorCallBackExceptions.add(exception.getCause());
+                    })
+                .build();
         final CategoryService spyCategoryService = new CategoryServiceImpl(spyOptions);
 
         // test and assertion

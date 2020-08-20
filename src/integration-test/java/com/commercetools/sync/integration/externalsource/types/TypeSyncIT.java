@@ -315,9 +315,9 @@ class TypeSyncIT {
 
         final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
                 .of(CTP_TARGET_CLIENT)
-                .errorCallback((errorMessage, exception) -> {
-                    errorMessages.add(errorMessage);
-                    exceptions.add(exception);
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorMessages.add(exception.getMessage());
+                    exceptions.add(exception.getCause());
                 })
                 .build();
 
@@ -352,9 +352,9 @@ class TypeSyncIT {
 
         final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
                 .of(CTP_TARGET_CLIENT)
-                .errorCallback((errorMessage, exception) -> {
-                    errorMessages.add(errorMessage);
-                    exceptions.add(exception);
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorMessages.add(exception.getMessage());
+                    exceptions.add(exception.getCause());
                 })
                 .build();
 
@@ -397,9 +397,9 @@ class TypeSyncIT {
 
         final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
                 .of(CTP_TARGET_CLIENT)
-                .errorCallback((errorMessage, exception) -> {
-                    errorMessages.add(errorMessage);
-                    exceptions.add(exception);
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorMessages.add(exception.getMessage());
+                    exceptions.add(exception.getCause());
                 })
                 .build();
 
@@ -452,9 +452,9 @@ class TypeSyncIT {
 
         final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
                 .of(CTP_TARGET_CLIENT)
-                .errorCallback((errorMessage, exception) -> {
-                    errorMessages.add(errorMessage);
-                    exceptions.add(exception);
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorMessages.add(exception.getMessage());
+                    exceptions.add(exception.getCause());
                 })
                 .build();
 
@@ -640,13 +640,13 @@ class TypeSyncIT {
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> errors = new ArrayList<>();
 
-        final TypeSyncOptions typeSyncOptions =
-            TypeSyncOptionsBuilder.of(spyClient)
-                                  .errorCallback((errorMessage, error) -> {
-                                      errorMessages.add(errorMessage);
-                                      errors.add(error);
-                                  })
-                                  .build();
+        final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
+            .of(spyClient)
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
+                errors.add(exception.getCause());
+            })
+            .build();
 
         final TypeSync typeSync = new TypeSync(typeSyncOptions);
 
@@ -704,13 +704,13 @@ class TypeSyncIT {
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> errors = new ArrayList<>();
 
-        final TypeSyncOptions typeSyncOptions =
-            TypeSyncOptionsBuilder.of(spyClient)
-                                  .errorCallback((errorMessage, error) -> {
-                                      errorMessages.add(errorMessage);
-                                      errors.add(error);
-                                  })
-                                  .build();
+        final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
+            .of(spyClient)
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
+                errors.add(exception.getCause());
+            })
+            .build();
 
         final TypeSync typeSync = new TypeSync(typeSyncOptions);
         //test

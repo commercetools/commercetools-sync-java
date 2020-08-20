@@ -89,7 +89,7 @@ public class InventorySyncMockUtils {
         final InventoryService inventoryService = mock(InventoryService.class);
         when(inventoryService.fetchInventoryEntriesBySkus(any())).thenReturn(completedFuture(inventoryEntries));
         when(inventoryService.createInventoryEntry(any()))
-            .thenReturn(completedFuture(Optional.of(createdInventoryEntry)));
+            .thenReturn(completedFuture(Optional.ofNullable(createdInventoryEntry)));
         when(inventoryService.updateInventoryEntry(any(), any())).thenReturn(completedFuture(updatedInventoryEntry));
         return inventoryService;
     }

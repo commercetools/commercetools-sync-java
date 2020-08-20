@@ -34,7 +34,7 @@ class StateSyncOptionsTest {
         final List<UpdateAction<State>> updateActions = singletonList(ChangeInitial.of(false));
 
         final List<UpdateAction<State>> filteredList =
-            stateSyncOptions.applyBeforeUpdateCallBack(updateActions, mock(StateDraft.class), mock(State.class));
+            stateSyncOptions.applyBeforeUpdateCallback(updateActions, mock(StateDraft.class), mock(State.class));
 
         assertThat(filteredList).isSameAs(updateActions);
     }
@@ -49,7 +49,7 @@ class StateSyncOptionsTest {
         final List<UpdateAction<State>> updateActions = singletonList(ChangeInitial.of(false));
 
         final List<UpdateAction<State>> filteredList =
-            stateSyncOptions.applyBeforeUpdateCallBack(updateActions, mock(StateDraft.class), mock(State.class));
+            stateSyncOptions.applyBeforeUpdateCallback(updateActions, mock(StateDraft.class), mock(State.class));
 
         assertAll(
             () -> assertThat(filteredList).isNotEqualTo(updateActions),
@@ -70,7 +70,7 @@ class StateSyncOptionsTest {
             .build();
 
         final List<UpdateAction<State>> filteredList =
-            stateSyncOptions.applyBeforeUpdateCallBack(emptyList(), mock(StateDraft.class), mock(State.class));
+            stateSyncOptions.applyBeforeUpdateCallback(emptyList(), mock(StateDraft.class), mock(State.class));
 
         assertThat(filteredList).isEmpty();
         verify(beforeUpdateCallback, never()).apply(any(), any(), any());
@@ -86,7 +86,7 @@ class StateSyncOptionsTest {
         final List<UpdateAction<State>> updateActions = singletonList(ChangeInitial.of(false));
 
         final List<UpdateAction<State>> filteredList =
-            stateSyncOptions.applyBeforeUpdateCallBack(updateActions, mock(StateDraft.class), mock(State.class));
+            stateSyncOptions.applyBeforeUpdateCallback(updateActions, mock(StateDraft.class), mock(State.class));
 
         assertThat(filteredList).isEmpty();
     }
@@ -101,7 +101,7 @@ class StateSyncOptionsTest {
         final StateDraft resourceDraft = mock(StateDraft.class);
         when(resourceDraft.getKey()).thenReturn("myKey");
 
-        final Optional<StateDraft> filteredDraft = stateSyncOptions.applyBeforeCreateCallBack(resourceDraft);
+        final Optional<StateDraft> filteredDraft = stateSyncOptions.applyBeforeCreateCallback(resourceDraft);
 
         assertThat(filteredDraft).hasValueSatisfying(stateDraft ->
             assertThat(stateDraft.getKey()).isEqualTo("myKey_filteredKey"));
@@ -112,7 +112,7 @@ class StateSyncOptionsTest {
         final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder.of(CTP_CLIENT).build();
         final StateDraft resourceDraft = mock(StateDraft.class);
 
-        final Optional<StateDraft> filteredDraft = stateSyncOptions.applyBeforeCreateCallBack(resourceDraft);
+        final Optional<StateDraft> filteredDraft = stateSyncOptions.applyBeforeCreateCallback(resourceDraft);
 
         assertThat(filteredDraft).containsSame(resourceDraft);
     }
@@ -125,7 +125,7 @@ class StateSyncOptionsTest {
             .build();
         final StateDraft resourceDraft = mock(StateDraft.class);
 
-        final Optional<StateDraft> filteredDraft = stateSyncOptions.applyBeforeCreateCallBack(resourceDraft);
+        final Optional<StateDraft> filteredDraft = stateSyncOptions.applyBeforeCreateCallback(resourceDraft);
 
         assertThat(filteredDraft).isEmpty();
     }

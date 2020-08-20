@@ -185,11 +185,10 @@ class TaxCategorySyncIT {
         List<Throwable> errorCallBackExceptions = new ArrayList<>();
         final TaxCategorySyncOptions spyOptions = TaxCategorySyncOptionsBuilder
             .of(spyClient)
-            .errorCallback((errorMessage, throwable) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(throwable);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
-            .warningCallback(warningCallBackMessages::add)
             .build();
 
         final TaxCategorySync taxCategorySync = new TaxCategorySync(spyOptions);
@@ -229,15 +228,14 @@ class TaxCategorySyncIT {
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
 
         List<String> errorCallBackMessages = new ArrayList<>();
-        List<String> warningCallBackMessages = new ArrayList<>();
         List<Throwable> errorCallBackExceptions = new ArrayList<>();
         final TaxCategorySyncOptions spyOptions = TaxCategorySyncOptionsBuilder
             .of(spyClient)
-            .errorCallback((errorMessage, throwable) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(throwable);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
-            .warningCallback(warningCallBackMessages::add)
+            //.warningCallback(warningCallBackMessages::add)
             .build();
 
         final TaxCategorySync taxCategorySync = new TaxCategorySync(spyOptions);
@@ -287,15 +285,13 @@ class TaxCategorySyncIT {
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
 
         List<String> errorCallBackMessages = new ArrayList<>();
-        List<String> warningCallBackMessages = new ArrayList<>();
         List<Throwable> errorCallBackExceptions = new ArrayList<>();
         final TaxCategorySyncOptions spyOptions = TaxCategorySyncOptionsBuilder
             .of(spyClient)
-            .errorCallback((errorMessage, throwable) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(throwable);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
-            .warningCallback(warningCallBackMessages::add)
             .build();
 
         final TaxCategorySync taxCategorySync = new TaxCategorySync(spyOptions);

@@ -4,6 +4,7 @@ package com.commercetools.sync.categories.utils;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.helpers.CategoryAssetActionFactory;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.AssetsUpdateActionUtils;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -115,7 +116,9 @@ public final class CategoryUpdateActionUtils {
         final Reference<Category> oldParent = oldCategory.getParent();
         final ResourceIdentifier<Category> newParent = newCategory.getParent();
         if (newParent == null && oldParent != null) {
-            syncOptions.applyWarningCallback(format(CATEGORY_CHANGE_PARENT_EMPTY_PARENT, oldCategory.getId()));
+            syncOptions.applyWarningCallback(
+                new SyncException(format(CATEGORY_CHANGE_PARENT_EMPTY_PARENT, oldCategory.getId())),
+                oldCategory, newCategory);
             return Optional.empty();
         } else {
             // The newParent.getId() call below can not cause an NPE in this case, since if both newParent and oldParent
@@ -147,8 +150,8 @@ public final class CategoryUpdateActionUtils {
         @Nonnull final CategoryDraft newCategory,
         @Nonnull final CategorySyncOptions syncOptions) {
         if (newCategory.getOrderHint() == null && oldCategory.getOrderHint() != null) {
-            syncOptions.applyWarningCallback(
-                format(CATEGORY_CHANGE_ORDER_HINT_EMPTY_ORDERHINT, oldCategory.getId()));
+            syncOptions.applyWarningCallback(new SyncException(
+                format(CATEGORY_CHANGE_ORDER_HINT_EMPTY_ORDERHINT, oldCategory.getId())), oldCategory, newCategory);
             return Optional.empty();
         }
         return buildUpdateAction(oldCategory.getOrderHint(),
@@ -249,12 +252,15 @@ public final class CategoryUpdateActionUtils {
 
         try {
             return AssetsUpdateActionUtils.buildAssetsUpdateActions(
+                oldCategory,
+                newCategory,
                 oldCategory.getAssets(),
                 newCategory.getAssets(),
                 new CategoryAssetActionFactory(syncOptions), syncOptions);
         } catch (final BuildUpdateActionException exception) {
-            syncOptions.applyErrorCallback(format("Failed to build update actions for the assets "
-                + "of the category with the key '%s'. Reason: %s", oldCategory.getKey(), exception), exception);
+            syncOptions.applyErrorCallback(new SyncException(format("Failed to build update actions for the assets "
+                + "of the category with the key '%s'.", oldCategory.getKey()), exception),
+                oldCategory, newCategory, null);
             return emptyList();
         }
     }

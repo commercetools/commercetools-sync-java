@@ -112,8 +112,10 @@ class ProductSyncWithAssetsIT {
 
     private ProductSyncOptions buildSyncOptions() {
         return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                        .errorCallback(this::errorCallback)
-                                        .warningCallback(warningCallBackMessages::add)
+                                        .errorCallback((exception, oldResource, newResource, updateActions)
+                                            -> errorCallback(exception.getMessage(), exception.getCause()))
+                                        .warningCallback((exception, oldResource, newResource) ->
+                                            warningCallBackMessages.add(exception.getMessage()))
                                         .beforeUpdateCallback(this::beforeUpdateCallback)
                                         .build();
     }

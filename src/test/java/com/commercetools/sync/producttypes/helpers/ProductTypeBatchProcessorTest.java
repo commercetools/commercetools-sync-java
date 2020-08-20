@@ -1,7 +1,7 @@
 package com.commercetools.sync.producttypes.helpers;
 
-import com.commercetools.sync.commons.exceptions.InvalidProductTypeDraftException;
 import com.commercetools.sync.commons.exceptions.InvalidReferenceException;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.producttypes.ProductTypeSync;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
@@ -47,8 +47,8 @@ class ProductTypeBatchProcessorTest {
         final SphereClient ctpClient = mock(SphereClient.class);
         final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
             .of(ctpClient)
-            .errorCallback((errorMessage, exception) -> {
-                errorCallBackMessages.add(errorMessage);
+            .errorCallback((exception, oldResource, newResource, actions) -> {
+                errorCallBackMessages.add(exception.getMessage());
                 errorCallBackExceptions.add(exception);
             })
             .build();
@@ -76,7 +76,7 @@ class ProductTypeBatchProcessorTest {
         assertThat(batchProcessor.getValidDrafts()).isEmpty();
         assertThat(errorCallBackMessages).containsExactly(PRODUCT_TYPE_DRAFT_IS_NULL);
         assertThat(errorCallBackExceptions).hasOnlyOneElementSatisfying(throwable -> {
-            assertThat(throwable).isInstanceOf(InvalidProductTypeDraftException.class);
+            assertThat(throwable).isInstanceOf(SyncException.class);
             assertThat(throwable).hasMessage(PRODUCT_TYPE_DRAFT_IS_NULL);
         });
     }
@@ -95,7 +95,7 @@ class ProductTypeBatchProcessorTest {
         final String errorMessage = format(PRODUCT_TYPE_DRAFT_KEY_NOT_SET, productTypeDraft.getName());
         assertThat(errorCallBackMessages).containsExactly(errorMessage);
         assertThat(errorCallBackExceptions).hasOnlyOneElementSatisfying(throwable -> {
-            assertThat(throwable).isInstanceOf(InvalidProductTypeDraftException.class);
+            assertThat(throwable).isInstanceOf(SyncException.class);
             assertThat(throwable).hasMessage(errorMessage);
         });
     }
@@ -114,7 +114,7 @@ class ProductTypeBatchProcessorTest {
         final String errorMessage = format(PRODUCT_TYPE_DRAFT_KEY_NOT_SET, productTypeDraft.getName());
         assertThat(errorCallBackMessages).containsExactly(errorMessage);
         assertThat(errorCallBackExceptions).hasOnlyOneElementSatisfying(throwable -> {
-            assertThat(throwable).isInstanceOf(InvalidProductTypeDraftException.class);
+            assertThat(throwable).isInstanceOf(SyncException.class);
             assertThat(throwable).hasMessage(errorMessage);
         });
     }
@@ -178,7 +178,7 @@ class ProductTypeBatchProcessorTest {
         assertThat(errorCallBackMessages).containsExactly(expectedExceptionMessage);
         assertThat(errorCallBackExceptions)
             .hasOnlyOneElementSatisfying(throwable -> {
-                assertThat(throwable).isInstanceOf(InvalidProductTypeDraftException.class);
+                assertThat(throwable).isInstanceOf(SyncException.class);
                 assertThat(throwable.getMessage()).isEqualTo(expectedExceptionMessage);
                 assertThat(throwable.getCause()).isInstanceOf(InvalidReferenceException.class);
                 assertThat(throwable.getCause().getMessage()).isEqualTo(BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER);
@@ -232,7 +232,7 @@ class ProductTypeBatchProcessorTest {
         assertThat(errorCallBackMessages).containsExactly(expectedExceptionMessage);
         assertThat(errorCallBackExceptions)
             .hasOnlyOneElementSatisfying(throwable -> {
-                assertThat(throwable).isInstanceOf(InvalidProductTypeDraftException.class);
+                assertThat(throwable).isInstanceOf(SyncException.class);
                 assertThat(throwable.getMessage()).isEqualTo(expectedExceptionMessage);
                 assertThat(throwable.getCause()).isInstanceOf(InvalidReferenceException.class);
                 assertThat(throwable.getCause().getMessage()).isEqualTo(BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER);
@@ -323,17 +323,17 @@ class ProductTypeBatchProcessorTest {
 
         final Predicate<Throwable> nullDraftPredicate = throwable ->
             PRODUCT_TYPE_DRAFT_IS_NULL.equals(throwable.getMessage())
-                && throwable instanceof InvalidProductTypeDraftException;
+                && throwable instanceof SyncException;
 
         final Condition<Throwable> nullDraftCondition = new Condition<>(nullDraftPredicate,
-            "InvalidProductTypeDraftException: ProductTypeDraft is null.");
+            "SyncException: ProductTypeDraft is null.");
 
         final Predicate<Throwable> blankProductTypeKeyPredicate = throwable ->
             format(PRODUCT_TYPE_DRAFT_KEY_NOT_SET, productTypeDraftWithEmptyKey.getName())
-                .equals(throwable.getMessage()) && throwable instanceof InvalidProductTypeDraftException;
+                .equals(throwable.getMessage()) && throwable instanceof SyncException;
 
         final Condition<Throwable> blankKeyCondition = new Condition<>(blankProductTypeKeyPredicate,
-            "InvalidProductTypeDraftException: ProductTypeDraft has blank key.");
+            "SyncException: ProductTypeDraft has blank key.");
 
 
         assertThat(errorCallBackExceptions)

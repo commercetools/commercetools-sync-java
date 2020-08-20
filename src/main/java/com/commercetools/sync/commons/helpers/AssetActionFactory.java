@@ -4,6 +4,7 @@ import com.commercetools.sync.commons.BaseSyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
+import io.sphere.sdk.models.Resource;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -13,18 +14,23 @@ import java.util.List;
  * Helper class for building update actions for assets that are contained in the resource of type {@code T}.
  *
  * @param <T> the type of the resource the asset update actions are built for.
+ * @param <D> the type of the draft, which contains the changes the asset update actions are built for.
  */
-public abstract class AssetActionFactory<T> {
+public abstract class AssetActionFactory<T extends Resource, D> {
     public BaseSyncOptions syncOptions = null;
 
     /**
      * Takes a matching old asset and a new asset and computes the update actions needed to sync them.
      *
+     * @param oldResource   mainresource, whose asset should be updated.
+     * @param newResource   new mainresource draft, which contains the asset to update.
      * @param oldAsset      the old asset to compare.
      * @param newAssetDraft the matching new asset draft.
      * @return update actions needed to sync the two assets.
      */
-    public abstract List<UpdateAction<T>> buildAssetActions(@Nonnull Asset oldAsset,
+    public abstract List<UpdateAction<T>> buildAssetActions(@Nonnull final T oldResource,
+                                                            @Nonnull final D newResource,
+                                                            @Nonnull Asset oldAsset,
                                                             @Nonnull AssetDraft newAssetDraft);
 
     /**

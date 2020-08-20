@@ -1,5 +1,7 @@
 package com.commercetools.sync.integration.externalsource.products;
 
+import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -30,7 +32,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
@@ -80,12 +81,14 @@ class ProductSyncWithReferencedProductTypesIT {
     }
 
     private ProductSyncOptions buildSyncOptions() {
-        final Consumer<String> warningCallBack = warningMessage -> warningCallBackMessages.add(warningMessage);
+        final TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>> warningCallback
+                = (syncException, productDraft, product) -> warningCallBackMessages.add(syncException.getMessage());
 
         return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                        .errorCallback(this::collectErrors)
+                                        .errorCallback((syncException, draft, product, updateActions)
+                                            -> collectErrors(syncException.getMessage(), syncException))
                                         .beforeUpdateCallback(this::collectActions)
-                                        .warningCallback(warningCallBack)
+                                        .warningCallback(warningCallback)
                                         .build();
     }
 
@@ -331,8 +334,8 @@ class ProductSyncWithReferencedProductTypesIT {
         assertThat(errorCallBackExceptions)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(error -> {
-                assertThat(error).isInstanceOf(ErrorResponseException.class);
-                final ErrorResponseException errorResponseException = (ErrorResponseException) error;
+                assertThat(error).hasCauseExactlyInstanceOf(ErrorResponseException.class);
+                final ErrorResponseException errorResponseException = (ErrorResponseException) error.getCause();
                 assertThat(errorResponseException.getStatusCode()).isEqualTo(400);
                 assertThat(error.getMessage())
                     .contains("The value '{\"typeId\":\"product-type\",\"id\":\"nonExistingKey\"}' "
@@ -471,8 +474,8 @@ class ProductSyncWithReferencedProductTypesIT {
         assertThat(errorCallBackExceptions)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(error -> {
-                assertThat(error).isInstanceOf(ErrorResponseException.class);
-                final ErrorResponseException errorResponseException = (ErrorResponseException) error;
+                assertThat(error).hasCauseExactlyInstanceOf(ErrorResponseException.class);
+                final ErrorResponseException errorResponseException = (ErrorResponseException) error.getCause();
                 assertThat(errorResponseException.getStatusCode()).isEqualTo(400);
                 assertThat(error.getMessage())
                     .contains("The value '{\"typeId\":\"product-type\",\"id\":\"nonExistingKey\"}' "

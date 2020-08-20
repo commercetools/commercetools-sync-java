@@ -65,15 +65,16 @@ class TaxCategoryServiceImplIT {
         deleteTaxCategories(CTP_TARGET_CLIENT);
         warnings = new ArrayList<>();
         oldTaxCategory = createTaxCategory(CTP_TARGET_CLIENT);
+
         final TaxCategorySyncOptions taxCategorySyncOptions = TaxCategorySyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .warningCallback(warnings::add)
-            .errorCallback((errorMessage, exception) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(exception);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
             .build();
         taxCategoryService = new TaxCategoryServiceImpl(taxCategorySyncOptions);
+
     }
 
     /**
@@ -170,10 +171,10 @@ class TaxCategoryServiceImplIT {
 
         final TaxCategorySyncOptions spyOptions =
             TaxCategorySyncOptionsBuilder.of(spyClient)
-                                         .errorCallback((errorMessage, exception) -> {
-                                             errorCallBackMessages.add(errorMessage);
-                                             errorCallBackExceptions.add(exception);
-                                         })
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorCallBackMessages.add(exception.getMessage());
+                    errorCallBackExceptions.add(exception.getCause());
+                })
                                          .build();
 
         final TaxCategoryService spyTaxCategoryService = new TaxCategoryServiceImpl(spyOptions);
@@ -236,9 +237,9 @@ class TaxCategoryServiceImplIT {
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         final TaxCategorySyncOptions spyOptions = TaxCategorySyncOptionsBuilder
             .of(spyClient)
-            .errorCallback((errorMessage, exception) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(exception);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
             .build();
 
@@ -280,9 +281,9 @@ class TaxCategoryServiceImplIT {
 
         final TaxCategorySyncOptions options = TaxCategorySyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .errorCallback((errorMessage, exception) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(exception);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
             .build();
 
@@ -308,9 +309,9 @@ class TaxCategoryServiceImplIT {
 
         final TaxCategorySyncOptions options = TaxCategorySyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .errorCallback((errorMessage, exception) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(exception);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
             .build();
 

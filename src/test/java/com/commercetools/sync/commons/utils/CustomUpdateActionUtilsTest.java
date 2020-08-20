@@ -4,6 +4,7 @@ import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.categories.helpers.CategoryCustomActionBuilder;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.AssetCustomActionBuilder;
@@ -17,9 +18,11 @@ import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.AssetDraftBuilder;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.Resource;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.Product;
+import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.updateactions.SetAssetCustomField;
 import io.sphere.sdk.products.commands.updateactions.SetAssetCustomType;
 import io.sphere.sdk.products.commands.updateactions.SetProductPriceCustomField;
@@ -33,8 +36,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.function.BiConsumer;
 
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildCustomUpdateActions;
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildNonNullCustomFieldsUpdateActions;
@@ -51,6 +54,8 @@ import static org.mockito.Mockito.when;
 class CustomUpdateActionUtilsTest {
     private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
     private static final CategorySyncOptions CATEGORY_SYNC_OPTIONS = CategorySyncOptionsBuilder.of(CTP_CLIENT).build();
+    Resource mainOldResource = mock(Resource.class);
+    Resource maiNewResource = mock(Resource.class);
 
     @Test
     void buildCustomUpdateActions_WithNonNullCustomFieldsWithDifferentTypes_ShouldBuildUpdateActions() {
@@ -68,8 +73,9 @@ class CustomUpdateActionUtilsTest {
         when(newAssetDraft.getCustom()).thenReturn(newAssetCustomFieldsDraft);
 
 
-        final List<UpdateAction<Product>> updateActions = buildCustomUpdateActions(oldAsset, newAssetDraft,
-            new AssetCustomActionBuilder(), 10, Asset::getId, asset -> Asset.resourceTypeId(), Asset::getKey,
+        final List<UpdateAction<Product>> updateActions = buildCustomUpdateActions(mainOldResource, maiNewResource,
+            oldAsset, newAssetDraft,new AssetCustomActionBuilder(), 10, Asset::getId,
+            asset -> Asset.resourceTypeId(), Asset::getKey,
             ProductSyncOptionsBuilder.of(CTP_CLIENT).build());
 
         // Should set custom type of old asset.
@@ -92,7 +98,8 @@ class CustomUpdateActionUtilsTest {
                                                           .build();
 
         final List<UpdateAction<Product>> updateActions =
-            buildCustomUpdateActions(oldAsset, newAssetDraft, new AssetCustomActionBuilder(), 10,
+            buildCustomUpdateActions(mainOldResource, maiNewResource, oldAsset, newAssetDraft,
+                new AssetCustomActionBuilder(), 10,
                 Asset::getId, asset -> Asset.resourceTypeId(), Asset::getKey,
                 ProductSyncOptionsBuilder.of(CTP_CLIENT).build());
 
@@ -116,19 +123,22 @@ class CustomUpdateActionUtilsTest {
 
         // Mock custom options error callback
         final ArrayList<Object> callBackResponses = new ArrayList<>();
-        final BiConsumer<String, Throwable> updateActionErrorCallBack = (errorMessage, exception) -> {
-            callBackResponses.add(errorMessage);
-            callBackResponses.add(exception);
-        };
+        final QuadConsumer<SyncException, Optional<ProductDraft>, Optional<Product>,
+                    List<UpdateAction<Product>>> errorCallback =
+                        (exception, newResource, oldResource, updateActions) -> {
+                            callBackResponses.add(exception.getMessage());
+                            callBackResponses.add(exception.getCause());
+                        };
 
         // Mock sync options
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
-                                                                               .errorCallback(updateActionErrorCallBack)
+                                                                               .errorCallback(errorCallback)
                                                                                .build();
 
         final List<UpdateAction<Product>> updateActions =
-            buildCustomUpdateActions(oldAsset, newAssetDraft, new AssetCustomActionBuilder(), 10,
-                Asset::getId, asset -> Asset.resourceTypeId(), Asset::getKey, productSyncOptions);
+            buildCustomUpdateActions(mainOldResource, maiNewResource, oldAsset, newAssetDraft,
+                new AssetCustomActionBuilder(), 10, Asset::getId, asset -> Asset.resourceTypeId(),
+                Asset::getKey, productSyncOptions);
 
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).hasSize(0);
@@ -149,9 +159,9 @@ class CustomUpdateActionUtilsTest {
                                                           .build();
 
         final List<UpdateAction<Product>> updateActions =
-            buildCustomUpdateActions(oldAsset, newAssetDraft, new AssetCustomActionBuilder(), 10,
-                Asset::getId, asset -> Asset.resourceTypeId(), Asset::getKey,
-                ProductSyncOptionsBuilder.of(CTP_CLIENT).build());
+            buildCustomUpdateActions(mainOldResource, maiNewResource, oldAsset, newAssetDraft,
+                new AssetCustomActionBuilder(), 10,  Asset::getId, asset -> Asset.resourceTypeId(),
+                Asset::getKey, ProductSyncOptionsBuilder.of(CTP_CLIENT).build());
 
         // Should remove custom type from old asset.
         assertThat(updateActions).isNotNull();
@@ -186,19 +196,22 @@ class CustomUpdateActionUtilsTest {
 
         // Mock custom options error callback
         final ArrayList<Object> callBackResponses = new ArrayList<>();
-        final BiConsumer<String, Throwable> updateActionErrorCallBack = (errorMessage, exception) -> {
-            callBackResponses.add(errorMessage);
-            callBackResponses.add(exception);
-        };
+        final QuadConsumer<SyncException, Optional<ProductDraft>, Optional<Product>,
+                    List<UpdateAction<Product>>> errorCallback =
+                        (exception, newResource, oldResource, updateActions) -> {
+                            callBackResponses.add(exception.getMessage());
+                            callBackResponses.add(exception.getCause());
+                        };
 
         // Mock sync options
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
-                                                                               .errorCallback(updateActionErrorCallBack)
+                                                                               .errorCallback(errorCallback)
                                                                                .build();
 
         final List<UpdateAction<Product>> updateActions =
-            buildCustomUpdateActions(oldAsset, newAssetDraft, new AssetCustomActionBuilder(), 10,
-                Asset::getId, asset -> Asset.resourceTypeId(), Asset::getKey, productSyncOptions);
+            buildCustomUpdateActions(mainOldResource, maiNewResource, oldAsset,
+                newAssetDraft, new AssetCustomActionBuilder(), 10,   Asset::getId,
+                asset -> Asset.resourceTypeId(), Asset::getKey, productSyncOptions);
 
         assertThat(callBackResponses).hasSize(2);
         assertThat(callBackResponses.get(0)).isEqualTo("Failed to build custom fields update actions on the asset"
@@ -217,19 +230,22 @@ class CustomUpdateActionUtilsTest {
 
         // Mock custom options error callback
         final ArrayList<Object> callBackResponses = new ArrayList<>();
-        final BiConsumer<String, Throwable> updateActionErrorCallBack = (errorMessage, exception) -> {
-            callBackResponses.add(errorMessage);
-            callBackResponses.add(exception);
-        };
+        final QuadConsumer<SyncException, Optional<ProductDraft>, Optional<Product>,
+                    List<UpdateAction<Product>>> errorCallback =
+                        (exception, newResource, oldResource, updateActions) -> {
+                            callBackResponses.add(exception.getMessage());
+                            callBackResponses.add(exception.getCause());
+                        };
 
         // Mock sync options
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
-                                                                               .errorCallback(updateActionErrorCallBack)
+                                                                               .errorCallback(errorCallback)
                                                                                .build();
 
         final List<UpdateAction<Product>> updateActions =
-            buildCustomUpdateActions(oldAsset, newAssetDraft, new AssetCustomActionBuilder(), 10,
-                Asset::getId, asset -> Asset.resourceTypeId(), Asset::getKey, productSyncOptions);
+            buildCustomUpdateActions(mainOldResource, maiNewResource, oldAsset, newAssetDraft,
+                new AssetCustomActionBuilder(), 10,  Asset::getId, asset -> Asset.resourceTypeId(),
+                Asset::getKey, productSyncOptions);
 
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).isEmpty();
@@ -323,12 +339,14 @@ class CustomUpdateActionUtilsTest {
 
         // Mock custom options error callback
         final ArrayList<String> errorMessages = new ArrayList<>();
-        final BiConsumer<String, Throwable> updateActionErrorCallBack =
-            (errorMessage, exception) -> errorMessages.add(errorMessage);
+        final QuadConsumer<SyncException, Optional<ProductDraft>, Optional<Product>,
+                    List<UpdateAction<Product>>> errorCallback =
+                        (exception, newResource, oldResource, updateActions) -> errorMessages
+                                .add(exception.getMessage());
 
         // Mock sync options
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
-                                                                               .errorCallback(updateActionErrorCallBack)
+                                                                               .errorCallback(errorCallback)
                                                                                .build();
 
         final Price price = mock(Price.class);

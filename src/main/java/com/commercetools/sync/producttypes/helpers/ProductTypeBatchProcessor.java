@@ -1,7 +1,7 @@
 package com.commercetools.sync.producttypes.helpers;
 
-import com.commercetools.sync.commons.exceptions.InvalidProductTypeDraftException;
 import com.commercetools.sync.commons.exceptions.InvalidReferenceException;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.producttypes.ProductTypeSync;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.AttributeType;
@@ -63,22 +63,22 @@ public class ProductTypeBatchProcessor {
                         final Set<String> referencedProductTypeKeys = getReferencedProductTypeKeys(productTypeDraft);
                         keysToCache.addAll(referencedProductTypeKeys);
                         validDrafts.add(productTypeDraft);
-                    } catch (InvalidProductTypeDraftException invalidProductTypeDraftException) {
-                        handleError(invalidProductTypeDraftException);
+                    } catch (SyncException syncException) {
+                        handleError(syncException);
                     }
                 } else {
                     final String errorMessage = format(PRODUCT_TYPE_DRAFT_KEY_NOT_SET, productTypeDraft.getName());
-                    handleError(new InvalidProductTypeDraftException(errorMessage));
+                    handleError(new SyncException(errorMessage));
                 }
             } else {
-                handleError(new InvalidProductTypeDraftException(PRODUCT_TYPE_DRAFT_IS_NULL));
+                handleError(new SyncException(PRODUCT_TYPE_DRAFT_IS_NULL));
             }
         }
     }
 
     @Nonnull
     private static Set<String> getReferencedProductTypeKeys(@Nonnull final ProductTypeDraft productTypeDraft)
-        throws InvalidProductTypeDraftException {
+        throws SyncException {
 
         final List<AttributeDefinitionDraft> attributeDefinitionDrafts = productTypeDraft.getAttributes();
         if (attributeDefinitionDrafts == null || attributeDefinitionDrafts.isEmpty()) {
@@ -102,7 +102,7 @@ public class ProductTypeBatchProcessor {
         if (!invalidAttributeDefinitionNames.isEmpty()) {
             final String errorMessage = format(PRODUCT_TYPE_HAS_INVALID_REFERENCES, productTypeDraft.getKey(),
                 invalidAttributeDefinitionNames);
-            throw new InvalidProductTypeDraftException(errorMessage,
+            throw new SyncException(errorMessage,
                 new InvalidReferenceException(BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
         }
 
@@ -141,8 +141,8 @@ public class ProductTypeBatchProcessor {
         return key;
     }
 
-    private void handleError(@Nonnull final Throwable throwable) {
-        productTypeSync.getSyncOptions().applyErrorCallback(throwable.getMessage(), throwable);
+    private void handleError(@Nonnull final SyncException syncException) {
+        productTypeSync.getSyncOptions().applyErrorCallback(syncException);
         productTypeSync.getStatistics().incrementFailed();
     }
 

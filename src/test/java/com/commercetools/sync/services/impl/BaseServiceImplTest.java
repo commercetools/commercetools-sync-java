@@ -1,11 +1,14 @@
 package com.commercetools.sync.services.impl;
 
+import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.ProductService;
 import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.products.Product;
+import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.utils.CompletableFutureUtils;
@@ -24,7 +27,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Consumer;
 
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
@@ -42,7 +44,8 @@ import static org.mockito.Mockito.when;
 class BaseServiceImplTest {
 
     @SuppressWarnings("unchecked")
-    private Consumer<String> warningCallback = mock(Consumer.class);
+    private TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>> warningCallback
+            = mock(TriConsumer.class);
     private SphereClient client = mock(SphereClient.class);
     private ProductService service;
 

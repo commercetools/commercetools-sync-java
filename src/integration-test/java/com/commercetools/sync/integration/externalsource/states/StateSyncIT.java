@@ -140,9 +140,9 @@ class StateSyncIT {
 
         final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
             .of(spyClient)
-            .errorCallback((errorMessage, throwable) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(throwable);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
             .build();
 
@@ -279,9 +279,9 @@ class StateSyncIT {
             .thenReturn(completedFuture(any(State.class)));
         final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
             .of(spyClient)
-            .errorCallback((errorMessage, throwable) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(throwable);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
             .build();
 
@@ -376,7 +376,6 @@ class StateSyncIT {
         List<Throwable> errorCallBackExceptions = new ArrayList<>();
         final StateSyncOptions spyOptions = StateSyncOptionsBuilder
             .of(spyClient)
-            .warningCallback(warningCallBackMessages::add)
             .build();
 
         final StateSync stateSync = new StateSync(spyOptions);
@@ -418,11 +417,12 @@ class StateSyncIT {
 
         final StateSyncOptions spyOptions = StateSyncOptionsBuilder
             .of(spyClient)
-            .errorCallback((errorMessage, throwable) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(throwable);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
-            .warningCallback(warningCallBackMessages::add)
+            .warningCallback((exception, newResource, oldResource) ->
+                warningCallBackMessages.add(exception.getMessage()))
             .build();
 
         final StateSync stateSync = new StateSync(spyOptions);
@@ -477,11 +477,12 @@ class StateSyncIT {
         List<Throwable> errorCallBackExceptions = new ArrayList<>();
         final StateSyncOptions spyOptions = StateSyncOptionsBuilder
             .of(spyClient)
-            .errorCallback((errorMessage, throwable) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(throwable);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
-            .warningCallback(warningCallBackMessages::add)
+            .warningCallback((exception, newResource, oldResource) ->
+                warningCallBackMessages.add(exception.getMessage()))
             .build();
 
         final StateSync stateSync = new StateSync(spyOptions);
@@ -651,10 +652,12 @@ class StateSyncIT {
         final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
             .of(spyClient)
             .batchSize(3)
-            .errorCallback((errorMessage, throwable) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(throwable);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
+            .warningCallback((exception, newResource, oldResource) ->
+                warningCallBackMessages.add(exception.getMessage()))
             .build();
 
         final StateSync stateSync = new StateSync(stateSyncOptions);
@@ -678,10 +681,12 @@ class StateSyncIT {
         final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
             .batchSize(3)
-            .errorCallback((errorMessage, throwable) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(throwable);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
+            .warningCallback((exception, newResource, oldResource) ->
+                warningCallBackMessages.add(exception.getMessage()))
             .build();
 
         final StateSync stateSync = new StateSync(stateSyncOptions);
@@ -756,10 +761,12 @@ class StateSyncIT {
         final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
             .of(spyClient)
             .batchSize(3)
-            .errorCallback((errorMessage, throwable) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(throwable);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
+            .warningCallback((exception, newResource, oldResource) ->
+                warningCallBackMessages.add(exception.getMessage()))
             .build();
 
         final StateSync stateSync = new StateSync(stateSyncOptions);
@@ -877,11 +884,12 @@ class StateSyncIT {
         final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
             .batchSize(3)
-            .errorCallback((errorMessage, throwable) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(throwable);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
-            .warningCallback(warningCallBackMessages::add)
+            .warningCallback((exception, newResource, oldResource) ->
+                warningCallBackMessages.add(exception.getMessage()))
             .build();
         final StateSync stateSync = new StateSync(stateSyncOptions);
         // test
@@ -931,11 +939,12 @@ class StateSyncIT {
         final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
             .of(spyClient)
             .batchSize(3)
-            .errorCallback((errorMessage, throwable) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(throwable);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
-            .warningCallback(warningCallBackMessages::add)
+            .warningCallback((exception, newResource, oldResource) ->
+                warningCallBackMessages.add(exception.getMessage()))
             .build();
         final StateSync stateSync = new StateSync(stateSyncOptions);
         final List<StateDraft> stateDrafts = replaceStateTransitionIdsWithKeys(Arrays.asList(stateA, stateB, stateC));
@@ -999,11 +1008,12 @@ class StateSyncIT {
         final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
             .of(spyClient)
             .batchSize(3)
-            .errorCallback((errorMessage, throwable) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(throwable);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
-            .warningCallback(warningCallBackMessages::add)
+            .warningCallback((exception, newResource, oldResource) ->
+                warningCallBackMessages.add(exception.getMessage()))
             .build();
 
         final List<StateDraft> stateDrafts = replaceStateTransitionIdsWithKeys(Arrays.asList(stateA, stateB, stateC));
@@ -1031,11 +1041,12 @@ class StateSyncIT {
         final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
             .batchSize(3)
-            .errorCallback((errorMessage, throwable) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(throwable);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
-            .warningCallback(warningCallBackMessages::add)
+            .warningCallback((exception, newResource, oldResource) ->
+                warningCallBackMessages.add(exception.getMessage()))
             .build();
         // test
         final StateSyncStatistics stateSyncStatistics = new StateSync(stateSyncOptions)
@@ -1047,7 +1058,8 @@ class StateSyncIT {
         Assertions.assertThat(errorCallBackExceptions).isNotEmpty();
         Assertions.assertThat(errorCallBackMessages).isNotEmpty();
         Assertions.assertThat(errorCallBackMessages.get(0))
-            .isEqualTo(format("StateDraft with key: '%s' has invalid state transitions", keyC));
+            .isEqualTo(format("com.commercetools.sync.commons.exceptions.InvalidStateDraftException: "
+                + "StateDraft with key: '%s' has invalid state transitions", keyC));
         Assertions.assertThat(warningCallBackMessages).isEmpty();
     }
 
@@ -1062,11 +1074,12 @@ class StateSyncIT {
         final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
             .batchSize(3)
-            .errorCallback((errorMessage, throwable) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(throwable);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
-            .warningCallback(warningCallBackMessages::add)
+            .warningCallback((exception, newResource, oldResource) ->
+                warningCallBackMessages.add(exception.getMessage()))
             .build();
         // test
         StateServiceImpl stateService = new StateServiceImpl(stateSyncOptions);

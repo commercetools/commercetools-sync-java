@@ -76,8 +76,8 @@ class CartDiscountServiceImplIT {
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
                 .of(CTP_TARGET_CLIENT)
-                .errorCallback((errorMessage, exception) -> {
-                    errorCallBackMessages.add(errorMessage);
+                .errorCallback((exception, oldResource, newResource, actions) -> {
+                    errorCallBackMessages.add(exception.getMessage());
                     errorCallBackExceptions.add(exception);
                 })
                 .build();
@@ -154,8 +154,8 @@ class CartDiscountServiceImplIT {
 
         final CartDiscountSyncOptions spyOptions =
                 CartDiscountSyncOptionsBuilder.of(spyClient)
-                        .errorCallback((errorMessage, exception) -> {
-                            errorCallBackMessages.add(errorMessage);
+                        .errorCallback((exception, oldResource, newResource, actions) -> {
+                            errorCallBackMessages.add(exception.getMessage());
                             errorCallBackExceptions.add(exception);
                         })
                         .build();
@@ -192,8 +192,8 @@ class CartDiscountServiceImplIT {
 
         final CartDiscountSyncOptions spyOptions =
                 CartDiscountSyncOptionsBuilder.of(spyClient)
-                        .errorCallback((errorMessage, exception) -> {
-                            errorCallBackMessages.add(errorMessage);
+                        .errorCallback((exception, oldResource, newResource, actions) -> {
+                            errorCallBackMessages.add(exception.getMessage());
                             errorCallBackExceptions.add(exception);
                         })
                         .build();
@@ -238,8 +238,8 @@ class CartDiscountServiceImplIT {
 
         final CartDiscountSyncOptions options = CartDiscountSyncOptionsBuilder
                 .of(CTP_TARGET_CLIENT)
-                .errorCallback((errorMessage, exception) -> {
-                    errorCallBackMessages.add(errorMessage);
+                .errorCallback((exception, oldResource, newResource, actions) -> {
+                    errorCallBackMessages.add(exception.getMessage());
                     errorCallBackExceptions.add(exception);
                 })
                 .build();
@@ -266,8 +266,8 @@ class CartDiscountServiceImplIT {
         assertThat(errorCallBackExceptions)
                 .hasSize(1)
                 .hasOnlyOneElementSatisfying(exception -> {
-                    assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class);
-                    final ErrorResponseException errorResponseException = (ErrorResponseException) exception;
+                    assertThat(exception).hasCauseExactlyInstanceOf(ErrorResponseException.class);
+                    final ErrorResponseException errorResponseException = (ErrorResponseException) exception.getCause();
 
                     final List<DuplicateFieldError> fieldErrors = errorResponseException
                             .getErrors()
@@ -297,8 +297,8 @@ class CartDiscountServiceImplIT {
 
         final CartDiscountSyncOptions options = CartDiscountSyncOptionsBuilder
                 .of(CTP_TARGET_CLIENT)
-                .errorCallback((errorMessage, exception) -> {
-                    errorCallBackMessages.add(errorMessage);
+                .errorCallback((exception, oldResource, newResource, actions) -> {
+                    errorCallBackMessages.add(exception.getMessage());
                     errorCallBackExceptions.add(exception);
                 })
                 .build();

@@ -1,7 +1,7 @@
 package com.commercetools.sync.integration.externalsource.producttypes;
 
 
-import com.commercetools.sync.commons.exceptions.InvalidProductTypeDraftException;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.producttypes.ProductTypeSync;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
@@ -331,8 +331,8 @@ class ProductTypeSyncIT {
 
         final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
                 exceptions.add(exception);
             })
             .build();
@@ -355,7 +355,7 @@ class ProductTypeSyncIT {
         assertThat(exceptions)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(throwable -> {
-                assertThat(throwable).isInstanceOf(InvalidProductTypeDraftException.class);
+                assertThat(throwable).isInstanceOf(SyncException.class);
                 assertThat(throwable.getMessage()).isEqualTo(expectedErrorMessage);
             });
 
@@ -371,8 +371,8 @@ class ProductTypeSyncIT {
 
         final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
                 exceptions.add(exception);
             })
             .build();
@@ -394,7 +394,7 @@ class ProductTypeSyncIT {
         assertThat(exceptions)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(throwable -> {
-                assertThat(throwable).isInstanceOf(InvalidProductTypeDraftException.class);
+                assertThat(throwable).isInstanceOf(SyncException.class);
                 assertThat(throwable.getMessage()).isEqualTo("ProductTypeDraft is null.");
             });
 
@@ -425,8 +425,8 @@ class ProductTypeSyncIT {
 
         final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
                 exceptions.add(exception);
             })
             .build();
@@ -449,7 +449,7 @@ class ProductTypeSyncIT {
         assertThat(exceptions)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(throwable -> {
-                assertThat(throwable).isExactlyInstanceOf(ErrorResponseException.class);
+                assertThat(throwable).hasCauseExactlyInstanceOf(ErrorResponseException.class);
                 assertThat(throwable).hasMessageContaining("AttributeDefinitionTypeConflict");
             });
 
@@ -478,9 +478,9 @@ class ProductTypeSyncIT {
 
         final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
-                exceptions.add(exception);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception.getCause());
             })
             .build();
 
@@ -525,9 +525,9 @@ class ProductTypeSyncIT {
 
         final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
-                exceptions.add(exception);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception.getCause());
             })
             .build();
 
@@ -584,9 +584,9 @@ class ProductTypeSyncIT {
 
         final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
-                exceptions.add(exception);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception.getCause());
             })
             .build();
 
@@ -691,9 +691,9 @@ class ProductTypeSyncIT {
 
         final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
             .of(spyClient)
-            .errorCallback((errorMessage, error) -> {
-                errorMessages.add(errorMessage);
-                errors.add(error);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
+                errors.add(exception.getCause());
             })
             .build();
 
@@ -755,9 +755,9 @@ class ProductTypeSyncIT {
 
         final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
             .of(spyClient)
-            .errorCallback((errorMessage, error) -> {
-                errorMessages.add(errorMessage);
-                errors.add(error);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
+                errors.add(exception.getCause());
             })
             .build();
 

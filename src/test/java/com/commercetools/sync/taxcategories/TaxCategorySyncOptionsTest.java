@@ -32,7 +32,7 @@ class TaxCategorySyncOptionsTest {
             .build();
         final List<UpdateAction<TaxCategory>> updateActions = singletonList(SetKey.of("key"));
         final List<UpdateAction<TaxCategory>> filteredList = taxCategorySyncOptions
-            .applyBeforeUpdateCallBack(updateActions, mock(TaxCategoryDraft.class), mock(TaxCategory.class));
+            .applyBeforeUpdateCallback(updateActions, mock(TaxCategoryDraft.class), mock(TaxCategory.class));
 
         assertThat(filteredList).isSameAs(updateActions);
     }
@@ -47,7 +47,7 @@ class TaxCategorySyncOptionsTest {
         final List<UpdateAction<TaxCategory>> updateActions = singletonList(SetKey.of("key"));
 
         final List<UpdateAction<TaxCategory>> filteredList = taxCategorySyncOptions
-            .applyBeforeUpdateCallBack(updateActions, mock(TaxCategoryDraft.class), mock(TaxCategory.class));
+            .applyBeforeUpdateCallback(updateActions, mock(TaxCategoryDraft.class), mock(TaxCategory.class));
 
         assertThat(filteredList).isEmpty();
     }
@@ -64,7 +64,7 @@ class TaxCategorySyncOptionsTest {
             .beforeUpdateCallback(beforeUpdateCallback)
             .build();
         final List<UpdateAction<TaxCategory>> filteredList = taxCategorySyncOptions
-            .applyBeforeUpdateCallBack(emptyList(), mock(TaxCategoryDraft.class), mock(TaxCategory.class));
+            .applyBeforeUpdateCallback(emptyList(), mock(TaxCategoryDraft.class), mock(TaxCategory.class));
 
         assertThat(filteredList).isEmpty();
         verify(beforeUpdateCallback, never()).apply(any(), any(), any());
@@ -81,7 +81,7 @@ class TaxCategorySyncOptionsTest {
         final List<UpdateAction<TaxCategory>> updateActions = singletonList(SetKey.of("key"));
 
         final List<UpdateAction<TaxCategory>> filteredList = taxCategorySyncOptions
-            .applyBeforeUpdateCallBack(updateActions, mock(TaxCategoryDraft.class), mock(TaxCategory.class));
+            .applyBeforeUpdateCallback(updateActions, mock(TaxCategoryDraft.class), mock(TaxCategory.class));
 
         assertThat(filteredList).isEmpty();
     }
@@ -98,7 +98,7 @@ class TaxCategorySyncOptionsTest {
         when(resourceDraft.getKey()).thenReturn("myKey");
 
         final Optional<TaxCategoryDraft> filteredDraft = taxCategorySyncOptions
-            .applyBeforeCreateCallBack(resourceDraft);
+            .applyBeforeCreateCallback(resourceDraft);
 
         assertThat(filteredDraft).hasValueSatisfying(taxCategoryDraft -> assertThat(taxCategoryDraft.getKey())
             .isEqualTo("myKey_filteredKey"));
@@ -110,7 +110,7 @@ class TaxCategorySyncOptionsTest {
         final TaxCategoryDraft resourceDraft = mock(TaxCategoryDraft.class);
 
         final Optional<TaxCategoryDraft> filteredDraft = taxCategorySyncOptions
-            .applyBeforeCreateCallBack(resourceDraft);
+            .applyBeforeCreateCallback(resourceDraft);
 
         assertThat(filteredDraft).containsSame(resourceDraft);
     }
@@ -124,7 +124,7 @@ class TaxCategorySyncOptionsTest {
         final TaxCategoryDraft resourceDraft = mock(TaxCategoryDraft.class);
 
         final Optional<TaxCategoryDraft> filteredDraft = taxCategorySyncOptions
-            .applyBeforeCreateCallBack(resourceDraft);
+            .applyBeforeCreateCallback(resourceDraft);
 
         assertThat(filteredDraft).isEmpty();
     }

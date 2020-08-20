@@ -48,7 +48,9 @@ class StateSyncTest {
         final List<String> errors = new ArrayList<>();
         final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
             .of(ctpClient)
-            .errorCallback((msg, error) -> errors.add(msg))
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errors.add(exception.getMessage());
+            })
             .build();
 
         final StateService stateService = mock(StateService.class);
@@ -69,9 +71,10 @@ class StateSyncTest {
         verifyNoMoreInteractions(stateService);
         assertThat(errors).hasSize(2);
         assertThat(errors).containsExactly(
-            "StateDraft with name: null doesn't have a key. "
+            "com.commercetools.sync.commons.exceptions.InvalidStateDraftException: "
+               + "StateDraft with name: null doesn't have a key. "
                 + "Please make sure all states have keys.",
-            "StateDraft is null.");
+            "com.commercetools.sync.commons.exceptions.InvalidStateDraftException: StateDraft is null.");
 
         assertThat(statistics).hasValues(2, 0, 0, 2, 0);
     }
@@ -88,9 +91,9 @@ class StateSyncTest {
 
         final StateSyncOptions syncOptions = StateSyncOptionsBuilder
             .of(mock(SphereClient.class))
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
-                exceptions.add(exception);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception.getCause());
             })
             .build();
 
@@ -138,9 +141,9 @@ class StateSyncTest {
 
         final StateSyncOptions syncOptions = StateSyncOptionsBuilder
             .of(mockClient)
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
-                exceptions.add(exception);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception.getCause());
             })
             .build();
 
@@ -197,8 +200,8 @@ class StateSyncTest {
         stateSync.sync(singletonList(stateDraft)).toCompletableFuture().join();
 
         // assertion
-        verify(spyStateSyncOptions).applyBeforeCreateCallBack(any());
-        verify(spyStateSyncOptions, never()).applyBeforeUpdateCallBack(any(), any(), any());
+        verify(spyStateSyncOptions).applyBeforeCreateCallback(any());
+        verify(spyStateSyncOptions, never()).applyBeforeUpdateCallback(any(), any(), any());
     }
 
     @Test
@@ -235,7 +238,7 @@ class StateSyncTest {
         stateSync.sync(singletonList(stateDraft)).toCompletableFuture().join();
 
         // assertion
-        verify(spyStateSyncOptions).applyBeforeUpdateCallBack(any(), any(), any());
-        verify(spyStateSyncOptions, never()).applyBeforeCreateCallBack(any());
+        verify(spyStateSyncOptions).applyBeforeUpdateCallback(any(), any(), any());
+        verify(spyStateSyncOptions, never()).applyBeforeCreateCallback(any());
     }
 }

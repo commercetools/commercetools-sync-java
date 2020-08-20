@@ -4,11 +4,16 @@ import com.commercetools.sync.cartdiscounts.CartDiscountSync;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
 import com.commercetools.sync.cartdiscounts.helpers.CartDiscountSyncStatistics;
+import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.commons.utils.QuadConsumer;
+import com.commercetools.sync.commons.utils.TriConsumer;
+import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraftBuilder;
 import io.sphere.sdk.cartdiscounts.StackingMode;
 import io.sphere.sdk.cartdiscounts.commands.CartDiscountCreateCommand;
 import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.queries.QueryPredicate;
@@ -21,10 +26,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
 import static com.commercetools.sync.benchmark.BenchmarkUtils.CART_DISCOUNT_SYNC;
@@ -75,15 +79,18 @@ class CartDiscountSyncBenchmark {
     }
 
     private CartDiscountSyncOptions buildSyncOptions() {
-        final BiConsumer<String, Throwable> errorCallBack = (errorMessage, exception) -> {
-            errorCallBackMessages.add(errorMessage);
-            errorCallBackExceptions.add(exception);
-        };
+        final QuadConsumer<SyncException, Optional<CartDiscountDraft>, Optional<CartDiscount>,
+                List<UpdateAction<CartDiscount>>> errorCallback
+                = (exception, newResource, oldResource, updateActions) -> {
+                    errorCallBackMessages.add(exception.getMessage());
+                    errorCallBackExceptions.add(exception.getCause());
+                };
 
-        final Consumer<String> warningCallBack = warningMessage -> warningCallBackMessages.add(warningMessage);
+        final TriConsumer<SyncException, Optional<CartDiscountDraft>, Optional<CartDiscount>> warningCallBack
+                = (exception, newResource, oldResource) -> warningCallBackMessages.add(exception.getMessage());
 
         return CartDiscountSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-                                             .errorCallback(errorCallBack)
+                                             .errorCallback(errorCallback)
                                              .warningCallback(warningCallBack)
                                              .build();
     }
@@ -107,10 +114,10 @@ class CartDiscountSyncBenchmark {
 
         // Assert actual state of CTP project (total number of existing cart discounts)
         final CompletableFuture<Integer> totalNumberOfCartDiscounts =
-            CTP_TARGET_CLIENT.execute(CartDiscountQuery.of())
-                             .thenApply(PagedQueryResult::getTotal)
-                             .thenApply(Long::intValue)
-                             .toCompletableFuture();
+                CTP_TARGET_CLIENT.execute(CartDiscountQuery.of())
+                                 .thenApply(PagedQueryResult::getTotal)
+                                 .thenApply(Long::intValue)
+                                 .toCompletableFuture();
 
         executeBlocking(totalNumberOfCartDiscounts);
         assertThat(totalNumberOfCartDiscounts).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
@@ -131,13 +138,13 @@ class CartDiscountSyncBenchmark {
         // Create cart discount drafts to target project
         // with different stacking mode (STOP_AFTER_THIS_DISCOUNT)
         CompletableFuture.allOf(
-            cartDiscountDrafts.stream()
-                              .map(CartDiscountDraftBuilder::of)
-                              .map(builder -> builder.stackingMode(StackingMode.STOP_AFTER_THIS_DISCOUNT))
-                              .map(CartDiscountDraftBuilder::build)
-                              .map(draft -> CTP_TARGET_CLIENT.execute(CartDiscountCreateCommand.of(draft)))
-                              .map(CompletionStage::toCompletableFuture)
-                              .toArray(CompletableFuture[]::new))
+                cartDiscountDrafts.stream()
+                                  .map(CartDiscountDraftBuilder::of)
+                                  .map(builder -> builder.stackingMode(StackingMode.STOP_AFTER_THIS_DISCOUNT))
+                                  .map(CartDiscountDraftBuilder::build)
+                                  .map(draft -> CTP_TARGET_CLIENT.execute(CartDiscountCreateCommand.of(draft)))
+                                  .map(CompletionStage::toCompletableFuture)
+                                  .toArray(CompletableFuture[]::new))
                          .join();
 
         final CartDiscountSync cartDiscountSync = new CartDiscountSync(cartDiscountSyncOptions);
@@ -156,11 +163,11 @@ class CartDiscountSyncBenchmark {
 
         // Assert actual state of CTP project (number of updated cart discount)
         final CompletableFuture<Integer> totalNumberOfUpdatedCartDiscounts =
-            CTP_TARGET_CLIENT.execute(
-                CartDiscountQuery.of().withPredicates(QueryPredicate.of("stackingMode = \"Stacking\"")))
-                             .thenApply(PagedQueryResult::getTotal)
-                             .thenApply(Long::intValue)
-                             .toCompletableFuture();
+                CTP_TARGET_CLIENT.execute(
+                        CartDiscountQuery.of().withPredicates(QueryPredicate.of("stackingMode = \"Stacking\"")))
+                                 .thenApply(PagedQueryResult::getTotal)
+                                 .thenApply(Long::intValue)
+                                 .toCompletableFuture();
 
 
         executeBlocking(totalNumberOfUpdatedCartDiscounts);
@@ -168,10 +175,10 @@ class CartDiscountSyncBenchmark {
 
         // Assert actual state of CTP project (total number of existing cart discounts)
         final CompletableFuture<Integer> totalNumberOfCartDiscounts =
-            CTP_TARGET_CLIENT.execute(CartDiscountQuery.of())
-                             .thenApply(PagedQueryResult::getTotal)
-                             .thenApply(Long::intValue)
-                             .toCompletableFuture();
+                CTP_TARGET_CLIENT.execute(CartDiscountQuery.of())
+                                 .thenApply(PagedQueryResult::getTotal)
+                                 .thenApply(Long::intValue)
+                                 .toCompletableFuture();
         executeBlocking(totalNumberOfCartDiscounts);
         assertThat(totalNumberOfCartDiscounts).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
 
@@ -195,13 +202,13 @@ class CartDiscountSyncBenchmark {
         // Create first half of cart discount drafts to target project
         // with different stacking mode (STOP_AFTER_THIS_DISCOUNT)
         CompletableFuture.allOf(
-            firstHalf.stream()
-                     .map(CartDiscountDraftBuilder::of)
-                     .map(builder -> builder.stackingMode(StackingMode.STOP_AFTER_THIS_DISCOUNT))
-                     .map(CartDiscountDraftBuilder::build)
-                     .map(draft -> CTP_TARGET_CLIENT.execute(CartDiscountCreateCommand.of(draft)))
-                     .map(CompletionStage::toCompletableFuture)
-                     .toArray(CompletableFuture[]::new))
+                firstHalf.stream()
+                         .map(CartDiscountDraftBuilder::of)
+                         .map(builder -> builder.stackingMode(StackingMode.STOP_AFTER_THIS_DISCOUNT))
+                         .map(CartDiscountDraftBuilder::build)
+                         .map(draft -> CTP_TARGET_CLIENT.execute(CartDiscountCreateCommand.of(draft)))
+                         .map(CompletionStage::toCompletableFuture)
+                         .toArray(CompletableFuture[]::new))
                          .join();
 
 
@@ -223,12 +230,12 @@ class CartDiscountSyncBenchmark {
 
         // Assert actual state of CTP project (number of updated cart discount)
         final CompletableFuture<Integer> totalNumberOfUpdatedCartDiscounts =
-            CTP_TARGET_CLIENT.execute(
-                CartDiscountQuery.of().withPredicates(
-                    QueryPredicate.of("stackingMode = \"StopAfterThisDiscount\"")))
-                             .thenApply(PagedQueryResult::getTotal)
-                             .thenApply(Long::intValue)
-                             .toCompletableFuture();
+                CTP_TARGET_CLIENT.execute(
+                        CartDiscountQuery.of().withPredicates(
+                                QueryPredicate.of("stackingMode = \"StopAfterThisDiscount\"")))
+                                 .thenApply(PagedQueryResult::getTotal)
+                                 .thenApply(Long::intValue)
+                                 .toCompletableFuture();
 
         executeBlocking(totalNumberOfUpdatedCartDiscounts);
         assertThat(totalNumberOfUpdatedCartDiscounts).isCompletedWithValue(0);
@@ -236,10 +243,10 @@ class CartDiscountSyncBenchmark {
 
         // Assert actual state of CTP project (total number of existing cart discounts)
         final CompletableFuture<Integer> totalNumberOfCartDiscounts =
-            CTP_TARGET_CLIENT.execute(CartDiscountQuery.of())
-                             .thenApply(PagedQueryResult::getTotal)
-                             .thenApply(Long::intValue)
-                             .toCompletableFuture();
+                CTP_TARGET_CLIENT.execute(CartDiscountQuery.of())
+                                 .thenApply(PagedQueryResult::getTotal)
+                                 .thenApply(Long::intValue)
+                                 .toCompletableFuture();
         executeBlocking(totalNumberOfCartDiscounts);
         assertThat(totalNumberOfCartDiscounts).isCompletedWithValue(NUMBER_OF_RESOURCE_UNDER_TEST);
 
@@ -257,21 +264,21 @@ class CartDiscountSyncBenchmark {
     private static List<CartDiscountDraft> buildCartDiscountDrafts(final int numberOfCartDiscounts) {
         final List<String> sortOrders = getSortOrders(numberOfCartDiscounts);
         return IntStream
-            .range(0, numberOfCartDiscounts)
-            .mapToObj(i ->
-                CartDiscountDraftBuilder.of(
-                    CART_DISCOUNT_NAME_1,
-                    CART_DISCOUNT_CART_PREDICATE_1,
-                    CART_DISCOUNT_VALUE_1,
-                    CART_DISCOUNT_TARGET_1,
-                    sortOrders.get(i),
-                    false)
+                .range(0, numberOfCartDiscounts)
+                .mapToObj(i ->
+                        CartDiscountDraftBuilder.of(
+                                CART_DISCOUNT_NAME_1,
+                                CART_DISCOUNT_CART_PREDICATE_1,
+                                CART_DISCOUNT_VALUE_1,
+                                CART_DISCOUNT_TARGET_1,
+                                sortOrders.get(i),
+                                false)
                                         .key(format("key__%d", i))
                                         .isActive(false)
                                         .description(LocalizedString.of(Locale.ENGLISH, format("description__%d", i)))
                                         .validFrom(JANUARY_FROM)
                                         .validUntil(JANUARY_UNTIL)
                                         .build())
-            .collect(toList());
+                .collect(toList());
     }
 }

@@ -1,5 +1,8 @@
 package com.commercetools.sync.states;
 
+import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.commons.utils.QuadConsumer;
+import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
@@ -8,8 +11,7 @@ import io.sphere.sdk.states.StateDraft;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
+import java.util.Optional;
 
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,8 +46,8 @@ class StateSyncOptionsBuilderTest {
         assertAll(
             () -> assertThat(stateSyncOptions.getBeforeUpdateCallback()).isNull(),
             () -> assertThat(stateSyncOptions.getBeforeCreateCallback()).isNull(),
-            () -> assertThat(stateSyncOptions.getErrorCallBack()).isNull(),
-            () -> assertThat(stateSyncOptions.getWarningCallBack()).isNull(),
+            () -> assertThat(stateSyncOptions.getErrorCallback()).isNull(),
+            () -> assertThat(stateSyncOptions.getWarningCallback()).isNull(),
             () -> assertThat(stateSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT),
             () -> assertThat(stateSyncOptions.getBatchSize()).isEqualTo(StateSyncOptionsBuilder.BATCH_SIZE_DEFAULT)
         );
@@ -73,24 +75,24 @@ class StateSyncOptionsBuilderTest {
 
     @Test
     void build_WithErrorCallback_ShouldSetErrorCallback() {
-        final BiConsumer<String, Throwable> mockErrorCallBack = (errorMessage, errorException) -> {
-        };
-        stateSyncOptionsBuilder.errorCallback(mockErrorCallBack);
+        final QuadConsumer<SyncException, Optional<StateDraft>, Optional<State>,
+            List<UpdateAction<State>>> mockErrorCallback = (exception, newDraft, old, actions) -> { };
+        stateSyncOptionsBuilder.errorCallback(mockErrorCallback);
 
         StateSyncOptions stateSyncOptions = stateSyncOptionsBuilder.build();
 
-        assertThat(stateSyncOptions.getErrorCallBack()).isNotNull();
+        assertThat(stateSyncOptions.getErrorCallback()).isNotNull();
     }
 
     @Test
     void build_WithWarningCallback_ShouldSetWarningCallback() {
-        final Consumer<String> mockWarningCallBack = (warningMessage) -> {
-        };
-        stateSyncOptionsBuilder.warningCallback(mockWarningCallBack);
+        final TriConsumer<SyncException, Optional<StateDraft>, Optional<State>> mockWarningCallback =
+            (exception, newDraft, old) -> { };
+        stateSyncOptionsBuilder.warningCallback(mockWarningCallback);
 
         StateSyncOptions stateSyncOptions = stateSyncOptionsBuilder.build();
 
-        assertThat(stateSyncOptions.getWarningCallBack()).isNotNull();
+        assertThat(stateSyncOptions.getWarningCallback()).isNotNull();
     }
 
 

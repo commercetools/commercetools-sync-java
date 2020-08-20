@@ -3,11 +3,12 @@ package com.commercetools.sync.commons.utils;
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.helpers.AssetActionFactory;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
-
+import io.sphere.sdk.models.Resource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -47,11 +48,14 @@ public final class AssetsUpdateActionUtils {
      *
      * <p>If the list of new {@link AssetDraft}s is {@code null}, then remove actions are built for every existing asset
      * in the {@code oldAssets} list.
-     *
+     * @param <T>                           the type of the resource the asset update actions are built for.
+     * @param <D>                           the type of the draft, which contains the changes
+     *                                      the asset update actions are built for.
+     * @param oldResource                   resource from a target project, whose asset should be updated.
+     * @param newResource                   resource draft from a source project, which contains the asset to update.
      * @param oldAssets                     the old list of assets.
      * @param newAssetDrafts                the new list of asset drafts.
      * @param assetActionFactory            factory responsible for building asset update actions.
-     * @param <T>                           the type of the resource the asset update actions are built for.
      * @param syncOptions                   responsible for supplying the sync options to the sync utility method.
      *                                      It is used for triggering the warn callback within the utility
      * @return a list of asset update actions on the resource of type T if the list of assets is not identical.
@@ -59,15 +63,18 @@ public final class AssetsUpdateActionUtils {
      * @throws BuildUpdateActionException in case there are asset drafts with duplicate keys.
      */
     @Nonnull
-    public static <T> List<UpdateAction<T>> buildAssetsUpdateActions(
+    public static <T extends Resource, D> List<UpdateAction<T>> buildAssetsUpdateActions(
+        @Nonnull final T oldResource,
+        @Nonnull final D newResource,
         @Nonnull final List<Asset> oldAssets,
         @Nullable final List<AssetDraft> newAssetDrafts,
-        @Nonnull final AssetActionFactory<T> assetActionFactory,
+        @Nonnull final AssetActionFactory<T, D> assetActionFactory,
         @Nonnull final BaseSyncOptions syncOptions)
         throws BuildUpdateActionException {
 
         if (newAssetDrafts != null) {
-            return buildAssetsUpdateActionsWithNewAssetDrafts(oldAssets, newAssetDrafts, assetActionFactory,
+            return buildAssetsUpdateActionsWithNewAssetDrafts(oldResource, newResource, oldAssets, newAssetDrafts,
+                assetActionFactory,
                 syncOptions);
         } else {
             return oldAssets.stream()
@@ -94,10 +101,12 @@ public final class AssetsUpdateActionUtils {
      * @throws BuildUpdateActionException in case there are asset drafts with duplicate keys.
      */
     @Nonnull
-    private static <T> List<UpdateAction<T>> buildAssetsUpdateActionsWithNewAssetDrafts(
+    private static <T extends Resource, D> List<UpdateAction<T>> buildAssetsUpdateActionsWithNewAssetDrafts(
+        @Nonnull final T oldResource,
+        @Nonnull final D newResource,
         @Nonnull final List<Asset> oldAssets,
         @Nonnull final List<AssetDraft> newAssetDrafts,
-        @Nonnull final AssetActionFactory<T> assetActionFactory,
+        @Nonnull final AssetActionFactory<T, D>  assetActionFactory,
         @Nonnull final BaseSyncOptions syncOptions)
         throws BuildUpdateActionException {
 
@@ -113,7 +122,8 @@ public final class AssetsUpdateActionUtils {
             if (isNotBlank(assetKey)) {
                 oldAssetsKeyMap.put(assetKey, asset);
             } else {
-                syncOptions.applyWarningCallback(format(ASSET_KEY_NOT_SET, "id: " + asset.getId()));
+                syncOptions.applyWarningCallback(new SyncException(format(ASSET_KEY_NOT_SET, "id: " + asset.getId())),
+                        asset, null);
             }
         });
         final Map<String, AssetDraft> newAssetDraftsKeyMap = new HashMap<>();
@@ -128,7 +138,8 @@ public final class AssetsUpdateActionUtils {
                     );
 
                 } else {
-                    syncOptions.applyWarningCallback(format(ASSET_KEY_NOT_SET, "name: " + newAsset.getName()));
+                    syncOptions.applyWarningCallback(new SyncException(format(ASSET_KEY_NOT_SET,
+                            "name: " + newAsset.getName())), null, newAsset);
                 }
             });
 
@@ -143,7 +154,8 @@ public final class AssetsUpdateActionUtils {
 
         //1. Remove or compare if matching.
         final List<UpdateAction<T>> updateActions =
-            buildRemoveAssetOrAssetUpdateActions(oldAssets, removedAssetKeys, newAssetDraftsKeyMap, assetActionFactory);
+            buildRemoveAssetOrAssetUpdateActions(oldResource, newResource, oldAssets, removedAssetKeys,
+                newAssetDraftsKeyMap, assetActionFactory);
 
         //2. Compare ordering of assets and add a ChangeAssetOrder action if needed.
         buildChangeAssetOrderUpdateAction(oldAssets, newAssetDrafts, removedAssetKeys, assetActionFactory)
@@ -170,11 +182,13 @@ public final class AssetsUpdateActionUtils {
      *         Otherwise, if the assets order is identical, an empty optional is returned.
      */
     @Nonnull
-    private static <T> List<UpdateAction<T>> buildRemoveAssetOrAssetUpdateActions(
+    private static <T  extends Resource, D> List<UpdateAction<T>> buildRemoveAssetOrAssetUpdateActions(
+        @Nonnull final T oldResource,
+        @Nonnull final D newResource,
         @Nonnull final List<Asset> oldAssets,
         @Nonnull final Set<String> removedAssetKeys,
         @Nonnull final Map<String, AssetDraft> newAssetDraftsKeyMap,
-        @Nonnull final AssetActionFactory<T> assetActionFactory) {
+        @Nonnull final AssetActionFactory<T, D> assetActionFactory) {
         // For every old asset, If it doesn't exist anymore in the new asset drafts,
         // then add a RemoveAsset action to the list of update actions. If the asset still exists in the new draft,
         // then compare the asset fields (name, desc, etc..), and add the computed actions to the list of update
@@ -187,7 +201,7 @@ public final class AssetsUpdateActionUtils {
                 final AssetDraft matchingNewAssetDraft = newAssetDraftsKeyMap.get(oldAssetKey);
                 return ofNullable(matchingNewAssetDraft)
                     .map(assetDraft -> // If asset exists, compare the two assets.
-                        assetActionFactory.buildAssetActions(oldAsset, assetDraft))
+                        assetActionFactory.buildAssetActions(oldResource, newResource, oldAsset, assetDraft))
                     .orElseGet(() -> { // If asset doesn't exist, remove asset.
                         removedAssetKeys.add(oldAssetKey);
                         return singletonList(assetActionFactory.buildRemoveAssetAction(oldAssetKey));
@@ -212,11 +226,11 @@ public final class AssetsUpdateActionUtils {
      *         identical. Otherwise, if the assets order is identical, an empty optional is returned.
      */
     @Nonnull
-    private static <T> Optional<UpdateAction<T>> buildChangeAssetOrderUpdateAction(
+    private static <T  extends Resource, D> Optional<UpdateAction<T>> buildChangeAssetOrderUpdateAction(
         @Nonnull final List<Asset> oldAssets,
         @Nonnull final List<AssetDraft> newAssetDrafts,
         @Nonnull final Set<String> removedAssetKeys,
-        @Nonnull final AssetActionFactory<T> assetActionFactory) {
+        @Nonnull final AssetActionFactory<T, D> assetActionFactory) {
 
         final Map<String, String> oldAssetKeyToIdMap = oldAssets.stream()
                                                                 .filter(asset -> isNotBlank(asset.getKey()))
@@ -251,10 +265,10 @@ public final class AssetsUpdateActionUtils {
      *         Otherwise, if the assets order is identical, an empty optional is returned.
      */
     @Nonnull
-    private static <T> List<UpdateAction<T>> buildAddAssetUpdateActions(
+    private static <T  extends Resource, D> List<UpdateAction<T>> buildAddAssetUpdateActions(
         @Nonnull final List<AssetDraft> newAssetDrafts,
         @Nonnull final Map<String, Asset> oldAssetsKeyMap,
-        @Nonnull final AssetActionFactory<T> assetActionFactory) {
+        @Nonnull final AssetActionFactory<T, D> assetActionFactory) {
 
 
         final ArrayList<Optional<UpdateAction<T>>> optionalActions =

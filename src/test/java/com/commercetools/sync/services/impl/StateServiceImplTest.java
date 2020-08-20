@@ -58,9 +58,9 @@ class StateServiceImplTest {
         errorMessages = new ArrayList<>();
         errorExceptions = new ArrayList<>();
         StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder.of(client)
-            .errorCallback((errorMessage, errorException) -> {
-                errorMessages.add(errorMessage);
-                errorExceptions.add(errorException);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
+                errorExceptions.add(exception.getCause());
             })
             .build();
         service = new StateServiceImpl(stateSyncOptions);

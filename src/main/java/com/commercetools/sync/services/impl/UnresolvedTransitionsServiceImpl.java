@@ -1,5 +1,6 @@
 package com.commercetools.sync.services.impl;
 
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedTransitions;
 import com.commercetools.sync.services.UnresolvedTransitionsService;
 import com.commercetools.sync.states.StateSyncOptions;
@@ -90,8 +91,8 @@ public class UnresolvedTransitionsServiceImpl implements UnresolvedTransitionsSe
                 if (exception == null) {
                     return Optional.of(resource.getValue());
                 } else {
-                    syncOptions.applyErrorCallback(
-                        format(SAVE_FAILED, customObjectDraft.getKey(), draft.getStateDraft().getKey()), exception);
+                    syncOptions.applyErrorCallback(new SyncException(format(SAVE_FAILED, customObjectDraft.getKey(),
+                        draft.getStateDraft().getKey()), exception));
                     return Optional.empty();
                 }
             });
@@ -109,8 +110,8 @@ public class UnresolvedTransitionsServiceImpl implements UnresolvedTransitionsSe
                 if (exception == null) {
                     return Optional.of(resource.getValue());
                 } else {
-                    syncOptions.applyErrorCallback(
-                        format(DELETE_FAILED, hash(key), key), exception);
+                    syncOptions.applyErrorCallback( new SyncException( format(DELETE_FAILED, hash(key), key),
+                        exception));
                     return Optional.empty();
                 }
             });

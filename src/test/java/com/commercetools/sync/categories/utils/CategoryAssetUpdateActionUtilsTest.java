@@ -5,6 +5,7 @@ import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.commands.updateactions.ChangeAssetName;
 import io.sphere.sdk.categories.commands.updateactions.SetAssetCustomField;
 import io.sphere.sdk.categories.commands.updateactions.SetAssetCustomType;
@@ -51,6 +52,9 @@ class CategoryAssetUpdateActionUtilsTest {
     private static final CategorySyncOptions SYNC_OPTIONS = CategorySyncOptionsBuilder
         .of(mock(SphereClient.class)).build();
 
+    Category mainCategory = mock(Category.class);
+    CategoryDraft mainCategoryDraft = mock(CategoryDraft.class);
+
     @Test
     void buildActions_WithDifferentValues_ShouldBuildUpdateAction() {
         final LocalizedString oldName = LocalizedString.of(Locale.GERMAN, "oldName");
@@ -91,7 +95,8 @@ class CategoryAssetUpdateActionUtilsTest {
                                                           .build();
 
 
-        final List<UpdateAction<Category>> updateActions = buildActions(oldAsset, newAssetDraft, SYNC_OPTIONS);
+        final List<UpdateAction<Category>> updateActions = buildActions(mainCategory, mainCategoryDraft,
+            oldAsset, newAssetDraft, SYNC_OPTIONS);
 
         assertThat(updateActions).hasSize(5);
         assertThat(updateActions).containsExactlyInAnyOrder(
@@ -131,7 +136,8 @@ class CategoryAssetUpdateActionUtilsTest {
         final AssetDraft newAssetDraft = AssetDraftBuilder.of(oldAsset).build();
 
 
-        final List<UpdateAction<Category>> updateActions = buildActions(oldAsset, newAssetDraft, SYNC_OPTIONS);
+        final List<UpdateAction<Category>> updateActions = buildActions(mainCategory, mainCategoryDraft,
+            oldAsset, newAssetDraft, SYNC_OPTIONS);
 
         assertThat(updateActions).isEmpty();
     }
@@ -337,7 +343,7 @@ class CategoryAssetUpdateActionUtilsTest {
                                                           .build();
 
         final List<UpdateAction<Category>> updateActions =
-            buildCustomUpdateActions(oldAsset, newAssetDraft, SYNC_OPTIONS);
+            buildCustomUpdateActions(mainCategory, mainCategoryDraft, oldAsset, newAssetDraft, SYNC_OPTIONS);
 
         assertThat(updateActions).isEmpty();
     }
@@ -368,7 +374,7 @@ class CategoryAssetUpdateActionUtilsTest {
                                                           .build();
 
         final List<UpdateAction<Category>> updateActions =
-            buildCustomUpdateActions(oldAsset, newAssetDraft, SYNC_OPTIONS);
+            buildCustomUpdateActions(mainCategory, mainCategoryDraft, oldAsset, newAssetDraft, SYNC_OPTIONS);
 
         assertThat(updateActions).hasSize(2);
     }
@@ -391,7 +397,7 @@ class CategoryAssetUpdateActionUtilsTest {
                                                           .build();
 
         final List<UpdateAction<Category>> updateActions =
-            buildCustomUpdateActions(oldAsset, newAssetDraft, SYNC_OPTIONS);
+            buildCustomUpdateActions(mainCategory, mainCategoryDraft, oldAsset, newAssetDraft, SYNC_OPTIONS);
 
         assertThat(updateActions).containsExactly(
             SetAssetCustomType.ofKey(newAssetDraft.getKey(), newCustomFieldsDraft)
@@ -425,14 +431,14 @@ class CategoryAssetUpdateActionUtilsTest {
 
         final List<String> errors = new ArrayList<>();
 
-        final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                          .errorCallback((errorMessage, throwable) ->
-                                                                              errors.add(errorMessage))
-                                                                          .build();
-
+        final CategorySyncOptions syncOptions =
+            CategorySyncOptionsBuilder.of(mock(SphereClient.class))
+                .errorCallback((exception, oldResource, newResource, updateActions) ->
+                    errors.add(exception.getMessage()))
+                .build();
 
         final List<UpdateAction<Category>> updateActions =
-            buildCustomUpdateActions(oldAsset, newAssetDraft, syncOptions);
+            buildCustomUpdateActions(mainCategory, mainCategoryDraft, oldAsset, newAssetDraft, syncOptions);
 
         assertThat(updateActions).isEmpty();
         assertThat(errors).hasSize(1);

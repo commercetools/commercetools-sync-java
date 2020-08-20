@@ -54,11 +54,12 @@ class UnresolvedTransitionsServiceImplIT {
 
         final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .errorCallback((errorMessage, exception) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(exception);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
-            .warningCallback(warningMessage -> warningCallBackMessages.add(warningMessage))
+            .warningCallback((exception, newResource, oldResource) ->
+                warningCallBackMessages.add(exception.getMessage()))
             .build();
 
         unresolvedTransitionsService = new UnresolvedTransitionsServiceImpl(stateSyncOptions);

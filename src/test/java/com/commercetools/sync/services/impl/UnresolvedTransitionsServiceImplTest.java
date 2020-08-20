@@ -48,9 +48,9 @@ class UnresolvedTransitionsServiceImplTest {
         errorExceptions = new ArrayList<>();
         stateSyncOptions = StateSyncOptionsBuilder
             .of(mock(SphereClient.class))
-            .errorCallback((errorMessage, errorException) -> {
-                errorMessages.add(errorMessage);
-                errorExceptions.add(errorException);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
+                errorExceptions.add(exception.getCause());
             })
             .build();
         service = new UnresolvedTransitionsServiceImpl(stateSyncOptions);

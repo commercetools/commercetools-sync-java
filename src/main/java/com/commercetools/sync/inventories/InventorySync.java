@@ -1,6 +1,7 @@
 package com.commercetools.sync.inventories;
 
 import com.commercetools.sync.commons.BaseSync;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.inventories.helpers.InventoryEntryIdentifier;
 import com.commercetools.sync.inventories.helpers.InventoryReferenceResolver;
 import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
@@ -129,7 +130,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
 
                 if (exception != null) {
                     final String errorMessage = format(CTP_INVENTORY_FETCH_FAILED, skus);
-                    handleError(errorMessage, exception, skus.size());
+                    handleError(new SyncException(errorMessage, exception), skus.size());
                     return CompletableFuture.completedFuture(null);
                 } else {
                     return syncBatch(fetchedInventoryEntries, validDrafts);
@@ -151,9 +152,9 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      */
     private boolean validateDraft(@Nullable final InventoryEntryDraft draft) {
         if (draft == null) {
-            handleError(INVENTORY_DRAFT_IS_NULL, null, 1);
+            handleError(new SyncException(INVENTORY_DRAFT_IS_NULL), 1);
         } else if (isBlank(draft.getSku())) {
-            handleError(INVENTORY_DRAFT_HAS_NO_SKU, null, 1);
+            handleError(new SyncException(INVENTORY_DRAFT_HAS_NO_SKU), 1);
         } else {
             return true;
         }
@@ -186,7 +187,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                     .exceptionally(completionException -> {
                         final String errorMessage = format(FAILED_TO_PROCESS,
                             newInventoryEntry.getSku(), completionException.getMessage());
-                        handleError(errorMessage, completionException, 1);
+                        handleError(new SyncException(errorMessage, completionException), 1);
                         return Optional.empty();
                     })
             )
@@ -235,7 +236,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         final List<UpdateAction<InventoryEntry>> updateActions = buildActions(entry, draft, syncOptions);
 
         final List<UpdateAction<InventoryEntry>> beforeUpdateCallBackApplied =
-            syncOptions.applyBeforeUpdateCallBack(updateActions, draft, entry);
+            syncOptions.applyBeforeUpdateCallback(updateActions, draft, entry);
 
         if (!beforeUpdateCallBackApplied.isEmpty()) {
             return inventoryService
@@ -248,7 +249,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                         final ResourceIdentifier<Channel> supplyChannel = draft.getSupplyChannel();
                         final String errorMessage = format(CTP_INVENTORY_ENTRY_UPDATE_FAILED, draft.getSku(),
                             supplyChannel != null ? supplyChannel.getId() : null);
-                        handleError(errorMessage, sphereException, 1);
+                        handleError(new SyncException(errorMessage, sphereException), entry, draft, updateActions);
                         return CompletableFuture.completedFuture(Optional.empty());
                     } else {
                         statistics.incrementUpdated();
@@ -274,7 +275,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
         @Nonnull final InventoryEntryDraft inventoryEntryDraft) {
 
         return syncOptions
-            .applyBeforeCreateCallBack(inventoryEntryDraft)
+            .applyBeforeCreateCallback(inventoryEntryDraft)
             .map(draft -> inventoryService
                 .createInventoryEntry(draft)
                 .thenApply(inventoryEntryOptional -> {
@@ -294,12 +295,30 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
      * incrementing the total number of failed categories to sync.
      *
-     * @param errorMessage The error message describing the reason(s) of failure.
-     * @param exception    The exception that called caused the failure, if any.
+     * @param syncException The exception that caused the failure.
+     * @param failedTimes  The number of times that the failed counter is incremented.
      */
-    private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
+    private void handleError(@Nonnull final SyncException syncException,
                              final int failedTimes) {
-        syncOptions.applyErrorCallback(errorMessage, exception);
+        syncOptions.applyErrorCallback(syncException);
         statistics.incrementFailed(failedTimes);
+    }
+
+    /**
+     * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this method calls the
+     * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
+     * incrementing the total number of failed categories to sync.
+     *
+     * @param syncException The exception that caused the failure.
+     * @param entry existing inventory entry that could be updated.
+     * @param draft draft containing data that could differ from data in {@code entry}.
+     * @param updateActions the update actions to update the {@link InventoryEntry} with.
+     */
+    private void handleError(@Nonnull final SyncException syncException,
+                             @Nullable final InventoryEntry entry,
+                             @Nullable final InventoryEntryDraft draft,
+        @Nullable final List<UpdateAction<InventoryEntry>> updateActions) {
+        syncOptions.applyErrorCallback(syncException, entry, draft, updateActions);
+        statistics.incrementFailed(1);
     }
 }

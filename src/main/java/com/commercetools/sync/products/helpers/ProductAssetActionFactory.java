@@ -6,6 +6,7 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.products.Product;
+import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.updateactions.AddAsset;
 import io.sphere.sdk.products.commands.updateactions.ChangeAssetOrder;
 import io.sphere.sdk.products.commands.updateactions.RemoveAsset;
@@ -15,7 +16,7 @@ import java.util.List;
 
 import static com.commercetools.sync.products.utils.ProductVariantAssetUpdateActionUtils.buildActions;
 
-public final class ProductAssetActionFactory extends AssetActionFactory<Product> {
+public  final class  ProductAssetActionFactory extends AssetActionFactory<Product, ProductDraft> {
     private Integer variantId;
 
     public ProductAssetActionFactory(@Nonnull final Integer variantId,
@@ -25,9 +26,12 @@ public final class ProductAssetActionFactory extends AssetActionFactory<Product>
     }
 
     @Override
-    public List<UpdateAction<Product>> buildAssetActions(@Nonnull final Asset oldAsset,
-                                                         @Nonnull final AssetDraft newAssetDraft) {
-        return buildActions(variantId, oldAsset, newAssetDraft, (ProductSyncOptions) syncOptions);
+    public List<UpdateAction<Product>> buildAssetActions(@Nonnull final Product oldResource,
+                                                          @Nonnull final ProductDraft newResource,
+                                                          @Nonnull final Asset oldAsset,
+                                                          @Nonnull final AssetDraft newAssetDraft) {
+        return buildActions(oldResource, newResource, variantId, oldAsset, newAssetDraft,
+            (ProductSyncOptions) syncOptions);
     }
 
     @Override

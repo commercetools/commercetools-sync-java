@@ -12,6 +12,7 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.Resource;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -27,16 +28,22 @@ public final class CategoryAssetUpdateActionUtils {
      * {@link UpdateAction}&lt;{@link Category}&gt; as a result. If both the {@link Asset} and the {@link AssetDraft}
      * have identical fields, then no update action is needed and hence an empty {@link List} is returned.
      *
-     * @param oldAsset    the asset which should be updated.
-     * @param newAsset    the asset draft where we get the new fields.
-     * @param syncOptions responsible for supplying the sync options to the sync utility method. It is used for
-     *                    triggering the error callback within the utility, in case of errors.
+     * @param <D>           Type of the mainresource draft
+     * @param oldResource  mainresource, whose asset should be updated.
+     * @param newResource  new mainresource draft, which contains the asset to update.
+     * @param oldAsset      the asset which should be updated.
+     * @param newAsset      the asset draft where we get the new fields.
+     * @param syncOptions   responsible for supplying the sync options to the sync utility method. It is used for
+     *                      triggering the error callback within the utility, in case of errors.
      * @return A list with the update actions or an empty list if the asset fields are identical.
      */
     @Nonnull
-    public static List<UpdateAction<Category>> buildActions(@Nonnull final Asset oldAsset,
-                                                            @Nonnull final AssetDraft newAsset,
-                                                            @Nonnull final CategorySyncOptions syncOptions) {
+    public static  <D> List<UpdateAction<Category>> buildActions(
+        @Nonnull final Resource oldResource,
+        @Nonnull final D newResource,
+        @Nonnull final Asset oldAsset,
+        @Nonnull final AssetDraft newAsset,
+        @Nonnull final CategorySyncOptions syncOptions) {
 
         final List<UpdateAction<Category>> updateActions = filterEmptyOptionals(
             buildChangeAssetNameUpdateAction(oldAsset, newAsset),
@@ -45,7 +52,7 @@ public final class CategoryAssetUpdateActionUtils {
             buildSetAssetSourcesUpdateAction(oldAsset, newAsset)
         );
 
-        updateActions.addAll(buildCustomUpdateActions(oldAsset, newAsset, syncOptions));
+        updateActions.addAll(buildCustomUpdateActions(oldResource, newResource, oldAsset, newAsset, syncOptions));
         return updateActions;
     }
 
@@ -128,6 +135,9 @@ public final class CategoryAssetUpdateActionUtils {
      * have identical custom fields and types, then no update action is needed and hence an empty {@link List} is
      * returned.
      *
+     * @param <D>         Type of the mainresource draft
+     * @param oldCategory category in a target project, whose asset should be updated.
+     * @param newCategory category in a source project, which contains the updated asset.
      * @param oldAsset    the asset which should be updated.
      * @param newAsset    the asset draft where we get the new custom fields and types.
      * @param syncOptions responsible for supplying the sync options to the sync utility method. It is used for
@@ -136,12 +146,16 @@ public final class CategoryAssetUpdateActionUtils {
      *         identical.
      */
     @Nonnull
-    public static List<UpdateAction<Category>> buildCustomUpdateActions(
+    public static  <D> List<UpdateAction<Category>> buildCustomUpdateActions(
+        @Nonnull final Resource oldCategory,
+        @Nonnull final D newCategory,
         @Nonnull final Asset oldAsset,
         @Nonnull final AssetDraft newAsset,
         @Nonnull final CategorySyncOptions syncOptions) {
 
         return CustomUpdateActionUtils.buildCustomUpdateActions(
+            oldCategory,
+            newCategory,
             oldAsset,
             newAsset,
             new AssetCustomActionBuilder(),

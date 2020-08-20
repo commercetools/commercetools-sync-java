@@ -1,5 +1,6 @@
 package com.commercetools.sync.products;
 
+import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
@@ -103,9 +104,9 @@ class ProductSyncTest {
 
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder
             .of(mockClient)
-            .errorCallback((errorMessage, exception) -> {
-                errorMessages.add(errorMessage);
-                exceptions.add(exception);
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception.getCause());
             })
             .build();
 
@@ -156,18 +157,19 @@ class ProductSyncTest {
                 .state(null)
                 .build();
 
-        final List<String> errorMessages = new ArrayList<>();
-        final List<Throwable> exceptions = new ArrayList<>();
+     
 
         final SphereClient mockClient = mock(SphereClient.class);
         when(mockClient.execute(any(ProductQuery.class)))
                 .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
 
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder
                 .of(mockClient)
-                .errorCallback((errorMessage, exception) -> {
-                    errorMessages.add(errorMessage);
-                    exceptions.add(exception);
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorMessages.add(exception.getMessage());
+                    exceptions.add(exception.getCause());
                 })
                 .build();
 
@@ -250,8 +252,8 @@ class ProductSyncTest {
 
 
         // assertion
-        verify(spyProductSyncOptions).applyBeforeCreateCallBack(any());
-        verify(spyProductSyncOptions, never()).applyBeforeUpdateCallBack(any(), any(), any());
+        verify(spyProductSyncOptions).applyBeforeCreateCallback(any());
+        verify(spyProductSyncOptions, never()).applyBeforeUpdateCallback(any(), any(), any());
     }
 
     @Test
@@ -299,7 +301,73 @@ class ProductSyncTest {
         productSync.sync(singletonList(productDraft)).toCompletableFuture().join();
 
         // assertion
-        verify(spyProductSyncOptions).applyBeforeUpdateCallBack(any(), any(), any());
-        verify(spyProductSyncOptions, never()).applyBeforeCreateCallBack(any());
+        verify(spyProductSyncOptions).applyBeforeUpdateCallback(any(), any(), any());
+        verify(spyProductSyncOptions, never()).applyBeforeCreateCallback(any());
     }
+
+    @Test
+    void sync_WithEmptyAttributeMetaDataMap_ShouldCallErrorCallbak() {
+        // preparation
+        final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH,
+            ProductType.referenceOfId("productTypeKey"))
+            .taxCategory(null)
+            .state(null)
+            .build();
+
+        final Product mockedExistingProduct =
+            readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class);
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+      
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder
+            .of(mock(SphereClient.class))
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception.getCause());
+            })
+            .build();
+
+        final ProductService productService = mock(ProductService.class);
+        final Map<String, String> keyToIds = new HashMap<>();
+        keyToIds.put(productDraft.getKey(), UUID.randomUUID().toString());
+        when(productService.cacheKeysToIds(anySet())).thenReturn(completedFuture(keyToIds));
+        when(productService.fetchMatchingProductsByKeys(anySet()))
+            .thenReturn(completedFuture(singleton(mockedExistingProduct)));
+        when(productService.updateProduct(any(), any())).thenReturn(completedFuture(mockedExistingProduct));
+
+        final ProductTypeService productTypeService = mock(ProductTypeService.class);
+        when(productTypeService.fetchCachedProductTypeId(any()))
+            .thenReturn(completedFuture(Optional.of(UUID.randomUUID().toString())));
+        when(productTypeService.fetchCachedProductAttributeMetaDataMap(any()))
+            .thenReturn(completedFuture(Optional.empty()));
+
+        final CategoryService categoryService = mock(CategoryService.class);
+        when(categoryService.fetchMatchingCategoriesByKeys(any())).thenReturn(completedFuture(emptySet()));
+
+        final ProductSyncOptions spyProductSyncOptions = spy(productSyncOptions);
+
+        final ProductSync productSync = new ProductSync(spyProductSyncOptions, productService,
+            productTypeService, categoryService, mock(TypeService.class),
+            mock(ChannelService.class), mock(CustomerGroupService.class), mock(TaxCategoryService.class),
+            mock(StateService.class),
+            mock(UnresolvedReferencesService.class));
+
+        // test
+        ProductSyncStatistics productSyncStatistics =
+            productSync.sync(singletonList(productDraft)).toCompletableFuture().join();
+
+        // assertion
+
+        // assertions
+        assertThat(errorMessages)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(message ->
+                assertThat(message).contains("Failed to update Product with key: 'productKey1'. Reason: Failed to"
+                    + " fetch a productType for the product to build the products' attributes metadata.")
+            );
+
+        AssertionsForStatistics.assertThat(productSyncStatistics).hasValues(1, 0, 0, 1);
+    }
+
+
 }

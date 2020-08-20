@@ -8,6 +8,7 @@ import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.AssetDraftBuilder;
 import io.sphere.sdk.products.Product;
+import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.updateactions.AddAsset;
 import io.sphere.sdk.products.commands.updateactions.ChangeAssetOrder;
 import io.sphere.sdk.products.commands.updateactions.RemoveAsset;
@@ -76,6 +77,8 @@ class ProductAssetActionFactoryTest {
 
     @Test
     void buildAssetActions_always_ShouldBuildCorrectAction() {
+        final Product mainProduct = mock(Product.class);
+        final ProductDraft mainProductDraft = mock(ProductDraft.class);
         final Asset asset = mock(Asset.class);
         when(asset.getKey()).thenReturn("assetKey");
         when(asset.getName()).thenReturn(ofEnglish("assetName"));
@@ -88,7 +91,7 @@ class ProductAssetActionFactoryTest {
                                                        .build();
 
         final List<UpdateAction<Product>> updateActions = productAssetActionFactory
-            .buildAssetActions(asset, assetDraft);
+            .buildAssetActions(mainProduct, mainProductDraft, asset, assetDraft);
 
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).containsExactly(

@@ -51,7 +51,7 @@ class TaxCategorySyncTest {
     void sync_WithInvalidDrafts_ShouldApplyErrorCallbackAndIncrementFailed() {
         final List<String> errors = new ArrayList<>();
         final TaxCategorySyncOptions options = TaxCategorySyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallback((msg, error) -> errors.add(msg))
+            .errorCallback((exception, draft, entry, actions) -> errors.add(exception.getMessage()))
             .build();
         final TaxCategorySync sync = new TaxCategorySync(options, taxCategoryService);
         final TaxCategoryDraft withoutKeyDraft = TaxCategoryDraftBuilder.of(null, emptyList(), null).build();
@@ -72,7 +72,7 @@ class TaxCategorySyncTest {
     void sync_WithErrorFetchingExistingKeys_ShouldApplyErrorCallbackAndIncrementFailed() {
         final List<String> errors = new ArrayList<>();
         final TaxCategorySyncOptions options = TaxCategorySyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallback((msg, error) -> errors.add(msg))
+            .errorCallback((exception, draft, entry, actions) -> errors.add(exception.getMessage()))
             .build();
         final TaxCategorySync sync = new TaxCategorySync(options, taxCategoryService);
         final TaxCategoryDraft draft = TaxCategoryDraftBuilder.of("someName", emptyList(), null).key("someKey").build();
@@ -96,7 +96,7 @@ class TaxCategorySyncTest {
     void sync_WithErrorCreating_ShouldIncrementFailedButNotApplyErrorCallback() {
         final List<String> errors = new ArrayList<>();
         final TaxCategorySyncOptions options = TaxCategorySyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallback((msg, error) -> errors.add(msg))
+            .errorCallback((exception, draft, entry, actions) -> errors.add(exception.getMessage()))
             .build();
         final TaxCategorySync sync = new TaxCategorySync(options, taxCategoryService);
         final TaxCategoryDraft draft = TaxCategoryDraftBuilder.of("someName", emptyList(), null).key("someKey").build();
@@ -149,7 +149,7 @@ class TaxCategorySyncTest {
     void sync_WithErrorUpdating_ShouldApplyErrorCallbackAndIncrementFailed() {
         final List<String> errors = new ArrayList<>();
         final TaxCategorySyncOptions options = TaxCategorySyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallback((msg, error) -> errors.add(msg))
+            .errorCallback((exception, draft, entry, actions) -> errors.add(exception.getMessage()))
             .build();
         final TaxCategorySync sync = new TaxCategorySync(options, taxCategoryService);
         final TaxCategoryDraft draft = TaxCategoryDraftBuilder.of("someName", emptyList(), "changed")
@@ -181,7 +181,7 @@ class TaxCategorySyncTest {
     void sync_WithErrorUpdatingAndTryingToRecoverWithFetchException_ShouldApplyErrorCallbackAndIncrementFailed() {
         final List<String> errors = new ArrayList<>();
         final TaxCategorySyncOptions options = TaxCategorySyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallback((msg, error) -> errors.add(msg))
+            .errorCallback((exception, draft, entry, actions) -> errors.add(exception.getMessage()))
             .build();
         final TaxCategorySync sync = new TaxCategorySync(options, taxCategoryService);
         final TaxCategoryDraft draft = TaxCategoryDraftBuilder.of("someName", emptyList(), "changed")
@@ -219,7 +219,7 @@ class TaxCategorySyncTest {
     void sync_WithErrorUpdatingAndTryingToRecoverWithEmptyResponse_ShouldApplyErrorCallbackAndIncrementFailed() {
         final List<String> errors = new ArrayList<>();
         final TaxCategorySyncOptions options = TaxCategorySyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallback((msg, error) -> errors.add(msg))
+            .errorCallback((exception, draft, entry, actions) -> errors.add(exception.getMessage()))
             .build();
         final TaxCategorySync sync = new TaxCategorySync(options, taxCategoryService);
         final TaxCategoryDraft draft = TaxCategoryDraftBuilder.of("someName", emptyList(), "changed")
@@ -330,7 +330,7 @@ class TaxCategorySyncTest {
 
         final AtomicReference<String> callback = new AtomicReference<>(null);
         final TaxCategorySyncOptions syncOptions = TaxCategorySyncOptionsBuilder.of(mock(SphereClient.class))
-                .errorCallback((errorMsg, exception) -> callback.set(errorMsg))
+            .errorCallback((exception, taxDraft, entry, actions) -> callback.set(exception.getMessage()))
                 .build();
         final TaxCategorySync sync = new TaxCategorySync(syncOptions, taxCategoryService);
         final TaxCategory taxCategory = mock(TaxCategory.class);
@@ -368,7 +368,7 @@ class TaxCategorySyncTest {
 
         final AtomicReference<String> callback = new AtomicReference<>(null);
         final TaxCategorySyncOptions syncOptions = TaxCategorySyncOptionsBuilder.of(mock(SphereClient.class))
-                .errorCallback((errorMsg, exception) -> callback.set(errorMsg))
+            .errorCallback((exception, taxDraft, entry, actions) -> callback.set(exception.getMessage()))
                 .build();
         final TaxCategorySync sync = new TaxCategorySync(syncOptions, taxCategoryService);
         final TaxCategory taxCategory = mock(TaxCategory.class);

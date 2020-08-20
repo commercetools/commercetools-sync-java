@@ -1,5 +1,8 @@
 package com.commercetools.sync.taxcategories;
 
+import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.commons.utils.QuadConsumer;
+import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
@@ -8,8 +11,8 @@ import io.sphere.sdk.taxcategories.TaxCategoryDraft;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
+import java.util.Optional;
+
 
 import static java.util.Collections.emptyList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,8 +47,8 @@ class TaxCategorySyncOptionsBuilderTest {
         assertAll(
             () -> assertThat(taxCategorySyncOptions.getBeforeUpdateCallback()).isNull(),
             () -> assertThat(taxCategorySyncOptions.getBeforeCreateCallback()).isNull(),
-            () -> assertThat(taxCategorySyncOptions.getErrorCallBack()).isNull(),
-            () -> assertThat(taxCategorySyncOptions.getWarningCallBack()).isNull(),
+            () -> assertThat(taxCategorySyncOptions.getErrorCallback()).isNull(),
+            () -> assertThat(taxCategorySyncOptions.getWarningCallback()).isNull(),
             () -> assertThat(taxCategorySyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT),
             () -> assertThat(taxCategorySyncOptions.getBatchSize())
                 .isEqualTo(TaxCategorySyncOptionsBuilder.BATCH_SIZE_DEFAULT)
@@ -76,24 +79,24 @@ class TaxCategorySyncOptionsBuilderTest {
 
     @Test
     void build_WithErrorCallback_ShouldSetErrorCallback() {
-        final BiConsumer<String, Throwable> mockErrorCallBack = (errorMessage, errorException) -> {
-        };
+        final QuadConsumer<SyncException, Optional<TaxCategoryDraft>, Optional<TaxCategory>,
+            List<UpdateAction<TaxCategory>>> mockErrorCallBack = (exception, entry, draft, actions) -> { };
         taxCategorySyncOptionsBuilder.errorCallback(mockErrorCallBack);
 
         final TaxCategorySyncOptions taxCategorySyncOptions = taxCategorySyncOptionsBuilder.build();
 
-        assertThat(taxCategorySyncOptions.getErrorCallBack()).isNotNull();
+        assertThat(taxCategorySyncOptions.getErrorCallback()).isNotNull();
     }
 
     @Test
     void build_WithWarningCallback_ShouldSetWarningCallback() {
-        final Consumer<String> mockWarningCallBack = (warningMessage) -> {
-        };
+        final TriConsumer<SyncException, Optional<TaxCategoryDraft>, Optional<TaxCategory>>
+            mockWarningCallBack = (warningMessage, draft, entry) -> { };
         taxCategorySyncOptionsBuilder.warningCallback(mockWarningCallBack);
 
         final TaxCategorySyncOptions taxCategorySyncOptions = taxCategorySyncOptionsBuilder.build();
 
-        assertThat(taxCategorySyncOptions.getWarningCallBack()).isNotNull();
+        assertThat(taxCategorySyncOptions.getWarningCallback()).isNotNull();
     }
 
 

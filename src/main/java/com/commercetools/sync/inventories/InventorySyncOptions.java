@@ -1,6 +1,9 @@
 package com.commercetools.sync.inventories;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
+import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.commons.utils.QuadConsumer;
+import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
@@ -10,24 +13,26 @@ import io.sphere.sdk.inventory.InventoryEntryDraft;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
+import java.util.Optional;
 import java.util.function.Function;
 
 public final class InventorySyncOptions extends BaseSyncOptions<InventoryEntry, InventoryEntryDraft> {
     private final boolean ensureChannels;
 
-    InventorySyncOptions(@Nonnull final SphereClient ctpClient,
-                         @Nullable final BiConsumer<String, Throwable> updateActionErrorCallBack,
-                         @Nullable final Consumer<String> updateActionWarningCallBack,
-                         final int batchSize,
-                         boolean ensureChannels,
-                         @Nullable final TriFunction<List<UpdateAction<InventoryEntry>>, InventoryEntryDraft,
-                             InventoryEntry, List<UpdateAction<InventoryEntry>>> beforeUpdateCallback,
-                         @Nullable final Function<InventoryEntryDraft, InventoryEntryDraft> beforeCreateCallback) {
+    InventorySyncOptions(
+        @Nonnull final SphereClient ctpClient,
+        @Nullable final QuadConsumer<SyncException, Optional<InventoryEntryDraft>, Optional<InventoryEntry>,
+                    List<UpdateAction<InventoryEntry>>> errorCallback,
+        @Nullable final TriConsumer<SyncException, Optional<InventoryEntryDraft>, Optional<InventoryEntry>>
+            warningCallback,
+        final int batchSize,
+        boolean ensureChannels,
+        @Nullable final TriFunction<List<UpdateAction<InventoryEntry>>, InventoryEntryDraft,
+            InventoryEntry, List<UpdateAction<InventoryEntry>>> beforeUpdateCallback,
+        @Nullable final Function<InventoryEntryDraft, InventoryEntryDraft> beforeCreateCallback) {
         super(ctpClient,
-            updateActionErrorCallBack,
-            updateActionWarningCallBack,
+            errorCallback,
+            warningCallback,
             batchSize,
             beforeUpdateCallback,
             beforeCreateCallback);

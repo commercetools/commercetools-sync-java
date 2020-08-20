@@ -1,11 +1,16 @@
 package com.commercetools.sync.integration.externalsource.products;
 
+import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.commons.utils.QuadConsumer;
+import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.producttypes.ProductType;
 import org.junit.jupiter.api.AfterAll;
@@ -17,8 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletionException;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
+import java.util.Optional;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
@@ -71,12 +75,13 @@ class ProductReferenceResolverIT {
     }
 
     private ProductSyncOptions getProductSyncOptions() {
-        final BiConsumer<String, Throwable> errorCallBack = (errorMessage, exception) -> {
-            errorCallBackMessages.add(errorMessage);
-            errorCallBackExceptions.add(exception);
-        };
-
-        final Consumer<String> warningCallBack = warningMessage -> warningCallBackMessages.add(warningMessage);
+        final QuadConsumer<SyncException, Optional<ProductDraft>, Optional<Product>, List<UpdateAction<Product>>>
+                errorCallBack = (exception, newResource, oldResource, updateActions) -> {
+                    errorCallBackMessages.add(exception.getMessage());
+                    errorCallBackExceptions.add(exception.getCause());
+                };
+        final TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>> warningCallBack =
+            (exception, newResource, oldResource) -> warningCallBackMessages.add(exception.getMessage());
 
         return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                         .errorCallback(errorCallBack)

@@ -50,11 +50,12 @@ class UnresolvedReferencesServiceImplIT {
 
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .errorCallback((errorMessage, exception) -> {
-                errorCallBackMessages.add(errorMessage);
+            .errorCallback((exception, oldResource, newResource, actions) -> {
+                errorCallBackMessages.add(exception.getMessage());
                 errorCallBackExceptions.add(exception);
             })
-            .warningCallback(warningMessage -> warningCallBackMessages.add(warningMessage))
+            .warningCallback((syncException, productDraft, product)
+                -> warningCallBackMessages.add(syncException.getMessage()))
             .build();
 
         unresolvedReferencesService = new UnresolvedReferencesServiceImpl(productSyncOptions);

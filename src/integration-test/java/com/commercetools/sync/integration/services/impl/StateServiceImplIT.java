@@ -73,15 +73,11 @@ class StateServiceImplIT {
         deleteStates(CTP_TARGET_CLIENT, TRANSITION_STATE_TYPE);
         warnings = new ArrayList<>();
         oldState = createState(CTP_TARGET_CLIENT, STATE_TYPE);
-        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
-            .of(CTP_TARGET_CLIENT)
-            .warningCallback(warnings::add)
-            .errorCallback((errorMessage, exception) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(exception);
-            })
+
+        final StateSyncOptions StateSyncOptions = StateSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+            .warningCallback((exception, oldResource, newResource) -> warnings.add(exception.getMessage()))
             .build();
-        stateService = new StateServiceImpl(stateSyncOptions);
+        stateService = new StateServiceImpl(StateSyncOptions);
     }
 
     /**
@@ -187,9 +183,9 @@ class StateServiceImplIT {
 
         final StateSyncOptions spyOptions =
             StateSyncOptionsBuilder.of(spyClient)
-                .errorCallback((errorMessage, exception) -> {
-                    errorCallBackMessages.add(errorMessage);
-                    errorCallBackExceptions.add(exception);
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorCallBackMessages.add(exception.getMessage());
+                    errorCallBackExceptions.add(exception.getCause());
                 })
                 .build();
 
@@ -280,9 +276,9 @@ class StateServiceImplIT {
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         final StateSyncOptions spyOptions = StateSyncOptionsBuilder
             .of(spyClient)
-            .errorCallback((errorMessage, exception) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(exception);
+            .errorCallback( (exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
             .build();
 
@@ -324,9 +320,9 @@ class StateServiceImplIT {
 
         final StateSyncOptions options = StateSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .errorCallback((errorMessage, exception) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(exception);
+            .errorCallback( (exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
             .build();
 
@@ -355,9 +351,9 @@ class StateServiceImplIT {
 
         final StateSyncOptions options = StateSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
-            .errorCallback((errorMessage, exception) -> {
-                errorCallBackMessages.add(errorMessage);
-                errorCallBackExceptions.add(exception);
+            .errorCallback( (exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
             })
             .build();
 

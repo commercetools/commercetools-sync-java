@@ -2,6 +2,7 @@ package com.commercetools.sync.states.helpers;
 
 import com.commercetools.sync.commons.exceptions.InvalidReferenceException;
 import com.commercetools.sync.commons.exceptions.InvalidStateDraftException;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.states.StateSync;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.states.State;
@@ -113,7 +114,7 @@ public class StateBatchProcessor {
     }
 
     private void handleError(@Nonnull final Throwable throwable) {
-        stateSync.getSyncOptions().applyErrorCallback(throwable.getMessage(), throwable);
+        stateSync.getSyncOptions().applyErrorCallback(new SyncException(throwable));
         stateSync.getStatistics().incrementFailed();
     }
 

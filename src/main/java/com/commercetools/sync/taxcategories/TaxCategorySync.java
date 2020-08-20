@@ -1,6 +1,7 @@
 package com.commercetools.sync.taxcategories;
 
 import com.commercetools.sync.commons.BaseSync;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.impl.TaxCategoryServiceImpl;
 import com.commercetools.sync.taxcategories.helpers.TaxCategorySyncStatistics;
@@ -113,7 +114,8 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
 
                     if (exception != null) {
                         final String errorMessage = format(TAX_CATEGORY_FETCH_FAILED, keys);
-                        handleError(errorMessage, exception, keys.size());
+                        handleError(new SyncException(errorMessage, exception),null,null,null,
+                            keys.size());
                         return completedFuture(null);
                     } else {
                         return syncBatch(fetchedTaxCategories, validTaxCategoryDrafts);
@@ -136,9 +138,9 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
      */
     private boolean validateDraft(@Nullable final TaxCategoryDraft draft) {
         if (draft == null) {
-            handleError(TAX_CATEGORY_DRAFT_IS_NULL, null);
+            handleError(new SyncException(TAX_CATEGORY_DRAFT_IS_NULL));
         } else if (isBlank(draft.getKey())) {
-            handleError(TAX_CATEGORY_DRAFT_HAS_NO_KEY, null);
+            handleError(new SyncException(TAX_CATEGORY_DRAFT_HAS_NO_KEY));
         } else if (draft.getTaxRates() != null && !draft.getTaxRates().isEmpty()) {
             return validateIfDuplicateCountryAndState(draft.getTaxRates());
         } else {
@@ -148,23 +150,30 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
         return false;
     }
 
+
+    private void handleError(@Nonnull final SyncException syncException) {
+        handleError(syncException, null, null, null,1);
+    }
+
     /**
      * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this method calls the
      * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
-     * incrementing the total number of failed tax categories to sync.
+     * incrementing the total number of failed states to sync.
      *
-     * @param errorMessage The error message describing the reason(s) of failure.
-     * @param exception    The exception that called caused the failure, if any.
-     * @param failedTimes  The number of times that the failed tax categories counter is incremented.
+     * @param SyncException The exception describing the reason(s) of failure.
+     * @param entry         The Resource, which should be updated
+     * @param draft         The draft, which should be sync
+     * @param updateActions Generated update actions
+     * @param failedTimes  The number of times that the failed states counter is incremented.
      */
-    private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception, int failedTimes) {
-        syncOptions.applyErrorCallback(errorMessage, exception);
+    private void handleError(@Nonnull final SyncException syncException, @Nullable final TaxCategory entry,
+                             @Nullable final TaxCategoryDraft draft,
+                             @Nullable final List<UpdateAction<TaxCategory>> updateActions,
+                             final int failedTimes) {
+        syncOptions.applyErrorCallback(syncException, entry, draft, updateActions);
         statistics.incrementFailed(failedTimes);
     }
 
-    private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception) {
-        handleError(errorMessage, exception, 1);
-    }
 
     /**
      * Given a set of tax category drafts, attempts to sync the drafts with the existing tax categories in the CTP
@@ -209,7 +218,7 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
         @Nonnull final TaxCategoryDraft taxCategoryDraft) {
 
         return syncOptions
-            .applyBeforeCreateCallBack(taxCategoryDraft)
+            .applyBeforeCreateCallback(taxCategoryDraft)
             .map(draft -> taxCategoryService
                 .createTaxCategory(draft)
                 .thenApply(taxCategoryOptional -> {
@@ -251,7 +260,7 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
                     String errorMessage = StringUtils.isBlank(stateEntry.getKey())
                         ? format(TAX_CATEGORY_DUPLICATED_COUNTRY, countryEntry.getKey())
                         : format(TAX_CATEGORY_DUPLICATED_COUNTRY_AND_STATE, countryEntry.getKey(), stateEntry.getKey());
-                    handleError(errorMessage, null);
+                    handleError(new SyncException(errorMessage));
                     return false;
                 }
             }
@@ -269,7 +278,7 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
         final List<UpdateAction<TaxCategory>> updateActions = buildActions(oldTaxCategory, newTaxCategory);
 
         List<UpdateAction<TaxCategory>> updateActionsAfterCallback =
-            syncOptions.applyBeforeUpdateCallBack(updateActions, newTaxCategory, oldTaxCategory);
+            syncOptions.applyBeforeUpdateCallback(updateActions, newTaxCategory, oldTaxCategory);
 
         if (!updateActionsAfterCallback.isEmpty()) {
             return updateTaxCategory(oldTaxCategory, newTaxCategory, updateActionsAfterCallback);
@@ -313,7 +322,9 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
                             final String errorMessage =
                                 format(TAX_CATEGORY_UPDATE_FAILED, newTaxCategory.getKey(),
                                     sphereException.getMessage());
-                            handleError(errorMessage, sphereException);
+                            handleError(new SyncException(errorMessage, sphereException), oldTaxCategory,
+                                newTaxCategory,
+                                updateActions, 1);
                             return completedFuture(Optional.empty());
                         });
                 } else {
@@ -339,7 +350,8 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
                 if (exception != null) {
                     final String errorMessage = format(TAX_CATEGORY_UPDATE_FAILED, key,
                         "Failed to fetch from CTP while retrying after concurrency modification.");
-                    handleError(errorMessage, exception);
+                    handleError(new SyncException(errorMessage, exception),oldTaxCategory,newTaxCategory,
+                        null,1);
                     return completedFuture(null);
                 }
 
@@ -349,7 +361,7 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
                         final String errorMessage = format(TAX_CATEGORY_UPDATE_FAILED, key,
                             "Not found when attempting to fetch while retrying "
                                 + "after concurrency modification.");
-                        handleError(errorMessage, null);
+                        handleError(new SyncException(errorMessage),oldTaxCategory,newTaxCategory,null, 1);
                         return completedFuture(null);
                     });
             });

@@ -13,6 +13,7 @@ import io.sphere.sdk.models.AssetSource;
 import io.sphere.sdk.models.AssetSourceBuilder;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.Product;
+import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.updateactions.ChangeAssetName;
 import io.sphere.sdk.products.commands.updateactions.SetAssetCustomField;
 import io.sphere.sdk.products.commands.updateactions.SetAssetCustomType;
@@ -51,6 +52,8 @@ import static org.mockito.Mockito.when;
 class ProductVariantAssetUpdateActionUtilsTest {
     private static final ProductSyncOptions SYNC_OPTIONS = ProductSyncOptionsBuilder
         .of(mock(SphereClient.class)).build();
+    final Product product = mock(Product.class);
+    final ProductDraft productDraft = mock(ProductDraft.class);
 
     @Test
     void buildActions_WithDifferentValues_ShouldBuildUpdateAction() {
@@ -91,8 +94,10 @@ class ProductVariantAssetUpdateActionUtilsTest {
                                                           .custom(newCustomFieldsDraft)
                                                           .build();
 
-
-        final List<UpdateAction<Product>> updateActions = buildActions(1, oldAsset, newAssetDraft, SYNC_OPTIONS);
+        Product product = mock(Product.class);
+        ProductDraft productDraft = mock(ProductDraft.class);
+        final List<UpdateAction<Product>> updateActions = buildActions(product,productDraft,1,
+            oldAsset, newAssetDraft, SYNC_OPTIONS);
 
         assertThat(updateActions).hasSize(5);
         assertThat(updateActions).containsExactlyInAnyOrder(
@@ -134,7 +139,8 @@ class ProductVariantAssetUpdateActionUtilsTest {
         final AssetDraft newAssetDraft = AssetDraftBuilder.of(oldAsset).build();
 
 
-        final List<UpdateAction<Product>> updateActions = buildActions(1, oldAsset, newAssetDraft, SYNC_OPTIONS);
+        final List<UpdateAction<Product>> updateActions = buildActions(product, productDraft,1, oldAsset,
+            newAssetDraft, SYNC_OPTIONS);
 
         assertThat(updateActions).isEmpty();
     }
@@ -340,7 +346,7 @@ class ProductVariantAssetUpdateActionUtilsTest {
                                                           .build();
 
         final List<UpdateAction<Product>> updateActions =
-            buildCustomUpdateActions(1, oldAsset, newAssetDraft, SYNC_OPTIONS);
+            buildCustomUpdateActions(product, productDraft,1, oldAsset, newAssetDraft, SYNC_OPTIONS);
 
         assertThat(updateActions).isEmpty();
     }
@@ -371,7 +377,7 @@ class ProductVariantAssetUpdateActionUtilsTest {
                                                           .build();
 
         final List<UpdateAction<Product>> updateActions =
-            buildCustomUpdateActions(1, oldAsset, newAssetDraft, SYNC_OPTIONS);
+            buildCustomUpdateActions(product, productDraft,1, oldAsset, newAssetDraft, SYNC_OPTIONS);
 
         assertThat(updateActions).hasSize(2);
     }
@@ -394,7 +400,7 @@ class ProductVariantAssetUpdateActionUtilsTest {
                                                           .build();
 
         final List<UpdateAction<Product>> updateActions =
-            buildCustomUpdateActions(1, oldAsset, newAssetDraft, SYNC_OPTIONS);
+            buildCustomUpdateActions(product, productDraft,1, oldAsset, newAssetDraft, SYNC_OPTIONS);
 
         assertThat(updateActions).containsExactly(
             SetAssetCustomType.ofVariantIdAndAssetKey(1, newAssetDraft.getKey(), newCustomFieldsDraft, true)
@@ -428,13 +434,14 @@ class ProductVariantAssetUpdateActionUtilsTest {
 
         final List<String> errors = new ArrayList<>();
 
-        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
-                                                                          .errorCallback((errorMessage, throwable) ->
-                                                                              errors.add(errorMessage))
-                                                                          .build();
+        final ProductSyncOptions syncOptions =
+            ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                .errorCallback((exception, oldResource, newResource, updateActions) ->
+                    errors.add(exception.getMessage()))
+                .build();
 
         final List<UpdateAction<Product>> updateActions =
-            buildCustomUpdateActions(1, oldAsset, newAssetDraft, syncOptions);
+            buildCustomUpdateActions(product, productDraft,1, oldAsset, newAssetDraft, syncOptions);
 
         assertThat(updateActions).isEmpty();
         assertThat(errors).hasSize(1);
@@ -476,12 +483,12 @@ class ProductVariantAssetUpdateActionUtilsTest {
         final List<String> errors = new ArrayList<>();
 
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
-                .errorCallback((errorMessage, throwable) ->
-                        errors.add(errorMessage))
+                .errorCallback((exception, oldResource, newResource, actions) ->
+                        errors.add(exception.getMessage()))
                 .build();
         // test
         final List<UpdateAction<Product>> updateActions =
-                buildCustomUpdateActions(1, oldAsset, newAssetDraft, syncOptions);
+                buildCustomUpdateActions(product, productDraft,1, oldAsset, newAssetDraft, syncOptions);
 
         // assertion
         assertThat(errors).isEmpty();
@@ -521,12 +528,12 @@ class ProductVariantAssetUpdateActionUtilsTest {
         final List<String> errors = new ArrayList<>();
 
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
-                .errorCallback((errorMessage, throwable) ->
-                        errors.add(errorMessage))
+                .errorCallback((exception, oldResource, newResource, actions) ->
+                        errors.add(exception.getMessage()))
                 .build();
         // test
         final List<UpdateAction<Product>> updateActions =
-                buildCustomUpdateActions(1, oldAsset, newAssetDraft, syncOptions);
+                buildCustomUpdateActions(product, productDraft,1, oldAsset, newAssetDraft, syncOptions);
 
         // assertion
         assertThat(errors).isEmpty();
