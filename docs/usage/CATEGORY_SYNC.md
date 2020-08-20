@@ -37,7 +37,7 @@ otherwise they won't be matched.
     reference would return its `key`.  
 
    **Note**: When syncing from a source commercetools project, you can use this util which this library provides: 
-    [`replaceCategoriesReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/1.9.1/com/commercetools/sync/categories/utils/CategoryReferenceReplacementUtils.html#replaceCategoriesReferenceIdsWithKeys-java.util.List-)
+    [`replaceCategoriesReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/2.0.0/com/commercetools/sync/categories/utils/CategoryReferenceReplacementUtils.html#replaceCategoriesReferenceIdsWithKeys-java.util.List-)
     that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
     ````java
     // Puts the keys in the reference id fields to prepare for reference resolution
