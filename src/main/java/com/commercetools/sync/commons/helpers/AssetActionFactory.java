@@ -14,6 +14,7 @@ import java.util.List;
  * Helper class for building update actions for assets that are contained in the resource of type {@code T}.
  *
  * @param <T> the type of the resource the asset update actions are built for.
+ * @param <D> the type of the draft, which contains the changes the asset update actions are built for.
  */
 public abstract class AssetActionFactory<T extends Resource, D> {
     public BaseSyncOptions syncOptions = null;

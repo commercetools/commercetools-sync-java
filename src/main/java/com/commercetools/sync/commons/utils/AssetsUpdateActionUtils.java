@@ -48,13 +48,14 @@ public final class AssetsUpdateActionUtils {
      *
      * <p>If the list of new {@link AssetDraft}s is {@code null}, then remove actions are built for every existing asset
      * in the {@code oldAssets} list.
-     * @param <D>                           Type of the mainresource draft
-     * @param oldResource                  mainresource, whose asset should be updated.
-     * @param newResource                  new mainresource draft, which contains the asset to update.
+     * @param <T>                           the type of the resource the asset update actions are built for.
+     * @param <D>                           the type of the draft, which contains the changes
+     *                                      the asset update actions are built for.
+     * @param oldResource                   mainresource, whose asset should be updated.
+     * @param newResource                   new mainresource draft, which contains the asset to update.
      * @param oldAssets                     the old list of assets.
      * @param newAssetDrafts                the new list of asset drafts.
      * @param assetActionFactory            factory responsible for building asset update actions.
-     * @param <T>                           the type of the resource the asset update actions are built for.
      * @param syncOptions                   responsible for supplying the sync options to the sync utility method.
      *                                      It is used for triggering the warn callback within the utility
      * @return a list of asset update actions on the resource of type T if the list of assets is not identical.
