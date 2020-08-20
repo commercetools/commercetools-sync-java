@@ -54,8 +54,10 @@ If it fails to create the supply channel, the inventory entry/product won't sync
  final Logger logger = LoggerFactory.getLogger(MySync.class);
  final ProductSyncOptions productsyncOptions = ProductSyncOptionsBuilder
          .of(sphereClient)
-         .errorCallback(logger::error)
-         .warningCallback(logger::warn)
+         .errorCallback((syncException, draft, product, updateActions)
+                         -> log.error(syncException.getMessage(), syncException))
+         .warningCallback((exception, oldResource, newResources) ->
+                         -> log.error(exception.getMessage(), exception))
          .build();
 ````
  
