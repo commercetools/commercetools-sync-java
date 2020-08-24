@@ -12,6 +12,7 @@ import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.queries.PagedQueryResult;
@@ -36,6 +37,7 @@ import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.commons.MockUtils.mockCategoryService;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.products.ProductSyncMockUtils.CATEGORY_KEY_1_RESOURCE_PATH;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.lang.String.format;
@@ -213,7 +215,7 @@ class CategorySyncTest {
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to process the CategoryDraft with"
                 + " key:'key'. Reason: %s: Failed to resolve parent reference on CategoryDraft"
                 + " with key:'key'. Reason: %s",
-            ReferenceResolutionException.class.getCanonicalName(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+            ReferenceResolutionException.class.getCanonicalName(), BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
     }
@@ -258,7 +260,7 @@ class CategorySyncTest {
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to process the CategoryDraft with"
                 + " key:'key'. Reason: %s: Failed to resolve parent reference on CategoryDraft with key:'key'. "
                 + "Reason: %s", ReferenceResolutionException.class.getCanonicalName(),
-            BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+            BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
     }
@@ -288,13 +290,14 @@ class CategorySyncTest {
 
     @Test
     void requiresChangeParentUpdateAction_WithTwoDifferentParents_ShouldReturnTrue() {
-        final String parentId = "parentId";
+        final String parentKey = "parentKey";
         final Category category = mock(Category.class);
-        when(category.getParent()).thenReturn(Category.referenceOfId(parentId));
-
+        Reference mockReference = mock(Reference.class);
+        when(mockReference.getKey()).thenReturn(parentKey);
+        when(category.getParent()).thenReturn(mockReference);
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "name"), LocalizedString.of(Locale.ENGLISH, "slug"))
-            .parent(ResourceIdentifier.ofId("differentParent"))
+            .parent(ResourceIdentifier.ofKey("differentParentKey"))
             .build();
         final boolean doesRequire = CategorySync.requiresChangeParentUpdateAction(category, categoryDraft);
         assertThat(doesRequire).isTrue();

@@ -45,6 +45,7 @@ class CategorySyncUtilsTest {
     private static final String CATEGORY_NAME = "categoryName";
     private static final String CATEGORY_SLUG = "categorySlug";
     private static final String CATEGORY_KEY = "categoryKey";
+    private static final String OLD_CATEGORY_KEY = "oldCategoryKey";
     private static final String CATEGORY_EXTERNAL_ID = "externalId";
     private static final String CATEGORY_DESC = "categoryDesc";
     private static final String CATEGORY_META_DESC = "categoryMetaDesc";
@@ -68,14 +69,14 @@ class CategorySyncUtilsTest {
         mockOldCategory = getMockCategory(LOCALE,
             CATEGORY_NAME,
             CATEGORY_SLUG,
-            CATEGORY_KEY,
+            OLD_CATEGORY_KEY,
             CATEGORY_EXTERNAL_ID,
             CATEGORY_DESC,
             CATEGORY_META_DESC,
             CATEGORY_META_TITLE,
             CATEGORY_KEYWORDS,
             CATEGORY_ORDER_HINT,
-            CATEGORY_PARENT_ID);
+            OLD_CATEGORY_KEY);
     }
 
     @Test
@@ -89,7 +90,7 @@ class CategorySyncUtilsTest {
             .metaTitle(LocalizedString.of(LOCALE, CATEGORY_META_TITLE))
             .metaKeywords(LocalizedString.of(LOCALE, CATEGORY_KEYWORDS))
             .orderHint(CATEGORY_ORDER_HINT)
-            .parent(ResourceIdentifier.ofId(CATEGORY_PARENT_ID))
+            .parent(ResourceIdentifier.ofKey(OLD_CATEGORY_KEY))
             .build();
 
         final List<UpdateAction<Category>> updateActions =
@@ -112,7 +113,7 @@ class CategorySyncUtilsTest {
             .metaTitle(LocalizedString.of(LOCALE, "differentMetaTitle"))
             .metaKeywords(LocalizedString.of(LOCALE, "differentMetaKeywords"))
             .orderHint("differentOrderHint")
-            .parent(ResourceIdentifier.ofId("differentParentId"))
+            .parent(ResourceIdentifier.ofKey("differentParentKey"))
             .assets(ASSET_DRAFTS)
             .build();
 
@@ -126,7 +127,7 @@ class CategorySyncUtilsTest {
             ChangeSlug.of(LocalizedString.of(LOCALE, "differentSlug")),
             SetExternalId.of("differentExternalId"),
             SetDescription.of(LocalizedString.of(LOCALE, "differentDescription")),
-            ChangeParent.of(ResourceIdentifier.ofId("differentParentId")),
+            ChangeParent.of(ResourceIdentifier.ofKey("differentParentKey")),
             ChangeOrderHint.of("differentOrderHint"),
             SetMetaTitle.of(LocalizedString.of(LOCALE, "differentMetaTitle")),
             SetMetaDescription.of(LocalizedString.of(LOCALE, "differentMetaDescription")),

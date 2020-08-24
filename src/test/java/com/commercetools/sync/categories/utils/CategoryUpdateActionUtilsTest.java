@@ -38,6 +38,7 @@ import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaTitleUpdateAction;
 import static com.commercetools.sync.products.ProductSyncMockUtils.CATEGORY_KEY_1_RESOURCE_PATH;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
+import static io.sphere.sdk.models.ResourceIdentifier.ofKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -194,23 +195,21 @@ class CategoryUpdateActionUtilsTest {
     @Test
     void buildChangeParentUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
-        when(newCategoryDraft.getParent()).thenReturn(ResourceIdentifier.ofId("2"));
+        when(newCategoryDraft.getParent()).thenReturn(ofKey("2"));
 
         final UpdateAction<Category> changeParentUpdateAction =
             buildChangeParentUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft, CATEGORY_SYNC_OPTIONS).orElse(null);
 
         assertThat(changeParentUpdateAction).isNotNull();
         assertThat(changeParentUpdateAction.getAction()).isEqualTo("changeParent");
-        assertThat(((ChangeParent) changeParentUpdateAction).getParent())
-            .isEqualTo(ResourceIdentifier.ofId("2"));
+        assertThat(((ChangeParent) changeParentUpdateAction).getParent()).isEqualTo(ofKey("2"));
     }
 
     @Test
     void buildChangeParentUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final Category oldCategory = readObjectFromResource(CATEGORY_KEY_1_RESOURCE_PATH, Category.class);
         final CategoryDraft newCategory = mock(CategoryDraft.class);
-        when(newCategory.getParent())
-            .thenReturn(ResourceIdentifier.ofId(oldCategory.getParent().getId()));
+        when(newCategory.getParent()).thenReturn(ResourceIdentifier.ofKey(oldCategory.getParent().getKey()));
 
         final Optional<UpdateAction<Category>> changeParentUpdateAction =
             buildChangeParentUpdateAction(oldCategory, newCategory, CATEGORY_SYNC_OPTIONS);
@@ -241,7 +240,8 @@ class CategoryUpdateActionUtilsTest {
         assertThat(changeParentUpdateAction).isNotNull();
         assertThat(changeParentUpdateAction).isNotPresent();
         assertThat(callBackResponse).hasSize(1);
-        assertThat(callBackResponse.get(0)).isEqualTo("Cannot unset 'parent' field of category with id 'oldCatId'.");
+        assertThat(callBackResponse.get(0))
+            .isEqualTo("Cannot unset 'parent' field of category with key 'categoryKey'.");
     }
 
     @Test
