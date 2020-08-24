@@ -15,6 +15,7 @@ import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
@@ -27,7 +28,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -36,7 +36,6 @@ import static com.commercetools.sync.categories.helpers.CategoryReferenceResolve
 import static com.commercetools.sync.categories.utils.CategorySyncUtils.buildActions;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.areResourceIdentifiersEqual;
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.toResourceIdentifierIfNotNull;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -111,7 +110,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                  @Nonnull final CategoryService categoryService) {
         super(new CategorySyncStatistics(), syncOptions);
         this.categoryService = categoryService;
-        this.referenceResolver = new CategoryReferenceResolver(syncOptions, typeService, categoryService);
+        this.referenceResolver = new CategoryReferenceResolver(syncOptions, typeService);
     }
 
     /**
@@ -171,11 +170,11 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         categoryDraftsToUpdate = new ConcurrentHashMap<>();
 
         return categoryService
-                .cacheKeysToIds()
+                .loadExistingCategoryKeys()
                 .handle(ImmutablePair::new)
                 .thenCompose(cachingResponse -> {
 
-                    final Map<String, String> keyToIdCache = cachingResponse.getKey();
+                    final  List<String> existingCategoryKeys = cachingResponse.getKey();
                     final Throwable cachingException = cachingResponse.getValue();
 
                     if (cachingException != null) {
@@ -184,14 +183,14 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                         return CompletableFuture.completedFuture(null);
                     }
 
-                    prepareDraftsForProcessing(categoryDrafts, keyToIdCache);
+                    prepareDraftsForProcessing(categoryDrafts, existingCategoryKeys);
 
                     categoryKeysToFetch = existingCategoryDrafts
                         .stream()
                         .map(CategoryDraft::getKey)
                         .collect(Collectors.toSet());
 
-                    return createAndUpdate(keyToIdCache);
+                    return createAndUpdate();
                 })
                 .thenApply(ignoredResult -> {
                     statistics.incrementProcessed(numberOfNewDraftsToProcess);
@@ -200,7 +199,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     }
 
 
-    private CompletionStage<Void> fetchAndUpdate(@Nonnull final Map<String, String> keyToIdCache) {
+    private CompletionStage<Void> fetchAndUpdate() {
         return categoryService
             .fetchMatchingCategoriesByKeys(categoryKeysToFetch)
             .handle(ImmutablePair::new)
@@ -215,15 +214,14 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                     return CompletableFuture.completedFuture(null);
                 }
 
-                return processFetchedCategoriesAndUpdate(keyToIdCache, fetchedCategories);
+                return processFetchedCategoriesAndUpdate(fetchedCategories);
             });
     }
 
     @Nonnull
-    private CompletionStage<Void> processFetchedCategoriesAndUpdate(@Nonnull final Map<String, String> keyToIdCache,
-                                                                    @Nonnull final Set<Category> fetchedCategories) {
+    private CompletionStage<Void> processFetchedCategoriesAndUpdate(@Nonnull final Set<Category> fetchedCategories) {
 
-        processFetchedCategories(fetchedCategories, referencesResolvedDrafts, keyToIdCache);
+        processFetchedCategories(fetchedCategories, referencesResolvedDrafts);
         updateCategoriesSequentially(categoryDraftsToUpdate);
         return updateCategoriesInParallel(categoryDraftsToUpdate);
     }
@@ -272,20 +270,20 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * resolution, the error callback is triggered and the category is skipped.
      *
      * @param categoryDrafts the input list of category drafts in the sync batch.
-     * @param keyToIdCache   the cache containing the mapping of all existing category keys to ids.
+     * @param existingCategoryKeys  List of keys of the ca.
      */
     private void prepareDraftsForProcessing(@Nonnull final List<CategoryDraft> categoryDrafts,
-                                            @Nonnull final Map<String, String> keyToIdCache) {
+                                            @Nonnull final List<String> existingCategoryKeys ) {
         for (CategoryDraft categoryDraft : categoryDrafts) {
             if (categoryDraft != null) {
                 final String categoryKey = categoryDraft.getKey();
                 if (isNotBlank(categoryKey)) {
                     try {
-                        categoryDraft = updateCategoriesWithMissingParents(categoryDraft, keyToIdCache);
+                        categoryDraft = updateCategoriesWithMissingParents(categoryDraft, existingCategoryKeys);
                         referenceResolver.resolveReferences(categoryDraft)
                                          .thenAccept(referencesResolvedDraft -> {
                                              referencesResolvedDrafts.add(referencesResolvedDraft);
-                                             if (keyToIdCache.containsKey(categoryKey)) {
+                                             if (existingCategoryKeys.contains(categoryKey)) {
                                                  existingCategoryDrafts.add(referencesResolvedDraft);
                                              } else {
                                                  newCategoryDrafts.add(referencesResolvedDraft);
@@ -313,10 +311,10 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     }
 
     @Nonnull
-    private CompletionStage<Void> createAndUpdate(@Nonnull final Map<String, String> keyToIdCache) {
+    private CompletionStage<Void> createAndUpdate() {
         return createCategories(newCategoryDrafts)
             .thenAccept(this::processCreatedCategories)
-            .thenCompose(ignoredResult -> fetchAndUpdate(keyToIdCache));
+            .thenCompose(ignoredResult -> fetchAndUpdate());
     }
 
     @Nonnull
@@ -348,11 +346,11 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @throws ReferenceResolutionException thrown if the parent key is not valid.
      */
     private CategoryDraft updateCategoriesWithMissingParents(@Nonnull final CategoryDraft categoryDraft,
-                                                             @Nonnull final Map<String, String> keyToIdCache)
+                                                             @Nonnull final List<String> existingCategoryKeys )
         throws ReferenceResolutionException {
         return getParentCategoryKey(categoryDraft)
             .map(parentCategoryKey -> {
-                if (isMissingCategory(parentCategoryKey, keyToIdCache)) {
+                if (isMissingCategory(parentCategoryKey, existingCategoryKeys)) {
                     statistics.putMissingParentCategoryChildKey(parentCategoryKey, categoryDraft.getKey());
                     return CategoryDraftBuilder.of(categoryDraft)
                                                .parent((ResourceIdentifier<Category>) null)
@@ -371,8 +369,8 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @return true or false, whether the category exists or not.
      */
     private boolean isMissingCategory(@Nonnull final String categoryKey,
-                                      @Nonnull final Map<String, String> keyToIdCache) {
-        return !keyToIdCache.containsKey(categoryKey);
+                                      @Nonnull final List<String> existingCategoryKeys ) {
+        return !existingCategoryKeys.contains(categoryKey);
     }
 
 
@@ -420,7 +418,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                         final Category category = createdChild.get();
                         final CategoryDraft categoryDraft =
                             CategoryDraftBuilder.of(category)
-                                                .parent(createdCategory.toResourceIdentifier())
+                                                .parent(ResourceIdentifier.ofKey(createdCategory.getKey()))
                                                 .build();
                         categoryDraftsToUpdate.put(categoryDraft, category);
                     } else {
@@ -452,11 +450,9 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @param fetchedCategories        {@code Set} of categories which have just been fetched and
      * @param resolvedReferencesDrafts {@code Set} of CategoryDrafts with resolved references, they are used to get
      *                                 a draft with a resolved reference for the input list of drafts.
-     * @param keyToIdCache             the cache containing mapping of all existing category keys to ids.
      */
     private void processFetchedCategories(@Nonnull final Set<Category> fetchedCategories,
-                                          @Nonnull final Set<CategoryDraft> resolvedReferencesDrafts,
-                                          @Nonnull final Map<String, String> keyToIdCache) {
+                                          @Nonnull final Set<CategoryDraft> resolvedReferencesDrafts) {
         fetchedCategories.forEach(fetchedCategory -> {
             final String fetchedCategoryKey = fetchedCategory.getKey();
             final Optional<CategoryDraft> draftByKeyIfExists =
@@ -465,7 +461,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                 draftByKeyIfExists.map(categoryDraft -> {
                     if (categoryDraft.getParent() == null) {
                         return CategoryDraftBuilder.of(categoryDraft)
-                                                   .parent(toResourceIdentifierIfNotNull(fetchedCategory.getParent()));
+                                                   .parent(getKeyReferenceIfNotNull(fetchedCategory.getParent()));
                     }
                     return CategoryDraftBuilder.of(categoryDraft);
                 })
@@ -473,15 +469,16 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
             if (categoryKeysWithResolvedParents.contains(fetchedCategoryKey)) {
                 statistics.getMissingParentKey(fetchedCategoryKey)
                           .ifPresent(missingParentKey -> {
-                              final String parentId = keyToIdCache.get(missingParentKey);
-                              categoryDraftBuilder
-                                  .parent(Category.referenceOfId(parentId).toResourceIdentifier());
+                              categoryDraftBuilder.parent(ResourceIdentifier.ofKey(missingParentKey));
                           });
             }
             categoryDraftsToUpdate.put(categoryDraftBuilder.build(), fetchedCategory);
         });
     }
 
+    private ResourceIdentifier<Category> getKeyReferenceIfNotNull(final Reference<Category> parent) {
+        return parent != null ? ResourceIdentifier.ofKey(parent.getKey()) : null;
+    }
 
     /**
      * Given a {@link Set} of categories and a {@code key}, this method tries to find a category with this key in this
@@ -541,7 +538,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      */
     static boolean requiresChangeParentUpdateAction(@Nonnull final Category category,
                                                     @Nonnull final CategoryDraft categoryDraft) {
-        return !areResourceIdentifiersEqual(category.getParent(), categoryDraft.getParent());
+        return !areResourceIdentifiersEqual(category.getParent(), categoryDraft.getParent(), true);
     }
 
     /**

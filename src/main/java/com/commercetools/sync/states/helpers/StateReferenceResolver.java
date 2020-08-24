@@ -77,7 +77,7 @@ public final class StateReferenceResolver extends BaseReferenceResolver<StateDra
             for (ResourceIdentifier<State> stateResourceIdentifier : stateResourceIdentifiers) {
                 if (stateResourceIdentifier != null) {
                     try {
-                        final String stateKey = getKeyFromResourceIdentifier(stateResourceIdentifier);
+                        final String stateKey = getdIdFromResourceIdentifier(stateResourceIdentifier);
                         stateKeys.add(stateKey);
                     } catch (ReferenceResolutionException referenceResolutionException) {
                         return exceptionallyCompletedFuture(

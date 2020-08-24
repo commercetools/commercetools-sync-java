@@ -14,6 +14,7 @@ import io.sphere.sdk.types.Type;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -78,9 +79,8 @@ public class MockUtils {
         when(mockCategoryService.fetchMatchingCategoriesByKeys(any()))
             .thenReturn(CompletableFuture.completedFuture(existingCategories));
 
-        final Map<String, String> keyToIds =
-            existingCategories.stream().collect(Collectors.toMap(Category::getKey, Category::getId));
-        when(mockCategoryService.cacheKeysToIds()).thenReturn(completedFuture(keyToIds));
+        final List<String> keyList = existingCategories.stream().map(Category::getKey).collect(Collectors.toList());
+        when(mockCategoryService.loadExistingCategoryKeys()).thenReturn(completedFuture(keyList));
         when(mockCategoryService.createCategory(any()))
             .thenReturn(CompletableFuture.completedFuture(ofNullable(createdCategory)));
         return mockCategoryService;

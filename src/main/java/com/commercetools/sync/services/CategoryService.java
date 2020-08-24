@@ -24,7 +24,7 @@ public interface CategoryService {
      *         category keys -&gt; ids
      */
     @Nonnull
-    CompletionStage<Map<String, String>> cacheKeysToIds();
+    CompletionStage<List<String>> loadExistingCategoryKeys();
 
     /**
      * Given a {@link Set} of category keys, this method fetches a set of all the categories, matching this given set of

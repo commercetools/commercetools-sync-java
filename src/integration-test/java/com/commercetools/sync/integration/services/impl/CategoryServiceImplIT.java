@@ -30,7 +30,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionException;
@@ -118,8 +117,8 @@ class CategoryServiceImplIT {
     }
 
     @Test
-    void cacheKeysToIds_ShouldCacheCategoryKeysOnlyFirstTime() {
-        Map<String, String> cache = categoryService.cacheKeysToIds().toCompletableFuture().join();
+    void loadExistingCategoryKeys_ShouldCacheCategoryKeysOnlyFirstTime() {
+        List<String> cache = categoryService.loadExistingCategoryKeys().toCompletableFuture().join();
         assertThat(cache).hasSize(1);
 
         // Create new category without caching
@@ -132,14 +131,14 @@ class CategoryServiceImplIT {
 
         CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(categoryDraft)).toCompletableFuture().join();
 
-        cache = categoryService.cacheKeysToIds().toCompletableFuture().join();
+        cache = categoryService.loadExistingCategoryKeys().toCompletableFuture().join();
         assertThat(cache).hasSize(1);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
     }
 
     @Test
-    void cacheKeysToIds_WithTargetCategoriesWithNoKeys_ShouldGiveAWarningAboutKeyNotSetAndNotCacheKey() {
+    void loadExistingCategoryKeys_WithTargetCategoriesWithNoKeys_ShouldGiveAWarningAboutKeyNotSetAndNotCacheKey() {
         // Create new category without key
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
@@ -149,7 +148,7 @@ class CategoryServiceImplIT {
         final Category createdCategory = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(categoryDraft))
                                                           .toCompletableFuture().join();
 
-        final Map<String, String> cache = categoryService.cacheKeysToIds().toCompletableFuture().join();
+        final List<String> cache = categoryService.loadExistingCategoryKeys().toCompletableFuture().join();
         assertThat(cache).hasSize(1);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();

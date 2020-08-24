@@ -86,7 +86,7 @@ class ChangeParentIT {
         final CategoryDraft oldCategoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture"))
-            .parent(oldCategory.toResourceIdentifier())
+            .parent(ResourceIdentifier.ofKey(oldCategory.getKey()))
             .build();
 
         // Build change parent update action between parent and new category.
@@ -132,8 +132,8 @@ class ChangeParentIT {
 
         assertThat(changeParentUpdateAction).isNull();
         assertThat(callBackResponses).hasSize(1);
-        assertThat(callBackResponses.get(0)).isEqualTo(format("Cannot unset 'parent' field of category with id '%s'.",
-            oldCategory.getId()));
+        assertThat(callBackResponses.get(0)).isEqualTo(format("Cannot unset 'parent' field of category with key '%s'.",
+            oldCategory.getKey()));
     }
 
 }

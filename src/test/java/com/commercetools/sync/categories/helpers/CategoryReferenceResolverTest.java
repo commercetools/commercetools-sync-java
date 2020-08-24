@@ -5,7 +5,6 @@ import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
-import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.client.SphereClient;
@@ -17,7 +16,6 @@ import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -61,7 +59,7 @@ class CategoryReferenceResolverTest {
         when(categoryService.fetchCachedCategoryId(CACHED_CATEGORY_KEY))
             .thenReturn(CompletableFuture.completedFuture(Optional.of(CACHED_CATEGORY_ID)));
         final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class)).build();
-        referenceResolver = new CategoryReferenceResolver(syncOptions, typeService, categoryService);
+        referenceResolver = new CategoryReferenceResolver(syncOptions, typeService);
     }
 
     @Test
@@ -130,23 +128,6 @@ class CategoryReferenceResolverTest {
         assertThat(resolvedAssetDraft.getCustom().getType().getId()).isEqualTo("typeId");
     }
 
-
-    @Disabled("TODO: SHOULD COMPLETE EXCEPTIONALLY. GITHUB ISSUE#219")
-    @Test
-    void resolveParentReference_WithNonExistentParentCategory_ShouldNotResolveParentReference() {
-        final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
-            CACHED_CATEGORY_KEY, "customTypeId", new HashMap<>());
-        when(categoryService.fetchCachedCategoryId(CACHED_CATEGORY_KEY))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
-
-        referenceResolver.resolveParentReference(categoryDraft)
-                                 .thenApply(CategoryDraftBuilder::build)
-                                 .thenAccept(resolvedDraft -> {
-                                     assertThat(resolvedDraft.getParent()).isNotNull();
-                                     assertThat(resolvedDraft.getParent().getId()).isEqualTo(CACHED_CATEGORY_ID);
-                                 }).toCompletableFuture().join();
-    }
-
     @Test
     void resolveCustomTypeReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
         final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
@@ -180,35 +161,7 @@ class CategoryReferenceResolverTest {
                                  }).toCompletableFuture().join();
     }
 
-    @Test
-    void resolveParentReference_WithEmptyIdOnParentReference_ShouldNotResolveParentReference() {
-        final CategoryDraftBuilder categoryDraft = CategoryDraftBuilder.of(ofEnglish("foo"), ofEnglish("bar"));
-        categoryDraft.key("key");
-        categoryDraft.parent(Category.referenceOfId("").toResourceIdentifier());
 
-        assertThat(referenceResolver.resolveParentReference(categoryDraft)
-            .toCompletableFuture())
-            .hasFailed()
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format("Failed to resolve parent reference on CategoryDraft with key:'key'. Reason: %s",
-                BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
-    }
-
-    @Test
-    void resolveParentReference_WithNullIdOnParentReference_ShouldNotResolveParentReference() {
-        final CategoryDraftBuilder categoryDraft = CategoryDraftBuilder.of(ofEnglish("foo"), ofEnglish("bar"));
-        categoryDraft.key("key");
-        categoryDraft.parent(Category.referenceOfId(null).toResourceIdentifier());
-
-        assertThat(referenceResolver.resolveParentReference(categoryDraft)
-            .toCompletableFuture())
-            .hasFailed()
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format("Failed to resolve parent reference on CategoryDraft with key:'key'. Reason: %s",
-                BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
-    }
 
     @Test
     void resolveCustomTypeReference_WithNullIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {

@@ -43,7 +43,6 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -549,8 +548,7 @@ class CategorySyncTest {
         final CategoryService categoryService = mockCategoryService(singleton(mockedExistingCategory),
             mockedExistingCategory, mockedExistingCategory);
 
-        when(categoryService.cacheKeysToIds())
-            .thenReturn(completedFuture(singletonMap("1", UUID.randomUUID().toString())));
+        when(categoryService.loadExistingCategoryKeys()).thenReturn(completedFuture(singletonList("1")));
 
         final CategorySyncOptions spyCategorySyncOptions = spy(categorySyncOptions);
 

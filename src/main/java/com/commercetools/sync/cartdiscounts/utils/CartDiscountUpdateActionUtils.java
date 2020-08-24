@@ -83,7 +83,7 @@ public final class CartDiscountUpdateActionUtils {
             @Nonnull final GiftLineItemCartDiscountValue oldValue,
             @Nonnull final GiftLineItemCartDiscountValue newValue) {
         return buildUpdateActionForReferences(oldValue.getProduct(), newValue.getProduct(),
-            () -> ChangeValue.of(newValue));
+            () -> ChangeValue.of(newValue), false);
     }
 
     @Nonnull
@@ -99,7 +99,7 @@ public final class CartDiscountUpdateActionUtils {
             @Nonnull final GiftLineItemCartDiscountValue oldValue,
             @Nonnull final GiftLineItemCartDiscountValue newValue) {
         return buildUpdateActionForReferences(oldValue.getSupplyChannel(), newValue.getSupplyChannel(),
-            () -> ChangeValue.of(newValue));
+            () -> ChangeValue.of(newValue), false);
     }
 
     @Nonnull
@@ -107,7 +107,7 @@ public final class CartDiscountUpdateActionUtils {
             @Nonnull final GiftLineItemCartDiscountValue oldValue,
             @Nonnull final GiftLineItemCartDiscountValue newValue) {
         return buildUpdateActionForReferences(oldValue.getDistributionChannel(), newValue.getDistributionChannel(),
-            () -> ChangeValue.of(newValue));
+            () -> ChangeValue.of(newValue), false);
     }
 
     @Nonnull

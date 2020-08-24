@@ -760,7 +760,7 @@ public final class ProductUpdateActionUtils {
         @Nonnull final Product oldProduct,
         @Nonnull final ProductDraft newProduct) {
         return buildUpdateActionForReferences(oldProduct.getTaxCategory(), newProduct.getTaxCategory(),
-            () -> SetTaxCategory.of(newProduct.getTaxCategory()));
+            () -> SetTaxCategory.of(newProduct.getTaxCategory()), false);
     }
 
     /**

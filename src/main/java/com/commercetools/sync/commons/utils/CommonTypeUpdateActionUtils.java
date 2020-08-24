@@ -59,9 +59,10 @@ public final class CommonTypeUpdateActionUtils {
         buildUpdateActionForReferences(
             @Nullable final S oldResourceIdentifier,
             @Nullable final U newResourceIdentifier,
-            @Nonnull final Supplier<V> updateActionSupplier) {
+            @Nonnull final Supplier<V> updateActionSupplier,
+            boolean useKeys) {
 
-        return !areResourceIdentifiersEqual(oldResourceIdentifier, newResourceIdentifier)
+        return !areResourceIdentifiersEqual(oldResourceIdentifier, newResourceIdentifier, useKeys)
             ? Optional.ofNullable(updateActionSupplier.get())
             : Optional.empty();
     }
@@ -76,12 +77,16 @@ public final class CommonTypeUpdateActionUtils {
      * @return true or false depending if the resource identifiers have the same id.
      */
     public static <T extends ResourceIdentifier, S extends ResourceIdentifier> boolean areResourceIdentifiersEqual(
-        @Nullable final T oldResourceIdentifier, @Nullable final S newResourceIdentifier) {
+        @Nullable final T oldResourceIdentifier, @Nullable final S newResourceIdentifier, boolean useKeys) {
 
-        final String oldId = ofNullable(oldResourceIdentifier).map(ResourceIdentifier::getId).orElse(null);
-        final String newId = ofNullable(newResourceIdentifier).map(ResourceIdentifier::getId).orElse(null);
+        final String oldValue = ofNullable(oldResourceIdentifier)
+            .map(useKeys ? ResourceIdentifier::getKey : ResourceIdentifier::getId)
+            .orElse(null);
+        final String newValue = ofNullable(newResourceIdentifier)
+            .map(useKeys ? ResourceIdentifier::getKey : ResourceIdentifier::getId)
+            .orElse(null);
 
-        return Objects.equals(oldId, newId);
+        return Objects.equals(oldValue, newValue);
     }
 
     /**
