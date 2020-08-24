@@ -72,12 +72,15 @@ public final class CommonTypeUpdateActionUtils {
      *
      * @param oldResourceIdentifier the old resource identifier
      * @param newResourceIdentifier the new resource identifier
+     * @param useKeys               if true, the keys of the identifier are used for the comparison
      * @param <T>                   the type of the old resource identifier
      * @param <S>                   the type of the new resource identifier
      * @return true or false depending if the resource identifiers have the same id.
      */
     public static <T extends ResourceIdentifier, S extends ResourceIdentifier> boolean areResourceIdentifiersEqual(
-        @Nullable final T oldResourceIdentifier, @Nullable final S newResourceIdentifier, boolean useKeys) {
+        @Nullable final T oldResourceIdentifier,
+        @Nullable final S newResourceIdentifier,
+        boolean useKeys) {
 
         final String oldValue = ofNullable(oldResourceIdentifier)
             .map(useKeys ? ResourceIdentifier::getKey : ResourceIdentifier::getId)
@@ -85,7 +88,6 @@ public final class CommonTypeUpdateActionUtils {
         final String newValue = ofNullable(newResourceIdentifier)
             .map(useKeys ? ResourceIdentifier::getKey : ResourceIdentifier::getId)
             .orElse(null);
-
         return Objects.equals(oldValue, newValue);
     }
 
