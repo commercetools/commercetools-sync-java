@@ -54,7 +54,7 @@ public class CategorySyncMockUtils {
                                            @Nonnull final String metaTitle,
                                            @Nonnull final String metaKeywords,
                                            @Nonnull final String orderHint,
-                                           @Nonnull final String parentId) {
+                                           @Nonnull final Category parentCategory) {
         final Category category = mock(Category.class);
         when(category.getName()).thenReturn(LocalizedString.of(locale, name));
         when(category.getSlug()).thenReturn(LocalizedString.of(locale, slug));
@@ -65,11 +65,27 @@ public class CategorySyncMockUtils {
         when(category.getMetaTitle()).thenReturn(LocalizedString.of(locale, metaTitle));
         when(category.getMetaKeywords()).thenReturn(LocalizedString.of(locale, metaKeywords));
         when(category.getOrderHint()).thenReturn(orderHint);
-        Reference mockReference = mock(Reference.class);
-        when(mockReference.getKey()).thenReturn(key);
-        when(category.getParent()).thenReturn(mockReference);
+        if (parentCategory != null) {
+            Reference mockReference = mock(Reference.class);
+            when(mockReference.getObj()).thenReturn(parentCategory);
+            when(category.getParent()).thenReturn(mockReference);
+        }
         when(category.toReference()).thenReturn(Category.referenceOfId(UUID.randomUUID().toString()));
         return category;
+    }
+
+    public static Category mockRoot() {
+        return getMockCategory(Locale.GERMAN,
+            "root",
+            "root",
+            "root",
+            "root",
+            "root",
+            "root",
+            "root",
+            "root",
+            null,
+            null);
     }
 
     public static Category getMockCategory(@Nonnull final String id, @Nonnull final String key) {

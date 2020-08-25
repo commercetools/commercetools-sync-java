@@ -84,11 +84,11 @@ public final class CommonTypeUpdateActionUtils {
 
         String oldValue = null;
         if (oldResourceIdentifier != null) {
-            oldValue = useKeys ? getKeyOfResourceIdentifier(oldResourceIdentifier) : oldResourceIdentifier.getKey();
+            oldValue = useKeys ? getKeyOfResourceIdentifier(oldResourceIdentifier) : oldResourceIdentifier.getId();
         }
         String newValue = null;
         if (newResourceIdentifier != null) {
-            newValue = useKeys ? getKeyOfResourceIdentifier(newResourceIdentifier) : newResourceIdentifier.getKey();
+            newValue = useKeys ? getKeyOfResourceIdentifier(newResourceIdentifier) : newResourceIdentifier.getId();
         }
         return Objects.equals(oldValue, newValue);
     }

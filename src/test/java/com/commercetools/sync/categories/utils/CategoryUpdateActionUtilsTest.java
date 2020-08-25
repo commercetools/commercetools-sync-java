@@ -27,6 +27,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategory;
+import static com.commercetools.sync.categories.CategorySyncMockUtils.mockRoot;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeNameUpdateAction;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeOrderHintUpdateAction;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeParentUpdateAction;
@@ -47,7 +48,6 @@ class CategoryUpdateActionUtilsTest {
     private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
     private static final CategorySyncOptions CATEGORY_SYNC_OPTIONS = CategorySyncOptionsBuilder.of(CTP_CLIENT).build();
     private static final Locale LOCALE = Locale.GERMAN;
-    private static final String MOCK_OLD_CATEGORY_PARENT_ID = "1";
     private static final String MOCK_OLD_CATEGORY_NAME = "categoryName";
     private static final String MOCK_OLD_CATEGORY_SLUG = "categorySlug";
     private static final String MOCK_OLD_CATEGORY_KEY = "categoryKey";
@@ -67,7 +67,7 @@ class CategoryUpdateActionUtilsTest {
         MOCK_OLD_CATEGORY_META_TITLE,
         MOCK_OLD_CATEGORY_META_KEYWORDS,
         MOCK_OLD_CATEGORY_ORDERHINT,
-        MOCK_OLD_CATEGORY_PARENT_ID);
+        mockRoot());
 
     @Test
     void buildChangeNameUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
@@ -241,7 +241,7 @@ class CategoryUpdateActionUtilsTest {
         assertThat(changeParentUpdateAction).isNotPresent();
         assertThat(callBackResponse).hasSize(1);
         assertThat(callBackResponse.get(0))
-            .isEqualTo("Cannot unset 'parent' field of category with key 'categoryKey'.");
+            .isEqualTo("Cannot unset 'parent' field of category with id 'oldCatId'.");
     }
 
     @Test

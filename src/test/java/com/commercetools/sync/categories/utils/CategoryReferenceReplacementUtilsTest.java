@@ -68,7 +68,7 @@ class CategoryReferenceReplacementUtilsTest {
             CategoryReferenceReplacementUtils.replaceCategoriesReferenceIdsWithKeys(mockCategories);
 
         for (int i = 0; i < referenceReplacedDrafts.size(); i++) {
-            assertThat(referenceReplacedDrafts.get(i).getParent().getId()).isEqualTo("parentKey" + i);
+            assertThat(referenceReplacedDrafts.get(i).getParent().getKey()).isEqualTo("parentKey" + i);
             assertThat(referenceReplacedDrafts.get(i).getCustom().getType().getId()).isEqualTo(mockCustomType.getKey());
 
             final List<AssetDraft> referenceReplacedDraftAssets = referenceReplacedDrafts.get(i).getAssets();

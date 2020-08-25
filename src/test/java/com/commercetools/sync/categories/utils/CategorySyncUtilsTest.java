@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Locale;
 
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategory;
+import static com.commercetools.sync.categories.CategorySyncMockUtils.mockRoot;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -37,6 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 class CategorySyncUtilsTest {
+    private Category mockRoot;
     private Category mockOldCategory;
     private CategorySyncOptions categorySyncOptions;
     private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
@@ -65,6 +67,7 @@ class CategorySyncUtilsTest {
     void setup() {
         categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
                                                         .build();
+        mockRoot = mockRoot();
 
         mockOldCategory = getMockCategory(LOCALE,
             CATEGORY_NAME,
@@ -76,7 +79,7 @@ class CategorySyncUtilsTest {
             CATEGORY_META_TITLE,
             CATEGORY_KEYWORDS,
             CATEGORY_ORDER_HINT,
-            OLD_CATEGORY_KEY);
+            mockRoot);
     }
 
     @Test
@@ -90,7 +93,7 @@ class CategorySyncUtilsTest {
             .metaTitle(LocalizedString.of(LOCALE, CATEGORY_META_TITLE))
             .metaKeywords(LocalizedString.of(LOCALE, CATEGORY_KEYWORDS))
             .orderHint(CATEGORY_ORDER_HINT)
-            .parent(ResourceIdentifier.ofKey(OLD_CATEGORY_KEY))
+            .parent(ResourceIdentifier.ofKey("root"))
             .build();
 
         final List<UpdateAction<Category>> updateActions =
