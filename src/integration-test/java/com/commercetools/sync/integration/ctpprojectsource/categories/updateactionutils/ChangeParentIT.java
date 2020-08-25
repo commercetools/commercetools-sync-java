@@ -96,7 +96,7 @@ class ChangeParentIT {
             .key(newParentKey)
             .build();
 
-         CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraftParent)).toCompletableFuture().join();
+        CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraftParent)).toCompletableFuture().join();
 
         final CategoryDraft newCategoryDraft = CategoryDraftBuilder
             .of(oldCategory.getName(), oldCategory.getSlug())
