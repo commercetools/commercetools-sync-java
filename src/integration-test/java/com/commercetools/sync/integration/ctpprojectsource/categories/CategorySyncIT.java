@@ -12,6 +12,7 @@ import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.errors.DuplicateFieldError;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import org.junit.jupiter.api.AfterAll;
@@ -346,7 +347,7 @@ class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "child"),
                 LocalizedString.of(Locale.ENGLISH, "child"))
             .key("child")
-            .parent(parentCreated.toResourceIdentifier())
+            .parent(ResourceIdentifier.ofKey(parentCreated.getKey()))
             .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
         CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(childDraft)).toCompletableFuture().join();
@@ -366,7 +367,7 @@ class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "child-new-name"),
                 LocalizedString.of(Locale.ENGLISH, "child"))
             .key("child")
-            .parent(sourceParentCreated.toResourceIdentifier())
+            .parent(ResourceIdentifier.ofKey(sourceParentCreated.getKey()))
             .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
         CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(sourceChildDraft)).toCompletableFuture().join();

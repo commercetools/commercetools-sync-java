@@ -36,8 +36,6 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createCustomFieldsJsonMap;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createTypeIfNotAlreadyExisting;
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.toResourceIdentifierIfNotNull;
-
 import static io.sphere.sdk.utils.CompletableFutureUtils.listOfFuturesToFutureOfList;
 import static java.lang.String.format;
 
@@ -64,13 +62,12 @@ public final class CategoryITUtils {
             final String key = format("key%s", i + 1);
             final String orderHint = format("0.%s", i + 1);
             final CategoryDraft categoryDraft = CategoryDraftBuilder.of(name, slug)
-                                                                    .parent(
-                                                                        toResourceIdentifierIfNotNull(parentCategory))
-                                                                    .description(description)
-                                                                    .key(key)
-                                                                    .orderHint(orderHint)
-                                                                    .custom(getCustomFieldsDraft())
-                                                                    .build();
+                .parent(parentCategory != null ? ResourceIdentifier.ofKey(parentCategory.getKey()) : null)
+                .description(description)
+                .key(key)
+                .orderHint(orderHint)
+                .custom(getCustomFieldsDraft())
+                .build();
             categoryDrafts.add(categoryDraft);
         }
         return categoryDrafts;
@@ -100,9 +97,9 @@ public final class CategoryITUtils {
             final LocalizedString newCategoryDescription = LocalizedString.of(locale,
                 format("%s%s", prefix, categoryDraft.getDescription().get(locale)));
             final CategoryDraftBuilder categoryDraftBuilder = CategoryDraftBuilder.of(categoryDraft)
-                                                                                  .name(newCategoryName)
-                                                                                  .slug(newCategorySlug)
-                                                                                  .description(newCategoryDescription);
+                .name(newCategoryName)
+                .slug(newCategorySlug)
+                .description(newCategoryDescription);
             categoryDraftsWithPrefix.add(categoryDraftBuilder.build());
         }
         return categoryDraftsWithPrefix;
@@ -130,24 +127,30 @@ public final class CategoryITUtils {
         final List<CompletableFuture<Category>> futures = new ArrayList<>();
         for (int i = 0; i < numberOfChildren; i++) {
             final String categoryName = prefix + (i + 1);
-            CategoryDraft child = CategoryDraftBuilder
+            CategoryDraftBuilder childBuilder = CategoryDraftBuilder
                 .of(LocalizedString.of(Locale.ENGLISH, categoryName),
                     LocalizedString.of(Locale.ENGLISH, categoryName))
                 .key(categoryName)
-                .parent(toResourceIdentifierIfNotNull(parent))
+
                 .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
-                .orderHint("sameOrderHint")
-                .build();
+                .orderHint("sameOrderHint");
+
+            if (parent != null) {
+                childBuilder = childBuilder.parent(ResourceIdentifier.ofKey(parent.getKey()));
+            }
+
+
+            CategoryDraft child=childBuilder.build();
             final CompletableFuture<Category> future = ctpClient
                 .execute(CategoryCreateCommand.of(child)).toCompletableFuture();
             futures.add(future);
         }
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]))
-                         .thenAccept(voidResult -> {
-                             for (CompletableFuture<Category> creationFuture : futures) {
-                                 children.add(creationFuture.join());
-                             }
-                         }).join();
+            .thenAccept(voidResult -> {
+                for (CompletableFuture<Category> creationFuture : futures) {
+                    children.add(creationFuture.join());
+                }
+            }).join();
         return children;
     }
 
@@ -191,7 +194,8 @@ public final class CategoryITUtils {
     /**
      * This method blocks to create a category custom Type on the CTP project defined by the supplied
      * {@code ctpClient}, with the supplied data.
-     *  @param typeKey   the type key
+     *
+     * @param typeKey   the type key
      * @param locale    the locale to be used for specifying the type name and field definitions names.
      * @param name      the name of the custom type.
      * @param ctpClient defines the CTP project to create the type on.
@@ -219,14 +223,14 @@ public final class CategoryITUtils {
         final Set<String> keys = new HashSet<>();
         final List<Category> categories = QueryExecutionUtils.queryAll(ctpClient,
             CategoryQuery.of().withExpansionPaths(CategoryExpansionModel::ancestors))
-                                                             .thenApply(CategoryITUtils::sortCategoriesByLeastAncestors)
-                                                             .toCompletableFuture().join();
+            .thenApply(CategoryITUtils::sortCategoriesByLeastAncestors)
+            .toCompletableFuture().join();
         categories.forEach(category -> {
             final String categoryKey = category.getKey();
             if (!hasADeletedAncestor(category, keys)) {
                 ctpClient.execute(CategoryDeleteCommand.of(category))
-                         .thenAccept(deletedCategory -> keys.add(categoryKey))
-                         .toCompletableFuture().join();
+                    .thenAccept(deletedCategory -> keys.add(categoryKey))
+                    .toCompletableFuture().join();
             }
         });
     }
@@ -256,8 +260,8 @@ public final class CategoryITUtils {
      *                     used from within the method to recursively sync each batch once the previous batch has
      *                     finished syncing.
      * @return an instance of {@link CompletionStage} which contains as a result an instance of
-     *          {@link CategorySyncStatistics} representing the {@code statistics} of the sync process executed on the
-     *          given list of batches.
+     * {@link CategorySyncStatistics} representing the {@code statistics} of the sync process executed on the
+     * given list of batches.
      */
     public static CompletionStage<CategorySyncStatistics> syncBatches(@Nonnull final CategorySync categorySync,
                                                                       @Nonnull final List<List<CategoryDraft>> batches,
@@ -278,14 +282,14 @@ public final class CategoryITUtils {
      * @param categories a {@link List} of {@link Category} from which the {@link Set} of {@link ResourceIdentifier}
      *                   will be built.
      * @return a {@link Set} of {@link ResourceIdentifier} with keys in place of ids from the supplied {@link List} of
-     *         {@link Category}.
+     * {@link Category}.
      */
     @Nonnull
     public static Set<ResourceIdentifier<Category>> geResourceIdentifiersWithKeys(
         @Nonnull final List<Category> categories) {
         return categories.stream()
-                         .map(category -> ResourceIdentifier.<Category>ofId(category.getKey()))
-                         .collect(Collectors.toSet());
+            .map(category -> ResourceIdentifier.<Category>ofId(category.getKey()))
+            .collect(Collectors.toSet());
     }
 
     /**
@@ -298,8 +302,8 @@ public final class CategoryITUtils {
     @Nonnull
     public static List<Reference<Category>> getReferencesWithIds(@Nonnull final List<Category> categories) {
         return categories.stream()
-                         .map(category -> Category.referenceOfId(category.getId()))
-                         .collect(Collectors.toList());
+            .map(category -> Category.referenceOfId(category.getId()))
+            .collect(Collectors.toList());
     }
 
     /**
@@ -307,8 +311,8 @@ public final class CategoryITUtils {
      * categoryOrderHint ids with the {@link Category} keys.
      *
      * @param categoryOrderHints the categoryOrderHints that should have its keys replaced with ids.
-     * @param categories the categories that the keys would be taken from to replace on the newly created
-     *                  {@link CategoryOrderHints}.
+     * @param categories         the categories that the keys would be taken from to replace on the newly created
+     *                           {@link CategoryOrderHints}.
      * @return a new {@link CategoryOrderHints} instance with keys replacing the category ids.
      */
     @Nonnull
@@ -317,12 +321,12 @@ public final class CategoryITUtils {
         @Nonnull final List<Category> categories) {
         final Map<String, String> categoryOrderHintKeyMap = new HashMap<>();
         categoryOrderHints.getAsMap()
-                          .forEach((categoryId, categoryOrderHintValue) ->
-                              categories.stream()
-                                        .filter(category -> Objects.equals(category.getId(), categoryId))
-                                        .findFirst()
-                                        .ifPresent(category ->
-                                            categoryOrderHintKeyMap.put(category.getKey(), categoryOrderHintValue)));
+            .forEach((categoryId, categoryOrderHintValue) ->
+                categories.stream()
+                    .filter(category -> Objects.equals(category.getId(), categoryId))
+                    .findFirst()
+                    .ifPresent(category ->
+                        categoryOrderHintKeyMap.put(category.getKey(), categoryOrderHintValue)));
         return CategoryOrderHints.of(categoryOrderHintKeyMap);
     }
 

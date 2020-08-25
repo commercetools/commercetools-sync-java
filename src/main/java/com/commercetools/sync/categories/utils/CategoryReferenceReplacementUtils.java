@@ -46,7 +46,7 @@ public final class CategoryReferenceReplacementUtils {
                 final CustomFieldsDraft customTypeWithKeysInReference = replaceCustomTypeIdWithKeys(category);
                 @SuppressWarnings("ConstantConditions") // NPE checked in replaceReferenceIdWithKey
                 final ResourceIdentifier<Category> parentWithKeyInReference = getResourceIdentifierWithKeyReplaced(
-                    category.getParent(), () -> ResourceIdentifier.ofId(category.getParent().getObj().getKey()));
+                    category.getParent(), () -> ResourceIdentifier.ofKey(category.getParent().getObj().getKey()));
                 final List<AssetDraft> assetDraftsWithKeyInReference =
                     replaceAssetsReferencesIdsWithKeys(category.getAssets());
 

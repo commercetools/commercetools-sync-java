@@ -32,7 +32,7 @@ import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 
 public final class CategoryUpdateActionUtils {
-    private static final String CATEGORY_CHANGE_PARENT_EMPTY_PARENT = "Cannot unset 'parent' field of category with key"
+    private static final String CATEGORY_CHANGE_PARENT_EMPTY_PARENT = "Cannot unset 'parent' field of category with id"
         + " '%s'.";
     private static final String CATEGORY_CHANGE_ORDER_HINT_EMPTY_ORDERHINT = "Cannot unset 'orderHint' field of "
         + "category with id '%s'.";
@@ -117,7 +117,7 @@ public final class CategoryUpdateActionUtils {
         final ResourceIdentifier<Category> newParent = newCategory.getParent();
         if (newParent == null && oldParent != null) {
             syncOptions.applyWarningCallback(
-                new SyncException(format(CATEGORY_CHANGE_PARENT_EMPTY_PARENT, oldCategory.getKey())),
+                new SyncException(format(CATEGORY_CHANGE_PARENT_EMPTY_PARENT, oldCategory.getId())),
                 oldCategory, newCategory);
             return Optional.empty();
         } else {

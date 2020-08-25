@@ -39,6 +39,7 @@ class ChangeParentIT {
      */
     @BeforeAll
     static void setup() {
+        String oldParentKey = "oldParentKey";
         deleteAllCategories(CTP_SOURCE_CLIENT);
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypesFromTargetAndSource();
@@ -46,6 +47,8 @@ class ChangeParentIT {
         final CategoryDraft oldCategoryDraftParent = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture-parent"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture-parent"))
+            .key("oldKey")
+            .key(oldParentKey)
             .build();
 
         oldCategoryParent = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraftParent))
@@ -55,7 +58,7 @@ class ChangeParentIT {
         final CategoryDraft oldCategoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture"))
-            .parent(oldCategoryParent.toResourceIdentifier())
+            .parent(ResourceIdentifier.ofKey(oldParentKey))
             .build();
 
         oldCategory = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraft))
@@ -88,17 +91,19 @@ class ChangeParentIT {
 
     @Test
     void buildChangeParentUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
+        String newParentKey = "newKey";
         final CategoryDraft newCategoryDraftParent = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "parent-name"), LocalizedString.of(Locale.ENGLISH, "parent-slug"))
+            .key(newParentKey)
             .build();
 
         final Category parentCategory = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraftParent))
-                                                         .toCompletableFuture()
+            .toCompletableFuture()
                                                          .join();
 
         final CategoryDraft newCategoryDraft = CategoryDraftBuilder
             .of(oldCategory.getName(), oldCategory.getSlug())
-            .parent(parentCategory.toResourceIdentifier())
+            .parent(ResourceIdentifier.ofKey(newParentKey))
             .build();
         final Category newCategory = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraft))
                                                       .toCompletableFuture()
@@ -109,12 +114,12 @@ class ChangeParentIT {
 
         // Build change parent update action
         final UpdateAction<Category> changeParentUpdateAction =
-            buildChangeParentUpdateAction(oldCategory, draftFromCategory, categorySyncOptions).orElse(null);
+            buildChangeParentUpdateAction(oldCategory, newCategoryDraft, categorySyncOptions).orElse(null);
 
         assertThat(changeParentUpdateAction).isNotNull();
         assertThat(changeParentUpdateAction.getAction()).isEqualTo("changeParent");
-        assertThat(((ChangeParent) changeParentUpdateAction).getParent().getId())
-            .isEqualTo(newCategory.getParent().getId());
+        assertThat(((ChangeParent) changeParentUpdateAction).getParent().getKey())
+            .isEqualTo(newParentKey);
         assertThat(callBackResponses).isEmpty();
     }
 
