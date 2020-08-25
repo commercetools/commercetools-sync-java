@@ -21,12 +21,11 @@ public final class ResourceIdentifierUtils {
      * key of the referenced Object, otherwise it will return the key of the {@link ResourceIdentifier}
      *
      * @param resourceIdentifier represents the resourceIdentifier, whose key should be return
-     * @param <T>      type of the resourceIdentifier supplied.
-     * @param <S>      represents the type of the {@link ResourceIdentifier} returned.
+     * @param <T>      type of the resourceIdentifier supplied
      * @return         The key of the resource identifier
      */
 
-    public static <T extends ResourceIdentifier> String getKeyOfResourceIdentifier(T resourceIdentifier) {
+    public static <T extends ResourceIdentifier> String getKeyOfResourceIdentifier(final T resourceIdentifier) {
         String key = null;
         if (resourceIdentifier != null) {
             if (resourceIdentifier instanceof Reference) {

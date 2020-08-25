@@ -1,9 +1,7 @@
 package com.commercetools.sync.commons.utils;
 
 
-import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 
 import javax.annotation.Nonnull;
@@ -15,7 +13,6 @@ import java.util.function.Supplier;
 
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.getKeyOfResourceIdentifier;
 import static java.util.Collections.emptyList;
-import static java.util.Optional.ofNullable;
 
 public final class CommonTypeUpdateActionUtils {
 
@@ -92,7 +89,7 @@ public final class CommonTypeUpdateActionUtils {
         String newValue = null;
         if (newResourceIdentifier != null) {
             newValue = useKeys ? getKeyOfResourceIdentifier(newResourceIdentifier) : newResourceIdentifier.getKey();
-         }
+        }
         return Objects.equals(oldValue, newValue);
     }
 

@@ -256,9 +256,9 @@ public final class CategoryITUtils {
      * @param result       in the first call of this recursive method, this result is normally a completed future, it
      *                     used from within the method to recursively sync each batch once the previous batch has
      *                     finished syncing.
-     * @return an instance of {@link CompletionStage} which contains as a result an instance of
-     * {@link CategorySyncStatistics} representing the {@code statistics} of the sync process executed on the
-     * given list of batches.
+     *                     @return an instance of {@link CompletionStage} which contains as a result an instance of
+     *                     {@link CategorySyncStatistics} representing the {@code statistics} of the sync process
+     *                     executed on the given list of batches.
      */
     public static CompletionStage<CategorySyncStatistics> syncBatches(@Nonnull final CategorySync categorySync,
                                                                       @Nonnull final List<List<CategoryDraft>> batches,

@@ -39,11 +39,10 @@ class ChangeParentIT {
      */
     @BeforeAll
     static void setup() {
-        String oldParentKey = "oldParentKey";
         deleteAllCategories(CTP_SOURCE_CLIENT);
         deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypesFromTargetAndSource();
-
+        String oldParentKey = "oldParentKey";
         final CategoryDraft oldCategoryDraftParent = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "classic furniture-parent"),
                 LocalizedString.of(Locale.ENGLISH, "classic-furniture-parent"))

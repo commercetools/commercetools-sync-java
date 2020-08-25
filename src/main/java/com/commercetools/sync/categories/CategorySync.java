@@ -17,7 +17,6 @@ import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.models.WithKey;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
@@ -462,7 +461,8 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
             final CategoryDraftBuilder categoryDraftBuilder =
                 draftByKeyIfExists.map(categoryDraft -> {
                     if (categoryDraft.getParent() == null) {
-                        return CategoryDraftBuilder.of(categoryDraft).parent(getKeyReferenceIfNotNull(fetchedCategory.getParent()));
+                        return CategoryDraftBuilder.of(categoryDraft)
+                            .parent(getKeyReferenceIfNotNull(fetchedCategory.getParent()));
                     }
                     return CategoryDraftBuilder.of(categoryDraft);
                 })

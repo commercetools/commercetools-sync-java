@@ -290,7 +290,7 @@ class CommonTypeUpdateActionUtilsTest {
     }
 
     @Test
-    void areResourceIdentifiersEqual_WithDiffIDValues_ShouldBeFalse() {
+    void areResourceIdentifiersEqual_WithDiffIdValues_ShouldBeFalse() {
         final boolean result = areResourceIdentifiersEqual(
             ResourceIdentifier.ofId("foo"), ResourceIdentifier.ofId("bar"), false);
 
@@ -322,7 +322,7 @@ class CommonTypeUpdateActionUtilsTest {
     }
 
     @Test
-    void areResourceIdentifiersEqual_WithSameKeyValuesAndDifferentIDCheckeByKey_ShouldBeTrue() {
+    void areResourceIdentifiersEqual_WithSameKeyValuesAndDifferentIdCheckeByKey_ShouldBeTrue() {
         final boolean result = areResourceIdentifiersEqual(
             ResourceIdentifier.ofIdOrKey("111","foo"), ResourceIdentifier.ofIdOrKey("111","foo"), true);
 
@@ -330,12 +330,13 @@ class CommonTypeUpdateActionUtilsTest {
     }
 
     @Test
-    void areResourceIdentifiersEqual_WithSameKeyValuesAndDifferentIDCheckeByID_ShouldBefalse() {
+    void areResourceIdentifiersEqual_WithSameKeyValuesAndDifferentIsCheckeById_ShouldBefalse() {
         final boolean result = areResourceIdentifiersEqual(
             ResourceIdentifier.ofIdOrKey("111","foo"), ResourceIdentifier.ofIdOrKey("222","foo"), false);
 
         assertThat(result).isFalse();
     }
+
     @Test
     void areResourceIdentifiersEqual_WithDiffValuesDifferentInterface_ShouldBeFalse() {
         final boolean result = areResourceIdentifiersEqual(

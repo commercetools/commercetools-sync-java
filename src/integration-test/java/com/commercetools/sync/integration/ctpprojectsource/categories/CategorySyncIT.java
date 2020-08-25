@@ -250,7 +250,7 @@ class CategorySyncIT {
         //---------------------------------------------------------------
 
         // Create a total of 130 categories in the source project
-        final List<Category> sourceSubFamily =createChildren(5, null, "root", CTP_SOURCE_CLIENT);
+        final List<Category> sourceSubFamily = createChildren(5, null, "root", CTP_SOURCE_CLIENT);
 
         for (final Category child : sourceSubFamily) {
             final List<Category> subsubFamily =
