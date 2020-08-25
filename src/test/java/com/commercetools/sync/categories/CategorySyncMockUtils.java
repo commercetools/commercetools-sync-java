@@ -74,6 +74,14 @@ public class CategorySyncMockUtils {
         return category;
     }
 
+    public static Category getMockCategory(@Nonnull final String id, @Nonnull final String key) {
+        final Category category = mock(Category.class);
+        when(category.getKey()).thenReturn(key);
+        when(category.getId()).thenReturn(id);
+        when(category.toReference()).thenReturn(Category.referenceOfId(id));
+        return category;
+    }
+
     public static Category mockRoot() {
         return getMockCategory(Locale.GERMAN,
             "root",
@@ -86,14 +94,6 @@ public class CategorySyncMockUtils {
             "root",
             null,
             null);
-    }
-
-    public static Category getMockCategory(@Nonnull final String id, @Nonnull final String key) {
-        final Category category = mock(Category.class);
-        when(category.getKey()).thenReturn(key);
-        when(category.getId()).thenReturn(id);
-        when(category.toReference()).thenReturn(Category.referenceOfId(id));
-        return category;
     }
 
     /**
