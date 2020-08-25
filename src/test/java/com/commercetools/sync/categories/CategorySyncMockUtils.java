@@ -92,7 +92,7 @@ public class CategorySyncMockUtils {
             "root",
             "root",
             "root",
-            null,
+            "100",
             null);
     }
 
