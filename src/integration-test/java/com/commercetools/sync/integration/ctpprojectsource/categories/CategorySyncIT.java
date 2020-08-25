@@ -339,8 +339,8 @@ class CategorySyncIT {
             .key(parentKey)
             .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
-        final Category parentCreated = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(parentDraft))
-                                                        .toCompletableFuture().join();
+
+        CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(parentDraft)).toCompletableFuture().join();
 
         final CategoryDraft childDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "child"),
@@ -359,8 +359,7 @@ class CategorySyncIT {
             .key(newParentKey)
             .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
-        final Category sourceParentCreated = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(sourceParentDraft))
-                                                        .toCompletableFuture().join();
+        CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(sourceParentDraft)).toCompletableFuture().join();
 
         final CategoryDraft sourceChildDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "child-new-name"),

@@ -96,9 +96,7 @@ class ChangeParentIT {
             .key(newParentKey)
             .build();
 
-        final Category parentCategory = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraftParent))
-            .toCompletableFuture()
-                                                         .join();
+         CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraftParent)).toCompletableFuture().join();
 
         final CategoryDraft newCategoryDraft = CategoryDraftBuilder
             .of(oldCategory.getName(), oldCategory.getSlug())
@@ -108,8 +106,7 @@ class ChangeParentIT {
                                                       .toCompletableFuture()
                                                       .join();
 
-        final CategoryDraft draftFromCategory = CategoryDraftBuilder.of(newCategory)
-                                                                    .build();
+        CategoryDraftBuilder.of(newCategory).build();
 
         // Build change parent update action
         final UpdateAction<Category> changeParentUpdateAction =
