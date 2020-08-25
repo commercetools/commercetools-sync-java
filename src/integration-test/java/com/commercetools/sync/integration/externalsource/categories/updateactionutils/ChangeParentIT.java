@@ -97,8 +97,8 @@ class ChangeParentIT {
 
         assertThat(changeParentUpdateAction).isNotNull();
         assertThat(changeParentUpdateAction.getAction()).isEqualTo("changeParent");
-        assertThat(((ChangeParent) changeParentUpdateAction).getParent().getId())
-            .isEqualTo(oldCategory.getId());
+        assertThat(((ChangeParent) changeParentUpdateAction).getParent().getKey())
+            .isEqualTo(oldCategory.getKey());
         assertThat(callBackResponses).isEmpty();
     }
 
@@ -132,8 +132,8 @@ class ChangeParentIT {
 
         assertThat(changeParentUpdateAction).isNull();
         assertThat(callBackResponses).hasSize(1);
-        assertThat(callBackResponses.get(0)).isEqualTo(format("Cannot unset 'parent' field of category with key '%s'.",
-            oldCategory.getKey()));
+        assertThat(callBackResponses.get(0)).isEqualTo(format("Cannot unset 'parent' field of category with id '%s'.",
+            oldCategory.getId()));
     }
 
 }
