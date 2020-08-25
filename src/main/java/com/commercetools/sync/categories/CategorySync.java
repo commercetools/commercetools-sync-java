@@ -17,6 +17,7 @@ import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
+import io.sphere.sdk.models.WithKey;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
@@ -36,6 +37,7 @@ import static com.commercetools.sync.categories.helpers.CategoryReferenceResolve
 import static com.commercetools.sync.categories.utils.CategorySyncUtils.buildActions;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.areResourceIdentifiersEqual;
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.getKeyOfResourceIdentifier;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
@@ -174,7 +176,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                 .handle(ImmutablePair::new)
                 .thenCompose(cachingResponse -> {
 
-                    final  List<String> existingCategoryKeys = cachingResponse.getKey();
+                    final  Set<String> existingCategoryKeys = cachingResponse.getKey();
                     final Throwable cachingException = cachingResponse.getValue();
 
                     if (cachingException != null) {
@@ -273,7 +275,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @param existingCategoryKeys  List of keys of the ca.
      */
     private void prepareDraftsForProcessing(@Nonnull final List<CategoryDraft> categoryDrafts,
-                                            @Nonnull final List<String> existingCategoryKeys ) {
+                                            @Nonnull final Set<String> existingCategoryKeys ) {
         for (CategoryDraft categoryDraft : categoryDrafts) {
             if (categoryDraft != null) {
                 final String categoryKey = categoryDraft.getKey();
@@ -346,7 +348,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @throws ReferenceResolutionException thrown if the parent key is not valid.
      */
     private CategoryDraft updateCategoriesWithMissingParents(@Nonnull final CategoryDraft categoryDraft,
-                                                             @Nonnull final List<String> existingCategoryKeys )
+                                                             @Nonnull final Set<String> existingCategoryKeys )
         throws ReferenceResolutionException {
         return getParentCategoryKey(categoryDraft)
             .map(parentCategoryKey -> {
@@ -369,7 +371,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @return true or false, whether the category exists or not.
      */
     private boolean isMissingCategory(@Nonnull final String categoryKey,
-                                      @Nonnull final List<String> existingCategoryKeys ) {
+                                      @Nonnull final Set<String> existingCategoryKeys ) {
         return !existingCategoryKeys.contains(categoryKey);
     }
 
@@ -460,8 +462,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
             final CategoryDraftBuilder categoryDraftBuilder =
                 draftByKeyIfExists.map(categoryDraft -> {
                     if (categoryDraft.getParent() == null) {
-                        return CategoryDraftBuilder.of(categoryDraft)
-                                                   .parent(getKeyReferenceIfNotNull(fetchedCategory.getParent()));
+                        return CategoryDraftBuilder.of(categoryDraft).parent(getKeyReferenceIfNotNull(fetchedCategory.getParent()));
                     }
                     return CategoryDraftBuilder.of(categoryDraft);
                 })
@@ -476,8 +477,8 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         });
     }
 
-    private ResourceIdentifier<Category> getKeyReferenceIfNotNull(final Reference<Category> parent) {
-        return parent != null ? ResourceIdentifier.ofKey(parent.getKey()) : null;
+    private <T extends Reference<Category>> ResourceIdentifier<Category> getKeyReferenceIfNotNull( final T parent) {
+        return parent != null ? ResourceIdentifier.ofKey(getKeyOfResourceIdentifier(parent)) : null;
     }
 
     /**

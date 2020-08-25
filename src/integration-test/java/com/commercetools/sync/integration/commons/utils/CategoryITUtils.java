@@ -131,16 +131,13 @@ public final class CategoryITUtils {
                 .of(LocalizedString.of(Locale.ENGLISH, categoryName),
                     LocalizedString.of(Locale.ENGLISH, categoryName))
                 .key(categoryName)
-
                 .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
                 .orderHint("sameOrderHint");
 
             if (parent != null) {
                 childBuilder = childBuilder.parent(ResourceIdentifier.ofKey(parent.getKey()));
             }
-
-
-            CategoryDraft child=childBuilder.build();
+            CategoryDraft child = childBuilder.build();
             final CompletableFuture<Category> future = ctpClient
                 .execute(CategoryCreateCommand.of(child)).toCompletableFuture();
             futures.add(future);

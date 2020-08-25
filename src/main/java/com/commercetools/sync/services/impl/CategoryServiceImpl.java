@@ -17,13 +17,11 @@ import io.sphere.sdk.commands.UpdateAction;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-
 import java.util.function.Consumer;
 
 import static java.lang.String.format;
@@ -37,8 +35,6 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 public final class CategoryServiceImpl extends BaseServiceWithKey<CategoryDraft, Category, CategorySyncOptions,
     CategoryQuery, CategoryQueryModel, CategoryExpansionModel<Category>> implements CategoryService {
 
-    final List<String> existingCategoryKeys = new ArrayList<String>();
-
     private static final String CATEGORY_KEY_NOT_SET = "Category with id: '%s' has no key set. Keys are required for "
         + "category matching.";
 
@@ -48,28 +44,29 @@ public final class CategoryServiceImpl extends BaseServiceWithKey<CategoryDraft,
 
     @Nonnull
     @Override
-    public CompletionStage<List<String>> loadExistingCategoryKeys() {
+    public CompletionStage<Set<String>> loadExistingCategoryKeys() {
 
         if (isCached) {
-            return CompletableFuture.completedFuture(existingCategoryKeys);
+            return CompletableFuture.completedFuture(keyToIdCache.keySet());
         }
 
         final Consumer<List<Category>> categoryPageConsumer = categoriesPage ->
             categoriesPage.forEach(category -> {
                 final String key = category.getKey();
-
+                final String id = category.getId();
                 if (isNotBlank(key)) {
-                    existingCategoryKeys.add(key);
+                    keyToIdCache.put(key, id);
                 } else {
-                    syncOptions.applyWarningCallback(new SyncException(format(CATEGORY_KEY_NOT_SET,category.getId() )),
+                    syncOptions.applyWarningCallback(new SyncException(format(CATEGORY_KEY_NOT_SET, id)),
                         category, null);
                 }
             });
 
         return CtpQueryUtils
-            .queryAll(syncOptions.getCtpClient(), CategoryQuery.of(), categoryPageConsumer)
+            .queryAll(syncOptions.getCtpClient(), CategoryQuery.of(),
+                categoryPageConsumer)
             .thenAccept(result -> isCached = true)
-            .thenApply(result -> existingCategoryKeys);
+            .thenApply(result -> keyToIdCache.keySet());
     }
 
     @Nonnull
@@ -79,7 +76,9 @@ public final class CategoryServiceImpl extends BaseServiceWithKey<CategoryDraft,
         return fetchMatchingResources(categoryKeys,
             () -> CategoryQuery
                 .of()
-                .plusPredicates(categoryQueryModel -> categoryQueryModel.key().isIn(categoryKeys)));
+                .plusPredicates(categoryQueryModel -> categoryQueryModel.key().isIn(categoryKeys))
+                .plusExpansionPaths(CategoryExpansionModel::parent));
+
     }
 
     @Nonnull

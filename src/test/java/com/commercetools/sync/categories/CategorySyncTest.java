@@ -16,11 +16,13 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.queries.PagedQueryResult;
+import org.assertj.core.util.Sets;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -40,6 +42,7 @@ import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.products.ProductSyncMockUtils.CATEGORY_KEY_1_RESOURCE_PATH;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
+import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
@@ -551,7 +554,7 @@ class CategorySyncTest {
         final CategoryService categoryService = mockCategoryService(singleton(mockedExistingCategory),
             mockedExistingCategory, mockedExistingCategory);
 
-        when(categoryService.loadExistingCategoryKeys()).thenReturn(completedFuture(singletonList("1")));
+        when(categoryService.loadExistingCategoryKeys()).thenReturn(completedFuture(asSet("1")));
 
         final CategorySyncOptions spyCategorySyncOptions = spy(categorySyncOptions);
 

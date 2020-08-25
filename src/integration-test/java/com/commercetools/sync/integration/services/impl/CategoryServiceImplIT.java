@@ -118,7 +118,7 @@ class CategoryServiceImplIT {
 
     @Test
     void loadExistingCategoryKeys_ShouldCacheCategoryKeysOnlyFirstTime() {
-        List<String> cache = categoryService.loadExistingCategoryKeys().toCompletableFuture().join();
+        Set<String> cache = categoryService.loadExistingCategoryKeys().toCompletableFuture().join();
         assertThat(cache).hasSize(1);
 
         // Create new category without caching
@@ -148,7 +148,7 @@ class CategoryServiceImplIT {
         final Category createdCategory = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(categoryDraft))
                                                           .toCompletableFuture().join();
 
-        final List<String> cache = categoryService.loadExistingCategoryKeys().toCompletableFuture().join();
+        final Set<String> cache = categoryService.loadExistingCategoryKeys().toCompletableFuture().join();
         assertThat(cache).hasSize(1);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();

@@ -1,7 +1,9 @@
 package com.commercetools.sync.commons.utils;
 
 
+import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 
 import javax.annotation.Nonnull;
@@ -11,6 +13,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.getKeyOfResourceIdentifier;
 import static java.util.Collections.emptyList;
 import static java.util.Optional.ofNullable;
 
@@ -82,14 +85,17 @@ public final class CommonTypeUpdateActionUtils {
         @Nullable final S newResourceIdentifier,
         boolean useKeys) {
 
-        final String oldValue = ofNullable(oldResourceIdentifier)
-            .map(useKeys ? ResourceIdentifier::getKey : ResourceIdentifier::getId)
-            .orElse(null);
-        final String newValue = ofNullable(newResourceIdentifier)
-            .map(useKeys ? ResourceIdentifier::getKey : ResourceIdentifier::getId)
-            .orElse(null);
+        String oldValue = null;
+        if (oldResourceIdentifier != null) {
+            oldValue = useKeys ? getKeyOfResourceIdentifier(oldResourceIdentifier) : oldResourceIdentifier.getKey();
+        }
+        String newValue = null;
+        if (newResourceIdentifier != null) {
+            newValue = useKeys ? getKeyOfResourceIdentifier(newResourceIdentifier) : newResourceIdentifier.getKey();
+         }
         return Objects.equals(oldValue, newValue);
     }
+
 
     /**
      * Compares two {@link Object} and returns a supplied list of {@link UpdateAction} as a result.
