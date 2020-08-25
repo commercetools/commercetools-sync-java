@@ -54,7 +54,7 @@ public class CategorySyncMockUtils {
                                            @Nonnull final String metaTitle,
                                            @Nonnull final String metaKeywords,
                                            @Nonnull final String orderHint,
-                                           @Nonnull final Category parentCategory) {
+                                           @Nullable final Category parentCategory) {
         final Category category = mock(Category.class);
         when(category.getName()).thenReturn(LocalizedString.of(locale, name));
         when(category.getSlug()).thenReturn(LocalizedString.of(locale, slug));
