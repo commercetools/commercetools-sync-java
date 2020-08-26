@@ -420,7 +420,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                         final Category category = createdChild.get();
                         final CategoryDraft categoryDraft =
                             CategoryDraftBuilder.of(category)
-                                                .parent(createdCategory.toResourceIdentifier())
+                                                .parent(ofKey(createdCategory.getKey()))
                                                 .build();
                         categoryDraftsToUpdate.put(categoryDraft, category);
                     } else {
