@@ -38,6 +38,7 @@ import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.a
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.getKeyOfResourceIdentifier;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
+import static io.sphere.sdk.models.ResourceIdentifier.ofKey;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
@@ -419,7 +420,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                         final Category category = createdChild.get();
                         final CategoryDraft categoryDraft =
                             CategoryDraftBuilder.of(category)
-                                                .parent(ResourceIdentifier.ofKey(createdCategory.getKey()))
+                                                .parent(createdCategory.toResourceIdentifier())
                                                 .build();
                         categoryDraftsToUpdate.put(categoryDraft, category);
                     } else {
@@ -462,7 +463,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                 draftByKeyIfExists.map(categoryDraft -> {
                     if (categoryDraft.getParent() == null) {
                         return CategoryDraftBuilder.of(categoryDraft)
-                            .parent(getKeyReferenceIfNotNull(fetchedCategory.getParent()));
+                                                   .parent(getKeyReferenceIfNotNull(fetchedCategory.getParent()));
                     }
                     return CategoryDraftBuilder.of(categoryDraft);
                 })
@@ -470,7 +471,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
             if (categoryKeysWithResolvedParents.contains(fetchedCategoryKey)) {
                 statistics.getMissingParentKey(fetchedCategoryKey)
                           .ifPresent(missingParentKey -> {
-                              categoryDraftBuilder.parent(ResourceIdentifier.ofKey(missingParentKey));
+                              categoryDraftBuilder.parent(ofKey(missingParentKey));
                           });
             }
             categoryDraftsToUpdate.put(categoryDraftBuilder.build(), fetchedCategory);
@@ -478,7 +479,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     }
 
     private <T extends Reference<Category>> ResourceIdentifier<Category> getKeyReferenceIfNotNull( final T parent) {
-        return parent != null ? ResourceIdentifier.ofKey(getKeyOfResourceIdentifier(parent)) : null;
+        return parent != null ? ofKey(getKeyOfResourceIdentifier(parent)) : null;
     }
 
     /**
