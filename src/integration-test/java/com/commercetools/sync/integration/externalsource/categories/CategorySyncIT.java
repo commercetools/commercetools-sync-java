@@ -371,7 +371,7 @@ class CategorySyncIT {
         final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
             .toCompletableFuture().join();
         assertThat(errorCallBackMessages.get(0)).contains(
-            "Reason: The value of the 'key' field of the Resource Identifier/Reference is blank (null/empty)");
+            "Reason: The value of the 'key' field of the resource identifier is blank (null/empty)");
         assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
     }
 

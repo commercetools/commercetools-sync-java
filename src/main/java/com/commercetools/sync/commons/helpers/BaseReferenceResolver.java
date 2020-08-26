@@ -18,8 +18,8 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  *            specified by the user, on reference resolution.
  */
 public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
-    public static final String BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER = "The value of the 'key' field of the Resource"
-        + " Identifier/Reference is blank (null/empty).";
+    public static final String BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER = "The value of the 'key' field of the resource"
+        + " identifier is blank (null/empty).";
     public static final String BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER = "The value of the 'id' field of the Resource"
         + " Identifier/Reference is blank (null/empty).";
     protected S options;
