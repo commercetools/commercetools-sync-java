@@ -53,7 +53,7 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
      * @throws ReferenceResolutionException if any of the validation checks fail.
      */
     @Nonnull
-    protected static String getdIdFromResourceIdentifier(@Nonnull final ResourceIdentifier resourceIdentifier)
+    protected static String getIdFromResourceIdentifier(@Nonnull final ResourceIdentifier resourceIdentifier)
         throws ReferenceResolutionException {
 
         final String id = resourceIdentifier.getId();
