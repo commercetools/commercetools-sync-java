@@ -48,6 +48,7 @@ public final class CommonTypeUpdateActionUtils {
      * @param oldResourceIdentifier the old resource identifier
      * @param newResourceIdentifier the new resource identifier
      * @param updateActionSupplier  the supplier that returns the update action to return in the optional
+     * @param useKeys               If true, the keys of the resource identifiers are used for comparison
      * @param <T>                   the type of the {@link UpdateAction}
      * @param <S>                   the type of the old resource identifier
      * @param <U>                   the type of the new resource identifier

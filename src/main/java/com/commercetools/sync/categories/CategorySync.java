@@ -335,13 +335,13 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     /**
      * This method first gets the parent key either from the expanded category object or from the id field on the
      * reference and validates it. If it is valid, then it checks if the parent category is missing, this is done by
-     * checking if the key exists in the {@code keyToIdCache} map. If it is missing, then it adds the key to the map
+     * checking if the key exists in the {@code existingCategoryKeys} list. If it is missing, then it adds the key to the map
      * {@code statistics#categoryKeysWithMissingParents}, then it returns a category draft identical to the supplied one
      * but with a {@code null} parent. If it is not missing, then the same identical category draft is returned with the
      * same parent.
      *
-     * @param categoryDraft the category draft to check whether it's parent is missing or not.
-     * @param keyToIdCache  the cache containing the mapping of all existing category keys to ids.
+     * @param categoryDraft         the category draft to check whether it's parent is missing or not.
+     * @param existingCategoryKeys  list of keys of existing categories
      * @return the same identical supplied category draft. However, with a null parent field, if the parent is missing.
      * @throws ReferenceResolutionException thrown if the parent key is not valid.
      */
@@ -362,10 +362,10 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
 
     /**
      * Checks if the category with the given {@code categoryKey} exists or not, by checking if its key
-     * exists in the {@code keyToIdCache} map.
+     * exists in the {@code existingCategoryKeys} list.
      *
      * @param categoryKey  the key of the category to check for existence.
-     * @param keyToIdCache the cache of existing category keys to ids.
+     * @param existingCategoryKeys  list of keys of existing categories
      * @return true or false, whether the category exists or not.
      */
     private boolean isMissingCategory(@Nonnull final String categoryKey,
