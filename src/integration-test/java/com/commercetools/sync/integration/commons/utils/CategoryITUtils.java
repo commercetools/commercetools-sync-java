@@ -39,7 +39,6 @@ import static com.commercetools.sync.integration.commons.utils.ITUtils.createTyp
 import static io.sphere.sdk.models.ResourceIdentifier.ofKey;
 import static io.sphere.sdk.utils.CompletableFutureUtils.listOfFuturesToFutureOfList;
 import static java.lang.String.format;
-import static java.util.stream.Collectors.toSet;
 
 public final class CategoryITUtils {
     public static final String OLD_CATEGORY_CUSTOM_TYPE_KEY = "oldCategoryCustomTypeKey";
