@@ -67,7 +67,7 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
      * This method fetches the key value on the passed {@link ResourceIdentifier}, if valid. If it is not valid, a
      * {@link ReferenceResolutionException} will be thrown. The validity checks are:
      * <ul>
-     * <li>Checks if the id value is not null or not empty.</li>
+     * <li>Checks if the key value is not null or not empty.</li>
      * </ul>
      * If the above checks pass, the key value is returned. Otherwise a {@link ReferenceResolutionException} is thrown.
      *
