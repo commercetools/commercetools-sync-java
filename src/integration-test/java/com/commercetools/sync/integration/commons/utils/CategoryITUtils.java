@@ -39,6 +39,7 @@ import static com.commercetools.sync.integration.commons.utils.ITUtils.createTyp
 import static io.sphere.sdk.models.ResourceIdentifier.ofKey;
 import static io.sphere.sdk.utils.CompletableFutureUtils.listOfFuturesToFutureOfList;
 import static java.lang.String.format;
+import static java.util.stream.Collectors.toSet;
 
 public final class CategoryITUtils {
     public static final String OLD_CATEGORY_CUSTOM_TYPE_KEY = "oldCategoryCustomTypeKey";
@@ -144,11 +145,11 @@ public final class CategoryITUtils {
             futures.add(future);
         }
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]))
-            .thenAccept(voidResult -> {
-                for (CompletableFuture<Category> creationFuture : futures) {
-                    children.add(creationFuture.join());
-                }
-            }).join();
+                          .thenAccept(voidResult -> {
+                              for (CompletableFuture<Category> creationFuture : futures) {
+                                  children.add(creationFuture.join());
+                              }
+                          }).join();
         return children;
     }
 
@@ -221,14 +222,14 @@ public final class CategoryITUtils {
         final Set<String> keys = new HashSet<>();
         final List<Category> categories = QueryExecutionUtils.queryAll(ctpClient,
             CategoryQuery.of().withExpansionPaths(CategoryExpansionModel::ancestors))
-            .thenApply(CategoryITUtils::sortCategoriesByLeastAncestors)
-            .toCompletableFuture().join();
+                                    .thenApply(CategoryITUtils::sortCategoriesByLeastAncestors)
+                                    .toCompletableFuture().join();
         categories.forEach(category -> {
             final String categoryKey = category.getKey();
             if (!hasADeletedAncestor(category, keys)) {
                 ctpClient.execute(CategoryDeleteCommand.of(category))
-                    .thenAccept(deletedCategory -> keys.add(categoryKey))
-                    .toCompletableFuture().join();
+                         .thenAccept(deletedCategory -> keys.add(categoryKey))
+                         .toCompletableFuture().join();
             }
         });
     }
@@ -257,9 +258,9 @@ public final class CategoryITUtils {
      * @param result       in the first call of this recursive method, this result is normally a completed future, it
      *                     used from within the method to recursively sync each batch once the previous batch has
      *                     finished syncing.
-     *                     @return an instance of {@link CompletionStage} which contains as a result an instance of
-     *                     {@link CategorySyncStatistics} representing the {@code statistics} of the sync process
-     *                     executed on the given list of batches.
+     * @return an instance of {@link CompletionStage} which contains as a result an instance of
+     *            {@link CategorySyncStatistics} representing the {@code statistics} of the sync process
+     *            executed on the given list of batches.
      */
     public static CompletionStage<CategorySyncStatistics> syncBatches(@Nonnull final CategorySync categorySync,
                                                                       @Nonnull final List<List<CategoryDraft>> batches,
@@ -280,14 +281,14 @@ public final class CategoryITUtils {
      * @param categories a {@link List} of {@link Category} from which the {@link Set} of {@link ResourceIdentifier}
      *                   will be built.
      * @return a {@link Set} of {@link ResourceIdentifier} with keys in place of ids from the supplied {@link List} of
-     * {@link Category}.
+     *         {@link Category}.
      */
     @Nonnull
     public static Set<ResourceIdentifier<Category>> geResourceIdentifiersWithKeys(
         @Nonnull final List<Category> categories) {
         return categories.stream()
-            .map(category -> ResourceIdentifier.<Category>ofId(category.getKey()))
-            .collect(Collectors.toSet());
+                         .map(category -> ResourceIdentifier.<Category>ofId(category.getKey()))
+                         .collect(toSet());
     }
 
     /**
@@ -300,8 +301,8 @@ public final class CategoryITUtils {
     @Nonnull
     public static List<Reference<Category>> getReferencesWithIds(@Nonnull final List<Category> categories) {
         return categories.stream()
-            .map(category -> Category.referenceOfId(category.getId()))
-            .collect(Collectors.toList());
+                         .map(category -> Category.referenceOfId(category.getId()))
+                         .collect(Collectors.toList());
     }
 
     /**
@@ -319,12 +320,12 @@ public final class CategoryITUtils {
         @Nonnull final List<Category> categories) {
         final Map<String, String> categoryOrderHintKeyMap = new HashMap<>();
         categoryOrderHints.getAsMap()
-            .forEach((categoryId, categoryOrderHintValue) ->
-                categories.stream()
-                    .filter(category -> Objects.equals(category.getId(), categoryId))
-                    .findFirst()
-                    .ifPresent(category ->
-                        categoryOrderHintKeyMap.put(category.getKey(), categoryOrderHintValue)));
+                          .forEach((categoryId, categoryOrderHintValue) ->
+                              categories.stream()
+                                  .filter(category -> Objects.equals(category.getId(), categoryId))
+                                  .findFirst()
+                                  .ifPresent(category ->
+                                        categoryOrderHintKeyMap.put(category.getKey(), categoryOrderHintValue)));
         return CategoryOrderHints.of(categoryOrderHintKeyMap);
     }
 
