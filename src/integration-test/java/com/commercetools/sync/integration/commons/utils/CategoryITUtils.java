@@ -135,7 +135,6 @@ public final class CategoryITUtils {
                 .key(categoryName)
                 .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
                 .orderHint("sameOrderHint");
-
             if (parent != null) {
                 childBuilder = childBuilder.parent(ofKey(parent.getKey()));
             }
