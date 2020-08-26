@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createCustomFieldsJsonMap;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createTypeIfNotAlreadyExisting;
+import static io.sphere.sdk.models.ResourceIdentifier.ofKey;
 import static io.sphere.sdk.utils.CompletableFutureUtils.listOfFuturesToFutureOfList;
 import static java.lang.String.format;
 
@@ -62,12 +63,13 @@ public final class CategoryITUtils {
             final String key = format("key%s", i + 1);
             final String orderHint = format("0.%s", i + 1);
             final CategoryDraft categoryDraft = CategoryDraftBuilder.of(name, slug)
-                .parent(parentCategory != null ? ResourceIdentifier.ofKey(parentCategory.getKey()) : null)
-                .description(description)
-                .key(key)
-                .orderHint(orderHint)
-                .custom(getCustomFieldsDraft())
-                .build();
+                                                                    .parent(parentCategory != null
+                                                                        ? ofKey(parentCategory.getKey()) : null)
+                                                                    .description(description)
+                                                                    .key(key)
+                                                                    .orderHint(orderHint)
+                                                                    .custom(getCustomFieldsDraft())
+                                                                    .build();
             categoryDrafts.add(categoryDraft);
         }
         return categoryDrafts;
@@ -97,9 +99,9 @@ public final class CategoryITUtils {
             final LocalizedString newCategoryDescription = LocalizedString.of(locale,
                 format("%s%s", prefix, categoryDraft.getDescription().get(locale)));
             final CategoryDraftBuilder categoryDraftBuilder = CategoryDraftBuilder.of(categoryDraft)
-                .name(newCategoryName)
-                .slug(newCategorySlug)
-                .description(newCategoryDescription);
+                                                                                  .name(newCategoryName)
+                                                                                  .slug(newCategorySlug)
+                                                                                  .description(newCategoryDescription);
             categoryDraftsWithPrefix.add(categoryDraftBuilder.build());
         }
         return categoryDraftsWithPrefix;
@@ -135,7 +137,7 @@ public final class CategoryITUtils {
                 .orderHint("sameOrderHint");
 
             if (parent != null) {
-                childBuilder = childBuilder.parent(ResourceIdentifier.ofKey(parent.getKey()));
+                childBuilder = childBuilder.parent(ofKey(parent.getKey()));
             }
             CategoryDraft child = childBuilder.build();
             final CompletableFuture<Category> future = ctpClient
