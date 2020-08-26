@@ -78,8 +78,9 @@ public class MockUtils {
         when(mockCategoryService.fetchMatchingCategoriesByKeys(any()))
             .thenReturn(CompletableFuture.completedFuture(existingCategories));
 
-        final Set<String> keyList = existingCategories.stream().map(Category::getKey).collect(Collectors.toSet());
-        when(mockCategoryService.loadExistingCategoryKeys()).thenReturn(completedFuture(keyList));
+        final Map<String, String> keyToIds =
+            existingCategories.stream().collect(Collectors.toMap(Category::getKey, Category::getId));
+        when(mockCategoryService.cacheKeysToIds()).thenReturn(completedFuture(keyToIds));
         when(mockCategoryService.createCategory(any()))
             .thenReturn(CompletableFuture.completedFuture(ofNullable(createdCategory)));
         return mockCategoryService;

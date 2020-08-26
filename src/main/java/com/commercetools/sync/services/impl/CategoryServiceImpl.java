@@ -18,6 +18,7 @@ import io.sphere.sdk.commands.UpdateAction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -44,10 +45,10 @@ public final class CategoryServiceImpl extends BaseServiceWithKey<CategoryDraft,
 
     @Nonnull
     @Override
-    public CompletionStage<Set<String>> loadExistingCategoryKeys() {
+    public CompletionStage<Map<String, String>> cacheKeysToIds() {
 
         if (isCached) {
-            return CompletableFuture.completedFuture(keyToIdCache.keySet());
+            return CompletableFuture.completedFuture(keyToIdCache);
         }
 
         final Consumer<List<Category>> categoryPageConsumer = categoriesPage ->
@@ -66,7 +67,7 @@ public final class CategoryServiceImpl extends BaseServiceWithKey<CategoryDraft,
             .queryAll(syncOptions.getCtpClient(), CategoryQuery.of(),
                 categoryPageConsumer)
             .thenAccept(result -> isCached = true)
-            .thenApply(result -> keyToIdCache.keySet());
+            .thenApply(result -> keyToIdCache);
     }
 
     @Nonnull

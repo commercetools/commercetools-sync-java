@@ -172,11 +172,9 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         categoryDraftsToUpdate = new ConcurrentHashMap<>();
 
         return categoryService
-                .loadExistingCategoryKeys()
+                .cacheKeysToIds()
                 .handle(ImmutablePair::new)
                 .thenCompose(cachingResponse -> {
-
-                    final  Set<String> existingCategoryKeys = cachingResponse.getKey();
                     final Throwable cachingException = cachingResponse.getValue();
 
                     if (cachingException != null) {
@@ -185,7 +183,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                         return CompletableFuture.completedFuture(null);
                     }
 
-                    prepareDraftsForProcessing(categoryDrafts, existingCategoryKeys);
+                    prepareDraftsForProcessing(categoryDrafts, cachingResponse.getKey().keySet());
 
                     categoryKeysToFetch = existingCategoryDrafts
                         .stream()
