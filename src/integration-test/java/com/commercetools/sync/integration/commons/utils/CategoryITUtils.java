@@ -259,8 +259,8 @@ public final class CategoryITUtils {
      *                     used from within the method to recursively sync each batch once the previous batch has
      *                     finished syncing.
      * @return an instance of {@link CompletionStage} which contains as a result an instance of
-     *            {@link CategorySyncStatistics} representing the {@code statistics} of the sync process
-     *            executed on the given list of batches.
+     *          {@link CategorySyncStatistics} representing the {@code statistics} of the sync process executed on the
+     *          given list of batches.
      */
     public static CompletionStage<CategorySyncStatistics> syncBatches(@Nonnull final CategorySync categorySync,
                                                                       @Nonnull final List<List<CategoryDraft>> batches,
@@ -288,7 +288,7 @@ public final class CategoryITUtils {
         @Nonnull final List<Category> categories) {
         return categories.stream()
                          .map(category -> ResourceIdentifier.<Category>ofId(category.getKey()))
-                         .collect(toSet());
+                         .collect(Collectors.toSet());
     }
 
     /**
@@ -310,8 +310,8 @@ public final class CategoryITUtils {
      * categoryOrderHint ids with the {@link Category} keys.
      *
      * @param categoryOrderHints the categoryOrderHints that should have its keys replaced with ids.
-     * @param categories         the categories that the keys would be taken from to replace on the newly created
-     *                           {@link CategoryOrderHints}.
+     * @param categories the categories that the keys would be taken from to replace on the newly created
+     *                  {@link CategoryOrderHints}.
      * @return a new {@link CategoryOrderHints} instance with keys replacing the category ids.
      */
     @Nonnull
@@ -322,9 +322,9 @@ public final class CategoryITUtils {
         categoryOrderHints.getAsMap()
                           .forEach((categoryId, categoryOrderHintValue) ->
                               categories.stream()
-                                  .filter(category -> Objects.equals(category.getId(), categoryId))
-                                  .findFirst()
-                                  .ifPresent(category ->
+                                        .filter(category -> Objects.equals(category.getId(), categoryId))
+                                        .findFirst()
+                                        .ifPresent(category ->
                                         categoryOrderHintKeyMap.put(category.getKey(), categoryOrderHintValue)));
         return CategoryOrderHints.of(categoryOrderHintKeyMap);
     }
