@@ -7,7 +7,6 @@ import io.sphere.sdk.categories.expansion.CategoryExpansionModel;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.models.AssetDraft;
-import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.types.CustomFieldsDraft;
 
@@ -17,7 +16,9 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.AssetReferenceReplacementUtils.replaceAssetsReferencesIdsWithKeys;
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.replaceCustomTypeIdWithKeys;
-import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKeyReplaced;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.getKeyOfResourceIdentifier;
+import static io.sphere.sdk.models.ResourceIdentifier.ofKey;
+import static org.apache.commons.lang3.StringUtils.isNoneBlank;
 
 /**
  * Util class which provides utilities that can be used when syncing resources from a source commercetools project
@@ -29,7 +30,7 @@ public final class CategoryReferenceReplacementUtils {
     }
 
     /**
-     * Takes a list of Categories that are supposed to have their custom type, parent category and asset custom type
+     * Takes a list of Categories that are supposed to have their custom type and asset custom type
      * references expanded in order to be able to fetch the keys and replace the resource identifier ids with the
      * corresponding keys and then return a new list of category drafts with their resource identifiers containing keys
      * instead of the ids. Note that if the references are not expanded for a category, the resource identifier ids will
@@ -45,16 +46,16 @@ public final class CategoryReferenceReplacementUtils {
             .map(category -> {
                 final CustomFieldsDraft customTypeWithKeysInReference = replaceCustomTypeIdWithKeys(category);
                 @SuppressWarnings("ConstantConditions") // NPE checked in replaceReferenceIdWithKey
-                final ResourceIdentifier<Category> parentWithKeyInReference = getResourceIdentifierWithKeyReplaced(
-                    category.getParent(), () -> ResourceIdentifier.ofKey(category.getParent().getObj().getKey()));
                 final List<AssetDraft> assetDraftsWithKeyInReference =
                     replaceAssetsReferencesIdsWithKeys(category.getAssets());
-
-                return CategoryDraftBuilder.of(category)
+                CategoryDraftBuilder builder = CategoryDraftBuilder.of(category)
                     .custom(customTypeWithKeysInReference)
-                    .parent(parentWithKeyInReference)
-                    .assets(assetDraftsWithKeyInReference)
-                    .build();
+                    .assets(assetDraftsWithKeyInReference);
+                String parentKey = getKeyOfResourceIdentifier(category.getParent());
+                if (isNoneBlank(parentKey)) {
+                    builder = builder.parent(ofKey(parentKey));
+                }
+                return builder.build();
             })
             .collect(Collectors.toList());
     }
