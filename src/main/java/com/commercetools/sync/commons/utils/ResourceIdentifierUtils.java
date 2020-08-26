@@ -17,12 +17,12 @@ public final class ResourceIdentifierUtils {
     public static final String REFERENCE_TYPE_ID_FIELD = "typeId";
     public static final String REFERENCE_ID_FIELD = "id";
     /**
-     * Given a {@link ResourceIdentifier}  the type {@code T}, if it is a {@link Reference}, it  returns the
+     * Given a {@link ResourceIdentifier} the type {@code T}. If it is a {@link Reference}, it  returns the
      * key of the referenced Object, otherwise it will return the key of the {@link ResourceIdentifier}
      *
      * @param resourceIdentifier represents the resourceIdentifier, whose key should be return
-     * @param <T>      type of the resourceIdentifier supplied
-     * @return         The key of the resource identifier
+     * @param <T>                type of the resourceIdentifier supplied
+     * @return The key of the resource identifier
      */
 
     public static <T extends ResourceIdentifier> String getKeyOfResourceIdentifier(final T resourceIdentifier) {
@@ -38,11 +38,6 @@ public final class ResourceIdentifierUtils {
         }
         return key;
     }
-
-
-
-
-
 
     /**
      * Given a {@link Referenceable} {@code resource} of the type {@code T}, if it is not null, this method applies the
