@@ -272,7 +272,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * resolution, the error callback is triggered and the category is skipped.
      *
      * @param categoryDrafts the input list of category drafts in the sync batch.
-     * @param existingCategoryKeys  List of keys of the ca.
+     * @param existingCategoryKeys  List of keys of categories.
      */
     private void prepareDraftsForProcessing(@Nonnull final List<CategoryDraft> categoryDrafts,
                                             @Nonnull final Set<String> existingCategoryKeys ) {
