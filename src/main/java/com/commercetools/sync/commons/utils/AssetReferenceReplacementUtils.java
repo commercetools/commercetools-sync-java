@@ -7,7 +7,7 @@ import io.sphere.sdk.models.AssetDraftBuilder;
 import javax.annotation.Nonnull;
 import java.util.List;
 
-import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.replaceCustomTypeIdWithKeys;
+import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.mapToCustomFieldsDraft;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -31,7 +31,7 @@ public final class AssetReferenceReplacementUtils {
     public static List<AssetDraft> replaceAssetsReferencesIdsWithKeys(@Nonnull final List<Asset> assets) {
         return assets.stream().map(asset ->
             AssetDraftBuilder.of(asset)
-                             .custom(replaceCustomTypeIdWithKeys(asset)).build())
+                             .custom(mapToCustomFieldsDraft(asset)).build())
                      .collect(toList());
     }
 

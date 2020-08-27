@@ -5,6 +5,7 @@ import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.models.Builder;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.types.CustomDraft;
 import io.sphere.sdk.types.CustomFieldsDraft;
 
@@ -18,6 +19,7 @@ import java.util.function.Function;
 import static io.sphere.sdk.types.CustomFieldsDraft.ofTypeIdAndJson;
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * This class is responsible for providing an abstract implementation of reference resolution on Custom CTP
@@ -34,7 +36,7 @@ public abstract class CustomReferenceResolver
         <D extends CustomDraft, B extends Builder<? extends D>, S extends BaseSyncOptions>
     extends BaseReferenceResolver<D, S> {
 
-    private TypeService typeService;
+    private final TypeService typeService;
 
     protected CustomReferenceResolver(@Nonnull final S options, @Nonnull final TypeService typeService) {
         super(options);
@@ -44,7 +46,7 @@ public abstract class CustomReferenceResolver
     /**
      * Given a draft of {@code D} (e.g. {@link CategoryDraft}) this method attempts to resolve it's custom type
      * reference to return {@link CompletionStage} which contains a new instance of the draft with the resolved
-     * custom type reference. The key of the custom type is taken from the from the id field of the reference.
+     * custom type reference.
      *
      * <p>The method then tries to fetch the key of the custom type, optimistically from a
      * cache. If the key is is not found, the resultant draft would remain exactly the same as the passed
@@ -60,7 +62,7 @@ public abstract class CustomReferenceResolver
     /**
      * Given a draft of {@code D} (e.g. {@link CategoryDraft}) this method attempts to resolve it's custom type
      * reference to return {@link CompletionStage} which contains a new instance of the draft with the resolved
-     * custom type reference. The key of the custom type is taken from the from the id field of the reference.
+     * custom type reference.
      *
      * <p>The method then tries to fetch the key of the custom type, optimistically from a
      * cache. If the key is is not found, the resultant draft would remain exactly the same as the passed
@@ -105,7 +107,8 @@ public abstract class CustomReferenceResolver
     private CompletionStage<Optional<String>> getCustomTypeId(@Nonnull final CustomFieldsDraft custom,
                                                               @Nonnull final String referenceResolutionErrorMessage) {
         try {
-            final String customTypeKey = getKeyFromResourceIdentifier(custom.getType());
+            // todo (ahmetoz): change method and messages on tests after fixing the conflicts with 231.
+            final String customTypeKey = getKeyFromResourceIdentifier2(custom.getType());
             return typeService.fetchCachedTypeId(customTypeKey);
         } catch (ReferenceResolutionException exception) {
             final String errorMessage =
@@ -114,5 +117,15 @@ public abstract class CustomReferenceResolver
         }
     }
 
+    @Nonnull // todo (ahmetoz): change method and messages on tests after fixing the conflicts with 231.
+    protected static <T> String getKeyFromResourceIdentifier2(@Nonnull final ResourceIdentifier<T> resourceIdentifier)
+        throws ReferenceResolutionException {
+
+        final String key = resourceIdentifier.getKey();
+        if (isBlank(key)) {
+            throw new ReferenceResolutionException(BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER);
+        }
+        return key;
+    }
 
 }
