@@ -69,12 +69,13 @@ class CategoryReferenceReplacementUtilsTest {
 
         for (int i = 0; i < referenceReplacedDrafts.size(); i++) {
             assertThat(referenceReplacedDrafts.get(i).getParent().getId()).isEqualTo("parentKey" + i);
-            assertThat(referenceReplacedDrafts.get(i).getCustom().getType().getId()).isEqualTo(mockCustomType.getKey());
+            assertThat(referenceReplacedDrafts.get(i).getCustom().getType().getKey())
+                .isEqualTo(mockCustomType.getKey());
 
             final List<AssetDraft> referenceReplacedDraftAssets = referenceReplacedDrafts.get(i).getAssets();
             assertThat(referenceReplacedDraftAssets).hasSize(1);
             assertThat(referenceReplacedDraftAssets.get(0).getCustom()).isNotNull();
-            assertThat(referenceReplacedDraftAssets.get(0).getCustom().getType().getId())
+            assertThat(referenceReplacedDraftAssets.get(0).getCustom().getType().getKey())
                 .isEqualTo(assetCustomType.getKey());
         }
     }
