@@ -41,7 +41,6 @@ import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.products.ProductSyncMockUtils.CATEGORY_KEY_1_RESOURCE_PATH;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
-import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
