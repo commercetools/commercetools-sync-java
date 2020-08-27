@@ -49,6 +49,7 @@ import static com.commercetools.sync.integration.commons.utils.ITUtils.BOOLEAN_C
 import static com.commercetools.sync.integration.commons.utils.ITUtils.LOCALISED_STRING_CUSTOM_FIELD_NAME;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.assertAssetsAreEqual;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createAssetDraft;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.createAssetDraftWithKey;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createAssetsCustomType;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createVariantDraft;
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
@@ -151,7 +152,7 @@ class ProductSyncWithAssetsIT {
     @Test
     void sync_withNewProductWithAssets_shouldCreateProduct() {
         final List<AssetDraft> assetDrafts =
-            singletonList(createAssetDraft("4", ofEnglish("4"), ASSETS_CUSTOM_TYPE_KEY));
+            singletonList(createAssetDraftWithKey("4", ofEnglish("4"), ASSETS_CUSTOM_TYPE_KEY));
 
         final ProductDraft productDraft = ProductDraftBuilder
             .of(referenceOfId(productType.getKey()), ofEnglish("draftName"), ofEnglish("slug"),
@@ -180,8 +181,8 @@ class ProductSyncWithAssetsIT {
     @Test
     void sync_withNewProductWithAssetsWithDuplicateKeys_shouldNotCreateProductAndTriggerErrorCallback() {
         final List<AssetDraft> assetDrafts = asList(
-            createAssetDraft("4", ofEnglish("4"), ASSETS_CUSTOM_TYPE_KEY),
-            createAssetDraft("4", ofEnglish("duplicate asset"), ASSETS_CUSTOM_TYPE_KEY));
+            createAssetDraftWithKey("4", ofEnglish("4"), ASSETS_CUSTOM_TYPE_KEY),
+            createAssetDraftWithKey("4", ofEnglish("duplicate asset"), ASSETS_CUSTOM_TYPE_KEY));
 
         final ProductDraft productDraft = ProductDraftBuilder
             .of(referenceOfId(productType.getKey()), ofEnglish("draftName"), ofEnglish("slug"),
@@ -222,8 +223,8 @@ class ProductSyncWithAssetsIT {
         // new asset drafts with different kind of asset actions (change order, add asset, remove asset, change asset
         // name, set asset custom fields, change
         final List<AssetDraft> assetDrafts = asList(
-            createAssetDraft("4", ofEnglish("4"), ASSETS_CUSTOM_TYPE_KEY),
-            createAssetDraft("3", ofEnglish("3"), ASSETS_CUSTOM_TYPE_KEY, customFieldsJsonMap),
+            createAssetDraftWithKey("4", ofEnglish("4"), ASSETS_CUSTOM_TYPE_KEY),
+            createAssetDraftWithKey("3", ofEnglish("3"), ASSETS_CUSTOM_TYPE_KEY, customFieldsJsonMap),
             createAssetDraft("2", ofEnglish("new name")));
 
 
@@ -280,8 +281,8 @@ class ProductSyncWithAssetsIT {
         // new asset drafts with different kind of asset actions (change order, add asset, remove asset, change asset
         // name, set asset custom fields, change
         final List<AssetDraft> assetDrafts = asList(
-            createAssetDraft("4", ofEnglish("4"), ASSETS_CUSTOM_TYPE_KEY),
-            createAssetDraft("3", ofEnglish("3"), ASSETS_CUSTOM_TYPE_KEY, customFieldsJsonMap),
+            createAssetDraftWithKey("4", ofEnglish("4"), ASSETS_CUSTOM_TYPE_KEY),
+            createAssetDraftWithKey("3", ofEnglish("3"), ASSETS_CUSTOM_TYPE_KEY, customFieldsJsonMap),
             createAssetDraft("2", ofEnglish("new name")));
 
 
@@ -340,9 +341,9 @@ class ProductSyncWithAssetsIT {
     @Test
     void sync_withMatchingProductWithDuplicateAssets_shouldFailToUpdateProductAndTriggerErrorCallback() {
         final List<AssetDraft> assetDrafts = asList(
-            createAssetDraft("4", ofEnglish("4"), ASSETS_CUSTOM_TYPE_KEY),
-            createAssetDraft("4", ofEnglish("4"), ASSETS_CUSTOM_TYPE_KEY),
-            createAssetDraft("2", ofEnglish("2"), ASSETS_CUSTOM_TYPE_KEY));
+            createAssetDraftWithKey("4", ofEnglish("4"), ASSETS_CUSTOM_TYPE_KEY),
+            createAssetDraftWithKey("4", ofEnglish("4"), ASSETS_CUSTOM_TYPE_KEY),
+            createAssetDraftWithKey("2", ofEnglish("2"), ASSETS_CUSTOM_TYPE_KEY));
 
 
         final ProductDraft productDraft = ProductDraftBuilder

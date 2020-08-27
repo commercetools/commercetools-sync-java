@@ -630,7 +630,7 @@ class ProductSyncWithPricesIT {
         newCustomFieldsJsonMap.put(NULL_NODE_SET_CUSTOM_FIELD_NAME, emptySet);
 
 
-        final CustomFieldsDraft customType1WithEmptySet = CustomFieldsDraft.ofTypeIdAndJson(customType1.getId(),
+        final CustomFieldsDraft customType1WithEmptySet = CustomFieldsDraft.ofTypeKeyAndJson(customType1.getKey(),
             newCustomFieldsJsonMap);
         final PriceDraft withChannel1CustomType1WithNullSet = getPriceDraft(BigDecimal.valueOf(100), EUR,
             DE, null, byMonth(1), byMonth(2), channel1.getKey(), customType1WithEmptySet);
@@ -699,7 +699,7 @@ class ProductSyncWithPricesIT {
         newCustomFieldsJsonMap.put(NULL_NODE_SET_CUSTOM_FIELD_NAME, nonEmptyNewSet);
 
 
-        final CustomFieldsDraft customType1WithEmptySet = CustomFieldsDraft.ofTypeIdAndJson(customType1.getId(),
+        final CustomFieldsDraft customType1WithEmptySet = CustomFieldsDraft.ofTypeKeyAndJson(customType1.getKey(),
             newCustomFieldsJsonMap);
         final PriceDraft withChannel1CustomType1WithNullSet = getPriceDraft(BigDecimal.valueOf(100), EUR,
             DE, null, byMonth(1), byMonth(2), channel1.getKey(), customType1WithEmptySet);
@@ -767,7 +767,7 @@ class ProductSyncWithPricesIT {
         newCustomFieldsJsonMap.put(NON_EMPTY_SEY_CUSTOM_FIELD_NAME, nullJsonNode);
 
 
-        final CustomFieldsDraft customType1WithEmptySet = CustomFieldsDraft.ofTypeIdAndJson(customType1.getId(),
+        final CustomFieldsDraft customType1WithEmptySet = CustomFieldsDraft.ofTypeKeyAndJson(customType1.getKey(),
             newCustomFieldsJsonMap);
         final PriceDraft withChannel1CustomType1WithNullSet = getPriceDraft(BigDecimal.valueOf(100), EUR,
             DE, null, byMonth(1), byMonth(2), channel1.getKey(), customType1WithEmptySet);
@@ -827,7 +827,7 @@ class ProductSyncWithPricesIT {
 
         product = executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(existingProductDraft)));
 
-        final CustomFieldsDraft customType1WithEmptySet = CustomFieldsDraft.ofTypeIdAndJson(customType1.getId(),
+        final CustomFieldsDraft customType1WithEmptySet = CustomFieldsDraft.ofTypeKeyAndJson(customType1.getKey(),
             new HashMap<>());
         final PriceDraft withChannel1CustomType1WithNullSet = getPriceDraft(BigDecimal.valueOf(100), EUR,
             DE, null, byMonth(1), byMonth(2), channel1.getKey(), customType1WithEmptySet);
@@ -888,7 +888,7 @@ class ProductSyncWithPricesIT {
                                                                  .put("en", "red");
 
 
-        final CustomFieldsDraft customType1WithEnDeOfKey = CustomFieldsDraft.ofTypeIdAndJson("customType1",
+        final CustomFieldsDraft customType1WithEnDeOfKey = CustomFieldsDraft.ofTypeKeyAndJson("customType1",
             createCustomFieldsJsonMap(LOCALISED_STRING_CUSTOM_FIELD_NAME, lTextWithEnDe));
         final PriceDraft withChannel1CustomType1WithEnDeOfKey = getPriceDraft(BigDecimal.valueOf(100), EUR,
             DE, null, byMonth(1), byMonth(2), "channel1", customType1WithEnDeOfKey);

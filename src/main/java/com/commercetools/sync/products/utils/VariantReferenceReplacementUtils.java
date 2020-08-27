@@ -58,6 +58,7 @@ public final class VariantReferenceReplacementUtils {
             .stream()
             .filter(Objects::nonNull)
             .map(productVariant -> {
+                // todo (ahmetoz) update the method name and tests after replacing all replacement utils.
                 final List<PriceDraft> priceDraftsWithKeys = replacePricesReferencesIdsWithKeys(productVariant);
                 final List<AttributeDraft> attributeDraftsWithKeys =
                     replaceAttributesReferencesIdsWithKeys(productVariant);

@@ -64,7 +64,7 @@ class PriceReferenceResolverTest {
     @Test
     void resolveCustomTypeReference_WithNonExistentCustomType_ShouldNotResolveCustomTypeReference() {
         final String customTypeKey = "customTypeKey";
-        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeIdAndJson(customTypeKey, new HashMap<>());
+        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeKeyAndJson(customTypeKey, new HashMap<>());
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
             .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .country(CountryCode.DE)
@@ -81,7 +81,7 @@ class PriceReferenceResolverTest {
             .isCompletedWithValueMatching(resolvedDraft ->
                 Objects.nonNull(resolvedDraft.getCustom())
                     && Objects.nonNull(resolvedDraft.getCustom().getType())
-                    && Objects.equals(resolvedDraft.getCustom().getType().getId(), customTypeKey));
+                    && Objects.equals(resolvedDraft.getCustom().getType().getKey(), customTypeKey));
     }
 
     @Test
@@ -108,7 +108,7 @@ class PriceReferenceResolverTest {
 
     @Test
     void resolveCustomTypeReference_WithEmptyIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
-        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeIdAndJson("", new HashMap<>());
+        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeKeyAndJson("", new HashMap<>());
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
             .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .country(CountryCode.DE)
@@ -128,7 +128,7 @@ class PriceReferenceResolverTest {
     @Test
     void resolveCustomTypeReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
         final String customTypeKey = "customTypeKey";
-        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeIdAndJson(customTypeKey, new HashMap<>());
+        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeKeyAndJson(customTypeKey, new HashMap<>());
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
             .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .country(CountryCode.DE)

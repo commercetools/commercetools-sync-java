@@ -61,7 +61,7 @@ public final class PriceReferenceResolver
      * Given a {@link PriceDraft} this method attempts to resolve the custom type and channel
      * references to return a {@link CompletionStage} which contains a new instance of the draft with the resolved
      * references. The keys of the references are either taken from the expanded references or
-     * taken from the id field of the references.
+     * taken from the key field of the references.
      *
      * @param priceDraft the priceDraft to resolve it's references.
      * @return a {@link CompletionStage} that contains as a result a new inventoryEntryDraft instance with resolved
