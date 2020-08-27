@@ -38,6 +38,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
@@ -370,8 +371,7 @@ class CategorySyncIT {
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
             .toCompletableFuture().join();
-        assertThat(errorCallBackMessages.get(0)).contains(
-            "Reason: The value of the 'key' field of the resource identifier is blank (null/empty)");
+        assertThat(errorCallBackMessages.get(0)).contains( "Reason: " + BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER);
         assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
     }
 
