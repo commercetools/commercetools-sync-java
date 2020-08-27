@@ -1,5 +1,6 @@
 package com.commercetools.sync.commons.utils;
 
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import io.sphere.sdk.client.BlockingSphereClient;
 import io.sphere.sdk.client.QueueSphereClientDecorator;
 import io.sphere.sdk.client.RetrySphereClientDecorator;
@@ -52,7 +53,8 @@ public final class ClientConfigurationUtils {
             final SphereClient underlying = SphereClient.of(clientConfig, httpClient, tokenSupplier);
             final SphereClient retryClient = withRetry(underlying);
             final SphereClient limitedParallelRequestsClient = withLimitedParallelRequests(retryClient);
-            delegatesCache.put(clientConfig, limitedParallelRequestsClient);
+            final SphereClient customHeaderClient = withCustomHeader(limitedParallelRequestsClient);
+            delegatesCache.put(clientConfig, customHeaderClient);
         }
         return BlockingSphereClient.of(delegatesCache.get(clientConfig), timeout, timeUnit);
     }
@@ -65,6 +67,10 @@ public final class ClientConfigurationUtils {
      */
     public static SphereClient createClient(@Nonnull final SphereClientConfig clientConfig) {
         return createClient(clientConfig, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_TIME_UNIT);
+    }
+
+    private static SphereClient withCustomHeader(@Nonnull final SphereClient sphereClient) {
+        return CustomHeaderSphereClientDecorator.of(sphereClient);
     }
 
     /**
