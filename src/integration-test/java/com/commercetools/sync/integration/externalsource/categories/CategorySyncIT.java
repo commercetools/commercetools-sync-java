@@ -84,8 +84,7 @@ class CategorySyncIT {
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorCallBackMessages.add(exception.getMessage());
                 errorCallBackExceptions.add(exception.getCause());
-            })
-                                                                                  .build();
+            }).build();
         categorySync = new CategorySync(categorySyncOptions);
 
         // Create a mock in the target project.
@@ -359,13 +358,13 @@ class CategorySyncIT {
     }
 
     @Test
-    void syncDrafts_WithNewCategoryWithExistingParentWithKey_ShouldNotCreateCategory() {
+    void syncDrafts_WithNewCategoryWithParentReferencedOnlyById_ShouldNotCreateCategory() {
         // Category draft coming from external source.
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key("newCategory")
-            .parent(ResourceIdentifier.ofId(oldCategoryKey))
+            .parent(ResourceIdentifier.ofId("parentId"))
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
