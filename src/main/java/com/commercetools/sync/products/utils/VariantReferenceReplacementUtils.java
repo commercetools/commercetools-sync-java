@@ -27,7 +27,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.commons.utils.AssetReferenceReplacementUtils.replaceAssetsReferencesIdsWithKeys;
+import static com.commercetools.sync.commons.utils.AssetReferenceReplacementUtils.mapToAssetDrafts;
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.mapToCustomFieldsDraft;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
 import static com.commercetools.sync.commons.utils.SyncUtils.getReferenceWithKeyReplaced;
@@ -61,8 +61,7 @@ public final class VariantReferenceReplacementUtils {
                 final List<PriceDraft> priceDraftsWithKeys = replacePricesReferencesIdsWithKeys(productVariant);
                 final List<AttributeDraft> attributeDraftsWithKeys =
                     replaceAttributesReferencesIdsWithKeys(productVariant);
-                final List<AssetDraft> assetDraftsWithKeys =
-                    replaceAssetsReferencesIdsWithKeys(productVariant.getAssets());
+                final List<AssetDraft> assetDraftsWithKeys = mapToAssetDrafts(productVariant.getAssets());
 
                 return ProductVariantDraftBuilder.of(productVariant)
                                                  .prices(priceDraftsWithKeys)

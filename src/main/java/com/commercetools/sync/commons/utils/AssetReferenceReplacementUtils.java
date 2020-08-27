@@ -18,17 +18,16 @@ public final class AssetReferenceReplacementUtils {
 
     /**
      * Takes an asset list that is supposed to have all its assets' custom references expanded in order to be able to
-     * fetch the keys and replace the reference ids with the corresponding keys for the custom references. This method
-     * returns as a result a {@link List} of {@link AssetDraft} that has all custom references with keys replacing the
-     * ids.
+     * fetch the keys for the custom references. This method returns as a result a {@link List} of {@link AssetDraft}
+     * that has all custom references with keys.
      *
      * <p>Any custom reference that is not expanded will have its id in place and not replaced by the key.
      *
      * @param assets the list of assets to replace their custom ids with keys.
-     * @return a {@link List} of {@link AssetDraft} that has all channel references with keys replacing the ids.
+     * @return a {@link List} of {@link AssetDraft} that has all channel references with keys.
      */
     @Nonnull
-    public static List<AssetDraft> replaceAssetsReferencesIdsWithKeys(@Nonnull final List<Asset> assets) {
+    public static List<AssetDraft> mapToAssetDrafts(@Nonnull final List<Asset> assets) {
         return assets.stream().map(asset ->
             AssetDraftBuilder.of(asset)
                              .custom(mapToCustomFieldsDraft(asset)).build())

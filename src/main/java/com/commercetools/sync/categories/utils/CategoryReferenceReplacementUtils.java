@@ -15,7 +15,7 @@ import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.commons.utils.AssetReferenceReplacementUtils.replaceAssetsReferencesIdsWithKeys;
+import static com.commercetools.sync.commons.utils.AssetReferenceReplacementUtils.mapToAssetDrafts;
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.mapToCustomFieldsDraft;
 import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKeyReplaced;
 
@@ -47,8 +47,7 @@ public final class CategoryReferenceReplacementUtils {
                 @SuppressWarnings("ConstantConditions") // NPE checked in replaceReferenceIdWithKey
                 final ResourceIdentifier<Category> parentWithKeyInReference = getResourceIdentifierWithKeyReplaced(
                     category.getParent(), () -> ResourceIdentifier.ofId(category.getParent().getObj().getKey()));
-                final List<AssetDraft> assetDraftsWithKeyInReference =
-                    replaceAssetsReferencesIdsWithKeys(category.getAssets());
+                final List<AssetDraft> assetDraftsWithKeyInReference = mapToAssetDrafts(category.getAssets());
 
                 return CategoryDraftBuilder.of(category)
                     .custom(customTypeWithKeysInReference)

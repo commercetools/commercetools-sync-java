@@ -23,7 +23,6 @@ public final class CartDiscountReferenceReplacementUtils {
      * Takes a list of CartDiscounts that are supposed to have their custom type references expanded in order to be able
      * to fetch the keys and then return a new list of cartDiscountDrafts with their custom type resource identifiers
      * containing keys instead of the ids.
-     *
      * Note that if the references are not expanded for a cart discount, the resource identifiers wil not have keys
      * and will still have their ids in place.
      *
