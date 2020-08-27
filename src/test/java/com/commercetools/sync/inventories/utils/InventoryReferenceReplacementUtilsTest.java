@@ -13,8 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import static com.commercetools.sync.inventories.utils.InventoryReferenceReplacementUtils.replaceChannelReferenceIdWithKey;
-import static com.commercetools.sync.inventories.utils.InventoryReferenceReplacementUtils.replaceInventoriesReferenceIdsWithKeys;
+import static com.commercetools.sync.inventories.utils.InventoryReferenceReplacementUtils.mapToChannelResourceIdentifier;
+import static com.commercetools.sync.inventories.utils.InventoryReferenceReplacementUtils.mapToInventoryEntryDrafts;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getChannelMock;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -23,8 +23,7 @@ import static org.mockito.Mockito.when;
 class InventoryReferenceReplacementUtilsTest {
 
     @Test
-    void
-        replaceInventoriesReferenceIdsWithKeys_WithAllExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
+    void mapToInventoryEntryDrafts_WithAllExpandedReferences_ShouldReturnResourceIdentifiersWithKeys() {
         //preparation
         final String customTypeId = UUID.randomUUID().toString();
         final String customTypeKey = "customTypeKey";
@@ -53,18 +52,17 @@ class InventoryReferenceReplacementUtilsTest {
 
         //test
         final List<InventoryEntryDraft> referenceReplacedDrafts =
-            replaceInventoriesReferenceIdsWithKeys(mockInventoryEntries);
+            mapToInventoryEntryDrafts(mockInventoryEntries);
 
         //assertion
         for (InventoryEntryDraft referenceReplacedDraft : referenceReplacedDrafts) {
             assertThat(referenceReplacedDraft.getCustom().getType().getKey()).isEqualTo(customTypeKey);
-            assertThat(referenceReplacedDraft.getSupplyChannel().getId()).isEqualTo(channelKey);
+            assertThat(referenceReplacedDraft.getSupplyChannel().getKey()).isEqualTo(channelKey);
         }
     }
 
     @Test
-    void
-        replaceInventoriesReferenceIdsWithKeys_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
+    void mapToInventoryEntryDrafts_WithNonExpandedReferences_ShouldReturnResourceIdentifiersWithoutKeys() {
         //preparation
         final String customTypeId = UUID.randomUUID().toString();
         final List<InventoryEntry> mockInventoryEntries = new ArrayList<>();
@@ -86,7 +84,7 @@ class InventoryReferenceReplacementUtilsTest {
 
         //test
         final List<InventoryEntryDraft> referenceReplacedDrafts =
-            replaceInventoriesReferenceIdsWithKeys(mockInventoryEntries);
+            mapToInventoryEntryDrafts(mockInventoryEntries);
 
         //assertion
         for (InventoryEntryDraft referenceReplacedDraft : referenceReplacedDrafts) {
@@ -97,7 +95,7 @@ class InventoryReferenceReplacementUtilsTest {
 
 
     @Test
-    void replaceChannelReferenceIdWithKey_WithNonExpandedReferences_ShouldReturnReferenceWithoutReplacedKeys() {
+    void mapToChannelResourceIdentifier_WithNonExpandedReferences_ShouldReturnResourceIdentifiersWithoutKeys() {
         //preparation
         final String channelId = UUID.randomUUID().toString();
         final Reference<Channel> channelReference = Channel.referenceOfId(channelId);
@@ -105,7 +103,7 @@ class InventoryReferenceReplacementUtilsTest {
         when(inventoryEntry.getSupplyChannel()).thenReturn(channelReference);
 
         //test
-        final ResourceIdentifier<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(inventoryEntry);
+        final ResourceIdentifier<Channel> channelReferenceWithKey = mapToChannelResourceIdentifier(inventoryEntry);
 
         //assertion
         assertThat(channelReferenceWithKey).isNotNull();
@@ -113,7 +111,7 @@ class InventoryReferenceReplacementUtilsTest {
     }
 
     @Test
-    void replaceChannelReferenceIdWithKey_WithExpandedReferences_ShouldReturnReplaceReferenceIdsWithKey() {
+    void mapToChannelResourceIdentifier_WithExpandedReferences_ShouldReturnResourceIdentifierWithKey() {
         //preparation
         final String channelKey = "channelKey";
         final Channel channel = getChannelMock(channelKey);
@@ -123,18 +121,18 @@ class InventoryReferenceReplacementUtilsTest {
         when(inventoryEntry.getSupplyChannel()).thenReturn(channelReference);
 
         //test
-        final ResourceIdentifier<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(inventoryEntry);
+        final ResourceIdentifier<Channel> channelReferenceWithKey = mapToChannelResourceIdentifier(inventoryEntry);
 
         //assertion
         assertThat(channelReferenceWithKey).isNotNull();
-        assertThat(channelReferenceWithKey.getId()).isEqualTo(channelKey);
+        assertThat(channelReferenceWithKey.getKey()).isEqualTo(channelKey);
     }
 
     @Test
-    void replaceChannelReferenceIdWithKey_WithNullChannelReference_ShouldReturnNull() {
+    void mapToChannelResourceIdentifier_WithNullChannelReference_ShouldReturnNull() {
         final InventoryEntry inventoryEntry = mock(InventoryEntry.class);
 
-        final ResourceIdentifier<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(inventoryEntry);
+        final ResourceIdentifier<Channel> channelReferenceWithKey = mapToChannelResourceIdentifier(inventoryEntry);
 
         assertThat(channelReferenceWithKey).isNull();
     }

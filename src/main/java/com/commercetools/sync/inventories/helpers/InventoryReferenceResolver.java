@@ -17,6 +17,7 @@ import java.util.concurrent.CompletionStage;
 
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public final class InventoryReferenceResolver
         extends CustomReferenceResolver<InventoryEntryDraft, InventoryEntryDraftBuilder, InventorySyncOptions> {
@@ -38,8 +39,7 @@ public final class InventoryReferenceResolver
     /**
      * Given a {@link InventoryEntryDraft} this method attempts to resolve the custom type and supply channel
      * resource identifiers to return a {@link CompletionStage} which contains a new instance of the draft with the
-     * resolved resource identifiers. The keys of the resolved resources are taken from the id fields of the resource
-     * identifiers.
+     * resolved resource identifiers.
      *
      * @param draft the inventoryEntryDraft to resolve its resource identifiers.
      * @return a {@link CompletionStage} that contains as a result a new inventoryEntryDraft instance with resolved
@@ -66,8 +66,7 @@ public final class InventoryReferenceResolver
     /**
      * Given a {@link InventoryEntryDraftBuilder} this method attempts to resolve the supply channel resource identifier
      * to return a {@link CompletionStage} which contains a new instance of the draft builder with the resolved
-     * supply channel resource identifier. The key of the supply channel taken from the id field of the resource
-     * identifier.
+     * supply channel resource identifier.
      *
      * <p>The method then tries to fetch the key of the supply channel, optimistically from a
      * cache. If the id is not found in cache nor the CTP project and {@code ensureChannel}
@@ -88,7 +87,7 @@ public final class InventoryReferenceResolver
         final ResourceIdentifier<Channel> channelReference = draftBuilder.getSupplyChannel();
         if (channelReference != null) {
             try {
-                final String channelKey = getKeyFromResourceIdentifier(channelReference);
+                final String channelKey = getKeyFromResourceIdentifier2(channelReference);
                 return fetchOrCreateAndResolveReference(draftBuilder, channelKey);
             } catch (ReferenceResolutionException exception) {
                 return CompletableFutureUtils.exceptionallyCompletedFuture(
@@ -97,6 +96,17 @@ public final class InventoryReferenceResolver
             }
         }
         return completedFuture(draftBuilder);
+    }
+
+    @Nonnull // todo (ahmetoz): change method and messages on tests after fixing the conflicts with 231.
+    protected static <T> String getKeyFromResourceIdentifier2(@Nonnull final ResourceIdentifier<T> resourceIdentifier)
+        throws ReferenceResolutionException {
+
+        final String key = resourceIdentifier.getKey();
+        if (isBlank(key)) {
+            throw new ReferenceResolutionException(BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER);
+        }
+        return key;
     }
 
     /**

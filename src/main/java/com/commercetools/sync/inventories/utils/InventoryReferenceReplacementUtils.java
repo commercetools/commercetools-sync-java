@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.mapToCustomFieldsDraft;
-import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKeyReplaced;
+import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 
 /**
  * Util class which provides utilities that can be used when syncing resources from a source commercetools project
@@ -24,23 +24,22 @@ public final class InventoryReferenceReplacementUtils {
 
     /**
      * Takes a list of inventoryEntries that are supposed to have their custom type and supply channel reference
-     * expanded in order to be able to fetch the keys and replace the reference ids with the corresponding keys and then
-     * return a new list of inventory entry drafts with their references containing keys instead of the ids.  Note that
-     * if the references are not expanded for an inventory entry, the reference ids will not be replaced with keys and
-     * will still have their ids in place.
+     * expanded in order to be able to fetch the keys and then return a new list of inventory entry drafts with
+     * their references containing keys.
+     * Note that if the references are not expanded for an inventory entry, the references will not have keys.
      *
-     * @param inventoryEntries the inventory entries to replace their reference ids with keys
-     * @return a list of inventoryEntry drafts with keys instead of ids for references.
+     * @param inventoryEntries the inventory entries expanded with keys
+     * @return a list of inventoryEntry drafts with keys for references.
      */
     @Nonnull
-    public static List<InventoryEntryDraft> replaceInventoriesReferenceIdsWithKeys(
+    public static List<InventoryEntryDraft> mapToInventoryEntryDrafts(
         @Nonnull final List<InventoryEntry> inventoryEntries) {
         return inventoryEntries
             .stream()
             .map(inventoryEntry -> {
                 final CustomFieldsDraft customTypeWithKeysInReference = mapToCustomFieldsDraft(inventoryEntry);
                 final ResourceIdentifier<Channel> channelReferenceWithKeysInReference =
-                    replaceChannelReferenceIdWithKey(inventoryEntry);
+                    mapToChannelResourceIdentifier(inventoryEntry);
                 return InventoryEntryDraftBuilder.of(inventoryEntry)
                                                  .custom(customTypeWithKeysInReference)
                                                  .supplyChannel(channelReferenceWithKeysInReference)
@@ -52,23 +51,22 @@ public final class InventoryReferenceReplacementUtils {
 
     /**
      * Takes an inventoryEntry that is supposed to have its channel reference expanded in order to be able to fetch the
-     * key and replace the reference id with the corresponding key and then return a new {@link Channel}
-     * {@link ResourceIdentifier} containing the key in the id field.
+     * key and return a new {@link Channel} {@link ResourceIdentifier} containing the key field.
      *
      * <p><b>Note:</b> The Channel reference should be expanded for the {@code inventoryEntry}, otherwise the reference
-     * id will not be replaced with the key and will still have the id in place.
+     * will not have a key in place.
      *
-     * @param inventoryEntry the inventoryEntry to replace its channel reference id with the key.
+     * @param inventoryEntry the inventoryEntry with {@link Channel} {@link ResourceIdentifier} containing the key.
      *
-     * @return a new {@link Channel} {@link ResourceIdentifier} containing the key in the id field.
+     * @return a new {@link Channel} {@link ResourceIdentifier} containing the key field.
      */
     @Nullable
     @SuppressWarnings("ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
-    static ResourceIdentifier<Channel> replaceChannelReferenceIdWithKey(@Nonnull final InventoryEntry inventoryEntry) {
+    static ResourceIdentifier<Channel> mapToChannelResourceIdentifier(@Nonnull final InventoryEntry inventoryEntry) {
 
         final Reference<Channel> inventoryEntrySupplyChannel = inventoryEntry.getSupplyChannel();
-        return getResourceIdentifierWithKeyReplaced(inventoryEntrySupplyChannel,
-            () -> ResourceIdentifier.ofId(inventoryEntrySupplyChannel.getObj().getKey()));
+        return getResourceIdentifierWithKey(inventoryEntrySupplyChannel,
+            () -> ResourceIdentifier.ofKey(inventoryEntrySupplyChannel.getObj().getKey()));
     }
 
 

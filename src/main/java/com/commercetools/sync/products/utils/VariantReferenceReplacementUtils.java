@@ -31,7 +31,7 @@ import static com.commercetools.sync.commons.utils.AssetReferenceReplacementUtil
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.mapToCustomFieldsDraft;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
 import static com.commercetools.sync.commons.utils.SyncUtils.getReferenceWithKeyReplaced;
-import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKeyReplaced;
+import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
@@ -116,7 +116,7 @@ public final class VariantReferenceReplacementUtils {
     static ResourceIdentifier<Channel> replaceChannelReferenceIdWithKey(@Nonnull final Price price) {
 
         final Reference<Channel> priceChannel = price.getChannel();
-        return getResourceIdentifierWithKeyReplaced(priceChannel,
+        return getResourceIdentifierWithKey(priceChannel,
             () -> ResourceIdentifier.ofId(priceChannel.getObj().getKey()));
     }
 

@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.AssetReferenceReplacementUtils.mapToAssetDrafts;
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.mapToCustomFieldsDraft;
-import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKeyReplaced;
+import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 
 /**
  * Util class which provides utilities that can be used when syncing resources from a source commercetools project
@@ -45,7 +45,7 @@ public final class CategoryReferenceReplacementUtils {
             .map(category -> {
                 final CustomFieldsDraft customTypeWithKeysInReference = mapToCustomFieldsDraft(category);
                 @SuppressWarnings("ConstantConditions") // NPE checked in replaceReferenceIdWithKey
-                final ResourceIdentifier<Category> parentWithKeyInReference = getResourceIdentifierWithKeyReplaced(
+                final ResourceIdentifier<Category> parentWithKeyInReference = getResourceIdentifierWithKey(
                     category.getParent(), () -> ResourceIdentifier.ofId(category.getParent().getObj().getKey()));
                 final List<AssetDraft> assetDraftsWithKeyInReference = mapToAssetDrafts(category.getAssets());
 

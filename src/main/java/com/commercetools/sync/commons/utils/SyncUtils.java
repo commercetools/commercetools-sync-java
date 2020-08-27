@@ -73,7 +73,7 @@ public final class SyncUtils {
      *         Otherwise, it returns the supplied reference as is.
      */
     @Nullable
-    public static <T> ResourceIdentifier<T> getResourceIdentifierWithKeyReplaced(
+    public static <T> ResourceIdentifier<T> getResourceIdentifierWithKey(
         @Nullable final Reference<T> reference,
         @Nonnull final Supplier<ResourceIdentifier<T>> keyInReferenceSupplier) {
 

@@ -32,7 +32,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.getReferenceWithKeyReplaced;
-import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKeyReplaced;
+import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -137,7 +137,7 @@ public final class ProductReferenceReplacementUtils {
     @SuppressWarnings("ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
     static ResourceIdentifier<ProductType> replaceProductTypeReferenceIdWithKey(@Nonnull final Product product) {
         final Reference<ProductType> productType = product.getProductType();
-        return getResourceIdentifierWithKeyReplaced(productType,
+        return getResourceIdentifierWithKey(productType,
             () -> ResourceIdentifier.ofId(productType.getObj().getKey()));
     }
 
@@ -158,7 +158,7 @@ public final class ProductReferenceReplacementUtils {
     static ResourceIdentifier<TaxCategory> replaceTaxCategoryReferenceIdWithKey(@Nonnull final Product product) {
 
         final Reference<TaxCategory> productTaxCategory = product.getTaxCategory();
-        return getResourceIdentifierWithKeyReplaced(productTaxCategory,
+        return getResourceIdentifierWithKey(productTaxCategory,
             () -> ResourceIdentifier.ofId(productTaxCategory.getObj().getKey()));
     }
 
@@ -208,7 +208,7 @@ public final class ProductReferenceReplacementUtils {
 
         categoryReferences.forEach(categoryReference ->
             categoryResourceIdentifiers.add(
-                getResourceIdentifierWithKeyReplaced(categoryReference, () -> {
+                getResourceIdentifierWithKey(categoryReference, () -> {
                     final String categoryId = categoryReference.getId();
                     @SuppressWarnings("ConstantConditions") // NPE is checked in replaceReferenceIdWithKey.
                     final String categoryKey = categoryReference.getObj().getKey();
