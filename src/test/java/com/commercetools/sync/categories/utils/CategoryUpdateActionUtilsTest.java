@@ -23,6 +23,7 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -41,7 +42,6 @@ import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.
 import static com.commercetools.sync.products.ProductSyncMockUtils.CATEGORY_KEY_1_RESOURCE_PATH;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static io.sphere.sdk.models.ResourceIdentifier.ofKey;
-import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -59,7 +59,7 @@ class CategoryUpdateActionUtilsTest {
     private static final String MOCK_OLD_CATEGORY_META_TITLE = "categoryMetaTitle";
     private static final String MOCK_OLD_CATEGORY_META_KEYWORDS = "categoryKeywords";
     private static final String MOCK_OLD_CATEGORY_ORDERHINT = "123";
-    final Map<String, String> keyToIdCache = singletonMap(MOCK_OLD_CATEGORY_KEY, MOCK_OLD_CATEGORY_EXTERNAL_ID);
+    final Map<String, String> keyToIdCache = new HashMap<>();
     private static final Category MOCK_OLD_CATEGORY = getMockCategory(LOCALE,
         MOCK_OLD_CATEGORY_NAME,
         MOCK_OLD_CATEGORY_SLUG,
@@ -199,9 +199,10 @@ class CategoryUpdateActionUtilsTest {
     void buildChangeParentUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getParent()).thenReturn(ofKey("2"));
-
+        keyToIdCache.put("2", "otherID");
         final UpdateAction<Category> changeParentUpdateAction =
-            buildChangeParentUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft, CATEGORY_SYNC_OPTIONS, keyToIdCache).orElse(null);
+            buildChangeParentUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft, CATEGORY_SYNC_OPTIONS, keyToIdCache)
+                .orElse(null);
 
         assertThat(changeParentUpdateAction).isNotNull();
         assertThat(changeParentUpdateAction.getAction()).isEqualTo("changeParent");
@@ -212,8 +213,8 @@ class CategoryUpdateActionUtilsTest {
     void buildChangeParentUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final Category oldCategory = readObjectFromResource(CATEGORY_KEY_1_RESOURCE_PATH, Category.class);
         final CategoryDraft newCategory = mock(CategoryDraft.class);
-        when(newCategory.getParent()).thenReturn(ResourceIdentifier.ofKey(oldCategory.getParent().getKey()));
-
+        when(newCategory.getParent()).thenReturn(ResourceIdentifier.ofKey("root"));
+        keyToIdCache.put("root", oldCategory.getParent().getId());
         final Optional<UpdateAction<Category>> changeParentUpdateAction =
             buildChangeParentUpdateAction(oldCategory, newCategory, CATEGORY_SYNC_OPTIONS, keyToIdCache);
 

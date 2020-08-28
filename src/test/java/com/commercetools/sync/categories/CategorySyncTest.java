@@ -33,6 +33,7 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static com.commercetools.sync.categories.CategorySync.requiresChangeParentUpdateAction;
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategory;
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraft;
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
@@ -303,7 +304,7 @@ class CategorySyncTest {
             .of(LocalizedString.of(Locale.ENGLISH, "name"), LocalizedString.of(Locale.ENGLISH, "slug"))
             .parent(ResourceIdentifier.ofKey("differentParentKey"))
             .build();
-        final boolean doesRequire = CategorySync.requiresChangeParentUpdateAction(category, categoryDraft, keyToIdCache);
+        final boolean doesRequire = requiresChangeParentUpdateAction(category, categoryDraft, keyToIdCache);
         assertThat(doesRequire).isTrue();
     }
 
@@ -318,7 +319,7 @@ class CategorySyncTest {
             .of(LocalizedString.of(Locale.ENGLISH, "name"), LocalizedString.of(Locale.ENGLISH, "slug"))
             .parent(ResourceIdentifier.ofKey(parentKey))
             .build();
-        final boolean doesRequire = CategorySync.requiresChangeParentUpdateAction(category, categoryDraft, keyToIdCache);
+        final boolean doesRequire = requiresChangeParentUpdateAction(category, categoryDraft, keyToIdCache);
         assertThat(doesRequire).isFalse();
     }
 
@@ -331,7 +332,7 @@ class CategorySyncTest {
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "name"), LocalizedString.of(Locale.ENGLISH, "slug"))
             .build();
-        final boolean doesRequire = CategorySync.requiresChangeParentUpdateAction(category, categoryDraft, keyToIdCache);
+        final boolean doesRequire = requiresChangeParentUpdateAction(category, categoryDraft, keyToIdCache);
         assertThat(doesRequire).isFalse();
     }
 

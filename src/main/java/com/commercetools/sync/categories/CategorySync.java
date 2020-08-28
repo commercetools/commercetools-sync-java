@@ -126,7 +126,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      *
      * @param categoryDrafts the list of new category drafts to sync to the CTP project.
      * @return an instance of {@link CompletionStage}&lt;{@link CategorySyncStatistics}&gt; which contains as a result
-     * an instance of {@link CategorySyncStatistics} representing the {@code statistics} instance attribute of
+     *         an instance of {@link CategorySyncStatistics} representing the {@code statistics} instance attribute of
      * {@code this} {@link CategorySync}.
      */
     @Override
@@ -154,7 +154,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      *
      * @param categoryDrafts the list of new category drafts to sync to the CTP project.
      * @return an instance of {@link CompletionStage}&lt;{@link CategorySyncStatistics}&gt; which contains as a result
-     * an instance of {@link CategorySyncStatistics} representing the {@code statistics} instance attribute of
+     *         an instance of {@link CategorySyncStatistics} representing the {@code statistics} instance attribute of
      * {@code this} {@link CategorySync}.
      */
 
@@ -460,8 +460,8 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
             final CategoryDraftBuilder categoryDraftBuilder =
                 draftByKeyIfExists.map(categoryDraft -> {
                     if (categoryDraft.getParent() == null) {
-                        if (fetchedCategory.getParent() != null &&
-                            idToKeyMap.containsKey(fetchedCategory.getParent().getId())) {
+                        if (fetchedCategory.getParent() != null
+                            && idToKeyMap.containsKey(fetchedCategory.getParent().getId())) {
                             return CategoryDraftBuilder.of(categoryDraft)
                                 .parent(ofKey(idToKeyMap.get(fetchedCategory.getParent().getId())));
                         }
@@ -534,8 +534,9 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      *
      * @param category      the old category to sync to.
      * @param categoryDraft the new category draft to sync.
+     * @param keyToIdCache  the cache containing the mapping of all existing category keys to ids.
      * @return true or false whether a {@link io.sphere.sdk.categories.commands.updateactions.ChangeParent} is needed to
-     * sync the draft to the category.
+     *         sync the draft to the category.
      */
     static boolean requiresChangeParentUpdateAction(@Nonnull final Category category,
                                                     @Nonnull final CategoryDraft categoryDraft,
@@ -549,7 +550,8 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * performs the sync on them in a parallel/non-blocking fashion.
      *
      * @param matchingCategories a {@link Map} of categoryDrafts to Categories that require syncing.
-     */
+     * @param keyToIdCache          the cache containing the mapping of all existing category keys to ids.
+     * */
     private CompletionStage<Void> updateCategoriesInParallel(
         @Nonnull final Map<CategoryDraft, Category> matchingCategories,
         final Map<String, String> keyToIdCache) {

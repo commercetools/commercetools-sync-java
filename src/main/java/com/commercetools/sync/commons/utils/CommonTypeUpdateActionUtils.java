@@ -48,7 +48,7 @@ public final class CommonTypeUpdateActionUtils {
      * @param oldResourceIdentifier the old resource identifier
      * @param newResourceIdentifier the new resource identifier
      * @param updateActionSupplier  the supplier that returns the update action to return in the optional
-     * @param useKeys               If true, the keys of the resource identifiers are used for comparison
+     * @param keyToIdCache          the cache containing the mapping of all existing category keys to ids.
      * @param <T>                   the type of the {@link UpdateAction}
      * @param <S>                   the type of the old resource identifier
      * @param <U>                   the type of the new resource identifier
@@ -61,7 +61,7 @@ public final class CommonTypeUpdateActionUtils {
             @Nullable final S oldResourceIdentifier,
             @Nullable final U newResourceIdentifier,
             @Nonnull final Supplier<V> updateActionSupplier,
-            final Map<String, String> keyToIdCache){
+            final Map<String, String> keyToIdCache) {
 
         return !areResourceIdentifiersEqual(oldResourceIdentifier, newResourceIdentifier, keyToIdCache)
             ? Optional.ofNullable(updateActionSupplier.get())
@@ -73,7 +73,7 @@ public final class CommonTypeUpdateActionUtils {
      *
      * @param oldResourceIdentifier the old resource identifier
      * @param newResourceIdentifier the new resource identifier
-     * @param useKeys               if true, the keys of the identifier are used for the comparison
+     * @param keyToIdCache          the cache containing the mapping of all existing category keys to ids.
      * @param <T>                   the type of the old resource identifier
      * @param <S>                   the type of the new resource identifier
      * @return true or false depending if the resource identifiers have the same id.

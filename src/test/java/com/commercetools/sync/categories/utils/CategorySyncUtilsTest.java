@@ -36,7 +36,6 @@ import static com.commercetools.sync.categories.CategorySyncMockUtils.mockRoot;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -57,7 +56,7 @@ class CategorySyncUtilsTest {
     private static final String CATEGORY_META_TITLE = "categoryMetaTitle";
     private static final String CATEGORY_KEYWORDS = "categoryKeywords";
     private static final String CATEGORY_ORDER_HINT = "123";
-    private static final Map<String, String> keyToIdCache= new HashMap<>();
+    private static final Map<String, String> keyToIdCache = new HashMap<>();
     private static final List<AssetDraft> ASSET_DRAFTS = asList(
         AssetDraftBuilder.of(singletonList(AssetSourceBuilder.ofUri("uri").build()), ofEnglish("name")).key("1")
                          .build(),

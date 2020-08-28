@@ -1,10 +1,8 @@
 package com.commercetools.sync.commons.utils;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.Referenceable;
 import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.models.WithKey;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

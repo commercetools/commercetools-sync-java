@@ -13,7 +13,7 @@ import io.sphere.sdk.types.CustomFieldsDraft;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.Map;
+
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.AssetReferenceReplacementUtils.replaceAssetsReferencesIdsWithKeys;
@@ -40,11 +40,9 @@ public final class CategoryReferenceReplacementUtils {
      * @return a list of category drafts with keys set on the resource identifiers.
      */
     @Nonnull
-    public static List<CategoryDraft> replaceCategoriesReferenceIdsWithKeys(@Nonnull final List<Category> categories ) {
-
-        Map<String, String> idToKeyMap = categories.stream()
-            .collect(Collectors.toMap(Category::getId, Category::getKey));
-          return categories
+    public static List<CategoryDraft> replaceCategoriesReferenceIdsWithKeys(@Nonnull final List<Category> categories )
+    {
+        return categories
             .stream()
             .map(category -> {
                 final CustomFieldsDraft customTypeWithKeysInReference = replaceCustomTypeIdWithKeys(category);

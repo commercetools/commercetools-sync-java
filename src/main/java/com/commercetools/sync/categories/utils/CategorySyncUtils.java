@@ -40,6 +40,7 @@ public final class CategorySyncUtils {
      *                    by the user. For example, custom callbacks to call in case of warnings or errors occurring
      *                    on the build update action process. And other options (See {@link BaseSyncOptions}
      *                    for more info.
+     * @param keyToIdCache  the cache containing the mapping of all existing category keys to ids.
      * @return A list of category-specific update actions.
      */
     @Nonnull
