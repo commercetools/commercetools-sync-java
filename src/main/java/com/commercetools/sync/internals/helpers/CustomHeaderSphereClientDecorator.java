@@ -14,6 +14,7 @@ import static com.commercetools.sync.commons.utils.SyncSolutionInfo.LIB_VERSION;
 
 public final class CustomHeaderSphereClientDecorator extends SphereClientDecorator {
 
+    private SphereRequestDecorator delegatedSphereRequestDecorator;
 
     private CustomHeaderSphereClientDecorator(@Nonnull final SphereClient sphereClient) {
         super(sphereClient);
@@ -26,7 +27,12 @@ public final class CustomHeaderSphereClientDecorator extends SphereClientDecorat
 
     @Override
     public <T> CompletionStage<T> execute(@Nonnull final SphereRequest<T> sphereRequest) {
+        delegatedSphereRequestDecorator = new CustomHeaderSphereRequestDecorator<>(sphereRequest);
         return super.execute(new CustomHeaderSphereRequestDecorator<>(sphereRequest));
+    }
+
+    protected HttpRequestIntent getHttpRequestIntent() {
+        return delegatedSphereRequestDecorator.httpRequestIntent();
     }
 
     private static final class CustomHeaderSphereRequestDecorator<T> extends SphereRequestDecorator<T> {
