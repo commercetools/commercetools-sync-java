@@ -23,13 +23,10 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Optional;
 
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategory;
-import static com.commercetools.sync.categories.CategorySyncMockUtils.mockRoot;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeNameUpdateAction;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeOrderHintUpdateAction;
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildChangeParentUpdateAction;
@@ -41,7 +38,6 @@ import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.
 import static com.commercetools.sync.categories.utils.CategoryUpdateActionUtils.buildSetMetaTitleUpdateAction;
 import static com.commercetools.sync.products.ProductSyncMockUtils.CATEGORY_KEY_1_RESOURCE_PATH;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
-import static io.sphere.sdk.models.ResourceIdentifier.ofKey;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -50,6 +46,7 @@ class CategoryUpdateActionUtilsTest {
     private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
     private static final CategorySyncOptions CATEGORY_SYNC_OPTIONS = CategorySyncOptionsBuilder.of(CTP_CLIENT).build();
     private static final Locale LOCALE = Locale.GERMAN;
+    private static final String MOCK_OLD_CATEGORY_PARENT_ID = "1";
     private static final String MOCK_OLD_CATEGORY_NAME = "categoryName";
     private static final String MOCK_OLD_CATEGORY_SLUG = "categorySlug";
     private static final String MOCK_OLD_CATEGORY_KEY = "categoryKey";
@@ -59,7 +56,6 @@ class CategoryUpdateActionUtilsTest {
     private static final String MOCK_OLD_CATEGORY_META_TITLE = "categoryMetaTitle";
     private static final String MOCK_OLD_CATEGORY_META_KEYWORDS = "categoryKeywords";
     private static final String MOCK_OLD_CATEGORY_ORDERHINT = "123";
-    final Map<String, String> keyToIdCache = new HashMap<>();
     private static final Category MOCK_OLD_CATEGORY = getMockCategory(LOCALE,
         MOCK_OLD_CATEGORY_NAME,
         MOCK_OLD_CATEGORY_SLUG,
@@ -70,7 +66,7 @@ class CategoryUpdateActionUtilsTest {
         MOCK_OLD_CATEGORY_META_TITLE,
         MOCK_OLD_CATEGORY_META_KEYWORDS,
         MOCK_OLD_CATEGORY_ORDERHINT,
-        mockRoot().getId());
+        MOCK_OLD_CATEGORY_PARENT_ID);
 
     @Test
     void buildChangeNameUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
@@ -198,25 +194,26 @@ class CategoryUpdateActionUtilsTest {
     @Test
     void buildChangeParentUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
-        when(newCategoryDraft.getParent()).thenReturn(ofKey("2"));
-        keyToIdCache.put("2", "otherID");
-        final UpdateAction<Category> changeParentUpdateAction =
-            buildChangeParentUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft, CATEGORY_SYNC_OPTIONS, keyToIdCache)
-                .orElse(null);
+        when(newCategoryDraft.getParent()).thenReturn(ResourceIdentifier.ofId("2"));
+
+        final UpdateAction<Category> changeParentUpdateAction = // parent id is 1.
+            buildChangeParentUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft, CATEGORY_SYNC_OPTIONS).orElse(null);
 
         assertThat(changeParentUpdateAction).isNotNull();
         assertThat(changeParentUpdateAction.getAction()).isEqualTo("changeParent");
-        assertThat(((ChangeParent) changeParentUpdateAction).getParent()).isEqualTo(ofKey("2"));
+        assertThat(((ChangeParent) changeParentUpdateAction).getParent())
+            .isEqualTo(ResourceIdentifier.ofId("2"));
     }
 
     @Test
     void buildChangeParentUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
         final Category oldCategory = readObjectFromResource(CATEGORY_KEY_1_RESOURCE_PATH, Category.class);
         final CategoryDraft newCategory = mock(CategoryDraft.class);
-        when(newCategory.getParent()).thenReturn(ResourceIdentifier.ofKey("root"));
-        keyToIdCache.put("root", oldCategory.getParent().getId());
+        when(newCategory.getParent())
+            .thenReturn(ResourceIdentifier.ofId(oldCategory.getParent().getId()));
+
         final Optional<UpdateAction<Category>> changeParentUpdateAction =
-            buildChangeParentUpdateAction(oldCategory, newCategory, CATEGORY_SYNC_OPTIONS, keyToIdCache);
+            buildChangeParentUpdateAction(oldCategory, newCategory, CATEGORY_SYNC_OPTIONS);
 
         assertThat(changeParentUpdateAction).isNotNull();
         assertThat(changeParentUpdateAction).isNotPresent();
@@ -239,13 +236,12 @@ class CategoryUpdateActionUtilsTest {
 
         final Optional<UpdateAction<Category>> changeParentUpdateAction =
             buildChangeParentUpdateAction(MOCK_OLD_CATEGORY, newCategory,
-                categorySyncOptions, keyToIdCache);
+                categorySyncOptions);
 
         assertThat(changeParentUpdateAction).isNotNull();
         assertThat(changeParentUpdateAction).isNotPresent();
         assertThat(callBackResponse).hasSize(1);
-        assertThat(callBackResponse.get(0))
-            .isEqualTo("Cannot unset 'parent' field of category with id 'oldCatId'.");
+        assertThat(callBackResponse.get(0)).isEqualTo("Cannot unset 'parent' field of category with id 'oldCatId'.");
     }
 
     @Test
@@ -266,7 +262,7 @@ class CategoryUpdateActionUtilsTest {
 
         final Optional<UpdateAction<Category>> changeParentUpdateAction =
             buildChangeParentUpdateAction(MOCK_OLD_CATEGORY, newCategory,
-                categorySyncOptions, keyToIdCache);
+                categorySyncOptions);
 
         assertThat(changeParentUpdateAction).isNotNull();
         assertThat(changeParentUpdateAction).isNotPresent();
