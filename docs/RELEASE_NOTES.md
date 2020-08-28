@@ -35,7 +35,7 @@
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.0.1)
 -->
 
-### 2.0.0 -  Aug 21, 2020
+<!--### 2.0.0 -  Aug 21, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.9.1...2.0.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.0.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.0.0)
@@ -44,6 +44,7 @@
     - **Refactoring of the error- and warning callbacks** - The signatures of the error- and warning callbacks was changed.
         From now on the resource draft of the source project, the resource of the target-project and optinally the failed update actions
         are passed to the callbacks. [#107](https://github.com/commercetools/commercetools-sync-java/issues/107)
+-->
 
 ### 1.9.1 -  Aug 5, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.9.0...1.9.1) |

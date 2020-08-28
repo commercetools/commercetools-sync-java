@@ -36,7 +36,7 @@ Therefore, in order for the sync to resolve the actual ids of those references i
     reference should return its `key`.
 
    **Note**: When syncing from a source commercetools project, you can use this util which this library provides:
-    [`replaceCartDiscountsReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/2.0.0/com/commercetools/sync/cartdiscounts/utils/CartDiscountReferenceReplacementUtils.html#replaceCartDiscountsReferenceIdsWithKeys-java.util.List-)
+    [`replaceCartDiscountsReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/1.9.1/com/commercetools/sync/cartdiscounts/utils/CartDiscountReferenceReplacementUtils.html#replaceCartDiscountsReferenceIdsWithKeys-java.util.List-)
     that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
     ````java
     // Puts the keys in the reference id fields to prepare for reference resolution
