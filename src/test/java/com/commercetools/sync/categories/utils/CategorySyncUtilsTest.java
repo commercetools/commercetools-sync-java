@@ -26,13 +26,10 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategory;
-import static com.commercetools.sync.categories.CategorySyncMockUtils.mockRoot;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -40,7 +37,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 class CategorySyncUtilsTest {
-    private Category mockRoot;
     private Category mockOldCategory;
     private CategorySyncOptions categorySyncOptions;
     private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
@@ -49,14 +45,12 @@ class CategorySyncUtilsTest {
     private static final String CATEGORY_NAME = "categoryName";
     private static final String CATEGORY_SLUG = "categorySlug";
     private static final String CATEGORY_KEY = "categoryKey";
-    private static final String OLD_CATEGORY_KEY = "oldCategoryKey";
     private static final String CATEGORY_EXTERNAL_ID = "externalId";
     private static final String CATEGORY_DESC = "categoryDesc";
     private static final String CATEGORY_META_DESC = "categoryMetaDesc";
     private static final String CATEGORY_META_TITLE = "categoryMetaTitle";
     private static final String CATEGORY_KEYWORDS = "categoryKeywords";
     private static final String CATEGORY_ORDER_HINT = "123";
-    private static final Map<String, String> keyToIdCache = new HashMap<>();
     private static final List<AssetDraft> ASSET_DRAFTS = asList(
         AssetDraftBuilder.of(singletonList(AssetSourceBuilder.ofUri("uri").build()), ofEnglish("name")).key("1")
                          .build(),
@@ -70,21 +64,18 @@ class CategorySyncUtilsTest {
     void setup() {
         categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
                                                         .build();
-        mockRoot = mockRoot();
 
         mockOldCategory = getMockCategory(LOCALE,
             CATEGORY_NAME,
             CATEGORY_SLUG,
-            OLD_CATEGORY_KEY,
+            CATEGORY_KEY,
             CATEGORY_EXTERNAL_ID,
             CATEGORY_DESC,
             CATEGORY_META_DESC,
             CATEGORY_META_TITLE,
             CATEGORY_KEYWORDS,
             CATEGORY_ORDER_HINT,
-            mockRoot.getId());
-        keyToIdCache.put(mockRoot.getKey(), mockRoot.getId());
-        keyToIdCache.put(mockOldCategory.getKey(), mockOldCategory.getId());
+            CATEGORY_PARENT_ID);
     }
 
     @Test
@@ -98,11 +89,11 @@ class CategorySyncUtilsTest {
             .metaTitle(LocalizedString.of(LOCALE, CATEGORY_META_TITLE))
             .metaKeywords(LocalizedString.of(LOCALE, CATEGORY_KEYWORDS))
             .orderHint(CATEGORY_ORDER_HINT)
-            .parent(ResourceIdentifier.ofKey("root"))
+            .parent(ResourceIdentifier.ofId(CATEGORY_PARENT_ID))
             .build();
 
         final List<UpdateAction<Category>> updateActions =
-            CategorySyncUtils.buildActions(mockOldCategory, newCategoryDraft, categorySyncOptions,  keyToIdCache);
+            CategorySyncUtils.buildActions(mockOldCategory, newCategoryDraft, categorySyncOptions);
         assertThat(updateActions).isNotNull();
         assertThat(updateActions).containsExactly(
             ChangeName.of(LocalizedString.of(LOCALE, "differentName")));
@@ -121,13 +112,13 @@ class CategorySyncUtilsTest {
             .metaTitle(LocalizedString.of(LOCALE, "differentMetaTitle"))
             .metaKeywords(LocalizedString.of(LOCALE, "differentMetaKeywords"))
             .orderHint("differentOrderHint")
-            .parent(ResourceIdentifier.ofKey("differentParentKey"))
+            .parent(ResourceIdentifier.ofId("differentParentId"))
             .assets(ASSET_DRAFTS)
             .build();
 
 
         final List<UpdateAction<Category>> updateActions =
-            CategorySyncUtils.buildActions(mockOldCategory, newCategoryDraft, categorySyncOptions, keyToIdCache);
+            CategorySyncUtils.buildActions(mockOldCategory, newCategoryDraft, categorySyncOptions);
         assertThat(updateActions).isNotNull();
 
         assertThat(updateActions).containsExactly(
@@ -135,7 +126,7 @@ class CategorySyncUtilsTest {
             ChangeSlug.of(LocalizedString.of(LOCALE, "differentSlug")),
             SetExternalId.of("differentExternalId"),
             SetDescription.of(LocalizedString.of(LOCALE, "differentDescription")),
-            ChangeParent.of(ResourceIdentifier.ofKey("differentParentKey")),
+            ChangeParent.of(ResourceIdentifier.ofId("differentParentId")),
             ChangeOrderHint.of("differentOrderHint"),
             SetMetaTitle.of(LocalizedString.of(LOCALE, "differentMetaTitle")),
             SetMetaDescription.of(LocalizedString.of(LOCALE, "differentMetaDescription")),

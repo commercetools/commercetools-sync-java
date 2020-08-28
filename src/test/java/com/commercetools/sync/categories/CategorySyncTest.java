@@ -12,11 +12,9 @@ import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.queries.PagedQueryResult;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +23,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -33,7 +30,6 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.commercetools.sync.categories.CategorySync.requiresChangeParentUpdateAction;
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategory;
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraft;
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
@@ -294,17 +290,15 @@ class CategorySyncTest {
 
     @Test
     void requiresChangeParentUpdateAction_WithTwoDifferentParents_ShouldReturnTrue() {
-        final String parentKey = "parentKey";
+        final String parentId = "parentId";
         final Category category = mock(Category.class);
-        Reference mockReference = mock(Reference.class);
-        when(mockReference.getId()).thenReturn("parentId");
-        when(category.getParent()).thenReturn(mockReference);
-        final Map<String, String> keyToIdCache = singletonMap(parentKey, "parentId");
+        when(category.getParent()).thenReturn(Category.referenceOfId(parentId));
+
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "name"), LocalizedString.of(Locale.ENGLISH, "slug"))
-            .parent(ResourceIdentifier.ofKey("differentParentKey"))
+            .parent(ResourceIdentifier.ofId("differentParent"))
             .build();
-        final boolean doesRequire = requiresChangeParentUpdateAction(category, categoryDraft, keyToIdCache);
+        final boolean doesRequire = CategorySync.requiresChangeParentUpdateAction(category, categoryDraft);
         assertThat(doesRequire).isTrue();
     }
 
@@ -314,12 +308,14 @@ class CategorySyncTest {
         final String parentKey = "parentkey";
         final Category category = mock(Category.class);
         when(category.getParent()).thenReturn(Category.referenceOfId(parentId));
-        final Map<String, String> keyToIdCache = singletonMap(parentKey, parentId);
+
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "name"), LocalizedString.of(Locale.ENGLISH, "slug"))
-            .parent(ResourceIdentifier.ofKey(parentKey))
+            .parent(ResourceIdentifier.ofIdOrKey(parentId, parentKey))
             .build();
-        final boolean doesRequire = requiresChangeParentUpdateAction(category, categoryDraft, keyToIdCache);
+
+        // checking with ids (on draft reference id will be resolved, but in test it's given)
+        final boolean doesRequire = CategorySync.requiresChangeParentUpdateAction(category, categoryDraft);
         assertThat(doesRequire).isFalse();
     }
 
@@ -328,11 +324,10 @@ class CategorySyncTest {
         final Category category = mock(Category.class);
         when(category.getParent()).thenReturn(null);
 
-        final Map<String, String> keyToIdCache = new HashMap<>();
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "name"), LocalizedString.of(Locale.ENGLISH, "slug"))
             .build();
-        final boolean doesRequire = requiresChangeParentUpdateAction(category, categoryDraft, keyToIdCache);
+        final boolean doesRequire = CategorySync.requiresChangeParentUpdateAction(category, categoryDraft);
         assertThat(doesRequire).isFalse();
     }
 
