@@ -53,8 +53,8 @@ public final class ClientConfigurationUtils {
             final SphereClient underlying = SphereClient.of(clientConfig, httpClient, tokenSupplier);
             final SphereClient retryClient = withRetry(underlying);
             final SphereClient limitedParallelRequestsClient = withLimitedParallelRequests(retryClient);
-            final SphereClient customHeaderClient = withCustomHeader(limitedParallelRequestsClient);
-            delegatesCache.put(clientConfig, customHeaderClient);
+
+            delegatesCache.put(clientConfig, limitedParallelRequestsClient);
         }
         return BlockingSphereClient.of(delegatesCache.get(clientConfig), timeout, timeUnit);
     }
@@ -67,10 +67,6 @@ public final class ClientConfigurationUtils {
      */
     public static SphereClient createClient(@Nonnull final SphereClientConfig clientConfig) {
         return createClient(clientConfig, DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_TIME_UNIT);
-    }
-
-    private static SphereClient withCustomHeader(@Nonnull final SphereClient sphereClient) {
-        return CustomHeaderSphereClientDecorator.of(sphereClient);
     }
 
     /**

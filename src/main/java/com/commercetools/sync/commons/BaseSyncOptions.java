@@ -4,6 +4,7 @@ import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 
@@ -39,7 +40,7 @@ public class BaseSyncOptions<U, V> {
         @Nullable final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>>
             beforeUpdateCallback,
         @Nullable final Function<V, V> beforeCreateCallback) {
-        this.ctpClient = ctpClient;
+        this.ctpClient = CustomHeaderSphereClientDecorator.of(ctpClient);
         this.errorCallback = errorCallback;
         this.batchSize = batchSize;
         this.warningCallback = warningCallback;
