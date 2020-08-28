@@ -3,13 +3,13 @@ package com.commercetools.sync.internals.helpers;
 import io.sphere.sdk.client.HttpRequestIntent;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereRequest;
-import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.http.HttpHeaders;
 import io.sphere.sdk.models.Versioned;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.commands.ProductTypeUpdateCommand;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
+
+import io.sphere.sdk.producttypes.commands.updateactions.ChangeName;
 import org.junit.jupiter.api.Test;
 
 
@@ -26,10 +26,10 @@ public class CustomHeaderSphereClientDecoratorTest {
     void executeRequest_shouldHaveLibVersionInRequestHeader() {
 
         SphereClient sphereClient = CustomHeaderSphereClientDecorator.of(mock(SphereClient.class));
-        List<UpdateAction<ProductType>> updateActionList = (ArrayList<UpdateAction<ProductType>>)mock(ArrayList.class);
-        Versioned<ProductType> version = (Versioned<ProductType>)mock(Versioned.class);
         SphereRequest<ProductType> productTypeUpdateSphereRequest =
-                ProductTypeUpdateCommand.of(version, updateActionList);
+            ProductTypeUpdateCommand.of(
+                    Versioned.of("ID", 1L),
+                    Collections.singletonList(ChangeName.of("newName")));
 
         sphereClient.execute(productTypeUpdateSphereRequest);
         HttpRequestIntent requestIntent = ((CustomHeaderSphereClientDecorator)sphereClient).getHttpRequestIntent();
