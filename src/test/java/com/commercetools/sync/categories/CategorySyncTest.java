@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -295,27 +296,29 @@ class CategorySyncTest {
         final String parentKey = "parentKey";
         final Category category = mock(Category.class);
         Reference mockReference = mock(Reference.class);
-        when(mockReference.getKey()).thenReturn(parentKey);
+        when(mockReference.getId()).thenReturn("parentId");
         when(category.getParent()).thenReturn(mockReference);
+        final Map<String, String> keyToIdCache = singletonMap(parentKey, "parentId");
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "name"), LocalizedString.of(Locale.ENGLISH, "slug"))
             .parent(ResourceIdentifier.ofKey("differentParentKey"))
             .build();
-        final boolean doesRequire = CategorySync.requiresChangeParentUpdateAction(category, categoryDraft);
+        final boolean doesRequire = CategorySync.requiresChangeParentUpdateAction(category, categoryDraft, keyToIdCache);
         assertThat(doesRequire).isTrue();
     }
 
     @Test
     void requiresChangeParentUpdateAction_WithTwoIdenticalParents_ShouldReturnFalse() {
         final String parentId = "parentId";
+        final String parentKey = "parentkey";
         final Category category = mock(Category.class);
         when(category.getParent()).thenReturn(Category.referenceOfId(parentId));
-
+        final Map<String, String> keyToIdCache = singletonMap(parentKey, parentId);
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "name"), LocalizedString.of(Locale.ENGLISH, "slug"))
-            .parent(ResourceIdentifier.ofId(parentId))
+            .parent(ResourceIdentifier.ofKey(parentKey))
             .build();
-        final boolean doesRequire = CategorySync.requiresChangeParentUpdateAction(category, categoryDraft);
+        final boolean doesRequire = CategorySync.requiresChangeParentUpdateAction(category, categoryDraft, keyToIdCache);
         assertThat(doesRequire).isFalse();
     }
 
@@ -324,10 +327,11 @@ class CategorySyncTest {
         final Category category = mock(Category.class);
         when(category.getParent()).thenReturn(null);
 
+        final Map<String, String> keyToIdCache = new HashMap<>();
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "name"), LocalizedString.of(Locale.ENGLISH, "slug"))
             .build();
-        final boolean doesRequire = CategorySync.requiresChangeParentUpdateAction(category, categoryDraft);
+        final boolean doesRequire = CategorySync.requiresChangeParentUpdateAction(category, categoryDraft, keyToIdCache);
         assertThat(doesRequire).isFalse();
     }
 

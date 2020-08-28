@@ -83,16 +83,22 @@ class CategoryReferenceReplacementUtilsTest {
     void
         replaceCategoryReferenceIdsWithKeys_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
         final String parentId = UUID.randomUUID().toString();
-        final String customTypeId = UUID.randomUUID().toString();
+        final String parentKey = "parentKey";
 
+        final String customTypeId = UUID.randomUUID().toString();
+        final Category parentCategory = mock(Category.class);
+        when(parentCategory.getId()).thenReturn(parentId);
+        when(parentCategory.getKey()).thenReturn(parentKey);
         // Mock asset with non-expanded custom type reference
         final Asset asset = getAssetMockWithCustomFields(Reference.ofResourceTypeIdAndId(Type.referenceTypeId(),
             UUID.randomUUID().toString()));
 
         final List<Category> mockCategories = new ArrayList<>();
+        mockCategories.add(parentCategory);
         for (int i = 0; i < 10; i++) {
             final Category mockCategory = mock(Category.class);
-
+            when(mockCategory.getId()).thenReturn("id"+i);
+            when(mockCategory.getKey()).thenReturn("key"+i);
             //Mock categories parent fields with non-expanded category references.
             final Reference<Category> parentReference = Reference.ofResourceTypeIdAndId(UUID.randomUUID().toString(),
                 parentId);
@@ -119,7 +125,7 @@ class CategoryReferenceReplacementUtilsTest {
             CategoryReferenceReplacementUtils.replaceCategoriesReferenceIdsWithKeys(mockCategories);
 
         for (CategoryDraft referenceReplacedDraft : referenceReplacedDrafts) {
-            assertThat(referenceReplacedDraft.getParent().getId()).isEqualTo(parentId);
+            assertThat(referenceReplacedDraft.getParent().getKey()).isEqualTo(parentId);
             assertThat(referenceReplacedDraft.getCustom().getType().getId()).isEqualTo(customTypeId);
 
             final List<AssetDraft> referenceReplacedDraftAssets = referenceReplacedDraft.getAssets();

@@ -24,6 +24,7 @@ import io.sphere.sdk.models.ResourceIdentifier;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
@@ -111,7 +112,8 @@ public final class CategoryUpdateActionUtils {
     public static Optional<UpdateAction<Category>> buildChangeParentUpdateAction(
         @Nonnull final Category oldCategory,
         @Nonnull final CategoryDraft newCategory,
-        @Nonnull final CategorySyncOptions syncOptions) {
+        @Nonnull final CategorySyncOptions syncOptions,
+        final Map<String, String> keyToIdCache) {
 
         final Reference<Category> oldParent = oldCategory.getParent();
         final ResourceIdentifier<Category> newParent = newCategory.getParent();
@@ -125,7 +127,7 @@ public final class CategoryUpdateActionUtils {
             // are null, then the supplier will not be called at all. The remaining cases all involve the newParent
             // being not null.
             return buildUpdateActionForReferences(oldParent, newParent,
-                () -> ChangeParent.of(ResourceIdentifier.ofKey(newParent.getKey())), true);
+                () -> ChangeParent.of(ResourceIdentifier.ofKey(newParent.getKey())), keyToIdCache);
         }
     }
 

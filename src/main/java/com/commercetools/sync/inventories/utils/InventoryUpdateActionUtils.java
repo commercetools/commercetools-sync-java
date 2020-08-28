@@ -107,7 +107,7 @@ public final class InventoryUpdateActionUtils {
         final Reference<Channel> oldSupplyChannel = oldEntry.getSupplyChannel();
         final ResourceIdentifier<Channel> newSupplyChannel = newEntry.getSupplyChannel();
         return buildUpdateActionForReferences(oldSupplyChannel, newSupplyChannel,
-            () -> SetSupplyChannel.of(newSupplyChannel), false);
+            () -> SetSupplyChannel.of(newSupplyChannel), null);
     }
 
     private InventoryUpdateActionUtils() { }

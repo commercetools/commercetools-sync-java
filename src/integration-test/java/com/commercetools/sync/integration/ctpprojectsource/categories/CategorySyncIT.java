@@ -319,6 +319,7 @@ class CategorySyncIT {
         final CategorySyncStatistics syncStatistics = syncBatches(categorySync, batches,
             CompletableFuture.completedFuture(null)).toCompletableFuture().join();
 
+
         assertThat(syncStatistics).hasValues(3, 0, 1, 0, 0);
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();

@@ -77,8 +77,7 @@ public final class CategoryServiceImpl extends BaseServiceWithKey<CategoryDraft,
         return fetchMatchingResources(categoryKeys,
             () -> CategoryQuery
                 .of()
-                .plusPredicates(categoryQueryModel -> categoryQueryModel.key().isIn(categoryKeys))
-                .plusExpansionPaths(CategoryExpansionModel::parent));
+                .plusPredicates(categoryQueryModel -> categoryQueryModel.key().isIn(categoryKeys)));
 
     }
 

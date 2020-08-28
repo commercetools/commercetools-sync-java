@@ -7,11 +7,11 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.getKeyOfResourceIdentifier;
 import static java.util.Collections.emptyList;
 
 public final class CommonTypeUpdateActionUtils {
@@ -61,9 +61,9 @@ public final class CommonTypeUpdateActionUtils {
             @Nullable final S oldResourceIdentifier,
             @Nullable final U newResourceIdentifier,
             @Nonnull final Supplier<V> updateActionSupplier,
-            boolean useKeys) {
+            final Map<String, String> keyToIdCache){
 
-        return !areResourceIdentifiersEqual(oldResourceIdentifier, newResourceIdentifier, useKeys)
+        return !areResourceIdentifiersEqual(oldResourceIdentifier, newResourceIdentifier, keyToIdCache)
             ? Optional.ofNullable(updateActionSupplier.get())
             : Optional.empty();
     }
@@ -81,15 +81,15 @@ public final class CommonTypeUpdateActionUtils {
     public static <T extends ResourceIdentifier, S extends ResourceIdentifier> boolean areResourceIdentifiersEqual(
         @Nullable final T oldResourceIdentifier,
         @Nullable final S newResourceIdentifier,
-        boolean useKeys) {
-
+        final Map<String, String> keyToIdCache) {
         String oldValue = null;
         if (oldResourceIdentifier != null) {
-            oldValue = useKeys ? getKeyOfResourceIdentifier(oldResourceIdentifier) : oldResourceIdentifier.getId();
+            oldValue =  oldResourceIdentifier.getId();
         }
         String newValue = null;
         if (newResourceIdentifier != null) {
-            newValue = useKeys ? getKeyOfResourceIdentifier(newResourceIdentifier) : newResourceIdentifier.getId();
+            newValue = keyToIdCache != null  && newResourceIdentifier.getKey() != null
+                ? keyToIdCache.get(newResourceIdentifier.getKey()) : newResourceIdentifier.getId();
         }
         return Objects.equals(oldValue, newValue);
     }

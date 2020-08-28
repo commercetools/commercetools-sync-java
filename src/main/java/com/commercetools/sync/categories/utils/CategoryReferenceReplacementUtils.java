@@ -7,18 +7,18 @@ import io.sphere.sdk.categories.expansion.CategoryExpansionModel;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.models.AssetDraft;
+import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.types.CustomFieldsDraft;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.AssetReferenceReplacementUtils.replaceAssetsReferencesIdsWithKeys;
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.replaceCustomTypeIdWithKeys;
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.getKeyOfResourceIdentifier;
 import static io.sphere.sdk.models.ResourceIdentifier.ofKey;
-import static org.apache.commons.lang3.StringUtils.isNoneBlank;
 
 /**
  * Util class which provides utilities that can be used when syncing resources from a source commercetools project
@@ -40,8 +40,11 @@ public final class CategoryReferenceReplacementUtils {
      * @return a list of category drafts with keys set on the resource identifiers.
      */
     @Nonnull
-    public static List<CategoryDraft> replaceCategoriesReferenceIdsWithKeys(@Nonnull final List<Category> categories) {
-        return categories
+    public static List<CategoryDraft> replaceCategoriesReferenceIdsWithKeys(@Nonnull final List<Category> categories ) {
+
+        Map<String, String> idToKeyMap = categories.stream()
+            .collect(Collectors.toMap(Category::getId, Category::getKey));
+          return categories
             .stream()
             .map(category -> {
                 final CustomFieldsDraft customTypeWithKeysInReference = replaceCustomTypeIdWithKeys(category);
@@ -51,9 +54,9 @@ public final class CategoryReferenceReplacementUtils {
                 CategoryDraftBuilder builder = CategoryDraftBuilder.of(category)
                     .custom(customTypeWithKeysInReference)
                     .assets(assetDraftsWithKeyInReference);
-                String parentKey = getKeyOfResourceIdentifier(category.getParent());
-                if (isNoneBlank(parentKey)) {
-                    builder = builder.parent(ofKey(parentKey));
+                Reference<Category> parent = category.getParent();
+                if (parent != null && parent.getObj() != null) {
+                    builder = builder.parent(ofKey(parent.getObj().getKey()));
                 }
                 return builder.build();
             })
