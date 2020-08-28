@@ -8,15 +8,16 @@ import io.sphere.sdk.http.HttpHeaders;
 import io.sphere.sdk.models.Versioned;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.commands.ProductTypeUpdateCommand;
-import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.jupiter.api.Test;
 
 
 import static com.commercetools.sync.commons.utils.SyncSolutionInfo.LIB_NAME;
 import static com.commercetools.sync.commons.utils.SyncSolutionInfo.LIB_VERSION;
-import static org.mockito.Mockito.mock;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+
 
 public class CustomHeaderSphereClientDecoratorTest {
 
