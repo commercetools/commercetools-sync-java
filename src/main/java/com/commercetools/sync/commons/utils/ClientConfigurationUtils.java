@@ -1,6 +1,5 @@
 package com.commercetools.sync.commons.utils;
 
-import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import io.sphere.sdk.client.BlockingSphereClient;
 import io.sphere.sdk.client.QueueSphereClientDecorator;
 import io.sphere.sdk.client.RetrySphereClientDecorator;
