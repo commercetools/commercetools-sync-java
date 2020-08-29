@@ -315,6 +315,46 @@ public final class ITUtils {
     }
 
     /**
+     * Creates an {@link AssetDraft} with the with the given key and name. The asset draft created will have custom
+     * field with the type key supplied ({@code assetCustomTypeKey} and the fields built from the method
+     * {@link ITUtils#createCustomFieldsJsonMap()}.
+     *
+     * @param assetKey          asset draft key.
+     * @param assetName         asset draft name.
+     * @param assetCustomTypeKey the asset custom type key.
+     * @return an {@link AssetDraft} with the with the given key and name. The asset draft created will have custom
+     *         field with the type key supplied ({@code assetCustomTypeKey} and the fields built from the method
+     *         {@link ITUtils#createCustomFieldsJsonMap()}.
+     */
+    public static AssetDraft createAssetDraftWithKey(@Nonnull final String assetKey,
+                                                     @Nonnull final LocalizedString assetName,
+                                                     @Nonnull final String assetCustomTypeKey) {
+        return createAssetDraftWithKey(assetKey, assetName, assetCustomTypeKey, createCustomFieldsJsonMap());
+    }
+
+    /**
+     * Creates an {@link AssetDraft} with the with the given key and name. The asset draft created will have custom
+     * field with the type key supplied ({@code assetCustomTypeKey} and the custom fields will be defined by the
+     * {@code customFieldsJsonMap} supplied.
+     *
+     * @param assetKey          asset draft key.
+     * @param assetName         asset draft name.
+     * @param assetCustomTypeKey the asset custom type key.
+     * @param customFieldsJsonMap the custom fields of the asset custom type.
+     * @return an {@link AssetDraft} with the with the given key and name. The asset draft created will have custom
+     *         field with the type id supplied ({@code assetCustomTypeId} and the custom fields will be defined by the
+     *         {@code customFieldsJsonMap} supplied.
+     */
+    public static AssetDraft createAssetDraftWithKey(@Nonnull final String assetKey,
+                                              @Nonnull final LocalizedString assetName,
+                                              @Nonnull final String assetCustomTypeKey,
+                                              @Nonnull final Map<String, JsonNode> customFieldsJsonMap) {
+        return createAssetDraftBuilder(assetKey, assetName)
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson(assetCustomTypeKey, customFieldsJsonMap))
+            .build();
+    }
+
+    /**
      * Creates an {@link AssetDraftBuilder} with the with the given key and name. The builder created will contain one
      * tag with the same value as the key and will contain one {@link io.sphere.sdk.models.AssetSource}
      * with the uri {@code sourceUri}.

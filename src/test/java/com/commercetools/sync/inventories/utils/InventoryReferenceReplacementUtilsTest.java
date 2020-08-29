@@ -57,7 +57,7 @@ class InventoryReferenceReplacementUtilsTest {
 
         //assertion
         for (InventoryEntryDraft referenceReplacedDraft : referenceReplacedDrafts) {
-            assertThat(referenceReplacedDraft.getCustom().getType().getId()).isEqualTo(customTypeKey);
+            assertThat(referenceReplacedDraft.getCustom().getType().getKey()).isEqualTo(customTypeKey);
             assertThat(referenceReplacedDraft.getSupplyChannel().getId()).isEqualTo(channelKey);
         }
     }

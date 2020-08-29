@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 class CartDiscountReferenceReplacementUtilsTest {
 
     @Test
-    void replaceCartDiscountsReferenceIdsWithKeys_WithExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
+    void mapToCartDiscountDrafts_WithExpandedReferences_ShouldReturnResourceIdentifiersWithKeys() {
         final Type mockCustomType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
 
         final List<CartDiscount> mockCartDiscounts = new ArrayList<>();
@@ -37,17 +37,17 @@ class CartDiscountReferenceReplacementUtilsTest {
         }
 
         final List<CartDiscountDraft> referenceReplacedDrafts =
-            CartDiscountReferenceReplacementUtils.replaceCartDiscountsReferenceIdsWithKeys(mockCartDiscounts);
+            CartDiscountReferenceReplacementUtils.mapToCartDiscountDrafts(mockCartDiscounts);
 
 
-        referenceReplacedDrafts.forEach(draft ->
-            assertThat(draft.getCustom().getType().getId()).isEqualTo(mockCustomType.getKey())
-        );
+        referenceReplacedDrafts.forEach(draft -> {
+            assertThat(draft.getCustom().getType().getId()).isNull();
+            assertThat(draft.getCustom().getType().getKey()).isEqualTo(mockCustomType.getKey());
+        });
     }
 
     @Test
-    void
-        replaceCartDiscountsReferenceIdsWithKeys_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
+    void mapToCartDiscountDrafts_WithNonExpandedReferences_ShouldReturnResourceIdentifiersWithoutKeys() {
         final String customTypeId = UUID.randomUUID().toString();
 
         final List<CartDiscount> mockCartDiscounts = new ArrayList<>();
@@ -64,12 +64,13 @@ class CartDiscountReferenceReplacementUtilsTest {
         }
 
         final List<CartDiscountDraft> referenceReplacedDrafts =
-            CartDiscountReferenceReplacementUtils.replaceCartDiscountsReferenceIdsWithKeys(mockCartDiscounts);
+            CartDiscountReferenceReplacementUtils.mapToCartDiscountDrafts(mockCartDiscounts);
 
 
-        referenceReplacedDrafts.forEach(draft ->
-            assertThat(draft.getCustom().getType().getId()).isEqualTo(customTypeId)
-        );
+        referenceReplacedDrafts.forEach(draft -> {
+            assertThat(draft.getCustom().getType().getId()).isEqualTo(customTypeId);
+            assertThat(draft.getCustom().getType().getKey()).isNull();
+        });
     }
 
     @Test

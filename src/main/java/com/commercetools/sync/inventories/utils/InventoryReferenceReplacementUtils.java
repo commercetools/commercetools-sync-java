@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.replaceCustomTypeIdWithKeys;
+import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.mapToCustomFieldsDraft;
 import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKeyReplaced;
 
 /**
@@ -38,7 +38,7 @@ public final class InventoryReferenceReplacementUtils {
         return inventoryEntries
             .stream()
             .map(inventoryEntry -> {
-                final CustomFieldsDraft customTypeWithKeysInReference = replaceCustomTypeIdWithKeys(inventoryEntry);
+                final CustomFieldsDraft customTypeWithKeysInReference = mapToCustomFieldsDraft(inventoryEntry);
                 final ResourceIdentifier<Channel> channelReferenceWithKeysInReference =
                     replaceChannelReferenceIdWithKey(inventoryEntry);
                 return InventoryEntryDraftBuilder.of(inventoryEntry)

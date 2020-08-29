@@ -168,9 +168,9 @@ public class CategorySyncMockUtils {
                                                      @Nonnull final String name,
                                                      @Nonnull final String key,
                                                      @Nullable final String parentKey,
-                                                     @Nonnull final String customTypeId,
+                                                     @Nonnull final String customTypeKey,
                                                      @Nonnull final Map<String, JsonNode> customFields) {
-        return getMockCategoryDraftBuilder(locale, name, key, parentKey, customTypeId, customFields).build();
+        return getMockCategoryDraftBuilder(locale, name, key, parentKey, customTypeKey, customFields).build();
     }
 
 
@@ -211,8 +211,8 @@ public class CategorySyncMockUtils {
      * @param locale          the locale to create with all the {@link LocalizedString} instances.
      * @param name            the name of the category.
      * @param key             the key id of the category.
-     * @param parentId        the id of the parent category.
-     * @param customTypeId    the id of the custom type of category.
+     * @param parentKey       the key of the parent category.
+     * @param customTypeKey   the key of the custom type of category.
      * @param customFields    the custom fields of the category.
      * @return an instance {@link CategoryDraftBuilder} with all the given fields set in the given {@link Locale}.
      */
@@ -220,11 +220,11 @@ public class CategorySyncMockUtils {
                                                                    @Nonnull final String name,
                                                                    @Nonnull final String key,
                                                                    @Nullable final String parentKey,
-                                                                   @Nonnull final String customTypeId,
+                                                                   @Nonnull final String customTypeKey,
                                                                    @Nonnull final Map<String, JsonNode> customFields) {
         return CategoryDraftBuilder.of(LocalizedString.of(locale, name), LocalizedString.of(locale, "testSlug"))
                                    .key(key)
                                    .parent(ResourceIdentifier.ofKey(parentKey))
-                                   .custom(CustomFieldsDraft.ofTypeIdAndJson(customTypeId, customFields));
+                                   .custom(CustomFieldsDraft.ofTypeKeyAndJson(customTypeKey, customFields));
     }
 }

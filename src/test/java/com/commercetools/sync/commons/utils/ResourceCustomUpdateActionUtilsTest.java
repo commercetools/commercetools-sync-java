@@ -12,11 +12,13 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
+import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.categories.commands.updateactions.SetCustomField;
 import io.sphere.sdk.categories.commands.updateactions.SetCustomType;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Asset;
+import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.types.CustomFields;
@@ -96,8 +98,13 @@ class ResourceCustomUpdateActionUtilsTest {
         final Category oldCategory = mock(Category.class);
         when(oldCategory.getCustom()).thenReturn(null);
 
-        final CategoryDraft newCategoryDraft = CategorySyncMockUtils.getMockCategoryDraft(Locale.ENGLISH, "name",
-            "key", "parentId", "customTypeId", new HashMap<>());
+        final CategoryDraft newCategoryDraft =
+            CategoryDraftBuilder.of(LocalizedString.ofEnglish("name"), LocalizedString.ofEnglish("testSlug"))
+                                .key("key")
+                                .parent(ResourceIdentifier.ofId("parentId"))
+                                .custom(CustomFieldsDraft.ofTypeIdAndJson("customTypeId", new HashMap<>()))
+                                .build();
+
         final List<UpdateAction<Category>> updateActions =
             buildPrimaryResourceCustomUpdateActions(oldCategory, newCategoryDraft, new CategoryCustomActionBuilder(),
                 categorySyncOptions);

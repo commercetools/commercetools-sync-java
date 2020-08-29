@@ -27,8 +27,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.commons.utils.AssetReferenceReplacementUtils.replaceAssetsReferencesIdsWithKeys;
-import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.replaceCustomTypeIdWithKeys;
+import static com.commercetools.sync.commons.utils.AssetReferenceReplacementUtils.mapToAssetDrafts;
+import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.mapToCustomFieldsDraft;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
 import static com.commercetools.sync.commons.utils.SyncUtils.getReferenceWithKeyReplaced;
 import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKeyReplaced;
@@ -58,11 +58,11 @@ public final class VariantReferenceReplacementUtils {
             .stream()
             .filter(Objects::nonNull)
             .map(productVariant -> {
+                // todo (ahmetoz) update the method name and tests after replacing all replacement utils.
                 final List<PriceDraft> priceDraftsWithKeys = replacePricesReferencesIdsWithKeys(productVariant);
                 final List<AttributeDraft> attributeDraftsWithKeys =
                     replaceAttributesReferencesIdsWithKeys(productVariant);
-                final List<AssetDraft> assetDraftsWithKeys =
-                    replaceAssetsReferencesIdsWithKeys(productVariant.getAssets());
+                final List<AssetDraft> assetDraftsWithKeys = mapToAssetDrafts(productVariant.getAssets());
 
                 return ProductVariantDraftBuilder.of(productVariant)
                                                  .prices(priceDraftsWithKeys)
@@ -90,7 +90,7 @@ public final class VariantReferenceReplacementUtils {
 
         return productVariant.getPrices().stream().map(price -> {
             final ResourceIdentifier<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(price);
-            final CustomFieldsDraft customFieldsDraftWithKey = replaceCustomTypeIdWithKeys(price);
+            final CustomFieldsDraft customFieldsDraftWithKey = mapToCustomFieldsDraft(price);
 
             return PriceDraftBuilder.of(price)
                                     .custom(customFieldsDraftWithKey)

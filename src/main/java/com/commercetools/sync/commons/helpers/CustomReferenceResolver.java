@@ -34,7 +34,7 @@ public abstract class CustomReferenceResolver
         <D extends CustomDraft, B extends Builder<? extends D>, S extends BaseSyncOptions>
     extends BaseReferenceResolver<D, S> {
 
-    private TypeService typeService;
+    private final TypeService typeService;
 
     protected CustomReferenceResolver(@Nonnull final S options, @Nonnull final TypeService typeService) {
         super(options);
@@ -44,7 +44,7 @@ public abstract class CustomReferenceResolver
     /**
      * Given a draft of {@code D} (e.g. {@link CategoryDraft}) this method attempts to resolve it's custom type
      * reference to return {@link CompletionStage} which contains a new instance of the draft with the resolved
-     * custom type reference. The key of the custom type is taken from the from the id field of the reference.
+     * custom type reference.
      *
      * <p>The method then tries to fetch the key of the custom type, optimistically from a
      * cache. If the key is is not found, the resultant draft would remain exactly the same as the passed
@@ -60,7 +60,7 @@ public abstract class CustomReferenceResolver
     /**
      * Given a draft of {@code D} (e.g. {@link CategoryDraft}) this method attempts to resolve it's custom type
      * reference to return {@link CompletionStage} which contains a new instance of the draft with the resolved
-     * custom type reference. The key of the custom type is taken from the from the id field of the reference.
+     * custom type reference.
      *
      * <p>The method then tries to fetch the key of the custom type, optimistically from a
      * cache. If the key is is not found, the resultant draft would remain exactly the same as the passed
@@ -105,7 +105,7 @@ public abstract class CustomReferenceResolver
     private CompletionStage<Optional<String>> getCustomTypeId(@Nonnull final CustomFieldsDraft custom,
                                                               @Nonnull final String referenceResolutionErrorMessage) {
         try {
-            final String customTypeKey = getIdFromResourceIdentifier(custom.getType());
+            final String customTypeKey = getKeyFromResourceIdentifier(custom.getType());
             return typeService.fetchCachedTypeId(customTypeKey);
         } catch (ReferenceResolutionException exception) {
             final String errorMessage =
@@ -113,6 +113,4 @@ public abstract class CustomReferenceResolver
             return exceptionallyCompletedFuture(new ReferenceResolutionException(errorMessage, exception));
         }
     }
-
-
 }

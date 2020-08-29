@@ -11,7 +11,7 @@ import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.replaceCustomTypeIdWithKeys;
+import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.mapToCustomFieldsDraft;
 
 /**
  * Util class which provides utilities that can be used when syncing resources from a source commercetools project
@@ -21,21 +21,21 @@ public final class CartDiscountReferenceReplacementUtils {
 
     /**
      * Takes a list of CartDiscounts that are supposed to have their custom type references expanded in order to be able
-     * to fetch the keys and replace the resource identifier ids with the corresponding keys and then return a new list
-     * of cartDiscountDrafts with their resource identifiers containing keys instead of the ids.
-     * Note that if the references are not expanded for a cart discount, the resource identifier ids will
-     * not be replaced with keys and will still have their ids in place.
+     * to fetch the keys and then return a new list of cartDiscountDrafts with their custom type resource identifiers
+     * containing keys instead of the ids.
+     * Note that if the references are not expanded for a cart discount, the resource identifiers wil not have keys
+     * and will still have their ids in place.
      *
-     * @param cartDiscounts the cartDiscounts to replace their resource identifier ids with keys
+     * @param cartDiscounts the cartDiscounts to replace their custom type resource identifier
      * @return a list of cartDiscountsDrafts with keys set on the resource identifiers.
      */
     @Nonnull
-    public static List<CartDiscountDraft> replaceCartDiscountsReferenceIdsWithKeys(
+    public static List<CartDiscountDraft> mapToCartDiscountDrafts(
         @Nonnull final List<CartDiscount> cartDiscounts) {
         return cartDiscounts
             .stream()
             .map(cartDiscount -> {
-                final CustomFieldsDraft customTypeWithKeysInReference = replaceCustomTypeIdWithKeys(cartDiscount);
+                final CustomFieldsDraft customTypeWithKeysInReference = mapToCustomFieldsDraft(cartDiscount);
 
                 return CartDiscountDraftBuilder.of(
                     cartDiscount.getCartPredicate(),

@@ -13,11 +13,11 @@ import io.sphere.sdk.types.CustomFieldsDraft;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.commons.utils.AssetReferenceReplacementUtils.replaceAssetsReferencesIdsWithKeys;
-import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.replaceCustomTypeIdWithKeys;
+import static com.commercetools.sync.commons.utils.AssetReferenceReplacementUtils.mapToAssetDrafts;
+import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.mapToCustomFieldsDraft;
+import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKeyReplaced;
 import static io.sphere.sdk.models.ResourceIdentifier.ofKey;
 
 /**
@@ -40,16 +40,14 @@ public final class CategoryReferenceReplacementUtils {
      * @return a list of category drafts with keys set on the resource identifiers.
      */
     @Nonnull
-    public static List<CategoryDraft> replaceCategoriesReferenceIdsWithKeys(@Nonnull final List<Category> categories )
-    {
+    public static List<CategoryDraft> replaceCategoriesReferenceIdsWithKeys(@Nonnull final List<Category> categories) {
         return categories
             .stream()
             .map(category -> {
-                final CustomFieldsDraft customTypeWithKeysInReference = replaceCustomTypeIdWithKeys(category);
-                @SuppressWarnings("ConstantConditions") // NPE checked in replaceReferenceIdWithKey
-                final List<AssetDraft> assetDraftsWithKeyInReference =
-                    replaceAssetsReferencesIdsWithKeys(category.getAssets());
-                CategoryDraftBuilder builder = CategoryDraftBuilder.of(category)
+                final CustomFieldsDraft customTypeWithKeysInReference = mapToCustomFieldsDraft(category);
+                final List<AssetDraft> assetDraftsWithKeyInReference = mapToAssetDrafts(category.getAssets());
+                CategoryDraftBuilder builder = CategoryDraftBuilder
+                    .of(category)
                     .custom(customTypeWithKeysInReference)
                     .assets(assetDraftsWithKeyInReference);
                 Reference<Category> parent = category.getParent();

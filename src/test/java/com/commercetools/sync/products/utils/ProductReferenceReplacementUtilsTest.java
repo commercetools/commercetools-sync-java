@@ -23,6 +23,7 @@ import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
@@ -132,7 +133,8 @@ class ProductReferenceReplacementUtilsTest {
                                                      .flatExtracting(ProductVariantDraft::getAssets)
                                                      .extracting(AssetDraft::getCustom)
                                                      .extracting(CustomFieldsDraft::getType)
-                                                     .extracting(ResourceIdentifier::getId)
+                                                     .extracting(type -> StringUtils.isEmpty(type.getId())
+                                                         ? type.getKey() : type.getId())
                                                      .containsExactly(assetCustomTypeKey, asset2CustomTypeId,
                                                          assetCustomTypeKey, asset2CustomTypeId, assetCustomTypeKey,
                                                          asset2CustomTypeId);

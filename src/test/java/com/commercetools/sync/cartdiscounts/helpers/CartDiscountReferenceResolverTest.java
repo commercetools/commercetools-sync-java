@@ -42,7 +42,7 @@ class CartDiscountReferenceResolverTest {
     }
 
     @Test
-    void resolveReferences_WithNoReferences_ShouldNotResolveReferences() {
+    void resolveReferences_WithoutReferences_ShouldNotResolveReferences() {
         final CartDiscountDraft cartDiscountDraft = CartDiscountDraftBuilder
             .of("cartPredicate",
                 LocalizedString.ofEnglish("foo"),
@@ -62,7 +62,7 @@ class CartDiscountReferenceResolverTest {
     }
 
     @Test
-    void resolveCustomTypeReference_WithNullIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
+    void resolveCustomTypeReference_WithNullKeyOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
         final CustomFieldsDraft newCustomFieldsDraft = mock(CustomFieldsDraft.class);
         when(newCustomFieldsDraft.getType()).thenReturn(ResourceIdentifier.ofId(null));
 
@@ -85,7 +85,7 @@ class CartDiscountReferenceResolverTest {
     }
 
     @Test
-    void resolveCustomTypeReference_WithEmptyIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
+    void resolveCustomTypeReference_WithEmptyKeyOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
         final CartDiscountDraftBuilder cartDiscountDraftBuilder = CartDiscountDraftBuilder
             .of("cartPredicate",
                 LocalizedString.ofEnglish("foo"),
@@ -94,7 +94,7 @@ class CartDiscountReferenceResolverTest {
                 ShippingCostTarget.of(),
                 CartDiscountValue.ofAbsolute(MoneyImpl.of(10, DefaultCurrencyUnits.EUR)))
             .key("cart-discount-key")
-            .custom(CustomFieldsDraft.ofTypeIdAndObjects("", emptyMap()));
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson("", emptyMap()));
 
         assertThat(referenceResolver.resolveCustomTypeReference(cartDiscountDraftBuilder).toCompletableFuture())
             .hasFailed()
@@ -114,7 +114,7 @@ class CartDiscountReferenceResolverTest {
                 ShippingCostTarget.of(),
                 RelativeCartDiscountValue.of(10))
             .key("cart-discount-key")
-            .custom(CustomFieldsDraft.ofTypeIdAndJson("typeKey", new HashMap<>()))
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson("typeKey", new HashMap<>()))
             .build();
 
         final CartDiscountDraft resolvedDraft = referenceResolver

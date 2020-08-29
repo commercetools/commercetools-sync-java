@@ -98,15 +98,13 @@ class VariantReferenceReplacementUtilsTest {
         assertThat(priceCustomAfterReplacement).isNotNull();
         final ResourceIdentifier<Type> priceCustomTypeAfterReplacement = priceCustomAfterReplacement.getType();
         assertThat(priceCustomTypeAfterReplacement).isNotNull();
-        // Assert that price custom type reference id is replaced with key.
-        assertThat(priceCustomTypeAfterReplacement.getId()).isEqualTo(customType.getKey());
+        assertThat(priceCustomTypeAfterReplacement.getKey()).isEqualTo(customType.getKey());
 
         assertThat(variantDrafts.get(0).getAssets()).hasSize(1);
         final ResourceIdentifier<Type> referenceReplacedType =
             variantDrafts.get(0).getAssets().get(0).getCustom().getType();
         assertThat(referenceReplacedType).isNotNull();
-        // Assert that price asset custom type reference id is replaced with key.
-        assertThat(referenceReplacedType.getId()).isEqualTo(customType.getKey());
+        assertThat(referenceReplacedType.getKey()).isEqualTo(customType.getKey());
     }
 
     @Test
@@ -167,13 +165,12 @@ class VariantReferenceReplacementUtilsTest {
         final ResourceIdentifier<Type> priceCustomType1ReferenceAfterReplacement =
             price1CustomFieldsAfterReplacement.getType();
         assertThat(priceCustomType1ReferenceAfterReplacement).isNotNull();
-        // Asset price custom type reference id is replaced with key.
-        assertThat(priceCustomType1ReferenceAfterReplacement.getId()).isEqualTo(customType.getKey());
+        assertThat(priceCustomType1ReferenceAfterReplacement.getKey()).isEqualTo(customType.getKey());
 
         assertThat(variantDrafts.get(0).getAssets()).hasSize(1);
         final ResourceIdentifier<Type> asset1CustomType = variantDrafts.get(0).getAssets().get(0).getCustom().getType();
         assertThat(asset1CustomType).isNotNull();
-        assertThat(asset1CustomType.getId()).isEqualTo(customType.getKey());
+        assertThat(asset1CustomType.getKey()).isEqualTo(customType.getKey());
 
         assertThat(variantDrafts.get(1).getPrices()).hasSize(1);
 
@@ -312,8 +309,7 @@ class VariantReferenceReplacementUtilsTest {
         assertThat(custom1AfterReplacement).isNotNull();
         final ResourceIdentifier<Type> customType1AfterReplacement = custom1AfterReplacement.getType();
         assertThat(customType1AfterReplacement).isNotNull();
-        // Assert id is replaced with key.
-        assertThat(customType1AfterReplacement.getId()).isEqualTo(customType.getKey());
+        assertThat(customType1AfterReplacement.getKey()).isEqualTo(customType.getKey());
 
 
         final PriceDraft priceDraft2AfterReplacement = priceDrafts.get(1);
@@ -326,8 +322,7 @@ class VariantReferenceReplacementUtilsTest {
         assertThat(custom2AfterReplacement).isNotNull();
         final ResourceIdentifier<Type> customType2AfterReplacement = custom2AfterReplacement.getType();
         assertThat(customType2AfterReplacement).isNotNull();
-        // Assert id is replaced with key.
-        assertThat(customType2AfterReplacement.getId()).isEqualTo(customType.getKey());
+        assertThat(customType2AfterReplacement.getKey()).isEqualTo(customType.getKey());
     }
 
     @Test
@@ -366,8 +361,7 @@ class VariantReferenceReplacementUtilsTest {
         final CustomFieldsDraft customType1AfterReplacement = priceDrafts.get(0).getCustom();
         assertThat(customType1AfterReplacement).isNotNull();
         assertThat(customType1AfterReplacement.getType()).isNotNull();
-        // Assert expanded reference has id replaced with key.
-        assertThat(customType1AfterReplacement.getType().getId()).isEqualTo(customType.getKey());
+        assertThat(customType1AfterReplacement.getType().getKey()).isEqualTo(customType.getKey());
 
         final CustomFieldsDraft customType2AfterReplacement = priceDrafts.get(1).getCustom();
         assertThat(customType2AfterReplacement).isNotNull();

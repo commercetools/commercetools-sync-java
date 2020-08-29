@@ -66,7 +66,7 @@ class InventoryReferenceResolverTest {
 
         final InventoryEntryDraft draft = InventoryEntryDraft
             .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(CHANNEL_KEY))
-            .withCustom(CustomFieldsDraft.ofTypeIdAndJson(CUSTOM_TYPE_KEY, new HashMap<>()));
+            .withCustom(CustomFieldsDraft.ofTypeKeyAndJson(CUSTOM_TYPE_KEY, new HashMap<>()));
 
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(syncOptions, typeService, channelService);
@@ -95,7 +95,7 @@ class InventoryReferenceResolverTest {
 
         final InventoryEntryDraft draft = InventoryEntryDraft
             .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(CHANNEL_KEY))
-            .withCustom(CustomFieldsDraft.ofTypeIdAndJson(CUSTOM_TYPE_KEY, new HashMap<>()));
+            .withCustom(CustomFieldsDraft.ofTypeKeyAndJson(CUSTOM_TYPE_KEY, new HashMap<>()));
 
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(optionsWithEnsureChannels, typeService, channelService);
@@ -112,7 +112,7 @@ class InventoryReferenceResolverTest {
     void resolveCustomTypeReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
         final InventoryEntryDraftBuilder draftBuilder = InventoryEntryDraftBuilder
             .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(UUID_KEY))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(CUSTOM_TYPE_KEY, new HashMap<>()));
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson(CUSTOM_TYPE_KEY, new HashMap<>()));
 
         when(typeService.fetchCachedTypeId(anyString()))
             .thenReturn(CompletableFutureUtils.failed(new SphereException("bad request")));
@@ -136,7 +136,7 @@ class InventoryReferenceResolverTest {
 
         final InventoryEntryDraftBuilder draftBuilder = InventoryEntryDraftBuilder
             .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(CHANNEL_KEY))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson(CUSTOM_TYPE_KEY, new HashMap<>()));
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson(CUSTOM_TYPE_KEY, new HashMap<>()));
 
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(syncOptions, typeService, channelService);
@@ -146,7 +146,7 @@ class InventoryReferenceResolverTest {
                          .thenAccept(resolvedDraft -> {
                              assertThat(resolvedDraft.getCustom()).isNotNull();
                              assertThat(resolvedDraft.getCustom().getType()).isNotNull();
-                             assertThat(resolvedDraft.getCustom().getType().getId()).isEqualTo(CUSTOM_TYPE_KEY);
+                             assertThat(resolvedDraft.getCustom().getType().getKey()).isEqualTo(CUSTOM_TYPE_KEY);
                          }).toCompletableFuture().join();
     }
 
@@ -154,7 +154,7 @@ class InventoryReferenceResolverTest {
     void resolveSupplyChannelReference_WithEmptyIdOnSupplyChannelReference_ShouldNotResolveChannelReference() {
         final InventoryEntryDraft draft = InventoryEntryDraft
             .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(""))
-            .withCustom(CustomFieldsDraft.ofTypeIdAndJson(CUSTOM_TYPE_KEY, new HashMap<>()));
+            .withCustom(CustomFieldsDraft.ofTypeKeyAndJson(CUSTOM_TYPE_KEY, new HashMap<>()));
 
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(syncOptions, typeService, channelService);
@@ -194,7 +194,7 @@ class InventoryReferenceResolverTest {
     void resolveCustomTypeReference_WithEmptyIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
         final InventoryEntryDraftBuilder draftBuilder = InventoryEntryDraftBuilder
             .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(CHANNEL_KEY))
-            .custom(CustomFieldsDraft.ofTypeIdAndJson("", new HashMap<>()));
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson("", new HashMap<>()));
 
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(syncOptions, typeService, channelService);
