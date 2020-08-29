@@ -18,9 +18,10 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  *            specified by the user, on reference resolution.
  */
 public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
+    public static final String BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER = "The value of the 'key' field of the "
+        + "ResourceIdentifier is blank (null/empty).";
     public static final String BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER = "The value of the 'id' field of the Resource"
         + " Identifier/Reference is blank (null/empty).";
-
     protected S options;
 
     protected BaseReferenceResolver(@Nonnull final S options) {
@@ -48,6 +49,29 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
      * If the above checks pass, the key value is returned. Otherwise a {@link ReferenceResolutionException} is thrown.
      *
      * @param resourceIdentifier the reference from which the key value is validated and returned.
+     * @return the Id value on the {@link ResourceIdentifier}
+     * @throws ReferenceResolutionException if any of the validation checks fail.
+     */
+    @Nonnull
+    protected static String getIdFromResourceIdentifier(@Nonnull final ResourceIdentifier resourceIdentifier)
+        throws ReferenceResolutionException {
+
+        final String id = resourceIdentifier.getId();
+        if (isBlank(id)) {
+            throw new ReferenceResolutionException(BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER);
+        }
+        return id;
+    }
+
+    /**
+     * This method fetches the key value on the passed {@link ResourceIdentifier}, if valid. If it is not valid, a
+     * {@link ReferenceResolutionException} will be thrown. The validity checks are:
+     * <ul>
+     * <li>Checks if the key value is not null or not empty.</li>
+     * </ul>
+     * If the above checks pass, the key value is returned. Otherwise a {@link ReferenceResolutionException} is thrown.
+     *
+     * @param resourceIdentifier the reference from which the key value is validated and returned.
      * @return the key value on the {@link ResourceIdentifier}
      * @throws ReferenceResolutionException if any of the validation checks fail.
      */
@@ -55,9 +79,9 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
     protected static String getKeyFromResourceIdentifier(@Nonnull final ResourceIdentifier resourceIdentifier)
         throws ReferenceResolutionException {
 
-        final String key = resourceIdentifier.getId();
+        final String key = resourceIdentifier.getKey();
         if (isBlank(key)) {
-            throw new ReferenceResolutionException(BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER);
+            throw new ReferenceResolutionException(BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER);
         }
         return key;
     }

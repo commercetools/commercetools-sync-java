@@ -7,12 +7,12 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 import static java.util.Collections.emptyList;
-import static java.util.Optional.ofNullable;
 
 public final class CommonTypeUpdateActionUtils {
 
@@ -48,6 +48,7 @@ public final class CommonTypeUpdateActionUtils {
      * @param oldResourceIdentifier the old resource identifier
      * @param newResourceIdentifier the new resource identifier
      * @param updateActionSupplier  the supplier that returns the update action to return in the optional
+     * @param keyToIdCache          the cache containing the mapping of all existing category keys to ids.
      * @param <T>                   the type of the {@link UpdateAction}
      * @param <S>                   the type of the old resource identifier
      * @param <U>                   the type of the new resource identifier
@@ -59,9 +60,10 @@ public final class CommonTypeUpdateActionUtils {
         buildUpdateActionForReferences(
             @Nullable final S oldResourceIdentifier,
             @Nullable final U newResourceIdentifier,
-            @Nonnull final Supplier<V> updateActionSupplier) {
+            @Nonnull final Supplier<V> updateActionSupplier,
+            final Map<String, String> keyToIdCache) {
 
-        return !areResourceIdentifiersEqual(oldResourceIdentifier, newResourceIdentifier)
+        return !areResourceIdentifiersEqual(oldResourceIdentifier, newResourceIdentifier, keyToIdCache)
             ? Optional.ofNullable(updateActionSupplier.get())
             : Optional.empty();
     }
@@ -71,18 +73,27 @@ public final class CommonTypeUpdateActionUtils {
      *
      * @param oldResourceIdentifier the old resource identifier
      * @param newResourceIdentifier the new resource identifier
+     * @param keyToIdCache          the cache containing the mapping of all existing category keys to ids.
      * @param <T>                   the type of the old resource identifier
      * @param <S>                   the type of the new resource identifier
      * @return true or false depending if the resource identifiers have the same id.
      */
     public static <T extends ResourceIdentifier, S extends ResourceIdentifier> boolean areResourceIdentifiersEqual(
-        @Nullable final T oldResourceIdentifier, @Nullable final S newResourceIdentifier) {
-
-        final String oldId = ofNullable(oldResourceIdentifier).map(ResourceIdentifier::getId).orElse(null);
-        final String newId = ofNullable(newResourceIdentifier).map(ResourceIdentifier::getId).orElse(null);
-
-        return Objects.equals(oldId, newId);
+        @Nullable final T oldResourceIdentifier,
+        @Nullable final S newResourceIdentifier,
+        final Map<String, String> keyToIdCache) {
+        String oldValue = null;
+        if (oldResourceIdentifier != null) {
+            oldValue =  oldResourceIdentifier.getId();
+        }
+        String newValue = null;
+        if (newResourceIdentifier != null) {
+            newValue = keyToIdCache != null  && newResourceIdentifier.getKey() != null
+                ? keyToIdCache.get(newResourceIdentifier.getKey()) : newResourceIdentifier.getId();
+        }
+        return Objects.equals(oldValue, newValue);
     }
+
 
     /**
      * Compares two {@link Object} and returns a supplied list of {@link UpdateAction} as a result.

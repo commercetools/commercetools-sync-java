@@ -12,9 +12,11 @@ import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.queries.PagedQueryResult;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -23,6 +25,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -30,12 +33,14 @@ import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static com.commercetools.sync.categories.CategorySync.requiresChangeParentUpdateAction;
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategory;
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraft;
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.commons.MockUtils.mockCategoryService;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.products.ProductSyncMockUtils.CATEGORY_KEY_1_RESOURCE_PATH;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.lang.String.format;
@@ -214,7 +219,7 @@ class CategorySyncTest {
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to process the CategoryDraft with"
                 + " key:'key'. Reason: %s: Failed to resolve parent reference on CategoryDraft"
                 + " with key:'key'. Reason: %s",
-            ReferenceResolutionException.class.getCanonicalName(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+            ReferenceResolutionException.class.getCanonicalName(), BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
     }
@@ -259,7 +264,7 @@ class CategorySyncTest {
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to process the CategoryDraft with"
                 + " key:'key'. Reason: %s: Failed to resolve parent reference on CategoryDraft with key:'key'. "
                 + "Reason: %s", ReferenceResolutionException.class.getCanonicalName(),
-            BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+            BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
     }
@@ -289,29 +294,32 @@ class CategorySyncTest {
 
     @Test
     void requiresChangeParentUpdateAction_WithTwoDifferentParents_ShouldReturnTrue() {
-        final String parentId = "parentId";
+        final String parentKey = "parentKey";
         final Category category = mock(Category.class);
-        when(category.getParent()).thenReturn(Category.referenceOfId(parentId));
-
+        Reference mockReference = mock(Reference.class);
+        when(mockReference.getId()).thenReturn("parentId");
+        when(category.getParent()).thenReturn(mockReference);
+        final Map<String, String> keyToIdCache = singletonMap(parentKey, "parentId");
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "name"), LocalizedString.of(Locale.ENGLISH, "slug"))
-            .parent(ResourceIdentifier.ofId("differentParent"))
+            .parent(ResourceIdentifier.ofKey("differentParentKey"))
             .build();
-        final boolean doesRequire = CategorySync.requiresChangeParentUpdateAction(category, categoryDraft);
+        final boolean doesRequire = requiresChangeParentUpdateAction(category, categoryDraft, keyToIdCache);
         assertThat(doesRequire).isTrue();
     }
 
     @Test
     void requiresChangeParentUpdateAction_WithTwoIdenticalParents_ShouldReturnFalse() {
         final String parentId = "parentId";
+        final String parentKey = "parentkey";
         final Category category = mock(Category.class);
         when(category.getParent()).thenReturn(Category.referenceOfId(parentId));
-
+        final Map<String, String> keyToIdCache = singletonMap(parentKey, parentId);
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "name"), LocalizedString.of(Locale.ENGLISH, "slug"))
-            .parent(ResourceIdentifier.ofId(parentId))
+            .parent(ResourceIdentifier.ofKey(parentKey))
             .build();
-        final boolean doesRequire = CategorySync.requiresChangeParentUpdateAction(category, categoryDraft);
+        final boolean doesRequire = requiresChangeParentUpdateAction(category, categoryDraft, keyToIdCache);
         assertThat(doesRequire).isFalse();
     }
 
@@ -320,10 +328,11 @@ class CategorySyncTest {
         final Category category = mock(Category.class);
         when(category.getParent()).thenReturn(null);
 
+        final Map<String, String> keyToIdCache = new HashMap<>();
         final CategoryDraft categoryDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "name"), LocalizedString.of(Locale.ENGLISH, "slug"))
             .build();
-        final boolean doesRequire = CategorySync.requiresChangeParentUpdateAction(category, categoryDraft);
+        final boolean doesRequire = requiresChangeParentUpdateAction(category, categoryDraft, keyToIdCache);
         assertThat(doesRequire).isFalse();
     }
 

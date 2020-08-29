@@ -173,7 +173,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         for (ResourceIdentifier<Category> categoryResourceIdentifier : categoryResourceIdentifiers) {
             if (categoryResourceIdentifier != null) {
                 try {
-                    final String categoryKey = getKeyFromResourceIdentifier(categoryResourceIdentifier);
+                    final String categoryKey = getIdFromResourceIdentifier(categoryResourceIdentifier);
                     categoryKeys.add(categoryKey);
                 } catch (ReferenceResolutionException referenceResolutionException) {
                     return exceptionallyCompletedFuture(
@@ -293,7 +293,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
             return completedFuture(draftBuilder);
         }
 
-        final String resourceKey = getKeyFromResourceIdentifier(resourceIdentifier);
+        final String resourceKey = getIdFromResourceIdentifier(resourceIdentifier);
 
         return keyToIdMapper
             .apply(resourceKey)

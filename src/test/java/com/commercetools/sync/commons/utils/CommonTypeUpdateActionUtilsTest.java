@@ -244,7 +244,7 @@ class CommonTypeUpdateActionUtilsTest {
 
         final Optional<UpdateAction<Category>> updateActionForStrings =
             buildUpdateActionForReferences(ResourceIdentifier.ofId("foo"), ResourceIdentifier.ofId("foo"),
-                () -> mockUpdateAction);
+                () -> mockUpdateAction,null);
 
         assertThat(updateActionForStrings).isNotNull();
         assertThat(updateActionForStrings).isNotPresent();
@@ -257,7 +257,7 @@ class CommonTypeUpdateActionUtilsTest {
 
         final Optional<UpdateAction<Category>> updateActionForStrings =
             buildUpdateActionForReferences(ResourceIdentifier.ofId("foo"), ResourceIdentifier.ofId("bar"),
-                () -> mockUpdateAction);
+                () -> mockUpdateAction, null);
 
         assertThat(updateActionForStrings).isNotNull();
         assertThat(updateActionForStrings).contains(mockUpdateAction);
@@ -270,7 +270,7 @@ class CommonTypeUpdateActionUtilsTest {
 
         final Optional<UpdateAction<Category>> updateActionForStrings =
             buildUpdateActionForReferences(ResourceIdentifier.ofId("foo"), Category.referenceOfId("foo"),
-                () -> mockUpdateAction);
+                () -> mockUpdateAction, null);
 
         assertThat(updateActionForStrings).isNotNull();
         assertThat(updateActionForStrings).isEmpty();
@@ -283,41 +283,22 @@ class CommonTypeUpdateActionUtilsTest {
 
         final Optional<UpdateAction<Category>> updateActionForStrings =
             buildUpdateActionForReferences(ResourceIdentifier.ofId("foo"), Category.referenceOfId("bar"),
-                () -> mockUpdateAction);
+                () -> mockUpdateAction, null);
 
         assertThat(updateActionForStrings).isNotNull();
         assertThat(updateActionForStrings).contains(mockUpdateAction);
     }
 
     @Test
-    void areResourceIdentifiersEqual_WithDiffValues_ShouldBeFalse() {
+    void areResourceIdentifiersEqual_WithDiffIdValues_ShouldBeFalse() {
         final boolean result = areResourceIdentifiersEqual(
-            ResourceIdentifier.ofId("foo"), ResourceIdentifier.ofId("bar"));
+            ResourceIdentifier.ofId("foo"), ResourceIdentifier.ofId("bar"), null);
 
         assertThat(result).isFalse();
     }
 
-    @Test
-    void areResourceIdentifiersEqual_WithSameValues_ShouldBeTrue() {
-        final boolean result = areResourceIdentifiersEqual(
-            ResourceIdentifier.ofId("foo"), ResourceIdentifier.ofId("foo"));
 
-        assertThat(result).isTrue();
-    }
 
-    @Test
-    void areResourceIdentifiersEqual_WithDiffValuesDifferentInterface_ShouldBeFalse() {
-        final boolean result = areResourceIdentifiersEqual(
-            ResourceIdentifier.ofId("foo"), Category.referenceOfId("bar"));
 
-        assertThat(result).isFalse();
-    }
 
-    @Test
-    void areResourceIdentifiersEqual_WithSameValuesDifferentInterface_ShouldBeTrue() {
-        final boolean result = areResourceIdentifiersEqual(
-            ResourceIdentifier.ofId("foo"), Category.referenceOfId("foo"));
-
-        assertThat(result).isTrue();
-    }
 }

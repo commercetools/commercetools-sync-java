@@ -5,7 +5,6 @@ import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
-import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.client.SphereClient;
@@ -30,6 +29,7 @@ import java.util.concurrent.CompletableFuture;
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraftBuilder;
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
@@ -61,7 +61,7 @@ class CategoryReferenceResolverTest {
         when(categoryService.fetchCachedCategoryId(CACHED_CATEGORY_KEY))
             .thenReturn(CompletableFuture.completedFuture(Optional.of(CACHED_CATEGORY_ID)));
         final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class)).build();
-        referenceResolver = new CategoryReferenceResolver(syncOptions, typeService, categoryService);
+        referenceResolver = new CategoryReferenceResolver(syncOptions, typeService);
     }
 
     @Test
@@ -184,7 +184,7 @@ class CategoryReferenceResolverTest {
     void resolveParentReference_WithEmptyIdOnParentReference_ShouldNotResolveParentReference() {
         final CategoryDraftBuilder categoryDraft = CategoryDraftBuilder.of(ofEnglish("foo"), ofEnglish("bar"));
         categoryDraft.key("key");
-        categoryDraft.parent(Category.referenceOfId("").toResourceIdentifier());
+        categoryDraft.parent(ResourceIdentifier.ofKey(""));
 
         assertThat(referenceResolver.resolveParentReference(categoryDraft)
             .toCompletableFuture())
@@ -192,14 +192,14 @@ class CategoryReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format("Failed to resolve parent reference on CategoryDraft with key:'key'. Reason: %s",
-                BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+                BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
-    void resolveParentReference_WithNullIdOnParentReference_ShouldNotResolveParentReference() {
+    void resolveParentReference_WithNullKeyOnParentReference_ShouldNotResolveParentReference() {
         final CategoryDraftBuilder categoryDraft = CategoryDraftBuilder.of(ofEnglish("foo"), ofEnglish("bar"));
         categoryDraft.key("key");
-        categoryDraft.parent(Category.referenceOfId(null).toResourceIdentifier());
+        categoryDraft.parent(ResourceIdentifier.ofKey(null));
 
         assertThat(referenceResolver.resolveParentReference(categoryDraft)
             .toCompletableFuture())
@@ -207,7 +207,7 @@ class CategoryReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format("Failed to resolve parent reference on CategoryDraft with key:'key'. Reason: %s",
-                BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+                BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test

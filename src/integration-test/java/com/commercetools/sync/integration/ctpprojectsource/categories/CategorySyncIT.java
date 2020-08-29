@@ -12,6 +12,7 @@ import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.errors.DuplicateFieldError;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import org.junit.jupiter.api.AfterAll;
@@ -249,8 +250,7 @@ class CategorySyncIT {
         //---------------------------------------------------------------
 
         // Create a total of 130 categories in the source project
-        final List<Category> sourceSubFamily =
-            createChildren(5, null, "root", CTP_SOURCE_CLIENT);
+        final List<Category> sourceSubFamily = createChildren(5, null, "root", CTP_SOURCE_CLIENT);
 
         for (final Category child : sourceSubFamily) {
             final List<Category> subsubFamily =
@@ -319,6 +319,7 @@ class CategorySyncIT {
         final CategorySyncStatistics syncStatistics = syncBatches(categorySync, batches,
             CompletableFuture.completedFuture(null)).toCompletableFuture().join();
 
+
         assertThat(syncStatistics).hasValues(3, 0, 1, 0, 0);
         assertThat(callBackErrorResponses).isEmpty();
         assertThat(callBackExceptions).isEmpty();
@@ -331,42 +332,41 @@ class CategorySyncIT {
         //-----------------Test Setup------------------------------------
         // Delete all categories in target project
         deleteAllCategories(CTP_TARGET_CLIENT);
-
+        String parentKey = "parent";
         // Create a total of 2 categories in the target project.
         final CategoryDraft parentDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "parent"),
                 LocalizedString.of(Locale.ENGLISH, "parent"))
-            .key("parent")
+            .key(parentKey)
             .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
-        final Category parentCreated = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(parentDraft))
-                                                        .toCompletableFuture().join();
+
+        CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(parentDraft)).toCompletableFuture().join();
 
         final CategoryDraft childDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "child"),
                 LocalizedString.of(Locale.ENGLISH, "child"))
             .key("child")
-            .parent(parentCreated.toResourceIdentifier())
+            .parent(ResourceIdentifier.ofKey(parentKey))
             .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
         CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(childDraft)).toCompletableFuture().join();
         //------------------------------------------------------------------------------------------------------------
         // Create a total of 2 categories in the source project
-
+        String newParentKey = "new-parent";
         final CategoryDraft sourceParentDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "new-parent"),
                 LocalizedString.of(Locale.ENGLISH, "new-parent"))
-            .key("new-parent")
+            .key(newParentKey)
             .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
-        final Category sourceParentCreated = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(sourceParentDraft))
-                                                        .toCompletableFuture().join();
+        CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(sourceParentDraft)).toCompletableFuture().join();
 
         final CategoryDraft sourceChildDraft = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "child-new-name"),
                 LocalizedString.of(Locale.ENGLISH, "child"))
             .key("child")
-            .parent(sourceParentCreated.toResourceIdentifier())
+            .parent(ResourceIdentifier.ofKey(newParentKey))
             .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
         CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(sourceChildDraft)).toCompletableFuture().join();
