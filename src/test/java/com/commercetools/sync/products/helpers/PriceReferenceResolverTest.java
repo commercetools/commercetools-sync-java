@@ -27,7 +27,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerGroup;
@@ -103,7 +103,7 @@ class PriceReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format("Failed to resolve custom type reference on PriceDraft"
-                + " with country:'DE' and value: 'EUR 10'. Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+                + " with country:'DE' and value: 'EUR 10'. Reason: %s", BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
@@ -122,7 +122,7 @@ class PriceReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format("Failed to resolve custom type reference on PriceDraft"
-                + " with country:'DE' and value: 'EUR 10'. Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+                + " with country:'DE' and value: 'EUR 10'. Reason: %s", BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test

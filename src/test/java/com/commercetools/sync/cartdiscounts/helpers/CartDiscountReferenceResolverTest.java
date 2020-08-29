@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
 import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -81,7 +81,7 @@ class CartDiscountReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format("Failed to resolve custom type reference on CartDiscountDraft with "
-                + "key:'cart-discount-key'. Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+                + "key:'cart-discount-key'. Reason: %s", BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
@@ -101,7 +101,7 @@ class CartDiscountReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format("Failed to resolve custom type reference on CartDiscountDraft with "
-                + "key:'cart-discount-key'. Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+                + "key:'cart-discount-key'. Reason: %s", BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
