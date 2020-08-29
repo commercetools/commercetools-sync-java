@@ -24,7 +24,6 @@ import io.sphere.sdk.models.ResourceIdentifier;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
@@ -104,7 +103,6 @@ public final class CategoryUpdateActionUtils {
      *
      * @param oldCategory the category which should be updated.
      * @param newCategory the category draft where we get the new parent.
-     * @param keyToIdCache  the cache containing the mapping of all existing category keys to ids.
      * @param syncOptions the sync syncOptions with which a custom callback function is called in case the parent
      *                    is null.
      * @return A filled optional with the update action or an empty optional if the parent references are identical.
@@ -113,8 +111,7 @@ public final class CategoryUpdateActionUtils {
     public static Optional<UpdateAction<Category>> buildChangeParentUpdateAction(
         @Nonnull final Category oldCategory,
         @Nonnull final CategoryDraft newCategory,
-        @Nonnull final CategorySyncOptions syncOptions,
-        final Map<String, String> keyToIdCache) {
+        @Nonnull final CategorySyncOptions syncOptions) {
 
         final Reference<Category> oldParent = oldCategory.getParent();
         final ResourceIdentifier<Category> newParent = newCategory.getParent();
@@ -128,7 +125,7 @@ public final class CategoryUpdateActionUtils {
             // are null, then the supplier will not be called at all. The remaining cases all involve the newParent
             // being not null.
             return buildUpdateActionForReferences(oldParent, newParent,
-                () -> ChangeParent.of(ResourceIdentifier.ofKey(newParent.getKey())), keyToIdCache);
+                () -> ChangeParent.of(ResourceIdentifier.ofId(newParent.getId())));
         }
     }
 

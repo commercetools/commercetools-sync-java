@@ -83,7 +83,7 @@ public final class CartDiscountUpdateActionUtils {
             @Nonnull final GiftLineItemCartDiscountValue oldValue,
             @Nonnull final GiftLineItemCartDiscountValue newValue) {
         return buildUpdateActionForReferences(oldValue.getProduct(), newValue.getProduct(),
-            () -> ChangeValue.of(newValue), null);
+            () -> ChangeValue.of(newValue));
     }
 
     @Nonnull
@@ -99,7 +99,7 @@ public final class CartDiscountUpdateActionUtils {
             @Nonnull final GiftLineItemCartDiscountValue oldValue,
             @Nonnull final GiftLineItemCartDiscountValue newValue) {
         return buildUpdateActionForReferences(oldValue.getSupplyChannel(), newValue.getSupplyChannel(),
-            () -> ChangeValue.of(newValue), null);
+            () -> ChangeValue.of(newValue));
     }
 
     @Nonnull
@@ -107,7 +107,7 @@ public final class CartDiscountUpdateActionUtils {
             @Nonnull final GiftLineItemCartDiscountValue oldValue,
             @Nonnull final GiftLineItemCartDiscountValue newValue) {
         return buildUpdateActionForReferences(oldValue.getDistributionChannel(), newValue.getDistributionChannel(),
-            () -> ChangeValue.of(newValue), null);
+            () -> ChangeValue.of(newValue));
     }
 
     @Nonnull
@@ -123,7 +123,7 @@ public final class CartDiscountUpdateActionUtils {
             return Optional.of(ChangeValue.of(newValue));
         }
 
-        final boolean allOldValuesFoundInNewValues = oldValue.getMoney().stream().allMatch(oldAmount -> 
+        final boolean allOldValuesFoundInNewValues = oldValue.getMoney().stream().allMatch(oldAmount ->
                 newValue.getMoney().stream()
                         .filter(newAmount -> newAmount.getCurrency().equals(oldAmount.getCurrency()))
                         .anyMatch(newAmount -> newAmount.isEqualTo(oldAmount)));

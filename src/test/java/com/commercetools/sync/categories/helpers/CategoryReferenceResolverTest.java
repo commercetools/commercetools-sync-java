@@ -60,7 +60,7 @@ class CategoryReferenceResolverTest {
         when(categoryService.fetchCachedCategoryId(CACHED_CATEGORY_KEY))
             .thenReturn(CompletableFuture.completedFuture(Optional.of(CACHED_CATEGORY_ID)));
         final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(mock(SphereClient.class)).build();
-        referenceResolver = new CategoryReferenceResolver(syncOptions, typeService);
+        referenceResolver = new CategoryReferenceResolver(syncOptions, typeService, categoryService);
     }
 
     @Test
@@ -195,7 +195,7 @@ class CategoryReferenceResolverTest {
     }
 
     @Test
-    void resolveParentReference_WithNullKeyOnParentReference_ShouldNotResolveParentReference() {
+    void resolveParentReference_WithNullIdOnParentReference_ShouldNotResolveParentReference() {
         final CategoryDraftBuilder categoryDraft = CategoryDraftBuilder.of(ofEnglish("foo"), ofEnglish("bar"));
         categoryDraft.key("key");
         categoryDraft.parent(ResourceIdentifier.ofKey(null));
