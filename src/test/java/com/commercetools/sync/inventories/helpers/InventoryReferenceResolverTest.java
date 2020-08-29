@@ -12,6 +12,7 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
 import io.sphere.sdk.inventory.InventoryEntryDraftBuilder;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.utils.CompletableFutureUtils;
@@ -64,9 +65,10 @@ class InventoryReferenceResolverTest {
         when(channelService.fetchCachedChannelId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-        final InventoryEntryDraft draft = InventoryEntryDraft
-            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(CHANNEL_KEY))
-            .withCustom(CustomFieldsDraft.ofTypeKeyAndJson(CUSTOM_TYPE_KEY, new HashMap<>()));
+        final InventoryEntryDraft draft = InventoryEntryDraftBuilder
+            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, ResourceIdentifier.ofKey(CHANNEL_KEY))
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson(CUSTOM_TYPE_KEY, new HashMap<>()))
+            .build();
 
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(syncOptions, typeService, channelService);
@@ -93,9 +95,10 @@ class InventoryReferenceResolverTest {
         when(channelService.fetchCachedChannelId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-        final InventoryEntryDraft draft = InventoryEntryDraft
-            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(CHANNEL_KEY))
-            .withCustom(CustomFieldsDraft.ofTypeKeyAndJson(CUSTOM_TYPE_KEY, new HashMap<>()));
+        final InventoryEntryDraft draft = InventoryEntryDraftBuilder
+            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, ResourceIdentifier.ofKey(CHANNEL_KEY))
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson(CUSTOM_TYPE_KEY, new HashMap<>()))
+            .build();
 
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(optionsWithEnsureChannels, typeService, channelService);
