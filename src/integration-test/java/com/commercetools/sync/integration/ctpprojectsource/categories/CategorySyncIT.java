@@ -29,7 +29,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 import static com.commercetools.sync.categories.utils.CategoryReferenceReplacementUtils.buildCategoryQuery;
-import static com.commercetools.sync.categories.utils.CategoryReferenceReplacementUtils.replaceCategoriesReferenceIdsWithKeys;
+import static com.commercetools.sync.categories.utils.CategoryReferenceReplacementUtils.mapToCategoryDrafts;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
@@ -115,7 +115,7 @@ class CategorySyncIT {
                                                            .toCompletableFuture().join().getResults();
 
         // Put the keys in the reference ids to prepare for reference resolution
-        final List<CategoryDraft> categoryDrafts = replaceCategoriesReferenceIdsWithKeys(categories);
+        final List<CategoryDraft> categoryDrafts = mapToCategoryDrafts(categories);
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
 
@@ -134,7 +134,7 @@ class CategorySyncIT {
                                                            .toCompletableFuture().join().getResults();
 
         // Put the keys in the reference ids to prepare for reference resolution
-        final List<CategoryDraft> categoryDrafts = replaceCategoriesReferenceIdsWithKeys(categories);
+        final List<CategoryDraft> categoryDrafts = mapToCategoryDrafts(categories);
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
 
@@ -212,7 +212,7 @@ class CategorySyncIT {
                                                            .toCompletableFuture().join().getResults();
 
         // Put the keys in the reference ids to prepare for reference resolution
-        final List<CategoryDraft> categoryDrafts = replaceCategoriesReferenceIdsWithKeys(categories);
+        final List<CategoryDraft> categoryDrafts = mapToCategoryDrafts(categories);
 
         // Make sure there is no hierarchical order
         Collections.shuffle(categoryDrafts);
@@ -268,7 +268,7 @@ class CategorySyncIT {
                                                            .toCompletableFuture().join().getResults();
 
         // Put the keys in the reference ids to prepare for reference resolution
-        final List<CategoryDraft> categoryDrafts = replaceCategoriesReferenceIdsWithKeys(categories);
+        final List<CategoryDraft> categoryDrafts = mapToCategoryDrafts(categories);
         Collections.shuffle(categoryDrafts);
 
         final List<List<CategoryDraft>> batches = batchElements(categoryDrafts, 13);
@@ -311,7 +311,7 @@ class CategorySyncIT {
                                                            .toCompletableFuture().join().getResults();
 
         // Put the keys in the reference ids to prepare for reference resolution
-        final List<CategoryDraft> categoryDrafts = replaceCategoriesReferenceIdsWithKeys(categories);
+        final List<CategoryDraft> categoryDrafts = mapToCategoryDrafts(categories);
         Collections.shuffle(categoryDrafts);
 
         final List<List<CategoryDraft>> batches = batchElements(categoryDrafts, 1);
@@ -378,7 +378,7 @@ class CategorySyncIT {
             .toCompletableFuture().join().getResults();
 
         // Put the keys in the reference ids to prepare for reference resolution
-        final List<CategoryDraft> categoryDrafts = replaceCategoriesReferenceIdsWithKeys(categories);
+        final List<CategoryDraft> categoryDrafts = mapToCategoryDrafts(categories);
 
         // To simulate the new parent coming in a later draft
         Collections.reverse(categoryDrafts);
@@ -433,7 +433,7 @@ class CategorySyncIT {
                                                            .toCompletableFuture().join().getResults();
 
         // Put the keys in the reference ids to prepare for reference resolution
-        final List<CategoryDraft> categoryDrafts = replaceCategoriesReferenceIdsWithKeys(categories);
+        final List<CategoryDraft> categoryDrafts = mapToCategoryDrafts(categories);
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
 

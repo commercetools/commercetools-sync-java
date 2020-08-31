@@ -17,6 +17,7 @@ import java.util.UUID;
 
 import static com.commercetools.sync.commons.MockUtils.getAssetMockWithCustomFields;
 import static com.commercetools.sync.commons.MockUtils.getTypeMock;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -25,8 +26,7 @@ import static org.mockito.Mockito.when;
 class CategoryReferenceReplacementUtilsTest {
 
     @Test
-    void
-        replaceCategoryReferenceIdsWithKeys_WithAllExpandedCategoryReferences_ShouldReturnReferencesWithReplacedKeys() {
+    void mapToCategoryDrafts_WithAllExpandedCategoryReferences_ShouldReturnReferencesWithKeys() {
         final String parentId = UUID.randomUUID().toString();
         final Type mockCustomType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
 
@@ -36,7 +36,7 @@ class CategoryReferenceReplacementUtilsTest {
             assetCustomType));
 
         final List<Category> mockCategories = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 2; i++) {
             final Category mockCategory = mock(Category.class);
 
             //Mock categories parent fields with expanded category references.
@@ -65,7 +65,7 @@ class CategoryReferenceReplacementUtilsTest {
             assertThat(category.getCustom().getType().getId()).isEqualTo(mockCustomType.getId());
         }
         final List<CategoryDraft> referenceReplacedDrafts =
-            CategoryReferenceReplacementUtils.replaceCategoriesReferenceIdsWithKeys(mockCategories);
+            CategoryReferenceReplacementUtils.mapToCategoryDrafts(mockCategories);
 
         for (int i = 0; i < referenceReplacedDrafts.size(); i++) {
             assertThat(referenceReplacedDrafts.get(i).getParent().getKey()).isEqualTo("parentKey" + i);
@@ -81,8 +81,7 @@ class CategoryReferenceReplacementUtilsTest {
     }
 
     @Test
-    void
-        replaceCategoryReferenceIdsWithKeys_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
+    void mapToCategoryDrafts_WithNonExpandedReferences_ShouldReturnReferencesWithoutKeys() {
         final String parentId = UUID.randomUUID().toString();
         final String customTypeId = UUID.randomUUID().toString();
 
@@ -91,7 +90,7 @@ class CategoryReferenceReplacementUtilsTest {
             UUID.randomUUID().toString()));
 
         final List<Category> mockCategories = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 2; i++) {
             final Category mockCategory = mock(Category.class);
 
             //Mock categories parent fields with non-expanded category references.
@@ -117,7 +116,7 @@ class CategoryReferenceReplacementUtilsTest {
             assertThat(category.getCustom().getType().getId()).isEqualTo(customTypeId);
         }
         final List<CategoryDraft> referenceReplacedDrafts =
-            CategoryReferenceReplacementUtils.replaceCategoriesReferenceIdsWithKeys(mockCategories);
+            CategoryReferenceReplacementUtils.mapToCategoryDrafts(mockCategories);
 
         for (CategoryDraft referenceReplacedDraft : referenceReplacedDrafts) {
             assertThat(referenceReplacedDraft.getParent().getId()).isEqualTo(parentId);
@@ -128,6 +127,25 @@ class CategoryReferenceReplacementUtilsTest {
             assertThat(referenceReplacedDraftAssets.get(0).getCustom()).isNotNull();
             assertThat(referenceReplacedDraftAssets.get(0).getCustom().getType().getId())
                 .isEqualTo(asset.getCustom().getType().getId());
+        }
+    }
+
+    @Test
+    void mapToCategoryDrafts_WithoutReferences_ShouldNotReturnReferences() {
+        final List<Category> mockCategories = new ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            final Category mockCategory = mock(Category.class);
+            when(mockCategory.getParent()).thenReturn(null);
+            when(mockCategory.getCustom()).thenReturn(null);
+            when(mockCategory.getAssets()).thenReturn(emptyList());
+            mockCategories.add(mockCategory);
+        }
+        final List<CategoryDraft> referenceReplacedDrafts =
+            CategoryReferenceReplacementUtils.mapToCategoryDrafts(mockCategories);
+        for (CategoryDraft referenceReplacedDraft : referenceReplacedDrafts) {
+            assertThat(referenceReplacedDraft.getParent()).isNull();
+            assertThat(referenceReplacedDraft.getCustom()).isNull();
+            assertThat(referenceReplacedDraft.getAssets()).isEmpty();
         }
     }
 

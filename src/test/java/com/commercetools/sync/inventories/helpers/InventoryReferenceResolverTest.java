@@ -29,6 +29,7 @@ import java.util.concurrent.CompletionException;
 
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.commons.helpers.CustomReferenceResolver.TYPE_DOES_NOT_EXIST;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -144,12 +145,16 @@ class InventoryReferenceResolverTest {
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(syncOptions, typeService, channelService);
 
+        final String expectedExceptionMessage = format(InventoryReferenceResolver.FAILED_TO_RESOLVE_CUSTOM_TYPE, SKU);
+        final String expectedMessageWithCause =
+            format("%s Reason: %s", expectedExceptionMessage, format(TYPE_DOES_NOT_EXIST, CUSTOM_TYPE_KEY));
+
         referenceResolver.resolveCustomTypeReference(draftBuilder)
-                         .thenApply(InventoryEntryDraftBuilder::build)
-                         .thenAccept(resolvedDraft -> {
-                             assertThat(resolvedDraft.getCustom()).isNotNull();
-                             assertThat(resolvedDraft.getCustom().getType()).isNotNull();
-                             assertThat(resolvedDraft.getCustom().getType().getKey()).isEqualTo(CUSTOM_TYPE_KEY);
+                         .exceptionally(exception -> {
+                             assertThat(exception).hasCauseExactlyInstanceOf(ReferenceResolutionException.class);
+                             assertThat(exception.getCause().getMessage())
+                                 .isEqualTo(expectedMessageWithCause);
+                             return null;
                          }).toCompletableFuture().join();
     }
 
@@ -204,10 +209,8 @@ class InventoryReferenceResolverTest {
 
         referenceResolver.resolveCustomTypeReference(draftBuilder)
                          .exceptionally(exception -> {
-                             assertThat(exception).isExactlyInstanceOf(CompletionException.class);
-                             assertThat(exception.getCause())
-                                 .isExactlyInstanceOf(ReferenceResolutionException.class);
-                             assertThat(exception.getCause().getMessage())
+                             assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
+                             assertThat(exception.getMessage())
                                  .isEqualTo(format("Failed to resolve custom type resource identifier on "
                                      + "InventoryEntryDraft with SKU:'1000'. Reason: %s",
                                      BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));

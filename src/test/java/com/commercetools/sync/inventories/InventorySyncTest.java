@@ -337,7 +337,7 @@ class InventorySyncTest {
         final List<InventoryEntryDraft> newDrafts = new ArrayList<>();
         final InventoryEntryDraft draftWithNullCustomTypeId =
             InventoryEntryDraft.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, null)
-                               .withCustom(CustomFieldsDraft.ofTypeIdAndJson("", new HashMap<>()));
+                               .withCustom(CustomFieldsDraft.ofTypeKeyAndJson("", new HashMap<>()));
         newDrafts.add(draftWithNullCustomTypeId);
 
         final InventorySyncStatistics syncStatistics = inventorySync.sync(newDrafts).toCompletableFuture().join();

@@ -8,16 +8,17 @@ import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.types.CustomFieldsDraft;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.AssetReferenceReplacementUtils.mapToAssetDrafts;
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.mapToCustomFieldsDraft;
-import static io.sphere.sdk.models.ResourceIdentifier.ofKey;
 
 /**
  * Util class which provides utilities that can be used when syncing resources from a source commercetools project
@@ -39,23 +40,34 @@ public final class CategoryReferenceReplacementUtils {
      * @return a list of category drafts with keys set on the resource identifiers.
      */
     @Nonnull
-    public static List<CategoryDraft> replaceCategoriesReferenceIdsWithKeys(@Nonnull final List<Category> categories) {
+    public static List<CategoryDraft> mapToCategoryDrafts(@Nonnull final List<Category> categories) {
         return categories
             .stream()
             .map(category -> {
                 final CustomFieldsDraft customTypeWithKeysInReference = mapToCustomFieldsDraft(category);
                 final List<AssetDraft> assetDraftsWithKeyInReference = mapToAssetDrafts(category.getAssets());
-                CategoryDraftBuilder builder = CategoryDraftBuilder
+                final ResourceIdentifier<Category> parentWithKeysInReference =
+                    mapToCategoryResourceIdentifier(category.getParent());
+                return CategoryDraftBuilder
                     .of(category)
                     .custom(customTypeWithKeysInReference)
-                    .assets(assetDraftsWithKeyInReference);
-                Reference<Category> parent = category.getParent();
-                if (parent != null && parent.getObj() != null) {
-                    builder = builder.parent(ofKey(parent.getObj().getKey()));
-                }
-                return builder.build();
+                    .assets(assetDraftsWithKeyInReference)
+                    .parent(parentWithKeysInReference)
+                    .build();
             })
             .collect(Collectors.toList());
+    }
+
+    @Nullable
+    private static ResourceIdentifier<Category> mapToCategoryResourceIdentifier(
+        @Nullable Reference<Category> parentReference) {
+        if (parentReference != null) {
+            if(parentReference.getObj() != null) {
+                return ResourceIdentifier.ofKey(parentReference.getObj().getKey());
+            }
+            return ResourceIdentifier.ofId(parentReference.getId());
+        }
+        return null;
     }
 
     /**

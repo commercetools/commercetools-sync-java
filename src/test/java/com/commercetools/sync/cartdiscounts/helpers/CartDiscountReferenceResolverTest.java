@@ -3,6 +3,7 @@ package com.commercetools.sync.cartdiscounts.helpers;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraftBuilder;
 import io.sphere.sdk.cartdiscounts.CartDiscountValue;
@@ -18,18 +19,24 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
+import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
+import static com.commercetools.sync.cartdiscounts.helpers.CartDiscountReferenceResolver.FAILED_TO_RESOLVE_CUSTOM_TYPE;
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.commons.helpers.CustomReferenceResolver.TYPE_DOES_NOT_EXIST;
 import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class CartDiscountReferenceResolverTest {
 
     private CartDiscountReferenceResolver referenceResolver;
+    private TypeService typeService;
 
     /**
      * Sets up the services and the options needed for reference resolution.
@@ -38,7 +45,8 @@ class CartDiscountReferenceResolverTest {
     void setup() {
         final CartDiscountSyncOptions syncOptions = CartDiscountSyncOptionsBuilder
             .of(mock(SphereClient.class)).build();
-        referenceResolver = new CartDiscountReferenceResolver(syncOptions, getMockTypeService());
+        typeService = getMockTypeService();
+        referenceResolver = new CartDiscountReferenceResolver(syncOptions, typeService);
     }
 
     @Test
@@ -102,6 +110,33 @@ class CartDiscountReferenceResolverTest {
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format("Failed to resolve custom type reference on CartDiscountDraft with "
                 + "key:'cart-discount-key'. Reason: %s", BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+    }
+
+    @Test
+    void resolveCustomTypeReference_WithNonExistentCustomType_ShouldCompleteExceptionally() {
+        final String customTypeKey = "customTypeKey";
+        final CartDiscountDraftBuilder cartDiscountDraftBuilder = CartDiscountDraftBuilder
+            .of("cartPredicate",
+                LocalizedString.ofEnglish("foo"),
+                true,
+                "0.1",
+                ShippingCostTarget.of(),
+                CartDiscountValue.ofAbsolute(MoneyImpl.of(10, DefaultCurrencyUnits.EUR)))
+            .key("cart-discount-key")
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson(customTypeKey, emptyMap()));
+
+        when(typeService.fetchCachedTypeId(anyString()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+
+        // Test and assertion
+        final String expectedExceptionMessage =
+            format(FAILED_TO_RESOLVE_CUSTOM_TYPE, cartDiscountDraftBuilder.getKey());
+        final String expectedMessageWithCause =
+            format("%s Reason: %s", expectedExceptionMessage, format(TYPE_DOES_NOT_EXIST, customTypeKey));
+        assertThat(referenceResolver.resolveCustomTypeReference(cartDiscountDraftBuilder))
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(ReferenceResolutionException.class)
+            .hasMessage(expectedMessageWithCause);
     }
 
     @Test

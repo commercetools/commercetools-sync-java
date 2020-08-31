@@ -29,10 +29,11 @@ public final class CategoryReferenceResolver
         extends CustomReferenceResolver<CategoryDraft, CategoryDraftBuilder, CategorySyncOptions> {
     private final AssetReferenceResolver assetReferenceResolver;
     private final CategoryService categoryService;
-    private static final String FAILED_TO_RESOLVE_PARENT = "Failed to resolve parent reference on "
+    static final String FAILED_TO_RESOLVE_PARENT = "Failed to resolve parent reference on "
         + "CategoryDraft with key:'%s'. Reason: %s";
-    private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
+    static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
         + "CategoryDraft with key:'%s'.";
+    static final String PARENT_CATEGORY_DOES_NOT_EXIST = "Parent category with key '%s' doesn't exist.";
 
     /**
      * Takes a {@link CategorySyncOptions} instance, a {@link CategoryService} and {@link TypeService} to instantiate a
@@ -99,8 +100,14 @@ public final class CategoryReferenceResolver
     /**
      * Given a {@link CategoryDraftBuilder} this method attempts to resolve the parent category reference to return
      * a {@link CompletionStage} which contains a new instance of the draft builder with the resolved
-     * parent category reference. The key of the parent category is either taken from the expanded object or
-     * taken from the id field of the reference.
+     * parent category reference.
+     *
+     * <p>The method then tries to fetch the key of the parent category, optimistically from a
+     * cache. If the key is is not found, the resultant draft would remain exactly the same as the passed
+     * draft (without a parent category reference resolution).
+     *
+     * <p>Note: If the id field is set, then it is an evidence of resource existence on commercetools,
+     * so we can issue an update/create API request right away without reference resolution.
      *
      * @param draftBuilder  the category draft builder to read parent category key.
      * @return a {@link CompletionStage} that contains as a result the same {@code draftBuilder} category draft instance
@@ -109,13 +116,17 @@ public final class CategoryReferenceResolver
      */
     @Nonnull
     CompletionStage<CategoryDraftBuilder> resolveParentReference(@Nonnull final CategoryDraftBuilder draftBuilder) {
-        try {
-            return getParentCategoryKey(draftBuilder)
-                .map(parentCategoryKey -> fetchAndResolveParentReference(draftBuilder, parentCategoryKey))
-                .orElseGet(() -> completedFuture(draftBuilder));
-        } catch (ReferenceResolutionException referenceResolutionException) {
-            return exceptionallyCompletedFuture(referenceResolutionException);
+        final ResourceIdentifier<Category> parent = draftBuilder.getParent();
+        if (parent != null && parent.getId() == null) {
+            try {
+                return getParentCategoryKey(draftBuilder)
+                    .map(parentCategoryKey -> fetchAndResolveParentReference(draftBuilder, parentCategoryKey))
+                    .orElseGet(() -> completedFuture(draftBuilder));
+            } catch (ReferenceResolutionException referenceResolutionException) {
+                return exceptionallyCompletedFuture(referenceResolutionException);
+            }
         }
+        return completedFuture(draftBuilder);
     }
 
     @Nonnull
@@ -179,11 +190,17 @@ public final class CategoryReferenceResolver
     private CompletionStage<CategoryDraftBuilder> fetchAndResolveParentReference(
         @Nonnull final CategoryDraftBuilder draftBuilder,
         @Nonnull final String parentCategoryKey) {
+
         return categoryService
             .fetchCachedCategoryId(parentCategoryKey)
-            .thenApply(resolvedParentIdOptional -> resolvedParentIdOptional
+            .thenCompose(resolvedParentIdOptional -> resolvedParentIdOptional
                 .map(resolvedParentId ->
-                    draftBuilder.parent(Category.referenceOfId(resolvedParentId).toResourceIdentifier()))
-                .orElse(draftBuilder));
+                    completedFuture(
+                        draftBuilder.parent(Category.referenceOfId(resolvedParentId).toResourceIdentifier())))
+                .orElseGet(() -> {
+                    final String errorMessage = format(FAILED_TO_RESOLVE_PARENT, draftBuilder.getKey(),
+                        format(PARENT_CATEGORY_DOES_NOT_EXIST, parentCategoryKey));
+                    return exceptionallyCompletedFuture(new ReferenceResolutionException(errorMessage));
+                }));
     }
 }

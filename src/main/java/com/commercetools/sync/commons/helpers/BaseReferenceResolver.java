@@ -52,7 +52,7 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
      * @return the Id value on the {@link ResourceIdentifier}
      * @throws ReferenceResolutionException if any of the validation checks fail.
      */
-    @Nonnull
+    @Nonnull // todo (ahmetoz) could be better to rename this to getKeyFromReference and type to Reference<T>
     protected static String getIdFromResourceIdentifier(@Nonnull final ResourceIdentifier resourceIdentifier)
         throws ReferenceResolutionException {
 
