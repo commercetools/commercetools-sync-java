@@ -66,7 +66,22 @@ public final class CustomObjectCompositeId {
         return new CustomObjectCompositeId(customObject.getKey(), customObject.getContainer());
     }
 
-
+    /**
+     * Given a {@link String} and {@link String}, creates a {@link CustomObjectCompositeId} using the following fields from the
+     * supplied attributes.
+     * <ol>
+     * <li>{@link CustomObjectCompositeId#key}: key of {@link CustomObject#getKey()} </li>
+     * <li>{@link CustomObjectCompositeId#container}: container of {@link CustomObject#getContainer()}</li>
+     * </ol>
+     *
+     * @param key key of CustomerObject to build composite Id.
+     * @param container container of CustomerObject to build composite Id.
+     * @return a composite id comprised of the fields of the supplied {@link CustomObject}.
+     */
+    @Nonnull
+    public static CustomObjectCompositeId of(@Nonnull final String key, @Nonnull final String container) {
+        return new CustomObjectCompositeId(key, container);
+    }
 
     public String getKey() {
         return this.key;
