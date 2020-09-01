@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createCustomFieldsJsonMap;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createTypeIfNotAlreadyExisting;
+import static io.sphere.sdk.models.ResourceIdentifier.ofId;
 import static io.sphere.sdk.models.ResourceIdentifier.ofKey;
 import static io.sphere.sdk.utils.CompletableFutureUtils.listOfFuturesToFutureOfList;
 import static java.lang.String.format;

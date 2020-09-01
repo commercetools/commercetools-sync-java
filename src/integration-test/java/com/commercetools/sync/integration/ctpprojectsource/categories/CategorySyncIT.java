@@ -4,7 +4,6 @@ import com.commercetools.sync.categories.CategorySync;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
-import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -18,7 +17,6 @@ import io.sphere.sdk.types.CustomFieldsDraft;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -26,7 +24,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 
 import static com.commercetools.sync.categories.utils.CategoryReferenceReplacementUtils.buildCategoryQuery;
 import static com.commercetools.sync.categories.utils.CategoryReferenceReplacementUtils.mapToCategoryDrafts;
@@ -45,7 +42,6 @@ import static com.commercetools.sync.integration.commons.utils.ITUtils.createCus
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -114,7 +110,6 @@ class CategorySyncIT {
         final List<Category> categories = CTP_SOURCE_CLIENT.execute(buildCategoryQuery())
                                                            .toCompletableFuture().join().getResults();
 
-        // Put the keys in the reference ids to prepare for reference resolution
         final List<CategoryDraft> categoryDrafts = mapToCategoryDrafts(categories);
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
@@ -133,7 +128,6 @@ class CategorySyncIT {
         final List<Category> categories = CTP_SOURCE_CLIENT.execute(buildCategoryQuery())
                                                            .toCompletableFuture().join().getResults();
 
-        // Put the keys in the reference ids to prepare for reference resolution
         final List<CategoryDraft> categoryDrafts = mapToCategoryDrafts(categories);
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
@@ -143,50 +137,6 @@ class CategorySyncIT {
         assertThat(callBackExceptions).isEmpty();
         assertThat(callBackWarningResponses).isEmpty();
     }
-
-    @Disabled("TODO - GITHUB ISSUE#138: Test should be adjusted after reference resolution refactoring")
-    @Test
-    void syncDrafts_WithUpdatedCategoriesWithoutReferenceKeys_ShouldNotSyncCategories() {
-        createCategories(CTP_SOURCE_CLIENT, getCategoryDraftsWithPrefix(Locale.ENGLISH, "new",
-            null, 2));
-
-        final List<Category> categories = CTP_SOURCE_CLIENT.execute(buildCategoryQuery())
-                                                           .toCompletableFuture().join().getResults();
-
-        final List<CategoryDraft> categoryDrafts = categories.stream()
-                                                             .map(category -> CategoryDraftBuilder.of(category).build())
-                                                             .collect(toList());
-
-        final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
-
-        assertThat(syncStatistics).hasValues(2, 0, 0, 2, 0);
-        assertThat(callBackErrorResponses).hasSize(2);
-        final String key1 = categoryDrafts.get(0).getKey();
-        assertThat(callBackErrorResponses.get(0)).isEqualTo(format("Failed to process the CategoryDraft with"
-                + " key:'%s'. Reason: %s: Failed to resolve custom type reference on "
-                + "CategoryDraft with key:'%s'. "
-                + "Reason: Found a UUID in the id field. Expecting a key without a UUID value. If you want to allow"
-                + " UUID values for reference keys, please use the allowUuidKeys(true) option in the sync options.",
-            key1, ReferenceResolutionException.class.getCanonicalName(), key1));
-        final String key2 = categoryDrafts.get(1).getKey();
-        assertThat(callBackErrorResponses.get(1)).isEqualTo(format("Failed to process the CategoryDraft with"
-                + " key:'%s'. Reason: %s: Failed to resolve custom type reference on "
-                + "CategoryDraft with key:'%s'. Reason: "
-                + "Found a UUID in the id field. Expecting a key without a UUID value. If you want to allow UUID values"
-                + " for reference keys, please use the allowUuidKeys(true) option in the sync options.",
-            key2, ReferenceResolutionException.class.getCanonicalName(), key2));
-
-        assertThat(callBackExceptions).hasSize(2);
-        assertThat(callBackExceptions.get(0)).isInstanceOf(CompletionException.class);
-        assertThat(callBackExceptions.get(0).getCause()).isInstanceOf(ReferenceResolutionException.class);
-
-
-        assertThat(callBackExceptions.get(1)).isInstanceOf(CompletionException.class);
-        assertThat(callBackExceptions.get(1).getCause()).isInstanceOf(ReferenceResolutionException.class);
-
-        assertThat(callBackWarningResponses).isEmpty();
-    }
-
 
     @Test
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
@@ -211,7 +161,6 @@ class CategorySyncIT {
         final List<Category> categories = CTP_SOURCE_CLIENT.execute(buildCategoryQuery())
                                                            .toCompletableFuture().join().getResults();
 
-        // Put the keys in the reference ids to prepare for reference resolution
         final List<CategoryDraft> categoryDrafts = mapToCategoryDrafts(categories);
 
         // Make sure there is no hierarchical order
@@ -267,7 +216,6 @@ class CategorySyncIT {
         final List<Category> categories = CTP_SOURCE_CLIENT.execute(buildCategoryQuery())
                                                            .toCompletableFuture().join().getResults();
 
-        // Put the keys in the reference ids to prepare for reference resolution
         final List<CategoryDraft> categoryDrafts = mapToCategoryDrafts(categories);
         Collections.shuffle(categoryDrafts);
 
@@ -310,7 +258,6 @@ class CategorySyncIT {
         final List<Category> categories = CTP_SOURCE_CLIENT.execute(buildCategoryQuery())
                                                            .toCompletableFuture().join().getResults();
 
-        // Put the keys in the reference ids to prepare for reference resolution
         final List<CategoryDraft> categoryDrafts = mapToCategoryDrafts(categories);
         Collections.shuffle(categoryDrafts);
 
@@ -377,7 +324,6 @@ class CategorySyncIT {
             .execute(buildCategoryQuery().withSort(sorting -> sorting.createdAt().sort().asc()))
             .toCompletableFuture().join().getResults();
 
-        // Put the keys in the reference ids to prepare for reference resolution
         final List<CategoryDraft> categoryDrafts = mapToCategoryDrafts(categories);
 
         // To simulate the new parent coming in a later draft
@@ -432,7 +378,6 @@ class CategorySyncIT {
         final List<Category> categories = CTP_SOURCE_CLIENT.execute(buildCategoryQuery())
                                                            .toCompletableFuture().join().getResults();
 
-        // Put the keys in the reference ids to prepare for reference resolution
         final List<CategoryDraft> categoryDrafts = mapToCategoryDrafts(categories);
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();

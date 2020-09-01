@@ -4,7 +4,6 @@ import com.commercetools.sync.cartdiscounts.CartDiscountSync;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
 import com.commercetools.sync.cartdiscounts.helpers.CartDiscountSyncStatistics;
-import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -29,7 +28,6 @@ import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
@@ -272,67 +270,6 @@ class CartDiscountSyncIT {
             .isEqualTo("Summary: 1 cart discounts were processed in total"
                 + " (0 created, 1 updated and 0 failed to sync).");
         assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 1, 0);
-    }
-
-    @Test
-    @Disabled("todo (ahmetoz): could not find why the test was failing before.")
-    void sync_WithUpdatedCartDiscount_WithNewCustomTypeWithWrongResIdentifier_ShouldFailToResolveReference() {
-        // preparation
-        final Type newCustomType =
-            createCartDiscountCustomType("new-type", Locale.ENGLISH, "new-type", CTP_TARGET_CLIENT);
-
-        final CartDiscountDraft newCartDiscountDraftWithExistingKey =
-            CartDiscountDraftBuilder.of(CART_DISCOUNT_DRAFT_1)
-                                    .custom(CustomFieldsDraft.ofTypeKeyAndJson(newCustomType.getKey(), emptyMap()))
-                                    .build();
-
-        final List<String> errorMessages = new ArrayList<>();
-        final List<Throwable> exceptions = new ArrayList<>();
-        final List<UpdateAction<CartDiscount>> updateActionsList = new ArrayList<>();
-
-        final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
-            .of(CTP_TARGET_CLIENT)
-            .errorCallback((exception, oldResource, newResource, actions) -> {
-                errorMessages.add(exception.getMessage());
-                exceptions.add(exception);
-            })
-            .beforeUpdateCallback((updateActions, newCartDiscount, oldCartDiscount) -> {
-                updateActionsList.addAll(updateActions);
-                return updateActions;
-            })
-            .build();
-
-        final CartDiscountSync cartDiscountSync = new CartDiscountSync(cartDiscountSyncOptions);
-
-        // test
-        final CartDiscountSyncStatistics cartDiscountSyncStatistics = cartDiscountSync
-            .sync(singletonList(newCartDiscountDraftWithExistingKey))
-            .toCompletableFuture()
-            .join();
-
-        //assertions
-        assertThat(errorMessages).containsExactly(
-            "Failed to process the CartDiscountDraft with key:'key_1'. Reason: "
-                + ReferenceResolutionException.class.getCanonicalName() + ": "
-                + "Failed to resolve custom type reference on CartDiscountDraft with key:'key_1'. Reason: "
-                + "The value of the 'id' field of the Resource Identifier/Reference is blank (null/empty).");
-        assertThat(exceptions)
-            .hasSize(1)
-            .hasOnlyOneElementSatisfying(exception -> {
-                assertThat(exception).hasCauseExactlyInstanceOf(CompletionException.class);
-                assertThat(exception.getMessage())
-                    .contains("Failed to resolve custom type reference on CartDiscountDraft with key:'key_1'");
-                assertThat(exception.getCause()).hasCauseExactlyInstanceOf(ReferenceResolutionException.class);
-                assertThat(exception.getCause().getCause().getMessage()).isEqualTo(
-                    "Failed to resolve custom type reference on CartDiscountDraft with key:'key_1'. Reason: "
-                    +   "The value of the 'id' field of the Resource Identifier/Reference is blank (null/empty).");
-            });
-        assertThat(updateActionsList).isEmpty();
-        assertThat(cartDiscountSyncStatistics
-            .getReportMessage())
-            .isEqualTo("Summary: 1 cart discounts were processed in total"
-                + " (0 created, 0 updated and 1 failed to sync).");
-        assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
     }
 
     @Test
