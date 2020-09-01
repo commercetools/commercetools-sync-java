@@ -64,6 +64,7 @@ public final class InventoryReferenceReplacementUtils {
     @SuppressWarnings("ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
     static ResourceIdentifier<Channel> mapToChannelResourceIdentifier(@Nonnull final InventoryEntry inventoryEntry) {
 
+        // todo (ahmet) consider refactoring getResourceIdentifierWithKey later.
         final Reference<Channel> inventoryEntrySupplyChannel = inventoryEntry.getSupplyChannel();
         return getResourceIdentifierWithKey(inventoryEntrySupplyChannel,
             () -> ResourceIdentifier.ofKey(inventoryEntrySupplyChannel.getObj().getKey()));
