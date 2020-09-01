@@ -53,7 +53,7 @@ import static com.commercetools.sync.integration.inventories.utils.InventoryITUt
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.getInventoryEntryBySkuAndSupplyChannel;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.populateSourceProject;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.populateTargetProject;
-import static com.commercetools.sync.inventories.utils.InventoryReferenceReplacementUtils.mapToInventoryEntryDrafts;
+import static com.commercetools.sync.inventories.utils.InventoryReferenceResolutionUtils.mapToInventoryEntryDrafts;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;

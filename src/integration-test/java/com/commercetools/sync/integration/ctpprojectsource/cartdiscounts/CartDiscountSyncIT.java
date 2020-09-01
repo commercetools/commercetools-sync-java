@@ -29,8 +29,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.cartdiscounts.utils.CartDiscountReferenceReplacementUtils.buildCartDiscountQuery;
-import static com.commercetools.sync.cartdiscounts.utils.CartDiscountReferenceReplacementUtils.mapToCartDiscountDrafts;
+import static com.commercetools.sync.cartdiscounts.utils.CartDiscountReferenceResolutionUtils.buildCartDiscountQuery;
+import static com.commercetools.sync.cartdiscounts.utils.CartDiscountReferenceResolutionUtils.mapToCartDiscountDrafts;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.createCartDiscountCustomType;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.deleteCartDiscountsFromTargetAndSource;

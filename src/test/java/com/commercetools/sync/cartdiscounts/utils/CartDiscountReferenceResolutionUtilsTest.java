@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class CartDiscountReferenceReplacementUtilsTest {
+class CartDiscountReferenceResolutionUtilsTest {
 
     @Test
     void mapToCartDiscountDrafts_WithExpandedReferences_ShouldReturnResourceIdentifiersWithKeys() {
@@ -37,7 +37,7 @@ class CartDiscountReferenceReplacementUtilsTest {
         }
 
         final List<CartDiscountDraft> referenceReplacedDrafts =
-            CartDiscountReferenceReplacementUtils.mapToCartDiscountDrafts(mockCartDiscounts);
+            CartDiscountReferenceResolutionUtils.mapToCartDiscountDrafts(mockCartDiscounts);
 
 
         referenceReplacedDrafts.forEach(draft -> {
@@ -64,7 +64,7 @@ class CartDiscountReferenceReplacementUtilsTest {
         }
 
         final List<CartDiscountDraft> referenceReplacedDrafts =
-            CartDiscountReferenceReplacementUtils.mapToCartDiscountDrafts(mockCartDiscounts);
+            CartDiscountReferenceResolutionUtils.mapToCartDiscountDrafts(mockCartDiscounts);
 
 
         referenceReplacedDrafts.forEach(draft -> {
@@ -75,7 +75,7 @@ class CartDiscountReferenceReplacementUtilsTest {
 
     @Test
     void buildCartDiscountQuery_Always_ShouldReturnQueryWithAllNeededReferencesExpanded() {
-        final CartDiscountQuery cartDiscountQuery = CartDiscountReferenceReplacementUtils.buildCartDiscountQuery();
+        final CartDiscountQuery cartDiscountQuery = CartDiscountReferenceResolutionUtils.buildCartDiscountQuery();
         assertThat(cartDiscountQuery.expansionPaths()).containsExactly(ExpansionPath.of("custom.type"));
     }
 }

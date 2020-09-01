@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
  * Util class which provides utilities that can be used when syncing resources from a source commercetools project
  * to a target one.
  */
-public final class CustomTypeReferenceReplacementUtils {
+public final class CustomTypeReferenceResolutionUtils {
     /**
      * Given a resource of type {@code T} that extends {@link Custom} (i.e. it has {@link CustomFields}, this method
      * checks if the custom fields are existing (not null) and they are reference expanded. If they are then
@@ -40,6 +40,6 @@ public final class CustomTypeReferenceReplacementUtils {
         return null;
     }
 
-    private CustomTypeReferenceReplacementUtils() {
+    private CustomTypeReferenceResolutionUtils() {
     }
 }

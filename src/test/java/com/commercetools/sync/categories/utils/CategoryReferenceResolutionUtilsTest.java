@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class CategoryReferenceReplacementUtilsTest {
+class CategoryReferenceResolutionUtilsTest {
 
     @Test
     void mapToCategoryDrafts_WithAllExpandedCategoryReferences_ShouldReturnReferencesWithKeys() {
@@ -65,7 +65,7 @@ class CategoryReferenceReplacementUtilsTest {
             assertThat(category.getCustom().getType().getId()).isEqualTo(mockCustomType.getId());
         }
         final List<CategoryDraft> referenceReplacedDrafts =
-            CategoryReferenceReplacementUtils.mapToCategoryDrafts(mockCategories);
+            CategoryReferenceResolutionUtils.mapToCategoryDrafts(mockCategories);
 
         for (int i = 0; i < referenceReplacedDrafts.size(); i++) {
             assertThat(referenceReplacedDrafts.get(i).getParent().getKey()).isEqualTo("parentKey" + i);
@@ -116,7 +116,7 @@ class CategoryReferenceReplacementUtilsTest {
             assertThat(category.getCustom().getType().getId()).isEqualTo(customTypeId);
         }
         final List<CategoryDraft> referenceReplacedDrafts =
-            CategoryReferenceReplacementUtils.mapToCategoryDrafts(mockCategories);
+            CategoryReferenceResolutionUtils.mapToCategoryDrafts(mockCategories);
 
         for (CategoryDraft referenceReplacedDraft : referenceReplacedDrafts) {
             assertThat(referenceReplacedDraft.getParent().getId()).isEqualTo(parentId);
@@ -141,7 +141,7 @@ class CategoryReferenceReplacementUtilsTest {
             mockCategories.add(mockCategory);
         }
         final List<CategoryDraft> referenceReplacedDrafts =
-            CategoryReferenceReplacementUtils.mapToCategoryDrafts(mockCategories);
+            CategoryReferenceResolutionUtils.mapToCategoryDrafts(mockCategories);
         for (CategoryDraft referenceReplacedDraft : referenceReplacedDrafts) {
             assertThat(referenceReplacedDraft.getParent()).isNull();
             assertThat(referenceReplacedDraft.getCustom()).isNull();
@@ -151,7 +151,7 @@ class CategoryReferenceReplacementUtilsTest {
 
     @Test
     void buildCategoryQuery_Always_ShouldReturnQueryWithAllNeededReferencesExpanded() {
-        final CategoryQuery categoryQuery = CategoryReferenceReplacementUtils.buildCategoryQuery();
+        final CategoryQuery categoryQuery = CategoryReferenceResolutionUtils.buildCategoryQuery();
         assertThat(categoryQuery.expansionPaths()).containsExactly(
             ExpansionPath.of("custom.type"),
             ExpansionPath.of("assets[*].custom.type"),

@@ -6,56 +6,84 @@ import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.categories.expansion.CategoryExpansionModel;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.expansion.ExpansionPath;
-import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.queries.QueryExecutionUtils;
-import io.sphere.sdk.types.CustomFieldsDraft;
+import io.sphere.sdk.types.Type;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.commons.utils.AssetReferenceReplacementUtils.mapToAssetDrafts;
-import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.mapToCustomFieldsDraft;
+import static com.commercetools.sync.commons.utils.AssetReferenceResolutionUtils.mapToAssetDrafts;
+import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft;
 
 /**
  * Util class which provides utilities that can be used when syncing resources from a source commercetools project
  * to a target one.
  */
-public final class CategoryReferenceReplacementUtils {
+public final class CategoryReferenceResolutionUtils {
 
-    private CategoryReferenceReplacementUtils() {
+    private CategoryReferenceResolutionUtils() {
     }
 
     /**
-     * Takes a list of Categories that are supposed to have their custom type and asset custom type
-     * references expanded in order to be able to fetch the keys and replace the resource identifier ids with the
-     * corresponding keys and then return a new list of category drafts with their resource identifiers containing keys
-     * instead of the ids. Note that if the references are not expanded for a category, the resource identifier ids will
-     * not be replaced with keys and will still have their ids in place.
+     * Returns an {@link List}&lt;{@link CategoryDraft}&gt; consisting of the results of applying the
+     * mapping from {@link Category} to {@link CategoryDraft} with considering reference resolution.
      *
-     * @param categories the categories to replace their resource identifier ids with keys
-     * @return a list of category drafts with keys set on the resource identifiers.
+     * <table summary="Mapping of Reference fields for the reference resolution">
+     *   <thead>
+     *     <tr>
+     *       <th>Reference field</th>
+     *       <th>from</th>
+     *       <th>to</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td>parent</td>
+     *       <td>{@link Reference}&lt;{@link Category}&gt;</td>
+     *       <td>{@link ResourceIdentifier}&lt;{@link Category}&gt;</td>
+     *     </tr>
+     *     <tr>
+     *        <td>custom.type</td>
+     *        <td>{@link Reference}&lt;{@link Type}&gt;</td>
+     *        <td>{@link ResourceIdentifier}&lt;{@link Type}&gt;</td>
+     *     </tr>
+     *     <tr>
+     *        <td>asset.custom.type</td>
+     *        <td>{@link Reference}&lt;{@link Type}&gt;</td>
+     *        <td>{@link ResourceIdentifier}&lt;{@link Type}&gt;</td>
+     *     </tr>
+     *   </tbody>
+     * </table>
+     *
+     * <p><b>Note:</b> The {@link Category} and {@link Type} references should be expanded with a key.
+     * Any reference that is not expanded will have its id in place and not replaced by the key will be
+     * considered as existing resources on the target commercetools project and
+     * the library will issues an update/create API request without reference resolution.
+     *
+     * @param categories the categories with expanded references.
+     * @return a {@link List} of {@link CategoryDraft} built from the
+     *         supplied {@link List} of {@link Category}.
      */
     @Nonnull
     public static List<CategoryDraft> mapToCategoryDrafts(@Nonnull final List<Category> categories) {
         return categories
             .stream()
-            .map(category -> {
-                final CustomFieldsDraft customTypeWithKeysInReference = mapToCustomFieldsDraft(category);
-                final List<AssetDraft> assetDraftsWithKeyInReference = mapToAssetDrafts(category.getAssets());
-                final ResourceIdentifier<Category> parentWithKeysInReference =
-                    mapToCategoryResourceIdentifier(category.getParent());
-                return CategoryDraftBuilder
-                    .of(category)
-                    .custom(customTypeWithKeysInReference)
-                    .assets(assetDraftsWithKeyInReference)
-                    .parent(parentWithKeysInReference)
-                    .build();
-            })
+            .map(CategoryReferenceResolutionUtils::mapToCategoryDraft)
             .collect(Collectors.toList());
+    }
+
+    @Nonnull
+    private static CategoryDraft mapToCategoryDraft(@Nonnull final Category category) {
+        return CategoryDraftBuilder
+            .of(category)
+            .custom(mapToCustomFieldsDraft(category))
+            .assets(mapToAssetDrafts(category.getAssets()))
+            .parent(mapToCategoryResourceIdentifier(category.getParent()))
+            .build();
     }
 
     @Nullable

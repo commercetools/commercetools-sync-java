@@ -9,12 +9,12 @@ import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
-import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.mapToCustomFieldsDraft;
+import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class CustomTypeReferenceReplacementUtilsTest {
+class CustomTypeReferenceResolutionUtilsTest {
 
     @Test
     void mapToCustomFieldsDraft_WithNullCustomType_ShouldReturnNullCustomFields() {

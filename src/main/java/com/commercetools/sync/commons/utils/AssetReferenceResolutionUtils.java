@@ -7,14 +7,14 @@ import io.sphere.sdk.models.AssetDraftBuilder;
 import javax.annotation.Nonnull;
 import java.util.List;
 
-import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.mapToCustomFieldsDraft;
+import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft;
 import static java.util.stream.Collectors.toList;
 
 /**
  * Util class which provides utilities that can be used when syncing resources from a source commercetools project
  * to a target one.
  */
-public final class AssetReferenceReplacementUtils {
+public final class AssetReferenceResolutionUtils {
 
     /**
      * Takes an asset list that is supposed to have all its assets' custom references expanded in order to be able to
@@ -34,6 +34,6 @@ public final class AssetReferenceReplacementUtils {
                      .collect(toList());
     }
 
-    private AssetReferenceReplacementUtils() {
+    private AssetReferenceResolutionUtils() {
     }
 }

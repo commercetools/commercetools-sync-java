@@ -11,12 +11,12 @@ import java.util.UUID;
 
 import static com.commercetools.sync.commons.MockUtils.getAssetMockWithCustomFields;
 import static com.commercetools.sync.commons.MockUtils.getTypeMock;
-import static com.commercetools.sync.commons.utils.AssetReferenceReplacementUtils.mapToAssetDrafts;
+import static com.commercetools.sync.commons.utils.AssetReferenceResolutionUtils.mapToAssetDrafts;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class AssetReferenceReplacementUtilsTest {
+class AssetReferenceResolutionUtilsTest {
 
     @Test
     void mapToAssetDrafts_WithAllExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
