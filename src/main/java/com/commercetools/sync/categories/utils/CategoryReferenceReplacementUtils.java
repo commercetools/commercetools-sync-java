@@ -60,9 +60,9 @@ public final class CategoryReferenceReplacementUtils {
 
     @Nullable
     private static ResourceIdentifier<Category> mapToCategoryResourceIdentifier(
-        @Nullable Reference<Category> parentReference) {
+        @Nullable final Reference<Category> parentReference) {
         if (parentReference != null) {
-            if(parentReference.getObj() != null) {
+            if (parentReference.getObj() != null) {
                 return ResourceIdentifier.ofKey(parentReference.getObj().getKey());
             }
             return ResourceIdentifier.ofId(parentReference.getId());
