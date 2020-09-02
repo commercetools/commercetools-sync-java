@@ -32,19 +32,17 @@ otherwise they won't be matched.
 
 2. Every category may have a reference to a `parent category` and a reference to the `Type` of its custom fields.
     
-    Types are matched by their `key`s. Therefore, in order for the sync to resolve the 
-    actual ids of the type reference, the `key` of the `Type` has to be supplied in the following way:
-    - Provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the
-    reference would return its `key`.
+   Types are matched by their `key`s. Therefore, in order for the sync to resolve the 
+    actual ids of the type reference, the `key` of the `Type` has to be supplied.
  
-   **Note**: When syncing from a source commercetools project, you can use this util which this library provides: 
-     [`replaceCategoriesReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/2.0.0/com/commercetools/sync/categories/utils/CategoryReferenceReplacementUtils.html#replaceCategoriesReferenceIdsWithKeys-java.util.List-)
-     that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
+   - **Note**: When syncing from a source commercetools project, you can use this util which this library provides: 
+     [`mapToCategoryDrafts`](https://commercetools.github.io/commercetools-sync-java/v/2.0.0/com/commercetools/sync/categories/utils/CategoryReferenceResolutionUtils.html#mapToCategoryDrafts-java.util.List-)
+     that maps from a `Category` to `CategoryDraft` in order to make them ready for reference resolution by the sync:
      ````java
-     // Puts the keys in the reference id fields to prepare for reference resolution
-     final List<CategoryDraft> categoryDrafts = replaceCategoriesReferenceIdsWithKeys(categories);
+     
+     final List<CategoryDraft> categoryDrafts = CategoryReferenceResolutionUtils.mapToCategoryDrafts(categories);
      ````
-      Example of its usage can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java#L130).
+      Example of its usage can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java).
       
       Parent categories are matched by their `reference key`. So by creating a category draft make sure, that the 
       reference to it's parent is created by a `key resource identifier` in the following way:
