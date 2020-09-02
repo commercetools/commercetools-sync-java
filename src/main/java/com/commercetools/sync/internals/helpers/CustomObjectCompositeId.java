@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 
+import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -89,6 +90,11 @@ public final class CustomObjectCompositeId {
 
     public String getContainer() {
         return this.container;
+    }
+
+    @Override
+    public String toString() {
+        return format("{key='%s', container='%s'}", key, container);
     }
 
     @Override
