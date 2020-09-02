@@ -47,8 +47,9 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     private final TaxCategoryService taxCategoryService;
     private final StateService stateService;
 
-    private static final String FAILED_TO_RESOLVE_REFERENCE = "Failed to resolve '%s' resource identifier on "
+    public static final String FAILED_TO_RESOLVE_REFERENCE = "Failed to resolve '%s' resource identifier on "
         + "ProductDraft with key:'%s'. Reason: %s";
+    public static final String PRODUCT_TYPE_DOES_NOT_EXIST = "Product type with key '%s' doesn't exist.";
 
     /**
      * Takes a {@link ProductSyncOptions} instance, a {@link ProductTypeService}, a {@link CategoryService}, a
@@ -143,15 +144,50 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     @Nonnull
     public CompletionStage<ProductDraftBuilder> resolveProductTypeReference(
         @Nonnull final ProductDraftBuilder draftBuilder) {
-        try {
-            return resolveResourceIdentifier(draftBuilder, draftBuilder.getProductType(),
-                productTypeService::fetchCachedProductTypeId, ResourceIdentifier::ofId,
-                ProductDraftBuilder::productType);
-        } catch (ReferenceResolutionException referenceResolutionException) {
-            return exceptionallyCompletedFuture(new ReferenceResolutionException(
-                format(FAILED_TO_RESOLVE_REFERENCE, ProductType.referenceTypeId(), draftBuilder.getKey(),
-                    referenceResolutionException.getMessage())));
+
+        final ResourceIdentifier<ProductType> productTypeReference = draftBuilder.getProductType();
+        if (productTypeReference != null && productTypeReference.getId() == null) {
+            String productTypeKey;
+            try {
+                productTypeKey = getKeyFromResourceIdentifier(productTypeReference);
+            } catch (ReferenceResolutionException referenceResolutionException) {
+                return exceptionallyCompletedFuture(new ReferenceResolutionException(
+                    format(FAILED_TO_RESOLVE_REFERENCE, ProductType.referenceTypeId(), draftBuilder.getKey(),
+                        referenceResolutionException.getMessage())));
+            }
+
+            return fetchAndResolveProductTypeReference(draftBuilder, productTypeKey);
         }
+        return completedFuture(draftBuilder);
+    }
+
+    /**
+     * Given a {@link ProductDraftBuilder} and a {@code productTypeKey} this method fetches the actual id of the
+     * product type corresponding to this key, ideally from a cache. Then it sets this id on the product type reference
+     * id.
+     *
+     * @param draftBuilder   the product draft builder to accept resolved references values.
+     * @param productTypeKey the product type key of to resolve it's actual id on the draft.
+     * @return a {@link CompletionStage} that contains as a result the same {@code draftBuilder} product draft builder
+     *         instance with resolved product type reference or an exception.
+     */
+    @Nonnull
+    private CompletionStage<ProductDraftBuilder> fetchAndResolveProductTypeReference(
+        @Nonnull final ProductDraftBuilder draftBuilder,
+        @Nonnull final String productTypeKey) {
+
+        return productTypeService
+            .fetchCachedProductTypeId(productTypeKey)
+            .thenCompose(resolvedProductTypeIdOptional -> resolvedProductTypeIdOptional
+                .map(resolvedProductTypeId ->
+                    completedFuture(draftBuilder.productType(
+                        ProductType.referenceOfId(resolvedProductTypeId).toResourceIdentifier())))
+                .orElseGet(() -> {
+                    final String errorMessage = format(PRODUCT_TYPE_DOES_NOT_EXIST, productTypeKey);
+                    return exceptionallyCompletedFuture(new ReferenceResolutionException(
+                        format(FAILED_TO_RESOLVE_REFERENCE, ProductType.referenceTypeId(), draftBuilder.getKey(),
+                            errorMessage)));
+                }));
     }
 
     /**

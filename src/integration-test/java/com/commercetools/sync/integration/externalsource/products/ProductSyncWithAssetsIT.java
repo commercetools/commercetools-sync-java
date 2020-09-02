@@ -16,6 +16,7 @@ import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.AssetDraft;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
@@ -155,7 +156,7 @@ class ProductSyncWithAssetsIT {
             singletonList(createAssetDraftWithKey("4", ofEnglish("4"), ASSETS_CUSTOM_TYPE_KEY));
 
         final ProductDraft productDraft = ProductDraftBuilder
-            .of(referenceOfId(productType.getKey()), ofEnglish("draftName"), ofEnglish("slug"),
+            .of(ResourceIdentifier.ofKey(productType.getKey()), ofEnglish("draftName"), ofEnglish("slug"),
                 createVariantDraft("masterVariant", assetDrafts, null))
             .key("draftKey")
             .build();
@@ -185,7 +186,7 @@ class ProductSyncWithAssetsIT {
             createAssetDraftWithKey("4", ofEnglish("duplicate asset"), ASSETS_CUSTOM_TYPE_KEY));
 
         final ProductDraft productDraft = ProductDraftBuilder
-            .of(referenceOfId(productType.getKey()), ofEnglish("draftName"), ofEnglish("slug"),
+            .of(ResourceIdentifier.ofKey(productType.getKey()), ofEnglish("draftName"), ofEnglish("slug"),
                 createVariantDraft("masterVariant", assetDrafts, null))
             .key("draftKey")
             .build();

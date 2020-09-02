@@ -15,6 +15,7 @@ import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifiable;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Price;
@@ -112,7 +113,7 @@ public class ProductSyncMockUtils {
      *         JSON resource and the product type.
      */
     public static ProductDraftBuilder createProductDraftBuilder(@Nonnull final String jsonResourcePath,
-                                                                @Nonnull final Reference<ProductType>
+                                                                @Nonnull final ResourceIdentifiable<ProductType>
                                                                     productTypeReference) {
         final Product productFromJson = readObjectFromResource(jsonResourcePath, Product.class);
         final ProductData productData = productFromJson.getMasterData().getStaged();
@@ -183,7 +184,7 @@ public class ProductSyncMockUtils {
     }
 
     public static ProductDraft createProductDraft(@Nonnull final String jsonResourcePath,
-                                                  @Nonnull final Reference<ProductType> productTypeReference,
+                                                  @Nonnull final ResourceIdentifiable<ProductType> productTypeReference,
                                                   @Nullable final Reference<TaxCategory> taxCategoryReference,
                                                   @Nullable final Reference<State> stateReference,
                                                   @Nonnull final Set<ResourceIdentifier<Category>>
@@ -471,9 +472,17 @@ public class ProductSyncMockUtils {
         return reference;
     }
 
-    @Nonnull
+    @Nonnull // todo (ahmetoz) ensure this is needed or remove.
     public static ProductDraftBuilder getBuilderWithProductTypeRefId(@Nonnull final String refId) {
         return ProductDraftBuilder.of(ProductType.referenceOfId(refId),
+            LocalizedString.ofEnglish("testName"),
+            LocalizedString.ofEnglish("testSlug"),
+            (ProductVariantDraft) null);
+    }
+
+    @Nonnull
+    public static ProductDraftBuilder getBuilderWithProductTypeRefKey(@Nullable final String refKey) {
+        return ProductDraftBuilder.of(ResourceIdentifier.ofKey(refKey),
             LocalizedString.ofEnglish("testName"),
             LocalizedString.ofEnglish("testSlug"),
             (ProductVariantDraft) null);

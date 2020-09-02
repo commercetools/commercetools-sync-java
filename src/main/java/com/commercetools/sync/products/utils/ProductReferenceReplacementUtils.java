@@ -59,8 +59,7 @@ public final class ProductReferenceReplacementUtils {
             .filter(Objects::nonNull)
             .map(product -> {
                 final ProductDraft productDraft = getDraftBuilderFromStagedProduct(product).build();
-                final ResourceIdentifier<ProductType> productTypeReferenceWithKey =
-                    replaceProductTypeReferenceIdWithKey(product);
+
                 final ResourceIdentifier<TaxCategory> taxCategoryReferenceWithKey =
                     replaceTaxCategoryReferenceIdWithKey(product);
                 final Reference<State> stateReferenceWithKey = replaceProductStateReferenceIdWithKey(product);
@@ -78,7 +77,7 @@ public final class ProductReferenceReplacementUtils {
                 return ProductDraftBuilder.of(productDraft)
                                           .masterVariant(masterVariantDraftWithKeys)
                                           .variants(variantDraftsWithKeys)
-                                          .productType(productTypeReferenceWithKey)
+                                          .productType(mapToProductTypeResourceIdentifier(product))
                                           .categories(categoryResourceIdentifiers)
                                           .categoryOrderHints(categoryOrderHintsWithKeys)
                                           .taxCategory(taxCategoryReferenceWithKey)
@@ -121,24 +120,18 @@ public final class ProductReferenceReplacementUtils {
             .categoryOrderHints(productData.getCategoryOrderHints());
     }
 
-    /**
-     * Takes a product that is supposed to have its ProductType reference expanded in order to be able to fetch the key
-     * and replace the reference id with the corresponding key and then return a new {@link ProductType}
-     * {@link ResourceIdentifier} containing the key in the id field.
-     *
-     * <p><b>Note:</b> The productType reference should be expanded for the {@code product}, otherwise the reference
-     * id will not be replaced with key and will still have the id in place.
-     *
-     * @param product the product to replace its ProductType reference id with the key.
-     *
-     * @return a new {@link ProductType} {@link ResourceIdentifier} containing the key in the id field.
-     */
     @Nullable
-    @SuppressWarnings("ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
-    static ResourceIdentifier<ProductType> replaceProductTypeReferenceIdWithKey(@Nonnull final Product product) {
-        final Reference<ProductType> productType = product.getProductType();
-        return getResourceIdentifierWithKey(productType,
-            () -> ResourceIdentifier.ofId(productType.getObj().getKey()));
+    private static ResourceIdentifier<ProductType> mapToProductTypeResourceIdentifier(
+        @Nonnull final Product product) {
+
+        final Reference<ProductType> productTypeReference = product.getProductType();
+        if (productTypeReference != null) {
+            if (productTypeReference.getObj() != null) {
+                return ResourceIdentifier.ofKey(productTypeReference.getObj().getKey());
+            }
+            return ResourceIdentifier.ofId(productTypeReference.getId());
+        }
+        return null;
     }
 
     /**

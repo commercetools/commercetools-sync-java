@@ -113,9 +113,11 @@ class ProductReferenceReplacementUtilsTest {
             .replaceProductsReferenceIdsWithKeys(products);
 
         assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getProductType)
-                                                     .extracting(ResourceIdentifier::getId)
-                                                     .containsExactly(productType.getId(), productType.getKey(),
-                                                         productType.getKey());
+                                                     .asList()
+                                                     .containsExactly(
+                                                         ResourceIdentifier.ofId(productType.getId()),
+                                                         ResourceIdentifier.ofKey(productType.getKey()),
+                                                         ResourceIdentifier.ofKey(productType.getKey()));
 
         assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getTaxCategory)
                                                      .extracting(ResourceIdentifier::getId)
@@ -191,8 +193,10 @@ class ProductReferenceReplacementUtilsTest {
             .replaceProductsReferenceIdsWithKeys(products);
 
         assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getProductType)
-                                                     .extracting(ResourceIdentifier::getId)
-                                                     .containsExactly(productType.getId(), productType.getKey());
+                                                     .asList()
+                                                     .containsExactly(
+                                                         ResourceIdentifier.ofId(productType.getId()),
+                                                         ResourceIdentifier.ofKey(productType.getKey()));
 
         assertThat(productDraftsWithKeysOnReferences).flatExtracting(ProductDraft::getCategories)
                                                      .extracting(ResourceIdentifier::getId)
@@ -211,50 +215,6 @@ class ProductReferenceReplacementUtilsTest {
                                                      .extracting(PriceDraft::getChannel)
                                                      .extracting(ResourceIdentifier::getId)
                                                      .containsExactly(channel.getKey(), channel.getKey());
-    }
-
-    @Test
-    void replaceProductTypeReferenceIdWithKey_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
-        final String productTypeId = UUID.randomUUID().toString();
-        final Reference<ProductType> productTypeReference = ProductType.referenceOfId(productTypeId);
-        final Product product = mock(Product.class);
-        when(product.getProductType()).thenReturn(productTypeReference);
-
-        final ResourceIdentifier<ProductType> productTypeReferenceWithKey = ProductReferenceReplacementUtils
-            .replaceProductTypeReferenceIdWithKey(product);
-
-        assertThat(productTypeReferenceWithKey).isNotNull();
-        assertThat(productTypeReferenceWithKey.getId()).isEqualTo(productTypeId);
-    }
-
-    @Test
-    void replaceProductTypeReferenceIdWithKey_WithExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
-        final String productTypeKey = "productTypeKey";
-
-        final ProductType productType = getProductTypeMock(productTypeKey);
-
-        final Reference<ProductType> productTypeReference = Reference
-            .ofResourceTypeIdAndIdAndObj(ProductType.referenceTypeId(), productType.getId(), productType);
-
-        final Product product = mock(Product.class);
-        when(product.getProductType()).thenReturn(productTypeReference);
-
-        final ResourceIdentifier<ProductType> productTypeReferenceWithKey = ProductReferenceReplacementUtils
-            .replaceProductTypeReferenceIdWithKey(product);
-
-        assertThat(productTypeReferenceWithKey).isNotNull();
-        assertThat(productTypeReferenceWithKey.getId()).isEqualTo(productTypeKey);
-    }
-
-    @Test
-    void replaceProductTypeReferenceIdWithKey_WithNullReferences_ShouldReturnNull() {
-        final Product product = mock(Product.class);
-        when(product.getProductType()).thenReturn(null);
-
-        final ResourceIdentifier<ProductType> productTypeReferenceWithKey = ProductReferenceReplacementUtils
-            .replaceProductTypeReferenceIdWithKey(product);
-
-        assertThat(productTypeReferenceWithKey).isNull();
     }
 
     @Test
