@@ -185,7 +185,7 @@ public class ProductSyncMockUtils {
 
     public static ProductDraft createProductDraft(@Nonnull final String jsonResourcePath,
                                                   @Nonnull final ResourceIdentifiable<ProductType> productTypeReference,
-                                                  @Nullable final Reference<TaxCategory> taxCategoryReference,
+                                                  @Nullable final ResourceIdentifier<TaxCategory> taxCategoryReference,
                                                   @Nullable final Reference<State> stateReference,
                                                   @Nonnull final Set<ResourceIdentifier<Category>>
                                                       categoryResourceIdentifiers,

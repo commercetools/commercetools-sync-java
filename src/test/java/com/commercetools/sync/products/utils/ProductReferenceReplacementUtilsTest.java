@@ -120,9 +120,11 @@ class ProductReferenceReplacementUtilsTest {
                                                          ResourceIdentifier.ofKey(productType.getKey()));
 
         assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getTaxCategory)
-                                                     .extracting(ResourceIdentifier::getId)
-                                                     .containsExactly(taxCategory.getKey(), taxCategory.getId(),
-                                                         taxCategory.getKey());
+                                                     .asList()
+                                                     .containsExactly(
+                                                         ResourceIdentifier.ofKey(taxCategory.getKey()),
+                                                         ResourceIdentifier.ofId(taxCategory.getId()),
+                                                         ResourceIdentifier.ofKey(taxCategory.getKey()));
 
         assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getState)
                                                      .extracting(ResourceIdentifier::getId)
@@ -203,8 +205,10 @@ class ProductReferenceReplacementUtilsTest {
                                                      .containsExactly(category.getKey());
 
         assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getTaxCategory)
-                                                     .extracting(ResourceIdentifier::getId)
-                                                     .containsExactly(taxCategory.getKey(), taxCategory.getId());
+                                                     .asList()
+                                                     .containsExactly(
+                                                         ResourceIdentifier.ofKey(taxCategory.getKey()),
+                                                         ResourceIdentifier.ofId(taxCategory.getId()));
 
         assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getState)
                                                      .extracting(ResourceIdentifier::getId)
@@ -215,48 +219,6 @@ class ProductReferenceReplacementUtilsTest {
                                                      .extracting(PriceDraft::getChannel)
                                                      .extracting(ResourceIdentifier::getId)
                                                      .containsExactly(channel.getKey(), channel.getKey());
-    }
-
-    @Test
-    void replaceTaxCategoryReferenceIdWithKey_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
-        final String taxCategoryId = UUID.randomUUID().toString();
-        final Reference<TaxCategory> taxCategoryReference = TaxCategory.referenceOfId(taxCategoryId);
-        final Product product = mock(Product.class);
-        when(product.getTaxCategory()).thenReturn(taxCategoryReference);
-
-        final ResourceIdentifier<TaxCategory> taxCategoryReferenceWithKey = ProductReferenceReplacementUtils
-            .replaceTaxCategoryReferenceIdWithKey(product);
-
-        assertThat(taxCategoryReferenceWithKey).isNotNull();
-        assertThat(taxCategoryReferenceWithKey.getId()).isEqualTo(taxCategoryId);
-    }
-
-    @Test
-    void replaceTaxCategoryReferenceIdWithKey_WithExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
-        final String taxCategoryKey = "taxCategoryKey";
-        final TaxCategory taxCategory = getTaxCategoryMock(taxCategoryKey);
-        final Reference<TaxCategory> taxCategoryReference = Reference
-            .ofResourceTypeIdAndIdAndObj(TaxCategory.referenceTypeId(), taxCategory.getId(), taxCategory);
-
-        final Product product = mock(Product.class);
-        when(product.getTaxCategory()).thenReturn(taxCategoryReference);
-
-        final ResourceIdentifier<TaxCategory> taxCategoryReferenceWithKey = ProductReferenceReplacementUtils
-            .replaceTaxCategoryReferenceIdWithKey(product);
-
-        assertThat(taxCategoryReferenceWithKey).isNotNull();
-        assertThat(taxCategoryReferenceWithKey.getId()).isEqualTo(taxCategoryKey);
-    }
-
-    @Test
-    void replaceTaxCategoryReferenceIdWithKey_WithNullReference_ShouldReturnNull() {
-        final Product product = mock(Product.class);
-        when(product.getTaxCategory()).thenReturn(null);
-
-        final ResourceIdentifier<TaxCategory> taxCategoryReferenceWithKey = ProductReferenceReplacementUtils
-            .replaceTaxCategoryReferenceIdWithKey(product);
-
-        assertThat(taxCategoryReferenceWithKey).isNull();
     }
 
     @Test

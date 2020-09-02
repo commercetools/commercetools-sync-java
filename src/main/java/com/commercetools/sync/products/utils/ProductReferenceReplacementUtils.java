@@ -60,8 +60,6 @@ public final class ProductReferenceReplacementUtils {
             .map(product -> {
                 final ProductDraft productDraft = getDraftBuilderFromStagedProduct(product).build();
 
-                final ResourceIdentifier<TaxCategory> taxCategoryReferenceWithKey =
-                    replaceTaxCategoryReferenceIdWithKey(product);
                 final Reference<State> stateReferenceWithKey = replaceProductStateReferenceIdWithKey(product);
 
                 final CategoryReferencePair categoryReferencePair = replaceCategoryReferencesIdsWithKeys(product);
@@ -77,10 +75,10 @@ public final class ProductReferenceReplacementUtils {
                 return ProductDraftBuilder.of(productDraft)
                                           .masterVariant(masterVariantDraftWithKeys)
                                           .variants(variantDraftsWithKeys)
-                                          .productType(mapToProductTypeResourceIdentifier(product))
+                                          .productType(mapToProductTypeResourceIdentifier(product.getProductType()))
                                           .categories(categoryResourceIdentifiers)
                                           .categoryOrderHints(categoryOrderHintsWithKeys)
-                                          .taxCategory(taxCategoryReferenceWithKey)
+                                          .taxCategory(mapToTaxCategoryResourceIdentifier(product.getTaxCategory()))
                                           .state(stateReferenceWithKey)
                                           .build();
             })
@@ -120,11 +118,10 @@ public final class ProductReferenceReplacementUtils {
             .categoryOrderHints(productData.getCategoryOrderHints());
     }
 
-    @Nullable
+    @Nullable // todo (ahmetoz) could be refactored to avoid duplication
     private static ResourceIdentifier<ProductType> mapToProductTypeResourceIdentifier(
-        @Nonnull final Product product) {
+        @Nullable final Reference<ProductType> productTypeReference) {
 
-        final Reference<ProductType> productTypeReference = product.getProductType();
         if (productTypeReference != null) {
             if (productTypeReference.getObj() != null) {
                 return ResourceIdentifier.ofKey(productTypeReference.getObj().getKey());
@@ -134,25 +131,17 @@ public final class ProductReferenceReplacementUtils {
         return null;
     }
 
-    /**
-     * Takes a product that is supposed to have its TaxCategory reference expanded in order to be able to fetch the key
-     * and replace the reference id with the corresponding key and then return a new {@link TaxCategory}
-     * {@link ResourceIdentifier} containing the key in the id field.
-     *
-     * <p><b>Note:</b> The TaxCategory reference should be expanded for the {@code product}, otherwise the reference
-     * id will not be replaced with the key and will still have the id in place.
-     *
-     * @param product the product to replace its TaxCategory reference id with the key.
-     *
-     * @return a new {@link TaxCategory} {@link ResourceIdentifier} containing the key in the id field.
-     */
     @Nullable
-    @SuppressWarnings("ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
-    static ResourceIdentifier<TaxCategory> replaceTaxCategoryReferenceIdWithKey(@Nonnull final Product product) {
+    private static ResourceIdentifier<TaxCategory> mapToTaxCategoryResourceIdentifier(
+        @Nullable final Reference<TaxCategory> taxCategoryReference) {
 
-        final Reference<TaxCategory> productTaxCategory = product.getTaxCategory();
-        return getResourceIdentifierWithKey(productTaxCategory,
-            () -> ResourceIdentifier.ofId(productTaxCategory.getObj().getKey()));
+        if (taxCategoryReference != null) {
+            if (taxCategoryReference.getObj() != null) {
+                return ResourceIdentifier.ofKey(taxCategoryReference.getObj().getKey());
+            }
+            return ResourceIdentifier.ofId(taxCategoryReference.getId());
+        }
+        return null;
     }
 
     /**

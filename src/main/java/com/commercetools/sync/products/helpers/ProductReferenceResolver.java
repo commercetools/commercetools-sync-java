@@ -40,6 +40,7 @@ import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 
+//todo (ahmetoz) all javadocs needs to be refactored with the new requirements.
 public final class ProductReferenceResolver extends BaseReferenceResolver<ProductDraft, ProductSyncOptions> {
     private final ProductTypeService productTypeService;
     private final CategoryService categoryService;
@@ -50,6 +51,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     public static final String FAILED_TO_RESOLVE_REFERENCE = "Failed to resolve '%s' resource identifier on "
         + "ProductDraft with key:'%s'. Reason: %s";
     public static final String PRODUCT_TYPE_DOES_NOT_EXIST = "Product type with key '%s' doesn't exist.";
+    public static final String TAX_CATEGORY_DOES_NOT_EXIST = "TaxCategory with key '%s' doesn't exist.";
 
     /**
      * Takes a {@link ProductSyncOptions} instance, a {@link ProductTypeService}, a {@link CategoryService}, a
@@ -271,15 +273,50 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     @Nonnull
     public CompletionStage<ProductDraftBuilder> resolveTaxCategoryReference(
         @Nonnull final ProductDraftBuilder draftBuilder) {
-        try {
-            return resolveResourceIdentifier(draftBuilder, draftBuilder.getTaxCategory(),
-                taxCategoryService::fetchCachedTaxCategoryId, ResourceIdentifier::ofId,
-                ProductDraftBuilder::taxCategory);
-        } catch (ReferenceResolutionException referenceResolutionException) {
-            return exceptionallyCompletedFuture(new ReferenceResolutionException(
-                format(FAILED_TO_RESOLVE_REFERENCE, TaxCategory.referenceTypeId(), draftBuilder.getKey(),
-                    referenceResolutionException.getMessage())));
+        final ResourceIdentifier<TaxCategory> taxCategoryResourceIdentifier =
+            draftBuilder.getTaxCategory();
+        if (taxCategoryResourceIdentifier != null && taxCategoryResourceIdentifier.getId() == null) {
+            String taxCategoryKey;
+            try {
+                taxCategoryKey = getKeyFromResourceIdentifier(taxCategoryResourceIdentifier);
+            } catch (ReferenceResolutionException referenceResolutionException) {
+                return exceptionallyCompletedFuture(new ReferenceResolutionException(
+                    format(FAILED_TO_RESOLVE_REFERENCE, TaxCategory.referenceTypeId(), draftBuilder.getKey(),
+                        referenceResolutionException.getMessage())));
+            }
+
+            return fetchAndResolveTaxCategoryReference(draftBuilder, taxCategoryKey);
         }
+        return completedFuture(draftBuilder);
+    }
+
+    /**
+     * Given a {@link ProductDraftBuilder} and a {@code taxCategoryKey} this method fetches the actual id of the
+     * product type corresponding to this key, ideally from a cache. Then it sets this id on the product type reference
+     * id. // todo (ahmet) complete the docs.
+     *
+     * @param draftBuilder   the product draft builder to accept resolved references values.
+     * @param taxCategoryKey the tax category type key of to resolve it's actual id on the draft.
+     * @return a {@link CompletionStage} that contains as a result the same {@code draftBuilder} product draft builder
+     *         instance with resolved tax category type reference or an exception.
+     */
+    @Nonnull
+    private CompletionStage<ProductDraftBuilder> fetchAndResolveTaxCategoryReference(
+        @Nonnull final ProductDraftBuilder draftBuilder,
+        @Nonnull final String taxCategoryKey) {
+
+        return taxCategoryService
+            .fetchCachedTaxCategoryId(taxCategoryKey)
+            .thenCompose(resolvedTaxCategoryIdOptional -> resolvedTaxCategoryIdOptional
+                .map(resolvedTaxCategoryId ->
+                    completedFuture(draftBuilder.taxCategory(
+                        TaxCategory.referenceOfId(resolvedTaxCategoryId).toResourceIdentifier())))
+                .orElseGet(() -> {
+                    final String errorMessage = format(TAX_CATEGORY_DOES_NOT_EXIST, taxCategoryKey);
+                    return exceptionallyCompletedFuture(new ReferenceResolutionException(
+                        format(FAILED_TO_RESOLVE_REFERENCE, ProductType.referenceTypeId(), draftBuilder.getKey(),
+                            errorMessage)));
+                }));
     }
 
     /**
