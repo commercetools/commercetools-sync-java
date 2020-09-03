@@ -2,7 +2,7 @@ package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.customobjects.CustomObjectSyncOptions;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptionsBuilder;
-import com.commercetools.sync.internals.helpers.CustomObjectCompositeId;
+import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.client.BadRequestException;
@@ -10,7 +10,6 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
 //import io.sphere.sdk.customobjects.commands.CustomObjectUpsertCommand;
-import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import java.util.ArrayList;
@@ -107,9 +106,9 @@ class CustomObjectServiceImplTest {
         final String container1 = RandomStringUtils.random(15);
         final String container2 = RandomStringUtils.random(15);
 
-        final Set<CustomObjectCompositeId> customObjectCompositeIds = new HashSet<>();
-        customObjectCompositeIds.add(CustomObjectCompositeId.of(key1, container1));
-        customObjectCompositeIds.add(CustomObjectCompositeId.of(key2, container2));
+        final Set<CustomObjectCompositeIdentifier> customObjectCompositeIds = new HashSet<>();
+        customObjectCompositeIds.add(CustomObjectCompositeIdentifier.of(key1, container1));
+        customObjectCompositeIds.add(CustomObjectCompositeIdentifier.of(key2, container2));
 
         final CustomObject mock1 = mock(CustomObject.class);
         when(mock1.getId()).thenReturn(RandomStringUtils.random(15));
