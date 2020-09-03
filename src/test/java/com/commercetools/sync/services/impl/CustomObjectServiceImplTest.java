@@ -15,9 +15,12 @@ import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -25,7 +28,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 
-
+import static io.sphere.sdk.customobjects.CustomObjectUtils.getCustomObjectJavaTypeForValue;
+import static io.sphere.sdk.json.SphereJsonUtils.convertToJavaType;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
@@ -75,13 +79,13 @@ class CustomObjectServiceImplTest {
 
     @Test
     void fetchCachedCustomObjectId_WithKeyAndContainer_ShouldFetchCustomObject() {
-        final String key = RandomStringUtils.random(15);
-        final String container = RandomStringUtils.random(15);
-        final String id = RandomStringUtils.random(15);
+        final String key = RandomStringUtils.random(15, true, true);
+        final String container = RandomStringUtils.random(15, true, true);
+        final String id = RandomStringUtils.random(15, true, true);
 
         final CustomObject mock = mock(CustomObject.class);
         when(mock.getId()).thenReturn(id);
-        when(mock.getContainer()).thenReturn(id);
+        when(mock.getContainer()).thenReturn(container);
         when(mock.getKey()).thenReturn(key);
 
         final CustomObjectPagedQueryResult result = mock(CustomObjectPagedQueryResult.class);
@@ -99,17 +103,17 @@ class CustomObjectServiceImplTest {
 
     }
 
-/*
-    @Test
-    void fetchMatchingCustomObjectsByKeysAndContainers_WithKeySet_ShouldFetchCustomObjects() {
-        final String key1 = RandomStringUtils.random(15);
-        final String key2 = RandomStringUtils.random(15);
-        final String container1 = RandomStringUtils.random(15);
-        final String container2 = RandomStringUtils.random(15);
 
-        final Set<CustomObjectCompositeIdentifier> customObjectCompositeIds = new HashSet<>();
-        customObjectCompositeIds.add(CustomObjectCompositeIdentifier.of(key1, container1));
-        customObjectCompositeIds.add(CustomObjectCompositeIdentifier.of(key2, container2));
+    @Test
+    void fetchMatchingCustomObjectsByCustomObjectCompositeIdentifier_WithKeySet_ShouldFetchCustomObjects() {
+        final String key1 = RandomStringUtils.random(15, true, true);
+        final String key2 = RandomStringUtils.random(15, true, true);
+        final String container1 = RandomStringUtils.random(15, true, true);
+        final String container2 = RandomStringUtils.random(15, true, true);
+
+        final Set<CustomObjectCompositeIdentifier> customObjectCompositeIdentifiers = new HashSet<>();
+        customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(key1, container1));
+        customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(key2, container2));
 
         final CustomObject mock1 = mock(CustomObject.class);
         when(mock1.getId()).thenReturn(RandomStringUtils.random(15));
@@ -128,12 +132,12 @@ class CustomObjectServiceImplTest {
 
 
 
-        final Set<CustomObject> customObjects = service
-            .fetchMatchingCustomObjectsByKeysAndContainers(customObjectCompositeIds)
+        final Set<CustomObject<JsonNode>> customObjects = service
+            .fetchMatchingCustomObjectByCompositeIdentifiers(customObjectCompositeIdentifiers)
             .toCompletableFuture().join();
 
-        List<CustomObjectCompositeId> customObjectCompositeIdlist =
-            new ArrayList<CustomObjectCompositeId>(customObjectCompositeIds);
+        List<CustomObjectCompositeIdentifier> customObjectCompositeIdlist =
+            new ArrayList<CustomObjectCompositeIdentifier>(customObjectCompositeIdentifiers);
 
         assertAll(
             () -> assertThat(customObjects).contains(mock1, mock2),
@@ -147,7 +151,7 @@ class CustomObjectServiceImplTest {
 
 
     }
-*/
+
     @Test
     void fetchCustomObject_WithKeyAndContainer_ShouldFetchCustomObject() {
         final CustomObject mock = mock(CustomObject.class);
@@ -209,6 +213,7 @@ class CustomObjectServiceImplTest {
         final CustomObjectDraft<JsonNode> draftMock = mock(CustomObjectDraft.class);
         when(draftMock.getKey()).thenReturn(customObjectKey);
         when(draftMock.getContainer()).thenReturn(customObjectContainer);
+        when(draftMock.getJavaType()).thenReturn(getCustomObjectJavaTypeForValue(convertToJavaType(JsonNode.class)));
 
         final Optional<CustomObject<JsonNode>> customObjectOptional =
             service.upsertCustomObject(draftMock).toCompletableFuture().join();
@@ -227,6 +232,7 @@ class CustomObjectServiceImplTest {
     @Test
     void createCustomObject_WithDraftHasNoKey_ShouldNotCreateCustomObject() {
         final CustomObjectDraft<JsonNode> customObjectDraft = mock(CustomObjectDraft.class);
+        when(customObjectDraft.getJavaType()).thenReturn(getCustomObjectJavaTypeForValue(convertToJavaType(JsonNode.class)));
 
          final Optional<CustomObject<JsonNode>> customObjectOptional =
             service.upsertCustomObject(customObjectDraft).toCompletableFuture().join();
