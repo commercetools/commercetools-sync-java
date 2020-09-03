@@ -1,7 +1,9 @@
 package com.commercetools.sync.customobjects.helpers;
 
+import io.netty.util.internal.StringUtil;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
@@ -86,7 +88,11 @@ public final class CustomObjectCompositeIdentifier {
 
     @Override
     public String toString() {
-        return format("{key='%s', container='%s'}", key, container);
+        if (StringUtils.isEmpty(key) && StringUtils.isEmpty(container)) {
+            return null;
+        } else {
+            return format("{key='%s', container='%s'}", key, container);
+        }
     }
 
     @Override
