@@ -16,11 +16,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
+/**
+ * Implementation of CustomObjectService interface.
+ */
 
-// todo: extend from an interface and document javadocs.
-// write integration and unit tests.
-// ensure the keyToId is correct usage.
-// for cache id we need to use combination of container and key.
 public class CustomObjectServiceImpl
     extends BaseService<CustomObjectDraft<JsonNode>,
     CustomObject<JsonNode>,
@@ -36,8 +35,15 @@ public class CustomObjectServiceImpl
     @Nonnull
     public CompletionStage<Optional<String>> fetchCachedCustomObjectId(
             @Nonnull final CustomObjectCompositeIdentifier identifier) {
-        // TODO
-      return null;
+
+        String container = identifier.getContainer();
+        String key = identifier.getKey();
+
+        return fetchCachedResourceId(identifier.toString(),
+                draft -> CustomObjectCompositeIdentifier.of(draft).toString(),
+                () -> CustomObjectQuery.ofJsonNode()
+                        .withPredicates(q -> q.container().is(container).and(q.key().is(key)))
+        );
     }
 
     @Nonnull
@@ -46,8 +52,7 @@ public class CustomObjectServiceImpl
         // TODO
         return null;
     }
-
-
+    
     @Nonnull
     public CompletionStage<Optional<CustomObject<JsonNode>>> fetchCustomObject(
             @Nonnull final CustomObjectCompositeIdentifier identifier) {
@@ -65,8 +70,8 @@ public class CustomObjectServiceImpl
     public CompletionStage<Optional<CustomObject<JsonNode>>> upsertCustomObject(
         @Nonnull final CustomObjectDraft<JsonNode> customObjectDraft) {
 
-        // todo: for cache id we need to use combination of container and key.
-        // todo : Change CustomObjectDraft::getKey and make use of CustomObjectCompositeIdentifier.toString()
-        return createResource(customObjectDraft, (CustomObjectDraft::getKey), CustomObjectUpsertCommand::of);
+        return createResource(customObjectDraft,
+                draft -> CustomObjectCompositeIdentifier.of(draft).toString(),
+                CustomObjectUpsertCommand::of);
     }
 }
