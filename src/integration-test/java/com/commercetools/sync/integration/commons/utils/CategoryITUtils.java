@@ -286,7 +286,7 @@ public final class CategoryITUtils {
     public static Set<ResourceIdentifier<Category>> geResourceIdentifiersWithKeys(
         @Nonnull final List<Category> categories) {
         return categories.stream()
-                         .map(category -> ResourceIdentifier.<Category>ofId(category.getKey()))
+                         .map(category -> ResourceIdentifier.<Category>ofKey(category.getKey()))
                          .collect(Collectors.toSet());
     }
 

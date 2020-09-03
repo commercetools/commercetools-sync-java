@@ -23,7 +23,7 @@ import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithRandomProductTypeUuid;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithRandomProductType;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductTypeService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockStateService;
@@ -62,7 +62,7 @@ class TaxCategoryReferenceResolverTest {
 
     @Test
     void resolveTaxCategoryReference_WithKeys_ShouldResolveReference() {
-        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType()
             .taxCategory(ResourceIdentifier.ofKey("taxCategoryKey"));
 
         final ProductDraftBuilder resolvedDraft = referenceResolver.resolveTaxCategoryReference(productBuilder)
@@ -74,7 +74,7 @@ class TaxCategoryReferenceResolverTest {
 
     @Test
     void resolveTaxCategoryReference_WithNullTaxCategory_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType()
             .key("dummyKey");
 
         assertThat(referenceResolver.resolveTaxCategoryReference(productBuilder).toCompletableFuture())
@@ -84,7 +84,7 @@ class TaxCategoryReferenceResolverTest {
 
     @Test
     void resolveTaxCategoryReference_WithNonExistentTaxCategory_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType()
             .taxCategory(ResourceIdentifier.ofKey("nonExistentKey"))
             .key("dummyKey");
 
@@ -107,7 +107,7 @@ class TaxCategoryReferenceResolverTest {
 
     @Test
     void resolveTaxCategoryReference_WithNullIdOnTaxCategoryReference_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType()
             .taxCategory(ResourceIdentifier.ofKey(null))
             .key("dummyKey");
 
@@ -120,7 +120,7 @@ class TaxCategoryReferenceResolverTest {
 
     @Test
     void resolveTaxCategoryReference_WithEmptyIdOnTaxCategoryReference_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType()
             .taxCategory(ResourceIdentifier.ofKey(""))
             .key("dummyKey");
 
@@ -133,7 +133,7 @@ class TaxCategoryReferenceResolverTest {
 
     @Test
     void resolveTaxCategoryReference_WithExceptionOnTaxCategoryFetch_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType()
             .taxCategory(ResourceIdentifier.ofKey("taxCategoryKey"))
             .key("dummyKey");
 

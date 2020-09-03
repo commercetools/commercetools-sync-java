@@ -201,7 +201,7 @@ class ProductReferenceReplacementUtilsTest {
                                                          ResourceIdentifier.ofKey(productType.getKey()));
 
         assertThat(productDraftsWithKeysOnReferences).flatExtracting(ProductDraft::getCategories)
-                                                     .extracting(ResourceIdentifier::getId)
+                                                     .extracting(ResourceIdentifier::getKey)
                                                      .containsExactly(category.getKey());
 
         assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getTaxCategory)
@@ -290,7 +290,7 @@ class ProductReferenceReplacementUtilsTest {
         final Product product = getProductMock(categoryReferences, categoryOrderHints);
 
         final CategoryReferencePair categoryReferencePair =
-            ProductReferenceReplacementUtils.replaceCategoryReferencesIdsWithKeys(product);
+            ProductReferenceReplacementUtils.mapToCategoryReferencePair(product);
 
         assertThat(categoryReferencePair).isNotNull();
 
@@ -304,13 +304,13 @@ class ProductReferenceReplacementUtilsTest {
     }
 
     @Test
-    void replaceCategoryReferencesIdsWithKeys_WithNonExpandedReferencesAndNoCategoryOrderHints_ShouldNotReplaceIds() {
+    void mapToCategoryReferencePair_WithNonExpandedReferencesAndNoCategoryOrderHints_ShouldNotReplaceIds() {
         final String categoryId = UUID.randomUUID().toString();
         final Set<Reference<Category>> categoryReferences = singleton(Category.referenceOfId(categoryId));
         final Product product = getProductMock(categoryReferences, null);
 
         final CategoryReferencePair categoryReferencePair =
-            ProductReferenceReplacementUtils.replaceCategoryReferencesIdsWithKeys(product);
+            ProductReferenceReplacementUtils.mapToCategoryReferencePair(product);
 
         assertThat(categoryReferencePair).isNotNull();
 
@@ -324,7 +324,7 @@ class ProductReferenceReplacementUtilsTest {
     }
 
     @Test
-    void replaceCategoryReferencesIdsWithKeys_WithExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
+    void mapToCategoryReferencePair_WithExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
         final String categoryKey = "categoryKey";
         final Category category = getCategoryMock(categoryKey);
         final Reference<Category> categoryReference =
@@ -336,7 +336,7 @@ class ProductReferenceReplacementUtilsTest {
         final Product product = getProductMock(categoryReferences, categoryOrderHints);
 
         final CategoryReferencePair categoryReferencePair =
-            ProductReferenceReplacementUtils.replaceCategoryReferencesIdsWithKeys(product);
+            ProductReferenceReplacementUtils.mapToCategoryReferencePair(product);
 
         assertThat(categoryReferencePair).isNotNull();
 
@@ -345,7 +345,7 @@ class ProductReferenceReplacementUtilsTest {
         final CategoryOrderHints categoryOrderHintsWithKeys = categoryReferencePair.getCategoryOrderHints();
 
         assertThat(categoryReferencesWithKeys).containsExactlyInAnyOrderElementsOf(
-            singleton(ResourceIdentifier.ofId(categoryKey)));
+            singleton(ResourceIdentifier.ofKey(categoryKey)));
 
         assertThat(categoryOrderHintsWithKeys).isNotNull();
         assertThat(categoryOrderHintsWithKeys.getAsMap()).containsOnly(entry(categoryKey,
@@ -353,7 +353,7 @@ class ProductReferenceReplacementUtilsTest {
     }
 
     @Test
-    void replaceCategoryReferencesIdsWithKeys_WithExpandedReferencesAndNoCategoryOrderHints_ShouldReplaceIds() {
+    void mapToCategoryReferencePair_WithExpandedReferencesAndNoCategoryOrderHints_ShouldReplaceIds() {
         final String categoryKey = "categoryKey";
         final Category category = getCategoryMock(categoryKey);
         final Reference<Category> categoryReference =
@@ -361,7 +361,7 @@ class ProductReferenceReplacementUtilsTest {
         final Product product = getProductMock(singleton(categoryReference), null);
 
         final CategoryReferencePair categoryReferencePair =
-            ProductReferenceReplacementUtils.replaceCategoryReferencesIdsWithKeys(product);
+            ProductReferenceReplacementUtils.mapToCategoryReferencePair(product);
 
         assertThat(categoryReferencePair).isNotNull();
 
@@ -369,13 +369,13 @@ class ProductReferenceReplacementUtilsTest {
             categoryReferencePair.getCategoryResourceIdentifiers();
         final CategoryOrderHints categoryOrderHintsWithKeys = categoryReferencePair.getCategoryOrderHints();
 
-        assertThat(categoryReferencesWithKeys).extracting(ResourceIdentifier::getId)
+        assertThat(categoryReferencesWithKeys).extracting(ResourceIdentifier::getKey)
                                               .containsExactlyInAnyOrder(categoryKey);
         assertThat(categoryOrderHintsWithKeys).isNull();
     }
 
     @Test
-    void replaceCategoryReferencesIdsWithKeys_WithExpandedReferencesAndSomeCategoryOrderHintsSet_ShouldReplaceIds() {
+    void mapToCategoryReferencePair_WithExpandedReferencesAndSomeCategoryOrderHintsSet_ShouldReplaceIds() {
         final String categoryKey1 = "categoryKey1";
         final String categoryKey2 = "categoryKey2";
 
@@ -396,7 +396,7 @@ class ProductReferenceReplacementUtilsTest {
         final Product product = getProductMock(categoryReferences, categoryOrderHints);
 
         final CategoryReferencePair categoryReferencePair =
-            ProductReferenceReplacementUtils.replaceCategoryReferencesIdsWithKeys(product);
+            ProductReferenceReplacementUtils.mapToCategoryReferencePair(product);
 
         assertThat(categoryReferencePair).isNotNull();
 
@@ -405,7 +405,7 @@ class ProductReferenceReplacementUtilsTest {
         final CategoryOrderHints categoryOrderHintsWithKeys = categoryReferencePair.getCategoryOrderHints();
 
 
-        assertThat(categoryReferencesWithKeys).extracting(ResourceIdentifier::getId)
+        assertThat(categoryReferencesWithKeys).extracting(ResourceIdentifier::getKey)
                                               .containsExactlyInAnyOrder(categoryKey1, categoryKey2);
 
         assertThat(categoryOrderHintsWithKeys).isNotNull();
@@ -414,11 +414,11 @@ class ProductReferenceReplacementUtilsTest {
     }
 
     @Test
-    void replaceCategoryReferencesIdsWithKeys_WithNoReferences_ShouldNotReplaceIds() {
+    void mapToCategoryReferencePair_WithNoReferences_ShouldNotReplaceIds() {
         final Product product = getProductMock(Collections.emptySet(), null);
 
         final CategoryReferencePair categoryReferencePair =
-            ProductReferenceReplacementUtils.replaceCategoryReferencesIdsWithKeys(product);
+            ProductReferenceReplacementUtils.mapToCategoryReferencePair(product);
 
         assertThat(categoryReferencePair).isNotNull();
 

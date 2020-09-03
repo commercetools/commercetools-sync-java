@@ -472,13 +472,6 @@ public class ProductSyncMockUtils {
         return reference;
     }
 
-    @Nonnull // todo (ahmetoz) ensure this is needed or remove.
-    public static ProductDraftBuilder getBuilderWithProductTypeRefId(@Nonnull final String refId) {
-        return ProductDraftBuilder.of(ProductType.referenceOfId(refId),
-            LocalizedString.ofEnglish("testName"),
-            LocalizedString.ofEnglish("testSlug"),
-            (ProductVariantDraft) null);
-    }
 
     @Nonnull
     public static ProductDraftBuilder getBuilderWithProductTypeRefKey(@Nullable final String refKey) {
@@ -489,16 +482,7 @@ public class ProductSyncMockUtils {
     }
 
     @Nonnull
-    public static ProductDraftBuilder getBuilderWithRandomProductTypeUuid() {
-        return getBuilderWithProductTypeRefId(UUID.randomUUID().toString());
-    }
-
-    @Nonnull
-    public static ProductDraftBuilder getBuilderWithProductTypeRef(
-        @Nonnull final Reference<ProductType> reference) {
-        return ProductDraftBuilder.of(reference,
-            LocalizedString.ofEnglish("testName"),
-            LocalizedString.ofEnglish("testSlug"),
-            (ProductVariantDraft) null);
+    public static ProductDraftBuilder getBuilderWithRandomProductType() {
+        return getBuilderWithProductTypeRefKey("anyKey");
     }
 }

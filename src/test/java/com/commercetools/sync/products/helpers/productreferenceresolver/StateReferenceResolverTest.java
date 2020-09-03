@@ -23,7 +23,7 @@ import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithRandomProductTypeUuid;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithRandomProductType;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductTypeService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockStateService;
@@ -60,7 +60,7 @@ class StateReferenceResolverTest {
 
     @Test
     void resolveStateReference_WithKeys_ShouldResolveReference() {
-        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType()
             .state(State.referenceOfId("stateKey"));
 
         final ProductDraftBuilder resolvedDraft = referenceResolver.resolveStateReference(productBuilder)
@@ -72,7 +72,7 @@ class StateReferenceResolverTest {
 
     @Test
     void resolveStateReference_WithNullState_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType()
             .key("dummyKey");
 
         assertThat(referenceResolver.resolveStateReference(productBuilder).toCompletableFuture())
@@ -82,7 +82,7 @@ class StateReferenceResolverTest {
 
     @Test
     void resolveStateReference_WithNonExistentState_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType()
             .state(State.referenceOfId("nonExistentKey"))
             .key("dummyKey");
 
@@ -98,7 +98,7 @@ class StateReferenceResolverTest {
 
     @Test
     void resolveStateReference_WithNullIdOnStateReference_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType()
             .state(Reference.of(State.referenceTypeId(), (String)null))
             .key("dummyKey");
 
@@ -112,7 +112,7 @@ class StateReferenceResolverTest {
 
     @Test
     void resolveStateReference_WithEmptyIdOnStateReference_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType()
             .state(State.referenceOfId(""))
             .key("dummyKey");
 
@@ -126,7 +126,7 @@ class StateReferenceResolverTest {
 
     @Test
     void resolveStateReference_WithExceptionOnFetch_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductTypeUuid()
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType()
             .state(State.referenceOfId("stateKey"))
             .key("dummyKey");
 

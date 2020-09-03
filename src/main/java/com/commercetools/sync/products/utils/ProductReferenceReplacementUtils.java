@@ -32,7 +32,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.getReferenceWithKeyReplaced;
-import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -62,7 +61,7 @@ public final class ProductReferenceReplacementUtils {
 
                 final Reference<State> stateReferenceWithKey = replaceProductStateReferenceIdWithKey(product);
 
-                final CategoryReferencePair categoryReferencePair = replaceCategoryReferencesIdsWithKeys(product);
+                final CategoryReferencePair categoryReferencePair = mapToCategoryReferencePair(product);
                 final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers =
                     categoryReferencePair.getCategoryResourceIdentifiers();
                 final CategoryOrderHints categoryOrderHintsWithKeys = categoryReferencePair.getCategoryOrderHints();
@@ -181,18 +180,17 @@ public final class ProductReferenceReplacementUtils {
      *         replacing the ids and a {@link CategoryOrderHints} with keys replacing the ids.
      */
     @Nonnull
-    static CategoryReferencePair replaceCategoryReferencesIdsWithKeys(@Nonnull final Product product) {
+    static CategoryReferencePair mapToCategoryReferencePair(@Nonnull final Product product) {
         final Set<Reference<Category>> categoryReferences = product.getMasterData().getStaged().getCategories();
         final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers = new HashSet<>();
 
         final CategoryOrderHints categoryOrderHints = product.getMasterData().getStaged().getCategoryOrderHints();
         final Map<String, String> categoryOrderHintsMapWithKeys = new HashMap<>();
 
-        categoryReferences.forEach(categoryReference ->
-            categoryResourceIdentifiers.add(
-                getResourceIdentifierWithKey(categoryReference, () -> {
+        categoryReferences.forEach(categoryReference -> {
+            if (categoryReference != null) {
+                if (categoryReference.getObj() != null) {
                     final String categoryId = categoryReference.getId();
-                    @SuppressWarnings("ConstantConditions") // NPE is checked in replaceReferenceIdWithKey.
                     final String categoryKey = categoryReference.getObj().getKey();
 
                     if (categoryOrderHints != null) {
@@ -201,9 +199,12 @@ public final class ProductReferenceReplacementUtils {
                             categoryOrderHintsMapWithKeys.put(categoryKey, categoryOrderHintValue);
                         }
                     }
-                    return ResourceIdentifier.ofId(categoryKey);
-                }))
-        );
+                    categoryResourceIdentifiers.add(ResourceIdentifier.ofKey(categoryKey));
+                } else {
+                    categoryResourceIdentifiers.add(ResourceIdentifier.ofId(categoryReference.getId()));
+                }
+            }
+        });
 
         final CategoryOrderHints categoryOrderHintsWithKeys = categoryOrderHintsMapWithKeys.isEmpty()
             ? categoryOrderHints : CategoryOrderHints.of(categoryOrderHintsMapWithKeys);

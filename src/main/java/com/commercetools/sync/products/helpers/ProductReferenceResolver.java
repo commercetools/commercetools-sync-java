@@ -23,6 +23,7 @@ import io.sphere.sdk.taxcategories.TaxCategory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -38,7 +39,10 @@ import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedF
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 //todo (ahmetoz) all javadocs needs to be refactored with the new requirements.
 public final class ProductReferenceResolver extends BaseReferenceResolver<ProductDraft, ProductSyncOptions> {
@@ -52,6 +56,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         + "ProductDraft with key:'%s'. Reason: %s";
     public static final String PRODUCT_TYPE_DOES_NOT_EXIST = "Product type with key '%s' doesn't exist.";
     public static final String TAX_CATEGORY_DOES_NOT_EXIST = "TaxCategory with key '%s' doesn't exist.";
+    public static final String CATEGORIES_DO_NOT_EXIST = "Categories with keys '%s' don't exist.";
 
     /**
      * Takes a {@link ProductSyncOptions} instance, a {@link ProductTypeService}, a {@link CategoryService}, a
@@ -208,10 +213,11 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
 
         final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers = draftBuilder.getCategories();
         final Set<String> categoryKeys = new HashSet<>();
+        final List<ResourceIdentifier<Category>> directCategoryResourceIdentifiers = new ArrayList<>();
         for (ResourceIdentifier<Category> categoryResourceIdentifier : categoryResourceIdentifiers) {
-            if (categoryResourceIdentifier != null) {
+            if (categoryResourceIdentifier != null && categoryResourceIdentifier.getId() == null) {
                 try {
-                    final String categoryKey = getIdFromResourceIdentifier(categoryResourceIdentifier);
+                    final String categoryKey = getKeyFromResourceIdentifier(categoryResourceIdentifier);
                     categoryKeys.add(categoryKey);
                 } catch (ReferenceResolutionException referenceResolutionException) {
                     return exceptionallyCompletedFuture(
@@ -219,9 +225,11 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
                             format(FAILED_TO_RESOLVE_REFERENCE, Category.referenceTypeId(),
                                 draftBuilder.getKey(), referenceResolutionException.getMessage())));
                 }
+            } else {
+                directCategoryResourceIdentifiers.add(categoryResourceIdentifier);
             }
         }
-        return fetchAndResolveCategoryReferences(draftBuilder, categoryKeys);
+        return fetchAndResolveCategoryReferences(draftBuilder, categoryKeys, directCategoryResourceIdentifiers);
     }
 
     /**
@@ -239,24 +247,47 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     @Nonnull
     private CompletionStage<ProductDraftBuilder> fetchAndResolveCategoryReferences(
         @Nonnull final ProductDraftBuilder draftBuilder,
-        @Nonnull final Set<String> categoryKeys) {
+        @Nonnull final Set<String> categoryKeys,
+        @Nonnull final List<ResourceIdentifier<Category>> directCategoryReferences) {
 
         final Map<String, String> categoryOrderHintsMap = new HashMap<>();
         final CategoryOrderHints categoryOrderHints = draftBuilder.getCategoryOrderHints();
+        final Map<String, Category> keyToCategory = new HashMap<>();
+        return categoryService
+            .fetchMatchingCategoriesByKeys(categoryKeys)
+            .thenApply(categories -> categories
+                .stream()
+                .map(category -> {
+                    keyToCategory.put(category.getKey(), category);
+                    if (categoryOrderHints != null) {
+                        // todo (ahmetoz), what about the direct references ?
+                        ofNullable(categoryOrderHints.get(category.getKey()))
+                            .ifPresent(orderHintValue ->
+                                categoryOrderHintsMap.put(category.getId(), orderHintValue));
+                    }
 
-        return categoryService.fetchMatchingCategoriesByKeys(categoryKeys)
-                              .thenApply(categories ->
-                                  categories.stream().map(category -> {
-                                      if (categoryOrderHints != null) {
-                                          ofNullable(categoryOrderHints.get(category.getKey()))
-                                              .ifPresent(orderHintValue -> categoryOrderHintsMap
-                                                  .put(category.getId(), orderHintValue));
-                                      }
-                                      return category.toReference();
-                                  }).collect(toList()))
-                              .thenApply(categoryReferences -> draftBuilder
-                                  .categories(categoryReferences)
-                                  .categoryOrderHints(CategoryOrderHints.of(categoryOrderHintsMap)));
+                    return Category.referenceOfId(category.getId()).toResourceIdentifier();
+                })
+                .collect(toSet()))
+            .thenCompose(categoryReferences -> {
+                String keysNotExists = categoryKeys
+                    .stream()
+                    .filter(categoryKey -> !keyToCategory.containsKey(categoryKey))
+                    .collect(joining(", "));
+
+                if (!isBlank(keysNotExists)) {
+                    final String errorMessage = format(CATEGORIES_DO_NOT_EXIST, keysNotExists);
+                    return exceptionallyCompletedFuture(new ReferenceResolutionException(
+                        format(FAILED_TO_RESOLVE_REFERENCE, Category.resourceTypeId(), draftBuilder.getKey(),
+                            errorMessage)));
+                }
+
+                categoryReferences.addAll(directCategoryReferences);
+
+                return completedFuture(draftBuilder
+                    .categories(categoryReferences)
+                    .categoryOrderHints(CategoryOrderHints.of(categoryOrderHintsMap)));
+            });
     }
 
     /**

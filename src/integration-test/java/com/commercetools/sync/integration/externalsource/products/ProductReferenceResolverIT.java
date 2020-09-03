@@ -9,7 +9,7 @@ import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.producttypes.ProductType;
@@ -19,13 +19,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.CompletionException;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CompletionException;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
@@ -97,9 +99,9 @@ class ProductReferenceResolverIT {
     @Test
     void sync_withNewProductWithInvalidCategoryReferences_ShouldFailCreatingTheProduct() {
         // Create a list of category references that contains one valid and one invalid reference.
-        final List<Reference<Category>> invalidCategoryReferences = new ArrayList<>();
-        invalidCategoryReferences.add(Category.referenceOfId(categories.get(0).getId()));
-        invalidCategoryReferences.add(Category.referenceOfId(null));
+        final Set<ResourceIdentifier<Category>> invalidCategoryReferences = new HashSet<>();
+        invalidCategoryReferences.add(ResourceIdentifier.ofId(categories.get(0).getId()));
+        invalidCategoryReferences.add(ResourceIdentifier.ofId(null));
 
         // Create a product with the invalid category references. (i.e. not ready for reference resolution).
         final ProductDraft productDraft =
@@ -116,7 +118,7 @@ class ProductReferenceResolverIT {
         assertThat(exception).isExactlyInstanceOf(CompletionException.class)
                              .hasMessageContaining("Failed to resolve 'category' resource identifier on ProductDraft "
                                  + "with key:'productKey1'")
-                             .hasMessageContaining(format("Reason: %s", BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+                             .hasMessageContaining(format("Reason: %s", BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
 
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0))
