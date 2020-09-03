@@ -3,22 +3,21 @@ package com.commercetools.sync.services.impl;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptions;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptionsBuilder;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.client.BadRequestException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
-//import io.sphere.sdk.customobjects.commands.CustomObjectUpsertCommand;
+import io.sphere.sdk.customobjects.commands.CustomObjectUpsertCommand;
+import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -27,18 +26,20 @@ import org.junit.jupiter.api.Test;
 
 
 
-//import static org.assertj.core.api.Assertions.assertThat;
-//import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
-//import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class CustomObjectServiceImplTest {
 
     private SphereClient client = mock(SphereClient.class);
 
-    // TODO - Enable here when service class is ready
-    //private CustomObjectServiceImpl service;
+    private CustomObjectServiceImpl service;
     private List<String> errorMessages;
     private List<Throwable> errorExceptions;
 
@@ -60,8 +61,8 @@ class CustomObjectServiceImplTest {
                 errorExceptions.add(exception.getCause());
             })
             .build();
-        // TODO - Enable here when service class is ready
-        //service = new CustomObjectServiceImpl(customObjectSyncOptions);
+
+        service = new CustomObjectServiceImpl(customObjectSyncOptions);
     }
 
     @AfterEach
@@ -88,17 +89,17 @@ class CustomObjectServiceImplTest {
 
         when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
 
-        /* TODO - Enable this code when service class is ready */
-        /*
+
         final Optional<String> fetchedId = service
-            .fetchCachedCustomObjectId(CustomObjectCompositeId.of(key, container))
+            .fetchCachedCustomObjectId(CustomObjectCompositeIdentifier.of(key, container))
             .toCompletableFuture().join();
 
         assertThat(fetchedId).contains(id);
 
-         */
+
     }
 
+/*
     @Test
     void fetchMatchingCustomObjectsByKeysAndContainers_WithKeySet_ShouldFetchCustomObjects() {
         final String key1 = RandomStringUtils.random(15);
@@ -125,8 +126,8 @@ class CustomObjectServiceImplTest {
 
         when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
 
-         /* TODO - Enable this code when service class is ready */
-        /*
+
+
         final Set<CustomObject> customObjects = service
             .fetchMatchingCustomObjectsByKeysAndContainers(customObjectCompositeIds)
             .toCompletableFuture().join();
@@ -144,9 +145,9 @@ class CustomObjectServiceImplTest {
 
         verify(client).execute(any(CustomObjectQuery.class));
 
-         */
-    }
 
+    }
+*/
     @Test
     void fetchCustomObject_WithKeyAndContainer_ShouldFetchCustomObject() {
         final CustomObject mock = mock(CustomObject.class);
@@ -158,10 +159,9 @@ class CustomObjectServiceImplTest {
 
         when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
 
-         /* TODO - Enable this code when service class is ready */
-        /*
-        final Optional<CustomObject> customObjectOptional = service
-            .fetchCustomObject(CustomObjectCompositeId.of(customObjectKey, customObjectContainer))
+
+        final Optional<CustomObject<JsonNode>> customObjectOptional = service
+            .fetchCustomObject(CustomObjectCompositeIdentifier.of(customObjectKey, customObjectContainer))
             .toCompletableFuture().join();
 
         assertAll(
@@ -169,7 +169,7 @@ class CustomObjectServiceImplTest {
         );
         verify(client).execute(any(CustomObjectQuery.class));
 
-         */
+
     }
 
     @Test
@@ -186,18 +186,16 @@ class CustomObjectServiceImplTest {
         customObjectValue.put("convertedAmount", "100");
 
 
-        final CustomObjectDraft draft = CustomObjectDraft
+        final CustomObjectDraft<JsonNode> draft = CustomObjectDraft
                 .ofUnversionedUpsert(customObjectContainer, customObjectKey,customObjectValue);
 
-        /* TODO - Enable this code when service class is ready */
-        /*
-
-        final Optional<CustomObject> customObjectOptional = service.createCustomObject(draft).toCompletableFuture().join();
+        final Optional<CustomObject<JsonNode>> customObjectOptional =
+                service.upsertCustomObject(draft).toCompletableFuture().join();
 
         assertThat(customObjectOptional).containsSame(mock);
 
         verify(client).execute(eq(CustomObjectUpsertCommand.of(draft)));
-        */
+
 
     }
 
@@ -208,12 +206,12 @@ class CustomObjectServiceImplTest {
 
         when(client.execute(any())).thenReturn(CompletableFutureUtils.failed(new BadRequestException("bad request")));
 
-        final CustomObjectDraft draftMock = mock(CustomObjectDraft.class);
+        final CustomObjectDraft<JsonNode> draftMock = mock(CustomObjectDraft.class);
         when(draftMock.getKey()).thenReturn(customObjectKey);
         when(draftMock.getContainer()).thenReturn(customObjectContainer);
-        /* TODO - Enable this code when service class is ready */
-        /* final Optional<CustomObject> customObjectOptional =
-            service.createTaxCategory(draftMock).toCompletableFuture().join();
+
+        final Optional<CustomObject<JsonNode>> customObjectOptional =
+            service.upsertCustomObject(draftMock).toCompletableFuture().join();
 
         assertAll(
             () -> assertThat(customObjectOptional).isEmpty(),
@@ -224,18 +222,14 @@ class CustomObjectServiceImplTest {
             () -> assertThat(errorExceptions).hasOnlyOneElementSatisfying(exception ->
                 assertThat(exception).isExactlyInstanceOf(BadRequestException.class))
         );
-        */
-
     }
 
     @Test
     void createCustomObject_WithDraftHasNoKey_ShouldNotCreateCustomObject() {
-        final CustomObjectDraft customObjectDraft = mock(CustomObjectDraft.class);
+        final CustomObjectDraft<JsonNode> customObjectDraft = mock(CustomObjectDraft.class);
 
-         /* TODO - Enable this code when service class is ready */
-         /*
-        final Optional<CustomObject> customObjectOptional =
-            service.createCustomObject(customObjectDraft).toCompletableFuture().join();
+         final Optional<CustomObject<JsonNode>> customObjectOptional =
+            service.upsertCustomObject(customObjectDraft).toCompletableFuture().join();
 
         assertAll(
             () -> assertThat(customObjectOptional).isEmpty(),
@@ -244,9 +238,6 @@ class CustomObjectServiceImplTest {
             () -> assertThat(errorMessages)
                 .contains("Failed to create draft with key: 'null'. Reason: Draft key is blank!")
         );
-       */
+
     }
-
-
-
 }
