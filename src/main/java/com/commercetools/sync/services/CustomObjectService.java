@@ -21,7 +21,7 @@ public interface CustomObjectService {
      * this method attempts to fetch the id of the identifier from the CTP
      * project, caches it and returns a {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt;
      * in which the result of it's completion could contain an
-     * {@link Optional} with the id inside of it or an empty {@link Optional} if no {@link Type} was
+     * {@link Optional} with the id inside of it or an empty {@link Optional} if no {@link CustomObject} was
      * found in the CTP project with this key.
      *
      * @param  identifier the identifier object containing CustomObject key and container, by which a
@@ -55,7 +55,7 @@ public interface CustomObjectService {
      *
      * @param identifier the identifier of the CustomObject to fetch.
      * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of its completion contains an
-     *         {@link Optional} that contains the matching {@link Type} if exists, otherwise empty.
+     *         {@link Optional} that contains the matching {@link CustomObject} if exists, otherwise empty.
      */
     @Nonnull
     CompletionStage<Optional<CustomObject<JsonNode>>> fetchCustomObject(@Nonnull CustomObjectCompositeIdentifier identifier);
