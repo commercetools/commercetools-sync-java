@@ -3,9 +3,9 @@ package com.commercetools.sync.products.utils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.PriceDraftBuilder;
 import io.sphere.sdk.products.Product;
@@ -17,7 +17,6 @@ import io.sphere.sdk.products.attributes.AttributeAccess;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -29,6 +28,7 @@ import static com.commercetools.sync.commons.utils.AssetReferenceResolutionUtils
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
 import static com.commercetools.sync.commons.utils.SyncUtils.getReferenceWithKeyReplaced;
+import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
@@ -84,24 +84,14 @@ public final class VariantReferenceReplacementUtils {
     @Nonnull
     static List<PriceDraft> mapToPriceDraft(@Nonnull final ProductVariant productVariant) {
 
-        return productVariant.getPrices().stream().map(price -> {
-            return PriceDraftBuilder.of(price)
-                                    .custom(mapToCustomFieldsDraft(price))
-                                    .channel(mapToChannelResourceIdentifier(price.getChannel()))
-                                    .build();
-        }).collect(toList());
-    }
-
-    static ResourceIdentifier<Channel> mapToChannelResourceIdentifier(
-        @Nullable final Reference<Channel> channelReference) {
-
-        if (channelReference != null) {
-            if (channelReference.getObj() != null) {
-                return ResourceIdentifier.ofKey(channelReference.getObj().getKey());
-            }
-            return ResourceIdentifier.ofId(channelReference.getId());
-        }
-        return null;
+        return productVariant.getPrices().stream().map(price -> PriceDraftBuilder
+            .of(price)
+            .custom(mapToCustomFieldsDraft(price))
+            .channel(getResourceIdentifierWithKey(price.getChannel()))
+            .customerGroup(
+                getReferenceWithKeyReplaced(price.getCustomerGroup(), () ->
+                    CustomerGroup.referenceOfId(price.getCustomerGroup().getObj().getKey())))
+            .build()).collect(toList());
     }
 
     /**

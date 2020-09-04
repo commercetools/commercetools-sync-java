@@ -222,48 +222,6 @@ class ProductReferenceReplacementUtilsTest {
     }
 
     @Test
-    void replaceStateReferenceIdWithKey_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
-        final String stateId = UUID.randomUUID().toString();
-        final Reference<State> stateReference = State.referenceOfId(stateId);
-        final Product product = mock(Product.class);
-        when(product.getState()).thenReturn(stateReference);
-
-        final Reference<State> stateReferenceWithKey = ProductReferenceReplacementUtils
-            .replaceProductStateReferenceIdWithKey(product);
-
-        assertThat(stateReferenceWithKey).isNotNull();
-        assertThat(stateReferenceWithKey.getId()).isEqualTo(stateId);
-    }
-
-    @Test
-    void replaceStateReferenceIdWithKey_WithExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
-        final String stateKey = "stateKey";
-        final State state = getStateMock(stateKey);
-        final Reference<State> stateReference = Reference
-            .ofResourceTypeIdAndIdAndObj(State.referenceTypeId(), state.getId(), state);
-
-        final Product product = mock(Product.class);
-        when(product.getState()).thenReturn(stateReference);
-
-        final Reference<State> stateReferenceWithKey = ProductReferenceReplacementUtils
-            .replaceProductStateReferenceIdWithKey(product);
-
-        assertThat(stateReferenceWithKey).isNotNull();
-        assertThat(stateReferenceWithKey.getId()).isEqualTo(stateKey);
-    }
-
-    @Test
-    void replaceStateReferenceIdWithKey_WithNullReferences_ShouldReturnNull() {
-        final Product product = mock(Product.class);
-        when(product.getState()).thenReturn(null);
-
-        final Reference<State> stateReferenceWithKey = ProductReferenceReplacementUtils
-            .replaceProductStateReferenceIdWithKey(product);
-
-        assertThat(stateReferenceWithKey).isNull();
-    }
-
-    @Test
     void buildProductQuery_Always_ShouldReturnQueryWithAllNeededReferencesExpanded() {
         final ProductQuery productQuery = ProductReferenceReplacementUtils.buildProductQuery();
         assertThat(productQuery.expansionPaths())
@@ -271,6 +229,8 @@ class ProductReferenceReplacementUtilsTest {
                 ExpansionPath.of("state"), ExpansionPath.of("masterData.staged.categories[*]"),
                 ExpansionPath.of("masterData.staged.masterVariant.prices[*].channel"),
                 ExpansionPath.of("masterData.staged.variants[*].prices[*].channel"),
+                ExpansionPath.of("masterData.staged.masterVariant.prices[*].customerGroup"),
+                ExpansionPath.of("masterData.staged.variants[*].prices[*].customerGroup"),
                 ExpansionPath.of("masterData.staged.masterVariant.prices[*].custom.type"),
                 ExpansionPath.of("masterData.staged.variants[*].prices[*].custom.type"),
                 ExpansionPath.of("masterData.staged.masterVariant.attributes[*].value"),

@@ -245,7 +245,7 @@ class VariantReferenceReplacementUtilsTest {
     }
 
     @Test
-    void replacePricesReferencesIdsWithKeys_WithNoExpandedReferences_ShouldNotReplaceIds() {
+    void mapToPriceDraft_WithNoExpandedReferences_ShouldNotReplaceIds() {
         final Reference<Channel> channelReference = Channel.referenceOfId(UUID.randomUUID().toString());
         final Reference<Type> typeReference = Type.referenceOfId(UUID.randomUUID().toString());
 
@@ -272,7 +272,7 @@ class VariantReferenceReplacementUtilsTest {
     }
 
     @Test
-    void replacePricesReferencesIdsWithKeys_WithAllExpandedReferences_ShouldReplaceIds() {
+    void mapToPriceDraft_WithAllExpandedReferences_ShouldReplaceIds() {
         final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
 
         final String channelKey1 = "channelKey1";
@@ -322,7 +322,7 @@ class VariantReferenceReplacementUtilsTest {
     }
 
     @Test
-    void replacePricesReferencesIdsWithKeys_WithSomeExpandedReferences_ShouldReplaceOnlyExpandedIds() {
+    void mapToPriceDraft_WithSomeExpandedReferences_ShouldReplaceOnlyExpandedIds() {
         final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
         final String channelKey1 = "channelKey1";
 

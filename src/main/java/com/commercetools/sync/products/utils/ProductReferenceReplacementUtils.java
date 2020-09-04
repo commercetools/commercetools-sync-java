@@ -15,13 +15,10 @@ import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.expansion.ProductExpansionModel;
 import io.sphere.sdk.products.queries.ProductQuery;
-import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.states.State;
-import io.sphere.sdk.taxcategories.TaxCategory;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,6 +29,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.getReferenceWithKeyReplaced;
+import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -59,8 +57,6 @@ public final class ProductReferenceReplacementUtils {
             .map(product -> {
                 final ProductDraft productDraft = getDraftBuilderFromStagedProduct(product).build();
 
-                final Reference<State> stateReferenceWithKey = replaceProductStateReferenceIdWithKey(product);
-
                 final CategoryReferencePair categoryReferencePair = mapToCategoryReferencePair(product);
                 final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers =
                     categoryReferencePair.getCategoryResourceIdentifiers();
@@ -74,11 +70,12 @@ public final class ProductReferenceReplacementUtils {
                 return ProductDraftBuilder.of(productDraft)
                                           .masterVariant(masterVariantDraftWithKeys)
                                           .variants(variantDraftsWithKeys)
-                                          .productType(mapToProductTypeResourceIdentifier(product.getProductType()))
+                                          .productType(getResourceIdentifierWithKey(product.getProductType()))
                                           .categories(categoryResourceIdentifiers)
                                           .categoryOrderHints(categoryOrderHintsWithKeys)
-                                          .taxCategory(mapToTaxCategoryResourceIdentifier(product.getTaxCategory()))
-                                          .state(stateReferenceWithKey)
+                                          .taxCategory(getResourceIdentifierWithKey(product.getTaxCategory()))
+                                          .state(getReferenceWithKeyReplaced(product.getState(),
+                                              () -> State.referenceOfId(product.getState().getObj().getKey())))
                                           .build();
             })
             .collect(Collectors.toList());
@@ -115,52 +112,6 @@ public final class ProductReferenceReplacementUtils {
             .publish(product.getMasterData().isPublished())
             .categories(new ArrayList<>(productData.getCategories()))
             .categoryOrderHints(productData.getCategoryOrderHints());
-    }
-
-    @Nullable // todo (ahmetoz) could be refactored to avoid duplication
-    private static ResourceIdentifier<ProductType> mapToProductTypeResourceIdentifier(
-        @Nullable final Reference<ProductType> productTypeReference) {
-
-        if (productTypeReference != null) {
-            if (productTypeReference.getObj() != null) {
-                return ResourceIdentifier.ofKey(productTypeReference.getObj().getKey());
-            }
-            return ResourceIdentifier.ofId(productTypeReference.getId());
-        }
-        return null;
-    }
-
-    @Nullable
-    private static ResourceIdentifier<TaxCategory> mapToTaxCategoryResourceIdentifier(
-        @Nullable final Reference<TaxCategory> taxCategoryReference) {
-
-        if (taxCategoryReference != null) {
-            if (taxCategoryReference.getObj() != null) {
-                return ResourceIdentifier.ofKey(taxCategoryReference.getObj().getKey());
-            }
-            return ResourceIdentifier.ofId(taxCategoryReference.getId());
-        }
-        return null;
-    }
-
-    /**
-     * Takes a product that is supposed to have its State reference expanded in order to be able to fetch the key
-     * and replace the reference id with the corresponding key and then return a new {@link State} {@link Reference}
-     * containing the key in the id field.
-     *
-     * <p><b>Note:</b> The State reference should be expanded for the {@code product}, otherwise the reference
-     * id will not be replaced with the key and will still have the id in place.
-     *
-     * @param product the product to replace its State reference id with the key.
-     *
-     * @return a new {@link State} {@link Reference} containing the key in the id field.
-     */
-    @Nullable
-    @SuppressWarnings("ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
-    static Reference<State> replaceProductStateReferenceIdWithKey(@Nonnull final Product product) {
-        final Reference<State> productState = product.getState();
-        return getReferenceWithKeyReplaced(productState,
-            () -> State.referenceOfId(productState.getObj().getKey()));
     }
 
     /**
@@ -221,6 +172,7 @@ public final class ProductReferenceReplacementUtils {
      *     <li>Staged Assets' Custom Types</li>
      *     <li>Staged Product Categories</li>
      *     <li>Staged Prices' Channels</li>
+     *     <li>Staged Prices' Customer Groups</li>
      *     <li>Staged Prices' Custom Types</li>
      *     <li>Reference Attributes</li>
      *     <li>Reference Set Attributes</li>
@@ -244,9 +196,11 @@ public final class ProductReferenceReplacementUtils {
                                expansionModel.masterData().staged().categories())
                            .plusExpansionPaths(expansionModel ->
                                expansionModel.masterData().staged().allVariants().prices().channel())
+                           .plusExpansionPaths(expansionModel ->
+                               expansionModel.masterData().staged().allVariants().prices().customerGroup())
                            .plusExpansionPaths(
                                ExpansionPath.of("masterData.staged.masterVariant.prices[*].custom.type"))
-                            .plusExpansionPaths(
+                           .plusExpansionPaths(
                                ExpansionPath.of("masterData.staged.variants[*].prices[*].custom.type"))
                            .plusExpansionPaths(expansionModel ->
                                expansionModel.masterData().staged().allVariants().attributes().value())

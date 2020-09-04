@@ -92,6 +92,7 @@ import static com.commercetools.sync.products.utils.productvariantupdateactionut
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.byMonth;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.createCustomFieldsJsonMap;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.getPriceDraft;
+import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.getPriceDraftWithChannelKey;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static com.neovisionaries.i18n.CountryCode.DE;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
@@ -632,7 +633,7 @@ class ProductSyncWithPricesIT {
 
         final CustomFieldsDraft customType1WithEmptySet = CustomFieldsDraft.ofTypeKeyAndJson(customType1.getKey(),
             newCustomFieldsJsonMap);
-        final PriceDraft withChannel1CustomType1WithNullSet = getPriceDraft(BigDecimal.valueOf(100), EUR,
+        final PriceDraft withChannel1CustomType1WithNullSet = getPriceDraftWithChannelKey(BigDecimal.valueOf(100), EUR,
             DE, null, byMonth(1), byMonth(2), channel1.getKey(), customType1WithEmptySet);
         final ProductDraft newProductDraft = ProductDraftBuilder
             .of(referenceOfId(productType.getKey()), ofEnglish("foo"), ofEnglish("bar"),
@@ -701,7 +702,7 @@ class ProductSyncWithPricesIT {
 
         final CustomFieldsDraft customType1WithEmptySet = CustomFieldsDraft.ofTypeKeyAndJson(customType1.getKey(),
             newCustomFieldsJsonMap);
-        final PriceDraft withChannel1CustomType1WithNullSet = getPriceDraft(BigDecimal.valueOf(100), EUR,
+        final PriceDraft withChannel1CustomType1WithNullSet = getPriceDraftWithChannelKey(BigDecimal.valueOf(100), EUR,
             DE, null, byMonth(1), byMonth(2), channel1.getKey(), customType1WithEmptySet);
         final ProductDraft newProductDraft = ProductDraftBuilder
             .of(referenceOfId(productType.getKey()), ofEnglish("foo"), ofEnglish("bar"),
@@ -769,7 +770,7 @@ class ProductSyncWithPricesIT {
 
         final CustomFieldsDraft customType1WithEmptySet = CustomFieldsDraft.ofTypeKeyAndJson(customType1.getKey(),
             newCustomFieldsJsonMap);
-        final PriceDraft withChannel1CustomType1WithNullSet = getPriceDraft(BigDecimal.valueOf(100), EUR,
+        final PriceDraft withChannel1CustomType1WithNullSet = getPriceDraftWithChannelKey(BigDecimal.valueOf(100), EUR,
             DE, null, byMonth(1), byMonth(2), channel1.getKey(), customType1WithEmptySet);
         final ProductDraft newProductDraft = ProductDraftBuilder
             .of(referenceOfId(productType.getKey()), ofEnglish("foo"), ofEnglish("bar"),
@@ -829,8 +830,9 @@ class ProductSyncWithPricesIT {
 
         final CustomFieldsDraft customType1WithEmptySet = CustomFieldsDraft.ofTypeKeyAndJson(customType1.getKey(),
             new HashMap<>());
-        final PriceDraft withChannel1CustomType1WithNullSet = getPriceDraft(BigDecimal.valueOf(100), EUR,
+        final PriceDraft withChannel1CustomType1WithNullSet = getPriceDraftWithChannelKey(BigDecimal.valueOf(100), EUR,
             DE, null, byMonth(1), byMonth(2), channel1.getKey(), customType1WithEmptySet);
+
         final ProductDraft newProductDraft = ProductDraftBuilder
             .of(referenceOfId(productType.getKey()), ofEnglish("foo"), ofEnglish("bar"),
                 createVariantDraft("foo", null,
@@ -890,10 +892,10 @@ class ProductSyncWithPricesIT {
 
         final CustomFieldsDraft customType1WithEnDeOfKey = CustomFieldsDraft.ofTypeKeyAndJson("customType1",
             createCustomFieldsJsonMap(LOCALISED_STRING_CUSTOM_FIELD_NAME, lTextWithEnDe));
-        final PriceDraft withChannel1CustomType1WithEnDeOfKey = getPriceDraft(BigDecimal.valueOf(100), EUR,
-            DE, null, byMonth(1), byMonth(2), "channel1", customType1WithEnDeOfKey);
-        final PriceDraft withChannel2CustomType1WithEnDeOfKey = getPriceDraft(BigDecimal.valueOf(100), EUR,
-            DE, null, byMonth(1), byMonth(2), "channel2", customType1WithEnDeOfKey);
+        final PriceDraft withChannel1CustomType1WithEnDeOfKey = getPriceDraftWithChannelKey(BigDecimal.valueOf(100),
+            EUR, DE, null, byMonth(1), byMonth(2), "channel1", customType1WithEnDeOfKey);
+        final PriceDraft withChannel2CustomType1WithEnDeOfKey = getPriceDraftWithChannelKey(BigDecimal.valueOf(100),
+            EUR, DE, null, byMonth(1), byMonth(2), "channel2", customType1WithEnDeOfKey);
 
         final List<PriceDraft> newPrices = asList(
             DRAFT_DE_111_EUR,

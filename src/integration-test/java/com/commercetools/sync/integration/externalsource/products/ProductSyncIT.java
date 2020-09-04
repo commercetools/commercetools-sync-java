@@ -197,7 +197,7 @@ class ProductSyncIT {
     @Test
     void sync_withMissingPriceChannel_shouldCreateProductDistributionPriceChannel() {
         PriceDraftDsl priceDraftWithMissingChannelRef = PriceDraftBuilder.of(MoneyImpl.of("20", "EUR"))
-                .channel(ResourceIdentifier.ofId("missingId")).build();
+                .channel(ResourceIdentifier.ofKey("missingKey")).build();
 
         ProductVariantDraftDsl masterVariantDraft = ProductVariantDraftBuilder.of(
                 ProductVariantDraftDsl.of()
