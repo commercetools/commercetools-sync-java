@@ -130,8 +130,6 @@ class CustomObjectServiceImplTest {
 
         when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
 
-
-
         final Set<CustomObject<JsonNode>> customObjects = service
             .fetchMatchingCustomObjectByCompositeIdentifiers(customObjectCompositeIdentifiers)
             .toCompletableFuture().join();
@@ -145,11 +143,7 @@ class CustomObjectServiceImplTest {
                 String.valueOf(customObjectCompositeIdlist.get(0)),
                 String.valueOf(customObjectCompositeIdlist.get(1)))
         );
-
-
         verify(client).execute(any(CustomObjectQuery.class));
-
-
     }
 
     @Test
@@ -169,7 +163,11 @@ class CustomObjectServiceImplTest {
             .toCompletableFuture().join();
 
         assertAll(
-            () -> assertThat(customObjectOptional).containsSame(mock)
+            () -> assertThat(customObjectOptional).containsSame(mock),
+            () -> assertThat(
+                service.keyToIdCache.get(
+                    CustomObjectCompositeIdentifier.of(customObjectKey, customObjectContainer).toString())
+            ).isEqualTo(customObjectId)
         );
         verify(client).execute(any(CustomObjectQuery.class));
 
@@ -197,10 +195,7 @@ class CustomObjectServiceImplTest {
                 service.upsertCustomObject(draft).toCompletableFuture().join();
 
         assertThat(customObjectOptional).containsSame(mock);
-
         verify(client).execute(eq(CustomObjectUpsertCommand.of(draft)));
-
-
     }
 
     @Test
@@ -218,10 +213,11 @@ class CustomObjectServiceImplTest {
         final Optional<CustomObject<JsonNode>> customObjectOptional =
             service.upsertCustomObject(draftMock).toCompletableFuture().join();
 
+        String expectedMsg = "Failed to create draft with key: '{key='%s', container='%s'}'";
         assertAll(
             () -> assertThat(customObjectOptional).isEmpty(),
             () -> assertThat(errorMessages).hasOnlyOneElementSatisfying(message -> {
-                assertThat(message).contains("Failed to create draft");
+                assertThat(message).contains(String.format(expectedMsg, customObjectKey, customObjectContainer));
                 assertThat(message).contains("BadRequestException");
             }),
             () -> assertThat(errorExceptions).hasOnlyOneElementSatisfying(exception ->
