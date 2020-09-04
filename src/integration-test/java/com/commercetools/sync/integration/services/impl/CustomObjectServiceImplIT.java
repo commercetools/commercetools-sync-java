@@ -212,22 +212,6 @@ class CustomObjectServiceImplIT {
     }
 
     @Test
-    void fetchCustomObject_WithNullKeyAndContainer_ShouldNotFetchCustomObject() {
-        final Optional<CustomObject<JsonNode>> fetchedCustomObjectOptional =
-            executeBlocking(customObjectService.fetchCustomObject(
-                    CustomObjectCompositeIdentifier.of(null, null)));
-        assertThat(fetchedCustomObjectOptional).isEmpty();
-    }
-
-    @Test
-    void fetchCustomObject_WithNullCompositeIdentifier_ShouldNotFetchCustomObject() {
-        final Optional<CustomObject<JsonNode>> fetchedCustomObjectOptional =
-                executeBlocking(customObjectService.fetchCustomObject(null));
-        assertThat(fetchedCustomObjectOptional).isEmpty();
-    }
-
-
-    @Test
     void upsertCustomObject_WithValidCustomObject_ShouldCreateCustomObjectAndCacheId() {
         final CustomObjectDraft<JsonNode> newCustomObjectDraft = CustomObjectDraft.ofUnversionedUpsert(
                 NEW_CUSTOM_OBJECT_CONTAINER,

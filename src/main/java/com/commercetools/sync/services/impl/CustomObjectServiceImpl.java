@@ -95,10 +95,6 @@ public class CustomObjectServiceImpl
     public CompletionStage<Optional<CustomObject<JsonNode>>> fetchCustomObject(
             @Nonnull final CustomObjectCompositeIdentifier identifier) {
 
-        if (Objects.isNull(identifier)) {
-            return CompletableFuture.completedFuture(Optional.empty());
-        }
-
         String container = identifier.getContainer();
         String key = identifier.getKey();
 

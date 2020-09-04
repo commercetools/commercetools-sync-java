@@ -239,7 +239,7 @@ class CustomObjectServiceImplTest {
             () -> assertThat(errorMessages).hasSize(1),
             () -> assertThat(errorExceptions).hasSize(1),
             () -> assertThat(errorMessages)
-                .contains("Failed to create draft with key: 'null'. Reason: Draft key is blank!")
+                .contains("Failed to create draft with key: ''. Reason: Draft key is blank!")
         );
 
     }

@@ -60,15 +60,14 @@ public final class CustomObjectITUtils {
      *
      * @param ctpClient represents the CTP project the types will be deleted from.
      */
-    public static void createCustomObject(
+    public static CustomObject<JsonNode> createCustomObject(
             @Nonnull final SphereClient ctpClient,
             @Nonnull final String key,
             @Nonnull final String container,
             @Nonnull final JsonNode value) {
 
         CustomObjectDraft<JsonNode> customObjectDraft = CustomObjectDraft.ofUnversionedUpsert(container,key, value);
-        CustomObject<JsonNode> customObject =
-                ctpClient.execute(CustomObjectUpsertCommand.of(customObjectDraft)).toCompletableFuture().join();
+        return ctpClient.execute(CustomObjectUpsertCommand.of(customObjectDraft)).toCompletableFuture().join();
     }
 
     /**
