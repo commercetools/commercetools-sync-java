@@ -12,6 +12,7 @@ import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.ProductDraft;
@@ -22,17 +23,13 @@ import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
@@ -57,6 +54,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     public static final String PRODUCT_TYPE_DOES_NOT_EXIST = "Product type with key '%s' doesn't exist.";
     public static final String TAX_CATEGORY_DOES_NOT_EXIST = "TaxCategory with key '%s' doesn't exist.";
     public static final String CATEGORIES_DO_NOT_EXIST = "Categories with keys '%s' don't exist.";
+    public static final String STATE_DOES_NOT_EXIST = "State with key '%s' doesn't exist.";
 
     /**
      * Takes a {@link ProductSyncOptions} instance, a {@link ProductTypeService}, a {@link CategoryService}, a
@@ -168,16 +166,6 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         return completedFuture(draftBuilder);
     }
 
-    /**
-     * Given a {@link ProductDraftBuilder} and a {@code productTypeKey} this method fetches the actual id of the
-     * product type corresponding to this key, ideally from a cache. Then it sets this id on the product type reference
-     * id.
-     *
-     * @param draftBuilder   the product draft builder to accept resolved references values.
-     * @param productTypeKey the product type key of to resolve it's actual id on the draft.
-     * @return a {@link CompletionStage} that contains as a result the same {@code draftBuilder} product draft builder
-     *         instance with resolved product type reference or an exception.
-     */
     @Nonnull
     private CompletionStage<ProductDraftBuilder> fetchAndResolveProductTypeReference(
         @Nonnull final ProductDraftBuilder draftBuilder,
@@ -232,18 +220,6 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         return fetchAndResolveCategoryReferences(draftBuilder, categoryKeys, directCategoryResourceIdentifiers);
     }
 
-    /**
-     * Given a {@link ProductDraftBuilder} and a {@link Set} of {@code categoryKeys} this method fetches the categories
-     * corresponding to these keys. Then it sets the category references on the {@code draftBuilder}. It also replaces
-     * the category keys on the {@link CategoryOrderHints} map of the {@code productDraft}. If the category is not found
-     * in the CTP project, the resultant draft would remain exactly the same as the passed product draft
-     * (without reference resolution).
-     *
-     * @param draftBuilder the product draft builder to resolve it's category references.
-     * @param categoryKeys the category keys of to resolve their actual id on the draft.
-     * @return a {@link CompletionStage} that contains as a result a new productDraft instance with resolved category
-     *         references or an exception.
-     */
     @Nonnull
     private CompletionStage<ProductDraftBuilder> fetchAndResolveCategoryReferences(
         @Nonnull final ProductDraftBuilder draftBuilder,
@@ -352,59 +328,49 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
 
     /**
      * Given a {@link ProductDraftBuilder} this method attempts to resolve the state to return a {@link CompletionStage}
-     * which contains a new instance of the builder with the resolved state reference. The key of the state reference is
-     * either taken from the expanded reference or taken from the value of the id field.
+     * which contains a new instance of the builder with the resolved state reference.
+     *
+     * <p>Note: The key of the state reference taken from the value of the id field of the reference.
      *
      * @param draftBuilder the productDraft to resolve its state reference.
      * @return a {@link CompletionStage} that contains as a result a new builder instance with resolved state
-     *         reference or, in case an error occurs during reference resolution,
-     *         a {@link ReferenceResolutionException}.
+     *         reference or, in case an error occurs during reference resolution, the future is completed exceptionally
+     *         with a {@link ReferenceResolutionException}.
      */
     @Nonnull
     public CompletionStage<ProductDraftBuilder> resolveStateReference(
         @Nonnull final ProductDraftBuilder draftBuilder) {
-        try {
-            return resolveResourceIdentifier(draftBuilder, draftBuilder.getState(),
-                stateService::fetchCachedStateId, State::referenceOfId, ProductDraftBuilder::state);
-        } catch (ReferenceResolutionException referenceResolutionException) {
-            return exceptionallyCompletedFuture(new ReferenceResolutionException(
-                format(FAILED_TO_RESOLVE_REFERENCE, State.referenceTypeId(), draftBuilder.getKey(),
-                    referenceResolutionException.getMessage())));
+        final Reference<State> stateReference = draftBuilder.getState();
+        if (stateReference != null) {
+            String stateKey;
+            try {
+                stateKey = getIdFromResourceIdentifier(stateReference);
+            } catch (ReferenceResolutionException referenceResolutionException) {
+                return exceptionallyCompletedFuture(new ReferenceResolutionException(
+                    format(FAILED_TO_RESOLVE_REFERENCE, State.referenceTypeId(), draftBuilder.getKey(),
+                        referenceResolutionException.getMessage())));
+            }
+
+            return fetchAndResolveStateReference(draftBuilder, stateKey);
         }
+        return completedFuture(draftBuilder);
     }
 
-    /**
-     * Common function to resolve references from key.
-     *
-     * @param draftBuilder                 {@link ProductDraftBuilder} to update
-     * @param resourceIdentifier           resourceIdentifier instance from which key is read
-     * @param keyToIdMapper                function which calls respective service to fetch the reference by key
-     * @param idToResourceIdentifierMapper function which creates {@link ResourceIdentifier} instance from fetched id
-     * @param resourceIdentifierSetter     function which will set the resolved reference to the {@code productDraft}
-     * @param <T>                          type of reference (e.g. {@link State}, {@link TaxCategory}
-     * @return {@link CompletionStage} containing {@link ProductDraftBuilder} with resolved &lt;T&gt; reference.
-     */
     @Nonnull
-    private <T, S extends ResourceIdentifier<T>> CompletionStage<ProductDraftBuilder> resolveResourceIdentifier(
+    private CompletionStage<ProductDraftBuilder> fetchAndResolveStateReference(
         @Nonnull final ProductDraftBuilder draftBuilder,
-        @Nullable final S resourceIdentifier,
-        @Nonnull final Function<String, CompletionStage<Optional<String>>> keyToIdMapper,
-        @Nonnull final Function<String, S> idToResourceIdentifierMapper,
-        @Nonnull final BiFunction<ProductDraftBuilder, S, ProductDraftBuilder> resourceIdentifierSetter)
-        throws ReferenceResolutionException {
+        @Nonnull final String stateKey) {
 
-        if (resourceIdentifier == null) {
-            return completedFuture(draftBuilder);
-        }
-
-        final String resourceKey = getIdFromResourceIdentifier(resourceIdentifier);
-
-        return keyToIdMapper
-            .apply(resourceKey)
-            .thenApply(optId -> optId
-                .map(idToResourceIdentifierMapper)
-                .map(resourceIdentifierToSet -> resourceIdentifierSetter.apply(draftBuilder, resourceIdentifierToSet))
-                .orElse(draftBuilder));
+        return stateService
+            .fetchCachedStateId(stateKey)
+            .thenCompose(resolvedStateIdOptional -> resolvedStateIdOptional
+                .map(resolvedStateId ->
+                    completedFuture(draftBuilder.state(State.referenceOfId(resolvedStateId))))
+                .orElseGet(() -> {
+                    final String errorMessage = format(STATE_DOES_NOT_EXIST, stateKey);
+                    return exceptionallyCompletedFuture(new ReferenceResolutionException(
+                        format(FAILED_TO_RESOLVE_REFERENCE, State.referenceTypeId(), draftBuilder.getKey(),
+                            errorMessage)));
+                }));
     }
-
 }

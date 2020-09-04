@@ -28,6 +28,8 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProduc
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductTypeService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockStateService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockTaxCategoryService;
+import static com.commercetools.sync.products.helpers.ProductReferenceResolver.FAILED_TO_RESOLVE_REFERENCE;
+import static com.commercetools.sync.products.helpers.ProductReferenceResolver.STATE_DOES_NOT_EXIST;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -89,11 +91,19 @@ class StateReferenceResolverTest {
         when(stateService.fetchCachedStateId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-        assertThat(referenceResolver.resolveStateReference(productBuilder).toCompletableFuture())
-            .hasNotFailed()
-            .isCompletedWithValueMatching(resolvedDraft ->
-                Objects.nonNull(resolvedDraft.getState())
-                    && Objects.equals(resolvedDraft.getState().getId(), "nonExistentKey"));
+        final String expectedMessageWithCause = format(FAILED_TO_RESOLVE_REFERENCE, State.resourceTypeId(),
+            "dummyKey", format(STATE_DOES_NOT_EXIST, "nonExistentKey"));
+
+        referenceResolver
+            .resolveStateReference(productBuilder)
+            .exceptionally(exception -> {
+                assertThat(exception).hasCauseExactlyInstanceOf(ReferenceResolutionException.class);
+                assertThat(exception.getCause().getMessage())
+                    .isEqualTo(expectedMessageWithCause);
+                return null;
+            })
+            .toCompletableFuture()
+            .join();
     }
 
     @Test
