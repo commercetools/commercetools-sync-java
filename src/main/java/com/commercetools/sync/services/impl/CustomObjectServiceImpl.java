@@ -14,8 +14,10 @@ import io.sphere.sdk.customobjects.queries.CustomObjectQueryModel;
 import io.sphere.sdk.queries.QueryPredicate;
 
 import javax.annotation.Nonnull;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
@@ -89,6 +91,10 @@ public class CustomObjectServiceImpl
     @Nonnull
     public CompletionStage<Optional<CustomObject<JsonNode>>> fetchCustomObject(
             @Nonnull final CustomObjectCompositeIdentifier identifier) {
+
+        if (Objects.isNull(identifier)) {
+            return CompletableFuture.completedFuture(Optional.empty());
+        }
 
         String container = identifier.getContainer();
         String key = identifier.getKey();

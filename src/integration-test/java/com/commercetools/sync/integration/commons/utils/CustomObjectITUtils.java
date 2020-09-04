@@ -2,22 +2,74 @@ package com.commercetools.sync.integration.commons.utils;
 
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedTransitions;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customobjects.CustomObject;
+import io.sphere.sdk.customobjects.CustomObjectDraft;
 import io.sphere.sdk.customobjects.commands.CustomObjectDeleteCommand;
+import io.sphere.sdk.customobjects.commands.CustomObjectUpsertCommand;
 import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
 import io.sphere.sdk.queries.PagedQueryResult;
+
 
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+
 public final class CustomObjectITUtils {
 
     private static final String PRODUCT_CUSTOM_OBJECT_CONTAINER_KEY =
         "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
 
+
+    /**
+     * Deletes all customObjects from CTP project, represented by provided {@code ctpClient}.
+     *
+     * @param ctpClient represents the CTP project the types will be deleted from.
+     */
+    public static void deleteCustomObjects(@Nonnull final SphereClient ctpClient) {
+
+        final CustomObjectQuery<JsonNode> customObjectQuery = CustomObjectQuery.ofJsonNode();
+
+        ctpClient
+                .execute(customObjectQuery)
+                .thenApply(PagedQueryResult::getResults)
+                .thenCompose(customObjects -> deleteCustomObjects(ctpClient, customObjects))
+                .toCompletableFuture()
+                .join();
+    }
+
+    @Nonnull
+    private static CompletableFuture<Void> deleteCustomObjects(
+            @Nonnull final SphereClient ctpClient,
+            @Nonnull final List<CustomObject<JsonNode>> customObjects) {
+
+        return CompletableFuture.allOf(
+                customObjects
+                        .stream()
+                        .map(customObject -> ctpClient
+                                .execute(CustomObjectDeleteCommand.of(customObject, JsonNode.class)))
+                        .map(CompletionStage::toCompletableFuture)
+                        .toArray(CompletableFuture[]::new));
+    }
+
+    /**
+     * Create a customObject in target CTP project, represented by provided {@code ctpClient}.
+     *
+     * @param ctpClient represents the CTP project the types will be deleted from.
+     */
+    public static void createCustomObject(
+            @Nonnull final SphereClient ctpClient,
+            @Nonnull final String key,
+            @Nonnull final String container,
+            @Nonnull final JsonNode value) {
+
+        CustomObjectDraft<JsonNode> customObjectDraft = CustomObjectDraft.ofUnversionedUpsert(container,key, value);
+        CustomObject<JsonNode> customObject =
+                ctpClient.execute(CustomObjectUpsertCommand.of(customObjectDraft)).toCompletableFuture().join();
+    }
 
     /**
      * This method is expected to be used only by tests, it only works on projects with less than or equal to 20 custom
