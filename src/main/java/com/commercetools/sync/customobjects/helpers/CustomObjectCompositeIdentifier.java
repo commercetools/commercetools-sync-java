@@ -93,22 +93,4 @@ public final class CustomObjectCompositeIdentifier {
             return format("{key='%s', container='%s'}", key, container);
         }
     }
-
-    @Override
-    public boolean equals(final Object otherObject) {
-        if (this == otherObject) {
-            return true;
-        }
-        if (!(otherObject instanceof CustomObjectCompositeIdentifier)) {
-            return false;
-        }
-        final CustomObjectCompositeIdentifier that = (CustomObjectCompositeIdentifier) otherObject;
-        return  Objects.equals(key, that.key)
-            && Objects.equals(container, that.container);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(key, container);
-    }
 }

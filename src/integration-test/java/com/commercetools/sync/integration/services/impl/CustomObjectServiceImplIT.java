@@ -204,6 +204,23 @@ class CustomObjectServiceImplIT {
     }
 
     @Test
+    void fetchCustomObject_WithBlankKey_ShouldNotFetchCustomObject() {
+        final Optional<CustomObject<JsonNode>> fetchedCustomObjectOptional =
+                executeBlocking(customObjectService.fetchCustomObject(
+                        CustomObjectCompositeIdentifier.of(StringUtils.EMPTY,OLD_CUSTOM_OBJECT_CONTAINER)));
+        assertThat(fetchedCustomObjectOptional).isEmpty();
+    }
+
+    @Test
+    void fetchCustomObject_WithBlankContainer_ShouldNotFetchCustomObject() {
+        final Optional<CustomObject<JsonNode>> fetchedCustomObjectOptional =
+                executeBlocking(customObjectService.fetchCustomObject(
+                        CustomObjectCompositeIdentifier.of(OLD_CUSTOM_OBJECT_KEY, StringUtils.EMPTY)));
+        assertThat(fetchedCustomObjectOptional).isEmpty();
+    }
+
+
+    @Test
     void fetchCustomObject_WithBlankKeyAndContainer_ShouldNotFetchCustomObject() {
         final Optional<CustomObject<JsonNode>> fetchedCustomObjectOptional =
             executeBlocking(customObjectService.fetchCustomObject(
