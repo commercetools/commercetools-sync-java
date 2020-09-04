@@ -14,10 +14,8 @@ import io.sphere.sdk.customobjects.queries.CustomObjectQueryModel;
 import io.sphere.sdk.queries.QueryPredicate;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
