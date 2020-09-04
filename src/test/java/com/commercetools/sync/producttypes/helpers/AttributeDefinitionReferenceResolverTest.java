@@ -16,7 +16,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_REFERENCE;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -116,7 +116,7 @@ class AttributeDefinitionReferenceResolverTest {
 
         // test and assertion
         final ReferenceResolutionException expectedRootCause =
-            new ReferenceResolutionException(BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER);
+            new ReferenceResolutionException(BLANK_ID_VALUE_ON_REFERENCE);
         assertThat(attributeDefinitionReferenceResolver.resolveReferences(attributeDefinitionDraft))
             .hasFailedWithThrowableThat()
             .hasMessageContaining("Failed to resolve references on attribute definition with name 'foo'")
@@ -204,7 +204,7 @@ class AttributeDefinitionReferenceResolverTest {
 
         // test and assertion
         final ReferenceResolutionException expectedRootCause =
-            new ReferenceResolutionException(BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER);
+            new ReferenceResolutionException(BLANK_ID_VALUE_ON_REFERENCE);
         assertThat(attributeDefinitionReferenceResolver.resolveReferences(attributeDefinitionDraft))
             .hasFailedWithThrowableThat()
             .hasMessageContaining("Failed to resolve references on attribute definition with name 'foo'")

@@ -6,7 +6,6 @@ import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.products.Price;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.PriceDraftBuilder;
 import io.sphere.sdk.products.Product;
@@ -16,7 +15,6 @@ import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.Attribute;
 import io.sphere.sdk.products.attributes.AttributeAccess;
 import io.sphere.sdk.products.attributes.AttributeDraft;
-import io.sphere.sdk.types.CustomFieldsDraft;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -31,7 +29,6 @@ import static com.commercetools.sync.commons.utils.AssetReferenceResolutionUtils
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
 import static com.commercetools.sync.commons.utils.SyncUtils.getReferenceWithKeyReplaced;
-import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 
@@ -58,8 +55,7 @@ public final class VariantReferenceReplacementUtils {
             .stream()
             .filter(Objects::nonNull)
             .map(productVariant -> {
-                // todo (ahmetoz) update the method name and tests after replacing all replacement utils.
-                final List<PriceDraft> priceDraftsWithKeys = replacePricesReferencesIdsWithKeys(productVariant);
+                final List<PriceDraft> priceDraftsWithKeys = mapToPriceDraft(productVariant);
                 final List<AttributeDraft> attributeDraftsWithKeys =
                     replaceAttributesReferencesIdsWithKeys(productVariant);
                 final List<AssetDraft> assetDraftsWithKeys = mapToAssetDrafts(productVariant.getAssets());
@@ -86,38 +82,26 @@ public final class VariantReferenceReplacementUtils {
      * @return  a {@link List} of {@link PriceDraft} that has all references with keys replacing the ids.
      */
     @Nonnull
-    static List<PriceDraft> replacePricesReferencesIdsWithKeys(@Nonnull final ProductVariant productVariant) {
+    static List<PriceDraft> mapToPriceDraft(@Nonnull final ProductVariant productVariant) {
 
         return productVariant.getPrices().stream().map(price -> {
-            final ResourceIdentifier<Channel> channelReferenceWithKey = replaceChannelReferenceIdWithKey(price);
-            final CustomFieldsDraft customFieldsDraftWithKey = mapToCustomFieldsDraft(price);
-
             return PriceDraftBuilder.of(price)
-                                    .custom(customFieldsDraftWithKey)
-                                    .channel(channelReferenceWithKey)
+                                    .custom(mapToCustomFieldsDraft(price))
+                                    .channel(mapToChannelResourceIdentifier(price.getChannel()))
                                     .build();
         }).collect(toList());
     }
 
-    /**
-     * Takes a price that is supposed to have its channel reference expanded in order to be able to fetch the key
-     * and replace the reference id with the corresponding key and then return a new {@link Channel}
-     * {@link ResourceIdentifier} containing the key in the id field.
-     *
-     * <p><b>Note:</b> The Channel reference should be expanded for the {@code price}, otherwise the reference
-     * id will not be replaced with the key and will still have the id in place.
-     *
-     * @param price the price to replace its channel reference id with the key.
-     *
-     * @return a new {@link Channel} {@link ResourceIdentifier} containing the key in the id field.
-     */
-    @Nullable
-    @SuppressWarnings("ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
-    static ResourceIdentifier<Channel> replaceChannelReferenceIdWithKey(@Nonnull final Price price) {
+    static ResourceIdentifier<Channel> mapToChannelResourceIdentifier(
+        @Nullable final Reference<Channel> channelReference) {
 
-        final Reference<Channel> priceChannel = price.getChannel();
-        return getResourceIdentifierWithKey(priceChannel,
-            () -> ResourceIdentifier.ofId(priceChannel.getObj().getKey()));
+        if (channelReference != null) {
+            if (channelReference.getObj() != null) {
+                return ResourceIdentifier.ofKey(channelReference.getObj().getKey());
+            }
+            return ResourceIdentifier.ofId(channelReference.getId());
+        }
+        return null;
     }
 
     /**

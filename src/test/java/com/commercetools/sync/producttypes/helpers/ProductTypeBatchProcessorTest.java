@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_REFERENCE;
 import static com.commercetools.sync.producttypes.helpers.ProductTypeBatchProcessor.PRODUCT_TYPE_DRAFT_IS_NULL;
 import static com.commercetools.sync.producttypes.helpers.ProductTypeBatchProcessor.PRODUCT_TYPE_DRAFT_KEY_NOT_SET;
 import static com.commercetools.sync.producttypes.helpers.ProductTypeBatchProcessor.PRODUCT_TYPE_HAS_INVALID_REFERENCES;
@@ -181,7 +181,7 @@ class ProductTypeBatchProcessorTest {
                 assertThat(throwable).isInstanceOf(SyncException.class);
                 assertThat(throwable.getMessage()).isEqualTo(expectedExceptionMessage);
                 assertThat(throwable.getCause()).isInstanceOf(InvalidReferenceException.class);
-                assertThat(throwable.getCause().getMessage()).isEqualTo(BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER);
+                assertThat(throwable.getCause().getMessage()).isEqualTo(BLANK_ID_VALUE_ON_REFERENCE);
             });
     }
 
@@ -235,7 +235,7 @@ class ProductTypeBatchProcessorTest {
                 assertThat(throwable).isInstanceOf(SyncException.class);
                 assertThat(throwable.getMessage()).isEqualTo(expectedExceptionMessage);
                 assertThat(throwable.getCause()).isInstanceOf(InvalidReferenceException.class);
-                assertThat(throwable.getCause().getMessage()).isEqualTo(BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER);
+                assertThat(throwable.getCause().getMessage()).isEqualTo(BLANK_ID_VALUE_ON_REFERENCE);
             });
     }
 
@@ -315,7 +315,7 @@ class ProductTypeBatchProcessorTest {
 
         final Predicate<Throwable> invalidReferencePredicate = throwable ->
             expectedExceptionMessage.equals(throwable.getMessage())
-                && BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER.equals(throwable.getCause().getMessage());
+                && BLANK_ID_VALUE_ON_REFERENCE.equals(throwable.getCause().getMessage());
 
         final Condition<Throwable> invalidReferenceCondition = new Condition<>(invalidReferencePredicate,
             "ReferenceResolutionException: "
