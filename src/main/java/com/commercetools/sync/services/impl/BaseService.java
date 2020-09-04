@@ -7,7 +7,6 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.DraftBasedCreateCommand;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.commands.UpdateCommand;
-import io.sphere.sdk.models.Resource;
 import io.sphere.sdk.models.ResourceView;
 import io.sphere.sdk.queries.MetaModelQueryDsl;
 import org.apache.commons.lang3.StringUtils;

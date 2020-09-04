@@ -38,6 +38,7 @@ public class CustomObjectServiceImpl
     }
 
     @Nonnull
+    @Override
     public CompletionStage<Optional<String>> fetchCachedCustomObjectId(
             @Nonnull final CustomObjectCompositeIdentifier identifier) {
 
@@ -45,13 +46,14 @@ public class CustomObjectServiceImpl
         String key = identifier.getKey();
 
         return fetchCachedResourceId(identifier.toString(),
-                draft -> CustomObjectCompositeIdentifier.of(draft).toString(),
-                () -> CustomObjectQuery.ofJsonNode()
+            draft -> CustomObjectCompositeIdentifier.of(draft).toString(),
+            () -> CustomObjectQuery.ofJsonNode()
                         .withPredicates(q -> q.container().is(container).and(q.key().is(key)))
         );
     }
 
     @Nonnull
+    @Override
     public CompletionStage<Set<CustomObject<JsonNode>>> fetchMatchingCustomObjectByCompositeIdentifiers(
             @Nonnull final Set<CustomObjectCompositeIdentifier> identifiers) {
 
@@ -60,12 +62,12 @@ public class CustomObjectServiceImpl
 
 
         return fetchMatchingResources(identifierStrings,
-                draft -> CustomObjectCompositeIdentifier.of(draft).toString(),
-                () -> {
-                    CustomObjectQueryBuilder<JsonNode> query = CustomObjectQueryBuilder.ofJsonNode();
-                    query = query.plusPredicates(queryModel -> createQuery(queryModel, identifiers));
-                    return query.build();
-                });
+            draft -> CustomObjectCompositeIdentifier.of(draft).toString(),
+            () -> {
+                CustomObjectQueryBuilder<JsonNode> query = CustomObjectQueryBuilder.ofJsonNode();
+                query = query.plusPredicates(queryModel -> createQuery(queryModel, identifiers));
+                return query.build();
+            });
     }
 
     @Nonnull
@@ -89,6 +91,7 @@ public class CustomObjectServiceImpl
     }
 
     @Nonnull
+    @Override
     public CompletionStage<Optional<CustomObject<JsonNode>>> fetchCustomObject(
             @Nonnull final CustomObjectCompositeIdentifier identifier) {
 
@@ -106,11 +109,12 @@ public class CustomObjectServiceImpl
     }
 
     @Nonnull
+    @Override
     public CompletionStage<Optional<CustomObject<JsonNode>>> upsertCustomObject(
         @Nonnull final CustomObjectDraft<JsonNode> customObjectDraft) {
 
         return createResource(customObjectDraft,
-                draft -> CustomObjectCompositeIdentifier.of(draft).toString(),
+            draft -> CustomObjectCompositeIdentifier.of(draft).toString(),
                 CustomObjectUpsertCommand::of);
     }
 }

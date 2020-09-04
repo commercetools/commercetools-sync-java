@@ -16,9 +16,9 @@ public interface CustomObjectService {
 
     /**
      * Given a {@code identifier} and convert the object to string as key, this method first checks if a cached
-     * map of {@link CustomObjectCompositeIdentifier#toString()} -&gt; ids contains the key. If not, it returns a completed future that contains an
-     * {@link Optional} that contains what this identifier maps to in the cache. If the cache doesn't contain the identifier;
-     * this method attempts to fetch the id of the identifier from the CTP
+     * map of {@link CustomObjectCompositeIdentifier#toString()} -&gt; ids contains the key. If not, it returns a
+     * completed future that contains an {@link Optional} that contains what this identifier maps to in the cache. If
+     * the cache doesn't contain the identifier; this method attempts to fetch the id of the identifier from the CTP
      * project, caches it and returns a {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt;
      * in which the result of it's completion could contain an
      * {@link Optional} with the id inside of it or an empty {@link Optional} if no {@link CustomObject} was
@@ -45,7 +45,8 @@ public interface CustomObjectService {
      *          of all matching CustomObjects.
      */
     @Nonnull
-    CompletionStage<Set<CustomObject<JsonNode>>> fetchMatchingCustomObjectByCompositeIdentifiers(@Nonnull Set<CustomObjectCompositeIdentifier> identifiers);
+    CompletionStage<Set<CustomObject<JsonNode>>> fetchMatchingCustomObjectByCompositeIdentifiers(
+        @Nonnull Set<CustomObjectCompositeIdentifier> identifiers);
 
     /**
      * Given a CustomObjectCompositeIdentifer identify which includes key and container of CustomObject, this method
@@ -58,7 +59,8 @@ public interface CustomObjectService {
      *         {@link Optional} that contains the matching {@link CustomObject} if exists, otherwise empty.
      */
     @Nonnull
-    CompletionStage<Optional<CustomObject<JsonNode>>> fetchCustomObject(@Nonnull CustomObjectCompositeIdentifier identifier);
+    CompletionStage<Optional<CustomObject<JsonNode>>> fetchCustomObject(
+        @Nonnull CustomObjectCompositeIdentifier identifier);
 
     /**
      * Given a resource draft of CustomObject {@link CustomObjectDraft}, this method attempts to create or update
@@ -70,8 +72,8 @@ public interface CustomObjectService {
      *     <li>the create request fails on CTP</li>
      * </ul>
      *
-     * <p>On the other hand, if the resource gets created or updated successfully on CTP, then the created resource's id and
-     * key/container wrapped by {@link CustomObjectCompositeIdentifier} are cached and the method returns a
+     * <p>On the other hand, if the resource gets created or updated successfully on CTP, then the created resource's
+     * id and key/container wrapped by {@link CustomObjectCompositeIdentifier} are cached and the method returns a
      * {@link CompletionStage} in which the result of its completion contains an instance {@link Optional} of the
      * resource which was created or updated.
      *
@@ -83,5 +85,6 @@ public interface CustomObjectService {
      *         otherwise an empty optional.
      */
     @Nonnull
-    CompletionStage<Optional<CustomObject<JsonNode>>> upsertCustomObject(@Nonnull CustomObjectDraft<JsonNode> customObjectDraft);
+    CompletionStage<Optional<CustomObject<JsonNode>>> upsertCustomObject(
+        @Nonnull CustomObjectDraft<JsonNode> customObjectDraft);
 }

@@ -228,9 +228,10 @@ class CustomObjectServiceImplTest {
     @Test
     void createCustomObject_WithDraftHasNoKey_ShouldNotCreateCustomObject() {
         final CustomObjectDraft<JsonNode> customObjectDraft = mock(CustomObjectDraft.class);
-        when(customObjectDraft.getJavaType()).thenReturn(getCustomObjectJavaTypeForValue(convertToJavaType(JsonNode.class)));
+        when(customObjectDraft.getJavaType()).thenReturn(
+            getCustomObjectJavaTypeForValue(convertToJavaType(JsonNode.class)));
 
-         final Optional<CustomObject<JsonNode>> customObjectOptional =
+        final Optional<CustomObject<JsonNode>> customObjectOptional =
             service.upsertCustomObject(customObjectDraft).toCompletableFuture().join();
 
         assertAll(

@@ -1,6 +1,5 @@
 package com.commercetools.sync.customobjects.helpers;
 
-import io.netty.util.internal.StringUtil;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
 import org.apache.commons.lang3.StringUtils;
@@ -29,8 +28,8 @@ public final class CustomObjectCompositeIdentifier {
 
 
     /**
-     * Given a {@link CustomObjectDraft}, creates a {@link CustomObjectCompositeIdentifier} using the following fields from the
-     * supplied {@link CustomObjectDraft}:
+     * Given a {@link CustomObjectDraft}, creates a {@link CustomObjectCompositeIdentifier} using the following fields
+     * from the supplied {@link CustomObjectDraft}:
      * <ol>
      * <li>{@link CustomObjectCompositeIdentifier#key}: key of {@link CustomObjectDraft#getKey()} </li>
      * <li>{@link CustomObjectCompositeIdentifier#container}: container of {@link CustomObjectDraft#getContainer()}</li>
@@ -46,8 +45,8 @@ public final class CustomObjectCompositeIdentifier {
     }
 
     /**
-     * Given a {@link CustomObjectDraft}, creates a {@link CustomObjectCompositeIdentifier} using the following fields from the
-     * supplied {@link CustomObject}:
+     * Given a {@link CustomObjectDraft}, creates a {@link CustomObjectCompositeIdentifier} using the following fields
+     * from the supplied {@link CustomObject}:
      * <ol>
      * <li>{@link CustomObjectCompositeIdentifier#key}: key of {@link CustomObject#getKey()} </li>
      * <li>{@link CustomObjectCompositeIdentifier#container}: container of {@link CustomObject#getContainer()}</li>
@@ -62,8 +61,8 @@ public final class CustomObjectCompositeIdentifier {
     }
 
     /**
-     * Given a {@link String} and {@link String}, creates a {@link CustomObjectCompositeIdentifier} using the following fields from the
-     * supplied attributes.
+     * Given a {@link String} and {@link String}, creates a {@link CustomObjectCompositeIdentifier} using the following
+     * fields from the supplied attributes.
      * <ol>
      * <li>{@link CustomObjectCompositeIdentifier#key}: key of {@link CustomObject#getKey()} </li>
      * <li>{@link CustomObjectCompositeIdentifier#container}: container of {@link CustomObject#getContainer()}</li>

@@ -2,7 +2,6 @@ package com.commercetools.sync.commons.utils;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.models.Resource;
 import io.sphere.sdk.models.ResourceView;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.queries.QueryDsl;

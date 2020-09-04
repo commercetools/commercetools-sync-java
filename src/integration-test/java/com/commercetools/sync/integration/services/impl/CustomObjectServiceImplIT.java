@@ -32,11 +32,13 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class CustomObjectServiceImplIT {
     private CustomObjectService customObjectService;
-    private static final String OLD_CUSTOM_OBJECT_ID = "old_custom_object_id";
     private static final String OLD_CUSTOM_OBJECT_KEY = "old_custom_object_key";
     private static final String OLD_CUSTOM_OBJECT_CONTAINER = "old_custom_object_container";
     private static final ObjectNode OLD_CUSTOM_OBJECT_VALUE =
@@ -62,7 +64,8 @@ class CustomObjectServiceImplIT {
         errorCallBackExceptions = new ArrayList<>();
 
         deleteCustomObjects(CTP_TARGET_CLIENT);
-        createCustomObject(CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY, OLD_CUSTOM_OBJECT_CONTAINER, OLD_CUSTOM_OBJECT_VALUE);
+        createCustomObject(CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY,
+                OLD_CUSTOM_OBJECT_CONTAINER, OLD_CUSTOM_OBJECT_VALUE);
 
         final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
@@ -79,7 +82,7 @@ class CustomObjectServiceImplIT {
      */
     @AfterAll
     static void tearDown() {
-       deleteCustomObjects(CTP_TARGET_CLIENT);
+        deleteCustomObjects(CTP_TARGET_CLIENT);
     }
 
     @Test
@@ -122,8 +125,10 @@ class CustomObjectServiceImplIT {
     @Test
     void fetchMatchingCustomObjectsByCompositeIdentifiers_WithNonExistingKeysAndContainers_ShouldReturnEmptySet() {
         final Set<CustomObjectCompositeIdentifier> customObjectCompositeIdentifiers = new HashSet<>();
-        customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(OLD_CUSTOM_OBJECT_KEY+"_1", OLD_CUSTOM_OBJECT_CONTAINER+"_1"));
-        customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(OLD_CUSTOM_OBJECT_KEY+"_2", OLD_CUSTOM_OBJECT_CONTAINER+"_2"));
+        customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(
+                OLD_CUSTOM_OBJECT_KEY + "_1", OLD_CUSTOM_OBJECT_CONTAINER + "_1"));
+        customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(
+                OLD_CUSTOM_OBJECT_KEY + "_2", OLD_CUSTOM_OBJECT_CONTAINER + "_2"));
 
         final Set<CustomObject<JsonNode>> matchingCustomObjects = customObjectService
                                     .fetchMatchingCustomObjectByCompositeIdentifiers(customObjectCompositeIdentifiers)
@@ -136,9 +141,10 @@ class CustomObjectServiceImplIT {
     }
 
     @Test
-    void fetchMatchingCustomObjectsByCompositeIdentifiers_WithAnyExistingKeysAndContainers_ShouldReturnASetOfCustomObjects() {
+    void fetchMatchingCustomObjectsByIdentifiers_WithAnyExistingKeysAndContainers_ShouldReturnASetOfCustomObjects() {
         final Set<CustomObjectCompositeIdentifier> customObjectCompositeIdentifiers = new HashSet<>();
-        customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(OLD_CUSTOM_OBJECT_KEY, OLD_CUSTOM_OBJECT_CONTAINER));
+        customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(
+                OLD_CUSTOM_OBJECT_KEY, OLD_CUSTOM_OBJECT_CONTAINER));
 
         final Set<CustomObject<JsonNode>> matchingCustomObjects =  customObjectService
                                     .fetchMatchingCustomObjectByCompositeIdentifiers(customObjectCompositeIdentifiers)
@@ -169,12 +175,14 @@ class CustomObjectServiceImplIT {
         final CustomObjectService spyCustomObjectService = new CustomObjectServiceImpl(spyOptions);
 
         final Set<CustomObjectCompositeIdentifier> customObjectCompositeIdentifiers = new HashSet<>();
-        customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(OLD_CUSTOM_OBJECT_KEY, OLD_CUSTOM_OBJECT_CONTAINER));
+        customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(
+                OLD_CUSTOM_OBJECT_KEY, OLD_CUSTOM_OBJECT_CONTAINER));
 
         // test and assert
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
-        assertThat(spyCustomObjectService.fetchMatchingCustomObjectByCompositeIdentifiers(customObjectCompositeIdentifiers))
+        assertThat(spyCustomObjectService
+                .fetchMatchingCustomObjectByCompositeIdentifiers(customObjectCompositeIdentifiers))
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(BadGatewayException.class);
     }
@@ -190,21 +198,24 @@ class CustomObjectServiceImplIT {
         assertThat(customObjectOptional).isNotNull();
 
         final Optional<CustomObject<JsonNode>> fetchedCustomObjectOptional =
-            executeBlocking(customObjectService.fetchCustomObject(CustomObjectCompositeIdentifier.of(OLD_CUSTOM_OBJECT_KEY, OLD_CUSTOM_OBJECT_CONTAINER)));
+            executeBlocking(customObjectService.fetchCustomObject(CustomObjectCompositeIdentifier.of(
+                    OLD_CUSTOM_OBJECT_KEY, OLD_CUSTOM_OBJECT_CONTAINER)));
         assertThat(customObjectOptional).isEqualTo(fetchedCustomObjectOptional);
     }
 
     @Test
     void fetchCustomObject_WithBlankKeyAndContainer_ShouldNotFetchCustomObject() {
         final Optional<CustomObject<JsonNode>> fetchedCustomObjectOptional =
-            executeBlocking(customObjectService.fetchCustomObject(CustomObjectCompositeIdentifier.of(StringUtils.EMPTY,StringUtils.EMPTY)));
+            executeBlocking(customObjectService.fetchCustomObject(
+                    CustomObjectCompositeIdentifier.of(StringUtils.EMPTY,StringUtils.EMPTY)));
         assertThat(fetchedCustomObjectOptional).isEmpty();
     }
 
     @Test
     void fetchCustomObject_WithNullKeyAndContainer_ShouldNotFetchCustomObject() {
         final Optional<CustomObject<JsonNode>> fetchedCustomObjectOptional =
-            executeBlocking(customObjectService.fetchCustomObject(CustomObjectCompositeIdentifier.of(null, null)));
+            executeBlocking(customObjectService.fetchCustomObject(
+                    CustomObjectCompositeIdentifier.of(null, null)));
         assertThat(fetchedCustomObjectOptional).isEmpty();
     }
 
