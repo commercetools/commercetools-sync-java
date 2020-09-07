@@ -4,7 +4,6 @@ import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedTransitions;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.client.SphereRequest;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
 import io.sphere.sdk.customobjects.commands.CustomObjectDeleteCommand;
