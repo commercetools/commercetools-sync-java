@@ -45,6 +45,7 @@ class CustomObjectServiceImplIT {
             JsonNodeFactory.instance.objectNode().put(
                     "old_custom_object_attribute", "old_custom_object_value");
 
+    private static final String NEW_CUSTOM_OBJECT_ID = "new_custom_object_id";
     private static final String NEW_CUSTOM_OBJECT_KEY = "new_custom_object_key";
     private static final String NEW_CUSTOM_OBJECT_CONTAINER = "new_custom_object_container";
     private static final ObjectNode NEW_CUSTOM_OBJECT_VALUE =
