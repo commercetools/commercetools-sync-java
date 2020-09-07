@@ -17,7 +17,7 @@ public interface CustomObjectService {
     /**
      * Given a {@code identifier} and convert the object to string as key, this method first checks if a cached
      * map of {@link CustomObjectCompositeIdentifier#toString()} -&gt; ids contains the key. If not, it returns a
-     * completed future that contains an {@link Optional} that contains what this identifier maps to in the cache. If
+     * CompletionStage that contains an {@link Optional} that contains what this identifier maps to in the cache. If
      * the cache doesn't contain the identifier; this method attempts to fetch the id of the identifier from the CTP
      * project, caches it and returns a {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt;
      * in which the result of it's completion could contain an
