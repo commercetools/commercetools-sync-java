@@ -222,23 +222,4 @@ class CustomObjectServiceImplTest {
             () -> assertThat(errorExceptions).singleElement().isExactlyInstanceOf(BadRequestException.class)
         );
     }
-
-    @Test
-    void createCustomObject_WithDraftHasNoKey_ShouldNotCreateCustomObject() {
-        final CustomObjectDraft<JsonNode> customObjectDraft = mock(CustomObjectDraft.class);
-        when(customObjectDraft.getJavaType()).thenReturn(
-            getCustomObjectJavaTypeForValue(convertToJavaType(JsonNode.class)));
-
-        final Optional<CustomObject<JsonNode>> customObjectOptional =
-            service.upsertCustomObject(customObjectDraft).toCompletableFuture().join();
-
-        assertAll(
-            () -> assertThat(customObjectOptional).isEmpty(),
-            () -> assertThat(errorMessages).hasSize(1),
-            () -> assertThat(errorExceptions).hasSize(1),
-            () -> assertThat(errorMessages)
-                .contains("Failed to create draft with key: ''. Reason: Draft key is blank!")
-        );
-
-    }
 }
