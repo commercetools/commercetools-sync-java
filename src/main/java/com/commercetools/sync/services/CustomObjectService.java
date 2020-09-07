@@ -35,7 +35,7 @@ public interface CustomObjectService {
 
     /**
      * Given a {@link Set} of CustomObjectCompositeIdentifier, this method fetches a set of all the CustomObjects,
-     * matching this given set of CustomObjectCompositeIdentifiers in the CTP project, defined in an injected
+     * matching this given set of CustomObjectCompositeIdentifiers in the CTP project defined in an injected
      * {@link io.sphere.sdk.client.SphereClient}. A mapping of the CustomObjectCompositeIdentifier to the id of the
      * fetched CustomObject is persisted in an in-memory map.
      *
