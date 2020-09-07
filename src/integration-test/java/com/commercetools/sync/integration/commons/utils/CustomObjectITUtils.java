@@ -9,6 +9,7 @@ import io.sphere.sdk.customobjects.CustomObjectDraft;
 import io.sphere.sdk.customobjects.commands.CustomObjectDeleteCommand;
 import io.sphere.sdk.customobjects.commands.CustomObjectUpsertCommand;
 import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
+import io.sphere.sdk.customobjects.queries.CustomObjectQueryBuilder;
 import io.sphere.sdk.queries.PagedQueryResult;
 
 
@@ -24,25 +25,33 @@ public final class CustomObjectITUtils {
         "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
 
 
+
     /**
      * Deletes all customObjects from CTP project, represented by provided {@code ctpClient}.
      *
      * @param ctpClient represents the CTP project the types will be deleted from.
      */
-    public static void deleteCustomObjects(@Nonnull final SphereClient ctpClient) {
+    public static void deleteCustomObject(
+        @Nonnull final SphereClient ctpClient,
+        @Nonnull final String key,
+        @Nonnull final String container) {
 
-        final CustomObjectQuery<JsonNode> customObjectQuery = CustomObjectQuery.ofJsonNode();
+        final CustomObjectQuery<JsonNode> customObjectQuery =
+                CustomObjectQueryBuilder.ofJsonNode()
+                        .plusPredicates(queryModel -> queryModel.container().is(container))
+                        .plusPredicates(queryModel -> queryModel.key().is(key))
+                        .build();
 
         ctpClient
                 .execute(customObjectQuery)
                 .thenApply(PagedQueryResult::getResults)
-                .thenCompose(customObjects -> deleteCustomObjects(ctpClient, customObjects))
+                .thenCompose(customObjects -> deleteCustomObject(ctpClient, customObjects))
                 .toCompletableFuture()
                 .join();
     }
 
     @Nonnull
-    private static CompletableFuture<Void> deleteCustomObjects(
+    private static CompletableFuture<Void> deleteCustomObject(
             @Nonnull final SphereClient ctpClient,
             @Nonnull final List<CustomObject<JsonNode>> customObjects) {
 

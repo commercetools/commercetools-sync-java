@@ -26,7 +26,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.deleteCustomObjects;
+import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.deleteCustomObject;
 import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.createCustomObject;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
@@ -44,7 +44,7 @@ class CustomObjectServiceImplIT {
     private static final ObjectNode OLD_CUSTOM_OBJECT_VALUE =
             JsonNodeFactory.instance.objectNode().put(
                     "old_custom_object_attribute", "old_custom_object_value");
-    
+
     private static final String NEW_CUSTOM_OBJECT_KEY = "new_custom_object_key";
     private static final String NEW_CUSTOM_OBJECT_CONTAINER = "new_custom_object_container";
     private static final ObjectNode NEW_CUSTOM_OBJECT_VALUE =
@@ -62,7 +62,8 @@ class CustomObjectServiceImplIT {
         errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
 
-        deleteCustomObjects(CTP_TARGET_CLIENT);
+        deleteCustomObject(CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY, OLD_CUSTOM_OBJECT_CONTAINER);
+        deleteCustomObject(CTP_TARGET_CLIENT, NEW_CUSTOM_OBJECT_KEY, NEW_CUSTOM_OBJECT_CONTAINER);
         createCustomObject(CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY,
                 OLD_CUSTOM_OBJECT_CONTAINER, OLD_CUSTOM_OBJECT_VALUE);
 
@@ -81,7 +82,8 @@ class CustomObjectServiceImplIT {
      */
     @AfterAll
     static void tearDown() {
-        deleteCustomObjects(CTP_TARGET_CLIENT);
+        deleteCustomObject(CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY, OLD_CUSTOM_OBJECT_CONTAINER);
+        deleteCustomObject(CTP_TARGET_CLIENT, NEW_CUSTOM_OBJECT_KEY, NEW_CUSTOM_OBJECT_CONTAINER);
     }
 
     @Test
