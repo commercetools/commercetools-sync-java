@@ -86,6 +86,10 @@ public final class CustomObjectCompositeIdentifier {
 
     @Override
     public String toString() {
-        return format("{key='%s', container='%s'}", key, container);
+        if (StringUtils.isEmpty(key) && StringUtils.isEmpty(container)) {
+            return "";
+        } else {
+            return format("{key='%s', container='%s'}", key, container);
+        }
     }
 }
