@@ -216,12 +216,10 @@ class CustomObjectServiceImplTest {
         String expectedMsg = "Failed to create draft with key: '{key='%s', container='%s'}'";
         assertAll(
             () -> assertThat(customObjectOptional).isEmpty(),
-            () -> assertThat(errorMessages).hasOnlyOneElementSatisfying(message -> {
-                assertThat(message).contains(String.format(expectedMsg, customObjectKey, customObjectContainer));
-                assertThat(message).contains("BadRequestException");
-            }),
-            () -> assertThat(errorExceptions).hasOnlyOneElementSatisfying(exception ->
-                assertThat(exception).isExactlyInstanceOf(BadRequestException.class))
+            () -> assertThat(errorMessages).singleElement().asString()
+                .contains(String.format(expectedMsg, customObjectKey, customObjectContainer))
+                .contains("BadRequestException"),
+            () -> assertThat(errorExceptions).singleElement().isExactlyInstanceOf(BadRequestException.class)
         );
     }
 
