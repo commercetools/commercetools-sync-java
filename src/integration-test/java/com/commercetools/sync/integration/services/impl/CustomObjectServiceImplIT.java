@@ -26,8 +26,8 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.deleteCustomObjects;
 import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.createCustomObject;
-import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.deleteCustomObject;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -63,8 +63,7 @@ class CustomObjectServiceImplIT {
         errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
 
-        deleteCustomObject(CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_CONTAINER, OLD_CUSTOM_OBJECT_KEY);
-        deleteCustomObject(CTP_TARGET_CLIENT, NEW_CUSTOM_OBJECT_CONTAINER, NEW_CUSTOM_OBJECT_KEY);
+        deleteCustomObjects(CTP_TARGET_CLIENT);
         createCustomObject(CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY,
                 OLD_CUSTOM_OBJECT_CONTAINER, OLD_CUSTOM_OBJECT_VALUE);
 
@@ -83,8 +82,7 @@ class CustomObjectServiceImplIT {
      */
     @AfterAll
     static void tearDown() {
-        deleteCustomObject(CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_CONTAINER, OLD_CUSTOM_OBJECT_KEY);
-        deleteCustomObject(CTP_TARGET_CLIENT, NEW_CUSTOM_OBJECT_CONTAINER, NEW_CUSTOM_OBJECT_KEY);
+        deleteCustomObjects(CTP_TARGET_CLIENT);
     }
 
     @Test
