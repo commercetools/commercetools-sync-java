@@ -59,6 +59,9 @@ public final class CustomObjectITUtils {
      * Create a customObject in target CTP project, represented by provided {@code ctpClient}.
      *
      * @param ctpClient represents the CTP project the types will be deleted from.
+     * @param key represents the key field required in custom object.
+     * @param container represents the container field required in custom object.
+     * @param value represents the value field required in custom object.
      */
     public static CustomObject<JsonNode> createCustomObject(
             @Nonnull final SphereClient ctpClient,
