@@ -41,7 +41,6 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-//todo (ahmetoz) all javadocs needs to be refactored with the new requirements.
 public final class ProductReferenceResolver extends BaseReferenceResolver<ProductDraft, ProductSyncOptions> {
     private final ProductTypeService productTypeService;
     private final CategoryService categoryService;
@@ -97,8 +96,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     /**
      * Given a {@link ProductDraft} this method attempts to resolve the product type, categories, variants, tax
      * category and product state references to return a {@link CompletionStage} which contains a new instance of the
-     * draft with the resolved references. The keys of the references are either taken from the expanded references or
-     * taken from the id field of the references.
+     * draft with the resolved references.
      *
      * @param productDraft the productDraft to resolve it's references.
      * @return a {@link CompletionStage} that contains as a result a new productDraft instance with resolved references
@@ -138,8 +136,6 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     /**
      * Given a {@link ProductDraftBuilder} this method attempts to resolve the product type to return a
      * {@link CompletionStage} which contains a new instance of the builder with the resolved product type reference.
-     * The key of the product type reference is either taken from the expanded reference or taken from the value of the
-     * id field.
      *
      * @param draftBuilder the productDraft to resolve its product type reference.
      * @return a {@link CompletionStage} that contains as a result a new builder instance with resolved product type
@@ -188,8 +184,6 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     /**
      * Given a {@link ProductDraftBuilder} this method attempts to resolve the categories and categoryOrderHints to
      * return a {@link CompletionStage} which contains a new instance of the builder with the resolved references.
-     * The key of the category references is either taken from the expanded references or taken from the value of the
-     * id fields.
      *
      * @param draftBuilder the productDraft to resolve its category and categoryOrderHints references.
      * @return a {@link CompletionStage} that contains as a result a new builder instance with resolved references or,
@@ -236,7 +230,6 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
                 .map(category -> {
                     keyToCategory.put(category.getKey(), category);
                     if (categoryOrderHints != null) {
-                        // todo (ahmetoz), what about the direct references ?
                         ofNullable(categoryOrderHints.get(category.getKey()))
                             .ifPresent(orderHintValue ->
                                 categoryOrderHintsMap.put(category.getId(), orderHintValue));
@@ -269,8 +262,6 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     /**
      * Given a {@link ProductDraftBuilder} this method attempts to resolve the tax category to return a
      * {@link CompletionStage} which contains a new instance of the builder with the resolved tax category reference.
-     * The key of the tax category reference is either taken from the expanded reference or taken from the value of the
-     * id field.
      *
      * @param draftBuilder the productDraft to resolve its tax category reference.
      * @return a {@link CompletionStage} that contains as a result a new builder instance with resolved tax category
@@ -297,16 +288,6 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         return completedFuture(draftBuilder);
     }
 
-    /**
-     * Given a {@link ProductDraftBuilder} and a {@code taxCategoryKey} this method fetches the actual id of the
-     * product type corresponding to this key, ideally from a cache. Then it sets this id on the product type reference
-     * id. // todo (ahmet) complete the docs.
-     *
-     * @param draftBuilder   the product draft builder to accept resolved references values.
-     * @param taxCategoryKey the tax category type key of to resolve it's actual id on the draft.
-     * @return a {@link CompletionStage} that contains as a result the same {@code draftBuilder} product draft builder
-     *         instance with resolved tax category type reference or an exception.
-     */
     @Nonnull
     private CompletionStage<ProductDraftBuilder> fetchAndResolveTaxCategoryReference(
         @Nonnull final ProductDraftBuilder draftBuilder,

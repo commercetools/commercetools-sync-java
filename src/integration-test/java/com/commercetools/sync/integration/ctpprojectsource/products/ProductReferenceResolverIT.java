@@ -45,8 +45,8 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
-import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.buildProductQuery;
-import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.replaceProductsReferenceIdsWithKeys;
+import static com.commercetools.sync.products.utils.ProductReferenceResolutionUtils.buildProductQuery;
+import static com.commercetools.sync.products.utils.ProductReferenceResolutionUtils.mapToProductDrafts;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -139,7 +139,7 @@ class ProductReferenceResolverIT {
         final List<Product> products = CTP_SOURCE_CLIENT.execute(productQuery)
                                                         .toCompletableFuture().join().getResults();
 
-        final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
+        final List<ProductDraft> productDrafts = mapToProductDrafts(products);
 
         // test
         final ProductSyncStatistics syncStatistics =  productSync.sync(productDrafts).toCompletableFuture().join();
@@ -162,7 +162,7 @@ class ProductReferenceResolverIT {
         final List<Product> products = CTP_SOURCE_CLIENT.execute(productQuery)
                                                         .toCompletableFuture().join().getResults();
 
-        final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
+        final List<ProductDraft> productDrafts = mapToProductDrafts(products);
 
         // test
         final ProductSyncStatistics syncStatistics =  productSync.sync(productDrafts).toCompletableFuture().join();

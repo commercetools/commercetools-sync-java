@@ -31,13 +31,13 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1
 import static com.commercetools.sync.products.ProductSyncMockUtils.getChannelMock;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getPriceMockWithReferences;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductVariantMock;
-import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.isProductReference;
-import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.isProductReferenceSet;
-import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.mapToPriceDraft;
-import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.replaceAttributeReferenceIdWithKey;
-import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.replaceAttributeReferenceSetIdsWithKeys;
-import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.replaceAttributesReferencesIdsWithKeys;
-import static com.commercetools.sync.products.utils.VariantReferenceReplacementUtils.replaceVariantsReferenceIdsWithKeys;
+import static com.commercetools.sync.products.utils.VariantReferenceResolutionUtils.isProductReference;
+import static com.commercetools.sync.products.utils.VariantReferenceResolutionUtils.isProductReferenceSet;
+import static com.commercetools.sync.products.utils.VariantReferenceResolutionUtils.mapToPriceDrafts;
+import static com.commercetools.sync.products.utils.VariantReferenceResolutionUtils.replaceAttributeReferenceIdWithKey;
+import static com.commercetools.sync.products.utils.VariantReferenceResolutionUtils.replaceAttributeReferenceSetIdsWithKeys;
+import static com.commercetools.sync.products.utils.VariantReferenceResolutionUtils.replaceAttributesReferencesIdsWithKeys;
+import static com.commercetools.sync.products.utils.VariantReferenceResolutionUtils.mapToProductVariantDrafts;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.CATEGORY_REFERENCE_ATTRIBUTE;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.DATE_ATTRIBUTE_2017_11_09;
@@ -60,10 +60,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class VariantReferenceReplacementUtilsTest {
+class VariantReferenceResolutionUtilsTest {
 
     @Test
-    void replaceVariantsReferenceIdsWithKeys_WithExpandedReferences_ShouldReturnVariantDraftsWithReplacedKeys() {
+    void mapToProductVariantDrafts_WithExpandedReferences_ShouldReturnVariantDraftsWithReplacedKeys() {
         final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
 
         final String channelKey = "channelKey";
@@ -82,7 +82,7 @@ class VariantReferenceReplacementUtilsTest {
 
         final ProductVariant productVariant = getProductVariantMock(singletonList(price), singletonList(asset));
 
-        final List<ProductVariantDraft> variantDrafts = replaceVariantsReferenceIdsWithKeys(
+        final List<ProductVariantDraft> variantDrafts = mapToProductVariantDrafts(
             singletonList(productVariant));
 
         assertThat(variantDrafts).hasSize(1);
@@ -106,7 +106,7 @@ class VariantReferenceReplacementUtilsTest {
     }
 
     @Test
-    void replaceVariantsReferenceIdsWithKeys_WithSomeExpandedReferences_ShouldReplaceSomeKeys() {
+    void mapToProductVariantDrafts_WithSomeExpandedReferences_ShouldReplaceSomeKeys() {
         final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
 
         final Reference<Type> priceCustomTypeReference1 =
@@ -146,7 +146,7 @@ class VariantReferenceReplacementUtilsTest {
         when(productVariant1.getAttributes()).thenReturn(singletonList(nonExpandedProductRefAttribute));
 
 
-        final List<ProductVariantDraft> variantDrafts = replaceVariantsReferenceIdsWithKeys(
+        final List<ProductVariantDraft> variantDrafts = mapToProductVariantDrafts(
             asList(productVariant1, productVariant2));
 
         assertThat(variantDrafts).hasSize(2);
@@ -206,7 +206,7 @@ class VariantReferenceReplacementUtilsTest {
     }
 
     @Test
-    void replaceVariantsReferenceIdsWithKeys_WithNoExpandedReferences_ShouldNotReplaceIds() {
+    void mapToProductVariantDrafts_WithNoExpandedReferences_ShouldNotReplaceIds() {
         final Reference<Channel> channelReference = Channel.referenceOfId(UUID.randomUUID().toString());
         final Reference<Type> customTypeReference = Type.referenceOfId(UUID.randomUUID().toString());
 
@@ -217,7 +217,7 @@ class VariantReferenceReplacementUtilsTest {
         final ProductVariant productVariant = getProductVariantMock(singletonList(price), singletonList(asset2));
 
         final List<ProductVariantDraft> variantDrafts =
-            replaceVariantsReferenceIdsWithKeys(singletonList(productVariant));
+            mapToProductVariantDrafts(singletonList(productVariant));
 
         assertThat(variantDrafts).hasSize(1);
         assertThat(variantDrafts.get(0).getPrices()).hasSize(1);
@@ -252,7 +252,7 @@ class VariantReferenceReplacementUtilsTest {
         final Price price = getPriceMockWithReferences(channelReference, typeReference);
         final ProductVariant productVariant = getProductVariantMock(singletonList(price));
 
-        final List<PriceDraft> priceDrafts = mapToPriceDraft(productVariant);
+        final List<PriceDraft> priceDrafts = mapToPriceDrafts(productVariant);
 
         assertThat(priceDrafts).hasSize(1);
         final PriceDraft priceDraftAfterReplacement = priceDrafts.get(0);
@@ -293,7 +293,7 @@ class VariantReferenceReplacementUtilsTest {
 
         final ProductVariant productVariant = getProductVariantMock(asList(price1, price2));
 
-        final List<PriceDraft> priceDrafts = mapToPriceDraft(productVariant);
+        final List<PriceDraft> priceDrafts = mapToPriceDrafts(productVariant);
 
         assertThat(priceDrafts).hasSize(2);
 
@@ -340,7 +340,7 @@ class VariantReferenceReplacementUtilsTest {
 
         final ProductVariant productVariant = getProductVariantMock(asList(price1, price2));
 
-        final List<PriceDraft> priceDrafts = mapToPriceDraft(productVariant);
+        final List<PriceDraft> priceDrafts = mapToPriceDrafts(productVariant);
 
         assertThat(priceDrafts).hasSize(2);
 

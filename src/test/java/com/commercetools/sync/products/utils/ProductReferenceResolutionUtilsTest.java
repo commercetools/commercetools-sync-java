@@ -49,10 +49,10 @@ import static org.assertj.core.data.MapEntry.entry;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class ProductReferenceReplacementUtilsTest {
+class ProductReferenceResolutionUtilsTest {
 
     @Test
-    void replaceProductsReferenceIdsWithKeys_WithSomeExpandedReferences_ShouldReplaceReferencesWhereExpanded() {
+    void mapToProductDrafts_WithSomeExpandedReferences_ShouldReplaceReferencesWhereExpanded() {
         final String resourceKey = "key";
         final ProductType productType = getProductTypeMock(resourceKey);
         final Reference<ProductType> productTypeReference =
@@ -109,8 +109,8 @@ class ProductReferenceReplacementUtilsTest {
             asList(productWithNonExpandedProductType, productWithNonExpandedTaxCategory, productWithNonExpandedSate);
 
 
-        final List<ProductDraft> productDraftsWithKeysOnReferences = ProductReferenceReplacementUtils
-            .replaceProductsReferenceIdsWithKeys(products);
+        final List<ProductDraft> productDraftsWithKeysOnReferences = ProductReferenceResolutionUtils
+            .mapToProductDrafts(products);
 
         assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getProductType)
                                                      .asList()
@@ -145,7 +145,7 @@ class ProductReferenceReplacementUtilsTest {
     }
 
     @Test
-    void replaceProductsReferenceIdsWithKeys_WithNullProducts_ShouldSkipNullProducts() {
+    void mapToProductDrafts_WithNullProducts_ShouldSkipNullProducts() {
         final String resourceKey = "key";
         final ProductType productType = getProductTypeMock(resourceKey);
         final Reference<ProductType> productTypeReference =
@@ -191,8 +191,8 @@ class ProductReferenceReplacementUtilsTest {
             asList(productWithNonExpandedProductType, productWithNonExpandedTaxCategory, null);
 
 
-        final List<ProductDraft> productDraftsWithKeysOnReferences = ProductReferenceReplacementUtils
-            .replaceProductsReferenceIdsWithKeys(products);
+        final List<ProductDraft> productDraftsWithKeysOnReferences = ProductReferenceResolutionUtils
+            .mapToProductDrafts(products);
 
         assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getProductType)
                                                      .asList()
@@ -223,7 +223,7 @@ class ProductReferenceReplacementUtilsTest {
 
     @Test
     void buildProductQuery_Always_ShouldReturnQueryWithAllNeededReferencesExpanded() {
-        final ProductQuery productQuery = ProductReferenceReplacementUtils.buildProductQuery();
+        final ProductQuery productQuery = ProductReferenceResolutionUtils.buildProductQuery();
         assertThat(productQuery.expansionPaths())
             .containsExactly(ExpansionPath.of("productType"), ExpansionPath.of("taxCategory"),
                 ExpansionPath.of("state"), ExpansionPath.of("masterData.staged.categories[*]"),
@@ -250,7 +250,7 @@ class ProductReferenceReplacementUtilsTest {
         final Product product = getProductMock(categoryReferences, categoryOrderHints);
 
         final CategoryReferencePair categoryReferencePair =
-            ProductReferenceReplacementUtils.mapToCategoryReferencePair(product);
+            ProductReferenceResolutionUtils.mapToCategoryReferencePair(product);
 
         assertThat(categoryReferencePair).isNotNull();
 
@@ -270,7 +270,7 @@ class ProductReferenceReplacementUtilsTest {
         final Product product = getProductMock(categoryReferences, null);
 
         final CategoryReferencePair categoryReferencePair =
-            ProductReferenceReplacementUtils.mapToCategoryReferencePair(product);
+            ProductReferenceResolutionUtils.mapToCategoryReferencePair(product);
 
         assertThat(categoryReferencePair).isNotNull();
 
@@ -296,7 +296,7 @@ class ProductReferenceReplacementUtilsTest {
         final Product product = getProductMock(categoryReferences, categoryOrderHints);
 
         final CategoryReferencePair categoryReferencePair =
-            ProductReferenceReplacementUtils.mapToCategoryReferencePair(product);
+            ProductReferenceResolutionUtils.mapToCategoryReferencePair(product);
 
         assertThat(categoryReferencePair).isNotNull();
 
@@ -321,7 +321,7 @@ class ProductReferenceReplacementUtilsTest {
         final Product product = getProductMock(singleton(categoryReference), null);
 
         final CategoryReferencePair categoryReferencePair =
-            ProductReferenceReplacementUtils.mapToCategoryReferencePair(product);
+            ProductReferenceResolutionUtils.mapToCategoryReferencePair(product);
 
         assertThat(categoryReferencePair).isNotNull();
 
@@ -356,7 +356,7 @@ class ProductReferenceReplacementUtilsTest {
         final Product product = getProductMock(categoryReferences, categoryOrderHints);
 
         final CategoryReferencePair categoryReferencePair =
-            ProductReferenceReplacementUtils.mapToCategoryReferencePair(product);
+            ProductReferenceResolutionUtils.mapToCategoryReferencePair(product);
 
         assertThat(categoryReferencePair).isNotNull();
 
@@ -378,7 +378,7 @@ class ProductReferenceReplacementUtilsTest {
         final Product product = getProductMock(Collections.emptySet(), null);
 
         final CategoryReferencePair categoryReferencePair =
-            ProductReferenceReplacementUtils.mapToCategoryReferencePair(product);
+            ProductReferenceResolutionUtils.mapToCategoryReferencePair(product);
 
         assertThat(categoryReferencePair).isNotNull();
 

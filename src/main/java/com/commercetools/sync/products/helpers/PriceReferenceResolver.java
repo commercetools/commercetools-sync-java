@@ -57,8 +57,10 @@ public final class PriceReferenceResolver
     /**
      * Given a {@link PriceDraft} this method attempts to resolve the custom type and channel
      * references to return a {@link CompletionStage} which contains a new instance of the draft with the resolved
-     * references. The keys of the references are either taken from the expanded references or
-     * taken from the key field of the references.
+     * references.
+     *
+     * <p>The method then tries to fetch the key of the customer group, optimistically from a cache.
+     * If the id is not found in cache nor the CTP project the {@link ReferenceResolutionException} will be thrown.
      *
      * @param priceDraft the priceDraft to resolve it's references.
      * @return a {@link CompletionStage} that contains as a result a new inventoryEntryDraft instance with resolved
@@ -87,8 +89,7 @@ public final class PriceReferenceResolver
     /**
      * Given a {@link PriceDraftBuilder} this method attempts to resolve the supply channel reference to return
      * a {@link CompletionStage} which contains the same instance of draft builder with the resolved
-     * supply channel reference. The key of the supply channel is either taken from the expanded reference or
-     * taken from the id field of the reference.
+     * supply channel reference.
      *
      * <p>The method then tries to fetch the key of the supply channel, optimistically from a
      * cache. If the id is not found in cache nor the CTP project and {@code ensureChannel}
@@ -193,9 +194,7 @@ public final class PriceReferenceResolver
      * a {@link CompletionStage} which contains the same instance of draft builder with the resolved
      * customer group reference.
      *
-     * <p>The method then tries to fetch the key of the customer group, optimistically from a
-     * cache. If the id is not found in cache nor the CTP project the draft builder is returned as is without the
-     * customer group reference being set on it.
+     * <p>Note: The key of the customer group reference taken from the value of the id field of the reference.
      *
      * @param draftBuilder the priceDraftBuilder to resolve its customer group reference.
      * @return a {@link CompletionStage} that contains as a result a new price draft builder instance with resolved

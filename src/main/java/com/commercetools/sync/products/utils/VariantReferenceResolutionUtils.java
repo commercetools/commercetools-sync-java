@@ -4,8 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.customergroups.CustomerGroup;
-import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.PriceDraftBuilder;
 import io.sphere.sdk.products.Product;
@@ -15,6 +15,8 @@ import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.Attribute;
 import io.sphere.sdk.products.attributes.AttributeAccess;
 import io.sphere.sdk.products.attributes.AttributeDraft;
+import io.sphere.sdk.producttypes.ProductType;
+import io.sphere.sdk.types.Type;
 
 import javax.annotation.Nonnull;
 import java.util.Iterator;
@@ -22,7 +24,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.AssetReferenceResolutionUtils.mapToAssetDrafts;
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft;
@@ -36,53 +37,80 @@ import static java.util.stream.Collectors.toSet;
  * Util class which provides utilities that can be used when syncing resources from a source commercetools project
  * to a target one.
  */
-public final class VariantReferenceReplacementUtils {
+public final class VariantReferenceResolutionUtils {
+
     /**
-     * Takes a list of Variants that are supposed to have their prices', assets' and attributes' references expanded in
-     * order to be able to fetch the keys and replace the reference ids with the corresponding keys and then return a
-     * new list of product variant drafts with their references containing keys instead of the ids.
+     * Returns an {@link List}&lt;{@link ProductVariantDraft}&gt; consisting of the results of applying the
+     * mapping from {@link ProductVariant} to {@link ProductVariantDraft} with considering reference resolution.
      *
-     * <p><b>Note:</b>If the references are not expanded for a product variant, the reference ids will not be replaced
-     * with keys and will still have their ids in place.
+     * <table summary="Mapping of Reference fields for the reference resolution">
+     *   <thead>
+     *     <tr>
+     *       <th>Reference field</th>
+     *       <th>from</th>
+     *       <th>to</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *        <td>variants.prices.channel</td>
+     *        <td>{@link Reference}&lt;{@link Channel}&gt;</td>
+     *        <td>{@link ResourceIdentifier}&lt;{@link Channel}&gt;</td>
+     *     </tr>
+     *     <tr>
+     *        <td>variants.prices.customerGroup *</td>
+     *        <td>{@link Reference}&lt;{@link CustomerGroup}&gt;</td>
+     *        <td>{@link Reference}&lt;{@link CustomerGroup}&gt; (with key replaced with id field)</td>
+     *     </tr>
+     *     <tr>
+     *        <td>variants.prices.custom.type</td>
+     *        <td>{@link Reference}&lt;{@link Type}&gt;</td>
+     *        <td>{@link ResourceIdentifier}&lt;{@link Type}&gt;</td>
+     *     </tr>
+     *     <tr>
+     *        <td>variants.assets.custom.type</td>
+     *        <td>{@link Reference}&lt;{@link Type}&gt;</td>
+     *        <td>{@link ResourceIdentifier}&lt;{@link Type}&gt;</td>
+     *     </tr>
+     *     <tr>
+     *        <td>variants.attributes on {@link List}&lt;{@link Attribute} *</td>
+     *        <td>{@link Reference}&lt;{@link ProductType}&gt; (example for ProductType)</td>
+     *        <td>{@link Reference}&lt;{@link ProductType}&gt; (with key replaced with id field)</td>
+     *     </tr>
+     *   </tbody>
+     * </table>
      *
-     * @param productVariants the product variants to replace their reference ids with keys
-     * @return a list of product variant drafts with keys instead of ids for references.
+     * <p><b>Note:</b> The aforementioned references should be expanded with a key.
+     * Any reference that is not expanded will have its id in place and not replaced by the key will be
+     * considered as existing resources on the target commercetools project and
+     * the library will issues an update/create API request without reference resolution.
+     *
+     * @param productVariants the product variants with expanded references.
+     * @return a {@link List} of {@link ProductVariantDraft} built from the
+     *         supplied {@link List} of {@link ProductVariant}.
      */
     @Nonnull
-    public static List<ProductVariantDraft> replaceVariantsReferenceIdsWithKeys(
+    public static List<ProductVariantDraft> mapToProductVariantDrafts(
         @Nonnull final List<ProductVariant> productVariants) {
+
         return productVariants
             .stream()
             .filter(Objects::nonNull)
-            .map(productVariant -> {
-                final List<PriceDraft> priceDraftsWithKeys = mapToPriceDraft(productVariant);
-                final List<AttributeDraft> attributeDraftsWithKeys =
-                    replaceAttributesReferencesIdsWithKeys(productVariant);
-                final List<AssetDraft> assetDraftsWithKeys = mapToAssetDrafts(productVariant.getAssets());
-
-                return ProductVariantDraftBuilder.of(productVariant)
-                                                 .prices(priceDraftsWithKeys)
-                                                 .attributes(attributeDraftsWithKeys)
-                                                 .assets(assetDraftsWithKeys)
-                                                 .build();
-            })
-            .collect(Collectors.toList());
+            .map(VariantReferenceResolutionUtils::mapToProductVariantDraft)
+            .collect(toList());
     }
 
-    /**
-     * Takes a product variant that is supposed to have all its prices' references (channel and custom type reference)
-     * expanded in order to be able to fetch the keys and replace the reference ids with the corresponding keys for the
-     * references. This method returns as a result a {@link List} of {@link PriceDraft} that has all channel and custom
-     * type references with keys replacing the ids.
-     *
-     * <p>Any reference, whether {@link Channel} or custom {@link io.sphere.sdk.types.Type}, that is not expanded will
-     * have its id in place and not replaced by the key.
-     *
-     * @param productVariant the product variant to replace its prices' reference ids with keys.
-     * @return  a {@link List} of {@link PriceDraft} that has all references with keys replacing the ids.
-     */
     @Nonnull
-    static List<PriceDraft> mapToPriceDraft(@Nonnull final ProductVariant productVariant) {
+    private static ProductVariantDraft mapToProductVariantDraft(@Nonnull final ProductVariant productVariant) {
+        return ProductVariantDraftBuilder.of(productVariant)
+                                  .prices(mapToPriceDrafts(productVariant))
+                                  .attributes(replaceAttributesReferencesIdsWithKeys(productVariant))
+                                  .assets(mapToAssetDrafts(productVariant.getAssets()))
+                                  .build();
+    }
+
+    @Nonnull
+    static List<PriceDraft> mapToPriceDrafts(@Nonnull final ProductVariant productVariant) {
 
         return productVariant.getPrices().stream().map(price -> PriceDraftBuilder
             .of(price)
@@ -130,7 +158,7 @@ public final class VariantReferenceReplacementUtils {
 
     private static Optional<Reference<Product>> getProductReference(@Nonnull final Attribute attribute) {
         return Optional.of(attribute)
-                       .filter(VariantReferenceReplacementUtils::isProductReference)
+                       .filter(VariantReferenceResolutionUtils::isProductReference)
                        .map(productReferenceAttribute -> productReferenceAttribute
                            .getValue(AttributeAccess.ofProductReference()));
     }
@@ -149,7 +177,7 @@ public final class VariantReferenceReplacementUtils {
 
     private static Optional<Set<Reference<Product>>> getProductReferenceSet(@Nonnull final Attribute attribute) {
         return Optional.of(attribute)
-                       .filter(VariantReferenceReplacementUtils::isProductReferenceSet)
+                       .filter(VariantReferenceResolutionUtils::isProductReferenceSet)
                        .map(productReferenceSetAttribute -> productReferenceSetAttribute
                            .getValue(AttributeAccess.ofProductReferenceSet()));
     }
@@ -181,6 +209,6 @@ public final class VariantReferenceReplacementUtils {
         return false;
     }
 
-    private VariantReferenceReplacementUtils() {
+    private VariantReferenceResolutionUtils() {
     }
 }

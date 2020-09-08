@@ -32,8 +32,7 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
     /**
      * Given a draft this method attempts to resolve the all the references on the draft to
      * return a {@link CompletionStage} which contains a new instance of the draft with the resolved
-     * references. The keys of the references are either taken from the expanded references or
-     * taken from the id field of the references.
+     * references.
      *
      * @param draft the productDraft to resolve it's references.
      * @return a {@link CompletionStage} that contains as a result a new draft instance with resolved references

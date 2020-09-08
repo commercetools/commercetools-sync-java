@@ -79,8 +79,6 @@ public final class InventoryReferenceResolutionUtils {
             .build();
     }
 
-    // todo (ahmetoz) add expanded query util.
-
     /**
      * Builds a {@link InventoryEntryQuery} for fetching inventories from a source CTP project with all the
      * needed references expanded for the sync:
