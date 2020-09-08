@@ -59,7 +59,7 @@ public class CustomObjectServiceImpl
 
     @Nonnull
     @Override
-    public CompletionStage<Set<CustomObject<JsonNode>>> fetchMatchingCustomObject(
+    public CompletionStage<Set<CustomObject<JsonNode>>> fetchMatchingCustomObjects(
             @Nonnull final Set<CustomObjectCompositeIdentifier> identifiers) {
 
         Set<CustomObjectCompositeIdentifier> filteredIdentifiers = identifiers.stream()

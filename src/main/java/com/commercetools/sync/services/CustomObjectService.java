@@ -45,7 +45,7 @@ public interface CustomObjectService {
      *          of all matching CustomObjects.
      */
     @Nonnull
-    CompletionStage<Set<CustomObject<JsonNode>>> fetchMatchingCustomObject(
+    CompletionStage<Set<CustomObject<JsonNode>>> fetchMatchingCustomObjects(
         @Nonnull Set<CustomObjectCompositeIdentifier> identifiers);
 
     /**
