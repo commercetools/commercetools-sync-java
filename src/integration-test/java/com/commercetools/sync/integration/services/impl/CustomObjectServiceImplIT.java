@@ -24,6 +24,7 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.deleteCustomObject;
@@ -99,6 +100,7 @@ class CustomObjectServiceImplIT {
     }
 
     @Test
+    @Disabled
     void fetchCachedCustomObjectId_WithExistingCustomObject_ShouldFetchCustomObjectAndCache() {
         CustomObjectCompositeIdentifier compositeIdentifier =
                 CustomObjectCompositeIdentifier.of(OLD_CUSTOM_OBJECT_KEY, OLD_CUSTOM_OBJECT_CONTAINER);
@@ -155,6 +157,7 @@ class CustomObjectServiceImplIT {
     }
 
     @Test
+    @Disabled
     void fetchMatchingCustomObjectsByIdentifiers_WithAnyExistingKeysAndContainers_ShouldReturnASetOfCustomObjects() {
         final Set<CustomObjectCompositeIdentifier> customObjectCompositeIdentifiers = new HashSet<>();
         customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(
@@ -202,6 +205,7 @@ class CustomObjectServiceImplIT {
     }
 
     @Test
+    @Disabled
     void fetchCustomObject_WithExistingCustomObjectKeyAndContainer_ShouldFetchCustomObject() {
         final Optional<CustomObject<JsonNode>> customObjectOptional = CTP_TARGET_CLIENT
             .execute(CustomObjectQuery.ofJsonNode()
