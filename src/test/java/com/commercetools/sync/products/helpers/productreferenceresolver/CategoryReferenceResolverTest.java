@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -340,5 +341,28 @@ class CategoryReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(SphereException.class)
             .hasMessageContaining("CTP error on fetch");
+    }
+
+    @Test
+    void resolveCategoryReferences_WithIdOnCategoryReference_ShouldNotResolveReference() {
+        // preparation
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                               .build();
+        final CategoryService mockCategoryService = mockCategoryService(emptySet(), null);
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType()
+            .categories(singleton(ResourceIdentifier.ofId("existing-id")));
+
+        final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
+            getMockProductTypeService(PRODUCT_TYPE_ID), mockCategoryService, getMockTypeService(),
+            getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)), mock(CustomerGroupService.class),
+            getMockTaxCategoryService(TAX_CATEGORY_ID), getMockStateService(STATE_ID),
+            getMockProductService(PRODUCT_ID));
+
+        // test and assertion
+        assertThat(productReferenceResolver.resolveCategoryReferences(productBuilder).toCompletableFuture())
+            .hasNotFailed()
+            .isCompletedWithValueMatching(resolvedDraft -> Objects.equals(resolvedDraft.getCategories(),
+                productBuilder.getCategories()));
+
     }
 }

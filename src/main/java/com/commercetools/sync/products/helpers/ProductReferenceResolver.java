@@ -302,7 +302,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
                 .orElseGet(() -> {
                     final String errorMessage = format(TAX_CATEGORY_DOES_NOT_EXIST, taxCategoryKey);
                     return exceptionallyCompletedFuture(new ReferenceResolutionException(
-                        format(FAILED_TO_RESOLVE_REFERENCE, ProductType.referenceTypeId(), draftBuilder.getKey(),
+                        format(FAILED_TO_RESOLVE_REFERENCE, TaxCategory.referenceTypeId(), draftBuilder.getKey(),
                             errorMessage)));
                 }));
     }

@@ -94,7 +94,7 @@ class TaxCategoryReferenceResolverTest {
         final String expectedMessageWithCause = format(FAILED_TO_RESOLVE_REFERENCE, TaxCategory.resourceTypeId(),
             "dummyKey", format(TAX_CATEGORY_DOES_NOT_EXIST, "nonExistentKey"));
 
-        referenceResolver.resolveProductTypeReference(productBuilder)
+        referenceResolver.resolveTaxCategoryReference(productBuilder)
                          .exceptionally(exception -> {
                              assertThat(exception).hasCauseExactlyInstanceOf(ReferenceResolutionException.class);
                              assertThat(exception.getCause().getMessage())
@@ -145,5 +145,17 @@ class TaxCategoryReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(SphereException.class)
             .hasMessageContaining("CTP error on fetch");
+    }
+
+    @Test
+    void resolveTaxCategoryReference_WithIdOnTaxCategoryReference_ShouldNotResolveReference() {
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType()
+            .taxCategory(ResourceIdentifier.ofId("existing-id"))
+            .key("dummyKey");
+
+        assertThat(referenceResolver.resolveTaxCategoryReference(productBuilder).toCompletableFuture())
+            .hasNotFailed()
+            .isCompletedWithValueMatching(resolvedDraft -> Objects.equals(resolvedDraft.getTaxCategory(),
+                productBuilder.getTaxCategory()));
     }
 }
