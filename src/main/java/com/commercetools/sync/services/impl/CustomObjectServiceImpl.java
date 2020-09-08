@@ -69,7 +69,7 @@ public class CustomObjectServiceImpl
                 .collect(Collectors.toSet());
 
         if (filteredIdentifiers.size() == 0) {
-            return CompletableFuture.completedFuture(Collections.EMPTY_SET);
+            return CompletableFuture.completedFuture(Collections.emptySet());
         }
 
         Set<String> identifierStrings =
