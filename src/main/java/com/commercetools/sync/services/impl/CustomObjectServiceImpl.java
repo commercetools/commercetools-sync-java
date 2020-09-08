@@ -128,8 +128,7 @@ public class CustomObjectServiceImpl
     @Override
     public CompletionStage<Optional<CustomObject<JsonNode>>> upsertCustomObject(
         @Nonnull final CustomObjectDraft<JsonNode> customObjectDraft) {
-        if (StringUtils.isEmpty(customObjectDraft.getKey()) ||
-            StringUtils.isEmpty(customObjectDraft.getContainer())) {
+        if (StringUtils.isEmpty(customObjectDraft.getKey()) || StringUtils.isEmpty(customObjectDraft.getContainer())) {
             return CompletableFuture.completedFuture(Optional.empty());
         }
         return createResource(customObjectDraft,
