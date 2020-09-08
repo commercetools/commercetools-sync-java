@@ -102,10 +102,23 @@ class CustomObjectServiceImplIT {
     void fetchCachedCustomObjectId_WithExistingCustomObject_ShouldFetchCustomObjectAndCache() {
         CustomObjectCompositeIdentifier compositeIdentifier =
                 CustomObjectCompositeIdentifier.of(OLD_CUSTOM_OBJECT_KEY, OLD_CUSTOM_OBJECT_CONTAINER);
-        final Optional<String> customerObjectId = customObjectService.fetchCachedCustomObjectId(compositeIdentifier)
-                                                   .toCompletableFuture()
-                                                   .join();
-        assertThat(customerObjectId).isNotEmpty();
+
+        final Optional<String> customObjectIdOptional = CTP_TARGET_CLIENT
+                .execute(CustomObjectQuery.ofJsonNode()
+                        .withPredicates(customObjectQueryModel ->
+                                customObjectQueryModel.key().is(OLD_CUSTOM_OBJECT_KEY).and(
+                                        customObjectQueryModel.container().is(OLD_CUSTOM_OBJECT_CONTAINER))))
+                .thenApply(result -> Optional.ofNullable(result.head().get().getId()))
+                .toCompletableFuture().join();
+        assertThat(customObjectIdOptional).isNotNull();
+
+        final Optional<String> fetchedCustomObjectIdOptional =
+                customObjectService.fetchCachedCustomObjectId(compositeIdentifier)
+                                   .toCompletableFuture()
+                                   .join();
+
+        assertThat(fetchedCustomObjectIdOptional).isNotEmpty();
+        assertThat(fetchedCustomObjectIdOptional).isEqualTo(customObjectIdOptional);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
     }
