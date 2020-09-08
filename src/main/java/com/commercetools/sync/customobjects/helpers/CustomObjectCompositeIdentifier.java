@@ -2,7 +2,6 @@ package com.commercetools.sync.customobjects.helpers;
 
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 
