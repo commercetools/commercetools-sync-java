@@ -237,6 +237,48 @@ class CustomObjectServiceImplTest {
     }
 
     @Test
+    void fetchMatchingCustomObjects_WithAllEmptyKey_ShouldNotFetch() {
+        final String key1 = "";
+        final String key2 = "";
+        final String container1 = RandomStringUtils.random(15, true, true);
+        final String container2 = RandomStringUtils.random(15, true, true);
+
+        final Set<CustomObjectCompositeIdentifier> customObjectCompositeIdentifiers = new HashSet<>();
+        customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(key1, container1));
+        customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(key2, container2));
+
+        final CustomObject mock1 = mock(CustomObject.class);
+        when(mock1.getId()).thenReturn(RandomStringUtils.random(15, true, true));
+        when(mock1.getKey()).thenReturn(key1);
+        when(mock1.getContainer()).thenReturn(container1);
+
+        final CustomObject mock2 = mock(CustomObject.class);
+        when(mock2.getId()).thenReturn(RandomStringUtils.random(15, true, true));
+        when(mock2.getKey()).thenReturn(key2);
+        when(mock2.getContainer()).thenReturn(container2);
+
+        final CustomObjectPagedQueryResult result = mock(CustomObjectPagedQueryResult.class);
+        when(result.getResults()).thenReturn(Arrays.asList(mock1, mock2));
+
+        when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
+
+        final Set<CustomObject<JsonNode>> customObjects = service
+                .fetchMatchingCustomObjects(customObjectCompositeIdentifiers)
+                .toCompletableFuture().join();
+
+        List<CustomObjectCompositeIdentifier> customObjectCompositeIdlist =
+                new ArrayList<CustomObjectCompositeIdentifier>(customObjectCompositeIdentifiers);
+
+        assertAll(
+                () -> assertThat(customObjects).isEmpty(),
+                () -> assertThat(service.keyToIdCache).doesNotContainKeys(
+                        String.valueOf(customObjectCompositeIdlist.get(0)),
+                        String.valueOf(customObjectCompositeIdlist.get(1)))
+        );
+        verify(client, times(0)).execute(any(CustomObjectQuery.class));
+    }
+
+    @Test
     void fetchCustomObject_WithKeyAndContainer_ShouldFetchCustomObject() {
         final CustomObject mock = mock(CustomObject.class);
         when(mock.getId()).thenReturn(customObjectId);
@@ -366,11 +408,28 @@ class CustomObjectServiceImplTest {
     @Test
     void createCustomObject_WithDraftHasNoKey_ShouldNotCreateCustomObject() {
         final CustomObjectDraft<JsonNode> customObjectDraft = mock(CustomObjectDraft.class);
+        when(customObjectDraft.getKey()).thenReturn("");
+        when(customObjectDraft.getContainer()).thenReturn(customObjectContainer);
         when(customObjectDraft.getJavaType()).thenReturn(
             getCustomObjectJavaTypeForValue(convertToJavaType(JsonNode.class)));
 
         final Optional<CustomObject<JsonNode>> customObjectOptional =
             service.upsertCustomObject(customObjectDraft).toCompletableFuture().join();
+
+        assertThat(customObjectOptional).isEmpty();
+        verify(client, times(0)).execute(eq(CustomObjectUpsertCommand.of(customObjectDraft)));
+    }
+
+    @Test
+    void createCustomObject_WithDraftHasNoContainer_ShouldNotCreateCustomObject() {
+        final CustomObjectDraft<JsonNode> customObjectDraft = mock(CustomObjectDraft.class);
+        when(customObjectDraft.getKey()).thenReturn(customObjectKey);
+        when(customObjectDraft.getContainer()).thenReturn("");
+        when(customObjectDraft.getJavaType()).thenReturn(
+                getCustomObjectJavaTypeForValue(convertToJavaType(JsonNode.class)));
+
+        final Optional<CustomObject<JsonNode>> customObjectOptional =
+                service.upsertCustomObject(customObjectDraft).toCompletableFuture().join();
 
         assertThat(customObjectOptional).isEmpty();
         verify(client, times(0)).execute(eq(CustomObjectUpsertCommand.of(customObjectDraft)));
