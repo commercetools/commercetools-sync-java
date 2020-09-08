@@ -99,6 +99,7 @@ class CustomObjectServiceImplTest {
             .toCompletableFuture().join();
 
         assertThat(fetchedId).contains(id);
+        verify(client).execute(any(CustomObjectQuery.class));
     }
 
     @Test
@@ -122,6 +123,7 @@ class CustomObjectServiceImplTest {
                 .fetchCachedCustomObjectId(CustomObjectCompositeIdentifier.of(key, container))
                 .toCompletableFuture().join();
         assertThat(fetchedId).isEmpty();
+        verify(client, times(0)).execute(any(CustomObjectQuery.class));
 
     }
 
@@ -146,7 +148,7 @@ class CustomObjectServiceImplTest {
                 .fetchCachedCustomObjectId(CustomObjectCompositeIdentifier.of(key, container))
                 .toCompletableFuture().join();
         assertThat(fetchedId).isEmpty();
-
+        verify(client, times(0)).execute(any(CustomObjectQuery.class));
     }
 
     @Test
@@ -273,6 +275,32 @@ class CustomObjectServiceImplTest {
 
         final Optional<CustomObject<JsonNode>> customObjectOptional = service
                 .fetchCustomObject(CustomObjectCompositeIdentifier.of("", customObjectContainer))
+                .toCompletableFuture().join();
+
+        assertAll(
+                () -> assertThat(customObjectOptional).isEmpty(),
+                () -> assertThat(
+                        service.keyToIdCache.get(
+                                CustomObjectCompositeIdentifier.of(customObjectKey, customObjectContainer).toString())
+                ).isNotEqualTo(customObjectId)
+        );
+        verify(client, times(0)).execute(any(CustomObjectQuery.class));
+    }
+
+    @Test
+    void fetchCustomObject_WithEmptyContainer_ShouldNotFetch() {
+        final CustomObject mock = mock(CustomObject.class);
+        when(mock.getId()).thenReturn(customObjectId);
+        when(mock.getKey()).thenReturn(customObjectKey);
+        when(mock.getContainer()).thenReturn(customObjectContainer);
+        final CustomObjectPagedQueryResult result = mock(CustomObjectPagedQueryResult.class);
+        when(result.head()).thenReturn(Optional.of(mock));
+
+        when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
+
+
+        final Optional<CustomObject<JsonNode>> customObjectOptional = service
+                .fetchCustomObject(CustomObjectCompositeIdentifier.of(customObjectKey, ""))
                 .toCompletableFuture().join();
 
         assertAll(
