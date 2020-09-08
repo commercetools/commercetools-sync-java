@@ -27,9 +27,10 @@ public final class CustomObjectITUtils {
 
 
     /**
-     * Deletes all customObjects from CTP project, represented by provided {@code ctpClient}.
+     * Deletes customObjects from CTP project which have key/container used in integration test,
+     * represented by provided {@code ctpClient}.
      *
-     * @param ctpClient represents the CTP project the types will be deleted from.
+     * @param ctpClient represents the CTP project the custom objects will be deleted from.
      */
     public static void deleteCustomObject(
         @Nonnull final SphereClient ctpClient,
@@ -65,9 +66,9 @@ public final class CustomObjectITUtils {
     }
 
     /**
-     * Create a customObject in target CTP project, represented by provided {@code ctpClient}.
+     * Create a custom object in target CTP project, represented by provided {@code ctpClient}.
      *
-     * @param ctpClient represents the CTP project the types will be deleted from.
+     * @param ctpClient represents the CTP project the custom object will be created.
      * @param key represents the key field required in custom object.
      * @param container represents the container field required in custom object.
      * @param value represents the value field required in custom object.

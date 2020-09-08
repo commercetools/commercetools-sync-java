@@ -15,14 +15,13 @@ import java.util.concurrent.CompletionStage;
 public interface CustomObjectService {
 
     /**
-     * Given a {@code identifier} and convert the object to string as key, this method first checks if a cached
-     * map of {@link CustomObjectCompositeIdentifier#toString()} -&gt; ids contains the key. If not, it returns a
-     * CompletionStage that contains an {@link Optional} that contains what this identifier maps to in the cache. If
-     * the cache doesn't contain the identifier; this method attempts to fetch the id of the identifier from the CTP
-     * project, caches it and returns a {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt;
-     * in which the result of it's completion could contain an
-     * {@link Optional} with the id inside of it or an empty {@link Optional} if no {@link CustomObject} was
-     * found in the CTP project with this key.
+     * Given an {@code identifier}, this method first checks if {@code identifier#toString()}
+     * is contained in a cached map of {@link CustomObjectCompositeIdentifier#toString()} -&gt; ids .
+     * If it contains, it returns a {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt;
+     * in which String is what this identifier maps to in the cache. If the cache doesn't contain the identifier,
+     * this method attempts to fetch the id of the identifier from the CTP project, caches it and returns
+     * a {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt;
+     * in which the {@link Optional} could contain the id inside of it.
      *
      * @param  identifier the identifier object containing CustomObject key and container, by which a
      *         {@link io.sphere.sdk.customobjects.CustomObject} id should be fetched from the CTP project.
@@ -30,6 +29,7 @@ public interface CustomObjectService {
      *         completion could contain an {@link Optional} with the id inside of it or an empty {@link Optional} if no
      *         {@link CustomObject} was found in the CTP project with this identifier.
      */
+
     @Nonnull
     CompletionStage<Optional<String>> fetchCachedCustomObjectId(@Nonnull CustomObjectCompositeIdentifier identifier);
 

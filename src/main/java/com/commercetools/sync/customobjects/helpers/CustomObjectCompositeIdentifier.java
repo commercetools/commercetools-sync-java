@@ -62,10 +62,6 @@ public final class CustomObjectCompositeIdentifier {
     /**
      * Given a {@link String} and {@link String}, creates a {@link CustomObjectCompositeIdentifier} using the following
      * fields from the supplied attributes.
-     * <ol>
-     * <li>{@link CustomObjectCompositeIdentifier#key}: key of {@link CustomObject#getKey()} </li>
-     * <li>{@link CustomObjectCompositeIdentifier#container}: container of {@link CustomObject#getContainer()}</li>
-     * </ol>
      *
      * @param key key of CustomerObject to build composite Id.
      * @param container container of CustomerObject to build composite Id.
