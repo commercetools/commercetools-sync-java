@@ -106,7 +106,7 @@ class CustomObjectServiceImplIT {
                 OLD_CUSTOM_OBJECT_KEY + "_2", OLD_CUSTOM_OBJECT_CONTAINER + "_2"));
 
         final Set<CustomObject<JsonNode>> matchingCustomObjects = customObjectService
-                                    .fetchMatchingCustomObject(customObjectCompositeIdentifiers)
+                                    .fetchMatchingCustomObjects(customObjectCompositeIdentifiers)
                                     .toCompletableFuture()
                                     .join();
 
@@ -142,7 +142,7 @@ class CustomObjectServiceImplIT {
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(spyCustomObjectService
-                .fetchMatchingCustomObject(customObjectCompositeIdentifiers))
+                .fetchMatchingCustomObjects(customObjectCompositeIdentifiers))
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(BadGatewayException.class);
     }
