@@ -65,7 +65,7 @@ public final class CustomObjectCompositeIdentifier {
      *
      * @param key key of CustomerObject to build composite Id.
      * @param container container of CustomerObject to build composite Id.
-     * @return a composite id comprised of the fields of the supplied {@link CustomObject}.
+     * @return a composite id comprised of the fields of the supplied {@code key} and {@code container}.
      */
     @Nonnull
     public static CustomObjectCompositeIdentifier of(@Nonnull final String key, @Nonnull final String container) {
