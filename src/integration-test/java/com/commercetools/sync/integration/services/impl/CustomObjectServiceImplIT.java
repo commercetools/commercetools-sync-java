@@ -21,10 +21,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.deleteCustomObject;
@@ -88,52 +86,13 @@ class CustomObjectServiceImplIT {
     }
 
     @Test
-    void fetchCachedCustomObjectId_WithNonExistingCustomObject_ShouldNotFetchACustomObject() {
+    void fetchCachedCustomObjectId_WithNonExistingCustomObject_ShouldReturnEmptyCustomObject() {
         CustomObjectCompositeIdentifier compositeIdentifier =
                 CustomObjectCompositeIdentifier.of("non-existing-key", "non-existing-container");
         final Optional<String> customObject = customObjectService.fetchCachedCustomObjectId(compositeIdentifier)
                                                    .toCompletableFuture()
                                                    .join();
         assertThat(customObject).isEmpty();
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-    }
-
-    @Test
-    @Disabled
-    void fetchCachedCustomObjectId_WithExistingCustomObject_ShouldFetchCustomObjectAndCache() {
-        CustomObjectCompositeIdentifier compositeIdentifier =
-                CustomObjectCompositeIdentifier.of(OLD_CUSTOM_OBJECT_KEY, OLD_CUSTOM_OBJECT_CONTAINER);
-
-        final Optional<String> customObjectIdOptional = CTP_TARGET_CLIENT
-                .execute(CustomObjectQuery.ofJsonNode()
-                        .withPredicates(customObjectQueryModel ->
-                                customObjectQueryModel.key().is(OLD_CUSTOM_OBJECT_KEY).and(
-                                        customObjectQueryModel.container().is(OLD_CUSTOM_OBJECT_CONTAINER))))
-                .thenApply(result -> Optional.ofNullable(result.head().get().getId()))
-                .toCompletableFuture().join();
-        assertThat(customObjectIdOptional).isNotNull();
-
-        final Optional<String> fetchedCustomObjectIdOptional =
-                customObjectService.fetchCachedCustomObjectId(compositeIdentifier)
-                                   .toCompletableFuture()
-                                   .join();
-
-        assertThat(fetchedCustomObjectIdOptional).isNotEmpty();
-        assertThat(fetchedCustomObjectIdOptional).isEqualTo(customObjectIdOptional);
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-    }
-
-    @Test
-    void fetchMatchingCustomObjectsByCompositeIdentifiers_WithEmptySetOfCompositeIdentifiers_ShouldReturnEmptySet() {
-        final Set<CustomObjectCompositeIdentifier> customObjectCompositeIdentifiers = new HashSet<>();
-        final Set<CustomObject<JsonNode>> matchingCustomObjects = customObjectService
-                                    .fetchMatchingCustomObjectByCompositeIdentifiers(customObjectCompositeIdentifiers)
-                                    .toCompletableFuture()
-                                    .join();
-
-        assertThat(matchingCustomObjects).isEmpty();
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
     }
@@ -156,22 +115,6 @@ class CustomObjectServiceImplIT {
         assertThat(errorCallBackMessages).isEmpty();
     }
 
-    @Test
-    @Disabled
-    void fetchMatchingCustomObjectsByIdentifiers_WithAnyExistingKeysAndContainers_ShouldReturnASetOfCustomObjects() {
-        final Set<CustomObjectCompositeIdentifier> customObjectCompositeIdentifiers = new HashSet<>();
-        customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(
-                OLD_CUSTOM_OBJECT_KEY, OLD_CUSTOM_OBJECT_CONTAINER));
-
-        final Set<CustomObject<JsonNode>> matchingCustomObjects =  customObjectService
-                                    .fetchMatchingCustomObjectByCompositeIdentifiers(customObjectCompositeIdentifiers)
-                                    .toCompletableFuture()
-                                    .join();
-
-        assertThat(matchingCustomObjects).hasSize(1);
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-    }
 
     @Test
     void fetchMatchingCustomObjectsByCompositeIdentifiers_WithBadGateWayExceptionAlways_ShouldFail() {
@@ -205,8 +148,7 @@ class CustomObjectServiceImplIT {
     }
 
     @Test
-    @Disabled
-    void fetchCustomObject_WithExistingCustomObjectKeyAndContainer_ShouldFetchCustomObject() {
+    void fetchCustomObject_WithNonExistingCustomObjectKeyAndContainer_ShouldReturnEmptyCustomObject() {
         final Optional<CustomObject<JsonNode>> customObjectOptional = CTP_TARGET_CLIENT
             .execute(CustomObjectQuery.ofJsonNode()
                   .withPredicates(customObjectQueryModel ->
@@ -217,33 +159,10 @@ class CustomObjectServiceImplIT {
 
         final Optional<CustomObject<JsonNode>> fetchedCustomObjectOptional =
             executeBlocking(customObjectService.fetchCustomObject(CustomObjectCompositeIdentifier.of(
-                    OLD_CUSTOM_OBJECT_KEY, OLD_CUSTOM_OBJECT_CONTAINER)));
-        assertThat(customObjectOptional).isEqualTo(fetchedCustomObjectOptional);
-    }
-
-    @Test
-    void fetchCustomObject_WithBlankKey_ShouldNotFetchCustomObject() {
-        final Optional<CustomObject<JsonNode>> fetchedCustomObjectOptional =
-                executeBlocking(customObjectService.fetchCustomObject(
-                        CustomObjectCompositeIdentifier.of(StringUtils.EMPTY,OLD_CUSTOM_OBJECT_CONTAINER)));
+                    "non-existing-key", "non-existing-container")));
         assertThat(fetchedCustomObjectOptional).isEmpty();
-    }
-
-    @Test
-    void fetchCustomObject_WithBlankContainer_ShouldNotFetchCustomObject() {
-        final Optional<CustomObject<JsonNode>> fetchedCustomObjectOptional =
-                executeBlocking(customObjectService.fetchCustomObject(
-                        CustomObjectCompositeIdentifier.of(OLD_CUSTOM_OBJECT_KEY, StringUtils.EMPTY)));
-        assertThat(fetchedCustomObjectOptional).isEmpty();
-    }
-
-
-    @Test
-    void fetchCustomObject_WithBlankKeyAndContainer_ShouldNotFetchCustomObject() {
-        final Optional<CustomObject<JsonNode>> fetchedCustomObjectOptional =
-            executeBlocking(customObjectService.fetchCustomObject(
-                    CustomObjectCompositeIdentifier.of(StringUtils.EMPTY,StringUtils.EMPTY)));
-        assertThat(fetchedCustomObjectOptional).isEmpty();
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
     }
 
     @Test

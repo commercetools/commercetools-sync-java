@@ -12,10 +12,13 @@ import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
 import io.sphere.sdk.customobjects.queries.CustomObjectQueryBuilder;
 import io.sphere.sdk.customobjects.queries.CustomObjectQueryModel;
 import io.sphere.sdk.queries.QueryPredicate;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
@@ -43,6 +46,10 @@ public class CustomObjectServiceImpl
         String container = identifier.getContainer();
         String key = identifier.getKey();
 
+        if (StringUtils.isEmpty(container) || StringUtils.isEmpty(key)) {
+            return CompletableFuture.completedFuture(Optional.empty());
+        }
+
         return fetchCachedResourceId(identifier.toString(),
             draft -> CustomObjectCompositeIdentifier.of(draft).toString(),
             () -> CustomObjectQuery.ofJsonNode()
@@ -55,8 +62,20 @@ public class CustomObjectServiceImpl
     public CompletionStage<Set<CustomObject<JsonNode>>> fetchMatchingCustomObjectByCompositeIdentifiers(
             @Nonnull final Set<CustomObjectCompositeIdentifier> identifiers) {
 
+        Set<CustomObjectCompositeIdentifier> filteredIdentifiers = identifiers.stream()
+                .filter(identifier ->
+                            StringUtils.isNotEmpty(identifier.getContainer())
+                        &&  StringUtils.isNotEmpty(identifier.getKey()))
+                .collect(Collectors.toSet());
+
+        if (filteredIdentifiers.size() == 0) {
+            return CompletableFuture.completedFuture(Collections.EMPTY_SET);
+        }
+
         Set<String> identifierStrings =
                 identifiers.stream().map(CustomObjectCompositeIdentifier::toString).collect(Collectors.toSet());
+
+
 
 
         return fetchMatchingResources(identifierStrings,
@@ -73,7 +92,7 @@ public class CustomObjectServiceImpl
             @Nonnull final CustomObjectQueryModel<CustomObject<JsonNode>> queryModel,
             @Nonnull final Set<CustomObjectCompositeIdentifier> identifiers) {
 
-        QueryPredicate<CustomObject<JsonNode>> queryPredicate = null;
+        QueryPredicate<CustomObject<JsonNode>> queryPredicate = QueryPredicate.of(null);
         boolean firstAttempt = true;
         for (CustomObjectCompositeIdentifier identifier : identifiers) {
             String key = identifier.getKey();
@@ -95,6 +114,10 @@ public class CustomObjectServiceImpl
 
         String container = identifier.getContainer();
         String key = identifier.getKey();
+
+        if (StringUtils.isEmpty(container) || StringUtils.isEmpty(key)) {
+            return CompletableFuture.completedFuture(Optional.empty());
+        }
 
         return fetchResource(identifier.toString(),
             () -> CustomObjectQuery.ofJsonNode()
