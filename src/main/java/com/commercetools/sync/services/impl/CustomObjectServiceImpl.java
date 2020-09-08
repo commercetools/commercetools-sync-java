@@ -73,13 +73,15 @@ public class CustomObjectServiceImpl
         }
 
         Set<String> identifierStrings =
-                identifiers.stream().map(CustomObjectCompositeIdentifier::toString).collect(Collectors.toSet());
+                filteredIdentifiers.stream()
+                        .map(CustomObjectCompositeIdentifier::toString)
+                        .collect(Collectors.toSet());
 
         return fetchMatchingResources(identifierStrings,
             draft -> CustomObjectCompositeIdentifier.of(draft).toString(),
             () -> {
                 CustomObjectQueryBuilder<JsonNode> query = CustomObjectQueryBuilder.ofJsonNode();
-                query = query.plusPredicates(queryModel -> createQuery(queryModel, identifiers));
+                query = query.plusPredicates(queryModel -> createQuery(queryModel, filteredIdentifiers));
                 return query.build();
             });
     }
@@ -126,7 +128,10 @@ public class CustomObjectServiceImpl
     @Override
     public CompletionStage<Optional<CustomObject<JsonNode>>> upsertCustomObject(
         @Nonnull final CustomObjectDraft<JsonNode> customObjectDraft) {
-
+        if (StringUtils.isEmpty(customObjectDraft.getKey()) ||
+            StringUtils.isEmpty(customObjectDraft.getContainer())) {
+            return CompletableFuture.completedFuture(Optional.empty());
+        }
         return createResource(customObjectDraft,
             draft -> CustomObjectCompositeIdentifier.of(draft).toString(),
                 CustomObjectUpsertCommand::of);

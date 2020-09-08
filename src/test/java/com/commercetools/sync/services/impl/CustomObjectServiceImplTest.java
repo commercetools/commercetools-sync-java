@@ -372,13 +372,7 @@ class CustomObjectServiceImplTest {
         final Optional<CustomObject<JsonNode>> customObjectOptional =
             service.upsertCustomObject(customObjectDraft).toCompletableFuture().join();
 
-        assertAll(
-            () -> assertThat(customObjectOptional).isEmpty(),
-            () -> assertThat(errorMessages).hasSize(1),
-            () -> assertThat(errorExceptions).hasSize(1),
-            () -> assertThat(errorMessages)
-                .contains("Failed to create draft with key: ''. Reason: Draft key is blank!")
-        );
-
+        assertThat(customObjectOptional).isEmpty();
+        verify(client, times(0)).execute(eq(CustomObjectUpsertCommand.of(customObjectDraft)));
     }
 }
