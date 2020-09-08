@@ -98,7 +98,7 @@ class CustomObjectServiceImplIT {
     }
 
     @Test
-    void fetchMatchingCustomObjectsByCompositeIdentifiers_WithNonExistingKeysAndContainers_ShouldReturnEmptySet() {
+    void fetchMatchingCustomObjects_WithNonExistingKeysAndContainers_ShouldReturnEmptySet() {
         final Set<CustomObjectCompositeIdentifier> customObjectCompositeIdentifiers = new HashSet<>();
         customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(
                 OLD_CUSTOM_OBJECT_KEY + "_1", OLD_CUSTOM_OBJECT_CONTAINER + "_1"));
@@ -114,6 +114,57 @@ class CustomObjectServiceImplIT {
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
     }
+
+    @Test
+    void fetchMatchingCustomObjects_WithDifferentExistingCombinationOfKeysAndContainers_ShouldReturnEmptySet() {
+
+        deleteCustomObject(CTP_TARGET_CLIENT,
+                OLD_CUSTOM_OBJECT_KEY + "_1",
+                OLD_CUSTOM_OBJECT_CONTAINER + "_1");
+        deleteCustomObject(CTP_TARGET_CLIENT,
+                OLD_CUSTOM_OBJECT_KEY + "_1",
+                OLD_CUSTOM_OBJECT_CONTAINER + "_2");
+        deleteCustomObject(CTP_TARGET_CLIENT,
+                OLD_CUSTOM_OBJECT_KEY + "_2",
+                OLD_CUSTOM_OBJECT_CONTAINER + "_1");
+        deleteCustomObject(CTP_TARGET_CLIENT,
+                OLD_CUSTOM_OBJECT_KEY + "_2",
+                OLD_CUSTOM_OBJECT_CONTAINER + "_2");
+
+        createCustomObject(CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY + "_1",
+                OLD_CUSTOM_OBJECT_CONTAINER + "_1", OLD_CUSTOM_OBJECT_VALUE);
+        createCustomObject(CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY + "_1",
+                OLD_CUSTOM_OBJECT_CONTAINER + "_2", OLD_CUSTOM_OBJECT_VALUE);
+        createCustomObject(CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY + "_2",
+                OLD_CUSTOM_OBJECT_CONTAINER + "_1", OLD_CUSTOM_OBJECT_VALUE);
+        createCustomObject(CTP_TARGET_CLIENT, OLD_CUSTOM_OBJECT_KEY + "_2",
+                OLD_CUSTOM_OBJECT_CONTAINER + "_2", OLD_CUSTOM_OBJECT_VALUE);
+
+        final Set<CustomObjectCompositeIdentifier> customObjectCompositeIdentifiers = new HashSet<>();
+        customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(
+                OLD_CUSTOM_OBJECT_KEY + "_1", OLD_CUSTOM_OBJECT_CONTAINER + "_2"));
+        customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(
+                OLD_CUSTOM_OBJECT_KEY + "_2", OLD_CUSTOM_OBJECT_CONTAINER + "_1"));
+
+        final Set<CustomObject<JsonNode>> matchingCustomObjects = customObjectService
+                .fetchMatchingCustomObjects(customObjectCompositeIdentifiers)
+                .toCompletableFuture()
+                .join();
+
+        assertThat(matchingCustomObjects).size().isEqualTo(2);
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+
+        deleteCustomObject(CTP_TARGET_CLIENT,
+                OLD_CUSTOM_OBJECT_KEY + "_1", OLD_CUSTOM_OBJECT_CONTAINER + "_1");
+        deleteCustomObject(CTP_TARGET_CLIENT,
+                OLD_CUSTOM_OBJECT_KEY + "_1", OLD_CUSTOM_OBJECT_CONTAINER + "_2");
+        deleteCustomObject(CTP_TARGET_CLIENT,
+                OLD_CUSTOM_OBJECT_KEY + "_2", OLD_CUSTOM_OBJECT_CONTAINER + "_1");
+        deleteCustomObject(CTP_TARGET_CLIENT,
+                OLD_CUSTOM_OBJECT_KEY + "_2", OLD_CUSTOM_OBJECT_CONTAINER + "_2");
+    }
+
 
 
     @Test
