@@ -33,30 +33,32 @@
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/2.0.0...2.0.1) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.0.1/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.0.1)
+  
 
-### 2.0.0 -  todo (ahmetoz), 2020
+### 2.0.0 - (todo (ahmetoz) add release date here before the release.), 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.9.1...2.0.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.0.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.0.0)
 
-- 🚧 **Breaking Changes** (7)
-    - **Commons** - Renamed `replaceCustomTypeIdWithKeys` to `mapToCustomFieldsDraft`. [#138](https://github.com/commercetools/commercetools-sync-java/issues/138)
-    - **Commons** - Renamed `replaceAssetsReferencesIdsWithKeys` to `mapToAssetDrafts`. [#138](https://github.com/commercetools/commercetools-sync-java/issues/138)
-    - **Category Sync** - Renamed `replaceCategoriesReferenceIdsWithKeys` to `mapToCategoryDrafts`. [#138](https://github.com/commercetools/commercetools-sync-java/issues/138)
-    - **CartDiscount Sync** - Renamed `replaceCartDiscountsReferenceIdsWithKeys` to `mapToCartDiscountDrafts`. [#138](https://github.com/commercetools/commercetools-sync-java/issues/138)
-    - **Inventory Sync** - Renamed `replaceInventoriesReferenceIdsWithKeys` to `mapToInventoryEntryDrafts`. [#138](https://github.com/commercetools/commercetools-sync-java/issues/138)     
-    - **Refactoring of the error- and warning callbacks** - The signatures of the error- and warning callbacks was changed.
-        From now on the resource draft of the source project, the resource of the target-project and optinally the failed update actions
-        are passed to the callbacks. [#107](https://github.com/commercetools/commercetools-sync-java/issues/107)
+- 🚧 **Breaking Changes** (2)
+    - Sync options:
+        - The signatures of the `errorCallback` and `errorCallback` changed and parameter lists extended.
+            From now on the resource draft of the source project, the resource of the target project and optionally the failed update actions
+            passed to the callbacks. Refer [sync options](./usage/SYNC_OPTIONS.md) for more details. [#107](https://github.com/commercetools/commercetools-sync-java/issues/107)
+    - Reference resolution utilities:
+        - **Commons** - Renamed `replaceCustomTypeIdWithKeys` to `mapToCustomFieldsDraft`. [#138](https://github.com/commercetools/commercetools-sync-java/issues/138)
+        - **Commons** - Renamed `replaceAssetsReferencesIdsWithKeys` to `mapToAssetDrafts`. [#138](https://github.com/commercetools/commercetools-sync-java/issues/138)
+        - **Category Sync** - Renamed `replaceCategoriesReferenceIdsWithKeys` to `mapToCategoryDrafts`. [#138](https://github.com/commercetools/commercetools-sync-java/issues/138)
+        - **CartDiscount Sync** - Renamed `replaceCartDiscountsReferenceIdsWithKeys` to `mapToCartDiscountDrafts`. [#138](https://github.com/commercetools/commercetools-sync-java/issues/138)
+        - **Inventory Sync** - Renamed `replaceInventoriesReferenceIdsWithKeys` to `mapToInventoryEntryDrafts`. [#138](https://github.com/commercetools/commercetools-sync-java/issues/138)     
+        - **Product Sync** - Renamed `replaceProductsReferenceIdsWithKeys` to `mapToProductDrafts`. [#138](https://github.com/commercetools/commercetools-sync-java/issues/138)
 
-// todo (ahmet oz)
+- ✨ **Enhancements** (1)        
+    -  The library will fail fast for the non-existing references that found during the reference resolution. [#219](https://github.com/commercetools/commercetools-sync-java/issues/219)
 
-    - **Refactoring parent category resolution** - From now on, the category references to their parent are resolved by 
-        'key' and not by id anymore. So please assure that in the categorydraft the "parentcategory" is referenced by key,
-         otherwise the errorcallback on reference resolution will be triggered.
-         
--->     
+// todo (ahmetoz) add dependency updates.
 
+--> 
 ### 1.9.1 -  Aug 5, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.9.0...1.9.1) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.9.1/) | 

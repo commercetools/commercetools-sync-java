@@ -1,8 +1,8 @@
 package com.commercetools.sync.products.utils;
 
-import com.commercetools.sync.products.ProductSyncMockUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
@@ -29,15 +29,16 @@ import static com.commercetools.sync.commons.MockUtils.getAssetMockWithCustomFie
 import static com.commercetools.sync.commons.MockUtils.getTypeMock;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getChannelMock;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerGroup;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getPriceMockWithReferences;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductVariantMock;
 import static com.commercetools.sync.products.utils.VariantReferenceResolutionUtils.isProductReference;
 import static com.commercetools.sync.products.utils.VariantReferenceResolutionUtils.isProductReferenceSet;
 import static com.commercetools.sync.products.utils.VariantReferenceResolutionUtils.mapToPriceDrafts;
+import static com.commercetools.sync.products.utils.VariantReferenceResolutionUtils.mapToProductVariantDrafts;
 import static com.commercetools.sync.products.utils.VariantReferenceResolutionUtils.replaceAttributeReferenceIdWithKey;
 import static com.commercetools.sync.products.utils.VariantReferenceResolutionUtils.replaceAttributeReferenceSetIdsWithKeys;
 import static com.commercetools.sync.products.utils.VariantReferenceResolutionUtils.replaceAttributesReferencesIdsWithKeys;
-import static com.commercetools.sync.products.utils.VariantReferenceResolutionUtils.mapToProductVariantDrafts;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.BOOLEAN_ATTRIBUTE_TRUE;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.CATEGORY_REFERENCE_ATTRIBUTE;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.attributes.AttributeFixtures.DATE_ATTRIBUTE_2017_11_09;
@@ -75,7 +76,12 @@ class VariantReferenceResolutionUtilsTest {
         final Reference<Type> priceCustomTypeReference =
             Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), customType);
 
-        final Price price = ProductSyncMockUtils.getPriceMockWithReferences(channelReference, priceCustomTypeReference);
+        final CustomerGroup customerGroup = getMockCustomerGroup("customer-group-id", "customer-group-key");
+        final Reference<CustomerGroup> customerGroupReference =
+            Reference.ofResourceTypeIdAndObj(CustomerGroup.referenceTypeId(), customerGroup);
+
+        final Price price = getPriceMockWithReferences(channelReference, priceCustomTypeReference,
+            customerGroupReference);
 
         final Asset asset =
             getAssetMockWithCustomFields(Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), customType));
@@ -120,8 +126,8 @@ class VariantReferenceResolutionUtilsTest {
             .ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel1.getId(), channel1);
         final Reference<Channel> channelReference2 = Channel.referenceOfId(UUID.randomUUID().toString());
 
-        final Price price1 = getPriceMockWithReferences(channelReference1, priceCustomTypeReference1);
-        final Price price2 = getPriceMockWithReferences(channelReference2, priceCustomTypeReference2);
+        final Price price1 = getPriceMockWithReferences(channelReference1, priceCustomTypeReference1, null);
+        final Price price2 = getPriceMockWithReferences(channelReference2, priceCustomTypeReference2, null);
 
         final Asset asset1 = getAssetMockWithCustomFields(Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(),
             customType));
@@ -213,7 +219,7 @@ class VariantReferenceResolutionUtilsTest {
         final Asset asset2 = getAssetMockWithCustomFields(Reference.ofResourceTypeIdAndId(Type.referenceTypeId(),
             UUID.randomUUID().toString()));
 
-        final Price price = getPriceMockWithReferences(channelReference, customTypeReference);
+        final Price price = getPriceMockWithReferences(channelReference, customTypeReference, null);
         final ProductVariant productVariant = getProductVariantMock(singletonList(price), singletonList(asset2));
 
         final List<ProductVariantDraft> variantDrafts =
@@ -249,7 +255,7 @@ class VariantReferenceResolutionUtilsTest {
         final Reference<Channel> channelReference = Channel.referenceOfId(UUID.randomUUID().toString());
         final Reference<Type> typeReference = Type.referenceOfId(UUID.randomUUID().toString());
 
-        final Price price = getPriceMockWithReferences(channelReference, typeReference);
+        final Price price = getPriceMockWithReferences(channelReference, typeReference, null);
         final ProductVariant productVariant = getProductVariantMock(singletonList(price));
 
         final List<PriceDraft> priceDrafts = mapToPriceDrafts(productVariant);
@@ -288,8 +294,8 @@ class VariantReferenceResolutionUtilsTest {
         final Reference<Type> customTypeReference =
             Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), customType);
 
-        final Price price1 = ProductSyncMockUtils.getPriceMockWithReferences(channelReference1, customTypeReference);
-        final Price price2 = ProductSyncMockUtils.getPriceMockWithReferences(channelReference2, customTypeReference);
+        final Price price1 = getPriceMockWithReferences(channelReference1, customTypeReference, null);
+        final Price price2 = getPriceMockWithReferences(channelReference2, customTypeReference, null);
 
         final ProductVariant productVariant = getProductVariantMock(asList(price1, price2));
 
@@ -335,8 +341,8 @@ class VariantReferenceResolutionUtilsTest {
         final Reference<Type> typeReference1 = Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), customType);
         final Reference<Type> typeReference2 = Type.referenceOfId(UUID.randomUUID().toString());
 
-        final Price price1 = getPriceMockWithReferences(channelReference1, typeReference1);
-        final Price price2 = getPriceMockWithReferences(channelReference2, typeReference2);
+        final Price price1 = getPriceMockWithReferences(channelReference1, typeReference1, null);
+        final Price price2 = getPriceMockWithReferences(channelReference2, typeReference2, null);
 
         final ProductVariant productVariant = getProductVariantMock(asList(price1, price2));
 

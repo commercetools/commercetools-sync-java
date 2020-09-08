@@ -1,6 +1,6 @@
 # Sync Options
 
-<!-- use in v2.0.0 
+<!-- use in v2.0.0
 #### `errorCallback`
 a callback that is called whenever an error event occurs during the sync process. It contains the follow information 
 about the error-event:

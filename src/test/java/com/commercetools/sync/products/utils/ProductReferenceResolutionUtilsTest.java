@@ -73,7 +73,7 @@ class ProductReferenceResolutionUtilsTest {
 
         final Reference<Channel> channelReference = Reference
             .ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel.getId(), channel);
-        final Price price = getPriceMockWithReferences(channelReference, null);
+        final Price price = getPriceMockWithReferences(channelReference, null, null);
 
         final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
         final Asset asset1 =
@@ -165,7 +165,7 @@ class ProductReferenceResolutionUtilsTest {
 
         final Reference<Channel> channelReference = Reference
             .ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel.getId(), channel);
-        final Price price = getPriceMockWithReferences(channelReference, null);
+        final Price price = getPriceMockWithReferences(channelReference, null, null);
         final ProductVariant productVariant = getProductVariantMock(singletonList(price));
 
         final Category category = getCategoryMock(resourceKey);

@@ -349,21 +349,24 @@ public class ProductSyncMockUtils {
     }
 
     /**
-     * Creates a mock {@link Price} with the supplied {@link Channel} {@link Reference} and custom {@link Type}
-     * {@link Reference}.
+     * Creates a mock {@link Price} with the supplied {@link Channel} {@link Reference},
+     * {@link CustomerGroup} {@link Reference}, and custom {@link Type} {@link Reference}.
      *
      * <p>If the supplied {@code customTypeReference} is {@code null}, no custom fields are stubbed on the
      * resulting price mock.
      *
      * @param channelReference    the channel reference to attach on the mock {@link Price}.
      * @param customTypeReference the custom type reference to attach on the mock {@link Price}.
+     * @param customerGroupReference  the custom type reference to attach on the mock {@link Price}.
      * @return a mock price with the supplied references.
      */
     @Nonnull
     public static Price getPriceMockWithReferences(@Nullable final Reference<Channel> channelReference,
-                                                   @Nullable final Reference<Type> customTypeReference) {
+                                                   @Nullable final Reference<Type> customTypeReference,
+                                                   @Nullable final Reference<CustomerGroup> customerGroupReference) {
         final Price price = mock(Price.class);
         when(price.getChannel()).thenReturn(channelReference);
+        when(price.getCustomerGroup()).thenReturn(customerGroupReference);
 
         return ofNullable(customTypeReference)
             .map(typeReference -> {
