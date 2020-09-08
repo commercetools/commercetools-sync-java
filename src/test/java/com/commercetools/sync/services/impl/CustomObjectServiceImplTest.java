@@ -179,7 +179,7 @@ class CustomObjectServiceImplTest {
         when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
 
         final Set<CustomObject<JsonNode>> customObjects = service
-            .fetchMatchingCustomObjectByCompositeIdentifiers(customObjectCompositeIdentifiers)
+            .fetchMatchingCustomObject(customObjectCompositeIdentifiers)
             .toCompletableFuture().join();
 
         List<CustomObjectCompositeIdentifier> customObjectCompositeIdlist =
@@ -221,7 +221,7 @@ class CustomObjectServiceImplTest {
         when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
 
         final Set<CustomObject<JsonNode>> customObjects = service
-                .fetchMatchingCustomObjectByCompositeIdentifiers(customObjectCompositeIdentifiers)
+                .fetchMatchingCustomObject(customObjectCompositeIdentifiers)
                 .toCompletableFuture().join();
 
         List<CustomObjectCompositeIdentifier> customObjectCompositeIdlist =
