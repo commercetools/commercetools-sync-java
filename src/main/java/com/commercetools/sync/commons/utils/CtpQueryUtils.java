@@ -1,7 +1,7 @@
 package com.commercetools.sync.commons.utils;
 
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.models.Resource;
+import io.sphere.sdk.models.ResourceView;
 import io.sphere.sdk.queries.QueryDsl;
 
 import javax.annotation.Nonnull;
@@ -33,7 +33,7 @@ public final class CtpQueryUtils {
      * @return a completion stage containing a list of mapped pages as a result.
      */
     @Nonnull
-    public static <T extends Resource, C extends QueryDsl<T, C>, S> CompletionStage<List<S>>
+    public static <T extends ResourceView, C extends QueryDsl<T, C>, S> CompletionStage<List<S>>
         queryAll(@Nonnull final SphereClient client, @Nonnull final QueryDsl<T, C> query,
                  @Nonnull final Function<List<T>, S> pageMapper) {
         return queryAll(client, query, pageMapper, DEFAULT_PAGE_SIZE);
@@ -55,7 +55,7 @@ public final class CtpQueryUtils {
      * @return a completion stage containing void as a result after the consumer was applied on all pages.
      */
     @Nonnull
-    public static <T extends Resource, C extends QueryDsl<T, C>> CompletionStage<Void>
+    public static <T extends ResourceView, C extends QueryDsl<T, C>> CompletionStage<Void>
         queryAll(@Nonnull final SphereClient client, @Nonnull final QueryDsl<T, C> query,
                  @Nonnull final Consumer<List<T>> pageConsumer) {
         return queryAll(client, query, pageConsumer, DEFAULT_PAGE_SIZE);
@@ -82,7 +82,7 @@ public final class CtpQueryUtils {
      * @return a completion stage containing a list of mapped pages as a result.
      */
     @Nonnull
-    public static <T extends Resource, C extends QueryDsl<T, C>, S> CompletionStage<List<S>>
+    public static <T extends ResourceView, C extends QueryDsl<T, C>, S> CompletionStage<List<S>>
         queryAll(@Nonnull final SphereClient client, @Nonnull final QueryDsl<T, C> query,
                  @Nonnull final Function<List<T>, S> pageMapper, final int pageSize) {
         final QueryAll<T, C, S> queryAll = QueryAll.of(client, query, pageSize);
@@ -107,7 +107,7 @@ public final class CtpQueryUtils {
      * @return a completion stage containing void as a result after the consumer was applied on all pages.
      */
     @Nonnull
-    public static <T extends Resource, C extends QueryDsl<T, C>> CompletionStage<Void>
+    public static <T extends ResourceView, C extends QueryDsl<T, C>> CompletionStage<Void>
         queryAll(@Nonnull final SphereClient client, @Nonnull final QueryDsl<T, C> query,
                  @Nonnull final Consumer<List<T>> pageConsumer, final int pageSize) {
         final QueryAll<T, C, Void> queryAll = QueryAll.of(client, query, pageSize);
