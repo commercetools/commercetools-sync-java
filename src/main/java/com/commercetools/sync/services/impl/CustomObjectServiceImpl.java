@@ -75,9 +75,6 @@ public class CustomObjectServiceImpl
         Set<String> identifierStrings =
                 identifiers.stream().map(CustomObjectCompositeIdentifier::toString).collect(Collectors.toSet());
 
-
-
-
         return fetchMatchingResources(identifierStrings,
             draft -> CustomObjectCompositeIdentifier.of(draft).toString(),
             () -> {

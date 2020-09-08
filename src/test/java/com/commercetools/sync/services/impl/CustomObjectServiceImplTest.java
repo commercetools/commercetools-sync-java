@@ -228,8 +228,8 @@ class CustomObjectServiceImplTest {
                 new ArrayList<CustomObjectCompositeIdentifier>(customObjectCompositeIdentifiers);
 
         assertAll(
-                () -> assertThat(customObjects).isEmpty(),
-                () -> assertThat(service.keyToIdCache).doesNotContainKeys(
+            () -> assertThat(customObjects).isEmpty(),
+            () -> assertThat(service.keyToIdCache).doesNotContainKeys(
                         String.valueOf(customObjectCompositeIdlist.get(0)),
                         String.valueOf(customObjectCompositeIdlist.get(1)))
         );
@@ -279,8 +279,8 @@ class CustomObjectServiceImplTest {
                 .toCompletableFuture().join();
 
         assertAll(
-                () -> assertThat(customObjectOptional).isEmpty(),
-                () -> assertThat(
+            () -> assertThat(customObjectOptional).isEmpty(),
+            () -> assertThat(
                         service.keyToIdCache.get(
                                 CustomObjectCompositeIdentifier.of(customObjectKey, customObjectContainer).toString())
                 ).isNotEqualTo(customObjectId)
@@ -305,8 +305,8 @@ class CustomObjectServiceImplTest {
                 .toCompletableFuture().join();
 
         assertAll(
-                () -> assertThat(customObjectOptional).isEmpty(),
-                () -> assertThat(
+            () -> assertThat(customObjectOptional).isEmpty(),
+            () -> assertThat(
                         service.keyToIdCache.get(
                                 CustomObjectCompositeIdentifier.of(customObjectKey, customObjectContainer).toString())
                 ).isNotEqualTo(customObjectId)
