@@ -6,9 +6,16 @@ import io.sphere.sdk.customobjects.CustomObjectDraft;
 
 import javax.annotation.Nonnull;
 
-
-
 public class CustomObjectSyncUtils {
+
+    /**
+     * Compares the value of a {@link CustomObject} to the value of a {@link CustomObjectDraft}.
+     * It returns a boolean whether the values are identical or not.
+     *
+     * @param oldCustomObject   the {@link CustomObject} which should be synced.
+     * @param newCustomObject   the {@link CustomObjectDraft} with the new data.
+     * @return A boolean whether the value of the CustomObject and CustomObjectDraft is identical or not.
+     */
 
     @Nonnull
     public static boolean hasIdenticalValue(
