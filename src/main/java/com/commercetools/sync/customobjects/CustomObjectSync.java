@@ -4,7 +4,7 @@ import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.customobjects.helpers.CustomObjectSyncStatistics;
-import com.commercetools.sync.customobjects.utils.CustomObjectUpdateActionUtils;
+import com.commercetools.sync.customobjects.utils.CustomObjectSyncUtils;
 import com.commercetools.sync.services.CustomObjectService;
 import com.commercetools.sync.services.impl.CustomObjectServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -264,7 +264,7 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft, CustomObjectSy
         @Nonnull final CustomObject<JsonNode> oldCustomObject,
         @Nonnull final CustomObjectDraft<JsonNode> newCustomObject) {
 
-        if (CustomObjectUpdateActionUtils.hasIdenticalValue(oldCustomObject, newCustomObject)) {
+        if (CustomObjectSyncUtils.hasIdenticalValue(oldCustomObject, newCustomObject)) {
             return customObjectService
                     .upsertCustomObject(newCustomObject)
                     .handle(ImmutablePair::new)
