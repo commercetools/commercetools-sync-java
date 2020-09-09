@@ -13,13 +13,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class CustomObjectUpdateActionUtilsTest {
+class CustomObjectSyncUtilsTest {
 
     private CustomObject<JsonNode> oldCustomObject;
     private CustomObjectDraft<JsonNode> newCustomObjectdraft;
 
-    final String key = "testkey";
-    final String container = "testcontainer";
+    final static String key = "testkey";
+    final static String container = "testcontainer";
 
 
     @Test
