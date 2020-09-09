@@ -88,7 +88,7 @@ public class CustomObjectSync {
      *
      * @param customObjectDrafts {@link List} of {@link CustomObjectDraft}'s that would be synced into CTP project.
      * @return {@link CompletionStage} with {@link CustomObjectSyncStatistics} holding statistics of all sync
-     * processes performed by this sync instance.
+     *    processes performed by this sync instance.
      */
     protected CompletionStage<CustomObjectSyncStatistics> process(
             @Nonnull final List<CustomObjectDraft<JsonNode>> customObjectDrafts) {
@@ -120,8 +120,8 @@ public class CustomObjectSync {
      *
      * @param batch batch of drafts that need to be synced
      * @return a {@link CompletionStage} containing an instance
-     * of {@link CustomObjectSyncStatistics} which contains information about the result of syncing the supplied
-     * batch to the target project.
+     *     of {@link CustomObjectSyncStatistics} which contains information about the result of syncing the supplied
+     *     batch to the target project.
      */
 
     protected CompletionStage<CustomObjectSyncStatistics> processBatch(
@@ -301,16 +301,16 @@ public class CustomObjectSync {
                         final Throwable sphereException = updateResponse.getValue();
                         if (sphereException != null) {
                             return executeSupplierIfConcurrentModificationException(sphereException,
-                                    () -> fetchAndUpdate(oldCustomObject, newCustomObject),
-                                    () -> {
-                                        final String errorMessage =
+                                () -> fetchAndUpdate(oldCustomObject, newCustomObject),
+                                () -> {
+                                    final String errorMessage =
                                                 format(CTP_CUSTOM_OBJECT_UPSERT_FAILED,
                                                         CustomObjectCompositeIdentifier.of(newCustomObject).toString(),
                                                         sphereException.getMessage());
-                                        handleError(errorMessage, sphereException, 1,
+                                    handleError(errorMessage, sphereException, 1,
                                                 oldCustomObject, newCustomObject);
-                                        return CompletableFuture.completedFuture(Optional.empty());
-                                    });
+                                    return CompletableFuture.completedFuture(Optional.empty());
+                                });
                         } else {
                             statistics.incrementUpdated();
                             return CompletableFuture.completedFuture(Optional.of(updatedCustomObject));
