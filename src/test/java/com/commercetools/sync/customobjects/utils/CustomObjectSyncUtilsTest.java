@@ -18,8 +18,8 @@ class CustomObjectSyncUtilsTest {
     private CustomObject<JsonNode> oldCustomObject;
     private CustomObjectDraft<JsonNode> newCustomObjectdraft;
 
-    final static String key = "testkey";
-    final static String container = "testcontainer";
+    private static final String key = "testkey";
+    private static final String container = "testcontainer";
 
 
     @Test
