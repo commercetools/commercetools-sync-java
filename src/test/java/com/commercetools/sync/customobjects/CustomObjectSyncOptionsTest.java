@@ -21,10 +21,10 @@ class CustomObjectSyncOptionsTest {
     @Test
     void applyBeforeCreateCallback_WithCallback_ShouldReturnFilteredDraft() {
 
-        final Function<CustomObjectDraft, CustomObjectDraft> draftFunction =
-                customObjectDraft -> CustomObjectDraft.ofUnversionedUpsert(
-                        customObjectDraft.getContainer()+ "_filteredContainer",
-                        customObjectDraft.getKey()+ "_filteredKey", (JsonNode)customObjectDraft.getValue());
+        final Function<CustomObjectDraft<JsonNode>, CustomObjectDraft<JsonNode>> draftFunction =
+            customObjectDraft -> CustomObjectDraft.ofUnversionedUpsert(
+                        customObjectDraft.getContainer() + "_filteredContainer",
+                        customObjectDraft.getKey() + "_filteredKey", customObjectDraft.getValue());
         final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder.of(CTP_CLIENT)
                 .beforeCreateCallback(draftFunction)
                 .build();
@@ -32,22 +32,22 @@ class CustomObjectSyncOptionsTest {
         when(resourceDraft.getKey()).thenReturn("myKey");
         when(resourceDraft.getContainer()).thenReturn("myContainer");
 
-        final Optional<CustomObjectDraft> filteredDraft = customObjectSyncOptions
+        final Optional<CustomObjectDraft<JsonNode>> filteredDraft = customObjectSyncOptions
                 .applyBeforeCreateCallback(resourceDraft);
 
         assertThat(filteredDraft).hasValueSatisfying(customObjectDraft ->
                 assertAll(
-                        () -> assertThat(customObjectDraft.getKey()).isEqualTo("myKey_filteredKey"),
-                        () -> assertThat(customObjectDraft.getContainer()).isEqualTo("myContainer_filteredContainer")
+                    () -> assertThat(customObjectDraft.getKey()).isEqualTo("myKey_filteredKey"),
+                    () -> assertThat(customObjectDraft.getContainer()).isEqualTo("myContainer_filteredContainer")
                 ));
     }
 
     @Test
     void applyBeforeCreateCallback_WithNullCallback_ShouldReturnIdenticalDraftInOptional() {
         final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder.of(CTP_CLIENT).build();
-        final CustomObjectDraft resourceDraft = mock(CustomObjectDraft.class);
+        final CustomObjectDraft<JsonNode> resourceDraft = mock(CustomObjectDraft.class);
 
-        final Optional<CustomObjectDraft> filteredDraft = customObjectSyncOptions
+        final Optional<CustomObjectDraft<JsonNode>> filteredDraft = customObjectSyncOptions
                 .applyBeforeCreateCallback(resourceDraft);
 
         assertThat(filteredDraft).containsSame(resourceDraft);
@@ -55,13 +55,14 @@ class CustomObjectSyncOptionsTest {
 
     @Test
     void applyBeforeCreateCallback_WithCallbackReturningNull_ShouldReturnEmptyOptional() {
-        final Function<CustomObjectDraft, CustomObjectDraft> draftFunction = customObjectDraft -> null;
+        final Function<CustomObjectDraft<JsonNode>, CustomObjectDraft<JsonNode>> draftFunction =
+            customObjectDraft -> null;
         final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder.of(CTP_CLIENT)
                 .beforeCreateCallback(draftFunction)
                 .build();
-        final CustomObjectDraft resourceDraft = mock(CustomObjectDraft.class);
+        final CustomObjectDraft<JsonNode> resourceDraft = mock(CustomObjectDraft.class);
 
-        final Optional<CustomObjectDraft> filteredDraft = customObjectSyncOptions
+        final Optional<CustomObjectDraft<JsonNode>> filteredDraft = customObjectSyncOptions
                 .applyBeforeCreateCallback(resourceDraft);
 
         assertThat(filteredDraft).isEmpty();
