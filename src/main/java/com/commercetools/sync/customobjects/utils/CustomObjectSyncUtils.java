@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 
 
 
-public class CustomObjectUpdateActionUtils {
+public class CustomObjectSyncUtils {
 
     @Nonnull
     public static boolean hasIdenticalValue(

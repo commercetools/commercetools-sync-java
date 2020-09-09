@@ -32,7 +32,7 @@ class CustomObjectUpdateActionUtilsTest {
         when(oldCustomObject.getValue()).thenReturn(oldValue);
         when(oldCustomObject.getContainer()).thenReturn(container);
         when(oldCustomObject.getKey()).thenReturn(key);
-        assertThat(CustomObjectUpdateActionUtils.hasIdenticalValue(oldCustomObject, newCustomObjectdraft)).isTrue();
+        assertThat(CustomObjectSyncUtils.hasIdenticalValue(oldCustomObject, newCustomObjectdraft)).isTrue();
     }
 
     @Test
@@ -45,7 +45,7 @@ class CustomObjectUpdateActionUtilsTest {
         when(oldCustomObject.getValue()).thenReturn(oldValue);
         when(oldCustomObject.getContainer()).thenReturn(container);
         when(oldCustomObject.getKey()).thenReturn(key);
-        assertThat(CustomObjectUpdateActionUtils.hasIdenticalValue(oldCustomObject, newCustomObjectdraft)).isFalse();
+        assertThat(CustomObjectSyncUtils.hasIdenticalValue(oldCustomObject, newCustomObjectdraft)).isFalse();
     }
 
     @Test
@@ -66,7 +66,7 @@ class CustomObjectUpdateActionUtilsTest {
         when(oldCustomObject.getKey()).thenReturn(key);
 
         assertThat(oldValue.toString()).isNotEqualTo(newValue.toString());
-        assertThat(CustomObjectUpdateActionUtils.hasIdenticalValue(oldCustomObject, newCustomObjectdraft)).isTrue();
+        assertThat(CustomObjectSyncUtils.hasIdenticalValue(oldCustomObject, newCustomObjectdraft)).isTrue();
     }
 
     @Test
@@ -93,7 +93,7 @@ class CustomObjectUpdateActionUtilsTest {
         when(oldCustomObject.getKey()).thenReturn(key);
 
         assertThat(oldJsonNode.toString()).isEqualTo(newJsonNode.toString());
-        assertThat(CustomObjectUpdateActionUtils.hasIdenticalValue(oldCustomObject, newCustomObjectdraft)).isTrue();
+        assertThat(CustomObjectSyncUtils.hasIdenticalValue(oldCustomObject, newCustomObjectdraft)).isTrue();
     }
 
     @Test
@@ -120,7 +120,7 @@ class CustomObjectUpdateActionUtilsTest {
         when(oldCustomObject.getKey()).thenReturn(key);
 
         assertThat(oldJsonNode.toString()).isNotEqualTo(newJsonNode.toString());
-        assertThat(CustomObjectUpdateActionUtils.hasIdenticalValue(oldCustomObject, newCustomObjectdraft)).isTrue();
+        assertThat(CustomObjectSyncUtils.hasIdenticalValue(oldCustomObject, newCustomObjectdraft)).isTrue();
     }
 
     @Test
@@ -147,6 +147,6 @@ class CustomObjectUpdateActionUtilsTest {
         when(oldCustomObject.getKey()).thenReturn(key);
 
         assertThat(oldJsonNode.toString()).isNotEqualTo(newJsonNode.toString());
-        assertThat(CustomObjectUpdateActionUtils.hasIdenticalValue(oldCustomObject, newCustomObjectdraft)).isFalse();
+        assertThat(CustomObjectSyncUtils.hasIdenticalValue(oldCustomObject, newCustomObjectdraft)).isFalse();
     }
 }

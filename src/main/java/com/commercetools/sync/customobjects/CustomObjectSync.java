@@ -3,7 +3,7 @@ package com.commercetools.sync.customobjects;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.customobjects.helpers.CustomObjectSyncStatistics;
-import com.commercetools.sync.customobjects.utils.CustomObjectUpdateActionUtils;
+import com.commercetools.sync.customobjects.utils.CustomObjectSyncUtils;
 import com.commercetools.sync.services.CustomObjectService;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.client.ConcurrentModificationException;
@@ -293,7 +293,7 @@ public class CustomObjectSync {
             @Nonnull final CustomObject<JsonNode> oldCustomObject,
             @Nonnull final CustomObjectDraft<JsonNode> newCustomObject) {
 
-        if (CustomObjectUpdateActionUtils.hasIdenticalValue(oldCustomObject, newCustomObject)) {
+        if (CustomObjectSyncUtils.hasIdenticalValue(oldCustomObject, newCustomObject)) {
             return customObjectService
                     .upsertCustomObject(newCustomObject)
                     .handle(ImmutablePair::new)
