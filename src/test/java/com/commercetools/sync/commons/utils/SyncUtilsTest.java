@@ -182,7 +182,7 @@ class SyncUtilsTest {
     }
 
     @Test
-    void getResourceIdentifierWithKey_WithNullReference_ShouldReturnResIdentifierWithoutKey() {
+    void getResourceIdentifierWithKey_WithNullReference_ShouldReturnNull() {
         final ResourceIdentifier<Category> resourceIdentifier = getResourceIdentifierWithKey(null);
         assertThat(resourceIdentifier).isNull();
     }
