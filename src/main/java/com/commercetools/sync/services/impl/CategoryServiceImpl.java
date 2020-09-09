@@ -78,7 +78,6 @@ public final class CategoryServiceImpl extends BaseServiceWithKey<CategoryDraft,
             () -> CategoryQuery
                 .of()
                 .plusPredicates(categoryQueryModel -> categoryQueryModel.key().isIn(categoryKeys)));
-
     }
 
     @Nonnull
