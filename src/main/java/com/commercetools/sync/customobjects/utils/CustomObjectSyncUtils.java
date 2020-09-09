@@ -26,6 +26,4 @@ public class CustomObjectSyncUtils {
 
         return oldValue.equals(newValue);
     }
-
-
 }

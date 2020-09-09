@@ -39,7 +39,7 @@ public class CustomObjectSync {
     private static final String CTP_CUSTOM_OBJECT_FETCH_FAILED =
             "Failed to fetch existing customObjects with keys: '%s'.";
     private static final String CTP_CUSTOM_OBJECT_UPSERT_FAILED =
-            "Failed to create/update customObjects with key: '%s'. Reason: %s" ;
+            "Failed to create/update customObjects with key: '%s'. Reason: %s";
     private static final String CUSTOM_OBJECT_DRAFT_HAS_NO_KEY = "Failed to process customObject draft without key.";
     private static final String CUSTOM_OBJECT_DRAFT_IS_NULL = "Failed to process null customObject draft.";
 
@@ -53,9 +53,10 @@ public class CustomObjectSync {
      * specified in the injected {@link CustomObjectSyncOptions} instance.
      *
      * <p>NOTE: This constructor is mainly to be used for tests where the services can be mocked and passed to.
-     *  @param syncOptions the container of all the options of the sync process including the CTP project
-     *                                client and/or configuration and other sync-specific options.
-     * @param customObjectService     the custom object service which is responsible for fetching/caching the
+     *
+     * @param syncOptions         the container of all the options of the sync process including the CTP project
+     *                            client and/or configuration and other sync-specific options.
+     * @param customObjectService the custom object service which is responsible for fetching/caching the
      */
     public CustomObjectSync(
             @Nonnull final CustomObjectSyncOptions syncOptions,
@@ -87,7 +88,7 @@ public class CustomObjectSync {
      *
      * @param customObjectDrafts {@link List} of {@link CustomObjectDraft}'s that would be synced into CTP project.
      * @return {@link CompletionStage} with {@link CustomObjectSyncStatistics} holding statistics of all sync
-     *         processes performed by this sync instance.
+     * processes performed by this sync instance.
      */
     protected CompletionStage<CustomObjectSyncStatistics> process(
             @Nonnull final List<CustomObjectDraft<JsonNode>> customObjectDrafts) {
@@ -119,8 +120,8 @@ public class CustomObjectSync {
      *
      * @param batch batch of drafts that need to be synced
      * @return a {@link CompletionStage} containing an instance
-     *         of {@link CustomObjectSyncStatistics} which contains information about the result of syncing the supplied
-     *         batch to the target project.
+     * of {@link CustomObjectSyncStatistics} which contains information about the result of syncing the supplied
+     * batch to the target project.
      */
 
     protected CompletionStage<CustomObjectSyncStatistics> processBatch(
@@ -199,15 +200,14 @@ public class CustomObjectSync {
      * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
      * incrementing the total number of failed custom objects to sync.
      *
-     * @param errorMessage              The error message describing the reason(s) of failure.
-     * @param exception                 The exception that called caused the failure, if any.
-     * @param failedTimes               The number of times that the failed types counter is incremented.
-     * @param oldCustomObject           existing type that could be updated.
-     * @param newCustomObjectDraft       draft containing data that could differ from data in {@code oldCustomObject}.
-
+     * @param errorMessage         The error message describing the reason(s) of failure.
+     * @param exception            The exception that called caused the failure, if any.
+     * @param failedTimes          The number of times that the failed types counter is incremented.
+     * @param oldCustomObject      existing type that could be updated.
+     * @param newCustomObjectDraft draft containing data that could differ from data in {@code oldCustomObject}.
      */
     private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
-                             final int failedTimes,  @Nullable final CustomObject oldCustomObject,
+                             final int failedTimes, @Nullable final CustomObject oldCustomObject,
                              @Nullable final CustomObjectDraft newCustomObjectDraft) {
         List<UpdateAction<CustomObject>> updateActions = new ArrayList<>();
         SyncException syncException = exception != null ? new SyncException(errorMessage, exception)
@@ -220,7 +220,7 @@ public class CustomObjectSync {
      * Given a set of custom object drafts, attempts to sync the drafts with the existing custom objects in the CTP
      * project. The custom object and the draft are considered to match if they have the same key and container.
      *
-     * @param oldCustomObjects old custom objects.
+     * @param oldCustomObjects      old custom objects.
      * @param newCustomObjectDrafts drafts that need to be synced.
      * @return a {@link CompletionStage} which contains an empty result after execution of the update
      */
@@ -274,7 +274,6 @@ public class CustomObjectSync {
     }
 
 
-
     /**
      * Given an existing {@link CustomObject} and a new {@link CustomObjectDraft}, the method verifies whether the JSON
      * objects between {@link CustomObject#getValue()} and {@link CustomObjectDraft#getValue()} are identical. If so, a
@@ -284,8 +283,8 @@ public class CustomObjectSync {
      * out successfully or not. If an exception was thrown on executing the request to CTP,the error handling method
      * is called.
      *
-     * @param oldCustomObject       existing custom object that could be updated.
-     * @param newCustomObject       draft containing data that could differ from data in {@code oldCustomObject}.
+     * @param oldCustomObject existing custom object that could be updated.
+     * @param newCustomObject draft containing data that could differ from data in {@code oldCustomObject}.
      * @return a {@link CompletionStage} which contains an empty result after execution of the update.
      */
     @Nonnull
