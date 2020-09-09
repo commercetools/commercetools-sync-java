@@ -41,7 +41,7 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
     public abstract CompletionStage<T> resolveReferences(@Nonnull T draft);
 
     /**
-     * This method fetches the key value on the passed {@link Reference}, if valid. If it is not valid, a
+     * This method gets the key value on the passed {@link Reference} from the id field, if valid. If it is not valid, a
      * {@link ReferenceResolutionException} will be thrown. The validity checks are:
      * <ul>
      * <li>Checks if the id value is not null or not empty.</li>
@@ -53,7 +53,7 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
      * @throws ReferenceResolutionException if any of the validation checks fail.
      */
     @Nonnull
-    protected static <T> String getKeyFromReference(@Nonnull final Reference<T> reference)
+    protected static <T> String getIdFromReference(@Nonnull final Reference<T> reference)
         throws ReferenceResolutionException {
 
         final String id = reference.getId();
@@ -64,7 +64,7 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
     }
 
     /**
-     * This method fetches the key value on the passed {@link ResourceIdentifier}, if valid. If it is not valid, a
+     * This method gets the key value on the passed {@link ResourceIdentifier}, if valid. If it is not valid, a
      * {@link ReferenceResolutionException} will be thrown. The validity checks are:
      * <ul>
      * <li>Checks if the key value is not null or not empty.</li>

@@ -110,7 +110,7 @@ public class AttributeDefinitionReferenceResolver
 
         final String resourceKey;
         try {
-            resourceKey = getKeyFromReference(typeReference);
+            resourceKey = getIdFromReference(typeReference);
         } catch (ReferenceResolutionException exception) {
             return exceptionallyCompletedFuture(
                 new ReferenceResolutionException("Failed to resolve NestedType productType reference.", exception));

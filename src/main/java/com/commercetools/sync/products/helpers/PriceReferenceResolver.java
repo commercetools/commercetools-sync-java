@@ -207,7 +207,7 @@ public final class PriceReferenceResolver
         if (customerGroupReference != null) {
             String customerGroupKey;
             try {
-                customerGroupKey = getKeyFromReference(customerGroupReference);
+                customerGroupKey = getIdFromReference(customerGroupReference);
             } catch (ReferenceResolutionException referenceResolutionException) {
                 return exceptionallyCompletedFuture(new ReferenceResolutionException(
                     format(FAILED_TO_RESOLVE_REFERENCE, CustomerGroup.referenceTypeId(), draftBuilder.getCountry(),

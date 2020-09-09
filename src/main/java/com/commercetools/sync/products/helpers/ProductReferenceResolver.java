@@ -325,7 +325,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         if (stateReference != null) {
             String stateKey;
             try {
-                stateKey = getKeyFromReference(stateReference);
+                stateKey = getIdFromReference(stateReference);
             } catch (ReferenceResolutionException referenceResolutionException) {
                 return exceptionallyCompletedFuture(new ReferenceResolutionException(
                     format(FAILED_TO_RESOLVE_REFERENCE, State.referenceTypeId(), draftBuilder.getKey(),
