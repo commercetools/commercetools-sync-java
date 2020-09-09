@@ -7,14 +7,12 @@ import com.commercetools.sync.customobjects.utils.CustomObjectSyncUtils;
 import com.commercetools.sync.services.CustomObjectService;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.client.ConcurrentModificationException;
-import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -24,6 +22,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Supplier;
 
+import static com.commercetools.sync.customobjects.utils.CustomObjectSyncUtils.batchElements;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -88,7 +87,7 @@ public class CustomObjectSync {
      *
      * @param customObjectDrafts {@link List} of {@link CustomObjectDraft}'s that would be synced into CTP project.
      * @return {@link CompletionStage} with {@link CustomObjectSyncStatistics} holding statistics of all sync
-     *    processes performed by this sync instance.
+     *     processes performed by this sync instance.
      */
     protected CompletionStage<CustomObjectSyncStatistics> process(
             @Nonnull final List<CustomObjectDraft<JsonNode>> customObjectDrafts) {
@@ -97,15 +96,7 @@ public class CustomObjectSync {
         return syncBatches(batches, CompletableFuture.completedFuture(statistics));
     }
 
-    private static List<List<CustomObjectDraft<JsonNode>>> batchElements(
-            @Nonnull final List<CustomObjectDraft<JsonNode>> elements,
-            final int batchSize) {
-        List<List<CustomObjectDraft<JsonNode>>> batches = new ArrayList<>();
-        for (int i = 0; i < elements.size() && batchSize > 0; i += batchSize) {
-            batches.add(elements.subList(i, Math.min(i + batchSize, elements.size())));
-        }
-        return batches;
-    }
+
 
     /**
      * This method first creates a new {@link Set} of valid {@link CustomObjectDraft} elements. For more on the rules of
@@ -207,12 +198,12 @@ public class CustomObjectSync {
      * @param newCustomObjectDraft draft containing data that could differ from data in {@code oldCustomObject}.
      */
     private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
-                             final int failedTimes, @Nullable final CustomObject oldCustomObject,
-                             @Nullable final CustomObjectDraft newCustomObjectDraft) {
-        List<UpdateAction<CustomObject>> updateActions = new ArrayList<>();
+                             final int failedTimes, @Nullable final CustomObject<JsonNode> oldCustomObject,
+                             @Nullable final CustomObjectDraft<JsonNode> newCustomObjectDraft) {
+
         SyncException syncException = exception != null ? new SyncException(errorMessage, exception)
                 : new SyncException(errorMessage);
-        syncOptions.applyErrorCallback(syncException, oldCustomObject, newCustomObjectDraft, updateActions);
+        syncOptions.applyErrorCallback(syncException, oldCustomObject, newCustomObjectDraft, null);
         statistics.incrementFailed(failedTimes);
     }
 
