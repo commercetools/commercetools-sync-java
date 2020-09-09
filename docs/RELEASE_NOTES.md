@@ -42,7 +42,7 @@
 
 - 🚧 **Breaking Changes** (2)
     - Sync options:
-        - The signatures of the `errorCallback` and `errorCallback` changed and parameter lists extended.
+        - The signatures of the `errorCallback` and `warningCallback` changed and their parameter lists are extended.
             From now on the resource draft of the source project, the resource of the target project and optionally the failed update actions
             passed to the callbacks. Refer [sync options](./usage/SYNC_OPTIONS.md) for more details. [#107](https://github.com/commercetools/commercetools-sync-java/issues/107)
     - Reference resolution utilities:
