@@ -66,7 +66,7 @@ public final class SyncUtils {
      * @param reference              the reference of the resource to check if it's expanded.
      * @param <T>                    the type of the resource.
      *
-     * @return returns the resource resource identifier with key if the {@code reference} was expanded.
+     * @return returns the resource identifier with key if the {@code reference} was expanded.
      *         Otherwise, it returns the resource identifier with id.
      */
     @Nullable
