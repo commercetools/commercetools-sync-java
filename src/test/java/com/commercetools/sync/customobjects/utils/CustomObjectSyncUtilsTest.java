@@ -268,7 +268,6 @@ class CustomObjectSyncUtilsTest {
 
     @Test
     void batchElements_WithNegativeSize_ShouldReturnNoBatches() {
-        final int numberOfCustomObjectDrafts = 160;
         final ArrayList<CustomObjectDraft<JsonNode>> customObjectDrafts = new ArrayList<>();
 
 
