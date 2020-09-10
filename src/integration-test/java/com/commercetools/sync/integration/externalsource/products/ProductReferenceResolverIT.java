@@ -2,7 +2,6 @@ package com.commercetools.sync.integration.externalsource.products;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
-import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -53,8 +52,6 @@ class ProductReferenceResolverIT {
 
     private static ProductType productType;
     private static List<Category> categories;
-    private List<String> errorCallBackMessages;
-    private List<String> warningCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
 
     @BeforeAll
@@ -73,23 +70,17 @@ class ProductReferenceResolverIT {
     }
 
     private void clearSyncTestCollections() {
-        errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
-        warningCallBackMessages = new ArrayList<>();
     }
 
     private ProductSyncOptions getProductSyncOptions() {
         final QuadConsumer<SyncException, Optional<ProductDraft>, Optional<Product>, List<UpdateAction<Product>>>
                 errorCallBack = (exception, newResource, oldResource, updateActions) -> {
-                    errorCallBackMessages.add(exception.getMessage());
                     errorCallBackExceptions.add(exception.getCause());
                 };
-        final TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>> warningCallBack =
-            (exception, newResource, oldResource) -> warningCallBackMessages.add(exception.getMessage());
 
         return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                         .errorCallback(errorCallBack)
-                                        .warningCallback(warningCallBack)
                                         .build();
     }
 
@@ -104,7 +95,6 @@ class ProductReferenceResolverIT {
         final Set<ResourceIdentifier<Category>> invalidCategoryReferences = new HashSet<>();
         invalidCategoryReferences.add(ResourceIdentifier.ofId(categories.get(0).getId()));
         invalidCategoryReferences.add(ResourceIdentifier.ofId(null));
-        invalidCategoryReferences.add(ResourceIdentifier.ofKey("non-existing-key"));
 
         // Create a product with the invalid category references. (i.e. not ready for reference resolution).
         final ProductDraft productDraft =
@@ -116,17 +106,12 @@ class ProductReferenceResolverIT {
             executeBlocking(productSync.sync(singletonList(productDraft)));
 
         assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
-        assertThat(errorCallBackExceptions).hasSize(2);
+        assertThat(errorCallBackExceptions).hasSize(1);
         final Throwable exception = errorCallBackExceptions.get(0);
         assertThat(exception).isExactlyInstanceOf(CompletionException.class)
                              .hasMessageContaining("Failed to resolve 'category' resource identifier on ProductDraft "
                                  + "with key:'productKey1'")
                              .hasMessageContaining(format("Reason: %s", BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
-
-        assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0))
-            .contains("Failed to process the ProductDraft with key:'productKey1'");
-        assertThat(warningCallBackMessages).isEmpty();
     }
 
     @Test
