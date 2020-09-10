@@ -242,7 +242,7 @@ class ProductReferenceResolutionUtilsTest {
     }
 
     @Test
-    void replaceCategoryReferencesIdsWithKeys_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
+    void mapToCategoryReferencePair_WithNonExpandedReferences_ShouldReturnReferencesWithoutReplacedKeys() {
         final String categoryId = UUID.randomUUID().toString();
         final Set<Reference<Category>> categoryReferences = singleton(Category.referenceOfId(categoryId));
         final CategoryOrderHints categoryOrderHints = getCategoryOrderHintsMock(categoryReferences);
@@ -376,6 +376,22 @@ class ProductReferenceResolutionUtilsTest {
     @Test
     void mapToCategoryReferencePair_WithNoReferences_ShouldNotReplaceIds() {
         final Product product = getProductMock(Collections.emptySet(), null);
+
+        final CategoryReferencePair categoryReferencePair =
+            ProductReferenceResolutionUtils.mapToCategoryReferencePair(product);
+
+        assertThat(categoryReferencePair).isNotNull();
+
+        final Set<ResourceIdentifier<Category>> categoryReferencesWithKeys =
+            categoryReferencePair.getCategoryResourceIdentifiers();
+        final CategoryOrderHints categoryOrderHintsWithKeys = categoryReferencePair.getCategoryOrderHints();
+        assertThat(categoryReferencesWithKeys).isEmpty();
+        assertThat(categoryOrderHintsWithKeys).isNull();
+    }
+
+    @Test
+    void mapToCategoryReferencePair_WithNullReferences_ShouldNotReplaceIds() {
+        final Product product = getProductMock(singleton(null), null);
 
         final CategoryReferencePair categoryReferencePair =
             ProductReferenceResolutionUtils.mapToCategoryReferencePair(product);
