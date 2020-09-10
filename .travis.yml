@@ -28,15 +28,3 @@ cache:
   directories:
   - $HOME/.gradle/caches/
   - $HOME/.gradle/wrapper/
-notifications:
-  slack:
-    template:
-    - '<https://github.com/commercetools/commercetools-sync-java|%{repository}>#<%{build_url}|%{build_number}>'
-    - '(%{branch} - <%{compare_url}|%{commit}> : %{author}): *%{message}*'
-    - 'Build duration:'
-    - '%{duration}.'
-    on_pull_requests: false
-    on_success: change
-    on_failure: change
-    rooms:
-      secure: diL83Fqrx+Eyxd7ViNbmxHH+TO8BT1jqdVqcAVAJxRlr4ka+dG3CLaGvgK26/0cb/mj576eWIxmUFhOct+x4WziVl9EFxIP1aEQUxSMIBE9x/G3tFEfNlwDr9RlxqBbTKyuk4gQ6aZtS6eIqa7Zuz3uRfdQkUXTYe3CTR2Y3jTGBdJpwaZkGj1goGVkQb2YY1IT1YR6c5Mh7ac1g+xA3ES8fn6jEHwAQCjw+1Heo0A4PMLVFDZ+ySKS7U1trvpu+4o1uwv9Xf30czsSgcFa64fUw7rP8SrzaI68wvy4aqx1gPH3BdQdHY0uduywT8pUAaE+ZoZ6Mn80J/IuYQlsr7zrFjdAPHEOiKFFJrT+eEtMv/f6iQ6rsBhzwjca+Ah3SVHbrzYGNdWSwrpbN+uPbyVuXMjym+q/i6lvDpzgl1rEov4RJGFGsLZs06KqJ2Ql47qcMOB8zg4lGnqg6A7i0GkvF5Ftc//0BliMVvO0zpZW6wDVromNIqJmIKLgHZS9fb4NNwHiEHwA17zyrOucvCLXYgvSR+mcluBDfluRbQbyPUdevSkI11Uevfj5WWdfOBHGqVOq5kIwsG0pHKGcTfqtDYPaoP4TorKLEIFm8Ce8Ame77A8f/BB7gZaNuttPU937mXRLqTQXheHVwtYra9uKAmT3+NzhisMyTgS4IyOQ=
