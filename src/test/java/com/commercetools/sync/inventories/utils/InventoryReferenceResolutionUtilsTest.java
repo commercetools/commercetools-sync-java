@@ -1,8 +1,10 @@
 package com.commercetools.sync.inventories.utils;
 
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.inventory.InventoryEntry;
 import io.sphere.sdk.inventory.InventoryEntryDraft;
+import io.sphere.sdk.inventory.queries.InventoryEntryQuery;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.Type;
@@ -13,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import static com.commercetools.sync.inventories.utils.InventoryReferenceResolutionUtils.buildInventoryQuery;
 import static com.commercetools.sync.inventories.utils.InventoryReferenceResolutionUtils.mapToInventoryEntryDrafts;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getChannelMock;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -103,6 +106,14 @@ class InventoryReferenceResolutionUtilsTest {
             assertThat(referenceReplacedDraft.getCustom()).isNull();
             assertThat(referenceReplacedDraft.getSupplyChannel()).isNull();
         }
+    }
+
+    @Test
+    void buildInventoryQuery_Always_ShouldReturnQueryWithAllNeededReferencesExpanded() {
+        final InventoryEntryQuery inventoryEntryQuery = buildInventoryQuery();
+        assertThat(inventoryEntryQuery.expansionPaths()).containsExactly(
+            ExpansionPath.of("custom.type"),
+            ExpansionPath.of("supplyChannel"));
     }
 
 }

@@ -26,7 +26,7 @@ import java.util.Locale;
 import java.util.concurrent.CompletionException;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
@@ -45,8 +45,8 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
-import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.buildProductQuery;
-import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.replaceProductsReferenceIdsWithKeys;
+import static com.commercetools.sync.products.utils.ProductReferenceResolutionUtils.buildProductQuery;
+import static com.commercetools.sync.products.utils.ProductReferenceResolutionUtils.mapToProductDrafts;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -139,7 +139,7 @@ class ProductReferenceResolverIT {
         final List<Product> products = CTP_SOURCE_CLIENT.execute(productQuery)
                                                         .toCompletableFuture().join().getResults();
 
-        final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
+        final List<ProductDraft> productDrafts = mapToProductDrafts(products);
 
         // test
         final ProductSyncStatistics syncStatistics =  productSync.sync(productDrafts).toCompletableFuture().join();
@@ -162,7 +162,7 @@ class ProductReferenceResolverIT {
         final List<Product> products = CTP_SOURCE_CLIENT.execute(productQuery)
                                                         .toCompletableFuture().join().getResults();
 
-        final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
+        final List<ProductDraft> productDrafts = mapToProductDrafts(products);
 
         // test
         final ProductSyncStatistics syncStatistics =  productSync.sync(productDrafts).toCompletableFuture().join();
@@ -175,7 +175,7 @@ class ProductReferenceResolverIT {
                 + "Failed to resolve 'product-type' resource identifier on ProductDraft with "
                 + "key:'%s'. Reason: %s",
             productDraft.getKey(), productDraft.getKey(),
-            BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+            BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(warningCallBackMessages).isEmpty();

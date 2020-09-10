@@ -74,8 +74,8 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.createProduct
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceWithId;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getReferenceSetAttributeDraft;
-import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.buildProductQuery;
-import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.replaceProductsReferenceIdsWithKeys;
+import static com.commercetools.sync.products.utils.ProductReferenceResolutionUtils.buildProductQuery;
+import static com.commercetools.sync.products.utils.ProductReferenceResolutionUtils.mapToProductDrafts;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
@@ -213,7 +213,7 @@ class ProductSyncIT {
         final List<Product> products = CTP_SOURCE_CLIENT.execute(buildProductQuery())
                                                         .toCompletableFuture().join().getResults();
 
-        final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
+        final List<ProductDraft> productDrafts = mapToProductDrafts(products);
 
         final ProductSyncStatistics syncStatistics =  productSync.sync(productDrafts).toCompletableFuture().join();
 
@@ -243,7 +243,7 @@ class ProductSyncIT {
         final List<Product> products = CTP_SOURCE_CLIENT.execute(buildProductQuery())
                                                         .toCompletableFuture().join().getResults();
 
-        final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
+        final List<ProductDraft> productDrafts = mapToProductDrafts(products);
 
         final ProductSyncStatistics syncStatistics = productSync.sync(productDrafts).toCompletableFuture().join();
 
@@ -275,7 +275,7 @@ class ProductSyncIT {
         final List<Product> products = CTP_SOURCE_CLIENT.execute(buildProductQuery())
                                                         .toCompletableFuture().join().getResults();
 
-        final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
+        final List<ProductDraft> productDrafts = mapToProductDrafts(products);
 
         final ProductSyncStatistics syncStatistics = productSync.sync(productDrafts).toCompletableFuture().join();
 
@@ -319,7 +319,7 @@ class ProductSyncIT {
         final List<Product> products = CTP_SOURCE_CLIENT.execute(buildProductQuery())
                                                         .toCompletableFuture().join().getResults();
 
-        final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
+        final List<ProductDraft> productDrafts = mapToProductDrafts(products);
 
         final ProductSyncStatistics syncStatistics =  productSync.sync(productDrafts).toCompletableFuture().join();
 
@@ -421,7 +421,7 @@ class ProductSyncIT {
         // Test
         final List<Product> products = CTP_SOURCE_CLIENT.execute(buildProductQuery())
                                                         .toCompletableFuture().join().getResults();
-        final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
+        final List<ProductDraft> productDrafts = mapToProductDrafts(products);
         final ProductSyncStatistics syncStatistics =  customSync.sync(productDrafts).toCompletableFuture().join();
 
 
@@ -492,7 +492,7 @@ class ProductSyncIT {
         // Test
         final List<Product> products = CTP_SOURCE_CLIENT.execute(buildProductQuery())
                                                         .toCompletableFuture().join().getResults();
-        final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
+        final List<ProductDraft> productDrafts = mapToProductDrafts(products);
         final ProductSyncStatistics syncStatistics = customSync.sync(productDrafts).toCompletableFuture().join();
 
 
@@ -620,7 +620,7 @@ class ProductSyncIT {
         // Test
         final List<Product> products = CTP_SOURCE_CLIENT.execute(buildProductQuery())
                                                         .toCompletableFuture().join().getResults();
-        final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
+        final List<ProductDraft> productDrafts = mapToProductDrafts(products);
         final ProductSyncStatistics syncStatistics =  customSync.sync(productDrafts).toCompletableFuture().join();
 
 

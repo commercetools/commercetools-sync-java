@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithProductTypeRefId;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithProductTypeRefKey;
 import static com.commercetools.sync.products.utils.ProductVariantUpdateActionUtils.buildProductVariantAssetsUpdateActions;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
@@ -66,7 +66,7 @@ class BuildVariantAssetsUpdateActionsTest {
 
         final ProductVariant oldMasterVariant = oldProduct.getMasterData().getStaged().getMasterVariant();
         ProductVariantDraft variant = ProductVariantDraftBuilder.of().build();
-        final ProductDraft newProduct = getBuilderWithProductTypeRefId("productTypeKey").plusVariants(variant).build();
+        final ProductDraft newProduct = getBuilderWithProductTypeRefKey("productTypeKey").plusVariants(variant).build();
         final List<UpdateAction<Product>> updateActions =
             buildProductVariantAssetsUpdateActions(oldProduct, newProduct, oldMasterVariant,
                 newProduct.getVariants().get(0), SYNC_OPTIONS);
@@ -83,7 +83,7 @@ class BuildVariantAssetsUpdateActionsTest {
         final ProductVariant productVariant = mock(ProductVariant.class);
         when(productVariant.getAssets()).thenReturn(emptyList());
         ProductVariantDraft variant = ProductVariantDraftBuilder.of().build();
-        final ProductDraft newProduct = getBuilderWithProductTypeRefId("productTypeKey").plusVariants(variant).build();
+        final ProductDraft newProduct = getBuilderWithProductTypeRefKey("productTypeKey").plusVariants(variant).build();
         final List<UpdateAction<Product>> updateActions =
             buildProductVariantAssetsUpdateActions(oldProduct, newProduct, productVariant,
                 ProductVariantDraftBuilder.of().build().withAssets(null), SYNC_OPTIONS);

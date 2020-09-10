@@ -9,7 +9,7 @@ import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
@@ -20,7 +20,6 @@ import io.sphere.sdk.products.queries.ProductProjectionQuery;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.queries.PagedQueryResult;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -264,7 +263,7 @@ class ProductSyncBenchmark {
     @Nonnull
     private List<ProductDraft> buildProductDrafts(final int numberOfProducts) {
         final List<ProductDraft> productDrafts = new ArrayList<>();
-        final Reference<ProductType> draftsProductType = ProductType.referenceOfId(productType.getKey());
+        final ResourceIdentifier<ProductType> draftsProductType = ResourceIdentifier.ofKey(productType.getKey());
         for (int i = 0; i < numberOfProducts; i++) {
             final ProductVariantDraft masterVariantDraft = ProductVariantDraftBuilder.of()
                                                                                      .key("masterVariantKey_" + i)

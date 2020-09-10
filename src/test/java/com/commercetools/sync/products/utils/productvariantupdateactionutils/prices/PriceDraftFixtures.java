@@ -260,6 +260,27 @@ public final class PriceDraftFixtures {
                                 .build();
     }
 
+    @Nonnull
+    public static PriceDraft getPriceDraftWithChannelKey(@Nonnull final BigDecimal value,
+                                           @Nonnull final CurrencyUnit currencyUnits,
+                                           @Nullable final CountryCode countryCode,
+                                           @Nullable final String customerGroupId,
+                                           @Nullable final ZonedDateTime validFrom,
+                                           @Nullable final ZonedDateTime validUntil,
+                                           @Nullable final String channelKey,
+                                           @Nullable final CustomFieldsDraft customFieldsDraft) {
+        return PriceDraftBuilder.of(Price.of(value, currencyUnits))
+                                .country(countryCode)
+                                .customerGroup(
+                                    ofNullable(customerGroupId).map(CustomerGroup::referenceOfId).orElse(null))
+                                .validFrom(validFrom)
+                                .validUntil(validUntil)
+                                .channel(ofNullable(channelKey).map(ResourceIdentifier::<Channel>ofKey)
+                                                              .orElse(null))
+                                .custom(customFieldsDraft)
+                                .build();
+    }
+
     private PriceDraftFixtures() {
     }
 }
