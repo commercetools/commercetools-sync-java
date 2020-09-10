@@ -43,7 +43,4 @@ public final class CustomObjectSyncOptions extends BaseSyncOptions<CustomObject<
             beforeUpdateCallback,
             beforeCreateCallback);
     }
-
-
-
 }

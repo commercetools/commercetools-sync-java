@@ -270,7 +270,6 @@ class CustomObjectSyncUtilsTest {
     void batchElements_WithNegativeSize_ShouldReturnNoBatches() {
         final ArrayList<CustomObjectDraft<JsonNode>> customObjectDrafts = new ArrayList<>();
 
-
         final List<List<CustomObjectDraft<JsonNode>>> batches = batchElements(customObjectDrafts, -100);
         assertThat(batches.size()).isEqualTo(0);
     }
