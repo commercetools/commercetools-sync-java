@@ -129,7 +129,7 @@ class CustomObjectServiceImplTest {
     }
 
     @Test
-    void fetchCachedCustomObjectId_WithEmptyCotainer_ShouldNotFetch() {
+    void fetchCachedCustomObjectId_WithEmptyContainer_ShouldNotFetch() {
         final String key = RandomStringUtils.random(15, true, true);
         final String container = "";
         final String id = RandomStringUtils.random(15, true, true);
@@ -229,9 +229,8 @@ class CustomObjectServiceImplTest {
 
         assertAll(
             () -> assertThat(customObjects).isEmpty(),
-            () -> assertThat(service.keyToIdCache).doesNotContainKeys(
-                        String.valueOf(customObjectCompositeIdlist.get(0)),
-                        String.valueOf(customObjectCompositeIdlist.get(1)))
+            () -> assertThat(service.keyToIdCache)
+                .doesNotContainKeys(String.valueOf(customObjectCompositeIdlist.get(0)))
         );
         verify(client, times(0)).execute(any(CustomObjectQuery.class));
     }

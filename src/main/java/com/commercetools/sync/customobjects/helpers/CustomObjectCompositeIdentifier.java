@@ -14,6 +14,7 @@ import static java.lang.String.format;
  * <p>Since there is no one unique identifier for customObjects on the commercetools API, we uniquely identify
  * a customObject as a composite id of the following fields: key, container. This class models such composite key.
  */
+// todo (ahmetoz) add test for hashCode and equals.
 public final class CustomObjectCompositeIdentifier {
 
     private final String key;
