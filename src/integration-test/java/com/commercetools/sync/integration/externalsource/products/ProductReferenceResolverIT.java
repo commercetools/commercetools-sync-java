@@ -19,6 +19,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -41,6 +42,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraft;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
+import static com.commercetools.sync.products.helpers.ProductReferenceResolver.PRODUCT_TYPE_DOES_NOT_EXIST;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.producttypes.ProductType.referenceOfId;
 import static java.lang.String.format;
@@ -102,6 +104,7 @@ class ProductReferenceResolverIT {
         final Set<ResourceIdentifier<Category>> invalidCategoryReferences = new HashSet<>();
         invalidCategoryReferences.add(ResourceIdentifier.ofId(categories.get(0).getId()));
         invalidCategoryReferences.add(ResourceIdentifier.ofId(null));
+        invalidCategoryReferences.add(ResourceIdentifier.ofKey("non-existing-key"));
 
         // Create a product with the invalid category references. (i.e. not ready for reference resolution).
         final ProductDraft productDraft =
@@ -113,7 +116,7 @@ class ProductReferenceResolverIT {
             executeBlocking(productSync.sync(singletonList(productDraft)));
 
         assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
-        assertThat(errorCallBackExceptions).hasSize(1);
+        assertThat(errorCallBackExceptions).hasSize(2);
         final Throwable exception = errorCallBackExceptions.get(0);
         assertThat(exception).isExactlyInstanceOf(CompletionException.class)
                              .hasMessageContaining("Failed to resolve 'category' resource identifier on ProductDraft "
@@ -124,5 +127,25 @@ class ProductReferenceResolverIT {
         assertThat(errorCallBackMessages.get(0))
             .contains("Failed to process the ProductDraft with key:'productKey1'");
         assertThat(warningCallBackMessages).isEmpty();
+    }
+
+    @Test
+    void sync_withNewProductWithNonExistingProductTypeReference_ShouldFailCreatingTheProduct() {
+        final ProductDraft productDraft =
+            createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH, ResourceIdentifier.ofKey("non-existing-key"), null,
+                null, Collections.emptySet(), null);
+
+        final ProductSync productSync = new ProductSync(getProductSyncOptions());
+        final ProductSyncStatistics syncStatistics =
+            executeBlocking(productSync.sync(singletonList(productDraft)));
+
+        assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
+        assertThat(errorCallBackExceptions).hasSize(1);
+        final Throwable exception = errorCallBackExceptions.get(0);
+        assertThat(exception)
+            .isExactlyInstanceOf(CompletionException.class)
+            .hasMessageContaining("Failed to resolve 'product-type' resource identifier on "
+                + "ProductDraft with key:'productKey1'")
+            .hasMessageContaining(format("Reason: %s", format(PRODUCT_TYPE_DOES_NOT_EXIST, "non-existing-key")));
     }
 }
