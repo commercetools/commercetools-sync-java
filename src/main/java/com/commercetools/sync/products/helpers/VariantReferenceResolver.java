@@ -3,9 +3,11 @@ package com.commercetools.sync.products.helpers;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.helpers.AssetReferenceResolver;
 import com.commercetools.sync.commons.helpers.BaseReferenceResolver;
+import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
+import com.commercetools.sync.services.CustomObjectService;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
@@ -14,6 +16,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.Product;
@@ -44,6 +47,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     private final ProductService productService;
     private final ProductTypeService productTypeService;
     private final CategoryService categoryService;
+    private final CustomObjectService customObjectService;
 
     /**
      * Instantiates a {@link VariantReferenceResolver} instance that could be used to resolve the variants of product
@@ -57,6 +61,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
      * @param productService       the service to fetch the products for reference resolution.
      * @param productTypeService   the service to fetch the productTypes for reference resolution.
      * @param categoryService      the service to fetch the categories for reference resolution.
+     * @param customObjectService  the service to fetch the custom objects for reference resolution.
      */
     public VariantReferenceResolver(@Nonnull final ProductSyncOptions productSyncOptions,
                                     @Nonnull final TypeService typeService,
@@ -64,7 +69,8 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
                                     @Nonnull final CustomerGroupService customerGroupService,
                                     @Nonnull final ProductService productService,
                                     @Nonnull final ProductTypeService productTypeService,
-                                    @Nonnull final CategoryService categoryService) {
+                                    @Nonnull final CategoryService categoryService,
+                                    @Nonnull final CustomObjectService customObjectService) {
         super(productSyncOptions);
         this.priceReferenceResolver = new PriceReferenceResolver(productSyncOptions, typeService, channelService,
             customerGroupService);
@@ -72,6 +78,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
         this.productService = productService;
         this.categoryService = categoryService;
         this.productTypeService = productTypeService;
+        this.customObjectService = customObjectService;
     }
 
 
@@ -177,6 +184,18 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
 
         if (isReferenceOfType(referenceValue, ProductType.referenceTypeId())) {
             return getResolvedIdFromKeyInReference(referenceValue, productTypeService::fetchCachedProductTypeId);
+        }
+
+        if (isReferenceOfType(referenceValue, CustomObject.referenceTypeId())) {
+            // todo (ahmetoz) ensure before the referenceValue is in correct format
+            //  or should throw an exception ?
+            return getResolvedIdFromKeyInReference(referenceValue, resolvedIdText -> {
+                final String[] containerAndKey = resolvedIdText.split("\\|");
+                final CustomObjectCompositeIdentifier customObjectCompositeIdentifier =
+                    CustomObjectCompositeIdentifier.of(containerAndKey[1], containerAndKey[0]);
+
+                return customObjectService.fetchCachedCustomObjectId(customObjectCompositeIdentifier);
+            });
         }
 
         return CompletableFuture.completedFuture(Optional.empty());

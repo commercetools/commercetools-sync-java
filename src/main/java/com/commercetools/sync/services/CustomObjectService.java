@@ -29,7 +29,6 @@ public interface CustomObjectService {
      *         completion could contain an {@link Optional} with the id inside of it or an empty {@link Optional} if no
      *         {@link CustomObject} was found in the CTP project with this identifier.
      */
-
     @Nonnull
     CompletionStage<Optional<String>> fetchCachedCustomObjectId(@Nonnull CustomObjectCompositeIdentifier identifier);
 
@@ -49,7 +48,7 @@ public interface CustomObjectService {
         @Nonnull Set<CustomObjectCompositeIdentifier> identifiers);
 
     /**
-     * Given a CustomObjectCompositeIdentifer identify which includes key and container of CustomObject, this method
+     * Given a CustomObjectCompositeIdentifier identify which includes key and container of CustomObject, this method
      * fetches a CustomObject that matches this given identifier in the CTP project defined in an
      * injected {@link SphereClient}. If there is no matching CustomObject an empty {@link Optional} will be
      * returned in the returned future.

@@ -4,6 +4,7 @@ import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
+import com.commercetools.sync.services.CustomObjectService;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
@@ -68,7 +69,7 @@ class ProductSyncTest {
             mock(ProductTypeService.class), mock(CategoryService.class), mock(TypeService.class),
             mock(ChannelService.class), mock(CustomerGroupService.class), mock(TaxCategoryService.class),
             mock(StateService.class),
-            mock(UnresolvedReferencesService.class));
+            mock(UnresolvedReferencesService.class), mock(CustomObjectService.class));
 
         final ProductDraft productDraftWithoutKey = ProductDraftBuilder
             .of(ResourceIdentifier.ofKey("productTypeKey"), ofEnglish("name"), ofEnglish("slug"), emptyList())
@@ -124,7 +125,8 @@ class ProductSyncTest {
             productTypeService, categoryService, mock(TypeService.class),
             mock(ChannelService.class), mock(CustomerGroupService.class), mock(TaxCategoryService.class),
             mock(StateService.class),
-            mock(UnresolvedReferencesService.class));
+            mock(UnresolvedReferencesService.class),
+            mock(CustomObjectService.class));
 
         // test
         final ProductSyncStatistics productSyncStatistics = productSync
@@ -157,7 +159,7 @@ class ProductSyncTest {
                 .state(null)
                 .build();
 
-     
+
 
         final SphereClient mockClient = mock(SphereClient.class);
         when(mockClient.execute(any(ProductQuery.class)))
@@ -190,7 +192,8 @@ class ProductSyncTest {
                 productTypeService, categoryService, mock(TypeService.class),
                 mock(ChannelService.class), mock(CustomerGroupService.class), mock(TaxCategoryService.class),
                 mock(StateService.class),
-            mock(UnresolvedReferencesService.class));
+            mock(UnresolvedReferencesService.class),
+            mock(CustomObjectService.class));
 
         // test
         final ProductSyncStatistics productSyncStatistics = productSync
@@ -245,7 +248,8 @@ class ProductSyncTest {
             productTypeService, categoryService, mock(TypeService.class),
             mock(ChannelService.class), mock(CustomerGroupService.class), mock(TaxCategoryService.class),
             mock(StateService.class),
-            mock(UnresolvedReferencesService.class));
+            mock(UnresolvedReferencesService.class),
+            mock(CustomObjectService.class));
 
         // test
         productSync.sync(singletonList(productDraft)).toCompletableFuture().join();
@@ -295,7 +299,8 @@ class ProductSyncTest {
             productTypeService, categoryService, mock(TypeService.class),
             mock(ChannelService.class), mock(CustomerGroupService.class), mock(TaxCategoryService.class),
             mock(StateService.class),
-            mock(UnresolvedReferencesService.class));
+            mock(UnresolvedReferencesService.class),
+            mock(CustomObjectService.class));
 
         // test
         productSync.sync(singletonList(productDraft)).toCompletableFuture().join();
@@ -318,7 +323,7 @@ class ProductSyncTest {
             readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class);
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> exceptions = new ArrayList<>();
-      
+
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder
             .of(mock(SphereClient.class))
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
@@ -350,7 +355,8 @@ class ProductSyncTest {
             productTypeService, categoryService, mock(TypeService.class),
             mock(ChannelService.class), mock(CustomerGroupService.class), mock(TaxCategoryService.class),
             mock(StateService.class),
-            mock(UnresolvedReferencesService.class));
+            mock(UnresolvedReferencesService.class),
+            mock(CustomObjectService.class));
 
         // test
         ProductSyncStatistics productSyncStatistics =
