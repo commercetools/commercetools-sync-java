@@ -26,8 +26,8 @@ import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtil
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.removeAttributeReferencesAndDeleteProductTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.producttypes.utils.ProductTypeReferenceReplacementUtils.buildProductTypeQuery;
-import static com.commercetools.sync.producttypes.utils.ProductTypeReferenceReplacementUtils.replaceProductTypesReferenceIdsWithKeys;
+import static com.commercetools.sync.producttypes.utils.ProductTypeReferenceResolutionUtils.buildProductTypeQuery;
+import static com.commercetools.sync.producttypes.utils.ProductTypeReferenceResolutionUtils.mapToProductTypeDrafts;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -84,7 +84,7 @@ class ProductTypeWithNestedAttributeSyncIT {
             .getResults();
 
         final List<ProductTypeDraft> productTypeDrafts =
-            replaceProductTypesReferenceIdsWithKeys(productTypes);
+            mapToProductTypeDrafts(productTypes);
 
         final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
 
@@ -116,7 +116,7 @@ class ProductTypeWithNestedAttributeSyncIT {
             .getResults();
 
         final List<ProductTypeDraft> productTypeDrafts =
-            replaceProductTypesReferenceIdsWithKeys(productTypes);
+            mapToProductTypeDrafts(productTypes);
 
         productTypeSyncOptions = ProductTypeSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
@@ -162,7 +162,7 @@ class ProductTypeWithNestedAttributeSyncIT {
                 .getResults();
 
         final List<ProductTypeDraft> productTypeDrafts =
-                replaceProductTypesReferenceIdsWithKeys(productTypes);
+                mapToProductTypeDrafts(productTypes);
 
         final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
 
@@ -195,7 +195,7 @@ class ProductTypeWithNestedAttributeSyncIT {
                 .getResults();
 
         //only update the nested types
-        final List<ProductTypeDraft> productTypeDrafts = replaceProductTypesReferenceIdsWithKeys(productTypes)
+        final List<ProductTypeDraft> productTypeDrafts = mapToProductTypeDrafts(productTypes)
                 .stream()
                 .map(productType -> {
                     final List<AttributeDefinitionDraft> attributeDefinitionDrafts = productType
