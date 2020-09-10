@@ -255,13 +255,14 @@ class CustomObjectSyncUtilsTest {
     void batchElements_WithValidSize_ShouldReturnCorrectBatches() {
         final int numberOfCustomObjectDrafts = 160;
         final int batchSize = 10;
-        final ArrayList<CustomObjectDraft<JsonNode>> customObjectDrafts = new ArrayList<>();
 
-        for (int i = 0; i < numberOfCustomObjectDrafts; i++) {
-            customObjectDrafts.add(CustomObjectDraft
-                    .ofUnversionedUpsert("container_" + i, "key_" + i,
-                            JsonNodeFactory.instance.objectNode().put("field", "field_" + i)));
-        }
+        final List<CustomObjectDraft<JsonNode>> customObjectDrafts = IntStream.of(numberOfCustomObjectDrafts)
+                .mapToObj(i -> CustomObjectDraft
+                        .ofUnversionedUpsert("container_" + i, "key_" + i,
+                                JsonNodeFactory.instance.objectNode().put("field", "field_" + i))
+                )
+                .collect(Collectors.toList());
+
         final List<List<CustomObjectDraft<JsonNode>>> batches = batchElements(customObjectDrafts, 10);
         assertThat(batches.size()).isEqualTo(numberOfCustomObjectDrafts / batchSize);
     }
