@@ -7,7 +7,7 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.DraftBasedCreateCommand;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.commands.UpdateCommand;
-import io.sphere.sdk.models.Resource;
+import io.sphere.sdk.models.ResourceView;
 import io.sphere.sdk.queries.MetaModelQueryDsl;
 import org.apache.commons.lang3.StringUtils;
 
@@ -43,7 +43,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  * @param <E> Expansion Model (e.g. {@link io.sphere.sdk.products.expansion.ProductExpansionModel},
  *            {@link io.sphere.sdk.categories.expansion.CategoryExpansionModel}, etc..
  */
-abstract class BaseService<T, U extends Resource<U>, S extends BaseSyncOptions,
+abstract class BaseService<T, U extends ResourceView<U,U>, S extends BaseSyncOptions,
     Q extends MetaModelQueryDsl<U, Q, M, E>, M, E> {
 
     final S syncOptions;
