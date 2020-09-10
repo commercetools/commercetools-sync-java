@@ -11,15 +11,6 @@ import io.sphere.sdk.customobjects.CustomObjectDraft;
 
 import org.junit.jupiter.api.Test;
 
-import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
-import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -29,11 +20,12 @@ class CustomObjectSyncUtilsTest {
     private CustomObject<JsonNode> oldCustomObject;
     private CustomObjectDraft<JsonNode> newCustomObjectdraft;
 
-    private static final String key = "testkey";
-    private static final String container = "testcontainer";
 
 
     private void prepareMockObjects(final JsonNode actualObj, final JsonNode mockedObj) {
+        final String key = "testkey";
+        final String container = "testcontainer";
+
         newCustomObjectdraft = CustomObjectDraft.ofUnversionedUpsert(container, key, actualObj);
         oldCustomObject = mock(CustomObject.class);
         when(oldCustomObject.getValue()).thenReturn(mockedObj);
