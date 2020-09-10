@@ -52,6 +52,7 @@
         - **CartDiscount Sync** - Renamed `replaceCartDiscountsReferenceIdsWithKeys` to `mapToCartDiscountDrafts`. [#138](https://github.com/commercetools/commercetools-sync-java/issues/138)
         - **Inventory Sync** - Renamed `replaceInventoriesReferenceIdsWithKeys` to `mapToInventoryEntryDrafts`. [#138](https://github.com/commercetools/commercetools-sync-java/issues/138)     
         - **Product Sync** - Renamed `replaceProductsReferenceIdsWithKeys` to `mapToProductDrafts`. [#138](https://github.com/commercetools/commercetools-sync-java/issues/138)
+        - **State Sync** - Renamed `replaceStateReferenceIdsWithKeys` to `mapToStateDrafts`. [#138](https://github.com/commercetools/commercetools-sync-java/issues/138)
 
 - ✨ **Enhancements** (1)        
     -  The library will fail fast for the non-existing references that found during the reference resolution. [#219](https://github.com/commercetools/commercetools-sync-java/issues/219)
