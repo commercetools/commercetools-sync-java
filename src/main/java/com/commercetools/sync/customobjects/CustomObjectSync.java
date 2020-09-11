@@ -1,12 +1,13 @@
 package com.commercetools.sync.customobjects;
 
+import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.customobjects.helpers.CustomObjectSyncStatistics;
 import com.commercetools.sync.customobjects.utils.CustomObjectSyncUtils;
 import com.commercetools.sync.services.CustomObjectService;
+import com.commercetools.sync.services.impl.CustomObjectServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
-import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -20,7 +21,6 @@ import java.util.Set;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Supplier;
 
 import static com.commercetools.sync.customobjects.utils.CustomObjectSyncUtils.batchElements;
 import static java.lang.String.format;
@@ -34,7 +34,9 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 /**
  * This class syncs custom object drafts with the corresponding custom objects in the CTP project.
  */
-public class CustomObjectSync {
+public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
+    CustomObjectSyncStatistics, CustomObjectSyncOptions> {
+
     private static final String CTP_CUSTOM_OBJECT_FETCH_FAILED =
             "Failed to fetch existing customObjects with keys: '%s'.";
     private static final String CTP_CUSTOM_OBJECT_UPSERT_FAILED =
@@ -42,8 +44,6 @@ public class CustomObjectSync {
     private static final String CUSTOM_OBJECT_DRAFT_HAS_NO_KEY = "Failed to process customObject draft without key.";
     private static final String CUSTOM_OBJECT_DRAFT_IS_NULL = "Failed to process null customObject draft.";
 
-    private final CustomObjectSyncStatistics statistics;
-    private final CustomObjectSyncOptions syncOptions;
     private final CustomObjectService customObjectService;
 
     /**
@@ -57,26 +57,17 @@ public class CustomObjectSync {
      *                            client and/or configuration and other sync-specific options.
      * @param customObjectService the custom object service which is responsible for fetching/caching the
      */
-    public CustomObjectSync(
-            @Nonnull final CustomObjectSyncOptions syncOptions,
-            @Nonnull final CustomObjectService customObjectService) {
+    CustomObjectSync(
+        @Nonnull final CustomObjectSyncOptions syncOptions,
+        @Nonnull final CustomObjectService customObjectService) {
 
-        this.statistics = new CustomObjectSyncStatistics();
-        this.syncOptions = syncOptions;
+        super(new CustomObjectSyncStatistics(), syncOptions);
         this.customObjectService = customObjectService;
     }
 
-    private CompletionStage<CustomObjectSyncStatistics> syncBatches(
-            @Nonnull final List<List<CustomObjectDraft<JsonNode>>> batches,
-            @Nonnull final CompletionStage<CustomObjectSyncStatistics> result) {
-
-        if (batches.isEmpty()) {
-            return result;
-        }
-        final List<CustomObjectDraft<JsonNode>> firstBatch = batches.remove(0);
-        return syncBatches(batches, result.thenCompose(subResult -> processBatch(firstBatch)));
+    public CustomObjectSync(@Nonnull final CustomObjectSyncOptions syncOptions) {
+        this(syncOptions, new CustomObjectServiceImpl(syncOptions));
     }
-
 
     /**
      * Iterates through the whole {@code customObjectDrafts} list and accumulates its valid drafts to batches.
@@ -96,13 +87,11 @@ public class CustomObjectSync {
         return syncBatches(batches, CompletableFuture.completedFuture(statistics));
     }
 
-
-
     /**
      * This method first creates a new {@link Set} of valid {@link CustomObjectDraft} elements. For more on the rules of
      * validation, check: {@link CustomObjectSync#validateDraft(CustomObjectDraft)}. Using the resulting set of
-     * {@code validCustomObjectDrafts}, the matching types in the target CTP project are fetched then the method
-     * {@link CustomObjectSync#syncBatch(Set, Set)} is called to perform the sync (<b>update</b> or <b>create</b>
+     * {@code validCustomObjectDrafts}, the matching custom objects in the target CTP project are fetched then the
+     * method {@link CustomObjectSync#syncBatch(Set, Set)} is called to perform the sync (<b>update</b> or <b>create</b>
      * requests accordingly) on the target project.
      *
      * <p> In case of error during of fetching of existing custom objects, the error callback will be triggered.
@@ -176,7 +165,7 @@ public class CustomObjectSync {
      *
      * @param errorMessage The error message describing the reason(s) of failure.
      * @param exception    The exception that called caused the failure, if any.
-     * @param failedTimes  The number of times that the failed types counter is incremented.
+     * @param failedTimes  The number of times that the failed custom objects counter is incremented.
      */
     private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
                              final int failedTimes) {
@@ -193,8 +182,8 @@ public class CustomObjectSync {
      *
      * @param errorMessage         The error message describing the reason(s) of failure.
      * @param exception            The exception that called caused the failure, if any.
-     * @param failedTimes          The number of times that the failed types counter is incremented.
-     * @param oldCustomObject      existing type that could be updated.
+     * @param failedTimes          The number of times that the failed custom objects counter is incremented.
+     * @param oldCustomObject      existing custom object that could be updated.
      * @param newCustomObjectDraft draft containing data that could differ from data in {@code oldCustomObject}.
      */
     private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
@@ -269,7 +258,7 @@ public class CustomObjectSync {
     /**
      * Given an existing {@link CustomObject} and a new {@link CustomObjectDraft}, the method verifies whether the JSON
      * objects between {@link CustomObject#getValue()} and {@link CustomObjectDraft#getValue()} are identical. If so, a
-     * request is made to CTP to update the existing type, otherwise it doesn't issue a request.
+     * request is made to CTP to update the existing custom object, otherwise it doesn't issue a request.
      *
      * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried
      * out successfully or not. If an exception was thrown on executing the request to CTP,the error handling method
@@ -340,38 +329,11 @@ public class CustomObjectSync {
                                         format(CTP_CUSTOM_OBJECT_UPSERT_FAILED, identifier.toString(),
                                                 "Not found when attempting to fetch while retrying "
                                                         + "after concurrency modification.");
-                                handleError(errorMessage, null, 1, oldCustomObject, customObjectDraft);
+                                handleError(errorMessage, null, 1,
+                                        oldCustomObject, customObjectDraft);
                                 return CompletableFuture.completedFuture(null);
                             });
 
                 });
     }
-
-    /**
-     * This method checks if the supplied {@code sphereException} is an instance of
-     * {@link io.sphere.sdk.client.ConcurrentModificationException}. If it is, then it executes the supplied
-     * {@code onConcurrentModificationSupplier} {@link Supplier}. Otherwise, if it is
-     * not an instance of a {@link io.sphere.sdk.client.ConcurrentModificationException} then it executes
-     * the other {@code onOtherExceptionSupplier} {@link Supplier}. Regardless, which supplier is executed the results
-     * of either is the result of this method.
-     *
-     * @param sphereException                  the sphere exception to check if is
-     *                                         {@link io.sphere.sdk.client.ConcurrentModificationException}.
-     * @param onConcurrentModificationSupplier the supplier to execute if the {@code sphereException} is a
-     *                                         {@link io.sphere.sdk.client.ConcurrentModificationException}.
-     * @param onOtherExceptionSupplier         the supplier to execute if the {@code sphereException} is not a
-     *                                         {@link io.sphere.sdk.client.ConcurrentModificationException}.
-     * @return the result of the executed supplier.
-     */
-    private static CompletionStage<Optional<CustomObject<JsonNode>>>  executeSupplierIfConcurrentModificationException(
-            @Nonnull final Throwable sphereException,
-            @Nonnull final Supplier<CompletionStage<Optional<CustomObject<JsonNode>>>> onConcurrentModificationSupplier,
-            @Nonnull final Supplier<CompletionStage<Optional<CustomObject<JsonNode>>>> onOtherExceptionSupplier) {
-        final Throwable completionExceptionCause = sphereException.getCause();
-        if (completionExceptionCause instanceof ConcurrentModificationException) {
-            return onConcurrentModificationSupplier.get();
-        }
-        return onOtherExceptionSupplier.get();
-    }
-
 }
