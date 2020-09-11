@@ -118,6 +118,39 @@
       "isSearchable": true,
       "inputHint": "SingleLine",
       "displayGroup": "Other"
+    },
+    {
+      "name": "customObject-reference",
+      "label": {
+        "en": "related customObject reference"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "reference",
+        "referenceTypeId": "key-value-document"
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
+    },
+    {
+      "name": "customObject-reference-set",
+      "label": {
+        "en": "related customObjects"
+      },
+      "isRequired": false,
+      "type": {
+        "name": "set",
+        "elementType": {
+          "name": "reference",
+          "referenceTypeId": "key-value-document"
+        }
+      },
+      "attributeConstraint": "SameForAll",
+      "isSearchable": true,
+      "inputHint": "SingleLine",
+      "displayGroup": "Other"
     }
   ],
   "createdAt": "2015-06-09T08:51:37.052Z",
