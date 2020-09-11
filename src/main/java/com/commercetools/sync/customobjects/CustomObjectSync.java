@@ -22,7 +22,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
-import static com.commercetools.sync.customobjects.utils.CustomObjectSyncUtils.batchElements;
+import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
