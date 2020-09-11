@@ -40,6 +40,9 @@
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.0.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.0.0)
 
+- 🎉 **New Features** (1)
+    - **Product Sync** - Added support for resolving custom object (key-value-document) references on attributes of type `Reference`, `Set` of `Reference`, `NestedType` or `Set` of `NestedType`. [#564](https://github.com/commercetools/commercetools-sync-java/issues/564)
+
 - 🚧 **Breaking Changes** (2)
     - Sync options:
         - The signatures of the `errorCallback` and `warningCallback` changed and their parameter lists are extended.

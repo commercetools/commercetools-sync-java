@@ -197,7 +197,7 @@ attributes.
     | `“category”`  | ✅ |
     | `“channel”`  | ❌ |
     | `“customer”`  | ❌ |
-    | `“key-value-document”`  | ❌ |
+    | `“key-value-document”`  | ✅ |
     | `“order”`  | ❌ |
     | `“product”` | ✅ |
     | `“product-type”` | ✅ |
