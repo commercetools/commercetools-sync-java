@@ -17,7 +17,6 @@ public class CustomObjectSyncUtils {
      * @return A boolean whether the value of the CustomObject and CustomObjectDraft is identical or not.
      */
 
-    @Nonnull
     public static boolean hasIdenticalValue(
             @Nonnull final CustomObject<JsonNode> oldCustomObject,
             @Nonnull final CustomObjectDraft<JsonNode> newCustomObject) {
