@@ -5,6 +5,8 @@ import io.sphere.sdk.customobjects.CustomObjectDraft;
 
 import javax.annotation.Nonnull;
 
+import java.util.Objects;
+
 import static java.lang.String.format;
 
 /**
@@ -82,5 +84,22 @@ public final class CustomObjectCompositeIdentifier {
     @Override
     public String toString() {
         return format("{key='%s', container='%s'}", key, container);
+    }
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof CustomObjectCompositeIdentifier)) {
+            return false;
+        }
+        final CustomObjectCompositeIdentifier that = (CustomObjectCompositeIdentifier) obj;
+        return key.equals(that.key) && container.equals(that.container);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(key, container);
     }
 }
