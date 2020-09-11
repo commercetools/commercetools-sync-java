@@ -5,8 +5,6 @@ import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
 
 public class CustomObjectSyncUtils {
 
@@ -28,27 +26,4 @@ public class CustomObjectSyncUtils {
 
         return oldValue.equals(newValue);
     }
-
-    /**
-     * Given a list of {@link CustomObjectDraft} and a {@code batchSize}, this method distributes the custom
-     * object drafts into batches with the {@code batchSize}. Each batch is represented by a {@link List} of drafts and
-     * all the batches are grouped and represented by a {@link List}&lt;{@link List}&gt; of elements, which is returned
-     * by the method.
-     *
-     * @param elements  the list of custom object drafts to split into batches.
-     * @param batchSize the size of each batch.
-     * @return a list of lists where each list represents a batch of {@link CustomObjectDraft}.
-     */
-
-    @Nonnull
-    public static List<List<CustomObjectDraft<JsonNode>>> batchElements(
-            @Nonnull final List<CustomObjectDraft<JsonNode>> elements,
-            final int batchSize) {
-        List<List<CustomObjectDraft<JsonNode>>> batches = new ArrayList<>();
-        for (int i = 0; i < elements.size() && batchSize > 0; i += batchSize) {
-            batches.add(elements.subList(i, Math.min(i + batchSize, elements.size())));
-        }
-        return batches;
-    }
-
 }
