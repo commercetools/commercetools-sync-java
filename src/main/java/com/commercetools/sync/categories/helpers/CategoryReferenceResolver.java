@@ -28,11 +28,12 @@ import static java.util.stream.Collectors.toList;
 public final class CategoryReferenceResolver
         extends CustomReferenceResolver<CategoryDraft, CategoryDraftBuilder, CategorySyncOptions> {
     private final AssetReferenceResolver assetReferenceResolver;
-    private CategoryService categoryService;
-    private static final String FAILED_TO_RESOLVE_PARENT = "Failed to resolve parent reference on "
+    private final CategoryService categoryService;
+    static final String FAILED_TO_RESOLVE_PARENT = "Failed to resolve parent reference on "
         + "CategoryDraft with key:'%s'. Reason: %s";
-    private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
+    static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
         + "CategoryDraft with key:'%s'.";
+    static final String PARENT_CATEGORY_DOES_NOT_EXIST = "Parent category with key '%s' doesn't exist.";
 
     /**
      * Takes a {@link CategorySyncOptions} instance, a {@link CategoryService} and {@link TypeService} to instantiate a
@@ -55,7 +56,7 @@ public final class CategoryReferenceResolver
     /**
      * Given a {@link CategoryDraft} this method attempts to resolve the custom type and parent category references to
      * return a {@link CompletionStage} which contains a new instance of the draft with the resolved
-     * references. The keys of the references are taken from the id field of the references.
+     * references.
      *
      * @param categoryDraft the categoryDraft to resolve its references.
      * @return a {@link CompletionStage} that contains as a result a new categoryDraft instance with resolved
@@ -96,26 +97,19 @@ public final class CategoryReferenceResolver
             format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draftBuilder.getKey()));
     }
 
-    /**
-     * Given a {@link CategoryDraftBuilder} this method attempts to resolve the parent category reference to return
-     * a {@link CompletionStage} which contains a new instance of the draft builder with the resolved
-     * parent category reference. The key of the parent category is either taken from the expanded object or
-     * taken from the id field of the reference.
-     *
-     * @param draftBuilder  the category draft builder to read parent category key.
-     * @return a {@link CompletionStage} that contains as a result the same {@code draftBuilder} category draft instance
-     *         with resolved parent category references or, in case an error occurs during reference resolution,
-     *         a {@link ReferenceResolutionException}.
-     */
     @Nonnull
     CompletionStage<CategoryDraftBuilder> resolveParentReference(@Nonnull final CategoryDraftBuilder draftBuilder) {
-        try {
-            return getParentCategoryKey(draftBuilder)
-                .map(parentCategoryKey -> fetchAndResolveParentReference(draftBuilder, parentCategoryKey))
-                .orElseGet(() -> completedFuture(draftBuilder));
-        } catch (ReferenceResolutionException referenceResolutionException) {
-            return exceptionallyCompletedFuture(referenceResolutionException);
+        final ResourceIdentifier<Category> parent = draftBuilder.getParent();
+        if (parent != null && parent.getId() == null) {
+            try {
+                return getParentCategoryKey(draftBuilder)
+                    .map(parentCategoryKey -> fetchAndResolveParentReference(draftBuilder, parentCategoryKey))
+                    .orElseGet(() -> completedFuture(draftBuilder));
+            } catch (ReferenceResolutionException referenceResolutionException) {
+                return exceptionallyCompletedFuture(referenceResolutionException);
+            }
         }
+        return completedFuture(draftBuilder);
     }
 
     @Nonnull
@@ -130,29 +124,12 @@ public final class CategoryReferenceResolver
         return getParentCategoryKey(draft.getParent(), draft.getKey());
     }
 
-    /**
-     * Given a category parent resource identifier, if it is not null the method validates the id field value. If it is
-     * not valid, a {@link ReferenceResolutionException} will be thrown. The validity checks are:
-     * <ul>
-     * <li>Checks if the id value is not null or not empty.</li>
-     * </ul>
-     * If the above checks pass, the id value is returned in an optional. Otherwise a
-     * {@link ReferenceResolutionException} is thrown.
-     *
-     * <p>If the passed resource identifier is {@code null}, then an emptu optional is returned.
-     *
-     * @param parentCategoryResourceIdentifier the category parent resource identifier. If null - an empty optional is
-     *                                         returned.
-     * @param categoryKey                      the category key used in the error message if the key was not valid.
-     * @return an optional containing the id or an empty optional if there is no parent reference.
-     * @throws ReferenceResolutionException thrown if the key is invalid.
-     */
     @Nonnull
     private static Optional<String> getParentCategoryKey(
         @Nullable final ResourceIdentifier<Category> parentCategoryResourceIdentifier,
         @Nullable final String categoryKey) throws ReferenceResolutionException {
 
-        if (parentCategoryResourceIdentifier != null) {
+        if (parentCategoryResourceIdentifier != null && parentCategoryResourceIdentifier.getId() == null) {
             try {
                 final String parentKey = getKeyFromResourceIdentifier(parentCategoryResourceIdentifier);
                 return Optional.of(parentKey);
@@ -164,26 +141,21 @@ public final class CategoryReferenceResolver
         return Optional.empty();
     }
 
-    /**
-     * Given a {@link CategoryDraftBuilder} and a {@code parentCategoryKey} this method fetches the actual id of the
-     * category corresponding to this key, ideally from a cache. Then it sets this id on the parent reference
-     * id. If the id is not found in cache nor the CTP project, the resultant draft builder
-     * would remain exactly the same as the passed category draft (without parent reference resolution).
-     *
-     * @param draftBuilder      the category draft builder to accept resolved references values.
-     * @param parentCategoryKey the parent category key of to resolve it's actual id on the draft.
-     * @return a {@link CompletionStage} that contains as a result the same {@code draftBuilder} category draft builder
-     *         instance with resolved parent category references or an exception.
-     */
     @Nonnull
     private CompletionStage<CategoryDraftBuilder> fetchAndResolveParentReference(
         @Nonnull final CategoryDraftBuilder draftBuilder,
         @Nonnull final String parentCategoryKey) {
+
         return categoryService
             .fetchCachedCategoryId(parentCategoryKey)
-            .thenApply(resolvedParentIdOptional -> resolvedParentIdOptional
+            .thenCompose(resolvedParentIdOptional -> resolvedParentIdOptional
                 .map(resolvedParentId ->
-                    draftBuilder.parent(Category.referenceOfId(resolvedParentId).toResourceIdentifier()))
-                .orElse(draftBuilder));
+                    completedFuture(
+                        draftBuilder.parent(Category.referenceOfId(resolvedParentId).toResourceIdentifier())))
+                .orElseGet(() -> {
+                    final String errorMessage = format(FAILED_TO_RESOLVE_PARENT, draftBuilder.getKey(),
+                        format(PARENT_CATEGORY_DOES_NOT_EXIST, parentCategoryKey));
+                    return exceptionallyCompletedFuture(new ReferenceResolutionException(errorMessage));
+                }));
     }
 }

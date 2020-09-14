@@ -9,45 +9,45 @@ import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
 
-import static com.commercetools.sync.commons.utils.CustomTypeReferenceReplacementUtils.replaceCustomTypeIdWithKeys;
+import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class CustomTypeReferenceReplacementUtilsTest {
+class CustomTypeReferenceResolutionUtilsTest {
 
     @Test
-    void replaceCustomTypeIdWithKeys_WithNullCustomType_ShouldReturnNullCustomFields() {
+    void mapToCustomFieldsDraft_WithNullCustomType_ShouldReturnNullCustomFields() {
         final Category mockCategory = mock(Category.class);
 
-        final CustomFieldsDraft customFieldsDraft = replaceCustomTypeIdWithKeys(mockCategory);
+        final CustomFieldsDraft customFieldsDraft = mapToCustomFieldsDraft(mockCategory);
 
         assertThat(customFieldsDraft).isNull();
     }
 
     @Test
-    void replaceCustomTypeIdWithKeys_WithExpandedCategory_ShouldReturnCustomFieldsDraft() {
+    void mapToCustomFieldsDraft_WithExpandedCategory_ShouldReturnCustomFieldsDraft() {
         // preparation
         final Category mockCategory = mock(Category.class);
         final CustomFields mockCustomFields  = mock(CustomFields.class);
         final Type mockType = mock(Type.class);
         final String typeKey = "typeKey";
         when(mockType.getKey()).thenReturn(typeKey);
-        final Reference<Type> mockCustomType = Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(),
-            mockType);
+        final Reference<Type> mockCustomType = Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), mockType);
         when(mockCustomFields.getType()).thenReturn(mockCustomType);
         when(mockCategory.getCustom()).thenReturn(mockCustomFields);
 
         // test
-        final CustomFieldsDraft customFieldsDraft = replaceCustomTypeIdWithKeys(mockCategory);
+        final CustomFieldsDraft customFieldsDraft = mapToCustomFieldsDraft(mockCategory);
 
         // assertion
         assertThat(customFieldsDraft).isNotNull();
-        assertThat(customFieldsDraft.getType().getId()).isEqualTo(typeKey);
+        assertThat(customFieldsDraft.getType().getKey()).isEqualTo(typeKey);
+        assertThat(customFieldsDraft.getType().getId()).isNull();
     }
 
     @Test
-    void replaceCustomTypeIdWithKeys_WithNonExpandedCategory_ShouldReturnReferenceWithoutReplacedKey() {
+    void mapToCustomFieldsDraft_WithNonExpandedCategory_ShouldReturnResourceIdentifierWithoutKey() {
         // preparation
         final Category mockCategory = mock(Category.class);
         final CustomFields mockCustomFields  = mock(CustomFields.class);
@@ -58,12 +58,13 @@ class CustomTypeReferenceReplacementUtilsTest {
         when(mockCategory.getCustom()).thenReturn(mockCustomFields);
 
         // test
-        final CustomFieldsDraft customFieldsDraft = replaceCustomTypeIdWithKeys(mockCategory);
+        final CustomFieldsDraft customFieldsDraft = mapToCustomFieldsDraft(mockCategory);
 
         // assertion
         assertThat(customFieldsDraft).isNotNull();
         assertThat(customFieldsDraft.getType()).isNotNull();
         assertThat(customFieldsDraft.getType().getId()).isEqualTo(customTypeUuid);
+        assertThat(customFieldsDraft.getType().getKey()).isNull();
     }
 
 }

@@ -40,7 +40,6 @@ public final class ProductTypeReferenceResolver
     /**
      * Given a {@link ProductTypeDraft} this method attempts to resolve the attribute definition references to return
      * a {@link CompletionStage} which contains a new instance of the draft with the resolved references.
-     * The keys of the references are either taken from the id fields of the references or resource identifiers.
      *
      * @param productTypeDraft the productTypeDraft to resolve its references.
      * @return a {@link CompletionStage} that contains as a result a new productTypeDraft instance with resolved

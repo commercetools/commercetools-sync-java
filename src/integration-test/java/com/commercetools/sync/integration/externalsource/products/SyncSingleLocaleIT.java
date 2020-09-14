@@ -11,6 +11,7 @@ import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.products.templates.beforeupdatecallback.SyncSingleLocale;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
@@ -48,7 +49,6 @@ import static com.commercetools.sync.products.templates.beforeupdatecallback.Syn
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.models.LocalizedString.of;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
-import static io.sphere.sdk.producttypes.ProductType.referenceOfId;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -143,7 +143,7 @@ class SyncSingleLocaleIT {
         executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(targetDraft)));
 
         final ProductDraft matchingDraft = ProductDraftBuilder
-            .of(referenceOfId(productType.getKey()), nameSource, slugSource,
+            .of(ResourceIdentifier.ofKey(productType.getKey()), nameSource, slugSource,
                 ProductVariantDraftBuilder.of().key("foo").sku("sku").build())
             .key("existingProduct")
             .description(descriptionSource)
@@ -152,7 +152,7 @@ class SyncSingleLocaleIT {
             .build();
 
         final ProductDraft nonMatchingDraft = ProductDraftBuilder
-            .of(referenceOfId(productType.getKey()), nameSource, LocalizedString.of(Locale.FRENCH, "foo"),
+            .of(ResourceIdentifier.ofKey(productType.getKey()), nameSource, LocalizedString.of(Locale.FRENCH, "foo"),
                 ProductVariantDraftBuilder.of().key("foo-new").sku("sku-new").build())
             .key("newProduct")
             .description(descriptionSource)

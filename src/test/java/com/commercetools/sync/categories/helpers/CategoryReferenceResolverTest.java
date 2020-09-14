@@ -5,19 +5,23 @@ import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.services.impl.CategoryServiceImpl;
+import com.commercetools.sync.services.impl.TypeServiceImpl;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
+import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.AssetDraftBuilder;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
+import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
+import io.sphere.sdk.types.queries.TypeQuery;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -28,14 +32,19 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraftBuilder;
+import static com.commercetools.sync.categories.helpers.CategoryReferenceResolver.FAILED_TO_RESOLVE_CUSTOM_TYPE;
+import static com.commercetools.sync.categories.helpers.CategoryReferenceResolver.FAILED_TO_RESOLVE_PARENT;
+import static com.commercetools.sync.categories.helpers.CategoryReferenceResolver.PARENT_CATEGORY_DOES_NOT_EXIST;
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.commons.helpers.CustomReferenceResolver.TYPE_DOES_NOT_EXIST;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -68,7 +77,7 @@ class CategoryReferenceResolverTest {
     void resolveAssetsReferences_WithEmptyAssets_ShouldNotResolveAssets() {
         final CategoryDraftBuilder categoryDraftBuilder =
             getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key", CACHED_CATEGORY_KEY,
-                "customTypeId", new HashMap<>())
+                "customTypeKey", new HashMap<>())
                 .assets(emptyList());
 
         final CategoryDraftBuilder resolvedBuilder = referenceResolver.resolveAssetsReferences(categoryDraftBuilder)
@@ -82,7 +91,7 @@ class CategoryReferenceResolverTest {
     void resolveAssetsReferences_WithNullAssets_ShouldNotResolveAssets() {
         final CategoryDraftBuilder categoryDraftBuilder =
             getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key", CACHED_CATEGORY_KEY,
-                "customTypeId", new HashMap<>())
+                "customTypeKey", new HashMap<>())
                 .assets(null);
 
         final CategoryDraftBuilder resolvedBuilder = referenceResolver.resolveAssetsReferences(categoryDraftBuilder)
@@ -96,7 +105,7 @@ class CategoryReferenceResolverTest {
     void resolveAssetsReferences_WithANullAsset_ShouldNotResolveAssets() {
         final CategoryDraftBuilder categoryDraftBuilder =
             getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key", CACHED_CATEGORY_KEY,
-                "customTypeId", new HashMap<>()).assets(singletonList(null));
+                "customTypeKey", new HashMap<>()).assets(singletonList(null));
 
         final CategoryDraftBuilder resolvedBuilder = referenceResolver.resolveAssetsReferences(categoryDraftBuilder)
                                                                       .toCompletableFuture().join();
@@ -108,7 +117,7 @@ class CategoryReferenceResolverTest {
     @Test
     void resolveAssetsReferences_WithAssetReferences_ShouldResolveAssets() {
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
-            .ofTypeIdAndJson("customTypeId", new HashMap<>());
+            .ofTypeKeyAndJson("customTypeKey", new HashMap<>());
 
         final AssetDraft assetDraft = AssetDraftBuilder.of(emptyList(), ofEnglish("assetName"))
                                                        .custom(customFieldsDraft)
@@ -117,134 +126,220 @@ class CategoryReferenceResolverTest {
 
         final CategoryDraftBuilder categoryDraftBuilder =
             getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key", CACHED_CATEGORY_KEY,
-                "customTypeId", new HashMap<>()).assets(singletonList(assetDraft));
+                "customTypeKey", new HashMap<>()).assets(singletonList(assetDraft));
 
         final CategoryDraftBuilder resolvedBuilder = referenceResolver.resolveAssetsReferences(categoryDraftBuilder)
                                                                       .toCompletableFuture().join();
 
         final List<AssetDraft> resolvedBuilderAssets = resolvedBuilder.getAssets();
-        assertThat(resolvedBuilderAssets).isNotEmpty();
-        final AssetDraft resolvedAssetDraft = resolvedBuilderAssets.get(0);
-        assertThat(resolvedAssetDraft).isNotNull();
-        assertThat(resolvedAssetDraft.getCustom()).isNotNull();
-        assertThat(resolvedAssetDraft.getCustom().getType().getId()).isEqualTo("typeId");
-    }
-
-
-    @Disabled("TODO: SHOULD COMPLETE EXCEPTIONALLY. GITHUB ISSUE#219")
-    @Test
-    void resolveParentReference_WithNonExistentParentCategory_ShouldNotResolveParentReference() {
-        final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
-            CACHED_CATEGORY_KEY, "customTypeId", new HashMap<>());
-        when(categoryService.fetchCachedCategoryId(CACHED_CATEGORY_KEY))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
-
-        referenceResolver.resolveParentReference(categoryDraft)
-                                 .thenApply(CategoryDraftBuilder::build)
-                                 .thenAccept(resolvedDraft -> {
-                                     assertThat(resolvedDraft.getParent()).isNotNull();
-                                     assertThat(resolvedDraft.getParent().getId()).isEqualTo(CACHED_CATEGORY_ID);
-                                 }).toCompletableFuture().join();
+        assertThat(resolvedBuilderAssets).hasSize(1);
+        assertThat(resolvedBuilderAssets).allSatisfy(resolvedDraft -> {
+            assertThat(resolvedDraft).isNotNull();
+            assertThat(resolvedDraft.getCustom()).isNotNull();
+            assertThat(resolvedDraft.getCustom().getType().getId()).isEqualTo("typeId");
+        });
     }
 
     @Test
-    void resolveCustomTypeReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
-        final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
-            CACHED_CATEGORY_KEY, "customTypeId", new HashMap<>());
+    void resolveParentReference_WithExceptionOnFetch_ShouldNotResolveReferences() {
+        // Preparation
+        final SphereClient ctpClient = mock(SphereClient.class);
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(ctpClient)
+                                                                                  .build();
+        final CategoryService categoryService = new CategoryServiceImpl(categorySyncOptions);
 
-        final CompletableFuture<Optional<String>> futureThrowingSphereException = new CompletableFuture<>();
+        final CompletableFuture<PagedQueryResult<Category>> futureThrowingSphereException = new CompletableFuture<>();
         futureThrowingSphereException.completeExceptionally(new SphereException("CTP error on fetch"));
-        when(typeService.fetchCachedTypeId(anyString())).thenReturn(futureThrowingSphereException);
+        when(ctpClient.execute(any(CategoryQuery.class))).thenReturn(futureThrowingSphereException);
 
-        assertThat(referenceResolver.resolveCustomTypeReference(categoryDraft)
-            .toCompletableFuture())
-            .hasFailed()
+        final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
+            "nonExistingCategoryKey", "customTypeKey", new HashMap<>());
+
+        final CategoryReferenceResolver categoryReferenceResolver = new CategoryReferenceResolver(categorySyncOptions,
+            typeService, categoryService);
+
+        // Test and assertion
+        assertThat(categoryReferenceResolver.resolveParentReference(categoryDraft))
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(SphereException.class)
             .hasMessageContaining("CTP error on fetch");
     }
 
     @Test
-    void resolveCustomTypeReference_WithNonExistentCustomType_ShouldNotResolveCustomTypeReference() {
+    void resolveParentReference_WithNonExistentParentCategory_ShouldNotResolveParentReference() {
+        // Preparation
         final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
-            CACHED_CATEGORY_KEY, "customTypeId", new HashMap<>());
+            CACHED_CATEGORY_KEY, "customTypeKey", new HashMap<>());
+        when(categoryService.fetchCachedCategoryId(CACHED_CATEGORY_KEY))
+            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+
+        // Test and assertion
+        final String expectedMessageWithCause = format(FAILED_TO_RESOLVE_PARENT, categoryDraft.getKey(),
+            format(PARENT_CATEGORY_DOES_NOT_EXIST, CACHED_CATEGORY_KEY));
+
+        assertThat(referenceResolver.resolveParentReference(categoryDraft))
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(ReferenceResolutionException.class)
+            .hasMessage(expectedMessageWithCause);
+    }
+
+    @Test
+    void resolveParentReference_WithEmptyKeyOnParentResId_ShouldNotResolveParentReference() {
+        final CategoryDraftBuilder categoryDraft = CategoryDraftBuilder.of(ofEnglish("foo"), ofEnglish("bar"))
+                                                                       .key("key")
+                                                                       .parent(ResourceIdentifier.ofKey(""));
+
+        assertThat(referenceResolver.resolveParentReference(categoryDraft))
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(ReferenceResolutionException.class)
+            .hasMessage(format("Failed to resolve parent reference on CategoryDraft with key:'key'. Reason: %s",
+                BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+    }
+
+    @Test
+    void resolveParentReference_WithNullKeyOnParentResId_ShouldNotResolveParentReference() {
+        // Preparation
+        final CategoryDraftBuilder categoryDraft = CategoryDraftBuilder.of(ofEnglish("foo"), ofEnglish("bar"))
+                                                                       .key("key")
+                                                                       .parent(ResourceIdentifier.ofKey(null));
+
+        assertThat(referenceResolver.resolveParentReference(categoryDraft))
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(ReferenceResolutionException.class)
+            .hasMessage(format("Failed to resolve parent reference on CategoryDraft with key:'key'. Reason: %s",
+                BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+    }
+
+    @Test
+    void resolveParentReference_WithNonNullIdOnParentResId_ShouldResolveParentReference() {
+        // Preparation
+        final String parentId = UUID.randomUUID().toString();
+        final CategoryDraftBuilder categoryDraft = CategoryDraftBuilder
+            .of(ofEnglish("foo"), ofEnglish("bar"))
+            .key("key")
+            .parent(ResourceIdentifier.ofId(parentId));
+
+        // Test
+        final CategoryDraftBuilder resolvedDraftBuilder =
+            referenceResolver.resolveParentReference(categoryDraft)
+                             .toCompletableFuture()
+                             .join();
+
+        // Assertion
+        assertThat(resolvedDraftBuilder.getParent()).isNotNull();
+        assertThat(resolvedDraftBuilder.getParent().getId()).isEqualTo(parentId);
+    }
+
+    @Test
+    void resolveParentReference_WithNonNullKeyOnParentResId_ShouldResolveParentReference() {
+        // Preparation
+        final CategoryDraftBuilder categoryDraft = CategoryDraftBuilder
+            .of(ofEnglish("foo"), ofEnglish("bar"))
+            .key("key")
+            .parent(ResourceIdentifier.ofKey(CACHED_CATEGORY_KEY));
+
+        // Test
+        final CategoryDraftBuilder resolvedDraftBuilder =
+            referenceResolver.resolveParentReference(categoryDraft)
+                             .toCompletableFuture()
+                             .join();
+
+        // Assertion
+        assertThat(resolvedDraftBuilder.getParent()).isNotNull();
+        assertThat(resolvedDraftBuilder.getParent().getId()).isEqualTo(CACHED_CATEGORY_ID);
+    }
+
+    @Test
+    void resolveCustomTypeReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
+        // Preparation
+        final SphereClient ctpClient = mock(SphereClient.class);
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(ctpClient)
+                                                                                  .build();
+        final TypeService typeService = new TypeServiceImpl(categorySyncOptions);
+
+        final CompletableFuture<PagedQueryResult<Type>> futureThrowingSphereException = new CompletableFuture<>();
+        futureThrowingSphereException.completeExceptionally(new SphereException("CTP error on fetch"));
+        when(ctpClient.execute(any(TypeQuery.class))).thenReturn(futureThrowingSphereException);
+
+        final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
+            null, "customTypeId", new HashMap<>());
+
+        final CategoryReferenceResolver categoryReferenceResolver = new CategoryReferenceResolver(categorySyncOptions,
+            typeService, categoryService);
+
+        // Test and assertion
+        assertThat(categoryReferenceResolver.resolveCustomTypeReference(categoryDraft))
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(SphereException.class)
+            .hasMessageContaining("CTP error on fetch");
+    }
+
+    @Test
+    void resolveCustomTypeReference_WithNonExistentCustomType_ShouldCompleteExceptionally() {
+        // Preparation
+        final CategoryDraftBuilder categoryDraft =
+            getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
+                null, "customTypeKey", new HashMap<>());
+
         when(typeService.fetchCachedTypeId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-        referenceResolver.resolveCustomTypeReference(categoryDraft)
-                                 .thenApply(CategoryDraftBuilder::build)
-                                 .thenAccept(resolvedDraft -> {
-                                     assertThat(resolvedDraft.getCustom()).isNotNull();
-                                     assertThat(resolvedDraft.getCustom().getType()).isNotNull();
-                                     assertThat(resolvedDraft.getCustom().getType().getId()).isEqualTo("customTypeId");
-                                 }).toCompletableFuture().join();
-    }
+        // Test and assertion
+        final String expectedExceptionMessage = format(FAILED_TO_RESOLVE_CUSTOM_TYPE, categoryDraft.getKey());
+        final String expectedMessageWithCause =
+            format("%s Reason: %s", expectedExceptionMessage, format(TYPE_DOES_NOT_EXIST, "customTypeKey"));
 
-    @Test
-    void resolveParentReference_WithEmptyIdOnParentReference_ShouldNotResolveParentReference() {
-        final CategoryDraftBuilder categoryDraft = CategoryDraftBuilder.of(ofEnglish("foo"), ofEnglish("bar"));
-        categoryDraft.key("key");
-        categoryDraft.parent(Category.referenceOfId("").toResourceIdentifier());
-
-        assertThat(referenceResolver.resolveParentReference(categoryDraft)
-            .toCompletableFuture())
-            .hasFailed()
+        assertThat(referenceResolver.resolveCustomTypeReference(categoryDraft))
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format("Failed to resolve parent reference on CategoryDraft with key:'key'. Reason: %s",
-                BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+            .hasMessage(expectedMessageWithCause);
     }
 
     @Test
-    void resolveParentReference_WithNullIdOnParentReference_ShouldNotResolveParentReference() {
-        final CategoryDraftBuilder categoryDraft = CategoryDraftBuilder.of(ofEnglish("foo"), ofEnglish("bar"));
-        categoryDraft.key("key");
-        categoryDraft.parent(Category.referenceOfId(null).toResourceIdentifier());
-
-        assertThat(referenceResolver.resolveParentReference(categoryDraft)
-            .toCompletableFuture())
-            .hasFailed()
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format("Failed to resolve parent reference on CategoryDraft with key:'key'. Reason: %s",
-                BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
-    }
-
-    @Test
-    void resolveCustomTypeReference_WithNullIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
+    void resolveCustomTypeReference_WithEmptyKeyOnCustomTypeResId_ShouldCompleteExceptionally() {
         final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
-            "parentKey", "customTypeId", new HashMap<>());
+            null, "", emptyMap());
 
-
-        final CustomFieldsDraft newCategoryCustomFieldsDraft = mock(CustomFieldsDraft.class);
-        final ResourceIdentifier<Type> newCategoryCustomFieldsDraftTypeReference =
-            ResourceIdentifier.ofId(null);
-        when(newCategoryCustomFieldsDraft.getType()).thenReturn(newCategoryCustomFieldsDraftTypeReference);
-        categoryDraft.custom(newCategoryCustomFieldsDraft);
-
-        assertThat(referenceResolver.resolveCustomTypeReference(categoryDraft)
-            .toCompletableFuture())
-            .hasFailed()
+        assertThat(referenceResolver.resolveCustomTypeReference(categoryDraft))
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format("Failed to resolve custom type reference on CategoryDraft with key:'key'. Reason: %s",
-                BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+                BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
-    void resolveCustomTypeReference_WithEmptyIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
-        final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
-            "parentKey", "customTypeId", new HashMap<>());
+    void resolveCustomTypeReference_WithNonNullIdOnCustomTypeResId_ShouldResolveCustomTypeReference() {
+        // Preparation
+        final String customTypeId = UUID.randomUUID().toString();
+        final CategoryDraftBuilder categoryDraft =
+            CategoryDraftBuilder.of(LocalizedString.ofEnglish("myDraft"), LocalizedString.ofEnglish("testSlug"))
+                                .key("key")
+                                .custom(CustomFieldsDraft.ofTypeIdAndJson(customTypeId, new HashMap<>()));
 
-        categoryDraft.custom(CustomFieldsDraft.ofTypeIdAndObjects("", emptyMap()));
+        // Test
+        final CategoryDraftBuilder resolvedDraftBuilder = referenceResolver.resolveCustomTypeReference(categoryDraft)
+                                                                           .toCompletableFuture().join();
 
-        assertThat(referenceResolver.resolveCustomTypeReference(categoryDraft)
-            .toCompletableFuture())
-            .hasFailed()
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format("Failed to resolve custom type reference on CategoryDraft with key:'key'. Reason: %s",
-                BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+        // Assertion
+        assertThat(resolvedDraftBuilder.getCustom()).isNotNull();
+        assertThat(resolvedDraftBuilder.getCustom().getType().getId()).isEqualTo(customTypeId);
+    }
+
+    @Test
+    void resolveCustomTypeReference_WithNonNullKeyOnCustomTypeResId_ShouldResolveCustomTypeReference() {
+        // Preparation
+        final CategoryDraftBuilder categoryDraft =
+            CategoryDraftBuilder.of(LocalizedString.ofEnglish("myDraft"), LocalizedString.ofEnglish("testSlug"))
+                                .key("key")
+                                .custom(CustomFieldsDraft.ofTypeKeyAndJson("myTypeKey", new HashMap<>()));
+
+        // Test
+        final CategoryDraftBuilder resolvedDraftBuilder = referenceResolver.resolveCustomTypeReference(categoryDraft)
+                                                                           .toCompletableFuture().join();
+
+        // Assertion
+        assertThat(resolvedDraftBuilder.getCustom()).isNotNull();
+        assertThat(resolvedDraftBuilder.getCustom().getType().getId()).isEqualTo("typeId");
     }
 
     @Test

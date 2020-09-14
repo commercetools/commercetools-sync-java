@@ -14,12 +14,8 @@ import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.PriceDraftBuilder;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
@@ -28,13 +24,14 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 public final class PriceReferenceResolver
     extends CustomReferenceResolver<PriceDraft, PriceDraftBuilder, ProductSyncOptions> {
 
-    private ChannelService channelService;
-    private CustomerGroupService customerGroupService;
-    private static final String CHANNEL_DOES_NOT_EXIST = "Channel with key '%s' does not exist.";
-    private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
+    private final ChannelService channelService;
+    private final CustomerGroupService customerGroupService;
+    static final String CHANNEL_DOES_NOT_EXIST = "Channel with key '%s' does not exist.";
+    static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
         + "PriceDraft with country:'%s' and value: '%s'.";
-    private static final String FAILED_TO_RESOLVE_REFERENCE = "Failed to resolve '%s' reference on PriceDraft with "
+    static final String FAILED_TO_RESOLVE_REFERENCE = "Failed to resolve '%s' reference on PriceDraft with "
         + "country:'%s' and value: '%s'. Reason: %s";
+    static final String CUSTOMER_GROUP_DOES_NOT_EXIST = "Customer Group with key '%s' does not exist.";
 
     /**
      * Takes a {@link ProductSyncOptions} instance, {@link TypeService}, a {@link ChannelService} and a
@@ -60,8 +57,10 @@ public final class PriceReferenceResolver
     /**
      * Given a {@link PriceDraft} this method attempts to resolve the custom type and channel
      * references to return a {@link CompletionStage} which contains a new instance of the draft with the resolved
-     * references. The keys of the references are either taken from the expanded references or
-     * taken from the id field of the references.
+     * references.
+     *
+     * <p>The method then tries to fetch the key of the customer group, optimistically from a cache.
+     * If the id is not found in cache nor the CTP project the {@link ReferenceResolutionException} will be thrown.
      *
      * @param priceDraft the priceDraft to resolve it's references.
      * @return a {@link CompletionStage} that contains as a result a new inventoryEntryDraft instance with resolved
@@ -90,8 +89,7 @@ public final class PriceReferenceResolver
     /**
      * Given a {@link PriceDraftBuilder} this method attempts to resolve the supply channel reference to return
      * a {@link CompletionStage} which contains the same instance of draft builder with the resolved
-     * supply channel reference. The key of the supply channel is either taken from the expanded reference or
-     * taken from the id field of the reference.
+     * supply channel reference.
      *
      * <p>The method then tries to fetch the key of the supply channel, optimistically from a
      * cache. If the id is not found in cache nor the CTP project and {@code ensureChannel}
@@ -106,66 +104,48 @@ public final class PriceReferenceResolver
      */
     @Nonnull
     CompletionStage<PriceDraftBuilder> resolveChannelReference(@Nonnull final PriceDraftBuilder draftBuilder) {
-        return resolveReference(draftBuilder, draftBuilder.getChannel(), channelService::fetchCachedChannelId,
-            ResourceIdentifier::ofId,
-            (priceDraftBuilder, reference) -> completedFuture(priceDraftBuilder.channel(reference)),
-            (priceDraftBuilder, channelKey) -> {
-                final CompletableFuture<PriceDraftBuilder> result = new CompletableFuture<>();
-                createChannelAndSetReference(channelKey, priceDraftBuilder)
-                    .whenComplete((draftWithCreatedChannel, exception) -> {
-                        if (exception != null) {
-                            result.completeExceptionally(
-                                new ReferenceResolutionException(format(FAILED_TO_RESOLVE_REFERENCE,
-                                    Channel.referenceTypeId(), draftBuilder.getCountry(), draftBuilder.getValue(),
-                                    exception.getMessage()), exception));
-                        } else {
-                            result.complete(draftWithCreatedChannel);
-                        }
-                    });
-                return result;
-            });
+        final ResourceIdentifier<Channel> channelResourceIdentifier = draftBuilder.getChannel();
+        if (channelResourceIdentifier != null && channelResourceIdentifier.getId() == null) {
+            String channelKey;
+            try {
+                channelKey = getKeyFromResourceIdentifier(channelResourceIdentifier);
+            } catch (ReferenceResolutionException referenceResolutionException) {
+                return exceptionallyCompletedFuture(new ReferenceResolutionException(
+                    format(FAILED_TO_RESOLVE_REFERENCE, Channel.resourceTypeId(), draftBuilder.getCountry(),
+                        draftBuilder.getValue(), referenceResolutionException.getMessage())));
+            }
+
+            return fetchAndResolveChannelReference(draftBuilder, channelKey);
+        }
+        return completedFuture(draftBuilder);
     }
 
-    /**
-     * Common function to resolve references from key.
-     *
-     * @param draftBuilder                    {@link PriceDraftBuilder} to update
-     * @param reference                       reference instance from which key is read
-     * @param keyToIdMapper                   function which calls respective service to fetch the reference by key
-     * @param idToReferenceMapper             function which creates {@link Reference} instance from fetched id
-     * @param referenceSetter                 function which will set the resolved reference to the {@code draftBuilder}
-     * @param nonExistingReferenceDraftMapper function which will be used to map the draft builder in case the reference
-     *                                        to exist after applying the {@code idToReferenceMapper}.
-     * @param <T>                             type of reference (e.g. {@link Channel}, {@link CustomerGroup}
-     * @return {@link CompletionStage} containing {@link PriceDraftBuilder} with resolved &lt;T&gt; reference.
-     */
     @Nonnull
-    private <T, S extends ResourceIdentifier<T>> CompletionStage<PriceDraftBuilder> resolveReference(
+    private CompletionStage<PriceDraftBuilder> fetchAndResolveChannelReference(
         @Nonnull final PriceDraftBuilder draftBuilder,
-        @Nullable final S reference,
-        @Nonnull final Function<String, CompletionStage<Optional<String>>> keyToIdMapper,
-        @Nonnull final Function<String, S> idToReferenceMapper,
-        @Nonnull final BiFunction<PriceDraftBuilder, S, CompletionStage<PriceDraftBuilder>> referenceSetter,
-        @Nonnull final BiFunction<PriceDraftBuilder, String, CompletionStage<PriceDraftBuilder>>
-            nonExistingReferenceDraftMapper) {
+        @Nonnull final String channelKey) {
 
-        if (reference == null) {
-            return completedFuture(draftBuilder);
-        }
-
-        try {
-            final String resourceKey = getKeyFromResourceIdentifier(reference);
-            return keyToIdMapper.apply(resourceKey)
-                                .thenCompose(resourceIdOptional -> resourceIdOptional
-                                    .map(idToReferenceMapper)
-                                    .map(referenceToSet -> referenceSetter.apply(draftBuilder, referenceToSet))
-                                    .orElseGet(() -> nonExistingReferenceDraftMapper.apply(draftBuilder, resourceKey)));
-        } catch (ReferenceResolutionException referenceResolutionException) {
-            return exceptionallyCompletedFuture(
-                new ReferenceResolutionException(
-                    format(FAILED_TO_RESOLVE_REFERENCE, reference.getTypeId(), draftBuilder.getCountry(),
-                        draftBuilder.getValue(), referenceResolutionException.getMessage())));
-        }
+        return channelService
+            .fetchCachedChannelId(channelKey)
+            .thenCompose(resolvedChannelIdOptional -> resolvedChannelIdOptional
+                .map(resolvedChannelId ->
+                    completedFuture(draftBuilder.channel(
+                        Channel.referenceOfId(resolvedChannelId).toResourceIdentifier())))
+                .orElseGet(() -> {
+                    final CompletableFuture<PriceDraftBuilder> result = new CompletableFuture<>();
+                    createChannelAndSetReference(channelKey, draftBuilder)
+                        .whenComplete((draftWithCreatedChannel, exception) -> {
+                            if (exception != null) {
+                                result.completeExceptionally(
+                                    new ReferenceResolutionException(format(FAILED_TO_RESOLVE_REFERENCE,
+                                        Channel.resourceTypeId(), draftBuilder.getCountry(), draftBuilder.getValue(),
+                                        exception.getMessage()), exception));
+                            } else {
+                                result.complete(draftWithCreatedChannel);
+                            }
+                        });
+                    return result;
+                }));
     }
 
     /**
@@ -214,9 +194,7 @@ public final class PriceReferenceResolver
      * a {@link CompletionStage} which contains the same instance of draft builder with the resolved
      * customer group reference.
      *
-     * <p>The method then tries to fetch the key of the customer group, optimistically from a
-     * cache. If the id is not found in cache nor the CTP project the draft builder is returned as is without the
-     * customer group reference being set on it.
+     * <p>Note: The key of the customer group reference taken from the value of the id field of the reference.
      *
      * @param draftBuilder the priceDraftBuilder to resolve its customer group reference.
      * @return a {@link CompletionStage} that contains as a result a new price draft builder instance with resolved
@@ -225,9 +203,37 @@ public final class PriceReferenceResolver
      */
     @Nonnull
     CompletionStage<PriceDraftBuilder> resolveCustomerGroupReference(@Nonnull final PriceDraftBuilder draftBuilder) {
-        return resolveReference(draftBuilder, draftBuilder.getCustomerGroup(),
-            customerGroupService::fetchCachedCustomerGroupId, CustomerGroup::referenceOfId,
-            (priceDraftBuilder, reference) -> completedFuture(priceDraftBuilder.customerGroup(reference)),
-            (priceDraftBuilder, customerGroupKey) -> completedFuture(priceDraftBuilder));
+        final Reference<CustomerGroup> customerGroupReference = draftBuilder.getCustomerGroup();
+        if (customerGroupReference != null) {
+            String customerGroupKey;
+            try {
+                customerGroupKey = getIdFromReference(customerGroupReference);
+            } catch (ReferenceResolutionException referenceResolutionException) {
+                return exceptionallyCompletedFuture(new ReferenceResolutionException(
+                    format(FAILED_TO_RESOLVE_REFERENCE, CustomerGroup.referenceTypeId(), draftBuilder.getCountry(),
+                        draftBuilder.getValue(), referenceResolutionException.getMessage())));
+            }
+
+            return fetchAndResolveCustomerGroupReference(draftBuilder, customerGroupKey);
+        }
+        return completedFuture(draftBuilder);
+    }
+
+    @Nonnull
+    private CompletionStage<PriceDraftBuilder> fetchAndResolveCustomerGroupReference(
+        @Nonnull final PriceDraftBuilder draftBuilder,
+        @Nonnull final String customerGroupKey) {
+
+        return customerGroupService
+            .fetchCachedCustomerGroupId(customerGroupKey)
+            .thenCompose(resolvedCustomerGroupIdOptional -> resolvedCustomerGroupIdOptional
+                .map(resolvedCustomerGroupId ->
+                    completedFuture(draftBuilder.customerGroup(CustomerGroup.referenceOfId(resolvedCustomerGroupId))))
+                .orElseGet(() -> {
+                    final String errorMessage = format(CUSTOMER_GROUP_DOES_NOT_EXIST, customerGroupKey);
+                    return exceptionallyCompletedFuture(new ReferenceResolutionException(
+                        format(FAILED_TO_RESOLVE_REFERENCE, CustomerGroup.referenceTypeId(), draftBuilder.getCountry(),
+                            draftBuilder.getValue(), errorMessage)));
+                }));
     }
 }
