@@ -37,7 +37,7 @@
 <dependency>
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
-  <version>1.9.1</version>
+  <version>2.0.0</version>
 </dependency>
 ````
 - For Gradle users:
@@ -48,7 +48,7 @@ implementation 'com.commercetools.sdk.jvm.core:commercetools-java-client:1.52.0'
 implementation 'com.commercetools.sdk.jvm.core:commercetools-convenience:1.52.0'
 
 // Add commercetools-sync-java dependency.
-implementation 'com.commercetools:commercetools-sync-java:1.9.1'
+implementation 'com.commercetools:commercetools-sync-java:2.0.0'
 ````
 
 ### 2. Setup Syncing Options
@@ -57,8 +57,8 @@ implementation 'com.commercetools:commercetools-sync-java:1.9.1'
  final Logger logger = LoggerFactory.getLogger(MySync.class);
  final ProductSyncOptions productsyncOptions = ProductSyncOptionsBuilder
                                  .of(sphereClient)
-                                 .errorCallBack(logger::error)
-                                 .warningCallBack(logger::warn)
+                                 .errorCallback(logger::error)
+                                 .warningCallback(logger::warn)
                                  .build();
  ```
  
