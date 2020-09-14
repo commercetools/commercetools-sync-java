@@ -62,7 +62,7 @@ public class CustomObjectSyncTest {
                 CustomObjectCompositeIdentifier.of("someKey", "someContainer");
 
         when(mockCustomObjectService.fetchMatchingCustomObjects(singleton(customObjectCompositeIdentifier)))
-               .thenReturn(supplyAsync(() -> { throw new SphereException();}));
+               .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
 
         final CustomObjectSync customObjectSync = new CustomObjectSync(syncOptions, mockCustomObjectService);
 
@@ -74,14 +74,14 @@ public class CustomObjectSyncTest {
         // assertions
         assertThat(errorMessages)
                 .hasSize(1).singleElement().asString()
-                .isEqualTo("Failed to fetch existing customObjects with keys: " +
-                        "'[{key='someKey', container='someContainer'}]'.");
+                .isEqualTo("Failed to fetch existing customObjects with keys: "
+                        + "'[{key='someKey', container='someContainer'}]'.");
 
         assertThat(exceptions)
                 .hasSize(1).singleElement().isInstanceOfSatisfying(Throwable.class,throwable -> {
-            assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
-            assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
-        });
+                    assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
+                    assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
+                });
 
         assertThat(customObjectSyncStatistics).hasValues(1, 0, 0, 1);
     }
