@@ -58,10 +58,8 @@ public class CustomObjectSyncTest {
                 .build();
 
         final CustomObjectService mockCustomObjectService = mock(CustomObjectService.class);
-        final CustomObjectCompositeIdentifier customObjectCompositeIdentifier =
-                CustomObjectCompositeIdentifier.of("someKey", "someContainer");
 
-        when(mockCustomObjectService.fetchMatchingCustomObjects(singleton(customObjectCompositeIdentifier)))
+        when(mockCustomObjectService.fetchMatchingCustomObjects(anySet()))
                .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
 
         final CustomObjectSync customObjectSync = new CustomObjectSync(syncOptions, mockCustomObjectService);
