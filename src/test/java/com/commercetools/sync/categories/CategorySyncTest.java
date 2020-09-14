@@ -212,10 +212,9 @@ class CategorySyncTest {
 
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to process the CategoryDraft with"
-                + " key:'key'. Reason: %s: Failed to resolve parent reference on CategoryDraft"
-                + " with key:'key'. Reason: %s",
-            ReferenceResolutionException.class.getCanonicalName(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("%s: Parent category reference of CategoryDraft with key" +
+                " 'key' has no key set. Please make sure parent category has a key.",
+                ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
     }
@@ -257,10 +256,9 @@ class CategorySyncTest {
 
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to process the CategoryDraft with"
-                + " key:'key'. Reason: %s: Failed to resolve parent reference on CategoryDraft with key:'key'. "
-                + "Reason: %s", ReferenceResolutionException.class.getCanonicalName(),
-            BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("%s: Parent category reference of CategoryDraft with key" +
+                        " 'key' has no key set. Please make sure parent category has a key.",
+                ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
     }

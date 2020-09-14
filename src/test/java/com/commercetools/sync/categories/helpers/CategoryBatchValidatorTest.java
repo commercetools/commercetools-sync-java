@@ -9,7 +9,11 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 import static com.commercetools.sync.categories.helpers.CategoryBatchValidator.*;
 import static java.lang.String.format;

@@ -151,7 +151,7 @@ class CategorySyncIT {
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
                                                         .toCompletableFuture().join();
-        
+
         assertThat(syncStatistics).hasValues(1, 0, 0, 0, 0);
     }
 
@@ -341,7 +341,7 @@ class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key("newCategory")
-            .parent(ResourceIdentifier.ofId(oldCategoryKey))
+            .parent(ResourceIdentifier.ofKey(oldCategoryKey))
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
@@ -402,7 +402,7 @@ class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "oldCategoryKey"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
             .key(oldCategoryKey)
-            .parent(ResourceIdentifier.ofId("cat7"))
+            .parent(ResourceIdentifier.ofKey("cat7"))
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
@@ -423,7 +423,7 @@ class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat6"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture2"))
             .key("cat6")
-            .parent(ResourceIdentifier.ofId("cat5"))
+            .parent(ResourceIdentifier.ofKey("cat5"))
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
@@ -509,7 +509,7 @@ class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat2"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture2"))
             .key("cat2")
-            .parent(ResourceIdentifier.ofId("cat1"))
+            .parent(ResourceIdentifier.ofKey("cat1"))
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
@@ -517,7 +517,7 @@ class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat3"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture3"))
             .key("cat3")
-            .parent(ResourceIdentifier.ofId("cat1"))
+            .parent(ResourceIdentifier.ofKey("cat1"))
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
@@ -532,7 +532,7 @@ class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat5"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture5"))
             .key("cat5")
-            .parent(ResourceIdentifier.ofId("cat4"))
+            .parent(ResourceIdentifier.ofKey("cat4"))
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
@@ -572,7 +572,7 @@ class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat2"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture2"))
             .key("cat2")
-            .parent(ResourceIdentifier.ofId("cat1"))
+            .parent(ResourceIdentifier.ofKey("cat1"))
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
@@ -580,7 +580,7 @@ class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat3"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture3"))
             .key("cat3")
-            .parent(ResourceIdentifier.ofId("cat1"))
+            .parent(ResourceIdentifier.ofKey("cat1"))
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
@@ -595,7 +595,7 @@ class CategorySyncIT {
             .of(LocalizedString.of(Locale.ENGLISH, "cat5"),
                 LocalizedString.of(Locale.ENGLISH, "modern-furniture5"))
             .key("cat5")
-            .parent(ResourceIdentifier.ofId("cat4"))
+            .parent(ResourceIdentifier.ofKey("cat4"))
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 
@@ -679,7 +679,7 @@ class CategorySyncIT {
         final CategoryDraft categoryDraftWithMissingParent = CategoryDraftBuilder
             .of(LocalizedString.of(Locale.ENGLISH, "furniture"), LocalizedString.of(Locale.ENGLISH, "new-furniture1"))
             .key("cat1")
-            .parent(ResourceIdentifier.ofId(nonExistingParentKey))
+            .parent(ResourceIdentifier.ofKey(nonExistingParentKey, nonExistingParentKey))
             .custom(CustomFieldsDraft.ofTypeIdAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
             .build();
 

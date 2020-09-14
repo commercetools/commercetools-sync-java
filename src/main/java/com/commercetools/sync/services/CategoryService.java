@@ -107,3 +107,4 @@ public interface CategoryService {
     CompletionStage<Category> updateCategory(@Nonnull Category category,
                                              @Nonnull List<UpdateAction<Category>> updateActions);
 }
+

@@ -93,8 +93,8 @@ abstract class BaseServiceWithKey<T extends WithKey, U extends Resource<U> & Wit
      * not already in the cache.
      *
      * @param keys keys to cache.
-     * @param keysQueryMapper function that accepts a set of keys which are not cached and maps it to a query object
-     *                        representing the query to CTP on such keys.
+     * @param keysQueryMapper function that accepts a set of keys which are not cached and maps it
+     *                        to a query to fetch CTP resources from the keys.
      * @return a map of key to ids of the requested keys.
      */
     @Nonnull

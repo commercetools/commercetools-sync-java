@@ -28,7 +28,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -172,15 +171,18 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         categoryDraftsToUpdate = new ConcurrentHashMap<>();
 
         final CategoryBatchValidator batchProcessor = new CategoryBatchValidator(this.syncOptions, this.statistics);
-        ImmutablePair<Set<CategoryDraft>, Set<String>> draftsAndKeys = batchProcessor.validateAndCollectValidDraftsAndKeys(categoryDrafts);
+        final ImmutablePair<Set<CategoryDraft>, Set<String>> validDraftsAndKeys
+                = batchProcessor.validateAndCollectValidDraftsAndKeys(categoryDrafts);
+        final Set<CategoryDraft> validDrafts = validDraftsAndKeys.getLeft();
+        final Set<String> keysToCache = validDraftsAndKeys.getRight();
 
-        if(draftsAndKeys.left.isEmpty()) {
+        if (validDrafts.isEmpty()) {
             statistics.incrementProcessed(categoryDrafts.size());
             return CompletableFuture.completedFuture(statistics);
         }
 
         return categoryService
-                .cacheKeysToIds(draftsAndKeys.right)
+                .cacheKeysToIds(keysToCache)
                 .handle(ImmutablePair::new)
                 .thenCompose(cachingResponse -> {
 

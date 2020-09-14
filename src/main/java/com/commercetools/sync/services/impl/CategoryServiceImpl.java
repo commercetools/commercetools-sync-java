@@ -12,7 +12,6 @@ import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.categories.queries.CategoryQueryBuilder;
 import io.sphere.sdk.categories.queries.CategoryQueryModel;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.queries.QueryPredicate;
 import org.apache.commons.lang3.StringUtils;
 
@@ -35,9 +34,6 @@ import static java.util.Collections.singleton;
 public final class CategoryServiceImpl extends BaseServiceWithKey<CategoryDraft, Category, CategorySyncOptions,
     CategoryQuery, CategoryQueryModel, CategoryExpansionModel<Category>> implements CategoryService {
 
-    private static final String CATEGORY_KEY_NOT_SET = "Category with id: '%s' has no key set. Keys are required for "
-        + "category matching.";
-
     public CategoryServiceImpl(@Nonnull final CategorySyncOptions syncOptions) {
         super(syncOptions);
     }
@@ -52,15 +48,11 @@ public final class CategoryServiceImpl extends BaseServiceWithKey<CategoryDraft,
                         .withPredicates(buildCategoryKeysQueryPredicate(keysNotCached)));
     }
 
-
     QueryPredicate<Category> buildCategoryKeysQueryPredicate(@Nonnull final Set<String> categoryKeys) {
-        final List<String> keysSurroundedWithDoubleQuotes = categoryKeys.stream()
-                .filter(StringUtils::isNotBlank)
-                .map(categoryKey -> format("\"%s\"", categoryKey))
-                .collect(Collectors.toList());
-        String keysQueryString = keysSurroundedWithDoubleQuotes.toString();
-        // Strip square brackets from list string. For example: ["key1", "key2"] -> "key1", "key2"
-        keysQueryString = keysQueryString.substring(1, keysQueryString.length() - 1);
+        final String keysQueryString = categoryKeys.stream()
+                                                   .filter(StringUtils::isNotBlank)
+                                                   .map(productKey -> format("\"%s\"", productKey))
+                                                   .collect(Collectors.joining(","));
         return QueryPredicate.of(format("key in (%s)", keysQueryString));
     }
 
@@ -106,3 +98,4 @@ public final class CategoryServiceImpl extends BaseServiceWithKey<CategoryDraft,
         return updateResource(category, CategoryUpdateCommand::of, updateActions);
     }
 }
+
