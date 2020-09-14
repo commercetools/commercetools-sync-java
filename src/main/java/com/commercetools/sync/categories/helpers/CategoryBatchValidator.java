@@ -9,7 +9,6 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -28,7 +27,8 @@ public class CategoryBatchValidator {
     final CategorySyncOptions syncOptions;
     final CategorySyncStatistics statistics;
 
-    public CategoryBatchValidator(@Nonnull final CategorySyncOptions syncOptions, @Nonnull final CategorySyncStatistics statistics) {
+    public CategoryBatchValidator(@Nonnull final CategorySyncOptions syncOptions,
+                                  @Nonnull final CategorySyncStatistics statistics) {
         this.syncOptions = syncOptions;
         this.statistics = statistics;
     }
@@ -48,10 +48,12 @@ public class CategoryBatchValidator {
      * </ol>
      *
      * @param categoryDrafts - a list of category drafts considered in this batch
+     *
      * @return a tuple of valid category drafts and valid keys
      */
 
-    public ImmutablePair<Set<CategoryDraft>, Set<String>> validateAndCollectValidDraftsAndKeys(List<CategoryDraft> categoryDrafts) {
+    public ImmutablePair<Set<CategoryDraft>, Set<String>> validateAndCollectValidDraftsAndKeys(
+            final List<CategoryDraft> categoryDrafts) {
         Set<CategoryDraft> validDrafts = new HashSet<>();
         Set<String> validKeys = new HashSet<>();
         for (CategoryDraft categoryDraft : categoryDrafts) {

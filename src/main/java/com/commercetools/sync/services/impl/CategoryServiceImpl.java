@@ -42,10 +42,9 @@ public final class CategoryServiceImpl extends BaseServiceWithKey<CategoryDraft,
     @Override
     public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> categoryKeys) {
         return cacheKeysToIds(
-                categoryKeys,
-                keysNotCached -> CategoryQuery
-                        .of()
-                        .withPredicates(buildCategoryKeysQueryPredicate(keysNotCached)));
+                categoryKeys, keysNotCached -> CategoryQuery
+                    .of()
+                    .withPredicates(buildCategoryKeysQueryPredicate(keysNotCached)));
     }
 
     QueryPredicate<Category> buildCategoryKeysQueryPredicate(@Nonnull final Set<String> categoryKeys) {
