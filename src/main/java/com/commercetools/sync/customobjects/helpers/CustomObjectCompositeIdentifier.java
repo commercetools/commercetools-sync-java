@@ -5,8 +5,6 @@ import io.sphere.sdk.customobjects.CustomObjectDraft;
 
 import javax.annotation.Nonnull;
 
-import java.util.Objects;
-
 import static java.lang.String.format;
 
 /**
