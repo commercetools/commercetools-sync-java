@@ -48,6 +48,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -549,7 +550,7 @@ class CategorySyncTest {
         final CategoryService categoryService = mockCategoryService(singleton(mockedExistingCategory),
             mockedExistingCategory, mockedExistingCategory);
 
-        when(categoryService.cacheKeysToIds())
+        when(categoryService.cacheKeysToIds(anySet()))
             .thenReturn(completedFuture(singletonMap("1", UUID.randomUUID().toString())));
 
         final CategorySyncOptions spyCategorySyncOptions = spy(categorySyncOptions);

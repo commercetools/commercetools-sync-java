@@ -2,8 +2,6 @@ package com.commercetools.sync.services.impl;
 
 
 import com.commercetools.sync.categories.CategorySyncOptions;
-import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.services.CategoryService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -14,6 +12,9 @@ import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.categories.queries.CategoryQueryBuilder;
 import io.sphere.sdk.categories.queries.CategoryQueryModel;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.products.queries.ProductQuery;
+import io.sphere.sdk.queries.QueryPredicate;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -21,13 +22,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static java.util.Collections.singleton;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
  * Implementation of CategoryService interface.
@@ -45,27 +44,24 @@ public final class CategoryServiceImpl extends BaseServiceWithKey<CategoryDraft,
 
     @Nonnull
     @Override
-    public CompletionStage<Map<String, String>> cacheKeysToIds() {
-        if (isCached) {
-            return CompletableFuture.completedFuture(keyToIdCache);
-        }
+    public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> categoryKeys) {
+        return cacheKeysToIds(
+                categoryKeys,
+                keysNotCached -> CategoryQuery
+                        .of()
+                        .withPredicates(buildCategoryKeysQueryPredicate(keysNotCached)));
+    }
 
-        final Consumer<List<Category>> categoryPageConsumer = categoriesPage ->
-            categoriesPage.forEach(category -> {
-                final String key = category.getKey();
-                final String id = category.getId();
-                if (isNotBlank(key)) {
-                    keyToIdCache.put(key, id);
-                } else {
-                    syncOptions.applyWarningCallback(new SyncException(format(CATEGORY_KEY_NOT_SET, id)),
-                        category, null);
-                }
-            });
 
-        return CtpQueryUtils
-            .queryAll(syncOptions.getCtpClient(), CategoryQuery.of(), categoryPageConsumer)
-            .thenAccept(result -> isCached = true)
-            .thenApply(result -> keyToIdCache);
+    QueryPredicate<Category> buildCategoryKeysQueryPredicate(@Nonnull final Set<String> categoryKeys) {
+        final List<String> keysSurroundedWithDoubleQuotes = categoryKeys.stream()
+                .filter(StringUtils::isNotBlank)
+                .map(categoryKey -> format("\"%s\"", categoryKey))
+                .collect(Collectors.toList());
+        String keysQueryString = keysSurroundedWithDoubleQuotes.toString();
+        // Strip square brackets from list string. For example: ["key1", "key2"] -> "key1", "key2"
+        keysQueryString = keysQueryString.substring(1, keysQueryString.length() - 1);
+        return QueryPredicate.of(format("key in (%s)", keysQueryString));
     }
 
     @Nonnull

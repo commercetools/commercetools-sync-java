@@ -1,12 +1,11 @@
 package com.commercetools.sync.categories;
 
-import com.commercetools.sync.categories.helpers.CategoryBatchProcessor;
+import com.commercetools.sync.categories.helpers.CategoryBatchValidator;
 import com.commercetools.sync.categories.helpers.CategoryReferenceResolver;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.products.helpers.ProductBatchProcessor;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.CategoryServiceImpl;
@@ -42,7 +41,6 @@ import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.toRes
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics, CategorySyncOptions> {
 
@@ -173,21 +171,16 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         categoryKeysWithResolvedParents = ConcurrentHashMap.newKeySet();
         categoryDraftsToUpdate = new ConcurrentHashMap<>();
 
-        final CategoryBatchProcessor batchProcessor = new CategoryBatchProcessor(categoryDrafts);
-        List<String> errors = batchProcessor.validateBatch();
+        final CategoryBatchValidator batchProcessor = new CategoryBatchValidator(this.syncOptions, this.statistics);
+        ImmutablePair<Set<CategoryDraft>, Set<String>> draftsAndKeys = batchProcessor.validateAndCollectValidDraftsAndKeys(categoryDrafts);
 
-        if (!errors.isEmpty()) {
-            errors.forEach(syncOptions::applyErrorCallback);
-            statistics.incrementFailed();
-        }
-
-        if(batchProcessor.getValidDrafts().isEmpty()) {
+        if(draftsAndKeys.left.isEmpty()) {
             statistics.incrementProcessed(categoryDrafts.size());
             return CompletableFuture.completedFuture(statistics);
         }
 
         return categoryService
-                .cacheKeysToIds()
+                .cacheKeysToIds(draftsAndKeys.right)
                 .handle(ImmutablePair::new)
                 .thenCompose(cachingResponse -> {
 
