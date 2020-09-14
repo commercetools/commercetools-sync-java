@@ -22,8 +22,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -80,7 +79,7 @@ public class MockUtils {
 
         final Map<String, String> keyToIds =
             existingCategories.stream().collect(Collectors.toMap(Category::getKey, Category::getId));
-        when(mockCategoryService.cacheKeysToIds()).thenReturn(completedFuture(keyToIds));
+        when(mockCategoryService.cacheKeysToIds(anySet())).thenReturn(completedFuture(keyToIds));
         when(mockCategoryService.createCategory(any()))
             .thenReturn(CompletableFuture.completedFuture(ofNullable(createdCategory)));
         return mockCategoryService;

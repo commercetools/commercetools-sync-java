@@ -46,9 +46,9 @@ public class CategoryBatchValidator {
      * @param categoryDrafts - a list of category drafts considered in this batch
      */
 
-    public ImmutablePair<List<CategoryDraft>, List<String>> validateAndCollectValidDraftsAndKeys(List<CategoryDraft> categoryDrafts) {
-        List<CategoryDraft> validDrafts = new ArrayList<>();
-        List<String> validKeys = new ArrayList<>();
+    public ImmutablePair<Set<CategoryDraft>, Set<String>> validateAndCollectValidDraftsAndKeys(List<CategoryDraft> categoryDrafts) {
+        Set<CategoryDraft> validDrafts = new HashSet<>();
+        Set<String> validKeys = new HashSet<>();
         for (CategoryDraft categoryDraft : categoryDrafts) {
             if (validateCategoryDraft(categoryDraft)) {
                 ResourceIdentifier<Category> parent = categoryDraft.getParent();
