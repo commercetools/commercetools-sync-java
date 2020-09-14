@@ -3,28 +3,19 @@ package com.commercetools.sync.customobjects;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.customobjects.helpers.CustomObjectSyncStatistics;
 import com.commercetools.sync.services.CustomObjectService;
-import com.commercetools.sync.types.TypeSync;
-import com.commercetools.sync.types.TypeSyncOptions;
-import com.commercetools.sync.types.TypeSyncOptionsBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
 import io.sphere.sdk.models.SphereException;
-import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
-import io.sphere.sdk.types.Type;
-import io.sphere.sdk.types.TypeDraft;
-import io.sphere.sdk.types.TypeDraftBuilder;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 import java.util.concurrent.CompletionException;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
@@ -89,59 +80,61 @@ public class CustomObjectSyncTest {
 
         assertThat(customObjectSyncStatistics).hasValues(1, 0, 0, 1);
     }
-/*
+
 
     @Test
     void sync_WithOnlyDraftsToCreate_ShouldCallBeforeCreateCallback() {
         // preparation
-        final CustomObjectDraft<JsonNode> newCustomObjectDraft = CustomObjectDraft.ofUnversionedUpsert("someName", "someKey", JsonNodeFactory.instance.objectNode().put( "json-field", "json-value"));
+        final CustomObjectDraft<JsonNode> newCustomObjectDraft = CustomObjectDraft
+                .ofUnversionedUpsert("someName", "someKey",
+                        JsonNodeFactory.instance.objectNode().put( "json-field", "json-value"));
 
         final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder
                 .of(mock(SphereClient.class))
                 .build();
 
         final CustomObjectService customObjectService = mock(CustomObjectService.class);
-        when(typeService.fetchMatchingTypesByKeys(anySet())).thenReturn(completedFuture(emptySet()));
-        when(typeService.createType(any())).thenReturn(completedFuture(Optional.empty()));
+        when(customObjectService.fetchMatchingCustomObjects(anySet())).thenReturn(completedFuture(emptySet()));
+        when(customObjectService.upsertCustomObject(any())).thenReturn(completedFuture(Optional.empty()));
 
-        final TypeSyncOptions spyTypeSyncOptions = spy(typeSyncOptions);
+        final CustomObjectSyncOptions spyCustomObjectSyncOptions = spy(customObjectSyncOptions);
 
         // test
-        new TypeSync(spyTypeSyncOptions, typeService)
-                .sync(singletonList(newTypeDraft)).toCompletableFuture().join();
+        new CustomObjectSync(spyCustomObjectSyncOptions, customObjectService)
+                .sync(singletonList(newCustomObjectDraft)).toCompletableFuture().join();
 
         // assertion
-        verify(spyTypeSyncOptions).applyBeforeCreateCallback(newTypeDraft);
-        verify(spyTypeSyncOptions, never()).applyBeforeUpdateCallback(any(), any(), any());
+        verify(spyCustomObjectSyncOptions).applyBeforeCreateCallback(newCustomObjectDraft);
+        verify(spyCustomObjectSyncOptions, never()).applyBeforeUpdateCallback(any(), any(), any());
     }
 
-    @Test
+    //TODO
+   /* @Test
     void sync_WithOnlyDraftsToUpdate_ShouldOnlyCallBeforeUpdateCallback() {
         // preparation
-        final TypeDraft newTypeDraft = TypeDraftBuilder
-                .of("newType", ofEnglish( "typeName"), ResourceTypeIdsSetBuilder.of().addChannels())
-                .build();
+        final CustomObjectDraft<JsonNode> newCustomObjectDraft = CustomObjectDraft
+                .ofUnversionedUpsert("someName", "someKey",
+                        JsonNodeFactory.instance.objectNode().put( "json-field", "json-value"));
 
-        final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
+        final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder
                 .of(mock(SphereClient.class))
                 .build();
 
-        final Type mockedExistingType = mock(Type.class);
-        when(mockedExistingType.getKey()).thenReturn(newTypeDraft.getKey());
+        final CustomObject mockedExistingCustomObject = mock(CustomObject.class);
+        when(mockedExistingCustomObject.getKey()).thenReturn(newCustomObjectDraft.getKey());
 
-        final TypeService typeService = mock(TypeService.class);
-        when(typeService.fetchMatchingTypesByKeys(anySet())).thenReturn(completedFuture(singleton(mockedExistingType)));
-        when(typeService.updateType(any(), any())).thenReturn(completedFuture(mockedExistingType));
+        final CustomObjectService customObjectService = mock(CustomObjectService.class);
+        when(customObjectService.fetchMatchingCustomObjects(anySet())).thenReturn(completedFuture(singleton(mockedExistingCustomObject)));
+        when(customObjectService.upsertCustomObject(any())).thenReturn(completedFuture(mockedExistingCustomObject));
 
-        final TypeSyncOptions spyTypeSyncOptions = spy(typeSyncOptions);
+        final CustomObjectSyncOptions spyTypeSyncOptions = spy(customObjectSyncOptions);
 
         // test
-        new TypeSync(spyTypeSyncOptions, typeService)
-                .sync(singletonList(newTypeDraft)).toCompletableFuture().join();
+        new CustomObjectSync(spyTypeSyncOptions, customObjectService)
+                .sync(singletonList(newCustomObjectDraft)).toCompletableFuture().join();
 
         // assertion
         verify(spyTypeSyncOptions).applyBeforeUpdateCallback(any(), any(), any());
-        verify(spyTypeSyncOptions, never()).applyBeforeCreateCallback(newTypeDraft);
-    }
-*/
+        verify(spyTypeSyncOptions, never()).applyBeforeCreateCallback(newCustomObjectDraft);
+    }*/
 }
