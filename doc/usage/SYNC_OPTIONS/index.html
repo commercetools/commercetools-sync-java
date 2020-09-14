@@ -418,14 +418,14 @@
       
         <li class="md-nav__item">
   <a href="#errorcallback" class="md-nav__link">
-    errorCallBack
+    errorCallback
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#warningcallback" class="md-nav__link">
-    warningCallBack
+    warningCallback
   </a>
   
 </li>
@@ -475,7 +475,7 @@
         
           <li class="md-nav__item">
   <a href="#1-using-errorcallback-and-warningcallback-for-logging" class="md-nav__link">
-    1. Using errorCallBack and warningCallBack for logging
+    1. Using errorCallback and warningCallback for logging
   </a>
   
 </li>
@@ -552,7 +552,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.9.1/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/2.0.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -628,14 +628,14 @@
       
         <li class="md-nav__item">
   <a href="#errorcallback" class="md-nav__link">
-    errorCallBack
+    errorCallback
   </a>
   
 </li>
       
         <li class="md-nav__item">
   <a href="#warningcallback" class="md-nav__link">
-    warningCallBack
+    warningCallback
   </a>
   
 </li>
@@ -685,7 +685,7 @@
         
           <li class="md-nav__item">
   <a href="#1-using-errorcallback-and-warningcallback-for-logging" class="md-nav__link">
-    1. Using errorCallBack and warningCallBack for logging
+    1. Using errorCallback and warningCallback for logging
   </a>
   
 </li>
@@ -743,12 +743,23 @@
                 
                 
                 <h1 id="sync-options">Sync Options<a class="headerlink" href="#sync-options" title="Permanent link">&para;</a></h1>
-<h4 id="errorcallback"><code>errorCallBack</code><a class="headerlink" href="#errorcallback" title="Permanent link">&para;</a></h4>
-<p>a callback that is called whenever an error event occurs during the sync process. It contains information about the 
-error message and the exception.</p>
-<h4 id="warningcallback"><code>warningCallBack</code><a class="headerlink" href="#warningcallback" title="Permanent link">&para;</a></h4>
-<p>a callback that is called whenever a warning event occurs during the sync process. It contains information about the 
-warning message.</p>
+<h4 id="errorcallback"><code>errorCallback</code><a class="headerlink" href="#errorcallback" title="Permanent link">&para;</a></h4>
+<p>a callback that is called whenever an error event occurs during the sync process. It contains the follow information 
+about the error-event:</p>
+<ul>
+<li>sync exception</li>
+<li>the resource draft of the source project</li>
+<li>the resource of the target project</li>
+<li>the update-actions, which failed</li>
+</ul>
+<h4 id="warningcallback"><code>warningCallback</code><a class="headerlink" href="#warningcallback" title="Permanent link">&para;</a></h4>
+<p>a callback that is called whenever a warning event occurs during the sync process. It contains the follow information 
+about the warning message:</p>
+<ul>
+<li>sync exception</li>
+<li>the resource draft of the source project</li>
+<li>the resource of the target project</li>
+</ul>
 <h4 id="beforeupdatecallback"><code>beforeUpdateCallback</code><a class="headerlink" href="#beforeupdatecallback" title="Permanent link">&para;</a></h4>
 <p>during the sync process if a target resource and a resource draft are matched, this callback can be used to intercept 
 the <strong><em>update</em></strong> request just before it is sent to CTP. It contains information about the resource draft, the target
@@ -787,12 +798,14 @@ Having an inventory entry or a product, with a missing channel reference, could 
 If it fails to create the supply channel, the inventory entry/product won't sync and <code>errorCallback</code> will be triggered.
 - If not provided, it is set to <code>false</code> by default.</p>
 <h3 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h3>
-<h4 id="1-using-errorcallback-and-warningcallback-for-logging">1. Using <code>errorCallBack</code> and <code>warningCallBack</code> for logging<a class="headerlink" href="#1-using-errorcallback-and-warningcallback-for-logging" title="Permanent link">&para;</a></h4>
+<h4 id="1-using-errorcallback-and-warningcallback-for-logging">1. Using <code>errorCallback</code> and <code>warningCallback</code> for logging<a class="headerlink" href="#1-using-errorcallback-and-warningcallback-for-logging" title="Permanent link">&para;</a></h4>
 <div class="codehilite"><pre><span></span><code> <span class="kd">final</span> <span class="n">Logger</span> <span class="n">logger</span> <span class="o">=</span> <span class="n">LoggerFactory</span><span class="p">.</span><span class="na">getLogger</span><span class="p">(</span><span class="n">MySync</span><span class="p">.</span><span class="na">class</span><span class="p">);</span>
  <span class="kd">final</span> <span class="n">ProductSyncOptions</span> <span class="n">productsyncOptions</span> <span class="o">=</span> <span class="n">ProductSyncOptionsBuilder</span>
          <span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">)</span>
-         <span class="p">.</span><span class="na">errorCallBack</span><span class="p">(</span><span class="n">logger</span><span class="p">::</span><span class="n">error</span><span class="p">)</span>
-         <span class="p">.</span><span class="na">warningCallBack</span><span class="p">(</span><span class="n">logger</span><span class="p">::</span><span class="n">warn</span><span class="p">)</span>
+         <span class="p">.</span><span class="na">errorCallback</span><span class="p">((</span><span class="n">syncException</span><span class="p">,</span> <span class="n">draft</span><span class="p">,</span> <span class="n">product</span><span class="p">,</span> <span class="n">updateActions</span><span class="p">)</span> <span class="o">-&gt;</span> 
+            <span class="n">logger</span><span class="p">.</span><span class="na">error</span><span class="p">(</span><span class="n">syncException</span><span class="p">.</span><span class="na">getMessage</span><span class="p">(),</span> <span class="n">syncException</span><span class="p">))</span>
+         <span class="p">.</span><span class="na">warningCallback</span><span class="p">((</span><span class="n">exception</span><span class="p">,</span> <span class="n">oldResource</span><span class="p">,</span> <span class="n">newResources</span><span class="p">)</span> <span class="o">-&gt;</span> 
+            <span class="n">logger</span><span class="p">.</span><span class="na">warn</span><span class="p">(</span><span class="n">exception</span><span class="p">.</span><span class="na">getMessage</span><span class="p">(),</span> <span class="n">exception</span><span class="p">))</span>
          <span class="p">.</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
 

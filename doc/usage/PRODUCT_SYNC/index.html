@@ -534,7 +534,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.9.1/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/2.0.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -747,25 +747,23 @@ otherwise they won't be matched.</p>
 all the variants in the target project are expected to have the <code>sku</code> fields set.</p>
 </li>
 <li>
-<p>Every product may have several references including <code>product type</code>, <code>categories</code>, <code>taxCategory</code>, etc.. Variants
+<p>Every product may have several references including <code>product type</code>, <code>categories</code>, <code>taxCategory</code>, etc. Variants
 of the product also have prices, where each price also has some references including a reference to the <code>Type</code> of its 
 custom fields and a reference to a <code>channel</code>. All these referenced resources are matched by their <code>key</code>s. Therefore, in 
 order for the sync to resolve the actual ids of those references, those <code>key</code>s have to be supplied in the following way:</p>
 <ul>
-<li>
-<p>Provide the <code>key</code> value on the <code>id</code> field of the reference. This means that calling <code>getId()</code> on the
-reference would return its <code>key</code>. </p>
-<p><strong>Note</strong>: When syncing from a source commercetools project, you can use this util which this library provides: 
- <a href="https://commercetools.github.io/commercetools-sync-java/v/1.9.1/com/commercetools/sync/products/utils/ProductReferenceReplacementUtils.html#replaceProductsReferenceIdsWithKeys-java.util.List-"><code>replaceProductsReferenceIdsWithKeys</code></a>
- that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
- <div class="codehilite"><pre><span></span><code><span class="c1">// Puts the keys in the reference id fields to prepare for reference resolution</span>
-<span class="kd">final</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">ProductDraft</span><span class="o">&gt;</span> <span class="n">productDrafts</span> <span class="o">=</span> <span class="n">replaceProductsReferenceIdsWithKeys</span><span class="p">(</span><span class="n">products</span><span class="p">);</span>
-</code></pre></div></p>
+<li>When syncing from a source commercetools project, you can use <a href="https://commercetools.github.io/commercetools-sync-java/v/2.0.0/com/commercetools/sync/products/utils/ProductReferenceResolutionUtils.html#mapToProductDrafts-java.util.List-"><code>mapToProductDrafts</code></a>
+ method that maps from a <code>Product</code> to <code>ProductDraft</code> in order to make them ready for reference resolution by the sync:
+ <div class="codehilite"><pre><span></span><code><span class="kd">final</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">ProductDraft</span><span class="o">&gt;</span> <span class="n">productDrafts</span> <span class="o">=</span> <span class="n">ProductReferenceResolutionUtils</span><span class="p">.</span><span class="na">mapToProductDrafts</span><span class="p">(</span><span class="n">products</span><span class="p">);</span>
+</code></pre></div><blockquote>
+<p>Note: Some references in the product like <code>state</code>, <code>customerGroup</code> of prices, and variant attributes with type <code>reference</code> do not support the <code>ResourceIdentifier</code> yet, 
+  for those references you need to provide the <code>key</code> value on the <code>id</code> field of the reference. This means that calling <code>getId()</code> on the
+  reference would return its <code>key</code>. 
+</p>
+</blockquote>
 </li>
+<li>Create a <code>sphereClient</code> <a href="../IMPORTANT_USAGE_TIPS/#sphereclient-creation">as described here</a>.</li>
 </ul>
-</li>
-<li>
-<p>Create a <code>sphereClient</code> <a href="../IMPORTANT_USAGE_TIPS/#sphereclient-creation">as described here</a>.</p>
 </li>
 <li>
 <p>After the <code>sphereClient</code> is set up, a <code>ProductSyncOptions</code> should be built as follows: 

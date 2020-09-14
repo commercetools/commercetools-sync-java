@@ -514,7 +514,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.9.1/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/2.0.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -702,27 +702,19 @@ against a <a href="https://docs.commercetools.com/http-api-projects-inventory.ht
 <li>
 <p>Every inventory entry may have a reference to a supply <code>Channel</code> and a reference to the <code>Type</code> of its custom fields. These
    references are matched by their <code>key</code>s. Therefore, in order for the sync to resolve the actual ids of those references,
-   their <code>key</code>s has to be supplied in the following way:</p>
+   their <code>key</code>s has to be supplied.</p>
 </li>
 <li>
-<p>Provide the <code>key</code> value on the <code>id</code> field of the reference. This means that calling <code>getId()</code> on the
-   reference would return its <code>key</code>. </p>
-<div class="codehilite"><pre><span></span><code>**Note**: When syncing from a source commercetools project, you can use this util which this library provides: 
- [`replaceInventoriesReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/1.9.1/com/commercetools/sync/inventories/utils/InventoryReferenceReplacementUtils.html#replaceInventoriesReferenceIdsWithKeys-java.util.List-)
- that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
- ````java
- // Puts the keys in the reference id fields to prepare for reference resolution
- final List&lt;InventoryEntryDraft&gt; inventoryEntryDrafts = replaceInventoriesReferenceIdsWithKeys(inventoryEntries);
- ````
-</code></pre></div>
-
-
+<p>When syncing from a source commercetools project, you can use <a href="https://commercetools.github.io/commercetools-sync-java/v/2.0.0/com/commercetools/sync/inventories/utils/InventoryReferenceResolutionUtils.html#mapToInventoryEntryDrafts-java.util.List-"><code>mapToInventoryEntryDrafts</code></a>
+     method that that maps from a <code>InventoryEntry</code> to <code>InventoryEntryDraft</code> in order to make them ready for reference resolution by the sync:
+     <div class="codehilite"><pre><span></span><code><span class="kd">final</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">InventoryEntryDraft</span><span class="o">&gt;</span> <span class="n">inventoryEntryDrafts</span> <span class="o">=</span> <span class="n">InventoryReferenceResolutionUtils</span><span class="p">.</span><span class="na">mapToInventoryEntryDrafts</span><span class="p">(</span><span class="n">inventoryEntries</span><span class="p">);</span>
+</code></pre></div></p>
 </li>
 <li>
 <p>Create a <code>sphereClient</code> <a href="../IMPORTANT_USAGE_TIPS/#sphereclient-creation">as described here</a>.</p>
 </li>
 <li>
-<p>After the <code>sphereClient</code> is setup, a <code>InventorySyncOptions</code> should be be built as follows: 
+<p>After the <code>sphereClient</code> is setup, a <code>InventorySyncOptions</code> should be built as follows: 
 <div class="codehilite"><pre><span></span><code><span class="c1">// instantiating a InventorySyncOptions</span>
 <span class="kd">final</span> <span class="n">InventorySyncOptions</span> <span class="n">inventorySyncOptions</span> <span class="o">=</span> <span class="n">InventorySyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>

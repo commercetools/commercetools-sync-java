@@ -527,7 +527,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.9.1/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/2.0.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -727,23 +727,16 @@ categories in the target CTP project. Also, the categories in the target project
 otherwise they won't be matched.</p>
 </li>
 <li>
-<p>Every category may have a reference to a <code>parent category</code> and a reference to the <code>Type</code> of its custom fields. Categories 
-   and Types are matched by their <code>key</code>s. Therefore, in order for the sync to resolve the 
-    actual ids of those references, the <code>key</code> of the <code>Type</code>/parent <code>Category</code> has to be supplied in the following way:</p>
-<ul>
-<li>Provide the <code>key</code> value on the <code>id</code> field of the reference. This means that calling <code>getId()</code> on the
-reference would return its <code>key</code>.  </li>
-</ul>
+<p>Every category may have a reference to a <code>parent category</code> and a reference to the <code>Type</code> of its custom fields. 
+These references are matched by their <code>key</code>s. Therefore, in order for the sync to resolve the 
+actual ids of the references, their <code>key</code>s has to be supplied.</p>
 </li>
-</ol>
-<p><strong>Note</strong>: When syncing from a source commercetools project, you can use this util which this library provides: 
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/1.9.1/com/commercetools/sync/categories/utils/CategoryReferenceReplacementUtils.html#replaceCategoriesReferenceIdsWithKeys-java.util.List-"><code>replaceCategoriesReferenceIdsWithKeys</code></a>
-    that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
-    <div class="codehilite"><pre><span></span><code><span class="c1">// Puts the keys in the reference id fields to prepare for reference resolution</span>
-<span class="kd">final</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">CategoryDraft</span><span class="o">&gt;</span> <span class="n">categoryDrafts</span> <span class="o">=</span> <span class="n">replaceCategoriesReferenceIdsWithKeys</span><span class="p">(</span><span class="n">categories</span><span class="p">);</span>
+<li>
+<p>When syncing from a source commercetools project, you can use <a href="https://commercetools.github.io/commercetools-sync-java/v/2.0.0/com/commercetools/sync/categories/utils/CategoryReferenceResolutionUtils.html#mapToCategoryDrafts-java.util.List-"><code>mapToCategoryDrafts</code></a>
+     method that maps from a <code>Category</code> to <code>CategoryDraft</code> in order to make them ready for reference resolution by the sync:
+     <div class="codehilite"><pre><span></span><code><span class="kd">final</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">CategoryDraft</span><span class="o">&gt;</span> <span class="n">categoryDrafts</span> <span class="o">=</span> <span class="n">CategoryReferenceResolutionUtils</span><span class="p">.</span><span class="na">mapToCategoryDrafts</span><span class="p">(</span><span class="n">categories</span><span class="p">);</span>
 </code></pre></div></p>
-<p>Example of its usage can be found <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java#L130">here</a>.</p>
-<ol>
+</li>
 <li>
 <p>Create a <code>sphereClient</code> <a href="../IMPORTANT_USAGE_TIPS/#sphereclient-creation">as described here</a>.</p>
 </li>
