@@ -17,13 +17,12 @@ public interface CategoryService {
 
     /**
      * Filters out the keys which are already cached and fetches only the not-cached category keys from the CTP project
-     * defined in an injected {@link SphereClient} and stores a mapping for every category to id in
-     * the cached map of keys -&gt; ids and returns this cached map.
+     * defined in an injected {@link SphereClient} and stores a mapping for every category to id in the cached map of
+     * keys -&gt; ids and returns this cached map.
      *
      * @param categoryKeys - a set category keys to fetch and cache the ids for
-     *
-     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a map of requested
-     *         category keys -&gt; ids
+     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a map of
+     *      requested category keys -&gt; ids
      */
     @Nonnull
     CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> categoryKeys);

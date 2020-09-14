@@ -12,7 +12,6 @@ import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.categories.queries.CategoryQueryBuilder;
 import io.sphere.sdk.categories.queries.CategoryQueryModel;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.queries.QueryPredicate;
 import org.apache.commons.lang3.StringUtils;
 
@@ -46,10 +45,9 @@ public final class CategoryServiceImpl extends BaseServiceWithKey<CategoryDraft,
     @Override
     public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> categoryKeys) {
         return cacheKeysToIds(
-                categoryKeys,
-                keysNotCached -> CategoryQuery
-                        .of()
-                        .withPredicates(buildCategoryKeysQueryPredicate(keysNotCached)));
+                categoryKeys, keysNotCached -> CategoryQuery
+                    .of()
+                    .withPredicates(buildCategoryKeysQueryPredicate(keysNotCached)));
     }
 
 

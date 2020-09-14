@@ -172,9 +172,10 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         categoryDraftsToUpdate = new ConcurrentHashMap<>();
 
         final CategoryBatchValidator batchProcessor = new CategoryBatchValidator(this.syncOptions, this.statistics);
-        ImmutablePair<Set<CategoryDraft>, Set<String>> draftsAndKeys = batchProcessor.validateAndCollectValidDraftsAndKeys(categoryDrafts);
+        ImmutablePair<Set<CategoryDraft>, Set<String>> draftsAndKeys =
+                batchProcessor.validateAndCollectValidDraftsAndKeys(categoryDrafts);
 
-        if(draftsAndKeys.left.isEmpty()) {
+        if (draftsAndKeys.left.isEmpty()) {
             statistics.incrementProcessed(categoryDrafts.size());
             return CompletableFuture.completedFuture(statistics);
         }
