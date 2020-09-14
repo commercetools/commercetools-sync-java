@@ -150,4 +150,16 @@ class ProductTypeReferenceResolverTest {
             .isCompletedWithValueMatching(resolvedDraft -> Objects.equals(resolvedDraft.getProductType(),
                 productBuilder.getProductType()));
     }
+
+    @Test
+    void resolveProductTypeReference_WithNullOnProductTypeReference_ShouldNotResolveReference() {
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType()
+            .productType(null)
+            .key("dummyKey");
+
+        assertThat(referenceResolver.resolveProductTypeReference(productBuilder).toCompletableFuture())
+            .hasNotFailed()
+            .isCompletedWithValueMatching(resolvedDraft -> Objects.equals(resolvedDraft.getProductType(),
+                productBuilder.getProductType()));
+    }
 }

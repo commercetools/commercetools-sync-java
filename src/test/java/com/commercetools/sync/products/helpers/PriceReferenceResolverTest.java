@@ -312,4 +312,47 @@ class PriceReferenceResolverTest {
         assertThat(referencesResolvedDraft.getChannel()).isNull();
         assertThat(referencesResolvedDraft.getCustomerGroup()).isNull();
     }
+
+    @Test
+    void resolveChannelReference_WithNullChannelReference_ShouldNotResolveReference() {
+        final ProductSyncOptions optionsWithEnsureChannels = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                                      .build();
+
+        final PriceDraftBuilder priceBuilder = PriceDraftBuilder
+            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+            .country(CountryCode.DE)
+            .channel((ResourceIdentifier<Channel>)null);
+
+        final PriceReferenceResolver priceReferenceResolver =
+            new PriceReferenceResolver(optionsWithEnsureChannels, typeService, channelService, customerGroupService);
+
+        // Test
+        final PriceDraftBuilder resolvedDraftBuilder = priceReferenceResolver.resolveChannelReference(priceBuilder)
+                                                                             .toCompletableFuture().join();
+
+        // Assertion
+        assertThat(resolvedDraftBuilder.getChannel()).isNull();
+    }
+
+    @Test
+    void resolveChannelReference_WithChannelReferenceWithId_ShouldNotResolveReference() {
+        final ProductSyncOptions optionsWithEnsureChannels = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                                                                                      .build();
+
+        final PriceDraftBuilder priceBuilder = PriceDraftBuilder
+            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+            .country(CountryCode.DE)
+            .channel(ResourceIdentifier.ofId("existing-id"));
+
+        final PriceReferenceResolver priceReferenceResolver =
+            new PriceReferenceResolver(optionsWithEnsureChannels, typeService, channelService, customerGroupService);
+
+        // Test
+        final PriceDraftBuilder resolvedDraftBuilder = priceReferenceResolver.resolveChannelReference(priceBuilder)
+                                                                             .toCompletableFuture().join();
+
+        // Assertion
+        assertThat(resolvedDraftBuilder.getChannel()).isNotNull();
+        assertThat(resolvedDraftBuilder.getChannel().getId()).isEqualTo("existing-id");
+    }
 }

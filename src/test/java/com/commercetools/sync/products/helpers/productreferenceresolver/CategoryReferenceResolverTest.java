@@ -37,6 +37,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.getMockStateS
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockTaxCategoryService;
 import static com.commercetools.sync.products.helpers.ProductReferenceResolver.CATEGORIES_DO_NOT_EXIST;
 import static com.commercetools.sync.products.helpers.ProductReferenceResolver.FAILED_TO_RESOLVE_REFERENCE;
+import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.lang.String.format;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
@@ -350,7 +351,7 @@ class CategoryReferenceResolverTest {
                                                                                .build();
         final CategoryService mockCategoryService = mockCategoryService(emptySet(), null);
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType()
-            .categories(singleton(ResourceIdentifier.ofId("existing-id")));
+            .categories(asSet(ResourceIdentifier.ofId("existing-id"), null));
 
         final ProductReferenceResolver productReferenceResolver = new ProductReferenceResolver(productSyncOptions,
             getMockProductTypeService(PRODUCT_TYPE_ID), mockCategoryService, getMockTypeService(),
