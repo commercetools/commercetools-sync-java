@@ -31,23 +31,39 @@ import static java.util.stream.Collectors.toList;
  * Util class which provides utilities that can be used when syncing resources from a source commercetools project
  * to a target one.
  */
-public final class ProductTypeReferenceReplacementUtils {
+public final class ProductTypeReferenceResolutionUtils {
 
     /**
-     * Takes a list of ProductTypes that are supposed to have their productType references (in case it has NestedType or
-     * set of NestedType) expanded in order to be able to fetch the keys and replace the reference ids with
-     * the corresponding keys and then return a new list of productType drafts with their references containing keys
-     * instead of the ids.
+     * Returns an {@link List}&lt;{@link ProductTypeDraft}&gt; consisting of the results of applying the
+     * mapping from {@link ProductType} to {@link ProductTypeDraft} with considering reference resolution.
+     *
+     * <table summary="Mapping of Reference fields for the reference resolution">
+     *   <thead>
+     *     <tr>
+     *       <th>Reference field</th>
+     *       <th>from</th>
+     *       <th>to</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *        <td>productType references (in case it has NestedType or set of NestedType)</td>
+     *        <td>{@link Set}&lt;{@link Reference}&lt;{@link ProductType}&gt;&gt;</td>
+     *        <td>{@link Set}&lt;{@link Reference}&lt;{@link ProductType}&gt;&gt; (with key replaced with id field)</td>
+     *     </tr>
+     *   </tbody>
+     * </table>
      *
      * <p><b>Note:</b>If some references are not expanded for an attributeDefinition of a productType, the method will
      * throw a {@link ReferenceReplacementException} containing the root causes of the exceptions that occurred in any
      * of the supplied {@code productTypes}.
      *
-     * @param productTypes the list of productTypes to replace the references on and convert to productTypeDrafts.
-     * @return a list of productType drafts with keys instead of ids for references.
+     * @param productTypes the product types with expanded references.
+     * @return a {@link List} of {@link ProductTypeDraft} built from the
+     *         supplied {@link List} of {@link ProductType}.
      */
     @Nonnull
-    public static List<ProductTypeDraft> replaceProductTypesReferenceIdsWithKeys(
+    public static List<ProductTypeDraft> mapToProductTypeDrafts(
         @Nonnull final List<ProductType> productTypes) {
 
         final Set<Throwable> errors = new HashSet<>();
@@ -224,7 +240,7 @@ public final class ProductTypeReferenceReplacementUtils {
         buildSetOfNestedTypeReferenceExpansionPath(final int maximumSetDepth) {
 
         return IntStream.rangeClosed(1, maximumSetDepth)
-                        .mapToObj(ProductTypeReferenceReplacementUtils::getExpansionPathForSetDepth)
+                        .mapToObj(ProductTypeReferenceResolutionUtils::getExpansionPathForSetDepth)
                         .collect(toList());
     }
 
@@ -236,6 +252,6 @@ public final class ProductTypeReferenceReplacementUtils {
         return ExpansionPath.of(format("attributes[*].type.%s.typeReference", elementTypePath));
     }
 
-    private ProductTypeReferenceReplacementUtils() {
+    private ProductTypeReferenceResolutionUtils() {
     }
 }

@@ -20,7 +20,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_REFERENCE;
 import static java.lang.String.format;
 import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -118,7 +118,7 @@ class StateReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format("Failed to resolve 'transition' reference on StateDraft with "
-                + "key:'%s'. Reason: %s", stateDraft.getKey(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+                + "key:'%s'. Reason: %s", stateDraft.getKey(), BLANK_ID_VALUE_ON_REFERENCE));
     }
 
     @Test
@@ -144,7 +144,7 @@ class StateReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format("Failed to resolve 'transition' reference on StateDraft with "
-                + "key:'%s'. Reason: %s", stateDraft.getKey(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+                + "key:'%s'. Reason: %s", stateDraft.getKey(), BLANK_ID_VALUE_ON_REFERENCE));
     }
 
     @Test

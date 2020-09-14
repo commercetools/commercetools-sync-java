@@ -38,17 +38,16 @@ references, those `key`s have to be supplied in the following way:
     - Provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the
     reference would return its `key`. 
      
-        **Note**: When syncing from a source commercetools project, you can use this util which this library provides: 
-         [`replaceProductTypesReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/1.9.1/com/commercetools/sync/producttypes/utils/ProductTypeReferenceReplacementUtils.html#replaceProductTypesReferenceIdsWithKeys-java.util.List-)
+        **Note**: When syncing from a source commercetools project, you can use [`mapToProductTypeDrafts`](https://commercetools.github.io/commercetools-sync-java/v/2.0.0/com/commercetools/sync/producttypes/utils/ProductTypeReferenceResolutionUtils.html#mapToProductTypeDrafts-java.util.List-)
          that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
          ````java
          // Puts the keys in the reference id fields to prepare for reference resolution
-         final List<ProductTypeDraft> productTypeDrafts = replaceProductTypesReferenceIdsWithKeys(productTypes);
+         final List<ProductTypeDraft> productTypeDrafts = ProductTypeReferenceResolutionUtils.mapToProductTypeDrafts(productTypes);
          ````
 
 3. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
-4. After the `sphereClient` is setup, a `ProductTypeSyncOptions` should be be built as follows:
+4. After the `sphereClient` is setup, a `ProductTypeSyncOptions` should be built as follows:
 ````java
 // instantiating a ProductTypeSyncOptions
 final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder.of(sphereClient).build();

@@ -2,6 +2,8 @@ package com.commercetools.sync.products.utils;
 
 import com.commercetools.sync.commons.helpers.CategoryReferencePair;
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
@@ -13,15 +15,16 @@ import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
+import io.sphere.sdk.products.attributes.Attribute;
 import io.sphere.sdk.products.expansion.ProductExpansionModel;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
+import io.sphere.sdk.types.Type;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -32,57 +35,112 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.getReferenceWithKeyReplaced;
-import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKeyReplaced;
+import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 import static java.util.stream.Collectors.toList;
 
 /**
  * Util class which provides utilities that can be used when syncing resources from a source commercetools project
  * to a target one.
  */
-public final class ProductReferenceReplacementUtils {
+public final class ProductReferenceResolutionUtils {
 
     /**
-     * Takes a list of Products that are supposed to have their product type, tax category, state, variants and category
-     * references expanded in order to be able to fetch the keys and replace the reference ids with the corresponding
-     * keys and then return a new list of product drafts with their references containing keys instead of the ids.
+     * Returns an {@link List}&lt;{@link ProductDraft}&gt; consisting of the results of applying the
+     * mapping from {@link Product} to {@link ProductDraft} with considering reference resolution.
      *
-     * <p><b>Note:</b>If the references are not expanded for a product, the reference ids will not be replaced with keys
-     * and will still have their ids in place.
+     * <table summary="Mapping of Reference fields for the reference resolution">
+     *   <thead>
+     *     <tr>
+     *       <th>Reference field</th>
+     *       <th>from</th>
+     *       <th>to</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *       <td>productType</td>
+     *       <td>{@link Reference}&lt;{@link ProductType}&gt;</td>
+     *       <td>{@link ResourceIdentifier}&lt;{@link ProductType}&gt;</td>
+     *     </tr>
+     *     <tr>
+     *        <td>categories</td>
+     *        <td>{@link Set}&lt;{@link Reference}&lt;{@link Category}&gt;&gt;</td>
+     *        <td>{@link Set}&lt;{@link ResourceIdentifier}&lt;{@link Category}&gt;&gt;</td>
+     *     </tr>
+     *     <tr>
+     *        <td>variants.prices.channel</td>
+     *        <td>{@link Reference}&lt;{@link Channel}&gt;</td>
+     *        <td>{@link ResourceIdentifier}&lt;{@link Channel}&gt;</td>
+     *     </tr>
+     *     <tr>
+     *        <td>variants.prices.customerGroup *</td>
+     *        <td>{@link Reference}&lt;{@link CustomerGroup}&gt;</td>
+     *        <td>{@link Reference}&lt;{@link CustomerGroup}&gt; (with key replaced with id field)</td>
+     *     </tr>
+     *     <tr>
+     *        <td>variants.prices.custom.type</td>
+     *        <td>{@link Reference}&lt;{@link Type}&gt;</td>
+     *        <td>{@link ResourceIdentifier}&lt;{@link Type}&gt;</td>
+     *     </tr>
+     *     <tr>
+     *        <td>variants.assets.custom.type</td>
+     *        <td>{@link Reference}&lt;{@link Type}&gt;</td>
+     *        <td>{@link ResourceIdentifier}&lt;{@link Type}&gt;</td>
+     *     </tr>
+     *     <tr>
+     *        <td>variants.attributes on {@link List}&lt;{@link Attribute} *</td>
+     *        <td>{@link Reference}&lt;{@link ProductType}&gt; (example for ProductType)</td>
+     *        <td>{@link Reference}&lt;{@link ProductType}&gt; (with key replaced with id field)</td>
+     *     </tr>
+     *     <tr>
+     *        <td>taxCategory</td>
+     *        <td>{@link Reference}&lt;{@link TaxCategory}&gt;</td>
+     *        <td>{@link ResourceIdentifier}&lt;{@link TaxCategory}&gt;</td>
+     *     </tr>
+     *     <tr>
+     *        <td>state *</td>
+     *        <td>{@link Reference}&lt;{@link State}&gt;</td>
+     *        <td>{@link Reference}&lt;{@link State}&gt; (with key replaced with id field)</td>
+     *     </tr>
+     *   </tbody>
+     * </table>
      *
-     * @param products the products to replace their reference ids with keys
-     * @return a list of products drafts with keys instead of ids for references.
+     * <p><b>Note:</b> The aforementioned references should be expanded with a key.
+     * Any reference that is not expanded will have its id in place and not replaced by the key will be
+     * considered as existing resources on the target commercetools project and
+     * the library will issues an update/create API request without reference resolution.
+     *
+     * @param products the products with expanded references.
+     * @return a {@link List} of {@link ProductDraft} built from the
+     *         supplied {@link List} of {@link Product}.
      */
     @Nonnull
-    public static List<ProductDraft> replaceProductsReferenceIdsWithKeys(@Nonnull final List<Product> products) {
+    public static List<ProductDraft> mapToProductDrafts(@Nonnull final List<Product> products) {
         return products
             .stream()
             .filter(Objects::nonNull)
             .map(product -> {
                 final ProductDraft productDraft = getDraftBuilderFromStagedProduct(product).build();
-                final ResourceIdentifier<ProductType> productTypeReferenceWithKey =
-                    replaceProductTypeReferenceIdWithKey(product);
-                final ResourceIdentifier<TaxCategory> taxCategoryReferenceWithKey =
-                    replaceTaxCategoryReferenceIdWithKey(product);
-                final Reference<State> stateReferenceWithKey = replaceProductStateReferenceIdWithKey(product);
 
-                final CategoryReferencePair categoryReferencePair = replaceCategoryReferencesIdsWithKeys(product);
+                final CategoryReferencePair categoryReferencePair = mapToCategoryReferencePair(product);
                 final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers =
                     categoryReferencePair.getCategoryResourceIdentifiers();
                 final CategoryOrderHints categoryOrderHintsWithKeys = categoryReferencePair.getCategoryOrderHints();
 
                 final List<ProductVariant> allVariants = product.getMasterData().getStaged().getAllVariants();
                 final List<ProductVariantDraft> variantDraftsWithKeys =
-                    VariantReferenceReplacementUtils.replaceVariantsReferenceIdsWithKeys(allVariants);
+                    VariantReferenceResolutionUtils.mapToProductVariantDrafts(allVariants);
                 final ProductVariantDraft masterVariantDraftWithKeys = variantDraftsWithKeys.remove(0);
 
                 return ProductDraftBuilder.of(productDraft)
                                           .masterVariant(masterVariantDraftWithKeys)
                                           .variants(variantDraftsWithKeys)
-                                          .productType(productTypeReferenceWithKey)
+                                          .productType(getResourceIdentifierWithKey(product.getProductType()))
                                           .categories(categoryResourceIdentifiers)
                                           .categoryOrderHints(categoryOrderHintsWithKeys)
-                                          .taxCategory(taxCategoryReferenceWithKey)
-                                          .state(stateReferenceWithKey)
+                                          .taxCategory(getResourceIdentifierWithKey(product.getTaxCategory()))
+                                          .state(getReferenceWithKeyReplaced(product.getState(),
+                                              () -> State.referenceOfId(product.getState().getObj().getKey())))
                                           .build();
             })
             .collect(Collectors.toList());
@@ -121,96 +179,18 @@ public final class ProductReferenceReplacementUtils {
             .categoryOrderHints(productData.getCategoryOrderHints());
     }
 
-    /**
-     * Takes a product that is supposed to have its ProductType reference expanded in order to be able to fetch the key
-     * and replace the reference id with the corresponding key and then return a new {@link ProductType}
-     * {@link ResourceIdentifier} containing the key in the id field.
-     *
-     * <p><b>Note:</b> The productType reference should be expanded for the {@code product}, otherwise the reference
-     * id will not be replaced with key and will still have the id in place.
-     *
-     * @param product the product to replace its ProductType reference id with the key.
-     *
-     * @return a new {@link ProductType} {@link ResourceIdentifier} containing the key in the id field.
-     */
-    @Nullable
-    @SuppressWarnings("ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
-    static ResourceIdentifier<ProductType> replaceProductTypeReferenceIdWithKey(@Nonnull final Product product) {
-        final Reference<ProductType> productType = product.getProductType();
-        return getResourceIdentifierWithKeyReplaced(productType,
-            () -> ResourceIdentifier.ofId(productType.getObj().getKey()));
-    }
-
-    /**
-     * Takes a product that is supposed to have its TaxCategory reference expanded in order to be able to fetch the key
-     * and replace the reference id with the corresponding key and then return a new {@link TaxCategory}
-     * {@link ResourceIdentifier} containing the key in the id field.
-     *
-     * <p><b>Note:</b> The TaxCategory reference should be expanded for the {@code product}, otherwise the reference
-     * id will not be replaced with the key and will still have the id in place.
-     *
-     * @param product the product to replace its TaxCategory reference id with the key.
-     *
-     * @return a new {@link TaxCategory} {@link ResourceIdentifier} containing the key in the id field.
-     */
-    @Nullable
-    @SuppressWarnings("ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
-    static ResourceIdentifier<TaxCategory> replaceTaxCategoryReferenceIdWithKey(@Nonnull final Product product) {
-
-        final Reference<TaxCategory> productTaxCategory = product.getTaxCategory();
-        return getResourceIdentifierWithKeyReplaced(productTaxCategory,
-            () -> ResourceIdentifier.ofId(productTaxCategory.getObj().getKey()));
-    }
-
-    /**
-     * Takes a product that is supposed to have its State reference expanded in order to be able to fetch the key
-     * and replace the reference id with the corresponding key and then return a new {@link State} {@link Reference}
-     * containing the key in the id field.
-     *
-     * <p><b>Note:</b> The State reference should be expanded for the {@code product}, otherwise the reference
-     * id will not be replaced with the key and will still have the id in place.
-     *
-     * @param product the product to replace its State reference id with the key.
-     *
-     * @return a new {@link State} {@link Reference} containing the key in the id field.
-     */
-    @Nullable
-    @SuppressWarnings("ConstantConditions") // NPE cannot occur due to being checked in replaceReferenceIdWithKey
-    static Reference<State> replaceProductStateReferenceIdWithKey(@Nonnull final Product product) {
-        final Reference<State> productState = product.getState();
-        return getReferenceWithKeyReplaced(productState,
-            () -> State.referenceOfId(productState.getObj().getKey()));
-    }
-
-    /**
-     * Takes a product that is supposed to have its category references expanded in order to be able to fetch the keys
-     * and replace the reference ids with the corresponding keys for both the product's category references and
-     * the categoryOrderHints ids. This method returns as a result a {@link CategoryReferencePair} that contains a
-     * {@link List} of category references with keys replacing the ids and a {@link CategoryOrderHints} with keys
-     * replacing the ids.
-     *
-     * <p>If the product's categoryOrderHints is null, then the resulting categoryOrderHints will be also null.
-     *
-     * <p>If the product's category references are not expanded the ids will not be replaced in both the category
-     * references and the categoryOrderHints and will be returned as is.
-     *
-     * @param product the product to replace its category references and CategoryOrderHints ids with keys.
-     * @return a {@link CategoryReferencePair} that contains a {@link List} of category resource identifiers with keys
-     *         replacing the ids and a {@link CategoryOrderHints} with keys replacing the ids.
-     */
     @Nonnull
-    static CategoryReferencePair replaceCategoryReferencesIdsWithKeys(@Nonnull final Product product) {
+    static CategoryReferencePair mapToCategoryReferencePair(@Nonnull final Product product) {
         final Set<Reference<Category>> categoryReferences = product.getMasterData().getStaged().getCategories();
         final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers = new HashSet<>();
 
         final CategoryOrderHints categoryOrderHints = product.getMasterData().getStaged().getCategoryOrderHints();
         final Map<String, String> categoryOrderHintsMapWithKeys = new HashMap<>();
 
-        categoryReferences.forEach(categoryReference ->
-            categoryResourceIdentifiers.add(
-                getResourceIdentifierWithKeyReplaced(categoryReference, () -> {
+        categoryReferences.forEach(categoryReference -> {
+            if (categoryReference != null) {
+                if (categoryReference.getObj() != null) {
                     final String categoryId = categoryReference.getId();
-                    @SuppressWarnings("ConstantConditions") // NPE is checked in replaceReferenceIdWithKey.
                     final String categoryKey = categoryReference.getObj().getKey();
 
                     if (categoryOrderHints != null) {
@@ -219,9 +199,12 @@ public final class ProductReferenceReplacementUtils {
                             categoryOrderHintsMapWithKeys.put(categoryKey, categoryOrderHintValue);
                         }
                     }
-                    return ResourceIdentifier.ofId(categoryKey);
-                }))
-        );
+                    categoryResourceIdentifiers.add(ResourceIdentifier.ofKey(categoryKey));
+                } else {
+                    categoryResourceIdentifiers.add(ResourceIdentifier.ofId(categoryReference.getId()));
+                }
+            }
+        });
 
         final CategoryOrderHints categoryOrderHintsWithKeys = categoryOrderHintsMapWithKeys.isEmpty()
             ? categoryOrderHints : CategoryOrderHints.of(categoryOrderHintsMapWithKeys);
@@ -238,6 +221,7 @@ public final class ProductReferenceReplacementUtils {
      *     <li>Staged Assets' Custom Types</li>
      *     <li>Staged Product Categories</li>
      *     <li>Staged Prices' Channels</li>
+     *     <li>Staged Prices' Customer Groups</li>
      *     <li>Staged Prices' Custom Types</li>
      *     <li>Reference Attributes</li>
      *     <li>Reference Set Attributes</li>
@@ -261,9 +245,11 @@ public final class ProductReferenceReplacementUtils {
                                expansionModel.masterData().staged().categories())
                            .plusExpansionPaths(expansionModel ->
                                expansionModel.masterData().staged().allVariants().prices().channel())
+                           .plusExpansionPaths(expansionModel ->
+                               expansionModel.masterData().staged().allVariants().prices().customerGroup())
                            .plusExpansionPaths(
                                ExpansionPath.of("masterData.staged.masterVariant.prices[*].custom.type"))
-                            .plusExpansionPaths(
+                           .plusExpansionPaths(
                                ExpansionPath.of("masterData.staged.variants[*].prices[*].custom.type"))
                            .plusExpansionPaths(expansionModel ->
                                expansionModel.masterData().staged().allVariants().attributes().value())
@@ -275,6 +261,6 @@ public final class ProductReferenceReplacementUtils {
                                ExpansionPath.of("masterData.staged.variants[*].assets[*].custom.type"));
     }
 
-    private ProductReferenceReplacementUtils() {
+    private ProductReferenceResolutionUtils() {
     }
 }

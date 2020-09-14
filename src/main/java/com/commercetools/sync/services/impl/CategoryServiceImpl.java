@@ -97,4 +97,3 @@ public final class CategoryServiceImpl extends BaseServiceWithKey<CategoryDraft,
         return updateResource(category, CategoryUpdateCommand::of, updateActions);
     }
 }
-

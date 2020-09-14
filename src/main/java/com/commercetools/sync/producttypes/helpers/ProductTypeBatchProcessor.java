@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_REFERENCE;
 import static java.lang.String.format;
 import static java.util.Collections.emptySet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -103,7 +103,7 @@ public class ProductTypeBatchProcessor {
             final String errorMessage = format(PRODUCT_TYPE_HAS_INVALID_REFERENCES, productTypeDraft.getKey(),
                 invalidAttributeDefinitionNames);
             throw new SyncException(errorMessage,
-                new InvalidReferenceException(BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+                new InvalidReferenceException(BLANK_ID_VALUE_ON_REFERENCE));
         }
 
         return referencedProductTypeKeys;
@@ -136,7 +136,7 @@ public class ProductTypeBatchProcessor {
 
         final String key = nestedAttributeType.getTypeReference().getId();
         if (isBlank(key)) {
-            throw new InvalidReferenceException(BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER);
+            throw new InvalidReferenceException(BLANK_ID_VALUE_ON_REFERENCE);
         }
         return key;
     }

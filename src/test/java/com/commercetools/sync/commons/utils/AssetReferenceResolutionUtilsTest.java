@@ -11,15 +11,15 @@ import java.util.UUID;
 
 import static com.commercetools.sync.commons.MockUtils.getAssetMockWithCustomFields;
 import static com.commercetools.sync.commons.MockUtils.getTypeMock;
-import static com.commercetools.sync.commons.utils.AssetReferenceReplacementUtils.replaceAssetsReferencesIdsWithKeys;
+import static com.commercetools.sync.commons.utils.AssetReferenceResolutionUtils.mapToAssetDrafts;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class AssetReferenceReplacementUtilsTest {
+class AssetReferenceResolutionUtilsTest {
 
     @Test
-    void replaceAssetsReferencesIdsWithKeys_WithAllExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
+    void mapToAssetDrafts_WithAllExpandedReferences_ShouldReturnReferencesWithReplacedKeys() {
         // preparation
         final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
 
@@ -27,18 +27,18 @@ class AssetReferenceReplacementUtilsTest {
             getAssetMockWithCustomFields(Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), customType));
 
         // test
-        final List<AssetDraft> referenceReplacedDrafts = replaceAssetsReferencesIdsWithKeys(singletonList(asset));
+        final List<AssetDraft> referenceReplacedDrafts = mapToAssetDrafts(singletonList(asset));
 
         // assertion
         referenceReplacedDrafts
             .forEach(referenceReplacedDraft -> {
                 assertThat(referenceReplacedDraft.getCustom()).isNotNull();
-                assertThat(referenceReplacedDraft.getCustom().getType().getId()).isEqualTo(customType.getKey());
+                assertThat(referenceReplacedDraft.getCustom().getType().getKey()).isEqualTo(customType.getKey());
             });
     }
 
     @Test
-    void replaceAssetsReferencesIdsWithKeys_WithSomeExpandedReferences_ShouldReplaceOnlyExpandedRefs() {
+    void mapToAssetDrafts_WithSomeExpandedReferences_ShouldReplaceOnlyExpandedRefs() {
         // preparation
         final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
 
@@ -49,19 +49,19 @@ class AssetReferenceReplacementUtilsTest {
                 UUID.randomUUID().toString()));
 
         // test
-        final List<AssetDraft> referenceReplacedDrafts = replaceAssetsReferencesIdsWithKeys(asList(asset1, asset2));
+        final List<AssetDraft> referenceReplacedDrafts = mapToAssetDrafts(asList(asset1, asset2));
 
         // assertion
         assertThat(referenceReplacedDrafts).hasSize(2);
         assertThat(referenceReplacedDrafts.get(0).getCustom()).isNotNull();
-        assertThat(referenceReplacedDrafts.get(0).getCustom().getType().getId()).isEqualTo(customType.getKey());
+        assertThat(referenceReplacedDrafts.get(0).getCustom().getType().getKey()).isEqualTo(customType.getKey());
         assertThat(referenceReplacedDrafts.get(1).getCustom()).isNotNull();
         assertThat(referenceReplacedDrafts.get(1).getCustom().getType().getId())
             .isEqualTo(asset2.getCustom().getType().getId());
     }
 
     @Test
-    void replaceAssetsReferencesIdsWithKeys_WithNonExpandedRefs_ShouldReturnReferencesWithoutReplacedKeys() {
+    void mapToAssetDrafts_WithNonExpandedRefs_ShouldReturnReferencesWithoutReplacedKeys() {
         // preparation
         final String customTypeId = UUID.randomUUID().toString();
 
@@ -69,7 +69,7 @@ class AssetReferenceReplacementUtilsTest {
             Reference.ofResourceTypeIdAndId(Type.referenceTypeId(), customTypeId));
 
         // test
-        final List<AssetDraft> referenceReplacedDrafts = replaceAssetsReferencesIdsWithKeys(singletonList(asset));
+        final List<AssetDraft> referenceReplacedDrafts = mapToAssetDrafts(singletonList(asset));
 
         // assertion
         referenceReplacedDrafts

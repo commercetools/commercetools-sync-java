@@ -51,8 +51,8 @@ import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtil
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
-import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.buildProductQuery;
-import static com.commercetools.sync.products.utils.ProductReferenceReplacementUtils.replaceProductsReferenceIdsWithKeys;
+import static com.commercetools.sync.products.utils.ProductReferenceResolutionUtils.buildProductQuery;
+import static com.commercetools.sync.products.utils.ProductReferenceResolutionUtils.mapToProductDrafts;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toMap;
@@ -162,7 +162,7 @@ class ProductSyncWithAssetsIT {
         final List<Product> products = CTP_SOURCE_CLIENT.execute(buildProductQuery())
                                                         .toCompletableFuture().join().getResults();
 
-        final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
+        final List<ProductDraft> productDrafts = mapToProductDrafts(products);
 
         final ProductSyncStatistics syncStatistics = productSync.sync(productDrafts).toCompletableFuture().join();
 
@@ -216,7 +216,7 @@ class ProductSyncWithAssetsIT {
         final List<Product> products = CTP_SOURCE_CLIENT.execute(buildProductQuery())
                                                         .toCompletableFuture().join().getResults();
 
-        final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
+        final List<ProductDraft> productDrafts = mapToProductDrafts(products);
 
         final ProductSyncStatistics syncStatistics = productSync.sync(productDrafts).toCompletableFuture().join();
 

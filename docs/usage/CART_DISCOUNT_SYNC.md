@@ -28,24 +28,19 @@ against a [CartDiscountDraft](https://docs.commercetools.com/http-api-projects-c
 cart discounts in the target CTP project. Also, the cart discounts in the target project are expected to have the `key`
 fields set, otherwise they won't be matched.
 
-2. Every cartDiscount may have a reference to the `Type` of its custom fields. Types are matched by their `key`s. 
-Therefore, in order for the sync to resolve the actual ids of those references in the target project, the `key` of the 
-`Type` has to be supplied in the following way:
-    
-    - Provide the `key` **value** on the `id` field of the reference. This means that calling `getId()` on the
-    reference should return its `key`.
+2. Every cartDiscount may have a reference to the `Type` of its custom fields. 
+Types are matched by their `key`s. Therefore, in order for the sync to resolve the 
+actual ids of the type reference, the `key` of the `Type` has to be supplied.
 
-   **Note**: When syncing from a source commercetools project, you can use this util which this library provides:
-    [`replaceCartDiscountsReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/1.9.1/com/commercetools/sync/cartdiscounts/utils/CartDiscountReferenceReplacementUtils.html#replaceCartDiscountsReferenceIdsWithKeys-java.util.List-)
-    that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
+   - When syncing from a source commercetools project, you can use [`mapToCartDiscountDrafts`](https://commercetools.github.io/commercetools-sync-java/v/2.0.0/com/commercetools/sync/cartdiscounts/utils/CartDiscountReferenceResolutionUtils.html#mapToCartDiscountDrafts-java.util.List-)
+    method that maps from a `CartDiscount` to `CartDiscountDraft` in order to make them ready for reference resolution by the sync:
     ````java
-    // Puts the keys in the reference id fields to prepare for reference resolution
-    final List<CartDiscountDraft> cartDiscountDrafts = replaceCartDiscountsReferenceIdsWithKeys(cartDiscounts);
+    final List<CartDiscountDraft> cartDiscountDrafts = CartDiscountReferenceResolutionUtils.mapToCartDiscountDrafts(cartDiscounts);
     ````
 
 3. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
-4. After the `sphereClient` is set up, a `CartDiscountSyncOptions` should be be built as follows:
+4. After the `sphereClient` is set up, a `CartDiscountSyncOptions` should be built as follows:
 ````java
 // instantiating a CartDiscountSyncOptions
 final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder.of(sphereClient).build();

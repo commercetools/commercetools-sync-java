@@ -34,21 +34,20 @@ otherwise they won't be matched.
 2. The sync expects all variants of the supplied list of `ProductDraft`s to have their `sku` fields set. Also,
 all the variants in the target project are expected to have the `sku` fields set.
 
-3. Every product may have several references including `product type`, `categories`, `taxCategory`, etc.. Variants
+3. Every product may have several references including `product type`, `categories`, `taxCategory`, etc. Variants
 of the product also have prices, where each price also has some references including a reference to the `Type` of its 
 custom fields and a reference to a `channel`. All these referenced resources are matched by their `key`s. Therefore, in 
 order for the sync to resolve the actual ids of those references, those `key`s have to be supplied in the following way:
-    - Provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the
-    reference would return its `key`. 
-     
-        **Note**: When syncing from a source commercetools project, you can use this util which this library provides: 
-         [`replaceProductsReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/1.9.1/com/commercetools/sync/products/utils/ProductReferenceReplacementUtils.html#replaceProductsReferenceIdsWithKeys-java.util.List-)
-         that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
-         ````java
-         // Puts the keys in the reference id fields to prepare for reference resolution
-         final List<ProductDraft> productDrafts = replaceProductsReferenceIdsWithKeys(products);
-         ````
-     
+
+    - When syncing from a source commercetools project, you can use [`mapToProductDrafts`](https://commercetools.github.io/commercetools-sync-java/v/2.0.0/com/commercetools/sync/products/utils/ProductReferenceResolutionUtils.html#mapToProductDrafts-java.util.List-)
+     method that maps from a `Product` to `ProductDraft` in order to make them ready for reference resolution by the sync:
+     ````java
+     final List<ProductDraft> productDrafts = ProductReferenceResolutionUtils.mapToProductDrafts(products);
+     ````
+     > Note: Some references in the product like `state`, `customerGroup` of prices, and variant attributes with type `reference` do not support the `ResourceIdentifier` yet, 
+      for those references you need to provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the
+      reference would return its `key`. 
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        >     
 4. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
 5. After the `sphereClient` is set up, a `ProductSyncOptions` should be built as follows: 

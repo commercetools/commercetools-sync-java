@@ -15,6 +15,7 @@ import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifiable;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Price;
@@ -112,7 +113,7 @@ public class ProductSyncMockUtils {
      *         JSON resource and the product type.
      */
     public static ProductDraftBuilder createProductDraftBuilder(@Nonnull final String jsonResourcePath,
-                                                                @Nonnull final Reference<ProductType>
+                                                                @Nonnull final ResourceIdentifiable<ProductType>
                                                                     productTypeReference) {
         final Product productFromJson = readObjectFromResource(jsonResourcePath, Product.class);
         final ProductData productData = productFromJson.getMasterData().getStaged();
@@ -183,8 +184,8 @@ public class ProductSyncMockUtils {
     }
 
     public static ProductDraft createProductDraft(@Nonnull final String jsonResourcePath,
-                                                  @Nonnull final Reference<ProductType> productTypeReference,
-                                                  @Nullable final Reference<TaxCategory> taxCategoryReference,
+                                                  @Nonnull final ResourceIdentifiable<ProductType> productTypeReference,
+                                                  @Nullable final ResourceIdentifier<TaxCategory> taxCategoryReference,
                                                   @Nullable final Reference<State> stateReference,
                                                   @Nonnull final Set<ResourceIdentifier<Category>>
                                                       categoryResourceIdentifiers,
@@ -348,21 +349,24 @@ public class ProductSyncMockUtils {
     }
 
     /**
-     * Creates a mock {@link Price} with the supplied {@link Channel} {@link Reference} and custom {@link Type}
-     * {@link Reference}.
+     * Creates a mock {@link Price} with the supplied {@link Channel} {@link Reference},
+     * {@link CustomerGroup} {@link Reference}, and custom {@link Type} {@link Reference}.
      *
      * <p>If the supplied {@code customTypeReference} is {@code null}, no custom fields are stubbed on the
      * resulting price mock.
      *
      * @param channelReference    the channel reference to attach on the mock {@link Price}.
      * @param customTypeReference the custom type reference to attach on the mock {@link Price}.
+     * @param customerGroupReference  the custom type reference to attach on the mock {@link Price}.
      * @return a mock price with the supplied references.
      */
     @Nonnull
     public static Price getPriceMockWithReferences(@Nullable final Reference<Channel> channelReference,
-                                                   @Nullable final Reference<Type> customTypeReference) {
+                                                   @Nullable final Reference<Type> customTypeReference,
+                                                   @Nullable final Reference<CustomerGroup> customerGroupReference) {
         final Price price = mock(Price.class);
         when(price.getChannel()).thenReturn(channelReference);
+        when(price.getCustomerGroup()).thenReturn(customerGroupReference);
 
         return ofNullable(customTypeReference)
             .map(typeReference -> {
@@ -471,25 +475,17 @@ public class ProductSyncMockUtils {
         return reference;
     }
 
+
     @Nonnull
-    public static ProductDraftBuilder getBuilderWithProductTypeRefId(@Nonnull final String refId) {
-        return ProductDraftBuilder.of(ProductType.referenceOfId(refId),
+    public static ProductDraftBuilder getBuilderWithProductTypeRefKey(@Nullable final String refKey) {
+        return ProductDraftBuilder.of(ResourceIdentifier.ofKey(refKey),
             LocalizedString.ofEnglish("testName"),
             LocalizedString.ofEnglish("testSlug"),
             (ProductVariantDraft) null);
     }
 
     @Nonnull
-    public static ProductDraftBuilder getBuilderWithRandomProductTypeUuid() {
-        return getBuilderWithProductTypeRefId(UUID.randomUUID().toString());
-    }
-
-    @Nonnull
-    public static ProductDraftBuilder getBuilderWithProductTypeRef(
-        @Nonnull final Reference<ProductType> reference) {
-        return ProductDraftBuilder.of(reference,
-            LocalizedString.ofEnglish("testName"),
-            LocalizedString.ofEnglish("testSlug"),
-            (ProductVariantDraft) null);
+    public static ProductDraftBuilder getBuilderWithRandomProductType() {
+        return getBuilderWithProductTypeRefKey("anyKey");
     }
 }

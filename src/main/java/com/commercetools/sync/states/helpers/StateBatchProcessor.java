@@ -14,7 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_REFERENCE;
 import static java.lang.String.format;
 import static java.util.Collections.emptySet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -97,7 +97,7 @@ public class StateBatchProcessor {
         if (!invalidStates.isEmpty()) {
             final String errorMessage = format(STATE_HAS_INVALID_REFERENCES, stateDraft.getKey());
             throw new InvalidStateDraftException(errorMessage,
-                new InvalidReferenceException(BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+                new InvalidReferenceException(BLANK_ID_VALUE_ON_REFERENCE));
         }
         return referencedStateKeys;
     }
@@ -108,7 +108,7 @@ public class StateBatchProcessor {
 
         final String key = stateReference.getId();
         if (isBlank(key)) {
-            throw new InvalidReferenceException(BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER);
+            throw new InvalidReferenceException(BLANK_ID_VALUE_ON_REFERENCE);
         }
         return key;
     }
