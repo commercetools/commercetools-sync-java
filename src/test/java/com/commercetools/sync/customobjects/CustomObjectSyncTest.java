@@ -1,6 +1,5 @@
 package com.commercetools.sync.customobjects;
 
-import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.customobjects.helpers.CustomObjectSyncStatistics;
 import com.commercetools.sync.services.CustomObjectService;
 import com.fasterxml.jackson.databind.JsonNode;
