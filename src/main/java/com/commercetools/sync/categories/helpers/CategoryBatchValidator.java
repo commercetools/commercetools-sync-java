@@ -93,7 +93,8 @@ public class CategoryBatchValidator {
 
     private boolean validateParentCategory(final ResourceIdentifier<Category> parent, final String categoryDraftKey) {
         if (isBlank(parent.getKey())) {
-            handleError(new SyncException(new ReferenceResolutionException(format(PARENT_CATEGORY_KEY_NOT_SET, categoryDraftKey))));
+            handleError(new SyncException(
+                    new ReferenceResolutionException(format(PARENT_CATEGORY_KEY_NOT_SET, categoryDraftKey))));
             return false;
         }
 
