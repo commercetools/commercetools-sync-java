@@ -102,7 +102,7 @@ class CustomObjectSyncUtilsTest {
 
     @Test
     void hasIdenticalValue_WithSameFieldAndDifferentValueInJsonNode_ShouldNotBeIdentical() {
-        
+
         ObjectNode oldValue = JsonNodeFactory.instance.objectNode().put("username", "Peter");
         ObjectNode newValue = JsonNodeFactory.instance.objectNode().put("username", "Joe");
         prepareMockObjects(oldValue, newValue);
