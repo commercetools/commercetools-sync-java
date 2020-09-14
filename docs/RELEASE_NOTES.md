@@ -34,8 +34,9 @@
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.0.1/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.0.1)
   
+--> 
 
-### 2.0.0 - (todo (ahmetoz) add release date here before the release.), 2020
+### 2.0.0 - Sept 14, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.9.1...2.0.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.0.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.0.0)
@@ -58,9 +59,12 @@
 - ✨ **Enhancements** (1)        
     -  The library will fail fast for the non-existing references that found during the reference resolution. [#219](https://github.com/commercetools/commercetools-sync-java/issues/219)
 
-// todo (ahmetoz) add dependency updates.
+- 🛠️ **Dependency Updates** (4)
+    - `org.assertj.assertj-core` `3.16.0` ->  [`3.17.2`](https://assertj.github.io/doc/#assertj-core-3-17-2-release-notes)
+    - `commercetools-jvm-sdk` `1.52.0` -> [`1.53.0`](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_53_0)
+    - `mockito-junit-jupiter` `3.4.4` -> [`3.5.10`](https://github.com/mockito/mockito/releases/tag/v3.5.10)
+    - `com.github.ben-manes.versions` `0.29.0` -> [`0.30.0`](https://github.com/ben-manes/gradle-versions-plugin/releases/tag/v0.30.0) 
 
---> 
 ### 1.9.1 -  Aug 5, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.9.0...1.9.1) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.9.1/) | 
