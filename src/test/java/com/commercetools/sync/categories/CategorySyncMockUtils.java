@@ -202,7 +202,7 @@ public class CategorySyncMockUtils {
     /**
      * Given a {@code locale}, {@code name}, {@code slug}, {@code key}, {@code description},
      * {@code metaDescription}, {@code metaTitle}, {@code metaKeywords}, {@code orderHint} and
-     * {@code parentKey}; this method creates a  {@link CategoryDraftBuilder} with mocked all those supplied fields.
+     * {@code parentId}; this method creates a  {@link CategoryDraftBuilder} with mocked all those supplied fields.
      * All the supplied arguments are given as {@link String} and the method internally converts them
      * to their required types.
      * For example, for all the fields that require a {@link LocalizedString} as a value type; the method creates an

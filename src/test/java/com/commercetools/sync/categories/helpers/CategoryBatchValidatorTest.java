@@ -2,6 +2,7 @@ package com.commercetools.sync.categories.helpers;
 
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
+import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.ResourceIdentifier;
@@ -94,7 +95,10 @@ class CategoryBatchValidatorTest {
         final ImmutablePair<Set<CategoryDraft>, Set<String>> draftsAndKeys = categoryBatchValidator.validateAndCollectValidDraftsAndKeys(Collections.singletonList(categoryDraft));
 
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo(format(PARENT_CATEGORY_KEY_NOT_SET, categoryDraft.getKey()));
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("%s: Parent category reference of CategoryDraft " +
+                        "with key '%s' has " +
+                        "no key set. Please make sure parent category has a key.",
+                ReferenceResolutionException.class.getCanonicalName(), "key"));
         assertThat(draftsAndKeys.left).isEmpty();
         assertThat(draftsAndKeys.right).isEmpty();
     }
@@ -107,7 +111,10 @@ class CategoryBatchValidatorTest {
         final ImmutablePair<Set<CategoryDraft>, Set<String>> draftsAndKeys = categoryBatchValidator.validateAndCollectValidDraftsAndKeys(Collections.singletonList(categoryDraft));
 
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo(format(PARENT_CATEGORY_KEY_NOT_SET, categoryDraft.getKey()));
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("%s: Parent category reference of CategoryDraft " +
+                        "with key '%s' has " +
+                        "no key set. Please make sure parent category has a key.",
+                ReferenceResolutionException.class.getCanonicalName(), "key"));
         assertThat(draftsAndKeys.left).isEmpty();
         assertThat(draftsAndKeys.right).isEmpty();
     }
