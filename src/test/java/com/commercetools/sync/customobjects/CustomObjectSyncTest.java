@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
@@ -128,5 +129,29 @@ public class CustomObjectSyncTest {
         // assertion
         verify(spyCustomObjectSyncOptions).applyBeforeCreateCallback(newCustomObjectDraft);
         verify(spyCustomObjectSyncOptions, never()).applyBeforeUpdateCallback(any(), any(), any());
+    }
+
+    @Test
+    void sync_WitEmptyValidDrafts_ShouldFailed() {
+        final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder
+                .of(mock(SphereClient.class))
+                .build();
+
+        final CustomObjectService customObjectService = mock(CustomObjectService.class);
+        when(customObjectService.fetchMatchingCustomObjects(anySet())).thenReturn(completedFuture(emptySet()));
+        when(customObjectService.upsertCustomObject(any())).thenReturn(completedFuture(Optional.empty()));
+
+        final CustomObjectSyncOptions spyCustomObjectSyncOptions = spy(customObjectSyncOptions);
+
+        // test
+        CustomObjectSyncStatistics syncStatistics =  new CustomObjectSync(
+                spyCustomObjectSyncOptions, customObjectService).sync(
+                    singletonList(null)).toCompletableFuture().join();
+
+        // assertion
+        assertThat(syncStatistics.getProcessed().get()).isEqualTo(1);
+        assertThat(syncStatistics.getCreated().get()).isEqualTo(0);
+        assertThat(syncStatistics.getFailed().get()).isEqualTo(1);
+
     }
 }

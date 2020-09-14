@@ -6,7 +6,6 @@ import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentif
 import com.commercetools.sync.customobjects.helpers.CustomObjectSyncStatistics;
 import com.commercetools.sync.customobjects.utils.CustomObjectSyncUtils;
 import com.commercetools.sync.services.CustomObjectService;
-import com.commercetools.sync.services.impl.CustomObjectServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
@@ -29,7 +28,6 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * This class syncs custom object drafts with the corresponding custom objects in the CTP project.
@@ -41,7 +39,6 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
             "Failed to fetch existing customObjects with keys: '%s'.";
     private static final String CTP_CUSTOM_OBJECT_UPSERT_FAILED =
             "Failed to create/update customObjects with key: '%s'. Reason: %s";
-    private static final String CUSTOM_OBJECT_DRAFT_HAS_NO_KEY = "Failed to process customObject draft without key.";
     private static final String CUSTOM_OBJECT_DRAFT_IS_NULL = "Failed to process null customObject draft.";
 
     private final CustomObjectService customObjectService;
@@ -63,10 +60,6 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
 
         super(new CustomObjectSyncStatistics(), syncOptions);
         this.customObjectService = customObjectService;
-    }
-
-    public CustomObjectSync(@Nonnull final CustomObjectSyncOptions syncOptions) {
-        this(syncOptions, new CustomObjectServiceImpl(syncOptions));
     }
 
     /**
@@ -150,12 +143,9 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
     private boolean validateDraft(@Nullable final CustomObjectDraft draft) {
         if (draft == null) {
             handleError(CUSTOM_OBJECT_DRAFT_IS_NULL, null, 1);
-        } else if (isBlank(draft.getKey())) {
-            handleError(CUSTOM_OBJECT_DRAFT_HAS_NO_KEY, null, 1);
-        } else {
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 
     /**
