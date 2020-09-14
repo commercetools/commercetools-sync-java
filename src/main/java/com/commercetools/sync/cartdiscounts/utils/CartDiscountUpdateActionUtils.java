@@ -123,7 +123,7 @@ public final class CartDiscountUpdateActionUtils {
             return Optional.of(ChangeValue.of(newValue));
         }
 
-        final boolean allOldValuesFoundInNewValues = oldValue.getMoney().stream().allMatch(oldAmount -> 
+        final boolean allOldValuesFoundInNewValues = oldValue.getMoney().stream().allMatch(oldAmount ->
                 newValue.getMoney().stream()
                         .filter(newAmount -> newAmount.getCurrency().equals(oldAmount.getCurrency()))
                         .anyMatch(newAmount -> newAmount.isEqualTo(oldAmount)));

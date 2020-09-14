@@ -6,7 +6,6 @@ import com.commercetools.sync.commons.helpers.BaseReferenceResolver;
 import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.states.StateSyncOptions;
 import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateDraft;
 import io.sphere.sdk.states.StateDraftBuilder;
@@ -71,13 +70,13 @@ public final class StateReferenceResolver extends BaseReferenceResolver<StateDra
     private CompletionStage<StateDraftBuilder> resolveTransitionReferences(
         @Nonnull final StateDraftBuilder draftBuilder) {
 
-        final Set<Reference<State>> stateResourceIdentifiers = draftBuilder.getTransitions();
+        final Set<Reference<State>> stateReferences = draftBuilder.getTransitions();
         final Set<String> stateKeys = new HashSet<>();
-        if (stateResourceIdentifiers != null) {
-            for (ResourceIdentifier<State> stateResourceIdentifier : stateResourceIdentifiers) {
-                if (stateResourceIdentifier != null) {
+        if (stateReferences != null) {
+            for (Reference<State> stateReference : stateReferences) {
+                if (stateReference != null) {
                     try {
-                        final String stateKey = getKeyFromResourceIdentifier(stateResourceIdentifier);
+                        final String stateKey = getIdFromReference(stateReference);
                         stateKeys.add(stateKey);
                     } catch (ReferenceResolutionException referenceResolutionException) {
                         return exceptionallyCompletedFuture(

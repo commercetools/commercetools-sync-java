@@ -413,7 +413,7 @@ class VariantReferenceResolverTest {
     @Test
     void resolveAssetsReferences_WithAssetReferences_ShouldResolveAssets() {
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
-            .ofTypeIdAndJson("customTypeId", new HashMap<>());
+            .ofTypeKeyAndJson("customTypeId", new HashMap<>());
 
         final AssetDraft assetDraft = AssetDraftBuilder
             .of(emptyList(), ofEnglish("assetName"))
@@ -462,7 +462,7 @@ class VariantReferenceResolverTest {
     @Test
     void resolvePricesReferences_WithPriceReferences_ShouldResolvePrices() {
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
-            .ofTypeIdAndJson("customTypeId", new HashMap<>());
+            .ofTypeKeyAndJson("customTypeId", new HashMap<>());
 
         final PriceDraft priceDraft = PriceDraftBuilder
             .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))

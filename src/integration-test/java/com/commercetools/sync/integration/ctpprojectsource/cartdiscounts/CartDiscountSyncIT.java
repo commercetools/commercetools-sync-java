@@ -29,8 +29,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.cartdiscounts.utils.CartDiscountReferenceReplacementUtils.buildCartDiscountQuery;
-import static com.commercetools.sync.cartdiscounts.utils.CartDiscountReferenceReplacementUtils.replaceCartDiscountsReferenceIdsWithKeys;
+import static com.commercetools.sync.cartdiscounts.utils.CartDiscountReferenceResolutionUtils.buildCartDiscountQuery;
+import static com.commercetools.sync.cartdiscounts.utils.CartDiscountReferenceResolutionUtils.mapToCartDiscountDrafts;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.createCartDiscountCustomType;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.deleteCartDiscountsFromTargetAndSource;
@@ -66,7 +66,7 @@ class CartDiscountSyncIT {
             .execute(buildCartDiscountQuery())
             .toCompletableFuture().join().getResults();
 
-        final List<CartDiscountDraft> cartDiscountDrafts = replaceCartDiscountsReferenceIdsWithKeys(cartDiscounts);
+        final List<CartDiscountDraft> cartDiscountDrafts = mapToCartDiscountDrafts(cartDiscounts);
 
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> exceptions = new ArrayList<>();
@@ -108,18 +108,18 @@ class CartDiscountSyncIT {
         final Type newTargetCustomType = createCartDiscountCustomType(newTypeKey, Locale.ENGLISH, newTypeKey,
             CTP_TARGET_CLIENT);
 
-        final List<CartDiscountDraft> cartDiscountsReferenceIdsWithKeys =
-            replaceCartDiscountsReferenceIdsWithKeys(cartDiscounts);
+        final List<CartDiscountDraft> cartDiscountDrafts =
+            mapToCartDiscountDrafts(cartDiscounts);
 
         // Apply some changes
-        final List<CartDiscountDraft> cartDiscountDrafts = cartDiscountsReferenceIdsWithKeys
+        final List<CartDiscountDraft> updatedCartDiscountDrafts = cartDiscountDrafts
             .stream()
             .map(draft -> CartDiscountDraftBuilder
                 .of(draft)
                 .cartPredicate(CartPredicate.of("totalPrice >= \"100 EUR\""))
                 .value(AbsoluteCartDiscountValue.of(MoneyImpl.of(40, EUR)))
                 .target(ShippingCostTarget.of())
-                .custom(CustomFieldsDraft.ofTypeIdAndJson(newTypeKey, emptyMap()))
+                .custom(CustomFieldsDraft.ofTypeKeyAndJson(newTypeKey, emptyMap()))
                 .build())
             .collect(Collectors.toList());
 
@@ -143,7 +143,7 @@ class CartDiscountSyncIT {
 
         // test
         final CartDiscountSyncStatistics cartDiscountSyncStatistics = cartDiscountSync
-            .sync(cartDiscountDrafts)
+            .sync(updatedCartDiscountDrafts)
             .toCompletableFuture().join();
 
         // assertion

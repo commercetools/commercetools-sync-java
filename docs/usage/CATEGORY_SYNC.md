@@ -30,22 +30,16 @@ against a [CategoryDraft](https://docs.commercetools.com/http-api-projects-categ
 categories in the target CTP project. Also, the categories in the target project are expected to have the `key` fields set,
 otherwise they won't be matched.
 
-2. Every category may have a reference to a `parent category` and a reference to the `Type` of its custom fields. Categories 
-   and Types are matched by their `key`s. Therefore, in order for the sync to resolve the 
-    actual ids of those references, the `key` of the `Type`/parent `Category` has to be supplied in the following way:
-    - Provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the
-    reference would return its `key`.  
-
-   **Note**: When syncing from a source commercetools project, you can use this util which this library provides: 
-    [`replaceCategoriesReferenceIdsWithKeys`](https://commercetools.github.io/commercetools-sync-java/v/1.9.1/com/commercetools/sync/categories/utils/CategoryReferenceReplacementUtils.html#replaceCategoriesReferenceIdsWithKeys-java.util.List-)
-    that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
-    ````java
-    // Puts the keys in the reference id fields to prepare for reference resolution
-    final List<CategoryDraft> categoryDrafts = replaceCategoriesReferenceIdsWithKeys(categories);
-    ````
-     
-   Example of its usage can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/categories/CategorySyncIT.java#L130).
-
+2. Every category may have a reference to a `parent category` and a reference to the `Type` of its custom fields. 
+These references are matched by their `key`s. Therefore, in order for the sync to resolve the 
+actual ids of the references, their `key`s has to be supplied.
+ 
+   - When syncing from a source commercetools project, you can use [`mapToCategoryDrafts`](https://commercetools.github.io/commercetools-sync-java/v/2.0.0/com/commercetools/sync/categories/utils/CategoryReferenceResolutionUtils.html#mapToCategoryDrafts-java.util.List-)
+     method that maps from a `Category` to `CategoryDraft` in order to make them ready for reference resolution by the sync:
+     ````java     
+     final List<CategoryDraft> categoryDrafts = CategoryReferenceResolutionUtils.mapToCategoryDrafts(categories);
+     ````
+  
 3. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
 4. After the `sphereClient` is set up, a `CategorySyncOptions` should be built as follows: 

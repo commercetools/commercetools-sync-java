@@ -46,6 +46,7 @@ public final class CategoryServiceImpl extends BaseServiceWithKey<CategoryDraft,
     @Nonnull
     @Override
     public CompletionStage<Map<String, String>> cacheKeysToIds() {
+
         if (isCached) {
             return CompletableFuture.completedFuture(keyToIdCache);
         }
@@ -63,7 +64,8 @@ public final class CategoryServiceImpl extends BaseServiceWithKey<CategoryDraft,
             });
 
         return CtpQueryUtils
-            .queryAll(syncOptions.getCtpClient(), CategoryQuery.of(), categoryPageConsumer)
+            .queryAll(syncOptions.getCtpClient(), CategoryQuery.of(),
+                categoryPageConsumer)
             .thenAccept(result -> isCached = true)
             .thenApply(result -> keyToIdCache);
     }

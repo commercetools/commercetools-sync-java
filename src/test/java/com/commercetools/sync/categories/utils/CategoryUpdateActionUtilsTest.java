@@ -196,7 +196,7 @@ class CategoryUpdateActionUtilsTest {
         final CategoryDraft newCategoryDraft = mock(CategoryDraft.class);
         when(newCategoryDraft.getParent()).thenReturn(ResourceIdentifier.ofId("2"));
 
-        final UpdateAction<Category> changeParentUpdateAction =
+        final UpdateAction<Category> changeParentUpdateAction = // parent id is 1.
             buildChangeParentUpdateAction(MOCK_OLD_CATEGORY, newCategoryDraft, CATEGORY_SYNC_OPTIONS).orElse(null);
 
         assertThat(changeParentUpdateAction).isNotNull();

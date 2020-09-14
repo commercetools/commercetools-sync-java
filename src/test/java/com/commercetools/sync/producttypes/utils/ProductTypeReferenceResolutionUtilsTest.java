@@ -17,8 +17,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static com.commercetools.sync.producttypes.utils.ProductTypeReferenceReplacementUtils.buildProductTypeQuery;
-import static com.commercetools.sync.producttypes.utils.ProductTypeReferenceReplacementUtils.replaceProductTypesReferenceIdsWithKeys;
+import static com.commercetools.sync.producttypes.utils.ProductTypeReferenceResolutionUtils.buildProductTypeQuery;
+import static com.commercetools.sync.producttypes.utils.ProductTypeReferenceResolutionUtils.mapToProductTypeDrafts;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -29,34 +29,34 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-class ProductTypeReferenceReplacementUtilsTest {
+class ProductTypeReferenceResolutionUtilsTest {
 
     @Test
-    void replaceProductTypesReferenceIdsWithKeys_WithEmptyList_ShouldReturnEmptyList() {
+    void mapToProductDrafts_WithEmptyList_ShouldReturnEmptyList() {
         // preparation
         final List<ProductType> productTypes = emptyList();
 
         // test
-        final List<ProductTypeDraft> productTypeDrafts = replaceProductTypesReferenceIdsWithKeys(productTypes);
+        final List<ProductTypeDraft> productTypeDrafts = mapToProductTypeDrafts(productTypes);
 
         // assertion
         assertThat(productTypeDrafts).isEmpty();
     }
 
     @Test
-    void replaceProductTypesReferenceIdsWithKeys_WithNullProductType_ShouldReturnEmptyList() {
+    void mapToProductDrafts_WithNullProductType_ShouldReturnEmptyList() {
         // preparation
         final List<ProductType> productTypes = singletonList(null);
 
         // test
-        final List<ProductTypeDraft> productTypeDrafts = replaceProductTypesReferenceIdsWithKeys(productTypes);
+        final List<ProductTypeDraft> productTypeDrafts = mapToProductTypeDrafts(productTypes);
 
         // assertion
         assertThat(productTypeDrafts).isEmpty();
     }
 
     @Test
-    void replaceProductTypesReferenceIdsWithKeys_WithProductTypeWithNoAttributeDefs_ShouldReturnProductType() {
+    void mapToProductDrafts_WithProductTypeWithNoAttributeDefs_ShouldReturnProductType() {
         // preparation
         final ProductType productTypeFoo = mock(ProductType.class);
         when(productTypeFoo.getKey()).thenReturn("foo");
@@ -65,14 +65,14 @@ class ProductTypeReferenceReplacementUtilsTest {
         final List<ProductType> productTypes = singletonList(productTypeFoo);
 
         // test
-        final List<ProductTypeDraft> productTypeDrafts = replaceProductTypesReferenceIdsWithKeys(productTypes);
+        final List<ProductTypeDraft> productTypeDrafts = mapToProductTypeDrafts(productTypes);
 
         // assertion
         assertThat(productTypeDrafts).containsExactly(ProductTypeDraftBuilder.of(productTypeFoo).build());
     }
 
     @Test
-    void replaceProductTypesReferenceIdsWithKeys_WithNoReferences_ShouldReturnCorrectProductTypeDrafts() {
+    void mapToProductDrafts_WithNoReferences_ShouldReturnCorrectProductTypeDrafts() {
         final AttributeDefinition stringAttr = AttributeDefinitionBuilder
             .of("a", ofEnglish("a"), StringAttributeType.of())
             .build();
@@ -93,7 +93,7 @@ class ProductTypeReferenceReplacementUtilsTest {
         final List<ProductType> productTypes = asList(productTypeFoo, productTypeBar);
 
         // test
-        final List<ProductTypeDraft> productTypeDrafts = replaceProductTypesReferenceIdsWithKeys(productTypes);
+        final List<ProductTypeDraft> productTypeDrafts = mapToProductTypeDrafts(productTypes);
 
         // assertion
         assertThat(productTypeDrafts).containsExactly(
@@ -102,7 +102,7 @@ class ProductTypeReferenceReplacementUtilsTest {
     }
 
     @Test
-    void replaceProductTypesReferenceIdsWithKeys_WithProductTypeWithAnExpandedRefNestedType_ShouldReplaceRef() {
+    void mapToProductDrafts_WithProductTypeWithAnExpandedRefNestedType_ShouldReplaceRef() {
         // preparation
         final ProductType referencedProductType = mock(ProductType.class);
         when(referencedProductType.getKey()).thenReturn("referencedProductType");
@@ -120,7 +120,7 @@ class ProductTypeReferenceReplacementUtilsTest {
         final List<ProductType> productTypes = singletonList(productType);
 
         // test
-        final List<ProductTypeDraft> productTypeDrafts = replaceProductTypesReferenceIdsWithKeys(productTypes);
+        final List<ProductTypeDraft> productTypeDrafts = mapToProductTypeDrafts(productTypes);
 
         // assertion
         assertThat(productTypeDrafts)
@@ -132,7 +132,7 @@ class ProductTypeReferenceReplacementUtilsTest {
     }
 
     @Test
-    void replaceProductTypesReferenceIdsWithKeys_WithProductTypeWithNonExpandedRefNestedType_ShouldFail() {
+    void mapToProductDrafts_WithProductTypeWithNonExpandedRefNestedType_ShouldFail() {
         // preparation
         final Reference<ProductType> productTypeReference = ProductType.referenceOfId("referencedProductType");
 
@@ -147,7 +147,7 @@ class ProductTypeReferenceReplacementUtilsTest {
         final List<ProductType> productTypes = singletonList(productType);
 
         // test
-        assertThatThrownBy(() -> replaceProductTypesReferenceIdsWithKeys(productTypes))
+        assertThatThrownBy(() -> mapToProductTypeDrafts(productTypes))
             .isExactlyInstanceOf(ReferenceReplacementException.class)
             .hasMessageContaining("Some errors occurred during reference replacement.")
             .hasMessageContaining("Failed to replace some references on the productType with key 'withNestedTypeAttr'")
@@ -156,7 +156,7 @@ class ProductTypeReferenceReplacementUtilsTest {
     }
 
     @Test
-    void replaceProductTypesReferenceIdsWithKeys_WithSetOfNestedType_ShouldReplaceRef() {
+    void mapToProductDrafts_WithSetOfNestedType_ShouldReplaceRef() {
         // preparation
         final ProductType referencedProductType = mock(ProductType.class);
         when(referencedProductType.getKey()).thenReturn("referencedProductType");
@@ -176,7 +176,7 @@ class ProductTypeReferenceReplacementUtilsTest {
         final List<ProductType> productTypes = singletonList(productType);
 
         // test
-        final List<ProductTypeDraft> productTypeDrafts = replaceProductTypesReferenceIdsWithKeys(productTypes);
+        final List<ProductTypeDraft> productTypeDrafts = mapToProductTypeDrafts(productTypes);
 
         // assertion
         assertThat(productTypeDrafts)
@@ -189,7 +189,7 @@ class ProductTypeReferenceReplacementUtilsTest {
     }
 
     @Test
-    void replaceProductTypesReferenceIdsWithKeys_WithSetOfNestedTypeNonExpanded_ShouldFail() {
+    void mapToProductDrafts_WithSetOfNestedTypeNonExpanded_ShouldFail() {
         // preparation
         final Reference<ProductType> productTypeReference = ProductType.referenceOfId("referencedProductType");
 
@@ -205,7 +205,7 @@ class ProductTypeReferenceReplacementUtilsTest {
         final List<ProductType> productTypes = singletonList(productType);
 
         // test
-        assertThatThrownBy(() -> replaceProductTypesReferenceIdsWithKeys(productTypes))
+        assertThatThrownBy(() -> mapToProductTypeDrafts(productTypes))
             .isExactlyInstanceOf(ReferenceReplacementException.class)
             .hasMessageContaining("Some errors occurred during reference replacement. Causes:\n")
             .hasMessageContaining("\tFailed to replace some references on the productType with key 'withNestedTypeAttr'"
@@ -215,7 +215,7 @@ class ProductTypeReferenceReplacementUtilsTest {
     }
 
     @Test
-    void replaceProductTypesReferenceIdsWithKeys_WithNestedTypeWithSetOfSet_ShouldReplaceRef() {
+    void mapToProductDrafts_WithNestedTypeWithSetOfSet_ShouldReplaceRef() {
         // preparation
         final ProductType referencedProductType = mock(ProductType.class);
         when(referencedProductType.getKey()).thenReturn("referencedProductType");
@@ -237,7 +237,7 @@ class ProductTypeReferenceReplacementUtilsTest {
         final List<ProductType> productTypes = singletonList(productType);
 
         // test
-        final List<ProductTypeDraft> productTypeDrafts = replaceProductTypesReferenceIdsWithKeys(productTypes);
+        final List<ProductTypeDraft> productTypeDrafts = mapToProductTypeDrafts(productTypes);
 
         // assertion
         assertThat(productTypeDrafts)
@@ -251,7 +251,7 @@ class ProductTypeReferenceReplacementUtilsTest {
     }
 
     @Test
-    void replaceProductTypesReferenceIdsWithKeys_WithProductTypeWithNonExpandedSetOfRefNestedType_ShouldFail() {
+    void mapToProductDrafts_WithProductTypeWithNonExpandedSetOfRefNestedType_ShouldFail() {
         // preparation
         final Reference<ProductType> productTypeReference = ProductType.referenceOfId("referencedProductType");
 
@@ -266,7 +266,7 @@ class ProductTypeReferenceReplacementUtilsTest {
         final List<ProductType> productTypes = singletonList(productType);
 
         // test
-        assertThatThrownBy(() -> replaceProductTypesReferenceIdsWithKeys(productTypes))
+        assertThatThrownBy(() -> mapToProductTypeDrafts(productTypes))
             .isExactlyInstanceOf(ReferenceReplacementException.class)
             .hasMessageContaining("Some errors occurred during reference replacement. Causes:\n")
             .hasMessageContaining("\tFailed to replace some references on the productType with key 'withNestedTypeAttr'"
@@ -276,7 +276,7 @@ class ProductTypeReferenceReplacementUtilsTest {
     }
 
     @Test
-    void replaceProductTypesReferenceIdsWithKeys_WithNestedTypeWithSetOfSetOfSet_ShouldReplaceRef() {
+    void mapToProductDrafts_WithNestedTypeWithSetOfSetOfSet_ShouldReplaceRef() {
         // preparation
         final ProductType referencedProductType = mock(ProductType.class);
         when(referencedProductType.getKey()).thenReturn("referencedProductType");
@@ -299,7 +299,7 @@ class ProductTypeReferenceReplacementUtilsTest {
         final List<ProductType> productTypes = singletonList(productType);
 
         // test
-        final List<ProductTypeDraft> productTypeDrafts = replaceProductTypesReferenceIdsWithKeys(productTypes);
+        final List<ProductTypeDraft> productTypeDrafts = mapToProductTypeDrafts(productTypes);
 
         // assertion
         assertThat(productTypeDrafts)

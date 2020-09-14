@@ -33,18 +33,38 @@
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/2.0.0...2.0.1) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.0.1/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.0.1)
--->
+  
+--> 
 
-<!--### 2.0.0 -  Aug 21, 2020
+### 2.0.0 - Sept 14, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.9.1...2.0.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.0.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.0.0)
 
-- 🚧 **Breaking Changes** (1)
-    - **Refactoring of the error- and warning callbacks** - The signatures of the error- and warning callbacks was changed.
-        From now on the resource draft of the source project, the resource of the target-project and optinally the failed update actions
-        are passed to the callbacks. [#107](https://github.com/commercetools/commercetools-sync-java/issues/107)
--->
+- 🚧 **Breaking Changes** (2)
+    - Sync options:
+        - The signatures of the `errorCallback` and `warningCallback` changed and their parameter lists are extended.
+            From now on the resource draft of the source project, the resource of the target project and optionally the failed update actions
+            passed to the callbacks. Refer [sync options](./usage/SYNC_OPTIONS.md) for more details. [#107](https://github.com/commercetools/commercetools-sync-java/issues/107)
+    - Reference resolution utilities:
+        - **Commons** - Renamed `replaceCustomTypeIdWithKeys` to `mapToCustomFieldsDraft`. [#138](https://github.com/commercetools/commercetools-sync-java/issues/138)
+        - **Commons** - Renamed `replaceAssetsReferencesIdsWithKeys` to `mapToAssetDrafts`. [#138](https://github.com/commercetools/commercetools-sync-java/issues/138)
+        - **Category Sync** - Renamed `replaceCategoriesReferenceIdsWithKeys` to `mapToCategoryDrafts`. [#138](https://github.com/commercetools/commercetools-sync-java/issues/138)
+        - **CartDiscount Sync** - Renamed `replaceCartDiscountsReferenceIdsWithKeys` to `mapToCartDiscountDrafts`. [#138](https://github.com/commercetools/commercetools-sync-java/issues/138)
+        - **Inventory Sync** - Renamed `replaceInventoriesReferenceIdsWithKeys` to `mapToInventoryEntryDrafts`. [#138](https://github.com/commercetools/commercetools-sync-java/issues/138)     
+        - **Product Sync** - Renamed `replaceProductsReferenceIdsWithKeys` to `mapToProductDrafts`. [#138](https://github.com/commercetools/commercetools-sync-java/issues/138)
+        - **State Sync** - Renamed `replaceStateReferenceIdsWithKeys` to `mapToStateDrafts`. [#138](https://github.com/commercetools/commercetools-sync-java/issues/138)
+        - **ProductType Sync** - Renamed `replaceProductTypesReferenceIdsWithKeys` to `mapToProductTypeDrafts`. [#138](https://github.com/commercetools/commercetools-sync-java/issues/138)
+
+- ✨ **Enhancements** (1)        
+    -  The library will fail fast for the non-existing references that found during the reference resolution. [#219](https://github.com/commercetools/commercetools-sync-java/issues/219)
+
+- 🛠️ **Dependency Updates** (4)
+    - `commercetools-jvm-sdk` `1.52.0` -> [`1.53.0`](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_53_0)
+    - `org.assertj.assertj-core` `3.16.0` ->  [`3.17.2`](https://assertj.github.io/doc/#assertj-core-3-17-2-release-notes)
+    - `junit.jupiterApiVersion` `5.6.2` ->  [`5.7.0`](https://github.com/junit-team/junit5/releases/tag/r5.7.0)
+    - `mockito-junit-jupiter` `3.4.4` -> [`3.5.10`](https://github.com/mockito/mockito/releases/tag/v3.5.10)
+    - `com.github.ben-manes.versions` `0.29.0` -> [`0.33.0`](https://github.com/ben-manes/gradle-versions-plugin/releases/tag/v0.33.0) 
 
 ### 1.9.1 -  Aug 5, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.9.0...1.9.1) |
