@@ -20,17 +20,17 @@
 <dependency>
   <groupId>com.commercetools.sdk.jvm.core</groupId>
   <artifactId>commercetools-models</artifactId>
-  <version>1.52.0</version>
+  <version>1.53.0</version>
 </dependency>
 <dependency>
   <groupId>com.commercetools.sdk.jvm.core</groupId>
   <artifactId>commercetools-java-client</artifactId>
-  <version>1.52.0</version>
+  <version>1.53.0</version>
 </dependency>
 <dependency>
   <groupId>com.commercetools.sdk.jvm.core</groupId>
   <artifactId>commercetools-convenience</artifactId>
-  <version>1.52.0</version>
+  <version>1.53.0</version>
 </dependency>
 
 <!-- Add commercetools-sync-java dependency. -->
@@ -43,9 +43,9 @@
 - For Gradle users:
 ````groovy
 // Add commercetools-jvm-sdk dependencies.
-implementation 'com.commercetools.sdk.jvm.core:commercetools-models:1.52.0'
-implementation 'com.commercetools.sdk.jvm.core:commercetools-java-client:1.52.0'
-implementation 'com.commercetools.sdk.jvm.core:commercetools-convenience:1.52.0'
+implementation 'com.commercetools.sdk.jvm.core:commercetools-models:1.53.0'
+implementation 'com.commercetools.sdk.jvm.core:commercetools-java-client:1.53.0'
+implementation 'com.commercetools.sdk.jvm.core:commercetools-convenience:1.53.0'
 
 // Add commercetools-sync-java dependency.
 implementation 'com.commercetools:commercetools-sync-java:2.0.0'
@@ -57,8 +57,10 @@ implementation 'com.commercetools:commercetools-sync-java:2.0.0'
  final Logger logger = LoggerFactory.getLogger(MySync.class);
  final ProductSyncOptions productsyncOptions = ProductSyncOptionsBuilder
                                  .of(sphereClient)
-                                 .errorCallback(logger::error)
-                                 .warningCallback(logger::warn)
+                                 .errorCallback((syncException, draft, product, updateActions) -> 
+                                    logger.error(syncException.getMessage(), syncException))
+                                 .warningCallback((exception, oldResource, newResources) -> 
+                                    logger.warn(exception.getMessage(), exception))
                                  .build();
  ```
  
