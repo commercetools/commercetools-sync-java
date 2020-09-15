@@ -265,7 +265,7 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
         @Nonnull final CustomObject<JsonNode> oldCustomObject,
         @Nonnull final CustomObjectDraft<JsonNode> newCustomObject) {
 
-        if (CustomObjectSyncUtils.hasIdenticalValue(oldCustomObject, newCustomObject)) {
+        if (!CustomObjectSyncUtils.hasIdenticalValue(oldCustomObject, newCustomObject)) {
             return customObjectService
                 .upsertCustomObject(newCustomObject)
                 .handle(ImmutablePair::new)
