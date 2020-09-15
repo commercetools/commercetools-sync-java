@@ -38,8 +38,8 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
 
     private static final String CTP_CUSTOM_OBJECT_FETCH_FAILED =
         "Failed to fetch existing custom objects with keys: '%s'.";
-    private static final String CTP_CUSTOM_OBJECT_UPSERT_FAILED =
-        "Failed to create/update custom objects with key: '%s'. Reason: %s";
+    private static final String CTP_CUSTOM_OBJECT_UPDATE_FAILED =
+        "Failed to update custom object with key: '%s'. Reason: %s";
     private static final String CUSTOM_OBJECT_DRAFT_IS_NULL = "Failed to process null custom object draft.";
 
     private final CustomObjectService customObjectService;
@@ -277,7 +277,7 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
                             () -> fetchAndUpdate(oldCustomObject, newCustomObject),
                             () -> {
                                 final String errorMessage =
-                                    format(CTP_CUSTOM_OBJECT_UPSERT_FAILED,
+                                    format(CTP_CUSTOM_OBJECT_UPDATE_FAILED,
                                         CustomObjectCompositeIdentifier.of(newCustomObject).toString(),
                                         sphereException.getMessage());
                                 handleError(errorMessage, sphereException, 1,
@@ -309,7 +309,7 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
                 final Throwable exception = fetchResponse.getValue();
 
                 if (exception != null) {
-                    final String errorMessage = format(CTP_CUSTOM_OBJECT_UPSERT_FAILED, identifier.toString(),
+                    final String errorMessage = format(CTP_CUSTOM_OBJECT_UPDATE_FAILED, identifier.toString(),
                         "Failed to fetch from CTP while retrying after concurrency modification.");
                     handleError(errorMessage, exception, 1, oldCustomObject, customObjectDraft);
                     return CompletableFuture.completedFuture(Optional.empty());
@@ -318,7 +318,7 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
                     .map(fetchedCustomObject -> updateCustomObject(fetchedCustomObject, customObjectDraft))
                     .orElseGet(() -> {
                         final String errorMessage =
-                            format(CTP_CUSTOM_OBJECT_UPSERT_FAILED, identifier.toString(),
+                            format(CTP_CUSTOM_OBJECT_UPDATE_FAILED, identifier.toString(),
                                 "Not found when attempting to fetch while retrying "
                                     + "after concurrency modification.");
                         handleError(errorMessage, null, 1,
