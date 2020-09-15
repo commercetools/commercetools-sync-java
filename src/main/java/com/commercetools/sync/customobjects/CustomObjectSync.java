@@ -202,16 +202,16 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
         @Nonnull final Set<CustomObject<JsonNode>> oldCustomObjects,
         @Nonnull final Set<CustomObjectDraft<JsonNode>> newCustomObjectDrafts) {
 
-        final Map<CustomObjectCompositeIdentifier, CustomObject<JsonNode>> oldCustomObjectMap =
+        final Map<String, CustomObject<JsonNode>> oldCustomObjectMap =
             oldCustomObjects.stream().collect(
                 toMap(customObject -> CustomObjectCompositeIdentifier.of(
-                    customObject.getKey(), customObject.getContainer()), identity()));
+                    customObject.getKey(), customObject.getContainer()).toString(), identity()));
 
         return CompletableFuture.allOf(newCustomObjectDrafts
             .stream()
             .map(newCustomObjectDraft -> {
                 final CustomObject<JsonNode> oldCustomObject = oldCustomObjectMap.get(
-                    CustomObjectCompositeIdentifier.of(newCustomObjectDraft));
+                    CustomObjectCompositeIdentifier.of(newCustomObjectDraft).toString());
                 return ofNullable(oldCustomObject)
                     .map(customObject -> updateCustomObject(oldCustomObject, newCustomObjectDraft))
                     .orElseGet(() -> applyCallbackAndCreate(newCustomObjectDraft));
