@@ -52,7 +52,7 @@ abstract class BaseServiceWithKey<T extends WithKey, U extends Resource<U> & Wit
      * @param draft         the resource draft to create a resource based off of.
      * @param createCommand a function to get the create command using the supplied draft.
      * @return a {@link CompletionStage} containing an optional with the created resource if successful otherwise an
-     * empty optional.
+     *     empty optional.
      */
     @Nonnull
     CompletionStage<Optional<U>> createResource(
@@ -74,8 +74,8 @@ abstract class BaseServiceWithKey<T extends WithKey, U extends Resource<U> & Wit
      * @param key           the key by which a resource id should be fetched from the CTP project.
      * @param querySupplier supplies the query to fetch the resource with the given key.
      * @return {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt; in which the result of it's
-     * completion could contain an {@link Optional} with the id inside of it or an empty {@link Optional} if no
-     * resource was found in the CTP project with this key.
+     *     completion could contain an {@link Optional} with the id inside of it or an empty {@link Optional} if no
+     *     resource was found in the CTP project with this key.
      */
     @Nonnull
     CompletionStage<Optional<String>> fetchCachedResourceId(
@@ -115,7 +115,7 @@ abstract class BaseServiceWithKey<T extends WithKey, U extends Resource<U> & Wit
      * @param keys          set of state keys to fetch matching states by
      * @param querySupplier supplies the query to fetch the resources with the given keys.
      * @return {@link CompletionStage}&lt;{@link Set}&lt;{@code U}&gt;&gt; in which the result of it's completion
-     * contains a {@link Set} of all matching resources.
+     *     contains a {@link Set} of all matching resources.
      */
     @Nonnull
     CompletionStage<Set<U>> fetchMatchingResources(

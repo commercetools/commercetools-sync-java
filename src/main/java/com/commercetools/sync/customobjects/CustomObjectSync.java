@@ -71,7 +71,7 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
      *
      * @param customObjectDrafts {@link List} of {@link CustomObjectDraft}'s that would be synced into CTP project.
      * @return {@link CompletionStage} with {@link CustomObjectSyncStatistics} holding statistics of all sync
-     * processes performed by this sync instance.
+     *     processes performed by this sync instance.
      */
     protected CompletionStage<CustomObjectSyncStatistics> process(
         @Nonnull final List<CustomObjectDraft<JsonNode>> customObjectDrafts) {

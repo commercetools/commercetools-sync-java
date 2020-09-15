@@ -111,7 +111,8 @@ public class BaseSyncOptions<U, V> {
      * which is set to {@code this} instance of the {@link BaseSyncOptions}. If there {@code errorCallback} is null,
      * this method does nothing.
      *
-     * @param exception        {@link Throwable} instance to supply as first param to the {@code errorCallback} function.
+     * @param exception        {@link Throwable} instance to supply as first param to the {@code errorCallback}
+     *                         function.
      * @param oldResource      the old resource that is being compared to the new draft.
      * @param newResourceDraft the new resource draft that is being compared to the old resource.
      * @param updateActions    the list of update actions.
@@ -147,7 +148,7 @@ public class BaseSyncOptions<U, V> {
      * batches and then processed. It allows to reduce the query size for fetching all resources processed in one
      * batch.
      * E.g. value of 30 means that 30 entries from input list would be accumulated and one API call will be performed
-     * for fetching entries responding to them. Then comparision and sync are performed.
+     * for fetching entries responding to them. Then comparison and sync are performed.
      *
      * <p>This batch size is set to 30 by default.
      *
@@ -164,8 +165,8 @@ public class BaseSyncOptions<U, V> {
      * generated list of update actions to produce a resultant list after the filter function has been applied.
      *
      * @return the {@code beforeUpdateCallback} {@link TriFunction}&lt;{@link List}&lt;{@link UpdateAction}&lt;
-     * {@code U}&gt;&gt;, {@code V}, {@code U}, {@link List}&lt;{@link UpdateAction}&lt;{@code U}&gt;&gt;&gt;
-     * function set to {@code this} {@link BaseSyncOptions}.
+     *     {@code U}&gt;&gt;, {@code V}, {@code U}, {@link List}&lt;{@link UpdateAction}&lt;{@code U}&gt;&gt;&gt;
+     *     function set to {@code this} {@link BaseSyncOptions}.
      */
     @Nullable
     public TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>> getBeforeUpdateCallback() {
@@ -197,9 +198,9 @@ public class BaseSyncOptions<U, V> {
      * @param newResourceDraft the new resource draft that is being compared to the old resource.
      * @param oldResource      the old resource that is being compared to the new draft.
      * @return a list of update actions after applying the {@code beforeUpdateCallback} function on. If the
-     * {@code beforeUpdateCallback} function is null or {@code updateActions} is empty, the supplied list of
-     * {@code updateActions} is returned as is. If the return of the callback is null, an empty list is
-     * returned.
+     *     {@code beforeUpdateCallback} function is null or {@code updateActions} is empty, the supplied list of
+     *     {@code updateActions} is returned as is. If the return of the callback is null, an empty list is
+     *     returned.
      */
     @Nonnull
     public List<UpdateAction<U>> applyBeforeUpdateCallback(@Nonnull final List<UpdateAction<U>> updateActions,
@@ -224,8 +225,8 @@ public class BaseSyncOptions<U, V> {
      *
      * @param newResourceDraft the new resource draft that should be created.
      * @return an optional containing the resultant resource draft after applying the {@code beforeCreateCallback}
-     * function on. If the {@code beforeCreateCallback} function is null, the supplied resource draft is
-     * returned as is, wrapped in an optional.
+     *     function on. If the {@code beforeCreateCallback} function is null, the supplied resource draft is
+     *     returned as is, wrapped in an optional.
      */
     @Nonnull
     public Optional<V> applyBeforeCreateCallback(@Nonnull final V newResourceDraft) {
