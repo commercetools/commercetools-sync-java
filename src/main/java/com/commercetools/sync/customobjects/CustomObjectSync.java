@@ -37,10 +37,10 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
     CustomObjectSyncStatistics, CustomObjectSyncOptions> {
 
     private static final String CTP_CUSTOM_OBJECT_FETCH_FAILED =
-        "Failed to fetch existing customObjects with keys: '%s'.";
+        "Failed to fetch existing custom objects with keys: '%s'.";
     private static final String CTP_CUSTOM_OBJECT_UPSERT_FAILED =
-        "Failed to create/update customObjects with key: '%s'. Reason: %s";
-    private static final String CUSTOM_OBJECT_DRAFT_IS_NULL = "Failed to process null customObject draft.";
+        "Failed to create/update custom objects with key: '%s'. Reason: %s";
+    private static final String CUSTOM_OBJECT_DRAFT_IS_NULL = "Failed to process null custom object draft.";
 
     private final CustomObjectService customObjectService;
 
