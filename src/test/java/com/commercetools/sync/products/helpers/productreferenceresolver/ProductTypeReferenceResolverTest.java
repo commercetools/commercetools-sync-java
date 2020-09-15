@@ -25,7 +25,6 @@ import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockC
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithProductTypeRefKey;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithRandomProductType;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomObjectService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductTypeService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockStateService;
@@ -45,7 +44,6 @@ class ProductTypeReferenceResolverTest {
     private static final String TAX_CATEGORY_ID = "taxCategoryId";
     private static final String STATE_ID = "stateId";
     private static final String PRODUCT_ID = "productId";
-    private static final String CUSTOM_OBJECT_ID = "customObjectId";
 
     private ProductTypeService productTypeService;
     private ProductReferenceResolver referenceResolver;
@@ -62,7 +60,7 @@ class ProductTypeReferenceResolverTest {
             getMockTypeService(), getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)),
             mock(CustomerGroupService.class),
             getMockTaxCategoryService(TAX_CATEGORY_ID), getMockStateService(STATE_ID),
-            getMockProductService(PRODUCT_ID), getMockCustomObjectService(CUSTOM_OBJECT_ID));
+            getMockProductService(PRODUCT_ID));
     }
 
     @Test
@@ -145,6 +143,18 @@ class ProductTypeReferenceResolverTest {
     void resolveProductTypeReference_WithIdOnProductTypeReference_ShouldNotResolveReference() {
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType()
             .productType(ResourceIdentifier.ofId("existing-id"))
+            .key("dummyKey");
+
+        assertThat(referenceResolver.resolveProductTypeReference(productBuilder).toCompletableFuture())
+            .hasNotFailed()
+            .isCompletedWithValueMatching(resolvedDraft -> Objects.equals(resolvedDraft.getProductType(),
+                productBuilder.getProductType()));
+    }
+
+    @Test
+    void resolveProductTypeReference_WithNullOnProductTypeReference_ShouldNotResolveReference() {
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType()
+            .productType(null)
             .key("dummyKey");
 
         assertThat(referenceResolver.resolveProductTypeReference(productBuilder).toCompletableFuture())

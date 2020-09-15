@@ -4,6 +4,7 @@ import com.commercetools.sync.cartdiscounts.CartDiscountSync;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
 import com.commercetools.sync.cartdiscounts.helpers.CartDiscountSyncStatistics;
+import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -270,6 +271,42 @@ class CartDiscountSyncIT {
             .isEqualTo("Summary: 1 cart discounts were processed in total"
                 + " (0 created, 1 updated and 0 failed to sync).");
         assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 1, 0);
+    }
+
+    @Test
+    void sync_WithUpdatedCartDiscount_WithNonExistingResIdentifier_ShouldFailToResolveReference() {
+        // preparation
+        final CartDiscountDraft newCartDiscountDraftWithExistingKey =
+            CartDiscountDraftBuilder.of(CART_DISCOUNT_DRAFT_1)
+                                    .custom(CustomFieldsDraft.ofTypeKeyAndJson("not-existing-key", emptyMap()))
+                                    .build();
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+
+        final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .errorCallback((exception, oldResource, newResource, actions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception);
+            })
+            .build();
+
+        final CartDiscountSync cartDiscountSync = new CartDiscountSync(cartDiscountSyncOptions);
+
+        // test
+        final CartDiscountSyncStatistics cartDiscountSyncStatistics = cartDiscountSync
+            .sync(singletonList(newCartDiscountDraftWithExistingKey))
+            .toCompletableFuture()
+            .join();
+
+        //assertions
+        assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(errorMessages).containsExactly(
+            "Failed to process the CartDiscountDraft with key:'key_1'. Reason: "
+                + ReferenceResolutionException.class.getCanonicalName() + ": "
+                + "Failed to resolve custom type reference on CartDiscountDraft with key:'key_1'. "
+                + "Reason: Type with key 'not-existing-key' doesn't exist.");
     }
 
     @Test

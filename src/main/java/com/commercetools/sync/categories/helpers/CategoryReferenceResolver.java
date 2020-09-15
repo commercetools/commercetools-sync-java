@@ -129,7 +129,7 @@ public final class CategoryReferenceResolver
         @Nullable final ResourceIdentifier<Category> parentCategoryResourceIdentifier,
         @Nullable final String categoryKey) throws ReferenceResolutionException {
 
-        if (parentCategoryResourceIdentifier != null) {
+        if (parentCategoryResourceIdentifier != null && parentCategoryResourceIdentifier.getId() == null) {
             try {
                 final String parentKey = getKeyFromResourceIdentifier(parentCategoryResourceIdentifier);
                 return Optional.of(parentKey);

@@ -38,7 +38,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.commons.helpers.CustomReferenceResolver.TYPE_DOES_NOT_EXIST;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_NAME;
@@ -356,23 +355,6 @@ class CategorySyncIT {
                                                                   .toCompletableFuture().join();
 
         assertThat(syncStatistics).hasValues(1, 1, 0, 0, 0);
-    }
-
-    @Test
-    void syncDrafts_WithNewCategoryWithParentReferencedOnlyById_ShouldNotCreateCategory() {
-        // Category draft coming from external source.
-        final CategoryDraft categoryDraft = CategoryDraftBuilder
-            .of(LocalizedString.of(Locale.ENGLISH, "Modern Furniture"),
-                LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
-            .key("newCategory")
-            .parent(ResourceIdentifier.ofId("parentId"))
-            .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CATEGORY_CUSTOM_TYPE_KEY, createCustomFieldsJsonMap()))
-            .build();
-
-        final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
-            .toCompletableFuture().join();
-        assertThat(errorCallBackMessages.get(0)).contains( "Reason: " + BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER);
-        assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
     }
 
     @Test

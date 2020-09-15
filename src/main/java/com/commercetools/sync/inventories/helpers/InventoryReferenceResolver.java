@@ -84,7 +84,7 @@ public final class InventoryReferenceResolver
             @Nonnull final InventoryEntryDraftBuilder draftBuilder) {
 
         final ResourceIdentifier<Channel> channelReference = draftBuilder.getSupplyChannel();
-        if (channelReference != null) {
+        if (channelReference != null && channelReference.getId() == null) {
             try {
                 final String channelKey = getKeyFromResourceIdentifier(channelReference);
                 return fetchOrCreateAndResolveReference(draftBuilder, channelKey);

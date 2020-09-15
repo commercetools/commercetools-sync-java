@@ -115,7 +115,7 @@ class InventoryReferenceResolverTest {
     @Test
     void resolveCustomTypeReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
         final InventoryEntryDraftBuilder draftBuilder = InventoryEntryDraftBuilder
-            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(UUID_KEY))
+            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, ResourceIdentifier.ofId(UUID_KEY))
             .custom(CustomFieldsDraft.ofTypeKeyAndJson(CUSTOM_TYPE_KEY, new HashMap<>()));
 
         when(typeService.fetchCachedTypeId(anyString()))
@@ -139,7 +139,7 @@ class InventoryReferenceResolverTest {
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
         final InventoryEntryDraftBuilder draftBuilder = InventoryEntryDraftBuilder
-            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(CHANNEL_KEY))
+            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, ResourceIdentifier.ofKey(CHANNEL_KEY))
             .custom(CustomFieldsDraft.ofTypeKeyAndJson(CUSTOM_TYPE_KEY, new HashMap<>()));
 
         final InventoryReferenceResolver referenceResolver =
@@ -160,9 +160,10 @@ class InventoryReferenceResolverTest {
 
     @Test
     void resolveSupplyChannelReference_WithEmptyIdOnSupplyChannelReference_ShouldNotResolveChannelReference() {
-        final InventoryEntryDraft draft = InventoryEntryDraft
-            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(""))
-            .withCustom(CustomFieldsDraft.ofTypeKeyAndJson(CUSTOM_TYPE_KEY, new HashMap<>()));
+        final InventoryEntryDraft draft = InventoryEntryDraftBuilder
+            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, ResourceIdentifier.ofKey(""))
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson(CUSTOM_TYPE_KEY, new HashMap<>()))
+            .build();
 
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(syncOptions, typeService, channelService);
@@ -199,22 +200,20 @@ class InventoryReferenceResolverTest {
     }
 
     @Test
-    void resolveCustomTypeReference_WithEmptyIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
-        final InventoryEntryDraftBuilder draftBuilder = InventoryEntryDraftBuilder
-            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, Channel.referenceOfId(CHANNEL_KEY))
-            .custom(CustomFieldsDraft.ofTypeKeyAndJson("", new HashMap<>()));
+    void resolveSupplyChannelReference_WithResolvedSupplyChannelReference_ShouldNotResolveChannelReference() {
+        final InventoryEntryDraft draft = InventoryEntryDraftBuilder
+            .of(SKU, QUANTITY, DATE_1, RESTOCKABLE_IN_DAYS, ResourceIdentifier.ofId(CHANNEL_ID))
+            .build();
 
         final InventoryReferenceResolver referenceResolver =
             new InventoryReferenceResolver(syncOptions, typeService, channelService);
 
-        referenceResolver.resolveCustomTypeReference(draftBuilder)
-                         .exceptionally(exception -> {
-                             assertThat(exception).isExactlyInstanceOf(ReferenceResolutionException.class);
-                             assertThat(exception.getMessage())
-                                 .isEqualTo(format("Failed to resolve custom type resource identifier on "
-                                     + "InventoryEntryDraft with SKU:'1000'. Reason: %s",
-                                     BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
-                             return null;
+        referenceResolver.resolveSupplyChannelReference(InventoryEntryDraftBuilder.of(draft))
+                         .thenApply(InventoryEntryDraftBuilder::build)
+                         .thenAccept(resolvedDraft -> {
+                             assertThat(resolvedDraft.getSupplyChannel()).isNotNull();
+                             assertThat(resolvedDraft.getSupplyChannel().getId()).isEqualTo(CHANNEL_ID);
                          }).toCompletableFuture().join();
+
     }
 }

@@ -1,7 +1,6 @@
 package com.commercetools.sync.products;
 
 import com.commercetools.sync.services.CategoryService;
-import com.commercetools.sync.services.CustomObjectService;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
@@ -33,6 +32,7 @@ import io.sphere.sdk.states.State;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.Type;
+
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -487,21 +487,5 @@ public class ProductSyncMockUtils {
     @Nonnull
     public static ProductDraftBuilder getBuilderWithRandomProductType() {
         return getBuilderWithProductTypeRefKey("anyKey");
-    }
-
-    /**
-     * Creates a mock {@link CustomObjectService} that returns a completed {@link CompletableFuture} containing an
-     * {@link Optional} containing the id of the supplied value whenever the following method is called on the service:
-     * <ul>
-     * <li>{@link CustomObjectService#fetchCachedCustomObjectId}</li>
-     * </ul>
-     *
-     * @return the created mock of the {@link CustomObjectService}.
-     */
-    public static CustomObjectService getMockCustomObjectService(@Nonnull final String id) {
-        final CustomObjectService customObjectService = mock(CustomObjectService.class);
-        when(customObjectService.fetchCachedCustomObjectId(any()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.of(id)));
-        return customObjectService;
     }
 }

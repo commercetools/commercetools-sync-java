@@ -30,18 +30,17 @@ against a [InventoryEntryDraft](https://docs.commercetools.com/http-api-projects
 
 2. Every inventory entry may have a reference to a supply `Channel` and a reference to the `Type` of its custom fields. These
    references are matched by their `key`s. Therefore, in order for the sync to resolve the actual ids of those references,
-   their `key`s has to be supplied in the following way:
-   -    **Note**: When syncing from a source commercetools project, you can use this util which this library provides: 
-         [`mapToInventoryEntryDrafts`](https://commercetools.github.io/commercetools-sync-java/v/2.0.0/com/commercetools/sync/inventories/utils/InventoryReferenceResolutionUtils.html#mapToInventoryEntryDrafts-java.util.List-)
-         that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
-         ````java
-         
-         final List<InventoryEntryDraft> inventoryEntryDrafts = InventoryReferenceResolutionUtils.mapToInventoryEntryDrafts(inventoryEntries);
-         ````
+   their `key`s has to be supplied.
+   
+   - When syncing from a source commercetools project, you can use [`mapToInventoryEntryDrafts`](https://commercetools.github.io/commercetools-sync-java/v/2.0.0/com/commercetools/sync/inventories/utils/InventoryReferenceResolutionUtils.html#mapToInventoryEntryDrafts-java.util.List-)
+     method that that maps from a `InventoryEntry` to `InventoryEntryDraft` in order to make them ready for reference resolution by the sync:
+     ````java
+     final List<InventoryEntryDraft> inventoryEntryDrafts = InventoryReferenceResolutionUtils.mapToInventoryEntryDrafts(inventoryEntries);
+     ````
      
 3. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
-4. After the `sphereClient` is setup, a `InventorySyncOptions` should be be built as follows: 
+4. After the `sphereClient` is setup, a `InventorySyncOptions` should be built as follows: 
 ````java
 // instantiating a InventorySyncOptions
 final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(sphereClient).build();
