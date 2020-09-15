@@ -18,7 +18,6 @@ import java.util.Optional;
 import java.util.function.Function;
 
 
-
 public final class CustomObjectSyncOptions extends BaseSyncOptions<CustomObject<JsonNode>,
     CustomObjectDraft<JsonNode>> {
 

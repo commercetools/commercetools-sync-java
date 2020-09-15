@@ -36,9 +36,9 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
     CustomObjectSyncStatistics, CustomObjectSyncOptions> {
 
     private static final String CTP_CUSTOM_OBJECT_FETCH_FAILED =
-            "Failed to fetch existing customObjects with keys: '%s'.";
+        "Failed to fetch existing customObjects with keys: '%s'.";
     private static final String CTP_CUSTOM_OBJECT_UPSERT_FAILED =
-            "Failed to create/update customObjects with key: '%s'. Reason: %s";
+        "Failed to create/update customObjects with key: '%s'. Reason: %s";
     private static final String CUSTOM_OBJECT_DRAFT_IS_NULL = "Failed to process null customObject draft.";
 
     private final CustomObjectService customObjectService;
@@ -71,12 +71,12 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
      *
      * @param customObjectDrafts {@link List} of {@link CustomObjectDraft}'s that would be synced into CTP project.
      * @return {@link CompletionStage} with {@link CustomObjectSyncStatistics} holding statistics of all sync
-     *     processes performed by this sync instance.
+     * processes performed by this sync instance.
      */
     protected CompletionStage<CustomObjectSyncStatistics> process(
-            @Nonnull final List<CustomObjectDraft<JsonNode>> customObjectDrafts) {
+        @Nonnull final List<CustomObjectDraft<JsonNode>> customObjectDrafts) {
         final List<List<CustomObjectDraft<JsonNode>>> batches = batchElements(
-                customObjectDrafts, syncOptions.getBatchSize());
+            customObjectDrafts, syncOptions.getBatchSize());
         return syncBatches(batches, CompletableFuture.completedFuture(statistics));
     }
 
@@ -93,42 +93,42 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
      *
      * @param batch batch of drafts that need to be synced
      * @return a {@link CompletionStage} containing an instance
-     *     of {@link CustomObjectSyncStatistics} which contains information about the result of syncing the supplied
-     *     batch to the target project.
+     * of {@link CustomObjectSyncStatistics} which contains information about the result of syncing the supplied
+     * batch to the target project.
      */
 
     protected CompletionStage<CustomObjectSyncStatistics> processBatch(
-            @Nonnull final List<CustomObjectDraft<JsonNode>> batch) {
+        @Nonnull final List<CustomObjectDraft<JsonNode>> batch) {
 
         final Set<CustomObjectDraft<JsonNode>> validCustomObjectDrafts = batch.stream().filter(
-                this::validateDraft).collect(toSet());
+            this::validateDraft).collect(toSet());
 
         if (validCustomObjectDrafts.isEmpty()) {
             statistics.incrementProcessed(batch.size());
             return completedFuture(statistics);
         } else {
             final Set<CustomObjectCompositeIdentifier> identifiers = validCustomObjectDrafts.stream().map(draft ->
-                    CustomObjectCompositeIdentifier.of(draft)).collect(toSet());
+                CustomObjectCompositeIdentifier.of(draft)).collect(toSet());
 
             return customObjectService
-                    .fetchMatchingCustomObjects(identifiers)
-                    .handle(ImmutablePair::new)
-                    .thenCompose(fetchResponse -> {
-                        final Set<CustomObject<JsonNode>> fetchedCustomObjects = fetchResponse.getKey();
-                        final Throwable exception = fetchResponse.getValue();
+                .fetchMatchingCustomObjects(identifiers)
+                .handle(ImmutablePair::new)
+                .thenCompose(fetchResponse -> {
+                    final Set<CustomObject<JsonNode>> fetchedCustomObjects = fetchResponse.getKey();
+                    final Throwable exception = fetchResponse.getValue();
 
-                        if (exception != null) {
-                            final String errorMessage = format(CTP_CUSTOM_OBJECT_FETCH_FAILED, identifiers);
-                            handleError(errorMessage, exception, identifiers.size());
-                            return CompletableFuture.completedFuture(null);
-                        } else {
-                            return syncBatch(fetchedCustomObjects, validCustomObjectDrafts);
-                        }
-                    })
-                    .thenApply(ignored -> {
-                        statistics.incrementProcessed(batch.size());
-                        return statistics;
-                    });
+                    if (exception != null) {
+                        final String errorMessage = format(CTP_CUSTOM_OBJECT_FETCH_FAILED, identifiers);
+                        handleError(errorMessage, exception, identifiers.size());
+                        return CompletableFuture.completedFuture(null);
+                    } else {
+                        return syncBatch(fetchedCustomObjects, validCustomObjectDrafts);
+                    }
+                })
+                .thenApply(ignored -> {
+                    statistics.incrementProcessed(batch.size());
+                    return statistics;
+                });
         }
     }
 
@@ -160,7 +160,7 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
     private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
                              final int failedTimes) {
         SyncException syncException = exception != null ? new SyncException(errorMessage, exception)
-                : new SyncException(errorMessage);
+            : new SyncException(errorMessage);
         syncOptions.applyErrorCallback(syncException);
         statistics.incrementFailed(failedTimes);
     }
@@ -181,7 +181,7 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
                              @Nullable final CustomObjectDraft<JsonNode> newCustomObjectDraft) {
 
         SyncException syncException = exception != null ? new SyncException(errorMessage, exception)
-                : new SyncException(errorMessage);
+            : new SyncException(errorMessage);
         syncOptions.applyErrorCallback(syncException, oldCustomObject, newCustomObjectDraft, null);
         statistics.incrementFailed(failedTimes);
     }
@@ -197,25 +197,25 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
 
     @Nonnull
     private CompletionStage<Void> syncBatch(
-            @Nonnull final Set<CustomObject<JsonNode>> oldCustomObjects,
-            @Nonnull final Set<CustomObjectDraft<JsonNode>> newCustomObjectDrafts) {
+        @Nonnull final Set<CustomObject<JsonNode>> oldCustomObjects,
+        @Nonnull final Set<CustomObjectDraft<JsonNode>> newCustomObjectDrafts) {
 
         final Map<CustomObjectCompositeIdentifier, CustomObject<JsonNode>> oldCustomObjectMap =
-                oldCustomObjects.stream().collect(
-                        toMap(customObject -> CustomObjectCompositeIdentifier.of(
-                                customObject.getKey(), customObject.getContainer()), identity()));
+            oldCustomObjects.stream().collect(
+                toMap(customObject -> CustomObjectCompositeIdentifier.of(
+                    customObject.getKey(), customObject.getContainer()), identity()));
 
         return CompletableFuture.allOf(newCustomObjectDrafts
-                .stream()
-                .map(newCustomObjectDraft -> {
-                    final CustomObject<JsonNode> oldCustomObject = oldCustomObjectMap.get(
-                            CustomObjectCompositeIdentifier.of(newCustomObjectDraft));
-                    return ofNullable(oldCustomObject)
-                            .map(customObject -> updateCustomObject(oldCustomObject, newCustomObjectDraft))
-                            .orElseGet(() -> applyCallbackAndCreate(newCustomObjectDraft));
-                })
-                .map(CompletionStage::toCompletableFuture)
-                .toArray(CompletableFuture[]::new));
+            .stream()
+            .map(newCustomObjectDraft -> {
+                final CustomObject<JsonNode> oldCustomObject = oldCustomObjectMap.get(
+                    CustomObjectCompositeIdentifier.of(newCustomObjectDraft));
+                return ofNullable(oldCustomObject)
+                    .map(customObject -> updateCustomObject(oldCustomObject, newCustomObjectDraft))
+                    .orElseGet(() -> applyCallbackAndCreate(newCustomObjectDraft));
+            })
+            .map(CompletionStage::toCompletableFuture)
+            .toArray(CompletableFuture[]::new));
     }
 
     /**
@@ -227,21 +227,21 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
      */
     @Nonnull
     private CompletionStage<Optional<CustomObject<JsonNode>>> applyCallbackAndCreate(
-            @Nonnull final CustomObjectDraft<JsonNode> customObjectDraft) {
+        @Nonnull final CustomObjectDraft<JsonNode> customObjectDraft) {
 
         return syncOptions
-                .applyBeforeCreateCallback(customObjectDraft)
-                .map(draft -> customObjectService.upsertCustomObject(customObjectDraft)
-                        .thenApply(customObjectOptional -> {
-                            if (customObjectOptional.isPresent()) {
-                                statistics.incrementCreated();
-                            } else {
-                                statistics.incrementFailed();
-                            }
-                            return customObjectOptional;
-                        })
-                )
-                .orElse(CompletableFuture.completedFuture(Optional.empty()));
+            .applyBeforeCreateCallback(customObjectDraft)
+            .map(draft -> customObjectService.upsertCustomObject(customObjectDraft)
+                                             .thenApply(customObjectOptional -> {
+                                                 if (customObjectOptional.isPresent()) {
+                                                     statistics.incrementCreated();
+                                                 } else {
+                                                     statistics.incrementFailed();
+                                                 }
+                                                 return customObjectOptional;
+                                             })
+            )
+            .orElse(CompletableFuture.completedFuture(Optional.empty()));
     }
 
 
@@ -260,70 +260,70 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
      */
     @Nonnull
     private CompletionStage<Optional<CustomObject<JsonNode>>> updateCustomObject(
-            @Nonnull final CustomObject<JsonNode> oldCustomObject,
-            @Nonnull final CustomObjectDraft<JsonNode> newCustomObject) {
+        @Nonnull final CustomObject<JsonNode> oldCustomObject,
+        @Nonnull final CustomObjectDraft<JsonNode> newCustomObject) {
 
         if (CustomObjectSyncUtils.hasIdenticalValue(oldCustomObject, newCustomObject)) {
             return customObjectService
-                    .upsertCustomObject(newCustomObject)
-                    .handle(ImmutablePair::new)
-                    .thenCompose(updateResponse -> {
-                        final CustomObject<JsonNode> updatedCustomObject = updateResponse.getKey().get();
-                        final Throwable sphereException = updateResponse.getValue();
-                        if (sphereException != null) {
-                            return executeSupplierIfConcurrentModificationException(sphereException,
-                                () -> fetchAndUpdate(oldCustomObject, newCustomObject),
-                                () -> {
-                                    final String errorMessage =
-                                                format(CTP_CUSTOM_OBJECT_UPSERT_FAILED,
-                                                        CustomObjectCompositeIdentifier.of(newCustomObject).toString(),
-                                                        sphereException.getMessage());
-                                    handleError(errorMessage, sphereException, 1,
-                                                oldCustomObject, newCustomObject);
-                                    return CompletableFuture.completedFuture(Optional.empty());
-                                });
-                        } else {
-                            statistics.incrementUpdated();
-                            return CompletableFuture.completedFuture(Optional.of(updatedCustomObject));
-                        }
+                .upsertCustomObject(newCustomObject)
+                .handle(ImmutablePair::new)
+                .thenCompose(updateResponse -> {
+                    final CustomObject<JsonNode> updatedCustomObject = updateResponse.getKey().get();
+                    final Throwable sphereException = updateResponse.getValue();
+                    if (sphereException != null) {
+                        return executeSupplierIfConcurrentModificationException(sphereException,
+                            () -> fetchAndUpdate(oldCustomObject, newCustomObject),
+                            () -> {
+                                final String errorMessage =
+                                    format(CTP_CUSTOM_OBJECT_UPSERT_FAILED,
+                                        CustomObjectCompositeIdentifier.of(newCustomObject).toString(),
+                                        sphereException.getMessage());
+                                handleError(errorMessage, sphereException, 1,
+                                    oldCustomObject, newCustomObject);
+                                return CompletableFuture.completedFuture(Optional.empty());
+                            });
+                    } else {
+                        statistics.incrementUpdated();
+                        return CompletableFuture.completedFuture(Optional.of(updatedCustomObject));
+                    }
 
-                    });
+                });
         }
         return completedFuture(Optional.empty());
     }
 
     @Nonnull
     private CompletionStage<Optional<CustomObject<JsonNode>>> fetchAndUpdate(
-            @Nonnull final CustomObject<JsonNode> oldCustomObject,
-            @Nonnull final CustomObjectDraft<JsonNode> customObjectDraft) {
+        @Nonnull final CustomObject<JsonNode> oldCustomObject,
+        @Nonnull final CustomObjectDraft<JsonNode> customObjectDraft) {
 
         final CustomObjectCompositeIdentifier identifier = CustomObjectCompositeIdentifier.of(oldCustomObject);
 
         return customObjectService
-                .fetchCustomObject(identifier)
-                .handle(ImmutablePair::new)
-                .thenCompose(fetchResponse -> {
-                    final Optional<CustomObject<JsonNode>> fetchedCustomObjectOptional = fetchResponse.getKey();
-                    final Throwable exception = fetchResponse.getValue();
+            .fetchCustomObject(identifier)
+            .handle(ImmutablePair::new)
+            .thenCompose(fetchResponse -> {
+                final Optional<CustomObject<JsonNode>> fetchedCustomObjectOptional = fetchResponse.getKey();
+                final Throwable exception = fetchResponse.getValue();
 
-                    if (exception != null) {
-                        final String errorMessage = format(CTP_CUSTOM_OBJECT_UPSERT_FAILED, identifier.toString(),
-                                "Failed to fetch from CTP while retrying after concurrency modification.");
-                        handleError(errorMessage, exception, 1, oldCustomObject, customObjectDraft);
-                        return CompletableFuture.completedFuture(Optional.empty());
-                    }
-                    return fetchedCustomObjectOptional
-                            .map(fetchedCustomObject -> updateCustomObject(fetchedCustomObject, customObjectDraft))
-                            .orElseGet(() -> {
-                                final String errorMessage =
-                                        format(CTP_CUSTOM_OBJECT_UPSERT_FAILED, identifier.toString(),
-                                                "Not found when attempting to fetch while retrying "
-                                                        + "after concurrency modification.");
-                                handleError(errorMessage, null, 1,
-                                        oldCustomObject, customObjectDraft);
-                                return CompletableFuture.completedFuture(null);
-                            });
+                if (exception != null) {
+                    final String errorMessage = format(CTP_CUSTOM_OBJECT_UPSERT_FAILED, identifier.toString(),
+                        "Failed to fetch from CTP while retrying after concurrency modification.");
+                    handleError(errorMessage, exception, 1, oldCustomObject, customObjectDraft);
+                    return CompletableFuture.completedFuture(Optional.empty());
+                }
+                return fetchedCustomObjectOptional
+                    .map(fetchedCustomObject -> updateCustomObject(fetchedCustomObject, customObjectDraft))
+                    .orElseGet(() -> {
+                        final String errorMessage =
+                            format(CTP_CUSTOM_OBJECT_UPSERT_FAILED, identifier.toString(),
+                                "Not found when attempting to fetch while retrying "
+                                    + "after concurrency modification.");
+                        handleError(errorMessage, null, 1,
+                            oldCustomObject, customObjectDraft);
+                        return CompletableFuture.completedFuture(null);
+                    });
 
-                });
+            });
     }
 }

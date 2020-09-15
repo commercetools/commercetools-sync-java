@@ -29,20 +29,20 @@ class CustomObjectSyncOptionsTest {
     private static SphereClient CTP_CLIENT = mock(SphereClient.class);
 
     private interface MockTriFunction extends
-            TriFunction<List<UpdateAction<CustomObject<JsonNode>>>,
-                    CustomObjectDraft<JsonNode>, CustomObject<JsonNode>, List<UpdateAction<CustomObject<JsonNode>>>> {
+        TriFunction<List<UpdateAction<CustomObject<JsonNode>>>,
+            CustomObjectDraft<JsonNode>, CustomObject<JsonNode>, List<UpdateAction<CustomObject<JsonNode>>>> {
     }
 
     @Test
     void applyBeforeUpdateCallback_WithNullCallbackAndEmptyUpdateActions_ShouldReturnIdenticalList() {
         final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder.of(CTP_CLIENT)
-                .build();
+                                                                                              .build();
 
         final List<UpdateAction<CustomObject<JsonNode>>> updateActions = emptyList();
 
         final List<UpdateAction<CustomObject<JsonNode>>> filteredList =
-                customObjectSyncOptions.applyBeforeUpdateCallback(updateActions,
-                    mock(CustomObjectDraft.class), mock(CustomObject.class));
+            customObjectSyncOptions.applyBeforeUpdateCallback(updateActions,
+                mock(CustomObjectDraft.class), mock(CustomObject.class));
 
         assertThat(filteredList).isSameAs(updateActions);
     }
@@ -51,16 +51,17 @@ class CustomObjectSyncOptionsTest {
     @Test
     void applyBeforeUpdateCallback_WithNullReturnCallbackAndEmptyUpdateActions_ShouldReturnEmptyList() {
         final TriFunction<List<UpdateAction<CustomObject<JsonNode>>>, CustomObjectDraft<JsonNode>,
-                CustomObject<JsonNode>, List<UpdateAction<CustomObject<JsonNode>>>>
-                beforeUpdateCallback = (updateActions, newCustomObject, oldCustomObject) -> null;
+            CustomObject<JsonNode>, List<UpdateAction<CustomObject<JsonNode>>>>
+            beforeUpdateCallback = (updateActions, newCustomObject, oldCustomObject) -> null;
         final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder.of(CTP_CLIENT)
-                .beforeUpdateCallback(beforeUpdateCallback)
-                .build();
+                                                                                              .beforeUpdateCallback(
+                                                                                                  beforeUpdateCallback)
+                                                                                              .build();
         final List<UpdateAction<CustomObject<JsonNode>>> updateActions = emptyList();
 
         final List<UpdateAction<CustomObject<JsonNode>>> filteredList =
-                customObjectSyncOptions.applyBeforeUpdateCallback(
-                        updateActions, mock(CustomObjectDraft.class), mock(CustomObject.class));
+            customObjectSyncOptions.applyBeforeUpdateCallback(
+                updateActions, mock(CustomObjectDraft.class), mock(CustomObject.class));
 
         assertAll(
             () -> assertThat(filteredList).isEqualTo(updateActions),
@@ -69,18 +70,18 @@ class CustomObjectSyncOptionsTest {
     }
 
 
-
     @Test
     void applyBeforeUpdateCallback_WithEmptyUpdateActions_ShouldNotApplyBeforeUpdateCallback() {
         final CustomObjectSyncOptionsTest.MockTriFunction beforeUpdateCallback =
-                mock(CustomObjectSyncOptionsTest.MockTriFunction.class);
+            mock(CustomObjectSyncOptionsTest.MockTriFunction.class);
         final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder.of(CTP_CLIENT)
-                .beforeUpdateCallback(beforeUpdateCallback)
-                .build();
+                                                                                              .beforeUpdateCallback(
+                                                                                                  beforeUpdateCallback)
+                                                                                              .build();
 
         final List<UpdateAction<CustomObject<JsonNode>>> filteredList =
-                customObjectSyncOptions.applyBeforeUpdateCallback(emptyList(),
-                        mock(CustomObjectDraft.class), mock(CustomObject.class));
+            customObjectSyncOptions.applyBeforeUpdateCallback(emptyList(),
+                mock(CustomObjectDraft.class), mock(CustomObject.class));
 
         assertThat(filteredList).isEmpty();
         verify(beforeUpdateCallback, never()).apply(any(), any(), any());
@@ -92,23 +93,24 @@ class CustomObjectSyncOptionsTest {
 
         final Function<CustomObjectDraft<JsonNode>, CustomObjectDraft<JsonNode>> draftFunction =
             customObjectDraft -> CustomObjectDraft.ofUnversionedUpsert(
-                        customObjectDraft.getContainer() + "_filteredContainer",
-                        customObjectDraft.getKey() + "_filteredKey", customObjectDraft.getValue());
+                customObjectDraft.getContainer() + "_filteredContainer",
+                customObjectDraft.getKey() + "_filteredKey", customObjectDraft.getValue());
         final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder.of(CTP_CLIENT)
-                .beforeCreateCallback(draftFunction)
-                .build();
+                                                                                              .beforeCreateCallback(
+                                                                                                  draftFunction)
+                                                                                              .build();
         final CustomObjectDraft<JsonNode> resourceDraft = mock(CustomObjectDraft.class);
         when(resourceDraft.getKey()).thenReturn("myKey");
         when(resourceDraft.getContainer()).thenReturn("myContainer");
 
         final Optional<CustomObjectDraft<JsonNode>> filteredDraft = customObjectSyncOptions
-                .applyBeforeCreateCallback(resourceDraft);
+            .applyBeforeCreateCallback(resourceDraft);
 
         assertThat(filteredDraft).hasValueSatisfying(customObjectDraft ->
-                assertAll(
-                    () -> assertThat(customObjectDraft.getKey()).isEqualTo("myKey_filteredKey"),
-                    () -> assertThat(customObjectDraft.getContainer()).isEqualTo("myContainer_filteredContainer")
-                ));
+            assertAll(
+                () -> assertThat(customObjectDraft.getKey()).isEqualTo("myKey_filteredKey"),
+                () -> assertThat(customObjectDraft.getContainer()).isEqualTo("myContainer_filteredContainer")
+            ));
     }
 
     @Test
@@ -117,7 +119,7 @@ class CustomObjectSyncOptionsTest {
         final CustomObjectDraft<JsonNode> resourceDraft = mock(CustomObjectDraft.class);
 
         final Optional<CustomObjectDraft<JsonNode>> filteredDraft = customObjectSyncOptions
-                .applyBeforeCreateCallback(resourceDraft);
+            .applyBeforeCreateCallback(resourceDraft);
 
         assertThat(filteredDraft).containsSame(resourceDraft);
     }
@@ -127,12 +129,13 @@ class CustomObjectSyncOptionsTest {
         final Function<CustomObjectDraft<JsonNode>, CustomObjectDraft<JsonNode>> draftFunction =
             customObjectDraft -> null;
         final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder.of(CTP_CLIENT)
-                .beforeCreateCallback(draftFunction)
-                .build();
+                                                                                              .beforeCreateCallback(
+                                                                                                  draftFunction)
+                                                                                              .build();
         final CustomObjectDraft<JsonNode> resourceDraft = mock(CustomObjectDraft.class);
 
         final Optional<CustomObjectDraft<JsonNode>> filteredDraft = customObjectSyncOptions
-                .applyBeforeCreateCallback(resourceDraft);
+            .applyBeforeCreateCallback(resourceDraft);
 
         assertThat(filteredDraft).isEmpty();
     }

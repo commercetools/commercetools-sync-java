@@ -18,8 +18,8 @@ public class CustomObjectSyncUtils {
      */
 
     public static boolean hasIdenticalValue(
-            @Nonnull final CustomObject<JsonNode> oldCustomObject,
-            @Nonnull final CustomObjectDraft<JsonNode> newCustomObject) {
+        @Nonnull final CustomObject<JsonNode> oldCustomObject,
+        @Nonnull final CustomObjectDraft<JsonNode> newCustomObject) {
         JsonNode oldValue = oldCustomObject.getValue();
         JsonNode newValue = newCustomObject.getValue();
 

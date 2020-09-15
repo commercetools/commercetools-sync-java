@@ -39,8 +39,8 @@ public class CustomObjectSyncTest {
     @BeforeEach
     void setup() {
         newCustomObjectDraft = CustomObjectDraft
-                .ofUnversionedUpsert("someContainer", "someKey",
-                        JsonNodeFactory.instance.objectNode().put( "json-field", "json-value"));
+            .ofUnversionedUpsert("someContainer", "someKey",
+                JsonNodeFactory.instance.objectNode().put("json-field", "json-value"));
     }
 
     @Test
@@ -49,36 +49,38 @@ public class CustomObjectSyncTest {
         final List<Throwable> exceptions = new ArrayList<>();
 
         final CustomObjectSyncOptions syncOptions = CustomObjectSyncOptionsBuilder
-                .of(mock(SphereClient.class))
-                .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                    errorMessages.add(exception.getMessage());
-                    exceptions.add(exception.getCause());
-                })
-                .build();
+            .of(mock(SphereClient.class))
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception.getCause());
+            })
+            .build();
 
         final CustomObjectService mockCustomObjectService = mock(CustomObjectService.class);
 
         when(mockCustomObjectService.fetchMatchingCustomObjects(anySet()))
-               .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
+            .thenReturn(supplyAsync(() -> {
+                throw new SphereException();
+            }));
 
         final CustomObjectSync customObjectSync = new CustomObjectSync(syncOptions, mockCustomObjectService);
 
         // test
         final CustomObjectSyncStatistics customObjectSyncStatistics = customObjectSync
-                .sync(singletonList(newCustomObjectDraft))
-                .toCompletableFuture().join();
+            .sync(singletonList(newCustomObjectDraft))
+            .toCompletableFuture().join();
 
         // assertions
         assertThat(errorMessages)
-                .hasSize(1).singleElement().asString()
-                .isEqualTo("Failed to fetch existing customObjects with keys: "
-                        + "'[{key='someKey', container='someContainer'}]'.");
+            .hasSize(1).singleElement().asString()
+            .isEqualTo("Failed to fetch existing customObjects with keys: "
+                + "'[{key='someKey', container='someContainer'}]'.");
 
         assertThat(exceptions)
-                .hasSize(1).singleElement().isInstanceOfSatisfying(Throwable.class,throwable -> {
-                    assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
-                    assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
-                });
+            .hasSize(1).singleElement().isInstanceOfSatisfying(Throwable.class, throwable -> {
+            assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
+            assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
+        });
 
         assertThat(customObjectSyncStatistics).hasValues(1, 0, 0, 1);
     }
@@ -86,8 +88,8 @@ public class CustomObjectSyncTest {
     @Test
     void sync_WithOnlyDraftsToCreate_ShouldCallBeforeCreateCallback_ShouldNotCallBeforeUpdateCallback() {
         final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder
-                .of(mock(SphereClient.class))
-                .build();
+            .of(mock(SphereClient.class))
+            .build();
 
         final CustomObjectService customObjectService = mock(CustomObjectService.class);
         when(customObjectService.fetchMatchingCustomObjects(anySet())).thenReturn(completedFuture(emptySet()));
@@ -97,7 +99,7 @@ public class CustomObjectSyncTest {
 
         // test
         new CustomObjectSync(spyCustomObjectSyncOptions, customObjectService)
-                .sync(singletonList(newCustomObjectDraft)).toCompletableFuture().join();
+            .sync(singletonList(newCustomObjectDraft)).toCompletableFuture().join();
 
         // assertion
         verify(spyCustomObjectSyncOptions).applyBeforeCreateCallback(newCustomObjectDraft);
@@ -107,23 +109,23 @@ public class CustomObjectSyncTest {
     @Test
     void sync_WithOnlyDraftsToUpdate_ShouldCallBeforeCreateCallback_ShouldNotCallBeforeUpdateCallback() {
         final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder
-                .of(mock(SphereClient.class))
-                .build();
+            .of(mock(SphereClient.class))
+            .build();
 
         final CustomObject<JsonNode> mockedExistingCustomObject = mock(CustomObject.class);
         when(mockedExistingCustomObject.getKey()).thenReturn(newCustomObjectDraft.getKey());
 
         final CustomObjectService customObjectService = mock(CustomObjectService.class);
         when(customObjectService.fetchMatchingCustomObjects(anySet()))
-                .thenReturn(completedFuture(singleton(mockedExistingCustomObject)));
+            .thenReturn(completedFuture(singleton(mockedExistingCustomObject)));
         when(customObjectService.upsertCustomObject(any()))
-                .thenReturn(completedFuture(Optional.of(mockedExistingCustomObject)));
+            .thenReturn(completedFuture(Optional.of(mockedExistingCustomObject)));
 
         final CustomObjectSyncOptions spyCustomObjectSyncOptions = spy(customObjectSyncOptions);
 
         // test
         new CustomObjectSync(spyCustomObjectSyncOptions, customObjectService)
-                .sync(singletonList(newCustomObjectDraft)).toCompletableFuture().join();
+            .sync(singletonList(newCustomObjectDraft)).toCompletableFuture().join();
 
         // assertion
         verify(spyCustomObjectSyncOptions).applyBeforeCreateCallback(newCustomObjectDraft);
@@ -133,8 +135,8 @@ public class CustomObjectSyncTest {
     @Test
     void sync_WitEmptyValidDrafts_ShouldFailed() {
         final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder
-                .of(mock(SphereClient.class))
-                .build();
+            .of(mock(SphereClient.class))
+            .build();
 
         final CustomObjectService customObjectService = mock(CustomObjectService.class);
         when(customObjectService.fetchMatchingCustomObjects(anySet())).thenReturn(completedFuture(emptySet()));
@@ -143,9 +145,9 @@ public class CustomObjectSyncTest {
         final CustomObjectSyncOptions spyCustomObjectSyncOptions = spy(customObjectSyncOptions);
 
         // test
-        CustomObjectSyncStatistics syncStatistics =  new CustomObjectSync(
-                spyCustomObjectSyncOptions, customObjectService).sync(
-                    singletonList(null)).toCompletableFuture().join();
+        CustomObjectSyncStatistics syncStatistics = new CustomObjectSync(
+            spyCustomObjectSyncOptions, customObjectService).sync(
+            singletonList(null)).toCompletableFuture().join();
 
         // assertion
         assertThat(syncStatistics.getProcessed().get()).isEqualTo(1);

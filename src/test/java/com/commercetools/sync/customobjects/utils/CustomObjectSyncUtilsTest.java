@@ -113,12 +113,12 @@ class CustomObjectSyncUtilsTest {
     void hasIdenticalValue_WithSameFieldAndValueInDifferentOrderInJsonNode_ShouldBeIdentical() {
 
         ObjectNode oldValue = JsonNodeFactory.instance.objectNode()
-                .put("username", "Peter")
-                .put("userId", "123-456-789");
+                                                      .put("username", "Peter")
+                                                      .put("userId", "123-456-789");
 
         ObjectNode newValue = JsonNodeFactory.instance.objectNode()
-                .put("userId", "123-456-789")
-                .put("username", "Peter");
+                                                      .put("userId", "123-456-789")
+                                                      .put("username", "Peter");
 
         prepareMockObjects(oldValue, newValue);
 
@@ -130,17 +130,17 @@ class CustomObjectSyncUtilsTest {
     void hasIdenticalValue_WithSameNestedJsonNode_WithSameAttributeOrderInNestedJson_ShouldBeIdentical() {
 
         JsonNode oldNestedJson = JsonNodeFactory.instance.objectNode()
-                .put("username", "Peter")
-                .put("userId", "123-456-789");
+                                                         .put("username", "Peter")
+                                                         .put("userId", "123-456-789");
         JsonNode newNestedJson = JsonNodeFactory.instance.objectNode()
-                .put("username", "Peter")
-                .put("userId", "123-456-789");
+                                                         .put("username", "Peter")
+                                                         .put("userId", "123-456-789");
 
         JsonNode oldJsonNode = JsonNodeFactory.instance.objectNode()
-                .set("nestedJson", oldNestedJson);
+                                                       .set("nestedJson", oldNestedJson);
 
         JsonNode newJsonNode = JsonNodeFactory.instance.objectNode()
-                .set("nestedJson", newNestedJson);
+                                                       .set("nestedJson", newNestedJson);
 
         prepareMockObjects(oldJsonNode, newJsonNode);
 
@@ -152,17 +152,17 @@ class CustomObjectSyncUtilsTest {
     void hasIdenticalValue_WithSameNestedJsonNode_WithDifferentAttributeOrderInNestedJson_ShouldBeIdentical() {
 
         JsonNode oldNestedJson = JsonNodeFactory.instance.objectNode()
-                .put("username", "Peter")
-                .put("userId", "123-456-789");
+                                                         .put("username", "Peter")
+                                                         .put("userId", "123-456-789");
         JsonNode newNestedJson = JsonNodeFactory.instance.objectNode()
-                .put("userId", "123-456-789")
-                .put("username", "Peter");
+                                                         .put("userId", "123-456-789")
+                                                         .put("username", "Peter");
 
         JsonNode oldJsonNode = JsonNodeFactory.instance.objectNode()
-                .set("nestedJson", oldNestedJson);
+                                                       .set("nestedJson", oldNestedJson);
 
         JsonNode newJsonNode = JsonNodeFactory.instance.objectNode()
-                .set("nestedJson", newNestedJson);
+                                                       .set("nestedJson", newNestedJson);
 
         prepareMockObjects(oldJsonNode, newJsonNode);
 
@@ -174,17 +174,17 @@ class CustomObjectSyncUtilsTest {
     void hasIdenticalValue_WithDifferentNestedJsonNode_ShouldNotBeIdentical() {
 
         JsonNode oldNestedJson = JsonNodeFactory.instance.objectNode()
-                .put("username", "Peter")
-                .put("userId", "123-456-789");
+                                                         .put("username", "Peter")
+                                                         .put("userId", "123-456-789");
         JsonNode newNestedJson = JsonNodeFactory.instance.objectNode()
-                .put("userId", "129-382-189")
-                .put("username", "Peter");
+                                                         .put("userId", "129-382-189")
+                                                         .put("username", "Peter");
 
         JsonNode oldJsonNode = JsonNodeFactory.instance.objectNode()
-                .set("nestedJson", oldNestedJson);
+                                                       .set("nestedJson", oldNestedJson);
 
         JsonNode newJsonNode = JsonNodeFactory.instance.objectNode()
-                .set("nestedJson", newNestedJson);
+                                                       .set("nestedJson", newNestedJson);
 
         prepareMockObjects(oldJsonNode, newJsonNode);
 

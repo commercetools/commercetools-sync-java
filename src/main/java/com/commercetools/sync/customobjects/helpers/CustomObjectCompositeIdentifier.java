@@ -19,7 +19,7 @@ public final class CustomObjectCompositeIdentifier {
     private final String container;
 
     private CustomObjectCompositeIdentifier(@Nonnull final String key,
-                                    @Nonnull final String container) {
+                                            @Nonnull final String container) {
         this.key = key;
         this.container = container;
     }
@@ -31,7 +31,7 @@ public final class CustomObjectCompositeIdentifier {
      * <ol>
      * <li>{@link CustomObjectCompositeIdentifier#key}: key of {@link CustomObjectDraft#getKey()} </li>
      * <li>{@link CustomObjectCompositeIdentifier#container}: container of {@link CustomObjectDraft#getContainer()}</li>
-
+     *
      * </ol>
      *
      * @param customObjectDraft a composite id is built using its fields.
@@ -62,7 +62,7 @@ public final class CustomObjectCompositeIdentifier {
      * Given a {@link String} and {@link String}, creates a {@link CustomObjectCompositeIdentifier} using the following
      * fields from the supplied attributes.
      *
-     * @param key key of CustomerObject to build composite Id.
+     * @param key       key of CustomerObject to build composite Id.
      * @param container container of CustomerObject to build composite Id.
      * @return a composite id comprised of the fields of the supplied {@code key} and {@code container}.
      */
