@@ -88,12 +88,10 @@ class CategorySyncTest {
         errorCallBackExceptions = new ArrayList<>();
         final SphereClient ctpClient = mock(SphereClient.class);
         categorySyncOptions = CategorySyncOptionsBuilder.of(ctpClient)
-                .errorCallback(
-                        (exception, oldResource, newResource, updateActions) -> {
-                            errorCallBackMessages.add(exception.getMessage());
-                            errorCallBackExceptions.add(exception.getCause());
-                        })
-                .build();
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorCallBackMessages.add(exception.getMessage());
+                    errorCallBackExceptions.add(exception.getCause());
+                }).build();
     }
 
     @Test
@@ -141,7 +139,8 @@ class CategorySyncTest {
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo("CategoryDraft with name: "
                 +
-                "LocalizedString(en -> noKeyDraft) doesn't have a key. Please make sure all category drafts have keys.");
+                "LocalizedString(en -> noKeyDraft) doesn't have a key. Please make sure all category drafts have keys."
+        );
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isEqualTo(null);
     }
@@ -214,7 +213,8 @@ class CategorySyncTest {
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(
-                format("%s: Parent category reference of CategoryDraft with key 'key' has no key set. Please make sure parent category has a key.",
+                format("%s: Parent category reference of CategoryDraft with key 'key' has no key set. "
+                                + "Please make sure parent category has a key.",
                         ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
@@ -258,7 +258,8 @@ class CategorySyncTest {
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(
-                format("%s: Parent category reference of CategoryDraft with key 'key' has no key set. Please make sure parent category has a key.",
+                format("%s: Parent category reference of CategoryDraft with key 'key' has no key set. "
+                               + "Please make sure parent category has a key.",
                         ReferenceResolutionException.class.getCanonicalName()));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(ReferenceResolutionException.class);
@@ -280,9 +281,8 @@ class CategorySyncTest {
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to process the CategoryDraft with"
-                        +
-                        " key:'key'. Reason: %s: Failed to resolve custom type reference on CategoryDraft with key:'key'. Reason:"
-                        + " %s", ReferenceResolutionException.class.getCanonicalName(),
+                        + " key:'key'. Reason: %s: Failed to resolve custom type reference on CategoryDraft "
+                        + "with key:'key'. Reason: %s", ReferenceResolutionException.class.getCanonicalName(),
                 BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
@@ -338,11 +338,10 @@ class CategorySyncTest {
         final int batchSize = 1;
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
                 .of(mock(SphereClient.class))
-                .errorCallback(
-                        (exception, oldResource, newResource, updateActions) -> {
-                            errorCallBackMessages.add(exception.getMessage());
-                            errorCallBackExceptions.add(exception.getCause());
-                        })
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorCallBackMessages.add(exception.getMessage());
+                    errorCallBackExceptions.add(exception.getCause());
+                })
                 .batchSize(batchSize)
                 .build();
         final int numberOfCategoryDrafts = 160;
@@ -444,8 +443,7 @@ class CategorySyncTest {
         assertThat(errorCallBackMessages)
                 .hasSize(1)
                 .hasOnlyOneElementSatisfying(message ->
-                        assertThat(message).contains("Failed to build a cache of keys to ids.")
-                );
+                        assertThat(message).contains("Failed to build a cache of keys to ids."));
 
         assertThat(errorCallBackExceptions)
                 .hasSize(1)
@@ -503,8 +501,7 @@ class CategorySyncTest {
         assertThat(errorCallBackMessages)
                 .hasSize(1)
                 .hasOnlyOneElementSatisfying(message ->
-                        assertThat(message).contains("Failed to fetch existing categories")
-                );
+                        assertThat(message).contains("Failed to fetch existing categories"));
 
         assertThat(errorCallBackExceptions)
                 .hasSize(1)

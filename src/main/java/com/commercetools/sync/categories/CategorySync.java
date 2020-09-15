@@ -21,6 +21,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,6 @@ import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapVal
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.toResourceIdentifierIfNotNull;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static java.lang.String.format;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics, CategorySyncOptions> {
 
@@ -191,11 +191,11 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
 
                     if (cachingException != null) {
                         handleError(new SyncException("Failed to build a cache of keys to ids.", cachingException),
-                            categoryDrafts.size());
+                            validDrafts.size());
                         return CompletableFuture.completedFuture(null);
                     }
 
-                    prepareDraftsForProcessing(categoryDrafts, keyToIdCache);
+                    prepareDraftsForProcessing(new ArrayList<>(validDrafts), keyToIdCache);
 
                     categoryKeysToFetch = existingCategoryDrafts
                         .stream()
@@ -288,38 +288,30 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private void prepareDraftsForProcessing(@Nonnull final List<CategoryDraft> categoryDrafts,
                                             @Nonnull final Map<String, String> keyToIdCache) {
         for (CategoryDraft categoryDraft : categoryDrafts) {
-            if (categoryDraft != null) {
-                final String categoryKey = categoryDraft.getKey();
-                if (isNotBlank(categoryKey)) {
-                    try {
-                        categoryDraft = updateCategoriesWithMissingParents(categoryDraft, keyToIdCache);
-                        referenceResolver.resolveReferences(categoryDraft)
-                                         .thenAccept(referencesResolvedDraft -> {
-                                             referencesResolvedDrafts.add(referencesResolvedDraft);
-                                             if (keyToIdCache.containsKey(categoryKey)) {
-                                                 existingCategoryDrafts.add(referencesResolvedDraft);
-                                             } else {
-                                                 newCategoryDrafts.add(referencesResolvedDraft);
-                                             }
-                                         })
-                                         .exceptionally(completionException -> {
-                                             final String errorMessage = format(FAILED_TO_PROCESS, categoryKey,
-                                                 completionException.getMessage());
-                                             handleError(errorMessage, completionException);
-                                             return null;
-                                         }).toCompletableFuture().join();
-                    } catch (Exception exception) {
-                        final String errorMessage = format(FAILED_TO_PROCESS, categoryKey,
-                            exception);
-                        handleError(errorMessage, exception);
-                    }
-                } else {
-                    final String errorMessage = format(CATEGORY_DRAFT_KEY_NOT_SET, categoryDraft.getName());
-                    handleError(errorMessage, null);
-                }
-            } else {
-                handleError(CATEGORY_DRAFT_IS_NULL, null);
+            final String categoryKey = categoryDraft.getKey();
+            try {
+                categoryDraft = updateCategoriesWithMissingParents(categoryDraft, keyToIdCache);
+                referenceResolver.resolveReferences(categoryDraft)
+                        .thenAccept(referencesResolvedDraft -> {
+                            referencesResolvedDrafts.add(referencesResolvedDraft);
+                            if (keyToIdCache.containsKey(categoryKey)) {
+                                existingCategoryDrafts.add(referencesResolvedDraft);
+                            } else {
+                                newCategoryDrafts.add(referencesResolvedDraft);
+                            }
+                        })
+                        .exceptionally(completionException -> {
+                            final String errorMessage = format(FAILED_TO_PROCESS, categoryKey,
+                                    completionException.getMessage());
+                            handleError(errorMessage, completionException);
+                            return null;
+                        }).toCompletableFuture().join();
+            } catch (Exception exception) {
+                final String errorMessage = format(FAILED_TO_PROCESS, categoryKey,
+                        exception);
+                handleError(errorMessage, exception);
             }
+
         }
     }
 

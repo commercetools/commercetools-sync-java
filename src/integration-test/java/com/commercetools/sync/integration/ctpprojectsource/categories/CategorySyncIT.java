@@ -4,6 +4,7 @@ import com.commercetools.sync.categories.CategorySync;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
+import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -42,6 +44,7 @@ import static com.commercetools.sync.integration.commons.utils.ITUtils.createCus
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -409,6 +412,39 @@ class CategorySyncIT {
                 assertThat(fieldErrors).allSatisfy(error -> assertThat(error.getField()).isEqualTo("slug.en"));
             });
 
+        assertThat(callBackWarningResponses).isEmpty();
+    }
+
+    @Test
+    void syncDrafts_fromCategoriesWithMissingParentKey_ShouldDoNothing() {
+        //Create a parent category with missing key
+        final CategoryDraft parentCategoryDraft = CategoryDraftBuilder
+                .of(LocalizedString.of(Locale.ENGLISH, "cat1"), LocalizedString.of(Locale.ENGLISH, "furniture1"))
+                .custom(getCustomFieldsDraft())
+                .build();
+        Category parentCategory = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(parentCategoryDraft))
+                .toCompletableFuture().join();
+
+        //Create a category in the source with parent without key set
+        final CategoryDraft oldCategoryDraft = CategoryDraftBuilder
+                .of(LocalizedString.of(Locale.ENGLISH, "cat2"), LocalizedString.of(Locale.ENGLISH, "furniture2"))
+                .custom(getCustomFieldsDraft())
+                .key("oldKey")
+                .parent(ResourceIdentifier.ofId(parentCategory.getId()))
+                .build();
+
+        Category category = CTP_SOURCE_CLIENT.execute(CategoryCreateCommand.of(oldCategoryDraft))
+                .toCompletableFuture().join();
+        final List<CategoryDraft> categoryDrafts = mapToCategoryDrafts(Arrays.asList(category));
+
+        final CategorySyncStatistics syncStatistics = categorySync.sync(categoryDrafts).toCompletableFuture().join();
+
+        assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
+        assertThat(callBackErrorResponses).hasSize(1);
+        assertThat(callBackErrorResponses.get(0)).isEqualTo(format("%s: Parent category reference of "
+                + "CategoryDraft with key 'oldKey' has no key set. Please make sure parent category has a key.",
+                ReferenceResolutionException.class.getCanonicalName()));
+        assertThat(callBackExceptions).hasSize(1);
         assertThat(callBackWarningResponses).isEmpty();
     }
 }
