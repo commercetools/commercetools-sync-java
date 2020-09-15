@@ -47,7 +47,7 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
     public CustomObjectSync(@Nonnull final CustomObjectSyncOptions syncOptions) {
         this(syncOptions, new CustomObjectServiceImpl(syncOptions));
     }
-    
+
     /**
      * Takes a {@link CustomObjectSyncOptions} and a {@link CustomObjectService} instances to instantiate
      * a new {@link CustomObjectSync} instance that could be used to sync customObject drafts in the CTP project
@@ -101,7 +101,6 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
      *      of {@link CustomObjectSyncStatistics} which contains information about the result of syncing the supplied
      *      batch to the target project.
      */
-
     protected CompletionStage<CustomObjectSyncStatistics> processBatch(
         @Nonnull final List<CustomObjectDraft<JsonNode>> batch) {
 
@@ -199,7 +198,6 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
      * @param newCustomObjectDrafts drafts that need to be synced.
      * @return a {@link CompletionStage} which contains an empty result after execution of the update
      */
-
     @Nonnull
     private CompletionStage<Void> syncBatch(
         @Nonnull final Set<CustomObject<JsonNode>> oldCustomObjects,
