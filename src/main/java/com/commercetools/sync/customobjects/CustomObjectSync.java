@@ -44,6 +44,10 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
 
     private final CustomObjectService customObjectService;
 
+    public CustomObjectSync(@Nonnull final CustomObjectSyncOptions syncOptions) {
+        this(syncOptions, new CustomObjectServiceImpl(syncOptions));
+    }
+    
     /**
      * Takes a {@link CustomObjectSyncOptions} and a {@link CustomObjectService} instances to instantiate
      * a new {@link CustomObjectSync} instance that could be used to sync customObject drafts in the CTP project
