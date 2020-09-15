@@ -248,9 +248,10 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
 
 
     /**
-     * Given an existing {@link CustomObject} and a new {@link CustomObjectDraft}, the method verifies whether the JSON
-     * objects between {@link CustomObject#getValue()} and {@link CustomObjectDraft#getValue()} are identical. If so, a
-     * request is made to CTP to update the existing custom object, otherwise it doesn't issue a request.
+     * Given an existing {@link CustomObject} and a new {@link CustomObjectDraft}, the method first checks whether
+     * existing {@link CustomObject} and a new {@link CustomObjectDraft} are identical. If so, the method aborts update
+     * the new draft and return an empty result, otherwise a request is made to CTP to update the existing custom
+     * object.
      *
      * <p>The {@code statistics} instance is updated accordingly to whether the CTP request was carried
      * out successfully or not. If an exception was thrown on executing the request to CTP,the error handling method
