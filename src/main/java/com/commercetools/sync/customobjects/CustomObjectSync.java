@@ -111,8 +111,8 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
             statistics.incrementProcessed(batch.size());
             return completedFuture(statistics);
         } else {
-            final Set<CustomObjectCompositeIdentifier> identifiers = validCustomObjectDrafts.stream().map(draft ->
-                CustomObjectCompositeIdentifier.of(draft)).collect(toSet());
+            final Set<CustomObjectCompositeIdentifier> identifiers = validCustomObjectDrafts.stream().map(
+                CustomObjectCompositeIdentifier::of).collect(toSet());
 
             return customObjectService
                 .fetchMatchingCustomObjects(identifiers)
