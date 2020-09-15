@@ -73,7 +73,7 @@ public class CustomObjectSyncTest {
         // assertions
         assertThat(errorMessages)
             .hasSize(1).singleElement().asString()
-            .isEqualTo("Failed to fetch existing customObjects with keys: "
+            .isEqualTo("Failed to fetch existing custom objects with keys: "
                 + "'[{key='someKey', container='someContainer'}]'.");
 
         assertThat(exceptions)
