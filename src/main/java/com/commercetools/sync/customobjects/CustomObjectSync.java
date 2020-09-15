@@ -137,9 +137,8 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
     }
 
     /**
-     * Checks if a draft is valid for further processing. If so, then returns {@code true}. Otherwise handles an error
-     * and returns {@code false}. A valid draft is a {@link CustomObjectDraft} object that is not {@code null} and its
-     * key is not empty.
+     * Checks if a draft is empty for further processing. If so, then returns {@code true}. Otherwise handles an error
+     * and returns {@code false}. A valid draft is a {@link CustomObjectDraft} object that is not {@code null}.
      *
      * @param draft nullable draft
      * @return boolean that indicate if given {@code draft} is valid for sync
