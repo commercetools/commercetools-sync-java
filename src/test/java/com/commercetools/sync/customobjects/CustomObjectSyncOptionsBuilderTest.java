@@ -57,8 +57,7 @@ class CustomObjectSyncOptionsBuilderTest {
     void errorCallBack_WithCallBack_ShouldSetCallBack() {
         final QuadConsumer<SyncException, Optional<CustomObjectDraft<JsonNode>>,
             Optional<CustomObject<JsonNode>>, List<UpdateAction<CustomObject<JsonNode>>>>
-            mockErrorCallBack = (exception, newResource, oldResource, updateActions) -> {
-        };
+            mockErrorCallBack = (exception, newResource, oldResource, updateActions) -> { };
         customObjectSyncOptionsBuilder.errorCallback(mockErrorCallBack);
 
         final CustomObjectSyncOptions customObjectSyncOptions = customObjectSyncOptionsBuilder.build();
@@ -69,8 +68,7 @@ class CustomObjectSyncOptionsBuilderTest {
     void warningCallBack_WithCallBack_ShouldSetCallBack() {
         final TriConsumer<SyncException,
             Optional<CustomObjectDraft<JsonNode>>, Optional<CustomObject<JsonNode>>> mockWarningCallBack =
-            (exception, newResource, oldResource) -> {
-            };
+                (exception, newResource, oldResource) -> { };
         customObjectSyncOptionsBuilder.warningCallback(mockWarningCallBack);
         final CustomObjectSyncOptions cutomObjectSyncOptions = customObjectSyncOptionsBuilder.build();
         assertThat(cutomObjectSyncOptions.getWarningCallback()).isNotNull();

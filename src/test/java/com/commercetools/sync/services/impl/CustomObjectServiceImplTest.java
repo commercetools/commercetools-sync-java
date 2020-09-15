@@ -63,14 +63,12 @@ class CustomObjectServiceImplTest {
         errorMessages = new ArrayList<>();
         errorExceptions = new ArrayList<>();
         CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder.of(client)
-                                                                                        .errorCallback(
-                                                                                            (exception, oldResource, newResource, updateActions) -> {
-                                                                                                errorMessages.add(
-                                                                                                    exception.getMessage());
-                                                                                                errorExceptions.add(
-                                                                                                    exception.getCause());
-                                                                                            })
-                                                                                        .build();
+            .errorCallback(
+                (exception, oldResource, newResource, updateActions) -> {
+                    errorMessages.add(exception.getMessage());
+                    errorExceptions.add(exception.getCause());
+                })
+            .build();
 
         service = new CustomObjectServiceImpl(customObjectSyncOptions);
     }

@@ -180,7 +180,7 @@ public class BaseSyncOptions<U, V> {
      * function has been applied.
      *
      * @return the {@code beforeUpdateCallback} {@link Function}&lt;{@code V}, {@link Optional}&lt;{@code V}&gt;&gt;
-     * function set to {@code this} {@link BaseSyncOptions}.
+     *      function set to {@code this} {@link BaseSyncOptions}.
      */
     @Nullable
     public Function<V, V> getBeforeCreateCallback() {

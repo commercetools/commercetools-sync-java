@@ -78,9 +78,9 @@ public class CustomObjectSyncTest {
 
         assertThat(exceptions)
             .hasSize(1).singleElement().isInstanceOfSatisfying(Throwable.class, throwable -> {
-            assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
-            assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
-        });
+                assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
+                assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
+            });
 
         assertThat(customObjectSyncStatistics).hasValues(1, 0, 0, 1);
     }

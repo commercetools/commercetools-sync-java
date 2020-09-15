@@ -6,6 +6,7 @@ import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentif
 import com.commercetools.sync.customobjects.helpers.CustomObjectSyncStatistics;
 import com.commercetools.sync.customobjects.utils.CustomObjectSyncUtils;
 import com.commercetools.sync.services.CustomObjectService;
+import com.commercetools.sync.services.impl.CustomObjectServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
@@ -93,8 +94,8 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
      *
      * @param batch batch of drafts that need to be synced
      * @return a {@link CompletionStage} containing an instance
-     * of {@link CustomObjectSyncStatistics} which contains information about the result of syncing the supplied
-     * batch to the target project.
+     *      of {@link CustomObjectSyncStatistics} which contains information about the result of syncing the supplied
+     *      batch to the target project.
      */
 
     protected CompletionStage<CustomObjectSyncStatistics> processBatch(
