@@ -99,8 +99,7 @@ public class CustomObjectSyncTest {
         when(customObjectService.upsertCustomObject(any())).thenReturn(completedFuture(Optional.empty()));
 
         // test
-        CustomObjectSyncStatistics syncStatistics =
-                new CustomObjectSync(spyCustomObjectSyncOptions, customObjectService)
+        new CustomObjectSync(spyCustomObjectSyncOptions, customObjectService)
             .sync(singletonList(newCustomObjectDraft)).toCompletableFuture().join();
 
         // assertion
@@ -123,8 +122,7 @@ public class CustomObjectSyncTest {
             .thenReturn(completedFuture(Optional.of(mockedExistingCustomObject)));
 
         // test
-        CustomObjectSyncStatistics syncStatistics =
-                new CustomObjectSync(spyCustomObjectSyncOptions, customObjectService)
+        new CustomObjectSync(spyCustomObjectSyncOptions, customObjectService)
             .sync(singletonList(newCustomObjectDraft)).toCompletableFuture().join();
 
         // assertion
@@ -342,10 +340,6 @@ public class CustomObjectSyncTest {
 
         final Set<CustomObject<JsonNode>> existingCustomObjectSet = new HashSet<CustomObject<JsonNode>>();
         existingCustomObjectSet.add(existingCustomObject);
-
-        final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder
-                .of(mock(SphereClient.class))
-                .build();
 
         final CustomObjectService customObjectService = mock(CustomObjectService.class);
         when(customObjectService.fetchMatchingCustomObjects(anySet()))
