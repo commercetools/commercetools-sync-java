@@ -57,12 +57,12 @@ public class CategoryBatchValidator {
         Set<CategoryDraft> validDrafts = new HashSet<>();
         Set<String> validKeys = new HashSet<>();
         for (CategoryDraft categoryDraft : categoryDrafts) {
-            if (validateCategoryDraft(categoryDraft)) {
+            if (isValidCategoryDraft(categoryDraft)) {
                 ResourceIdentifier<Category> parent = categoryDraft.getParent();
                 if (parent == null) {
                     validKeys.add(categoryDraft.getKey());
                     validDrafts.add(categoryDraft);
-                } else if (validateParentCategory(parent, categoryDraft.getKey())) {
+                } else if (isValidParentCategory(parent, categoryDraft.getKey())) {
                     validDrafts.add(categoryDraft);
                     validKeys.add(categoryDraft.getKey());
                     validKeys.add(parent.getKey());
@@ -73,7 +73,7 @@ public class CategoryBatchValidator {
         return ImmutablePair.of(validDrafts, validKeys);
     }
 
-    private boolean validateCategoryDraft(final CategoryDraft categoryDraft) {
+    private boolean isValidCategoryDraft(final CategoryDraft categoryDraft) {
         String errorMessage = EMPTY;
         if (categoryDraft != null) {
             if (isBlank(categoryDraft.getKey())) {
@@ -91,7 +91,7 @@ public class CategoryBatchValidator {
         return true;
     }
 
-    private boolean validateParentCategory(final ResourceIdentifier<Category> parent, final String categoryDraftKey) {
+    private boolean isValidParentCategory(final ResourceIdentifier<Category> parent, final String categoryDraftKey) {
         if (isBlank(parent.getKey())) {
             handleError(new SyncException(
                     new ReferenceResolutionException(format(PARENT_CATEGORY_KEY_NOT_SET, categoryDraftKey))));
