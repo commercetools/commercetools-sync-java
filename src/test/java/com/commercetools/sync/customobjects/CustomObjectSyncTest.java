@@ -13,6 +13,7 @@ import io.sphere.sdk.models.SphereException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -21,6 +22,8 @@ import java.util.Set;
 import java.util.concurrent.CompletionException;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
@@ -53,13 +56,8 @@ public class CustomObjectSyncTest {
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> exceptions = new ArrayList<>();
 
-        final CustomObjectSyncOptions syncOptions = CustomObjectSyncOptionsBuilder
-            .of(mock(SphereClient.class))
-            .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                errorMessages.add(exception.getMessage());
-                exceptions.add(exception.getCause());
-            })
-            .build();
+        final CustomObjectSyncOptions spyCustomObjectSyncOptions =
+                initCustomObjectSyncOptions(errorMessages, exceptions);
 
         final CustomObjectService mockCustomObjectService = mock(CustomObjectService.class);
 
@@ -68,14 +66,15 @@ public class CustomObjectSyncTest {
                 throw new SphereException();
             }));
 
-        final CustomObjectSync customObjectSync = new CustomObjectSync(syncOptions, mockCustomObjectService);
+        final CustomObjectSync customObjectSync =
+                new CustomObjectSync(spyCustomObjectSyncOptions, mockCustomObjectService);
 
         // test
         final CustomObjectSyncStatistics customObjectSyncStatistics = customObjectSync
             .sync(singletonList(newCustomObjectDraft))
             .toCompletableFuture().join();
 
-        // assertions
+        // assertion
         assertThat(errorMessages)
             .hasSize(1).singleElement().asString()
             .isEqualTo("Failed to fetch existing custom objects with keys: "
@@ -92,18 +91,16 @@ public class CustomObjectSyncTest {
 
     @Test
     void sync_WithOnlyDraftsToCreate_ShouldCallBeforeCreateCallback_ShouldNotCallBeforeUpdateCallback() {
-        final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder
-            .of(mock(SphereClient.class))
-            .build();
+        final CustomObjectSyncOptions spyCustomObjectSyncOptions =
+                initCustomObjectSyncOptions(emptyList(),emptyList());
 
         final CustomObjectService customObjectService = mock(CustomObjectService.class);
         when(customObjectService.fetchMatchingCustomObjects(anySet())).thenReturn(completedFuture(emptySet()));
         when(customObjectService.upsertCustomObject(any())).thenReturn(completedFuture(Optional.empty()));
 
-        final CustomObjectSyncOptions spyCustomObjectSyncOptions = spy(customObjectSyncOptions);
-
         // test
-        new CustomObjectSync(spyCustomObjectSyncOptions, customObjectService)
+        CustomObjectSyncStatistics syncStatistics =
+                new CustomObjectSync(spyCustomObjectSyncOptions, customObjectService)
             .sync(singletonList(newCustomObjectDraft)).toCompletableFuture().join();
 
         // assertion
@@ -113,9 +110,8 @@ public class CustomObjectSyncTest {
 
     @Test
     void sync_WithOnlyDraftsToUpdate_ShouldCallBeforeCreateCallback_ShouldNotCallBeforeUpdateCallback() {
-        final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder
-            .of(mock(SphereClient.class))
-            .build();
+        final CustomObjectSyncOptions spyCustomObjectSyncOptions =
+                initCustomObjectSyncOptions(emptyList(), emptyList());
 
         final CustomObject<JsonNode> mockedExistingCustomObject = mock(CustomObject.class);
         when(mockedExistingCustomObject.getKey()).thenReturn(newCustomObjectDraft.getKey());
@@ -126,10 +122,9 @@ public class CustomObjectSyncTest {
         when(customObjectService.upsertCustomObject(any()))
             .thenReturn(completedFuture(Optional.of(mockedExistingCustomObject)));
 
-        final CustomObjectSyncOptions spyCustomObjectSyncOptions = spy(customObjectSyncOptions);
-
         // test
-        new CustomObjectSync(spyCustomObjectSyncOptions, customObjectService)
+        CustomObjectSyncStatistics syncStatistics =
+                new CustomObjectSync(spyCustomObjectSyncOptions, customObjectService)
             .sync(singletonList(newCustomObjectDraft)).toCompletableFuture().join();
 
         // assertion
@@ -138,7 +133,10 @@ public class CustomObjectSyncTest {
     }
 
     @Test
-    void sync_WithSameIndentifiersAndDifferentValues_ShoudUpdateSucessfully() {
+    void sync_WithSameIdentifiersAndDifferentValues_ShouldUpdateSuccessfully() {
+        final CustomObjectSyncOptions spyCustomObjectSyncOptions =
+                initCustomObjectSyncOptions(emptyList(), emptyList());
+
         final CustomObject<JsonNode> existingCustomObject = mock(CustomObject.class);
         when(existingCustomObject.getContainer()).thenReturn("someContainer");
         when(existingCustomObject.getKey()).thenReturn("someKey");
@@ -152,23 +150,18 @@ public class CustomObjectSyncTest {
         final Set<CustomObject<JsonNode>> existingCustomObjectSet = new HashSet<CustomObject<JsonNode>>();
         existingCustomObjectSet.add(existingCustomObject);
 
-        final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder
-                .of(mock(SphereClient.class))
-                .build();
-
         final CustomObjectService customObjectService = mock(CustomObjectService.class);
         when(customObjectService.fetchMatchingCustomObjects(anySet()))
                 .thenReturn(completedFuture(existingCustomObjectSet));
         when(customObjectService.upsertCustomObject(any()))
                 .thenReturn(completedFuture(Optional.of(updatedCustomObject)));
 
-        final CustomObjectSyncOptions spyCustomObjectSyncOptions = spy(customObjectSyncOptions);
-
         // test
         CustomObjectSyncStatistics syncStatistics =
                 new CustomObjectSync(spyCustomObjectSyncOptions, customObjectService)
                 .sync(singletonList(newCustomObjectDraft)).toCompletableFuture().join();
 
+        // assertion
         assertAll(
             () -> assertThat(syncStatistics.getProcessed().get()).isEqualTo(1),
             () -> assertThat(syncStatistics.getUpdated().get()).isEqualTo(1),
@@ -178,7 +171,52 @@ public class CustomObjectSyncTest {
     }
 
     @Test
-    void sync_WithErrorUpdatingAndTryingToRecoverWithFetchException_ShouldApplyErrorCallbackAndIncrementFailed() {
+    void sync_WithSameIdentifiersAndIdenticalValues_ShouldProcessedAndNotUpdated() {
+        final CustomObjectSyncOptions spyCustomObjectSyncOptions =
+                initCustomObjectSyncOptions(emptyList(), emptyList());
+
+        final CustomObject<JsonNode> existingCustomObject = mock(CustomObject.class);
+        when(existingCustomObject.getContainer()).thenReturn("someContainer");
+        when(existingCustomObject.getKey()).thenReturn("someKey");
+        when(existingCustomObject.getValue()).thenReturn(newCustomObjectDraft.getValue());
+
+        final CustomObject<JsonNode> updatedCustomObject = mock(CustomObject.class);
+        when(updatedCustomObject.getContainer()).thenReturn("someContainer");
+        when(updatedCustomObject.getKey()).thenReturn("someKey");
+        when(updatedCustomObject.getValue()).thenReturn(newCustomObjectDraft.getValue());
+
+        final Set<CustomObject<JsonNode>> existingCustomObjectSet = new HashSet<CustomObject<JsonNode>>();
+        existingCustomObjectSet.add(existingCustomObject);
+
+        final CustomObjectService customObjectService = mock(CustomObjectService.class);
+        when(customObjectService.fetchMatchingCustomObjects(anySet()))
+                .thenReturn(completedFuture(existingCustomObjectSet));
+        when(customObjectService.upsertCustomObject(any()))
+                .thenReturn(completedFuture(Optional.of(updatedCustomObject)));
+
+        // test
+        CustomObjectSyncStatistics syncStatistics =
+                new CustomObjectSync(spyCustomObjectSyncOptions, customObjectService)
+                        .sync(singletonList(newCustomObjectDraft)).toCompletableFuture().join();
+
+        // assertion
+        assertAll(
+            () -> assertThat(syncStatistics.getProcessed().get()).isEqualTo(1),
+            () -> assertThat(syncStatistics.getUpdated().get()).isEqualTo(0),
+            () -> assertThat(syncStatistics.getCreated().get()).isEqualTo(0),
+            () -> assertThat(syncStatistics.getFailed().get()).isEqualTo(0)
+        );
+    }
+
+
+    @Test
+    void sync_UpdateWithConcurrentModificationExceptionAndRetryWithFetchException_ShouldIncrementFailed() {
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+
+        final CustomObjectSyncOptions spyCustomObjectSyncOptions =
+                initCustomObjectSyncOptions(errorMessages, exceptions);
+
         final CustomObject<JsonNode> existingCustomObject = mock(CustomObject.class);
         when(existingCustomObject.getContainer()).thenReturn("someContainer");
         when(existingCustomObject.getKey()).thenReturn("someKey");
@@ -191,10 +229,6 @@ public class CustomObjectSyncTest {
         when(updatedCustomObject.getContainer()).thenReturn("someContainer");
         when(updatedCustomObject.getKey()).thenReturn("someKey");
         when(updatedCustomObject.getValue()).thenReturn(newCustomObjectDraft.getValue());
-
-        final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder
-                .of(mock(SphereClient.class))
-                .build();
 
         final CustomObjectService customObjectService = mock(CustomObjectService.class);
         when(customObjectService.fetchMatchingCustomObjects(anySet()))
@@ -206,24 +240,96 @@ public class CustomObjectSyncTest {
                     throw new SphereException();
                 }));
 
-        final CustomObjectSyncOptions spyCustomObjectSyncOptions = spy(customObjectSyncOptions);
-
         // test
         CustomObjectSyncStatistics syncStatistics =
                 new CustomObjectSync(spyCustomObjectSyncOptions, customObjectService)
                         .sync(singletonList(newCustomObjectDraft)).toCompletableFuture().join();
+        // assertion
         assertAll(
             () -> assertThat(syncStatistics.getProcessed().get()).isEqualTo(1),
+            () -> assertThat(syncStatistics.getCreated().get()).isEqualTo(0),
             () -> assertThat(syncStatistics.getUpdated().get()).isEqualTo(0),
             () -> assertThat(syncStatistics.getFailed().get()).isEqualTo(1)
         );
+        assertThat(exceptions).hasSize(1);
+        assertThat(errorMessages)
+            .hasSize(1)
+            .singleElement()
+            .isEqualTo(
+                    format("Failed to update custom object with key: '%s'. Reason: %s",
+                            CustomObjectCompositeIdentifier.of(newCustomObjectDraft).toString(),
+                            "Failed to fetch from CTP while retrying after concurrency modification.")
+            );
+
         verify(customObjectService).fetchCustomObject(any(CustomObjectCompositeIdentifier.class));
         verify(customObjectService).upsertCustomObject(any());
         verify(customObjectService).fetchMatchingCustomObjects(any());
     }
 
     @Test
-    void sync_WithDifferentIndentifiers_ShoudCreateSucessfully() {
+    void sync_UpdateWithSphereExceptionAndRetryWithFetchException_ShouldIncrementFailed() {
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+
+        final CustomObjectSyncOptions spyCustomObjectSyncOptions =
+                initCustomObjectSyncOptions(errorMessages, exceptions);
+
+        final CustomObject<JsonNode> existingCustomObject = mock(CustomObject.class);
+        when(existingCustomObject.getContainer()).thenReturn("someContainer");
+        when(existingCustomObject.getKey()).thenReturn("someKey");
+        when(existingCustomObject.getValue()).thenReturn(JsonNodeFactory.instance.numberNode(2020));
+
+        final Set<CustomObject<JsonNode>> existingCustomObjectSet = new HashSet<CustomObject<JsonNode>>();
+        existingCustomObjectSet.add(existingCustomObject);
+
+        final CustomObject<JsonNode> updatedCustomObject = mock(CustomObject.class);
+        when(updatedCustomObject.getContainer()).thenReturn("someContainer");
+        when(updatedCustomObject.getKey()).thenReturn("someKey");
+        when(updatedCustomObject.getValue()).thenReturn(newCustomObjectDraft.getValue());
+
+        final CustomObjectService customObjectService = mock(CustomObjectService.class);
+        when(customObjectService.fetchMatchingCustomObjects(anySet()))
+                .thenReturn(completedFuture(existingCustomObjectSet));
+        when(customObjectService.upsertCustomObject(any()))
+                .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
+        when(customObjectService.fetchCustomObject(any(CustomObjectCompositeIdentifier.class)))
+                .thenReturn(supplyAsync(() -> {
+                    throw new SphereException();
+                }));
+
+        // test
+        CustomObjectSyncStatistics syncStatistics =
+                new CustomObjectSync(spyCustomObjectSyncOptions, customObjectService)
+                        .sync(singletonList(newCustomObjectDraft)).toCompletableFuture().join();
+
+        // assertion
+        assertAll(
+            () -> assertThat(syncStatistics.getProcessed().get()).isEqualTo(1),
+            () -> assertThat(syncStatistics.getCreated().get()).isEqualTo(0),
+            () -> assertThat(syncStatistics.getUpdated().get()).isEqualTo(0),
+            () -> assertThat(syncStatistics.getFailed().get()).isEqualTo(1)
+        );
+        assertThat(exceptions).hasSize(1);
+        assertThat(errorMessages)
+            .hasSize(1)
+            .singleElement()
+            .isEqualTo(
+                    format("Failed to update custom object with key: '%s'. Reason: %s",
+                            CustomObjectCompositeIdentifier.of(newCustomObjectDraft).toString(),
+                            exceptions.get(0).getMessage())
+            );
+        verify(customObjectService).upsertCustomObject(any());
+        verify(customObjectService).fetchMatchingCustomObjects(any());
+    }
+
+    @Test
+    void sync_WithDifferentIdentifiers_ShouldCreateSuccessfully() {
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+
+        final CustomObjectSyncOptions spyCustomObjectSyncOptions =
+                initCustomObjectSyncOptions(errorMessages, exceptions);
+
         final CustomObject<JsonNode> existingCustomObject = mock(CustomObject.class);
         when(existingCustomObject.getContainer()).thenReturn("otherContainer");
         when(existingCustomObject.getKey()).thenReturn("otherKey");
@@ -247,31 +353,34 @@ public class CustomObjectSyncTest {
         when(customObjectService.upsertCustomObject(any()))
                 .thenReturn(completedFuture(Optional.of(updatedCustomObject)));
 
-        final CustomObjectSyncOptions spyCustomObjectSyncOptions = spy(customObjectSyncOptions);
-
         // test
         CustomObjectSyncStatistics syncStatistics =
                 new CustomObjectSync(spyCustomObjectSyncOptions, customObjectService)
                         .sync(singletonList(newCustomObjectDraft)).toCompletableFuture().join();
 
         // assertion
+        assertThat(exceptions).hasSize(0);
+        assertThat(errorMessages).hasSize(0);
+        assertAll(
+            () -> assertThat(syncStatistics.getProcessed().get()).isEqualTo(1),
+            () -> assertThat(syncStatistics.getCreated().get()).isEqualTo(1),
+            () -> assertThat(syncStatistics.getUpdated().get()).isEqualTo(0),
+            () -> assertThat(syncStatistics.getFailed().get()).isEqualTo(0)
+        );
         verify(spyCustomObjectSyncOptions).applyBeforeCreateCallback(newCustomObjectDraft);
-
-        assertThat(syncStatistics.getProcessed().get()).isEqualTo(1);
-        assertThat(syncStatistics.getCreated().get()).isEqualTo(1);
     }
 
     @Test
     void sync_WitEmptyValidDrafts_ShouldFailed() {
-        final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder
-            .of(mock(SphereClient.class))
-            .build();
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+
+        final CustomObjectSyncOptions spyCustomObjectSyncOptions =
+                initCustomObjectSyncOptions(errorMessages, exceptions);
 
         final CustomObjectService customObjectService = mock(CustomObjectService.class);
         when(customObjectService.fetchMatchingCustomObjects(anySet())).thenReturn(completedFuture(emptySet()));
         when(customObjectService.upsertCustomObject(any())).thenReturn(completedFuture(Optional.empty()));
-
-        final CustomObjectSyncOptions spyCustomObjectSyncOptions = spy(customObjectSyncOptions);
 
         // test
         CustomObjectSyncStatistics syncStatistics = new CustomObjectSync(
@@ -279,9 +388,26 @@ public class CustomObjectSyncTest {
             singletonList(null)).toCompletableFuture().join();
 
         // assertion
-        assertThat(syncStatistics.getProcessed().get()).isEqualTo(1);
-        assertThat(syncStatistics.getCreated().get()).isEqualTo(0);
-        assertThat(syncStatistics.getFailed().get()).isEqualTo(1);
+        assertThat(exceptions).hasSize(1);
+        assertThat(errorMessages).hasSize(1);
+        assertAll(
+            () -> assertThat(syncStatistics.getProcessed().get()).isEqualTo(1),
+            () -> assertThat(syncStatistics.getCreated().get()).isEqualTo(0),
+            () -> assertThat(syncStatistics.getUpdated().get()).isEqualTo(0),
+            () -> assertThat(syncStatistics.getFailed().get()).isEqualTo(1)
+        );
+    }
 
+    @Nonnull
+    private CustomObjectSyncOptions initCustomObjectSyncOptions(
+            @Nonnull final List<String> errorMessages,
+            @Nonnull final List<Throwable> exceptions) {
+        return spy(CustomObjectSyncOptionsBuilder
+                .of(mock(SphereClient.class))
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorMessages.add(exception.getMessage());
+                    exceptions.add(exception.getCause());
+                })
+                .build());
     }
 }
