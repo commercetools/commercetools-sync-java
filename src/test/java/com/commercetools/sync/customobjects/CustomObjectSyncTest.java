@@ -220,8 +220,6 @@ public class CustomObjectSyncTest {
         verify(customObjectService).fetchCustomObject(any(CustomObjectCompositeIdentifier.class));
         verify(customObjectService).upsertCustomObject(any());
         verify(customObjectService).fetchMatchingCustomObjects(any());
-
-
     }
 
     @Test
