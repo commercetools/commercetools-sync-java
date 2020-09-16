@@ -271,7 +271,7 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
                 .upsertCustomObject(newCustomObject)
                 .handle(ImmutablePair::new)
                 .thenCompose(updateResponse -> {
-                    final CustomObject<JsonNode> updatedCustomObject = updateResponse.getKey().get();
+                    final Optional<CustomObject<JsonNode>> updateCustomObjectOptional = updateResponse.getKey();
                     final Throwable sphereException = updateResponse.getValue();
                     if (sphereException != null) {
                         return executeSupplierIfConcurrentModificationException(sphereException,
@@ -287,7 +287,7 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
                             });
                     } else {
                         statistics.incrementUpdated();
-                        return CompletableFuture.completedFuture(Optional.of(updatedCustomObject));
+                        return CompletableFuture.completedFuture(Optional.of(updateCustomObjectOptional.get()));
                     }
 
                 });

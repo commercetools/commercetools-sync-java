@@ -1,9 +1,11 @@
 package com.commercetools.sync.customobjects;
 
+import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.customobjects.helpers.CustomObjectSyncStatistics;
 import com.commercetools.sync.services.CustomObjectService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
@@ -25,6 +27,7 @@ import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.mock;
@@ -167,8 +170,59 @@ public class CustomObjectSyncTest {
                 .sync(singletonList(newCustomObjectDraft)).toCompletableFuture().join();
 
 
-        assertThat(syncStatistics.getProcessed().get()).isEqualTo(1);
-        assertThat(syncStatistics.getUpdated().get()).isEqualTo(1);
+        assertAll(
+            () -> assertThat(syncStatistics.getProcessed().get()).isEqualTo(1),
+            () -> assertThat(syncStatistics.getUpdated().get()).isEqualTo(1),
+            () -> assertThat(syncStatistics.getCreated().get()).isEqualTo(1),
+            () -> assertThat(syncStatistics.getFailed().get()).isEqualTo(0)
+        );
+    }
+
+    @Test
+    void sync_WithErrorUpdatingAndTryingToRecoverWithFetchException_ShouldApplyErrorCallbackAndIncrementFailed() {
+        final CustomObject<JsonNode> existingCustomObject = mock(CustomObject.class);
+        when(existingCustomObject.getContainer()).thenReturn("someContainer");
+        when(existingCustomObject.getKey()).thenReturn("someKey");
+        when(existingCustomObject.getValue()).thenReturn(JsonNodeFactory.instance.numberNode(2020));
+
+        final Set<CustomObject<JsonNode>> existingCustomObjectSet = new HashSet<CustomObject<JsonNode>>();
+        existingCustomObjectSet.add(existingCustomObject);
+
+        final CustomObject<JsonNode> updatedCustomObject = mock(CustomObject.class);
+        when(updatedCustomObject.getContainer()).thenReturn("someContainer");
+        when(updatedCustomObject.getKey()).thenReturn("someKey");
+        when(updatedCustomObject.getValue()).thenReturn(newCustomObjectDraft.getValue());
+
+        final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder
+                .of(mock(SphereClient.class))
+                .build();
+
+        final CustomObjectService customObjectService = mock(CustomObjectService.class);
+        when(customObjectService.fetchMatchingCustomObjects(anySet()))
+                .thenReturn(completedFuture(existingCustomObjectSet));
+        when(customObjectService.upsertCustomObject(any()))
+                .thenReturn(supplyAsync(() -> { throw new ConcurrentModificationException(); }));
+        when(customObjectService.fetchCustomObject(any(CustomObjectCompositeIdentifier.class)))
+                .thenReturn(supplyAsync(() -> {
+                    throw new SphereException();
+                }));
+
+        final CustomObjectSyncOptions spyCustomObjectSyncOptions = spy(customObjectSyncOptions);
+
+        // test
+        CustomObjectSyncStatistics syncStatistics =
+                new CustomObjectSync(spyCustomObjectSyncOptions, customObjectService)
+                        .sync(singletonList(newCustomObjectDraft)).toCompletableFuture().join();
+        assertAll(
+            () -> assertThat(syncStatistics.getProcessed().get()).isEqualTo(1),
+            () -> assertThat(syncStatistics.getUpdated().get()).isEqualTo(0),
+            () -> assertThat(syncStatistics.getFailed().get()).isEqualTo(1)
+        );
+        verify(customObjectService).fetchCustomObject(any(CustomObjectCompositeIdentifier.class));
+        verify(customObjectService).upsertCustomObject(any());
+        verify(customObjectService).fetchMatchingCustomObjects(any());
+
+
     }
 
     @Test
