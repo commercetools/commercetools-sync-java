@@ -169,11 +169,10 @@ public class CustomObjectSyncTest {
                 new CustomObjectSync(spyCustomObjectSyncOptions, customObjectService)
                 .sync(singletonList(newCustomObjectDraft)).toCompletableFuture().join();
 
-
         assertAll(
             () -> assertThat(syncStatistics.getProcessed().get()).isEqualTo(1),
             () -> assertThat(syncStatistics.getUpdated().get()).isEqualTo(1),
-            () -> assertThat(syncStatistics.getCreated().get()).isEqualTo(1),
+            () -> assertThat(syncStatistics.getCreated().get()).isEqualTo(0),
             () -> assertThat(syncStatistics.getFailed().get()).isEqualTo(0)
         );
     }
