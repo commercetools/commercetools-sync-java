@@ -43,8 +43,6 @@ import static java.lang.String.format;
 
 public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics, CategorySyncOptions> {
 
-    private static final String CATEGORY_DRAFT_KEY_NOT_SET = "CategoryDraft with name: %s doesn't have a key.";
-    private static final String CATEGORY_DRAFT_IS_NULL = "CategoryDraft is null.";
     private static final String FAILED_TO_PROCESS  = "Failed to process the CategoryDraft with key:'%s'. Reason: %s";
     private static final String UPDATE_FAILED = "Failed to update Category with key: '%s'. Reason: %s";
 
