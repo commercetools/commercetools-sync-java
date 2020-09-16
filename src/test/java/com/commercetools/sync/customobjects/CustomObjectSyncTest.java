@@ -172,7 +172,7 @@ public class CustomObjectSyncTest {
     }
 
     @Test
-    void sync_WithDifferentIndentifiers_ShoudUpdateSucessfully() {
+    void sync_WithDifferentIndentifiers_ShoudCreateSucessfully() {
         final CustomObject<JsonNode> existingCustomObject = mock(CustomObject.class);
         when(existingCustomObject.getContainer()).thenReturn("otherContainer");
         when(existingCustomObject.getKey()).thenReturn("otherKey");
