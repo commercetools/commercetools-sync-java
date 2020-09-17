@@ -10,13 +10,11 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-
 
 public final class CustomObjectSyncOptions extends BaseSyncOptions<CustomObject<JsonNode>,
     CustomObjectDraft<JsonNode>> {

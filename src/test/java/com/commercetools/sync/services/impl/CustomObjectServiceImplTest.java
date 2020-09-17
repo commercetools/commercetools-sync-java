@@ -265,9 +265,8 @@ class CustomObjectServiceImplTest {
 
         when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
 
-        final Set<CustomObject<JsonNode>> customObjects = service
-            .fetchMatchingCustomObjects(customObjectCompositeIdentifiers)
-            .toCompletableFuture().join();
+        final Set<CustomObject<JsonNode>> customObjects =
+            service.fetchMatchingCustomObjects(customObjectCompositeIdentifiers).toCompletableFuture().join();
 
         List<CustomObjectCompositeIdentifier> customObjectCompositeIdlist =
             new ArrayList<CustomObjectCompositeIdentifier>(customObjectCompositeIdentifiers);

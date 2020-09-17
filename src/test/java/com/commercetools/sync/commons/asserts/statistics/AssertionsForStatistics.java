@@ -115,5 +115,4 @@ public final class AssertionsForStatistics {
     public static CustomObjectSyncStatisticsAssert assertThat(@Nullable final CustomObjectSyncStatistics statistics) {
         return new CustomObjectSyncStatisticsAssert(statistics);
     }
-
 }

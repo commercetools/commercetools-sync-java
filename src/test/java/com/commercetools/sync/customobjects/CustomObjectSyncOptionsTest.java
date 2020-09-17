@@ -35,8 +35,8 @@ class CustomObjectSyncOptionsTest {
 
     @Test
     void applyBeforeUpdateCallback_WithNullCallbackAndEmptyUpdateActions_ShouldReturnIdenticalList() {
-        final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder.of(CTP_CLIENT)
-                                                                                              .build();
+        final CustomObjectSyncOptions customObjectSyncOptions =
+                CustomObjectSyncOptionsBuilder.of(CTP_CLIENT).build();
 
         final List<UpdateAction<CustomObject<JsonNode>>> updateActions = emptyList();
 
