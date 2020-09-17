@@ -43,7 +43,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
  * @param <E> Expansion Model (e.g. {@link io.sphere.sdk.products.expansion.ProductExpansionModel},
  *            {@link io.sphere.sdk.categories.expansion.CategoryExpansionModel}, etc..
  */
-abstract class BaseService<T, U extends ResourceView<U,U>, S extends BaseSyncOptions,
+abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOptions,
     Q extends MetaModelQueryDsl<U, Q, M, E>, M, E> {
 
     final S syncOptions;
@@ -67,7 +67,7 @@ abstract class BaseService<T, U extends ResourceView<U,U>, S extends BaseSyncOpt
      *                              resource.
      * @param updateActions         the update actions to execute on the resource.
      * @return an instance of {@link CompletionStage}&lt;{@code U}&gt; which contains as a result an instance of
-     *         the resource {@link U} after all the update actions have been executed.
+     *     the resource {@link U} after all the update actions have been executed.
      */
     @Nonnull
     CompletionStage<U> updateResource(
@@ -91,7 +91,7 @@ abstract class BaseService<T, U extends ResourceView<U,U>, S extends BaseSyncOpt
      *                              resource.
      * @param batches               the batches of update actions to execute.
      * @return an instance of {@link CompletionStage}&lt;{@code U}&gt; which contains as a result an instance of
-     *         the resource {@link U} after all the update actions in all batches have been executed.
+     *     the resource {@link U} after all the update actions in all batches have been executed.
      */
     @Nonnull
     private CompletionStage<U> updateBatches(
@@ -125,7 +125,7 @@ abstract class BaseService<T, U extends ResourceView<U,U>, S extends BaseSyncOpt
      * @param keyMapper     a function to get the key from the supplied draft.
      * @param createCommand a function to get the create command using the supplied draft.
      * @return a {@link CompletionStage} containing an optional with the created resource if successful otherwise an
-     *         empty optional.
+     *     empty optional.
      */
     @SuppressWarnings("unchecked")
     @Nonnull
@@ -173,8 +173,8 @@ abstract class BaseService<T, U extends ResourceView<U,U>, S extends BaseSyncOpt
      * @param keyMapper     a function to get the key from the resource.
      * @param querySupplier supplies the query to fetch the resource with the given key.
      * @return {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt; in which the result of it's
-     *          completion could contain an {@link Optional} with the id inside of it or an empty {@link Optional} if no
-     *          resource was found in the CTP project with this key.
+     *     completion could contain an {@link Optional} with the id inside of it or an empty {@link Optional} if no
+     *     resource was found in the CTP project with this key.
      */
     @Nonnull
     CompletionStage<Optional<String>> fetchCachedResourceId(
@@ -247,7 +247,7 @@ abstract class BaseService<T, U extends ResourceView<U,U>, S extends BaseSyncOpt
      * @param keyMapper     a function to get the key from the resource.
      * @param querySupplier supplies the query to fetch the resources with the given keys.
      * @return {@link CompletionStage}&lt;{@link Set}&lt;{@code U}&gt;&gt; in which the result of it's completion
-     *         contains a {@link Set} of all matching resources.
+     *     contains a {@link Set} of all matching resources.
      */
     @Nonnull
     CompletionStage<Set<U>> fetchMatchingResources(
@@ -277,7 +277,7 @@ abstract class BaseService<T, U extends ResourceView<U,U>, S extends BaseSyncOpt
      * @param key           the key of the resource to fetch
      * @param querySupplier supplies the query to fetch the resource with the given key.
      * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion contains an
-     *         {@link Optional} that contains the matching {@code T} if exists, otherwise empty.
+     * {@link Optional} that contains the matching {@code T} if exists, otherwise empty.
      */
     @Nonnull
     CompletionStage<Optional<U>> fetchResource(

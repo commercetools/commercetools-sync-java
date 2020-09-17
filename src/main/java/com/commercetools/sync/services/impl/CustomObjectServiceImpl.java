@@ -32,7 +32,7 @@ public class CustomObjectServiceImpl
     CustomObjectSyncOptions,
     CustomObjectQuery<JsonNode>,
     CustomObjectQueryModel<CustomObject<JsonNode>>, CustomObjectExpansionModel<CustomObject<JsonNode>>>
-        implements CustomObjectService {
+    implements CustomObjectService {
 
     public CustomObjectServiceImpl(@Nonnull final CustomObjectSyncOptions syncOptions) {
         super(syncOptions);
@@ -41,7 +41,7 @@ public class CustomObjectServiceImpl
     @Nonnull
     @Override
     public CompletionStage<Optional<String>> fetchCachedCustomObjectId(
-            @Nonnull final CustomObjectCompositeIdentifier identifier) {
+        @Nonnull final CustomObjectCompositeIdentifier identifier) {
 
         String container = identifier.getContainer();
         String key = identifier.getKey();
@@ -53,19 +53,19 @@ public class CustomObjectServiceImpl
         return fetchCachedResourceId(identifier.toString(),
             draft -> CustomObjectCompositeIdentifier.of(draft).toString(),
             () -> CustomObjectQuery.ofJsonNode()
-                        .withPredicates(q -> q.container().is(container).and(q.key().is(key)))
+                                   .withPredicates(q -> q.container().is(container).and(q.key().is(key)))
         );
     }
 
     @Nonnull
     @Override
     public CompletionStage<Set<CustomObject<JsonNode>>> fetchMatchingCustomObjects(
-            @Nonnull final Set<CustomObjectCompositeIdentifier> identifiers) {
+        @Nonnull final Set<CustomObjectCompositeIdentifier> identifiers) {
 
         Set<CustomObjectCompositeIdentifier> filteredIdentifiers = identifiers.stream()
                 .filter(identifier ->
-                            StringUtils.isNotEmpty(identifier.getContainer())
-                        &&  StringUtils.isNotEmpty(identifier.getKey()))
+                        StringUtils.isNotEmpty(identifier.getContainer())
+                    &&  StringUtils.isNotEmpty(identifier.getKey()))
                 .collect(Collectors.toSet());
 
         if (filteredIdentifiers.size() == 0) {
@@ -73,9 +73,9 @@ public class CustomObjectServiceImpl
         }
 
         Set<String> identifierStrings =
-                filteredIdentifiers.stream()
-                        .map(CustomObjectCompositeIdentifier::toString)
-                        .collect(Collectors.toSet());
+            filteredIdentifiers.stream()
+                               .map(CustomObjectCompositeIdentifier::toString)
+                               .collect(Collectors.toSet());
 
         return fetchMatchingResources(identifierStrings,
             draft -> CustomObjectCompositeIdentifier.of(draft).toString(),
@@ -88,8 +88,8 @@ public class CustomObjectServiceImpl
 
     @Nonnull
     private QueryPredicate<CustomObject<JsonNode>> createQuery(
-            @Nonnull final CustomObjectQueryModel<CustomObject<JsonNode>> queryModel,
-            @Nonnull final Set<CustomObjectCompositeIdentifier> identifiers) {
+        @Nonnull final CustomObjectQueryModel<CustomObject<JsonNode>> queryModel,
+        @Nonnull final Set<CustomObjectCompositeIdentifier> identifiers) {
 
         QueryPredicate<CustomObject<JsonNode>> queryPredicate = QueryPredicate.of(null);
         boolean firstAttempt = true;
@@ -109,7 +109,7 @@ public class CustomObjectServiceImpl
     @Nonnull
     @Override
     public CompletionStage<Optional<CustomObject<JsonNode>>> fetchCustomObject(
-            @Nonnull final CustomObjectCompositeIdentifier identifier) {
+        @Nonnull final CustomObjectCompositeIdentifier identifier) {
 
         String container = identifier.getContainer();
         String key = identifier.getKey();
@@ -133,6 +133,6 @@ public class CustomObjectServiceImpl
         }
         return createResource(customObjectDraft,
             draft -> CustomObjectCompositeIdentifier.of(draft).toString(),
-                CustomObjectUpsertCommand::of);
+            CustomObjectUpsertCommand::of);
     }
 }

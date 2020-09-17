@@ -18,13 +18,13 @@ import static java.util.Optional.ofNullable;
 
 /**
  * @param <V> Resource Draft (e.g. {@link io.sphere.sdk.products.ProductDraft},
- *             {@link io.sphere.sdk.categories.CategoryDraft}, etc..
+ *            {@link io.sphere.sdk.categories.CategoryDraft}, etc..
  * @param <U> Resource (e.g. {@link io.sphere.sdk.products.Product}, {@link io.sphere.sdk.categories.Category}, etc..
  */
 public class BaseSyncOptions<U, V> {
     private final SphereClient ctpClient;
     private final QuadConsumer<SyncException, Optional<V>, Optional<U>, List<UpdateAction<U>>>
-            errorCallback;
+        errorCallback;
     private final TriConsumer<SyncException, Optional<V>, Optional<U>> warningCallback;
     private int batchSize;
     private final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>> beforeUpdateCallback;
@@ -33,7 +33,7 @@ public class BaseSyncOptions<U, V> {
     protected BaseSyncOptions(
         @Nonnull final SphereClient ctpClient,
         @Nullable final QuadConsumer<SyncException, Optional<V>, Optional<U>, List<UpdateAction<U>>>
-                errorCallback,
+            errorCallback,
         @Nullable final TriConsumer<SyncException, Optional<V>, Optional<U>> warningCallback,
         final int batchSize,
         @Nullable final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>>
@@ -64,9 +64,9 @@ public class BaseSyncOptions<U, V> {
      * the sync process that represents an error.
      *
      * @return the {@code errorCallback} {@link QuadConsumer}&lt;{@link SyncException},
-     *      {@link Optional}&lt;{@code V}&gt;, {@link Optional}&lt;{@code U}&gt;,
-     *      {@link List}&lt;{@link UpdateAction}&lt;{@code U}&gt;&gt; function set to
-     *      {@code this} {@link BaseSyncOptions}
+     * {@link Optional}&lt;{@code V}&gt;, {@link Optional}&lt;{@code U}&gt;,
+     * {@link List}&lt;{@link UpdateAction}&lt;{@code U}&gt;&gt; function set to
+     * {@code this} {@link BaseSyncOptions}
      */
     @Nullable
     public QuadConsumer<SyncException, Optional<V>, Optional<U>, List<UpdateAction<U>>> getErrorCallback() {
@@ -80,8 +80,8 @@ public class BaseSyncOptions<U, V> {
      * during the sync process that represents a warning.
      *
      * @return the {@code warningCallback} {@link TriConsumer}&lt;{@link SyncException},
-     *      {@link Optional}&lt;{@code V}&gt;, {@link Optional}&lt;{@code U}&gt;&gt; function set to {@code this}
-     *      {@link BaseSyncOptions}
+     * {@link Optional}&lt;{@code V}&gt;, {@link Optional}&lt;{@code U}&gt;&gt; function set to {@code this}
+     * {@link BaseSyncOptions}
      */
     @Nullable
     public TriConsumer<SyncException, Optional<V>, Optional<U>> getWarningCallback() {
@@ -94,12 +94,12 @@ public class BaseSyncOptions<U, V> {
      * {@link BaseSyncOptions}. If there {@code warningCallback} is null, this
      * method does nothing.
      *
-     * @param exception the exception to supply to the {@code warningCallback} function.
-     * @param oldResource the old resource that is being compared to the new draft.
+     * @param exception        the exception to supply to the {@code warningCallback} function.
+     * @param oldResource      the old resource that is being compared to the new draft.
      * @param newResourceDraft the new resource draft that is being compared to the old resource.
      */
     public void applyWarningCallback(@Nonnull final SyncException exception, @Nullable final U oldResource,
-        @Nullable final V newResourceDraft) {
+                                     @Nullable final V newResourceDraft) {
         if (this.warningCallback != null) {
             this.warningCallback.accept(exception, Optional.ofNullable(newResourceDraft),
                 Optional.ofNullable(oldResource));
@@ -111,13 +111,15 @@ public class BaseSyncOptions<U, V> {
      * which is set to {@code this} instance of the {@link BaseSyncOptions}. If there {@code errorCallback} is null,
      * this method does nothing.
      *
-     * @param exception {@link Throwable} instance to supply as first param to the {@code errorCallback} function.
-     * @param oldResource the old resource that is being compared to the new draft.
+     * @param exception        {@link Throwable} instance to supply as first param to the {@code errorCallback}
+     *                         function.
+     * @param oldResource      the old resource that is being compared to the new draft.
      * @param newResourceDraft the new resource draft that is being compared to the old resource.
-     * @param updateActions the list of update actions.
+     * @param updateActions    the list of update actions.
      */
     public void applyErrorCallback(@Nonnull final SyncException exception, @Nullable final U oldResource,
-        @Nullable final V newResourceDraft, @Nullable final List<UpdateAction<U>> updateActions) {
+                                   @Nullable final V newResourceDraft,
+                                   @Nullable final List<UpdateAction<U>> updateActions) {
         if (this.errorCallback != null) {
             this.errorCallback.accept(exception, Optional.ofNullable(newResourceDraft),
                 Optional.ofNullable(oldResource), updateActions);
@@ -125,7 +127,6 @@ public class BaseSyncOptions<U, V> {
     }
 
     /**
-     *
      * @param syncException {@link Throwable} instance to supply as first param to the {@code errorCallback} function.
      * @see #applyErrorCallback(SyncException exception, Object oldResource, Object newResource, List updateActions)
      */
@@ -134,7 +135,6 @@ public class BaseSyncOptions<U, V> {
     }
 
     /**
-     *
      * @param errorMessage the error message to supply as part of first param to the {@code errorCallback} function.
      * @see #applyErrorCallback(SyncException exception, Object oldResource, Object newResource, List updateActions)
      */
@@ -148,9 +148,10 @@ public class BaseSyncOptions<U, V> {
      * batches and then processed. It allows to reduce the query size for fetching all resources processed in one
      * batch.
      * E.g. value of 30 means that 30 entries from input list would be accumulated and one API call will be performed
-     * for fetching entries responding to them. Then comparision and sync are performed.
+     * for fetching entries responding to them. Then comparison and sync are performed.
      *
      * <p>This batch size is set to 30 by default.
+     *
      * @return option that indicates capacity of batch of resources to process.
      */
     public int getBatchSize() {
@@ -164,8 +165,8 @@ public class BaseSyncOptions<U, V> {
      * generated list of update actions to produce a resultant list after the filter function has been applied.
      *
      * @return the {@code beforeUpdateCallback} {@link TriFunction}&lt;{@link List}&lt;{@link UpdateAction}&lt;
-     *         {@code U}&gt;&gt;, {@code V}, {@code U}, {@link List}&lt;{@link UpdateAction}&lt;{@code U}&gt;&gt;&gt;
-     *         function set to {@code this} {@link BaseSyncOptions}.
+     *     {@code U}&gt;&gt;, {@code V}, {@code U}, {@link List}&lt;{@link UpdateAction}&lt;{@code U}&gt;&gt;&gt;
+     *     function set to {@code this} {@link BaseSyncOptions}.
      */
     @Nullable
     public TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>> getBeforeUpdateCallback() {
@@ -179,7 +180,7 @@ public class BaseSyncOptions<U, V> {
      * function has been applied.
      *
      * @return the {@code beforeUpdateCallback} {@link Function}&lt;{@code V}, {@link Optional}&lt;{@code V}&gt;&gt;
-     *         function set to {@code this} {@link BaseSyncOptions}.
+     *      function set to {@code this} {@link BaseSyncOptions}.
      */
     @Nullable
     public Function<V, V> getBeforeCreateCallback() {
@@ -193,13 +194,13 @@ public class BaseSyncOptions<U, V> {
      * is null or {@code updateActions} is empty, this method does nothing to the supplied list of {@code updateActions}
      * and returns the same list. If the result of the callback is null, an empty list is returned.
      *
-     * @param updateActions the list of update actions to apply the {@code beforeUpdateCallback} function on.
+     * @param updateActions    the list of update actions to apply the {@code beforeUpdateCallback} function on.
      * @param newResourceDraft the new resource draft that is being compared to the old resource.
-     * @param oldResource the old resource that is being compared to the new draft.
+     * @param oldResource      the old resource that is being compared to the new draft.
      * @return a list of update actions after applying the {@code beforeUpdateCallback} function on. If the
-     *         {@code beforeUpdateCallback} function is null or {@code updateActions} is empty, the supplied list of
-     *         {@code updateActions} is returned as is. If the return of the callback is null, an empty list is
-     *         returned.
+     *     {@code beforeUpdateCallback} function is null or {@code updateActions} is empty, the supplied list of
+     *     {@code updateActions} is returned as is. If the return of the callback is null, an empty list is
+     *     returned.
      */
     @Nonnull
     public List<UpdateAction<U>> applyBeforeUpdateCallback(@Nonnull final List<UpdateAction<U>> updateActions,
@@ -224,12 +225,12 @@ public class BaseSyncOptions<U, V> {
      *
      * @param newResourceDraft the new resource draft that should be created.
      * @return an optional containing the resultant resource draft after applying the {@code beforeCreateCallback}
-     *         function on. If the {@code beforeCreateCallback} function is null, the supplied resource draft is
-     *         returned as is, wrapped in an optional.
+     *     function on. If the {@code beforeCreateCallback} function is null, the supplied resource draft is
+     *     returned as is, wrapped in an optional.
      */
     @Nonnull
     public Optional<V> applyBeforeCreateCallback(@Nonnull final V newResourceDraft) {
         return ofNullable(
-                beforeCreateCallback != null ? beforeCreateCallback.apply(newResourceDraft) : newResourceDraft);
+            beforeCreateCallback != null ? beforeCreateCallback.apply(newResourceDraft) : newResourceDraft);
     }
 }

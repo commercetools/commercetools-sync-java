@@ -9,7 +9,7 @@ import io.sphere.sdk.customobjects.CustomObjectDraft;
 import javax.annotation.Nonnull;
 
 public final class CustomObjectSyncOptionsBuilder extends BaseSyncOptionsBuilder<CustomObjectSyncOptionsBuilder,
-        CustomObjectSyncOptions, CustomObject<JsonNode>, CustomObjectDraft<JsonNode>> {
+    CustomObjectSyncOptions, CustomObject<JsonNode>, CustomObjectDraft<JsonNode>> {
 
     public static final int BATCH_SIZE_DEFAULT = 50;
 
