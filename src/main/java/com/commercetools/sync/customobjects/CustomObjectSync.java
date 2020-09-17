@@ -270,9 +270,9 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
             return customObjectService
                 .upsertCustomObject(newCustomObject)
                 .handle(ImmutablePair::new)
-                .thenCompose(updateResponse -> {
-                    final Optional<CustomObject<JsonNode>> updateCustomObjectOptional = updateResponse.getKey();
-                    final Throwable sphereException = updateResponse.getValue();
+                .thenCompose(updatedResponseEntry -> {
+                    final Optional<CustomObject<JsonNode>> updateCustomObjectOptional = updatedResponseEntry.getKey();
+                    final Throwable sphereException = updatedResponseEntry.getValue();
                     if (sphereException != null) {
                         return executeSupplierIfConcurrentModificationException(sphereException,
                             () -> fetchAndUpdate(oldCustomObject, newCustomObject),
@@ -305,9 +305,9 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
         return customObjectService
             .fetchCustomObject(identifier)
             .handle(ImmutablePair::new)
-            .thenCompose(fetchResponse -> {
-                final Optional<CustomObject<JsonNode>> fetchedCustomObjectOptional = fetchResponse.getKey();
-                final Throwable exception = fetchResponse.getValue();
+            .thenCompose(fetchedResponseEntry -> {
+                final Optional<CustomObject<JsonNode>> fetchedCustomObjectOptional = fetchedResponseEntry.getKey();
+                final Throwable exception = fetchedResponseEntry.getValue();
 
                 if (exception != null) {
                     final String errorMessage = format(CTP_CUSTOM_OBJECT_UPDATE_FAILED, identifier.toString(),
