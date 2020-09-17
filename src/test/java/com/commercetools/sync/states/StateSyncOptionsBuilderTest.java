@@ -4,6 +4,7 @@ import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.states.State;
@@ -48,7 +49,8 @@ class StateSyncOptionsBuilderTest {
             () -> assertThat(stateSyncOptions.getBeforeCreateCallback()).isNull(),
             () -> assertThat(stateSyncOptions.getErrorCallback()).isNull(),
             () -> assertThat(stateSyncOptions.getWarningCallback()).isNull(),
-            () -> assertThat(stateSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT),
+            () -> assertThat(stateSyncOptions.getCtpClient())
+                    .isEqualTo(CustomHeaderSphereClientDecorator.of(CTP_CLIENT)),
             () -> assertThat(stateSyncOptions.getBatchSize()).isEqualTo(StateSyncOptionsBuilder.BATCH_SIZE_DEFAULT)
         );
     }

@@ -4,6 +4,7 @@ import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
@@ -48,7 +49,7 @@ class ProductSyncOptionsBuilderTest {
         assertThat(productSyncOptions.getBeforeCreateCallback()).isNull();
         assertThat(productSyncOptions.getErrorCallback()).isNull();
         assertThat(productSyncOptions.getWarningCallback()).isNull();
-        assertThat(productSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
+        assertThat(productSyncOptions.getCtpClient()).isEqualTo(CustomHeaderSphereClientDecorator.of(CTP_CLIENT));
         assertThat(productSyncOptions.getBatchSize()).isEqualTo(ProductSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
     }
 

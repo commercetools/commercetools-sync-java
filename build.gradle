@@ -52,4 +52,5 @@ dependencies {
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:${jupiterApiVersion}"
     testRuntimeOnly "org.junit.vintage:junit-vintage-engine:${jupiterApiVersion}"
     testImplementation "org.assertj:assertj-core:${assertjVersion}"
+    testImplementation "org.mockito:mockito-inline:${mockitoJunitJupiterVersion}"
 }

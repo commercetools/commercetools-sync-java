@@ -4,6 +4,7 @@ import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraftBuilder;
@@ -46,7 +47,7 @@ class CartDiscountSyncOptionsBuilderTest {
         assertThat(cartDiscountSyncOptions.getBeforeCreateCallback()).isNull();
         assertThat(cartDiscountSyncOptions.getErrorCallback()).isNull();
         assertThat(cartDiscountSyncOptions.getWarningCallback()).isNull();
-        assertThat(cartDiscountSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
+        assertThat(cartDiscountSyncOptions.getCtpClient()).isEqualTo(CustomHeaderSphereClientDecorator.of(CTP_CLIENT));
         assertThat(cartDiscountSyncOptions.getBatchSize()).isEqualTo(CartDiscountSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
     }
 
