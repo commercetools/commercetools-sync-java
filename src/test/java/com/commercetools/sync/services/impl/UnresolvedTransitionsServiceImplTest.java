@@ -46,10 +46,10 @@ class UnresolvedTransitionsServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        SphereClient mockClient = mock(SphereClient.class);
-        SphereClient mockDecoratedClient = mock(CustomHeaderSphereClientDecorator.class);
         errorMessages = new ArrayList<>();
         errorExceptions = new ArrayList<>();
+        SphereClient mockClient = mock(SphereClient.class);
+        SphereClient mockDecoratedClient = mock(CustomHeaderSphereClientDecorator.class);
         stateSyncOptions = spy(StateSyncOptionsBuilder
             .of(mockClient)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {

@@ -47,10 +47,10 @@ class UnresolvedReferencesServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        SphereClient mockClient = mock(SphereClient.class);
-        SphereClient mockDecoratedClient = mock(CustomHeaderSphereClientDecorator.class);
         errorMessages = new ArrayList<>();
         errorExceptions = new ArrayList<>();
+        SphereClient mockClient = mock(SphereClient.class);
+        SphereClient mockDecoratedClient = mock(CustomHeaderSphereClientDecorator.class);
         productSyncOptions = spy(ProductSyncOptionsBuilder
             .of(mockClient)
             .errorCallback((exception, oldResource, newResource, actions) -> {
