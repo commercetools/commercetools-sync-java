@@ -1,6 +1,7 @@
 package com.commercetools.sync.products;
 
 import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
@@ -83,7 +84,8 @@ class ProductSyncTest {
         // assertion
         verifyNoMoreInteractions(ctpClient);
         verifyNoMoreInteractions(productService);
-        assertThat(statistics).hasValues(1, 0, 0, 1, 0);
+        assertThat(statistics)
+            .hasValues(1, 0, 0, 1, 0);
     }
 
     @Test
@@ -99,16 +101,19 @@ class ProductSyncTest {
         final List<Throwable> exceptions = new ArrayList<>();
 
         final SphereClient mockClient = mock(SphereClient.class);
-        when(mockClient.execute(any(ProductQuery.class)))
-                .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
+        final SphereClient mockDecoratedClient = mock(CustomHeaderSphereClientDecorator.class);
 
-        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder
+        final ProductSyncOptions syncOptions = spy(ProductSyncOptionsBuilder
             .of(mockClient)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorMessages.add(exception.getMessage());
                 exceptions.add(exception.getCause());
             })
-            .build();
+            .build());
+
+        when(syncOptions.getCtpClient()).thenReturn(mockDecoratedClient);
+        when(mockDecoratedClient.execute(any(ProductQuery.class)))
+                .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
 
         final ProductService productService = spy(new ProductServiceImpl(syncOptions));
 
@@ -118,7 +123,6 @@ class ProductSyncTest {
 
         final CategoryService categoryService = mock(CategoryService.class);
         when(categoryService.fetchMatchingCategoriesByKeys(any())).thenReturn(completedFuture(emptySet()));
-
 
         final ProductSync productSync = new ProductSync(syncOptions, productService,
             productTypeService, categoryService, mock(TypeService.class),
@@ -134,13 +138,11 @@ class ProductSyncTest {
         // assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).contains("Failed to build a cache of product keys to ids.")
-            );
+            .singleElement().asString().contains("Failed to build a cache of product keys to ids.");
 
         assertThat(exceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> {
+            .singleElement().satisfies(throwable -> {
                 assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
                 assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
             });
@@ -157,21 +159,21 @@ class ProductSyncTest {
                 .state(null)
                 .build();
 
-     
-
         final SphereClient mockClient = mock(SphereClient.class);
-        when(mockClient.execute(any(ProductQuery.class)))
+        final SphereClient mockDecoratedClient = mock(CustomHeaderSphereClientDecorator.class);
+        when(mockDecoratedClient.execute(any(ProductQuery.class)))
                 .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
 
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> exceptions = new ArrayList<>();
-        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder
+        final ProductSyncOptions syncOptions = spy(ProductSyncOptionsBuilder
                 .of(mockClient)
                 .errorCallback((exception, oldResource, newResource, updateActions) -> {
                     errorMessages.add(exception.getMessage());
                     exceptions.add(exception.getCause());
                 })
-                .build();
+                .build());
+        when(syncOptions.getCtpClient()).thenReturn(mockDecoratedClient);
 
         final ProductService productService = spy(new ProductServiceImpl(syncOptions));
         final Map<String, String> keyToIds = new HashMap<>();
@@ -184,7 +186,6 @@ class ProductSyncTest {
 
         final CategoryService categoryService = mock(CategoryService.class);
         when(categoryService.fetchMatchingCategoriesByKeys(any())).thenReturn(completedFuture(emptySet()));
-
 
         final ProductSync productSync = new ProductSync(syncOptions, productService,
                 productTypeService, categoryService, mock(TypeService.class),
@@ -200,13 +201,11 @@ class ProductSyncTest {
         // assertions
         assertThat(errorMessages)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(message ->
-                        assertThat(message).contains("Failed to fetch existing products")
-            );
+                .singleElement().asString().contains("Failed to fetch existing products");
 
         assertThat(exceptions)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(throwable -> {
+                .singleElement().satisfies(throwable -> {
                     assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
                     assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
                 });
@@ -249,7 +248,6 @@ class ProductSyncTest {
 
         // test
         productSync.sync(singletonList(productDraft)).toCompletableFuture().join();
-
 
         // assertion
         verify(spyProductSyncOptions).applyBeforeCreateCallback(any());
@@ -318,7 +316,7 @@ class ProductSyncTest {
             readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class);
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> exceptions = new ArrayList<>();
-      
+
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder
             .of(mock(SphereClient.class))
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
@@ -361,12 +359,11 @@ class ProductSyncTest {
         // assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).contains("Failed to update Product with key: 'productKey1'. Reason: Failed to"
-                    + " fetch a productType for the product to build the products' attributes metadata.")
-            );
+            .singleElement().asString().contains("Failed to update Product with key: 'productKey1'. Reason: Failed to"
+                    + " fetch a productType for the product to build the products' attributes metadata.");
 
-        AssertionsForStatistics.assertThat(productSyncStatistics).hasValues(1, 0, 0, 1);
+        AssertionsForStatistics.assertThat(productSyncStatistics)
+            .hasValues(1, 0, 0, 1);
     }
 
 

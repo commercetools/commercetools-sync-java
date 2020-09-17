@@ -1,5 +1,6 @@
 package com.commercetools.sync.states;
 
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.impl.StateServiceImpl;
 import com.commercetools.sync.states.helpers.StateSyncStatistics;
@@ -111,13 +112,11 @@ class StateSyncTest {
         // assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).contains("Failed to build a cache of state keys to ids.")
-            );
+            .singleElement().asString().contains("Failed to build a cache of state keys to ids.");
 
         assertThat(exceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> {
+            .singleElement().satisfies(throwable -> {
                 assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
                 assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
             });
@@ -136,16 +135,17 @@ class StateSyncTest {
         final List<Throwable> exceptions = new ArrayList<>();
 
         final SphereClient mockClient = mock(SphereClient.class);
-        when(mockClient.execute(any(StateQuery.class)))
+        final SphereClient mockDecoratedClient = mock(CustomHeaderSphereClientDecorator.class);
+        final StateSyncOptions syncOptions = spy(StateSyncOptionsBuilder
+                .of(mockClient)
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorMessages.add(exception.getMessage());
+                    exceptions.add(exception.getCause());
+                })
+                .build());
+        when(syncOptions.getCtpClient()).thenReturn(mockDecoratedClient);
+        when(mockDecoratedClient.execute(any(StateQuery.class)))
                 .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
-
-        final StateSyncOptions syncOptions = StateSyncOptionsBuilder
-            .of(mockClient)
-            .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                errorMessages.add(exception.getMessage());
-                exceptions.add(exception.getCause());
-            })
-            .build();
 
         final StateService stateService = spy(new StateServiceImpl(syncOptions));
         final Map<String, String> keyToIds = new HashMap<>();
@@ -162,13 +162,11 @@ class StateSyncTest {
         // assertions
         assertThat(errorMessages)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(message ->
-                        assertThat(message).contains("Failed to fetch existing states")
-            );
+                .singleElement().asString().contains("Failed to fetch existing states");
 
         assertThat(exceptions)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(throwable -> {
+                .singleElement().satisfies(throwable -> {
                     assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
                     assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
                 });

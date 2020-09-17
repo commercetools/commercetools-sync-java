@@ -2,6 +2,7 @@ package com.commercetools.sync.categories;
 
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.CategoryServiceImpl;
@@ -87,12 +88,12 @@ class CategorySyncTest {
         errorCallBackExceptions = new ArrayList<>();
         final SphereClient ctpClient = mock(SphereClient.class);
         categorySyncOptions = CategorySyncOptionsBuilder.of(ctpClient)
-                                                        .errorCallback(
-                                                            (exception, oldResource, newResource, updateActions) -> {
-                                                                errorCallBackMessages.add(exception.getMessage());
-                                                                errorCallBackExceptions.add(exception.getCause());
-                                                            })
-                                                        .build();
+            .errorCallback(
+                (exception, oldResource, newResource, updateActions) -> {
+                    errorCallBackMessages.add(exception.getMessage());
+                    errorCallBackExceptions.add(exception.getCause());
+                })
+            .build();
     }
 
     @Test
@@ -151,7 +152,8 @@ class CategorySyncTest {
         final CategorySync mockCategorySync =
             new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService);
         final List<CategoryDraft> categoryDrafts = singletonList(
-            getMockCategoryDraft(Locale.ENGLISH, "name", "newKey", "parentKey", "customTypeId", new HashMap<>()));
+            getMockCategoryDraft(Locale.ENGLISH, "name", "newKey",
+                    "parentKey", "customTypeId", new HashMap<>()));
 
         final CategorySyncStatistics syncStatistics = mockCategorySync.sync(categoryDrafts)
                                                                       .toCompletableFuture().join();
@@ -169,7 +171,8 @@ class CategorySyncTest {
         final CategorySync mockCategorySync =
             new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService);
         final List<CategoryDraft> categoryDrafts = singletonList(
-            getMockCategoryDraft(Locale.ENGLISH, "name", "key", "parentKey", "customTypeId", new HashMap<>()));
+            getMockCategoryDraft(Locale.ENGLISH, "name", "key",
+                    "parentKey", "customTypeId", new HashMap<>()));
 
         final CategorySyncStatistics syncStatistics = mockCategorySync.sync(categoryDrafts)
                                                                       .toCompletableFuture().join();
@@ -409,23 +412,27 @@ class CategorySyncTest {
     void sync_WithFailOnCachingKeysToIds_ShouldTriggerErrorCallbackAndReturnProperStats() {
         // preparation
         final SphereClient mockClient = mock(SphereClient.class);
-        when(mockClient.execute(any(CategoryQuery.class)))
-                .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
+        final SphereClient mockDecoratedClient = mock(CustomHeaderSphereClientDecorator.class);
 
-        final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder
+        final CategorySyncOptions syncOptions = spy(CategorySyncOptionsBuilder
                 .of(mockClient)
                 .errorCallback((exception, oldResource, newResource, updateActions) -> {
                     errorCallBackMessages.add(exception.getMessage());
                     errorCallBackExceptions.add(exception.getCause());
                 })
-                .build();
+                .build());
+
+        when(syncOptions.getCtpClient()).thenReturn(mockDecoratedClient);
+        when(mockDecoratedClient.execute(any(CategoryQuery.class)))
+                .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
 
         final CategoryService categoryServiceSpy = spy(new CategoryServiceImpl(syncOptions));
 
         final CategorySync mockCategorySync = new CategorySync(syncOptions, getMockTypeService(), categoryServiceSpy);
 
         CategoryDraft categoryDraft =
-                getMockCategoryDraft(Locale.ENGLISH, "name", "newKey", "parentKey", "customTypeId", new HashMap<>());
+                getMockCategoryDraft(Locale.ENGLISH, "name", "newKey",
+                        "parentKey", "customTypeId", new HashMap<>());
 
         // test
         final CategorySyncStatistics syncStatistics = mockCategorySync.sync(singletonList(categoryDraft))
@@ -435,14 +442,11 @@ class CategorySyncTest {
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
 
         assertThat(errorCallBackMessages)
-                .hasSize(1)
-                .hasOnlyOneElementSatisfying(message ->
-                        assertThat(message).contains("Failed to build a cache of keys to ids.")
-            );
+                .hasSize(1).singleElement().asString().contains("Failed to build a cache of keys to ids.");
 
         assertThat(errorCallBackExceptions)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(throwable -> {
+                .singleElement().satisfies(throwable -> {
                     assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
                     assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
                 });
@@ -452,7 +456,16 @@ class CategorySyncTest {
     void sync_WithFailOnFetchingCategories_ShouldTriggerErrorCallbackAndReturnProperStats() {
         // preparation
         final SphereClient mockClient = mock(SphereClient.class);
+        final SphereClient mockDecoratedClient = mock(CustomHeaderSphereClientDecorator.class);
+        final CategorySyncOptions syncOptions = spy(CategorySyncOptionsBuilder
+                .of(mockClient)
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorCallBackMessages.add(exception.getMessage());
+                    errorCallBackExceptions.add(exception.getCause());
+                })
+                .build());
 
+        when(syncOptions.getCtpClient()).thenReturn(mockDecoratedClient);
         final String categoryKey = "key";
         final Category mockCategory = getMockCategory("foo", categoryKey);
 
@@ -462,29 +475,22 @@ class CategorySyncTest {
         when(pagedQueryResult.getResults()).thenReturn(singletonList(mockCategory));
 
         // successful caching but exception on fetch.
-        when(mockClient.execute(any(CategoryQuery.class)))
+        when(mockDecoratedClient.execute(any(CategoryQuery.class)))
             .thenReturn(CompletableFuture.completedFuture(pagedQueryResult))
             .thenReturn(supplyAsync(() -> {
                 throw new SphereException();
             }));
 
-        when(mockClient.execute(any(CategoryCreateCommand.class)))
+        when(mockDecoratedClient.execute(any(CategoryCreateCommand.class)))
             .thenReturn(CompletableFuture.completedFuture(mockCategory));
-
-        final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder
-            .of(mockClient)
-            .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                errorCallBackMessages.add(exception.getMessage());
-                errorCallBackExceptions.add(exception.getCause());
-            })
-            .build();
 
         final CategoryService categoryServiceSpy = spy(new CategoryServiceImpl(syncOptions));
 
         final CategorySync mockCategorySync = new CategorySync(syncOptions, getMockTypeService(), categoryServiceSpy);
 
         final CategoryDraft categoryDraft =
-            getMockCategoryDraft(Locale.ENGLISH, "name", categoryKey, "parentKey", "customTypeId", new HashMap<>());
+            getMockCategoryDraft(Locale.ENGLISH, "name", categoryKey,
+                    "parentKey", "customTypeId", new HashMap<>());
 
         // test
         final CategorySyncStatistics syncStatistics = mockCategorySync.sync(singletonList(categoryDraft))
@@ -495,13 +501,11 @@ class CategorySyncTest {
 
         assertThat(errorCallBackMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).contains("Failed to fetch existing categories")
-            );
+            .singleElement().asString().contains("Failed to fetch existing categories");
 
         assertThat(errorCallBackExceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> {
+            .singleElement().satisfies(throwable -> {
                 assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
                 assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
             });
@@ -511,7 +515,8 @@ class CategorySyncTest {
     void sync_WithOnlyDraftsToCreate_ShouldCallBeforeCreateCallback() {
         // preparation
         final CategoryDraft categoryDraft =
-            getMockCategoryDraft(Locale.ENGLISH, "name", "foo", "parentKey", "customTypeId", new HashMap<>());
+            getMockCategoryDraft(Locale.ENGLISH, "name", "foo",
+                    "parentKey", "customTypeId", new HashMap<>());
 
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
             .of(mock(SphereClient.class))
@@ -537,7 +542,8 @@ class CategorySyncTest {
     void sync_WithOnlyDraftsToUpdate_ShouldOnlyCallBeforeUpdateCallback() {
         // preparation
         final CategoryDraft categoryDraft =
-            getMockCategoryDraft(Locale.ENGLISH, "name", "1", "parentKey", "customTypeId", new HashMap<>());
+            getMockCategoryDraft(Locale.ENGLISH, "name", "1",
+                    "parentKey", "customTypeId", new HashMap<>());
 
         final Category mockedExistingCategory =
             readObjectFromResource(CATEGORY_KEY_1_RESOURCE_PATH, Category.class);
