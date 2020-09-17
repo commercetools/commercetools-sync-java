@@ -400,10 +400,10 @@ public class CustomObjectSyncTest {
         assertThat(exceptions).hasSize(0);
         assertThat(errorMessages).hasSize(0);
         assertAll(
-                () -> assertThat(syncStatistics.getProcessed().get()).isEqualTo(1),
-                () -> assertThat(syncStatistics.getCreated().get()).isEqualTo(1),
-                () -> assertThat(syncStatistics.getUpdated().get()).isEqualTo(0),
-                () -> assertThat(syncStatistics.getFailed().get()).isEqualTo(0)
+            () -> assertThat(syncStatistics.getProcessed().get()).isEqualTo(1),
+            () -> assertThat(syncStatistics.getCreated().get()).isEqualTo(1),
+            () -> assertThat(syncStatistics.getUpdated().get()).isEqualTo(0),
+            () -> assertThat(syncStatistics.getFailed().get()).isEqualTo(0)
         );
         verify(spyCustomObjectSyncOptions).applyBeforeCreateCallback(newCustomObjectDraft);
     }
@@ -444,10 +444,10 @@ public class CustomObjectSyncTest {
         assertThat(exceptions).hasSize(0);
         assertThat(errorMessages).hasSize(0);
         assertAll(
-                () -> assertThat(syncStatistics.getProcessed().get()).isEqualTo(1),
-                () -> assertThat(syncStatistics.getCreated().get()).isEqualTo(1),
-                () -> assertThat(syncStatistics.getUpdated().get()).isEqualTo(0),
-                () -> assertThat(syncStatistics.getFailed().get()).isEqualTo(0)
+            () -> assertThat(syncStatistics.getProcessed().get()).isEqualTo(1),
+            () -> assertThat(syncStatistics.getCreated().get()).isEqualTo(1),
+            () -> assertThat(syncStatistics.getUpdated().get()).isEqualTo(0),
+            () -> assertThat(syncStatistics.getFailed().get()).isEqualTo(0)
         );
         verify(spyCustomObjectSyncOptions).applyBeforeCreateCallback(newCustomObjectDraft);
     }
