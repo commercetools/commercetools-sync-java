@@ -2,6 +2,7 @@ package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.TriConsumer;
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.ProductService;
@@ -37,6 +38,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -47,17 +49,19 @@ class BaseServiceImplTest {
     private TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>> warningCallback
             = mock(TriConsumer.class);
     private SphereClient client = mock(SphereClient.class);
+    private SphereClient mockDecoratedClient = mock(CustomHeaderSphereClientDecorator.class);
     private ProductService service;
 
     @BeforeEach
     void setup() {
         final ProductSyncOptions syncOptions =
-            ProductSyncOptionsBuilder
+            spy(ProductSyncOptionsBuilder
                 .of(client)
                 .warningCallback(warningCallback)
                 .batchSize(20)
-                .build();
+                .build());
         service = new ProductServiceImpl(syncOptions);
+        when(syncOptions.getCtpClient()).thenReturn(mockDecoratedClient);
     }
 
     @AfterEach
@@ -74,7 +78,7 @@ class BaseServiceImplTest {
 
         //assertions
         assertThat(result).isEmpty();
-        verify(client, never()).execute(any());
+        verify(mockDecoratedClient, never()).execute(any());
     }
 
     @Test
@@ -88,7 +92,7 @@ class BaseServiceImplTest {
         when(mockProductResult.getId()).thenReturn(id);
         when(pagedQueryResult.getResults()).thenReturn(singletonList(mockProductResult));
 
-        when(client.execute(any())).thenReturn(completedFuture(pagedQueryResult));
+        when(mockDecoratedClient.execute(any())).thenReturn(completedFuture(pagedQueryResult));
 
         //test
         final Optional<String> result = service.getIdFromCacheOrFetch(key).toCompletableFuture().join();
@@ -107,7 +111,7 @@ class BaseServiceImplTest {
         when(mockProductResult.getKey()).thenReturn(key);
         when(mockProductResult.getId()).thenReturn(id);
         when(pagedQueryResult.getResults()).thenReturn(singletonList(mockProductResult));
-        when(client.execute(any())).thenReturn(completedFuture(pagedQueryResult));
+        when(mockDecoratedClient.execute(any())).thenReturn(completedFuture(pagedQueryResult));
         service.getIdFromCacheOrFetch(key).toCompletableFuture().join();
 
         //test
@@ -116,7 +120,7 @@ class BaseServiceImplTest {
         //assertions
         assertThat(result).contains(id);
         // only 1 request of the first fetch, but no more since second time it gets it from cache.
-        verify(client, times(1)).execute(any(ProductQuery.class));
+        verify(mockDecoratedClient, times(1)).execute(any(ProductQuery.class));
     }
 
     @Test
@@ -129,7 +133,7 @@ class BaseServiceImplTest {
 
         //assertions
         assertThat(resources).isEmpty();
-        verify(client, never()).execute(any(ProductQuery.class));
+        verify(mockDecoratedClient, never()).execute(any(ProductQuery.class));
     }
 
     @SuppressWarnings("unchecked")
@@ -154,7 +158,7 @@ class BaseServiceImplTest {
         final PagedQueryResult result = mock(PagedQueryResult.class);
         when(result.getResults()).thenReturn(Arrays.asList(mock1, mock2));
 
-        when(client.execute(any(ProductQuery.class))).thenReturn(completedFuture(result));
+        when(mockDecoratedClient.execute(any(ProductQuery.class))).thenReturn(completedFuture(result));
 
         //test fetch
         final Set<Product> resources = service
@@ -163,7 +167,7 @@ class BaseServiceImplTest {
 
         //assertions
         assertThat(resources).containsExactlyInAnyOrder(mock1, mock2);
-        verify(client, times(1)).execute(any(ProductQuery.class));
+        verify(mockDecoratedClient, times(1)).execute(any(ProductQuery.class));
 
         //test caching
         final Optional<String> cachedKey1 = service
@@ -178,7 +182,7 @@ class BaseServiceImplTest {
         assertThat(cachedKey1).contains(mock1.getId());
         assertThat(cachedKey2).contains(mock2.getId());
         // still 1 request from the first #fetchMatchingProductsByKeys call
-        verify(client, times(1)).execute(any(ProductQuery.class));
+        verify(mockDecoratedClient, times(1)).execute(any(ProductQuery.class));
     }
 
     @Test
@@ -191,7 +195,7 @@ class BaseServiceImplTest {
         resourceKeys.add(key1);
         resourceKeys.add(key2);
 
-        when(client.execute(any(ProductQuery.class)))
+        when(mockDecoratedClient.execute(any(ProductQuery.class)))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
 
         //test
@@ -199,7 +203,7 @@ class BaseServiceImplTest {
 
         //assertions
         assertThat(result).hasFailedWithThrowableThat().isExactlyInstanceOf(BadGatewayException.class);
-        verify(client).execute(any(ProductQuery.class));
+        verify(mockDecoratedClient).execute(any(ProductQuery.class));
     }
 
     @ParameterizedTest
@@ -211,7 +215,7 @@ class BaseServiceImplTest {
 
         //assertions
         assertThat(optional).isEmpty();
-        verify(client, never()).execute(any());
+        verify(mockDecoratedClient, never()).execute(any());
     }
 
     @SuppressWarnings("unchecked")
@@ -228,20 +232,20 @@ class BaseServiceImplTest {
         final PagedQueryResult<Product> result = mock(PagedQueryResult.class);
         when(result.head()).thenReturn(Optional.of(mockProductResult));
 
-        when(client.execute(any())).thenReturn(completedFuture(result));
+        when(mockDecoratedClient.execute(any())).thenReturn(completedFuture(result));
 
         //test
         final Optional<Product> resourceOptional = service.fetchProduct(resourceKey).toCompletableFuture().join();
 
         //assertions
         assertThat(resourceOptional).containsSame(mockProductResult);
-        verify(client).execute(any(ProductQuery.class));
+        verify(mockDecoratedClient).execute(any(ProductQuery.class));
     }
 
     @Test
     void fetchResource_WithBadGateWayException_ShouldCompleteExceptionally() {
         //preparation
-        when(client.execute(any(ProductQuery.class)))
+        when(mockDecoratedClient.execute(any(ProductQuery.class)))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
 
         //test
@@ -249,7 +253,7 @@ class BaseServiceImplTest {
 
         //assertions
         assertThat(result).hasFailedWithThrowableThat().isExactlyInstanceOf(BadGatewayException.class);
-        verify(client, times(1)).execute(any(ProductQuery.class));
+        verify(mockDecoratedClient, times(1)).execute(any(ProductQuery.class));
     }
 
     @Test
@@ -259,7 +263,7 @@ class BaseServiceImplTest {
 
         //assertions
         assertThat(optional).isEmpty();
-        verify(client, never()).execute(any());
+        verify(mockDecoratedClient, never()).execute(any());
     }
 
     @Test
@@ -272,7 +276,7 @@ class BaseServiceImplTest {
         when(mockProductResult.getKey()).thenReturn(key);
         when(mockProductResult.getId()).thenReturn(id);
         when(pagedQueryResult.getResults()).thenReturn(singletonList(mockProductResult));
-        when(client.execute(any())).thenReturn(completedFuture(pagedQueryResult));
+        when(mockDecoratedClient.execute(any())).thenReturn(completedFuture(pagedQueryResult));
         service.getIdFromCacheOrFetch(key).toCompletableFuture().join();
 
         //test
@@ -280,7 +284,7 @@ class BaseServiceImplTest {
 
         //assertions
         assertThat(optional).containsExactly(MapEntry.entry(key, id));
-        verify(client, times(1)).execute(any(ProductQuery.class));
+        verify(mockDecoratedClient, times(1)).execute(any(ProductQuery.class));
     }
 
     @Test
@@ -293,14 +297,14 @@ class BaseServiceImplTest {
         when(mockProductResult.getKey()).thenReturn(key);
         when(mockProductResult.getId()).thenReturn(id);
         when(pagedQueryResult.getResults()).thenReturn(singletonList(mockProductResult));
-        when(client.execute(any())).thenReturn(completedFuture(pagedQueryResult));
+        when(mockDecoratedClient.execute(any())).thenReturn(completedFuture(pagedQueryResult));
 
         //test
         final Map<String, String> optional = service.cacheKeysToIds(singleton("testKey")).toCompletableFuture().join();
 
         //assertions
         assertThat(optional).containsExactly(MapEntry.entry(key, id));
-        verify(client, times(1)).execute(any(ProductQuery.class));
+        verify(mockDecoratedClient, times(1)).execute(any(ProductQuery.class));
     }
 
     @Test
@@ -313,7 +317,7 @@ class BaseServiceImplTest {
         when(mockProductResult.getKey()).thenReturn(key);
         when(mockProductResult.getId()).thenReturn(id);
         when(pagedQueryResult.getResults()).thenReturn(singletonList(mockProductResult));
-        when(client.execute(any(ProductQuery.class)))
+        when(mockDecoratedClient.execute(any(ProductQuery.class)))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
 
         //test
@@ -321,6 +325,6 @@ class BaseServiceImplTest {
 
         //assertions
         assertThat(result).hasFailedWithThrowableThat().isExactlyInstanceOf(BadGatewayException.class);
-        verify(client, times(1)).execute(any(ProductQuery.class));
+        verify(mockDecoratedClient, times(1)).execute(any(ProductQuery.class));
     }
 }
