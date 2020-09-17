@@ -63,12 +63,10 @@ public class CustomObjectServiceImpl
         @Nonnull final Set<CustomObjectCompositeIdentifier> identifiers) {
 
         Set<CustomObjectCompositeIdentifier> filteredIdentifiers = identifiers.stream()
-                                                                              .filter(identifier ->
-                                                                                  StringUtils.isNotEmpty(
-                                                                                      identifier.getContainer())
-                                                                                      && StringUtils.isNotEmpty(
-                                                                                      identifier.getKey()))
-                                                                              .collect(Collectors.toSet());
+                .filter(identifier ->
+                        StringUtils.isNotEmpty(identifier.getContainer())
+                    &&  StringUtils.isNotEmpty(identifier.getKey()))
+                .collect(Collectors.toSet());
 
         if (filteredIdentifiers.size() == 0) {
             return CompletableFuture.completedFuture(Collections.emptySet());
