@@ -1,5 +1,6 @@
 package com.commercetools.sync.services.impl;
 
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.taxcategories.TaxCategorySyncOptions;
 import com.commercetools.sync.taxcategories.TaxCategorySyncOptionsBuilder;
 import io.sphere.sdk.client.BadRequestException;
@@ -34,12 +35,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class TaxCategoryServiceImplTest {
-
-    private SphereClient client = mock(SphereClient.class);
+    private SphereClient mockClient = mock(SphereClient.class);
+    private SphereClient mockDecoratedClient = mock(CustomHeaderSphereClientDecorator.class);
     private TaxCategoryServiceImpl service;
     private List<String> errorMessages;
     private List<Throwable> errorExceptions;
@@ -47,6 +49,8 @@ class TaxCategoryServiceImplTest {
     private String taxCategoryId;
     private String taxCategoryName;
     private String taxCategoryKey;
+
+    private TaxCategorySyncOptions taxCategorySyncOptions;
 
     @BeforeEach
     void setup() {
@@ -56,18 +60,20 @@ class TaxCategoryServiceImplTest {
 
         errorMessages = new ArrayList<>();
         errorExceptions = new ArrayList<>();
-        TaxCategorySyncOptions taxCategorySyncOptions = TaxCategorySyncOptionsBuilder.of(client)
+        taxCategorySyncOptions = spy(TaxCategorySyncOptionsBuilder.of(mockClient)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorMessages.add(exception.getMessage());
                 errorExceptions.add(exception.getCause());
             })
-            .build();
+            .build());
         service = new TaxCategoryServiceImpl(taxCategorySyncOptions);
+        when(taxCategorySyncOptions.getCtpClient()).thenReturn(mockDecoratedClient);
     }
 
     @AfterEach
     void cleanup() {
-        reset(client);
+        reset(mockClient);
+        reset(mockDecoratedClient);
     }
 
     private interface TaxCategoryPagedQueryResult extends PagedQueryResult<TaxCategory> {
@@ -85,7 +91,7 @@ class TaxCategoryServiceImplTest {
         final TaxCategoryPagedQueryResult result = mock(TaxCategoryPagedQueryResult.class);
         when(result.getResults()).thenReturn(Collections.singletonList(mock));
 
-        when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
+        when(mockDecoratedClient.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
 
         final Optional<String> fetchedId = service.fetchCachedTaxCategoryId(key).toCompletableFuture().join();
 
@@ -112,7 +118,7 @@ class TaxCategoryServiceImplTest {
         final TaxCategoryPagedQueryResult result = mock(TaxCategoryPagedQueryResult.class);
         when(result.getResults()).thenReturn(Arrays.asList(mock1, mock2));
 
-        when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
+        when(mockDecoratedClient.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
 
         final Set<TaxCategory> taxCategories = service.fetchMatchingTaxCategoriesByKeys(taxCategoryKeys)
             .toCompletableFuture().join();
@@ -121,7 +127,7 @@ class TaxCategoryServiceImplTest {
             () -> assertThat(taxCategories).contains(mock1, mock2),
             () -> assertThat(service.keyToIdCache).containsKeys(key1, key2)
         );
-        verify(client).execute(any(TaxCategoryQuery.class));
+        verify(mockDecoratedClient).execute(any(TaxCategoryQuery.class));
     }
 
     @Test
@@ -132,7 +138,8 @@ class TaxCategoryServiceImplTest {
         final TaxCategoryPagedQueryResult result = mock(TaxCategoryPagedQueryResult.class);
         when(result.head()).thenReturn(Optional.of(mock));
 
-        when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
+        when(mockDecoratedClient.execute(any(TaxCategoryQuery.class)))
+            .thenReturn(CompletableFuture.completedFuture(result));
 
         final Optional<TaxCategory> taxCategoryOptional = service.fetchTaxCategory(taxCategoryKey)
             .toCompletableFuture().join();
@@ -141,7 +148,7 @@ class TaxCategoryServiceImplTest {
             () -> assertThat(taxCategoryOptional).containsSame(mock),
             () -> assertThat(service.keyToIdCache.get(taxCategoryKey)).isEqualTo(taxCategoryId)
         );
-        verify(client).execute(any(TaxCategoryQuery.class));
+        verify(mockDecoratedClient).execute(any(TaxCategoryQuery.class));
     }
 
     @Test
@@ -150,7 +157,7 @@ class TaxCategoryServiceImplTest {
         when(mock.getId()).thenReturn(taxCategoryId);
         when(mock.getKey()).thenReturn(taxCategoryKey);
 
-        when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(mock));
+        when(mockDecoratedClient.execute(any())).thenReturn(CompletableFuture.completedFuture(mock));
 
         final TaxCategoryDraft draft = TaxCategoryDraftBuilder
             .of(taxCategoryName, Collections.emptyList(), "description")
@@ -159,7 +166,7 @@ class TaxCategoryServiceImplTest {
         final Optional<TaxCategory> taxCategoryOptional = service.createTaxCategory(draft).toCompletableFuture().join();
 
         assertThat(taxCategoryOptional).containsSame(mock);
-        verify(client).execute(eq(TaxCategoryCreateCommand.of(draft)));
+        verify(mockDecoratedClient).execute(eq(TaxCategoryCreateCommand.of(draft)));
     }
 
     @Test
@@ -167,7 +174,8 @@ class TaxCategoryServiceImplTest {
         final TaxCategory mock = mock(TaxCategory.class);
         when(mock.getId()).thenReturn(taxCategoryId);
 
-        when(client.execute(any())).thenReturn(CompletableFutureUtils.failed(new BadRequestException("bad request")));
+        when(mockDecoratedClient.execute(any()))
+            .thenReturn(CompletableFutureUtils.failed(new BadRequestException("bad request")));
 
         final TaxCategoryDraft draft = mock(TaxCategoryDraft.class);
         when(draft.getKey()).thenReturn(taxCategoryKey);
@@ -203,13 +211,13 @@ class TaxCategoryServiceImplTest {
     @Test
     void updateTaxCategory_WithNoError_ShouldUpdateTaxCategory() {
         final TaxCategory mock = mock(TaxCategory.class);
-        when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(mock));
+        when(mockDecoratedClient.execute(any())).thenReturn(CompletableFuture.completedFuture(mock));
         final List<UpdateAction<TaxCategory>> updateActions = Collections.singletonList(ChangeName.of("name"));
 
         final TaxCategory taxCategory = service.updateTaxCategory(mock, updateActions).toCompletableFuture().join();
 
         assertThat(taxCategory).isSameAs(mock);
-        verify(client).execute(eq(TaxCategoryUpdateCommand.of(mock, updateActions)));
+        verify(mockDecoratedClient).execute(eq(TaxCategoryUpdateCommand.of(mock, updateActions)));
     }
 
 }

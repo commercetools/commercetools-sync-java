@@ -2,6 +2,7 @@ package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import io.sphere.sdk.client.BadRequestException;
@@ -33,6 +34,7 @@ import static org.apache.commons.codec.digest.DigestUtils.sha1Hex;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -45,16 +47,19 @@ class UnresolvedReferencesServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        SphereClient mockClient = mock(SphereClient.class);
+        SphereClient mockDecoratedClient = mock(CustomHeaderSphereClientDecorator.class);
         errorMessages = new ArrayList<>();
         errorExceptions = new ArrayList<>();
-        productSyncOptions = ProductSyncOptionsBuilder
-            .of(mock(SphereClient.class))
+        productSyncOptions = spy(ProductSyncOptionsBuilder
+            .of(mockClient)
             .errorCallback((exception, oldResource, newResource, actions) -> {
                 errorMessages.add(exception.getMessage());
                 errorExceptions.add(exception);
             })
-            .build();
+            .build());
         service = new UnresolvedReferencesServiceImpl(productSyncOptions);
+        when(productSyncOptions.getCtpClient()).thenReturn(mockDecoratedClient);
     }
 
     @Test

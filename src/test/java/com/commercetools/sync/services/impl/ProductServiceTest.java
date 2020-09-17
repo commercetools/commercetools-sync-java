@@ -1,5 +1,6 @@
 package com.commercetools.sync.services.impl;
 
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import io.sphere.sdk.client.BadRequestException;
@@ -28,6 +29,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -42,14 +44,17 @@ class ProductServiceTest {
     void setUp() {
         errorMessages = new ArrayList<>();
         errorExceptions = new ArrayList<>();
-        productSyncOptions = ProductSyncOptionsBuilder
-            .of(mock(SphereClient.class))
+        SphereClient mockClient = mock(SphereClient.class);
+        SphereClient mockDecoratedClient = mock(CustomHeaderSphereClientDecorator.class);
+        productSyncOptions = spy(ProductSyncOptionsBuilder
+            .of(mockClient)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorMessages.add(exception.getMessage());
                 errorExceptions.add(exception.getCause());
             })
-            .build();
+            .build());
         service = new ProductServiceImpl(productSyncOptions);
+        when(productSyncOptions.getCtpClient()).thenReturn(mockDecoratedClient);
     }
 
     @Test

@@ -3,6 +3,7 @@ package com.commercetools.sync.services.impl;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
 import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.services.CartDiscountService;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
@@ -30,6 +31,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -67,7 +69,6 @@ class CartDiscountServiceImplTest {
         // test
         final CompletionStage<Optional<CartDiscount>> result = cartDiscountService.fetchCartDiscount(null);
 
-
         // assertions
         assertThat(result).isCompletedWithValue(Optional.empty());
         verify(sphereClient, never()).execute(any());
@@ -77,12 +78,14 @@ class CartDiscountServiceImplTest {
     void fetchCartDiscount_WithValidKey_ShouldReturnMockCartDiscount() {
         // preparation
         final SphereClient sphereClient = mock(SphereClient.class);
+        final SphereClient mockDecoratedClient = mock(CustomHeaderSphereClientDecorator.class);
         final CartDiscount mockCartDiscount = mock(CartDiscount.class);
         when(mockCartDiscount.getId()).thenReturn("testId");
         when(mockCartDiscount.getKey()).thenReturn("any_key");
-        final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
+        final CartDiscountSyncOptions cartDiscountSyncOptions = spy(CartDiscountSyncOptionsBuilder
                 .of(sphereClient)
-                .build();
+                .build());
+        when(cartDiscountSyncOptions.getCtpClient()).thenReturn(mockDecoratedClient);
         final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
 
         @SuppressWarnings("unchecked")
@@ -97,7 +100,7 @@ class CartDiscountServiceImplTest {
 
         // assertions
         assertThat(result).isCompletedWithValue(Optional.of(mockCartDiscount));
-        verify(sphereClient, only()).execute(any());
+        verify(mockDecoratedClient, only()).execute(any());
     }
 
     @Test
@@ -113,7 +116,7 @@ class CartDiscountServiceImplTest {
                         errors.put(exception.getMessage(), exception))
                 .build();
         final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
-
+        final SphereClient spyClient = spy(cartDiscountSyncOptions.getCtpClient());
         // test
         final CompletionStage<Optional<CartDiscount>> result = cartDiscountService
             .createCartDiscount(mockCartDiscountDraft);
@@ -122,7 +125,7 @@ class CartDiscountServiceImplTest {
         assertThat(result).isCompletedWithValue(Optional.empty());
         assertThat(errors.keySet())
             .containsExactly("Failed to create draft with key: 'null'. Reason: Draft key is blank!");
-        verify(cartDiscountSyncOptions.getCtpClient(), times(0)).execute(any());
+        verify(spyClient, times(0)).execute(any());
     }
 
     @Test
@@ -140,7 +143,7 @@ class CartDiscountServiceImplTest {
             .build();
 
         final CartDiscountServiceImpl cartDiscountService = new CartDiscountServiceImpl(options);
-
+        final SphereClient spyClient = spy(options.getCtpClient());
         // test
         final CompletionStage<Optional<CartDiscount>> result = cartDiscountService
             .createCartDiscount(mockCartDiscountDraft);
@@ -149,7 +152,7 @@ class CartDiscountServiceImplTest {
         assertThat(result).isCompletedWithValue(Optional.empty());
         assertThat(errors.keySet())
             .containsExactly("Failed to create draft with key: ''. Reason: Draft key is blank!");
-        verify(options.getCtpClient(), times(0)).execute(any());
+        verify(spyClient, times(0)).execute(any());
     }
 
     @Test
@@ -194,10 +197,12 @@ class CartDiscountServiceImplTest {
     void updateCartDiscount_WithMockSuccessfulCtpResponse_ShouldCallCartDiscountUpdateCommand() {
         // preparation
         final CartDiscount mockCartDiscount = mock(CartDiscount.class);
-        final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
-                .of(mock(SphereClient.class))
-                .build();
-
+        final SphereClient mockClient = mock(SphereClient.class);
+        final SphereClient mockDecoratedClient = mock(CustomHeaderSphereClientDecorator.class);
+        final CartDiscountSyncOptions cartDiscountSyncOptions = spy(CartDiscountSyncOptionsBuilder
+            .of(mockClient)
+            .build());
+        when(cartDiscountSyncOptions.getCtpClient()).thenReturn(mockDecoratedClient);
         when(cartDiscountSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mockCartDiscount));
         final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
 
@@ -209,7 +214,7 @@ class CartDiscountServiceImplTest {
 
         // assertions
         assertThat(result).isCompletedWithValue(mockCartDiscount);
-        verify(cartDiscountSyncOptions.getCtpClient())
+        verify(mockDecoratedClient)
                 .execute(eq(CartDiscountUpdateCommand.of(mockCartDiscount, updateActions)));
     }
 

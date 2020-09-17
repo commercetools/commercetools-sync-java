@@ -6,7 +6,6 @@ import com.commercetools.sync.services.ProductTypeService;
 import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.producttypes.ProductType;
-import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.jupiter.api.Test;
 
@@ -60,13 +59,13 @@ class ProductTypeServiceImplTest {
     void fetchProductType_WithBadGateWayException_ShouldCompleteExceptionally() {
         // preparation
         final SphereClient sphereClient = mock(SphereClient.class);
-        when(sphereClient.execute(any(ProductTypeQuery.class)))
+        final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
+                .of(sphereClient)
+                .build();
+
+        when(syncOptions.getCtpClient().execute(any()))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
 
-
-        final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
-            .of(sphereClient)
-            .build();
         final ProductTypeService productTypeService = new ProductTypeServiceImpl(syncOptions);
 
         // test

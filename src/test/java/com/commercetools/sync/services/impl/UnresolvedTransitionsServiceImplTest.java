@@ -1,6 +1,7 @@
 package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.models.WaitingToBeResolvedTransitions;
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.states.StateSyncOptions;
 import com.commercetools.sync.states.StateSyncOptionsBuilder;
 import io.sphere.sdk.client.BadRequestException;
@@ -32,6 +33,7 @@ import static org.apache.commons.codec.digest.DigestUtils.sha1Hex;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -44,16 +46,19 @@ class UnresolvedTransitionsServiceImplTest {
 
     @BeforeEach
     void setUp() {
+        SphereClient mockClient = mock(SphereClient.class);
+        SphereClient mockDecoratedClient = mock(CustomHeaderSphereClientDecorator.class);
         errorMessages = new ArrayList<>();
         errorExceptions = new ArrayList<>();
-        stateSyncOptions = StateSyncOptionsBuilder
-            .of(mock(SphereClient.class))
+        stateSyncOptions = spy(StateSyncOptionsBuilder
+            .of(mockClient)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorMessages.add(exception.getMessage());
                 errorExceptions.add(exception.getCause());
             })
-            .build();
+            .build());
         service = new UnresolvedTransitionsServiceImpl(stateSyncOptions);
+        when(stateSyncOptions.getCtpClient()).thenReturn(mockDecoratedClient);
     }
 
     @Test
