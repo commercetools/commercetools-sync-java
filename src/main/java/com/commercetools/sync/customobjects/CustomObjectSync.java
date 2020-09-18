@@ -59,7 +59,7 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
      *                            client and/or configuration and other sync-specific options.
      * @param customObjectService the custom object service which is responsible for fetching/caching the
      */
-    CustomObjectSync(
+    public CustomObjectSync(
         @Nonnull final CustomObjectSyncOptions syncOptions,
         @Nonnull final CustomObjectService customObjectService) {
 
