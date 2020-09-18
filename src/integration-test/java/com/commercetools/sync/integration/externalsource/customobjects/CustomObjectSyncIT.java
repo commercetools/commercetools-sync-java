@@ -12,7 +12,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
 import io.sphere.sdk.customobjects.commands.CustomObjectUpsertCommand;
 import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
@@ -40,7 +39,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 public class CustomObjectSyncIT {
-    private CustomObject<JsonNode> testCustomObject1;
     private ObjectNode customObject1Value;
 
     @BeforeEach
@@ -50,12 +48,11 @@ public class CustomObjectSyncIT {
         customObject1Value =
             JsonNodeFactory.instance.objectNode().put("name", "value1");
 
-        testCustomObject1 = createCustomObject(CTP_TARGET_CLIENT, "key1", "container1", customObject1Value);
+        createCustomObject(CTP_TARGET_CLIENT, "key1", "container1", customObject1Value);
     }
 
     @AfterAll
     static void tearDown() {
-
         deleteCustomObject(CTP_TARGET_CLIENT, "key1", "container1");
         deleteCustomObject(CTP_TARGET_CLIENT, "key2", "container2");
     }
@@ -141,8 +138,8 @@ public class CustomObjectSyncIT {
     @Test
     void sync_withChangedCustomObjectButConcurrentModificationException_shouldRetryAndUpdateCustomObject() {
 
-        final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
-
+        final SphereClient spyClient = buildClientWithConcurrentModificationUpdate();
+        final ObjectNode newCustomObjectValue = JsonNodeFactory.instance.objectNode().put("name", "value2");
         List<String> errorCallBackMessages = new ArrayList<>();
         List<String> warningCallBackMessages = new ArrayList<>();
         List<Throwable> errorCallBackExceptions = new ArrayList<>();
@@ -158,7 +155,7 @@ public class CustomObjectSyncIT {
         final CustomObjectSync customObjectSync = new CustomObjectSync(spyOptions);
 
         final CustomObjectDraft<JsonNode> customObjectDraft = CustomObjectDraft.ofUnversionedUpsert("container1",
-            "key1", customObject1Value);
+            "key1", newCustomObjectValue);
 
         //test
         final CustomObjectSyncStatistics customObjectSyncStatistics = customObjectSync
