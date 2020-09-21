@@ -144,7 +144,6 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
         } else {
             return executeCreateCommand(draft, keyMapper, createCommand);
         }
-
     }
 
     /**
@@ -309,5 +308,4 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
                 }
             }));
     }
-
 }
