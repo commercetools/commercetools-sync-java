@@ -80,8 +80,7 @@ public class CustomObjectSyncIT {
     }
 
     @Test
-    void sync_withExistingCustomObject_shouldUpdateCustomObject() {
-
+    void sync_withExistingCustomObjectThatHasDifferentValue_shouldUpdateCustomObject() {
         final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder.of(
             CTP_TARGET_CLIENT).build();
         final CustomObjectSync customObjectSync = new CustomObjectSync(customObjectSyncOptions);
@@ -100,7 +99,7 @@ public class CustomObjectSyncIT {
     }
 
     @Test
-    void sync_withSameCustomObject_shouldNotUpdateCustomObject() {
+    void sync_withExistingCustomObjectThatHasSameValue_shouldNotUpdateCustomObject() {
 
         final CustomObjectDraft<JsonNode> customObjectDraft = CustomObjectDraft.ofUnversionedUpsert("container1",
             "key1", customObject1Value);
@@ -115,31 +114,17 @@ public class CustomObjectSyncIT {
             .toCompletableFuture().join();
 
         assertThat(customObjectSyncStatistics).hasValues(1, 0, 0, 0);
-
     }
-
-    @Nonnull
-    private SphereClient buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry() {
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-
-        final CustomObjectUpsertCommand upsertCommand = any(CustomObjectUpsertCommand.class);
-        when(spyClient.execute(upsertCommand))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()))
-            .thenCallRealMethod();
-
-        final CustomObjectQuery customObjectQuery = any(CustomObjectQuery.class);
-        when(spyClient.execute(customObjectQuery))
-            .thenCallRealMethod() // Call real fetch on fetching matching custom objects
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
-
-        return spyClient;
-    }
-
 
     @Test
-    void sync_withChangedCustomObjectButConcurrentModificationException_shouldRetryAndUpdateCustomObject() {
+    void sync_withChangedCustomObjectAndConcurrentModificationException_shouldRetryAndUpdateCustomObject() {
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
 
-        final SphereClient spyClient = buildClientWithConcurrentModificationUpdate();
+        final CustomObjectUpsertCommand customObjectUpsertCommand = any(CustomObjectUpsertCommand.class);
+        when(spyClient.execute(customObjectUpsertCommand))
+                .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()))
+                .thenCallRealMethod();
+
         final ObjectNode newCustomObjectValue = JsonNodeFactory.instance.objectNode().put("name", "value2");
         List<String> errorCallBackMessages = new ArrayList<>();
         List<String> warningCallBackMessages = new ArrayList<>();
@@ -169,27 +154,20 @@ public class CustomObjectSyncIT {
         Assertions.assertThat(warningCallBackMessages).isEmpty();
     }
 
-    @Nonnull
-    private SphereClient buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry() {
+    @Test
+    void sync_withChangedCustomObjectWithBadGatewayExceptionInsideUpdateRetry_shouldFailToUpdate() {
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
 
-        final CustomObjectUpsertCommand customObjectUpsertCommand = any(CustomObjectUpsertCommand.class);
-        when(spyClient.execute(customObjectUpsertCommand))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()))
-            .thenCallRealMethod();
+        final CustomObjectUpsertCommand upsertCommand = any(CustomObjectUpsertCommand.class);
+        when(spyClient.execute(upsertCommand))
+                .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()))
+                .thenCallRealMethod();
 
         final CustomObjectQuery customObjectQuery = any(CustomObjectQuery.class);
-
         when(spyClient.execute(customObjectQuery))
-            .thenCallRealMethod()
-            .thenReturn(CompletableFuture.completedFuture(PagedQueryResult.empty()));
+                .thenCallRealMethod()
+                .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
 
-        return spyClient;
-    }
-
-    @Test
-    void sync_withConcurrentModificationExceptionAndFailedFetch_shouldFailToReFetchAndUpdate() {
-        final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
         final ObjectNode newCustomObjectValue = JsonNodeFactory.instance.objectNode().put("name", "value2");
         List<String> errorCallBackMessages = new ArrayList<>();
         List<Throwable> errorCallBackExceptions = new ArrayList<>();
@@ -219,22 +197,22 @@ public class CustomObjectSyncIT {
                 + "after concurrency modification.", CustomObjectCompositeIdentifier.of(customObjectDraft)));
     }
 
-    @Nonnull
-    private SphereClient buildClientWithConcurrentModificationUpdate() {
+    @Test
+    void sync_withConcurrentModificationExceptionAndUnexpectedDelete_shouldFailToReFetchAndUpdate() {
+
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
 
         final CustomObjectUpsertCommand customObjectUpsertCommand = any(CustomObjectUpsertCommand.class);
         when(spyClient.execute(customObjectUpsertCommand))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()))
-            .thenCallRealMethod();
+                .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()))
+                .thenCallRealMethod();
 
-        return spyClient;
-    }
+        final CustomObjectQuery customObjectQuery = any(CustomObjectQuery.class);
 
-    @Test
-    void sync_withConcurrentModificationExceptionAndUnexpectedDelete_shouldFailToReFetchAndUpdate() {
+        when(spyClient.execute(customObjectQuery))
+                .thenCallRealMethod()
+                .thenReturn(CompletableFuture.completedFuture(PagedQueryResult.empty()));
 
-        final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
         final ObjectNode newCustomObjectValue = JsonNodeFactory.instance.objectNode().put("name", "value2");
         List<String> errorCallBackMessages = new ArrayList<>();
         List<Throwable> errorCallBackExceptions = new ArrayList<>();
@@ -260,15 +238,21 @@ public class CustomObjectSyncIT {
         Assertions.assertThat(errorCallBackMessages).hasSize(1);
         Assertions.assertThat(errorCallBackExceptions).hasSize(1);
 
-        //TODO: Debug to see correct error message
         Assertions.assertThat(errorCallBackMessages.get(0)).contains(
             format("Failed to update custom object with key: '%s'. Reason: Not found when attempting to fetch while"
                 + " retrying after concurrency modification.", CustomObjectCompositeIdentifier.of(customObjectDraft)));
     }
 
     @Test
-    void sync_withNewCustomObjectAndBadRequest_shouldFailCreationAndHandleError() {
-        final SphereClient spyClient = buildClientWithBadRequest();
+    void sync_withNewCustomObjectAndBadRequest_shouldNotCreateButHandleError() {
+
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+
+        final CustomObjectUpsertCommand upsertCommand = any(CustomObjectUpsertCommand.class);
+        when(spyClient.execute(upsertCommand))
+                .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadRequestException("bad request")))
+                .thenCallRealMethod();
+
         final ObjectNode newCustomObjectValue = JsonNodeFactory.instance.objectNode().put("name", "value2");
         final CustomObjectDraft<JsonNode> newCustomObjectDraft = CustomObjectDraft.ofUnversionedUpsert("container2",
                 "key2", newCustomObjectValue);
@@ -298,16 +282,5 @@ public class CustomObjectSyncIT {
         Assertions.assertThat(errorCallBackMessages.get(0)).contains(
                 format("Failed to create custom object with key: '%s'.",
                         CustomObjectCompositeIdentifier.of(newCustomObjectDraft)));
-    }
-
-    @Nonnull
-    private SphereClient buildClientWithBadRequest() {
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-
-        final CustomObjectUpsertCommand upsertCommand = any(CustomObjectUpsertCommand.class);
-        when(spyClient.execute(upsertCommand))
-                .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadRequestException("bad request")))
-                .thenCallRealMethod();
-        return spyClient;
     }
 }
