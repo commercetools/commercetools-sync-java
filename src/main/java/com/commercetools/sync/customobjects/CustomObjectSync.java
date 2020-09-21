@@ -40,6 +40,8 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
         "Failed to fetch existing custom objects with keys: '%s'.";
     private static final String CTP_CUSTOM_OBJECT_UPDATE_FAILED =
         "Failed to update custom object with key: '%s'. Reason: %s";
+    private static final String CTP_CUSTOM_OBJECT_CREATE_FAILED =
+        "Failed to create custom object with key: '%s'. Reason: %s";
     private static final String CUSTOM_OBJECT_DRAFT_IS_NULL = "Failed to process null custom object draft.";
 
     private final CustomObjectService customObjectService;
@@ -59,7 +61,7 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
      *                            client and/or configuration and other sync-specific options.
      * @param customObjectService the custom object service which is responsible for fetching/caching the
      */
-    public CustomObjectSync(
+    CustomObjectSync(
         @Nonnull final CustomObjectSyncOptions syncOptions,
         @Nonnull final CustomObjectService customObjectService) {
 
@@ -233,17 +235,25 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
 
         return syncOptions
             .applyBeforeCreateCallback(customObjectDraft)
-            .map(draft -> customObjectService.upsertCustomObject(customObjectDraft)
-                                             .thenApply(customObjectOptional -> {
-                                                 if (customObjectOptional.isPresent()) {
-                                                     statistics.incrementCreated();
-                                                 } else {
-                                                     statistics.incrementFailed();
-                                                 }
-                                                 return customObjectOptional;
-                                             })
-            )
-            .orElse(CompletableFuture.completedFuture(Optional.empty()));
+                .map(draft -> customObjectService
+                    .upsertCustomObject(draft)
+                    .thenApply(customObjectOptional -> {
+                        if (customObjectOptional.isPresent()) {
+                            statistics.incrementCreated();
+                        } else {
+                            statistics.incrementFailed();
+                        }
+                        return customObjectOptional;
+                    }).exceptionally(sphereException -> {
+                        final String errorMessage =
+                            format(CTP_CUSTOM_OBJECT_CREATE_FAILED,
+                                CustomObjectCompositeIdentifier.of(customObjectDraft).toString(),
+                                sphereException.getMessage());
+                        handleError(errorMessage, sphereException, 1,
+                            null, customObjectDraft);
+                        return Optional.empty();
+                    })
+                ).orElse(completedFuture(Optional.empty()));
     }
 
 

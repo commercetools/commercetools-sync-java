@@ -3,13 +3,13 @@ package com.commercetools.sync.integration.externalsource.customobjects;
 import com.commercetools.sync.customobjects.CustomObjectSync;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptions;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptionsBuilder;
+import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.customobjects.helpers.CustomObjectSyncStatistics;
-import com.commercetools.sync.services.CustomObjectService;
-import com.commercetools.sync.services.impl.CustomObjectServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.client.BadGatewayException;
+import io.sphere.sdk.client.BadRequestException;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.createCustomObject;
@@ -62,8 +63,8 @@ public class CustomObjectSyncIT {
 
         final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder.of(
             CTP_TARGET_CLIENT).build();
-        final CustomObjectService customObjectService = new CustomObjectServiceImpl(customObjectSyncOptions);
-        final CustomObjectSync customObjectSync = new CustomObjectSync(customObjectSyncOptions, customObjectService);
+
+        final CustomObjectSync customObjectSync = new CustomObjectSync(customObjectSyncOptions);
 
         final ObjectNode customObject2Value =
             JsonNodeFactory.instance.objectNode().put("name", "value1");
@@ -83,8 +84,7 @@ public class CustomObjectSyncIT {
 
         final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder.of(
             CTP_TARGET_CLIENT).build();
-        final CustomObjectService customObjectService = new CustomObjectServiceImpl(customObjectSyncOptions);
-        final CustomObjectSync customObjectSync = new CustomObjectSync(customObjectSyncOptions, customObjectService);
+        final CustomObjectSync customObjectSync = new CustomObjectSync(customObjectSyncOptions);
 
         final ObjectNode customObject2Value =
             JsonNodeFactory.instance.objectNode().put("name", "value2");
@@ -107,8 +107,8 @@ public class CustomObjectSyncIT {
 
         final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder.of(
             CTP_TARGET_CLIENT).build();
-        final CustomObjectService customObjectService = new CustomObjectServiceImpl(customObjectSyncOptions);
-        final CustomObjectSync customObjectSync = new CustomObjectSync(customObjectSyncOptions, customObjectService);
+
+        final CustomObjectSync customObjectSync = new CustomObjectSync(customObjectSyncOptions);
 
         final CustomObjectSyncStatistics customObjectSyncStatistics = customObjectSync
             .sync(Collections.singletonList(customObjectDraft))
@@ -134,6 +134,7 @@ public class CustomObjectSyncIT {
 
         return spyClient;
     }
+
 
     @Test
     void sync_withChangedCustomObjectButConcurrentModificationException_shouldRetryAndUpdateCustomObject() {
@@ -189,7 +190,7 @@ public class CustomObjectSyncIT {
     @Test
     void sync_withConcurrentModificationExceptionAndFailedFetch_shouldFailToReFetchAndUpdate() {
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
-
+        final ObjectNode newCustomObjectValue = JsonNodeFactory.instance.objectNode().put("name", "value2");
         List<String> errorCallBackMessages = new ArrayList<>();
         List<Throwable> errorCallBackExceptions = new ArrayList<>();
 
@@ -204,7 +205,7 @@ public class CustomObjectSyncIT {
         final CustomObjectSync customObjectSync = new CustomObjectSync(spyOptions);
 
         final CustomObjectDraft<JsonNode> customObjectDraft = CustomObjectDraft.ofUnversionedUpsert("container1",
-            "key1", customObject1Value);
+            "key1", newCustomObjectValue);
 
         final CustomObjectSyncStatistics customObjectSyncStatistics = customObjectSync
             .sync(Collections.singletonList(customObjectDraft))
@@ -216,10 +217,8 @@ public class CustomObjectSyncIT {
 
         //TODO: Debug to see correct error message
         Assertions.assertThat(errorCallBackMessages.get(0)).contains(
-            format("Failed to update tax category with key: '%s'. Reason: Not found when attempting to fetch while"
-                + " retrying after concurrency modification.", customObjectDraft.getKey()));
-
-
+            format("Failed to update custom object with key: '%s'. Reason: Failed to fetch from CTP while retrying "
+                + "after concurrency modification.", CustomObjectCompositeIdentifier.of(customObjectDraft)));
     }
 
     @Nonnull
@@ -238,7 +237,7 @@ public class CustomObjectSyncIT {
     void sync_withConcurrentModificationExceptionAndUnexpectedDelete_shouldFailToReFetchAndUpdate() {
 
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
-
+        final ObjectNode newCustomObjectValue = JsonNodeFactory.instance.objectNode().put("name", "value2");
         List<String> errorCallBackMessages = new ArrayList<>();
         List<Throwable> errorCallBackExceptions = new ArrayList<>();
 
@@ -253,7 +252,7 @@ public class CustomObjectSyncIT {
         final CustomObjectSync customObjectSync = new CustomObjectSync(spyOptions);
 
         final CustomObjectDraft<JsonNode> customObjectDraft = CustomObjectDraft.ofUnversionedUpsert("container1",
-            "key1", customObject1Value);
+            "key1", newCustomObjectValue);
 
         final CustomObjectSyncStatistics customObjectSyncStatistics = customObjectSync
             .sync(Collections.singletonList(customObjectDraft))
@@ -265,12 +264,54 @@ public class CustomObjectSyncIT {
 
         //TODO: Debug to see correct error message
         Assertions.assertThat(errorCallBackMessages.get(0)).contains(
-            format("Failed to update tax category with key: '%s'. Reason: Not found when attempting to fetch while"
-                + " retrying after concurrency modification.", customObjectDraft.getKey()));
-
+            format("Failed to update custom object with key: '%s'. Reason: Not found when attempting to fetch while"
+                + " retrying after concurrency modification.", CustomObjectCompositeIdentifier.of(customObjectDraft)));
     }
 
+    @Test
+    void sync_withNewCustomObjectAndBadRequest_shouldFailCreationAndHandleError() {
+        final SphereClient spyClient = buildClientWithBadRequest();
+        final ObjectNode newCustomObjectValue = JsonNodeFactory.instance.objectNode().put("name", "value2");
+        final CustomObjectDraft<JsonNode> newCustomObjectDraft = CustomObjectDraft.ofUnversionedUpsert("container2",
+                "key2", newCustomObjectValue);
 
+        List<String> errorCallBackMessages = new ArrayList<>();
+        List<Throwable> errorCallBackExceptions = new ArrayList<>();
+
+        final CustomObjectSyncOptions spyOptions = CustomObjectSyncOptionsBuilder
+                .of(spyClient)
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorCallBackMessages.add(exception.getMessage());
+                    errorCallBackExceptions.add(exception.getCause());
+                })
+                .build();
+
+        final CustomObjectSync customObjectSync = new CustomObjectSync(spyOptions);
+
+        final CustomObjectSyncStatistics customObjectSyncStatistics = customObjectSync
+                .sync(Collections.singletonList(newCustomObjectDraft))
+                .toCompletableFuture().join();
+
+        assertThat(customObjectSyncStatistics).hasValues(1, 0, 0, 1);
+        Assertions.assertThat(errorCallBackMessages).hasSize(1);
+        Assertions.assertThat(errorCallBackExceptions).hasSize(1);
+        Assertions.assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
+        Assertions.assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(BadRequestException.class);
+        Assertions.assertThat(errorCallBackMessages.get(0)).contains(
+                format("Failed to create custom object with key: '%s'.",
+                        CustomObjectCompositeIdentifier.of(newCustomObjectDraft)));
+    }
+    
+    @Nonnull
+    private SphereClient buildClientWithBadRequest() {
+        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+
+        final CustomObjectUpsertCommand upsertCommand = any(CustomObjectUpsertCommand.class);
+        when(spyClient.execute(upsertCommand))
+                .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadRequestException("bad request")))
+                .thenCallRealMethod();
+        return spyClient;
+    }
 }
 
 

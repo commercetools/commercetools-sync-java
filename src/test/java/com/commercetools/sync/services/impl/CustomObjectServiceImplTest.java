@@ -47,8 +47,6 @@ class CustomObjectServiceImplTest {
     private SphereClient client = mock(SphereClient.class);
 
     private CustomObjectServiceImpl service;
-    private List<String> errorMessages;
-    private List<Throwable> errorExceptions;
 
     private String customObjectId;
     private String customObjectContainer;
@@ -60,15 +58,7 @@ class CustomObjectServiceImplTest {
         customObjectContainer = RandomStringUtils.random(15, true, true);
         customObjectKey = RandomStringUtils.random(15, true, true);
 
-        errorMessages = new ArrayList<>();
-        errorExceptions = new ArrayList<>();
-        CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder.of(client)
-            .errorCallback(
-                (exception, oldResource, newResource, updateActions) -> {
-                    errorMessages.add(exception.getMessage());
-                    errorExceptions.add(exception.getCause());
-                })
-            .build();
+        CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder.of(client).build();
 
         service = new CustomObjectServiceImpl(customObjectSyncOptions);
     }
@@ -352,16 +342,12 @@ class CustomObjectServiceImplTest {
         when(draftMock.getContainer()).thenReturn(customObjectContainer);
         when(draftMock.getJavaType()).thenReturn(getCustomObjectJavaTypeForValue(convertToJavaType(JsonNode.class)));
 
-        final Optional<CustomObject<JsonNode>> customObjectOptional =
-            service.upsertCustomObject(draftMock).toCompletableFuture().join();
 
-        String expectedMsg = "Failed to create draft with key: '{key='%s', container='%s'}'";
+        CompletableFuture future = service.upsertCustomObject(draftMock).toCompletableFuture();
+
         assertAll(
-            () -> assertThat(customObjectOptional).isEmpty(),
-            () -> assertThat(errorMessages).singleElement().asString()
-                                           .contains(String.format(expectedMsg, customObjectKey, customObjectContainer))
-                                           .contains("BadRequestException"),
-            () -> assertThat(errorExceptions).singleElement().isExactlyInstanceOf(BadRequestException.class)
+            () -> assertThat(future.isCompletedExceptionally()).isTrue(),
+            () -> assertThat(future).hasFailedWithThrowableThat().isExactlyInstanceOf(BadRequestException.class)
         );
     }
 

@@ -4,6 +4,7 @@ import com.commercetools.sync.customobjects.CustomObjectSyncOptions;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.services.CustomObjectService;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.sphere.sdk.commands.DraftBasedCreateCommand;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
 import io.sphere.sdk.customobjects.commands.CustomObjectUpsertCommand;
@@ -20,6 +21,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -131,8 +133,27 @@ public class CustomObjectServiceImpl
         if (StringUtils.isEmpty(customObjectDraft.getKey()) || StringUtils.isEmpty(customObjectDraft.getContainer())) {
             return CompletableFuture.completedFuture(Optional.empty());
         }
-        return createResource(customObjectDraft,
-            draft -> CustomObjectCompositeIdentifier.of(draft).toString(),
-            CustomObjectUpsertCommand::of);
+        CompletionStage<Optional<CustomObject<JsonNode>>> createdResource = createResource(customObjectDraft,
+            draft -> CustomObjectCompositeIdentifier.of(draft).toString(), CustomObjectUpsertCommand::of);
+        return createdResource ;
+    }
+
+    @Nonnull
+    @Override
+    CompletionStage<Optional<CustomObject<JsonNode>>> executeCreateCommand(
+        @Nonnull final CustomObjectDraft<JsonNode> draft,
+        @Nonnull final Function<CustomObjectDraft<JsonNode>, String> keyMapper,
+        @Nonnull final Function<CustomObjectDraft<JsonNode>,
+                DraftBasedCreateCommand<CustomObject<JsonNode>, CustomObjectDraft<JsonNode>>> createCommand) {
+
+        final String draftKey = keyMapper.apply(draft);
+
+        return syncOptions
+            .getCtpClient()
+            .execute(createCommand.apply(draft))
+            .thenApply(resource -> {
+                keyToIdCache.put(draftKey, resource.getId());
+                return Optional.of(resource);
+            });
     }
 }
