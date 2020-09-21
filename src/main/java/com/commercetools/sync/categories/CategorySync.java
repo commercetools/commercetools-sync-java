@@ -36,10 +36,12 @@ import java.util.stream.Collectors;
 import static com.commercetools.sync.categories.helpers.CategoryReferenceResolver.getParentCategoryKey;
 import static com.commercetools.sync.categories.utils.CategorySyncUtils.buildActions;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.areResourceIdentifiersEqual;
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.toResourceIdentifierIfNotNull;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
 
 public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics, CategorySyncOptions> {
 
@@ -47,6 +49,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private static final String UPDATE_FAILED = "Failed to update Category with key: '%s'. Reason: %s";
 
     private final CategoryService categoryService;
+    private final TypeService typeService;
     private final CategoryReferenceResolver referenceResolver;
 
     /**
@@ -109,6 +112,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                  @Nonnull final CategoryService categoryService) {
         super(new CategorySyncStatistics(), syncOptions);
         this.categoryService = categoryService;
+        this.typeService = typeService;
         this.referenceResolver = new CategoryReferenceResolver(syncOptions, typeService, categoryService);
     }
 
@@ -122,7 +126,6 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      *
      * <p>More on the exact implementation of how the sync works here:
      * https://sphere.atlassian.net/wiki/spaces/PS/pages/145193124/Category+Parallelisation+Technical+Concept
-     *
      *
      * @param categoryDrafts the list of new category drafts to sync to the CTP project.
      * @return an instance of {@link CompletionStage}&lt;{@link CategorySyncStatistics}&gt; which contains as a result
@@ -152,7 +155,6 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * <p>More on the exact implementation of how the sync works here:
      * https://github.com/commercetools/commercetools-sync-java/wiki/Category-Sync-Underlying-Concept
      *
-     *
      * @param categoryDrafts the list of new category drafts to sync to the CTP project.
      * @return an instance of {@link CompletionStage}&lt;{@link CategorySyncStatistics}&gt; which contains as a result
      *         an instance of {@link CategorySyncStatistics} representing the {@code statistics} instance attribute of
@@ -168,46 +170,52 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         categoryKeysWithResolvedParents = ConcurrentHashMap.newKeySet();
         categoryDraftsToUpdate = new ConcurrentHashMap<>();
 
-        final CategoryBatchValidator batchProcessor = new CategoryBatchValidator(this.syncOptions, this.statistics);
-        final ImmutablePair<Set<CategoryDraft>, Set<String>> validDraftsAndKeys
-                = batchProcessor.validateAndCollectValidDraftsAndKeys(categoryDrafts);
-        final Set<CategoryDraft> validDrafts = validDraftsAndKeys.getLeft();
-        final Set<String> keysToCache = validDraftsAndKeys.getRight();
+        final CategoryBatchValidator batchValidator = new CategoryBatchValidator(this.syncOptions, this.statistics);
+        final ImmutablePair<Set<CategoryDraft>, CategoryBatchValidator.ReferencedKeys> pair =
+            batchValidator.validateAndCollectReferencedKeys(categoryDrafts);
 
+        final Set<CategoryDraft> validDrafts = pair.getLeft();
         if (validDrafts.isEmpty()) {
             statistics.incrementProcessed(categoryDrafts.size());
             return CompletableFuture.completedFuture(statistics);
         }
 
-        return categoryService
-                .cacheKeysToIds(keysToCache)
-                .handle(ImmutablePair::new)
-                .thenCompose(cachingResponse -> {
+        return fetchAndBuildKeyToIdCaches(pair.getRight())
+            .thenCompose(keyToIdCaches -> {
+                final Map<String, String> keyToIdCache = keyToIdCaches.get(0);
+                prepareDraftsForProcessing(new ArrayList<>(validDrafts), keyToIdCache);
 
-                    final Map<String, String> keyToIdCache = cachingResponse.getKey();
-                    final Throwable cachingException = cachingResponse.getValue();
+                categoryKeysToFetch = existingCategoryDrafts
+                    .stream()
+                    .map(CategoryDraft::getKey)
+                    .collect(Collectors.toSet());
 
-                    if (cachingException != null) {
-                        handleError(new SyncException("Failed to build a cache of keys to ids.", cachingException),
-                            validDrafts.size());
-                        return CompletableFuture.completedFuture(null);
-                    }
-
-                    prepareDraftsForProcessing(new ArrayList<>(validDrafts), keyToIdCache);
-
-                    categoryKeysToFetch = existingCategoryDrafts
-                        .stream()
-                        .map(CategoryDraft::getKey)
-                        .collect(Collectors.toSet());
-
-                    return createAndUpdate(keyToIdCache);
-                })
-                .thenApply(ignoredResult -> {
-                    statistics.incrementProcessed(numberOfNewDraftsToProcess);
-                    return statistics;
-                });
+                return createAndUpdate(keyToIdCache);
+            })
+            .exceptionally(completionException -> {
+                handleError(new SyncException("Failed to build a cache of keys to ids.", completionException),
+                    validDrafts.size());
+                return null;
+            })
+            .thenApply(ignoredResult -> {
+                statistics.incrementProcessed(numberOfNewDraftsToProcess);
+                return statistics;
+            });
     }
 
+    @Nonnull
+    private CompletableFuture<List<Map<String, String>>> fetchAndBuildKeyToIdCaches(
+        @Nonnull final CategoryBatchValidator.ReferencedKeys referencedKeys) {
+
+        final List<CompletionStage<Map<String, String>>> futures = new ArrayList<>();
+        futures.add(categoryService.cacheKeysToIds(referencedKeys.getCategoryKeys()));
+        final Set<String> typeKeys = referencedKeys.getTypeKeys();
+        if (!typeKeys.isEmpty()) {
+            futures.add(typeService.cacheKeysToIds(typeKeys));
+        }
+
+        return collectionOfFuturesToFutureOfCollection(futures, toList());
+    }
 
     private CompletionStage<Void> fetchAndUpdate(@Nonnull final Map<String, String> keyToIdCache) {
         return categoryService
@@ -309,7 +317,6 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                         exception);
                 handleError(errorMessage, exception);
             }
-
         }
     }
 

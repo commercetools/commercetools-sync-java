@@ -1,121 +1,77 @@
 package com.commercetools.sync.categories.helpers;
 
 import com.commercetools.sync.categories.CategorySyncOptions;
-import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
-import com.commercetools.sync.commons.exceptions.SyncException;
-import io.sphere.sdk.categories.Category;
+import com.commercetools.sync.commons.helpers.BaseBatchValidator;
 import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.models.ResourceIdentifier;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
-import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-public class CategoryBatchValidator {
+public class CategoryBatchValidator
+    extends BaseBatchValidator<CategoryDraft, CategorySyncOptions, CategorySyncStatistics> {
+
     static final String CATEGORY_DRAFT_KEY_NOT_SET = "CategoryDraft with name: %s doesn't have a key. "
-            + "Please make sure all category drafts have keys.";
+        + "Please make sure all category drafts have keys.";
     static final String CATEGORY_DRAFT_IS_NULL = "CategoryDraft is null.";
-    static final String PARENT_CATEGORY_KEY_NOT_SET = "Parent category reference of "
-            + "CategoryDraft with key '%s' has no key set. Please make sure parent category has a key.";
 
-    final CategorySyncOptions syncOptions;
-    final CategorySyncStatistics statistics;
+    public CategoryBatchValidator(
+        @Nonnull final CategorySyncOptions syncOptions,
+        @Nonnull final CategorySyncStatistics syncStatistics) {
 
-    public CategoryBatchValidator(@Nonnull final CategorySyncOptions syncOptions,
-                                  @Nonnull final CategorySyncStatistics statistics) {
-        this.syncOptions = syncOptions;
-        this.statistics = statistics;
+        super(syncOptions, syncStatistics);
     }
 
-    /**
-     * This method validates a list of category drafts.
-     *
-     * <p>A valid category draft is one which satisfies the following conditions:
-     * <ol>
-     * <li>It has a key which is not blank (null/empty)</li>
-     * <li>It has parent category valid</li>
-     * <li>A parent is valid if it satisfies the following conditions:
-     * <ol>
-     * <li>It has a key which is not blank (null/empty)</li>
-     * </ol>
-     * </li>
-     * </ol>
-     *
-     * @param categoryDrafts - a list of category drafts considered in this batch
-     *
-     * @return a tuple of valid category drafts and valid keys
-     */
+    @Override
+    public ImmutablePair<Set<CategoryDraft>, ReferencedKeys> validateAndCollectReferencedKeys(
+        @Nonnull final List<CategoryDraft> categoryDrafts) {
+        final ReferencedKeys referencedKeys = new ReferencedKeys();
+        final Set<CategoryDraft> validDrafts = categoryDrafts
+            .stream()
+            .filter(this::isValidCategoryDraft)
+            .peek(categoryDraft -> {
+                referencedKeys.categoryKeys.add(categoryDraft.getKey());
+                collectReferencedKeyFromResourceIdentifier(categoryDraft.getParent(),
+                    referencedKeys.categoryKeys::add);
+                collectReferencedKeyFromCustomFieldsDraft(categoryDraft.getCustom(),
+                    referencedKeys.typeKeys::add);
+                collectReferencedKeysFromAssetDrafts(categoryDraft.getAssets(),
+                    referencedKeys.typeKeys::add);
+            })
+            .collect(Collectors.toSet());
 
-    public ImmutablePair<Set<CategoryDraft>, Set<String>> validateAndCollectValidDraftsAndKeys(
-            final List<CategoryDraft> categoryDrafts) {
-        Set<CategoryDraft> validDrafts = new HashSet<>();
-        Set<String> validKeys = new HashSet<>();
-        for (CategoryDraft categoryDraft : categoryDrafts) {
-            if (isValidCategoryDraft(categoryDraft)) {
-                ResourceIdentifier<Category> parent = categoryDraft.getParent();
-                if (parent == null) {
-                    validKeys.add(categoryDraft.getKey());
-                    validDrafts.add(categoryDraft);
-                } else if (isValidParentCategory(parent, categoryDraft.getKey())) {
-                    validDrafts.add(categoryDraft);
-                    validKeys.add(categoryDraft.getKey());
-                    validKeys.add(parent.getKey());
-                }
-            }
-        }
-
-        return ImmutablePair.of(validDrafts, validKeys);
+        return ImmutablePair.of(validDrafts, referencedKeys);
     }
 
-    private boolean isValidCategoryDraft(final CategoryDraft categoryDraft) {
-        String errorMessage = EMPTY;
-        if (categoryDraft != null) {
-            if (isBlank(categoryDraft.getKey())) {
-                errorMessage = format(CATEGORY_DRAFT_KEY_NOT_SET, categoryDraft.getName());
-            }
+    private boolean isValidCategoryDraft(@Nullable final CategoryDraft categoryDraft) {
+        if (categoryDraft == null) {
+            handleError(CATEGORY_DRAFT_IS_NULL);
+        } else if (isBlank(categoryDraft.getKey())) {
+            handleError(format(CATEGORY_DRAFT_KEY_NOT_SET, categoryDraft.getName()));
         } else {
-            errorMessage = CATEGORY_DRAFT_IS_NULL;
+            return true;
         }
 
-        if (!isBlank(errorMessage)) {
-            handleError(errorMessage);
-            return false;
+        return false;
+    }
+
+    public static class ReferencedKeys {
+        private final Set<String> categoryKeys = new HashSet<>();
+        private final Set<String> typeKeys = new HashSet<>();
+
+        public Set<String> getCategoryKeys() {
+            return categoryKeys;
         }
 
-        return true;
-    }
-
-    private boolean isValidParentCategory(final ResourceIdentifier<Category> parent, final String categoryDraftKey) {
-        if (isBlank(parent.getKey())) {
-            handleError(new SyncException(
-                    new ReferenceResolutionException(format(PARENT_CATEGORY_KEY_NOT_SET, categoryDraftKey))));
-            return false;
+        public Set<String> getTypeKeys() {
+            return typeKeys;
         }
-
-        return true;
     }
-
-    private void handleError(@Nonnull final SyncException syncException) {
-        this.syncOptions.applyErrorCallback(syncException);
-        this.statistics.incrementFailed();
-    }
-
-    /**
-     * Given a {@link String} {@code errorMessage}, this method calls the
-     * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
-     * incrementing the total number of failed categories to sync.
-     *
-     * @param errorMessage The error message describing the reason(s) of failure.
-     */
-    private void handleError(@Nonnull final String errorMessage) {
-        this.syncOptions.applyErrorCallback(errorMessage);
-        this.statistics.incrementFailed();
-    }
-
 }

@@ -14,6 +14,19 @@ import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
 public interface TypeService {
+
+    /**
+     * Filters out the keys which are already cached and fetches only the not-cached type keys from the CTP project
+     * defined in an injected {@link SphereClient} and stores a mapping for every type to id in the cached map of
+     * keys -&gt; ids and returns this cached map.
+     *
+     * @param typeKeys - a set type keys to fetch and cache the ids for
+     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a map of
+     *      requested type keys -&gt; ids
+     */
+    @Nonnull
+    CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> typeKeys);
+
     /**
      * Given a {@code key}, this method first checks if a cached map of Type keys -&gt; ids contains the key.
      * If not, it returns a completed future that contains an {@link Optional} that contains what this key maps to in

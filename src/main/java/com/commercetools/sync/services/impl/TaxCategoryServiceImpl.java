@@ -15,6 +15,7 @@ import io.sphere.sdk.taxcategories.queries.TaxCategoryQueryModel;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
@@ -27,6 +28,17 @@ public final class TaxCategoryServiceImpl
 
     public TaxCategoryServiceImpl(@Nonnull final TaxCategorySyncOptions syncOptions) {
         super(syncOptions);
+    }
+
+    @Nonnull
+    @Override
+    public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> taxCategoryKeys) {
+
+        return cacheKeysToIds(
+            taxCategoryKeys, keysNotCached -> TaxCategoryQueryBuilder
+                .of()
+                .plusPredicates(taxCategoryQueryModel -> taxCategoryQueryModel.key().isIn(keysNotCached))
+                .build());
     }
 
     @Nonnull

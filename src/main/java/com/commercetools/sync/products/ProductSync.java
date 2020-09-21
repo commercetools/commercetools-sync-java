@@ -4,7 +4,7 @@ import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
-import com.commercetools.sync.products.helpers.ProductBatchProcessor;
+import com.commercetools.sync.products.helpers.ProductBatchValidator;
 import com.commercetools.sync.products.helpers.ProductReferenceResolver;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.services.CategoryService;
@@ -120,31 +120,23 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     protected CompletionStage<ProductSyncStatistics> processBatch(@Nonnull final List<ProductDraft> batch) {
 
         readyToResolve = ConcurrentHashMap.newKeySet();
-        final ProductBatchProcessor batchProcessor = new ProductBatchProcessor(batch, this);
-        batchProcessor.validateBatch();
 
-        final Set<ProductDraft> validDrafts = batchProcessor.getValidDrafts();
+        final ProductBatchValidator batchProcessor = new ProductBatchValidator(syncOptions, statistics);
+        final ImmutablePair<Set<ProductDraft>, ProductBatchValidator.ReferencedKeys> result
+            = batchProcessor.validateAndCollectReferencedKeys(batch);
+
+        final Set<ProductDraft> validDrafts = result.getLeft();
         if (validDrafts.isEmpty()) {
             statistics.incrementProcessed(batch.size());
             return CompletableFuture.completedFuture(statistics);
         }
 
-        final Set<String> keysToCache = batchProcessor.getKeysToCache();
-        return productService
-            .cacheKeysToIds(keysToCache)
-            .handle(ImmutablePair::new)
-            .thenCompose(cachingResponse -> {
-
-                final Map<String, String> keyToIdCache = cachingResponse.getKey();
-                final Throwable cachingException = cachingResponse.getValue();
-
-                if (cachingException != null) {
-                    handleError(new SyncException("Failed to build a cache of product keys to ids.", cachingException),
-                        keysToCache.size());
-                    return CompletableFuture.completedFuture(null);
-                } else {
-                    return syncBatch(validDrafts, keyToIdCache);
-                }
+        return productReferenceResolver.cacheKeyToIds(result.getRight())
+            .thenCompose(keyToIdCaches -> syncBatch(validDrafts, keyToIdCaches.get(0)))
+            .exceptionally(cachingException -> {
+                handleError(new SyncException("Failed to build a cache of product keys to ids.", cachingException),
+                    validDrafts.size());
+                return null;
             })
             .thenApply(ignoredResult -> {
                 statistics.incrementProcessed(batch.size());
@@ -220,7 +212,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
         final Set<String> referencedProductKeys = getAllVariants(newProduct)
             .stream()
-            .map(ProductBatchProcessor::getReferencedProductKeys)
+            .map(ProductBatchValidator::getReferencedProductKeys)
             .flatMap(Collection::stream)
             .collect(Collectors.toSet());
 

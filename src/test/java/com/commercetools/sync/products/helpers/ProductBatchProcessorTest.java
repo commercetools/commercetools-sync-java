@@ -1,6 +1,5 @@
 package com.commercetools.sync.products.helpers;
 
-import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -11,211 +10,47 @@ import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.AttributeDraft;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceWithId;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getReferenceSetAttributeDraft;
-import static com.commercetools.sync.products.helpers.ProductBatchProcessor.PRODUCT_DRAFT_IS_NULL;
-import static com.commercetools.sync.products.helpers.ProductBatchProcessor.PRODUCT_DRAFT_KEY_NOT_SET;
-import static com.commercetools.sync.products.helpers.ProductBatchProcessor.PRODUCT_VARIANT_DRAFT_IS_NULL;
-import static com.commercetools.sync.products.helpers.ProductBatchProcessor.PRODUCT_VARIANT_DRAFT_KEY_NOT_SET;
-import static com.commercetools.sync.products.helpers.ProductBatchProcessor.PRODUCT_VARIANT_DRAFT_SKU_NOT_SET;
-import static com.commercetools.sync.products.helpers.ProductBatchProcessor.getProductDraftErrorsAndAcceptConsumer;
-import static com.commercetools.sync.products.helpers.ProductBatchProcessor.getReferencedProductKeys;
-import static com.commercetools.sync.products.helpers.ProductBatchProcessor.getVariantDraftErrors;
+import static com.commercetools.sync.products.helpers.ProductBatchValidator.PRODUCT_DRAFT_IS_NULL;
+import static com.commercetools.sync.products.helpers.ProductBatchValidator.PRODUCT_DRAFT_KEY_NOT_SET;
+import static com.commercetools.sync.products.helpers.ProductBatchValidator.PRODUCT_VARIANT_DRAFT_IS_NULL;
+import static com.commercetools.sync.products.helpers.ProductBatchValidator.PRODUCT_VARIANT_DRAFT_KEY_NOT_SET;
+import static com.commercetools.sync.products.helpers.ProductBatchValidator.PRODUCT_VARIANT_DRAFT_SKU_NOT_SET;
+import static com.commercetools.sync.products.helpers.ProductBatchValidator.getReferencedProductKeys;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class ProductBatchProcessorTest {
     private List<String> errorCallBackMessages;
-    private List<Throwable> errorCallBackExceptions;
-    private ProductSync productSync;
+    private ProductSyncOptions syncOptions;
+    private ProductSyncStatistics syncStatistics;
 
     @BeforeEach
     void setup() {
         errorCallBackMessages = new ArrayList<>();
-        errorCallBackExceptions = new ArrayList<>();
         final SphereClient ctpClient = mock(SphereClient.class);
-        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(ctpClient)
+        syncOptions = ProductSyncOptionsBuilder.of(ctpClient)
                 .errorCallback((exception, oldResource, newResource, updateActions) -> {
                     errorCallBackMessages.add(exception.getMessage());
-                    errorCallBackExceptions.add(exception.getCause());
                 })
                 .build();
-        productSync = new ProductSync(syncOptions);
-    }
-
-    @Test
-    void getVariantDraftErrors_WithNullVariant_ShouldHaveValidationErrors() {
-        final int variantPosition = 0;
-        final String productDraftKey = "key";
-        final List<String> validationErrors = getVariantDraftErrors(null, variantPosition, productDraftKey);
-
-        assertThat(validationErrors).hasSize(1);
-        assertThat(validationErrors.get(0))
-            .isEqualTo(format(PRODUCT_VARIANT_DRAFT_IS_NULL, variantPosition, productDraftKey));
-    }
-
-    @Test
-    void getVariantDraftErrors_WithNokeyAndSku_ShouldHaveValidationErrors() {
-        final int variantPosition = 0;
-        final String productDraftKey = "key";
-        final List<String> validationErrors =
-            getVariantDraftErrors(mock(ProductVariantDraft.class), variantPosition, productDraftKey);
-
-        assertThat(validationErrors).hasSize(2);
-        assertThat(validationErrors).containsExactlyInAnyOrder(
-            format(PRODUCT_VARIANT_DRAFT_SKU_NOT_SET, variantPosition, productDraftKey),
-            format(PRODUCT_VARIANT_DRAFT_KEY_NOT_SET, variantPosition, productDraftKey));
-    }
-
-    @Test
-    void getVariantDraftErrors_WithNoKey_ShouldHaveKeyValidationError() {
-        final int variantPosition = 0;
-        final String productDraftKey = "key";
-        final ProductVariantDraft productVariantDraft = mock(ProductVariantDraft.class);
-        when(productVariantDraft.getSku()).thenReturn("sku");
-
-        final List<String> validationErrors =
-            getVariantDraftErrors(productVariantDraft, variantPosition, productDraftKey);
-
-        assertThat(validationErrors).hasSize(1);
-        assertThat(validationErrors.get(0)).isEqualTo(
-            format(PRODUCT_VARIANT_DRAFT_KEY_NOT_SET, variantPosition, productDraftKey));
-    }
-
-    @Test
-    void getVariantDraftErrors_WithNoSku_ShouldHaveSkuValidationError() {
-        final int variantPosition = 0;
-        final String productDraftKey = "key";
-        final ProductVariantDraft productVariantDraft = mock(ProductVariantDraft.class);
-        when(productVariantDraft.getKey()).thenReturn("key");
-
-        final List<String> validationErrors =
-            getVariantDraftErrors(productVariantDraft, variantPosition, productDraftKey);
-
-        assertThat(validationErrors).hasSize(1);
-        assertThat(validationErrors.get(0)).isEqualTo(
-            format(PRODUCT_VARIANT_DRAFT_SKU_NOT_SET, variantPosition, productDraftKey));
-    }
-
-    @Test
-    void getVariantDraftErrors_WithSkuAndKey_ShouldHaveNoValidationErrors() {
-        final String productDraftKey = "key";
-        final ProductVariantDraft productVariantDraft = mock(ProductVariantDraft.class);
-        when(productVariantDraft.getKey()).thenReturn("key");
-        when(productVariantDraft.getSku()).thenReturn("sku");
-
-        final List<String> validationErrors =
-            getVariantDraftErrors(productVariantDraft, 0, productDraftKey);
-
-        assertThat(validationErrors).isEmpty();
-    }
-
-    @Test
-    void getProductDraftErrorsAndAcceptConsumer_WithNullMvAndNullVariants_ShouldNotAcceptConsumerAndHaveErrors() {
-        final AtomicBoolean isConsumerAccepted = new AtomicBoolean(false);
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getKey()).thenReturn("key");
-        when(productDraft.getVariants()).thenReturn(null);
-
-        final List<String> validationErrors =
-            getProductDraftErrorsAndAcceptConsumer(productDraft, variantDraft -> isConsumerAccepted.set(true));
-
-        assertThat(validationErrors).hasSize(1);
-        assertThat(validationErrors.get(0))
-            .isEqualTo(format(PRODUCT_VARIANT_DRAFT_IS_NULL, 0, productDraft.getKey()));
-        assertThat(isConsumerAccepted.get()).isFalse();
-    }
-
-    @Test
-    void getProductDraftErrorsAndAcceptConsumer_WithNullMvAndNoVariants_ShouldNotAcceptConsumerAndHaveErrors() {
-        final AtomicBoolean isConsumerAccepted = new AtomicBoolean(false);
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getKey()).thenReturn("key");
-
-        final List<String> validationErrors =
-            getProductDraftErrorsAndAcceptConsumer(productDraft, variantDraft -> isConsumerAccepted.set(true));
-
-        assertThat(validationErrors).hasSize(1);
-        assertThat(validationErrors.get(0))
-            .isEqualTo(format(PRODUCT_VARIANT_DRAFT_IS_NULL, 0, productDraft.getKey()));
-        assertThat(isConsumerAccepted.get()).isFalse();
-    }
-
-    @Test
-    void getProductDraftErrorsAndAcceptConsumer_WithNullMvAndValidVariants_ShouldNotAcceptConsumerAndHaveErrors() {
-        final AtomicBoolean isConsumerAccepted = new AtomicBoolean(false);
-
-        final ProductVariantDraft productVariantDraft = mock(ProductVariantDraft.class);
-        when(productVariantDraft.getKey()).thenReturn("key");
-        when(productVariantDraft.getSku()).thenReturn("sku");
-
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getKey()).thenReturn("key");
-        when(productDraft.getVariants()).thenReturn(singletonList(productVariantDraft));
-
-        final List<String> validationErrors =
-            getProductDraftErrorsAndAcceptConsumer(productDraft, variantDraft -> isConsumerAccepted.set(true));
-
-        assertThat(validationErrors).hasSize(1);
-        assertThat(validationErrors.get(0))
-            .isEqualTo(format(PRODUCT_VARIANT_DRAFT_IS_NULL, 0, productDraft.getKey()));
-        assertThat(isConsumerAccepted.get()).isFalse();
-    }
-
-    @Test
-    void getProductDraftErrorsAndAcceptConsumer_WithInValidMvAndValidVariants_ShouldNotAcceptConsumerAndHaveErrors() {
-        final AtomicBoolean isConsumerAccepted = new AtomicBoolean(false);
-
-        final ProductVariantDraft productVariantDraft = mock(ProductVariantDraft.class);
-        when(productVariantDraft.getKey()).thenReturn("key");
-        when(productVariantDraft.getSku()).thenReturn("sku");
-
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getKey()).thenReturn("key");
-        when(productDraft.getMasterVariant()).thenReturn(mock(ProductVariantDraft.class));
-        when(productDraft.getVariants()).thenReturn(singletonList(productVariantDraft));
-
-        final List<String> validationErrors =
-            getProductDraftErrorsAndAcceptConsumer(productDraft, variantDraft -> isConsumerAccepted.set(true));
-
-        assertThat(validationErrors).hasSize(2);
-        assertThat(validationErrors).containsExactlyInAnyOrder(
-            format(PRODUCT_VARIANT_DRAFT_SKU_NOT_SET, 0, productDraft.getKey()),
-            format(PRODUCT_VARIANT_DRAFT_KEY_NOT_SET, 0, productDraft.getKey()));
-        assertThat(isConsumerAccepted.get()).isFalse();
-    }
-
-    @Test
-    void getProductDraftErrorsAndAcceptConsumer_WithValidMvAndValidVariants_ShouldAcceptConsumerAndNoErrors() {
-        final AtomicBoolean isConsumerAccepted = new AtomicBoolean(false);
-
-        final ProductVariantDraft productVariantDraft = mock(ProductVariantDraft.class);
-        when(productVariantDraft.getKey()).thenReturn("key");
-        when(productVariantDraft.getSku()).thenReturn("sku");
-
-        final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getKey()).thenReturn("key");
-        when(productDraft.getMasterVariant()).thenReturn(productVariantDraft);
-        when(productDraft.getVariants()).thenReturn(singletonList(productVariantDraft));
-
-        final List<String> validationErrors =
-            getProductDraftErrorsAndAcceptConsumer(productDraft, variantDraft -> isConsumerAccepted.set(true));
-
-        assertThat(validationErrors).isEmpty();
-        assertThat(isConsumerAccepted.get()).isTrue();
+        syncStatistics = mock(ProductSyncStatistics.class);
     }
 
     @Test
@@ -358,62 +193,135 @@ class ProductBatchProcessorTest {
     }
 
     @Test
-    void validateBatch_WithEmptyBatch_ShouldHaveEmptyResults() {
-        final ProductBatchProcessor batchProcessor = new ProductBatchProcessor(emptyList(), productSync);
+    void validateAndCollectReferencedKeys_WithEmptyDraft_ShouldHaveEmptyResult() {
+        final Set<ProductDraft> validDrafts = getValidDrafts(Collections.emptyList());
 
-        batchProcessor.validateBatch();
-
-        assertThat(batchProcessor.getKeysToCache()).isEmpty();
-        assertThat(batchProcessor.getValidDrafts()).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).hasSize(0);
+        assertThat(validDrafts).isEmpty();
     }
 
     @Test
-    void validateBatch_WithANullDraft_ShouldResultInAnError() {
-        final ProductBatchProcessor batchProcessor = new ProductBatchProcessor(singletonList(null), productSync);
+    void validateAndCollectReferencedKeys_WithNullProductDraft_ShouldHaveValidationErrorAndEmptyResult() {
+        final Set<ProductDraft> validDrafts = getValidDrafts(Collections.singletonList(null));
 
-        batchProcessor.validateBatch();
-
-        assertThat(batchProcessor.getKeysToCache()).isEmpty();
-        assertThat(batchProcessor.getValidDrafts()).isEmpty();
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages).containsExactly(PRODUCT_DRAFT_IS_NULL);
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(PRODUCT_DRAFT_IS_NULL);
+        assertThat(validDrafts).isEmpty();
     }
 
     @Test
-    void validateBatch_WithADraftWithNullKey_ShouldResultInAnError() {
+    void validateAndCollectReferencedKeys_WithProductDraftWithNullKey_ShouldHaveValidationErrorAndEmptyResult() {
         final ProductDraft productDraft = mock(ProductDraft.class);
-        final ProductBatchProcessor batchProcessor =
-            new ProductBatchProcessor(singletonList(productDraft), productSync);
+        final Set<ProductDraft> validDrafts = getValidDrafts(Collections.singletonList(productDraft));
 
-        batchProcessor.validateBatch();
-
-        assertThat(batchProcessor.getKeysToCache()).isEmpty();
-        assertThat(batchProcessor.getValidDrafts()).isEmpty();
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages)
-            .containsExactly(format(PRODUCT_DRAFT_KEY_NOT_SET, productDraft.getName()));
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format(PRODUCT_DRAFT_KEY_NOT_SET, productDraft.getName()));
+        assertThat(validDrafts).isEmpty();
     }
 
     @Test
-    void validateBatch_WithADraftWithEmptyKey_ShouldResultInAnError() {
+    void validateAndCollectReferencedKeys_WithCategoryDraftWithEmptyKey_ShouldHaveValidationErrorAndEmptyResult() {
         final ProductDraft productDraft = mock(ProductDraft.class);
-        when(productDraft.getKey()).thenReturn("");
+        when(productDraft.getKey()).thenReturn(EMPTY);
+        final Set<ProductDraft> validDrafts = getValidDrafts(Collections.singletonList(productDraft));
 
-        final ProductBatchProcessor batchProcessor =
-            new ProductBatchProcessor(singletonList(productDraft), productSync);
-        batchProcessor.validateBatch();
-
-        assertThat(batchProcessor.getKeysToCache()).isEmpty();
-        assertThat(batchProcessor.getValidDrafts()).isEmpty();
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages)
-            .containsExactly(format(PRODUCT_DRAFT_KEY_NOT_SET, productDraft.getName()));
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(format(PRODUCT_DRAFT_KEY_NOT_SET, productDraft.getName()));
+        assertThat(validDrafts).isEmpty();
     }
 
     @Test
-    void validateBatch_WithDrafts_ShouldValidateCorrectly() {
+    void validateAndCollectReferencedKeys_WithNullVariant_ShouldHaveValidationErrors() {
+        final String productDraftKey = "key";
+        final int variantPosition = 0;
+
+        final ProductDraft productDraft = mock(ProductDraft.class);
+        when(productDraft.getKey()).thenReturn(productDraftKey);
+
+        final Set<ProductDraft> validDrafts = getValidDrafts(Collections.singletonList(productDraft));
+
+        assertThat(validDrafts).isEmpty();
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0))
+            .isEqualTo(format(PRODUCT_VARIANT_DRAFT_IS_NULL, variantPosition, productDraftKey));
+    }
+
+    @Test
+    void validateAndCollectReferencedKeys_WithVariantButNoKeyAndSku_ShouldHaveValidationErrors() {
+        final int variantPosition = 0;
+        final String productDraftKey = "key";
+
+        final ProductDraft productDraft = mock(ProductDraft.class);
+        when(productDraft.getKey()).thenReturn(productDraftKey);
+        final ProductVariantDraft masterVariant = mock(ProductVariantDraft.class);
+        when(productDraft.getMasterVariant()).thenReturn(masterVariant);
+
+        final Set<ProductDraft> validDrafts = getValidDrafts(Collections.singletonList(productDraft));
+
+        assertThat(validDrafts).isEmpty();
+        assertThat(errorCallBackMessages).hasSize(2);
+        assertThat(errorCallBackMessages).containsExactlyInAnyOrder(
+            format(PRODUCT_VARIANT_DRAFT_SKU_NOT_SET, variantPosition, productDraftKey),
+            format(PRODUCT_VARIANT_DRAFT_KEY_NOT_SET, variantPosition, productDraftKey));
+    }
+
+    @Test
+    void validateAndCollectReferencedKeys_WithNoVariantKey_ShouldHaveKeyValidationError() {
+        final int variantPosition = 0;
+        final String productDraftKey = "key";
+
+        final ProductDraft productDraft = mock(ProductDraft.class);
+        when(productDraft.getKey()).thenReturn(productDraftKey);
+
+        final ProductVariantDraft masterVariant = mock(ProductVariantDraft.class);
+        when(masterVariant.getSku()).thenReturn("sku");
+        when(productDraft.getMasterVariant()).thenReturn(masterVariant);
+
+        final Set<ProductDraft> validDrafts = getValidDrafts(Collections.singletonList(productDraft));
+
+        assertThat(validDrafts).isEmpty();
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(
+            format(PRODUCT_VARIANT_DRAFT_KEY_NOT_SET, variantPosition, productDraftKey));
+    }
+
+    @Test
+    void validateAndCollectReferencedKeys_WithNoVariantSku_ShouldHaveSkuValidationError() {
+        final int variantPosition = 0;
+        final String productDraftKey = "key";
+        final ProductDraft productDraft = mock(ProductDraft.class);
+        when(productDraft.getKey()).thenReturn(productDraftKey);
+
+        final ProductVariantDraft masterVariant = mock(ProductVariantDraft.class);
+        when(masterVariant.getKey()).thenReturn("key");
+        when(productDraft.getMasterVariant()).thenReturn(masterVariant);
+
+        final Set<ProductDraft> validDrafts = getValidDrafts(Collections.singletonList(productDraft));
+
+        assertThat(validDrafts).isEmpty();
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(
+            format(PRODUCT_VARIANT_DRAFT_SKU_NOT_SET, variantPosition, productDraftKey));
+    }
+
+    @Test
+    void validateAndCollectReferencedKeys_WithSkuAndKey_ShouldHaveNoValidationErrors() {
+        final String productDraftKey = "key";
+        final ProductDraft productDraft = mock(ProductDraft.class);
+        when(productDraft.getKey()).thenReturn(productDraftKey);
+
+        final ProductVariantDraft masterVariant = mock(ProductVariantDraft.class);
+        when(masterVariant.getKey()).thenReturn("key");
+        when(masterVariant.getSku()).thenReturn("sku");
+        when(productDraft.getMasterVariant()).thenReturn(masterVariant);
+
+        final Set<ProductDraft> validDrafts = getValidDrafts(Collections.singletonList(productDraft));
+
+        assertThat(validDrafts).hasSize(1);
+    }
+
+    @Test
+    void validateAndCollectReferencedKeys__WithDrafts_ShouldValidateCorrectly() {
         final AttributeDraft productReferenceSetAttribute =
             getReferenceSetAttributeDraft("foo", getProductReferenceWithId("foo"),
                 getProductReferenceWithId("bar"));
@@ -450,13 +358,14 @@ class ProductBatchProcessorTest {
         final List<ProductDraft> productDrafts = asList(null, mock(ProductDraft.class),
             validProductDraft, inValidProductDraft1, inValidProductDraft2);
 
-        final ProductBatchProcessor batchProcessor = new ProductBatchProcessor(productDrafts, productSync);
-        batchProcessor.validateBatch();
+        final ProductBatchValidator productBatchValidator = new ProductBatchValidator(syncOptions, syncStatistics);
+        final ImmutablePair<Set<ProductDraft>, ProductBatchValidator.ReferencedKeys> pair =
+            productBatchValidator.validateAndCollectReferencedKeys(productDrafts);
 
-        assertThat(batchProcessor.getKeysToCache()).hasSize(3);
-        assertThat(batchProcessor.getKeysToCache()).containsExactlyInAnyOrder("validProductDraft", "foo", "bar");
-        assertThat(batchProcessor.getValidDrafts()).hasSize(1);
-        assertThat(batchProcessor.getValidDrafts()).containsExactly(validProductDraft);
+        assertThat(pair.getLeft()).hasSize(1);
+        assertThat(pair.getLeft()).containsExactly(validProductDraft);
+        assertThat(pair.getRight().getProductKeys()).hasSize(3);
+        assertThat(pair.getRight().getProductKeys()).containsExactlyInAnyOrder("validProductDraft", "foo", "bar");
 
         assertThat(errorCallBackMessages).hasSize(5);
         assertThat(errorCallBackMessages).containsExactlyInAnyOrder(
@@ -467,4 +376,11 @@ class ProductBatchProcessorTest {
             format(PRODUCT_VARIANT_DRAFT_SKU_NOT_SET, 1, inValidProductDraft2.getKey()));
     }
 
+    @Nonnull
+    private Set<ProductDraft> getValidDrafts(@Nonnull final List<ProductDraft> productDrafts) {
+        final ProductBatchValidator productBatchValidator = new ProductBatchValidator(syncOptions, syncStatistics);
+        final ImmutablePair<Set<ProductDraft>, ProductBatchValidator.ReferencedKeys> pair =
+            productBatchValidator.validateAndCollectReferencedKeys(productDrafts);
+        return pair.getLeft();
+    }
 }

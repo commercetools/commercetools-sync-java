@@ -29,8 +29,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
@@ -47,6 +49,9 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     private final VariantReferenceResolver variantReferenceResolver;
     private final TaxCategoryService taxCategoryService;
     private final StateService stateService;
+    private final TypeService typeService;
+    private final ChannelService channelService;
+    private final ProductService productService;
 
     public static final String FAILED_TO_RESOLVE_REFERENCE = "Failed to resolve '%s' resource identifier on "
         + "ProductDraft with key:'%s'. Reason: %s";
@@ -88,6 +93,9 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         this.categoryService = categoryService;
         this.taxCategoryService = taxCategoryService;
         this.stateService = stateService;
+        this.typeService = typeService;
+        this.channelService = channelService;
+        this.productService = productService;
         this.variantReferenceResolver =
             new VariantReferenceResolver(productSyncOptions, typeService, channelService, customerGroupService,
                 productService, productTypeService, categoryService);
@@ -353,5 +361,50 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
                         format(FAILED_TO_RESOLVE_REFERENCE, State.referenceTypeId(), draftBuilder.getKey(),
                             errorMessage)));
                 }));
+    }
+
+    /**
+     * d
+     * @param referencedKeys d
+     * @return d
+     */
+    @Nonnull
+    public CompletableFuture<List<Map<String, String>>> cacheKeyToIds(
+        @Nonnull final ProductBatchValidator.ReferencedKeys referencedKeys) {
+
+        final List<CompletionStage<Map<String, String>>> futures = new ArrayList<>();
+        futures.add(productService.cacheKeysToIds(referencedKeys.getProductKeys()));
+
+        final Set<String> productTypeKeys = referencedKeys.getProductTypeKeys();
+        if (!productTypeKeys.isEmpty()) {
+            futures.add(productTypeService.cacheKeysToIds(productTypeKeys));
+        }
+
+        final Set<String> categoryKeys = referencedKeys.getCategoryKeys();
+        if (!categoryKeys.isEmpty()) {
+            futures.add(categoryService.cacheKeysToIds(categoryKeys));
+        }
+
+        final Set<String> taxCategoryKeys = referencedKeys.getTaxCategoryKeys();
+        if (!taxCategoryKeys.isEmpty()) {
+            futures.add(taxCategoryService.cacheKeysToIds(taxCategoryKeys));
+        }
+
+        final Set<String> typeKeys = referencedKeys.getTypeKeys();
+        if (!typeKeys.isEmpty()) {
+            futures.add(typeService.cacheKeysToIds(typeKeys));
+        }
+
+        final Set<String> channelKeys = referencedKeys.getChannelKeys();
+        if (!channelKeys.isEmpty()) {
+            futures.add(channelService.cacheKeysToIds(typeKeys));
+        }
+
+        final Set<String> stateKeys = referencedKeys.getStateKeys();
+        if (!stateKeys.isEmpty()) {
+            futures.add(stateService.cacheKeysToIds(stateKeys));
+        }
+
+        return collectionOfFuturesToFutureOfCollection(futures, toList());
     }
 }

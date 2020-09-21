@@ -2,14 +2,15 @@ package com.commercetools.sync.categories.helpers;
 
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
-import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.ResourceIdentifier;
+import io.sphere.sdk.types.CustomFieldsDraft;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,111 +27,68 @@ import static org.mockito.Mockito.when;
 
 class CategoryBatchValidatorTest {
 
-    private CategoryBatchValidator categoryBatchValidator;
+    private CategorySyncOptions syncOptions;
+    private CategorySyncStatistics syncStatistics;
     private List<String> errorCallBackMessages;
-    private List<Throwable> errorCallBackExceptions;
 
     @BeforeEach
     void setup() {
         errorCallBackMessages = new ArrayList<>();
-        errorCallBackExceptions = new ArrayList<>();
         final SphereClient ctpClient = mock(SphereClient.class);
-        final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder.of(ctpClient)
-                .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                    errorCallBackMessages.add(exception.getMessage());
-                    errorCallBackExceptions.add(exception.getCause());
-                })
-                .build();
-        CategorySyncStatistics statistics = mock(CategorySyncStatistics.class);
 
-        categoryBatchValidator = new CategoryBatchValidator(syncOptions, statistics);
+        syncOptions = CategorySyncOptionsBuilder
+            .of(ctpClient)
+            .errorCallback((exception, oldResource, newResource, updateActions) ->
+                errorCallBackMessages.add(exception.getMessage()))
+            .build();
+        syncStatistics = mock(CategorySyncStatistics.class);
     }
 
     @Test
-    void validateBatch_WithEmptyBatch_ShouldHaveEmptyResult() {
-        final ImmutablePair<Set<CategoryDraft>, Set<String>> draftsAndKeys =
-                categoryBatchValidator.validateAndCollectValidDraftsAndKeys(Collections.emptyList());
+    void validateAndCollectReferencedKeys_WithEmptyDraft_ShouldHaveEmptyResult() {
+        final Set<CategoryDraft> validDrafts = getValidDrafts(Collections.emptyList());
 
         assertThat(errorCallBackMessages).hasSize(0);
-        assertThat(draftsAndKeys.left).isEmpty();
-        assertThat(draftsAndKeys.right).isEmpty();
+        assertThat(validDrafts).isEmpty();
     }
 
     @Test
-    void validateBatch_WithNullCategoryDraft_ShouldHaveValidationErrorAndEmptyResult() {
-        final ImmutablePair<Set<CategoryDraft>, Set<String>> draftsAndKeys =
-                categoryBatchValidator.validateAndCollectValidDraftsAndKeys(Collections.singletonList(null));
+    void validateAndCollectReferencedKeys_WithNullCategoryDraft_ShouldHaveValidationErrorAndEmptyResult() {
+        final Set<CategoryDraft> validDrafts = getValidDrafts(Collections.singletonList(null));
 
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(CATEGORY_DRAFT_IS_NULL);
-        assertThat(draftsAndKeys.left).isEmpty();
-        assertThat(draftsAndKeys.right).isEmpty();
+        assertThat(validDrafts).isEmpty();
     }
 
     @Test
-    void validateBatch_WithCategoryDraftWithNullKey_ShouldHaveValidationErrorAndEmptyResult() {
+    void validateAndCollectReferencedKeys_WithCategoryDraftWithNullKey_ShouldHaveValidationErrorAndEmptyResult() {
         final CategoryDraft categoryDraft = mock(CategoryDraft.class);
-        final ImmutablePair<Set<CategoryDraft>, Set<String>> draftsAndKeys =
-                categoryBatchValidator.validateAndCollectValidDraftsAndKeys(Collections.singletonList(categoryDraft));
+        final Set<CategoryDraft> validDrafts = getValidDrafts(Collections.singletonList(categoryDraft));
 
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format(CATEGORY_DRAFT_KEY_NOT_SET, categoryDraft.getName()));
-        assertThat(draftsAndKeys.left).isEmpty();
-        assertThat(draftsAndKeys.right).isEmpty();
+        assertThat(validDrafts).isEmpty();
     }
 
     @Test
-    void validateBatch_WithCategoryDraftWithEmptyKey_ShouldHaveValidationErrorAndEmptyResult() {
+    void validateAndCollectReferencedKeys_WithCategoryDraftWithEmptyKey_ShouldHaveValidationErrorAndEmptyResult() {
         final CategoryDraft categoryDraft = mock(CategoryDraft.class);
         when(categoryDraft.getKey()).thenReturn(EMPTY);
-        final ImmutablePair<Set<CategoryDraft>, Set<String>> draftsAndKeys =
-                categoryBatchValidator.validateAndCollectValidDraftsAndKeys(Collections.singletonList(categoryDraft));
+        final Set<CategoryDraft> validDrafts = getValidDrafts(Collections.singletonList(categoryDraft));
 
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format(CATEGORY_DRAFT_KEY_NOT_SET, categoryDraft.getName()));
-        assertThat(draftsAndKeys.left).isEmpty();
-        assertThat(draftsAndKeys.right).isEmpty();
+        assertThat(validDrafts).isEmpty();
     }
 
     @Test
-    void validateBatch_WithCategoryDraftWithParentHasNullKey_ShouldHaveValidationErrorAndEmptyResult() {
-        final CategoryDraft categoryDraft = mock(CategoryDraft.class);
-        when(categoryDraft.getKey()).thenReturn("key");
-        when(categoryDraft.getParent()).thenReturn(ResourceIdentifier.ofKey(null));
-        final ImmutablePair<Set<CategoryDraft>, Set<String>> draftsAndKeys =
-                categoryBatchValidator.validateAndCollectValidDraftsAndKeys(Collections.singletonList(categoryDraft));
-
-        assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("%s: Parent category reference of CategoryDraft "
-                        + "with key '%s' has "
-                        + "no key set. Please make sure parent category has a key.",
-                ReferenceResolutionException.class.getCanonicalName(), "key"));
-        assertThat(draftsAndKeys.left).isEmpty();
-        assertThat(draftsAndKeys.right).isEmpty();
-    }
-
-    @Test
-    void validateBatch_WithCategoryDraftWithParentHasEmptyKey_ShouldHaveValidationErrorAndEmptyResult() {
-        final CategoryDraft categoryDraft = mock(CategoryDraft.class);
-        when(categoryDraft.getKey()).thenReturn("key");
-        when(categoryDraft.getParent()).thenReturn(ResourceIdentifier.ofKey(""));
-        final ImmutablePair<Set<CategoryDraft>, Set<String>> draftsAndKeys =
-                categoryBatchValidator.validateAndCollectValidDraftsAndKeys(Collections.singletonList(categoryDraft));
-
-        assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo(format("%s: Parent category reference of CategoryDraft "
-                        + "with key '%s' has "
-                        + "no key set. Please make sure parent category has a key.",
-                ReferenceResolutionException.class.getCanonicalName(), "key"));
-        assertThat(draftsAndKeys.left).isEmpty();
-        assertThat(draftsAndKeys.right).isEmpty();
-    }
-
-    @Test
-    void validateBatch_WithValidDrafts_ShouldReturnResult() {
+    void validateAndCollectReferencedKeys_WithValidDrafts_ShouldReturnCorrectResults() {
         final CategoryDraft validCategoryDraft = mock(CategoryDraft.class);
         when(validCategoryDraft.getKey()).thenReturn("validDraftKey");
         when(validCategoryDraft.getParent()).thenReturn(ResourceIdentifier.ofKey("validParentKey"));
+        when(validCategoryDraft.getCustom())
+            .thenReturn(CustomFieldsDraft.ofTypeKeyAndJson("typeKey", Collections.emptyMap()));
 
         final CategoryDraft validMainCategoryDraft = mock(CategoryDraft.class);
         when(validMainCategoryDraft.getKey()).thenReturn("validDraftKey1");
@@ -138,18 +96,27 @@ class CategoryBatchValidatorTest {
         final CategoryDraft invalidCategoryDraft = mock(CategoryDraft.class);
         when(invalidCategoryDraft.getParent()).thenReturn(ResourceIdentifier.ofKey("key"));
 
-        final ImmutablePair<Set<CategoryDraft>, Set<String>> draftsAndKeys = categoryBatchValidator
-                .validateAndCollectValidDraftsAndKeys(
-                        Arrays.asList(validCategoryDraft, invalidCategoryDraft, validMainCategoryDraft));
+        final CategoryBatchValidator categoryBatchValidator = new CategoryBatchValidator(syncOptions, syncStatistics);
+        final ImmutablePair<Set<CategoryDraft>, CategoryBatchValidator.ReferencedKeys> pair
+            = categoryBatchValidator.validateAndCollectReferencedKeys(
+            Arrays.asList(validCategoryDraft, invalidCategoryDraft, validMainCategoryDraft));
 
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0))
-                .isEqualTo(format(CATEGORY_DRAFT_KEY_NOT_SET, invalidCategoryDraft.getName()));
-        assertThat(draftsAndKeys.right).hasSize(3);
-        assertThat(draftsAndKeys.right).containsExactlyInAnyOrder("validDraftKey", "validParentKey", "validDraftKey1");
-        assertThat(draftsAndKeys.left).hasSize(2);
-        assertThat(draftsAndKeys.left).containsExactlyInAnyOrder(validCategoryDraft, validMainCategoryDraft);
+            .isEqualTo(format(CATEGORY_DRAFT_KEY_NOT_SET, invalidCategoryDraft.getName()));
+        assertThat(pair.getLeft())
+            .containsExactlyInAnyOrder(validCategoryDraft, validMainCategoryDraft);
+        assertThat(pair.getRight().getCategoryKeys())
+            .containsExactlyInAnyOrder("validDraftKey", "validParentKey", "validDraftKey1");
+        assertThat(pair.getRight().getTypeKeys())
+            .containsExactlyInAnyOrder("typeKey");
     }
 
-
+    @Nonnull
+    private Set<CategoryDraft> getValidDrafts(@Nonnull final List<CategoryDraft> categoryDrafts) {
+        final CategoryBatchValidator categoryBatchValidator = new CategoryBatchValidator(syncOptions, syncStatistics);
+        final ImmutablePair<Set<CategoryDraft>, CategoryBatchValidator.ReferencedKeys> pair =
+            categoryBatchValidator.validateAndCollectReferencedKeys(categoryDrafts);
+        return pair.getLeft();
+    }
 }

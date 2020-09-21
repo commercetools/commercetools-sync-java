@@ -16,6 +16,18 @@ import java.util.concurrent.CompletionStage;
 public interface TaxCategoryService {
 
     /**
+     * Filters out the keys which are already cached and fetches only the not-cached tax category keys from the
+     * CTP project defined in an injected {@link SphereClient} and stores a mapping for every tax category to id
+     * in the cached map of keys -&gt; ids and returns this cached map.
+     *
+     * @param taxCategoryKeys - a set of tax category keys to fetch and cache the ids for
+     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a map of
+     *      requested tax category keys -&gt; ids
+     */
+    @Nonnull
+    CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> taxCategoryKeys);
+
+    /**
      * Given a {@code key}, this method first checks if a cached map of TaxCategory keys -&gt; ids is not empty.
      * If not, it returns a completed future that contains an optional that contains what this key maps to in
      * the cache. If the cache is empty, the method populates the cache with the mapping of all TaxCategory keys to ids
