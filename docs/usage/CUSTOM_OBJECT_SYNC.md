@@ -1,7 +1,8 @@
 # Custom Object Sync
 
 Allows importing/syncing CustomObject into a commercetools project. 
-It also provides utilities for generating update actions based on the comparison of a [CustomObject](https://docs.commercetools.com/http-api-projects-custom-objects#customobject) 
+It also provides utilities for checking whether importing custom object is identical to existing one based on the 
+comparison of a [CustomObject](https://docs.commercetools.com/http-api-projects-custom-objects#customobject) 
 against a [CustomObjectDraft](https://docs.commercetools.com/http-api-projects-custom-objects#customobjectdraft).
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
@@ -22,8 +23,8 @@ against a [CustomObjectDraft](https://docs.commercetools.com/http-api-projects-c
 
 #### Prerequisites
 1. The sync expects a list of `CustomObjectDraft`s that have their `key` and `container` fields set to be matched with
-custom objects in the target CTP project. Also, the custom objects in the target project are expected to have the `key`
-and `container` fields set, otherwise they won't be matched.
+custom objects in the target CTP project. Therefore, the custom objects in the target project are expected to have the 
+`key` and `container` fields set, otherwise they won't be matched.
 
 2. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
