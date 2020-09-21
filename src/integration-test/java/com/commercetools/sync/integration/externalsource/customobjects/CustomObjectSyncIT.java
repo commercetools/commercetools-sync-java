@@ -311,21 +311,3 @@ public class CustomObjectSyncIT {
         return spyClient;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
