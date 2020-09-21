@@ -40,7 +40,7 @@
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.1.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.1.0)
 - 🎉 **New Features** (2)
-    - **CustomObject Sync** - Added support for syncing custom objects. [#565](https://github.com/commercetools/commercetools-sync-java/issues/565) For more info how to use it please refer to [CustomObject usage doc](/docs/usage/CUSTOM_OBJECT_SYNC.md).
+    - **CustomObject Sync** - Added support for syncing custom objects between ctp projects. [#565](https://github.com/commercetools/commercetools-sync-java/issues/565) For more info how to use it please refer to [CustomObject usage doc](/docs/usage/CUSTOM_OBJECT_SYNC.md).
     - **CustomObject Sync** - Exposed `CustomObjectSyncUtils#hasIdenticalValue` which determines whether update process is required after comparing a `CustomObject` and a `CustomObjectDraft`. [#565](https://github.com/commercetools/commercetools-sync-java/issues/565)
     
 - 🛠️ **Dependency Updates** (2)
