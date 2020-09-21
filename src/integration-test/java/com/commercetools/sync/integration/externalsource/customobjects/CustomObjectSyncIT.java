@@ -45,7 +45,7 @@ public class CustomObjectSyncIT {
     @BeforeEach
     void setup() {
         deleteCustomObject(CTP_TARGET_CLIENT, "key1", "container1");
-
+        deleteCustomObject(CTP_TARGET_CLIENT, "key2", "container2");
         customObject1Value =
             JsonNodeFactory.instance.objectNode().put("name", "value1");
 
@@ -301,7 +301,7 @@ public class CustomObjectSyncIT {
                 format("Failed to create custom object with key: '%s'.",
                         CustomObjectCompositeIdentifier.of(newCustomObjectDraft)));
     }
-    
+
     @Nonnull
     private SphereClient buildClientWithBadRequest() {
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
