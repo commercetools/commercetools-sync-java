@@ -227,7 +227,8 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
      * CTP project to create the corresponding CustomObject.
      *
      * @param customObjectDraft the custom object draft to create the custom object from.
-     * @return a {@link CompletionStage} which contains an empty result after execution of the create.
+     * @return a {@link CompletionStage} which contains created custom object after success execution of the create.
+     *      Otherwise it contains an empty result in case of failure.
      */
     @Nonnull
     private CompletionStage<Optional<CustomObject<JsonNode>>> applyCallbackAndCreate(
@@ -255,7 +256,6 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
                     })
                 ).orElse(completedFuture(Optional.empty()));
     }
-
 
     /**
      * Given an existing {@link CustomObject} and a new {@link CustomObjectDraft}, the method first checks whether

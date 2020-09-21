@@ -129,7 +129,7 @@ public class CustomObjectSyncIT {
 
         final CustomObjectQuery customObjectQuery = any(CustomObjectQuery.class);
         when(spyClient.execute(customObjectQuery))
-            .thenCallRealMethod() // Call real fetch on fetching matching tax categories
+            .thenCallRealMethod() // Call real fetch on fetching matching custom objects
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
 
         return spyClient;
