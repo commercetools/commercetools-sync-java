@@ -1,6 +1,5 @@
 package com.commercetools.sync.services.impl;
 
-import com.commercetools.sync.customobjects.CustomObjectSync;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptions;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.services.CustomObjectService;
@@ -139,25 +138,6 @@ public class CustomObjectServiceImpl
         return createdResource ;
     }
 
-    /**
-     * This method overrides {@link BaseService#executeCreateCommand}. It is because custom object has different
-     * behaviour from other resource in error handling, which requires to be handled separately.
-     *
-     * For custom object, if without overriding, either update or create resource operations called
-     * {@link BaseService#createResource}. If exception occurred during update, it passed exception to
-     * {@link CustomObjectSyncOptions#applyErrorCallback} and returned empty object. As a result, exception could not
-     * be thrown back to {@link CustomObjectSync} during update operation as it had been already handled in
-     * {@link BaseService#createResource}, which leaded to retry mechanism not able to take place for custom object when
-     * ConcurrentModificationException occurred.
-     *
-     * In this method, exception is thrown back, and exception is further managed in {@link CustomObjectSync}.
-     *
-     * @param draft         the custom object draft to create a custom object in target CTP project.
-     * @param keyMapper     a function to get the key from the supplied custom object draft.
-     * @param createCommand a function to get the create command using the supplied custom object draft.
-     * @return a {@link CompletionStage} containing an optional with the created resource if successful otherwise an
-     *     exception.
-     */
     @Nonnull
     @Override
     CompletionStage<Optional<CustomObject<JsonNode>>> executeCreateCommand(
