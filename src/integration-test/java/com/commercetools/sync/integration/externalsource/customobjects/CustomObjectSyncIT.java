@@ -214,8 +214,6 @@ public class CustomObjectSyncIT {
         assertThat(customObjectSyncStatistics).hasValues(1, 0, 0, 1);
         Assertions.assertThat(errorCallBackMessages).hasSize(1);
         Assertions.assertThat(errorCallBackExceptions).hasSize(1);
-
-        //TODO: Debug to see correct error message
         Assertions.assertThat(errorCallBackMessages.get(0)).contains(
             format("Failed to update custom object with key: '%s'. Reason: Failed to fetch from CTP while retrying "
                 + "after concurrency modification.", CustomObjectCompositeIdentifier.of(customObjectDraft)));
