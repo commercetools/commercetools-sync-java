@@ -1,7 +1,7 @@
 # Custom Object Sync
 
-Allows importing/syncing CustomObject into a commercetools project. 
-It also provides utilities for checking whether importing custom object is identical to existing one based on the 
+Module used for importing/syncing CustomObject into a commercetools project. 
+It also provides utilities for correlating a custom object to a given custom object draft based on the 
 comparison of a [CustomObject](https://docs.commercetools.com/http-api-projects-custom-objects#customobject) 
 against a [CustomObjectDraft](https://docs.commercetools.com/http-api-projects-custom-objects#customobjectdraft).
 
@@ -24,7 +24,7 @@ against a [CustomObjectDraft](https://docs.commercetools.com/http-api-projects-c
 #### Prerequisites
 1. The sync expects a list of `CustomObjectDraft`s that have their `key` and `container` fields set to be matched with
 custom objects in the target CTP project. Therefore, the custom objects in the target project are expected to have the 
-`key` and `container` fields set, otherwise they won't be matched.
+same `key` and `container` fields set, otherwise they won't be matched.
 
 2. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
@@ -42,7 +42,7 @@ After all the aforementioned points in the previous section have been fulfilled,
 // instantiating a CustomObjectSync
 final CustomObjectSync customObjectSync = new CustomObjectSync(customObjectSyncOptions);
 
-// execute the sync on your list of tax categories
+// execute the sync on your list of custom object drafts
 CompletionStage<CustomObjectSyncStatistics> syncStatisticsStage = customObjectSync.sync(customObjectDrafts);
 ````
 The result of the completing the `syncStatisticsStage` in the previous code snippet contains a `CustomObjectSyncStatistics`
