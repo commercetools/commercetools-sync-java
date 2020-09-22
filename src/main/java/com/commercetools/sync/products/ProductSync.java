@@ -72,6 +72,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     private final ProductTypeService productTypeService;
     private final ProductReferenceResolver productReferenceResolver;
     private final UnresolvedReferencesService unresolvedReferencesService;
+    private final ProductBatchValidator batchValidator;
 
     private ConcurrentHashMap.KeySetView<String, Boolean> readyToResolve;
 
@@ -108,6 +109,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             categoryService, typeService, channelService, customerGroupService, taxCategoryService, stateService,
             productService);
         this.unresolvedReferencesService = unresolvedReferencesService;
+        this.batchValidator = new ProductBatchValidator(productSyncOptions, getStatistics());
     }
 
     @Override
@@ -121,9 +123,8 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
         readyToResolve = ConcurrentHashMap.newKeySet();
 
-        final ProductBatchValidator batchProcessor = new ProductBatchValidator(syncOptions, statistics);
         final ImmutablePair<Set<ProductDraft>, ProductBatchValidator.ReferencedKeys> result
-            = batchProcessor.validateAndCollectReferencedKeys(batch);
+            = batchValidator.validateAndCollectReferencedKeys(batch);
 
         final Set<ProductDraft> validDrafts = result.getLeft();
         if (validDrafts.isEmpty()) {

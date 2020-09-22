@@ -48,6 +48,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
 
     private final CategoryService categoryService;
     private final CategoryReferenceResolver referenceResolver;
+    private final CategoryBatchValidator batchValidator;
 
     /**
      * The following set ({@code processedCategoryKeys}) is thread-safe because it is accessed/modified in a concurrent
@@ -110,6 +111,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         super(new CategorySyncStatistics(), syncOptions);
         this.categoryService = categoryService;
         this.referenceResolver = new CategoryReferenceResolver(syncOptions, typeService, categoryService);
+        this.batchValidator = new CategoryBatchValidator(syncOptions, getStatistics());
     }
 
     /**
@@ -166,7 +168,6 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         categoryKeysWithResolvedParents = ConcurrentHashMap.newKeySet();
         categoryDraftsToUpdate = new ConcurrentHashMap<>();
 
-        final CategoryBatchValidator batchValidator = new CategoryBatchValidator(this.syncOptions, this.statistics);
         final ImmutablePair<Set<CategoryDraft>, CategoryBatchValidator.ReferencedKeys> pair =
             batchValidator.validateAndCollectReferencedKeys(categoryDrafts);
 
