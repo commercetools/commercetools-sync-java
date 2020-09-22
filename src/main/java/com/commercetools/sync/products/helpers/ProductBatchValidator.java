@@ -68,7 +68,7 @@ public class ProductBatchValidator
      * @param productDrafts the product drafts to validate and collect referenced keys.
      * @return {@link ImmutablePair}&lt;{@link Set}&lt;{@link ProductDraft}&gt;,
      *      {@link ProductBatchValidator.ReferencedKeys}&gt; which contains the {@link Set} of valid drafts
-     *      and referenced keys with a wrapper.
+     *      and referenced keys within a wrapper.
      */
     @Override
     public ImmutablePair<Set<ProductDraft>, ReferencedKeys> validateAndCollectReferencedKeys(
