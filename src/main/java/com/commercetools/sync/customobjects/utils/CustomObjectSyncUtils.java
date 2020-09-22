@@ -8,9 +8,6 @@ import javax.annotation.Nonnull;
 
 public class CustomObjectSyncUtils {
 
-    // For coverage
-    private CustomObjectSyncUtils() {}
-
     /**
      * Compares the value of a {@link CustomObject} to the value of a {@link CustomObjectDraft}.
      * It returns a boolean whether the values are identical or not.
