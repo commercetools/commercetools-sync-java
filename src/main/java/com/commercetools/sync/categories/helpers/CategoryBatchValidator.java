@@ -29,6 +29,22 @@ public class CategoryBatchValidator
         super(syncOptions, syncStatistics);
     }
 
+    /**
+     * Given the {@link List}&lt;{@link CategoryDraft}&gt; of drafts this method attempts to validate
+     * drafts anc collect referenced keys from the draft
+     * and return an {@link ImmutablePair}&lt;{@link Set}&lt;{@link CategoryDraft}&gt;,{@link ReferencedKeys}&gt;
+     * which contains the {@link Set} of valid drafts and referenced keys with a wrapper.
+     *
+     * <p>A valid category draft is one which satisfies the following conditions:
+     * <ol>
+     * <li>It has a key which is not blank (null/empty)</li>
+     * </li>
+     * </ol>
+     *
+     * @param categoryDrafts the category drafts to validate and collect referenced keys.
+     * @return {@link ImmutablePair}&lt;{@link Set}&lt;{@link CategoryDraft}&gt;,{@link ReferencedKeys}&gt;
+     *      which contains the {@link Set} of valid drafts and referenced keys with a wrapper.
+     */
     @Override
     public ImmutablePair<Set<CategoryDraft>, ReferencedKeys> validateAndCollectReferencedKeys(
         @Nonnull final List<CategoryDraft> categoryDrafts) {
@@ -36,15 +52,7 @@ public class CategoryBatchValidator
         final Set<CategoryDraft> validDrafts = categoryDrafts
             .stream()
             .filter(this::isValidCategoryDraft)
-            .peek(categoryDraft -> {
-                referencedKeys.categoryKeys.add(categoryDraft.getKey());
-                collectReferencedKeyFromResourceIdentifier(categoryDraft.getParent(),
-                    referencedKeys.categoryKeys::add);
-                collectReferencedKeyFromCustomFieldsDraft(categoryDraft.getCustom(),
-                    referencedKeys.typeKeys::add);
-                collectReferencedKeysFromAssetDrafts(categoryDraft.getAssets(),
-                    referencedKeys.typeKeys::add);
-            })
+            .peek(categoryDraft -> collectReferencedKeys(referencedKeys, categoryDraft))
             .collect(Collectors.toSet());
 
         return ImmutablePair.of(validDrafts, referencedKeys);
@@ -60,6 +68,19 @@ public class CategoryBatchValidator
         }
 
         return false;
+    }
+
+    private void collectReferencedKeys(
+        @Nonnull final ReferencedKeys referencedKeys,
+        @Nonnull final CategoryDraft categoryDraft) {
+
+        referencedKeys.categoryKeys.add(categoryDraft.getKey());
+        collectReferencedKeyFromResourceIdentifier(categoryDraft.getParent(),
+            referencedKeys.categoryKeys::add);
+        collectReferencedKeyFromCustomFieldsDraft(categoryDraft.getCustom(),
+            referencedKeys.typeKeys::add);
+        collectReferencedKeysFromAssetDrafts(categoryDraft.getAssets(),
+            referencedKeys.typeKeys::add);
     }
 
     public static class ReferencedKeys {

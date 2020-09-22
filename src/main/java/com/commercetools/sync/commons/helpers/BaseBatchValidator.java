@@ -2,6 +2,7 @@ package com.commercetools.sync.commons.helpers;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.SyncException;
+import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
@@ -28,13 +29,18 @@ public abstract class BaseBatchValidator<D, O extends BaseSyncOptions, S extends
     }
 
     /**
-     * d
-     * @param drafts d
-     * @return d
+     * Given the {@link List}&lt;{@code D}&gt; (e.g.{@link CategoryDraft}) of drafts this method attempts to validate
+     * drafts anc collect referenced keys from the draft
+     * and return an {@link ImmutablePair}&lt;{@link Set}&lt;{@code D}&gt;, ReferencedKeys&gt; which contains
+     * the {@link Set} of valid drafts and referenced keys with a wrapper.
+     *
+     * @param drafts the drafts to validate.
+     * @return {@link ImmutablePair}&lt;{@link Set}&lt;{@code D}&gt;, ReferencedKeys&gt; which contains
+     *      the {@link Set} of valid drafts and referenced keys with a wrapper.
      */
-    public abstract ImmutablePair<Set<D>, ?>  validateAndCollectReferencedKeys(@Nonnull final List<D> drafts);
+    public abstract ImmutablePair<Set<D>, ?> validateAndCollectReferencedKeys(@Nonnull final List<D> drafts);
 
-    protected  <T> void collectReferencedKeyFromResourceIdentifier(
+    protected <T> void collectReferencedKeyFromResourceIdentifier(
         @Nullable final ResourceIdentifier<T> resourceIdentifier,
         @Nonnull final Consumer<String> keyConsumer) {
 

@@ -176,7 +176,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
             return CompletableFuture.completedFuture(statistics);
         }
 
-        return referenceResolver.cacheKeyToIds(pair.getRight())
+        return referenceResolver.cacheKeysToIds(pair.getRight())
             .thenCompose(keyToIdCaches -> {
                 final Map<String, String> keyToIdCache = keyToIdCaches.get(0);
                 prepareDraftsForProcessing(new ArrayList<>(validDrafts), keyToIdCache);

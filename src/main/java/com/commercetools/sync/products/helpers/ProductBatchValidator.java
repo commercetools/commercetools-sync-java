@@ -48,10 +48,10 @@ public class ProductBatchValidator
     }
 
     /**
-     * This method validates the batch of drafts, and only for valid drafts it adds the valid draft
-     * to {@code validDrafts} set, and adds the keys of all referenced products to
-     * {@code keysToCache}.
-     *
+     * Given the {@link List}&lt;{@link ProductDraft}&gt; of drafts this method attempts to validate
+     * drafts anc collect referenced keys from the draft and return an {@link ImmutablePair}&lt;{@link Set}&lt;
+     * {@link ProductDraft}&gt;,{@link ProductBatchValidator.ReferencedKeys}&gt;
+     * which contains the {@link Set} of valid drafts and referenced keys with a wrapper.
      *
      * <p>A valid product draft is one which satisfies the following conditions:
      * <ol>
@@ -64,6 +64,11 @@ public class ProductBatchValidator
      * </ol>
      * </li>
      * </ol>
+     *
+     * @param productDrafts the product drafts to validate and collect referenced keys.
+     * @return {@link ImmutablePair}&lt;{@link Set}&lt;{@link ProductDraft}&gt;,
+     *      {@link ProductBatchValidator.ReferencedKeys}&gt; which contains the {@link Set} of valid drafts
+     *      and referenced keys with a wrapper.
      */
     @Override
     public ImmutablePair<Set<ProductDraft>, ReferencedKeys> validateAndCollectReferencedKeys(
@@ -73,57 +78,8 @@ public class ProductBatchValidator
         final Set<ProductDraft> validDrafts =  productDrafts
             .stream()
             .filter(this::isValidProductDraft)
-            .peek(productDraft -> {
-                // todo (ahmetoz) refactor.
-                referencedKeys.productKeys.add(productDraft.getKey());
-                collectReferencedKeyFromResourceIdentifier(productDraft.getProductType(),
-                    referencedKeys.productTypeKeys::add);
-                productDraft
-                    .getCategories()
-                    .stream()
-                    .filter(Objects::nonNull)
-                    .forEach(categoryResourceIdentifier ->
-                        collectReferencedKeyFromResourceIdentifier(categoryResourceIdentifier,
-                            referencedKeys.categoryKeys::add));
-
-                final List<ProductVariantDraft> allVariants = new ArrayList<>();
-                allVariants.add(productDraft.getMasterVariant());
-                if (productDraft.getVariants() != null) {
-                    allVariants.addAll(productDraft.getVariants());
-                }
-                allVariants.forEach(variantDraft -> {
-                    if (variantDraft.getPrices() != null) {
-                        variantDraft
-                            .getPrices()
-                            .stream()
-                            .filter(Objects::nonNull)
-                            .forEach(priceDraft -> {
-                                // todo (ahmetoz) need cacheKeysToIds.
-                                // collectKeyFromResourceIdentifier(priceDraft.getCustomerGroup(), channelKeys::add);
-
-                                collectReferencedKeyFromResourceIdentifier(priceDraft.getChannel(),
-                                    referencedKeys.channelKeys::add);
-                                collectReferencedKeyFromCustomFieldsDraft(priceDraft.getCustom(),
-                                    referencedKeys.typeKeys::add);
-                            });
-                    }
-
-                    referencedKeys.productKeys.addAll(getReferencedProductKeys(variantDraft));
-
-                    referencedKeys.categoryKeys.addAll(getReferencedKeysWithReferenceTypeId(
-                        variantDraft, Category.referenceTypeId()));
-
-                    referencedKeys.productTypeKeys.addAll(getReferencedKeysWithReferenceTypeId(
-                        variantDraft, ProductType.referenceTypeId()));
-
-                    collectReferencedKeysFromAssetDrafts(variantDraft.getAssets(), referencedKeys.typeKeys::add);
-                });
-                collectReferencedKeyFromResourceIdentifier(productDraft.getTaxCategory(),
-                    referencedKeys.taxCategoryKeys::add);
-                collectReferencedKeysKeyFromReference(productDraft.getState(), referencedKeys.stateKeys::add);
-            })
+            .peek(productDraft -> collectReferencedKeys(referencedKeys, productDraft))
             .collect(Collectors.toSet());
-
         return ImmutablePair.of(validDrafts, referencedKeys);
     }
 
@@ -144,14 +100,95 @@ public class ProductBatchValidator
         return false;
     }
 
+    private void collectReferencedKeys(
+        @Nonnull final ReferencedKeys referencedKeys,
+        @Nonnull final ProductDraft productDraft) {
+
+        referencedKeys.productKeys.add(productDraft.getKey());
+        collectReferencedKeyFromResourceIdentifier(productDraft.getProductType(), referencedKeys.productTypeKeys::add);
+        collectReferencedKeysInCategories(referencedKeys, productDraft);
+        collectReferencedKeysInVariants(referencedKeys, productDraft);
+        collectReferencedKeyFromResourceIdentifier(productDraft.getTaxCategory(),
+            referencedKeys.taxCategoryKeys::add);
+        collectReferencedKeysKeyFromReference(productDraft.getState(), referencedKeys.stateKeys::add);
+    }
+
+    private void collectReferencedKeysInCategories(
+        @Nonnull final ReferencedKeys referencedKeys,
+        @Nonnull final ProductDraft productDraft)  {
+
+        productDraft
+            .getCategories()
+            .stream()
+            .filter(Objects::nonNull)
+            .forEach(resourceIdentifier ->
+                collectReferencedKeyFromResourceIdentifier(resourceIdentifier, referencedKeys.categoryKeys::add));
+    }
+
+    private void collectReferencedKeysInVariants(
+        @Nonnull final ReferencedKeys referencedKeys,
+        @Nonnull final ProductDraft productDraft) {
+
+        getAllVariants(productDraft).forEach(variantDraft -> {
+            collectReferencedKeysInPrices(referencedKeys, variantDraft);
+            collectReferencedKeysInAttributes(referencedKeys, variantDraft);
+            collectReferencedKeysFromAssetDrafts(variantDraft.getAssets(), referencedKeys.typeKeys::add);
+        });
+    }
+
     @Nonnull
-    private List<String> getVariantDraftErrorsInAllVariants(@Nonnull final ProductDraft productDraft) {
-        final List<String> errorMessages = new ArrayList<>();
+    private List<ProductVariantDraft> getAllVariants(@Nonnull final ProductDraft productDraft) {
         final List<ProductVariantDraft> allVariants = new ArrayList<>();
         allVariants.add(productDraft.getMasterVariant());
         if (productDraft.getVariants() != null) {
-            allVariants.addAll(productDraft.getVariants());
+            allVariants.addAll(
+                productDraft.getVariants()
+                            .stream()
+                            .filter(Objects::nonNull)
+                            .collect(Collectors.toList()));
         }
+        return allVariants;
+    }
+
+    private void collectReferencedKeysInPrices(
+        @Nonnull final ReferencedKeys referencedKeys,
+        @Nonnull final ProductVariantDraft variantDraft) {
+
+        if (variantDraft.getPrices() == null) {
+            return;
+        }
+
+        variantDraft
+            .getPrices()
+            .stream()
+            .filter(Objects::nonNull)
+            .forEach(priceDraft -> {
+                // todo (ahmetoz) need cacheKeysToIds.
+                // collectKeyFromResourceIdentifier(priceDraft.getCustomerGroup(), channelKeys::add);
+
+                collectReferencedKeyFromResourceIdentifier(priceDraft.getChannel(),
+                    referencedKeys.channelKeys::add);
+                collectReferencedKeyFromCustomFieldsDraft(priceDraft.getCustom(),
+                    referencedKeys.typeKeys::add);
+            });
+    }
+
+    private void collectReferencedKeysInAttributes(
+        @Nonnull final ReferencedKeys referencedKeys,
+        @Nonnull final ProductVariantDraft variantDraft) {
+        referencedKeys.productKeys.addAll(getReferencedProductKeys(variantDraft));
+
+        referencedKeys.categoryKeys.addAll(
+            getReferencedKeysWithReferenceTypeId(variantDraft, Category.referenceTypeId()));
+
+        referencedKeys.productTypeKeys.addAll(
+            getReferencedKeysWithReferenceTypeId(variantDraft, ProductType.referenceTypeId()));
+    }
+
+    @Nonnull
+    private List<String> getVariantDraftErrorsInAllVariants(@Nonnull final ProductDraft productDraft) {
+        final List<String> errorMessages = new ArrayList<>();
+        final List<ProductVariantDraft> allVariants = getAllVariants(productDraft);
         for (int i = 0; i < allVariants.size(); i++) {
             errorMessages.addAll(getVariantDraftErrorsInAllVariants(allVariants.get(i),
                 i, requireNonNull(productDraft.getKey())));

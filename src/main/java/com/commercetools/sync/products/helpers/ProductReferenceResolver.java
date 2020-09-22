@@ -364,12 +364,15 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     /**
-     * d
-     * @param referencedKeys d
-     * @return d
+     * Calls the {@code cacheKeysToIds} service methods to fetch all the referenced keys
+     * (i.e product type, tax category) from the commercetools to prepare caches for the reference resolution.
+     *
+     * @param referencedKeys a wrapper for the product resource to fetch and cache the id's for.
+     * @return {@link CompletionStage}&lt;{@link List}&lt;{@link Map}&gt;&gt; in which the results of it's completions
+     *     contains a map of requested references keys -&gt; ids.
      */
     @Nonnull
-    public CompletableFuture<List<Map<String, String>>> cacheKeyToIds(
+    public CompletableFuture<List<Map<String, String>>> cacheKeysToIds(
         @Nonnull final ProductBatchValidator.ReferencedKeys referencedKeys) {
 
         final List<CompletionStage<Map<String, String>>> futures = new ArrayList<>();
