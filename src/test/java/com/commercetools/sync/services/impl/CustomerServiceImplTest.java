@@ -108,6 +108,20 @@ class CustomerServiceImplTest {
     }
 
     @Test
+    void createCustomer_WithResponseIsNull_ShouldReturnEmpty() {
+        CustomerSignInResult resultMock = mock(CustomerSignInResult.class);
+        when(customerSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(resultMock));
+
+        final CustomerDraft draft = mock(CustomerDraft.class);
+        when(draft.getKey()).thenReturn("key");
+        final Optional<Customer> customerOptional = service.createCustomer(draft).toCompletableFuture().join();
+
+        assertThat(customerOptional).isEmpty();
+        assertThat(errorExceptions).isEmpty();
+        assertThat(errorMessages).isEmpty();
+    }
+
+    @Test
     void updateCustomer_WithSuccessfulMockCtpResponse_ShouldReturnMock() {
         Customer customer = mock(Customer.class);
         when(customerSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(customer));

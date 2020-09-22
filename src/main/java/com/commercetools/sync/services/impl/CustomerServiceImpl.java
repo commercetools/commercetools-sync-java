@@ -90,11 +90,13 @@ public final class CustomerServiceImpl extends BaseServiceWithKey<CustomerDraft,
                         if (exception == null && resource.getCustomer() != null) {
                             keyToIdCache.put(draftKey, resource.getCustomer().getId());
                             return Optional.of(resource.getCustomer());
-                        } else {
+                        } else if (exception != null) {
                             syncOptions.applyErrorCallback(
                                     new SyncException(format(CREATE_FAILED, draftKey, exception.getMessage()),
                                             exception),
                                     null, customerDraft, null);
+                            return Optional.empty();
+                        } else {
                             return Optional.empty();
                         }
                     }));
