@@ -436,7 +436,7 @@ class CustomerServiceImplIT {
     void changePassword_WithInvalidCurrentPassword_ShouldFail() {
         final String newPwd = "newPassword";
 
-        final Customer updatedCustomer = customerService
+        customerService
                 .changePassword(customer, customer.getPassword(), newPwd)
                 .exceptionally(exception -> {
                     assertThat(exception).isNotNull();
@@ -447,7 +447,17 @@ class CustomerServiceImplIT {
                 })
                 .toCompletableFuture().join();
 
-        //TODO: compare the target with the updated customer
+
+        final Optional<Customer> queried = CTP_TARGET_CLIENT
+                .execute(CustomerQuery.of()
+                        .withPredicates(QueryPredicate.of(format("key = \"%s\"", EXISTING_CUSTOMER_KEY))))
+                .toCompletableFuture().join().head();
+
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(queried).isNotEmpty();
+        final Customer fetchedCustomer = queried.get();
+        assertThat(fetchedCustomer.getPassword()).isNotEqualTo(newPwd);
 
     }
 }
