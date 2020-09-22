@@ -43,7 +43,7 @@ public class CategoryBatchValidator
      *
      * @param categoryDrafts the category drafts to validate and collect referenced keys.
      * @return {@link ImmutablePair}&lt;{@link Set}&lt;{@link CategoryDraft}&gt;,{@link ReferencedKeys}&gt;
-     *      which contains the {@link Set} of valid drafts and referenced keys with a wrapper.
+     *      which contains the {@link Set} of valid drafts and referenced keys within a wrapper.
      */
     @Override
     public ImmutablePair<Set<CategoryDraft>, ReferencedKeys> validateAndCollectReferencedKeys(
