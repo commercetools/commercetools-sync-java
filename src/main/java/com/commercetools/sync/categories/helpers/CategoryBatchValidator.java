@@ -31,7 +31,7 @@ public class CategoryBatchValidator
 
     /**
      * Given the {@link List}&lt;{@link CategoryDraft}&gt; of drafts this method attempts to validate
-     * drafts anc collect referenced keys from the draft
+     * drafts and collect referenced keys from the draft
      * and return an {@link ImmutablePair}&lt;{@link Set}&lt;{@link CategoryDraft}&gt;,{@link ReferencedKeys}&gt;
      * which contains the {@link Set} of valid drafts and referenced keys with a wrapper.
      *
