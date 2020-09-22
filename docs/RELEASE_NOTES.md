@@ -43,9 +43,10 @@
     - **CustomObject Sync** - Added support for syncing custom objects between ctp projects. [#565](https://github.com/commercetools/commercetools-sync-java/issues/565) For more info how to use it please refer to [CustomObject usage doc](/docs/usage/CUSTOM_OBJECT_SYNC.md).
     - **CustomObject Sync** - Exposed `CustomObjectSyncUtils#hasIdenticalValue` which determines whether update process is required after comparing a `CustomObject` and a `CustomObjectDraft`. [#565](https://github.com/commercetools/commercetools-sync-java/issues/565)
     
-- 🛠️ **Dependency Updates** (2)
-    - `mockito-junit-jupiter` `3.5.10` ->  [`3.5.11`](https://github.com/mockito/mockito/releases/tag/v3.5.11)
-    - `org.ajoberstar.grgit` `4.0.2` -> [`4.1.0`](https://github.com/ajoberstar/grgit/releases/tag/4.1.0) 
+- 🛠️ **Dependency Updates** (3)
+    - `org.ajoberstar.git-publish` `2.1.3` -> [`3.0.0`](https://github.com/ajoberstar/gradle-git-publish/releases/tag/3.0.0) 
+    - `org.ajoberstar.grgit` `4.0.2` -> [`4.1.0`](https://github.com/ajoberstar/grgit/releases/tag/4.1.0)
+    - `mockito-junit-jupiter` `3.5.10` ->  [`3.5.11`](https://github.com/mockito/mockito/releases/tag/v3.5.11) 
 
 ### 2.0.0 - Sept 14, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.9.1...2.0.0) |
