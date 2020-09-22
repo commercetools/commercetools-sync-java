@@ -10,8 +10,6 @@ import io.sphere.sdk.products.commands.ProductUpdateCommand;
 import io.sphere.sdk.products.expansion.ProductExpansionModel;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.products.queries.ProductQueryModel;
-import io.sphere.sdk.queries.QueryPredicate;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -20,9 +18,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
-import java.util.stream.Collectors;
 
-import static java.lang.String.format;
+import static com.commercetools.sync.commons.utils.CtpQueryUtils.buildResourceKeysQueryPredicate;
 import static java.util.Collections.singleton;
 
 
@@ -39,7 +36,7 @@ public final class ProductServiceImpl extends BaseServiceWithKey<ProductDraft, P
 
         return fetchCachedResourceId(key,
             () -> ProductQuery.of()
-                              .withPredicates(buildProductKeysQueryPredicate(singleton(key))));
+                              .withPredicates(buildResourceKeysQueryPredicate(singleton(key))));
     }
 
     @Nonnull
@@ -50,18 +47,7 @@ public final class ProductServiceImpl extends BaseServiceWithKey<ProductDraft, P
             productKeys,
             keysNotCached -> ProductQuery
                 .of()
-                .withPredicates(buildProductKeysQueryPredicate(keysNotCached)));
-    }
-
-    QueryPredicate<Product> buildProductKeysQueryPredicate(@Nonnull final Set<String> productKeys) {
-        final List<String> keysSurroundedWithDoubleQuotes = productKeys.stream()
-                                                                       .filter(StringUtils::isNotBlank)
-                                                                       .map(productKey -> format("\"%s\"", productKey))
-                                                                       .collect(Collectors.toList());
-        String keysQueryString = keysSurroundedWithDoubleQuotes.toString();
-        // Strip square brackets from list string. For example: ["key1", "key2"] -> "key1", "key2"
-        keysQueryString = keysQueryString.substring(1, keysQueryString.length() - 1);
-        return QueryPredicate.of(format("key in (%s)", keysQueryString));
+                .withPredicates(buildResourceKeysQueryPredicate(keysNotCached)));
     }
 
     @Nonnull
@@ -69,7 +55,7 @@ public final class ProductServiceImpl extends BaseServiceWithKey<ProductDraft, P
     public CompletionStage<Set<Product>> fetchMatchingProductsByKeys(@Nonnull final Set<String> productKeys) {
 
         return fetchMatchingResources(productKeys,
-            () -> ProductQuery.of().withPredicates(buildProductKeysQueryPredicate(productKeys)));
+            () -> ProductQuery.of().withPredicates(buildResourceKeysQueryPredicate(productKeys)));
     }
 
     @Nonnull
@@ -78,7 +64,7 @@ public final class ProductServiceImpl extends BaseServiceWithKey<ProductDraft, P
 
         return fetchResource(key,
             () -> ProductQuery
-                .of().withPredicates(buildProductKeysQueryPredicate(singleton(key))));
+                .of().withPredicates(buildResourceKeysQueryPredicate(singleton(key))));
     }
 
     @Nonnull

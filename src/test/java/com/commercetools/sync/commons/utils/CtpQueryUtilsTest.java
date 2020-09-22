@@ -4,6 +4,7 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.categories.queries.CategoryQueryModel;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.products.Product;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.queries.QuerySort;
@@ -16,12 +17,14 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.annotation.Nonnull;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static com.commercetools.sync.commons.utils.CtpQueryUtils.buildResourceKeysQueryPredicate;
 import static com.commercetools.sync.commons.utils.CtpQueryUtils.queryAll;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -153,4 +156,31 @@ class CtpQueryUtilsTest {
             .plusPredicates(QueryPredicate.of(format("id > \"%s\"", lastCategoryIdInPage)))
             .withLimit(500);
     }
+
+    @Test
+    void buildResourceKeysQueryPredicate_WithEmptyKeysSet_ShouldBuildCorrectQuery() {
+        final QueryPredicate<Product> queryPredicate = buildResourceKeysQueryPredicate(new HashSet<>());
+        assertThat(queryPredicate.toSphereQuery()).isEqualTo("key in ()");
+    }
+
+    @Test
+    void buildResourceKeysQueryPredicate_WithKeysSet_ShouldBuildCorrectQuery() {
+        final HashSet<String> keys = new HashSet<>();
+        keys.add("key1");
+        keys.add("key2");
+        final QueryPredicate<Product> queryPredicate = buildResourceKeysQueryPredicate(keys);
+        assertThat(queryPredicate.toSphereQuery()).isEqualTo("key in (\"key1\", \"key2\")");
+    }
+
+    @Test
+    void buildResourceKeysQueryPredicate_WithSomeBlankKeys_ShouldBuildCorrectQuery() {
+        final HashSet<String> keys = new HashSet<>();
+        keys.add("key1");
+        keys.add("key2");
+        keys.add("");
+        keys.add(null);
+        final QueryPredicate<Product> queryPredicate = buildResourceKeysQueryPredicate(keys);
+        assertThat(queryPredicate.toSphereQuery()).isEqualTo("key in (\"key1\", \"key2\")");
+    }
+
 }

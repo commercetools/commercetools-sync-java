@@ -2,15 +2,21 @@ package com.commercetools.sync.commons.utils;
 
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.ResourceView;
+import io.sphere.sdk.queries.MetaModelQueryDsl;
 import io.sphere.sdk.queries.QueryDsl;
+import io.sphere.sdk.queries.QueryPredicate;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static io.sphere.sdk.queries.QueryExecutionUtils.DEFAULT_PAGE_SIZE;
+import static java.lang.String.format;
 
 public final class CtpQueryUtils {
 
@@ -112,6 +118,23 @@ public final class CtpQueryUtils {
                  @Nonnull final Consumer<List<T>> pageConsumer, final int pageSize) {
         final QueryAll<T, C, Void> queryAll = QueryAll.of(client, query, pageSize);
         return queryAll.run(pageConsumer);
+    }
+
+    /**
+     * Takes a set of keys and transforms it to a query predicate in the form:
+     * "key in ("key1", "key2")" which can be used to extend any {@link MetaModelQueryDsl}
+     *
+     * @param keys - a set of keys to build the predicate from
+     * @return - a {@link QueryPredicate} reflecting the set of keys as a predicate
+     */
+    public static QueryPredicate buildResourceKeysQueryPredicate(@Nonnull final Set<String> keys) {
+        final List<String> keysSurroundedWithDoubleQuotes = keys.stream()
+                .filter(StringUtils::isNotBlank)
+                .map(key -> format("\"%s\"", key))
+                .collect(Collectors.toList());
+        String keysQueryString = keysSurroundedWithDoubleQuotes.toString();
+        keysQueryString = keysQueryString.substring(1, keysQueryString.length() - 1);
+        return QueryPredicate.of(format("key in (%s)", keysQueryString));
     }
 
     private CtpQueryUtils() {
