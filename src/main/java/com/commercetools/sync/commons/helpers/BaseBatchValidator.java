@@ -30,7 +30,7 @@ public abstract class BaseBatchValidator<D, O extends BaseSyncOptions, S extends
 
     /**
      * Given the {@link List}&lt;{@code D}&gt; (e.g.{@link CategoryDraft}) of drafts this method attempts to validate
-     * drafts anc collect referenced keys from the draft
+     * drafts and collect referenced keys from the draft
      * and return an {@link ImmutablePair}&lt;{@link Set}&lt;{@code D}&gt;, ReferencedKeys&gt; which contains
      * the {@link Set} of valid drafts and referenced keys with a wrapper.
      *
