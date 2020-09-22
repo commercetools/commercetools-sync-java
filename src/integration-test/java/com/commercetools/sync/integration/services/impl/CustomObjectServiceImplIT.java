@@ -1,6 +1,5 @@
 package com.commercetools.sync.integration.services.impl;
 
-
 import com.commercetools.sync.customobjects.CustomObjectSyncOptions;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptionsBuilder;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
@@ -165,8 +164,6 @@ class CustomObjectServiceImplIT {
                 OLD_CUSTOM_OBJECT_KEY + "_2", OLD_CUSTOM_OBJECT_CONTAINER + "_2");
     }
 
-
-
     @Test
     void fetchMatchingCustomObjectsByCompositeIdentifiers_WithBadGateWayExceptionAlways_ShouldFail() {
         // Mock sphere client to return BadGatewayException on any request.
@@ -262,8 +259,6 @@ class CustomObjectServiceImplIT {
         verify(spyClient, times(0)).execute(any(CustomObjectQuery.class));
     }
 
-
-
     @Test
     void upsertCustomObject_WithDuplicateKeyAndContainerInCompositeIdentifier_ShouldUpdateValue() {
         //preparation
@@ -284,5 +279,4 @@ class CustomObjectServiceImplIT {
         assertThat(result.get().getKey()).isEqualTo(OLD_CUSTOM_OBJECT_KEY);
 
     }
-
 }

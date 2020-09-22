@@ -33,8 +33,20 @@
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/2.0.0...2.0.1) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.0.1/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.0.1)
-  
---> 
+-->
+
+### 2.1.0 - Sep 21, 2020
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/2.0.0...2.1.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.1.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.1.0)
+- 🎉 **New Features** (2)
+    - **CustomObject Sync** - Added support for syncing custom objects between ctp projects. [#565](https://github.com/commercetools/commercetools-sync-java/issues/565) For more info how to use it please refer to [CustomObject usage doc](/docs/usage/CUSTOM_OBJECT_SYNC.md).
+    - **CustomObject Sync** - Exposed `CustomObjectSyncUtils#hasIdenticalValue` which determines whether update process is required after comparing a `CustomObject` and a `CustomObjectDraft`. [#565](https://github.com/commercetools/commercetools-sync-java/issues/565)
+    
+- 🛠️ **Dependency Updates** (3)
+    - `org.ajoberstar.git-publish` `2.1.3` -> [`3.0.0`](https://github.com/ajoberstar/gradle-git-publish/releases/tag/3.0.0) 
+    - `org.ajoberstar.grgit` `4.0.2` -> [`4.1.0`](https://github.com/ajoberstar/grgit/releases/tag/4.1.0)
+    - `mockito-junit-jupiter` `3.5.10` ->  [`3.5.11`](https://github.com/mockito/mockito/releases/tag/v3.5.11) 
 
 ### 2.0.0 - Sept 14, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.9.1...2.0.0) |
@@ -65,7 +77,7 @@
     - `junit.jupiterApiVersion` `5.6.2` ->  [`5.7.0`](https://github.com/junit-team/junit5/releases/tag/r5.7.0)
     - `mockito-junit-jupiter` `3.4.4` -> [`3.5.10`](https://github.com/mockito/mockito/releases/tag/v3.5.10)
     - `com.github.ben-manes.versions` `0.29.0` -> [`0.33.0`](https://github.com/ben-manes/gradle-versions-plugin/releases/tag/v0.33.0) 
-
+    
 ### 1.9.1 -  Aug 5, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/1.9.0...1.9.1) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/1.9.1/) | 
