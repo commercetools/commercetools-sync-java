@@ -261,10 +261,10 @@ class CustomObjectServiceImplTest {
                 new ArrayList<CustomObjectCompositeIdentifier>(customObjectCompositeIdentifiers);
 
         assertAll(
-                () -> assertThat(customObjects).isEmpty(),
-                () -> assertThat(service.keyToIdCache).doesNotContainKeys(
-                        String.valueOf(customObjectCompositeIdlist.get(0)),
-                        String.valueOf(customObjectCompositeIdlist.get(1)))
+            () -> assertThat(customObjects).isEmpty(),
+            () -> assertThat(service.keyToIdCache).doesNotContainKeys(
+                    String.valueOf(customObjectCompositeIdlist.get(0)),
+                    String.valueOf(customObjectCompositeIdlist.get(1)))
         );
         verify(client, times(0)).execute(any(CustomObjectQuery.class));
     }
