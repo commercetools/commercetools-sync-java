@@ -140,14 +140,17 @@ public class CustomObjectServiceImpl
     }
 
     /**
-     * Custom object has special behaviour that it only performs upsert operation. That means both update and create
-     * custom object operations in the end called {@link BaseService#createResource}, which is different from other
-     * resources.
+     * This method overrides {@link BaseService#executeCreateCommand}. It is because custom object has different
+     * behaviour from other resource in error handling, which requires to be handled separately.
      *
-     * <p>This method provides a specific exception handling after execution of create command for custom objects.
-     * Any exception that occurs inside executeCreateCommand method is thrown to the caller method in
-     * {@link CustomObjectSync}, which is necessary to trigger retry on error behaviour.
+     * <p>For custom object, if without overriding, either update or create resource operations called
+     * {@link BaseService#createResource}. If exception occurred during update, it passed exception to
+     * {@link CustomObjectSyncOptions#applyErrorCallback} and returned empty object. As a result, exception could not
+     * be thrown back to {@link CustomObjectSync} during update operation as it had been already handled in
+     * {@link BaseService#createResource}, which leaded to retry mechanism not able to take place for custom object when
+     * ConcurrentModificationException occurred.
      *
+     * <p>In this method, exception is thrown back, and exception is further managed in {@link CustomObjectSync}.
      *
      * @param draft         the custom object draft to create a custom object in target CTP project.
      * @param keyMapper     a function to get the key from the supplied custom object draft.
