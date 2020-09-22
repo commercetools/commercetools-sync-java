@@ -53,7 +53,7 @@ import static com.commercetools.sync.integration.inventories.utils.InventoryITUt
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.getInventoryEntryBySkuAndSupplyChannel;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.populateSourceProject;
 import static com.commercetools.sync.integration.inventories.utils.InventoryITUtils.populateTargetProject;
-import static com.commercetools.sync.inventories.utils.InventoryReferenceReplacementUtils.replaceInventoriesReferenceIdsWithKeys;
+import static com.commercetools.sync.inventories.utils.InventoryReferenceResolutionUtils.mapToInventoryEntryDrafts;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -149,9 +149,8 @@ class InventorySyncIT {
 
         /*
          * Prepare InventoryEntryDraft of sku SKU_1 and reference to supply channel of key SUPPLY_CHANNEL_KEY_1.
-         * Please note that the key is provided in place of Referenced id.
          */
-        final ResourceIdentifier<Channel> supplyChannelReference = ResourceIdentifier.ofId(SUPPLY_CHANNEL_KEY_1);
+        final ResourceIdentifier<Channel> supplyChannelReference = ResourceIdentifier.ofKey(SUPPLY_CHANNEL_KEY_1);
 
         final InventoryEntryDraft newInventoryDraft = InventoryEntryDraftBuilder
             .of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, supplyChannelReference).build();
@@ -184,7 +183,7 @@ class InventorySyncIT {
         assertThat(oldSupplyChannelBeforeSync).isEmpty();
 
         //Prepare sync data.
-        final ResourceIdentifier<Channel> newSupplyChannelReference = ResourceIdentifier.ofId(SUPPLY_CHANNEL_KEY_2);
+        final ResourceIdentifier<Channel> newSupplyChannelReference = ResourceIdentifier.ofKey(SUPPLY_CHANNEL_KEY_2);
         final InventoryEntryDraft newInventoryDraft = InventoryEntryDraftBuilder
             .of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2, newSupplyChannelReference)
             .build();
@@ -216,7 +215,7 @@ class InventorySyncIT {
         //Prepare InventoryEntryDraft of sku SKU_1 and reference to above supply channel key.
         final InventoryEntryDraft newInventoryDraft = InventoryEntryDraftBuilder
             .of(SKU_1, QUANTITY_ON_STOCK_2, EXPECTED_DELIVERY_2, RESTOCKABLE_IN_DAYS_2,
-                ResourceIdentifier.ofId(SUPPLY_CHANNEL_KEY_1)).build();
+                ResourceIdentifier.ofKey(SUPPLY_CHANNEL_KEY_1)).build();
 
         //Fetch existing Channel of key SUPPLY_CHANNEL_KEY_1 from target project.
         final Optional<Channel> targetSupplyChannel = getChannelByKey(CTP_TARGET_CLIENT, SUPPLY_CHANNEL_KEY_1);
@@ -263,7 +262,7 @@ class InventorySyncIT {
                                                                        .join()
                                                                        .getResults();
 
-        final List<InventoryEntryDraft> newInventories = replaceInventoriesReferenceIdsWithKeys(inventoryEntries);
+        final List<InventoryEntryDraft> newInventories = mapToInventoryEntryDrafts(inventoryEntries);
 
         //Prepare sync options and perform sync of draft to target project.
         final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -285,7 +284,7 @@ class InventorySyncIT {
                                         .plusExpansionPaths(ExpansionPath.of("custom.type")))
             .toCompletableFuture().join().getResults();
 
-        final List<InventoryEntryDraft> newInventories = replaceInventoriesReferenceIdsWithKeys(inventoryEntries);
+        final List<InventoryEntryDraft> newInventories = mapToInventoryEntryDrafts(inventoryEntries);
 
         //Prepare sync options and perform sync of draft to target project.
         final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -333,7 +332,7 @@ class InventorySyncIT {
                                         .plusExpansionPaths(ExpansionPath.of("custom.type")))
             .toCompletableFuture().join().getResults();
 
-        final List<InventoryEntryDraft> newInventories = replaceInventoriesReferenceIdsWithKeys(inventoryEntries);
+        final List<InventoryEntryDraft> newInventories = mapToInventoryEntryDrafts(inventoryEntries);
 
         //Prepare sync options and perform sync of draft to target project.
         final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
@@ -354,7 +353,7 @@ class InventorySyncIT {
                                         .plusExpansionPaths(ExpansionPath.of("custom.type")))
             .toCompletableFuture().join().getResults();
 
-        final List<InventoryEntryDraft> newInventories = replaceInventoriesReferenceIdsWithKeys(inventoryEntries);
+        final List<InventoryEntryDraft> newInventories = mapToInventoryEntryDrafts(inventoryEntries);
 
         //Prepare sync options and perform sync of draft to target project.
         final AtomicInteger invocationCounter = new AtomicInteger(0);

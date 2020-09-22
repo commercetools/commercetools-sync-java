@@ -3,14 +3,17 @@ package com.commercetools.sync.commons.helpers;
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.services.TypeService;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.models.Builder;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.types.CustomDraft;
 import io.sphere.sdk.types.CustomFieldsDraft;
+import io.sphere.sdk.types.Type;
 
 import javax.annotation.Nonnull;
-import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
+import javax.annotation.Nullable;
+import java.util.Map;
 import java.util.concurrent.CompletionStage;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -18,6 +21,7 @@ import java.util.function.Function;
 import static io.sphere.sdk.types.CustomFieldsDraft.ofTypeIdAndJson;
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 
 /**
  * This class is responsible for providing an abstract implementation of reference resolution on Custom CTP
@@ -31,10 +35,11 @@ import static java.lang.String.format;
  *            specified by the user, on reference resolution.
  */
 public abstract class CustomReferenceResolver
-        <D extends CustomDraft, B extends Builder<? extends D>, S extends BaseSyncOptions>
+    <D extends CustomDraft, B extends Builder<? extends D>, S extends BaseSyncOptions>
     extends BaseReferenceResolver<D, S> {
 
-    private TypeService typeService;
+    public static final String TYPE_DOES_NOT_EXIST = "Type with key '%s' doesn't exist.";
+    private final TypeService typeService;
 
     protected CustomReferenceResolver(@Nonnull final S options, @Nonnull final TypeService typeService) {
         super(options);
@@ -44,7 +49,7 @@ public abstract class CustomReferenceResolver
     /**
      * Given a draft of {@code D} (e.g. {@link CategoryDraft}) this method attempts to resolve it's custom type
      * reference to return {@link CompletionStage} which contains a new instance of the draft with the resolved
-     * custom type reference. The key of the custom type is taken from the from the id field of the reference.
+     * custom type reference.
      *
      * <p>The method then tries to fetch the key of the custom type, optimistically from a
      * cache. If the key is is not found, the resultant draft would remain exactly the same as the passed
@@ -60,11 +65,14 @@ public abstract class CustomReferenceResolver
     /**
      * Given a draft of {@code D} (e.g. {@link CategoryDraft}) this method attempts to resolve it's custom type
      * reference to return {@link CompletionStage} which contains a new instance of the draft with the resolved
-     * custom type reference. The key of the custom type is taken from the from the id field of the reference.
+     * custom type reference.
      *
      * <p>The method then tries to fetch the key of the custom type, optimistically from a
      * cache. If the key is is not found, the resultant draft would remain exactly the same as the passed
      * draft (without a custom type reference resolution).
+     *
+     * <p>Note: If the id field is set, then it is an evidence of resource existence on commercetools,
+     * so we can issue an update/create API request right away without reference resolution.
      *
      * @param draftBuilder the draft builder to resolve it's references.
      * @param customGetter a function to return the CustomFieldsDraft instance of the draft builder.
@@ -82,37 +90,65 @@ public abstract class CustomReferenceResolver
         @Nonnull final String errorMessage) {
 
         final CustomFieldsDraft custom = customGetter.apply(draftBuilder);
-        if (custom != null) {
-            return getCustomTypeId(custom, errorMessage)
-                .thenApply(resolvedTypeIdOptional ->
-                    resolvedTypeIdOptional.map(resolvedTypeId ->
-                        customSetter.apply(draftBuilder, ofTypeIdAndJson(resolvedTypeId, custom.getFields())))
-                                          .orElse(draftBuilder));
-        }
-        return CompletableFuture.completedFuture(draftBuilder);
-    }
 
+        if (custom != null) {
+            final ResourceIdentifier<Type> customType = custom.getType();
+
+            if (customType.getId() == null) {
+                String customTypeKey;
+
+                try {
+                    customTypeKey = getCustomTypeKey(customType, errorMessage);
+                } catch (ReferenceResolutionException referenceResolutionException) {
+                    return exceptionallyCompletedFuture(referenceResolutionException);
+                }
+
+                return fetchAndResolveTypeReference(draftBuilder, customSetter, custom.getFields(), customTypeKey,
+                    errorMessage);
+            }
+        }
+        return completedFuture(draftBuilder);
+    }
 
     /**
      * Given a custom fields object this method fetches the custom type reference id.
      *
-     * @param custom                          the custom fields object.
+     * @param customType                          the custom fields' Type.
      * @param referenceResolutionErrorMessage the message containing the information about the draft to attach to the
      *                                        {@link ReferenceResolutionException} in case it occurs.
      * @return a {@link CompletionStage} that contains as a result an optional which either contains the custom type id
      *         if it exists or empty if it doesn't.
      */
-    private CompletionStage<Optional<String>> getCustomTypeId(@Nonnull final CustomFieldsDraft custom,
-                                                              @Nonnull final String referenceResolutionErrorMessage) {
+    private String getCustomTypeKey(
+        @Nonnull final ResourceIdentifier<Type> customType,
+        @Nonnull final String referenceResolutionErrorMessage) throws ReferenceResolutionException {
+
         try {
-            final String customTypeKey = getKeyFromResourceIdentifier(custom.getType());
-            return typeService.fetchCachedTypeId(customTypeKey);
+            return getKeyFromResourceIdentifier(customType);
         } catch (ReferenceResolutionException exception) {
             final String errorMessage =
                 format("%s Reason: %s", referenceResolutionErrorMessage, exception.getMessage());
-            return exceptionallyCompletedFuture(new ReferenceResolutionException(errorMessage, exception));
+            throw new ReferenceResolutionException(errorMessage, exception);
         }
     }
 
+    @Nonnull
+    private CompletionStage<B> fetchAndResolveTypeReference(
+        @Nonnull final B draftBuilder,
+        @Nonnull final BiFunction<B, CustomFieldsDraft, B> customSetter,
+        @Nullable final Map<String, JsonNode> customFields,
+        @Nonnull final String typeKey,
+        @Nonnull final String referenceResolutionErrorMessage) {
 
+        return typeService
+            .fetchCachedTypeId(typeKey)
+            .thenCompose(resolvedTypeIdOptional -> resolvedTypeIdOptional
+                .map(resolvedTypeId ->
+                    completedFuture(customSetter.apply(draftBuilder, ofTypeIdAndJson(resolvedTypeId, customFields))))
+                .orElseGet(() -> {
+                    final String errorMessage =
+                        format("%s Reason: %s", referenceResolutionErrorMessage, format(TYPE_DOES_NOT_EXIST, typeKey));
+                    return exceptionallyCompletedFuture(new ReferenceResolutionException(errorMessage));
+                }));
+    }
 }

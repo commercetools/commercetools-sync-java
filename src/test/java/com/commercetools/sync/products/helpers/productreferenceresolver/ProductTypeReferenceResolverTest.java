@@ -8,7 +8,7 @@ import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductTypeService;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.producttypes.ProductType;
@@ -20,15 +20,17 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithProductTypeRef;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithProductTypeRefId;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithProductTypeRefKey;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithRandomProductType;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductTypeService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockStateService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockTaxCategoryService;
+import static com.commercetools.sync.products.helpers.ProductReferenceResolver.FAILED_TO_RESOLVE_REFERENCE;
+import static com.commercetools.sync.products.helpers.ProductReferenceResolver.PRODUCT_TYPE_DOES_NOT_EXIST;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -63,7 +65,7 @@ class ProductTypeReferenceResolverTest {
 
     @Test
     void resolveProductTypeReference_WithKeys_ShouldResolveReference() {
-        final ProductDraftBuilder productBuilder = getBuilderWithProductTypeRefId("productTypeKey");
+        final ProductDraftBuilder productBuilder = getBuilderWithProductTypeRefKey("productTypeKey");
 
         final ProductDraftBuilder resolvedDraft = referenceResolver.resolveProductTypeReference(productBuilder)
                                                                    .toCompletableFuture().join();
@@ -74,23 +76,29 @@ class ProductTypeReferenceResolverTest {
 
     @Test
     void resolveProductTypeReference_WithNonExistentProductType_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getBuilderWithProductTypeRefId("anyKey")
+        final ProductDraftBuilder productBuilder = getBuilderWithProductTypeRefKey("anyKey")
             .key("dummyKey");
 
         when(productTypeService.fetchCachedProductTypeId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-        assertThat(referenceResolver.resolveProductTypeReference(productBuilder).toCompletableFuture())
-            .hasNotFailed()
-            .isCompletedWithValueMatching(resolvedDraft ->
-                Objects.nonNull(resolvedDraft.getProductType())
-                    && Objects.equals(resolvedDraft.getProductType().getId(), "anyKey"));
+        final String expectedMessageWithCause = format(FAILED_TO_RESOLVE_REFERENCE, ProductType.resourceTypeId(),
+            "dummyKey", format(PRODUCT_TYPE_DOES_NOT_EXIST, "anyKey"));
+
+        referenceResolver.resolveProductTypeReference(productBuilder)
+                         .exceptionally(exception -> {
+                             assertThat(exception).hasCauseExactlyInstanceOf(ReferenceResolutionException.class);
+                             assertThat(exception.getCause().getMessage())
+                                 .isEqualTo(expectedMessageWithCause);
+                             return null;
+                         })
+                         .toCompletableFuture()
+                         .join();
     }
 
     @Test
-    void resolveProductTypeReference_WithNullIdOnProductTypeReference_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getBuilderWithProductTypeRef(
-            Reference.of(ProductType.referenceTypeId(), (String)null))
+    void resolveProductTypeReference_WithNullKeyOnProductTypeReference_ShouldNotResolveReference() {
+        final ProductDraftBuilder productBuilder = getBuilderWithProductTypeRefKey(null)
             .key("dummyKey");
 
         assertThat(referenceResolver.resolveProductTypeReference(productBuilder).toCompletableFuture())
@@ -99,12 +107,12 @@ class ProductTypeReferenceResolverTest {
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format("Failed to resolve '%s' resource identifier on ProductDraft"
                 + " with key:'%s'. Reason: %s", ProductType.referenceTypeId(),
-                productBuilder.getKey(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+                productBuilder.getKey(), BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
-    void resolveProductTypeReference_WithEmptyIdOnProductTypeReference_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getBuilderWithProductTypeRefId("")
+    void resolveProductTypeReference_WithEmptyKeyOnProductTypeReference_ShouldNotResolveReference() {
+        final ProductDraftBuilder productBuilder = getBuilderWithProductTypeRefKey("")
             .key("dummyKey");
 
         assertThat(referenceResolver.resolveProductTypeReference(productBuilder).toCompletableFuture())
@@ -113,22 +121,45 @@ class ProductTypeReferenceResolverTest {
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format("Failed to resolve '%s' resource identifier on ProductDraft"
                 + " with key:'%s'. Reason: %s", ProductType.referenceTypeId(), productBuilder.getKey(),
-                BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+                BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
     void resolveProductTypeReference_WithExceptionOnProductTypeFetch_ShouldNotResolveReference() {
-        final ProductDraftBuilder productBuilder = getBuilderWithProductTypeRefId(PRODUCT_TYPE_ID)
+        final ProductDraftBuilder productBuilder = getBuilderWithProductTypeRefKey("anyKey")
             .key("dummyKey");
 
         final CompletableFuture<Optional<String>> futureThrowingSphereException = new CompletableFuture<>();
         futureThrowingSphereException.completeExceptionally(new SphereException("CTP error on fetch"));
         when(productTypeService.fetchCachedProductTypeId(anyString())).thenReturn(futureThrowingSphereException);
 
-        assertThat(referenceResolver.resolveProductTypeReference(productBuilder).toCompletableFuture())
-            .hasFailed()
+        assertThat(referenceResolver.resolveProductTypeReference(productBuilder))
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(SphereException.class)
             .hasMessageContaining("CTP error on fetch");
+    }
+
+    @Test
+    void resolveProductTypeReference_WithIdOnProductTypeReference_ShouldNotResolveReference() {
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType()
+            .productType(ResourceIdentifier.ofId("existing-id"))
+            .key("dummyKey");
+
+        assertThat(referenceResolver.resolveProductTypeReference(productBuilder).toCompletableFuture())
+            .hasNotFailed()
+            .isCompletedWithValueMatching(resolvedDraft -> Objects.equals(resolvedDraft.getProductType(),
+                productBuilder.getProductType()));
+    }
+
+    @Test
+    void resolveProductTypeReference_WithNullOnProductTypeReference_ShouldNotResolveReference() {
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType()
+            .productType(null)
+            .key("dummyKey");
+
+        assertThat(referenceResolver.resolveProductTypeReference(productBuilder).toCompletableFuture())
+            .hasNotFailed()
+            .isCompletedWithValueMatching(resolvedDraft -> Objects.equals(resolvedDraft.getProductType(),
+                productBuilder.getProductType()));
     }
 }

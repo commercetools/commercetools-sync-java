@@ -35,11 +35,11 @@ otherwise they won't be matched.
       transition would return its `key`. 
      
         **Note**: When syncing from a source commercetools project, you can use this util which this library provides: 
-         `replaceStateTransitionIdsWithKeys`]
+         [`mapToStateDrafts`](https://commercetools.github.io/commercetools-sync-java/v/2.0.0/com/commercetools/sync/states/utils/StateReferenceResolutionUtils.html#mapToStateDrafts-java.util.List-)
          that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
          ````java
          // Puts the keys in the reference id fields to prepare for reference resolution
-         final List<StateDraft> stateDrafts = replaceStateTransitionIdsWithKeys(states);
+         final List<StateDraft> stateDrafts = StateReferenceResolutionUtils.mapToStateDrafts(states);
          ````
      
 4. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).

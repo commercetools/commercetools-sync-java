@@ -2,6 +2,7 @@ package com.commercetools.sync.commons.utils;
 
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
+import io.sphere.sdk.models.WithKey;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -58,29 +59,28 @@ public final class SyncUtils {
 
     /**
      * Given a reference to a resource of type {@code T}, this method
-     * checks if the reference is expanded. If it is, then it executes the {@code keyInReferenceSupplier} and returns
-     * it's result. Otherwise, it returns the supplied reference as is. Since, the reference could be {@code null}, this
-     * method could also return null if the reference was not expanded.
-     *
-     * <p>This method expects the passed supplier to either </p>
+     * checks if the reference is expanded. If it is, then it return the resource identifier with key.
+     * Otherwise, it returns the resource identifier with id.
+     * Since, the reference could be {@code null}, this method could also return null if the reference was not expanded.
      *
      * @param reference              the reference of the resource to check if it's expanded.
      * @param <T>                    the type of the resource.
-     * @param keyInReferenceSupplier the supplier to execute and return its result if the {@code reference} was
-     *                               expanded.
      *
-     * @return returns the result of the {@code keyInReferenceSupplier} if the {@code reference} was expanded.
-     *         Otherwise, it returns the supplied reference as is.
+     * @return returns the resource identifier with key if the {@code reference} was expanded.
+     *         Otherwise, it returns the resource identifier with id.
      */
     @Nullable
-    public static <T> ResourceIdentifier<T> getResourceIdentifierWithKeyReplaced(
-        @Nullable final Reference<T> reference,
-        @Nonnull final Supplier<ResourceIdentifier<T>> keyInReferenceSupplier) {
+    public static <T extends WithKey> ResourceIdentifier<T> getResourceIdentifierWithKey(
+        @Nullable final Reference<T> reference) {
 
-        if (reference != null && reference.getObj() != null) {
-            return keyInReferenceSupplier.get();
+        if (reference != null) {
+            if (reference.getObj() != null) {
+                return ResourceIdentifier.ofKey(reference.getObj().getKey());
+            }
+            return ResourceIdentifier.ofId(reference.getId());
         }
-        return reference;
+
+        return null;
     }
 
     private SyncUtils() {

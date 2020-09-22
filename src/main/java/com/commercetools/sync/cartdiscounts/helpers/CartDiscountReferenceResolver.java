@@ -15,7 +15,7 @@ import static java.lang.String.format;
 public final class CartDiscountReferenceResolver
     extends CustomReferenceResolver<CartDiscountDraft, CartDiscountDraftBuilder, CartDiscountSyncOptions> {
 
-    private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
+    static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
         + "CartDiscountDraft with key:'%s'.";
 
     /**

@@ -15,15 +15,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.commons.helpers.AssetReferenceResolver.FAILED_TO_RESOLVE_CUSTOM_TYPE;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.commons.helpers.CustomReferenceResolver.TYPE_DOES_NOT_EXIST;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -43,9 +46,9 @@ class AssetReferenceResolverTest {
     }
 
     @Test
-    void resolveCustomTypeReference_WithNonExistentCustomType_ShouldNotResolveCustomTypeReference() {
+    void resolveCustomTypeReference_WithNonExistentCustomType_ShouldCompleteExceptionally() {
         final String customTypeKey = "customTypeKey";
-        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeIdAndJson(customTypeKey, new HashMap<>());
+        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeKeyAndJson(customTypeKey, new HashMap<>());
         final AssetDraftBuilder assetDraftBuilder = AssetDraftBuilder.of(emptyList(), ofEnglish("assetName"))
                                                                      .key("assetKey")
                                                                      .custom(customFieldsDraft);
@@ -55,12 +58,15 @@ class AssetReferenceResolverTest {
 
         final AssetReferenceResolver assetReferenceResolver = new AssetReferenceResolver(syncOptions, typeService);
 
-        assertThat(assetReferenceResolver.resolveCustomTypeReference(assetDraftBuilder).toCompletableFuture())
-            .hasNotFailed()
-            .isCompletedWithValueMatching(resolvedDraft ->
-                Objects.nonNull(resolvedDraft.getCustom())
-                    && Objects.nonNull(resolvedDraft.getCustom().getType())
-                    && Objects.equals(resolvedDraft.getCustom().getType().getId(), customTypeKey));
+        // Test and assertion
+        final String expectedExceptionMessage =
+            format(FAILED_TO_RESOLVE_CUSTOM_TYPE, assetDraftBuilder.getKey());
+        final String expectedMessageWithCause =
+            format("%s Reason: %s", expectedExceptionMessage, format(TYPE_DOES_NOT_EXIST, customTypeKey));
+        assertThat(assetReferenceResolver.resolveCustomTypeReference(assetDraftBuilder))
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(ReferenceResolutionException.class)
+            .hasMessage(expectedMessageWithCause);
     }
 
     @Test
@@ -75,35 +81,54 @@ class AssetReferenceResolverTest {
 
         final AssetReferenceResolver assetReferenceResolver = new AssetReferenceResolver(syncOptions, typeService);
 
-        assertThat(assetReferenceResolver.resolveCustomTypeReference(assetDraftBuilder).toCompletableFuture())
-            .hasFailed()
+        assertThat(assetReferenceResolver.resolveCustomTypeReference(assetDraftBuilder))
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format("Failed to resolve custom type reference on AssetDraft with key:'assetKey'. Reason: %s",
-                BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+            .hasMessage(format("Failed to resolve custom type reference on AssetDraft with key:'%s'. Reason: %s",
+                assetDraftBuilder.getKey(), BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
-    void resolveCustomTypeReference_WithEmptyIdOnCustomTypeReference_ShouldNotResolveCustomTypeReference() {
-        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeIdAndJson("", new HashMap<>());
+    public void resolveCustomTypeReference_WithNonNullIdOnCustomTypeResId_ShouldResolveCustomTypeReference() {
+        // Preparation
+        final String customTypeId = UUID.randomUUID().toString();
+        final AssetDraftBuilder assetDraftBuilder =
+            AssetDraftBuilder.of(emptyList(), ofEnglish("assetName"))
+                             .key("assetKey")
+                             .custom(CustomFieldsDraft.ofTypeIdAndJson(customTypeId, emptyMap()));
+
+        final AssetReferenceResolver assetReferenceResolver = new AssetReferenceResolver(syncOptions, typeService);
+
+        // Test
+        final AssetDraftBuilder resolvedDraftBuilder =
+            assetReferenceResolver.resolveCustomTypeReference(assetDraftBuilder)
+                                  .toCompletableFuture().join();
+
+        // Assertion
+        assertThat(resolvedDraftBuilder.getCustom()).isNotNull();
+        assertThat(resolvedDraftBuilder.getCustom().getType().getId()).isEqualTo(customTypeId);
+    }
+
+    @Test
+    void resolveCustomTypeReference_WithEmptyKeyOnCustomTypeReference_ShouldCompleteExceptionally() {
+        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeKeyAndJson("", new HashMap<>());
         final AssetDraftBuilder assetDraftBuilder = AssetDraftBuilder.of(emptyList(), ofEnglish("assetName"))
                                                                      .key("assetKey")
                                                                      .custom(customFieldsDraft);
 
         final AssetReferenceResolver assetReferenceResolver = new AssetReferenceResolver(syncOptions, typeService);
 
-        assertThat(assetReferenceResolver.resolveCustomTypeReference(assetDraftBuilder).toCompletableFuture())
-            .hasFailed()
+        assertThat(assetReferenceResolver.resolveCustomTypeReference(assetDraftBuilder))
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format("Failed to resolve custom type reference on AssetDraft with key:'assetKey'. Reason: %s",
-                BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+            .hasMessage(format("Failed to resolve custom type reference on AssetDraft with key:'%s'. Reason: %s",
+                assetDraftBuilder.getKey(), BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
     void resolveCustomTypeReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
         final String customTypeKey = "customTypeKey";
-        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeIdAndJson(customTypeKey, new HashMap<>());
+        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft.ofTypeKeyAndJson(customTypeKey, new HashMap<>());
         final AssetDraftBuilder assetDraftBuilder = AssetDraftBuilder.of(emptyList(), ofEnglish("assetName"))
                                                                      .key("assetKey")
                                                                      .custom(customFieldsDraft);
@@ -114,8 +139,7 @@ class AssetReferenceResolverTest {
 
         final AssetReferenceResolver assetReferenceResolver = new AssetReferenceResolver(syncOptions, typeService);
 
-        assertThat(assetReferenceResolver.resolveCustomTypeReference(assetDraftBuilder).toCompletableFuture())
-            .hasFailed()
+        assertThat(assetReferenceResolver.resolveCustomTypeReference(assetDraftBuilder))
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(SphereException.class)
             .hasMessageContaining("CTP error on fetch");

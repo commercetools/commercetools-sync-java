@@ -36,7 +36,6 @@ public class AttributeDefinitionReferenceResolver
      * Given an {@link AttributeDefinitionDraft} this method attempts to resolve the ProductType references, which can
      * exist on attributeDefinition with an AttributeType: NestedType or SetType of NestedType, to return a
      * {@link CompletionStage} which contains a new instance of the draft with the resolved references.
-     * The keys of the references are taken from the id field of the references.
      *
      * @param attributeDefinitionDraft the attributeDefinitionDraft to resolve its references.
      * @return a {@link CompletionStage} that contains as a result a new attributeDefinitionDraft instance with resolved
@@ -111,7 +110,7 @@ public class AttributeDefinitionReferenceResolver
 
         final String resourceKey;
         try {
-            resourceKey = getKeyFromResourceIdentifier(typeReference);
+            resourceKey = getIdFromReference(typeReference);
         } catch (ReferenceResolutionException exception) {
             return exceptionallyCompletedFuture(
                 new ReferenceResolutionException("Failed to resolve NestedType productType reference.", exception));
