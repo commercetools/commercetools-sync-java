@@ -40,6 +40,8 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
         "Failed to fetch existing custom objects with keys: '%s'.";
     private static final String CTP_CUSTOM_OBJECT_UPDATE_FAILED =
         "Failed to update custom object with key: '%s'. Reason: %s";
+    private static final String CTP_CUSTOM_OBJECT_CREATE_FAILED =
+        "Failed to create custom object with key: '%s'. Reason: %s";
     private static final String CUSTOM_OBJECT_DRAFT_IS_NULL = "Failed to process null custom object draft.";
 
     private final CustomObjectService customObjectService;
@@ -225,7 +227,8 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
      * CTP project to create the corresponding CustomObject.
      *
      * @param customObjectDraft the custom object draft to create the custom object from.
-     * @return a {@link CompletionStage} which contains an empty result after execution of the create.
+     * @return a {@link CompletionStage} which contains created custom object after success execution of the create.
+     *      Otherwise it contains an empty result in case of failure.
      */
     @Nonnull
     private CompletionStage<Optional<CustomObject<JsonNode>>> applyCallbackAndCreate(
@@ -233,19 +236,26 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
 
         return syncOptions
             .applyBeforeCreateCallback(customObjectDraft)
-            .map(draft -> customObjectService.upsertCustomObject(customObjectDraft)
-                                             .thenApply(customObjectOptional -> {
-                                                 if (customObjectOptional.isPresent()) {
-                                                     statistics.incrementCreated();
-                                                 } else {
-                                                     statistics.incrementFailed();
-                                                 }
-                                                 return customObjectOptional;
-                                             })
-            )
-            .orElse(CompletableFuture.completedFuture(Optional.empty()));
+                .map(draft -> customObjectService
+                    .upsertCustomObject(draft)
+                    .thenApply(customObjectOptional -> {
+                        if (customObjectOptional.isPresent()) {
+                            statistics.incrementCreated();
+                        } else {
+                            statistics.incrementFailed();
+                        }
+                        return customObjectOptional;
+                    }).exceptionally(sphereException -> {
+                        final String errorMessage =
+                            format(CTP_CUSTOM_OBJECT_CREATE_FAILED,
+                                CustomObjectCompositeIdentifier.of(customObjectDraft).toString(),
+                                sphereException.getMessage());
+                        handleError(errorMessage, sphereException, 1,
+                            null, customObjectDraft);
+                        return Optional.empty();
+                    })
+                ).orElse(completedFuture(Optional.empty()));
     }
-
 
     /**
      * Given an existing {@link CustomObject} and a new {@link CustomObjectDraft}, the method first checks whether

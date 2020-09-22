@@ -142,22 +142,8 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
                 null, draft, null);
             return CompletableFuture.completedFuture(Optional.empty());
         } else {
-            return syncOptions
-                .getCtpClient()
-                .execute(createCommand.apply(draft))
-                .handle(((resource, exception) -> {
-                    if (exception == null) {
-                        keyToIdCache.put(draftKey, resource.getId());
-                        return Optional.of(resource);
-                    } else {
-                        syncOptions.applyErrorCallback(
-                            new SyncException(format(CREATE_FAILED, draftKey, exception.getMessage()), exception),
-                            null, draft, null);
-                        return Optional.empty();
-                    }
-                }));
+            return executeCreateCommand(draft, keyMapper, createCommand);
         }
-
     }
 
     /**
@@ -299,4 +285,27 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
                 }));
     }
 
+    @Nonnull
+    CompletionStage<Optional<U>> executeCreateCommand(
+            @Nonnull final T draft,
+            @Nonnull final Function<T, String> keyMapper,
+            @Nonnull final Function<T, DraftBasedCreateCommand<U, T>> createCommand) {
+
+        final String draftKey = keyMapper.apply(draft);
+
+        return syncOptions
+            .getCtpClient()
+            .execute(createCommand.apply(draft))
+            .handle(((resource, exception) -> {
+                if (exception == null) {
+                    keyToIdCache.put(draftKey, resource.getId());
+                    return Optional.of(resource);
+                } else {
+                    syncOptions.applyErrorCallback(
+                            new SyncException(format(CREATE_FAILED, draftKey, exception.getMessage()), exception),
+                            null, draft, null);
+                    return Optional.empty();
+                }
+            }));
+    }
 }
