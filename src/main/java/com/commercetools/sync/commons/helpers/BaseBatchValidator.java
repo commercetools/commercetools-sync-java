@@ -36,7 +36,7 @@ public abstract class BaseBatchValidator<D, O extends BaseSyncOptions, S extends
      *
      * @param drafts the drafts to validate.
      * @return {@link ImmutablePair}&lt;{@link Set}&lt;{@code D}&gt;, ReferencedKeys&gt; which contains
-     *      the {@link Set} of valid drafts and referenced keys with a wrapper.
+     *      the {@link Set} of valid drafts and referenced keys within a wrapper.
      */
     public abstract ImmutablePair<Set<D>, ?> validateAndCollectReferencedKeys(@Nonnull final List<D> drafts);
 
