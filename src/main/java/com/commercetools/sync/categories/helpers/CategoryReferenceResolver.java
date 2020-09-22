@@ -15,10 +15,15 @@ import io.sphere.sdk.models.ResourceIdentifier;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
@@ -29,6 +34,8 @@ public final class CategoryReferenceResolver
         extends CustomReferenceResolver<CategoryDraft, CategoryDraftBuilder, CategorySyncOptions> {
     private final AssetReferenceResolver assetReferenceResolver;
     private final CategoryService categoryService;
+    private final TypeService typeService;
+
     static final String FAILED_TO_RESOLVE_PARENT = "Failed to resolve parent reference on "
         + "CategoryDraft with key:'%s'. Reason: %s";
     static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
@@ -51,6 +58,7 @@ public final class CategoryReferenceResolver
         super(options, typeService);
         this.assetReferenceResolver = new AssetReferenceResolver(options, typeService);
         this.categoryService = categoryService;
+        this.typeService = typeService;
     }
 
     /**
@@ -157,5 +165,28 @@ public final class CategoryReferenceResolver
                         format(PARENT_CATEGORY_DOES_NOT_EXIST, parentCategoryKey));
                     return exceptionallyCompletedFuture(new ReferenceResolutionException(errorMessage));
                 }));
+    }
+
+    /**
+     * Calls the {@code cacheKeysToIds} service methods to fetch all the referenced keys (category and type)
+     * from the commercetools project to prepare caches for the reference resolution.
+     *
+     * @param referencedKeys a wrapper for the category resource to fetch and cache the id's for.
+     * @return {@link CompletionStage}&lt;{@link List}&lt;{@link Map}&gt;&gt; in which the results of it's completions
+     *     contains a map of requested references keys -&gt; ids.
+     */
+    @Nonnull
+    public CompletableFuture<List<Map<String, String>>> cacheKeyToIds(
+        @Nonnull final CategoryBatchValidator.ReferencedKeys referencedKeys) {
+
+        final List<CompletionStage<Map<String, String>>> futures = new ArrayList<>();
+        futures.add(categoryService.cacheKeysToIds(referencedKeys.getCategoryKeys()));
+
+        final Set<String> typeKeys = referencedKeys.getTypeKeys();
+        if (!typeKeys.isEmpty()) {
+            futures.add(typeService.cacheKeysToIds(typeKeys));
+        }
+
+        return collectionOfFuturesToFutureOfCollection(futures, toList());
     }
 }

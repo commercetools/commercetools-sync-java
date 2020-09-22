@@ -36,12 +36,10 @@ import java.util.stream.Collectors;
 import static com.commercetools.sync.categories.helpers.CategoryReferenceResolver.getParentCategoryKey;
 import static com.commercetools.sync.categories.utils.CategorySyncUtils.buildActions;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.areResourceIdentifiersEqual;
-import static com.commercetools.sync.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.toResourceIdentifierIfNotNull;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
 
 public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics, CategorySyncOptions> {
 
@@ -49,7 +47,6 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private static final String UPDATE_FAILED = "Failed to update Category with key: '%s'. Reason: %s";
 
     private final CategoryService categoryService;
-    private final TypeService typeService;
     private final CategoryReferenceResolver referenceResolver;
 
     /**
@@ -112,7 +109,6 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                  @Nonnull final CategoryService categoryService) {
         super(new CategorySyncStatistics(), syncOptions);
         this.categoryService = categoryService;
-        this.typeService = typeService;
         this.referenceResolver = new CategoryReferenceResolver(syncOptions, typeService, categoryService);
     }
 
@@ -180,7 +176,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
             return CompletableFuture.completedFuture(statistics);
         }
 
-        return fetchAndBuildKeyToIdCaches(pair.getRight())
+        return referenceResolver.cacheKeyToIds(pair.getRight())
             .thenCompose(keyToIdCaches -> {
                 final Map<String, String> keyToIdCache = keyToIdCaches.get(0);
                 prepareDraftsForProcessing(new ArrayList<>(validDrafts), keyToIdCache);
@@ -201,20 +197,6 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                 statistics.incrementProcessed(numberOfNewDraftsToProcess);
                 return statistics;
             });
-    }
-
-    @Nonnull
-    private CompletableFuture<List<Map<String, String>>> fetchAndBuildKeyToIdCaches(
-        @Nonnull final CategoryBatchValidator.ReferencedKeys referencedKeys) {
-
-        final List<CompletionStage<Map<String, String>>> futures = new ArrayList<>();
-        futures.add(categoryService.cacheKeysToIds(referencedKeys.getCategoryKeys()));
-        final Set<String> typeKeys = referencedKeys.getTypeKeys();
-        if (!typeKeys.isEmpty()) {
-            futures.add(typeService.cacheKeysToIds(typeKeys));
-        }
-
-        return collectionOfFuturesToFutureOfCollection(futures, toList());
     }
 
     private CompletionStage<Void> fetchAndUpdate(@Nonnull final Map<String, String> keyToIdCache) {
