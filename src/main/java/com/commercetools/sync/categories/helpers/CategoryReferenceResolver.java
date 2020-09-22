@@ -171,7 +171,7 @@ public final class CategoryReferenceResolver
      * Calls the {@code cacheKeysToIds} service methods to fetch all the referenced keys (category and type)
      * from the commercetools to prepare caches for the reference resolution.
      *
-     * @param referencedKeys a wrapper for the category resource to fetch and cache the id's for.
+     * @param referencedKeys a wrapper for the category references to fetch and cache the id's for.
      * @return {@link CompletionStage}&lt;{@link List}&lt;{@link Map}&gt;&gt; in which the results of it's completions
      *     contains a map of requested references keys -&gt; ids.
      */
