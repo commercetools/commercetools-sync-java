@@ -36,7 +36,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class ProductBatchProcessorTest {
+class ProductBatchValidatorTest {
     private List<String> errorCallBackMessages;
     private ProductSyncOptions syncOptions;
     private ProductSyncStatistics syncStatistics;
