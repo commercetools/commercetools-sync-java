@@ -23,11 +23,11 @@ public interface CustomObjectService {
      * a {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt;
      * in which the {@link Optional} could contain the id inside of it.
      *
-     * @param  identifier the identifier object containing CustomObject key and container, by which a
-     *         {@link io.sphere.sdk.customobjects.CustomObject} id should be fetched from the CTP project.
+     * @param identifier the identifier object containing CustomObject key and container, by which a
+     *                   {@link io.sphere.sdk.customobjects.CustomObject} id should be fetched from the CTP project.
      * @return {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt; in which the result of its
-     *         completion could contain an {@link Optional} with the id inside of it or an empty {@link Optional} if no
-     *         {@link CustomObject} was found in the CTP project with this identifier.
+     *     completion could contain an {@link Optional} with the id inside of it or an empty {@link Optional} if no
+     *     {@link CustomObject} was found in the CTP project with this identifier.
      */
 
     @Nonnull
@@ -42,7 +42,7 @@ public interface CustomObjectService {
      * @param identifiers set of CustomObjectCompositeIdentifiers. Each identifier includes key and container to fetch
      *                    matching CustomObject.
      * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of its completion contains a {@link Set}
-     *          of all matching CustomObjects.
+     *     of all matching CustomObjects.
      */
     @Nonnull
     CompletionStage<Set<CustomObject<JsonNode>>> fetchMatchingCustomObjects(
@@ -56,7 +56,7 @@ public interface CustomObjectService {
      *
      * @param identifier the identifier of the CustomObject to fetch.
      * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of its completion contains an
-     *         {@link Optional} that contains the matching {@link CustomObject} if exists, otherwise empty.
+     * {@link Optional} that contains the matching {@link CustomObject} if exists, otherwise empty.
      */
     @Nonnull
     CompletionStage<Optional<CustomObject<JsonNode>>> fetchCustomObject(
@@ -82,7 +82,7 @@ public interface CustomObjectService {
      *
      * @param customObjectDraft the resource draft to create or update a resource based off of.
      * @return a {@link CompletionStage} containing an optional with the created/updated resource if successful
-     *         otherwise an empty optional.
+     *     otherwise an empty optional.
      */
     @Nonnull
     CompletionStage<Optional<CustomObject<JsonNode>>> upsertCustomObject(
