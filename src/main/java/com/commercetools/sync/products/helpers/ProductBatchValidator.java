@@ -96,7 +96,6 @@ public class ProductBatchValidator
                 return true;
             }
         }
-
         return false;
     }
 
