@@ -135,7 +135,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         return productReferenceResolver.cacheKeysToIds(result.getRight())
             .thenCompose(keyToIdCaches -> syncBatch(validDrafts, keyToIdCaches.get(0)))
             .exceptionally(cachingException -> {
-                handleError(new SyncException("Failed to build a cache of product keys to ids.", cachingException),
+                handleError(new SyncException("Failed to build a cache of keys to ids.", cachingException),
                     validDrafts.size());
                 return null;
             })

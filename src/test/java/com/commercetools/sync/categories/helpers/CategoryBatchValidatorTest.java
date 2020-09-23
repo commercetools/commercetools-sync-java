@@ -91,7 +91,7 @@ class CategoryBatchValidatorTest {
             .thenReturn(CustomFieldsDraft.ofTypeKeyAndJson("typeKey", Collections.emptyMap()));
 
         final CategoryDraft validMainCategoryDraft = mock(CategoryDraft.class);
-        when(validMainCategoryDraft.getKey()).thenReturn("validDraftKey1");
+        when(validMainCategoryDraft.getKey()).thenReturn("inValidDraftKey");
 
         final CategoryDraft invalidCategoryDraft = mock(CategoryDraft.class);
         when(invalidCategoryDraft.getParent()).thenReturn(ResourceIdentifier.ofKey("key"));
@@ -107,7 +107,7 @@ class CategoryBatchValidatorTest {
         assertThat(pair.getLeft())
             .containsExactlyInAnyOrder(validCategoryDraft, validMainCategoryDraft);
         assertThat(pair.getRight().getCategoryKeys())
-            .containsExactlyInAnyOrder("validDraftKey", "validParentKey", "validDraftKey1");
+            .containsExactlyInAnyOrder("validParentKey");
         assertThat(pair.getRight().getTypeKeys())
             .containsExactlyInAnyOrder("typeKey");
     }

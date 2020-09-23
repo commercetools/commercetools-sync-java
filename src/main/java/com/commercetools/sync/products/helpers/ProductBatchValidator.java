@@ -103,7 +103,6 @@ public class ProductBatchValidator
         @Nonnull final ReferencedKeys referencedKeys,
         @Nonnull final ProductDraft productDraft) {
 
-        referencedKeys.productKeys.add(productDraft.getKey());
         collectReferencedKeyFromResourceIdentifier(productDraft.getProductType(), referencedKeys.productTypeKeys::add);
         collectReferencedKeysInCategories(referencedKeys, productDraft);
         collectReferencedKeysInVariants(referencedKeys, productDraft);

@@ -321,7 +321,7 @@ class ProductBatchValidatorTest {
     }
 
     @Test
-    void validateAndCollectReferencedKeys__WithDrafts_ShouldValidateCorrectly() {
+    void validateAndCollectReferencedKeys_WithDrafts_ShouldValidateCorrectly() {
         final AttributeDraft productReferenceSetAttribute =
             getReferenceSetAttributeDraft("foo", getProductReferenceWithId("foo"),
                 getProductReferenceWithId("bar"));
@@ -364,8 +364,8 @@ class ProductBatchValidatorTest {
 
         assertThat(pair.getLeft()).hasSize(1);
         assertThat(pair.getLeft()).containsExactly(validProductDraft);
-        assertThat(pair.getRight().getProductKeys()).hasSize(3);
-        assertThat(pair.getRight().getProductKeys()).containsExactlyInAnyOrder("validProductDraft", "foo", "bar");
+        assertThat(pair.getRight().getProductKeys()).hasSize(2);
+        assertThat(pair.getRight().getProductKeys()).containsExactlyInAnyOrder("foo", "bar");
 
         assertThat(errorCallBackMessages).hasSize(5);
         assertThat(errorCallBackMessages).containsExactlyInAnyOrder(

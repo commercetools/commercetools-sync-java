@@ -376,7 +376,11 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         @Nonnull final ProductBatchValidator.ReferencedKeys referencedKeys) {
 
         final List<CompletionStage<Map<String, String>>> futures = new ArrayList<>();
-        futures.add(productService.cacheKeysToIds(referencedKeys.getProductKeys()));
+
+        final Set<String> productKeys = referencedKeys.getProductKeys();
+        if (!productKeys.isEmpty()) {
+            futures.add(productService.cacheKeysToIds(referencedKeys.getProductKeys()));
+        }
 
         final Set<String> productTypeKeys = referencedKeys.getProductTypeKeys();
         if (!productTypeKeys.isEmpty()) {

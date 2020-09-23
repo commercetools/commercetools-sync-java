@@ -180,8 +180,10 @@ public final class CategoryReferenceResolver
         @Nonnull final CategoryBatchValidator.ReferencedKeys referencedKeys) {
 
         final List<CompletionStage<Map<String, String>>> futures = new ArrayList<>();
-        futures.add(categoryService.cacheKeysToIds(referencedKeys.getCategoryKeys()));
-
+        final Set<String> categoryKeys = referencedKeys.getCategoryKeys();
+        if (!categoryKeys.isEmpty()) {
+            futures.add(categoryService.cacheKeysToIds(referencedKeys.getCategoryKeys()));
+        }
         final Set<String> typeKeys = referencedKeys.getTypeKeys();
         if (!typeKeys.isEmpty()) {
             futures.add(typeService.cacheKeysToIds(typeKeys));
