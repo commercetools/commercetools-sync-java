@@ -55,6 +55,7 @@ public class ProductBatchValidator
      *
      * <p>A valid product draft is one which satisfies the following conditions:
      * <ol>
+     * <li>It is not null</li>
      * <li>It has a key which is not blank (null/empty)</li>
      * <li>It has all variants AND master variant valid</li>
      * <li>A variant is valid if it satisfies the following conditions:

@@ -37,6 +37,7 @@ public class CategoryBatchValidator
      *
      * <p>A valid category draft is one which satisfies the following conditions:
      * <ol>
+     * <li>It is not null</li>
      * <li>It has a key which is not blank (null/empty)</li>
      * </li>
      * </ol>
