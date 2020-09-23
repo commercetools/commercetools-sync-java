@@ -132,12 +132,19 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             return CompletableFuture.completedFuture(statistics);
         }
 
-        return productReferenceResolver.cacheKeysToIds(result.getRight())
-            .thenCompose(keyToIdCaches -> syncBatch(validDrafts, keyToIdCaches.get(0)))
-            .exceptionally(cachingException -> {
-                handleError(new SyncException("Failed to build a cache of keys to ids.", cachingException),
-                    validDrafts.size());
-                return null;
+        return productReferenceResolver
+            .populateKeyToIdCachesForReferencedKeys(result.getRight())
+            .handle(ImmutablePair::new)
+            .thenCompose(cachingResponse -> {
+                final Throwable cachingException = cachingResponse.getValue();
+                if (cachingException != null) {
+                    handleError(new SyncException("Failed to build a cache of keys to ids.", cachingException),
+                        validDrafts.size());
+                    return CompletableFuture.completedFuture(null);
+                }
+
+                final Map<String, String> productKeyToIdCache = cachingResponse.getKey();
+                return syncBatch(validDrafts, productKeyToIdCache);
             })
             .thenApply(ignoredResult -> {
                 statistics.incrementProcessed(batch.size());

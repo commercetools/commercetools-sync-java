@@ -19,7 +19,6 @@ import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.queries.ProductQuery;
-import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -91,19 +90,13 @@ class ProductSyncTest {
         // preparation
         final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             ResourceIdentifier.ofKey("productTypeKey"))
-            .taxCategory(null)
-            .state(null)
             .build();
 
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> exceptions = new ArrayList<>();
 
-        final SphereClient mockClient = mock(SphereClient.class);
-        when(mockClient.execute(any(ProductTypeQuery.class)))
-                .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
-
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder
-            .of(mockClient)
+            .of(mock(SphereClient.class))
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorMessages.add(exception.getMessage());
                 exceptions.add(exception.getCause());
@@ -112,8 +105,12 @@ class ProductSyncTest {
 
         final ProductService productService = spy(new ProductServiceImpl(syncOptions));
 
+        final ProductTypeService productTypeService = mock(ProductTypeService.class);
+        when(productTypeService.cacheKeysToIds(any()))
+            .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
+
         final ProductSync productSync = new ProductSync(syncOptions, productService,
-            mock(ProductTypeService.class), mock(CategoryService.class), mock(TypeService.class),
+            productTypeService, mock(CategoryService.class), mock(TypeService.class),
             mock(ChannelService.class), mock(CustomerGroupService.class), mock(TaxCategoryService.class),
             mock(StateService.class),
             mock(UnresolvedReferencesService.class));

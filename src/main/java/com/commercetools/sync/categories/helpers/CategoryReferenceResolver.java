@@ -169,26 +169,27 @@ public final class CategoryReferenceResolver
 
     /**
      * Calls the {@code cacheKeysToIds} service methods to fetch all the referenced keys (category and type)
-     * from the commercetools to prepare caches for the reference resolution.
+     * from the commercetools to populate caches for the reference resolution.
+     *
+     * <p>Note: This method is meant be only used internally by the library to improve performance.
      *
      * @param referencedKeys a wrapper for the category references to fetch and cache the id's for.
-     * @return {@link CompletionStage}&lt;{@link List}&lt;{@link Map}&gt;&gt; in which the results of it's completions
-     *     contains a map of requested references keys -&gt; ids.
+     * @return {@link CompletionStage}&lt;{@link Map}&lt;{@link String}&gt;{@link String}&gt;&gt; in which the results
+     *     of it's completions contains a map of requested references keys -&gt; ids of parent category references.
      */
     @Nonnull
-    public CompletableFuture<List<Map<String, String>>> cacheKeysToIds(
+    public CompletableFuture<Map<String, String>> populateKeyToIdCachesForReferencedKeys(
         @Nonnull final CategoryBatchValidator.ReferencedKeys referencedKeys) {
 
         final List<CompletionStage<Map<String, String>>> futures = new ArrayList<>();
-        final Set<String> categoryKeys = referencedKeys.getCategoryKeys();
-        if (!categoryKeys.isEmpty()) {
-            futures.add(categoryService.cacheKeysToIds(referencedKeys.getCategoryKeys()));
-        }
+
+        futures.add(categoryService.cacheKeysToIds(referencedKeys.getCategoryKeys()));
+
         final Set<String> typeKeys = referencedKeys.getTypeKeys();
         if (!typeKeys.isEmpty()) {
             futures.add(typeService.cacheKeysToIds(typeKeys));
         }
 
-        return collectionOfFuturesToFutureOfCollection(futures, toList());
+        return collectionOfFuturesToFutureOfCollection(futures, toList()).thenApply(maps -> maps.get(0));
     }
 }

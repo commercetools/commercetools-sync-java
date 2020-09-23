@@ -24,6 +24,7 @@ import io.sphere.sdk.taxcategories.TaxCategory;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -365,21 +366,23 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
 
     /**
      * Calls the {@code cacheKeysToIds} service methods to fetch all the referenced keys
-     * (i.e product type, tax category) from the commercetools to prepare caches for the reference resolution.
+     * (i.e product type, product attribute) from the commercetools to populate caches for the reference resolution.
      *
-     * @param referencedKeys a wrapper for the product resource to fetch and cache the id's for.
-     * @return {@link CompletionStage}&lt;{@link List}&lt;{@link Map}&gt;&gt; in which the results of it's completions
-     *     contains a map of requested references keys -&gt; ids.
+     * <p>Note: This method is meant be only used internally by the library to improve performance.
+     *
+     * @param referencedKeys a wrapper for the product references to fetch and cache the id's for.
+     * @return {@link CompletionStage}&lt;{@link Map}&lt;{@link String}&gt;{@link String}&gt;&gt; in which the results
+     *     of it's completions contains a map of requested references keys -&gt; ids of product references.
      */
     @Nonnull
-    public CompletableFuture<List<Map<String, String>>> cacheKeysToIds(
+    public CompletableFuture<Map<String, String>> populateKeyToIdCachesForReferencedKeys(
         @Nonnull final ProductBatchValidator.ReferencedKeys referencedKeys) {
 
         final List<CompletionStage<Map<String, String>>> futures = new ArrayList<>();
 
         final Set<String> productKeys = referencedKeys.getProductKeys();
         if (!productKeys.isEmpty()) {
-            futures.add(productService.cacheKeysToIds(referencedKeys.getProductKeys()));
+            futures.add(productService.cacheKeysToIds(productKeys));
         }
 
         final Set<String> productTypeKeys = referencedKeys.getProductTypeKeys();
@@ -412,6 +415,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
             futures.add(stateService.cacheKeysToIds(stateKeys));
         }
 
-        return collectionOfFuturesToFutureOfCollection(futures, toList());
+        return collectionOfFuturesToFutureOfCollection(futures, toList())
+            .thenApply(maps -> productKeys.isEmpty() ? Collections.emptyMap() : maps.get(0));
     }
 }

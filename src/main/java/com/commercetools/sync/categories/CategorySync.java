@@ -168,18 +168,27 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         categoryKeysWithResolvedParents = ConcurrentHashMap.newKeySet();
         categoryDraftsToUpdate = new ConcurrentHashMap<>();
 
-        final ImmutablePair<Set<CategoryDraft>, CategoryBatchValidator.ReferencedKeys> pair =
+        final ImmutablePair<Set<CategoryDraft>, CategoryBatchValidator.ReferencedKeys> result =
             batchValidator.validateAndCollectReferencedKeys(categoryDrafts);
 
-        final Set<CategoryDraft> validDrafts = pair.getLeft();
+        final Set<CategoryDraft> validDrafts = result.getLeft();
         if (validDrafts.isEmpty()) {
             statistics.incrementProcessed(categoryDrafts.size());
             return CompletableFuture.completedFuture(statistics);
         }
 
-        return referenceResolver.cacheKeysToIds(pair.getRight())
-            .thenCompose(keyToIdCaches -> {
-                final Map<String, String> categoryKeyToIdCache = keyToIdCaches.get(0);
+        return referenceResolver
+            .populateKeyToIdCachesForReferencedKeys(result.getRight())
+             .handle(ImmutablePair::new)
+            .thenCompose(cachingResponse -> {
+                final Throwable cachingException = cachingResponse.getValue();
+                if (cachingException != null) {
+                    handleError(new SyncException("Failed to build a cache of keys to ids.", cachingException),
+                        validDrafts.size());
+                    return CompletableFuture.completedFuture(null);
+                }
+
+                final Map<String, String> categoryKeyToIdCache = cachingResponse.getKey();
                 prepareDraftsForProcessing(new ArrayList<>(validDrafts), categoryKeyToIdCache);
 
                 categoryKeysToFetch = existingCategoryDrafts
@@ -188,11 +197,6 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                     .collect(Collectors.toSet());
 
                 return createAndUpdate(categoryKeyToIdCache);
-            })
-            .exceptionally(completionException -> {
-                handleError(new SyncException("Failed to build a cache of keys to ids.", completionException),
-                    validDrafts.size());
-                return null;
             })
             .thenApply(ignoredResult -> {
                 statistics.incrementProcessed(numberOfNewDraftsToProcess);

@@ -74,6 +74,7 @@ public class CategoryBatchValidator
         @Nonnull final ReferencedKeys referencedKeys,
         @Nonnull final CategoryDraft categoryDraft) {
 
+        referencedKeys.categoryKeys.add(categoryDraft.getKey());
         collectReferencedKeyFromResourceIdentifier(categoryDraft.getParent(),
             referencedKeys.categoryKeys::add);
         collectReferencedKeyFromCustomFieldsDraft(categoryDraft.getCustom(),

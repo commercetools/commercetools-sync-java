@@ -13,6 +13,7 @@ import io.sphere.sdk.types.Type;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -108,6 +109,8 @@ public class MockUtils {
         final TypeService typeService = mock(TypeService.class);
         when(typeService.fetchCachedTypeId(anyString()))
             .thenReturn(completedFuture(Optional.of("typeId")));
+        when(typeService.cacheKeysToIds(anySet()))
+            .thenReturn(completedFuture(Collections.singletonMap("typeKey", "typeId")));
         return typeService;
     }
 
