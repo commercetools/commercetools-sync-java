@@ -179,7 +179,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
 
         return referenceResolver
             .populateKeyToIdCachesForReferencedKeys(result.getRight())
-             .handle(ImmutablePair::new)
+            .handle(ImmutablePair::new)
             .thenCompose(cachingResponse -> {
                 final Throwable cachingException = cachingResponse.getValue();
                 if (cachingException != null) {
