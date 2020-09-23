@@ -111,17 +111,4 @@ public final class CustomerServiceImpl extends BaseServiceWithKey<CustomerDraft,
         return updateResource(customer, CustomerUpdateCommand::of, updateActions);
     }
 
-    @Nonnull
-    @Override
-    public CompletionStage<Customer> changePassword(@Nonnull final Customer customer,
-                                                    @Nonnull final String currentPassword,
-                                                    @Nonnull final String newPassword) {
-        CustomerChangePasswordCommand changePasswordCommand =
-                CustomerChangePasswordCommand.of(customer, currentPassword,
-                        newPassword);
-
-        return syncOptions
-                .getCtpClient()
-                .execute(changePasswordCommand);
-    }
 }

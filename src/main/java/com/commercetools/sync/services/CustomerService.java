@@ -104,20 +104,4 @@ public interface CustomerService {
     CompletionStage<Customer> updateCustomer(@Nonnull Customer customer,
                                              @Nonnull List<UpdateAction<Customer>> updateActions);
 
-    /**
-     * Given a {@link Customer} and a {@code password} this method issues a password change request on this customer
-     * in the CTP project defined in an injected {@link SphereClient}. This method returns {@link CompletionStage}
-     * &lt;{@link Customer}&gt; in which the result of it's completion contains an instance of the {@link Customer}
-     * which was updated in the CTP project.
-     *
-     * @param customer  the {@link Customer} to change the password.
-     * @param currentPassword the current password of the customer
-     * @param newPassword the new password to change to.
-     * @return  {@link CompletionStage}&lt;{@link Customer}&gt; containing as a result of it's completion an instance
-     *          of the {@link Customer} which was updated in the CTP project or a
-     *          {@link io.sphere.sdk.models.SphereException}.
-     */
-    @Nonnull
-    CompletionStage<Customer> changePassword(@Nonnull Customer customer, @Nonnull String currentPassword,
-                                             @Nonnull String newPassword);
 }

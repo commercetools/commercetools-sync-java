@@ -133,18 +133,4 @@ class CustomerServiceImplTest {
         verify(customerSyncOptions.getCtpClient()).execute(eq(CustomerUpdateCommand.of(customer, updateActions)));
     }
 
-    @Test
-    void changePassword_WithSuccessfulMockCtpResponse_ShouldReturnMock() {
-        Customer customer = mock(Customer.class);
-        when(customerSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(customer));
-
-        Customer result = service.changePassword(customer, "oldPwd", "newPwd")
-                .toCompletableFuture()
-                .join();
-
-        assertThat(result).isSameAs(customer);
-        verify(customerSyncOptions.getCtpClient()).execute(eq(CustomerChangePasswordCommand.of(customer, "oldPwd",
-                "newPwd")));
-    }
-
 }
