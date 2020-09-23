@@ -73,7 +73,7 @@ public abstract class BaseBatchValidator<D, O extends BaseSyncOptions, S extends
         @Nonnull final Consumer<String> keyInReferenceSupplier) {
 
         if (reference != null && !isBlank(reference.getId())) {
-            keyInReferenceSupplier.accept(reference.getKey());
+            keyInReferenceSupplier.accept(reference.getId());
         }
     }
 
