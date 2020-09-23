@@ -58,6 +58,7 @@ class StateSyncTest {
 
         final StateDraft stateDraftWithoutKey = StateDraftBuilder
             .of(null, StateType.LINE_ITEM_STATE)
+            .name(LocalizedString.ofEnglish("state-name"))
             .build();
 
         // test
@@ -71,10 +72,9 @@ class StateSyncTest {
         verifyNoMoreInteractions(stateService);
         assertThat(errors).hasSize(2);
         assertThat(errors).containsExactly(
-            "com.commercetools.sync.commons.exceptions.InvalidStateDraftException: "
-               + "StateDraft with name: null doesn't have a key. "
-                + "Please make sure all states have keys.",
-            "com.commercetools.sync.commons.exceptions.InvalidStateDraftException: StateDraft is null.");
+            "StateDraft with name: LocalizedString(en -> state-name) doesn't have a key. "
+                + "Please make sure all state drafts have keys.",
+            "StateDraft is null.");
 
         assertThat(statistics).hasValues(2, 0, 0, 2, 0);
     }
@@ -112,7 +112,7 @@ class StateSyncTest {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).contains("Failed to build a cache of state keys to ids.")
+                assertThat(message).contains("Failed to build a cache of keys to ids.")
             );
 
         assertThat(exceptions)
