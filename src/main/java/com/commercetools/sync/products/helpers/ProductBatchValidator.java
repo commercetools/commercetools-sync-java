@@ -51,7 +51,7 @@ public class ProductBatchValidator
      * Given the {@link List}&lt;{@link ProductDraft}&gt; of drafts this method attempts to validate
      * drafts and collect referenced keys from the draft and return an {@link ImmutablePair}&lt;{@link Set}&lt;
      * {@link ProductDraft}&gt;,{@link ProductBatchValidator.ReferencedKeys}&gt;
-     * which contains the {@link Set} of valid drafts and referenced keys with a wrapper.
+     * which contains the {@link Set} of valid drafts and referenced keys within a wrapper.
      *
      * <p>A valid product draft is one which satisfies the following conditions:
      * <ol>
