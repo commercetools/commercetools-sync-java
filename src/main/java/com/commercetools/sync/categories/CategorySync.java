@@ -179,15 +179,15 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
 
         return referenceResolver.cacheKeysToIds(pair.getRight())
             .thenCompose(keyToIdCaches -> {
-                final Map<String, String> keyToIdCache = keyToIdCaches.get(0);
-                prepareDraftsForProcessing(new ArrayList<>(validDrafts), keyToIdCache);
+                final Map<String, String> categoryKeyToIdCache = keyToIdCaches.get(0);
+                prepareDraftsForProcessing(new ArrayList<>(validDrafts), categoryKeyToIdCache);
 
                 categoryKeysToFetch = existingCategoryDrafts
                     .stream()
                     .map(CategoryDraft::getKey)
                     .collect(Collectors.toSet());
 
-                return createAndUpdate(keyToIdCache);
+                return createAndUpdate(categoryKeyToIdCache);
             })
             .exceptionally(completionException -> {
                 handleError(new SyncException("Failed to build a cache of keys to ids.", completionException),
