@@ -10,6 +10,7 @@ import io.sphere.sdk.customers.commands.CustomerCreateCommand;
 import io.sphere.sdk.customers.commands.CustomerUpdateCommand;
 import io.sphere.sdk.customers.expansion.CustomerExpansionModel;
 import io.sphere.sdk.customers.queries.CustomerQuery;
+import io.sphere.sdk.customers.queries.CustomerQueryBuilder;
 import io.sphere.sdk.customers.queries.CustomerQueryModel;
 
 import javax.annotation.Nonnull;
@@ -21,9 +22,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
-import static com.commercetools.sync.commons.utils.CtpQueryUtils.buildResourceKeysQueryPredicate;
 import static java.lang.String.format;
-import static java.util.Collections.singleton;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 
@@ -38,34 +37,38 @@ public final class CustomerServiceImpl extends BaseServiceWithKey<CustomerDraft,
     @Override
     public CompletionStage<Map<String, String>> cacheKeysToIds(
         @Nonnull final Set<String> keysToCache) {
-        return cacheKeysToIds(keysToCache, keysNotCached -> CustomerQuery
+        return cacheKeysToIds(keysToCache, keysNotCached -> CustomerQueryBuilder
             .of()
-            .withPredicates(buildResourceKeysQueryPredicate(keysNotCached)));
+            .plusPredicates(customerQueryModel -> customerQueryModel.key().isIn(keysNotCached))
+            .build());
     }
 
     @Nonnull
     @Override
     public CompletionStage<Set<Customer>> fetchMatchingCustomersByKeys(
         @Nonnull final Set<String> customerKeys) {
-        return fetchMatchingResources(customerKeys, () -> CustomerQuery
+        return fetchMatchingResources(customerKeys, () -> CustomerQueryBuilder
             .of()
-            .withPredicates(buildResourceKeysQueryPredicate(customerKeys)));
+            .plusPredicates(customerQueryModel -> customerQueryModel.key().isIn(customerKeys))
+            .build());
     }
 
     @Nonnull
     @Override
     public CompletionStage<Optional<Customer>> fetchCustomerByKey(@Nullable final String key) {
-        return fetchResource(key, () -> CustomerQuery
+        return fetchResource(key, () -> CustomerQueryBuilder
             .of()
-            .withPredicates(buildResourceKeysQueryPredicate(singleton(key))));
+            .plusPredicates(customerQueryModel -> customerQueryModel.key().is(key))
+            .build());
     }
 
     @Nonnull
     @Override
     public CompletionStage<Optional<String>> fetchCachedCustomerId(@Nonnull final String key) {
-        return fetchCachedResourceId(key, () -> CustomerQuery
+        return fetchCachedResourceId(key, () -> CustomerQueryBuilder
             .of()
-            .withPredicates(buildResourceKeysQueryPredicate(singleton(key))));
+            .plusPredicates(customerQueryModel -> customerQueryModel.key().is(key))
+            .build());
     }
 
     @Nonnull

@@ -11,11 +11,13 @@ import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.ProductUpdateCommand;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
+import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -120,5 +122,31 @@ class ProductServiceTest {
 
         assertThat(product).isSameAs(mock);
         verify(productSyncOptions.getCtpClient()).execute(eq(ProductUpdateCommand.of(mock, updateActions)));
+    }
+
+    @Test
+    void buildProductKeysQueryPredicate_WithEmptyProductKeysSet_ShouldBuildCorrectQuery() {
+        final QueryPredicate<Product> queryPredicate = service.buildProductKeysQueryPredicate(new HashSet<>());
+        assertThat(queryPredicate.toSphereQuery()).isEqualTo("key in ()");
+    }
+
+    @Test
+    void buildProductKeysQueryPredicate_WithProductKeysSet_ShouldBuildCorrectQuery() {
+        final HashSet<String> productKeys = new HashSet<>();
+        productKeys.add("key1");
+        productKeys.add("key2");
+        final QueryPredicate<Product> queryPredicate = service.buildProductKeysQueryPredicate(productKeys);
+        assertThat(queryPredicate.toSphereQuery()).isEqualTo("key in (\"key1\", \"key2\")");
+    }
+
+    @Test
+    void buildProductKeysQueryPredicate_WithSomeBlankProductKeys_ShouldBuildCorrectQuery() {
+        final HashSet<String> productKeys = new HashSet<>();
+        productKeys.add("key1");
+        productKeys.add("key2");
+        productKeys.add("");
+        productKeys.add(null);
+        final QueryPredicate<Product> queryPredicate = service.buildProductKeysQueryPredicate(productKeys);
+        assertThat(queryPredicate.toSphereQuery()).isEqualTo("key in (\"key1\", \"key2\")");
     }
 }
