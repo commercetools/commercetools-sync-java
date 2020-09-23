@@ -1,5 +1,6 @@
 package com.commercetools.sync.integration.services.impl;
 
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.ProductService;
@@ -78,12 +79,9 @@ class ProductServiceImplIT {
     private static ProductType productType;
     private static List<Reference<Category>> categoryReferencesWithIds;
     private Product product;
-
-
     private List<String> errorCallBackMessages;
     private List<String> warningCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
-
 
     /**
      * Delete all product related test data from target project. Then creates custom types for target CTP project
@@ -274,19 +272,20 @@ class ProductServiceImplIT {
     void fetchMatchingProductsByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
         // preparation
         // Mock sphere client to return BadGatewayException on any request.
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(ProductQuery.class)))
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
+
+        when(spyDecoratedClient.execute(any(ProductQuery.class)))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
             .thenCallRealMethod();
-        final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder
-            .of(spyClient)
+        final ProductSyncOptions spyOptions = spy(ProductSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorCallBackMessages.add(exception.getMessage());
                 errorCallBackExceptions.add(exception.getCause());
-            })
-            .build();
-        final ProductService spyProductService = new ProductServiceImpl(spyOptions);
+            }).build());
+        when(spyOptions.getCtpClient()).thenReturn(spyDecoratedClient);
 
+        final ProductService spyProductService = new ProductServiceImpl(spyOptions);
 
         final Set<String> keys =  new HashSet<>();
         keys.add(product.getKey());
@@ -541,7 +540,6 @@ class ProductServiceImplIT {
             })
             .toCompletableFuture().join();
 
-
         //assert CTP state
         final Optional<Product> fetchedProductOptional = CTP_TARGET_CLIENT
             .execute(ProductQuery.of()
@@ -562,7 +560,6 @@ class ProductServiceImplIT {
             IntStream.range(1, numberOfUpdateActions + 1)
                      .mapToObj(i -> ChangeName.of(LocalizedString.of(Locale.GERMAN, format("name:%s", i))))
                      .collect(Collectors.toList());
-
 
         final Product updatedProduct = productService.updateProduct(product, updateActions)
                                                      .toCompletableFuture().join();
@@ -667,12 +664,12 @@ class ProductServiceImplIT {
     void fetchProduct_WithBadGatewayException_ShouldFail() {
         // preparation
         // Mock sphere client to return BadGatewayException on any request.
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(ProductQuery.class)))
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
+        when(spyDecoratedClient.execute(any(ProductQuery.class)))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
             .thenCallRealMethod();
         final ProductSyncOptions spyOptions =
-            ProductSyncOptionsBuilder.of(spyClient)
+            spy(ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                 .errorCallback(
                     (exception, oldResource, newResource, updateActions) -> {
                         errorCallBackMessages.add(exception.getMessage());
@@ -681,9 +678,9 @@ class ProductServiceImplIT {
                 .warningCallback(
                     (exception, oldResource, newResource)
                         -> warningCallBackMessages.add(exception.getMessage()))
-                .build();
+                .build());
+        when(spyOptions.getCtpClient()).thenReturn(spyDecoratedClient);
         final ProductService spyProductService = new ProductServiceImpl(spyOptions);
-
 
         final String productKey = product.getKey();
 

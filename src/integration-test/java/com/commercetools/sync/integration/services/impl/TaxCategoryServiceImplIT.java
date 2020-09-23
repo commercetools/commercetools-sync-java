@@ -1,5 +1,6 @@
 package com.commercetools.sync.integration.services.impl;
 
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.impl.TaxCategoryServiceImpl;
 import com.commercetools.sync.taxcategories.TaxCategorySyncOptions;
@@ -164,21 +165,20 @@ class TaxCategoryServiceImplIT {
     @Test
     void fetchMatchingTaxCategoriesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
         // Mock sphere client to return BadGatewayException on any request.
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(TaxCategoryQuery.class)))
+
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
+        when(spyDecoratedClient.execute(any(TaxCategoryQuery.class)))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
             .thenCallRealMethod();
 
         final TaxCategorySyncOptions spyOptions =
-            TaxCategorySyncOptionsBuilder.of(spyClient)
+            spy(TaxCategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                 .errorCallback((exception, oldResource, newResource, updateActions) -> {
                     errorCallBackMessages.add(exception.getMessage());
                     errorCallBackExceptions.add(exception.getCause());
-                })
-                                         .build();
-
+                }).build());
+        when(spyOptions.getCtpClient()).thenReturn(spyDecoratedClient);
         final TaxCategoryService spyTaxCategoryService = new TaxCategoryServiceImpl(spyOptions);
-
 
         final Set<String> keys = new HashSet<>();
         keys.add(TAXCATEGORY_KEY);

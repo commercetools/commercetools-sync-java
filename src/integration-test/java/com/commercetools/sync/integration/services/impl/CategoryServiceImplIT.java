@@ -1,8 +1,8 @@
 package com.commercetools.sync.integration.services.impl;
 
-
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.impl.CategoryServiceImpl;
 import io.sphere.sdk.categories.Category;
@@ -54,12 +54,10 @@ import static org.mockito.Mockito.when;
 class CategoryServiceImplIT {
     private CategoryService categoryService;
     private Category oldCategory;
-    private static final String oldCategoryKey = "oldCategoryKey";
-
     private List<String> errorCallBackMessages;
     private List<String> warningCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
-
+    private static final String oldCategoryKey = "oldCategoryKey";
 
     /**
      * Delete all categories and types from target project. Then create custom types for target CTP project categories.
@@ -181,21 +179,21 @@ class CategoryServiceImplIT {
     @Test
     void fetchMatchingCategoriesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
         // Mock sphere client to return BadGatewayException on any request.
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(CategoryQuery.class)))
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
+        when(spyDecoratedClient.execute(any(CategoryQuery.class)))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
             .thenCallRealMethod();
         final CategorySyncOptions spyOptions =
-            CategorySyncOptionsBuilder.of(spyClient)
+            spy(CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                 .errorCallback(
                     (exception, oldResource, newResource, updateActions) -> {
                         errorCallBackMessages.add(exception.getMessage());
                         errorCallBackExceptions.add(exception.getCause());
                     })
-                .build();
+                .build());
+        when(spyOptions.getCtpClient()).thenReturn(spyDecoratedClient);
+        
         final CategoryService spyCategoryService = new CategoryServiceImpl(spyOptions);
-
-
         final Set<String> keys =  new HashSet<>();
         keys.add(oldCategoryKey);
 
@@ -277,11 +275,9 @@ class CategoryServiceImplIT {
             .createCategory(categoryDraft)
             .toCompletableFuture().join();
 
-
         // assertion
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
-
 
         //assert CTP state
         final Optional<Category> queriedOptional = CTP_TARGET_CLIENT
@@ -429,7 +425,6 @@ class CategoryServiceImplIT {
         final Category newCategory = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(newCategoryDraft))
                                                       .toCompletableFuture().join();
 
-
         final LocalizedString newSlug = LocalizedString.of(Locale.ENGLISH, "furniture");
         final ChangeSlug changeSlugUpdateAction = ChangeSlug.of(newSlug);
 
@@ -456,7 +451,6 @@ class CategoryServiceImplIT {
                 return null;
             })
             .toCompletableFuture().join();
-
 
         //assert CTP state
         final Optional<Category> fetchedCategoryOptional = CTP_TARGET_CLIENT
@@ -494,18 +488,18 @@ class CategoryServiceImplIT {
     @Test
     void fetchCategory_WithBadGateWayExceptionAlways_ShouldFail() {
         // Mock sphere client to return BadGatewayException on any request.
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(CategoryQuery.class)))
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
+        when(spyDecoratedClient.execute(any(CategoryQuery.class)))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
             .thenCallRealMethod();
         final CategorySyncOptions spyOptions =
-            CategorySyncOptionsBuilder.of(spyClient)
+            spy(CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                 .errorCallback(
                     (exception, oldResource, newResource, updateActions) -> {
                         errorCallBackMessages.add(exception.getMessage());
                         errorCallBackExceptions.add(exception.getCause());
-                    })
-                .build();
+                    }).build());
+        when(spyOptions.getCtpClient()).thenReturn(spyDecoratedClient);
         final CategoryService spyCategoryService = new CategoryServiceImpl(spyOptions);
 
         // test and assertion

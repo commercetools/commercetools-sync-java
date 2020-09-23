@@ -1,8 +1,8 @@
 package com.commercetools.sync.integration.services.impl;
 
-
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.services.CartDiscountService;
 import com.commercetools.sync.services.impl.CartDiscountServiceImpl;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
@@ -147,22 +147,19 @@ class CartDiscountServiceImplIT {
     @Test
     void fetchMatchingCartDiscountsByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
         // Mock sphere client to return BadGatewayException on any request.
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(CartDiscountQuery.class)))
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
+        when(spyDecoratedClient.execute(any(CartDiscountQuery.class)))
                 .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()))
                 .thenCallRealMethod();
 
         final CartDiscountSyncOptions spyOptions =
-                CartDiscountSyncOptionsBuilder.of(spyClient)
+                spy(CartDiscountSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                         .errorCallback((exception, oldResource, newResource, actions) -> {
                             errorCallBackMessages.add(exception.getMessage());
                             errorCallBackExceptions.add(exception);
-                        })
-                        .build();
-
+                        }).build());
+        when(spyOptions.getCtpClient()).thenReturn(spyDecoratedClient);
         final CartDiscountService spyCartDiscountService = new CartDiscountServiceImpl(spyOptions);
-
-
         final Set<String> cartDiscountKeys = new HashSet<>();
         cartDiscountKeys.add(CART_DISCOUNT_KEY_1);
 
@@ -219,7 +216,6 @@ class CartDiscountServiceImplIT {
                     assertThat(created.getTarget()).isEqualTo(queried.getTarget());
                     assertThat(created.getSortOrder()).isEqualTo(queried.getSortOrder());
                 }));
-
     }
 
     @Test
@@ -256,8 +252,8 @@ class CartDiscountServiceImplIT {
         assertThat(result).isEmpty();
         assertThat(errorCallBackMessages)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(msg -> assertThat(msg)
-                        .contains(format("A duplicate value '\"%s\"' exists for field 'key'.", CART_DISCOUNT_KEY_1)));
+                .singleElement().asString().contains(
+                        format("A duplicate value '\"%s\"' exists for field 'key'.", CART_DISCOUNT_KEY_1));
 
         ensureErrorCallbackIsDuplicateFieldError();
     }
@@ -265,7 +261,7 @@ class CartDiscountServiceImplIT {
     private void ensureErrorCallbackIsDuplicateFieldError() {
         assertThat(errorCallBackExceptions)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(exception -> {
+                .singleElement().satisfies(exception -> {
                     assertThat(exception).hasCauseExactlyInstanceOf(ErrorResponseException.class);
                     final ErrorResponseException errorResponseException = (ErrorResponseException) exception.getCause();
 
@@ -315,8 +311,8 @@ class CartDiscountServiceImplIT {
         assertThat(result).isEmpty();
         assertThat(errorCallBackMessages)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(msg -> assertThat(msg)
-                    .contains(format("A duplicate value '\"%s\"' exists for field 'sortOrder'.", SORT_ORDER_1)));
+                .singleElement().asString().contains(
+                        format("A duplicate value '\"%s\"' exists for field 'sortOrder'.", SORT_ORDER_1));
 
         ensureErrorCallbackIsDuplicateFieldError();
     }

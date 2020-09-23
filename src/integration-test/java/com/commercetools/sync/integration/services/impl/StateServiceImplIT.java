@@ -1,5 +1,6 @@
 package com.commercetools.sync.integration.services.impl;
 
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.impl.StateServiceImpl;
 import com.commercetools.sync.states.StateSyncOptions;
@@ -176,21 +177,20 @@ class StateServiceImplIT {
     @Test
     void fetchMatchingStatesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
         // Mock sphere client to return BadGatewayException on any request.
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(StateQuery.class)))
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
+        when(spyDecoratedClient.execute(any(StateQuery.class)))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
             .thenCallRealMethod();
 
         final StateSyncOptions spyOptions =
-            StateSyncOptionsBuilder.of(spyClient)
+            spy(StateSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                 .errorCallback((exception, oldResource, newResource, updateActions) -> {
                     errorCallBackMessages.add(exception.getMessage());
                     errorCallBackExceptions.add(exception.getCause());
                 })
-                .build();
-
+                .build());
+        when(spyOptions.getCtpClient()).thenReturn(spyDecoratedClient);
         final StateService spyStateService = new StateServiceImpl(spyOptions);
-
 
         final Set<String> keys = new HashSet<>();
         keys.add(OLD_STATE_KEY);

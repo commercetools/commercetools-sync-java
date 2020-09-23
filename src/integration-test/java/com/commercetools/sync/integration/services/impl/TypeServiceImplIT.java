@@ -1,6 +1,6 @@
 package com.commercetools.sync.integration.services.impl;
 
-
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import com.commercetools.sync.types.TypeSyncOptions;
@@ -151,22 +151,21 @@ class TypeServiceImplIT {
     @Test
     void fetchMatchingTypesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
         // Mock sphere client to return BadGatewayException on any request.
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(TypeQuery.class)))
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
+        when(spyDecoratedClient.execute(any(TypeQuery.class)))
                 .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
                 .thenCallRealMethod();
 
         final TypeSyncOptions spyOptions =
-                TypeSyncOptionsBuilder.of(spyClient)
+                spy(TypeSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                       .errorCallback((exception, oldResource, newResource, updateActions) -> {
                                           errorCallBackMessages.add(exception.getMessage());
                                           errorCallBackExceptions.add(exception.getCause());
                                       })
-                                      .build();
+                                      .build());
 
+        when(spyOptions.getCtpClient()).thenReturn(spyDecoratedClient);
         final TypeService spyTypeService = new TypeServiceImpl(spyOptions);
-
-
         final Set<String> keys = new HashSet<>();
         keys.add(OLD_TYPE_KEY);
 

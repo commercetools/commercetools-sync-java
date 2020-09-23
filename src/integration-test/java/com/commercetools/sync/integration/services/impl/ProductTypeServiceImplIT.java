@@ -1,5 +1,6 @@
 package com.commercetools.sync.integration.services.impl;
 
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
@@ -173,20 +174,22 @@ class ProductTypeServiceImplIT {
     @Test
     void fetchMatchingProductTypesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
         // Mock sphere client to return BadGatewayException on any request.
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(ProductTypeQuery.class)))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
-            .thenCallRealMethod();
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
+
         final ProductTypeSyncOptions spyOptions =
-            ProductTypeSyncOptionsBuilder.of(spyClient)
+            spy(ProductTypeSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                          .errorCallback((exception, oldResource, newResource, updateActions) -> {
                                              errorCallBackMessages.add(exception.getMessage());
                                              errorCallBackExceptions.add(exception.getCause());
                                          })
-                                         .build();
+                                         .build());
+
+        when(spyOptions.getCtpClient()).thenReturn(spyDecoratedClient);
+        when(spyDecoratedClient.execute(any(ProductTypeQuery.class)))
+                .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
+                .thenCallRealMethod();
 
         final ProductTypeService spyProductTypeService = new ProductTypeServiceImpl(spyOptions);
-
 
         final Set<String> keys = new HashSet<>();
         keys.add(OLD_PRODUCT_TYPE_KEY);
