@@ -9,7 +9,6 @@ import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
 import io.sphere.sdk.customers.CustomerName;
 import io.sphere.sdk.customers.CustomerSignInResult;
-import io.sphere.sdk.customers.commands.CustomerChangePasswordCommand;
 import io.sphere.sdk.customers.commands.CustomerCreateCommand;
 import io.sphere.sdk.customers.commands.CustomerUpdateCommand;
 import io.sphere.sdk.customers.commands.updateactions.ChangeName;
@@ -43,12 +42,12 @@ class CustomerServiceImplTest {
         errorMessages = new ArrayList<>();
         errorExceptions = new ArrayList<>();
         customerSyncOptions = CustomerSyncOptionsBuilder
-                .of(mock(SphereClient.class))
-                .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                    errorMessages.add(exception.getMessage());
-                    errorExceptions.add(exception.getCause());
-                })
-                .build();
+            .of(mock(SphereClient.class))
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorMessages.add(exception.getMessage());
+                errorExceptions.add(exception.getCause());
+            })
+            .build();
         service = new CustomerServiceImpl(customerSyncOptions);
     }
 
@@ -80,7 +79,7 @@ class CustomerServiceImplTest {
         when(resultMock.getCustomer()).thenReturn(customerMock);
 
         when(customerSyncOptions.getCtpClient().execute(any())).thenReturn(
-                CompletableFutureUtils.failed(new BadRequestException("bad request")));
+            CompletableFutureUtils.failed(new BadRequestException("bad request")));
 
         final CustomerDraft draft = mock(CustomerDraft.class);
         when(draft.getKey()).thenReturn("customerKey");
@@ -103,7 +102,7 @@ class CustomerServiceImplTest {
         assertThat(errorExceptions).hasSize(1);
         assertThat(errorMessages).hasSize(1);
         assertThat(errorMessages.get(0))
-                .contains("Failed to create draft with key: 'null'. Reason: Draft key is blank!");
+            .contains("Failed to create draft with key: 'null'. Reason: Draft key is blank!");
         verifyNoInteractions(customerSyncOptions.getCtpClient());
     }
 
@@ -127,7 +126,7 @@ class CustomerServiceImplTest {
         when(customerSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(customer));
 
         List<UpdateAction<Customer>> updateActions =
-                singletonList(ChangeName.of(CustomerName.of("title", "Max", "", "Mustermann")));
+            singletonList(ChangeName.of(CustomerName.of("title", "Max", "", "Mustermann")));
         Customer result = service.updateCustomer(customer, updateActions).toCompletableFuture().join();
 
         assertThat(result).isSameAs(customer);

@@ -6,7 +6,6 @@ import com.commercetools.sync.services.CustomerService;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
-import io.sphere.sdk.customers.commands.CustomerChangePasswordCommand;
 import io.sphere.sdk.customers.commands.CustomerCreateCommand;
 import io.sphere.sdk.customers.commands.CustomerUpdateCommand;
 import io.sphere.sdk.customers.expansion.CustomerExpansionModel;
@@ -29,7 +28,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 
 public final class CustomerServiceImpl extends BaseServiceWithKey<CustomerDraft, Customer, CustomerSyncOptions,
-        CustomerQuery, CustomerQueryModel, CustomerExpansionModel<Customer>> implements CustomerService {
+    CustomerQuery, CustomerQueryModel, CustomerExpansionModel<Customer>> implements CustomerService {
 
     public CustomerServiceImpl(@Nonnull final CustomerSyncOptions syncOptions) {
         super(syncOptions);
@@ -38,68 +37,68 @@ public final class CustomerServiceImpl extends BaseServiceWithKey<CustomerDraft,
     @Nonnull
     @Override
     public CompletionStage<Map<String, String>> cacheKeysToIds(
-            @Nonnull final Set<String> keysToCache) {
+        @Nonnull final Set<String> keysToCache) {
         return cacheKeysToIds(keysToCache, keysNotCached -> CustomerQuery
-                        .of()
-                        .withPredicates(buildResourceKeysQueryPredicate(keysNotCached)));
+            .of()
+            .withPredicates(buildResourceKeysQueryPredicate(keysNotCached)));
     }
 
     @Nonnull
     @Override
     public CompletionStage<Set<Customer>> fetchMatchingCustomersByKeys(
-            @Nonnull final Set<String> customerKeys) {
+        @Nonnull final Set<String> customerKeys) {
         return fetchMatchingResources(customerKeys, () -> CustomerQuery
-                        .of()
-                        .withPredicates(buildResourceKeysQueryPredicate(customerKeys)));
+            .of()
+            .withPredicates(buildResourceKeysQueryPredicate(customerKeys)));
     }
 
     @Nonnull
     @Override
     public CompletionStage<Optional<Customer>> fetchCustomerByKey(@Nullable final String key) {
         return fetchResource(key, () -> CustomerQuery
-                .of()
-                .withPredicates(buildResourceKeysQueryPredicate(singleton(key))));
+            .of()
+            .withPredicates(buildResourceKeysQueryPredicate(singleton(key))));
     }
 
     @Nonnull
     @Override
     public CompletionStage<Optional<String>> fetchCachedCustomerId(@Nonnull final String key) {
         return fetchCachedResourceId(key, () -> CustomerQuery
-                .of()
-                .withPredicates(buildResourceKeysQueryPredicate(singleton(key))));
+            .of()
+            .withPredicates(buildResourceKeysQueryPredicate(singleton(key))));
     }
 
     @Nonnull
     @Override
     public CompletionStage<Optional<Customer>> createCustomer(
-            @Nonnull final CustomerDraft customerDraft) {
+        @Nonnull final CustomerDraft customerDraft) {
 
         final String draftKey = customerDraft.getKey();
         CustomerCreateCommand createCommand = CustomerCreateCommand.of(customerDraft);
 
         if (isBlank(draftKey)) {
             syncOptions.applyErrorCallback(
-                    new SyncException(format(CREATE_FAILED, draftKey, "Draft key is blank!")),
-                    null, customerDraft, null);
+                new SyncException(format(CREATE_FAILED, draftKey, "Draft key is blank!")),
+                null, customerDraft, null);
             return CompletableFuture.completedFuture(Optional.empty());
         } else {
             return syncOptions
-                    .getCtpClient()
-                    .execute(createCommand)
-                    .handle(((resource, exception) -> {
-                        if (exception == null && resource.getCustomer() != null) {
-                            keyToIdCache.put(draftKey, resource.getCustomer().getId());
-                            return Optional.of(resource.getCustomer());
-                        } else if (exception != null) {
-                            syncOptions.applyErrorCallback(
-                                    new SyncException(format(CREATE_FAILED, draftKey, exception.getMessage()),
-                                            exception),
-                                    null, customerDraft, null);
-                            return Optional.empty();
-                        } else {
-                            return Optional.empty();
-                        }
-                    }));
+                .getCtpClient()
+                .execute(createCommand)
+                .handle(((resource, exception) -> {
+                    if (exception == null && resource.getCustomer() != null) {
+                        keyToIdCache.put(draftKey, resource.getCustomer().getId());
+                        return Optional.of(resource.getCustomer());
+                    } else if (exception != null) {
+                        syncOptions.applyErrorCallback(
+                            new SyncException(format(CREATE_FAILED, draftKey, exception.getMessage()),
+                                exception),
+                            null, customerDraft, null);
+                        return Optional.empty();
+                    } else {
+                        return Optional.empty();
+                    }
+                }));
         }
 
     }

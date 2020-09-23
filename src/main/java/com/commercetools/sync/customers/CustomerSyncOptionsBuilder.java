@@ -9,7 +9,7 @@ import io.sphere.sdk.customers.CustomerDraft;
 import javax.annotation.Nonnull;
 
 public final class CustomerSyncOptionsBuilder extends BaseSyncOptionsBuilder<CustomerSyncOptionsBuilder,
-        CustomerSyncOptions, Customer, CustomerDraft> {
+    CustomerSyncOptions, Customer, CustomerDraft> {
     public static final int BATCH_SIZE_DEFAULT = 50;
 
     private CustomerSyncOptionsBuilder(@Nonnull final SphereClient ctpClient) {
