@@ -2,6 +2,7 @@ package com.commercetools.sync.integration.externalsource.products;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.TriConsumer;
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -49,11 +50,6 @@ import io.sphere.sdk.states.StateType;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import io.sphere.sdk.utils.MoneyImpl;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -64,6 +60,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
@@ -415,16 +415,16 @@ class ProductSyncIT {
     @Test
     void syncDrafts_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
         // preparation
-        final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
+        final SphereClient spyDecoratedClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
 
-        final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder
-            .of(spyClient)
+        final ProductSyncOptions spyOptions = spy(ProductSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
             .errorCallback((exception, oldResource, newResource, updateActions)
                 -> collectErrors(exception.getMessage(), exception.getCause()))
             .warningCallback((exception, oldResource, newResource)
                 -> warningCallBackMessages.add(exception.getMessage()))
-            .build();
-
+            .build());
+        when(spyOptions.getCtpClient()).thenReturn(spyDecoratedClient);
         final ProductSync spyProductSync = new ProductSync(spyOptions);
 
         final ProductDraft productDraft =
@@ -448,34 +448,35 @@ class ProductSyncIT {
 
     @Nonnull
     private SphereClient buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry() {
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
 
         final ProductUpdateCommand anyProductUpdateCommand = any(ProductUpdateCommand.class);
-        when(spyClient.execute(anyProductUpdateCommand))
+        when(spyDecoratedClient.execute(anyProductUpdateCommand))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()))
             .thenCallRealMethod();
 
         final ProductQuery anyProductQuery = any(ProductQuery.class);
-        when(spyClient.execute(anyProductQuery))
+        when(spyDecoratedClient.execute(anyProductQuery))
             .thenCallRealMethod() // cache product keys
             .thenCallRealMethod() // Call real fetch on fetching matching products
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
 
-        return spyClient;
+        return spyDecoratedClient;
     }
 
     @Test
     void syncDrafts_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
         // preparation
-        final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
+        final SphereClient spyDecoratedClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
 
-        final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder
-            .of(spyClient)
+        final ProductSyncOptions spyOptions = spy(ProductSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
             .errorCallback((exception, oldResource, newResource, updateActions)
                 -> collectErrors(exception.getMessage(), exception.getCause()))
             .warningCallback((exception, oldResource, newResource)
                 -> warningCallBackMessages.add(exception.getMessage()))
-            .build();
+            .build());
+        when(spyOptions.getCtpClient()).thenReturn(spyDecoratedClient);
 
         final ProductSync spyProductSync = new ProductSync(spyOptions);
 
@@ -499,21 +500,21 @@ class ProductSyncIT {
 
     @Nonnull
     private SphereClient buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry() {
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
 
         final ProductUpdateCommand anyProductUpdateCommand = any(ProductUpdateCommand.class);
-        when(spyClient.execute(anyProductUpdateCommand))
+        when(spyDecoratedClient.execute(anyProductUpdateCommand))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()))
             .thenCallRealMethod();
 
         final ProductQuery anyProductQuery = any(ProductQuery.class);
 
-        when(spyClient.execute(anyProductQuery))
+        when(spyDecoratedClient.execute(anyProductQuery))
             .thenCallRealMethod() // cache product keys
             .thenCallRealMethod() // Call real fetch on fetching matching products
             .thenReturn(CompletableFuture.completedFuture(PagedQueryResult.empty()));
 
-        return spyClient;
+        return spyDecoratedClient;
     }
 
     @Test

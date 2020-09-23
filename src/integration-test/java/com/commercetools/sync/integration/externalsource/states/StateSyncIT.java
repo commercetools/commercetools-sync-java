@@ -1,6 +1,7 @@
 package com.commercetools.sync.integration.externalsource.states;
 
 import com.commercetools.sync.commons.models.WaitingToBeResolvedTransitions;
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.services.impl.StateServiceImpl;
 import com.commercetools.sync.services.impl.UnresolvedTransitionsServiceImpl;
 import com.commercetools.sync.states.StateSync;
@@ -27,11 +28,6 @@ import io.sphere.sdk.states.commands.StateUpdateCommand;
 import io.sphere.sdk.states.expansion.StateExpansionModel;
 import io.sphere.sdk.states.queries.StateQuery;
 import io.sphere.sdk.states.queries.StateQueryBuilder;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,6 +39,10 @@ import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
@@ -62,6 +62,7 @@ import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.ThreadLocalRandom.current;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -133,19 +134,19 @@ class StateSyncIT {
                 StateRole.REVIEW_INCLUDED_IN_STATISTICS))
             .build();
 
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
         final StateCreateCommand command = any(StateCreateCommand.class);
-        when(spyClient.execute(command))
+        when(spyDecoratedClient.execute(command))
             .thenReturn(exceptionallyCompletedFuture(new BadRequestException("test error message")));
 
-        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
-            .of(spyClient)
+        final StateSyncOptions stateSyncOptions = spy(StateSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorCallBackMessages.add(exception.getMessage());
                 errorCallBackExceptions.add(exception.getCause());
             })
-            .build();
-
+            .build());
+        when(stateSyncOptions.getCtpClient()).thenReturn(spyDecoratedClient);
         final StateSync stateSync = new StateSync(stateSyncOptions);
 
         // test
@@ -272,18 +273,21 @@ class StateSyncIT {
             .of(keyA, StateType.REVIEW_STATE)
             .roles(asSet(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
             .build();
-
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final State mockState = mock(State.class);
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
         final StateCreateCommand command = any(StateCreateCommand.class);
-        when(spyClient.execute(command))
-            .thenReturn(completedFuture(any(State.class)));
-        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
-            .of(spyClient)
+        when(spyDecoratedClient.execute(command))
+                .thenReturn(completedFuture(mockState));
+
+        final StateSyncOptions stateSyncOptions = spy(StateSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorCallBackMessages.add(exception.getMessage());
                 errorCallBackExceptions.add(exception.getCause());
             })
-            .build();
+            .build());
+
+        when(stateSyncOptions.getCtpClient()).thenReturn(spyDecoratedClient);
 
         final StateSync stateSync = new StateSync(stateSyncOptions);
 
@@ -369,15 +373,15 @@ class StateSyncIT {
     @Test
     void sync_withChangedStateButConcurrentModificationException_shouldRetryAndUpdateState() {
         // preparation
-        final SphereClient spyClient = buildClientWithConcurrentModificationUpdate();
+        final SphereClient spyDecoratedClient = buildClientWithConcurrentModificationUpdate();
 
         List<String> errorCallBackMessages = new ArrayList<>();
         List<String> warningCallBackMessages = new ArrayList<>();
         List<Throwable> errorCallBackExceptions = new ArrayList<>();
-        final StateSyncOptions spyOptions = StateSyncOptionsBuilder
-            .of(spyClient)
-            .build();
-
+        final StateSyncOptions spyOptions = spy(StateSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .build());
+        when(spyOptions.getCtpClient()).thenReturn(spyDecoratedClient);
         final StateSync stateSync = new StateSync(spyOptions);
 
         final StateDraft stateDraft = StateDraftBuilder
@@ -399,32 +403,32 @@ class StateSyncIT {
 
     @Nonnull
     private SphereClient buildClientWithConcurrentModificationUpdate() {
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
 
         final StateUpdateCommand updateCommand = any(StateUpdateCommand.class);
-        when(spyClient.execute(updateCommand))
+        when(spyDecoratedClient.execute(updateCommand))
             .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
             .thenCallRealMethod();
 
-        return spyClient;
+        return spyDecoratedClient;
     }
 
     @Test
     void sync_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
         // preparation
-        final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
+        final SphereClient spyDecoratedClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
 
-
-        final StateSyncOptions spyOptions = StateSyncOptionsBuilder
-            .of(spyClient)
+        final StateSyncOptions spyOptions = spy(StateSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorCallBackMessages.add(exception.getMessage());
                 errorCallBackExceptions.add(exception.getCause());
             })
             .warningCallback((exception, newResource, oldResource) ->
                 warningCallBackMessages.add(exception.getMessage()))
-            .build();
+            .build());
 
+        when(spyOptions.getCtpClient()).thenReturn(spyDecoratedClient);
         final StateSync stateSync = new StateSync(spyOptions);
 
         final StateDraft stateDraft = StateDraftBuilder
@@ -451,40 +455,41 @@ class StateSyncIT {
 
     @Nonnull
     private SphereClient buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry() {
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
 
         final StateUpdateCommand updateCommand = any(StateUpdateCommand.class);
-        when(spyClient.execute(updateCommand))
+        when(spyDecoratedClient.execute(updateCommand))
             .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
             .thenCallRealMethod();
 
         final StateQuery stateQuery = any(StateQuery.class);
-        when(spyClient.execute(stateQuery))
+        when(spyDecoratedClient.execute(stateQuery))
             .thenCallRealMethod() // cache state keys
             .thenCallRealMethod() // Call real fetch on fetching matching states
             .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()));
 
-        return spyClient;
+        return spyDecoratedClient;
     }
 
     @Test
     void sync_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
         // preparation
-        final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
+        final SphereClient spyDecoratedClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
 
         List<String> errorCallBackMessages = new ArrayList<>();
         List<String> warningCallBackMessages = new ArrayList<>();
         List<Throwable> errorCallBackExceptions = new ArrayList<>();
-        final StateSyncOptions spyOptions = StateSyncOptionsBuilder
-            .of(spyClient)
+        final StateSyncOptions spyOptions = spy(StateSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorCallBackMessages.add(exception.getMessage());
                 errorCallBackExceptions.add(exception.getCause());
             })
             .warningCallback((exception, newResource, oldResource) ->
                 warningCallBackMessages.add(exception.getMessage()))
-            .build();
+            .build());
 
+        when(spyOptions.getCtpClient()).thenReturn(spyDecoratedClient);
         final StateSync stateSync = new StateSync(spyOptions);
 
         final StateDraft stateDraft = StateDraftBuilder
@@ -510,21 +515,21 @@ class StateSyncIT {
 
     @Nonnull
     private SphereClient buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry() {
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
 
         final StateUpdateCommand stateUpdateCommand = any(StateUpdateCommand.class);
-        when(spyClient.execute(stateUpdateCommand))
+        when(spyDecoratedClient.execute(stateUpdateCommand))
             .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
             .thenCallRealMethod();
 
         final StateQuery stateQuery = any(StateQuery.class);
 
-        when(spyClient.execute(stateQuery))
+        when(spyDecoratedClient.execute(stateQuery))
             .thenCallRealMethod() // cache state keys
             .thenCallRealMethod() // Call real fetch on fetching matching states
             .thenReturn(completedFuture(PagedQueryResult.empty()));
 
-        return spyClient;
+        return spyDecoratedClient;
     }
 
     @Test
@@ -640,17 +645,16 @@ class StateSyncIT {
         final StateDraft stateADraft = createStateDraft(keyA, stateB, stateC);
         final State stateA = createStateInSource(stateADraft);
 
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
 
-        when(spyClient.execute(any(CustomObjectQuery.class)))
+        when(spyDecoratedClient.execute(any(CustomObjectQuery.class)))
             .thenReturn(
                 exceptionallyCompletedFuture(new BadRequestException("a test exception")))
             .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
             .thenCallRealMethod();
 
-
-        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
-            .of(spyClient)
+        final StateSyncOptions stateSyncOptions = spy(StateSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
             .batchSize(3)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorCallBackMessages.add(exception.getMessage());
@@ -658,7 +662,9 @@ class StateSyncIT {
             })
             .warningCallback((exception, newResource, oldResource) ->
                 warningCallBackMessages.add(exception.getMessage()))
-            .build();
+            .build());
+
+        when(stateSyncOptions.getCtpClient()).thenReturn(spyDecoratedClient);
 
         final StateSync stateSync = new StateSync(stateSyncOptions);
         final List<StateDraft> stateDrafts = replaceStateTransitionIdsWithKeys(Arrays.asList(stateA, stateB, stateC));
@@ -752,14 +758,14 @@ class StateSyncIT {
         final State stateC = createStateInSource(stateCDraft);
         final StateDraft stateBDraft = createStateDraft(keyB, stateC);
         final State stateB = createStateInSource(stateBDraft);
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
         final StateQuery stateQuery = any(StateQuery.class);
-        when(spyClient.execute(stateQuery))
+        when(spyDecoratedClient.execute(stateQuery))
             .thenCallRealMethod()
             .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()));
 
-        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
-            .of(spyClient)
+        final StateSyncOptions stateSyncOptions = spy(StateSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
             .batchSize(3)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorCallBackMessages.add(exception.getMessage());
@@ -767,8 +773,8 @@ class StateSyncIT {
             })
             .warningCallback((exception, newResource, oldResource) ->
                 warningCallBackMessages.add(exception.getMessage()))
-            .build();
-
+            .build());
+        when(stateSyncOptions.getCtpClient()).thenReturn(spyDecoratedClient);
         final StateSync stateSync = new StateSync(stateSyncOptions);
         final List<StateDraft> stateDrafts = replaceStateTransitionIdsWithKeys(Arrays.asList(stateB, stateC));
         // test
@@ -926,18 +932,17 @@ class StateSyncIT {
         Assertions.assertThat(targetStateA.getTransitions().size()).isEqualTo(1);
 
 
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
 
         final StateUpdateCommand updateCommand = any(StateUpdateCommand.class);
-        when(spyClient.execute(updateCommand))
+        when(spyDecoratedClient.execute(updateCommand))
             .thenReturn(
                 exceptionallyCompletedFuture(new BadRequestException("a test exception")))
             .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
             .thenCallRealMethod();
 
-
-        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
-            .of(spyClient)
+        final StateSyncOptions stateSyncOptions = spy(StateSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
             .batchSize(3)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorCallBackMessages.add(exception.getMessage());
@@ -945,7 +950,9 @@ class StateSyncIT {
             })
             .warningCallback((exception, newResource, oldResource) ->
                 warningCallBackMessages.add(exception.getMessage()))
-            .build();
+            .build());
+        when(stateSyncOptions.getCtpClient()).thenReturn(spyDecoratedClient);
+
         final StateSync stateSync = new StateSync(stateSyncOptions);
         final List<StateDraft> stateDrafts = replaceStateTransitionIdsWithKeys(Arrays.asList(stateA, stateB, stateC));
         // test
@@ -997,16 +1004,14 @@ class StateSyncIT {
         Assertions.assertThat(targetStateB.getTransitions().size()).isEqualTo(1);
         Assertions.assertThat(targetStateA.getTransitions().size()).isEqualTo(1);
 
-
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(StateQuery.class)))
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
+        when(spyDecoratedClient.execute(any(StateQuery.class)))
             .thenReturn(exceptionallyCompletedFuture(new BadRequestException("a test exception")))
             .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
             .thenCallRealMethod();
 
-
-        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
-            .of(spyClient)
+        final StateSyncOptions stateSyncOptions = spy(StateSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
             .batchSize(3)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorCallBackMessages.add(exception.getMessage());
@@ -1014,8 +1019,8 @@ class StateSyncIT {
             })
             .warningCallback((exception, newResource, oldResource) ->
                 warningCallBackMessages.add(exception.getMessage()))
-            .build();
-
+            .build());
+        when(stateSyncOptions.getCtpClient()).thenReturn(spyDecoratedClient);
         final List<StateDraft> stateDrafts = replaceStateTransitionIdsWithKeys(Arrays.asList(stateA, stateB, stateC));
         // test
         final StateSyncStatistics stateSyncStatistics = new StateSync(stateSyncOptions)

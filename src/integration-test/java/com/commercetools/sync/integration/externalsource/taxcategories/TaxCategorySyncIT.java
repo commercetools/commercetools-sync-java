@@ -1,5 +1,6 @@
 package com.commercetools.sync.integration.externalsource.taxcategories;
 
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.taxcategories.TaxCategorySync;
 import com.commercetools.sync.taxcategories.TaxCategorySyncOptions;
 import com.commercetools.sync.taxcategories.TaxCategorySyncOptionsBuilder;
@@ -20,16 +21,15 @@ import io.sphere.sdk.taxcategories.commands.TaxCategoryCreateCommand;
 import io.sphere.sdk.taxcategories.commands.TaxCategoryUpdateCommand;
 import io.sphere.sdk.taxcategories.queries.TaxCategoryQuery;
 import io.sphere.sdk.utils.CompletableFutureUtils;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
@@ -178,18 +178,20 @@ class TaxCategorySyncIT {
     @Test
     void sync_withChangedTaxCategoryButConcurrentModificationException_shouldRetryAndUpdateTaxCategory() {
         // preparation
-        final SphereClient spyClient = buildClientWithConcurrentModificationUpdate();
+        final SphereClient spyDecoratedClient = buildClientWithConcurrentModificationUpdate();
 
         List<String> errorCallBackMessages = new ArrayList<>();
         List<String> warningCallBackMessages = new ArrayList<>();
         List<Throwable> errorCallBackExceptions = new ArrayList<>();
-        final TaxCategorySyncOptions spyOptions = TaxCategorySyncOptionsBuilder
-            .of(spyClient)
+        final TaxCategorySyncOptions spyOptions = spy(TaxCategorySyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorCallBackMessages.add(exception.getMessage());
                 errorCallBackExceptions.add(exception.getCause());
             })
-            .build();
+            .build());
+
+        when(spyOptions.getCtpClient()).thenReturn(spyDecoratedClient);
 
         final TaxCategorySync taxCategorySync = new TaxCategorySync(spyOptions);
 
@@ -212,31 +214,33 @@ class TaxCategorySyncIT {
 
     @Nonnull
     private SphereClient buildClientWithConcurrentModificationUpdate() {
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
 
         final TaxCategoryUpdateCommand updateCommand = any(TaxCategoryUpdateCommand.class);
-        when(spyClient.execute(updateCommand))
+        when(spyDecoratedClient.execute(updateCommand))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()))
             .thenCallRealMethod();
 
-        return spyClient;
+        return spyDecoratedClient;
     }
 
     @Test
     void sync_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
         // preparation
-        final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
+        final SphereClient spyDecoratedClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
 
         List<String> errorCallBackMessages = new ArrayList<>();
         List<Throwable> errorCallBackExceptions = new ArrayList<>();
-        final TaxCategorySyncOptions spyOptions = TaxCategorySyncOptionsBuilder
-            .of(spyClient)
+        final TaxCategorySyncOptions spyOptions = spy(TaxCategorySyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorCallBackMessages.add(exception.getMessage());
                 errorCallBackExceptions.add(exception.getCause());
             })
             //.warningCallback(warningCallBackMessages::add)
-            .build();
+            .build());
+
+        when(spyOptions.getCtpClient()).thenReturn(spyDecoratedClient);
 
         final TaxCategorySync taxCategorySync = new TaxCategorySync(spyOptions);
 
@@ -264,35 +268,37 @@ class TaxCategorySyncIT {
 
     @Nonnull
     private SphereClient buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry() {
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
 
         final TaxCategoryUpdateCommand updateCommand = any(TaxCategoryUpdateCommand.class);
-        when(spyClient.execute(updateCommand))
+        when(spyDecoratedClient.execute(updateCommand))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()))
             .thenCallRealMethod();
 
         final TaxCategoryQuery taxCategoryQuery = any(TaxCategoryQuery.class);
-        when(spyClient.execute(taxCategoryQuery))
+        when(spyDecoratedClient.execute(taxCategoryQuery))
             .thenCallRealMethod() // Call real fetch on fetching matching tax categories
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
 
-        return spyClient;
+        return spyDecoratedClient;
     }
 
     @Test
     void sync_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
         // preparation
-        final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
+        final SphereClient spyDecoratedClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
 
         List<String> errorCallBackMessages = new ArrayList<>();
         List<Throwable> errorCallBackExceptions = new ArrayList<>();
-        final TaxCategorySyncOptions spyOptions = TaxCategorySyncOptionsBuilder
-            .of(spyClient)
+        final TaxCategorySyncOptions spyOptions = spy(TaxCategorySyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorCallBackMessages.add(exception.getMessage());
                 errorCallBackExceptions.add(exception.getCause());
             })
-            .build();
+            .build());
+
+        when(spyOptions.getCtpClient()).thenReturn(spyDecoratedClient);
 
         final TaxCategorySync taxCategorySync = new TaxCategorySync(spyOptions);
 
@@ -318,19 +324,19 @@ class TaxCategorySyncIT {
 
     @Nonnull
     private SphereClient buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry() {
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
 
         final TaxCategoryUpdateCommand taxCategoryUpdateCommand = any(TaxCategoryUpdateCommand.class);
-        when(spyClient.execute(taxCategoryUpdateCommand))
+        when(spyDecoratedClient.execute(taxCategoryUpdateCommand))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()))
             .thenCallRealMethod();
 
         final TaxCategoryQuery taxCategoryQuery = any(TaxCategoryQuery.class);
 
-        when(spyClient.execute(taxCategoryQuery))
+        when(spyDecoratedClient.execute(taxCategoryQuery))
             .thenCallRealMethod() // Call real fetch on fetching matching tax categories
             .thenReturn(CompletableFuture.completedFuture(PagedQueryResult.empty()));
 
-        return spyClient;
+        return spyDecoratedClient;
     }
 }

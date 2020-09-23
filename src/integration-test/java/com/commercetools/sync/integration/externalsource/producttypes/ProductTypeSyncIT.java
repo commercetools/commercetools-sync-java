@@ -2,6 +2,7 @@ package com.commercetools.sync.integration.externalsource.producttypes;
 
 
 import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.producttypes.ProductTypeSync;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
@@ -152,10 +153,8 @@ class ProductTypeSyncIT {
             .sync(singletonList(newProductTypeDraft))
             .toCompletableFuture().join();
 
-
         // assertions
         assertThat(productTypeSyncStatistics).hasValues(1, 1, 0, 0, 0);
-
 
         final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_2);
 
@@ -221,7 +220,6 @@ class ProductTypeSyncIT {
             .toCompletableFuture().join();
 
         assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0, 0);
-
 
         final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
 
@@ -309,7 +307,6 @@ class ProductTypeSyncIT {
 
         assertThat(productTypeSyncStatistics).hasValues(1, 0, 1, 0, 0);
 
-
         final Optional<ProductType> oldProductTypeAfter = getProductTypeByKey(CTP_TARGET_CLIENT, PRODUCT_TYPE_KEY_1);
 
         assertThat(oldProductTypeAfter).hasValueSatisfying(productType ->
@@ -344,17 +341,16 @@ class ProductTypeSyncIT {
             .sync(singletonList(newProductTypeDraft))
             .toCompletableFuture().join();
 
-
         final String expectedErrorMessage = format("ProductTypeDraft with name: %s doesn't have a key. "
             + "Please make sure all productType drafts have keys.", newProductTypeDraft.getName());
         // assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message -> assertThat(message).isEqualTo(expectedErrorMessage));
+            .singleElement().asString().isEqualTo(expectedErrorMessage);
 
         assertThat(exceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> {
+            .singleElement().satisfies(throwable -> {
                 assertThat(throwable).isInstanceOf(SyncException.class);
                 assertThat(throwable.getMessage()).isEqualTo(expectedErrorMessage);
             });
@@ -387,13 +383,11 @@ class ProductTypeSyncIT {
         // assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).isEqualTo("ProductTypeDraft is null.")
-            );
+            .singleElement().asString().isEqualTo("ProductTypeDraft is null.");
 
         assertThat(exceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> {
+            .singleElement().satisfies(throwable -> {
                 assertThat(throwable).isInstanceOf(SyncException.class);
                 assertThat(throwable.getMessage()).isEqualTo("ProductTypeDraft is null.");
             });
@@ -442,13 +436,11 @@ class ProductTypeSyncIT {
         // assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).contains("Failed to create draft with key: 'key_2'.")
-            );
+            .singleElement().asString().contains("Failed to create draft with key: 'key_2'.");
 
         assertThat(exceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> {
+            .singleElement().satisfies(throwable -> {
                 assertThat(throwable).hasCauseExactlyInstanceOf(ErrorResponseException.class);
                 assertThat(throwable).hasMessageContaining("AttributeDefinitionTypeConflict");
             });
@@ -494,13 +486,13 @@ class ProductTypeSyncIT {
         // assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
+            .singleElement().satisfies(message ->
                 assertThat(message).contains("Failed to update product type with key: 'key_1'.")
             );
 
         assertThat(exceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> {
+            .singleElement().satisfies(throwable -> {
                 assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
                 assertThat(throwable).hasCauseExactlyInstanceOf(ErrorResponseException.class);
                 assertThat(throwable).hasMessageContaining("InvalidInput");
@@ -541,13 +533,13 @@ class ProductTypeSyncIT {
         // assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
+            .singleElement().satisfies(message ->
                 assertThat(message).contains("Failed to update product type with key: 'key_1'.")
             );
 
         assertThat(exceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> {
+            .singleElement().satisfies(throwable -> {
                 assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
                 assertThat(throwable).hasCauseExactlyInstanceOf(ErrorResponseException.class);
                 assertThat(throwable).hasMessageContaining("Missing required value");
@@ -672,7 +664,7 @@ class ProductTypeSyncIT {
     @Test
     void syncDrafts_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
         // Preparation
-        final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
+        final SphereClient spyDecoratedClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
 
         final ProductTypeDraft productTypeDraft =
             ProductTypeDraftBuilder.of("key", "foo", "description", emptyList())
@@ -689,14 +681,14 @@ class ProductTypeSyncIT {
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> errors = new ArrayList<>();
 
-        final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
-            .of(spyClient)
+        final ProductTypeSyncOptions syncOptions = spy(ProductTypeSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorMessages.add(exception.getMessage());
                 errors.add(exception.getCause());
             })
-            .build();
-
+            .build());
+        when(syncOptions.getCtpClient()).thenReturn(spyDecoratedClient);
         final ProductTypeSync productTypeSync = new ProductTypeSync(syncOptions);
 
         // Test
@@ -736,7 +728,7 @@ class ProductTypeSyncIT {
     @Test
     void syncDrafts_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
         // Preparation
-        final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
+        final SphereClient spyDecoratedClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
 
         final ProductTypeDraft productTypeDraft =
             ProductTypeDraftBuilder.of("key", "foo", "description", emptyList())
@@ -753,14 +745,14 @@ class ProductTypeSyncIT {
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> errors = new ArrayList<>();
 
-        final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
-            .of(spyClient)
+        final ProductTypeSyncOptions syncOptions = spy(ProductTypeSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorMessages.add(exception.getMessage());
                 errors.add(exception.getCause());
             })
-            .build();
-
+            .build());
+        when(syncOptions.getCtpClient()).thenReturn(spyDecoratedClient);
         final ProductTypeSync productTypeSync = new ProductTypeSync(syncOptions);
 
         // Test
@@ -780,20 +772,20 @@ class ProductTypeSyncIT {
 
     @Nonnull
     private SphereClient buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry() {
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
         final ProductTypeQuery anyProductTypeQuery = any(ProductTypeQuery.class);
 
-        when(spyClient.execute(anyProductTypeQuery))
+        when(spyDecoratedClient.execute(anyProductTypeQuery))
             .thenCallRealMethod() // Call real fetch on fetching matching product types
             .thenReturn(CompletableFuture.completedFuture(PagedQueryResult.empty()));
 
 
         final ProductTypeUpdateCommand anyProductTypeUpdateCmd = any(ProductTypeUpdateCommand.class);
-        when(spyClient.execute(anyProductTypeUpdateCmd))
+        when(spyDecoratedClient.execute(anyProductTypeUpdateCmd))
             .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()));
 
 
-        return spyClient;
+        return spyDecoratedClient;
     }
 
     @Test
@@ -863,9 +855,7 @@ class ProductTypeSyncIT {
             asList(withSetOfEnumsOld, withSetOfSetOfLEnumsOld)
         );
 
-
         CTP_TARGET_CLIENT.execute(ProductTypeCreateCommand.of(oldDraft)).toCompletableFuture().join();
-
 
         final AttributeDefinitionDraft withSetOfEnumsNew = AttributeDefinitionDraftBuilder
             .of(

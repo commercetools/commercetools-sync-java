@@ -1,5 +1,6 @@
 package com.commercetools.sync.integration.externalsource.types;
 
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.types.TypeSync;
 import com.commercetools.sync.types.TypeSyncOptions;
 import com.commercetools.sync.types.TypeSyncOptionsBuilder;
@@ -25,10 +26,6 @@ import io.sphere.sdk.types.TypeDraftBuilder;
 import io.sphere.sdk.types.commands.TypeCreateCommand;
 import io.sphere.sdk.types.commands.TypeUpdateCommand;
 import io.sphere.sdk.types.queries.TypeQuery;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,6 +35,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
@@ -65,7 +65,6 @@ import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
-
 class TypeSyncIT {
 
     /**
@@ -86,7 +85,6 @@ class TypeSyncIT {
     static void tearDown() {
         deleteTypes(CTP_TARGET_CLIENT);
     }
-
 
     @Test
     void sync_WithUpdatedType_ShouldUpdateType() {
@@ -116,7 +114,6 @@ class TypeSyncIT {
 
         //assertions
         assertThat(typeSyncStatistics).hasValues(1, 0, 1, 0);
-
 
         final Optional<Type> oldTypeAfter = getTypeByKey(CTP_TARGET_CLIENT, TYPE_KEY_1);
 
@@ -174,7 +171,6 @@ class TypeSyncIT {
                 .description(TYPE_DESCRIPTION_1)
                 .fieldDefinitions(asList(FIELD_DEFINITION_1, FIELD_DEFINITION_2, FIELD_DEFINITION_3))
                 .build();
-
 
         final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
                 .of(CTP_TARGET_CLIENT)
@@ -332,13 +328,11 @@ class TypeSyncIT {
         // assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).isEqualTo("Failed to process type draft without key.")
-            );
+            .singleElement().asString().isEqualTo("Failed to process type draft without key.");
 
         assertThat(exceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable).isNull());
+            .singleElement().satisfies(throwable -> assertThat(throwable).isNull());
 
         assertThat(typeSyncStatistics).hasValues(1, 0, 0, 1);
     }
@@ -369,13 +363,11 @@ class TypeSyncIT {
         //assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).isEqualTo("Failed to process null type draft.")
-            );
+            .singleElement().asString().isEqualTo("Failed to process null type draft.");
 
         assertThat(exceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable).isNull());
+            .singleElement().satisfies(throwable -> assertThat(throwable).isNull());
 
         assertThat(typeSyncStatistics).hasValues(1, 0, 0, 1);
     }
@@ -414,13 +406,11 @@ class TypeSyncIT {
         // assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).contains("Failed to update type with key: 'key_1'.")
-            );
+            .singleElement().asString().contains("Failed to update type with key: 'key_1'.");
 
         assertThat(exceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> {
+            .singleElement().satisfies(throwable -> {
                 assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
                 assertThat(throwable).hasCauseExactlyInstanceOf(ErrorResponseException.class);
                 assertThat(throwable).hasMessageContaining("Missing required value");
@@ -469,13 +459,11 @@ class TypeSyncIT {
         // assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).contains("Failed to update type with key: 'key_1'.")
-            );
+            .singleElement().asString().contains("Failed to update type with key: 'key_1'.");
 
         assertThat(exceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> {
+            .singleElement().satisfies(throwable -> {
                 assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
                 assertThat(throwable).hasCauseExactlyInstanceOf(ErrorResponseException.class);
                 assertThat(throwable).hasMessageContaining("Missing required value");
@@ -573,7 +561,7 @@ class TypeSyncIT {
     @Test
     void sync_WithConcurrentModificationException_ShouldRetryToUpdateNewTypeWithSuccess() {
         // Preparation
-        final SphereClient spyClient = buildClientWithConcurrentModificationUpdate();
+        final SphereClient spyDecoratedClient = buildClientWithConcurrentModificationUpdate();
 
         final TypeDraft typeDraft = TypeDraftBuilder
             .of(TYPE_KEY_2, TYPE_NAME_2, ResourceTypeIdsSetBuilder.of().addChannels())
@@ -585,7 +573,8 @@ class TypeSyncIT {
 
         final TypeDraft updatedDraft = TypeDraftBuilder.of(typeDraft).name(TYPE_NAME_1).build();
 
-        final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(spyClient).build();
+        final TypeSyncOptions typeSyncOptions = spy(TypeSyncOptionsBuilder.of(CTP_TARGET_CLIENT).build());
+        when(typeSyncOptions.getCtpClient()).thenReturn(spyDecoratedClient);
         final TypeSync typeSync = new TypeSync(typeSyncOptions);
 
         //test
@@ -610,21 +599,21 @@ class TypeSyncIT {
     @Nonnull
     private SphereClient buildClientWithConcurrentModificationUpdate() {
 
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
 
         final TypeUpdateCommand anyTypeUpdate = any(TypeUpdateCommand.class);
 
-        when(spyClient.execute(anyTypeUpdate))
+        when(spyDecoratedClient.execute(anyTypeUpdate))
             .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
             .thenCallRealMethod();
 
-        return spyClient;
+        return spyDecoratedClient;
     }
 
     @Test
     void sync_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
         //preparation
-        final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
+        final SphereClient spyDecoratedClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
 
         final TypeDraft typeDraft = TypeDraftBuilder
             .of("typeKey", LocalizedString.ofEnglish( "typeName"), ResourceTypeIdsSetBuilder.of().addChannels())
@@ -640,13 +629,15 @@ class TypeSyncIT {
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> errors = new ArrayList<>();
 
-        final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
-            .of(spyClient)
+        final TypeSyncOptions typeSyncOptions = spy(TypeSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorMessages.add(exception.getMessage());
                 errors.add(exception.getCause());
             })
-            .build();
+            .build());
+
+        when(typeSyncOptions.getCtpClient()).thenReturn(spyDecoratedClient);
 
         final TypeSync typeSync = new TypeSync(typeSyncOptions);
 
@@ -671,24 +662,24 @@ class TypeSyncIT {
     @Nonnull
     private SphereClient buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry() {
 
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(TypeQuery.class)))
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
+        when(spyDecoratedClient.execute(any(TypeQuery.class)))
             .thenCallRealMethod() // Call real fetch on fetching matching types
             .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()));
 
         final TypeUpdateCommand anyTypeUpdate = any(TypeUpdateCommand.class);
 
-        when(spyClient.execute(anyTypeUpdate))
+        when(spyDecoratedClient.execute(anyTypeUpdate))
             .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
             .thenCallRealMethod();
 
-        return spyClient;
+        return spyDecoratedClient;
     }
 
     @Test
     void sync__WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
         //preparation
-        final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
+        final SphereClient spyDecoratedClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
 
         final TypeDraft typeDraft = TypeDraftBuilder
             .of("typeKey", LocalizedString.ofEnglish( "typeName"), ResourceTypeIdsSetBuilder.of().addChannels())
@@ -704,13 +695,15 @@ class TypeSyncIT {
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> errors = new ArrayList<>();
 
-        final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
-            .of(spyClient)
+        final TypeSyncOptions typeSyncOptions = spy(TypeSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorMessages.add(exception.getMessage());
                 errors.add(exception.getCause());
             })
-            .build();
+            .build());
+
+        when(typeSyncOptions.getCtpClient()).thenReturn(spyDecoratedClient);
 
         final TypeSync typeSync = new TypeSync(typeSyncOptions);
         //test
@@ -731,20 +724,20 @@ class TypeSyncIT {
     @Nonnull
     private SphereClient buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry() {
 
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
         final TypeQuery anyTypeQuery = any(TypeQuery.class);
 
-        when(spyClient.execute(anyTypeQuery))
+        when(spyDecoratedClient.execute(anyTypeQuery))
             .thenCallRealMethod() // Call real fetch on fetching matching types
             .thenReturn(CompletableFuture.completedFuture(PagedQueryResult.empty()));
 
         final TypeUpdateCommand anyTypeUpdate = any(TypeUpdateCommand.class);
 
-        when(spyClient.execute(anyTypeUpdate))
+        when(spyDecoratedClient.execute(anyTypeUpdate))
             .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
             .thenCallRealMethod();
 
-        return spyClient;
+        return spyDecoratedClient;
     }
 
     @Test
@@ -807,7 +800,6 @@ class TypeSyncIT {
                                                        .fieldDefinitions(
                                                            asList(withSetOfEnumsNew, withSetOfSetOfLEnumsNew))
                                                        .build();
-
 
         final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)

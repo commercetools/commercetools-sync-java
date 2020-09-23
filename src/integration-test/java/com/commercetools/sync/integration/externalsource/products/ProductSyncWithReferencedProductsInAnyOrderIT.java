@@ -3,6 +3,7 @@ package com.commercetools.sync.integration.externalsource.products;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.commons.utils.TriConsumer;
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -30,17 +31,18 @@ import io.sphere.sdk.products.queries.ProductByKeyGet;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.utils.CompletableFutureUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
@@ -798,20 +800,22 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
             .key(parentProductKey)
             .build();
 
-        final SphereClient ctpClient = spy(CTP_TARGET_CLIENT);
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
 
         final BadGatewayException gatewayException = new BadGatewayException("failed to respond.");
-        when(ctpClient.execute(any(CustomObjectQuery.class)))
+        when(spyDecoratedClient.execute(any(CustomObjectQuery.class)))
             .thenReturn(CompletableFutureUtils.failed(gatewayException))
             .thenCallRealMethod();
 
 
-        syncOptions = ProductSyncOptionsBuilder
-            .of(ctpClient)
+        syncOptions = spy(ProductSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
             .errorCallback((syncException, draft, product, updateActions)
                 -> collectErrors(syncException.getMessage(), syncException))
             .beforeUpdateCallback(this::collectActions)
-            .build();
+            .build());
+
+        when(syncOptions.getCtpClient()).thenReturn(spyDecoratedClient);
 
         // test
         final ProductSync productSync = new ProductSync(syncOptions);

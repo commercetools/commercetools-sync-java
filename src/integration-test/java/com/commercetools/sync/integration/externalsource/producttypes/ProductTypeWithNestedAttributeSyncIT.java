@@ -1,6 +1,6 @@
 package com.commercetools.sync.integration.externalsource.producttypes;
 
-
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.producttypes.ProductTypeSync;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
@@ -20,14 +20,13 @@ import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.commands.updateactions.AddAttributeDefinition;
 import io.sphere.sdk.producttypes.commands.updateactions.RemoveAttributeDefinition;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.ATTRIBUTE_DEFINITION_DRAFT_1;
@@ -280,17 +279,17 @@ class ProductTypeWithNestedAttributeSyncIT {
             PRODUCT_TYPE_DESCRIPTION_4,
             singletonList(ATTRIBUTE_DEFINITION_DRAFT_3));
 
-        final SphereClient ctpClient = spy(CTP_TARGET_CLIENT);
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
         final BadGatewayException badGatewayException = new BadGatewayException();
-        when(ctpClient.execute(any(ProductTypeQuery.class)))
+        when(spyDecoratedClient.execute(any(ProductTypeQuery.class)))
             .thenCallRealMethod() // should work on caching
             .thenCallRealMethod() // should work when fetching matching product types
             .thenCallRealMethod() // should work when second fetching matching product types
             .thenReturn(exceptionallyCompletedFuture(badGatewayException)) // fail on fetching during resolution
             .thenCallRealMethod(); // call the real method for the rest of the calls
 
-        productTypeSyncOptions = ProductTypeSyncOptionsBuilder
-            .of(ctpClient)
+        productTypeSyncOptions = spy(ProductTypeSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
             .batchSize(1) // this ensures the drafts are in separate batches.
             .beforeUpdateCallback((actions, draft, oldProductType) -> {
                 builtUpdateActions.addAll(actions);
@@ -300,9 +299,9 @@ class ProductTypeWithNestedAttributeSyncIT {
                 errorMessages.add(exception.getMessage());
                 exceptions.add(exception);
             })
-            .build();
+            .build());
 
-
+        when(productTypeSyncOptions.getCtpClient()).thenReturn(spyDecoratedClient);
         final ProductTypeSync productTypeSync = new ProductTypeSync(productTypeSyncOptions);
 
         // tests
