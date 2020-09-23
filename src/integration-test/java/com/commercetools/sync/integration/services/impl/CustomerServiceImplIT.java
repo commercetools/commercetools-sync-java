@@ -4,17 +4,14 @@ import com.commercetools.sync.customers.CustomerSyncOptions;
 import com.commercetools.sync.customers.CustomerSyncOptionsBuilder;
 import com.commercetools.sync.services.CustomerService;
 import com.commercetools.sync.services.impl.CustomerServiceImpl;
-import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
 import io.sphere.sdk.customers.CustomerDraftBuilder;
 import io.sphere.sdk.customers.commands.CustomerCreateCommand;
 import io.sphere.sdk.customers.commands.updateactions.ChangeEmail;
-import io.sphere.sdk.customers.commands.updateactions.SetKey;
 import io.sphere.sdk.customers.queries.CustomerQuery;
 import io.sphere.sdk.queries.QueryPredicate;
-import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,7 +33,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class CustomerServiceImplIT {
     private static final String EXISTING_CUSTOMER_KEY = "existing-customer-key";
@@ -111,66 +107,6 @@ class CustomerServiceImplIT {
     }
 
     @Test
-    void fetchCachedCustomerId_WithCachedExistingCustomer_ShouldFetchFromCache() {
-        final Optional<String> oldCustomerId = customerService.fetchCachedCustomerId(EXISTING_CUSTOMER_KEY)
-                                                              .toCompletableFuture()
-                                                              .join();
-
-        final String newKey = "newKey";
-        customerService.updateCustomer(customer, singletonList(SetKey.of(newKey)))
-                       .toCompletableFuture()
-                       .join();
-
-        final Optional<String> cachedCustomerId = customerService.fetchCachedCustomerId(EXISTING_CUSTOMER_KEY)
-                                                                 .toCompletableFuture().join();
-
-        assertThat(cachedCustomerId).isNotEmpty();
-        assertThat(cachedCustomerId).isEqualTo(oldCustomerId);
-
-        final Optional<String> newCustomerId = customerService.fetchCachedCustomerId(newKey)
-                                                              .toCompletableFuture().join();
-
-        assertThat(newCustomerId).isNotEmpty();
-        assertThat(newCustomerId).isEqualTo(cachedCustomerId);
-
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-    }
-
-
-    @Test
-    void fetchCachedCustomerId_WithUnexpectedException_ShouldFail() {
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(CustomerQuery.class)))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
-            .thenCallRealMethod();
-        final CustomerSyncOptions spyOptions = CustomerSyncOptionsBuilder
-            .of(spyClient)
-            .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                errorCallBackMessages.add(exception.getMessage());
-                errorCallBackExceptions.add(exception.getCause());
-            })
-            .build();
-        final CustomerServiceImpl spyCustomerService = new CustomerServiceImpl(spyOptions);
-
-        assertThat(spyCustomerService.fetchCachedCustomerId("key"))
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(BadGatewayException.class);
-        assertThat(errorCallBackMessages).isEmpty();
-        assertThat(errorCallBackExceptions).isEmpty();
-    }
-
-    @Test
-    void fetchCustomerByKey_WithBlankKey_ShouldReturnEmptyOptional() {
-        Optional<Customer> customer = customerService.fetchCustomerByKey("")
-                                                     .toCompletableFuture()
-                                                     .join();
-        assertThat(customer).isEmpty();
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-    }
-
-    @Test
     void fetchCustomerByKey_WithExistingCustomer_ShouldFetchCustomer() {
         Optional<Customer> customer = customerService.fetchCustomerByKey(EXISTING_CUSTOMER_KEY)
                                                      .toCompletableFuture()
@@ -188,29 +124,6 @@ class CustomerServiceImplIT {
         assertThat(customer).isEmpty();
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
-    }
-
-
-    @Test
-    void fetchCustomerByKey_WithUnexpectedException_ShouldFail() {
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(CustomerQuery.class)))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
-            .thenCallRealMethod();
-        final CustomerSyncOptions spyOptions = CustomerSyncOptionsBuilder
-            .of(spyClient)
-            .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                errorCallBackMessages.add(exception.getMessage());
-                errorCallBackExceptions.add(exception.getCause());
-            })
-            .build();
-        final CustomerServiceImpl spyCustomerService = new CustomerServiceImpl(spyOptions);
-
-        assertThat(spyCustomerService.fetchCustomerByKey("key"))
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(BadGatewayException.class);
-        assertThat(errorCallBackMessages).isEmpty();
-        assertThat(errorCallBackExceptions).isEmpty();
     }
 
     @Test
@@ -276,92 +189,6 @@ class CustomerServiceImplIT {
         assertThat(customers).hasSize(1);
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(errorCallBackExceptions).isEmpty();
-    }
-
-    @Test
-    void fetchMatchingCustomersByKeys_WithUnexpectedException_ShouldFail() {
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(CustomerQuery.class)))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
-            .thenCallRealMethod();
-        final CustomerSyncOptions spyOptions = CustomerSyncOptionsBuilder
-            .of(spyClient)
-            .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                errorCallBackMessages.add(exception.getMessage());
-                errorCallBackExceptions.add(exception.getCause());
-            })
-            .build();
-        final CustomerServiceImpl spyCustomerService = new CustomerServiceImpl(spyOptions);
-
-        assertThat(spyCustomerService.fetchMatchingCustomersByKeys(singleton(EXISTING_CUSTOMER_KEY)))
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(BadGatewayException.class);
-        assertThat(errorCallBackMessages).isEmpty();
-        assertThat(errorCallBackExceptions).isEmpty();
-    }
-
-
-    @Test
-    void createCustomer_WithValidCustomerData_ShouldCreateAndCacheId() {
-        String newKey = "new-customer-key";
-        CustomerDraft customerDraft = CustomerDraftBuilder
-            .of("newmail@mail.com", "password")
-            .key(newKey)
-            .build();
-
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        final CustomerSyncOptions spyOptions = CustomerSyncOptionsBuilder
-            .of(spyClient)
-            .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                errorCallBackMessages.add(exception.getMessage());
-                errorCallBackExceptions.add(exception.getCause());
-            })
-            .build();
-
-        final CustomerService spyCustomerService = new CustomerServiceImpl(spyOptions);
-
-        final Optional<Customer> createdCustomer = spyCustomerService
-            .createCustomer(customerDraft)
-            .toCompletableFuture().join();
-
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-
-        final Optional<Customer> queriedOptional = CTP_TARGET_CLIENT
-            .execute(CustomerQuery.of()
-                                  .withPredicates(QueryPredicate.of(format("key = \"%s\"", newKey))))
-            .toCompletableFuture().join().head();
-
-        assertThat(queriedOptional)
-            .hasValueSatisfying(queried -> assertThat(createdCustomer)
-                .hasValueSatisfying(created -> {
-                    assertThat(queried.getKey()).isEqualTo(created.getKey());
-                    assertThat(queried.getEmail()).isEqualTo(created.getEmail());
-                    assertThat(queried.getPassword()).isEqualTo(created.getPassword());
-                }));
-
-        final Optional<String> customerId =
-            spyCustomerService.fetchCachedCustomerId(newKey).toCompletableFuture().join();
-        assertThat(customerId).isPresent();
-        verify(spyClient, times(0)).execute(any(CustomerQuery.class));
-    }
-
-    @Test
-    void createCustomer_WithBlankKey_ShouldNotCreateCustomer() {
-        final String newKey = "";
-        CustomerDraft customerDraft = CustomerDraftBuilder
-            .of("newmail@mail.com", "password")
-            .key(newKey)
-            .build();
-
-        final Optional<Customer> createdCustomer = customerService
-            .createCustomer(customerDraft)
-            .toCompletableFuture().join();
-
-        assertThat(createdCustomer).isEmpty();
-        assertThat(errorCallBackMessages)
-            .containsExactly("Failed to create draft with key: ''. Reason: Draft key is blank!");
-        assertThat(errorCallBackExceptions).hasSize(1);
     }
 
     @Test

@@ -2,6 +2,7 @@ package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.customers.CustomerSyncOptions;
 import com.commercetools.sync.customers.CustomerSyncOptionsBuilder;
+import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.BadRequestException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
@@ -131,6 +132,67 @@ class CustomerServiceImplTest {
 
         assertThat(result).isSameAs(customer);
         verify(customerSyncOptions.getCtpClient()).execute(eq(CustomerUpdateCommand.of(customer, updateActions)));
+    }
+
+    @Test
+    void fetchCachedCustomerId_WithBlankKey_ShouldNotFetchCustomerId() {
+        Optional<String> customerId = service.fetchCachedCustomerId("")
+                                             .toCompletableFuture()
+                                             .join();
+
+        assertThat(customerId).isEmpty();
+        assertThat(errorExceptions).isEmpty();
+        assertThat(errorMessages).isEmpty();
+        verifyNoInteractions(customerSyncOptions.getCtpClient());
+    }
+
+    @Test
+    void fetchCachedCustomerId_WithCachedCustomer_ShouldFetchIdFromCache() {
+        service.keyToIdCache.put("key", "id");
+        Optional<String> customerId = service.fetchCachedCustomerId("key")
+                                             .toCompletableFuture()
+                                             .join();
+
+        assertThat(customerId).contains("id");
+        assertThat(errorExceptions).isEmpty();
+        assertThat(errorMessages).isEmpty();
+        verifyNoInteractions(customerSyncOptions.getCtpClient());
+    }
+
+    @Test
+    void fetchCachedCustomerId_WithUnexpectedException_ShouldFail() {
+        when(customerSyncOptions.getCtpClient().execute(any())).thenReturn(
+            CompletableFutureUtils.failed(new BadGatewayException("bad gateway")));
+
+        assertThat(service.fetchCachedCustomerId("key"))
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(BadGatewayException.class);
+        assertThat(errorExceptions).isEmpty();
+        assertThat(errorMessages).isEmpty();
+    }
+
+    @Test
+    void fetchCustomerByKey_WithUnexpectedException_ShouldFail() {
+        when(customerSyncOptions.getCtpClient().execute(any())).thenReturn(
+            CompletableFutureUtils.failed(new BadGatewayException("bad gateway")));
+
+        assertThat(service.fetchCustomerByKey("key"))
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(BadGatewayException.class);
+        assertThat(errorExceptions).isEmpty();
+        assertThat(errorMessages).isEmpty();
+    }
+
+    @Test
+    void fetchCustomerByKey_WithBlankKey_ShouldNotFetchCustomer() {
+        Optional<Customer> customer = service.fetchCustomerByKey("")
+                                             .toCompletableFuture()
+                                             .join();
+
+        assertThat(customer).isEmpty();
+        assertThat(errorExceptions).isEmpty();
+        assertThat(errorMessages).isEmpty();
+        verifyNoInteractions(customerSyncOptions.getCtpClient());
     }
 
 }
