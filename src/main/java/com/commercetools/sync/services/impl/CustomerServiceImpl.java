@@ -76,8 +76,11 @@ public final class CustomerServiceImpl extends BaseServiceWithKey<CustomerDraft,
     public CompletionStage<Optional<Customer>> createCustomer(
         @Nonnull final CustomerDraft customerDraft) {
 
+        // Uses a different implementation than in the base service because CustomerCreateCommand uses a
+        // different library as CTP responds with a CustomerSignInResult which is not extending resource but a
+        // different model, containing the customer resource.
         final String draftKey = customerDraft.getKey();
-        CustomerCreateCommand createCommand = CustomerCreateCommand.of(customerDraft);
+        final CustomerCreateCommand createCommand = CustomerCreateCommand.of(customerDraft);
 
         if (isBlank(draftKey)) {
             syncOptions.applyErrorCallback(
