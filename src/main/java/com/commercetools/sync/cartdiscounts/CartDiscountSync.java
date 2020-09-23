@@ -86,8 +86,8 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
         super(new CartDiscountSyncStatistics(), cartDiscountSyncOptions);
         this.cartDiscountService = cartDiscountService;
         this.typeService = typeService;
-        this.referenceResolver = new CartDiscountReferenceResolver(cartDiscountSyncOptions, typeService);
-        this.batchValidator = new CartDiscountBatchValidator(cartDiscountSyncOptions, getStatistics());
+        this.referenceResolver = new CartDiscountReferenceResolver(getSyncOptions(), typeService);
+        this.batchValidator = new CartDiscountBatchValidator(getSyncOptions(), getStatistics());
     }
 
     /**

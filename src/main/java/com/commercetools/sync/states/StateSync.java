@@ -76,9 +76,9 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
               @Nonnull final StateService stateService) {
         super(new StateSyncStatistics(), stateSyncOptions);
         this.stateService = stateService;
-        this.stateReferenceResolver = new StateReferenceResolver(stateSyncOptions, stateService);
-        this.unresolvedTransitionsService = new UnresolvedTransitionsServiceImpl(stateSyncOptions);
-        this.batchValidator = new StateBatchValidator(stateSyncOptions, getStatistics());
+        this.stateReferenceResolver = new StateReferenceResolver(getSyncOptions(), stateService);
+        this.unresolvedTransitionsService = new UnresolvedTransitionsServiceImpl(getSyncOptions());
+        this.batchValidator = new StateBatchValidator(getSyncOptions(), getStatistics());
     }
 
     @Override

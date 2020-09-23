@@ -105,11 +105,11 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         super(new ProductSyncStatistics(), productSyncOptions);
         this.productService = productService;
         this.productTypeService = productTypeService;
-        this.productReferenceResolver = new ProductReferenceResolver(productSyncOptions, productTypeService,
+        this.productReferenceResolver = new ProductReferenceResolver(getSyncOptions(), productTypeService,
             categoryService, typeService, channelService, customerGroupService, taxCategoryService, stateService,
             productService);
         this.unresolvedReferencesService = unresolvedReferencesService;
-        this.batchValidator = new ProductBatchValidator(productSyncOptions, getStatistics());
+        this.batchValidator = new ProductBatchValidator(getSyncOptions(), getStatistics());
     }
 
     @Override

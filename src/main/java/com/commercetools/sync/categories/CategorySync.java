@@ -110,8 +110,8 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                  @Nonnull final CategoryService categoryService) {
         super(new CategorySyncStatistics(), syncOptions);
         this.categoryService = categoryService;
-        this.referenceResolver = new CategoryReferenceResolver(syncOptions, typeService, categoryService);
-        this.batchValidator = new CategoryBatchValidator(syncOptions, getStatistics());
+        this.referenceResolver = new CategoryReferenceResolver(getSyncOptions(), typeService, categoryService);
+        this.batchValidator = new CategoryBatchValidator(getSyncOptions(), getStatistics());
     }
 
     /**
