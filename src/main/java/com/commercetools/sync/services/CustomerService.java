@@ -32,7 +32,7 @@ public interface CustomerService {
      *
      * @param customerKeys set of customer keys to fetch matching resources by.
      * @return {@link CompletionStage}&lt;{@link Set}&lt;{@link Customer}&gt;&gt; in which the result of it's completion
-     * contains a {@link Set} of all matching customers.
+     *     contains a {@link Set} of all matching customers.
      */
     @Nonnull
     CompletionStage<Set<Customer>> fetchMatchingCustomersByKeys(@Nonnull Set<String> customerKeys);
@@ -60,8 +60,8 @@ public interface CustomerService {
      *
      * @param key the key by which a customer id should be fetched from the CTP project.
      * @return {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt; in which the result of it's
-     * completion could contain an {@link Optional} holding the id or an empty {@link Optional} if no customer
-     * was found in the CTP project with this key.
+     *     completion could contain an {@link Optional} holding the id or an empty {@link Optional} if no customer
+     *     was found in the CTP project with this key.
      */
     @Nonnull
     CompletionStage<Optional<String>> fetchCachedCustomerId(@Nonnull String key);
@@ -82,7 +82,7 @@ public interface CustomerService {
      *
      * @param customerDraft the resource draft to create a resource based off of.
      * @return a {@link CompletionStage} containing an optional with the created resource if successful otherwise an
-     * empty optional.
+     *     empty optional.
      */
     @Nonnull
     CompletionStage<Optional<Customer>> createCustomer(@Nonnull CustomerDraft customerDraft);
@@ -97,8 +97,7 @@ public interface CustomerService {
      * @param customer      the {@link Customer} to update.
      * @param updateActions the update actions to update the {@link Customer} with.
      * @return {@link CompletionStage}&lt;{@link Customer}&gt; containing as a result of it's completion an instance of
-     * the {@link Customer} which was updated in the CTP project or a
-     * {@link io.sphere.sdk.models.SphereException}.
+     *     the {@link Customer} which was updated in the CTP project or a {@link io.sphere.sdk.models.SphereException}.
      */
     @Nonnull
     CompletionStage<Customer> updateCustomer(@Nonnull Customer customer,
