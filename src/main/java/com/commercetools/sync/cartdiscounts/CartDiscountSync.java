@@ -42,10 +42,6 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
         "Failed to fetch existing cart discounts with keys: '%s'.";
     private static final String CTP_CART_DISCOUNT_UPDATE_FAILED =
         "Failed to update cart discount with key: '%s'. Reason: %s";
-    private static final String CART_DISCOUNT_DRAFT_HAS_NO_KEY =
-        "Failed to process cart discount draft without key.";
-    private static final String CART_DISCOUNT_DRAFT_IS_NULL =
-        "Failed to process null cart discount draft.";
     private static final String FAILED_TO_PROCESS = "Failed to process the CartDiscountDraft with key:'%s'. Reason: %s";
 
     private final CartDiscountService cartDiscountService;
