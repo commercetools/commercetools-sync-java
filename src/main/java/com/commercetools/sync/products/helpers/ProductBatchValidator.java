@@ -108,7 +108,7 @@ public class ProductBatchValidator
         collectReferencedKeysInVariants(referencedKeys, productDraft);
         collectReferencedKeyFromResourceIdentifier(productDraft.getTaxCategory(),
             referencedKeys.taxCategoryKeys::add);
-        collectReferencedKeysKeyFromReference(productDraft.getState(), referencedKeys.stateKeys::add);
+        collectReferencedKeyFromReference(productDraft.getState(), referencedKeys.stateKeys::add);
     }
 
     private void collectReferencedKeysInCategories(
@@ -161,9 +161,8 @@ public class ProductBatchValidator
             .stream()
             .filter(Objects::nonNull)
             .forEach(priceDraft -> {
-                // todo (ahmetoz) need cacheKeysToIds.
-                // collectKeyFromResourceIdentifier(priceDraft.getCustomerGroup(), channelKeys::add);
-
+                collectReferencedKeyFromReference(priceDraft.getCustomerGroup(),
+                    referencedKeys.customerGroupKeys::add);
                 collectReferencedKeyFromResourceIdentifier(priceDraft.getChannel(),
                     referencedKeys.channelKeys::add);
                 collectReferencedKeyFromCustomFieldsDraft(priceDraft.getCustom(),
@@ -273,6 +272,7 @@ public class ProductBatchValidator
         private final Set<String> stateKeys = new HashSet<>();
         private final Set<String> typeKeys = new HashSet<>();
         private final Set<String> channelKeys = new HashSet<>();
+        private final Set<String> customerGroupKeys = new HashSet<>();
 
         public Set<String> getProductKeys() {
             return productKeys;
@@ -300,6 +300,10 @@ public class ProductBatchValidator
 
         public Set<String> getChannelKeys() {
             return channelKeys;
+        }
+
+        public Set<String> getCustomerGroupKeys() {
+            return customerGroupKeys;
         }
     }
 }

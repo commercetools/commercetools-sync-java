@@ -12,6 +12,7 @@ import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
@@ -53,6 +54,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     private final TypeService typeService;
     private final ChannelService channelService;
     private final ProductService productService;
+    private final CustomerGroupService customerGroupService;
 
     public static final String FAILED_TO_RESOLVE_REFERENCE = "Failed to resolve '%s' resource identifier on "
         + "ProductDraft with key:'%s'. Reason: %s";
@@ -97,6 +99,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         this.typeService = typeService;
         this.channelService = channelService;
         this.productService = productService;
+        this.customerGroupService = customerGroupService;
         this.variantReferenceResolver =
             new VariantReferenceResolver(productSyncOptions, typeService, channelService, customerGroupService,
                 productService, productTypeService, categoryService);
@@ -413,6 +416,11 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         final Set<String> stateKeys = referencedKeys.getStateKeys();
         if (!stateKeys.isEmpty()) {
             futures.add(stateService.cacheKeysToIds(stateKeys));
+        }
+
+        final Set<String> customerGroupKeys = referencedKeys.getCustomerGroupKeys();
+        if (!customerGroupKeys.isEmpty()) {
+            futures.add(customerGroupService.cacheKeysToIds(customerGroupKeys));
         }
 
         return collectionOfFuturesToFutureOfCollection(futures, toList())
