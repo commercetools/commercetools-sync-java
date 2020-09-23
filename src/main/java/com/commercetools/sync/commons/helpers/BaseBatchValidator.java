@@ -68,7 +68,7 @@ public abstract class BaseBatchValidator<D, O extends BaseSyncOptions, S extends
         }
     }
 
-    protected <T> void collectReferencedKeysKeyFromReference(
+    protected <T> void collectReferencedKeyFromReference(
         @Nullable final Reference<T> reference,
         @Nonnull final Consumer<String> keyInReferenceSupplier) {
 
