@@ -241,18 +241,19 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @return the number of drafts that are needed to be processed.
      */
     private int getNumberOfDraftsToProcess(@Nonnull final List<CategoryDraft> categoryDrafts) {
-        final int numberOfNullCategoryDrafts = categoryDrafts.stream()
-                                                             .filter(Objects::isNull)
-                                                             .collect(Collectors.toList()).size();
-        final int numberOfCategoryDraftsNotProcessedBefore =
-            categoryDrafts.stream()
-                          .filter(Objects::nonNull)
-                          .map(CategoryDraft::getKey)
-                          .filter(categoryDraftKey ->
-                              categoryDraftKey == null || !processedCategoryKeys.contains(categoryDraftKey))
-                          .collect(Collectors.toList()).size();
+        final long numberOfNullCategoryDrafts = categoryDrafts
+            .stream()
+            .filter(Objects::isNull)
+            .count();
 
-        return numberOfCategoryDraftsNotProcessedBefore + numberOfNullCategoryDrafts;
+        final long numberOfCategoryDraftsNotProcessedBefore = categoryDrafts
+            .stream()
+            .filter(Objects::nonNull)
+            .map(CategoryDraft::getKey)
+            .filter(categoryDraftKey -> categoryDraftKey == null || !processedCategoryKeys.contains(categoryDraftKey))
+            .count();
+
+        return (int) (numberOfCategoryDraftsNotProcessedBefore + numberOfNullCategoryDrafts);
     }
 
     /**
