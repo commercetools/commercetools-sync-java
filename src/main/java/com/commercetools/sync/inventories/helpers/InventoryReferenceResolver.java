@@ -22,7 +22,7 @@ public final class InventoryReferenceResolver
         extends CustomReferenceResolver<InventoryEntryDraft, InventoryEntryDraftBuilder, InventorySyncOptions> {
 
     private static final String CHANNEL_DOES_NOT_EXIST = "Channel with key '%s' does not exist.";
-    private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type resource identifier on "
+    static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type resource identifier on "
         + "InventoryEntryDraft with SKU:'%s'.";
     private static final String FAILED_TO_RESOLVE_SUPPLY_CHANNEL = "Failed to resolve supply channel "
         + "resource identifier on InventoryEntryDraft with SKU:'%s'. Reason: %s";
@@ -38,8 +38,7 @@ public final class InventoryReferenceResolver
     /**
      * Given a {@link InventoryEntryDraft} this method attempts to resolve the custom type and supply channel
      * resource identifiers to return a {@link CompletionStage} which contains a new instance of the draft with the
-     * resolved resource identifiers. The keys of the resolved resources are taken from the id fields of the resource
-     * identifiers.
+     * resolved resource identifiers.
      *
      * @param draft the inventoryEntryDraft to resolve its resource identifiers.
      * @return a {@link CompletionStage} that contains as a result a new inventoryEntryDraft instance with resolved
@@ -66,8 +65,7 @@ public final class InventoryReferenceResolver
     /**
      * Given a {@link InventoryEntryDraftBuilder} this method attempts to resolve the supply channel resource identifier
      * to return a {@link CompletionStage} which contains a new instance of the draft builder with the resolved
-     * supply channel resource identifier. The key of the supply channel taken from the id field of the resource
-     * identifier.
+     * supply channel resource identifier.
      *
      * <p>The method then tries to fetch the key of the supply channel, optimistically from a
      * cache. If the id is not found in cache nor the CTP project and {@code ensureChannel}
@@ -86,7 +84,7 @@ public final class InventoryReferenceResolver
             @Nonnull final InventoryEntryDraftBuilder draftBuilder) {
 
         final ResourceIdentifier<Channel> channelReference = draftBuilder.getSupplyChannel();
-        if (channelReference != null) {
+        if (channelReference != null && channelReference.getId() == null) {
             try {
                 final String channelKey = getKeyFromResourceIdentifier(channelReference);
                 return fetchOrCreateAndResolveReference(draftBuilder, channelKey);

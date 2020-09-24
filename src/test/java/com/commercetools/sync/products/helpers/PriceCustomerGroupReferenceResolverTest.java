@@ -17,16 +17,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_REFERENCE;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerGroup;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerGroupService;
+import static com.commercetools.sync.products.helpers.PriceReferenceResolver.CUSTOMER_GROUP_DOES_NOT_EXIST;
+import static com.commercetools.sync.products.helpers.PriceReferenceResolver.FAILED_TO_RESOLVE_REFERENCE;
 import static java.lang.String.format;
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -82,10 +82,12 @@ class PriceCustomerGroupReferenceResolverTest {
         when(customerGroupService.fetchCachedCustomerGroupId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-        assertThat(referenceResolver.resolveCustomerGroupReference(priceBuilder).toCompletableFuture())
-            .hasNotFailed()
-            .isCompletedWithValueMatching(resolvedDraft -> nonNull(resolvedDraft.getCustomerGroup())
-                    && Objects.equals(resolvedDraft.getCustomerGroup().getId(), "nonExistentKey"));
+
+        assertThat(referenceResolver.resolveCustomerGroupReference(priceBuilder))
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(ReferenceResolutionException.class)
+            .hasMessage(format(FAILED_TO_RESOLVE_REFERENCE, CustomerGroup.referenceTypeId(), priceBuilder.getCountry(),
+                priceBuilder.getValue(), format(CUSTOMER_GROUP_DOES_NOT_EXIST, "nonExistentKey")));
     }
 
     @Test
@@ -100,7 +102,7 @@ class PriceCustomerGroupReferenceResolverTest {
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format("Failed to resolve 'customer-group' reference on PriceDraft with country:'%s' and"
                 + " value: '%s'. Reason: %s", priceBuilder.getCountry(), priceBuilder.getValue(),
-                BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+                BLANK_ID_VALUE_ON_REFERENCE));
     }
 
     @Test
@@ -115,7 +117,7 @@ class PriceCustomerGroupReferenceResolverTest {
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format("Failed to resolve 'customer-group' reference on PriceDraft with country:'%s' and"
                     + " value: '%s'. Reason: %s", priceBuilder.getCountry(), priceBuilder.getValue(),
-                BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+                BLANK_ID_VALUE_ON_REFERENCE));
     }
 
     @Test

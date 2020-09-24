@@ -78,8 +78,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     /**
      * Given a {@link ProductVariantDraft} this method attempts to resolve the prices, assets and attributes to
      * return a {@link CompletionStage} which contains a new instance of the draft with the resolved
-     * references. The keys of the references are either taken from the expanded references or
-     * taken from the id field of the references.
+     * references.
      *
      * <p>Note: this method will filter out any null sub resources (e.g. prices, attributes or assets) under the
      * returned resolved variant.

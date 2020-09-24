@@ -47,7 +47,7 @@ class BaseServiceImplTest {
 
     @SuppressWarnings("unchecked")
     private TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>> warningCallback
-            = mock(TriConsumer.class);
+        = mock(TriConsumer.class);
     private SphereClient client = mock(SphereClient.class);
     private SphereClient mockDecoratedClient = mock(CustomHeaderSphereClientDecorator.class);
     private ProductService service;

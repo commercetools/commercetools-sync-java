@@ -29,7 +29,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getCompletionStageWithException;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryEntry;
@@ -85,10 +85,6 @@ class InventorySyncTest {
      */
     @BeforeEach
     void setup() {
-        final Channel channel1 = getMockSupplyChannel(REF_1, KEY_1);
-
-        final Reference<Channel> expandedReference1 = Channel.referenceOfId(REF_1).filled(channel1);
-
         final Reference<Channel> reference1 = Channel.referenceOfId(REF_1);
         final Reference<Channel> reference2 = Channel.referenceOfId(REF_2);
 
@@ -105,25 +101,22 @@ class InventorySyncTest {
                 .of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, null)
                 .build(),
             InventoryEntryDraftBuilder
-                .of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, ResourceIdentifier.ofId(KEY_2))
+                .of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, ResourceIdentifier.ofKey(KEY_2))
                 .build(),
             InventoryEntryDraftBuilder
                 .of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2, null)
                 .build(),
             InventoryEntryDraftBuilder
-                .of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2, ResourceIdentifier.ofId(KEY_1))
+                .of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2, ResourceIdentifier.ofKey(KEY_1))
                 .build(),
             InventoryEntryDraftBuilder
-                .of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2, ResourceIdentifier.ofId(KEY_2))
+                .of(SKU_2, QUANTITY_2, DATE_2, RESTOCKABLE_2, ResourceIdentifier.ofKey(KEY_2))
                 .build(),
             InventoryEntryDraftBuilder
                 .of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, null)
                 .build(),
             InventoryEntryDraftBuilder
-                .of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, expandedReference1)
-                .build(),
-            InventoryEntryDraftBuilder
-                .of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, ResourceIdentifier.ofId(KEY_2))
+                .of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, ResourceIdentifier.ofKey(KEY_2))
                 .build()
         );
 
@@ -144,7 +137,7 @@ class InventorySyncTest {
         final InventorySyncStatistics stats = inventorySync.getStatistics();
 
         // assertion
-        assertThat(stats).hasValues(8, 3, 3, 0);
+        assertThat(stats).hasValues(7, 2, 3, 0);
         assertThat(errorCallBackMessages).hasSize(0);
         assertThat(errorCallBackExceptions).hasSize(0);
     }
@@ -163,8 +156,9 @@ class InventorySyncTest {
 
     @Test
     void sync_WithEnsuredChannels_ShouldCreateEntriesWithUnknownChannels() {
-        final InventoryEntryDraft draftWithNewChannel = InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1,
-                Channel.referenceOfId(KEY_3));
+        final InventoryEntryDraft draftWithNewChannel = InventoryEntryDraftBuilder
+            .of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, ResourceIdentifier.ofKey(KEY_3))
+            .build();
         final InventorySync inventorySync = getInventorySync(30, true);
         final InventorySyncStatistics stats = inventorySync.sync(singletonList(draftWithNewChannel))
                 .toCompletableFuture()
@@ -177,8 +171,9 @@ class InventorySyncTest {
 
     @Test
     void sync_WithNoNewCreatedInventory_ShouldIncrementFailedStatic() {
-        final InventoryEntryDraft draftWithNewChannel = InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1,
-            Channel.referenceOfId(KEY_3));
+        final InventoryEntryDraft draftWithNewChannel = InventoryEntryDraftBuilder
+            .of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, ResourceIdentifier.ofKey(KEY_3))
+            .build();
         final InventorySyncOptions options = getInventorySyncOptions(30, true);
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
             null,  mock(InventoryEntry.class));
@@ -196,8 +191,9 @@ class InventorySyncTest {
 
     @Test
     void sync_WithNotEnsuredChannels_ShouldNotSyncEntriesWithUnknownChannels() {
-        final InventoryEntryDraft draftWithNewChannel = InventoryEntryDraft.of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1,
-                Channel.referenceOfId(KEY_3));
+        final InventoryEntryDraft draftWithNewChannel = InventoryEntryDraftBuilder
+            .of(SKU_3, QUANTITY_1, DATE_1, RESTOCKABLE_1, ResourceIdentifier.ofKey(KEY_3))
+            .build();
 
         final InventorySyncOptions options = getInventorySyncOptions(30, false);
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
@@ -272,7 +268,7 @@ class InventorySyncTest {
                 .toCompletableFuture()
                 .join();
 
-        assertThat(stats).hasValues(8, 5, 1, 2);
+        assertThat(stats).hasValues(7, 4, 1, 2);
         assertThat(errorCallBackMessages).hasSize(2);
         assertThat(errorCallBackExceptions).hasSize(2);
     }
@@ -293,9 +289,9 @@ class InventorySyncTest {
                 .toCompletableFuture()
                 .join();
 
-        assertThat(stats).hasValues(8, 0, 0, 6);
-        assertThat(errorCallBackMessages).hasSize(6);
-        assertThat(errorCallBackExceptions).hasSize(6);
+        assertThat(stats).hasValues(7, 0, 0, 5);
+        assertThat(errorCallBackMessages).hasSize(5);
+        assertThat(errorCallBackExceptions).hasSize(5);
     }
 
     @Test
@@ -311,7 +307,8 @@ class InventorySyncTest {
             mock(TypeService.class));
 
         final InventoryEntryDraft inventoryEntryDraft = InventoryEntryDraftBuilder
-            .of(SKU_2, QUANTITY_2, DATE_1, RESTOCKABLE_1, ResourceIdentifier.ofId(KEY_2)).build();
+            .of(SKU_2, QUANTITY_2, DATE_1, RESTOCKABLE_1, ResourceIdentifier.ofKey(KEY_2))
+            .build();
 
         final InventorySyncStatistics stats = inventorySync.sync(Collections.singletonList(inventoryEntryDraft))
                                                            .toCompletableFuture()
@@ -340,7 +337,7 @@ class InventorySyncTest {
         final List<InventoryEntryDraft> newDrafts = new ArrayList<>();
         final InventoryEntryDraft draftWithNullCustomTypeId =
             InventoryEntryDraft.of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, null)
-                               .withCustom(CustomFieldsDraft.ofTypeIdAndJson("", new HashMap<>()));
+                               .withCustom(CustomFieldsDraft.ofTypeKeyAndJson("", new HashMap<>()));
         newDrafts.add(draftWithNullCustomTypeId);
 
         final InventorySyncStatistics syncStatistics = inventorySync.sync(newDrafts).toCompletableFuture().join();
@@ -350,7 +347,7 @@ class InventorySyncTest {
         assertThat(errorCallBackMessages.get(0)).contains(format("Failed to process the"
             + " InventoryEntryDraft with SKU:'%s'. Reason: %s: Failed to resolve custom type resource identifier on "
             + "InventoryEntryDraft with SKU:'1000'. Reason: %s", SKU_1,
-            ReferenceResolutionException.class.getCanonicalName(), BLANK_ID_VALUE_ON_RESOURCE_IDENTIFIER));
+            ReferenceResolutionException.class.getCanonicalName(), BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
         assertThat(errorCallBackExceptions).isNotEmpty();
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
@@ -367,8 +364,9 @@ class InventorySyncTest {
         when(channelService.fetchCachedChannelId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-        final InventoryEntryDraft newInventoryDraft = InventoryEntryDraft
-            .of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, Channel.referenceOfId(KEY_3));
+        final InventoryEntryDraft newInventoryDraft = InventoryEntryDraftBuilder
+            .of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, ResourceIdentifier.ofKey(KEY_3))
+            .build();
         final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
             mock(TypeService.class));
 
@@ -392,8 +390,9 @@ class InventorySyncTest {
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
         when(channelService.createAndCacheChannel(anyString())).thenReturn(failed(new SphereException()));
 
-        final InventoryEntryDraft newInventoryDraft = InventoryEntryDraft
-            .of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, Channel.referenceOfId(KEY_3));
+        final InventoryEntryDraft newInventoryDraft = InventoryEntryDraftBuilder
+            .of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, ResourceIdentifier.ofKey(KEY_3))
+            .build();
         final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
             mock(TypeService.class));
 

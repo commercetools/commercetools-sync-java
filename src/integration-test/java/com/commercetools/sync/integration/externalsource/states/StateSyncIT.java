@@ -50,7 +50,7 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static com.commercetools.sync.integration.commons.utils.StateITUtils.deleteStates;
 import static com.commercetools.sync.integration.commons.utils.StateITUtils.deleteStatesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.StateITUtils.getStateByKey;
-import static com.commercetools.sync.states.utils.StateTransitionReferenceReplacementUtils.replaceStateTransitionIdsWithKeys;
+import static com.commercetools.sync.states.utils.StateReferenceResolutionUtils.mapToStateDrafts;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static io.sphere.sdk.states.State.referenceOfId;
@@ -567,7 +567,7 @@ class StateSyncIT {
         final State stateB = createStateInSource(stateBDraft);
 
         StateDraft[] draftsWithReplacesKeys =
-            replaceStateTransitionIdsWithKeys(asList(stateB, stateC)).toArray(new StateDraft[2]);
+            mapToStateDrafts(asList(stateB, stateC)).toArray(new StateDraft[2]);
         final StateDraft stateADraft = createStateDraftReferencingStateDrafts(keyA, draftsWithReplacesKeys);
         final List<StateDraft> stateDrafts = asList(stateADraft);
 
@@ -615,7 +615,7 @@ class StateSyncIT {
             .build();
 
         final StateSync stateSync = new StateSync(stateSyncOptions);
-        final List<StateDraft> stateDrafts = replaceStateTransitionIdsWithKeys(Arrays.asList(stateA, stateB, stateC));
+        final List<StateDraft> stateDrafts = mapToStateDrafts(Arrays.asList(stateA, stateB, stateC));
         // test
         final StateSyncStatistics stateSyncStatistics = stateSync
             .sync(stateDrafts)
@@ -667,7 +667,7 @@ class StateSyncIT {
         when(stateSyncOptions.getCtpClient()).thenReturn(spyDecoratedClient);
 
         final StateSync stateSync = new StateSync(stateSyncOptions);
-        final List<StateDraft> stateDrafts = replaceStateTransitionIdsWithKeys(Arrays.asList(stateA, stateB, stateC));
+        final List<StateDraft> stateDrafts = mapToStateDrafts(Arrays.asList(stateA, stateB, stateC));
         // test
         final StateSyncStatistics stateSyncStatistics = stateSync
             .sync(stateDrafts)
@@ -733,7 +733,7 @@ class StateSyncIT {
             .build();
 
         final StateSync stateSync = new StateSync(stateSyncOptions);
-        final List<StateDraft> stateDrafts = replaceStateTransitionIdsWithKeys(Arrays.asList(stateA, stateB, stateC));
+        final List<StateDraft> stateDrafts = mapToStateDrafts(Arrays.asList(stateA, stateB, stateC));
         // test
         final StateSyncStatistics stateSyncStatistics = stateSync
             .sync(stateDrafts)
@@ -776,7 +776,7 @@ class StateSyncIT {
             .build());
         when(stateSyncOptions.getCtpClient()).thenReturn(spyDecoratedClient);
         final StateSync stateSync = new StateSync(stateSyncOptions);
-        final List<StateDraft> stateDrafts = replaceStateTransitionIdsWithKeys(Arrays.asList(stateB, stateC));
+        final List<StateDraft> stateDrafts = mapToStateDrafts(Arrays.asList(stateB, stateC));
         // test
         final StateSyncStatistics stateSyncStatistics = stateSync
             .sync(stateDrafts)
@@ -816,7 +816,7 @@ class StateSyncIT {
             .build();
 
         final StateSync stateSync = new StateSync(stateSyncOptions);
-        final List<StateDraft> stateDrafts = replaceStateTransitionIdsWithKeys(Arrays.asList(stateA, stateB, stateC));
+        final List<StateDraft> stateDrafts = mapToStateDrafts(Arrays.asList(stateA, stateB, stateC));
         // test
         final StateSyncStatistics stateSyncStatistics = stateSync
             .sync(stateDrafts)
@@ -859,7 +859,7 @@ class StateSyncIT {
             .build();
 
         final StateSync stateSync = new StateSync(stateSyncOptions);
-        final List<StateDraft> stateDrafts = replaceStateTransitionIdsWithKeys(Arrays.asList(stateA, stateB, stateC));
+        final List<StateDraft> stateDrafts = mapToStateDrafts(Arrays.asList(stateA, stateB, stateC));
         // test
         final StateSyncStatistics stateSyncStatistics = stateSync
             .sync(stateDrafts)
@@ -954,7 +954,7 @@ class StateSyncIT {
         when(stateSyncOptions.getCtpClient()).thenReturn(spyDecoratedClient);
 
         final StateSync stateSync = new StateSync(stateSyncOptions);
-        final List<StateDraft> stateDrafts = replaceStateTransitionIdsWithKeys(Arrays.asList(stateA, stateB, stateC));
+        final List<StateDraft> stateDrafts = mapToStateDrafts(Arrays.asList(stateA, stateB, stateC));
         // test
         final StateSyncStatistics stateSyncStatistics = stateSync
             .sync(stateDrafts)
@@ -1021,7 +1021,8 @@ class StateSyncIT {
                 warningCallBackMessages.add(exception.getMessage()))
             .build());
         when(stateSyncOptions.getCtpClient()).thenReturn(spyDecoratedClient);
-        final List<StateDraft> stateDrafts = replaceStateTransitionIdsWithKeys(Arrays.asList(stateA, stateB, stateC));
+        final List<StateDraft> stateDrafts = mapToStateDrafts(Arrays.asList(stateA, stateB, stateC));
+
         // test
         final StateSyncStatistics stateSyncStatistics = new StateSync(stateSyncOptions)
             .sync(stateDrafts)

@@ -13,7 +13,7 @@ import static java.lang.String.format;
 public final class AssetReferenceResolver
     extends CustomReferenceResolver<AssetDraft, AssetDraftBuilder, BaseSyncOptions> {
 
-    private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
+    static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
         + "AssetDraft with key:'%s'.";
 
     /**

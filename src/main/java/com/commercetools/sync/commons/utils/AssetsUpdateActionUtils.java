@@ -150,7 +150,6 @@ public final class AssetsUpdateActionUtils {
         // It is important to have a changeAssetOrder action before an addAsset action, since changeAssetOrder requires
         // asset ids for sorting them, and new assets don't have ids yet since they are generated
         // by CTP after an asset is created. Therefore, the order of update actions must be:
-        // removeAsset → changeAssetOrder → addAsset
 
         //1. Remove or compare if matching.
         final List<UpdateAction<T>> updateActions =

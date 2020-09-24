@@ -234,7 +234,7 @@ class CartDiscountSyncIT {
 
         final CartDiscountDraft newCartDiscountDraftWithExistingKey =
             CartDiscountDraftBuilder.of(CART_DISCOUNT_DRAFT_1)
-                                    .custom(CustomFieldsDraft.ofTypeIdAndJson(newCustomType.getKey(), emptyMap()))
+                                    .custom(CustomFieldsDraft.ofTypeKeyAndJson(newCustomType.getKey(), emptyMap()))
                                     .build();
 
         final List<String> errorMessages = new ArrayList<>();
@@ -274,29 +274,21 @@ class CartDiscountSyncIT {
     }
 
     @Test
-    void sync_WithUpdatedCartDiscount_WithNewCustomTypeWithWrongResIdentifier_ShouldFailToResolveReference() {
+    void sync_WithUpdatedCartDiscount_WithNonExistingResIdentifier_ShouldFailToResolveReference() {
         // preparation
-        final Type newCustomType =
-            createCartDiscountCustomType("new-type", Locale.ENGLISH, "new-type", CTP_TARGET_CLIENT);
-
         final CartDiscountDraft newCartDiscountDraftWithExistingKey =
             CartDiscountDraftBuilder.of(CART_DISCOUNT_DRAFT_1)
-                                    .custom(CustomFieldsDraft.ofTypeKeyAndJson(newCustomType.getKey(), emptyMap()))
+                                    .custom(CustomFieldsDraft.ofTypeKeyAndJson("not-existing-key", emptyMap()))
                                     .build();
 
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> exceptions = new ArrayList<>();
-        final List<UpdateAction<CartDiscount>> updateActionsList = new ArrayList<>();
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
             .errorCallback((exception, oldResource, newResource, actions) -> {
                 errorMessages.add(exception.getMessage());
                 exceptions.add(exception);
-            })
-            .beforeUpdateCallback((updateActions, newCartDiscount, oldCartDiscount) -> {
-                updateActionsList.addAll(updateActions);
-                return updateActions;
             })
             .build();
 
@@ -309,28 +301,12 @@ class CartDiscountSyncIT {
             .join();
 
         //assertions
+        assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
         assertThat(errorMessages).containsExactly(
             "Failed to process the CartDiscountDraft with key:'key_1'. Reason: "
                 + ReferenceResolutionException.class.getCanonicalName() + ": "
-                + "Failed to resolve custom type reference on CartDiscountDraft with key:'key_1'. Reason: "
-                + "The value of the 'id' field of the Resource Identifier/Reference is blank (null/empty).");
-        assertThat(exceptions)
-            .hasSize(1)
-            .hasOnlyOneElementSatisfying(exception -> {
-                assertThat(exception).hasCauseExactlyInstanceOf(CompletionException.class);
-                assertThat(exception.getMessage())
-                    .contains("Failed to resolve custom type reference on CartDiscountDraft with key:'key_1'");
-                assertThat(exception.getCause()).hasCauseExactlyInstanceOf(ReferenceResolutionException.class);
-                assertThat(exception.getCause().getCause().getMessage()).isEqualTo(
-                    "Failed to resolve custom type reference on CartDiscountDraft with key:'key_1'. Reason: "
-                    +   "The value of the 'id' field of the Resource Identifier/Reference is blank (null/empty).");
-            });
-        assertThat(updateActionsList).isEmpty();
-        assertThat(cartDiscountSyncStatistics
-            .getReportMessage())
-            .isEqualTo("Summary: 1 cart discounts were processed in total"
-                + " (0 created, 0 updated and 1 failed to sync).");
-        assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
+                + "Failed to resolve custom type reference on CartDiscountDraft with key:'key_1'. "
+                + "Reason: Type with key 'not-existing-key' doesn't exist.");
     }
 
     @Test
@@ -342,7 +318,7 @@ class CartDiscountSyncIT {
         final CartDiscountDraft newCartDiscountDraftWithExistingKey =
             CartDiscountDraftBuilder.of(CART_DISCOUNT_DRAFT_1)
                                     .custom(CustomFieldsDraft
-                                        .ofTypeIdAndJson(OLD_CART_DISCOUNT_TYPE_KEY, customFieldsJsons))
+                                        .ofTypeKeyAndJson(OLD_CART_DISCOUNT_TYPE_KEY, customFieldsJsons))
                                     .build();
 
         final List<String> errorMessages = new ArrayList<>();

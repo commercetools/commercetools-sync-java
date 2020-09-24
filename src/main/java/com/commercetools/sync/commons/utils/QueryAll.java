@@ -2,7 +2,7 @@ package com.commercetools.sync.commons.utils;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.models.Resource;
+import io.sphere.sdk.models.ResourceView;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.queries.QueryDsl;
 import io.sphere.sdk.queries.QueryPredicate;
@@ -18,7 +18,7 @@ import java.util.function.Function;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 
-final class QueryAll<T extends Resource, C extends QueryDsl<T, C>, S> {
+final class QueryAll<T extends ResourceView, C extends QueryDsl<T, C>, S> {
     private final SphereClient client;
     private final QueryDsl<T, C> baseQuery;
     private final long pageSize;
@@ -39,7 +39,7 @@ final class QueryAll<T extends Resource, C extends QueryDsl<T, C>, S> {
     }
 
     @Nonnull
-    private static <T extends Resource, C extends QueryDsl<T, C>> QueryDsl<T, C> withDefaults(
+    private static <T extends ResourceView, C extends QueryDsl<T, C>> QueryDsl<T, C> withDefaults(
         @Nonnull final QueryDsl<T, C> query, final long pageSize) {
 
         final C withLimit = query.withLimit(pageSize);
@@ -47,7 +47,7 @@ final class QueryAll<T extends Resource, C extends QueryDsl<T, C>, S> {
     }
 
     @Nonnull
-    static <T extends Resource, C extends QueryDsl<T, C>, S> QueryAll<T, C, S> of(
+    static <T extends ResourceView, C extends QueryDsl<T, C>, S> QueryAll<T, C, S> of(
         @Nonnull final SphereClient client,
         @Nonnull final QueryDsl<T, C> baseQuery,
         final int pageSize) {

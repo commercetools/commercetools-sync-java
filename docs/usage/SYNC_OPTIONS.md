@@ -1,6 +1,5 @@
 # Sync Options
 
-<!-- use in v2.0.0 
 #### `errorCallback`
 a callback that is called whenever an error event occurs during the sync process. It contains the follow information 
 about the error-event:
@@ -17,15 +16,6 @@ about the warning message:
 * sync exception
 * the resource draft of the source project
 * the resource of the target project
--->
-#### `errorCallBack`
-a callback that is called whenever an error event occurs during the sync process. It contains information about the 
-error message and the exception.
-
-#### `warningCallBack` 
-a callback that is called whenever a warning event occurs during the sync process. It contains information about the 
-warning message.
-
 
 #### `beforeUpdateCallback`
 during the sync process if a target resource and a resource draft are matched, this callback can be used to intercept 
@@ -73,8 +63,10 @@ If it fails to create the supply channel, the inventory entry/product won't sync
  final Logger logger = LoggerFactory.getLogger(MySync.class);
  final ProductSyncOptions productsyncOptions = ProductSyncOptionsBuilder
          .of(sphereClient)
-         .errorCallBack(logger::error)
-         .warningCallBack(logger::warn)         
+         .errorCallback((syncException, draft, product, updateActions) -> 
+            logger.error(syncException.getMessage(), syncException))
+         .warningCallback((exception, oldResource, newResources) -> 
+            logger.warn(exception.getMessage(), exception))
          .build();
 ````
  
