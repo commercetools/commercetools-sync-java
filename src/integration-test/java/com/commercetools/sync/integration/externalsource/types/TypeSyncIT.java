@@ -333,7 +333,8 @@ class TypeSyncIT {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).isEqualTo("Failed to process type draft without key.")
+                assertThat(message).isEqualTo("TypeDraft with name: LocalizedString(en -> name_1) doesn't have a key. "
+                    + "Please make sure all type drafts have keys.")
             );
 
         assertThat(exceptions)
@@ -370,7 +371,7 @@ class TypeSyncIT {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).isEqualTo("Failed to process null type draft.")
+                assertThat(message).isEqualTo("TypeDraft is null.")
             );
 
         assertThat(exceptions)
