@@ -3,6 +3,7 @@ package com.commercetools.sync.products.helpers;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.helpers.AssetReferenceResolver;
 import com.commercetools.sync.commons.helpers.BaseReferenceResolver;
+import com.commercetools.sync.commons.utils.SyncUtils;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.CategoryService;
@@ -187,15 +188,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
         }
 
         if (isReferenceOfType(referenceValue, CustomObject.referenceTypeId())) {
-            // todo (ahmetoz) ensure before the referenceValue is in correct format
-            //  or should throw an exception ?
-            return getResolvedIdFromKeyInReference(referenceValue, resolvedIdText -> {
-                final String[] containerAndKey = resolvedIdText.split("\\|");
-                final CustomObjectCompositeIdentifier customObjectCompositeIdentifier =
-                    CustomObjectCompositeIdentifier.of(containerAndKey[1], containerAndKey[0]);
-
-                return customObjectService.fetchCachedCustomObjectId(customObjectCompositeIdentifier);
-            });
+            return getResolvedIdFromKeyInReference(referenceValue, this::resolveCustomObjectReference);
         }
 
         return CompletableFuture.completedFuture(Optional.empty());
@@ -210,6 +203,19 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
         return idField != null && !Objects.equals(idField, NullNode.getInstance())
             ? resolvedIdFetcher.apply(idField.asText())
             : CompletableFuture.completedFuture(Optional.empty());
+    }
+
+    private CompletionStage<Optional<String>> resolveCustomObjectReference(
+        @Nonnull final String resolvedIdText) {
+
+        if (SyncUtils.isUuid(resolvedIdText)) {
+            return completedFuture(Optional.empty());
+        }
+
+        final CustomObjectCompositeIdentifier customObjectCompositeIdentifier =
+            CustomObjectCompositeIdentifier.of(resolvedIdText);
+
+        return customObjectService.fetchCachedCustomObjectId(customObjectCompositeIdentifier);
     }
 }
 
