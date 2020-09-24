@@ -3,6 +3,7 @@ package com.commercetools.sync.services.impl;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptions;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptionsBuilder;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -29,7 +30,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-
 import static io.sphere.sdk.customobjects.CustomObjectUtils.getCustomObjectJavaTypeForValue;
 import static io.sphere.sdk.json.SphereJsonUtils.convertToJavaType;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -38,6 +38,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -45,7 +46,7 @@ import static org.mockito.Mockito.when;
 class CustomObjectServiceImplTest {
 
     private SphereClient client = mock(SphereClient.class);
-
+    private SphereClient decoratedClient = mock(CustomHeaderSphereClientDecorator.class);
     private CustomObjectServiceImpl service;
 
     private String customObjectId;
@@ -58,8 +59,8 @@ class CustomObjectServiceImplTest {
         customObjectContainer = RandomStringUtils.random(15, true, true);
         customObjectKey = RandomStringUtils.random(15, true, true);
 
-        CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder.of(client).build();
-
+        CustomObjectSyncOptions customObjectSyncOptions = spy(CustomObjectSyncOptionsBuilder.of(client).build());
+        when(customObjectSyncOptions.getCtpClient()).thenReturn(decoratedClient);
         service = new CustomObjectServiceImpl(customObjectSyncOptions);
     }
 
@@ -85,7 +86,7 @@ class CustomObjectServiceImplTest {
         final CustomObjectPagedQueryResult result = mock(CustomObjectPagedQueryResult.class);
         when(result.getResults()).thenReturn(Collections.singletonList(mock));
 
-        when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
+        when(decoratedClient.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
 
 
         final Optional<String> fetchedId = service
@@ -93,7 +94,7 @@ class CustomObjectServiceImplTest {
             .toCompletableFuture().join();
 
         assertThat(fetchedId).contains(id);
-        verify(client).execute(any(CustomObjectQuery.class));
+        verify(decoratedClient).execute(any(CustomObjectQuery.class));
     }
 
     @Test
@@ -110,14 +111,14 @@ class CustomObjectServiceImplTest {
         final CustomObjectPagedQueryResult result = mock(CustomObjectPagedQueryResult.class);
         when(result.getResults()).thenReturn(Collections.singletonList(mock));
 
-        when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
+        when(decoratedClient.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
 
 
         final Optional<String> fetchedId = service
             .fetchCachedCustomObjectId(CustomObjectCompositeIdentifier.of(key, container))
             .toCompletableFuture().join();
         assertThat(fetchedId).isEmpty();
-        verify(client, times(0)).execute(any(CustomObjectQuery.class));
+        verify(decoratedClient, times(0)).execute(any(CustomObjectQuery.class));
 
     }
 
@@ -135,14 +136,14 @@ class CustomObjectServiceImplTest {
         final CustomObjectPagedQueryResult result = mock(CustomObjectPagedQueryResult.class);
         when(result.getResults()).thenReturn(Collections.singletonList(mock));
 
-        when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
+        when(decoratedClient.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
 
 
         final Optional<String> fetchedId = service
             .fetchCachedCustomObjectId(CustomObjectCompositeIdentifier.of(key, container))
             .toCompletableFuture().join();
         assertThat(fetchedId).isEmpty();
-        verify(client, times(0)).execute(any(CustomObjectQuery.class));
+        verify(decoratedClient, times(0)).execute(any(CustomObjectQuery.class));
     }
 
     @Test
@@ -169,7 +170,7 @@ class CustomObjectServiceImplTest {
         final CustomObjectPagedQueryResult result = mock(CustomObjectPagedQueryResult.class);
         when(result.getResults()).thenReturn(Arrays.asList(mock1, mock2));
 
-        when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
+        when(decoratedClient.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
 
         final Set<CustomObject<JsonNode>> customObjects = service
             .fetchMatchingCustomObjects(customObjectCompositeIdentifiers)
@@ -184,7 +185,7 @@ class CustomObjectServiceImplTest {
                 String.valueOf(customObjectCompositeIdlist.get(0)),
                 String.valueOf(customObjectCompositeIdlist.get(1)))
         );
-        verify(client).execute(any(CustomObjectQuery.class));
+        verify(decoratedClient).execute(any(CustomObjectQuery.class));
     }
 
     @Test
@@ -211,7 +212,7 @@ class CustomObjectServiceImplTest {
         final CustomObjectPagedQueryResult result = mock(CustomObjectPagedQueryResult.class);
         when(result.getResults()).thenReturn(Arrays.asList(mock1, mock2));
 
-        when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
+        when(decoratedClient.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
 
         final Set<CustomObject<JsonNode>> customObjects =
             service.fetchMatchingCustomObjects(customObjectCompositeIdentifiers).toCompletableFuture().join();
@@ -225,7 +226,7 @@ class CustomObjectServiceImplTest {
                 String.valueOf(customObjectCompositeIdlist.get(0)),
                 String.valueOf(customObjectCompositeIdlist.get(1)))
         );
-        verify(client, times(0)).execute(any(CustomObjectQuery.class));
+        verify(decoratedClient, times(0)).execute(any(CustomObjectQuery.class));
     }
 
     @Test
@@ -252,7 +253,7 @@ class CustomObjectServiceImplTest {
         final CustomObjectPagedQueryResult result = mock(CustomObjectPagedQueryResult.class);
         when(result.getResults()).thenReturn(Arrays.asList(mock1, mock2));
 
-        when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
+        when(decoratedClient.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
 
         final Set<CustomObject<JsonNode>> customObjects =
                 service.fetchMatchingCustomObjects(customObjectCompositeIdentifiers).toCompletableFuture().join();
@@ -266,7 +267,7 @@ class CustomObjectServiceImplTest {
                     String.valueOf(customObjectCompositeIdlist.get(0)),
                     String.valueOf(customObjectCompositeIdlist.get(1)))
         );
-        verify(client, times(0)).execute(any(CustomObjectQuery.class));
+        verify(decoratedClient, times(0)).execute(any(CustomObjectQuery.class));
     }
 
     @Test
@@ -277,9 +278,7 @@ class CustomObjectServiceImplTest {
         when(mock.getContainer()).thenReturn(customObjectContainer);
         final CustomObjectPagedQueryResult result = mock(CustomObjectPagedQueryResult.class);
         when(result.head()).thenReturn(Optional.of(mock));
-
-        when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
-
+        when(decoratedClient.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
 
         final Optional<CustomObject<JsonNode>> customObjectOptional = service
             .fetchCustomObject(CustomObjectCompositeIdentifier.of(customObjectKey, customObjectContainer))
@@ -292,7 +291,7 @@ class CustomObjectServiceImplTest {
                     CustomObjectCompositeIdentifier.of(customObjectKey, customObjectContainer).toString())
             ).isEqualTo(customObjectId)
         );
-        verify(client).execute(any(CustomObjectQuery.class));
+        verify(decoratedClient).execute(any(CustomObjectQuery.class));
     }
 
     @Test
@@ -304,7 +303,7 @@ class CustomObjectServiceImplTest {
         final CustomObjectPagedQueryResult result = mock(CustomObjectPagedQueryResult.class);
         when(result.head()).thenReturn(Optional.of(mock));
 
-        when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
+        when(decoratedClient.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
 
 
         final Optional<CustomObject<JsonNode>> customObjectOptional = service
@@ -318,7 +317,7 @@ class CustomObjectServiceImplTest {
                     CustomObjectCompositeIdentifier.of(customObjectKey, customObjectContainer).toString())
             ).isNotEqualTo(customObjectId)
         );
-        verify(client, times(0)).execute(any(CustomObjectQuery.class));
+        verify(decoratedClient, times(0)).execute(any(CustomObjectQuery.class));
     }
 
     @Test
@@ -330,7 +329,7 @@ class CustomObjectServiceImplTest {
         final CustomObjectPagedQueryResult result = mock(CustomObjectPagedQueryResult.class);
         when(result.head()).thenReturn(Optional.of(mock));
 
-        when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
+        when(decoratedClient.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
 
 
         final Optional<CustomObject<JsonNode>> customObjectOptional = service
@@ -344,7 +343,7 @@ class CustomObjectServiceImplTest {
                     CustomObjectCompositeIdentifier.of(customObjectKey, customObjectContainer).toString())
             ).isNotEqualTo(customObjectId)
         );
-        verify(client, times(0)).execute(any(CustomObjectQuery.class));
+        verify(decoratedClient, times(0)).execute(any(CustomObjectQuery.class));
     }
 
     @Test
@@ -354,7 +353,7 @@ class CustomObjectServiceImplTest {
         when(mock.getKey()).thenReturn(customObjectKey);
         when(mock.getContainer()).thenReturn(customObjectContainer);
 
-        when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(mock));
+        when(decoratedClient.execute(any())).thenReturn(CompletableFuture.completedFuture(mock));
 
         final ObjectNode customObjectValue = JsonNodeFactory.instance.objectNode();
         customObjectValue.put("currentHash", "1234-5678-0912-3456");
@@ -368,7 +367,7 @@ class CustomObjectServiceImplTest {
             service.upsertCustomObject(draft).toCompletableFuture().join();
 
         assertThat(customObjectOptional).containsSame(mock);
-        verify(client).execute(eq(CustomObjectUpsertCommand.of(draft)));
+        verify(decoratedClient).execute(eq(CustomObjectUpsertCommand.of(draft)));
     }
 
     @Test
@@ -376,7 +375,8 @@ class CustomObjectServiceImplTest {
         final CustomObject mock = mock(CustomObject.class);
         when(mock.getId()).thenReturn(customObjectId);
 
-        when(client.execute(any())).thenReturn(CompletableFutureUtils.failed(new BadRequestException("bad request")));
+        when(decoratedClient.execute(any())).thenReturn(
+                CompletableFutureUtils.failed(new BadRequestException("bad request")));
 
         final CustomObjectDraft<JsonNode> draftMock = mock(CustomObjectDraft.class);
         when(draftMock.getKey()).thenReturn(customObjectKey);
@@ -404,7 +404,7 @@ class CustomObjectServiceImplTest {
             service.upsertCustomObject(customObjectDraft).toCompletableFuture().join();
 
         assertThat(customObjectOptional).isEmpty();
-        verify(client, times(0)).execute(eq(CustomObjectUpsertCommand.of(customObjectDraft)));
+        verify(decoratedClient, times(0)).execute(eq(CustomObjectUpsertCommand.of(customObjectDraft)));
     }
 
     @Test
@@ -419,6 +419,6 @@ class CustomObjectServiceImplTest {
             service.upsertCustomObject(customObjectDraft).toCompletableFuture().join();
 
         assertThat(customObjectOptional).isEmpty();
-        verify(client, times(0)).execute(eq(CustomObjectUpsertCommand.of(customObjectDraft)));
+        verify(decoratedClient, times(0)).execute(eq(CustomObjectUpsertCommand.of(customObjectDraft)));
     }
 }

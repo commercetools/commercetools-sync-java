@@ -3,6 +3,7 @@ package com.commercetools.sync.categories.helpers;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.CategoryServiceImpl;
@@ -21,15 +22,14 @@ import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.queries.TypeQuery;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraftBuilder;
 import static com.commercetools.sync.categories.helpers.CategoryReferenceResolver.FAILED_TO_RESOLVE_CUSTOM_TYPE;
@@ -47,6 +47,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 class CategoryReferenceResolverTest {
@@ -144,13 +145,15 @@ class CategoryReferenceResolverTest {
     void resolveParentReference_WithExceptionOnFetch_ShouldNotResolveReferences() {
         // Preparation
         final SphereClient ctpClient = mock(SphereClient.class);
-        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(ctpClient)
-                                                                                  .build();
+        final SphereClient mockDecoratedClient = mock(CustomHeaderSphereClientDecorator.class);
+        final CategorySyncOptions categorySyncOptions = spy(CategorySyncOptionsBuilder.of(ctpClient)
+                                                                                  .build());
         final CategoryService categoryService = new CategoryServiceImpl(categorySyncOptions);
 
         final CompletableFuture<PagedQueryResult<Category>> futureThrowingSphereException = new CompletableFuture<>();
         futureThrowingSphereException.completeExceptionally(new SphereException("CTP error on fetch"));
-        when(ctpClient.execute(any(CategoryQuery.class))).thenReturn(futureThrowingSphereException);
+        when(categorySyncOptions.getCtpClient()).thenReturn(mockDecoratedClient);
+        when(mockDecoratedClient.execute(any(CategoryQuery.class))).thenReturn(futureThrowingSphereException);
 
         final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
             "nonExistingCategoryKey", "customTypeKey", new HashMap<>());
@@ -253,13 +256,15 @@ class CategoryReferenceResolverTest {
     void resolveCustomTypeReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
         // Preparation
         final SphereClient ctpClient = mock(SphereClient.class);
-        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(ctpClient)
-                                                                                  .build();
+        final SphereClient mockDecoratedClient = mock(CustomHeaderSphereClientDecorator.class);
+        final CategorySyncOptions categorySyncOptions = spy(CategorySyncOptionsBuilder.of(ctpClient)
+                                                                                  .build());
         final TypeService typeService = new TypeServiceImpl(categorySyncOptions);
 
         final CompletableFuture<PagedQueryResult<Type>> futureThrowingSphereException = new CompletableFuture<>();
         futureThrowingSphereException.completeExceptionally(new SphereException("CTP error on fetch"));
-        when(ctpClient.execute(any(TypeQuery.class))).thenReturn(futureThrowingSphereException);
+        when(categorySyncOptions.getCtpClient()).thenReturn(mockDecoratedClient);
+        when(mockDecoratedClient.execute(any(TypeQuery.class))).thenReturn(futureThrowingSphereException);
 
         final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
             null, "customTypeId", new HashMap<>());

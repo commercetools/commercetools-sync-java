@@ -5,6 +5,7 @@ import com.commercetools.sync.customobjects.CustomObjectSyncOptions;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptionsBuilder;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.customobjects.helpers.CustomObjectSyncStatistics;
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -199,16 +200,16 @@ public class CustomObjectSyncIT {
     @Test
     void sync_withConcurrentModificationExceptionAndUnexpectedDelete_shouldFailToReFetchAndUpdate() {
 
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
 
         final CustomObjectUpsertCommand customObjectUpsertCommand = any(CustomObjectUpsertCommand.class);
-        when(spyClient.execute(customObjectUpsertCommand))
+        when(spyDecoratedClient.execute(customObjectUpsertCommand))
                 .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()))
                 .thenCallRealMethod();
 
         final CustomObjectQuery customObjectQuery = any(CustomObjectQuery.class);
 
-        when(spyClient.execute(customObjectQuery))
+        when(spyDecoratedClient.execute(customObjectQuery))
                 .thenCallRealMethod()
                 .thenReturn(CompletableFuture.completedFuture(PagedQueryResult.empty()));
 
@@ -216,14 +217,14 @@ public class CustomObjectSyncIT {
         List<String> errorCallBackMessages = new ArrayList<>();
         List<Throwable> errorCallBackExceptions = new ArrayList<>();
 
-        final CustomObjectSyncOptions spyOptions = CustomObjectSyncOptionsBuilder
-            .of(spyClient)
+        final CustomObjectSyncOptions spyOptions = spy(CustomObjectSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorCallBackMessages.add(exception.getMessage());
                 errorCallBackExceptions.add(exception.getCause());
             })
-            .build();
-
+            .build());
+        when(spyOptions.getCtpClient()).thenReturn(spyDecoratedClient);
         final CustomObjectSync customObjectSync = new CustomObjectSync(spyOptions);
 
         final CustomObjectDraft<JsonNode> customObjectDraft = CustomObjectDraft.ofUnversionedUpsert("container1",

@@ -4,6 +4,7 @@ import com.commercetools.sync.customobjects.CustomObjectSyncOptions;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptionsBuilder;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.services.CustomObjectService;
 import com.commercetools.sync.services.impl.CustomObjectServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -167,19 +168,19 @@ class CustomObjectServiceImplIT {
     @Test
     void fetchMatchingCustomObjectsByCompositeIdentifiers_WithBadGateWayExceptionAlways_ShouldFail() {
         // Mock sphere client to return BadGatewayException on any request.
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(CustomObjectQuery.class)))
+        final SphereClient spyDecoratedClient = spy(CustomHeaderSphereClientDecorator.of(CTP_TARGET_CLIENT));
+        when(spyDecoratedClient.execute(any(CustomObjectQuery.class)))
                 .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
                 .thenCallRealMethod();
 
         final CustomObjectSyncOptions spyOptions =
-                CustomObjectSyncOptionsBuilder.of(spyClient)
+                spy(CustomObjectSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                                       .errorCallback((exception, oldResource, newResource, updateActions) -> {
                                           errorCallBackMessages.add(exception.getMessage());
                                           errorCallBackExceptions.add(exception.getCause());
                                       })
-                                      .build();
-
+                                      .build());
+        when(spyOptions.getCtpClient()).thenReturn(spyDecoratedClient);
         final CustomObjectService spyCustomObjectService = new CustomObjectServiceImpl(spyOptions);
 
         final Set<CustomObjectCompositeIdentifier> customObjectCompositeIdentifiers = new HashSet<>();

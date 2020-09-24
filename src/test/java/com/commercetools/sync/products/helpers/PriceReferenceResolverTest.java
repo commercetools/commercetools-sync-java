@@ -1,6 +1,7 @@
 package com.commercetools.sync.products.helpers;
 
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.ChannelService;
@@ -20,14 +21,13 @@ import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.queries.TypeQuery;
 import io.sphere.sdk.utils.MoneyImpl;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
@@ -45,6 +45,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 class PriceReferenceResolverTest {
@@ -74,13 +75,15 @@ class PriceReferenceResolverTest {
     void resolveCustomTypeReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
         // Preparation
         final SphereClient ctpClient = mock(SphereClient.class);
-        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(ctpClient).build();
+        final SphereClient mockDecoratedClient = mock(CustomHeaderSphereClientDecorator.class);
+        final ProductSyncOptions productSyncOptions = spy(ProductSyncOptionsBuilder.of(ctpClient).build());
 
         final TypeService typeService = new TypeServiceImpl(productSyncOptions);
 
         final CompletableFuture<PagedQueryResult<Type>> futureThrowingSphereException = new CompletableFuture<>();
         futureThrowingSphereException.completeExceptionally(new SphereException("CTP error on fetch"));
-        when(ctpClient.execute(any(TypeQuery.class))).thenReturn(futureThrowingSphereException);
+        when(productSyncOptions.getCtpClient()).thenReturn(mockDecoratedClient);
+        when(mockDecoratedClient.execute(any(TypeQuery.class))).thenReturn(futureThrowingSphereException);
 
         final String customTypeKey = "customTypeKey";
         final PriceDraftBuilder priceBuilder = PriceDraftBuilder
