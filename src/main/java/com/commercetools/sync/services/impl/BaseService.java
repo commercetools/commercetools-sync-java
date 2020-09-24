@@ -50,7 +50,7 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
     final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
 
     private static final int MAXIMUM_ALLOWED_UPDATE_ACTIONS = 500;
-    private static final String CREATE_FAILED = "Failed to create draft with key: '%s'. Reason: %s";
+    static final String CREATE_FAILED = "Failed to create draft with key: '%s'. Reason: %s";
 
     BaseService(@Nonnull final S syncOptions) {
         this.syncOptions = syncOptions;
@@ -256,7 +256,7 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
     /**
      * Given a resource key, this method fetches a resource that matches this given key in the CTP project defined in a
      * potentially injected {@link SphereClient}. If there is no matching resource an empty {@link Optional} will be
-     * returned in the returned future. A mapping of the key to the id of the fetched category is persisted in an in
+     * returned in the returned future. A mapping of the key to the id of the fetched resource is persisted in an in
      * -memory map.
      *
      * @param key           the key of the resource to fetch
