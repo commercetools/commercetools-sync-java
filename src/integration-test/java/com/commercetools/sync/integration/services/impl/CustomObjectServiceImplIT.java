@@ -141,16 +141,19 @@ class CustomObjectServiceImplIT {
 
         final Set<CustomObjectCompositeIdentifier> customObjectCompositeIdentifiers = new HashSet<>();
         customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(
+                OLD_CUSTOM_OBJECT_KEY + "_1", OLD_CUSTOM_OBJECT_CONTAINER + "_1"));
+        customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(
                 OLD_CUSTOM_OBJECT_KEY + "_1", OLD_CUSTOM_OBJECT_CONTAINER + "_2"));
         customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(
                 OLD_CUSTOM_OBJECT_KEY + "_2", OLD_CUSTOM_OBJECT_CONTAINER + "_1"));
+
 
         final Set<CustomObject<JsonNode>> matchingCustomObjects = customObjectService
                 .fetchMatchingCustomObjects(customObjectCompositeIdentifiers)
                 .toCompletableFuture()
                 .join();
 
-        assertThat(matchingCustomObjects).size().isEqualTo(2);
+        assertThat(matchingCustomObjects).size().isEqualTo(3);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
 

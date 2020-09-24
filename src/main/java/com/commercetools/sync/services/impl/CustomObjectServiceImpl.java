@@ -14,13 +14,11 @@ import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
 import io.sphere.sdk.customobjects.queries.CustomObjectQueryBuilder;
 import io.sphere.sdk.customobjects.queries.CustomObjectQueryModel;
 import io.sphere.sdk.queries.QueryPredicate;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
-import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -43,50 +41,45 @@ public class CustomObjectServiceImpl
 
     @Nonnull
     @Override
+    public CompletionStage<Map<String, String>> cacheKeysToIds(
+        @Nonnull final Set<CustomObjectCompositeIdentifier> identifiers) {
+
+        /*
+         * one example representation of the cache:
+         *
+         * [
+         *  "container_1|key_2" : "7fcd15ca-666e-4639-b25a-0c9f76a66efb"
+         *  "container_2|key_1" : "ad54192c-86cd-4453-a139-85829e2dd891"
+         *  "container_1|key_1" : "33213df2-c09a-426d-8c28-ccc52fdf9744"
+         * ]
+         */
+        return cacheKeysToIds(
+            getKeys(identifiers),
+            this::keyMapper,
+            keysNotCached -> queryIdentifiers(getIdentifiers(keysNotCached)));
+    }
+
+    @Nonnull
+    @Override
     public CompletionStage<Optional<String>> fetchCachedCustomObjectId(
         @Nonnull final CustomObjectCompositeIdentifier identifier) {
 
-        String container = identifier.getContainer();
-        String key = identifier.getKey();
-
-        if (StringUtils.isEmpty(container) || StringUtils.isEmpty(key)) {
-            return CompletableFuture.completedFuture(Optional.empty());
-        }
-
-        return fetchCachedResourceId(identifier.toString(),
-            draft -> CustomObjectCompositeIdentifier.of(draft).toString(),
-            () -> CustomObjectQuery.ofJsonNode()
-                                   .withPredicates(q -> q.container().is(container).and(q.key().is(key)))
-        );
+        return fetchCachedResourceId(
+            identifier.toString(),
+            this::keyMapper,
+            () -> queryOneIdentifier(identifier));
     }
+
 
     @Nonnull
     @Override
     public CompletionStage<Set<CustomObject<JsonNode>>> fetchMatchingCustomObjects(
         @Nonnull final Set<CustomObjectCompositeIdentifier> identifiers) {
 
-        Set<CustomObjectCompositeIdentifier> filteredIdentifiers = identifiers.stream()
-                .filter(identifier ->
-                        StringUtils.isNotEmpty(identifier.getContainer())
-                    &&  StringUtils.isNotEmpty(identifier.getKey()))
-                .collect(Collectors.toSet());
-
-        if (filteredIdentifiers.size() == 0) {
-            return CompletableFuture.completedFuture(Collections.emptySet());
-        }
-
-        Set<String> identifierStrings =
-            filteredIdentifiers.stream()
-                               .map(CustomObjectCompositeIdentifier::toString)
-                               .collect(Collectors.toSet());
-
-        return fetchMatchingResources(identifierStrings,
-            draft -> CustomObjectCompositeIdentifier.of(draft).toString(),
-            () -> {
-                CustomObjectQueryBuilder<JsonNode> query = CustomObjectQueryBuilder.ofJsonNode();
-                query = query.plusPredicates(queryModel -> createQuery(queryModel, filteredIdentifiers));
-                return query.build();
-            });
+        return fetchMatchingResources(
+            getKeys(identifiers),
+            this::keyMapper,
+            () -> queryIdentifiers(identifiers));
     }
 
     @Nonnull
@@ -114,29 +107,17 @@ public class CustomObjectServiceImpl
     public CompletionStage<Optional<CustomObject<JsonNode>>> fetchCustomObject(
         @Nonnull final CustomObjectCompositeIdentifier identifier) {
 
-        String container = identifier.getContainer();
-        String key = identifier.getKey();
-
-        if (StringUtils.isEmpty(container) || StringUtils.isEmpty(key)) {
-            return CompletableFuture.completedFuture(Optional.empty());
-        }
-
-        return fetchResource(identifier.toString(),
-            () -> CustomObjectQuery.ofJsonNode()
-                                   .withPredicates(q -> q.container().is(container).and(q.key().is(key)))
-        );
+        return fetchResource(identifier.toString(), () -> queryOneIdentifier(identifier));
     }
 
     @Nonnull
     @Override
     public CompletionStage<Optional<CustomObject<JsonNode>>> upsertCustomObject(
         @Nonnull final CustomObjectDraft<JsonNode> customObjectDraft) {
-        if (StringUtils.isEmpty(customObjectDraft.getKey()) || StringUtils.isEmpty(customObjectDraft.getContainer())) {
-            return CompletableFuture.completedFuture(Optional.empty());
-        }
-        CompletionStage<Optional<CustomObject<JsonNode>>> createdResource = createResource(customObjectDraft,
-            draft -> CustomObjectCompositeIdentifier.of(draft).toString(), CustomObjectUpsertCommand::of);
-        return createdResource ;
+
+        return createResource(customObjectDraft,
+            this::keyMapper,
+            CustomObjectUpsertCommand::of);
     }
 
     /**
@@ -171,5 +152,51 @@ public class CustomObjectServiceImpl
                 keyToIdCache.put(draftKey, resource.getId());
                 return Optional.of(resource);
             });
+    }
+
+    @Nonnull
+    private Set<String> getKeys(@Nonnull final Set<CustomObjectCompositeIdentifier> identifiers) {
+        return identifiers
+            .stream()
+            .map(CustomObjectCompositeIdentifier::toString)
+            .collect(Collectors.toSet());
+    }
+
+    @Nonnull
+    private String keyMapper(@Nonnull final CustomObjectDraft<JsonNode> customObjectDraft) {
+        return CustomObjectCompositeIdentifier.of(customObjectDraft).toString();
+    }
+
+    @Nonnull
+    private String keyMapper(@Nonnull final CustomObject<JsonNode> customObject) {
+        return CustomObjectCompositeIdentifier.of(customObject).toString();
+    }
+
+    @Nonnull
+    private Set<CustomObjectCompositeIdentifier> getIdentifiers(@Nonnull final Set<String> keys) {
+        return keys
+            .stream()
+            .map(CustomObjectCompositeIdentifier::of)
+            .collect(Collectors.toSet());
+    }
+
+    @Nonnull
+    private CustomObjectQuery<JsonNode> queryIdentifiers(
+        @Nonnull final Set<CustomObjectCompositeIdentifier> identifiers) {
+
+        return CustomObjectQueryBuilder
+            .ofJsonNode()
+            .plusPredicates(q -> createQuery(q, identifiers))
+            .build();
+    }
+
+    @Nonnull
+    private CustomObjectQuery<JsonNode> queryOneIdentifier(
+        @Nonnull final CustomObjectCompositeIdentifier identifier) {
+
+        return CustomObjectQueryBuilder
+            .ofJsonNode()
+            .plusPredicates(q -> q.container().is(identifier.getContainer()).and(q.key().is(identifier.getKey())))
+            .build();
     }
 }

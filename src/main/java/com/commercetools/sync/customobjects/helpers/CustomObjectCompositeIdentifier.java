@@ -18,6 +18,8 @@ public final class CustomObjectCompositeIdentifier {
 
     private final String key;
     private final String container;
+    private static final String WRONG_FORMAT_ERROR_MESSAGE = "The value: \"%s\" does not have the correct format. "
+        + "Format must have a  \"|\" character between container and key.";
 
     private CustomObjectCompositeIdentifier(@Nonnull final String key,
                                             @Nonnull final String container) {
@@ -68,7 +70,24 @@ public final class CustomObjectCompositeIdentifier {
      */
     @Nonnull
     public static CustomObjectCompositeIdentifier of(@Nonnull final String key, @Nonnull final String container) {
-        return new CustomObjectCompositeIdentifier(key, container);
+        return CustomObjectCompositeIdentifier.of(
+            CustomObjectDraft.ofUnversionedUpsert(container, key, null));
+    }
+
+    /**
+     * Given a {@link String} with a format "container|key", creates a {@link CustomObjectCompositeIdentifier} using
+     * the following fields from the supplied identifier as string.
+     *
+     * @param identifierAsString  string format of the identifier to build composite Id.
+     * @return a composite id comprised of the fields of the supplied {@code key} and {@code container}.
+     */
+    @Nonnull
+    public static CustomObjectCompositeIdentifier of(@Nonnull final String identifierAsString) {
+        final String[] containerAndKey = identifierAsString.split("\\|");
+        if (containerAndKey.length == 2) {
+            return of(containerAndKey[1], containerAndKey[0]);
+        }
+        throw new IllegalArgumentException(format(WRONG_FORMAT_ERROR_MESSAGE, identifierAsString));
     }
 
     public String getKey() {
@@ -98,6 +117,6 @@ public final class CustomObjectCompositeIdentifier {
 
     @Override
     public String toString() {
-        return format("{key='%s', container='%s'}", key, container);
+        return format("%s|%s", container, key);
     }
 }

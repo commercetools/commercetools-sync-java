@@ -14,6 +14,20 @@ import java.util.concurrent.CompletionStage;
 
 public interface CustomObjectService {
 
+
+    /**
+     * Filters out the custom object identifiers which are already cached and fetches only the not-cached custom object
+     * identifiers from the CTP project defined in an injected {@link SphereClient} and stores a mapping for every
+     * custom object to id in the cached map of keys -&gt; ids and returns this cached map.
+     *
+     * @param identifiers - a set custom object identifiers to fetch and cache the ids for
+     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a map of
+     *      requested custom object identifiers -&gt; ids
+     */
+    @Nonnull
+    CompletionStage<Map<String, String>> cacheKeysToIds(
+        @Nonnull final Set<CustomObjectCompositeIdentifier> identifiers);
+
     /**
      * Given an {@code identifier}, this method first checks if {@code identifier#toString()}
      * is contained in a cached map of {@link CustomObjectCompositeIdentifier#toString()} -&gt; ids .
