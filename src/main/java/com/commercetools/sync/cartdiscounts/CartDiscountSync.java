@@ -1,5 +1,6 @@
 package com.commercetools.sync.cartdiscounts;
 
+import com.commercetools.sync.cartdiscounts.helpers.CartDiscountBatchValidator;
 import com.commercetools.sync.cartdiscounts.helpers.CartDiscountReferenceResolver;
 import com.commercetools.sync.cartdiscounts.helpers.CartDiscountSyncStatistics;
 import com.commercetools.sync.commons.BaseSync;
@@ -31,7 +32,6 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * This class syncs cart discount drafts with the corresponding cart discounts in the CTP project.
@@ -42,14 +42,12 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
         "Failed to fetch existing cart discounts with keys: '%s'.";
     private static final String CTP_CART_DISCOUNT_UPDATE_FAILED =
         "Failed to update cart discount with key: '%s'. Reason: %s";
-    private static final String CART_DISCOUNT_DRAFT_HAS_NO_KEY =
-        "Failed to process cart discount draft without key.";
-    private static final String CART_DISCOUNT_DRAFT_IS_NULL =
-        "Failed to process null cart discount draft.";
     private static final String FAILED_TO_PROCESS = "Failed to process the CartDiscountDraft with key:'%s'. Reason: %s";
 
     private final CartDiscountService cartDiscountService;
+    private final TypeService typeService;
     private final CartDiscountReferenceResolver referenceResolver;
+    private final CartDiscountBatchValidator batchValidator;
 
     /**
      * Takes a {@link CartDiscountSyncOptions} to instantiate a new {@link CartDiscountSync} instance
@@ -83,7 +81,9 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
                      @Nonnull final CartDiscountService cartDiscountService) {
         super(new CartDiscountSyncStatistics(), cartDiscountSyncOptions);
         this.cartDiscountService = cartDiscountService;
-        this.referenceResolver = new CartDiscountReferenceResolver(cartDiscountSyncOptions, typeService);
+        this.typeService = typeService;
+        this.referenceResolver = new CartDiscountReferenceResolver(getSyncOptions(), typeService);
+        this.batchValidator = new CartDiscountBatchValidator(getSyncOptions(), getStatistics());
     }
 
     /**
@@ -105,59 +105,51 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
         return syncBatches(batches, completedFuture(statistics));
     }
 
-
     @Override
     protected CompletionStage<CartDiscountSyncStatistics> processBatch(@Nonnull final List<CartDiscountDraft> batch) {
 
-        final Set<CartDiscountDraft> validCartDiscountDrafts =
-                batch.stream().filter(this::validateDraft).collect(toSet());
-        if (validCartDiscountDrafts.isEmpty()) {
+        final ImmutablePair<Set<CartDiscountDraft>, Set<String>> result =
+            batchValidator.validateAndCollectReferencedKeys(batch);
+
+        final Set<CartDiscountDraft> validDrafts = result.getLeft();
+        if (validDrafts.isEmpty()) {
             statistics.incrementProcessed(batch.size());
             return completedFuture(statistics);
         }
 
-        final Set<String> keys = validCartDiscountDrafts.stream().map(CartDiscountDraft::getKey).collect(toSet());
+        return typeService
+            .cacheKeysToIds(result.getRight())
+            .handle(ImmutablePair::new)
+            .thenCompose(cachingResponse -> {
+                final Throwable cachingException = cachingResponse.getValue();
+                if (cachingException != null) {
+                    handleError("Failed to build a cache of keys to ids.", cachingException,
+                        validDrafts.size());
+                    return CompletableFuture.completedFuture(null);
+                }
 
+                final Set<String> keys = validDrafts.stream().map(CartDiscountDraft::getKey).collect(toSet());
 
-        return cartDiscountService
-                .fetchMatchingCartDiscountsByKeys(keys)
-                .handle(ImmutablePair::new)
-                .thenCompose(fetchResponse -> {
-                    final Set<CartDiscount> fetchedCartDiscounts = fetchResponse.getKey();
-                    final Throwable exception = fetchResponse.getValue();
+                return cartDiscountService
+                    .fetchMatchingCartDiscountsByKeys(keys)
+                    .handle(ImmutablePair::new)
+                    .thenCompose(fetchResponse -> {
+                        final Set<CartDiscount> fetchedCartDiscounts = fetchResponse.getKey();
+                        final Throwable exception = fetchResponse.getValue();
 
-                    if (exception != null) {
-                        final String errorMessage = format(CTP_CART_DISCOUNT_FETCH_FAILED, keys);
-                        handleError(errorMessage, exception, keys.size());
-                        return CompletableFuture.completedFuture(null);
-                    } else {
-                        return syncBatch(fetchedCartDiscounts, validCartDiscountDrafts);
-                    }
-                })
-                .thenApply(ignored -> {
-                    statistics.incrementProcessed(batch.size());
-                    return statistics;
-                });
-    }
-
-    /**
-     * Checks if a draft is valid for further processing. If so, then returns {@code true}. Otherwise handles an error
-     * and returns {@code false}. A valid draft is not {@code null} and its
-     * key is not empty.
-     *
-     * @param cartDiscountDraft nullable draft
-     * @return boolean that indicate if given {@code draft} is valid for sync
-     */
-    private boolean validateDraft(@Nullable final CartDiscountDraft cartDiscountDraft) {
-        if (cartDiscountDraft == null) {
-            handleError(CART_DISCOUNT_DRAFT_IS_NULL, null, 1);
-        } else if (isBlank(cartDiscountDraft.getKey())) {
-            handleError(CART_DISCOUNT_DRAFT_HAS_NO_KEY, null, 1);
-        } else {
-            return true;
-        }
-
-        return false;
+                        if (exception != null) {
+                            final String errorMessage = format(CTP_CART_DISCOUNT_FETCH_FAILED, keys);
+                            handleError(errorMessage, exception, keys.size());
+                            return CompletableFuture.completedFuture(null);
+                        } else {
+                            return syncBatch(fetchedCartDiscounts, validDrafts);
+                        }
+                    });
+            })
+            .thenApply(ignoredResult -> {
+                statistics.incrementProcessed(batch.size());
+                return statistics;
+            });
     }
 
     /**

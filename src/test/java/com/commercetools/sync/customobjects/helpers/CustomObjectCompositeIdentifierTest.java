@@ -21,10 +21,10 @@ public class CustomObjectCompositeIdentifierTest {
     @Test
     void of_WithCustomObjectDraft_ShouldCreateCustomObjectCompositeIdentifier() {
         final CustomObjectDraft<JsonNode> customObjectDraft =
-            CustomObjectDraft.ofUnversionedUpsert(CONTAINER, KEY, null);
+                CustomObjectDraft.ofUnversionedUpsert(CONTAINER, KEY, null);
 
         final CustomObjectCompositeIdentifier customObjectCompositeIdentifier
-            = CustomObjectCompositeIdentifier.of(customObjectDraft);
+                = CustomObjectCompositeIdentifier.of(customObjectDraft);
 
         assertThat(customObjectCompositeIdentifier).isNotNull();
         assertThat(customObjectCompositeIdentifier.getContainer()).isEqualTo(CONTAINER);
@@ -34,7 +34,7 @@ public class CustomObjectCompositeIdentifierTest {
     @Test
     void of_WithContainerAndKeyParams_ShouldCreateCustomObjectCompositeIdentifier() {
         final CustomObjectCompositeIdentifier customObjectCompositeIdentifier
-            = CustomObjectCompositeIdentifier.of(KEY, CONTAINER);
+                = CustomObjectCompositeIdentifier.of(KEY, CONTAINER);
 
         assertThat(customObjectCompositeIdentifier).isNotNull();
         assertThat(customObjectCompositeIdentifier.getContainer()).isEqualTo(CONTAINER);
@@ -48,7 +48,7 @@ public class CustomObjectCompositeIdentifierTest {
         when(customObject.getKey()).thenReturn(KEY);
 
         final CustomObjectCompositeIdentifier customObjectCompositeIdentifier
-            = CustomObjectCompositeIdentifier.of(customObject);
+                = CustomObjectCompositeIdentifier.of(customObject);
 
         assertThat(customObjectCompositeIdentifier).isNotNull();
         assertThat(customObjectCompositeIdentifier.getContainer()).isEqualTo(CONTAINER);
@@ -58,7 +58,7 @@ public class CustomObjectCompositeIdentifierTest {
     @Test
     void equals_WithSameObj_ShouldReturnTrue() {
         final CustomObjectCompositeIdentifier customObjectCompositeIdentifier
-            = CustomObjectCompositeIdentifier.of(KEY, CONTAINER);
+                = CustomObjectCompositeIdentifier.of(KEY, CONTAINER);
 
         boolean result = customObjectCompositeIdentifier.equals(customObjectCompositeIdentifier);
 
@@ -68,7 +68,7 @@ public class CustomObjectCompositeIdentifierTest {
     @Test
     void equals_WithDiffType_ShouldReturnFalse() {
         final CustomObjectCompositeIdentifier customObjectCompositeIdentifier
-            = CustomObjectCompositeIdentifier.of(KEY, CONTAINER);
+                = CustomObjectCompositeIdentifier.of(KEY, CONTAINER);
         final Object other = new Object();
 
         boolean result = customObjectCompositeIdentifier.equals(other);
@@ -79,9 +79,9 @@ public class CustomObjectCompositeIdentifierTest {
     @Test
     void equals_WithEqualObjects_ShouldReturnTrue() {
         final CustomObjectCompositeIdentifier customObjectCompositeIdentifier
-            = CustomObjectCompositeIdentifier.of(KEY,  CONTAINER);
+                = CustomObjectCompositeIdentifier.of(KEY,  CONTAINER);
         final CustomObjectCompositeIdentifier other
-            = CustomObjectCompositeIdentifier.of(KEY, CONTAINER);
+                = CustomObjectCompositeIdentifier.of(KEY, CONTAINER);
 
         boolean result = customObjectCompositeIdentifier.equals(other);
 
@@ -91,9 +91,9 @@ public class CustomObjectCompositeIdentifierTest {
     @Test
     void equals_WithDifferentKeys_ShouldReturnFalse() {
         final CustomObjectCompositeIdentifier customObjectCompositeIdentifier
-            = CustomObjectCompositeIdentifier.of("key1", CONTAINER);
+                = CustomObjectCompositeIdentifier.of("key1", CONTAINER);
         final CustomObjectCompositeIdentifier other
-            = CustomObjectCompositeIdentifier.of("key2", CONTAINER);
+                = CustomObjectCompositeIdentifier.of("key2", CONTAINER);
 
         boolean result = customObjectCompositeIdentifier.equals(other);
 
@@ -103,9 +103,9 @@ public class CustomObjectCompositeIdentifierTest {
     @Test
     void equals_WithDifferentContainers_ShouldReturnFalse() {
         final CustomObjectCompositeIdentifier customObjectCompositeIdentifier
-            = CustomObjectCompositeIdentifier.of(KEY, "container1");
+                = CustomObjectCompositeIdentifier.of(KEY, "container1");
         final CustomObjectCompositeIdentifier other
-            = CustomObjectCompositeIdentifier.of(KEY, "container2");
+                = CustomObjectCompositeIdentifier.of(KEY, "container2");
 
         boolean result = customObjectCompositeIdentifier.equals(other);
 
@@ -115,7 +115,7 @@ public class CustomObjectCompositeIdentifierTest {
     @Test
     void hashCode_withSameInstances_ShouldBeEquals() {
         final CustomObjectCompositeIdentifier customObjectCompositeIdentifier
-            = CustomObjectCompositeIdentifier.of(KEY, CONTAINER);
+                = CustomObjectCompositeIdentifier.of(KEY, CONTAINER);
         final CustomObjectCompositeIdentifier other = customObjectCompositeIdentifier;
 
         final int hash1 = customObjectCompositeIdentifier.hashCode();
@@ -128,9 +128,9 @@ public class CustomObjectCompositeIdentifierTest {
     void hashCode_withSameKeyAndSameContainer_ShouldBeEquals() {
         // preparation
         final CustomObjectCompositeIdentifier customObjectCompositeIdentifier
-            = CustomObjectCompositeIdentifier.of(KEY, CONTAINER);
+                = CustomObjectCompositeIdentifier.of(KEY, CONTAINER);
         final CustomObjectCompositeIdentifier other
-            = CustomObjectCompositeIdentifier.of(KEY, CONTAINER);
+                = CustomObjectCompositeIdentifier.of(KEY, CONTAINER);
 
         // test
         final int hash1 = customObjectCompositeIdentifier.hashCode();
@@ -143,10 +143,10 @@ public class CustomObjectCompositeIdentifierTest {
     @Test
     void hashCode_withDifferentKeyAndSameContainer_ShouldNotBeEquals() {
         final CustomObjectCompositeIdentifier customObjectCompositeIdentifier
-            = CustomObjectCompositeIdentifier.of("key1", CONTAINER);
+                = CustomObjectCompositeIdentifier.of("key1", CONTAINER);
 
         final CustomObjectCompositeIdentifier other
-            = CustomObjectCompositeIdentifier.of("key2", CONTAINER);
+                = CustomObjectCompositeIdentifier.of("key2", CONTAINER);
 
         final int hash1 = customObjectCompositeIdentifier.hashCode();
         final int hash2 = other.hashCode();
@@ -157,9 +157,9 @@ public class CustomObjectCompositeIdentifierTest {
     @Test
     void hashCode_withSameKeyAndDifferentContainer_ShouldNotBeEquals() {
         final CustomObjectCompositeIdentifier customObjectCompositeIdentifier
-            = CustomObjectCompositeIdentifier.of(KEY, "container1");
+                = CustomObjectCompositeIdentifier.of(KEY, "container1");
         final CustomObjectCompositeIdentifier other
-            = CustomObjectCompositeIdentifier.of(KEY, "container2");
+                = CustomObjectCompositeIdentifier.of(KEY, "container2");
 
         final int hash1 = customObjectCompositeIdentifier.hashCode();
         final int hash2 = other.hashCode();
@@ -170,9 +170,9 @@ public class CustomObjectCompositeIdentifierTest {
     @Test
     void hashCode_withCompletelyDifferentValues_ShouldNotBeEquals() {
         final CustomObjectCompositeIdentifier customObjectCompositeIdentifier
-            = CustomObjectCompositeIdentifier.of("key1", "container1");
+                = CustomObjectCompositeIdentifier.of("key1", "container1");
         final CustomObjectCompositeIdentifier other
-            = CustomObjectCompositeIdentifier.of("key2", "container2");
+                = CustomObjectCompositeIdentifier.of("key2", "container2");
 
         final int hash1 = customObjectCompositeIdentifier.hashCode();
         final int hash2 = other.hashCode();

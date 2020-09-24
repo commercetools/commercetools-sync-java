@@ -1,6 +1,7 @@
 package com.commercetools.sync.customobjects;
 
 import com.commercetools.sync.commons.BaseSyncOptionsBuilder;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
@@ -8,7 +9,7 @@ import io.sphere.sdk.customobjects.CustomObjectDraft;
 import javax.annotation.Nonnull;
 
 public final class CustomObjectSyncOptionsBuilder extends BaseSyncOptionsBuilder<CustomObjectSyncOptionsBuilder,
-        CustomObjectSyncOptions, CustomObject, CustomObjectDraft> {
+    CustomObjectSyncOptions, CustomObject<JsonNode>, CustomObjectDraft<JsonNode>> {
 
     public static final int BATCH_SIZE_DEFAULT = 50;
 
