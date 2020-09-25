@@ -10,11 +10,13 @@ import com.commercetools.sync.services.ProductTypeService;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
+import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.producttypes.ProductType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -151,5 +153,17 @@ class ProductTypeReferenceResolverTest {
             .hasNotFailed()
             .isCompletedWithValueMatching(resolvedDraft -> Objects.equals(resolvedDraft.getProductType(),
                 productBuilder.getProductType()));
+    }
+
+    @Test
+    void resolveReferences_WithoutMasterVariant_ShouldNotResolveMasterReference() {
+        //this case only possible when resolveReferences called without ProductSync
+        final ProductDraftBuilder productBuilder = getBuilderWithProductTypeRefKey("productTypeKey")
+            .categories(Collections.emptyList());
+
+        final ProductDraft resolvedDraft = referenceResolver.resolveReferences(productBuilder.build())
+                                                            .toCompletableFuture().join();
+
+        assertThat(resolvedDraft.getMasterVariant()).isNull();
     }
 }

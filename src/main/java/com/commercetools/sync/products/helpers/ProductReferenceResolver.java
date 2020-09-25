@@ -211,6 +211,10 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         @Nonnull final ProductDraftBuilder draftBuilder) {
 
         final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers = draftBuilder.getCategories();
+        if (categoryResourceIdentifiers.isEmpty()) {
+            return CompletableFuture.completedFuture(draftBuilder);
+        }
+
         final Set<String> categoryKeys = new HashSet<>();
         final List<ResourceIdentifier<Category>> directCategoryResourceIdentifiers = new ArrayList<>();
         for (ResourceIdentifier<Category> categoryResourceIdentifier : categoryResourceIdentifiers) {
