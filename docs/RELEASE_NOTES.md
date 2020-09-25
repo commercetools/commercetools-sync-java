@@ -35,10 +35,11 @@
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.2.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.2.0)
 
-- 🎉 **New Features** (1)
+- 🎉 **New Features** (2)
+    - **Product Sync** - Added support for resolving `key-value-document` (custom object) references on attributes of type `Reference`, `Set` of `Reference`, `NestedType` or `Set` of `NestedType`. [#564](https://github.com/commercetools/commercetools-sync-java/issues/564)     
     - Introduced new concept for the validation of `the drafts in batches` for each `Sync` instance, exposed with 
     `BaseBatchValidator` implementations (i.e. ProductBatchValidator, CategoryBatchValidator). [#233](https://github.com/commercetools/commercetools-sync-java/issues/233)
-
+    
 - ✨ **Enhancements** (2)    
     - **Category Sync** - Passed category keys in batch to `cacheKeysToIds` method of `CategoryService` to avoid fetching all categories for every batch. 
 [#235](https://github.com/commercetools/commercetools-sync-java/issues/235)
