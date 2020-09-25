@@ -18,8 +18,9 @@ public final class CustomObjectCompositeIdentifier {
 
     private final String key;
     private final String container;
-    private static final String WRONG_FORMAT_ERROR_MESSAGE = "The value: \"%s\" does not have the correct format. "
-        + "Format must have a  \"|\" character between container and key.";
+    private static final String WRONG_FORMAT_ERROR_MESSAGE = "The custom object identifier value: \"%s\" does not have "
+        + "the correct format. The correct format must have a vertical bar \"|\" character "
+        + "between the container and key.";
 
     private CustomObjectCompositeIdentifier(@Nonnull final String key,
                                             @Nonnull final String container) {

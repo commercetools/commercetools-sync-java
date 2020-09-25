@@ -68,8 +68,8 @@ public class CustomObjectCompositeIdentifierTest {
     void of_WithInvalidIdentifierAsString_ShouldThrowAnError() {
         assertThatThrownBy(() -> CustomObjectCompositeIdentifier.of("aContainer-andKey"))
             .isInstanceOf(IllegalArgumentException.class)
-            .hasMessage("The value: \"aContainer-andKey\" does not have the correct format. "
-                + "Format must have a  \"|\" character between container and key.");
+            .hasMessage("The custom object identifier value: \"aContainer-andKey\" does not have the correct format. "
+                + "The correct format must have a vertical bar \"|\" character between the container and key.");
     }
 
     @Test

@@ -132,6 +132,49 @@ class WithCustomObjectReferencesTest {
     }
 
     @Test
+    void resolveReferences_WithInvalidCustomObjectIdentifier_ShouldNotResolveReferences() {
+        // preparation
+        final String invalidCustomObjectIdentifier = "container-key";
+        final ObjectNode attributeValue =
+            createReferenceObject(invalidCustomObjectIdentifier, CustomObject.referenceTypeId());
+        final AttributeDraft attributeDraft = AttributeDraft.of("attributeName", attributeValue);
+        final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
+            .of()
+            .attributes(attributeDraft)
+            .build();
+
+        // test
+        assertThat(referenceResolver.resolveReferences(productVariantDraft))
+            .hasFailed()
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(IllegalArgumentException.class)
+            .hasMessage("The custom object identifier value: \"container-key\" does not have the correct format. "
+                + "The correct format must have a vertical bar \"|\" character between the container and key.");
+    }
+
+    @Test
+    void resolveReferences_WithUuidCustomObjectIdentifier_ShouldNotResolveReferences() {
+        // preparation
+        final String uuid = UUID.randomUUID().toString();
+        final ObjectNode attributeValue =
+            createReferenceObject(uuid, CustomObject.referenceTypeId());
+        final AttributeDraft attributeDraft = AttributeDraft.of("attributeName", attributeValue);
+        final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
+            .of()
+            .attributes(attributeDraft)
+            .build();
+
+        // test
+        final ProductVariantDraft resolvedAttributeDraft =
+            referenceResolver.resolveReferences(productVariantDraft)
+                             .toCompletableFuture()
+                             .join();
+
+        // assertions
+        assertThat(resolvedAttributeDraft).isEqualTo(productVariantDraft);
+    }
+
+    @Test
     void resolveReferences_WithExistingCustomObjectReferenceAttribute_ShouldResolveReferences() {
         // preparation
         final ObjectNode attributeValue = createReferenceObject("container|key", CustomObject.referenceTypeId());
