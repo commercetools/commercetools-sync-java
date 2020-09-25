@@ -404,7 +404,7 @@ class ProductBatchValidatorTest {
     }
 
     @Test
-    void validateAndCollectReferencedKeys_WithKeyValueDocumentAttDrafts_ShouldHaveKeyValidationError() {
+    void validateAndCollectReferencedKeys_WithKeyValueDocumentAttDrafts_ShouldNotHaveKeyValidationError() {
         final String uuid = UUID.randomUUID().toString();
         final String validIdentifier = "container|key";
         final String invalidIdentifier = "container-key";
