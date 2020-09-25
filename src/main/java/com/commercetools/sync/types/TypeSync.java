@@ -106,18 +106,18 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
             statistics.incrementProcessed(batch.size());
             return CompletableFuture.completedFuture(statistics);
         }
-        final Set<String> validKeys = result.getRight();
+        final Set<String> validTypeKeys = result.getRight();
 
         return typeService
-            .fetchMatchingTypesByKeys(validKeys)
+            .fetchMatchingTypesByKeys(validTypeKeys)
             .handle(ImmutablePair::new)
             .thenCompose(fetchResponse -> {
                 final Set<Type> fetchedTypes = fetchResponse.getKey();
                 final Throwable exception = fetchResponse.getValue();
 
                 if (exception != null) {
-                    final String errorMessage = format(CTP_TYPE_FETCH_FAILED, validKeys);
-                    handleError(errorMessage, exception, validKeys.size());
+                    final String errorMessage = format(CTP_TYPE_FETCH_FAILED, validTypeKeys);
+                    handleError(errorMessage, exception, validTypeKeys.size());
                     return CompletableFuture.completedFuture(null);
                 } else {
                     return syncBatch(fetchedTypes, validDrafts);
@@ -138,10 +138,9 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      * @param exception    The exception that called caused the failure, if any.
      * @param failedTimes  The number of times that the failed types counter is incremented.
      */
-    private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
+    private void handleError(@Nonnull final String errorMessage, @Nonnull final Throwable exception,
                              final int failedTimes) {
-        SyncException syncException = exception != null ? new SyncException(errorMessage, exception)
-            : new SyncException(errorMessage);
+        SyncException syncException = new SyncException(errorMessage, exception);
         syncOptions.applyErrorCallback(syncException);
         statistics.incrementFailed(failedTimes);
     }
