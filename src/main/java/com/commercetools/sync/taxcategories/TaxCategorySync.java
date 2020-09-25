@@ -94,19 +94,19 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
             statistics.incrementProcessed(batch.size());
             return CompletableFuture.completedFuture(statistics);
         }
-        final Set<String> validKeys = result.getRight();
+        final Set<String> validTaxCategoryKeys = result.getRight();
 
         return taxCategoryService
-            .fetchMatchingTaxCategoriesByKeys(validKeys)
+            .fetchMatchingTaxCategoriesByKeys(validTaxCategoryKeys)
             .handle(ImmutablePair::new)
             .thenCompose(fetchResponse -> {
                 Set<TaxCategory> fetchedTaxCategories = fetchResponse.getKey();
                 final Throwable exception = fetchResponse.getValue();
 
                 if (exception != null) {
-                    final String errorMessage = format(TAX_CATEGORY_FETCH_FAILED, validKeys);
+                    final String errorMessage = format(TAX_CATEGORY_FETCH_FAILED, validTaxCategoryKeys);
                     handleError(new SyncException(errorMessage, exception),null,null,null,
-                        validKeys.size());
+                        validTaxCategoryKeys.size());
                     return completedFuture(null);
                 } else {
                     return syncBatch(fetchedTaxCategories, validDrafts);
