@@ -106,18 +106,18 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
             statistics.incrementProcessed(batch.size());
             return CompletableFuture.completedFuture(statistics);
         }
-        final Set<String> validKeys = result.getRight();
+        final Set<String> validTypeKeys = result.getRight();
 
         return typeService
-            .fetchMatchingTypesByKeys(validKeys)
+            .fetchMatchingTypesByKeys(validTypeKeys)
             .handle(ImmutablePair::new)
             .thenCompose(fetchResponse -> {
                 final Set<Type> fetchedTypes = fetchResponse.getKey();
                 final Throwable exception = fetchResponse.getValue();
 
                 if (exception != null) {
-                    final String errorMessage = format(CTP_TYPE_FETCH_FAILED, validKeys);
-                    handleError(errorMessage, exception, validKeys.size());
+                    final String errorMessage = format(CTP_TYPE_FETCH_FAILED, validTypeKeys);
+                    handleError(errorMessage, exception, validTypeKeys.size());
                     return CompletableFuture.completedFuture(null);
                 } else {
                     return syncBatch(fetchedTypes, validDrafts);
