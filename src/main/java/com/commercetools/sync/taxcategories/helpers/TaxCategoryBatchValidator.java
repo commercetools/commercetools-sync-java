@@ -63,7 +63,7 @@ public class TaxCategoryBatchValidator
         final Set<TaxCategoryDraft> validDrafts = taxCategoryDrafts
             .stream()
             .filter(this::isValidTaxCategoryDraft)
-            .collect(Collectors.toSet());
+            .collect(toSet());
 
         final Set<String> validKeys = validDrafts
             .stream()
