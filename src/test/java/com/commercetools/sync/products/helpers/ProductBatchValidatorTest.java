@@ -6,10 +6,12 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.AttributeDraft;
+import io.sphere.sdk.states.State;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -220,7 +222,7 @@ class ProductBatchValidatorTest {
     }
 
     @Test
-    void validateAndCollectReferencedKeys_WithCategoryDraftWithEmptyKey_ShouldHaveValidationErrorAndEmptyResult() {
+    void validateAndCollectReferencedKeys_WithProductDraftWithEmptyKey_ShouldHaveValidationErrorAndEmptyResult() {
         final ProductDraft productDraft = mock(ProductDraft.class);
         when(productDraft.getKey()).thenReturn(EMPTY);
         final Set<ProductDraft> validDrafts = getValidDrafts(Collections.singletonList(productDraft));
@@ -375,6 +377,28 @@ class ProductBatchValidatorTest {
             format(PRODUCT_VARIANT_DRAFT_SKU_NOT_SET, 0, inValidProductDraft2.getKey()),
             format(PRODUCT_VARIANT_DRAFT_SKU_NOT_SET, 1, inValidProductDraft2.getKey()));
     }
+
+    @Test
+    void validateAndCollectReferencedKeys_WithEmptyKeys_ShouldNotCollectKeys() {
+        final ProductDraft productDraft = mock(ProductDraft.class);
+        when(productDraft.getKey()).thenReturn("key");
+        when(productDraft.getTaxCategory()).thenReturn(ResourceIdentifier.ofKey(EMPTY));
+        when(productDraft.getState()).thenReturn(State.referenceOfId(EMPTY));
+        final ProductVariantDraft masterVariant = mock(ProductVariantDraft.class);
+        when(masterVariant.getKey()).thenReturn("key");
+        when(masterVariant.getSku()).thenReturn("sku");
+        when(productDraft.getMasterVariant()).thenReturn(masterVariant);
+
+        final ProductBatchValidator productBatchValidator = new ProductBatchValidator(syncOptions, syncStatistics);
+        final ImmutablePair<Set<ProductDraft>, ProductBatchValidator.ReferencedKeys> pair =
+            productBatchValidator.validateAndCollectReferencedKeys(singletonList(productDraft));
+
+        assertThat(pair.getLeft()).contains(productDraft);
+        assertThat(pair.getRight().getTaxCategoryKeys()).isEmpty();
+        assertThat(pair.getRight().getStateKeys()).isEmpty();
+        assertThat(errorCallBackMessages).hasSize(0);
+    }
+
 
     @Nonnull
     private Set<ProductDraft> getValidDrafts(@Nonnull final List<ProductDraft> productDrafts) {
