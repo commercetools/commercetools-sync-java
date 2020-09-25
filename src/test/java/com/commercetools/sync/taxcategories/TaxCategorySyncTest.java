@@ -62,8 +62,9 @@ class TaxCategorySyncTest {
             () -> assertThat(result.getProcessed().get()).isEqualTo(2),
             () -> assertThat(result.getFailed().get()).isEqualTo(2),
             () -> assertThat(errors).hasSize(2),
-            () -> assertThat(errors).contains("Failed to process null tax category draft.",
-                "Failed to process tax category draft without key.")
+            () -> assertThat(errors).contains("TaxCategoryDraft is null.",
+                "TaxCategoryDraft with name: null doesn't have a key. "
+                    + "Please make sure all tax category drafts have keys.")
         );
         verifyNoMoreInteractions(taxCategoryService);
     }

@@ -5,6 +5,7 @@ import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorato
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
+import com.commercetools.sync.services.CustomObjectService;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
@@ -20,7 +21,6 @@ import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.queries.ProductQuery;
-import io.sphere.sdk.producttypes.ProductType;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -69,7 +69,7 @@ class ProductSyncTest {
             mock(ProductTypeService.class), mock(CategoryService.class), mock(TypeService.class),
             mock(ChannelService.class), mock(CustomerGroupService.class), mock(TaxCategoryService.class),
             mock(StateService.class),
-            mock(UnresolvedReferencesService.class));
+            mock(UnresolvedReferencesService.class), mock(CustomObjectService.class));
 
         final ProductDraft productDraftWithoutKey = ProductDraftBuilder
             .of(ResourceIdentifier.ofKey("productTypeKey"), ofEnglish("name"), ofEnglish("slug"), emptyList())
@@ -92,9 +92,7 @@ class ProductSyncTest {
     void sync_WithErrorCachingKeys_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         // preparation
         final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
-            ProductType.referenceOfId("productTypeKey"))
-            .taxCategory(null)
-            .state(null)
+            ResourceIdentifier.ofKey("productTypeKey"))
             .build();
 
         final List<String> errorMessages = new ArrayList<>();
@@ -118,17 +116,16 @@ class ProductSyncTest {
         final ProductService productService = spy(new ProductServiceImpl(syncOptions));
 
         final ProductTypeService productTypeService = mock(ProductTypeService.class);
-        when(productTypeService.fetchCachedProductTypeId(any()))
-            .thenReturn(completedFuture(Optional.of(UUID.randomUUID().toString())));
 
-        final CategoryService categoryService = mock(CategoryService.class);
-        when(categoryService.fetchMatchingCategoriesByKeys(any())).thenReturn(completedFuture(emptySet()));
+        when(productTypeService.cacheKeysToIds(any()))
+            .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
 
         final ProductSync productSync = new ProductSync(syncOptions, productService,
-            productTypeService, categoryService, mock(TypeService.class),
+            productTypeService, mock(CategoryService.class), mock(TypeService.class),
             mock(ChannelService.class), mock(CustomerGroupService.class), mock(TaxCategoryService.class),
             mock(StateService.class),
-            mock(UnresolvedReferencesService.class));
+            mock(UnresolvedReferencesService.class),
+            mock(CustomObjectService.class));
 
         // test
         final ProductSyncStatistics productSyncStatistics = productSync
@@ -138,7 +135,7 @@ class ProductSyncTest {
         // assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .singleElement().asString().contains("Failed to build a cache of product keys to ids.");
+            .singleElement().asString().contains("Failed to build a cache of keys to ids.");
 
         assertThat(exceptions)
             .hasSize(1)
@@ -154,7 +151,7 @@ class ProductSyncTest {
     void sync_WithErrorFetchingExistingKeys_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         // preparation
         final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
-                ProductType.referenceOfId("productTypeKey"))
+                ResourceIdentifier.ofKey("productTypeKey"))
                 .taxCategory(null)
                 .state(null)
                 .build();
@@ -191,7 +188,8 @@ class ProductSyncTest {
                 productTypeService, categoryService, mock(TypeService.class),
                 mock(ChannelService.class), mock(CustomerGroupService.class), mock(TaxCategoryService.class),
                 mock(StateService.class),
-            mock(UnresolvedReferencesService.class));
+            mock(UnresolvedReferencesService.class),
+            mock(CustomObjectService.class));
 
         // test
         final ProductSyncStatistics productSyncStatistics = productSync
@@ -217,7 +215,7 @@ class ProductSyncTest {
     void sync_WithOnlyDraftsToCreate_ShouldCallBeforeCreateCallback() {
         // preparation
         final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
-            ProductType.referenceOfId("productTypeKey"))
+            ResourceIdentifier.ofKey("productTypeKey"))
             .taxCategory(null)
             .state(null)
             .build();
@@ -244,7 +242,8 @@ class ProductSyncTest {
             productTypeService, categoryService, mock(TypeService.class),
             mock(ChannelService.class), mock(CustomerGroupService.class), mock(TaxCategoryService.class),
             mock(StateService.class),
-            mock(UnresolvedReferencesService.class));
+            mock(UnresolvedReferencesService.class),
+            mock(CustomObjectService.class));
 
         // test
         productSync.sync(singletonList(productDraft)).toCompletableFuture().join();
@@ -258,7 +257,7 @@ class ProductSyncTest {
     void sync_WithOnlyDraftsToUpdate_ShouldOnlyCallBeforeUpdateCallback() {
         // preparation
         final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH,
-            ProductType.referenceOfId("productTypeKey"))
+            ResourceIdentifier.ofKey("productTypeKey"))
             .taxCategory(null)
             .state(null)
             .build();
@@ -293,7 +292,8 @@ class ProductSyncTest {
             productTypeService, categoryService, mock(TypeService.class),
             mock(ChannelService.class), mock(CustomerGroupService.class), mock(TaxCategoryService.class),
             mock(StateService.class),
-            mock(UnresolvedReferencesService.class));
+            mock(UnresolvedReferencesService.class),
+            mock(CustomObjectService.class));
 
         // test
         productSync.sync(singletonList(productDraft)).toCompletableFuture().join();
@@ -304,10 +304,10 @@ class ProductSyncTest {
     }
 
     @Test
-    void sync_WithEmptyAttributeMetaDataMap_ShouldCallErrorCallbak() {
+    void sync_WithEmptyAttributeMetaDataMap_ShouldCallErrorCallback() {
         // preparation
         final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH,
-            ProductType.referenceOfId("productTypeKey"))
+            ResourceIdentifier.ofKey("productTypeKey"))
             .taxCategory(null)
             .state(null)
             .build();
@@ -348,7 +348,8 @@ class ProductSyncTest {
             productTypeService, categoryService, mock(TypeService.class),
             mock(ChannelService.class), mock(CustomerGroupService.class), mock(TaxCategoryService.class),
             mock(StateService.class),
-            mock(UnresolvedReferencesService.class));
+            mock(UnresolvedReferencesService.class),
+            mock(CustomObjectService.class));
 
         // test
         ProductSyncStatistics productSyncStatistics =

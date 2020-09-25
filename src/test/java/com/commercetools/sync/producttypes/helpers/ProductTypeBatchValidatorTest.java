@@ -2,7 +2,6 @@ package com.commercetools.sync.producttypes.helpers;
 
 import com.commercetools.sync.commons.exceptions.InvalidReferenceException;
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.producttypes.ProductTypeSync;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
 import io.sphere.sdk.client.SphereClient;
@@ -14,113 +13,95 @@ import io.sphere.sdk.products.attributes.StringAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_REFERENCE;
-import static com.commercetools.sync.producttypes.helpers.ProductTypeBatchProcessor.PRODUCT_TYPE_DRAFT_IS_NULL;
-import static com.commercetools.sync.producttypes.helpers.ProductTypeBatchProcessor.PRODUCT_TYPE_DRAFT_KEY_NOT_SET;
-import static com.commercetools.sync.producttypes.helpers.ProductTypeBatchProcessor.PRODUCT_TYPE_HAS_INVALID_REFERENCES;
+import static com.commercetools.sync.producttypes.helpers.ProductTypeBatchValidator.PRODUCT_TYPE_DRAFT_IS_NULL;
+import static com.commercetools.sync.producttypes.helpers.ProductTypeBatchValidator.PRODUCT_TYPE_DRAFT_KEY_NOT_SET;
+import static com.commercetools.sync.producttypes.helpers.ProductTypeBatchValidator.PRODUCT_TYPE_HAS_INVALID_REFERENCES;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class ProductTypeBatchProcessorTest {
+class ProductTypeBatchValidatorTest {
     private List<String> errorCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
-    private ProductTypeSync productTypeSync;
+    private ProductTypeSyncOptions syncOptions;
+    private ProductTypeSyncStatistics syncStatistics;
 
     @BeforeEach
     void setup() {
         errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
         final SphereClient ctpClient = mock(SphereClient.class);
-        final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
+        syncOptions = ProductTypeSyncOptionsBuilder
             .of(ctpClient)
             .errorCallback((exception, oldResource, newResource, actions) -> {
                 errorCallBackMessages.add(exception.getMessage());
                 errorCallBackExceptions.add(exception);
             })
             .build();
-        productTypeSync = new ProductTypeSync(syncOptions);
+        syncStatistics = new ProductTypeSyncStatistics();
     }
 
     @Test
-    void validateBatch_WithEmptyBatch_ShouldResultInNoValidDraftsAndNoCachedKeys() {
-        final ProductTypeBatchProcessor batchProcessor = new ProductTypeBatchProcessor(emptyList(), productTypeSync);
-        batchProcessor.validateBatch();
+    void validateAndCollectReferencedKeys_WithEmptyDraft_ShouldHaveEmptyResult() {
+        final Set<ProductTypeDraft> validDrafts = getValidDrafts(emptyList());
 
-        assertThat(batchProcessor.getKeysToCache()).isEmpty();
-        assertThat(batchProcessor.getValidDrafts()).isEmpty();
+        assertThat(validDrafts).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
-        assertThat(errorCallBackExceptions).isEmpty();
     }
 
     @Test
-    void validateBatch_WithANullDraft_ShouldResultInAnError() {
-        final ProductTypeBatchProcessor batchProcessor =
-            new ProductTypeBatchProcessor(singletonList(null), productTypeSync);
-        batchProcessor.validateBatch();
+    void validateAndCollectReferencedKeys_WithNullProductTypeDraft_ShouldHaveValidationErrorAndEmptyResult() {
+        final Set<ProductTypeDraft> validDrafts = getValidDrafts(Collections.singletonList(null));
 
-        assertThat(batchProcessor.getKeysToCache()).isEmpty();
-        assertThat(batchProcessor.getValidDrafts()).isEmpty();
-        assertThat(errorCallBackMessages).containsExactly(PRODUCT_TYPE_DRAFT_IS_NULL);
-        assertThat(errorCallBackExceptions).hasOnlyOneElementSatisfying(throwable -> {
-            assertThat(throwable).isInstanceOf(SyncException.class);
-            assertThat(throwable).hasMessage(PRODUCT_TYPE_DRAFT_IS_NULL);
-        });
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0)).isEqualTo(PRODUCT_TYPE_DRAFT_IS_NULL);
+        assertThat(validDrafts).isEmpty();
     }
 
     @Test
-    void validateBatch_WithADraftWithNullKey_ShouldResultInAnError() {
+    void validateAndCollectReferencedKeys_WithProductTypeDraftWithNullKey_ShouldHaveValidationErrorAndEmptyResult() {
         final ProductTypeDraft productTypeDraft = mock(ProductTypeDraft.class);
-        when(productTypeDraft.getKey()).thenReturn(null);
+        final Set<ProductTypeDraft> validDrafts = getValidDrafts(Collections.singletonList(productTypeDraft));
 
-        final ProductTypeBatchProcessor batchProcessor =
-            new ProductTypeBatchProcessor(singletonList(productTypeDraft), productTypeSync);
-        batchProcessor.validateBatch();
-
-        assertThat(batchProcessor.getKeysToCache()).isEmpty();
-        assertThat(batchProcessor.getValidDrafts()).isEmpty();
-        final String errorMessage = format(PRODUCT_TYPE_DRAFT_KEY_NOT_SET, productTypeDraft.getName());
-        assertThat(errorCallBackMessages).containsExactly(errorMessage);
-        assertThat(errorCallBackExceptions).hasOnlyOneElementSatisfying(throwable -> {
-            assertThat(throwable).isInstanceOf(SyncException.class);
-            assertThat(throwable).hasMessage(errorMessage);
-        });
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0))
+            .isEqualTo(format(PRODUCT_TYPE_DRAFT_KEY_NOT_SET, productTypeDraft.getName()));
+        assertThat(validDrafts).isEmpty();
     }
 
     @Test
-    void validateBatch_WithADraftWithEmptyKey_ShouldResultInAnError() {
+    void validateAndCollectReferencedKeys_WithProductTypeDraftWithEmptyKey_ShouldHaveValidationErrorAndEmptyResult() {
         final ProductTypeDraft productTypeDraft = mock(ProductTypeDraft.class);
-        when(productTypeDraft.getKey()).thenReturn("");
+        when(productTypeDraft.getKey()).thenReturn(EMPTY);
+        final Set<ProductTypeDraft> validDrafts = getValidDrafts(Collections.singletonList(productTypeDraft));
 
-        final ProductTypeBatchProcessor batchProcessor =
-            new ProductTypeBatchProcessor(singletonList(productTypeDraft), productTypeSync);
-        batchProcessor.validateBatch();
-
-        assertThat(batchProcessor.getKeysToCache()).isEmpty();
-        assertThat(batchProcessor.getValidDrafts()).isEmpty();
-        final String errorMessage = format(PRODUCT_TYPE_DRAFT_KEY_NOT_SET, productTypeDraft.getName());
-        assertThat(errorCallBackMessages).containsExactly(errorMessage);
-        assertThat(errorCallBackExceptions).hasOnlyOneElementSatisfying(throwable -> {
-            assertThat(throwable).isInstanceOf(SyncException.class);
-            assertThat(throwable).hasMessage(errorMessage);
-        });
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0))
+            .isEqualTo(format(PRODUCT_TYPE_DRAFT_KEY_NOT_SET, productTypeDraft.getName()));
+        assertThat(validDrafts).isEmpty();
     }
 
     @Test
-    void validateBatch_WithADraftWithAValidNestedReference_ShouldNotResultInAnError() {
+    void validateAndCollectReferencedKeys_WithADraftWithAValidNestedReference_ShouldNotResultInAnError() {
         final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
             .of(StringAttributeType.of(), "foo", ofEnglish("koko"), true)
             .build();
@@ -138,18 +119,17 @@ class ProductTypeBatchProcessorTest {
             .of("mainProductType", "foo", "foo", attributes)
             .build();
 
-        final ProductTypeBatchProcessor batchProcessor =
-            new ProductTypeBatchProcessor(singletonList(productTypeDraft), productTypeSync);
-        batchProcessor.validateBatch();
+        final ProductTypeBatchValidator batchValidator = new ProductTypeBatchValidator(syncOptions, syncStatistics);
+        final ImmutablePair<Set<ProductTypeDraft>, Set<String>> pair =
+            batchValidator.validateAndCollectReferencedKeys(singletonList(productTypeDraft));
 
-        assertThat(batchProcessor.getKeysToCache()).containsExactlyInAnyOrder("x");
-        assertThat(batchProcessor.getValidDrafts()).containsExactly(productTypeDraft);
+        assertThat(pair.getLeft()).containsExactly(productTypeDraft);
+        assertThat(pair.getRight()).containsExactlyInAnyOrder("x");
         assertThat(errorCallBackMessages).isEmpty();
-        assertThat(errorCallBackExceptions).isEmpty();
     }
 
     @Test
-    void validateBatch_WithADraftWithAnInvalidNestedReference_ShouldResultInAnError() {
+    void validateAndCollectReferencedKeys_WithADraftWithAnInvalidNestedReference_ShouldResultInAnError() {
         final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
             .of(StringAttributeType.of(), "foo", ofEnglish("koko"), true)
             .build();
@@ -166,12 +146,12 @@ class ProductTypeBatchProcessorTest {
             .of("foo", "foo", "foo", attributes)
             .build();
 
-        final ProductTypeBatchProcessor batchProcessor =
-            new ProductTypeBatchProcessor(singletonList(productTypeDraft), productTypeSync);
-        batchProcessor.validateBatch();
+        final ProductTypeBatchValidator batchValidator = new ProductTypeBatchValidator(syncOptions, syncStatistics);
+        final ImmutablePair<Set<ProductTypeDraft>, Set<String>> pair =
+            batchValidator.validateAndCollectReferencedKeys(singletonList(productTypeDraft));
 
-        assertThat(batchProcessor.getKeysToCache()).isEmpty();
-        assertThat(batchProcessor.getValidDrafts()).isEmpty();
+        assertThat(pair.getLeft()).isEmpty();
+        assertThat(pair.getRight()).isEmpty();
 
         final String expectedExceptionMessage =
             format(PRODUCT_TYPE_HAS_INVALID_REFERENCES, productTypeDraft.getKey(), "[invalidNested]");
@@ -186,7 +166,7 @@ class ProductTypeBatchProcessorTest {
     }
 
     @Test
-    void validateBatch_WithADraftWithMultipleInvalidNestedReferences_ShouldResultInAnError() {
+    void validateAndCollectReferencedKeys_WithADraftWithMultipleInvalidNestedReferences_ShouldResultInAnError() {
         final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
             .of(StringAttributeType.of(), "foo", ofEnglish("koko"), true)
             .build();
@@ -221,12 +201,13 @@ class ProductTypeBatchProcessorTest {
             .of("foo", "foo", "foo", attributes)
             .build();
 
-        final ProductTypeBatchProcessor batchProcessor =
-            new ProductTypeBatchProcessor(singletonList(productTypeDraft), productTypeSync);
-        batchProcessor.validateBatch();
+        final ProductTypeBatchValidator batchValidator = new ProductTypeBatchValidator(syncOptions, syncStatistics);
+        final ImmutablePair<Set<ProductTypeDraft>, Set<String>> pair =
+            batchValidator.validateAndCollectReferencedKeys(singletonList(productTypeDraft));
 
-        assertThat(batchProcessor.getKeysToCache()).isEmpty();
-        assertThat(batchProcessor.getValidDrafts()).isEmpty();
+        assertThat(pair.getLeft()).isEmpty();
+        assertThat(pair.getRight()).isEmpty();
+
         final String expectedExceptionMessage = format(PRODUCT_TYPE_HAS_INVALID_REFERENCES,
             productTypeDraft.getKey(), "[invalidNested, setOfInvalidNested]");
         assertThat(errorCallBackMessages).containsExactly(expectedExceptionMessage);
@@ -240,7 +221,7 @@ class ProductTypeBatchProcessorTest {
     }
 
     @Test
-    void validateBatch_WithMixOfValidAndInvalidDrafts_ShouldValidateCorrectly() {
+    void validateAndCollectReferencedKeys_WithMixOfValidAndInvalidDrafts_ShouldValidateCorrectly() {
         final AttributeDefinitionDraft attributeDefinitionDraft = AttributeDefinitionDraftBuilder
             .of(StringAttributeType.of(), "foo", ofEnglish("koko"), true)
             .build();
@@ -299,13 +280,13 @@ class ProductTypeBatchProcessorTest {
         productTypeDrafts.add(draftWithEmptyAttributes);
         productTypeDrafts.add(draftWithNullAttributes);
 
-        final ProductTypeBatchProcessor batchProcessor =
-            new ProductTypeBatchProcessor(productTypeDrafts, productTypeSync);
-        batchProcessor.validateBatch();
+        final ProductTypeBatchValidator batchValidator = new ProductTypeBatchValidator(syncOptions, syncStatistics);
+        final ImmutablePair<Set<ProductTypeDraft>, Set<String>> pair =
+            batchValidator.validateAndCollectReferencedKeys(productTypeDrafts);
 
-        assertThat(batchProcessor.getKeysToCache()).containsExactlyInAnyOrder("x", "y");
-        assertThat(batchProcessor.getValidDrafts()).containsExactlyInAnyOrder(validProductTypeDraftWithReferences,
+        assertThat(pair.getLeft()).containsExactlyInAnyOrder(validProductTypeDraftWithReferences,
             draftWithEmptyAttributes, draftWithNullAttributes);
+        assertThat(pair.getRight()).containsExactlyInAnyOrder("x", "y");
 
         final String expectedExceptionMessage = format(PRODUCT_TYPE_HAS_INVALID_REFERENCES,
             productTypeDraft.getKey(), "[invalidNested, setOfInvalidNested]");
@@ -341,5 +322,13 @@ class ProductTypeBatchProcessorTest {
             .haveExactly(1, invalidReferenceCondition)
             .haveExactly(1, nullDraftCondition)
             .haveExactly(1, blankKeyCondition);
+    }
+
+    @Nonnull
+    private Set<ProductTypeDraft> getValidDrafts(@Nonnull final List<ProductTypeDraft> productTypeDrafts) {
+        final ProductTypeBatchValidator batchValidator = new ProductTypeBatchValidator(syncOptions, syncStatistics);
+        final ImmutablePair<Set<ProductTypeDraft>, Set<String>> pair =
+            batchValidator.validateAndCollectReferencedKeys(productTypeDrafts);
+        return pair.getLeft();
     }
 }

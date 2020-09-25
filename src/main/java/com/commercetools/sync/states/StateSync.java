@@ -7,7 +7,7 @@ import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.UnresolvedTransitionsService;
 import com.commercetools.sync.services.impl.StateServiceImpl;
 import com.commercetools.sync.services.impl.UnresolvedTransitionsServiceImpl;
-import com.commercetools.sync.states.helpers.StateBatchProcessor;
+import com.commercetools.sync.states.helpers.StateBatchValidator;
 import com.commercetools.sync.states.helpers.StateReferenceResolver;
 import com.commercetools.sync.states.helpers.StateSyncStatistics;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -52,6 +52,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
     private final StateService stateService;
     private final StateReferenceResolver stateReferenceResolver;
     private final UnresolvedTransitionsService unresolvedTransitionsService;
+    private final StateBatchValidator batchValidator;
 
     private ConcurrentHashMap.KeySetView<String, Boolean> readyToResolve;
 
@@ -75,8 +76,9 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
               @Nonnull final StateService stateService) {
         super(new StateSyncStatistics(), stateSyncOptions);
         this.stateService = stateService;
-        this.stateReferenceResolver = new StateReferenceResolver(syncOptions, stateService);
-        this.unresolvedTransitionsService = new UnresolvedTransitionsServiceImpl(stateSyncOptions);
+        this.stateReferenceResolver = new StateReferenceResolver(getSyncOptions(), stateService);
+        this.unresolvedTransitionsService = new UnresolvedTransitionsServiceImpl(getSyncOptions());
+        this.batchValidator = new StateBatchValidator(getSyncOptions(), getStatistics());
     }
 
     @Override
@@ -89,29 +91,29 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
     protected CompletionStage<StateSyncStatistics> processBatch(@Nonnull final List<StateDraft> batch) {
         readyToResolve = ConcurrentHashMap.newKeySet();
 
-        final StateBatchProcessor batchProcessor = new StateBatchProcessor(batch, this);
-        batchProcessor.validateBatch();
+        final ImmutablePair<Set<StateDraft>, Set<String>> result =
+            batchValidator.validateAndCollectReferencedKeys(batch);
 
-        final Set<StateDraft> validDrafts = batchProcessor.getValidDrafts();
+        final Set<StateDraft> validDrafts = result.getLeft();
         if (validDrafts.isEmpty()) {
             statistics.incrementProcessed(batch.size());
             return CompletableFuture.completedFuture(statistics);
         }
 
-        final Set<String> keysToCache = batchProcessor.getKeysToCache();
+        final Set<String> stateTransitionKeys = result.getRight();
 
         return stateService
-            .cacheKeysToIds(keysToCache)
+            .cacheKeysToIds(stateTransitionKeys)
             .handle(ImmutablePair::new)
             .thenCompose(cachingResponse -> {
-                final Map<String, String> keyToIdCache = cachingResponse.getKey();
                 final Throwable cachingException = cachingResponse.getValue();
                 if (cachingException != null) {
-                    handleError(new SyncException("Failed to build a cache of state keys to ids.", cachingException),
-                        null,null,null , batch.size());
+                    handleError(new SyncException("Failed to build a cache of keys to ids.", cachingException),
+                        null,null,null , validDrafts.size());
                     return CompletableFuture.completedFuture(null);
                 }
 
+                final Map<String, String> keyToIdCache = cachingResponse.getKey();
                 return syncBatch(validDrafts, keyToIdCache);
             })
             .thenApply(ignored -> {

@@ -1,10 +1,12 @@
 package com.commercetools.sync.inventories;
 
+import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.InventoryService;
 import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.services.impl.TypeServiceImpl;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.inventory.InventoryEntry;
@@ -40,11 +42,14 @@ import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -230,7 +235,8 @@ class InventorySyncTest {
 
         assertThat(stats).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to process inventory entry without SKU.");
+        assertThat(errorCallBackMessages.get(0)).isEqualTo("InventoryEntryDraft doesn't have a SKU."
+            + " Please make sure all inventory entry drafts have SKUs.");
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isEqualTo(null);
     }
@@ -245,7 +251,8 @@ class InventorySyncTest {
 
         assertThat(stats).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).hasSize(1);
-        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to process inventory entry without SKU.");
+        assertThat(errorCallBackMessages.get(0)).isEqualTo("InventoryEntryDraft doesn't have a SKU. "
+            + "Please make sure all inventory entry drafts have SKUs.");
         assertThat(errorCallBackExceptions).hasSize(1);
         assertThat(errorCallBackExceptions.get(0)).isEqualTo(null);
     }
@@ -429,7 +436,7 @@ class InventorySyncTest {
 
         assertThat(stats).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).isNotEmpty();
-        assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to process null inventory draft.");
+        assertThat(errorCallBackMessages.get(0)).isEqualTo("InventoryEntryDraft is null.");
         assertThat(errorCallBackExceptions).isNotEmpty();
         assertThat(errorCallBackExceptions.get(0)).isEqualTo(null);
     }
@@ -498,5 +505,54 @@ class InventorySyncTest {
                                               errorCallBackExceptions.add(exception.getCause());
                                           })
                                           .build();
+    }
+
+    @Test
+    void sync_WithFailOnCachingKeysToIds_ShouldTriggerErrorCallbackAndReturnProperStats() {
+        // preparation
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+
+        final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder
+            .of(mock(SphereClient.class))
+            .errorCallback((exception, oldResource, newResource, actions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception.getCause());
+            })
+            .build();
+
+        final TypeService typeService = spy(new TypeServiceImpl(inventorySyncOptions));
+        when(typeService.cacheKeysToIds(anySet()))
+            .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
+
+        final InventorySync inventorySync = new InventorySync(inventorySyncOptions,
+            mock(InventoryService.class), mock(ChannelService.class), typeService);
+
+        final InventoryEntryDraft newInventoryDraftWithCustomType = mock(InventoryEntryDraft.class);
+        when(newInventoryDraftWithCustomType.getSku()).thenReturn("sku");
+        when(newInventoryDraftWithCustomType.getCustom()).thenReturn(
+            CustomFieldsDraft.ofTypeKeyAndJson("typeKey", emptyMap()));
+
+        //test
+        final InventorySyncStatistics inventorySyncStatistics = inventorySync
+            .sync(singletonList(newInventoryDraftWithCustomType))
+            .toCompletableFuture()
+            .join();
+
+
+        // assertions
+        AssertionsForStatistics.assertThat(inventorySyncStatistics).hasValues(1, 0, 0, 1);
+
+        assertThat(errorMessages)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(message ->
+                assertThat(message).contains("Failed to build a cache of keys to ids."));
+
+        assertThat(exceptions)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(throwable -> {
+                assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
+                assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
+            });
     }
 }

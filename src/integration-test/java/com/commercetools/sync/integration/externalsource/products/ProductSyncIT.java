@@ -456,8 +456,8 @@ class ProductSyncIT {
             .thenCallRealMethod();
 
         final ProductQuery anyProductQuery = any(ProductQuery.class);
+
         when(spyDecoratedClient.execute(anyProductQuery))
-            .thenCallRealMethod() // cache product keys
             .thenCallRealMethod() // Call real fetch on fetching matching products
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
 
@@ -510,7 +510,6 @@ class ProductSyncIT {
         final ProductQuery anyProductQuery = any(ProductQuery.class);
 
         when(spyDecoratedClient.execute(anyProductQuery))
-            .thenCallRealMethod() // cache product keys
             .thenCallRealMethod() // Call real fetch on fetching matching products
             .thenReturn(CompletableFuture.completedFuture(PagedQueryResult.empty()));
 

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.Product;
@@ -129,4 +130,31 @@ class ResourceIdentifierUtilsTest {
         assertThat(isReference).isTrue();
     }
 
+    @Test
+    void isReferenceOfType_WithCustomObjectReferenceVsProductReferenceTypeId_ShouldReturnFalse() {
+        // preparation
+        final ObjectNode customObjectReference = JsonNodeFactory.instance.objectNode();
+        customObjectReference.put(REFERENCE_TYPE_ID_FIELD, CustomObject.referenceTypeId());
+        customObjectReference.put(REFERENCE_ID_FIELD, UUID.randomUUID().toString());
+
+        // test
+        final boolean isReference = isReferenceOfType(customObjectReference, Product.referenceTypeId());
+
+        // assertion
+        assertThat(isReference).isFalse();
+    }
+
+    @Test
+    void isReferenceOfType_WithCustomObjectReferenceVsCustomObjectReferenceTypeId_ShouldReturnTrue() {
+        // preparation
+        final ObjectNode customObjectReference = JsonNodeFactory.instance.objectNode();
+        customObjectReference.put(REFERENCE_TYPE_ID_FIELD, CustomObject.referenceTypeId());
+        customObjectReference.put(REFERENCE_ID_FIELD, UUID.randomUUID().toString());
+
+        // test
+        final boolean isReference = isReferenceOfType(customObjectReference, CustomObject.referenceTypeId());
+
+        // assertion
+        assertThat(isReference).isTrue();
+    }
 }

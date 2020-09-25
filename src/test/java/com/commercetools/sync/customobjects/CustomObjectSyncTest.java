@@ -78,7 +78,7 @@ public class CustomObjectSyncTest {
         assertThat(errorMessages)
             .hasSize(1).singleElement().asString()
             .isEqualTo("Failed to fetch existing custom objects with keys: "
-                + "'[{key='someKey', container='someContainer'}]'.");
+                + "'[someContainer|someKey]'.");
 
         assertThat(exceptions)
             .hasSize(1).singleElement().isInstanceOfSatisfying(Throwable.class, throwable -> {
@@ -114,6 +114,7 @@ public class CustomObjectSyncTest {
 
         final CustomObject<JsonNode> mockedExistingCustomObject = mock(CustomObject.class);
         when(mockedExistingCustomObject.getKey()).thenReturn(newCustomObjectDraft.getKey());
+        when(mockedExistingCustomObject.getContainer()).thenReturn("differentContainer");
 
         final CustomObjectService customObjectService = mock(CustomObjectService.class);
         when(customObjectService.fetchMatchingCustomObjects(anySet()))

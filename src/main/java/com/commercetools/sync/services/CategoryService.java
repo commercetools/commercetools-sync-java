@@ -16,15 +16,16 @@ import java.util.concurrent.CompletionStage;
 public interface CategoryService {
 
     /**
-     * If not already done once before, it fetches all the category keys from the CTP project defined in an
-     * injected {@link io.sphere.sdk.client.SphereClient} and stores a mapping for every category to id in {@link Map}
-     * and returns this cached map.
+     * Filters out the keys which are already cached and fetches only the not-cached category keys from the CTP project
+     * defined in an injected {@link SphereClient} and stores a mapping for every category to id in the cached map of
+     * keys -&gt; ids and returns this cached map.
      *
-     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a map of all
-     *         category keys -&gt; ids
+     * @param categoryKeys - a set category keys to fetch and cache the ids for
+     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a map of
+     *      requested category keys -&gt; ids
      */
     @Nonnull
-    CompletionStage<Map<String, String>> cacheKeysToIds();
+    CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> categoryKeys);
 
     /**
      * Given a {@link Set} of category keys, this method fetches a set of all the categories, matching this given set of
@@ -105,3 +106,4 @@ public interface CategoryService {
     CompletionStage<Category> updateCategory(@Nonnull Category category,
                                              @Nonnull List<UpdateAction<Category>> updateActions);
 }
+

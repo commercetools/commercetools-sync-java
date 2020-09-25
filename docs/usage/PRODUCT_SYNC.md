@@ -46,7 +46,12 @@ order for the sync to resolve the actual ids of those references, those `key`s h
      > Note: Some references in the product like `state`, `customerGroup` of prices, and variant attributes with type `reference` do not support the `ResourceIdentifier` yet, 
       for those references you need to provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the
       reference would return its `key`. 
-
+    
+    - For resolving `key-value-document` (custom object) references on attributes of type `Reference`, `Set` of `Reference`, `NestedType` or `Set` of `NestedType`, The `id` field of the reference in the attribute draft should be defined in the correct format. 
+    The correct format must have a vertical bar `|` character between the values of the container and key.
+    For example, if the custom object has a container value `container` and key value `key`, the `id` field should be `container|key"`,  
+    also, the key and container value should match the pattern `[-_~.a-zA-Z0-9]+`.
+     
 4. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
 5. After the `sphereClient` is set up, a `ProductSyncOptions` should be built as follows: 
@@ -198,7 +203,7 @@ attributes.
     | `“category”`  | ✅ |
     | `“channel”`  | ❌ |
     | `“customer”`  | ❌ |
-    | `“key-value-document”`  | ❌ |
+    | `“key-value-document”`  | ✅ |
     | `“order”`  | ❌ |
     | `“product”` | ✅ |
     | `“product-type”` | ✅ |

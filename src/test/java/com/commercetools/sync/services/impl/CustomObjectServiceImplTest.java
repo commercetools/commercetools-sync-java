@@ -15,16 +15,14 @@ import io.sphere.sdk.customobjects.commands.CustomObjectUpsertCommand;
 import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.utils.CompletableFutureUtils;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,7 +37,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -98,55 +95,6 @@ class CustomObjectServiceImplTest {
     }
 
     @Test
-    void fetchCachedCustomObjectId_WithEmptyKey_ShouldNotFetch() {
-        final String key = "";
-        final String container = RandomStringUtils.random(15, true, true);
-        final String id = RandomStringUtils.random(15, true, true);
-
-        final CustomObject mock = mock(CustomObject.class);
-        when(mock.getId()).thenReturn(id);
-        when(mock.getContainer()).thenReturn(container);
-        when(mock.getKey()).thenReturn(key);
-
-        final CustomObjectPagedQueryResult result = mock(CustomObjectPagedQueryResult.class);
-        when(result.getResults()).thenReturn(Collections.singletonList(mock));
-
-        when(decoratedClient.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
-
-
-        final Optional<String> fetchedId = service
-            .fetchCachedCustomObjectId(CustomObjectCompositeIdentifier.of(key, container))
-            .toCompletableFuture().join();
-        assertThat(fetchedId).isEmpty();
-        verify(decoratedClient, times(0)).execute(any(CustomObjectQuery.class));
-
-    }
-
-    @Test
-    void fetchCachedCustomObjectId_WithEmptyCotainer_ShouldNotFetch() {
-        final String key = RandomStringUtils.random(15, true, true);
-        final String container = "";
-        final String id = RandomStringUtils.random(15, true, true);
-
-        final CustomObject mock = mock(CustomObject.class);
-        when(mock.getId()).thenReturn(id);
-        when(mock.getContainer()).thenReturn(container);
-        when(mock.getKey()).thenReturn(key);
-
-        final CustomObjectPagedQueryResult result = mock(CustomObjectPagedQueryResult.class);
-        when(result.getResults()).thenReturn(Collections.singletonList(mock));
-
-        when(decoratedClient.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
-
-
-        final Optional<String> fetchedId = service
-            .fetchCachedCustomObjectId(CustomObjectCompositeIdentifier.of(key, container))
-            .toCompletableFuture().join();
-        assertThat(fetchedId).isEmpty();
-        verify(decoratedClient, times(0)).execute(any(CustomObjectQuery.class));
-    }
-
-    @Test
     void fetchMatchingCustomObjects_WithKeySet_ShouldFetchCustomObjects() {
         final String key1 = RandomStringUtils.random(15, true, true);
         final String key2 = RandomStringUtils.random(15, true, true);
@@ -189,88 +137,6 @@ class CustomObjectServiceImplTest {
     }
 
     @Test
-    void fetchMatchingCustomObjects_WithAllEmptyKey_ShouldNotFetch() {
-        final String key1 = "";
-        final String key2 = "";
-        final String container1 = RandomStringUtils.random(15, true, true);
-        final String container2 = RandomStringUtils.random(15, true, true);
-
-        final Set<CustomObjectCompositeIdentifier> customObjectCompositeIdentifiers = new HashSet<>();
-        customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(key1, container1));
-        customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(key2, container2));
-
-        final CustomObject mock1 = mock(CustomObject.class);
-        when(mock1.getId()).thenReturn(RandomStringUtils.random(15, true, true));
-        when(mock1.getKey()).thenReturn(key1);
-        when(mock1.getContainer()).thenReturn(container1);
-
-        final CustomObject mock2 = mock(CustomObject.class);
-        when(mock2.getId()).thenReturn(RandomStringUtils.random(15, true, true));
-        when(mock2.getKey()).thenReturn(key2);
-        when(mock2.getContainer()).thenReturn(container2);
-
-        final CustomObjectPagedQueryResult result = mock(CustomObjectPagedQueryResult.class);
-        when(result.getResults()).thenReturn(Arrays.asList(mock1, mock2));
-
-        when(decoratedClient.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
-
-        final Set<CustomObject<JsonNode>> customObjects =
-            service.fetchMatchingCustomObjects(customObjectCompositeIdentifiers).toCompletableFuture().join();
-
-        List<CustomObjectCompositeIdentifier> customObjectCompositeIdlist =
-            new ArrayList<CustomObjectCompositeIdentifier>(customObjectCompositeIdentifiers);
-
-        assertAll(
-            () -> assertThat(customObjects).isEmpty(),
-            () -> assertThat(service.keyToIdCache).doesNotContainKeys(
-                String.valueOf(customObjectCompositeIdlist.get(0)),
-                String.valueOf(customObjectCompositeIdlist.get(1)))
-        );
-        verify(decoratedClient, times(0)).execute(any(CustomObjectQuery.class));
-    }
-
-    @Test
-    void fetchMatchingCustomObjects_WithAllEmptyContainer_ShouldNotFetch() {
-        final String key1 = RandomStringUtils.random(15, true, true);
-        final String key2 = RandomStringUtils.random(15, true, true);
-        final String container1 = "";
-        final String container2 = "";
-
-        final Set<CustomObjectCompositeIdentifier> customObjectCompositeIdentifiers = new HashSet<>();
-        customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(key1, container1));
-        customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(key2, container2));
-
-        final CustomObject mock1 = mock(CustomObject.class);
-        when(mock1.getId()).thenReturn(RandomStringUtils.random(15, true, true));
-        when(mock1.getKey()).thenReturn(key1);
-        when(mock1.getContainer()).thenReturn(container1);
-
-        final CustomObject mock2 = mock(CustomObject.class);
-        when(mock2.getId()).thenReturn(RandomStringUtils.random(15, true, true));
-        when(mock2.getKey()).thenReturn(key2);
-        when(mock2.getContainer()).thenReturn(container2);
-
-        final CustomObjectPagedQueryResult result = mock(CustomObjectPagedQueryResult.class);
-        when(result.getResults()).thenReturn(Arrays.asList(mock1, mock2));
-
-        when(decoratedClient.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
-
-        final Set<CustomObject<JsonNode>> customObjects =
-                service.fetchMatchingCustomObjects(customObjectCompositeIdentifiers).toCompletableFuture().join();
-
-        List<CustomObjectCompositeIdentifier> customObjectCompositeIdlist =
-                new ArrayList<CustomObjectCompositeIdentifier>(customObjectCompositeIdentifiers);
-
-        assertAll(
-            () -> assertThat(customObjects).isEmpty(),
-            () -> assertThat(service.keyToIdCache).doesNotContainKeys(
-                    String.valueOf(customObjectCompositeIdlist.get(0)),
-                    String.valueOf(customObjectCompositeIdlist.get(1)))
-        );
-        verify(decoratedClient, times(0)).execute(any(CustomObjectQuery.class));
-    }
-
-    @Test
     void fetchCustomObject_WithKeyAndContainer_ShouldFetchCustomObject() {
         final CustomObject mock = mock(CustomObject.class);
         when(mock.getId()).thenReturn(customObjectId);
@@ -292,58 +158,6 @@ class CustomObjectServiceImplTest {
             ).isEqualTo(customObjectId)
         );
         verify(decoratedClient).execute(any(CustomObjectQuery.class));
-    }
-
-    @Test
-    void fetchCustomObject_WithEmptyKey_ShouldNotFetch() {
-        final CustomObject mock = mock(CustomObject.class);
-        when(mock.getId()).thenReturn(customObjectId);
-        when(mock.getKey()).thenReturn(customObjectKey);
-        when(mock.getContainer()).thenReturn(customObjectContainer);
-        final CustomObjectPagedQueryResult result = mock(CustomObjectPagedQueryResult.class);
-        when(result.head()).thenReturn(Optional.of(mock));
-
-        when(decoratedClient.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
-
-
-        final Optional<CustomObject<JsonNode>> customObjectOptional = service
-            .fetchCustomObject(CustomObjectCompositeIdentifier.of("", customObjectContainer))
-            .toCompletableFuture().join();
-
-        assertAll(
-            () -> assertThat(customObjectOptional).isEmpty(),
-            () -> assertThat(
-                service.keyToIdCache.get(
-                    CustomObjectCompositeIdentifier.of(customObjectKey, customObjectContainer).toString())
-            ).isNotEqualTo(customObjectId)
-        );
-        verify(decoratedClient, times(0)).execute(any(CustomObjectQuery.class));
-    }
-
-    @Test
-    void fetchCustomObject_WithEmptyContainer_ShouldNotFetch() {
-        final CustomObject mock = mock(CustomObject.class);
-        when(mock.getId()).thenReturn(customObjectId);
-        when(mock.getKey()).thenReturn(customObjectKey);
-        when(mock.getContainer()).thenReturn(customObjectContainer);
-        final CustomObjectPagedQueryResult result = mock(CustomObjectPagedQueryResult.class);
-        when(result.head()).thenReturn(Optional.of(mock));
-
-        when(decoratedClient.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
-
-
-        final Optional<CustomObject<JsonNode>> customObjectOptional = service
-            .fetchCustomObject(CustomObjectCompositeIdentifier.of(customObjectKey, ""))
-            .toCompletableFuture().join();
-
-        assertAll(
-            () -> assertThat(customObjectOptional).isEmpty(),
-            () -> assertThat(
-                service.keyToIdCache.get(
-                    CustomObjectCompositeIdentifier.of(customObjectKey, customObjectContainer).toString())
-            ).isNotEqualTo(customObjectId)
-        );
-        verify(decoratedClient, times(0)).execute(any(CustomObjectQuery.class));
     }
 
     @Test
@@ -390,35 +204,5 @@ class CustomObjectServiceImplTest {
             () -> assertThat(future.isCompletedExceptionally()).isTrue(),
             () -> assertThat(future).hasFailedWithThrowableThat().isExactlyInstanceOf(BadRequestException.class)
         );
-    }
-
-    @Test
-    void createCustomObject_WithDraftHasNoKey_ShouldNotCreateCustomObject() {
-        final CustomObjectDraft<JsonNode> customObjectDraft = mock(CustomObjectDraft.class);
-        when(customObjectDraft.getKey()).thenReturn("");
-        when(customObjectDraft.getContainer()).thenReturn(customObjectContainer);
-        when(customObjectDraft.getJavaType()).thenReturn(
-            getCustomObjectJavaTypeForValue(convertToJavaType(JsonNode.class)));
-
-        final Optional<CustomObject<JsonNode>> customObjectOptional =
-            service.upsertCustomObject(customObjectDraft).toCompletableFuture().join();
-
-        assertThat(customObjectOptional).isEmpty();
-        verify(decoratedClient, times(0)).execute(eq(CustomObjectUpsertCommand.of(customObjectDraft)));
-    }
-
-    @Test
-    void createCustomObject_WithDraftHasNoContainer_ShouldNotCreateCustomObject() {
-        final CustomObjectDraft<JsonNode> customObjectDraft = mock(CustomObjectDraft.class);
-        when(customObjectDraft.getKey()).thenReturn(customObjectKey);
-        when(customObjectDraft.getContainer()).thenReturn("");
-        when(customObjectDraft.getJavaType()).thenReturn(
-            getCustomObjectJavaTypeForValue(convertToJavaType(JsonNode.class)));
-
-        final Optional<CustomObject<JsonNode>> customObjectOptional =
-            service.upsertCustomObject(customObjectDraft).toCompletableFuture().join();
-
-        assertThat(customObjectOptional).isEmpty();
-        verify(decoratedClient, times(0)).execute(eq(CustomObjectUpsertCommand.of(customObjectDraft)));
     }
 }
