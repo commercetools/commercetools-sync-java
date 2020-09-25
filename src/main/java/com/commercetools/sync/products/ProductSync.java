@@ -4,11 +4,13 @@ import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
+import com.commercetools.sync.customobjects.CustomObjectSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductBatchValidator;
 import com.commercetools.sync.products.helpers.ProductReferenceResolver;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
+import com.commercetools.sync.services.CustomObjectService;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
@@ -18,6 +20,7 @@ import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.UnresolvedReferencesService;
 import com.commercetools.sync.services.impl.CategoryServiceImpl;
 import com.commercetools.sync.services.impl.ChannelServiceImpl;
+import com.commercetools.sync.services.impl.CustomObjectServiceImpl;
 import com.commercetools.sync.services.impl.CustomerGroupServiceImpl;
 import com.commercetools.sync.services.impl.ProductServiceImpl;
 import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
@@ -93,7 +96,8 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             new CustomerGroupServiceImpl(productSyncOptions),
             new TaxCategoryServiceImpl(TaxCategorySyncOptionsBuilder.of(productSyncOptions.getCtpClient()).build()),
             new StateServiceImpl(StateSyncOptionsBuilder.of(productSyncOptions.getCtpClient()).build()),
-            new UnresolvedReferencesServiceImpl(productSyncOptions));
+            new UnresolvedReferencesServiceImpl(productSyncOptions),
+            new CustomObjectServiceImpl(CustomObjectSyncOptionsBuilder.of(productSyncOptions.getCtpClient()).build()));
     }
 
     ProductSync(@Nonnull final ProductSyncOptions productSyncOptions, @Nonnull final ProductService productService,
@@ -101,13 +105,14 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                 @Nonnull final TypeService typeService, @Nonnull final ChannelService channelService,
                 @Nonnull final CustomerGroupService customerGroupService,
                 @Nonnull final TaxCategoryService taxCategoryService, @Nonnull final StateService stateService,
-                @Nonnull final UnresolvedReferencesService unresolvedReferencesService) {
+                @Nonnull final UnresolvedReferencesService unresolvedReferencesService,
+                @Nonnull final CustomObjectService customObjectService) {
         super(new ProductSyncStatistics(), productSyncOptions);
         this.productService = productService;
         this.productTypeService = productTypeService;
         this.productReferenceResolver = new ProductReferenceResolver(getSyncOptions(), productTypeService,
             categoryService, typeService, channelService, customerGroupService, taxCategoryService, stateService,
-            productService);
+            productService, customObjectService);
         this.unresolvedReferencesService = unresolvedReferencesService;
         this.batchValidator = new ProductBatchValidator(getSyncOptions(), getStatistics());
     }

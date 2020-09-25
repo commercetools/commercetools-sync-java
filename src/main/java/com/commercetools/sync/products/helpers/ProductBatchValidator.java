@@ -1,9 +1,12 @@
 package com.commercetools.sync.products.helpers;
 
 import com.commercetools.sync.commons.helpers.BaseBatchValidator;
+import com.commercetools.sync.commons.utils.SyncUtils;
+import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductVariantDraft;
@@ -15,6 +18,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -27,6 +31,7 @@ import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.isRef
 import static java.lang.String.format;
 import static java.util.Collections.emptySet;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class ProductBatchValidator
@@ -181,6 +186,9 @@ public class ProductBatchValidator
 
         referencedKeys.productTypeKeys.addAll(
             getReferencedKeysWithReferenceTypeId(variantDraft, ProductType.referenceTypeId()));
+
+        referencedKeys.customObjectCompositeIdentifiers.addAll(
+            getReferencedKeysWithReferenceTypeId(variantDraft, CustomObject.referenceTypeId()));
     }
 
     @Nonnull
@@ -274,6 +282,7 @@ public class ProductBatchValidator
         private final Set<String> typeKeys = new HashSet<>();
         private final Set<String> channelKeys = new HashSet<>();
         private final Set<String> customerGroupKeys = new HashSet<>();
+        private final Set<String> customObjectCompositeIdentifiers = new HashSet<>();
 
         public Set<String> getProductKeys() {
             return productKeys;
@@ -305,6 +314,37 @@ public class ProductBatchValidator
 
         public Set<String> getCustomerGroupKeys() {
             return customerGroupKeys;
+        }
+
+        /**
+         * Applies mapping of {@link Set}&lt;{@link String}&gt; identifiers
+         * (collected from reference id fields of product `key-value-document` references) to {@link Set}&lt;
+         * {@link CustomObjectCompositeIdentifier}&gt; to be used for caching purposes.
+         *
+         * <p>Note: Invalid identifiers and uuid formatted identifiers will be filtered out.
+         * Validation handling will be part of the {@link VariantReferenceResolver}.
+         *
+         * @return a result set with valid identifiers mapped to {@link CustomObjectCompositeIdentifier}.
+         */
+        public Set<CustomObjectCompositeIdentifier> getCustomObjectCompositeIdentifiers() {
+            if (!customObjectCompositeIdentifiers.isEmpty()) {
+                return customObjectCompositeIdentifiers
+                    .stream()
+                    .map((identifierAsString) -> {
+                        if (SyncUtils.isUuid(identifierAsString)) {
+                            return null;
+                        }
+                        try {
+                            return CustomObjectCompositeIdentifier.of(identifierAsString);
+                        } catch (IllegalArgumentException ignored) {
+                            return null;
+                        }
+                    })
+                    .filter(Objects::nonNull)
+                    .collect(toSet());
+            }
+
+            return Collections.emptySet();
         }
     }
 }

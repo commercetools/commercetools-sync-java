@@ -1,5 +1,6 @@
 package com.commercetools.sync.products.helpers.variantreferenceresolver.withsetofnestedattributes;
 
+import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.VariantReferenceResolver;
@@ -13,8 +14,8 @@ import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.producttypes.ProductType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -26,7 +27,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import static com.commercetools.sync.products.ProductSyncMockUtils.createReferenceObject;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductTypeService;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomObjectService;
 import static com.commercetools.sync.products.helpers.variantreferenceresolver.AssertionUtilsForVariantReferenceResolver.assertReferenceAttributeValue;
 import static com.commercetools.sync.products.helpers.variantreferenceresolver.AssertionUtilsForVariantReferenceResolver.assertReferenceSetAttributeValue;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
@@ -34,44 +35,44 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class WithProductTypeReferencesTest {
-    private ProductTypeService productTypeService;
+class WithCustomObjectReferencesTest {
+    private CustomObjectService customObjectService;
 
-    private static final String PRODUCT_TYPE_ID = UUID.randomUUID().toString();
+    private static final String CUSTOM_OBJECT_ID = UUID.randomUUID().toString();
     private VariantReferenceResolver referenceResolver;
 
-    private static final String RES_SUB_ROOT = "withproducttypereferences/";
-    private static final String SET_OF_NESTED_ATTRIBUTE_WITH_PRODUCT_TYPE_REFERENCE_ATTRIBUTES =
+    private static final String RES_SUB_ROOT = "withcustomobjectreferences/";
+    private static final String SET_OF_NESTED_ATTRIBUTE_WITH_CUSTOM_OBJECT_REFERENCE_ATTRIBUTES =
         WithNoReferencesTest.RES_ROOT + RES_SUB_ROOT + "with-reference.json";
-    private static final String SET_OF_NESTED_ATTRIBUTE_WITH_SOME_NOT_EXISTING_PRODUCT_TYPE_REFERENCE_ATTRIBUTES =
+    private static final String SET_OF_NESTED_ATTRIBUTE_WITH_SOME_NOT_EXISTING_CUSTOM_OBJECT_REFERENCE_ATTRIBUTES =
         WithNoReferencesTest.RES_ROOT + RES_SUB_ROOT + "with-non-existing-references.json";
-    private static final String SET_OF_NESTED_ATTRIBUTE_WITH_SET_OF_PRODUCT_TYPE_REFERENCE_ATTRIBUTES =
+    private static final String SET_OF_NESTED_ATTRIBUTE_WITH_SET_OF_CUSTOM_OBJECT_REFERENCE_ATTRIBUTES =
         WithNoReferencesTest.RES_ROOT + RES_SUB_ROOT + "with-set-of-references.json";
 
     @BeforeEach
     void setup() {
-        productTypeService = getMockProductTypeService(PRODUCT_TYPE_ID);
+        customObjectService = getMockCustomObjectService(CUSTOM_OBJECT_ID);
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
         referenceResolver = new VariantReferenceResolver(syncOptions,
             mock(TypeService.class),
             mock(ChannelService.class),
             mock(CustomerGroupService.class),
             mock(ProductService.class),
-            productTypeService,
+            mock(ProductTypeService.class),
             mock(CategoryService.class),
-            mock(CustomObjectService.class));
+            customObjectService);
     }
 
     @Test
-    void resolveReferences_WithSetOfNestedProductTypeReferenceAttributes_ShouldResolveReferences() {
+    void resolveReferences_WithSetOfNestedCustomObjectReferenceAttributes_ShouldResolveReferences() {
         // preparation
-        final ProductVariantDraft withSetOfNestedProductTypeReferenceAttributes =
-            readObjectFromResource(SET_OF_NESTED_ATTRIBUTE_WITH_PRODUCT_TYPE_REFERENCE_ATTRIBUTES,
+        final ProductVariantDraft withSetOfNestedCustomObjectReferenceAttributes =
+            readObjectFromResource(SET_OF_NESTED_ATTRIBUTE_WITH_CUSTOM_OBJECT_REFERENCE_ATTRIBUTES,
                 ProductVariantDraft.class);
 
         // test
         final ProductVariantDraft resolvedAttributeDraft =
-            referenceResolver.resolveReferences(withSetOfNestedProductTypeReferenceAttributes)
+            referenceResolver.resolveReferences(withSetOfNestedCustomObjectReferenceAttributes)
                              .toCompletableFuture()
                              .join();
         // assertions
@@ -89,24 +90,24 @@ class WithProductTypeReferencesTest {
             .stream(resolvedNestedAttributeAsArray.spliterator(), false)
             .collect(Collectors.toMap(jsonNode -> jsonNode.get("name").asText(), jsonNode -> jsonNode));
 
-        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-1-name", PRODUCT_TYPE_ID,
-            ProductType.referenceTypeId());
-        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-2-name", PRODUCT_TYPE_ID,
-            ProductType.referenceTypeId());
-        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-3-name", PRODUCT_TYPE_ID,
-            ProductType.referenceTypeId());
+        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-1-name", CUSTOM_OBJECT_ID,
+            CustomObject.referenceTypeId());
+        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-2-name", CUSTOM_OBJECT_ID,
+            CustomObject.referenceTypeId());
+        assertReferenceAttributeValue(resolvedNestedAttributesMap, "nested-attribute-3-name", CUSTOM_OBJECT_ID,
+            CustomObject.referenceTypeId());
     }
 
     @Test
-    void resolveReferences_WithSetOfNestedSetOfProductTypeReferenceAttributes_ShouldOnlyResolveExistingReferences() {
+    void resolveReferences_WithSetOfNestedSetOfCustomObjectReferenceAttributes_ShouldOnlyResolveExistingReferences() {
         // preparation
-        final ProductVariantDraft withSetOfNestedSetOfProductTypeReferenceAttributes =
-            readObjectFromResource(SET_OF_NESTED_ATTRIBUTE_WITH_SET_OF_PRODUCT_TYPE_REFERENCE_ATTRIBUTES,
+        final ProductVariantDraft withSetOfNestedSetOfCustomObjectReferenceAttributes =
+            readObjectFromResource(SET_OF_NESTED_ATTRIBUTE_WITH_SET_OF_CUSTOM_OBJECT_REFERENCE_ATTRIBUTES,
                 ProductVariantDraft.class);
 
         // test
         final ProductVariantDraft resolvedAttributeDraft =
-            referenceResolver.resolveReferences(withSetOfNestedSetOfProductTypeReferenceAttributes)
+            referenceResolver.resolveReferences(withSetOfNestedSetOfCustomObjectReferenceAttributes)
                              .toCompletableFuture()
                              .join();
         // assertions
@@ -125,28 +126,36 @@ class WithProductTypeReferencesTest {
             .collect(Collectors.toMap(jsonNode -> jsonNode.get("name").asText(), jsonNode -> jsonNode));
 
         assertReferenceSetAttributeValue(resolvedNestedAttributesMap,
-            "nested-attribute-1-name", 2, PRODUCT_TYPE_ID, ProductType.referenceTypeId());
+            "nested-attribute-1-name", 2, CUSTOM_OBJECT_ID, CustomObject.referenceTypeId());
         assertReferenceAttributeValue(resolvedNestedAttributesMap,
-            "nested-attribute-2-name", PRODUCT_TYPE_ID, ProductType.referenceTypeId());
+            "nested-attribute-2-name", CUSTOM_OBJECT_ID, CustomObject.referenceTypeId());
         assertReferenceAttributeValue(resolvedNestedAttributesMap,
-            "nested-attribute-3-name", PRODUCT_TYPE_ID, ProductType.referenceTypeId());
+            "nested-attribute-3-name", CUSTOM_OBJECT_ID, CustomObject.referenceTypeId());
     }
 
     @Test
     void resolveReferences_WithSetOfNestedProdTypeReferenceSetOfSomeNonExisting_ShouldOnlyResolveExistingReferences() {
         // preparation
-        when(productTypeService.fetchCachedProductTypeId("nonExistingProductTypeKey1"))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
-        when(productTypeService.fetchCachedProductTypeId("nonExistingProductTypeKey3"))
+        final CustomObjectCompositeIdentifier nonExistingCustomObject1Id =
+            CustomObjectCompositeIdentifier.of("non-existing-key-1", "non-existing-container");
+
+        when(customObjectService.fetchCachedCustomObjectId(nonExistingCustomObject1Id))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-        final ProductVariantDraft withSetOfNestedProductTypeReferenceSetWithSomeNonExisting =
-            readObjectFromResource(SET_OF_NESTED_ATTRIBUTE_WITH_SOME_NOT_EXISTING_PRODUCT_TYPE_REFERENCE_ATTRIBUTES,
+        final CustomObjectCompositeIdentifier nonExistingCustomObject3Id =
+            CustomObjectCompositeIdentifier.of("non-existing-key-3", "non-existing-container");
+
+        when(customObjectService.fetchCachedCustomObjectId(nonExistingCustomObject3Id))
+            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+
+
+        final ProductVariantDraft withSetOfNestedCustomObjectReferenceSetWithSomeNonExisting =
+            readObjectFromResource(SET_OF_NESTED_ATTRIBUTE_WITH_SOME_NOT_EXISTING_CUSTOM_OBJECT_REFERENCE_ATTRIBUTES,
                 ProductVariantDraft.class);
 
         // test
         final ProductVariantDraft resolvedAttributeDraft =
-            referenceResolver.resolveReferences(withSetOfNestedProductTypeReferenceSetWithSomeNonExisting)
+            referenceResolver.resolveReferences(withSetOfNestedCustomObjectReferenceSetWithSomeNonExisting)
                              .toCompletableFuture()
                              .join();
         // assertions
@@ -166,13 +175,13 @@ class WithProductTypeReferencesTest {
 
         assertReferenceSetAttributeValue(resolvedNestedAttributesMap,
             "nested-attribute-1-name",
-            createReferenceObject("nonExistingProductTypeKey1", ProductType.referenceTypeId()),
-            createReferenceObject(PRODUCT_TYPE_ID, ProductType.referenceTypeId()));
+            createReferenceObject("non-existing-container|non-existing-key-1", CustomObject.referenceTypeId()),
+            createReferenceObject(CUSTOM_OBJECT_ID, CustomObject.referenceTypeId()));
 
         assertReferenceAttributeValue(resolvedNestedAttributesMap,
-            "nested-attribute-2-name", PRODUCT_TYPE_ID, ProductType.referenceTypeId());
+            "nested-attribute-2-name", CUSTOM_OBJECT_ID, CustomObject.referenceTypeId());
 
         assertReferenceAttributeValue(resolvedNestedAttributesMap,
-            "nested-attribute-3-name", "nonExistingProductTypeKey3", ProductType.referenceTypeId());
+            "nested-attribute-3-name", "non-existing-container|non-existing-key-3", CustomObject.referenceTypeId());
     }
 }

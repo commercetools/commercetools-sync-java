@@ -9,8 +9,10 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 public final class SyncUtils {
+    private static final String UUID_REGEX = "[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}";
 
     /**
      * Given a list of elements and a {@code batchSize}, this method distributes the elements into batches with the
@@ -81,6 +83,17 @@ public final class SyncUtils {
         }
 
         return null;
+    }
+
+    /**
+     * Given an id as {@link String}, this method checks whether if it is in UUID format or not.
+     *
+     * @param id to check if it is in UUID format.
+     * @return true if it is in UUID format, otherwise false.
+     */
+    public static boolean isUuid(@Nonnull final String id) {
+        final Pattern regexPattern = Pattern.compile(UUID_REGEX);
+        return regexPattern.matcher(id).matches();
     }
 
     private SyncUtils() {

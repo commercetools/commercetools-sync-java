@@ -2,9 +2,11 @@ package com.commercetools.sync.products.helpers;
 
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.helpers.BaseReferenceResolver;
+import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
+import com.commercetools.sync.services.CustomObjectService;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
@@ -54,6 +56,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     private final ChannelService channelService;
     private final ProductService productService;
     private final CustomerGroupService customerGroupService;
+    private final CustomObjectService customObjectService;
 
     public static final String FAILED_TO_RESOLVE_REFERENCE = "Failed to resolve '%s' resource identifier on "
         + "ProductDraft with key:'%s'. Reason: %s";
@@ -80,6 +83,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
      * @param stateService         the service to fetch product states for reference resolution.
      * @param productService       the service to fetch products for product reference resolution on reference
      *                             attributes.
+     * @param customObjectService  the service to fetch custom objects for reference resolution.
      */
     public ProductReferenceResolver(@Nonnull final ProductSyncOptions productSyncOptions,
                                     @Nonnull final ProductTypeService productTypeService,
@@ -89,7 +93,8 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
                                     @Nonnull final CustomerGroupService customerGroupService,
                                     @Nonnull final TaxCategoryService taxCategoryService,
                                     @Nonnull final StateService stateService,
-                                    @Nonnull final ProductService productService) {
+                                    @Nonnull final ProductService productService,
+                                    @Nonnull final CustomObjectService customObjectService) {
         super(productSyncOptions);
         this.productTypeService = productTypeService;
         this.categoryService = categoryService;
@@ -99,9 +104,10 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         this.channelService = channelService;
         this.productService = productService;
         this.customerGroupService = customerGroupService;
+        this.customObjectService = customObjectService;
         this.variantReferenceResolver =
             new VariantReferenceResolver(productSyncOptions, typeService, channelService, customerGroupService,
-                productService, productTypeService, categoryService);
+                productService, productTypeService, categoryService, customObjectService);
     }
 
     /**
@@ -420,6 +426,12 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         final Set<String> customerGroupKeys = referencedKeys.getCustomerGroupKeys();
         if (!customerGroupKeys.isEmpty()) {
             futures.add(customerGroupService.cacheKeysToIds(customerGroupKeys));
+        }
+
+        final Set<CustomObjectCompositeIdentifier> customObjectCompositeIdentifiers =
+            referencedKeys.getCustomObjectCompositeIdentifiers();
+        if (!customObjectCompositeIdentifiers.isEmpty()) {
+            futures.add(customObjectService.cacheKeysToIds(customObjectCompositeIdentifiers));
         }
 
         return collectionOfFuturesToFutureOfCollection(futures, toList())

@@ -5,6 +5,7 @@ import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.VariantReferenceResolver;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
+import com.commercetools.sync.services.CustomObjectService;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
@@ -40,7 +41,8 @@ class WithCustomerReferencesTest {
             mock(CustomerGroupService.class),
             mock(ProductService.class),
             mock(ProductTypeService.class),
-            mock(CategoryService.class));
+            mock(CategoryService.class),
+            mock(CustomObjectService.class));
     }
 
 

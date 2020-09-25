@@ -1,11 +1,13 @@
 package com.commercetools.sync.products.helpers;
 
+import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductVariantDraft;
@@ -21,7 +23,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
+import static com.commercetools.sync.products.ProductSyncMockUtils.createReferenceObject;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceWithId;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getReferenceSetAttributeDraft;
 import static com.commercetools.sync.products.helpers.ProductBatchValidator.PRODUCT_DRAFT_IS_NULL;
@@ -222,7 +226,7 @@ class ProductBatchValidatorTest {
     }
 
     @Test
-    void validateAndCollectReferencedKeys_WithProductDraftWithEmptyKey_ShouldHaveValidationErrorAndEmptyResult() {
+    void validateAndCollectReferencedKeys_WithCategoryDraftWithEmptyKey_ShouldHaveValidationErrorAndEmptyResult() {
         final ProductDraft productDraft = mock(ProductDraft.class);
         when(productDraft.getKey()).thenReturn(EMPTY);
         final Set<ProductDraft> validDrafts = getValidDrafts(Collections.singletonList(productDraft));
@@ -399,6 +403,42 @@ class ProductBatchValidatorTest {
         assertThat(errorCallBackMessages).hasSize(0);
     }
 
+    @Test
+    void validateAndCollectReferencedKeys_WithKeyValueDocumentAttDrafts_ShouldNotHaveKeyValidationError() {
+        final String uuid = UUID.randomUUID().toString();
+        final String validIdentifier = "container|key";
+        final String invalidIdentifier = "container-key";
+
+        final AttributeDraft referenceSetAttributeDraft =
+            getReferenceSetAttributeDraft("foo",
+                createReferenceObject(validIdentifier, CustomObject.referenceTypeId()),
+                createReferenceObject(uuid, CustomObject.referenceTypeId()),
+                createReferenceObject(invalidIdentifier, CustomObject.referenceTypeId()));
+
+        final List<AttributeDraft> attributes = asList(referenceSetAttributeDraft);
+
+        final ProductVariantDraft validVariantDraft = ProductVariantDraftBuilder.of()
+                                                                                .key("variantKey")
+                                                                                .sku("variantSku")
+                                                                                .attributes(attributes)
+                                                                                .build();
+
+        final ProductDraft validProductDraft = mock(ProductDraft.class);
+        when(validProductDraft.getKey()).thenReturn("validProductDraft");
+        when(validProductDraft.getMasterVariant()).thenReturn(validVariantDraft);
+
+        final ProductBatchValidator productBatchValidator = new ProductBatchValidator(syncOptions, syncStatistics);
+        final ImmutablePair<Set<ProductDraft>, ProductBatchValidator.ReferencedKeys> pair =
+            productBatchValidator.validateAndCollectReferencedKeys(singletonList(validProductDraft));
+
+        assertThat(pair.getLeft()).hasSize(1);
+        assertThat(pair.getLeft()).containsExactly(validProductDraft);
+
+        Set<CustomObjectCompositeIdentifier> identifiers = pair.getRight().getCustomObjectCompositeIdentifiers();
+        assertThat(identifiers).containsExactlyInAnyOrder(CustomObjectCompositeIdentifier.of(validIdentifier));
+
+        assertThat(errorCallBackMessages).hasSize(0);
+    }
 
     @Nonnull
     private Set<ProductDraft> getValidDrafts(@Nonnull final List<ProductDraft> productDrafts) {
