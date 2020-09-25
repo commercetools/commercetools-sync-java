@@ -19,7 +19,6 @@ import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.queries.ProductQuery;
-import io.sphere.sdk.producttypes.ProductType;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -90,20 +89,14 @@ class ProductSyncTest {
     void sync_WithErrorCachingKeys_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         // preparation
         final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
-            ProductType.referenceOfId("productTypeKey"))
-            .taxCategory(null)
-            .state(null)
+            ResourceIdentifier.ofKey("productTypeKey"))
             .build();
 
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> exceptions = new ArrayList<>();
 
-        final SphereClient mockClient = mock(SphereClient.class);
-        when(mockClient.execute(any(ProductQuery.class)))
-                .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
-
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder
-            .of(mockClient)
+            .of(mock(SphereClient.class))
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorMessages.add(exception.getMessage());
                 exceptions.add(exception.getCause());
@@ -113,15 +106,11 @@ class ProductSyncTest {
         final ProductService productService = spy(new ProductServiceImpl(syncOptions));
 
         final ProductTypeService productTypeService = mock(ProductTypeService.class);
-        when(productTypeService.fetchCachedProductTypeId(any()))
-            .thenReturn(completedFuture(Optional.of(UUID.randomUUID().toString())));
-
-        final CategoryService categoryService = mock(CategoryService.class);
-        when(categoryService.fetchMatchingCategoriesByKeys(any())).thenReturn(completedFuture(emptySet()));
-
+        when(productTypeService.cacheKeysToIds(any()))
+            .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
 
         final ProductSync productSync = new ProductSync(syncOptions, productService,
-            productTypeService, categoryService, mock(TypeService.class),
+            productTypeService, mock(CategoryService.class), mock(TypeService.class),
             mock(ChannelService.class), mock(CustomerGroupService.class), mock(TaxCategoryService.class),
             mock(StateService.class),
             mock(UnresolvedReferencesService.class));
@@ -135,7 +124,7 @@ class ProductSyncTest {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).contains("Failed to build a cache of product keys to ids.")
+                assertThat(message).contains("Failed to build a cache of keys to ids.")
             );
 
         assertThat(exceptions)
@@ -152,12 +141,12 @@ class ProductSyncTest {
     void sync_WithErrorFetchingExistingKeys_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         // preparation
         final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
-                ProductType.referenceOfId("productTypeKey"))
+                ResourceIdentifier.ofKey("productTypeKey"))
                 .taxCategory(null)
                 .state(null)
                 .build();
 
-     
+
 
         final SphereClient mockClient = mock(SphereClient.class);
         when(mockClient.execute(any(ProductQuery.class)))
@@ -218,7 +207,7 @@ class ProductSyncTest {
     void sync_WithOnlyDraftsToCreate_ShouldCallBeforeCreateCallback() {
         // preparation
         final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
-            ProductType.referenceOfId("productTypeKey"))
+            ResourceIdentifier.ofKey("productTypeKey"))
             .taxCategory(null)
             .state(null)
             .build();
@@ -260,7 +249,7 @@ class ProductSyncTest {
     void sync_WithOnlyDraftsToUpdate_ShouldOnlyCallBeforeUpdateCallback() {
         // preparation
         final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH,
-            ProductType.referenceOfId("productTypeKey"))
+            ResourceIdentifier.ofKey("productTypeKey"))
             .taxCategory(null)
             .state(null)
             .build();
@@ -306,10 +295,10 @@ class ProductSyncTest {
     }
 
     @Test
-    void sync_WithEmptyAttributeMetaDataMap_ShouldCallErrorCallbak() {
+    void sync_WithEmptyAttributeMetaDataMap_ShouldCallErrorCallback() {
         // preparation
         final ProductDraft productDraft = createProductDraftBuilder(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH,
-            ProductType.referenceOfId("productTypeKey"))
+            ResourceIdentifier.ofKey("productTypeKey"))
             .taxCategory(null)
             .state(null)
             .build();
@@ -318,7 +307,7 @@ class ProductSyncTest {
             readObjectFromResource(PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH, Product.class);
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> exceptions = new ArrayList<>();
-      
+
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder
             .of(mock(SphereClient.class))
             .errorCallback((exception, oldResource, newResource, updateActions) -> {

@@ -11,10 +11,10 @@ import io.sphere.sdk.customergroups.queries.CustomerGroupQueryModel;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
-
-import static java.util.Collections.singleton;
 
 public final class CustomerGroupServiceImpl
     extends BaseServiceWithKey<CustomerGroupDraft, CustomerGroup, BaseSyncOptions, CustomerGroupQuery,
@@ -26,12 +26,24 @@ public final class CustomerGroupServiceImpl
 
     @Nonnull
     @Override
+    public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> customerGroupKeys) {
+
+        return cacheKeysToIds(
+            customerGroupKeys, keysNotCached -> CustomerGroupQueryBuilder
+                .of()
+                .plusPredicates(customerGroupQueryModel ->
+                    customerGroupQueryModel.key().isIn(keysNotCached))
+                .build());
+    }
+
+    @Nonnull
+    @Override
     public CompletionStage<Optional<String>> fetchCachedCustomerGroupId(@Nullable final String key) {
 
         return fetchCachedResourceId(key,
             () -> CustomerGroupQueryBuilder
                 .of()
-                .plusPredicates(queryModel -> queryModel.key().isIn(singleton(key)))
+                .plusPredicates(queryModel -> queryModel.key().is(key))
                 .build());
     }
 }

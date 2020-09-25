@@ -2,6 +2,7 @@ package com.commercetools.sync.customobjects;
 
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.customobjects.helpers.CustomObjectBatchValidator;
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.customobjects.helpers.CustomObjectSyncStatistics;
 import com.commercetools.sync.customobjects.utils.CustomObjectSyncUtils;
@@ -18,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
@@ -28,7 +28,6 @@ import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
-import static java.util.stream.Collectors.toSet;
 
 /**
  * This class syncs custom object drafts with the corresponding custom objects in the CTP project.
@@ -42,9 +41,9 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
         "Failed to update custom object with key: '%s'. Reason: %s";
     private static final String CTP_CUSTOM_OBJECT_CREATE_FAILED =
         "Failed to create custom object with key: '%s'. Reason: %s";
-    private static final String CUSTOM_OBJECT_DRAFT_IS_NULL = "Failed to process null custom object draft.";
 
     private final CustomObjectService customObjectService;
+    private final CustomObjectBatchValidator batchValidator;
 
     public CustomObjectSync(@Nonnull final CustomObjectSyncOptions syncOptions) {
         this(syncOptions, new CustomObjectServiceImpl(syncOptions));
@@ -67,6 +66,7 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
 
         super(new CustomObjectSyncStatistics(), syncOptions);
         this.customObjectService = customObjectService;
+        this.batchValidator = new CustomObjectBatchValidator(getSyncOptions(), getStatistics());
     }
 
     /**
@@ -89,10 +89,10 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
 
     /**
      * This method first creates a new {@link Set} of valid {@link CustomObjectDraft} elements. For more on the rules of
-     * validation, check: {@link CustomObjectSync#validateDraft(CustomObjectDraft)}. Using the resulting set of
-     * {@code validCustomObjectDrafts}, the matching custom objects in the target CTP project are fetched then the
-     * method {@link CustomObjectSync#syncBatch(Set, Set)} is called to perform the sync (<b>update</b> or <b>create</b>
-     * requests accordingly) on the target project.
+     * validation, check: {@link CustomObjectBatchValidator#validateAndCollectReferencedKeys(List)}. Using the resulting
+     * set of {@code validCustomObjectDrafts}, the matching custom objects in the target CTP project are fetched then
+     * the method {@link CustomObjectSync#syncBatch(Set, Set)} is called to perform the sync (<b>update</b> or
+     * <b>create</b> requests accordingly) on the target project.
      *
      * <p> In case of error during of fetching of existing custom objects, the error callback will be triggered.
      * And the sync process would stop for the given batch.
@@ -106,51 +106,35 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
     protected CompletionStage<CustomObjectSyncStatistics> processBatch(
         @Nonnull final List<CustomObjectDraft<JsonNode>> batch) {
 
-        final Set<CustomObjectDraft<JsonNode>> validCustomObjectDrafts = batch.stream().filter(
-            this::validateDraft).collect(toSet());
+        final ImmutablePair<Set<CustomObjectDraft<JsonNode>>, Set<CustomObjectCompositeIdentifier>> result =
+            batchValidator.validateAndCollectReferencedKeys(batch);
 
-        if (validCustomObjectDrafts.isEmpty()) {
+        final Set<CustomObjectDraft<JsonNode>> validDrafts = result.getLeft();
+        if (validDrafts.isEmpty()) {
             statistics.incrementProcessed(batch.size());
-            return completedFuture(statistics);
-        } else {
-            final Set<CustomObjectCompositeIdentifier> identifiers = validCustomObjectDrafts.stream().map(
-                CustomObjectCompositeIdentifier::of).collect(toSet());
-
-            return customObjectService
-                .fetchMatchingCustomObjects(identifiers)
-                .handle(ImmutablePair::new)
-                .thenCompose(fetchResponse -> {
-                    final Set<CustomObject<JsonNode>> fetchedCustomObjects = fetchResponse.getKey();
-                    final Throwable exception = fetchResponse.getValue();
-
-                    if (exception != null) {
-                        final String errorMessage = format(CTP_CUSTOM_OBJECT_FETCH_FAILED, identifiers);
-                        handleError(errorMessage, exception, identifiers.size());
-                        return CompletableFuture.completedFuture(null);
-                    } else {
-                        return syncBatch(fetchedCustomObjects, validCustomObjectDrafts);
-                    }
-                })
-                .thenApply(ignored -> {
-                    statistics.incrementProcessed(batch.size());
-                    return statistics;
-                });
+            return CompletableFuture.completedFuture(statistics);
         }
-    }
+        final Set<CustomObjectCompositeIdentifier> validIdentifiers = result.getRight();
 
-    /**
-     * Checks if a draft is empty for further processing. If so, then returns {@code true}. Otherwise handles an error
-     * and returns {@code false}. A valid draft is a {@link CustomObjectDraft} object that is not {@code null}.
-     *
-     * @param draft nullable draft
-     * @return boolean that indicate if given {@code draft} is valid for sync
-     */
-    private boolean validateDraft(@Nullable final CustomObjectDraft draft) {
-        if (draft == null) {
-            handleError(CUSTOM_OBJECT_DRAFT_IS_NULL, null, 1);
-            return false;
-        }
-        return true;
+        return customObjectService
+            .fetchMatchingCustomObjects(validIdentifiers)
+            .handle(ImmutablePair::new)
+            .thenCompose(fetchResponse -> {
+                final Set<CustomObject<JsonNode>> fetchedCustomObjects = fetchResponse.getKey();
+                final Throwable exception = fetchResponse.getValue();
+
+                if (exception != null) {
+                    final String errorMessage = format(CTP_CUSTOM_OBJECT_FETCH_FAILED, validIdentifiers);
+                    handleError(errorMessage, exception, validIdentifiers.size());
+                    return CompletableFuture.completedFuture(null);
+                } else {
+                    return syncBatch(fetchedCustomObjects, validDrafts);
+                }
+            })
+            .thenApply(ignored -> {
+                statistics.incrementProcessed(batch.size());
+                return statistics;
+            });
     }
 
     /**
@@ -162,10 +146,9 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
      * @param exception    The exception that called caused the failure, if any.
      * @param failedTimes  The number of times that the failed custom objects counter is incremented.
      */
-    private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
+    private void handleError(@Nonnull final String errorMessage, @Nonnull final Throwable exception,
                              final int failedTimes) {
-        SyncException syncException = exception != null ? new SyncException(errorMessage, exception)
-            : new SyncException(errorMessage);
+        SyncException syncException = new SyncException(errorMessage, exception);
         syncOptions.applyErrorCallback(syncException);
         statistics.incrementFailed(failedTimes);
     }

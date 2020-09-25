@@ -29,10 +29,21 @@
 -->
 
 <!--
-### 2.x.x - MM xx, 2020
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/2.0.0...2.0.1) |
-[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.0.1/) | 
-[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.0.1)
+
+### 2.2.0 - MM xx,, 2020
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/2.1.0...2.2.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.2.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.2.0)
+
+- 🎉 **New Features** (1)
+    - Introduced new concept for the validation of `the drafts in batches` for each `Sync` instance, exposed with 
+    `BaseBatchValidator` implementations (i.e. ProductBatchValidator, CategoryBatchValidator). [#233](https://github.com/commercetools/commercetools-sync-java/issues/233)
+
+- ✨ **Enhancements** (2)    
+    - **Category Sync** - Passed category keys in batch to `cacheKeysToIds` method of `CategoryService` to avoid fetching all categories for every batch. 
+[#235](https://github.com/commercetools/commercetools-sync-java/issues/235)
+    - Populated `keyToId` caches in services before reference resolution to improve the performance of the library 
+    with collecting referenced keys in batches of drafts. [#235](https://github.com/commercetools/commercetools-sync-java/issues/235)
 -->
 
 ### 2.1.0 - Sep 21, 2020

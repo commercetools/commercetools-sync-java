@@ -13,6 +13,7 @@ import io.sphere.sdk.channels.queries.ChannelQueryBuilder;
 import io.sphere.sdk.channels.queries.ChannelQueryModel;
 
 import javax.annotation.Nonnull;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
@@ -29,6 +30,17 @@ public final class ChannelServiceImpl extends BaseServiceWithKey<ChannelDraft, C
         @Nonnull final Set<ChannelRole> channelRoles) {
         super(syncOptions);
         this.channelRoles = channelRoles;
+    }
+
+    @Nonnull
+    @Override
+    public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> channelKeys) {
+
+        return cacheKeysToIds(
+            channelKeys, keysNotCached -> ChannelQueryBuilder
+                .of()
+                .plusPredicates(channelQueryModel -> channelQueryModel.key().isIn(keysNotCached))
+                .build());
     }
 
     @Nonnull

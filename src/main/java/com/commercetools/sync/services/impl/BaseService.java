@@ -47,7 +47,6 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
     Q extends MetaModelQueryDsl<U, Q, M, E>, M, E> {
 
     final S syncOptions;
-    boolean isCached = false;
     final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
 
     private static final int MAXIMUM_ALLOWED_UPDATE_ACTIONS = 500;

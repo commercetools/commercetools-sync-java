@@ -13,6 +13,7 @@ import io.sphere.sdk.types.Type;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -80,7 +82,7 @@ public class MockUtils {
 
         final Map<String, String> keyToIds =
             existingCategories.stream().collect(Collectors.toMap(Category::getKey, Category::getId));
-        when(mockCategoryService.cacheKeysToIds()).thenReturn(completedFuture(keyToIds));
+        when(mockCategoryService.cacheKeysToIds(anySet())).thenReturn(completedFuture(keyToIds));
         when(mockCategoryService.createCategory(any()))
             .thenReturn(CompletableFuture.completedFuture(ofNullable(createdCategory)));
         return mockCategoryService;
@@ -107,6 +109,8 @@ public class MockUtils {
         final TypeService typeService = mock(TypeService.class);
         when(typeService.fetchCachedTypeId(anyString()))
             .thenReturn(completedFuture(Optional.of("typeId")));
+        when(typeService.cacheKeysToIds(anySet()))
+            .thenReturn(completedFuture(Collections.singletonMap("typeKey", "typeId")));
         return typeService;
     }
 
