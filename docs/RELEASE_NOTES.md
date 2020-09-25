@@ -28,9 +28,7 @@
 
 -->
 
-<!--
-
-### 2.2.0 - MM xx,, 2020
+### 2.2.0 - Sep 25, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/2.1.0...2.2.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.2.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.2.0)
