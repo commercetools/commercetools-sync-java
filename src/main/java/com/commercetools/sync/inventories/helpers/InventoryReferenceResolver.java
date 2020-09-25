@@ -32,6 +32,7 @@ public final class InventoryReferenceResolver
         + "InventoryEntryDraft with SKU:'%s'.";
     private static final String FAILED_TO_RESOLVE_SUPPLY_CHANNEL = "Failed to resolve supply channel "
         + "resource identifier on InventoryEntryDraft with SKU:'%s'. Reason: %s";
+    private static final String FAILED_TO_CREATE_SUPPLY_CHANNEL = "Failed to create supply channel with key: '%s'";
     private final ChannelService channelService;
     private final TypeService typeService;
 
@@ -206,7 +207,7 @@ public final class InventoryReferenceResolver
                         return setChannelReference(createdChannelOptional.get().getId(), draftBuilder);
                     } else {
                         final ReferenceResolutionException referenceResolutionException =
-                            new ReferenceResolutionException(format(CHANNEL_DOES_NOT_EXIST, channelKey));
+                            new ReferenceResolutionException(format(FAILED_TO_CREATE_SUPPLY_CHANNEL, channelKey));
                         return CompletableFutureUtils.exceptionallyCompletedFuture(referenceResolutionException);
                     }
                 });

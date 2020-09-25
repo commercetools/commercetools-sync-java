@@ -37,7 +37,6 @@ import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockC
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryEntry;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
-import static io.sphere.sdk.utils.CompletableFutureUtils.failed;
 import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -395,7 +394,8 @@ class InventorySyncTest {
         final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_3, KEY_3));
         when(channelService.fetchCachedChannelId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
-        when(channelService.createAndCacheChannel(anyString())).thenReturn(failed(new SphereException()));
+        when(channelService.createAndCacheChannel(anyString()))
+            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
         final InventoryEntryDraft newInventoryDraft = InventoryEntryDraftBuilder
             .of(SKU_1, QUANTITY_1, DATE_1, RESTOCKABLE_1, ResourceIdentifier.ofKey(KEY_3))
@@ -410,13 +410,12 @@ class InventorySyncTest {
         assertThat(stats).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).isNotEmpty();
         assertThat(errorCallBackMessages.get(0)).contains(format("Failed to resolve supply channel resource identifier"
-            + " on InventoryEntryDraft with SKU:'%s'.", SKU_1));
+            + " on InventoryEntryDraft with SKU:'%s'. Reason: Failed to create supply channel with key: '%s'", SKU_1,
+            "channel-key_3"));
         assertThat(errorCallBackExceptions).isNotEmpty();
         assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(ReferenceResolutionException.class);
         assertThat(errorCallBackExceptions.get(0).getCause().getCause()).isExactlyInstanceOf(CompletionException.class);
-        assertThat(errorCallBackExceptions.get(0).getCause()
-                                          .getCause().getCause()).isExactlyInstanceOf(SphereException.class);
     }
 
     @Test

@@ -194,7 +194,12 @@ public class ProductBatchValidator
     @Nonnull
     private List<String> getVariantDraftErrorsInAllVariants(@Nonnull final ProductDraft productDraft) {
         final List<String> errorMessages = new ArrayList<>();
-        final List<ProductVariantDraft> allVariants = getAllVariants(productDraft);
+
+        // don't filter the nulls
+        final List<ProductVariantDraft> allVariants = new ArrayList<>();
+        allVariants.add(productDraft.getMasterVariant());
+        allVariants.addAll(productDraft.getVariants());
+
         for (int i = 0; i < allVariants.size(); i++) {
             errorMessages.addAll(getVariantDraftErrorsInAllVariants(allVariants.get(i),
                 i, requireNonNull(productDraft.getKey())));

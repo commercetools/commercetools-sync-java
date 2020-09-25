@@ -133,12 +133,9 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     private CompletionStage<ProductDraftBuilder> resolveAllVariantsReferences(
         @Nonnull final ProductDraftBuilder draftBuilder) {
         final ProductVariantDraft masterVariantDraft = draftBuilder.getMasterVariant();
-        if (masterVariantDraft != null) {
-            return variantReferenceResolver.resolveReferences(masterVariantDraft)
-                                           .thenApply(draftBuilder::masterVariant)
-                                           .thenCompose(this::resolveVariantsReferences);
-        }
-        return resolveVariantsReferences(draftBuilder);
+        return variantReferenceResolver.resolveReferences(masterVariantDraft)
+                                       .thenApply(draftBuilder::masterVariant)
+                                       .thenCompose(this::resolveVariantsReferences);
     }
 
     @Nonnull

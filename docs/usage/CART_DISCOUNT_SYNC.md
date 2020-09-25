@@ -32,7 +32,7 @@ fields set, otherwise they won't be matched.
 Types are matched by their `key`s. Therefore, in order for the sync to resolve the 
 actual ids of the type reference, the `key` of the `Type` has to be supplied.
 
-   - When syncing from a source commercetools project, you can use [`mapToCartDiscountDrafts`](https://commercetools.github.io/commercetools-sync-java/v/2.1.0/com/commercetools/sync/cartdiscounts/utils/CartDiscountReferenceResolutionUtils.html#mapToCartDiscountDrafts-java.util.List-)
+   - When syncing from a source commercetools project, you can use [`mapToCartDiscountDrafts`](https://commercetools.github.io/commercetools-sync-java/v/2.2.0/com/commercetools/sync/cartdiscounts/utils/CartDiscountReferenceResolutionUtils.html#mapToCartDiscountDrafts-java.util.List-)
     method that maps from a `CartDiscount` to `CartDiscountDraft` in order to make them ready for reference resolution by the sync:
 
     ````java
