@@ -133,12 +133,9 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     private CompletionStage<ProductDraftBuilder> resolveAllVariantsReferences(
         @Nonnull final ProductDraftBuilder draftBuilder) {
         final ProductVariantDraft masterVariantDraft = draftBuilder.getMasterVariant();
-        if (masterVariantDraft != null) {
-            return variantReferenceResolver.resolveReferences(masterVariantDraft)
-                                           .thenApply(draftBuilder::masterVariant)
-                                           .thenCompose(this::resolveVariantsReferences);
-        }
-        return resolveVariantsReferences(draftBuilder);
+        return variantReferenceResolver.resolveReferences(masterVariantDraft)
+                                       .thenApply(draftBuilder::masterVariant)
+                                       .thenCompose(this::resolveVariantsReferences);
     }
 
     @Nonnull
@@ -211,10 +208,6 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         @Nonnull final ProductDraftBuilder draftBuilder) {
 
         final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers = draftBuilder.getCategories();
-        if (categoryResourceIdentifiers.isEmpty()) {
-            return CompletableFuture.completedFuture(draftBuilder);
-        }
-
         final Set<String> categoryKeys = new HashSet<>();
         final List<ResourceIdentifier<Category>> directCategoryResourceIdentifiers = new ArrayList<>();
         for (ResourceIdentifier<Category> categoryResourceIdentifier : categoryResourceIdentifiers) {
