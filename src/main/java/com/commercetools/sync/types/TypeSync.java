@@ -138,10 +138,9 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      * @param exception    The exception that called caused the failure, if any.
      * @param failedTimes  The number of times that the failed types counter is incremented.
      */
-    private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
+    private void handleError(@Nonnull final String errorMessage, @Nonnull final Throwable exception,
                              final int failedTimes) {
-        SyncException syncException = exception != null ? new SyncException(errorMessage, exception)
-            : new SyncException(errorMessage);
+        SyncException syncException = new SyncException(errorMessage, exception);
         syncOptions.applyErrorCallback(syncException);
         statistics.incrementFailed(failedTimes);
     }
