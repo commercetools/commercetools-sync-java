@@ -546,7 +546,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/2.1.0/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/2.2.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -764,14 +764,22 @@ of the product also have prices, where each price also has some references inclu
 custom fields and a reference to a <code>channel</code>. All these referenced resources are matched by their <code>key</code>s. Therefore, in 
 order for the sync to resolve the actual ids of those references, those <code>key</code>s have to be supplied in the following way:</p>
 <ul>
-<li>When syncing from a source commercetools project, you can use <a href="https://commercetools.github.io/commercetools-sync-java/v/2.1.0/com/commercetools/sync/products/utils/ProductReferenceResolutionUtils.html#mapToProductDrafts-java.util.List-"><code>mapToProductDrafts</code></a>
+<li>
+<p>When syncing from a source commercetools project, you can use <a href="https://commercetools.github.io/commercetools-sync-java/v/2.2.0/com/commercetools/sync/products/utils/ProductReferenceResolutionUtils.html#mapToProductDrafts-java.util.List-"><code>mapToProductDrafts</code></a>
  method that maps from a <code>Product</code> to <code>ProductDraft</code> in order to make them ready for reference resolution by the sync:
  <div class="codehilite"><pre><span></span><code><span class="kd">final</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">ProductDraft</span><span class="o">&gt;</span> <span class="n">productDrafts</span> <span class="o">=</span> <span class="n">ProductReferenceResolutionUtils</span><span class="p">.</span><span class="na">mapToProductDrafts</span><span class="p">(</span><span class="n">products</span><span class="p">);</span>
-</code></pre></div><blockquote>
+</code></pre></div></p>
+<blockquote>
 <p>Note: Some references in the product like <code>state</code>, <code>customerGroup</code> of prices, and variant attributes with type <code>reference</code> do not support the <code>ResourceIdentifier</code> yet, 
   for those references you need to provide the <code>key</code> value on the <code>id</code> field of the reference. This means that calling <code>getId()</code> on the
   reference would return its <code>key</code>. </p>
 </blockquote>
+</li>
+<li>
+<p>For resolving <code>key-value-document</code> (custom object) references on attributes of type <code>Reference</code>, <code>Set</code> of <code>Reference</code>, <code>NestedType</code> or <code>Set</code> of <code>NestedType</code>, The <code>id</code> field of the reference in the attribute draft should be defined in the correct format. 
+The correct format must have a vertical bar <code>|</code> character between the values of the container and key.
+For example, if the custom object has a container value <code>container</code> and key value <code>key</code>, the <code>id</code> field should be <code>container|key"</code>,<br />
+also, the key and container value should match the pattern <code>[-_~.a-zA-Z0-9]+</code>.</p>
 </li>
 </ul>
 </li>
@@ -926,7 +934,7 @@ attributes.</p>
 </tr>
 <tr>
 <td><code>“key-value-document”</code></td>
-<td>❌</td>
+<td>✅</td>
 </tr>
 <tr>
 <td><code>“order”</code></td>

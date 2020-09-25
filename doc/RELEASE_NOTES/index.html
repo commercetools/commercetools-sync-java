@@ -432,7 +432,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/2.1.0/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/2.2.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -469,6 +469,13 @@
   
     <label class="md-nav__title" for="__toc">Table of contents</label>
     <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#220-sep-25-2020" class="md-nav__link">
+    2.2.0 - Sep 25, 2020
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#210-sep-21-2020" class="md-nav__link">
@@ -789,6 +796,13 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#220-sep-25-2020" class="md-nav__link">
+    2.2.0 - Sep 25, 2020
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#210-sep-21-2020" class="md-nav__link">
     2.1.0 - Sep 21, 2020
   </a>
@@ -1087,13 +1101,35 @@
 
 -->
 
-<!--
-### 2.x.x - MM xx, 2020
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/2.0.0...2.0.1) |
-[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.0.1/) | 
-[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.0.1)
--->
-
+<h3 id="220-sep-25-2020">2.2.0 - Sep 25, 2020<a class="headerlink" href="#220-sep-25-2020" title="Permanent link">&para;</a></h3>
+<p><a href="https://github.com/commercetools/commercetools-sync-java/compare/2.1.0...2.2.0">Commits</a> |
+<a href="https://commercetools.github.io/commercetools-sync-java/v/2.2.0/">Javadoc</a> | 
+<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/2.2.0">Jar</a></p>
+<ul>
+<li>
+<p>🎉 <strong>New Features</strong> (2)</p>
+<ul>
+<li><strong>Product Sync</strong> - Added support for resolving <code>key-value-document</code> (custom object) references on attributes of type <code>Reference</code>, <code>Set</code> of <code>Reference</code>, <code>NestedType</code> or <code>Set</code> of <code>NestedType</code>. <a href="https://github.com/commercetools/commercetools-sync-java/issues/564">#564</a>     </li>
+<li>Introduced new concept for the validation of <code>the drafts in batches</code> for each <code>Sync</code> instance, exposed with 
+<code>BaseBatchValidator</code> implementations (i.e. ProductBatchValidator, CategoryBatchValidator). <a href="https://github.com/commercetools/commercetools-sync-java/issues/233">#233</a></li>
+</ul>
+</li>
+<li>
+<p>✨ <strong>Enhancements</strong> (2)    </p>
+<ul>
+<li><strong>Category Sync</strong> - Passed category keys in batch to <code>cacheKeysToIds</code> method of <code>CategoryService</code> to avoid fetching all categories for every batch. 
+<a href="https://github.com/commercetools/commercetools-sync-java/issues/235">#235</a></li>
+<li>Populated <code>keyToId</code> caches in services before reference resolution to improve the performance of the library 
+with collecting referenced keys in batches of drafts. <a href="https://github.com/commercetools/commercetools-sync-java/issues/235">#235</a></li>
+</ul>
+</li>
+<li>
+<p>🛠️ <strong>Dependency Updates</strong> (1)</p>
+<ul>
+<li><code>mockito-junit-jupiter</code> <code>3.5.11</code> -&gt;  <a href="https://github.com/mockito/mockito/releases/tag/v3.5.13"><code>3.5.13</code></a> </li>
+</ul>
+</li>
+</ul>
 <h3 id="210-sep-21-2020">2.1.0 - Sep 21, 2020<a class="headerlink" href="#210-sep-21-2020" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/2.0.0...2.1.0">Commits</a> |
 <a href="https://commercetools.github.io/commercetools-sync-java/v/2.1.0/">Javadoc</a> | 
