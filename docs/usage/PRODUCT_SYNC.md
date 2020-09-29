@@ -10,7 +10,8 @@ against a [ProductDraft](https://docs.commercetools.com/http-api-projects-produc
 
 - [Usage](#usage)
   - [Sync list of product drafts](#sync-list-of-product-drafts)
-    - [Prerequisites](#prerequisites)
+    - [Prerequisites](#about-syncoptions)
+    - [About SyncOptions](#running-the-sync)
     - [Running the sync](#running-the-sync)
       - [Persistence of ProductDrafts with Irresolvable References](#persistence-of-productdrafts-with-irresolvable-references)
       - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)
