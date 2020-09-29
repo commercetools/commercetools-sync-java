@@ -34,7 +34,7 @@
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.2.1)
 
  🐞 **Bug Fixes** (1)
-    - **Product Sync** - Fixed a bug in the `ProductSync` related fixing unresolved product references provided in 
+    - **Product Sync** - Fixed a bug in the `ProductSync` related handling of unresolved product references provided in 
     different batches. [#580](https://github.com/commercetools/commercetools-sync-java/issues/580)
 
 
