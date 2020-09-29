@@ -32,7 +32,7 @@ against a [InventoryEntryDraft](https://docs.commercetools.com/http-api-projects
    references are matched by their `key`s. Therefore, in order for the sync to resolve the actual ids of those references,
    their `key`s has to be supplied.
    
-   - When syncing from a source commercetools project, you can use [`mapToInventoryEntryDrafts`](https://commercetools.github.io/commercetools-sync-java/v/2.2.0/com/commercetools/sync/inventories/utils/InventoryReferenceResolutionUtils.html#mapToInventoryEntryDrafts-java.util.List-)
+   - When syncing from a source commercetools project, you can use [`mapToInventoryEntryDrafts`](https://commercetools.github.io/commercetools-sync-java/v/2.2.1/com/commercetools/sync/inventories/utils/InventoryReferenceResolutionUtils.html#mapToInventoryEntryDrafts-java.util.List-)
      method that that maps from a `InventoryEntry` to `InventoryEntryDraft` in order to make them ready for reference resolution by the sync:
      ````java
      final List<InventoryEntryDraft> inventoryEntryDrafts = InventoryReferenceResolutionUtils.mapToInventoryEntryDrafts(inventoryEntries);

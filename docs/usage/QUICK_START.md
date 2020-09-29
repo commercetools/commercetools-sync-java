@@ -37,7 +37,7 @@
 <dependency>
   <groupId>com.commercetools</groupId>
   <artifactId>commercetools-sync-java</artifactId>
-  <version>2.2.0</version>
+  <version>2.2.1</version>
 </dependency>
 ````
 - For Gradle users:
@@ -48,7 +48,7 @@ implementation 'com.commercetools.sdk.jvm.core:commercetools-java-client:1.53.0'
 implementation 'com.commercetools.sdk.jvm.core:commercetools-convenience:1.53.0'
 
 // Add commercetools-sync-java dependency.
-implementation 'com.commercetools:commercetools-sync-java:2.2.0'
+implementation 'com.commercetools:commercetools-sync-java:2.2.1'
 ````
 
 ### 2. Setup Syncing Options

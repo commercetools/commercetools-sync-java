@@ -432,6 +432,6 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         }
 
         return collectionOfFuturesToFutureOfCollection(futures, toList())
-            .thenApply(maps -> productKeys.isEmpty() ? Collections.emptyMap() : maps.get(0));
+            .thenCompose(ignored -> productService.cacheKeysToIds(Collections.emptySet())); // return all cache.
     }
 }

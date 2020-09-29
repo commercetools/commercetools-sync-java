@@ -38,7 +38,7 @@ all the variants in the target project are expected to have the `sku` fields set
 of the product also have prices, where each price also has some references including a reference to the `Type` of its 
 custom fields and a reference to a `channel`. All these referenced resources are matched by their `key`s. Therefore, in 
 order for the sync to resolve the actual ids of those references, those `key`s have to be supplied in the following way:
-    - When syncing from a source commercetools project, you can use [`mapToProductDrafts`](https://commercetools.github.io/commercetools-sync-java/v/2.2.0/com/commercetools/sync/products/utils/ProductReferenceResolutionUtils.html#mapToProductDrafts-java.util.List-)
+    - When syncing from a source commercetools project, you can use [`mapToProductDrafts`](https://commercetools.github.io/commercetools-sync-java/v/2.2.1/com/commercetools/sync/products/utils/ProductReferenceResolutionUtils.html#mapToProductDrafts-java.util.List-)
      method that maps from a `Product` to `ProductDraft` in order to make them ready for reference resolution by the sync:
      ````java
      final List<ProductDraft> productDrafts = ProductReferenceResolutionUtils.mapToProductDrafts(products);

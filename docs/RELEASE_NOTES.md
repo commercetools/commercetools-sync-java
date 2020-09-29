@@ -28,6 +28,16 @@
 
 -->
 
+### 2.2.1 - Sep 29, 2020
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/2.2.0...2.2.1) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.2.1/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.2.1)
+
+ 🐞 **Bug Fixes** (1)
+    - **Product Sync** - Fixed a bug in the `ProductSync` related handling of unresolved product references provided in 
+    different batches. [#580](https://github.com/commercetools/commercetools-sync-java/issues/580)
+
+
 ### 2.2.0 - Sep 25, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/2.1.0...2.2.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.2.0/) | 
