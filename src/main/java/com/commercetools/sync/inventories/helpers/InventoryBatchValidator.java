@@ -38,7 +38,6 @@ public class InventoryBatchValidator
      * <ol>
      * <li>It is not null</li>
      * <li>It has a sku which is not blank (null/empty)</li>
-     * </li>
      * </ol>
      *
      * @param inventoryDrafts the inventory drafts to validate and collect referenced keys.
