@@ -386,7 +386,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         final List<CompletionStage<Map<String, String>>> futures = new ArrayList<>();
 
         final Set<String> productKeys = referencedKeys.getProductKeys();
-        if (productKeys.isEmpty()) {
+        if (!productKeys.isEmpty()) {
             futures.add(productService.cacheKeysToIds(productKeys));
         }
 
