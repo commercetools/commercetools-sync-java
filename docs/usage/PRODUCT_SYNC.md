@@ -61,7 +61,7 @@ final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(spher
 ````
 
 #### About SyncOptions
-SyncOptions is an object which provides a place for users to add certain configurations to customize the sync process.
+`SyncOptions` is an object which provides a place for users to add certain configurations to customize the sync process.
 Here are configurations included :
 
 1.[`errorCallback`](SYNC_OPTIONS.md#errorcallback) - A callback which is triggered when error event occurs during 
