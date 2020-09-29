@@ -11,6 +11,7 @@ against a [TypeDraft](https://docs.commercetools.com/http-api-projects-types.htm
 - [Usage](#usage)
   - [Sync list of type drafts](#sync-list-of-type-drafts)
     - [Prerequisites](#prerequisites)
+    - [About SyncOptions](#about-syncoptions)
     - [Running the sync](#running-the-sync)
     - [Important to Note](#important-to-note)
     - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)
@@ -37,7 +38,25 @@ fields set, otherwise they won't be matched.
 final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(sphereClient).build();
 ````
 
-[More information about Sync Options](SYNC_OPTIONS.md).
+#### About SyncOptions
+`SyncOptions` is an object which provides a place for users to add certain configurations to customize the sync process.
+Here are configurations included :
+
+1.[`errorCallback`](SYNC_OPTIONS.md#errorcallback) - A callback which is triggered when error event occurs during 
+sync process.
+
+2.[`warningCallback`](SYNC_OPTIONS.md#warningcallback) - A callback which is triggered when warning event occurs during
+syc process.
+
+3.[`beforeUpdateCallback`](SYNC_OPTIONS.md#beforeupdatecallback) - A callback which intercepts the update request
+just before the request is sent to CTP.
+ 
+4.[`beforeCreateCallback`](SYNC_OPTIONS.md#beforecreatecallback) - A callback which intercepts the create request
+ust before the request is sent to CTP.
+ 
+5.[`batchsize`](SYNC_OPTIONS.md#batchsize) - It defines how many types are fetched into a batch and processed.
+
+[More information about Sync Options](SYNC_OPTIONS.md). 
 
 #### Running the sync
 After all the aforementioned points in the previous section have been fulfilled, to run the sync:
