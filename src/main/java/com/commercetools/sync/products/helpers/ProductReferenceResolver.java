@@ -26,6 +26,7 @@ import io.sphere.sdk.taxcategories.TaxCategory;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -385,7 +386,9 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         final List<CompletionStage<Map<String, String>>> futures = new ArrayList<>();
 
         final Set<String> productKeys = referencedKeys.getProductKeys();
-        futures.add(productService.cacheKeysToIds(productKeys));
+        if (productKeys.isEmpty()) {
+            futures.add(productService.cacheKeysToIds(productKeys));
+        }
 
         final Set<String> productTypeKeys = referencedKeys.getProductTypeKeys();
         if (!productTypeKeys.isEmpty()) {
@@ -429,6 +432,6 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         }
 
         return collectionOfFuturesToFutureOfCollection(futures, toList())
-            .thenApply(maps -> maps.get(0));
+            .thenCompose(ignored -> productService.cacheKeysToIds(Collections.emptySet())); // return all cache.
     }
 }
