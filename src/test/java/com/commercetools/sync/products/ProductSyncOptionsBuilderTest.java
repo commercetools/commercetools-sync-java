@@ -10,14 +10,12 @@ import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
-import io.sphere.sdk.products.commands.updateactions.RemoveVariant;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static com.commercetools.sync.products.ActionGroup.IMAGES;
 import static com.commercetools.sync.products.SyncFilter.ofWhiteList;
@@ -166,13 +164,8 @@ class ProductSyncOptionsBuilderTest {
 
     @Test
     void applyBeforeUpdateCallBack_WithNullReturnCallback_ShouldReturnEmptyList() {
-        final TriFunction<
-                List<UpdateAction<Product>>,
-                ProductDraft, Product,
-                List<UpdateAction<Product>>> beforeUpdateCallback =
-                (updateActions, newCategory, oldCategory) ->  updateActions.stream()
-                        .filter(updateAction -> !updateAction.getAction().isEmpty())
-                        .collect(Collectors.toList());
+        final TriFunction<List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>>
+            beforeUpdateCallback = (updateActions, newCategory, oldCategory) -> null;
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
                                                                                .beforeUpdateCallback(
                                                                                    beforeUpdateCallback)
