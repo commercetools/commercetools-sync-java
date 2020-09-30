@@ -2,13 +2,13 @@ package com.commercetools.sync.commons.helpers;
 
 import io.netty.util.internal.StringUtil;
 
+import javax.annotation.Nonnull;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.String.format;
 
 public abstract class BaseSyncStatistics {
-    protected String reportMessage;
     private AtomicInteger updated;
     private AtomicInteger created;
     private AtomicInteger failed;
@@ -31,7 +31,6 @@ public abstract class BaseSyncStatistics {
         created = new AtomicInteger();
         failed = new AtomicInteger();
         processed = new AtomicInteger();
-        reportMessage = StringUtil.EMPTY_STRING;
         latestBatchHumanReadableProcessingTime = StringUtil.EMPTY_STRING;
     }
 
@@ -285,4 +284,18 @@ public abstract class BaseSyncStatistics {
      * @return a summary message of the statistics report.
      */
     public abstract String getReportMessage();
+
+    /**
+     * Builds a proper summary message of the statistics report of a given {@code resourceString} in following format:
+     *
+     * <p>"Summary: 2 resources were processed in total (2 created, 2 updated and 0 failed to sync)."
+     *
+     * @param resourceString a string representing the resource
+     * @return a summary message of the statistics report
+     */
+    protected String getDefaultReportMessageForResource(@Nonnull final String resourceString) {
+        return format(
+            "Summary: %s %s were processed in total (%s created, %s updated and %s failed to sync).",
+            getProcessed(), resourceString, getCreated(), getUpdated(), getFailed());
+    }
 }
