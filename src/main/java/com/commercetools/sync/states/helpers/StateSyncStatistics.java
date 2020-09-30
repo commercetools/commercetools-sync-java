@@ -38,10 +38,9 @@ public class StateSyncStatistics extends BaseSyncStatistics {
      */
     @Override
     public String getReportMessage() {
-        reportMessage = format("Summary: %s state(s) were processed in total "
+        return format("Summary: %s state(s) were processed in total "
                 + "(%s created, %s updated, %s failed to sync and %s state(s) with missing transition(s)).",
             getProcessed(), getCreated(), getUpdated(), getFailed(), getNumberOfStatesWithMissingParents());
-        return reportMessage;
     }
 
     /**
