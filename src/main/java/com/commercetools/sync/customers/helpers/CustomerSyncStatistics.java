@@ -20,7 +20,7 @@ public class CustomerSyncStatistics extends BaseSyncStatistics {
     @Override
     public String getReportMessage() {
         reportMessage = format(
-            "Summary: %s customers have been processed in total (%s created, %s updated and %s failed to sync).",
+            "Summary: %s customers were processed in total (%s created, %s updated and %s failed to sync).",
             getProcessed(), getCreated(), getUpdated(), getFailed());
         return reportMessage;
     }
