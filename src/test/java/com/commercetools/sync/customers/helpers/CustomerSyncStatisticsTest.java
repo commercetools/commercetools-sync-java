@@ -22,7 +22,7 @@ class CustomerSyncStatisticsTest {
         customerSyncStatistics.incrementProcessed(6);
 
         assertThat(customerSyncStatistics.getReportMessage())
-            .isEqualTo("Summary: 6 customers have been processed in total "
+            .isEqualTo("Summary: 6 customers were processed in total "
                 + "(1 created, 3 updated and 2 failed to sync).");
     }
 }
