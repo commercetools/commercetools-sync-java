@@ -6,10 +6,6 @@ import static java.lang.String.format;
 
 public class CustomerSyncStatistics extends BaseSyncStatistics {
 
-    public CustomerSyncStatistics() {
-        super();
-    }
-
     /**
      * Builds a summary of the customer sync statistics instance that looks like the following example:
      *
