@@ -4,6 +4,7 @@ import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
+import com.commercetools.sync.products.ActionGroup;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -45,8 +46,7 @@ import static com.commercetools.sync.integration.commons.utils.ProductITUtils.de
 import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.products.ActionGroup.CATEGORIES;
-import static com.commercetools.sync.products.ActionGroup.NAME;
+import static com.commercetools.sync.products.ActionGroup.*;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_CHANGED_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
@@ -142,8 +142,7 @@ class ProductSyncFilterIT {
                     null, categoryResourceIdentifiersWithKeys, createRandomCategoryOrderHints(
                         categoryResourceIdentifiersWithKeys));
 
-        final ProductSyncOptions syncOptions = syncOptionsBuilder.syncFilter(ofBlackList(CATEGORIES))
-                                                                 .build();
+        final ProductSyncOptions syncOptions = syncOptionsBuilder.syncFilter(ofWhiteList(ActionGroup.PRICES)).build();
 
         final ProductSync productSync = new ProductSync(syncOptions);
         final ProductSyncStatistics syncStatistics =

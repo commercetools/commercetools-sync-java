@@ -64,6 +64,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
@@ -252,12 +253,17 @@ class ProductSyncIT {
                 .build();
 
         final String keyPrefix = "callback_";
+        final Function<ProductDraft, ProductDraft> createCallback = (callbackDraft) -> {
+            final String newProductDraftKey = format("%s%s", callbackDraft.getKey(), "NEW_PROJECT");
+            return ProductDraftBuilder.of(callbackDraft).key(newProductDraftKey).build();
+        };
+
         final ProductSyncOptions options = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
                 .errorCallback((exception, oldResource, newResource, updateActions)
                     -> collectErrors(exception.getMessage(), exception.getCause()))
                 .warningCallback((exception, oldResource, newResource)
                     -> warningCallBackMessages.add(exception.getMessage()))
-                .beforeCreateCallback(draft -> prefixDraftKey(draft, keyPrefix))
+                .beforeCreateCallback(createCallback)
                 .build();
 
         final ProductSync productSync = new ProductSync(options);
