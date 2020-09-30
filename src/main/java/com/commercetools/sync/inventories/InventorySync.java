@@ -2,6 +2,7 @@ package com.commercetools.sync.inventories;
 
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.inventories.helpers.InventoryBatchValidator;
 import com.commercetools.sync.inventories.helpers.InventoryEntryIdentifier;
 import com.commercetools.sync.inventories.helpers.InventoryReferenceResolver;
 import com.commercetools.sync.inventories.helpers.InventorySyncStatistics;
@@ -37,9 +38,7 @@ import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * Default implementation of inventories sync process.
@@ -49,13 +48,12 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     private static final String CTP_INVENTORY_FETCH_FAILED = "Failed to fetch existing inventory entries of SKUs %s.";
     private static final String CTP_INVENTORY_ENTRY_UPDATE_FAILED = "Failed to update inventory entry of SKU '%s' and "
         + "supply channel id '%s'.";
-    private static final String INVENTORY_DRAFT_HAS_NO_SKU = "Failed to process inventory entry without SKU.";
-    private static final String INVENTORY_DRAFT_IS_NULL = "Failed to process null inventory draft.";
     private static final String FAILED_TO_PROCESS = "Failed to process the InventoryEntryDraft with SKU:'%s'. "
         + "Reason: %s";
 
     private final InventoryService inventoryService;
     private final InventoryReferenceResolver referenceResolver;
+    private final InventoryBatchValidator batchValidator;
 
     /**
      * Takes a {@link InventorySyncOptions} instance to instantiate a new {@link InventorySync} instance that could be
@@ -75,7 +73,8 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                   @Nonnull final ChannelService channelService, @Nonnull final TypeService typeService) {
         super(new InventorySyncStatistics(), syncOptions);
         this.inventoryService = inventoryService;
-        this.referenceResolver = new InventoryReferenceResolver(syncOptions, typeService, channelService);
+        this.referenceResolver = new InventoryReferenceResolver(getSyncOptions(), typeService, channelService);
+        this.batchValidator = new InventoryBatchValidator(getSyncOptions(), getStatistics());
     }
 
     /**
@@ -102,7 +101,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
     /**
      * Fetches existing {@link InventoryEntry} objects from CTP project that correspond to passed {@code batchOfDrafts}.
      * Having existing inventory entries fetched, {@code batchOfDrafts} is compared and synced with fetched objects by
-     * {@link InventorySync#syncBatch(Set, List)} function. When fetching existing inventory entries results in
+     * {@link InventorySync#syncBatch(Set, Set)} function. When fetching existing inventory entries results in
      * an empty optional then {@code batchOfDrafts} isn't processed.
      *
      * @param batch batch of drafts that need to be synced
@@ -110,31 +109,46 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      */
     protected CompletionStage<InventorySyncStatistics> processBatch(@Nonnull final List<InventoryEntryDraft> batch) {
 
-        final List<InventoryEntryDraft> validDrafts = batch
-            .stream()
-            .filter(this::validateDraft)
-            .collect(toList());
+        final ImmutablePair<Set<InventoryEntryDraft>, InventoryBatchValidator.ReferencedKeys> result =
+            batchValidator.validateAndCollectReferencedKeys(batch);
 
+        final Set<InventoryEntryDraft> validDrafts = result.getLeft();
         if (validDrafts.isEmpty()) {
             statistics.incrementProcessed(batch.size());
-            return completedFuture(statistics);
+            return CompletableFuture.completedFuture(statistics);
         }
 
-        final Set<String> skus = validDrafts.stream().map(InventoryEntryDraft::getSku).collect(Collectors.toSet());
-
-        return inventoryService.fetchInventoryEntriesBySkus(skus)
+        return referenceResolver
+            .populateKeyToIdCachesForReferencedKeys(result.getRight())
             .handle(ImmutablePair::new)
-            .thenCompose(fetchResponse -> {
-                final Set<InventoryEntry> fetchedInventoryEntries = fetchResponse.getKey();
-                final Throwable exception = fetchResponse.getValue();
-
-                if (exception != null) {
-                    final String errorMessage = format(CTP_INVENTORY_FETCH_FAILED, skus);
-                    handleError(new SyncException(errorMessage, exception), skus.size());
+            .thenCompose(cachingResponse -> {
+                final Throwable cachingException = cachingResponse.getValue();
+                if (cachingException != null) {
+                    handleError(new SyncException("Failed to build a cache of keys to ids.", cachingException),
+                        validDrafts.size());
                     return CompletableFuture.completedFuture(null);
-                } else {
-                    return syncBatch(fetchedInventoryEntries, validDrafts);
                 }
+
+                final Set<String> skus = validDrafts
+                    .stream()
+                    .map(InventoryEntryDraft::getSku)
+                    .collect(Collectors.toSet());
+
+                return inventoryService
+                    .fetchInventoryEntriesBySkus(skus)
+                    .handle(ImmutablePair::new)
+                    .thenCompose(fetchResponse -> {
+                        final Set<InventoryEntry> fetchedInventoryEntries = fetchResponse.getKey();
+                        final Throwable exception = fetchResponse.getValue();
+
+                        if (exception != null) {
+                            final String errorMessage = format(CTP_INVENTORY_FETCH_FAILED, skus);
+                            handleError(new SyncException(errorMessage, exception), skus.size());
+                            return CompletableFuture.completedFuture(null);
+                        } else {
+                            return syncBatch(fetchedInventoryEntries, validDrafts);
+                        }
+                    });
             })
             .thenApply(ignored -> {
                 statistics.incrementProcessed(batch.size());
@@ -142,24 +156,6 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
             });
     }
 
-    /**
-     * Checks if a draft is valid for further processing. If so, then returns {@code true}. Otherwise handles an error
-     * and returns {@code false}. A valid draft is a {@link InventoryEntryDraft} object that is not {@code null} and its
-     * SKU is not empty.
-     *
-     * @param draft nullable draft
-     * @return boolean that indicate if given {@code draft} is valid for sync
-     */
-    private boolean validateDraft(@Nullable final InventoryEntryDraft draft) {
-        if (draft == null) {
-            handleError(new SyncException(INVENTORY_DRAFT_IS_NULL), 1);
-        } else if (isBlank(draft.getSku())) {
-            handleError(new SyncException(INVENTORY_DRAFT_HAS_NO_SKU), 1);
-        } else {
-            return true;
-        }
-        return false;
-    }
 
     /**
      * Given a list of inventory entry {@code drafts}, this method resolves the references of each entry and attempts to
@@ -173,7 +169,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      */
     private CompletionStage<Void> syncBatch(
         @Nonnull final Set<InventoryEntry> oldInventories,
-        @Nonnull final List<InventoryEntryDraft> inventoryEntryDrafts) {
+        @Nonnull final Set<InventoryEntryDraft> inventoryEntryDrafts) {
 
         final Map<InventoryEntryIdentifier , InventoryEntry> oldInventoryMap =
             oldInventories.stream().collect(toMap(InventoryEntryIdentifier::of, identity()));

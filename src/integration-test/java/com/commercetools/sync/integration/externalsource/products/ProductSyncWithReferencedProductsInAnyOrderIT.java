@@ -112,6 +112,7 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
                                         .errorCallback((syncException, draft, product, updateActions)
                                             -> collectErrors(syncException.getMessage(), syncException))
                                         .beforeUpdateCallback(this::collectActions)
+                                        .batchSize(1)
                                         .warningCallback(warningCallback)
                                         .build();
     }

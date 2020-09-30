@@ -1,12 +1,28 @@
 package com.commercetools.sync.services;
 
 import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.client.SphereClient;
 
 import javax.annotation.Nonnull;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
 
 public interface ChannelService {
+
+    /**
+     * Filters out the keys which are already cached and fetches only the not-cached channel keys from the
+     * CTP project defined in an injected {@link SphereClient} and stores a mapping for every channel to id
+     * in the cached map of keys -&gt; ids and returns this cached map.
+     *
+     * @param channelKeys - a set of channel keys to fetch and cache the ids for
+     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a map of
+     *      requested tax channel -&gt; ids
+     */
+    @Nonnull
+    CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> channelKeys);
+
     /**
      * Given a {@code key}, this method first checks if a cached map of channel keys -&gt; ids is not empty.
      * If not, it returns a completed future that contains an optional that contains what this key maps to in

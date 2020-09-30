@@ -460,7 +460,6 @@ class StateSyncIT {
 
         final StateQuery stateQuery = any(StateQuery.class);
         when(spyClient.execute(stateQuery))
-            .thenCallRealMethod() // cache state keys
             .thenCallRealMethod() // Call real fetch on fetching matching states
             .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()));
 
@@ -520,7 +519,6 @@ class StateSyncIT {
         final StateQuery stateQuery = any(StateQuery.class);
 
         when(spyClient.execute(stateQuery))
-            .thenCallRealMethod() // cache state keys
             .thenCallRealMethod() // Call real fetch on fetching matching states
             .thenReturn(completedFuture(PagedQueryResult.empty()));
 
@@ -1026,7 +1024,7 @@ class StateSyncIT {
         assertThat(stateSyncStatistics).hasValues(3, 0, 0, 3, 0);
         Assertions.assertThat(errorCallBackExceptions).isNotEmpty();
         Assertions.assertThat(errorCallBackMessages).isNotEmpty();
-        Assertions.assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to build a cache of state keys to ids.");
+        Assertions.assertThat(errorCallBackMessages.get(0)).isEqualTo("Failed to build a cache of keys to ids.");
         Assertions.assertThat(warningCallBackMessages).isEmpty();
     }
 
@@ -1058,8 +1056,7 @@ class StateSyncIT {
         Assertions.assertThat(errorCallBackExceptions).isNotEmpty();
         Assertions.assertThat(errorCallBackMessages).isNotEmpty();
         Assertions.assertThat(errorCallBackMessages.get(0))
-            .isEqualTo(format("com.commercetools.sync.commons.exceptions.InvalidStateDraftException: "
-                + "StateDraft with key: '%s' has invalid state transitions", keyC));
+            .isEqualTo(format("StateDraft with key: '%s' has invalid state transitions", keyC));
         Assertions.assertThat(warningCallBackMessages).isEmpty();
     }
 

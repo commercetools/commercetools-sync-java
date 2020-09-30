@@ -2,48 +2,49 @@ package com.commercetools.sync.producttypes.helpers;
 
 import com.commercetools.sync.commons.exceptions.InvalidReferenceException;
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.producttypes.ProductTypeSync;
+import com.commercetools.sync.commons.helpers.BaseBatchValidator;
+import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import io.sphere.sdk.products.attributes.AttributeDefinitionDraft;
 import io.sphere.sdk.products.attributes.AttributeType;
 import io.sphere.sdk.products.attributes.NestedAttributeType;
 import io.sphere.sdk.products.attributes.SetAttributeType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_REFERENCE;
 import static java.lang.String.format;
 import static java.util.Collections.emptySet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-public class ProductTypeBatchProcessor {
+public class ProductTypeBatchValidator
+    extends BaseBatchValidator<ProductTypeDraft, ProductTypeSyncOptions, ProductTypeSyncStatistics> {
+
     static final String PRODUCT_TYPE_DRAFT_KEY_NOT_SET = "ProductTypeDraft with name: %s doesn't have a key. "
         + "Please make sure all productType drafts have keys.";
     static final String PRODUCT_TYPE_DRAFT_IS_NULL = "ProductTypeDraft is null.";
     static final String PRODUCT_TYPE_HAS_INVALID_REFERENCES = "ProductTypeDraft with key: '%s' has invalid productType "
         + "references on the following AttributeDefinitionDrafts: %s";
 
-    private final List<ProductTypeDraft> productTypeDrafts;
-    private final ProductTypeSync productTypeSync;
-    private final Set<ProductTypeDraft> validDrafts = new HashSet<>();
-    private final Set<String> keysToCache = new HashSet<>();
-
-    public ProductTypeBatchProcessor(@Nonnull final List<ProductTypeDraft> productTypeDrafts,
-                                     @Nonnull final ProductTypeSync productTypeSync) {
-        this.productTypeDrafts = productTypeDrafts;
-        this.productTypeSync = productTypeSync;
+    public ProductTypeBatchValidator(@Nonnull final ProductTypeSyncOptions syncOptions,
+                                     @Nonnull final ProductTypeSyncStatistics syncStatistics) {
+        super(syncOptions, syncStatistics);
     }
 
     /**
-     * This method validates the batch of drafts, and only for valid drafts it adds the valid draft
-     * to a {@code validDrafts} set, the keys of their referenced productTypes and
-     * the keys of the missing parents to a {@code keysToCache} set.
+     * Given the {@link List}&lt;{@link ProductTypeDraft}&gt; of drafts this method attempts to validate
+     * drafts and collect referenced keys from the draft
+     * and return an {@link ImmutablePair}&lt;{@link Set}&lt;{@link ProductTypeDraft}&gt;
+     * ,{@link Set}&lt;{@link String}&gt;&gt;
+     * which contains the {@link Set} of valid drafts and referenced product type keys.
      *
      * <p>A valid productType draft is one which satisfies the following conditions:
      * <ol>
@@ -53,27 +54,45 @@ public class ProductTypeBatchProcessor {
      * with either a NestedType or SetType AttributeType.
      * A valid reference is simply one which has its id field's value not blank (null/empty)</li>
      * </ol>
+     *
+     * @param productTypeDrafts the product type drafts to validate and collect referenced product type keys.
+     * @return {@link ImmutablePair}&lt;{@link Set}&lt;{@link ProductTypeDraft}&gt;,
+     *      {@link Set}&lt;{@link String}&gt;&gt; which contains the {@link Set} of valid drafts and
+     *      referenced product type keys.
      */
-    public void validateBatch() {
-        for (ProductTypeDraft productTypeDraft : productTypeDrafts) {
-            if (productTypeDraft != null) {
-                final String productTypeDraftKey = productTypeDraft.getKey();
-                if (isNotBlank(productTypeDraftKey)) {
-                    try {
-                        final Set<String> referencedProductTypeKeys = getReferencedProductTypeKeys(productTypeDraft);
-                        keysToCache.addAll(referencedProductTypeKeys);
-                        validDrafts.add(productTypeDraft);
-                    } catch (SyncException syncException) {
-                        handleError(syncException);
-                    }
-                } else {
-                    final String errorMessage = format(PRODUCT_TYPE_DRAFT_KEY_NOT_SET, productTypeDraft.getName());
-                    handleError(new SyncException(errorMessage));
-                }
-            } else {
-                handleError(new SyncException(PRODUCT_TYPE_DRAFT_IS_NULL));
+    @Override
+    public ImmutablePair<Set<ProductTypeDraft>, Set<String>> validateAndCollectReferencedKeys(
+        @Nonnull final List<ProductTypeDraft> productTypeDrafts) {
+
+        final Set<String> productTypeKeys = new HashSet<>();
+
+        final Set<ProductTypeDraft> validDrafts = productTypeDrafts
+            .stream()
+            .filter(productTypeDraft -> isValidProductTypeDraft(productTypeDraft, productTypeKeys))
+            .collect(Collectors.toSet());
+
+        return ImmutablePair.of(validDrafts, productTypeKeys);
+    }
+
+    private boolean isValidProductTypeDraft(
+        @Nullable final ProductTypeDraft productTypeDraft,
+        @Nonnull final Set<String> productTypeKeys) {
+
+        if (productTypeDraft == null) {
+            handleError(PRODUCT_TYPE_DRAFT_IS_NULL);
+        } else if (isBlank(productTypeDraft.getKey())) {
+            handleError(format(PRODUCT_TYPE_DRAFT_KEY_NOT_SET, productTypeDraft.getName()));
+        } else {
+            try {
+                final Set<String> referencedProductTypeKeys = getReferencedProductTypeKeys(productTypeDraft);
+                productTypeKeys.addAll(referencedProductTypeKeys);
+                return true;
+            } catch (SyncException syncException) {
+                handleError(syncException);
             }
         }
+
+        return false;
     }
 
     @Nonnull
@@ -139,18 +158,5 @@ public class ProductTypeBatchProcessor {
             throw new InvalidReferenceException(BLANK_ID_VALUE_ON_REFERENCE);
         }
         return key;
-    }
-
-    private void handleError(@Nonnull final SyncException syncException) {
-        productTypeSync.getSyncOptions().applyErrorCallback(syncException);
-        productTypeSync.getStatistics().incrementFailed();
-    }
-
-    public Set<ProductTypeDraft> getValidDrafts() {
-        return validDrafts;
-    }
-
-    public Set<String> getKeysToCache() {
-        return keysToCache;
     }
 }

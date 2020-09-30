@@ -4,6 +4,7 @@ import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
+import com.commercetools.sync.types.helpers.TypeBatchValidator;
 import com.commercetools.sync.types.helpers.TypeSyncStatistics;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
@@ -27,8 +28,6 @@ import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
-import static java.util.stream.Collectors.toSet;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
  * This class syncs type drafts with the corresponding types in the CTP project.
@@ -37,10 +36,9 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
 
     private static final String CTP_TYPE_FETCH_FAILED = "Failed to fetch existing types with keys: '%s'.";
     private static final String CTP_TYPE_UPDATE_FAILED = "Failed to update type with key: '%s'. Reason: %s" ;
-    private static final String TYPE_DRAFT_HAS_NO_KEY = "Failed to process type draft without key.";
-    private static final String TYPE_DRAFT_IS_NULL = "Failed to process null type draft.";
 
     private final TypeService typeService;
+    private final TypeBatchValidator batchValidator;
 
     public TypeSync(@Nonnull final TypeSyncOptions typeSyncOptions) {
         this(typeSyncOptions, new TypeServiceImpl(typeSyncOptions));
@@ -61,6 +59,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
     TypeSync(@Nonnull final TypeSyncOptions typeSyncOptions, @Nonnull final TypeService typeService) {
         super(new TypeSyncStatistics(), typeSyncOptions);
         this.typeService = typeService;
+        this.batchValidator = new TypeBatchValidator(getSyncOptions(), getStatistics());
     }
 
     /**
@@ -82,7 +81,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
 
     /**
      * This method first creates a new {@link Set} of valid {@link TypeDraft} elements. For more on the rules of
-     * validation, check: {@link TypeSync#validateDraft(TypeDraft)}. Using the resulting set of
+     * validation, check: {@link TypeBatchValidator#validateAndCollectReferencedKeys(List)}. Using the resulting set of
      * {@code validTypeDrafts}, the matching types in the target CTP project are fetched then the method
      * {@link TypeSync#syncBatch(Set, Set)} is called to perform the sync (<b>update</b> or <b>create</b>
      * requests accordingly) on the target project.
@@ -99,54 +98,35 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
     @Override
     protected CompletionStage<TypeSyncStatistics> processBatch(@Nonnull final List<TypeDraft> batch) {
 
-        final Set<TypeDraft> validTypeDrafts = batch.stream().filter(this::validateDraft).collect(toSet());
+        final ImmutablePair<Set<TypeDraft>, Set<String>> result =
+            batchValidator.validateAndCollectReferencedKeys(batch);
 
-        if (validTypeDrafts.isEmpty()) {
+        final Set<TypeDraft> validDrafts = result.getLeft();
+        if (validDrafts.isEmpty()) {
             statistics.incrementProcessed(batch.size());
-            return completedFuture(statistics);
-        } else {
-            final Set<String> keys = validTypeDrafts.stream().map(TypeDraft::getKey).collect(toSet());
-
-            return typeService
-                .fetchMatchingTypesByKeys(keys)
-                .handle(ImmutablePair::new)
-                .thenCompose(fetchResponse -> {
-                    final Set<Type> fetchedTypes = fetchResponse.getKey();
-                    final Throwable exception = fetchResponse.getValue();
-
-                    if (exception != null) {
-                        final String errorMessage = format(CTP_TYPE_FETCH_FAILED, keys);
-                        handleError(errorMessage, exception, keys.size());
-                        return CompletableFuture.completedFuture(null);
-                    } else {
-                        return syncBatch(fetchedTypes, validTypeDrafts);
-                    }
-                })
-                .thenApply(ignored -> {
-                    statistics.incrementProcessed(batch.size());
-                    return statistics;
-                });
+            return CompletableFuture.completedFuture(statistics);
         }
-    }
+        final Set<String> validTypeKeys = result.getRight();
 
-    /**
-     * Checks if a draft is valid for further processing. If so, then returns {@code true}. Otherwise handles an error
-     * and returns {@code false}. A valid draft is a {@link TypeDraft} object that is not {@code null} and its
-     * key is not empty.
-     *
-     * @param draft nullable draft
-     * @return boolean that indicate if given {@code draft} is valid for sync
-     */
-    private boolean validateDraft(@Nullable final TypeDraft draft) {
-        if (draft == null) {
-            handleError(TYPE_DRAFT_IS_NULL, null, 1);
-        } else if (isBlank(draft.getKey())) {
-            handleError(TYPE_DRAFT_HAS_NO_KEY, null, 1);
-        } else {
-            return true;
-        }
+        return typeService
+            .fetchMatchingTypesByKeys(validTypeKeys)
+            .handle(ImmutablePair::new)
+            .thenCompose(fetchResponse -> {
+                final Set<Type> fetchedTypes = fetchResponse.getKey();
+                final Throwable exception = fetchResponse.getValue();
 
-        return false;
+                if (exception != null) {
+                    final String errorMessage = format(CTP_TYPE_FETCH_FAILED, validTypeKeys);
+                    handleError(errorMessage, exception, validTypeKeys.size());
+                    return CompletableFuture.completedFuture(null);
+                } else {
+                    return syncBatch(fetchedTypes, validDrafts);
+                }
+            })
+            .thenApply(ignored -> {
+                statistics.incrementProcessed(batch.size());
+                return statistics;
+            });
     }
 
     /**
@@ -158,10 +138,9 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      * @param exception    The exception that called caused the failure, if any.
      * @param failedTimes  The number of times that the failed types counter is incremented.
      */
-    private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
+    private void handleError(@Nonnull final String errorMessage, @Nonnull final Throwable exception,
                              final int failedTimes) {
-        SyncException syncException = exception != null ? new SyncException(errorMessage, exception)
-            : new SyncException(errorMessage);
+        SyncException syncException = new SyncException(errorMessage, exception);
         syncOptions.applyErrorCallback(syncException);
         statistics.incrementFailed(failedTimes);
     }

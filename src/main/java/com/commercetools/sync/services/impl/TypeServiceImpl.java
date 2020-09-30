@@ -15,6 +15,7 @@ import io.sphere.sdk.types.queries.TypeQueryModel;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
@@ -28,6 +29,17 @@ public final class TypeServiceImpl extends BaseServiceWithKey<TypeDraft, Type, B
 
     public TypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
         super(syncOptions);
+    }
+
+    @Nonnull
+    @Override
+    public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> typeKeys) {
+
+        return cacheKeysToIds(
+            typeKeys, keysNotCached -> TypeQueryBuilder
+                .of()
+                .plusPredicates(typeQueryModel -> typeQueryModel.key().isIn(keysNotCached))
+                .build());
     }
 
     @Nonnull

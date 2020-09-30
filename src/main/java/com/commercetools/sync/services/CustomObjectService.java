@@ -14,6 +14,20 @@ import java.util.concurrent.CompletionStage;
 
 public interface CustomObjectService {
 
+
+    /**
+     * Filters out the custom object identifiers which are already cached and fetches only the not-cached custom object
+     * identifiers from the CTP project defined in an injected {@link SphereClient} and stores a mapping for every
+     * custom object to id in the cached map of keys -&gt; ids and returns this cached map.
+     *
+     * @param identifiers - a set custom object identifiers to fetch and cache the ids for
+     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a map of
+     *      requested custom object identifiers -&gt; ids
+     */
+    @Nonnull
+    CompletionStage<Map<String, String>> cacheKeysToIds(
+        @Nonnull final Set<CustomObjectCompositeIdentifier> identifiers);
+
     /**
      * Given an {@code identifier}, this method first checks if {@code identifier#toString()}
      * is contained in a cached map of {@link CustomObjectCompositeIdentifier#toString()} -&gt; ids .
@@ -29,7 +43,6 @@ public interface CustomObjectService {
      *     completion could contain an {@link Optional} with the id inside of it or an empty {@link Optional} if no
      *     {@link CustomObject} was found in the CTP project with this identifier.
      */
-
     @Nonnull
     CompletionStage<Optional<String>> fetchCachedCustomObjectId(@Nonnull CustomObjectCompositeIdentifier identifier);
 
@@ -49,7 +62,7 @@ public interface CustomObjectService {
         @Nonnull Set<CustomObjectCompositeIdentifier> identifiers);
 
     /**
-     * Given a CustomObjectCompositeIdentifer identify which includes key and container of CustomObject, this method
+     * Given a CustomObjectCompositeIdentifier identify which includes key and container of CustomObject, this method
      * fetches a CustomObject that matches this given identifier in the CTP project defined in an
      * injected {@link SphereClient}. If there is no matching CustomObject an empty {@link Optional} will be
      * returned in the returned future.

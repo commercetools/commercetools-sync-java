@@ -12,11 +12,17 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.stream.Collectors.toList;
 
 public final class InventoryReferenceResolver
         extends CustomReferenceResolver<InventoryEntryDraft, InventoryEntryDraftBuilder, InventorySyncOptions> {
@@ -26,13 +32,26 @@ public final class InventoryReferenceResolver
         + "InventoryEntryDraft with SKU:'%s'.";
     private static final String FAILED_TO_RESOLVE_SUPPLY_CHANNEL = "Failed to resolve supply channel "
         + "resource identifier on InventoryEntryDraft with SKU:'%s'. Reason: %s";
-    private ChannelService channelService;
+    private static final String FAILED_TO_CREATE_SUPPLY_CHANNEL = "Failed to create supply channel with key: '%s'";
+    private final ChannelService channelService;
+    private final TypeService typeService;
 
+    /**
+     * Takes a {@link InventorySyncOptions} instance, a {@link TypeService} and a {@link ChannelService} to instantiate
+     * a {@link InventoryReferenceResolver} instance that could be used to resolve the type and supply channel
+     * references of inventory drafts.
+     *
+     * @param options   the container of all the options of the sync process including the CTP project client
+     *                             and/or configuration and other sync-specific options.
+     * @param typeService          the service to fetch the custom types for reference resolution.
+     * @param channelService       the service to fetch the supply channels for reference resolution.
+     */
     public InventoryReferenceResolver(@Nonnull final InventorySyncOptions options,
                                       @Nonnull final TypeService typeService,
                                       @Nonnull final ChannelService channelService) {
         super(options, typeService);
         this.channelService = channelService;
+        this.typeService = typeService;
     }
 
     /**
@@ -188,7 +207,7 @@ public final class InventoryReferenceResolver
                         return setChannelReference(createdChannelOptional.get().getId(), draftBuilder);
                     } else {
                         final ReferenceResolutionException referenceResolutionException =
-                            new ReferenceResolutionException(format(CHANNEL_DOES_NOT_EXIST, channelKey));
+                            new ReferenceResolutionException(format(FAILED_TO_CREATE_SUPPLY_CHANNEL, channelKey));
                         return CompletableFutureUtils.exceptionallyCompletedFuture(referenceResolutionException);
                     }
                 });
@@ -197,5 +216,35 @@ public final class InventoryReferenceResolver
                 new ReferenceResolutionException(format(CHANNEL_DOES_NOT_EXIST, channelKey));
             return CompletableFutureUtils.exceptionallyCompletedFuture(referenceResolutionException);
         }
+    }
+
+    /**
+     * Calls the {@code cacheKeysToIds} service methods to fetch all the referenced keys (supply channel and type)
+     * from the commercetools to populate caches for the reference resolution.
+     *
+     * <p>Note: This method is meant be only used internally by the library to improve performance.
+     *
+     * @param referencedKeys a wrapper for the inventory references to fetch and cache the id's for.
+     * @return {@link CompletionStage}&lt;{@link List}&lt;{@link Map}&lt;{@link String}&gt;{@link String}&gt;&gt;&gt;
+     *     in which the results of it's completions contains a map of
+     *     requested references keys -&gt; ids of it's references.
+     */
+    @Nonnull
+    public CompletableFuture<List<Map<String, String>>> populateKeyToIdCachesForReferencedKeys(
+        @Nonnull final InventoryBatchValidator.ReferencedKeys referencedKeys) {
+
+        final List<CompletionStage<Map<String, String>>> futures = new ArrayList<>();
+
+        final Set<String> channelKeys = referencedKeys.getChannelKeys();
+        if (!channelKeys.isEmpty()) {
+            futures.add(channelService.cacheKeysToIds(channelKeys));
+        }
+
+        final Set<String> typeKeys = referencedKeys.getTypeKeys();
+        if (!typeKeys.isEmpty()) {
+            futures.add(typeService.cacheKeysToIds(typeKeys));
+        }
+
+        return collectionOfFuturesToFutureOfCollection(futures, toList());
     }
 }
