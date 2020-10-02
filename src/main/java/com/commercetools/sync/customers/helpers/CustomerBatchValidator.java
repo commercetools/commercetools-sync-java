@@ -36,25 +36,13 @@ public class CustomerBatchValidator
     static final String ADDRESSES_THAT_KEYS_NOT_UNIQUE = "CustomerDraft with key: '%s' has duplicate address keys on "
         + "indexes: '%s'. Please make sure each address key is unique in the addresses list.";
 
-    static final String DEFAULT_BILLING_ADDRESS_IS_NOT_VALID = "CustomerDraft with key: '%s' does not contain an "
-        + "index: '%s' of the 'defaultBillingAddress' in the addresses array."
-        + "Please make sure all customer drafts have a valid index value for the 'defaultBillingAddress'."
-        + "Note: When The 'defaultBillingAddressId' of the customer will be set to the ID of that address.";
-
     static final String BILLING_ADDRESSES_ARE_NOT_VALID = "CustomerDraft with key: '%s' does not contain indices: '%s' "
         + "of the 'billingAddresses' in the addresses list. "
-        + "Please make sure all customer drafts have valid index values for the 'billingAddresses'."
-        + "Note: The 'billingAddressIds' of the customer will be set to the IDs of that addresses.";
-
-    static final String DEFAULT_SHIPPING_ADDRESS_IS_NOT_VALID = "CustomerDraft with key: '%s' does not contain an "
-        + "index: '%s' of the 'defaultShippingAddress' in the addresses array."
-        + "Please make sure all customer drafts have a valid index value for the 'defaultShippingAddress'."
-        + "Note: The 'defaultShippingAddressId' of the customer will be set to the ID of that address.";
+        + "Please make sure all customer drafts have valid index values for the 'billingAddresses'.";
 
     static final String SHIPPING_ADDRESSES_ARE_NOT_VALID = "CustomerDraft with key: '%s' does not contain indices: '%s'"
         + " of the 'shippingAddresses' in the addresses list. "
-        + "Please make sure all customer drafts have valid index values for the 'shippingAddresses'."
-        + "Note: The 'shippingAddressIds' of the customer will be set to the IDs of that addresses.";
+        + "Please make sure all customer drafts have valid index values for the 'shippingAddresses'.";
 
     public CustomerBatchValidator(@Nonnull final CustomerSyncOptions syncOptions,
                                   @Nonnull final BaseSyncStatistics syncStatistics) {
@@ -75,9 +63,12 @@ public class CustomerBatchValidator
      * <li>It has not null addresses</li>
      * <li>It has valid addresses with keys is not blank (null/empty)</li>
      * <li>It has unique address keys</li>
-     * <li>It has valid valid 'defaultBillingAddress', 'billingAddresses',
-     * 'defaultShippingAddress', 'shippingAddresses'</li>
+     * <li>It has valid 'billingAddresses' and 'shippingAddresses'</li>
      * </ol>
+     *
+     * <p>Note that {@link io.sphere.sdk.customers.CustomerDraftDsl} is validating the 'defaultBillingAddress' and
+     * 'defaultShippingAddress' with '#isValidAddressIndex' method in it's constructor, so default values are not
+     * possible to be invalid.
      *
      * @param customerDrafts the customer drafts to validate and collect referenced keys.
      * @return {@link ImmutablePair}&lt;{@link Set}&lt;{@link CustomerDraft}&gt;,
@@ -145,6 +136,7 @@ public class CustomerBatchValidator
         return true;
     }
 
+    @Nonnull
     private List<Integer> getIndexes(@Nonnull final List<Address> list, @Nonnull final Predicate<Address> predicate) {
 
         final List<Integer> indexes = new ArrayList<>();
@@ -173,37 +165,21 @@ public class CustomerBatchValidator
          */
 
         final List<Address> addressList = customerDraft.getAddresses();
-        final boolean hasAddresses = addressList != null && !addressList.isEmpty();
-
-        final Predicate<Integer> isMissingIndex = index -> index == null
-            || (hasAddresses && (index < 0 || index > addressList.size() - 1));
-
-        if (customerDraft.getDefaultBillingAddress() != null
-            && isMissingIndex.test(customerDraft.getDefaultBillingAddress())) {
-            handleError(format(DEFAULT_BILLING_ADDRESS_IS_NOT_VALID,
-                customerDraft.getKey(), customerDraft.getDefaultBillingAddress()));
-            return false;
-        }
+        final Predicate<Integer> isInvalidIndex = index -> index == null || addressList == null
+            || addressList.isEmpty() || index < 0 || index > addressList.size() - 1;
 
         if (customerDraft.getBillingAddresses() != null && !customerDraft.getBillingAddresses().isEmpty()) {
-            final List<Integer> inValidIndexes = getIndexValues(customerDraft.getBillingAddresses(), isMissingIndex);
-            if (!inValidIndexes.isEmpty()) {
-                handleError(format(BILLING_ADDRESSES_ARE_NOT_VALID, customerDraft.getKey(), inValidIndexes));
+            final List<Integer> invalidIndexes = getIndexValues(customerDraft.getBillingAddresses(), isInvalidIndex);
+            if (!invalidIndexes.isEmpty()) {
+                handleError(format(BILLING_ADDRESSES_ARE_NOT_VALID, customerDraft.getKey(), invalidIndexes));
                 return false;
             }
         }
 
-        if (customerDraft.getDefaultShippingAddress() != null
-            && isMissingIndex.test(customerDraft.getDefaultShippingAddress())) {
-            handleError(format(DEFAULT_SHIPPING_ADDRESS_IS_NOT_VALID,
-                customerDraft.getKey(), customerDraft.getDefaultShippingAddress()));
-            return false;
-        }
-
         if (customerDraft.getShippingAddresses() != null && !customerDraft.getShippingAddresses().isEmpty()) {
-            final List<Integer> inValidIndexes = getIndexValues(customerDraft.getBillingAddresses(), isMissingIndex);
-            if (!inValidIndexes.isEmpty()) {
-                handleError(format(SHIPPING_ADDRESSES_ARE_NOT_VALID, customerDraft.getKey(), inValidIndexes));
+            final List<Integer> invalidIndexes = getIndexValues(customerDraft.getShippingAddresses(), isInvalidIndex);
+            if (!invalidIndexes.isEmpty()) {
+                handleError(format(SHIPPING_ADDRESSES_ARE_NOT_VALID, customerDraft.getKey(), invalidIndexes));
                 return false;
             }
         }
@@ -211,6 +187,7 @@ public class CustomerBatchValidator
         return true;
     }
 
+    @Nonnull
     private List<Integer> getIndexValues(@Nonnull final List<Integer> list,
         @Nonnull final Predicate<Integer> predicate) {
 
