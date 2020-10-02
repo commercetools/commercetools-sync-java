@@ -23,9 +23,12 @@ import io.sphere.sdk.models.Address;
 import io.sphere.sdk.models.AddressBuilder;
 import io.sphere.sdk.states.commands.updateactions.SetName;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.changeEmailUpdateAction;
@@ -53,14 +56,31 @@ public class CustomerUpdateActionUtilsTest {
     private static CustomerDraft newDifferent;
 
 
-    @BeforeAll
-    static void setup() {
+    @BeforeEach
+      void setup() {
 
-        //private CustomerName
+        CustomerName oldCustomerName =  CustomerName.of("old-title", "old-firstName", "old-middleName", "old-lastName");
+        CustomerName newCustomerName = CustomerName.of("new-title", "new-firstName", "new-middleName", "new-lastName");
 
-//        old = mock(Customer.class);
-//        when(old.getId()).thenReturn("addressId1");
-//        when(old.getName()).thenReturn(Customername );
+       old = mock(Customer.class);
+       when(old.getKey()).thenReturn("key1");
+       when(old.getName()).thenReturn(oldCustomerName);
+       when(old.getEmail()).thenReturn("old-email");
+       when(old.getFirstName()).thenReturn("old-firstName");
+       when(old.getMiddleName()).thenReturn("old-middleName");
+       when(old.getLastName()).thenReturn("old-lastName");
+       when(old.getTitle()).thenReturn("old-title");
+       when(old.getSalutation()).thenReturn("old-salutation");
+       when(old.getCustomerNumber()).thenReturn("old-customerNumber");
+       when(old.getExternalId()).thenReturn("old-externalId");
+       when(old.getCompanyName()).thenReturn("old-companyName");
+       when(old.getDateOfBirth()).thenReturn(LocalDate.parse("1990-10-01"));
+       when(old.getVatId()).thenReturn("old-VatId");
+       when(old.getLocale()).thenReturn(Locale.forLanguageTag("old-locale"));
+
+
+       newSame = CustomerDraftBuilder.of(oldCustomerName, "old-email", "oldPW").build();
+       newDifferent = CustomerDraftBuilder.of(newCustomerName, "new-email", "newPW").build();
    }
 
     @Test
@@ -77,8 +97,6 @@ public class CustomerUpdateActionUtilsTest {
 
         assertThat(result).isEmpty();
     }
-
-
 
     @Test
     void buildSetFirstNameUpdateAction_WithDifferentValues_ShouldReturnAction(){
