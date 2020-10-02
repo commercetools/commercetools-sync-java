@@ -7,12 +7,15 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customers.CustomerDraft;
 import io.sphere.sdk.customers.CustomerDraftBuilder;
 import io.sphere.sdk.models.Address;
+import io.sphere.sdk.models.ResourceIdentifier;
+import io.sphere.sdk.types.CustomFieldsDraft;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -27,6 +30,7 @@ import static com.commercetools.sync.customers.helpers.CustomerBatchValidator.SH
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -239,6 +243,58 @@ class CustomerBatchValidatorTest {
         assertThat(errorCallBackMessages.get(0))
             .isEqualTo(format(SHIPPING_ADDRESSES_ARE_NOT_VALID, "key", "[3, 4, null]"));
         assertThat(validDrafts).isEmpty();
+    }
+
+    @Test
+    void validateAndCollectReferencedKeys_WithMixedDrafts_ShouldReturnCorrectResults() {
+        final CustomerDraft customerDraft =
+            CustomerDraftBuilder.of("email", "pass")
+                                .key("customerKey")
+                                .customerGroup(ResourceIdentifier.ofKey("customerGroupKey"))
+                                .custom(CustomFieldsDraft.ofTypeKeyAndJson("typeKey", emptyMap()))
+                                .stores(asList(ResourceIdentifier.ofKey("storeKey1"),
+                                    ResourceIdentifier.ofKey("storeKey2"),
+                                    ResourceIdentifier.ofId("storeId3")))
+                                .build();
+
+        final CustomerDraft customerDraft2 =
+            CustomerDraftBuilder.of("email", "pass")
+                                .key("customerKey2")
+                                .customerGroup(ResourceIdentifier.ofId("customerGroupId2"))
+                                .custom(CustomFieldsDraft.ofTypeIdAndJson("typeId2", emptyMap()))
+                                .addresses(asList(
+                                    Address.of(CountryCode.DE).withKey("address-key1"),
+                                    Address.of(CountryCode.FR).withKey("address-key2"),
+                                    Address.of(CountryCode.US).withKey("address-key3")))
+                                .build();
+
+        final CustomerDraft customerDraft3 =
+            CustomerDraftBuilder.of("email", "pass")
+                                .key("  ")
+                                .customerGroup(ResourceIdentifier.ofKey("customerGroupKey3"))
+                                .build();
+
+        final CustomerDraft customerDraft4 =
+            CustomerDraftBuilder.of("", "pass")
+                                .key("customerKey4")
+                                .custom(CustomFieldsDraft.ofTypeKeyAndJson("typeId4", emptyMap()))
+                                .build();
+
+        final CustomerBatchValidator customerBatchValidator = new CustomerBatchValidator(syncOptions, syncStatistics);
+        final ImmutablePair<Set<CustomerDraft>, CustomerBatchValidator.ReferencedKeys> pair
+            = customerBatchValidator.validateAndCollectReferencedKeys(
+            Arrays.asList(customerDraft, customerDraft2, customerDraft3, customerDraft4));
+
+        assertThat(errorCallBackMessages).hasSize(2);
+        assertThat(errorCallBackMessages.get(0))
+            .isEqualTo(format(CUSTOMER_DRAFT_KEY_NOT_SET, customerDraft3.getEmail()));
+        assertThat(errorCallBackMessages.get(1))
+            .isEqualTo(format(CUSTOMER_DRAFT_EMAIL_NOT_SET, customerDraft4.getKey()));
+
+        assertThat(pair.getLeft()).containsExactlyInAnyOrder(customerDraft, customerDraft2);
+        assertThat(pair.getRight().getTypeKeys()).containsExactlyInAnyOrder("typeKey");
+        assertThat(pair.getRight().getCustomerGroupKeys()).containsExactlyInAnyOrder("customerGroupKey");
+        assertThat(pair.getRight().getStoreKeys()).containsExactlyInAnyOrder("storeKey1", "storeKey2");
     }
 
     @Nonnull
