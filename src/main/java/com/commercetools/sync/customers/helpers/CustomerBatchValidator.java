@@ -38,7 +38,7 @@ public class CustomerBatchValidator
 
     static final String DEFAULT_BILLING_ADDRESS_IS_NOT_VALID = "CustomerDraft with key: '%s' does not contain an "
         + "index: '%s' of the 'defaultBillingAddress' in the addresses array."
-        + "Please make sure all customer drafts has a valid index value for the 'defaultBillingAddress'."
+        + "Please make sure all customer drafts have a valid index value for the 'defaultBillingAddress'."
         + "Note: When The 'defaultBillingAddressId' of the customer will be set to the ID of that address.";
 
     static final String BILLING_ADDRESSES_ARE_NOT_VALID = "CustomerDraft with key: '%s' does not contain indices: '%s' "
@@ -48,7 +48,7 @@ public class CustomerBatchValidator
 
     static final String DEFAULT_SHIPPING_ADDRESS_IS_NOT_VALID = "CustomerDraft with key: '%s' does not contain an "
         + "index: '%s' of the 'defaultShippingAddress' in the addresses array."
-        + "Please make sure all customer drafts has a valid index value for the 'defaultShippingAddress'."
+        + "Please make sure all customer drafts have a valid index value for the 'defaultShippingAddress'."
         + "Note: The 'defaultShippingAddressId' of the customer will be set to the ID of that address.";
 
     static final String SHIPPING_ADDRESSES_ARE_NOT_VALID = "CustomerDraft with key: '%s' does not contain indices: '%s'"
