@@ -4,6 +4,7 @@ import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.customers.CustomerSyncOptions;
 import com.commercetools.sync.customers.CustomerSyncOptionsBuilder;
 import com.commercetools.sync.services.CustomerGroupService;
+import com.commercetools.sync.services.StoreService;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customers.CustomerDraft;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,11 +28,19 @@ import static com.commercetools.sync.commons.helpers.CustomReferenceResolver.TYP
 import static com.commercetools.sync.customers.helpers.CustomerReferenceResolver.CUSTOMER_GROUP_DOES_NOT_EXIST;
 import static com.commercetools.sync.customers.helpers.CustomerReferenceResolver.FAILED_TO_RESOLVE_CUSTOMER_GROUP_REFERENCE;
 import static com.commercetools.sync.customers.helpers.CustomerReferenceResolver.FAILED_TO_RESOLVE_CUSTOM_TYPE;
+import static com.commercetools.sync.customers.helpers.CustomerReferenceResolver.FAILED_TO_RESOLVE_STORE_REFERENCE;
+import static com.commercetools.sync.customers.helpers.CustomerReferenceResolver.STORES_DO_NOT_EXIST;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerGroup;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerGroupService;
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonList;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -40,6 +50,8 @@ class CustomerReferenceResolverTest {
     private CustomerReferenceResolver referenceResolver;
     private TypeService typeService;
     private CustomerGroupService customerGroupService;
+    private StoreService storeService;
+
     private static final String CUSTOMER_GROUP_KEY = "customer-group-key";
     private static final String CUSTOMER_GROUP_ID = UUID.randomUUID().toString();
 
@@ -56,7 +68,9 @@ class CustomerReferenceResolverTest {
 
         customerGroupService = getMockCustomerGroupService(
             getMockCustomerGroup(CUSTOMER_GROUP_ID, CUSTOMER_GROUP_KEY));
-        referenceResolver = new CustomerReferenceResolver(syncOptions, typeService, customerGroupService);
+
+        storeService = mock(StoreService.class);
+        referenceResolver = new CustomerReferenceResolver(syncOptions, typeService, customerGroupService, storeService);
     }
 
     @Test
@@ -115,7 +129,7 @@ class CustomerReferenceResolverTest {
             .custom(CustomFieldsDraft.ofTypeKeyAndJson(customTypeKey, emptyMap()));
 
         when(typeService.fetchCachedTypeId(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+            .thenReturn(completedFuture(Optional.empty()));
 
         // Test and assertion
         final String expectedExceptionMessage =
@@ -156,7 +170,7 @@ class CustomerReferenceResolverTest {
             .customerGroup(ResourceIdentifier.ofKey("customer-group-key"));
 
         final CustomerDraftBuilder resolvedDraft = referenceResolver.resolveCustomerGroupReference(customerDraftBuilder)
-                                                                   .toCompletableFuture().join();
+                                                                    .toCompletableFuture().join();
 
         assertThat(resolvedDraft.getCustomerGroup()).isNotNull();
         assertThat(resolvedDraft.getCustomerGroup().getId()).isEqualTo(CUSTOMER_GROUP_ID);
@@ -170,7 +184,7 @@ class CustomerReferenceResolverTest {
             .key("dummyKey");
 
         when(customerGroupService.fetchCachedCustomerGroupId(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+            .thenReturn(completedFuture(Optional.empty()));
 
         final String expectedMessageWithCause = format(FAILED_TO_RESOLVE_CUSTOMER_GROUP_REFERENCE,
             "dummyKey", format(CUSTOMER_GROUP_DOES_NOT_EXIST, "anyKey"));
@@ -244,5 +258,133 @@ class CustomerReferenceResolverTest {
             .hasNotFailed()
             .isCompletedWithValueMatching(resolvedDraft -> Objects.equals(resolvedDraft.getCustomerGroup(),
                 customerDraftBuilder.getCustomerGroup()));
+    }
+
+    @Test
+    void resolveStoreReferences_WithNullStoreReferences_ShouldNotResolveReferences() {
+        final CustomerDraftBuilder customerDraftBuilder = CustomerDraftBuilder
+            .of("email@example.com", "secret123")
+            .stores(null)
+            .key("dummyKey");
+
+        final CustomerDraftBuilder resolvedDraft = referenceResolver
+            .resolveStoreReferences(customerDraftBuilder)
+            .toCompletableFuture()
+            .join();
+
+        assertThat(resolvedDraft.getStores()).isNull();
+    }
+
+    @Test
+    void resolveStoreReferences_WithEmptyStoreReferences_ShouldNotResolveReferences() {
+        final CustomerDraftBuilder customerDraftBuilder = CustomerDraftBuilder
+            .of("email@example.com", "secret123")
+            .stores(emptyList())
+            .key("dummyKey");
+
+        final CustomerDraftBuilder resolvedDraft = referenceResolver
+            .resolveStoreReferences(customerDraftBuilder)
+            .toCompletableFuture()
+            .join();
+
+        assertThat(resolvedDraft.getStores()).isEmpty();
+    }
+
+    @Test
+    void resolveStoreReferences_WithValidStores_ShouldResolveReferences() {
+        final CustomerDraftBuilder customerDraftBuilder = CustomerDraftBuilder
+            .of("email@example.com", "secret123")
+            .stores(asList(ResourceIdentifier.ofKey("store-key1"),
+                ResourceIdentifier.ofKey("store-key2"),
+                ResourceIdentifier.ofId("store-id-3")))
+            .key("dummyKey");
+
+
+        final Map<String, String> resultMap = new HashMap<>();
+        resultMap.put("store-key1", "store-id-1");
+        resultMap.put("store-key2", "store-id-2");
+        when(storeService.cacheKeysToIds(any())).thenReturn(completedFuture(resultMap));
+
+        // test
+        final CustomerDraftBuilder resolvedDraft = referenceResolver
+            .resolveStoreReferences(customerDraftBuilder)
+            .toCompletableFuture()
+            .join();
+
+        // assertion
+        assertThat(resolvedDraft.getStores())
+            .containsExactly(ResourceIdentifier.ofId("store-id-1"),
+                ResourceIdentifier.ofId("store-id-2"),
+                ResourceIdentifier.ofId("store-id-3"));
+    }
+
+
+    @Test
+    void resolveStoreReferences_WithNonExistentStoreReferences_ShouldNotResolveReferences() {
+        final CustomerDraftBuilder customerDraftBuilder = CustomerDraftBuilder
+            .of("email@example.com", "secret123")
+            .stores(asList(ResourceIdentifier.ofKey("non-existent-store-1"),
+                ResourceIdentifier.ofKey("non-existent-store-2")))
+            .key("dummyKey");
+
+        when(storeService.cacheKeysToIds(any())).thenReturn(completedFuture(emptyMap()));
+
+
+        // todo (ahmet) check if the order in message important.
+        final String expectedMessageWithCause = format(FAILED_TO_RESOLVE_STORE_REFERENCE,
+            "dummyKey", format(STORES_DO_NOT_EXIST, "non-existent-store-2, non-existent-store-1"));
+
+        // test
+        assertThat(referenceResolver.resolveStoreReferences(customerDraftBuilder).toCompletableFuture())
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(ReferenceResolutionException.class)
+            .hasMessage(expectedMessageWithCause);
+    }
+
+    @Test
+    void resolveStoreReferences_WithExceptionOnStoreFetch_ShouldNotResolveReference() {
+        final CustomerDraftBuilder customerDraftBuilder = CustomerDraftBuilder
+            .of("email@example.com", "secret123")
+            .stores(singletonList(ResourceIdentifier.ofKey("store-key-1")))
+            .key("dummyKey");
+
+
+        final CompletableFuture<Map<String, String>> futureThrowingSphereException = new CompletableFuture<>();
+        futureThrowingSphereException.completeExceptionally(new SphereException("CTP error on fetch"));
+        when(storeService.cacheKeysToIds(anySet())).thenReturn(futureThrowingSphereException);
+
+        // test and assertion
+        assertThat(referenceResolver.resolveStoreReferences(customerDraftBuilder))
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(SphereException.class)
+            .hasMessageContaining("CTP error on fetch");
+    }
+
+    @Test
+    void resolveStoreReferences_WithNullKeyOnStoreReference_ShouldNotResolveReference() {
+        final CustomerDraftBuilder customerDraftBuilder = CustomerDraftBuilder
+            .of("email@example.com", "secret123")
+            .stores(singletonList(ResourceIdentifier.ofKey(null)))
+            .key("dummyKey");
+
+        // test and assertion
+        assertThat(referenceResolver.resolveStoreReferences(customerDraftBuilder))
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(ReferenceResolutionException.class)
+            .hasMessage(format(FAILED_TO_RESOLVE_STORE_REFERENCE, "dummyKey", BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+    }
+
+    @Test
+    void resolveStoreReferences_WithBlankKeyOnStoreReference_ShouldNotResolveReference() {
+        final CustomerDraftBuilder customerDraftBuilder = CustomerDraftBuilder
+            .of("email@example.com", "secret123")
+            .stores(singletonList(ResourceIdentifier.ofKey(" ")))
+            .key("dummyKey");
+
+        // test and assertion
+        assertThat(referenceResolver.resolveStoreReferences(customerDraftBuilder))
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(ReferenceResolutionException.class)
+            .hasMessage(format(FAILED_TO_RESOLVE_STORE_REFERENCE, "dummyKey", BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 }
