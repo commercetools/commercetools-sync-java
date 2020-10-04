@@ -48,7 +48,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -118,13 +117,13 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     }
 
     @Override
-    protected CompletionStage<ProductSyncStatistics> process(@Nonnull final List<ProductDraft> resourceDrafts) {
+    protected CompletableFuture<ProductSyncStatistics> process(@Nonnull final List<ProductDraft> resourceDrafts) {
         final List<List<ProductDraft>> batches = batchElements(resourceDrafts, syncOptions.getBatchSize());
         return syncBatches(batches, CompletableFuture.completedFuture(statistics));
     }
 
     @Override
-    protected CompletionStage<ProductSyncStatistics> processBatch(@Nonnull final List<ProductDraft> batch) {
+    protected CompletableFuture<ProductSyncStatistics> processBatch(@Nonnull final List<ProductDraft> batch) {
 
         readyToResolve = ConcurrentHashMap.newKeySet();
 
@@ -159,7 +158,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
-    private CompletionStage<Void> syncBatch(
+    private CompletableFuture<Void> syncBatch(
         @Nonnull final Set<ProductDraft> productDrafts,
         @Nonnull final Map<String, String> keyToIdCache) {
 
@@ -195,10 +194,10 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
      *
      * @param oldProducts old product types.
      * @param newProducts drafts that need to be synced.
-     * @return a {@link CompletionStage} which contains an empty result after execution of the update
+     * @return a {@link CompletableFuture} which contains an empty result after execution of the update
      */
     @Nonnull
-    private CompletionStage<Void> syncOrKeepTrack(
+    private CompletableFuture<Void> syncOrKeepTrack(
         @Nonnull final Set<ProductDraft> newProducts,
         @Nonnull final Set<Product> oldProducts,
         @Nonnull final Map<String, String> keyToIdCache) {
@@ -215,7 +214,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                     return syncDraft(oldProducts, newDraft);
                 }
             })
-            .map(CompletionStage::toCompletableFuture)
+            .map(CompletableFuture::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
     }
 
@@ -235,7 +234,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             .collect(Collectors.toSet());
     }
 
-    private CompletionStage<Optional<WaitingToBeResolved>> keepTrackOfMissingReferences(
+    private CompletableFuture<Optional<WaitingToBeResolved>> keepTrackOfMissingReferences(
         @Nonnull final ProductDraft newProduct,
         @Nonnull final Set<String> missingReferencedProductKeys) {
 
@@ -246,7 +245,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
-    private CompletionStage<Void> resolveNowReadyReferences(final Map<String, String> keyToIdCache) {
+    private CompletableFuture<Void> resolveNowReadyReferences(final Map<String, String> keyToIdCache) {
 
         // We delete anyways the keys from the statistics before we attempt resolution, because even if resolution fails
         // the products that failed to be synced would be counted as failed.
@@ -305,7 +304,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         return allOf(waitingDraftsToBeUpdated
             .stream()
             .map(unresolvedReferencesService::save)
-            .map(CompletionStage::toCompletableFuture)
+            .map(CompletableFuture::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
     }
 
@@ -316,13 +315,13 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             .stream()
             .map(ProductDraft::getKey)
             .map(unresolvedReferencesService::delete)
-            .map(CompletionStage::toCompletableFuture)
+            .map(CompletableFuture::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
     }
 
 
     @Nonnull
-    private CompletionStage<Void> syncDraft(
+    private CompletableFuture<Void> syncDraft(
         @Nonnull final Set<Product> oldProducts,
         @Nonnull final ProductDraft newProductDraft) {
 
@@ -351,7 +350,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     }
 
     @Nonnull
-    private CompletionStage<Void> fetchProductAttributesMetadataAndUpdate(
+    private CompletableFuture<Void> fetchProductAttributesMetadataAndUpdate(
         @Nonnull final Product oldProduct,
         @Nonnull final ProductDraft newProduct) {
 
@@ -383,7 +382,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     }
 
     @Nonnull
-    private CompletionStage<Void> updateProduct(
+    private CompletableFuture<Void> updateProduct(
         @Nonnull final Product oldProduct,
         @Nonnull final ProductDraft newProduct,
         @Nonnull final List<UpdateAction<Product>> updateActions) {
@@ -421,7 +420,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
      * @return a future which contains an empty result after execution of the update.
      */
     @Nonnull
-    private CompletionStage<Void> fetchAndUpdate(@Nonnull final Product oldProduct,
+    private CompletableFuture<Void> fetchAndUpdate(@Nonnull final Product oldProduct,
                                                  @Nonnull final ProductDraft newProduct) {
 
         final String key = oldProduct.getKey();
@@ -452,7 +451,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
-    private CompletionStage<Void> applyCallbackAndCreate(@Nonnull final ProductDraft productDraft) {
+    private CompletableFuture<Void> applyCallbackAndCreate(@Nonnull final ProductDraft productDraft) {
         return syncOptions
             .applyBeforeCreateCallback(productDraft)
             .map(draft -> productService

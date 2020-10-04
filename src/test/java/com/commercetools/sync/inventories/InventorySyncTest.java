@@ -32,7 +32,7 @@ import java.util.concurrent.CompletionException;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
-import static com.commercetools.sync.inventories.InventorySyncMockUtils.getCompletionStageWithException;
+import static com.commercetools.sync.inventories.InventorySyncMockUtils.getCompletableFutureWithException;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryEntry;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockInventoryService;
@@ -265,7 +265,7 @@ class InventorySyncTest {
 
         final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_3, KEY_3));
         when(inventoryService.fetchInventoryEntriesBySkus(singleton(SKU_1)))
-            .thenReturn(getCompletionStageWithException());
+            .thenReturn(getCompletableFutureWithException());
 
         final InventorySync inventorySync = new InventorySync(options, inventoryService, channelService,
             mock(TypeService.class));
@@ -284,8 +284,8 @@ class InventorySyncTest {
         final InventorySyncOptions options = getInventorySyncOptions(3, false);
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
             mock(InventoryEntry.class), mock(InventoryEntry.class));
-        when(inventoryService.createInventoryEntry(any())).thenReturn(getCompletionStageWithException());
-        when(inventoryService.updateInventoryEntry(any(), any())).thenReturn(getCompletionStageWithException());
+        when(inventoryService.createInventoryEntry(any())).thenReturn(getCompletableFutureWithException());
+        when(inventoryService.updateInventoryEntry(any(), any())).thenReturn(getCompletableFutureWithException());
 
         final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_2, KEY_2));
 
@@ -305,7 +305,7 @@ class InventorySyncTest {
         final InventorySyncOptions options = getInventorySyncOptions(3, false);
         final InventoryService inventoryService = getMockInventoryService(existingInventories,
             mock(InventoryEntry.class), mock(InventoryEntry.class));
-        when(inventoryService.updateInventoryEntry(any(), any())).thenReturn(getCompletionStageWithException());
+        when(inventoryService.updateInventoryEntry(any(), any())).thenReturn(getCompletableFutureWithException());
 
         final ChannelService channelService = getMockChannelService(getMockSupplyChannel(REF_2, KEY_2));
 

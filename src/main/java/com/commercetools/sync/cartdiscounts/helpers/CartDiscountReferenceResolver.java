@@ -8,7 +8,7 @@ import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraftBuilder;
 
 import javax.annotation.Nonnull;
-import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 
 import static java.lang.String.format;
 
@@ -35,23 +35,23 @@ public final class CartDiscountReferenceResolver
 
     /**
      * Given a {@link CartDiscountDraft} this method attempts to resolve the custom type reference to
-     * return a {@link CompletionStage} which contains a new instance of the draft with the resolved
+     * return a {@link CompletableFuture} which contains a new instance of the draft with the resolved
      * reference or, in case an error occurs during reference resolution, a {@link ReferenceResolutionException}.
      *
      * @param draft the CartDiscountDraft to resolve its references.
-     * @return a {@link CompletionStage} that contains as a result a new CartDiscountDraft instance with resolved
+     * @return a {@link CompletableFuture} that contains as a result a new CartDiscountDraft instance with resolved
      *          custom type reference or, in case an error occurs during reference resolution,
      *          a {@link ReferenceResolutionException}.
      */
     @Override
     @Nonnull
-    public CompletionStage<CartDiscountDraft> resolveReferences(@Nonnull final CartDiscountDraft draft) {
+    public CompletableFuture<CartDiscountDraft> resolveReferences(@Nonnull final CartDiscountDraft draft) {
         return resolveCustomTypeReference(CartDiscountDraftBuilder.of(draft))
             .thenApply(CartDiscountDraftBuilder::build);
     }
 
     @Override
-    protected CompletionStage<CartDiscountDraftBuilder> resolveCustomTypeReference(
+    protected CompletableFuture<CartDiscountDraftBuilder> resolveCustomTypeReference(
         @Nonnull final CartDiscountDraftBuilder draftBuilder) {
 
         return resolveCustomTypeReference(draftBuilder,

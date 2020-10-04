@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -47,7 +47,7 @@ class CartDiscountServiceImplTest {
         final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
 
         // test
-        final CompletionStage<Optional<CartDiscount>> result = cartDiscountService.fetchCartDiscount("");
+        final CompletableFuture<Optional<CartDiscount>> result = cartDiscountService.fetchCartDiscount("");
 
 
         // assertions
@@ -65,7 +65,7 @@ class CartDiscountServiceImplTest {
         final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
 
         // test
-        final CompletionStage<Optional<CartDiscount>> result = cartDiscountService.fetchCartDiscount(null);
+        final CompletableFuture<Optional<CartDiscount>> result = cartDiscountService.fetchCartDiscount(null);
 
 
         // assertions
@@ -92,7 +92,7 @@ class CartDiscountServiceImplTest {
                 .thenReturn(completedFuture(pagedQueryResult));
 
         // test
-        final CompletionStage<Optional<CartDiscount>> result =
+        final CompletableFuture<Optional<CartDiscount>> result =
                 cartDiscountService.fetchCartDiscount("any_key");
 
         // assertions
@@ -115,7 +115,7 @@ class CartDiscountServiceImplTest {
         final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
 
         // test
-        final CompletionStage<Optional<CartDiscount>> result = cartDiscountService
+        final CompletableFuture<Optional<CartDiscount>> result = cartDiscountService
             .createCartDiscount(mockCartDiscountDraft);
 
         // assertions
@@ -142,7 +142,7 @@ class CartDiscountServiceImplTest {
         final CartDiscountServiceImpl cartDiscountService = new CartDiscountServiceImpl(options);
 
         // test
-        final CompletionStage<Optional<CartDiscount>> result = cartDiscountService
+        final CompletableFuture<Optional<CartDiscount>> result = cartDiscountService
             .createCartDiscount(mockCartDiscountDraft);
 
         // assertion
@@ -171,7 +171,7 @@ class CartDiscountServiceImplTest {
                 .thenReturn(CompletableFutureUtils.failed(new InternalServerErrorException()));
 
         // test
-        final CompletionStage<Optional<CartDiscount>> result =
+        final CompletableFuture<Optional<CartDiscount>> result =
                 cartDiscountService.createCartDiscount(mockCartDiscountDraft);
 
         // assertions
@@ -204,7 +204,7 @@ class CartDiscountServiceImplTest {
         final List<UpdateAction<CartDiscount>> updateActions =
                 singletonList(SetDescription.of(LocalizedString.ofEnglish("new_desc")));
         // test
-        final CompletionStage<CartDiscount> result =
+        final CompletableFuture<CartDiscount> result =
                 cartDiscountService.updateCartDiscount(mockCartDiscount, updateActions);
 
         // assertions
@@ -229,7 +229,7 @@ class CartDiscountServiceImplTest {
         final List<UpdateAction<CartDiscount>> updateActions =
                 singletonList(SetDescription.of(LocalizedString.ofEnglish("new_desc")));
         // test
-        final CompletionStage<CartDiscount> result =
+        final CompletableFuture<CartDiscount> result =
                 cartDiscountService.updateCartDiscount(mockCartDiscount, updateActions);
 
         // assertions

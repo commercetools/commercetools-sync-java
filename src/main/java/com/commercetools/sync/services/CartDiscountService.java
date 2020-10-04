@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 
 public interface CartDiscountService {
 
@@ -21,11 +21,11 @@ public interface CartDiscountService {
      * mapping of the key to the id of the fetched CartDiscount is persisted in an in-memory map.
      *
      * @param keys set of CartDiscounts keys to fetch matching CartDiscount by.
-     * @return {@link CompletionStage}&lt;{@link Set}&gt; in which the result of its completion contains a {@link Set}
+     * @return {@link CompletableFuture}&lt;{@link Set}&gt; in which the result of its completion contains a {@link Set}
      *          of all matching CartDiscounts.
      */
     @Nonnull
-    CompletionStage<Set<CartDiscount>> fetchMatchingCartDiscountsByKeys(@Nonnull Set<String> keys);
+    CompletableFuture<Set<CartDiscount>> fetchMatchingCartDiscountsByKeys(@Nonnull Set<String> keys);
 
 
     /**
@@ -35,11 +35,11 @@ public interface CartDiscountService {
      * discount is persisted in an in-memory map.
      *
      * @param key the key of the product to fetch.
-     * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion contains an
+     * @return {@link CompletableFuture}&lt;{@link Optional}&gt; in which the result of it's completion contains an
      * {@link Optional} that contains the matching {@link CartDiscount} if exists, otherwise empty.
      */
     @Nonnull
-    CompletionStage<Optional<CartDiscount>> fetchCartDiscount(@Nullable String key);
+    CompletableFuture<Optional<CartDiscount>> fetchCartDiscount(@Nullable String key);
 
     /**
      * Given a resource draft of type {@link CartDiscountDraft}, this method attempts to create a resource
@@ -53,29 +53,29 @@ public interface CartDiscountService {
      * </ul>
      *
      * <p>On the other hand, if the CartDiscount gets created successfully on CTP, then the created CartDiscount's id
-     * and key are cached. The method returns a {@link CompletionStage} in which the result of it's completion
+     * and key are cached. The method returns a {@link CompletableFuture} in which the result of it's completion
      * contains an instance {@link Optional} of the created `CartDiscount`.
      *
      * @param cartDiscountDraft the resource draft to create a resource based off of.
-     * @return a {@link CompletionStage} containing an optional with the created {@link CartDiscount} if successful
+     * @return a {@link CompletableFuture} containing an optional with the created {@link CartDiscount} if successful
      *         otherwise an empty optional.
      */
     @Nonnull
-    CompletionStage<Optional<CartDiscount>> createCartDiscount(@Nonnull CartDiscountDraft cartDiscountDraft);
+    CompletableFuture<Optional<CartDiscount>> createCartDiscount(@Nonnull CartDiscountDraft cartDiscountDraft);
 
     /**
      * Given a {@link CartDiscount} and a {@link List}&lt;{@link UpdateAction}&lt;{@link CartDiscount}&gt;&gt;, this
      * method issues an update request with these update actions on this {@link CartDiscount} in the CTP project
      * defined in a potentially injected {@link SphereClient}. This method returns
-     * {@link CompletionStage}&lt;{@link CartDiscount}&gt; in which the result of its completion contains an instance
+     * {@link CompletableFuture}&lt;{@link CartDiscount}&gt; in which the result of its completion contains an instance
      * of the {@link CartDiscount} which was updated in the CTP project.
      *
      * @param cartDiscount  the {@link CartDiscount} to update.
      * @param updateActions the update actions to update the {@link CartDiscount} with.
-     * @return {@link CompletionStage}&lt;{@link CartDiscount}&gt; containing as a result of its completion an
+     * @return {@link CompletableFuture}&lt;{@link CartDiscount}&gt; containing as a result of its completion an
      *         instance of the {@link CartDiscount} which was updated in the CTP project or a {@link SphereException}.
      */
     @Nonnull
-    CompletionStage<CartDiscount> updateCartDiscount(@Nonnull CartDiscount cartDiscount,
+    CompletableFuture<CartDiscount> updateCartDiscount(@Nonnull CartDiscount cartDiscount,
                                                      @Nonnull List<UpdateAction<CartDiscount>> updateActions);
 }

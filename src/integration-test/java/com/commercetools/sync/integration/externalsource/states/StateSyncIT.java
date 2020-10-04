@@ -40,7 +40,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -51,7 +51,7 @@ import static com.commercetools.sync.integration.commons.utils.StateITUtils.dele
 import static com.commercetools.sync.integration.commons.utils.StateITUtils.deleteStatesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.StateITUtils.getStateByKey;
 import static com.commercetools.sync.states.utils.StateReferenceResolutionUtils.mapToStateDrafts;
-import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
+import static com.commercetools.tests.utils.CompletableFutureUtil.executeBlocking;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static io.sphere.sdk.states.State.referenceOfId;
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
@@ -1083,7 +1083,7 @@ class StateSyncIT {
         final StateReferenceResolver stateReferenceResolver = new StateReferenceResolver(stateSyncOptions,
             stateService);
 
-        CompletionStage<StateDraft> result = stateReferenceResolver.resolveReferences(stateCDraft);
+        CompletableFuture<StateDraft> result = stateReferenceResolver.resolveReferences(stateCDraft);
         result.exceptionally(exception -> {
                 Assertions.assertThat(exception.getMessage())
                     .contains(format("Failed to resolve 'transition' reference on StateDraft with key:'%s", keyC));

@@ -33,7 +33,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_NO_VA
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_WITH_VARS_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
-import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
+import static com.commercetools.tests.utils.CompletableFutureUtil.executeBlocking;
 import static io.sphere.sdk.producttypes.ProductType.referenceOfId;
 import static java.lang.String.format;
 import static java.util.Collections.singletonList;

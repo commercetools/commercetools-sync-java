@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 
 import static java.util.Collections.singleton;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -75,7 +74,7 @@ public class InventorySyncMockUtils {
 
     /**
      * Returns mock instance of {@link InventoryService}. Executing any method with any parameter on this instance
-     * returns values passed in parameters, wrapped in {@link CompletionStage}.
+     * returns values passed in parameters, wrapped in {@link CompletableFuture}.
      *
      * @param inventoryEntries result of calling {@link InventoryService#fetchInventoryEntriesBySkus(Set)}
      * @param createdInventoryEntry result of calling {@link InventoryService#createInventoryEntry(InventoryEntryDraft)}
@@ -116,12 +115,12 @@ public class InventorySyncMockUtils {
     }
 
     /**
-     * Returns {@link CompletionStage} completed exceptionally.
+     * Returns {@link CompletableFuture} completed exceptionally.
      *
-     * @param <T> type of result that is supposed to be inside {@link CompletionStage}
-     * @return {@link CompletionStage} instance that is completed exceptionally with {@link RuntimeException}
+     * @param <T> type of result that is supposed to be inside {@link CompletableFuture}
+     * @return {@link CompletableFuture} instance that is completed exceptionally with {@link RuntimeException}
      */
-    static <T> CompletionStage<T> getCompletionStageWithException() {
+    static <T> CompletableFuture<T> getCompletableFutureWithException() {
         final CompletableFuture<T> exceptionalStage = new CompletableFuture<>();
         exceptionalStage.completeExceptionally(new RuntimeException());
         return exceptionalStage;

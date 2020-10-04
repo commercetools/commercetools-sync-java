@@ -6,7 +6,7 @@ import io.sphere.sdk.queries.QueryDsl;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -19,7 +19,7 @@ public final class CtpQueryUtils {
      * page size 500. More on the algorithm can be found here: http://dev.commercetools.com/http-api.html#offset.
      *
      * <p>The method takes a callback {@link Function} that returns a result of type {@code <S>} that is returned on
-     * every page of elements queried. Eventually, the method returns a {@link CompletionStage} that contains a list of
+     * every page of elements queried. Eventually, the method returns a {@link CompletableFuture} that contains a list of
      * all the results of the callbacks returned from every page.
      *
      * <p>NOTE: This method fetches all paged results sequentially as opposed to fetching the pages in parallel.
@@ -33,7 +33,7 @@ public final class CtpQueryUtils {
      * @return a completion stage containing a list of mapped pages as a result.
      */
     @Nonnull
-    public static <T extends ResourceView, C extends QueryDsl<T, C>, S> CompletionStage<List<S>>
+    public static <T extends ResourceView, C extends QueryDsl<T, C>, S> CompletableFuture<List<S>>
         queryAll(@Nonnull final SphereClient client, @Nonnull final QueryDsl<T, C> query,
                  @Nonnull final Function<List<T>, S> pageMapper) {
         return queryAll(client, query, pageMapper, DEFAULT_PAGE_SIZE);
@@ -55,7 +55,7 @@ public final class CtpQueryUtils {
      * @return a completion stage containing void as a result after the consumer was applied on all pages.
      */
     @Nonnull
-    public static <T extends ResourceView, C extends QueryDsl<T, C>> CompletionStage<Void>
+    public static <T extends ResourceView, C extends QueryDsl<T, C>> CompletableFuture<Void>
         queryAll(@Nonnull final SphereClient client, @Nonnull final QueryDsl<T, C> query,
                  @Nonnull final Consumer<List<T>> pageConsumer) {
         return queryAll(client, query, pageConsumer, DEFAULT_PAGE_SIZE);
@@ -67,7 +67,7 @@ public final class CtpQueryUtils {
      * More on the algorithm can be found here: http://dev.commercetools.com/http-api.html#offset.
      *
      * <p>The method takes a callback {@link Function} that returns a result of type {@code <S>} that is returned on
-     * every page of elements queried. Eventually, the method returns a {@link CompletionStage} that contains a list of
+     * every page of elements queried. Eventually, the method returns a {@link CompletableFuture} that contains a list of
      * all the results of the callbacks returned from every page.
      *
      * <p>NOTE: This method fetches all paged results sequentially as opposed to fetching the pages in parallel.
@@ -82,7 +82,7 @@ public final class CtpQueryUtils {
      * @return a completion stage containing a list of mapped pages as a result.
      */
     @Nonnull
-    public static <T extends ResourceView, C extends QueryDsl<T, C>, S> CompletionStage<List<S>>
+    public static <T extends ResourceView, C extends QueryDsl<T, C>, S> CompletableFuture<List<S>>
         queryAll(@Nonnull final SphereClient client, @Nonnull final QueryDsl<T, C> query,
                  @Nonnull final Function<List<T>, S> pageMapper, final int pageSize) {
         final QueryAll<T, C, S> queryAll = QueryAll.of(client, query, pageSize);
@@ -107,7 +107,7 @@ public final class CtpQueryUtils {
      * @return a completion stage containing void as a result after the consumer was applied on all pages.
      */
     @Nonnull
-    public static <T extends ResourceView, C extends QueryDsl<T, C>> CompletionStage<Void>
+    public static <T extends ResourceView, C extends QueryDsl<T, C>> CompletableFuture<Void>
         queryAll(@Nonnull final SphereClient client, @Nonnull final QueryDsl<T, C> query,
                  @Nonnull final Consumer<List<T>> pageConsumer, final int pageSize) {
         final QueryAll<T, C, Void> queryAll = QueryAll.of(client, query, pageSize);

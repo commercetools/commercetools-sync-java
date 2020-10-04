@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -65,11 +64,11 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
      * @param updateCommandFunction a {@link BiFunction} used to compute the update command required to update the
      *                              resource.
      * @param updateActions         the update actions to execute on the resource.
-     * @return an instance of {@link CompletionStage}&lt;{@code U}&gt; which contains as a result an instance of
+     * @return an instance of {@link CompletableFuture}&lt;{@code U}&gt; which contains as a result an instance of
      *     the resource {@link U} after all the update actions have been executed.
      */
     @Nonnull
-    CompletionStage<U> updateResource(
+    CompletableFuture<U> updateResource(
         @Nonnull final U resource,
         @Nonnull final BiFunction<U, List<? extends UpdateAction<U>>, UpdateCommand<U>> updateCommandFunction,
         @Nonnull final List<UpdateAction<U>> updateActions) {
@@ -89,16 +88,16 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
      * @param updateCommandFunction a {@link BiFunction} used to compute the update command required to update the
      *                              resource.
      * @param batches               the batches of update actions to execute.
-     * @return an instance of {@link CompletionStage}&lt;{@code U}&gt; which contains as a result an instance of
+     * @return an instance of {@link CompletableFuture}&lt;{@code U}&gt; which contains as a result an instance of
      *     the resource {@link U} after all the update actions in all batches have been executed.
      */
     @Nonnull
-    private CompletionStage<U> updateBatches(
-        @Nonnull final CompletionStage<U> result,
+    private CompletableFuture<U> updateBatches(
+        @Nonnull final CompletableFuture<U> result,
         @Nonnull final BiFunction<U, List<? extends UpdateAction<U>>, UpdateCommand<U>> updateCommandFunction,
         @Nonnull final List<List<UpdateAction<U>>> batches) {
 
-        CompletionStage<U> resultStage = result;
+        CompletableFuture<U> resultStage = result;
         for (final List<UpdateAction<U>> batch : batches) {
             resultStage = resultStage.thenCompose(updatedProduct ->
                 syncOptions.getCtpClient().execute(updateCommandFunction.apply(updatedProduct, batch)));
@@ -117,18 +116,18 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
      * </ul>
      *
      * <p>On the other hand, if the resource gets created successfully on CTP, then the created resource's id and
-     * key are cached and the method returns a {@link CompletionStage} in which the result of it's completion
+     * key are cached and the method returns a {@link CompletableFuture} in which the result of it's completion
      * contains an instance {@link Optional} of the resource which was created.
      *
      * @param draft         the resource draft to create a resource based off of.
      * @param keyMapper     a function to get the key from the supplied draft.
      * @param createCommand a function to get the create command using the supplied draft.
-     * @return a {@link CompletionStage} containing an optional with the created resource if successful otherwise an
+     * @return a {@link CompletableFuture} containing an optional with the created resource if successful otherwise an
      *     empty optional.
      */
     @SuppressWarnings("unchecked")
     @Nonnull
-    CompletionStage<Optional<U>> createResource(
+    CompletableFuture<Optional<U>> createResource(
         @Nonnull final T draft,
         @Nonnull final Function<T, String> keyMapper,
         @Nonnull final Function<T, DraftBasedCreateCommand<U, T>> createCommand) {
@@ -150,19 +149,19 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
      * This method then checks if the cached map of resource keys -&gt; ids contains the key. If it does, then an
      * optional containing the mapped id is returned. If the cache doesn't contain the key; this method attempts to
      * fetch the id of the key from the CTP project, caches it and returns a
-     * {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt; in which the result of it's completion
+     * {@link CompletableFuture}&lt;{@link Optional}&lt;{@link String}&gt;&gt; in which the result of it's completion
      * could contain an {@link Optional} with the id inside of it or an empty {@link Optional} if no resource
      * was found in the CTP project with this key.
      *
      * @param key           the key by which a resource id should be fetched from the CTP project.
      * @param keyMapper     a function to get the key from the resource.
      * @param querySupplier supplies the query to fetch the resource with the given key.
-     * @return {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt; in which the result of it's
+     * @return {@link CompletableFuture}&lt;{@link Optional}&lt;{@link String}&gt;&gt; in which the result of it's
      *     completion could contain an {@link Optional} with the id inside of it or an empty {@link Optional} if no
      *     resource was found in the CTP project with this key.
      */
     @Nonnull
-    CompletionStage<Optional<String>> fetchCachedResourceId(
+    CompletableFuture<Optional<String>> fetchCachedResourceId(
         @Nullable final String key,
         @Nonnull final Function<U, String> keyMapper,
         @Nonnull final Supplier<Q> querySupplier) {
@@ -176,7 +175,7 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
         return fetchAndCache(key, keyMapper, querySupplier);
     }
 
-    private CompletionStage<Optional<String>> fetchAndCache(
+    private CompletableFuture<Optional<String>> fetchAndCache(
         @Nullable final String key,
         @Nonnull final Function<U, String> keyMapper,
         @Nonnull final Supplier<Q> querySupplier) {
@@ -200,7 +199,7 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
      * @return a map of key to ids of the requested keys.
      */
     @Nonnull
-    CompletionStage<Map<String, String>> cacheKeysToIds(
+    CompletableFuture<Map<String, String>> cacheKeysToIds(
         @Nonnull final Set<String> keys,
         @Nonnull final Function<U, String> keyMapper,
         @Nonnull final Function<Set<String>, Q> keysQueryMapper) {
@@ -231,11 +230,11 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
      * @param keys          set of keys to fetch matching resources by.
      * @param keyMapper     a function to get the key from the resource.
      * @param querySupplier supplies the query to fetch the resources with the given keys.
-     * @return {@link CompletionStage}&lt;{@link Set}&lt;{@code U}&gt;&gt; in which the result of it's completion
+     * @return {@link CompletableFuture}&lt;{@link Set}&lt;{@code U}&gt;&gt; in which the result of it's completion
      *     contains a {@link Set} of all matching resources.
      */
     @Nonnull
-    CompletionStage<Set<U>> fetchMatchingResources(
+    CompletableFuture<Set<U>> fetchMatchingResources(
         @Nonnull final Set<String> keys,
         @Nonnull final Function<U, String> keyMapper,
         @Nonnull final Supplier<Q> querySupplier) {
@@ -261,11 +260,11 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
      *
      * @param key           the key of the resource to fetch
      * @param querySupplier supplies the query to fetch the resource with the given key.
-     * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion contains an
+     * @return {@link CompletableFuture}&lt;{@link Optional}&gt; in which the result of it's completion contains an
      * {@link Optional} that contains the matching {@code T} if exists, otherwise empty.
      */
     @Nonnull
-    CompletionStage<Optional<U>> fetchResource(
+    CompletableFuture<Optional<U>> fetchResource(
         @Nullable final String key,
         @Nonnull final Supplier<Q> querySupplier) {
 
@@ -276,6 +275,7 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
         return syncOptions
             .getCtpClient()
             .execute(querySupplier.get())
+                .toCompletableFuture()
             .thenApply(pagedQueryResult -> pagedQueryResult
                 .head()
                 .map(resource -> {
@@ -285,7 +285,7 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
     }
 
     @Nonnull
-    CompletionStage<Optional<U>> executeCreateCommand(
+    CompletableFuture<Optional<U>> executeCreateCommand(
             @Nonnull final T draft,
             @Nonnull final Function<T, String> keyMapper,
             @Nonnull final Function<T, DraftBasedCreateCommand<U, T>> createCommand) {
@@ -295,6 +295,7 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
         return syncOptions
             .getCtpClient()
             .execute(createCommand.apply(draft))
+                .toCompletableFuture()
             .handle(((resource, exception) -> {
                 if (exception == null) {
                     keyToIdCache.put(draftKey, resource.getId());

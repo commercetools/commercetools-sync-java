@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static java.lang.String.format;
@@ -77,10 +76,10 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
      * {@inheritDoc}
      *
      * @param customObjectDrafts {@link List} of {@link CustomObjectDraft}'s that would be synced into CTP project.
-     * @return {@link CompletionStage} with {@link CustomObjectSyncStatistics} holding statistics of all sync
+     * @return {@link CompletableFuture} with {@link CustomObjectSyncStatistics} holding statistics of all sync
      *     processes performed by this sync instance.
      */
-    protected CompletionStage<CustomObjectSyncStatistics> process(
+    protected CompletableFuture<CustomObjectSyncStatistics> process(
         @Nonnull final List<CustomObjectDraft<JsonNode>> customObjectDrafts) {
         final List<List<CustomObjectDraft<JsonNode>>> batches = batchElements(
             customObjectDrafts, syncOptions.getBatchSize());
@@ -99,11 +98,11 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
      * </p>
      *
      * @param batch batch of drafts that need to be synced
-     * @return a {@link CompletionStage} containing an instance
+     * @return a {@link CompletableFuture} containing an instance
      *      of {@link CustomObjectSyncStatistics} which contains information about the result of syncing the supplied
      *      batch to the target project.
      */
-    protected CompletionStage<CustomObjectSyncStatistics> processBatch(
+    protected CompletableFuture<CustomObjectSyncStatistics> processBatch(
         @Nonnull final List<CustomObjectDraft<JsonNode>> batch) {
 
         final ImmutablePair<Set<CustomObjectDraft<JsonNode>>, Set<CustomObjectCompositeIdentifier>> result =
@@ -180,10 +179,10 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
      *
      * @param oldCustomObjects      old custom objects.
      * @param newCustomObjectDrafts drafts that need to be synced.
-     * @return a {@link CompletionStage} which contains an empty result after execution of the update
+     * @return a {@link CompletableFuture} which contains an empty result after execution of the update
      */
     @Nonnull
-    private CompletionStage<Void> syncBatch(
+    private CompletableFuture<Void> syncBatch(
         @Nonnull final Set<CustomObject<JsonNode>> oldCustomObjects,
         @Nonnull final Set<CustomObjectDraft<JsonNode>> newCustomObjectDrafts) {
 
@@ -201,7 +200,7 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
                     .map(customObject -> updateCustomObject(oldCustomObject, newCustomObjectDraft))
                     .orElseGet(() -> applyCallbackAndCreate(newCustomObjectDraft));
             })
-            .map(CompletionStage::toCompletableFuture)
+            .map(CompletableFuture::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
     }
 
@@ -210,11 +209,11 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
      * CTP project to create the corresponding CustomObject.
      *
      * @param customObjectDraft the custom object draft to create the custom object from.
-     * @return a {@link CompletionStage} which contains created custom object after success execution of the create.
+     * @return a {@link CompletableFuture} which contains created custom object after success execution of the create.
      *      Otherwise it contains an empty result in case of failure.
      */
     @Nonnull
-    private CompletionStage<Optional<CustomObject<JsonNode>>> applyCallbackAndCreate(
+    private CompletableFuture<Optional<CustomObject<JsonNode>>> applyCallbackAndCreate(
         @Nonnull final CustomObjectDraft<JsonNode> customObjectDraft) {
 
         return syncOptions
@@ -252,10 +251,10 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
      *
      * @param oldCustomObject existing custom object that could be updated.
      * @param newCustomObject draft containing data that could differ from data in {@code oldCustomObject}.
-     * @return a {@link CompletionStage} which contains an empty result after execution of the update.
+     * @return a {@link CompletableFuture} which contains an empty result after execution of the update.
      */
     @Nonnull
-    private CompletionStage<Optional<CustomObject<JsonNode>>> updateCustomObject(
+    private CompletableFuture<Optional<CustomObject<JsonNode>>> updateCustomObject(
         @Nonnull final CustomObject<JsonNode> oldCustomObject,
         @Nonnull final CustomObjectDraft<JsonNode> newCustomObject) {
 
@@ -289,7 +288,7 @@ public class CustomObjectSync extends BaseSync<CustomObjectDraft<JsonNode>,
     }
 
     @Nonnull
-    private CompletionStage<Optional<CustomObject<JsonNode>>> fetchAndUpdate(
+    private CompletableFuture<Optional<CustomObject<JsonNode>>> fetchAndUpdate(
         @Nonnull final CustomObject<JsonNode> oldCustomObject,
         @Nonnull final CustomObjectDraft<JsonNode> customObjectDraft) {
 

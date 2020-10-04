@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
@@ -63,17 +62,17 @@ public final class CategoryReferenceResolver
 
     /**
      * Given a {@link CategoryDraft} this method attempts to resolve the custom type and parent category references to
-     * return a {@link CompletionStage} which contains a new instance of the draft with the resolved
+     * return a {@link CompletableFuture} which contains a new instance of the draft with the resolved
      * references.
      *
      * @param categoryDraft the categoryDraft to resolve its references.
-     * @return a {@link CompletionStage} that contains as a result a new categoryDraft instance with resolved
+     * @return a {@link CompletableFuture} that contains as a result a new categoryDraft instance with resolved
      *          category references or, in case an error occurs during reference resolution,
      *          a {@link ReferenceResolutionException}.
      */
     @Override
     @Nonnull
-    public CompletionStage<CategoryDraft> resolveReferences(@Nonnull final CategoryDraft categoryDraft) {
+    public CompletableFuture<CategoryDraft> resolveReferences(@Nonnull final CategoryDraft categoryDraft) {
         return resolveCustomTypeReference(CategoryDraftBuilder.of(categoryDraft))
             .thenCompose(this::resolveParentReference)
             .thenCompose(this::resolveAssetsReferences)
@@ -81,7 +80,7 @@ public final class CategoryReferenceResolver
     }
 
     @Nonnull
-    CompletionStage<CategoryDraftBuilder> resolveAssetsReferences(
+    CompletableFuture<CategoryDraftBuilder> resolveAssetsReferences(
         @Nonnull final CategoryDraftBuilder categoryDraftBuilder) {
 
         final List<AssetDraft> categoryDraftAssets = categoryDraftBuilder.getAssets();
@@ -96,7 +95,7 @@ public final class CategoryReferenceResolver
 
     @Override
     @Nonnull
-    protected CompletionStage<CategoryDraftBuilder> resolveCustomTypeReference(
+    protected CompletableFuture<CategoryDraftBuilder> resolveCustomTypeReference(
         @Nonnull final CategoryDraftBuilder draftBuilder) {
 
         return resolveCustomTypeReference(draftBuilder,
@@ -106,7 +105,7 @@ public final class CategoryReferenceResolver
     }
 
     @Nonnull
-    CompletionStage<CategoryDraftBuilder> resolveParentReference(@Nonnull final CategoryDraftBuilder draftBuilder) {
+    CompletableFuture<CategoryDraftBuilder> resolveParentReference(@Nonnull final CategoryDraftBuilder draftBuilder) {
         final ResourceIdentifier<Category> parent = draftBuilder.getParent();
         if (parent != null && parent.getId() == null) {
             try {
@@ -150,7 +149,7 @@ public final class CategoryReferenceResolver
     }
 
     @Nonnull
-    private CompletionStage<CategoryDraftBuilder> fetchAndResolveParentReference(
+    private CompletableFuture<CategoryDraftBuilder> fetchAndResolveParentReference(
         @Nonnull final CategoryDraftBuilder draftBuilder,
         @Nonnull final String parentCategoryKey) {
 
@@ -174,14 +173,14 @@ public final class CategoryReferenceResolver
      * <p>Note: This method is meant be only used internally by the library to improve performance.
      *
      * @param referencedKeys a wrapper for the category references to fetch and cache the id's for.
-     * @return {@link CompletionStage}&lt;{@link Map}&lt;{@link String}&gt;{@link String}&gt;&gt; in which the results
+     * @return {@link CompletableFuture}&lt;{@link Map}&lt;{@link String}&gt;{@link String}&gt;&gt; in which the results
      *     of it's completions contains a map of requested references keys -&gt; ids of parent category references.
      */
     @Nonnull
     public CompletableFuture<Map<String, String>> populateKeyToIdCachesForReferencedKeys(
         @Nonnull final CategoryBatchValidator.ReferencedKeys referencedKeys) {
 
-        final List<CompletionStage<Map<String, String>>> futures = new ArrayList<>();
+        final List<CompletableFuture<Map<String, String>>> futures = new ArrayList<>();
 
         futures.add(categoryService.cacheKeysToIds(referencedKeys.getCategoryKeys()));
 

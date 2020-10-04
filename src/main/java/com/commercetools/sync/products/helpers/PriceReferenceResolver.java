@@ -15,7 +15,6 @@ import io.sphere.sdk.products.PriceDraftBuilder;
 
 import javax.annotation.Nonnull;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
@@ -56,19 +55,19 @@ public final class PriceReferenceResolver
 
     /**
      * Given a {@link PriceDraft} this method attempts to resolve the custom type and channel
-     * references to return a {@link CompletionStage} which contains a new instance of the draft with the resolved
+     * references to return a {@link CompletableFuture} which contains a new instance of the draft with the resolved
      * references.
      *
      * <p>The method then tries to fetch the key of the customer group, optimistically from a cache.
      * If the id is not found in cache nor the CTP project the {@link ReferenceResolutionException} will be thrown.
      *
      * @param priceDraft the priceDraft to resolve it's references.
-     * @return a {@link CompletionStage} that contains as a result a new inventoryEntryDraft instance with resolved
+     * @return a {@link CompletableFuture} that contains as a result a new inventoryEntryDraft instance with resolved
      *         references or, in case an error occurs during reference resolution a
      *         {@link ReferenceResolutionException}.
      */
     @Override
-    public CompletionStage<PriceDraft> resolveReferences(@Nonnull final PriceDraft priceDraft) {
+    public CompletableFuture<PriceDraft> resolveReferences(@Nonnull final PriceDraft priceDraft) {
         return resolveCustomTypeReference(PriceDraftBuilder.of(priceDraft))
             .thenCompose(this::resolveChannelReference)
             .thenCompose(this::resolveCustomerGroupReference)
@@ -77,7 +76,7 @@ public final class PriceReferenceResolver
 
     @Override
     @Nonnull
-    protected CompletionStage<PriceDraftBuilder> resolveCustomTypeReference(
+    protected CompletableFuture<PriceDraftBuilder> resolveCustomTypeReference(
         @Nonnull final PriceDraftBuilder draftBuilder) {
 
         return resolveCustomTypeReference(draftBuilder,
@@ -88,7 +87,7 @@ public final class PriceReferenceResolver
 
     /**
      * Given a {@link PriceDraftBuilder} this method attempts to resolve the supply channel reference to return
-     * a {@link CompletionStage} which contains the same instance of draft builder with the resolved
+     * a {@link CompletableFuture} which contains the same instance of draft builder with the resolved
      * supply channel reference.
      *
      * <p>The method then tries to fetch the key of the supply channel, optimistically from a
@@ -98,12 +97,12 @@ public final class PriceReferenceResolver
      * {@link ReferenceResolutionException}.
      *
      * @param draftBuilder the PriceDraftBuilder to resolve its channel reference.
-     * @return a {@link CompletionStage} that contains as a result a new price draft builder instance with resolved
+     * @return a {@link CompletableFuture} that contains as a result a new price draft builder instance with resolved
      *         supply channel or, in case an error occurs during reference resolution,
      *         a {@link ReferenceResolutionException}.
      */
     @Nonnull
-    CompletionStage<PriceDraftBuilder> resolveChannelReference(@Nonnull final PriceDraftBuilder draftBuilder) {
+    CompletableFuture<PriceDraftBuilder> resolveChannelReference(@Nonnull final PriceDraftBuilder draftBuilder) {
         final ResourceIdentifier<Channel> channelResourceIdentifier = draftBuilder.getChannel();
         if (channelResourceIdentifier != null && channelResourceIdentifier.getId() == null) {
             String channelKey;
@@ -121,7 +120,7 @@ public final class PriceReferenceResolver
     }
 
     @Nonnull
-    private CompletionStage<PriceDraftBuilder> fetchAndResolveChannelReference(
+    private CompletableFuture<PriceDraftBuilder> fetchAndResolveChannelReference(
         @Nonnull final PriceDraftBuilder draftBuilder,
         @Nonnull final String channelKey) {
 
@@ -157,16 +156,16 @@ public final class PriceReferenceResolver
      * <p>If the {@code ensureChannels} options is set to {@code false} on the {@code options} instance of {@code this}
      * class, the future is completed exceptionally with a {@link ReferenceResolutionException}.
      *
-     * <p>The method then returns a CompletionStage with a resolved channel reference {@link PriceDraftBuilder}
+     * <p>The method then returns a CompletableFuture with a resolved channel reference {@link PriceDraftBuilder}
      * object.
      *
      * @param channelKey   the key to create the new channel with.
      * @param draftBuilder the inventory entry draft builder where to resolve it's supply channel reference to the newly
      *                     created channel.
-     * @return a CompletionStage with the same {@code draftBuilder} instance having resolved channel reference.
+     * @return a CompletableFuture with the same {@code draftBuilder} instance having resolved channel reference.
      */
     @Nonnull
-    private CompletionStage<PriceDraftBuilder> createChannelAndSetReference(
+    private CompletableFuture<PriceDraftBuilder> createChannelAndSetReference(
         @Nonnull final String channelKey,
         @Nonnull final PriceDraftBuilder draftBuilder) {
 
@@ -191,18 +190,18 @@ public final class PriceReferenceResolver
 
     /**
      * Given a {@link PriceDraftBuilder} this method attempts to resolve the customer group reference to return
-     * a {@link CompletionStage} which contains the same instance of draft builder with the resolved
+     * a {@link CompletableFuture} which contains the same instance of draft builder with the resolved
      * customer group reference.
      *
      * <p>Note: The key of the customer group reference taken from the value of the id field of the reference.
      *
      * @param draftBuilder the priceDraftBuilder to resolve its customer group reference.
-     * @return a {@link CompletionStage} that contains as a result a new price draft builder instance with resolved
+     * @return a {@link CompletableFuture} that contains as a result a new price draft builder instance with resolved
      *         customer group reference or no customer group reference if the customer group doesn't exist or in case an
      *         error occurs during reference resolution a {@link ReferenceResolutionException}.
      */
     @Nonnull
-    CompletionStage<PriceDraftBuilder> resolveCustomerGroupReference(@Nonnull final PriceDraftBuilder draftBuilder) {
+    CompletableFuture<PriceDraftBuilder> resolveCustomerGroupReference(@Nonnull final PriceDraftBuilder draftBuilder) {
         final Reference<CustomerGroup> customerGroupReference = draftBuilder.getCustomerGroup();
         if (customerGroupReference != null) {
             String customerGroupKey;
@@ -220,7 +219,7 @@ public final class PriceReferenceResolver
     }
 
     @Nonnull
-    private CompletionStage<PriceDraftBuilder> fetchAndResolveCustomerGroupReference(
+    private CompletableFuture<PriceDraftBuilder> fetchAndResolveCustomerGroupReference(
         @Nonnull final PriceDraftBuilder draftBuilder,
         @Nonnull final String customerGroupKey) {
 

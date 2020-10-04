@@ -19,7 +19,7 @@ import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -41,7 +41,7 @@ public class CustomObjectServiceImpl
 
     @Nonnull
     @Override
-    public CompletionStage<Map<String, String>> cacheKeysToIds(
+    public CompletableFuture<Map<String, String>> cacheKeysToIds(
         @Nonnull final Set<CustomObjectCompositeIdentifier> identifiers) {
 
         /*
@@ -61,7 +61,7 @@ public class CustomObjectServiceImpl
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<String>> fetchCachedCustomObjectId(
+    public CompletableFuture<Optional<String>> fetchCachedCustomObjectId(
         @Nonnull final CustomObjectCompositeIdentifier identifier) {
 
         return fetchCachedResourceId(
@@ -73,7 +73,7 @@ public class CustomObjectServiceImpl
 
     @Nonnull
     @Override
-    public CompletionStage<Set<CustomObject<JsonNode>>> fetchMatchingCustomObjects(
+    public CompletableFuture<Set<CustomObject<JsonNode>>> fetchMatchingCustomObjects(
         @Nonnull final Set<CustomObjectCompositeIdentifier> identifiers) {
 
         return fetchMatchingResources(
@@ -104,7 +104,7 @@ public class CustomObjectServiceImpl
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<CustomObject<JsonNode>>> fetchCustomObject(
+    public CompletableFuture<Optional<CustomObject<JsonNode>>> fetchCustomObject(
         @Nonnull final CustomObjectCompositeIdentifier identifier) {
 
         return fetchResource(identifier.toString(), () -> queryOneIdentifier(identifier));
@@ -112,7 +112,7 @@ public class CustomObjectServiceImpl
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<CustomObject<JsonNode>>> upsertCustomObject(
+    public CompletableFuture<Optional<CustomObject<JsonNode>>> upsertCustomObject(
         @Nonnull final CustomObjectDraft<JsonNode> customObjectDraft) {
 
         return createResource(customObjectDraft,
@@ -132,12 +132,12 @@ public class CustomObjectServiceImpl
      * @param draft         the custom object draft to create a custom object in target CTP project.
      * @param keyMapper     a function to get the key from the supplied custom object draft.
      * @param createCommand a function to get the create command using the supplied custom object draft.
-     * @return a {@link CompletionStage} containing an optional with the created resource if successful otherwise an
+     * @return a {@link CompletableFuture} containing an optional with the created resource if successful otherwise an
      *     exception.
      */
     @Nonnull
     @Override
-    CompletionStage<Optional<CustomObject<JsonNode>>> executeCreateCommand(
+    CompletableFuture<Optional<CustomObject<JsonNode>>> executeCreateCommand(
         @Nonnull final CustomObjectDraft<JsonNode> draft,
         @Nonnull final Function<CustomObjectDraft<JsonNode>, String> keyMapper,
         @Nonnull final Function<CustomObjectDraft<JsonNode>,
@@ -148,6 +148,7 @@ public class CustomObjectServiceImpl
         return syncOptions
             .getCtpClient()
             .execute(createCommand.apply(draft))
+                .toCompletableFuture()
             .thenApply(resource -> {
                 keyToIdCache.put(draftKey, resource.getId());
                 return Optional.of(resource);

@@ -39,7 +39,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -237,7 +236,7 @@ public final class ProductTypeITUtils {
         final Consumer<List<ProductType>> pageConsumer =
             pageElements -> CompletableFuture.allOf(pageElements.stream()
                 .map(productType -> deleteProductTypeWithRetry(ctpClient, productType))
-                .map(CompletionStage::toCompletableFuture)
+                .map(CompletableFuture::toCompletableFuture)
                 .toArray(CompletableFuture[]::new))
                 .join();
 
@@ -246,7 +245,7 @@ public final class ProductTypeITUtils {
                 .join();
     }
 
-    private static CompletionStage<ProductType> deleteProductTypeWithRetry(@Nonnull final SphereClient ctpClient,
+    private static CompletableFuture<ProductType> deleteProductTypeWithRetry(@Nonnull final SphereClient ctpClient,
                                                                            @Nonnull final ProductType productType) {
         return ctpClient.execute(ProductTypeDeleteCommand.of(productType))
                 .handle((result, throwable) -> {
@@ -258,7 +257,8 @@ public final class ProductTypeITUtils {
                         ctpClient.execute(retry);
                     }
                     return result;
-                });
+                })
+                .toCompletableFuture();
     }
 
     /**
@@ -304,7 +304,7 @@ public final class ProductTypeITUtils {
         } catch (InterruptedException expected) { }
     }
 
-    private static CompletionStage<ProductType> removeAttributeDefinitionWithRetry(
+    private static CompletableFuture<ProductType> removeAttributeDefinitionWithRetry(
         @Nonnull final SphereClient ctpClient,
         @Nonnull final Map.Entry<ProductType, Set<UpdateAction<ProductType>>> entry) {
 
@@ -323,7 +323,8 @@ public final class ProductTypeITUtils {
                         ctpClient.execute(retry);
                     }
                     return result;
-                });
+                })
+                .toCompletableFuture();
     }
 
     /**

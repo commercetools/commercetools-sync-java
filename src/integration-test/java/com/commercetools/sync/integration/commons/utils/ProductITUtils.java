@@ -24,7 +24,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
 import static com.commercetools.sync.integration.commons.utils.ChannelITUtils.deleteChannels;
@@ -75,10 +75,10 @@ public final class ProductITUtils {
      *
      * @param ctpClient defines the CTP project to delete the product from.
      * @param product the product to be deleted.
-     * @return a {@link CompletionStage} containing the deleted product.
+     * @return a {@link CompletableFuture} containing the deleted product.
      */
     @Nonnull
-    private static CompletionStage<Product> safeDeleteProduct(@Nonnull final SphereClient ctpClient,
+    private static CompletableFuture<Product> safeDeleteProduct(@Nonnull final SphereClient ctpClient,
                                                               @Nonnull final Product product) {
         return product.getMasterData().isPublished()
             ? unpublishAndDeleteProduct(ctpClient, product) : deleteProduct(ctpClient, product);
@@ -89,12 +89,13 @@ public final class ProductITUtils {
      *
      * @param ctpClient defines the CTP project to delete the product from.
      * @param product the product to be unpublished and deleted.
-     * @return a {@link CompletionStage} containing the deleted product.
+     * @return a {@link CompletableFuture} containing the deleted product.
      */
     @Nonnull
-    private static CompletionStage<Product> unpublishAndDeleteProduct(@Nonnull final SphereClient ctpClient,
+    private static CompletableFuture<Product> unpublishAndDeleteProduct(@Nonnull final SphereClient ctpClient,
                                                                       @Nonnull final Product product) {
         return ctpClient.execute(buildUnpublishRequest(product))
+                .toCompletableFuture()
                         .thenCompose(unpublishedProduct ->
                             deleteProduct(ctpClient, unpublishedProduct));
     }
@@ -104,13 +105,13 @@ public final class ProductITUtils {
      *
      * @param ctpClient the client defining the CTP project to delete the product from.
      * @param product   the product to be deleted.
-     * @return a {@link CompletionStage} containing the deleted product. If the product supplied was already unpublished
+     * @return a {@link CompletableFuture} containing the deleted product. If the product supplied was already unpublished
      *          the method will return a completion stage that completed exceptionally.
      */
     @Nonnull
-    private static CompletionStage<Product> deleteProduct(@Nonnull final SphereClient ctpClient,
+    private static CompletableFuture<Product> deleteProduct(@Nonnull final SphereClient ctpClient,
                                                           @Nonnull final Product product) {
-        return ctpClient.execute(ProductDeleteCommand.of(product));
+        return ctpClient.execute(ProductDeleteCommand.of(product)).toCompletableFuture();
     }
 
     /**

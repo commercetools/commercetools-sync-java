@@ -26,7 +26,6 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -71,9 +70,9 @@ class CategorySyncTest {
         }
 
         @Override
-        protected CompletionStage<CategorySyncStatistics> syncBatches(
+        protected CompletableFuture<CategorySyncStatistics> syncBatches(
                 @Nonnull final List<List<CategoryDraft>> batches,
-                @Nonnull final CompletionStage<CategorySyncStatistics> result) {
+                @Nonnull final CompletableFuture<CategorySyncStatistics> result) {
             return super.syncBatches(batches, result);
         }
     }

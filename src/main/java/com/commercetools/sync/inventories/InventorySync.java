@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
@@ -86,12 +85,12 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      *
      * @param inventoryEntryDrafts {@link List} of {@link InventoryEntryDraft} resources that would be synced into CTP
      *                             project.
-     * @return {@link CompletionStage} with {@link InventorySyncStatistics} holding statistics of all sync
+     * @return {@link CompletableFuture} with {@link InventorySyncStatistics} holding statistics of all sync
      *                                           processes performed by this sync instance
      */
     @Nonnull
     @Override
-    protected CompletionStage<InventorySyncStatistics> process(
+    protected CompletableFuture<InventorySyncStatistics> process(
         @Nonnull final List<InventoryEntryDraft> inventoryEntryDrafts) {
 
         final List<List<InventoryEntryDraft>> batches = batchElements(inventoryEntryDrafts, syncOptions.getBatchSize());
@@ -105,9 +104,9 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * an empty optional then {@code batchOfDrafts} isn't processed.
      *
      * @param batch batch of drafts that need to be synced
-     * @return {@link CompletionStage} of {@link Void} that indicates method progress.
+     * @return {@link CompletableFuture} of {@link Void} that indicates method progress.
      */
-    protected CompletionStage<InventorySyncStatistics> processBatch(@Nonnull final List<InventoryEntryDraft> batch) {
+    protected CompletableFuture<InventorySyncStatistics> processBatch(@Nonnull final List<InventoryEntryDraft> batch) {
 
         final ImmutablePair<Set<InventoryEntryDraft>, InventoryBatchValidator.ReferencedKeys> result =
             batchValidator.validateAndCollectReferencedKeys(batch);
@@ -167,7 +166,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @param inventoryEntryDrafts drafts that need to be synced
      * @return a future which contains an empty result after execution of the update
      */
-    private CompletionStage<Void> syncBatch(
+    private CompletableFuture<Void> syncBatch(
         @Nonnull final Set<InventoryEntry> oldInventories,
         @Nonnull final Set<InventoryEntryDraft> inventoryEntryDrafts) {
 
@@ -187,7 +186,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
                         return Optional.empty();
                     })
             )
-            .map(CompletionStage::toCompletableFuture)
+            .map(CompletableFuture::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
     }
 
@@ -199,7 +198,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @param resolvedDraft inventory entry draft which has its references resolved
      * @return a future which contains an empty result after execution of the update
      */
-    private CompletionStage<Optional<InventoryEntry>> syncDraft(
+    private CompletableFuture<Optional<InventoryEntry>> syncDraft(
         @Nonnull final Map<InventoryEntryIdentifier , InventoryEntry> oldInventories,
         @Nonnull final InventoryEntryDraft resolvedDraft) {
 
@@ -225,7 +224,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @return a future which contains an empty result after execution of the update.
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
-    private CompletionStage<Optional<InventoryEntry>> buildActionsAndUpdate(
+    private CompletableFuture<Optional<InventoryEntry>> buildActionsAndUpdate(
         @Nonnull final InventoryEntry entry,
         @Nonnull final InventoryEntryDraft draft) {
 
@@ -267,7 +266,7 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      * @param inventoryEntryDraft the inventory entry draft to create the inventory entry from.
      * @return a future which contains an empty result after execution of the create.
      */
-    private CompletionStage<Optional<InventoryEntry>> applyCallbackAndCreate(
+    private CompletableFuture<Optional<InventoryEntry>> applyCallbackAndCreate(
         @Nonnull final InventoryEntryDraft inventoryEntryDraft) {
 
         return syncOptions

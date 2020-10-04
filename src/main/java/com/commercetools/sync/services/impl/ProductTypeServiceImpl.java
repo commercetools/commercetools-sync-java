@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -39,7 +38,7 @@ public final class ProductTypeServiceImpl extends BaseServiceWithKey<ProductType
 
     @Nonnull
     @Override
-    public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> keys) {
+    public CompletableFuture<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> keys) {
 
         return cacheKeysToIds(
             keys,
@@ -51,7 +50,7 @@ public final class ProductTypeServiceImpl extends BaseServiceWithKey<ProductType
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<String>> fetchCachedProductTypeId(@Nonnull final String key) {
+    public CompletableFuture<Optional<String>> fetchCachedProductTypeId(@Nonnull final String key) {
 
         return fetchCachedResourceId(key,
             () -> ProductTypeQueryBuilder
@@ -72,7 +71,7 @@ public final class ProductTypeServiceImpl extends BaseServiceWithKey<ProductType
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<Map<String, AttributeMetaData>>> fetchCachedProductAttributeMetaDataMap(
+    public CompletableFuture<Optional<Map<String, AttributeMetaData>>> fetchCachedProductAttributeMetaDataMap(
         @Nonnull final String productTypeId) {
 
         if (productsAttributesMetaData.isEmpty()) {
@@ -84,7 +83,7 @@ public final class ProductTypeServiceImpl extends BaseServiceWithKey<ProductType
     }
 
     @Nonnull
-    private CompletionStage<Optional<Map<String, AttributeMetaData>>> fetchAndCacheProductMetaData(
+    private CompletableFuture<Optional<Map<String, AttributeMetaData>>> fetchAndCacheProductMetaData(
         @Nonnull final String productTypeId) {
 
         final Consumer<List<ProductType>> productTypePageConsumer = productTypePage ->
@@ -100,7 +99,7 @@ public final class ProductTypeServiceImpl extends BaseServiceWithKey<ProductType
 
     @Nonnull
     @Override
-    public CompletionStage<Set<ProductType>> fetchMatchingProductTypesByKeys(@Nonnull final Set<String> keys) {
+    public CompletableFuture<Set<ProductType>> fetchMatchingProductTypesByKeys(@Nonnull final Set<String> keys) {
         return fetchMatchingResources(keys,
             () -> ProductTypeQueryBuilder
                 .of()
@@ -110,13 +109,13 @@ public final class ProductTypeServiceImpl extends BaseServiceWithKey<ProductType
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<ProductType>> createProductType(@Nonnull final ProductTypeDraft productTypeDraft) {
+    public CompletableFuture<Optional<ProductType>> createProductType(@Nonnull final ProductTypeDraft productTypeDraft) {
         return createResource(productTypeDraft, ProductTypeCreateCommand::of);
     }
 
     @Nonnull
     @Override
-    public CompletionStage<ProductType> updateProductType(
+    public CompletableFuture<ProductType> updateProductType(
         @Nonnull final ProductType productType, @Nonnull final List<UpdateAction<ProductType>> updateActions) {
 
         return updateResource(productType, ProductTypeUpdateCommand::of, updateActions);
@@ -124,7 +123,7 @@ public final class ProductTypeServiceImpl extends BaseServiceWithKey<ProductType
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<ProductType>> fetchProductType(@Nullable final String key) {
+    public CompletableFuture<Optional<ProductType>> fetchProductType(@Nullable final String key) {
 
         return fetchResource(key,
             () -> ProductTypeQueryBuilder.of().plusPredicates(queryModel -> queryModel.key().is(key)).build());

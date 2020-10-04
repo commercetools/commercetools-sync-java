@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
@@ -112,15 +111,15 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
 
     /**
      * Given a {@link ProductDraft} this method attempts to resolve the product type, categories, variants, tax
-     * category and product state references to return a {@link CompletionStage} which contains a new instance of the
+     * category and product state references to return a {@link CompletableFuture} which contains a new instance of the
      * draft with the resolved references.
      *
      * @param productDraft the productDraft to resolve it's references.
-     * @return a {@link CompletionStage} that contains as a result a new productDraft instance with resolved references
+     * @return a {@link CompletableFuture} that contains as a result a new productDraft instance with resolved references
      *         or, in case an error occurs during reference resolution, a {@link ReferenceResolutionException}.
      */
     @Override
-    public CompletionStage<ProductDraft> resolveReferences(@Nonnull final ProductDraft productDraft) {
+    public CompletableFuture<ProductDraft> resolveReferences(@Nonnull final ProductDraft productDraft) {
         return resolveProductTypeReference(ProductDraftBuilder.of(productDraft))
             .thenCompose(this::resolveCategoryReferences)
             .thenCompose(this::resolveAllVariantsReferences)
@@ -130,7 +129,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     @Nonnull
-    private CompletionStage<ProductDraftBuilder> resolveAllVariantsReferences(
+    private CompletableFuture<ProductDraftBuilder> resolveAllVariantsReferences(
         @Nonnull final ProductDraftBuilder draftBuilder) {
         final ProductVariantDraft masterVariantDraft = draftBuilder.getMasterVariant();
         return variantReferenceResolver.resolveReferences(masterVariantDraft)
@@ -139,7 +138,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     @Nonnull
-    private CompletionStage<ProductDraftBuilder> resolveVariantsReferences(
+    private CompletableFuture<ProductDraftBuilder> resolveVariantsReferences(
         @Nonnull final ProductDraftBuilder draftBuilder) {
         final List<ProductVariantDraft> productDraftVariants = draftBuilder.getVariants();
 
@@ -149,15 +148,15 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
 
     /**
      * Given a {@link ProductDraftBuilder} this method attempts to resolve the product type to return a
-     * {@link CompletionStage} which contains a new instance of the builder with the resolved product type reference.
+     * {@link CompletableFuture} which contains a new instance of the builder with the resolved product type reference.
      *
      * @param draftBuilder the productDraft to resolve its product type reference.
-     * @return a {@link CompletionStage} that contains as a result a new builder instance with resolved product type
+     * @return a {@link CompletableFuture} that contains as a result a new builder instance with resolved product type
      *         reference or, in case an error occurs during reference resolution,
      *         a {@link ReferenceResolutionException}.
      */
     @Nonnull
-    public CompletionStage<ProductDraftBuilder> resolveProductTypeReference(
+    public CompletableFuture<ProductDraftBuilder> resolveProductTypeReference(
         @Nonnull final ProductDraftBuilder draftBuilder) {
 
         final ResourceIdentifier<ProductType> productTypeReference = draftBuilder.getProductType();
@@ -177,7 +176,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     @Nonnull
-    private CompletionStage<ProductDraftBuilder> fetchAndResolveProductTypeReference(
+    private CompletableFuture<ProductDraftBuilder> fetchAndResolveProductTypeReference(
         @Nonnull final ProductDraftBuilder draftBuilder,
         @Nonnull final String productTypeKey) {
 
@@ -197,14 +196,14 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
 
     /**
      * Given a {@link ProductDraftBuilder} this method attempts to resolve the categories and categoryOrderHints to
-     * return a {@link CompletionStage} which contains a new instance of the builder with the resolved references.
+     * return a {@link CompletableFuture} which contains a new instance of the builder with the resolved references.
      *
      * @param draftBuilder the productDraft to resolve its category and categoryOrderHints references.
-     * @return a {@link CompletionStage} that contains as a result a new builder instance with resolved references or,
+     * @return a {@link CompletableFuture} that contains as a result a new builder instance with resolved references or,
      *         in case an error occurs during reference resolution, a {@link ReferenceResolutionException}.
      */
     @Nonnull
-    public CompletionStage<ProductDraftBuilder> resolveCategoryReferences(
+    public CompletableFuture<ProductDraftBuilder> resolveCategoryReferences(
         @Nonnull final ProductDraftBuilder draftBuilder) {
 
         final Set<ResourceIdentifier<Category>> categoryResourceIdentifiers = draftBuilder.getCategories();
@@ -229,7 +228,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     @Nonnull
-    private CompletionStage<ProductDraftBuilder> fetchAndResolveCategoryReferences(
+    private CompletableFuture<ProductDraftBuilder> fetchAndResolveCategoryReferences(
         @Nonnull final ProductDraftBuilder draftBuilder,
         @Nonnull final Set<String> categoryKeys,
         @Nonnull final List<ResourceIdentifier<Category>> directCategoryReferences) {
@@ -275,15 +274,15 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
 
     /**
      * Given a {@link ProductDraftBuilder} this method attempts to resolve the tax category to return a
-     * {@link CompletionStage} which contains a new instance of the builder with the resolved tax category reference.
+     * {@link CompletableFuture} which contains a new instance of the builder with the resolved tax category reference.
      *
      * @param draftBuilder the productDraft to resolve its tax category reference.
-     * @return a {@link CompletionStage} that contains as a result a new builder instance with resolved tax category
+     * @return a {@link CompletableFuture} that contains as a result a new builder instance with resolved tax category
      *         reference or, in case an error occurs during reference resolution,
      *         a {@link ReferenceResolutionException}.
      */
     @Nonnull
-    public CompletionStage<ProductDraftBuilder> resolveTaxCategoryReference(
+    public CompletableFuture<ProductDraftBuilder> resolveTaxCategoryReference(
         @Nonnull final ProductDraftBuilder draftBuilder) {
         final ResourceIdentifier<TaxCategory> taxCategoryResourceIdentifier =
             draftBuilder.getTaxCategory();
@@ -303,7 +302,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     @Nonnull
-    private CompletionStage<ProductDraftBuilder> fetchAndResolveTaxCategoryReference(
+    private CompletableFuture<ProductDraftBuilder> fetchAndResolveTaxCategoryReference(
         @Nonnull final ProductDraftBuilder draftBuilder,
         @Nonnull final String taxCategoryKey) {
 
@@ -322,18 +321,18 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     /**
-     * Given a {@link ProductDraftBuilder} this method attempts to resolve the state to return a {@link CompletionStage}
+     * Given a {@link ProductDraftBuilder} this method attempts to resolve the state to return a {@link CompletableFuture}
      * which contains a new instance of the builder with the resolved state reference.
      *
      * <p>Note: The key of the state reference taken from the value of the id field of the reference.
      *
      * @param draftBuilder the productDraft to resolve its state reference.
-     * @return a {@link CompletionStage} that contains as a result a new builder instance with resolved state
+     * @return a {@link CompletableFuture} that contains as a result a new builder instance with resolved state
      *         reference or, in case an error occurs during reference resolution, the future is completed exceptionally
      *         with a {@link ReferenceResolutionException}.
      */
     @Nonnull
-    public CompletionStage<ProductDraftBuilder> resolveStateReference(
+    public CompletableFuture<ProductDraftBuilder> resolveStateReference(
         @Nonnull final ProductDraftBuilder draftBuilder) {
         final Reference<State> stateReference = draftBuilder.getState();
         if (stateReference != null) {
@@ -352,7 +351,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     @Nonnull
-    private CompletionStage<ProductDraftBuilder> fetchAndResolveStateReference(
+    private CompletableFuture<ProductDraftBuilder> fetchAndResolveStateReference(
         @Nonnull final ProductDraftBuilder draftBuilder,
         @Nonnull final String stateKey) {
 
@@ -376,14 +375,14 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
      * <p>Note: This method is meant be only used internally by the library to improve performance.
      *
      * @param referencedKeys a wrapper for the product references to fetch and cache the id's for.
-     * @return {@link CompletionStage}&lt;{@link Map}&lt;{@link String}&gt;{@link String}&gt;&gt; in which the results
+     * @return {@link CompletableFuture}&lt;{@link Map}&lt;{@link String}&gt;{@link String}&gt;&gt; in which the results
      *     of it's completions contains a map of requested references keys -&gt; ids of product references.
      */
     @Nonnull
     public CompletableFuture<Map<String, String>> populateKeyToIdCachesForReferencedKeys(
         @Nonnull final ProductBatchValidator.ReferencedKeys referencedKeys) {
 
-        final List<CompletionStage<Map<String, String>>> futures = new ArrayList<>();
+        final List<CompletableFuture<Map<String, String>>> futures = new ArrayList<>();
 
         final Set<String> productKeys = referencedKeys.getProductKeys();
         if (!productKeys.isEmpty()) {

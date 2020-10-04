@@ -35,7 +35,7 @@ import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtil
 import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.createTaxCategory;
 import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.createTaxRateDraft;
 import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.deleteTaxCategories;
-import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
+import static com.commercetools.tests.utils.CompletableFutureUtil.executeBlocking;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;

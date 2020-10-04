@@ -13,7 +13,7 @@ import javax.annotation.Nonnull;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndExecute;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
+import static com.commercetools.tests.utils.CompletableFutureUtil.executeBlocking;
 
 public final class CustomerGroupITUtils {
     /**

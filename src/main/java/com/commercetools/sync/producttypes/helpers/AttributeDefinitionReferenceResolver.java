@@ -15,7 +15,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
-import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
@@ -35,16 +35,16 @@ public class AttributeDefinitionReferenceResolver
     /**
      * Given an {@link AttributeDefinitionDraft} this method attempts to resolve the ProductType references, which can
      * exist on attributeDefinition with an AttributeType: NestedType or SetType of NestedType, to return a
-     * {@link CompletionStage} which contains a new instance of the draft with the resolved references.
+     * {@link CompletableFuture} which contains a new instance of the draft with the resolved references.
      *
      * @param attributeDefinitionDraft the attributeDefinitionDraft to resolve its references.
-     * @return a {@link CompletionStage} that contains as a result a new attributeDefinitionDraft instance with resolved
+     * @return a {@link CompletableFuture} that contains as a result a new attributeDefinitionDraft instance with resolved
      *         references or if there is no productType existing with the given key the draft will be returned as is
      *         without the reference resolved. In case an error occurs during reference resolution, a
      *         {@link ReferenceResolutionException} is thrown.
      */
     @Nonnull
-    public CompletionStage<AttributeDefinitionDraft> resolveReferences(
+    public CompletableFuture<AttributeDefinitionDraft> resolveReferences(
         @Nonnull final AttributeDefinitionDraft attributeDefinitionDraft) {
 
         final AttributeDefinitionDraftBuilder draftBuilder =
@@ -69,7 +69,7 @@ public class AttributeDefinitionReferenceResolver
     }
 
     @Nonnull
-    private CompletionStage<AttributeDefinitionDraftBuilder> resolveReferences(
+    private CompletableFuture<AttributeDefinitionDraftBuilder> resolveReferences(
         @Nonnull final AttributeDefinitionDraftBuilder attributeDefinitionDraftBuilder) {
 
         final AttributeType attributeType = attributeDefinitionDraftBuilder.getAttributeType();
@@ -93,7 +93,7 @@ public class AttributeDefinitionReferenceResolver
     }
 
     @Nonnull
-    private CompletionStage<NestedAttributeType> resolveNestedTypeReference(
+    private CompletableFuture<NestedAttributeType> resolveNestedTypeReference(
         @Nonnull final NestedAttributeType nestedAttributeType) {
 
         final Reference<ProductType> typeReference = nestedAttributeType.getTypeReference();
@@ -105,7 +105,7 @@ public class AttributeDefinitionReferenceResolver
     }
 
     @Nonnull
-    private CompletionStage<Optional<Reference<ProductType>>> resolveProductTypeReference(
+    private CompletableFuture<Optional<Reference<ProductType>>> resolveProductTypeReference(
         @Nonnull final Reference<ProductType> typeReference) {
 
         final String resourceKey;

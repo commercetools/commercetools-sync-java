@@ -37,7 +37,7 @@ import static com.commercetools.sync.integration.commons.utils.TypeITUtils.TYPE_
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.TYPE_KEY_1;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.TYPE_NAME_1;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.deleteTypes;
-import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
+import static com.commercetools.tests.utils.CompletableFutureUtil.executeBlocking;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;

@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.sync.cartdiscounts.utils.CartDiscountSyncUtils.buildActions;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
@@ -94,11 +93,11 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
      * {@inheritDoc}
      *
      * @param cartDiscountDrafts {@link List} of {@link CartDiscountDraft}'s that would be synced into CTP project.
-     * @return {@link CompletionStage} with {@link CartDiscountSyncStatistics} holding statistics of all sync
+     * @return {@link CompletableFuture} with {@link CartDiscountSyncStatistics} holding statistics of all sync
      *         processes performed by this sync instance.
      */
     @Override
-    protected CompletionStage<CartDiscountSyncStatistics> process(
+    protected CompletableFuture<CartDiscountSyncStatistics> process(
         @Nonnull final List<CartDiscountDraft> cartDiscountDrafts) {
 
         final List<List<CartDiscountDraft>> batches = batchElements(cartDiscountDrafts, syncOptions.getBatchSize());
@@ -106,7 +105,7 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
     }
 
     @Override
-    protected CompletionStage<CartDiscountSyncStatistics> processBatch(@Nonnull final List<CartDiscountDraft> batch) {
+    protected CompletableFuture<CartDiscountSyncStatistics> processBatch(@Nonnull final List<CartDiscountDraft> batch) {
 
         final ImmutablePair<Set<CartDiscountDraft>, Set<String>> result =
             batchValidator.validateAndCollectReferencedKeys(batch);
@@ -174,10 +173,10 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
      *
      * @param oldCartDiscounts old cart discounts.
      * @param newCartDiscounts drafts that need to be synced.
-     * @return a {@link CompletionStage} which contains an empty result after execution of the update
+     * @return a {@link CompletableFuture} which contains an empty result after execution of the update
      */
     @Nonnull
-    private CompletionStage<Void> syncBatch(
+    private CompletableFuture<Void> syncBatch(
             @Nonnull final Set<CartDiscount> oldCartDiscounts,
             @Nonnull final Set<CartDiscountDraft> newCartDiscounts) {
 
@@ -198,12 +197,12 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
                             return null;
                         })
                 )
-                .map(CompletionStage::toCompletableFuture)
+                .map(CompletableFuture::toCompletableFuture)
                 .toArray(CompletableFuture[]::new));
     }
 
     @Nonnull
-    private CompletionStage<Void> syncDraft(
+    private CompletableFuture<Void> syncDraft(
         @Nonnull final Map<String, CartDiscount> oldCartDiscountMap,
         @Nonnull final CartDiscountDraft newCartDiscount) {
 
@@ -216,7 +215,7 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
 
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
-    private CompletionStage<Void> buildActionsAndUpdate(
+    private CompletableFuture<Void> buildActionsAndUpdate(
             @Nonnull final CartDiscount oldCartDiscount,
             @Nonnull final CartDiscountDraft newCartDiscount) {
 
@@ -238,10 +237,10 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
      * CTP project to create the corresponding CartDiscount.
      *
      * @param cartDiscountDraft the cart discount draft to create the cart discount from.
-     * @return a {@link CompletionStage} which contains an empty result after execution of the create.
+     * @return a {@link CompletableFuture} which contains an empty result after execution of the create.
      */
     @Nonnull
-    private CompletionStage<Void> applyCallbackAndCreate(@Nonnull final CartDiscountDraft cartDiscountDraft) {
+    private CompletableFuture<Void> applyCallbackAndCreate(@Nonnull final CartDiscountDraft cartDiscountDraft) {
 
         return syncOptions
             .applyBeforeCreateCallback(cartDiscountDraft)
@@ -270,10 +269,10 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
      * @param oldCartDiscount existing cart discount that could be updated.
      * @param newCartDiscount draft containing data that could differ from data in {@code oldCartDiscount}.
      * @param updateActions   the update actions to update the {@link CartDiscount} with.
-     * @return a {@link CompletionStage} which contains an empty result after execution of the update.
+     * @return a {@link CompletableFuture} which contains an empty result after execution of the update.
      */
     @Nonnull
-    private CompletionStage<Void> updateCartDiscount(
+    private CompletableFuture<Void> updateCartDiscount(
         @Nonnull final CartDiscount oldCartDiscount,
         @Nonnull final CartDiscountDraft newCartDiscount,
         @Nonnull final List<UpdateAction<CartDiscount>> updateActions) {
@@ -302,7 +301,7 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
     }
 
     @Nonnull
-    private CompletionStage<Void> fetchAndUpdate(
+    private CompletableFuture<Void> fetchAndUpdate(
             @Nonnull final CartDiscount oldCartDiscount,
             @Nonnull final CartDiscountDraft newCartDiscount) {
 

@@ -28,7 +28,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -97,11 +96,11 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * {@inheritDoc}
      *
      * @param productTypeDrafts {@link List} of {@link ProductTypeDraft}'s that would be synced into CTP project.
-     * @return {@link CompletionStage} with {@link ProductTypeSyncStatistics} holding statistics of all sync
+     * @return {@link CompletableFuture} with {@link ProductTypeSyncStatistics} holding statistics of all sync
      *         processes performed by this sync instance.
      */
     @Override
-    protected CompletionStage<ProductTypeSyncStatistics> process(
+    protected CompletableFuture<ProductTypeSyncStatistics> process(
             @Nonnull final List<ProductTypeDraft> productTypeDrafts) {
 
         final List<List<ProductTypeDraft>> batches = batchElements(productTypeDrafts, syncOptions.getBatchSize());
@@ -124,12 +123,12 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * </p>
      *
      * @param batch batch of drafts that need to be synced
-     * @return a {@link CompletionStage} containing an instance
+     * @return a {@link CompletableFuture} containing an instance
      *         of {@link ProductTypeSyncStatistics} which contains information about the result of syncing the supplied
      *         batch to the target project.
      */
     @Override
-    protected CompletionStage<ProductTypeSyncStatistics> processBatch(@Nonnull final List<ProductTypeDraft> batch) {
+    protected CompletableFuture<ProductTypeSyncStatistics> processBatch(@Nonnull final List<ProductTypeDraft> batch) {
 
         readyToResolve = ConcurrentHashMap.newKeySet();
 
@@ -237,10 +236,10 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      *
      * @param oldProductTypes old product types.
      * @param newProductTypes drafts that need to be synced.
-     * @return a {@link CompletionStage} which contains an empty result after execution of the update
+     * @return a {@link CompletableFuture} which contains an empty result after execution of the update
      */
     @Nonnull
-    private CompletionStage<Void> syncBatch(
+    private CompletableFuture<Void> syncBatch(
         @Nonnull final Set<ProductType> oldProductTypes,
         @Nonnull final Set<ProductTypeDraft> newProductTypes,
         @Nonnull final Map<String, String> keyToIdCache) {
@@ -261,7 +260,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                     return null;
                 })
             )
-            .map(CompletionStage::toCompletableFuture)
+            .map(CompletableFuture::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
     }
 
@@ -359,7 +358,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     }
 
     @Nonnull
-    private CompletionStage<Void> syncDraft(
+    private CompletableFuture<Void> syncDraft(
         @Nonnull final Map<String, ProductType> oldProductTypeMap,
         @Nonnull final ProductTypeDraft newProductTypeDraft) {
 
@@ -422,10 +421,10 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * the reference id value (which is a key) is resolved to an actual UUID of the product type key pointed by this
      * key. Then, for each product type, the method issues an update request containing all the actions.
      *
-     * @return a {@link CompletionStage} which contains an empty result after execution of all the update requests.
+     * @return a {@link CompletableFuture} which contains an empty result after execution of all the update requests.
      */
     @Nonnull
-    private CompletionStage<Void> resolveMissingNestedReferences(
+    private CompletableFuture<Void> resolveMissingNestedReferences(
         @Nonnull final Map<String, Set<AttributeDefinitionDraft>> productTypesToUpdate) {
 
         final Set<String> keys = productTypesToUpdate.keySet();
@@ -463,7 +462,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                                     actionsWithResolvedReferences);
 
                             })
-                            .map(CompletionStage::toCompletableFuture)
+                            .map(CompletableFuture::toCompletableFuture)
                             .toArray(CompletableFuture[]::new));
                 }
             });
@@ -479,11 +478,11 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      *
      * @param oldProductType existing product type that could be updated.
      * @param updateActions actions to update the product type with.
-     * @return a {@link CompletionStage} which contains an empty result after execution of the update.
+     * @return a {@link CompletableFuture} which contains an empty result after execution of the update.
      */
     @SuppressWarnings("ConstantConditions") // since the batch is validate before, key is assured to be non-blank here.
     @Nonnull
-    private CompletionStage<Void> resolveMissingNestedReferences(
+    private CompletableFuture<Void> resolveMissingNestedReferences(
         @Nonnull final ProductType oldProductType,
         @Nonnull final List<UpdateAction<ProductType>> updateActions) {
 
@@ -542,7 +541,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
 
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
-    private CompletionStage<Void> buildActionsAndUpdate(
+    private CompletableFuture<Void> buildActionsAndUpdate(
         @Nonnull final ProductType oldProductType,
         @Nonnull final ProductTypeDraft newProductType) {
 
@@ -571,10 +570,10 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * @param oldProductType existing product type that could be updated.
      * @param newProductType draft containing data that could differ from data in {@code oldProductType}.
      * @param updateActions the update actions to update the {@link ProductType} with.
-     * @return a {@link CompletionStage} which contains an empty result after execution of the update.
+     * @return a {@link CompletableFuture} which contains an empty result after execution of the update.
      */
     @Nonnull
-    private CompletionStage<Void> updateProductType(
+    private CompletableFuture<Void> updateProductType(
         @Nonnull final ProductType oldProductType,
         @Nonnull final ProductTypeDraft newProductType,
         @Nonnull final List<UpdateAction<ProductType>> updateActions) {
@@ -605,9 +604,9 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     }
 
     @Nonnull
-    private CompletionStage<Void> fetchAndUpdate(
+    private CompletableFuture<Void> fetchAndUpdate(
         @Nonnull final ProductType oldProductType,
-        @Nonnull final Function<ProductType, CompletionStage<Void>> fetchedProductMapper) {
+        @Nonnull final Function<ProductType, CompletableFuture<Void>> fetchedProductMapper) {
 
         final String key = oldProductType.getKey();
         return productTypeService
@@ -645,10 +644,10 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
      * CTP project to create the corresponding Product Type.
      *
      * @param productTypeDraft the product type draft to create the product type from.
-     * @return a {@link CompletionStage} which contains an empty result after execution of the create.
+     * @return a {@link CompletableFuture} which contains an empty result after execution of the create.
      */
     @Nonnull
-    private CompletionStage<Void> applyCallbackAndCreate(
+    private CompletableFuture<Void> applyCallbackAndCreate(
         @Nonnull final ProductTypeDraft productTypeDraft) {
 
         return syncOptions

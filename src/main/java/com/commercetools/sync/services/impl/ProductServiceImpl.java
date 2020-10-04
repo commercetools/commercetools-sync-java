@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -35,7 +35,7 @@ public final class ProductServiceImpl extends BaseServiceWithKey<ProductDraft, P
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<String>> getIdFromCacheOrFetch(@Nullable final String key) {
+    public CompletableFuture<Optional<String>> getIdFromCacheOrFetch(@Nullable final String key) {
 
         return fetchCachedResourceId(key,
             () -> ProductQuery.of()
@@ -44,7 +44,7 @@ public final class ProductServiceImpl extends BaseServiceWithKey<ProductDraft, P
 
     @Nonnull
     @Override
-    public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> productKeys) {
+    public CompletableFuture<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> productKeys) {
 
         return cacheKeysToIds(
             productKeys,
@@ -66,7 +66,7 @@ public final class ProductServiceImpl extends BaseServiceWithKey<ProductDraft, P
 
     @Nonnull
     @Override
-    public CompletionStage<Set<Product>> fetchMatchingProductsByKeys(@Nonnull final Set<String> productKeys) {
+    public CompletableFuture<Set<Product>> fetchMatchingProductsByKeys(@Nonnull final Set<String> productKeys) {
 
         return fetchMatchingResources(productKeys,
             () -> ProductQuery.of().withPredicates(buildProductKeysQueryPredicate(productKeys)));
@@ -74,7 +74,7 @@ public final class ProductServiceImpl extends BaseServiceWithKey<ProductDraft, P
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<Product>> fetchProduct(@Nullable final String key) {
+    public CompletableFuture<Optional<Product>> fetchProduct(@Nullable final String key) {
 
         return fetchResource(key,
             () -> ProductQuery
@@ -83,13 +83,13 @@ public final class ProductServiceImpl extends BaseServiceWithKey<ProductDraft, P
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<Product>> createProduct(@Nonnull final ProductDraft productDraft) {
+    public CompletableFuture<Optional<Product>> createProduct(@Nonnull final ProductDraft productDraft) {
         return createResource(productDraft, ProductCreateCommand::of);
     }
 
     @Nonnull
     @Override
-    public CompletionStage<Product> updateProduct(@Nonnull final Product product,
+    public CompletableFuture<Product> updateProduct(@Nonnull final Product product,
                                                   @Nonnull final List<UpdateAction<Product>> updateActions) {
         return updateResource(product, ProductUpdateCommand::of, updateActions);
     }

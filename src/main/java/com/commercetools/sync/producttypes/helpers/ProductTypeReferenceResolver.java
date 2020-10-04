@@ -10,7 +10,7 @@ import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 
 import javax.annotation.Nonnull;
 import java.util.List;
-import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -39,21 +39,21 @@ public final class ProductTypeReferenceResolver
 
     /**
      * Given a {@link ProductTypeDraft} this method attempts to resolve the attribute definition references to return
-     * a {@link CompletionStage} which contains a new instance of the draft with the resolved references.
+     * a {@link CompletableFuture} which contains a new instance of the draft with the resolved references.
      *
      * @param productTypeDraft the productTypeDraft to resolve its references.
-     * @return a {@link CompletionStage} that contains as a result a new productTypeDraft instance with resolved
+     * @return a {@link CompletableFuture} that contains as a result a new productTypeDraft instance with resolved
      *         references or, in case an error occurs during reference resolution,
      *         a {@link ReferenceResolutionException}.
      */
     @Nonnull
-    public CompletionStage<ProductTypeDraft> resolveReferences(@Nonnull final ProductTypeDraft productTypeDraft) {
+    public CompletableFuture<ProductTypeDraft> resolveReferences(@Nonnull final ProductTypeDraft productTypeDraft) {
         return resolveAttributeDefinitionsReferences(ProductTypeDraftBuilder.of(productTypeDraft))
             .thenApply(ProductTypeDraftBuilder::build);
     }
 
     @Nonnull
-    CompletionStage<ProductTypeDraftBuilder> resolveAttributeDefinitionsReferences(
+    CompletableFuture<ProductTypeDraftBuilder> resolveAttributeDefinitionsReferences(
         @Nonnull final ProductTypeDraftBuilder productTypeDraftBuilder) {
 
         final List<AttributeDefinitionDraft> attributeDefinitionDrafts = productTypeDraftBuilder.getAttributes();

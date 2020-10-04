@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.taxcategories.utils.TaxCategorySyncUtils.buildActions;
@@ -62,7 +61,7 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
     }
 
     @Override
-    protected CompletionStage<TaxCategorySyncStatistics> process(@Nonnull final List<TaxCategoryDraft> resourceDrafts) {
+    protected CompletableFuture<TaxCategorySyncStatistics> process(@Nonnull final List<TaxCategoryDraft> resourceDrafts) {
         List<List<TaxCategoryDraft>> batches = batchElements(resourceDrafts, syncOptions.getBatchSize());
         return syncBatches(batches, completedFuture(statistics));
     }
@@ -79,12 +78,12 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
      * </p>
      *
      * @param batch batch of drafts that need to be synced
-     * @return a {@link CompletionStage} containing an instance
+     * @return a {@link CompletableFuture} containing an instance
      *         of {@link TaxCategorySyncStatistics} which contains information about the result of syncing the supplied
      *         batch to the target project.
      */
     @Override
-    protected CompletionStage<TaxCategorySyncStatistics> processBatch(@Nonnull final List<TaxCategoryDraft> batch) {
+    protected CompletableFuture<TaxCategorySyncStatistics> processBatch(@Nonnull final List<TaxCategoryDraft> batch) {
 
         final ImmutablePair<Set<TaxCategoryDraft>, Set<String>> result =
             batchValidator.validateAndCollectReferencedKeys(batch);
@@ -145,10 +144,10 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
      *
      * @param oldTaxCategories old tax categories.
      * @param newTaxCategories drafts that need to be synced.
-     * @return a {@link CompletionStage} which contains an empty result after execution of the update
+     * @return a {@link CompletableFuture} which contains an empty result after execution of the update
      */
     @Nonnull
-    private CompletionStage<Void> syncBatch(
+    private CompletableFuture<Void> syncBatch(
         @Nonnull final Set<TaxCategory> oldTaxCategories,
         @Nonnull final Set<TaxCategoryDraft> newTaxCategories) {
 
@@ -165,7 +164,7 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
                     .map(taxCategory -> buildActionsAndUpdate(oldTaxCategory, newTaxCategory))
                     .orElseGet(() -> applyCallbackAndCreate(newTaxCategory));
             })
-            .map(CompletionStage::toCompletableFuture)
+            .map(CompletableFuture::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
     }
 
@@ -174,10 +173,10 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
      * CTP project to create the corresponding TaxCategory.
      *
      * @param taxCategoryDraft the tax category draft to create the tax category from.
-     * @return a {@link CompletionStage} which contains an empty result after execution of the create.
+     * @return a {@link CompletableFuture} which contains an empty result after execution of the create.
      */
     @Nonnull
-    private CompletionStage<Optional<TaxCategory>> applyCallbackAndCreate(
+    private CompletableFuture<Optional<TaxCategory>> applyCallbackAndCreate(
         @Nonnull final TaxCategoryDraft taxCategoryDraft) {
 
         return syncOptions
@@ -198,7 +197,7 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
 
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
-    private CompletionStage<Optional<TaxCategory>> buildActionsAndUpdate(
+    private CompletableFuture<Optional<TaxCategory>> buildActionsAndUpdate(
         @Nonnull final TaxCategory oldTaxCategory,
         @Nonnull final TaxCategoryDraft newTaxCategory) {
 
@@ -226,10 +225,10 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
      *
      * @param oldTaxCategory existing tax category that could be updated.
      * @param newTaxCategory draft containing data that could differ from data in {@code oldTaxCategory}.
-     * @return a {@link CompletionStage} which contains an empty result after execution of the update.
+     * @return a {@link CompletableFuture} which contains an empty result after execution of the update.
      */
     @Nonnull
-    private CompletionStage<Optional<TaxCategory>> updateTaxCategory(
+    private CompletableFuture<Optional<TaxCategory>> updateTaxCategory(
         @Nonnull final TaxCategory oldTaxCategory,
         @Nonnull final TaxCategoryDraft newTaxCategory,
         @Nonnull final List<UpdateAction<TaxCategory>> updateActions) {
@@ -262,7 +261,7 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
     }
 
     @Nonnull
-    private CompletionStage<Optional<TaxCategory>> fetchAndUpdate(
+    private CompletableFuture<Optional<TaxCategory>> fetchAndUpdate(
         @Nonnull final TaxCategory oldTaxCategory,
         @Nonnull final TaxCategoryDraft newTaxCategory) {
 

@@ -6,7 +6,7 @@ import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.AssetDraftBuilder;
 
 import javax.annotation.Nonnull;
-import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 
 import static java.lang.String.format;
 
@@ -31,14 +31,14 @@ public final class AssetReferenceResolver
 
     @Override
     @Nonnull
-    public CompletionStage<AssetDraft> resolveReferences(@Nonnull final AssetDraft assetDraft) {
+    public CompletableFuture<AssetDraft> resolveReferences(@Nonnull final AssetDraft assetDraft) {
         return resolveCustomTypeReference(AssetDraftBuilder.of(assetDraft))
             .thenApply(AssetDraftBuilder::build);
     }
 
     @Override
     @Nonnull
-    protected CompletionStage<AssetDraftBuilder> resolveCustomTypeReference(
+    protected CompletableFuture<AssetDraftBuilder> resolveCustomTypeReference(
         @Nonnull final AssetDraftBuilder assetDraftBuilder) {
 
         return resolveCustomTypeReference(

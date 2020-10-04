@@ -29,7 +29,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -126,12 +125,12 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * https://sphere.atlassian.net/wiki/spaces/PS/pages/145193124/Category+Parallelisation+Technical+Concept
      *
      * @param categoryDrafts the list of new category drafts to sync to the CTP project.
-     * @return an instance of {@link CompletionStage}&lt;{@link CategorySyncStatistics}&gt; which contains as a result
+     * @return an instance of {@link CompletableFuture}&lt;{@link CategorySyncStatistics}&gt; which contains as a result
      *         an instance of {@link CategorySyncStatistics} representing the {@code statistics} instance attribute of
      *         {@code this} {@link CategorySync}.
      */
     @Override
-    protected CompletionStage<CategorySyncStatistics> process(@Nonnull final List<CategoryDraft> categoryDrafts) {
+    protected CompletableFuture<CategorySyncStatistics> process(@Nonnull final List<CategoryDraft> categoryDrafts) {
         final List<List<CategoryDraft>> batches = batchElements(categoryDrafts, syncOptions.getBatchSize());
         return syncBatches(batches, CompletableFuture.completedFuture(statistics));
     }
@@ -154,12 +153,12 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * https://github.com/commercetools/commercetools-sync-java/wiki/Category-Sync-Underlying-Concept
      *
      * @param categoryDrafts the list of new category drafts to sync to the CTP project.
-     * @return an instance of {@link CompletionStage}&lt;{@link CategorySyncStatistics}&gt; which contains as a result
+     * @return an instance of {@link CompletableFuture}&lt;{@link CategorySyncStatistics}&gt; which contains as a result
      *         an instance of {@link CategorySyncStatistics} representing the {@code statistics} instance attribute of
      *         {@code this} {@link CategorySync}.
      */
     @Override
-    protected CompletionStage<CategorySyncStatistics> processBatch(@Nonnull final List<CategoryDraft> categoryDrafts) {
+    protected CompletableFuture<CategorySyncStatistics> processBatch(@Nonnull final List<CategoryDraft> categoryDrafts) {
         final int numberOfNewDraftsToProcess = getNumberOfDraftsToProcess(categoryDrafts);
         referencesResolvedDrafts = new HashSet<>();
         existingCategoryDrafts = new HashSet<>();
@@ -204,7 +203,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
             });
     }
 
-    private CompletionStage<Void> fetchAndUpdate(@Nonnull final Map<String, String> keyToIdCache) {
+    private CompletableFuture<Void> fetchAndUpdate(@Nonnull final Map<String, String> keyToIdCache) {
         return categoryService
             .fetchMatchingCategoriesByKeys(categoryKeysToFetch)
             .handle(ImmutablePair::new)
@@ -224,7 +223,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     }
 
     @Nonnull
-    private CompletionStage<Void> processFetchedCategoriesAndUpdate(@Nonnull final Map<String, String> keyToIdCache,
+    private CompletableFuture<Void> processFetchedCategoriesAndUpdate(@Nonnull final Map<String, String> keyToIdCache,
                                                                     @Nonnull final Set<Category> fetchedCategories) {
 
         processFetchedCategories(fetchedCategories, referencesResolvedDrafts, keyToIdCache);
@@ -309,21 +308,21 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     }
 
     @Nonnull
-    private CompletionStage<Void> createAndUpdate(@Nonnull final Map<String, String> keyToIdCache) {
+    private CompletableFuture<Void> createAndUpdate(@Nonnull final Map<String, String> keyToIdCache) {
         return createCategories(newCategoryDrafts)
             .thenAccept(this::processCreatedCategories)
             .thenCompose(ignoredResult -> fetchAndUpdate(keyToIdCache));
     }
 
     @Nonnull
-    private CompletionStage<Set<Category>> createCategories(@Nonnull final Set<CategoryDraft> categoryDrafts) {
+    private CompletableFuture<Set<Category>> createCategories(@Nonnull final Set<CategoryDraft> categoryDrafts) {
         return mapValuesToFutureOfCompletedValues(categoryDrafts, this::applyCallbackAndCreate)
             .thenApply(results -> results.filter(Optional::isPresent).map(Optional::get))
             .thenApply(createdCategories -> createdCategories.collect(Collectors.toSet()));
     }
 
     @Nonnull
-    private CompletionStage<Optional<Category>> applyCallbackAndCreate(@Nonnull final CategoryDraft categoryDraft) {
+    private CompletableFuture<Optional<Category>> applyCallbackAndCreate(@Nonnull final CategoryDraft categoryDraft) {
         return syncOptions
             .applyBeforeCreateCallback(categoryDraft)
             .map(categoryService::createCategory)
@@ -521,7 +520,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         matchingCategories.entrySet().stream()
                           .filter(entry -> requiresChangeParentUpdateAction(entry.getValue(), entry.getKey()))
                           .map(entry -> buildUpdateActionsAndUpdate(entry.getValue(), entry.getKey()))
-                          .map(CompletionStage::toCompletableFuture)
+                          .map(CompletableFuture::toCompletableFuture)
                           .forEach(CompletableFuture::join);
     }
 
@@ -547,14 +546,14 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      *
      * @param matchingCategories a {@link Map} of categoryDrafts to Categories that require syncing.
      */
-    private CompletionStage<Void> updateCategoriesInParallel(
+    private CompletableFuture<Void> updateCategoriesInParallel(
         @Nonnull final Map<CategoryDraft, Category> matchingCategories) {
 
         final List<CompletableFuture<Void>> futures =
             matchingCategories.entrySet().stream()
                               .filter(entry -> !requiresChangeParentUpdateAction(entry.getValue(), entry.getKey()))
                               .map(entry -> buildUpdateActionsAndUpdate(entry.getValue(), entry.getKey()))
-                              .map(CompletionStage::toCompletableFuture)
+                              .map(CompletableFuture::toCompletableFuture)
                               .collect(Collectors.toList());
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
     }
@@ -573,7 +572,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @return a future which contains an empty result after execution of the update.
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
-    private CompletionStage<Void> buildUpdateActionsAndUpdate(@Nonnull final Category oldCategory,
+    private CompletableFuture<Void> buildUpdateActionsAndUpdate(@Nonnull final Category oldCategory,
                                                               @Nonnull final CategoryDraft newCategory) {
 
         final List<UpdateAction<Category>> updateActions = buildActions(oldCategory, newCategory, syncOptions);
@@ -604,7 +603,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @param updateActions the list of update actions to update the category with.
      * @return a future which contains an empty result after execution of the update.
      */
-    private CompletionStage<Void> updateCategory(@Nonnull final Category oldCategory,
+    private CompletableFuture<Void> updateCategory(@Nonnull final Category oldCategory,
                                                  @Nonnull final CategoryDraft newCategory,
                                                  @Nonnull final List<UpdateAction<Category>> updateActions) {
         final String categoryKey = oldCategory.getKey();
@@ -636,7 +635,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                               });
     }
 
-    private CompletionStage<Void> refetchAndUpdate(@Nonnull final Category oldCategory,
+    private CompletableFuture<Void> refetchAndUpdate(@Nonnull final Category oldCategory,
                                                    @Nonnull final CategoryDraft newCategory) {
 
         final String key = oldCategory.getKey();

@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * Implementation of TypeService interface.
@@ -33,7 +33,7 @@ public final class TypeServiceImpl extends BaseServiceWithKey<TypeDraft, Type, B
 
     @Nonnull
     @Override
-    public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> typeKeys) {
+    public CompletableFuture<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> typeKeys) {
 
         return cacheKeysToIds(
             typeKeys, keysNotCached -> TypeQueryBuilder
@@ -44,7 +44,7 @@ public final class TypeServiceImpl extends BaseServiceWithKey<TypeDraft, Type, B
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<String>> fetchCachedTypeId(@Nonnull final String key) {
+    public CompletableFuture<Optional<String>> fetchCachedTypeId(@Nonnull final String key) {
 
         return fetchCachedResourceId(
             key,
@@ -55,7 +55,7 @@ public final class TypeServiceImpl extends BaseServiceWithKey<TypeDraft, Type, B
 
     @Nonnull
     @Override
-    public CompletionStage<Set<Type>> fetchMatchingTypesByKeys(@Nonnull final Set<String> keys) {
+    public CompletableFuture<Set<Type>> fetchMatchingTypesByKeys(@Nonnull final Set<String> keys) {
 
         return fetchMatchingResources(keys,
             () -> TypeQueryBuilder
@@ -66,7 +66,7 @@ public final class TypeServiceImpl extends BaseServiceWithKey<TypeDraft, Type, B
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<Type>> fetchType(@Nullable final String key) {
+    public CompletableFuture<Optional<Type>> fetchType(@Nullable final String key) {
 
         return fetchResource(key,
             () -> TypeQueryBuilder.of().plusPredicates(queryModel -> queryModel.key().is(key)).build());
@@ -74,13 +74,13 @@ public final class TypeServiceImpl extends BaseServiceWithKey<TypeDraft, Type, B
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<Type>> createType(@Nonnull final TypeDraft typeDraft) {
+    public CompletableFuture<Optional<Type>> createType(@Nonnull final TypeDraft typeDraft) {
         return createResource(typeDraft, TypeCreateCommand::of);
     }
 
     @Nonnull
     @Override
-    public CompletionStage<Type> updateType(
+    public CompletableFuture<Type> updateType(
         @Nonnull final Type type,
         @Nonnull final List<UpdateAction<Type>> updateActions) {
         return updateResource(type, TypeUpdateCommand::of, updateActions);

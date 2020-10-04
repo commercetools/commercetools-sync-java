@@ -18,7 +18,6 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -48,7 +47,7 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
 
     @Nonnull
     @Override
-    public CompletionStage<Set<WaitingToBeResolved>> fetch(@Nonnull final Set<String> keys) {
+    public CompletableFuture<Set<WaitingToBeResolved>> fetch(@Nonnull final Set<String> keys) {
 
         if (keys.isEmpty()) {
             return CompletableFuture.completedFuture(Collections.emptySet());
@@ -65,6 +64,7 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
 
         return QueryExecutionUtils
             .queryAll(syncOptions.getCtpClient(), customObjectQuery)
+                .toCompletableFuture()
             .thenApply(customObjects -> customObjects
                 .stream()
                 .map(CustomObject::getValue)
@@ -74,7 +74,7 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<WaitingToBeResolved>> save(@Nonnull final WaitingToBeResolved draft) {
+    public CompletableFuture<Optional<WaitingToBeResolved>> save(@Nonnull final WaitingToBeResolved draft) {
 
         final CustomObjectDraft<WaitingToBeResolved> customObjectDraft = CustomObjectDraft
             .ofUnversionedUpsert(
@@ -86,6 +86,7 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
         return syncOptions
             .getCtpClient()
             .execute(CustomObjectUpsertCommand.of(customObjectDraft))
+                .toCompletableFuture()
             .handle((resource, exception) -> {
                 if (exception == null) {
                     return Optional.of(resource.getValue());
@@ -100,12 +101,13 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<WaitingToBeResolved>> delete(@Nonnull final String key) {
+    public CompletableFuture<Optional<WaitingToBeResolved>> delete(@Nonnull final String key) {
 
         return syncOptions
             .getCtpClient()
             .execute(CustomObjectDeleteCommand
                 .of(CUSTOM_OBJECT_CONTAINER_KEY, hash(key), WaitingToBeResolved.class))
+                .toCompletableFuture()
             .handle((resource, exception) -> {
                 if (exception == null) {
                     return Optional.of(resource.getValue());

@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 
 import static java.util.Collections.singleton;
 
@@ -35,7 +35,7 @@ public final class StateServiceImpl
 
     @Nonnull
     @Override
-    public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> keys) {
+    public CompletableFuture<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> keys) {
 
         return cacheKeysToIds(
             keys,
@@ -47,7 +47,7 @@ public final class StateServiceImpl
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<String>> fetchCachedStateId(@Nullable final String key) {
+    public CompletableFuture<Optional<String>> fetchCachedStateId(@Nullable final String key) {
         return fetchCachedResourceId(key,
             () -> StateQueryBuilder
                 .of()
@@ -57,17 +57,17 @@ public final class StateServiceImpl
 
     @Nonnull
     @Override
-    public CompletionStage<Set<State>> fetchMatchingStatesByKeys(@Nonnull final Set<String> stateKeys) {
+    public CompletableFuture<Set<State>> fetchMatchingStatesByKeys(@Nonnull final Set<String> stateKeys) {
         return fetchMatchingStates(stateKeys, false);
     }
 
     @Nonnull
     @Override
-    public CompletionStage<Set<State>> fetchMatchingStatesByKeysWithTransitions(@Nonnull final Set<String> stateKeys) {
+    public CompletableFuture<Set<State>> fetchMatchingStatesByKeysWithTransitions(@Nonnull final Set<String> stateKeys) {
         return fetchMatchingStates(stateKeys, true);
     }
 
-    private CompletionStage<Set<State>> fetchMatchingStates(@Nonnull final Set<String> stateKeys,
+    private CompletableFuture<Set<State>> fetchMatchingStates(@Nonnull final Set<String> stateKeys,
                                                             final boolean withTransitions) {
         return fetchMatchingResources(stateKeys,
             () -> {
@@ -82,20 +82,20 @@ public final class StateServiceImpl
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<State>> fetchState(@Nullable final String key) {
+    public CompletableFuture<Optional<State>> fetchState(@Nullable final String key) {
         return fetchResource(key,
             () -> StateQuery.of().plusPredicates(stateQueryModel -> stateQueryModel.key().is(key)));
     }
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<State>> createState(@Nonnull final StateDraft stateDraft) {
+    public CompletableFuture<Optional<State>> createState(@Nonnull final StateDraft stateDraft) {
         return createResource(stateDraft, StateCreateCommand::of);
     }
 
     @Nonnull
     @Override
-    public CompletionStage<State> updateState(
+    public CompletableFuture<State> updateState(
         @Nonnull final State state,
         @Nonnull final List<UpdateAction<State>> updateActions) {
         return updateResource(state, StateUpdateCommand::of, updateActions);

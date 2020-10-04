@@ -16,7 +16,7 @@ import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 
 
 public final class ChannelServiceImpl extends BaseServiceWithKey<ChannelDraft, Channel, BaseSyncOptions, ChannelQuery,
@@ -34,7 +34,7 @@ public final class ChannelServiceImpl extends BaseServiceWithKey<ChannelDraft, C
 
     @Nonnull
     @Override
-    public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> channelKeys) {
+    public CompletableFuture<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> channelKeys) {
 
         return cacheKeysToIds(
             channelKeys, keysNotCached -> ChannelQueryBuilder
@@ -45,7 +45,7 @@ public final class ChannelServiceImpl extends BaseServiceWithKey<ChannelDraft, C
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<String>> fetchCachedChannelId(@Nonnull final String key) {
+    public CompletableFuture<Optional<String>> fetchCachedChannelId(@Nonnull final String key) {
 
         return fetchCachedResourceId(
             key,
@@ -58,7 +58,7 @@ public final class ChannelServiceImpl extends BaseServiceWithKey<ChannelDraft, C
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<Channel>> createChannel(@Nonnull final String key) {
+    public CompletableFuture<Optional<Channel>> createChannel(@Nonnull final String key) {
 
         final ChannelDraft draft = ChannelDraftBuilder
             .of(key)
@@ -70,7 +70,7 @@ public final class ChannelServiceImpl extends BaseServiceWithKey<ChannelDraft, C
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<Channel>> createAndCacheChannel(@Nonnull final String key) {
+    public CompletableFuture<Optional<Channel>> createAndCacheChannel(@Nonnull final String key) {
 
         return createChannel(key)
             .thenApply(channelOptional -> {

@@ -14,7 +14,7 @@ import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 
 public final class CustomerGroupServiceImpl
     extends BaseServiceWithKey<CustomerGroupDraft, CustomerGroup, BaseSyncOptions, CustomerGroupQuery,
@@ -26,7 +26,7 @@ public final class CustomerGroupServiceImpl
 
     @Nonnull
     @Override
-    public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> customerGroupKeys) {
+    public CompletableFuture<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> customerGroupKeys) {
 
         return cacheKeysToIds(
             customerGroupKeys, keysNotCached -> CustomerGroupQueryBuilder
@@ -38,7 +38,7 @@ public final class CustomerGroupServiceImpl
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<String>> fetchCachedCustomerGroupId(@Nullable final String key) {
+    public CompletableFuture<Optional<String>> fetchCachedCustomerGroupId(@Nullable final String key) {
 
         return fetchCachedResourceId(key,
             () -> CustomerGroupQueryBuilder

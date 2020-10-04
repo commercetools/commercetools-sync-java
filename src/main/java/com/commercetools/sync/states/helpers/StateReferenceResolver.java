@@ -14,7 +14,7 @@ import javax.annotation.Nonnull;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
@@ -42,32 +42,32 @@ public final class StateReferenceResolver extends BaseReferenceResolver<StateDra
 
     /**
      * Given a {@link StateDraft} this method attempts to resolve the transition state references to
-     * return a {@link CompletionStage} which contains a new instance of the draft with the resolved
+     * return a {@link CompletableFuture} which contains a new instance of the draft with the resolved
      * references. The keys of the references are taken from the id field of the references.
      *
      * @param stateDraft the stateDraft to resolve its references.
-     * @return a {@link CompletionStage} that contains as a result a new Statedraft instance with resolved
+     * @return a {@link CompletableFuture} that contains as a result a new Statedraft instance with resolved
      *          category references or, in case an error occurs during reference resolution,
      *          a {@link ReferenceResolutionException}.
      */
     @Override
     @Nonnull
-    public CompletionStage<StateDraft> resolveReferences(@Nonnull final StateDraft stateDraft) {
+    public CompletableFuture<StateDraft> resolveReferences(@Nonnull final StateDraft stateDraft) {
         return resolveTransitionReferences(StateDraftBuilder.of(stateDraft))
             .thenApply(StateDraftBuilder::build);
     }
 
     /**
      * Given a {@link StateDraftBuilder} this method attempts to resolve the transitions to
-     * return a {@link CompletionStage} which contains a new instance of the builder with the resolved references.
+     * return a {@link CompletableFuture} which contains a new instance of the builder with the resolved references.
      * The key of the state references is taken from the value of the id fields.
      *
      * @param draftBuilder the state to resolve its transition references.
-     * @return a {@link CompletionStage} that contains as a result a new builder instance with resolved references or,
+     * @return a {@link CompletableFuture} that contains as a result a new builder instance with resolved references or,
      *         in case an error occurs during reference resolution, a {@link ReferenceResolutionException}.
      */
     @Nonnull
-    private CompletionStage<StateDraftBuilder> resolveTransitionReferences(
+    private CompletableFuture<StateDraftBuilder> resolveTransitionReferences(
         @Nonnull final StateDraftBuilder draftBuilder) {
 
         final Set<Reference<State>> stateReferences = draftBuilder.getTransitions();
@@ -96,11 +96,11 @@ public final class StateReferenceResolver extends BaseReferenceResolver<StateDra
      *
      * @param draftBuilder the state draft builder to resolve it's state references.
      * @param stateKeys the state keys of to resolve their actual id on the draft.
-     * @return a {@link CompletionStage} that contains as a result a new stateDraft instance with resolved state
+     * @return a {@link CompletableFuture} that contains as a result a new stateDraft instance with resolved state
      *         references or an exception.
      */
     @Nonnull
-    private CompletionStage<StateDraftBuilder> fetchAndResolveStateTransitions(
+    private CompletableFuture<StateDraftBuilder> fetchAndResolveStateTransitions(
         @Nonnull final StateDraftBuilder draftBuilder,
         @Nonnull final Set<String> stateKeys) {
 

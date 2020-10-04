@@ -26,12 +26,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndExecute;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
+import static com.commercetools.tests.utils.CompletableFutureUtil.executeBlocking;
 import static io.sphere.sdk.states.commands.updateactions.SetTransitions.of;
 import static io.sphere.sdk.utils.CompletableFutureUtils.listOfFuturesToFutureOfList;
 import static java.lang.String.format;
@@ -66,11 +65,11 @@ public final class StateITUtils {
             .of()
             .plusPredicates(QueryPredicate.of("builtIn = false")).build())
             .thenCompose(result -> {
-                final List<CompletionStage<State>> clearStates = new ArrayList<>();
+                final List<CompletableFuture<State>> clearStates = new ArrayList<>();
                 result.stream().forEach(state -> {
                     if (state.getTransitions() != null && !state.getTransitions().isEmpty()) {
                         List<? extends UpdateAction<State>> emptyUpdateActions = Collections.emptyList();
-                        clearStates.add(ctpClient.execute(StateUpdateCommand.of(state, emptyUpdateActions)));
+                        clearStates.add(ctpClient.execute(StateUpdateCommand.of(state, emptyUpdateActions)).toCompletableFuture());
                     } else {
                         clearStates.add(CompletableFuture.completedFuture(state));
                     }

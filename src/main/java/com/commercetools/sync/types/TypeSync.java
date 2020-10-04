@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.types.utils.TypeSyncUtils.buildActions;
@@ -70,11 +69,11 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      * {@inheritDoc}
      *
      * @param typeDrafts {@link List} of {@link TypeDraft}'s that would be synced into CTP project.
-     * @return {@link CompletionStage} with {@link TypeSyncStatistics} holding statistics of all sync
+     * @return {@link CompletableFuture} with {@link TypeSyncStatistics} holding statistics of all sync
      *         processes performed by this sync instance.
      */
     @Override
-    protected CompletionStage<TypeSyncStatistics> process(@Nonnull final List<TypeDraft> typeDrafts) {
+    protected CompletableFuture<TypeSyncStatistics> process(@Nonnull final List<TypeDraft> typeDrafts) {
         final List<List<TypeDraft>> batches = batchElements(typeDrafts, syncOptions.getBatchSize());
         return syncBatches(batches, CompletableFuture.completedFuture(statistics));
     }
@@ -91,12 +90,12 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      * </p>
      *
      * @param batch batch of drafts that need to be synced
-     * @return a {@link CompletionStage} containing an instance
+     * @return a {@link CompletableFuture} containing an instance
      *         of {@link TypeSyncStatistics} which contains information about the result of syncing the supplied
      *         batch to the target project.
      */
     @Override
-    protected CompletionStage<TypeSyncStatistics> processBatch(@Nonnull final List<TypeDraft> batch) {
+    protected CompletableFuture<TypeSyncStatistics> processBatch(@Nonnull final List<TypeDraft> batch) {
 
         final ImmutablePair<Set<TypeDraft>, Set<String>> result =
             batchValidator.validateAndCollectReferencedKeys(batch);
@@ -172,10 +171,10 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      *
      * @param oldTypes old types.
      * @param newTypes drafts that need to be synced.
-     * @return a {@link CompletionStage} which contains an empty result after execution of the update
+     * @return a {@link CompletableFuture} which contains an empty result after execution of the update
      */
     @Nonnull
-    private CompletionStage<Void> syncBatch(
+    private CompletableFuture<Void> syncBatch(
             @Nonnull final Set<Type> oldTypes,
             @Nonnull final Set<TypeDraft> newTypes) {
 
@@ -190,7 +189,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
                         .map(type -> buildActionsAndUpdate(oldType, newType))
                         .orElseGet(() -> applyCallbackAndCreate(newType));
                 })
-                .map(CompletionStage::toCompletableFuture)
+                .map(CompletableFuture::toCompletableFuture)
                 .toArray(CompletableFuture[]::new));
     }
 
@@ -199,10 +198,10 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      * CTP project to create the corresponding Type.
      *
      * @param typeDraft the type draft to create the type from.
-     * @return a {@link CompletionStage} which contains an empty result after execution of the create.
+     * @return a {@link CompletableFuture} which contains an empty result after execution of the create.
      */
     @Nonnull
-    private CompletionStage<Optional<Type>> applyCallbackAndCreate(
+    private CompletableFuture<Optional<Type>> applyCallbackAndCreate(
         @Nonnull final TypeDraft typeDraft) {
 
         return syncOptions
@@ -223,7 +222,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
 
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
-    private CompletionStage<Optional<Type>> buildActionsAndUpdate(
+    private CompletableFuture<Optional<Type>> buildActionsAndUpdate(
         @Nonnull final Type oldType,
         @Nonnull final TypeDraft newType) {
 
@@ -252,10 +251,10 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
      * @param oldType       existing type that could be updated.
      * @param newType       draft containing data that could differ from data in {@code oldType}.
      * @param updateActions the update actions to update the {@link Type} with.
-     * @return a {@link CompletionStage} which contains an empty result after execution of the update.
+     * @return a {@link CompletableFuture} which contains an empty result after execution of the update.
      */
     @Nonnull
-    private CompletionStage<Optional<Type>> updateType(
+    private CompletableFuture<Optional<Type>> updateType(
         @Nonnull final Type oldType,
         @Nonnull final TypeDraft newType,
         @Nonnull final List<UpdateAction<Type>> updateActions) {
@@ -285,7 +284,7 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
     }
 
     @Nonnull
-    private CompletionStage<Optional<Type>> fetchAndUpdate(
+    private CompletableFuture<Optional<Type>> fetchAndUpdate(
         @Nonnull final Type oldType,
         @Nonnull final TypeDraft newType) {
 

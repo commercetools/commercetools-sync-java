@@ -17,7 +17,7 @@ import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 
 public final class InventoryServiceImpl extends BaseService<InventoryEntryDraft, InventoryEntry, InventorySyncOptions,
     InventoryEntryQuery, InventoryEntryQueryModel, InventoryEntryExpansionModel<InventoryEntry>>
@@ -30,7 +30,7 @@ public final class InventoryServiceImpl extends BaseService<InventoryEntryDraft,
 
     @Nonnull
     @Override
-    public CompletionStage<Set<InventoryEntry>> fetchInventoryEntriesBySkus(@Nonnull final Set<String> skus) {
+    public CompletableFuture<Set<InventoryEntry>> fetchInventoryEntriesBySkus(@Nonnull final Set<String> skus) {
 
         return fetchMatchingResources(skus,
             draft -> String.valueOf(InventoryEntryIdentifier.of(draft)),
@@ -42,7 +42,7 @@ public final class InventoryServiceImpl extends BaseService<InventoryEntryDraft,
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<InventoryEntry>> createInventoryEntry(
+    public CompletableFuture<Optional<InventoryEntry>> createInventoryEntry(
         @Nonnull final InventoryEntryDraft inventoryEntryDraft) {
 
         return createResource(
@@ -53,7 +53,7 @@ public final class InventoryServiceImpl extends BaseService<InventoryEntryDraft,
 
     @Nonnull
     @Override
-    public CompletionStage<InventoryEntry> updateInventoryEntry(
+    public CompletableFuture<InventoryEntry> updateInventoryEntry(
         @Nonnull final InventoryEntry inventoryEntry,
         @Nonnull final List<UpdateAction<InventoryEntry>> updateActions) {
 

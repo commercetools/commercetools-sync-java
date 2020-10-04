@@ -93,7 +93,7 @@ import static com.commercetools.sync.products.utils.productvariantupdateactionut
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.createCustomFieldsJsonMap;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.getPriceDraft;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.getPriceDraftWithChannelKey;
-import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
+import static com.commercetools.tests.utils.CompletableFutureUtil.executeBlocking;
 import static com.neovisionaries.i18n.CountryCode.DE;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.USD;

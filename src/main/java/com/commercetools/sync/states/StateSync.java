@@ -27,7 +27,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -82,13 +81,13 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
     }
 
     @Override
-    protected CompletionStage<StateSyncStatistics> process(@Nonnull final List<StateDraft> resourceDrafts) {
+    protected CompletableFuture<StateSyncStatistics> process(@Nonnull final List<StateDraft> resourceDrafts) {
         List<List<StateDraft>> batches = batchElements(resourceDrafts, syncOptions.getBatchSize());
         return syncBatches(batches, completedFuture(statistics));
     }
 
     @Override
-    protected CompletionStage<StateSyncStatistics> processBatch(@Nonnull final List<StateDraft> batch) {
+    protected CompletableFuture<StateSyncStatistics> processBatch(@Nonnull final List<StateDraft> batch) {
         readyToResolve = ConcurrentHashMap.newKeySet();
 
         final ImmutablePair<Set<StateDraft>, Set<String>> result =
@@ -139,7 +138,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
 
     @Nonnull
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION")
-    private CompletionStage<Void> syncBatch(@Nonnull final Set<StateDraft> stateDrafts,
+    private CompletableFuture<Void> syncBatch(@Nonnull final Set<StateDraft> stateDrafts,
                                             @Nonnull final Map<String, String> keyToIdCache) {
 
         if (stateDrafts.isEmpty()) {
@@ -176,10 +175,10 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
      * @param newStates      drafts that need to be synced.
      * @param oldStates      old states.
      * @param keyToIdCache   the cache containing the mapping of all existing state keys to ids.
-     * @return a {@link CompletionStage} which contains an empty result after execution of the update
+     * @return a {@link CompletableFuture} which contains an empty result after execution of the update
      */
     @Nonnull
-    private CompletionStage<Void> syncOrKeepTrack(
+    private CompletableFuture<Void> syncOrKeepTrack(
         @Nonnull final Set<StateDraft> newStates,
         @Nonnull final Set<State> oldStates,
         @Nonnull final Map<String, String> keyToIdCache) {
@@ -196,7 +195,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
                     return syncDraft(oldStates, newDraft);
                 }
             })
-            .map(CompletionStage::toCompletableFuture)
+            .map(CompletableFuture::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
     }
 
@@ -215,7 +214,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
                        .collect(Collectors.toSet());
     }
 
-    private CompletionStage<Optional<WaitingToBeResolvedTransitions>> keepTrackOfMissingTransitionStates(
+    private CompletableFuture<Optional<WaitingToBeResolvedTransitions>> keepTrackOfMissingTransitionStates(
         @Nonnull final StateDraft newState,
         @Nonnull final Set<String> missingTransitionParentStateKeys) {
 
@@ -227,7 +226,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
     }
 
     @Nonnull
-    private CompletionStage<Void> syncDraft(
+    private CompletableFuture<Void> syncDraft(
         @Nonnull final Set<State> oldStates,
         @Nonnull final StateDraft newStateDraft) {
 
@@ -259,11 +258,11 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
      * CTP project to create the corresponding State.
      *
      * @param stateDraft the state draft to create the state from.
-     * @return a {@link CompletionStage} which contains an empty result after execution of the create.
+     * @return a {@link CompletableFuture} which contains an empty result after execution of the create.
      */
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
-    private CompletionStage<Void> applyCallbackAndCreate(@Nonnull final StateDraft stateDraft) {
+    private CompletableFuture<Void> applyCallbackAndCreate(@Nonnull final StateDraft stateDraft) {
         return syncOptions
             .applyBeforeCreateCallback(stateDraft)
             .map(draft -> stateService
@@ -282,7 +281,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
 
     @Nonnull
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION")
-    private CompletionStage<Void> buildActionsAndUpdate(
+    private CompletableFuture<Void> buildActionsAndUpdate(
         @Nonnull final State oldState,
         @Nonnull final StateDraft newState) {
 
@@ -310,10 +309,10 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
      *
      * @param oldState existing state that could be updated.
      * @param newState draft containing data that could differ from data in {@code oldState}.
-     * @return a {@link CompletionStage} which contains an empty result after execution of the update.
+     * @return a {@link CompletableFuture} which contains an empty result after execution of the update.
      */
     @Nonnull
-    private CompletionStage<Void> updateState(
+    private CompletableFuture<Void> updateState(
         @Nonnull final State oldState,
         @Nonnull final StateDraft newState,
         @Nonnull final List<UpdateAction<State>> updateActions) {
@@ -344,7 +343,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
     }
 
     @Nonnull
-    private CompletionStage<Void> fetchAndUpdate(
+    private CompletableFuture<Void> fetchAndUpdate(
         @Nonnull final State oldState,
         @Nonnull final StateDraft newState) {
         String key = oldState.getKey();
@@ -378,7 +377,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
 
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
-    private CompletionStage<Void> resolveNowReadyReferences(@Nonnull final Map<String, String> keyToIdCache) {
+    private CompletableFuture<Void> resolveNowReadyReferences(@Nonnull final Map<String, String> keyToIdCache) {
 
         // We delete anyways the keys from the statistics before we attempt resolution, because even if resolution fails
         // the states that failed to be synced would be counted as failed.
@@ -438,7 +437,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
         return allOf(waitingDraftsToBeUpdated
             .stream()
             .map(unresolvedTransitionsService::save)
-            .map(CompletionStage::toCompletableFuture)
+            .map(CompletableFuture::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
     }
 
@@ -449,7 +448,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
             .stream()
             .map(StateDraft::getKey)
             .map(unresolvedTransitionsService::delete)
-            .map(CompletionStage::toCompletableFuture)
+            .map(CompletableFuture::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
     }
 }

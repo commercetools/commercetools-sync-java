@@ -54,7 +54,7 @@ import static com.commercetools.sync.products.ProductSyncMockUtils.createProduct
 import static com.commercetools.sync.products.ProductSyncMockUtils.createRandomCategoryOrderHints;
 import static com.commercetools.sync.products.SyncFilter.ofBlackList;
 import static com.commercetools.sync.products.SyncFilter.ofWhiteList;
-import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
+import static com.commercetools.tests.utils.CompletableFutureUtil.executeBlocking;
 import static io.sphere.sdk.producttypes.ProductType.referenceOfId;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;

@@ -37,7 +37,7 @@ import static com.commercetools.sync.integration.commons.utils.StateITUtils.STAT
 import static com.commercetools.sync.integration.commons.utils.StateITUtils.clearTransitions;
 import static com.commercetools.sync.integration.commons.utils.StateITUtils.createState;
 import static com.commercetools.sync.integration.commons.utils.StateITUtils.deleteStates;
-import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
+import static com.commercetools.tests.utils.CompletableFutureUtil.executeBlocking;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;

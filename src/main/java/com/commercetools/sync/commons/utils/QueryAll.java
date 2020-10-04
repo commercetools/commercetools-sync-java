@@ -11,7 +11,7 @@ import io.sphere.sdk.queries.QuerySort;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -64,9 +64,9 @@ final class QueryAll<T extends ResourceView, C extends QueryDsl<T, C>, S> {
      * @return a future containing a list of mapped results of type {@code S}, after the function applied all the pages.
      */
     @Nonnull
-    CompletionStage<List<S>> run(@Nonnull final Function<List<T>, S> pageMapper) {
+    CompletableFuture<List<S>> run(@Nonnull final Function<List<T>, S> pageMapper) {
         this.pageMapper = pageMapper;
-        final CompletionStage<PagedQueryResult<T>> firstPage = client.execute(baseQuery);
+        final CompletableFuture<PagedQueryResult<T>> firstPage = client.execute(baseQuery).toCompletableFuture();
         return queryNextPages(firstPage)
             .thenApply(voidResult -> this.mappedResultsTillNow);
     }
@@ -80,9 +80,9 @@ final class QueryAll<T extends ResourceView, C extends QueryDsl<T, C>, S> {
      * @return a future containing void after the consumer accepted all the pages.
      */
     @Nonnull
-    CompletionStage<Void> run(@Nonnull final Consumer<List<T>> pageConsumer) {
+    CompletableFuture<Void> run(@Nonnull final Consumer<List<T>> pageConsumer) {
         this.pageConsumer = pageConsumer;
-        final CompletionStage<PagedQueryResult<T>> firstPage = client.execute(baseQuery);
+        final CompletableFuture<PagedQueryResult<T>> firstPage = client.execute(baseQuery).toCompletableFuture();
         return queryNextPages(firstPage).thenAccept(voidResult -> { });
     }
 
@@ -97,7 +97,7 @@ final class QueryAll<T extends ResourceView, C extends QueryDsl<T, C>, S> {
      * @param currentPageStage a future containing a result {@link PagedQueryResult}.
      */
     @Nonnull
-    private CompletionStage<Void> queryNextPages(@Nonnull final CompletionStage<PagedQueryResult<T>> currentPageStage) {
+    private CompletableFuture<Void> queryNextPages(@Nonnull final CompletableFuture<PagedQueryResult<T>> currentPageStage) {
         return currentPageStage.thenCompose(currentPage ->
             currentPage != null ? queryNextPages(processPageAndGetNext(currentPage)) : completedFuture(null));
     }
@@ -115,7 +115,7 @@ final class QueryAll<T extends ResourceView, C extends QueryDsl<T, C>, S> {
      */
     @Nonnull
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // `https://github.com/findbugsproject/findbugs/issues/79
-    private CompletionStage<PagedQueryResult<T>> processPageAndGetNext(@Nonnull final PagedQueryResult<T> page) {
+    private CompletableFuture<PagedQueryResult<T>> processPageAndGetNext(@Nonnull final PagedQueryResult<T> page) {
         final List<T> currentPageElements = page.getResults();
         if (!currentPageElements.isEmpty()) {
             mapOrConsume(currentPageElements);
@@ -153,11 +153,11 @@ final class QueryAll<T extends ResourceView, C extends QueryDsl<T, C>, S> {
      */
     @Nonnull
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // `https://github.com/findbugsproject/findbugs/issues/79
-    private CompletionStage<PagedQueryResult<T>> getNextPageStage(@Nonnull final List<T> pageElements) {
+    private CompletableFuture<PagedQueryResult<T>> getNextPageStage(@Nonnull final List<T> pageElements) {
         if (pageElements.size() == pageSize) {
             final String lastElementId = pageElements.get(pageElements.size() - 1).getId();
             final QueryPredicate<T> queryPredicate = QueryPredicate.of(format("id > \"%s\"", lastElementId));
-            return client.execute(baseQuery.plusPredicates(queryPredicate));
+            return client.execute(baseQuery.plusPredicates(queryPredicate)).toCompletableFuture();
         }
         return completedFuture(null);
     }

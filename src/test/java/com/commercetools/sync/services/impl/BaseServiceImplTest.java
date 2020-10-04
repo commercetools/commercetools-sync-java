@@ -26,7 +26,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
@@ -195,7 +195,7 @@ class BaseServiceImplTest {
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
 
         //test
-        final CompletionStage<Set<Product>> result = service.fetchMatchingProductsByKeys(resourceKeys);
+        final CompletableFuture<Set<Product>> result = service.fetchMatchingProductsByKeys(resourceKeys);
 
         //assertions
         assertThat(result).hasFailedWithThrowableThat().isExactlyInstanceOf(BadGatewayException.class);
@@ -245,7 +245,7 @@ class BaseServiceImplTest {
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
 
         //test
-        final CompletionStage<Optional<Product>> result = service.fetchProduct("foo");
+        final CompletableFuture<Optional<Product>> result = service.fetchProduct("foo");
 
         //assertions
         assertThat(result).hasFailedWithThrowableThat().isExactlyInstanceOf(BadGatewayException.class);
@@ -317,7 +317,7 @@ class BaseServiceImplTest {
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
 
         //test
-        final CompletionStage<Map<String, String>> result = service.cacheKeysToIds(singleton("testKey"));
+        final CompletableFuture<Map<String, String>> result = service.cacheKeysToIds(singleton("testKey"));
 
         //assertions
         assertThat(result).hasFailedWithThrowableThat().isExactlyInstanceOf(BadGatewayException.class);

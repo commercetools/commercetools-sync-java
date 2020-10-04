@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test;
 import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.deleteCustomObject;
 import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.createCustomObject;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
+import static com.commercetools.tests.utils.CompletableFutureUtil.executeBlocking;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;

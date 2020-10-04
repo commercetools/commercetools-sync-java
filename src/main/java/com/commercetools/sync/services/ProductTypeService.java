@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 
 public interface ProductTypeService {
 
@@ -26,28 +26,28 @@ public interface ProductTypeService {
      *
      * @param keys the productType keys to fetch and cache the ids for.
      *
-     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a map of all
+     * @return {@link CompletableFuture}&lt;{@link Map}&gt; in which the result of it's completion contains a map of all
      *          productType keys -&gt; ids
      */
     @Nonnull
-    CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull Set<String> keys);
+    CompletableFuture<Map<String, String>> cacheKeysToIds(@Nonnull Set<String> keys);
 
     /**
      * Given a {@code key}, this method first checks if a cached map of ProductType keys -&gt; ids contains the key.
      * If not, it returns a completed future that contains an {@link Optional} that contains what this key maps to in
      * the cache. If the cache doesn't contain the key; this method attempts to fetch the id of the key from the CTP
-     * project, caches it and returns a {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt;
+     * project, caches it and returns a {@link CompletableFuture}&lt;{@link Optional}&lt;{@link String}&gt;&gt;
      * in which the result of it's completion could contain an
      * {@link Optional} with the id inside of it or an empty {@link Optional} if no {@link ProductType} was
      * found in the CTP project with this key.
      *
      * @param key the key by which a {@link ProductType} id should be fetched from the CTP project.
-     * @return {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt; in which the result of its
+     * @return {@link CompletableFuture}&lt;{@link Optional}&lt;{@link String}&gt;&gt; in which the result of its
      *         completion could contain an {@link Optional} with the id inside of it or an empty {@link Optional} if no
      *         {@link ProductType} was found in the CTP project with this key.
      */
     @Nonnull
-    CompletionStage<Optional<String>> fetchCachedProductTypeId(@Nonnull String key);
+    CompletableFuture<Optional<String>> fetchCachedProductTypeId(@Nonnull String key);
 
     /**
      * TODO FIX JAVADOC AND TEST METHOD
@@ -57,19 +57,19 @@ public interface ProductTypeService {
      * the method populates the cache with the mapping of all ProductType ids to maps of each product type's attributes'
      * {@link AttributeMetaData} in the CTP project, by querying the CTP project for all ProductTypes.
      *
-     * <p>After that, the method returns a {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt;
+     * <p>After that, the method returns a {@link CompletableFuture}&lt;{@link Optional}&lt;{@link String}&gt;&gt;
      * in which the result of it's completion could contain an
      * {@link Optional} with a map of the attributes names -&gt; {@link AttributeMetaData} inside of it or an empty
      * {@link Optional} if no {@link ProductType} was found in the CTP project with this id.
      *
      * @param productTypeId the id by which a a map of the attributes names -&gt; {@link AttributeMetaData}
      *                      corresponding to the product type should be fetched from the CTP project.
-     * @return {@link CompletionStage}&lt;{@link Optional}&lt;{@link String}&gt;&gt; in which the result of its
+     * @return {@link CompletableFuture}&lt;{@link Optional}&lt;{@link String}&gt;&gt; in which the result of its
      *         completion could contain an {@link Optional} with the id inside of it or an empty {@link Optional} if no
      *         {@link ProductType} was found in the CTP project with this key.
      */
     @Nonnull
-    CompletionStage<Optional<Map<String, AttributeMetaData>>> fetchCachedProductAttributeMetaDataMap(
+    CompletableFuture<Optional<Map<String, AttributeMetaData>>> fetchCachedProductAttributeMetaDataMap(
             @Nonnull String productTypeId);
 
     /**
@@ -78,11 +78,11 @@ public interface ProductTypeService {
      * mapping of the key to the id of the fetched ProductType is persisted in an in-memory map.
      *
      * @param keys set of ProductType keys to fetch matching ProductTypes by.
-     * @return {@link CompletionStage}&lt;{@link Map}&gt; in which the result of it's completion contains a {@link Set}
+     * @return {@link CompletableFuture}&lt;{@link Map}&gt; in which the result of it's completion contains a {@link Set}
      *          of all matching ProductType.
      */
     @Nonnull
-    CompletionStage<Set<ProductType>> fetchMatchingProductTypesByKeys(@Nonnull Set<String> keys);
+    CompletableFuture<Set<ProductType>> fetchMatchingProductTypesByKeys(@Nonnull Set<String> keys);
 
     /**
      * Given a resource draft of type {@link ProductTypeDraft}, this method attempts to create a resource
@@ -95,25 +95,25 @@ public interface ProductTypeService {
      * </ul>
      *
      * <p>On the other hand, if the resource gets created successfully on CTP, then the created resource's id and
-     * key are cached and the method returns a {@link CompletionStage} in which the result of it's completion
+     * key are cached and the method returns a {@link CompletableFuture} in which the result of it's completion
      * contains an instance {@link Optional} of the resource which was created.
      *
      * @param productTypeDraft the resource draft to create a resource based off of.
-     * @return a {@link CompletionStage} containing an optional with the created resource if successful otherwise an
+     * @return a {@link CompletableFuture} containing an optional with the created resource if successful otherwise an
      *         empty optional.
      */
     @Nonnull
-    CompletionStage<Optional<ProductType>> createProductType(@Nonnull ProductTypeDraft productTypeDraft);
+    CompletableFuture<Optional<ProductType>> createProductType(@Nonnull ProductTypeDraft productTypeDraft);
 
     /**
      * Updates existing product type with {@code updateActions}.
      *
      * @param productType   product type that should be updated
      * @param updateActions {@link List} of actions that should be applied to {@code productType}
-     * @return {@link CompletionStage} with updated {@link ProductType}.
+     * @return {@link CompletableFuture} with updated {@link ProductType}.
      */
     @Nonnull
-    CompletionStage<ProductType> updateProductType(@Nonnull ProductType productType,
+    CompletableFuture<ProductType> updateProductType(@Nonnull ProductType productType,
                                                    @Nonnull List<UpdateAction<ProductType>> updateActions);
 
     /**
@@ -122,9 +122,9 @@ public interface ProductTypeService {
      * will be returned in the returned future.
      *
      * @param key the key of the product type to fetch.
-     * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion contains an
+     * @return {@link CompletableFuture}&lt;{@link Optional}&gt; in which the result of it's completion contains an
      *         {@link Optional} that contains the matching {@link ProductType} if exists, otherwise empty.
      */
     @Nonnull
-    CompletionStage<Optional<ProductType>> fetchProductType(@Nullable String key);
+    CompletableFuture<Optional<ProductType>> fetchProductType(@Nullable String key);
 }

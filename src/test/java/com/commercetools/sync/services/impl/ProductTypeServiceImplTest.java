@@ -11,7 +11,7 @@ import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
-import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -32,7 +32,7 @@ class ProductTypeServiceImplTest {
         final ProductTypeService productTypeService = new ProductTypeServiceImpl(syncOptions);
 
         // test
-        final CompletionStage<Optional<ProductType>> result = productTypeService.fetchProductType("");
+        final CompletableFuture<Optional<ProductType>> result = productTypeService.fetchProductType("");
 
         // assertions
         assertThat(result).isCompletedWithValue(Optional.empty());
@@ -49,7 +49,7 @@ class ProductTypeServiceImplTest {
         final ProductTypeService productTypeService = new ProductTypeServiceImpl(syncOptions);
 
         // test
-        final CompletionStage<Optional<ProductType>> result = productTypeService.fetchProductType(null);
+        final CompletableFuture<Optional<ProductType>> result = productTypeService.fetchProductType(null);
 
         // assertions
         assertThat(result).isCompletedWithValue(Optional.empty());
@@ -70,7 +70,7 @@ class ProductTypeServiceImplTest {
         final ProductTypeService productTypeService = new ProductTypeServiceImpl(syncOptions);
 
         // test
-        final CompletionStage<Optional<ProductType>> result = productTypeService.fetchProductType("foo");
+        final CompletableFuture<Optional<ProductType>> result = productTypeService.fetchProductType("foo");
 
         // assertions
         assertThat(result).hasFailedWithThrowableThat().isExactlyInstanceOf(BadGatewayException.class);

@@ -7,7 +7,7 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 
 import javax.annotation.Nonnull;
-import java.util.concurrent.CompletionStage;
+import java.util.concurrent.CompletableFuture;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -31,14 +31,14 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
 
     /**
      * Given a draft this method attempts to resolve the all the references on the draft to
-     * return a {@link CompletionStage} which contains a new instance of the draft with the resolved
+     * return a {@link CompletableFuture} which contains a new instance of the draft with the resolved
      * references.
      *
      * @param draft the productDraft to resolve it's references.
-     * @return a {@link CompletionStage} that contains as a result a new draft instance with resolved references
+     * @return a {@link CompletableFuture} that contains as a result a new draft instance with resolved references
      *          or, in case an error occurs during reference resolution, a {@link ReferenceResolutionException}.
      */
-    public abstract CompletionStage<T> resolveReferences(@Nonnull T draft);
+    public abstract CompletableFuture<T> resolveReferences(@Nonnull T draft);
 
     /**
      * This method gets the key value on the passed {@link Reference} from the id field, if valid. If it is not valid, a

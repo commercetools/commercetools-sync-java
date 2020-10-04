@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
@@ -85,18 +84,18 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
 
     /**
      * Given a {@link ProductVariantDraft} this method attempts to resolve the prices, assets and attributes to
-     * return a {@link CompletionStage} which contains a new instance of the draft with the resolved
+     * return a {@link CompletableFuture} which contains a new instance of the draft with the resolved
      * references.
      *
      * <p>Note: this method will filter out any null sub resources (e.g. prices, attributes or assets) under the
      * returned resolved variant.
      *
      * @param productVariantDraft the product variant draft to resolve it's references.
-     * @return a {@link CompletionStage} that contains as a result a new productDraft instance with resolved references
+     * @return a {@link CompletableFuture} that contains as a result a new productDraft instance with resolved references
      *         or, in case an error occurs during reference resolution, a {@link ReferenceResolutionException}.
      */
     @Override
-    public CompletionStage<ProductVariantDraft> resolveReferences(
+    public CompletableFuture<ProductVariantDraft> resolveReferences(
         @Nonnull final ProductVariantDraft productVariantDraft) {
         return resolvePricesReferences(ProductVariantDraftBuilder.of(productVariantDraft))
             .thenCompose(this::resolveAssetsReferences)
@@ -105,7 +104,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     @Nonnull
-    CompletionStage<ProductVariantDraftBuilder> resolveAssetsReferences(
+    CompletableFuture<ProductVariantDraftBuilder> resolveAssetsReferences(
         @Nonnull final ProductVariantDraftBuilder productVariantDraftBuilder) {
 
         final List<AssetDraft> productVariantDraftAssets = productVariantDraftBuilder.getAssets();
@@ -118,7 +117,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     @Nonnull
-    CompletionStage<ProductVariantDraftBuilder> resolvePricesReferences(
+    CompletableFuture<ProductVariantDraftBuilder> resolvePricesReferences(
         @Nonnull final ProductVariantDraftBuilder productVariantDraftBuilder) {
 
         final List<PriceDraft> productVariantDraftPrices = productVariantDraftBuilder.getPrices();
@@ -132,7 +131,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     @Nonnull
-    private CompletionStage<ProductVariantDraftBuilder> resolveAttributesReferences(
+    private CompletableFuture<ProductVariantDraftBuilder> resolveAttributesReferences(
         @Nonnull final ProductVariantDraftBuilder productVariantDraftBuilder) {
 
         final List<AttributeDraft> attributeDrafts = productVariantDraftBuilder.getAttributes();
@@ -145,7 +144,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     @Nonnull
-    private CompletionStage<AttributeDraft> resolveAttributeReference(@Nonnull final AttributeDraft attributeDraft) {
+    private CompletableFuture<AttributeDraft> resolveAttributeReference(@Nonnull final AttributeDraft attributeDraft) {
 
         final JsonNode attributeDraftValue = attributeDraft.getValue();
 
@@ -166,14 +165,14 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     @Nonnull
-    private CompletionStage<Void> resolveReference(@Nonnull final JsonNode referenceValue) {
+    private CompletableFuture<Void> resolveReference(@Nonnull final JsonNode referenceValue) {
         return getResolvedId(referenceValue)
             .thenAccept(optionalId ->
                 optionalId.ifPresent(id -> ((ObjectNode) referenceValue).put(REFERENCE_ID_FIELD, id)));
     }
 
     @Nonnull
-    private CompletionStage<Optional<String>> getResolvedId(@Nonnull final JsonNode referenceValue) {
+    private CompletableFuture<Optional<String>> getResolvedId(@Nonnull final JsonNode referenceValue) {
 
         if (isReferenceOfType(referenceValue, Product.referenceTypeId())) {
             return getResolvedIdFromKeyInReference(referenceValue, productService::getIdFromCacheOrFetch);
@@ -195,9 +194,9 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
     }
 
     @Nonnull
-    private CompletionStage<Optional<String>> getResolvedIdFromKeyInReference(
+    private CompletableFuture<Optional<String>> getResolvedIdFromKeyInReference(
         @Nonnull final JsonNode referenceValue,
-        @Nonnull final Function<String, CompletionStage<Optional<String>>> resolvedIdFetcher) {
+        @Nonnull final Function<String, CompletableFuture<Optional<String>>> resolvedIdFetcher) {
 
         final JsonNode idField = referenceValue.get(REFERENCE_ID_FIELD);
         return idField != null && !Objects.equals(idField, NullNode.getInstance())
@@ -205,7 +204,7 @@ public final class VariantReferenceResolver extends BaseReferenceResolver<Produc
             : CompletableFuture.completedFuture(Optional.empty());
     }
 
-    private CompletionStage<Optional<String>> resolveCustomObjectReference(
+    private CompletableFuture<Optional<String>> resolveCustomObjectReference(
         @Nonnull final String resolvedIdText) {
 
         if (SyncUtils.isUuid(resolvedIdText)) {
