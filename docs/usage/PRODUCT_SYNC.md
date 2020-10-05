@@ -66,8 +66,9 @@ final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(spher
 Available configurations:
 
 ##### 1. `errorCallback`
-A callback that is called whenever an error event occurs during the sync process. It contains the following context 
-about the error-event:
+A callback that is called whenever an error event occurs during the sync process. Each resource executes its own 
+error-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+following context about the error-event:
 
 * sync exception
 * product draft from the source
@@ -84,8 +85,9 @@ about the error-event:
 ````
     
 ##### 2. `warningCallback`
-A callback that is called whenever a warning event occurs during the sync process. It contains the following context 
-about the warning message:
+A callback that is called whenever a warning event occurs during the sync process. Each resource executes its own 
+warning-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+following context about the warning message:
 
 * sync exception
 * product draft from the source 
