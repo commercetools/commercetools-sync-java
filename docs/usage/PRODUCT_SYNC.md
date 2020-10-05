@@ -116,7 +116,7 @@ actions array with custom actions or discard unwanted actions. The callback prov
 final TriFunction<
         List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>> beforeUpdateProductCallback =
             (updateActions, newProductDraft, oldProduct) ->  updateActions.stream()
-                    .filter(updateAction -> !updateAction.getAction().isEmpty())
+                    .filter(updateAction -> !(updateAction instanceof RemoveVariant))
                     .collect(Collectors.toList());
                         
 final ProductSyncOptions productSyncOptions = 
