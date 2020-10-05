@@ -306,6 +306,23 @@ class CustomerReferenceResolverTest {
     }
 
     @Test
+    void resolveStoreReferences_WithNullStore_ShouldResolveReferences() {
+        final CustomerDraftBuilder customerDraftBuilder = CustomerDraftBuilder
+            .of("email@example.com", "secret123")
+            .stores(singletonList(null))
+            .key("dummyKey");
+
+        // test
+        final CustomerDraftBuilder resolvedDraft = referenceResolver
+            .resolveStoreReferences(customerDraftBuilder)
+            .toCompletableFuture()
+            .join();
+
+        // assertion
+        assertThat(resolvedDraft.getStores()).isEmpty();
+    }
+
+    @Test
     void resolveStoreReferences_WithNullKeyOnStoreReference_ShouldNotResolveReference() {
         final CustomerDraftBuilder customerDraftBuilder = CustomerDraftBuilder
             .of("email@example.com", "secret123")

@@ -246,6 +246,48 @@ class CustomerBatchValidatorTest {
     }
 
     @Test
+    void validateAndCollectReferencedKeys_WithAllValidAddresses_ShouldNotHaveValidationError() {
+        final CustomerDraft customerDraft =
+            CustomerDraftBuilder.of("email", "pass")
+                                .key("key")
+                                .addresses(asList(
+                                    Address.of(CountryCode.DE).withKey("address-key1"),
+                                    Address.of(CountryCode.FR).withKey("address-key2"),
+                                    Address.of(CountryCode.US).withKey("address-key3")))
+                                .defaultShippingAddress(0)
+                                .shippingAddresses(asList(0,1))
+                                .defaultBillingAddress(1)
+                                .billingAddresses(asList(1,2))
+                                .build();
+
+        final Set<CustomerDraft> validDrafts = getValidDrafts(singletonList(customerDraft));
+
+        assertThat(errorCallBackMessages).hasSize(0);
+        assertThat(validDrafts).containsExactly(customerDraft);
+    }
+
+    @Test
+    void validateAndCollectReferencedKeys_WithEmptyBillingAndShippingAddresses_ShouldNotHaveValidationError() {
+        final CustomerDraft customerDraft =
+            CustomerDraftBuilder.of("email", "pass")
+                                .key("key")
+                                .addresses(asList(
+                                    Address.of(CountryCode.DE).withKey("address-key1"),
+                                    Address.of(CountryCode.FR).withKey("address-key2"),
+                                    Address.of(CountryCode.US).withKey("address-key3")))
+                                .defaultShippingAddress(0)
+                                .shippingAddresses(emptyList())
+                                .defaultBillingAddress(1)
+                                .billingAddresses(emptyList())
+                                .build();
+
+        final Set<CustomerDraft> validDrafts = getValidDrafts(singletonList(customerDraft));
+
+        assertThat(errorCallBackMessages).hasSize(0);
+        assertThat(validDrafts).containsExactly(customerDraft);
+    }
+
+    @Test
     void validateAndCollectReferencedKeys_WithMixedDrafts_ShouldReturnCorrectResults() {
         final CustomerDraft customerDraft =
             CustomerDraftBuilder.of("email", "pass")
