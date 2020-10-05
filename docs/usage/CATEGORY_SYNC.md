@@ -133,15 +133,15 @@ final CategorySyncOptions categorySyncOptions =
 ````
 
 ##### 5. `batchSize`
-A number that could be used to set the batch size with which product types are fetched and processed,
-as product types are obtained from the target project on commercetools platform in batches for better performance. The 
-algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding product types 
+A number that could be used to set the batch size with which categories are fetched and processed,
+as categories are obtained from the target project on commercetools platform in batches for better performance. The 
+algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding categories
 from the target project on commecetools platform in a single request. Playing with this option can slightly improve or 
-reduce processing speed. If it is not set, the default batch size is 50 for product type sync.
+reduce processing speed. If it is not set, the default batch size is 50 for category sync.
 ##### Example
 ````java                         
-final ProductTypeSyncOptions productTypeSyncOptions = 
-         ProductTypeSyncOptionsBuilder.of(sphereClient).batchSize(30).build();
+final CategorySyncOptions categorySyncOptions = 
+         CategorySyncOptionsBuilder.of(sphereClient).batchSize(30).build();
 ````
 
 #### Running the sync
