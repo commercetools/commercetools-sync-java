@@ -87,7 +87,7 @@ final class AddressesUpdateActionUtils {
                         if (!addressDraft.getKey().equals(oldAddressKey)) {
                             return RemoveAddress.of(oldAddress);
                         } else {
-                            if (!addressDraft.equals(oldAddress)) {
+                            if (addressDraft.equals(oldAddress)) {
                                 return ChangeAddress.of(oldAddress.getId(), addressDraft);
                             }
                             return null;
