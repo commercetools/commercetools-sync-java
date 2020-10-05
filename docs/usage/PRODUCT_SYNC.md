@@ -84,8 +84,8 @@ about the error-event:
 ````
     
 ##### 2. `warningCallback`
-A callback that is called whenever a warning event occurs during the sync process. It contains the following 
-information about the warning message:
+A callback that is called whenever a warning event occurs during the sync process. It contains the following context 
+about the warning message:
 
 * sync exception
 * product draft from the source 
