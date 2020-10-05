@@ -288,6 +288,33 @@ class CustomerBatchValidatorTest {
     }
 
     @Test
+    void validateAndCollectReferencedKeys_WithIndexesWithoutAddresses_ShouldHaveValidationErrorAndEmptyResult() {
+        final CustomerDraft customerDraft1 =
+            CustomerDraftBuilder.of("email", "pass")
+                                .key("key")
+                                .addresses(emptyList())
+                                .shippingAddresses(asList(0, 1))
+                                .build();
+
+        final CustomerDraft customerDraft2=
+            CustomerDraftBuilder.of("email", "pass")
+                                .key("key")
+                                .addresses(null)
+                                .billingAddresses(asList(0, 1))
+                                .build();
+
+        final Set<CustomerDraft> validDrafts = getValidDrafts(asList(customerDraft1, customerDraft2));
+
+        assertThat(errorCallBackMessages).hasSize(2);
+        assertThat(errorCallBackMessages.get(0))
+            .isEqualTo(format(SHIPPING_ADDRESSES_ARE_NOT_VALID, "key", "[0, 1]"));
+        assertThat(errorCallBackMessages.get(1))
+            .isEqualTo(format(BILLING_ADDRESSES_ARE_NOT_VALID, "key", "[0, 1]"));
+        assertThat(validDrafts).isEmpty();
+
+    }
+
+    @Test
     void validateAndCollectReferencedKeys_WithMixedDrafts_ShouldReturnCorrectResults() {
         final CustomerDraft customerDraft =
             CustomerDraftBuilder.of("email", "pass")
