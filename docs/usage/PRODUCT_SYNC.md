@@ -29,8 +29,8 @@ against a [ProductDraft](https://docs.commercetools.com/http-api-projects-produc
 
 #### Prerequisites
 1. The sync expects a list of `ProductDraft`s that have their `key` fields set to be matched with
-products in the target CTP project. Also, the products in the target project are expected to have the `key` fields set,
-otherwise they won't be matched.
+products in the target commercetools project. Also, the products in the target project are expected to have the `key` 
+fields set, otherwise they won't be matched.
 
 2. The sync expects all variants of the supplied list of `ProductDraft`s to have their `sku` fields set. Also,
 all the variants in the target project are expected to have the `sku` fields set.
@@ -104,8 +104,8 @@ following context about the warning message:
 
 ##### 3. `beforeUpdateCallback`
 During the sync process if a target product and a product draft are matched, this callback can be used to intercept 
-the **_update_** request just before it is sent to CTP. This allows the user to modify update actions array with custom 
-actions or discard unwanted actions. The callback provides the following information :
+the **_update_** request just before it is sent to commercetools platform. This allows the user to modify update 
+actions array with custom actions or discard unwanted actions. The callback provides the following information :
  
  * product draft from the source
  * product from the target project
@@ -125,7 +125,7 @@ final ProductSyncOptions productSyncOptions =
 
 ##### 4. `beforeCreateCallback`
 During the sync process if a product draft should be created, this callback can be used to intercept 
-the **_create_** request just before it is sent to Commercetools platform.  It contains following information : 
+the **_create_** request just before it is sent to commercetools platform.  It contains following information : 
 
  * product draft that should be created
  
@@ -219,7 +219,7 @@ It could be that Y is not supplied before X, which means the sync could fail cre
 It could also be that Y is not supplied at all in this batch but at a later batch.
  
 The library keep tracks of such "referencing" drafts like X and persists them in storage 
-(**CTP `customObjects` in the target project** , in this case) 
+(**Commercetools platform `customObjects` in the target project** , in this case) 
 to keep them and create/update them accordingly whenever the referenced drafts exist in the target project.
 
 The `customObject` will have a `container:` **`"commercetools-sync-java.UnresolvedReferencesService.productDrafts"`**
@@ -289,7 +289,7 @@ As soon, as the referenced productDrafts are supplied to the sync, the draft wil
 
 ##### More examples of how to use the sync
 
-1. [Sync from another CTP project as a source](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/ProductSyncIT.java).
+1. [Sync from another commercetools project as a source](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/ProductSyncIT.java).
 2. [Sync from an external source](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncIT.java). 
 3. [Sync with blacklisting/whitelisting](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java).
 
