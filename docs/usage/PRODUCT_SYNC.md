@@ -77,11 +77,11 @@ following context about the error-event:
 
 ##### Example 
 ````java
- List<String> errorCallBackMessages = new ArrayList<>();
+ final Logger logger = LoggerFactory.getLogger(ProductSync.class);
  final ProductSyncOptions productsyncOptions = ProductSyncOptionsBuilder
          .of(sphereClient)
          .errorCallback((syncException, draft, product, updateActions) -> 
-            errorCallBackMessages.add(exception.getMessage())).build();
+            logger.error(new SyncException("My customized message"), syncException)).build();
 ````
     
 ##### 2. `warningCallback`
@@ -95,11 +95,11 @@ following context about the warning message:
 
 ##### Example 
 ````java
- List<String> warningCallBackMessages = new ArrayList<>();
+ final Logger logger = LoggerFactory.getLogger(ProductSync.class);
  final ProductSyncOptions productsyncOptions = ProductSyncOptionsBuilder
          .of(sphereClient)
          .warningCallback((syncException, draft, product, updateActions) -> 
-            warningCallBackMessages.add(exception.getMessage())).build();
+            logger.warn(new SyncException("My customized message"), syncException)).build();
 ````
 
 ##### 3. `beforeUpdateCallback`
