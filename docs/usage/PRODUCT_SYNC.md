@@ -129,13 +129,20 @@ the **_create_** request just before it is sent to commercetools platform.  It c
 
  * product draft that should be created
  
-##### Example
+##### Example (Logging of search keywords in product draft)
 ````java
 final Function<ProductDraft, ProductDraft> beforeCreateProductCallback =
-             (callbackDraft) -> {
-                 final String newProductDraftKey = format("%s%s", callbackDraft.getKey(), "NEW_PROJECT");
-                 return ProductDraftBuilder.of(callbackDraft).key(newProductDraftKey).build();
-             };
+         (callbackDraft) -> {
+                Map<Locale, List<SearchKeyword>> searchKeywordLocaleMap = callbackDraft.getSearchKeywords().getContent();
+
+                List<String> searchKeywords = searchKeywordLocaleMap.entrySet().stream().flatMap(
+                    keywordEntry -> keywordEntry.getValue().stream().map(
+                        keyword -> String.format("Search Keywords (Locale : %s ) : %s)", keywordEntry.getKey(), keyword.getText())))
+                    .collect(Collectors.toList());
+
+                searchKeywords.forEach(keywordWithLocale -> logger.info(keywordWithLocale));
+
+         };
                          
 final ProductSyncOptions productSyncOptions = 
          ProductSyncOptionsBuilder.of(sphereClient).beforeCreateCallback(beforeCreateProductCallback).build();
