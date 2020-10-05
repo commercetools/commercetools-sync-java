@@ -78,7 +78,7 @@ following context about the error-event:
 ##### Example 
 ````java
  final Logger logger = LoggerFactory.getLogger(ProductSync.class);
- final ProductSyncOptions productsyncOptions = ProductSyncOptionsBuilder
+ final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder
          .of(sphereClient)
          .errorCallback((syncException, draft, product, updateActions) -> 
             logger.error(new SyncException("My customized message"), syncException)).build();
@@ -96,7 +96,7 @@ following context about the warning message:
 ##### Example 
 ````java
  final Logger logger = LoggerFactory.getLogger(ProductSync.class);
- final ProductSyncOptions productsyncOptions = ProductSyncOptionsBuilder
+ final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder
          .of(sphereClient)
          .warningCallback((syncException, draft, product, updateActions) -> 
             logger.warn(new SyncException("My customized message"), syncException)).build();
@@ -120,7 +120,7 @@ final TriFunction<
                     .collect(Collectors.toList());
                         
 final ProductSyncOptions productSyncOptions = 
-        ProductSyncOptionsBuilder.of(sphereClient).beforeUpdateCallback(beforeUpdateCallback).build();
+        ProductSyncOptionsBuilder.of(sphereClient).beforeUpdateCallback(beforeUpdateProductCallback).build();
 ````
 
 ##### 4. `beforeCreateCallback`
@@ -129,7 +129,7 @@ the **_create_** request just before it is sent to commercetools platform.  It c
 
  * product draft that should be created
  
-##### Example (Logging of search keywords in product draft)
+##### Example (Logging of search keywords from product draft)
 ````java
 final Function<ProductDraft, ProductDraft> beforeCreateProductCallback =
          (callbackDraft) -> {
