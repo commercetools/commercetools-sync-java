@@ -14,11 +14,16 @@ import io.sphere.sdk.stores.Store;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
+import static java.util.stream.Collectors.toList;
 
 public final class CustomerReferenceResolver
     extends CustomReferenceResolver<CustomerDraft, CustomerDraftBuilder, CustomerSyncOptions> {
@@ -32,6 +37,7 @@ public final class CustomerReferenceResolver
     public static final String CUSTOMER_GROUP_DOES_NOT_EXIST = "CustomerGroup with key '%s' doesn't exist.";
 
     private final CustomerGroupService customerGroupService;
+    private final TypeService typeService;
 
     /**
      * Takes a {@link CustomerSyncOptions} instance, a  {@link TypeService} to instantiate a
@@ -48,6 +54,7 @@ public final class CustomerReferenceResolver
         @Nonnull final TypeService typeService,
         @Nonnull final CustomerGroupService customerGroupService) {
         super(options, typeService);
+        this.typeService = typeService;
         this.customerGroupService = customerGroupService;
     }
 
@@ -164,4 +171,34 @@ public final class CustomerReferenceResolver
         }
         return completedFuture(draftBuilder.stores(resolvedReferences));
     }
+
+    /**
+     * Calls the {@code cacheKeysToIds} service methods to fetch all the referenced keys
+     * (i.e custom type, customer group) from the commercetools to populate caches for the reference resolution.
+     *
+     * <p>Note: This method is meant be only used internally by the library to improve performance.
+     *
+     * @param referencedKeys a wrapper for the product references to fetch and cache the id's for.
+     * @return {@link CompletionStage}&lt;{@link Map}&lt;{@link String}&gt;{@link String}&gt;&gt; in which the results
+     *     of it's completions contains a map of requested references keys -&gt; ids of customer references.
+     */
+    @Nonnull
+    public CompletableFuture<List<Map<String, String>>> populateKeyToIdCachesForReferencedKeys(
+        @Nonnull final CustomerBatchValidator.ReferencedKeys referencedKeys) {
+
+        final List<CompletionStage<Map<String, String>>> futures = new ArrayList<>();
+
+        final Set<String> typeKeys = referencedKeys.getTypeKeys();
+        if (!typeKeys.isEmpty()) {
+            futures.add(typeService.cacheKeysToIds(typeKeys));
+        }
+
+        final Set<String> customerGroupKeys = referencedKeys.getCustomerGroupKeys();
+        if (!customerGroupKeys.isEmpty()) {
+            futures.add(customerGroupService.cacheKeysToIds(customerGroupKeys));
+        }
+
+        return collectionOfFuturesToFutureOfCollection(futures, toList());
+    }
+
 }
