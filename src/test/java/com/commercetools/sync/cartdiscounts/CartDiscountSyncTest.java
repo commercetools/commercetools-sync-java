@@ -1,9 +1,11 @@
 package com.commercetools.sync.cartdiscounts;
 
 import com.commercetools.sync.cartdiscounts.helpers.CartDiscountSyncStatistics;
+import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.services.CartDiscountService;
 import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.services.impl.TypeServiceImpl;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraftBuilder;
@@ -13,6 +15,7 @@ import io.sphere.sdk.cartdiscounts.ShippingCostTarget;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.SphereException;
+import io.sphere.sdk.types.CustomFieldsDraft;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -23,8 +26,10 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 
+import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static java.lang.String.format;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
@@ -86,7 +91,7 @@ class CartDiscountSyncTest {
             }));
 
         final CartDiscountSync cartDiscountSync =
-            new CartDiscountSync(syncOptions, mock(TypeService.class), mockCartDiscountService);
+            new CartDiscountSync(syncOptions, getMockTypeService(), mockCartDiscountService);
 
         // test
         final CartDiscountSyncStatistics cartDiscountSyncStatistics = cartDiscountSync
@@ -126,7 +131,7 @@ class CartDiscountSyncTest {
         final CartDiscountSyncOptions spyCartDiscountSyncOptions = spy(cartDiscountSyncOptions);
 
         // test
-        new CartDiscountSync(spyCartDiscountSyncOptions, mock(TypeService.class), cartDiscountService)
+        new CartDiscountSync(spyCartDiscountSyncOptions, getMockTypeService(), cartDiscountService)
             .sync(singletonList(newCartDiscount)).toCompletableFuture().join();
 
         // assertion
@@ -154,7 +159,7 @@ class CartDiscountSyncTest {
         final CartDiscountSyncOptions spyCartDiscountSyncOptions = spy(cartDiscountSyncOptions);
 
         // test
-        new CartDiscountSync(spyCartDiscountSyncOptions, mock(TypeService.class), cartDiscountService)
+        new CartDiscountSync(spyCartDiscountSyncOptions, getMockTypeService(), cartDiscountService)
             .sync(singletonList(newCartDiscount)).toCompletableFuture().join();
 
         // assertion
@@ -178,7 +183,8 @@ class CartDiscountSyncTest {
                 })
                 .build();
 
-        final CartDiscountSync cartDiscountSync = new CartDiscountSync(cartDiscountSyncOptions);
+        final CartDiscountSync cartDiscountSync = new CartDiscountSync(cartDiscountSyncOptions,
+            getMockTypeService(), mock(CartDiscountService.class));
 
         //test
         final CartDiscountSyncStatistics cartDiscountSyncStatistics = cartDiscountSync
@@ -190,7 +196,7 @@ class CartDiscountSyncTest {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).isEqualTo("Failed to process null cart discount draft.")
+                assertThat(message).isEqualTo("CartDiscountDraft is null.")
             );
 
         assertThat(exceptions)
@@ -217,7 +223,8 @@ class CartDiscountSyncTest {
             })
             .build();
 
-        final CartDiscountSync cartDiscountSync = new CartDiscountSync(cartDiscountSyncOptions);
+        final CartDiscountSync cartDiscountSync = new CartDiscountSync(cartDiscountSyncOptions,
+            getMockTypeService(), mock(CartDiscountService.class));
 
         //test
         final CartDiscountSyncStatistics cartDiscountSyncStatistics = cartDiscountSync
@@ -229,7 +236,8 @@ class CartDiscountSyncTest {
         assertThat(errorMessages)
             .hasSize(1)
             .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).isEqualTo("Failed to process cart discount draft without key.")
+                assertThat(message).isEqualTo("CartDiscountDraft with name: null doesn't have a key. "
+                    + "Please make sure all cart discount drafts have keys.")
             );
 
         assertThat(exceptions)
@@ -237,6 +245,55 @@ class CartDiscountSyncTest {
             .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable.getCause()).isNull());
 
         assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
+    }
+
+    @Test
+    void sync_WithFailOnCachingKeysToIds_ShouldTriggerErrorCallbackAndReturnProperStats() {
+        // preparation
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+
+        final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
+            .of(mock(SphereClient.class))
+            .errorCallback((exception, oldResource, newResource, actions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception.getCause());
+            })
+            .build();
+
+        final TypeService typeService = spy(new TypeServiceImpl(cartDiscountSyncOptions));
+        when(typeService.cacheKeysToIds(anySet()))
+            .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
+
+        final CartDiscountSync cartDiscountSync = new CartDiscountSync(cartDiscountSyncOptions,
+            typeService, mock(CartDiscountService.class));
+
+        final CartDiscountDraft newCartDiscountDraftWithCustomType = mock(CartDiscountDraft.class);
+        when(newCartDiscountDraftWithCustomType.getKey()).thenReturn("cart-discount-key");
+        when(newCartDiscountDraftWithCustomType.getCustom()).thenReturn(
+            CustomFieldsDraft.ofTypeKeyAndJson("typeKey", emptyMap()));
+
+        //test
+        final CartDiscountSyncStatistics cartDiscountSyncStatistics = cartDiscountSync
+            .sync(singletonList(newCartDiscountDraftWithCustomType))
+            .toCompletableFuture()
+            .join();
+
+
+        // assertions
+        AssertionsForStatistics.assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
+
+        assertThat(errorMessages)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(message ->
+                assertThat(message).contains("Failed to build a cache of keys to ids."));
+
+        assertThat(exceptions)
+            .hasSize(1)
+            .hasOnlyOneElementSatisfying(throwable -> {
+                assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
+                assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
+            });
     }
 
 }

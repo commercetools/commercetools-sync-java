@@ -2,9 +2,11 @@ package com.commercetools.sync.products.helpers;
 
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.helpers.BaseReferenceResolver;
+import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
+import com.commercetools.sync.services.CustomObjectService;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
@@ -24,13 +26,16 @@ import io.sphere.sdk.taxcategories.TaxCategory;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
@@ -47,6 +52,11 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     private final VariantReferenceResolver variantReferenceResolver;
     private final TaxCategoryService taxCategoryService;
     private final StateService stateService;
+    private final TypeService typeService;
+    private final ChannelService channelService;
+    private final ProductService productService;
+    private final CustomerGroupService customerGroupService;
+    private final CustomObjectService customObjectService;
 
     public static final String FAILED_TO_RESOLVE_REFERENCE = "Failed to resolve '%s' resource identifier on "
         + "ProductDraft with key:'%s'. Reason: %s";
@@ -73,6 +83,7 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
      * @param stateService         the service to fetch product states for reference resolution.
      * @param productService       the service to fetch products for product reference resolution on reference
      *                             attributes.
+     * @param customObjectService  the service to fetch custom objects for reference resolution.
      */
     public ProductReferenceResolver(@Nonnull final ProductSyncOptions productSyncOptions,
                                     @Nonnull final ProductTypeService productTypeService,
@@ -82,15 +93,21 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
                                     @Nonnull final CustomerGroupService customerGroupService,
                                     @Nonnull final TaxCategoryService taxCategoryService,
                                     @Nonnull final StateService stateService,
-                                    @Nonnull final ProductService productService) {
+                                    @Nonnull final ProductService productService,
+                                    @Nonnull final CustomObjectService customObjectService) {
         super(productSyncOptions);
         this.productTypeService = productTypeService;
         this.categoryService = categoryService;
         this.taxCategoryService = taxCategoryService;
         this.stateService = stateService;
+        this.typeService = typeService;
+        this.channelService = channelService;
+        this.productService = productService;
+        this.customerGroupService = customerGroupService;
+        this.customObjectService = customObjectService;
         this.variantReferenceResolver =
             new VariantReferenceResolver(productSyncOptions, typeService, channelService, customerGroupService,
-                productService, productTypeService, categoryService);
+                productService, productTypeService, categoryService, customObjectService);
     }
 
     /**
@@ -116,12 +133,9 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     private CompletionStage<ProductDraftBuilder> resolveAllVariantsReferences(
         @Nonnull final ProductDraftBuilder draftBuilder) {
         final ProductVariantDraft masterVariantDraft = draftBuilder.getMasterVariant();
-        if (masterVariantDraft != null) {
-            return variantReferenceResolver.resolveReferences(masterVariantDraft)
-                                           .thenApply(draftBuilder::masterVariant)
-                                           .thenCompose(this::resolveVariantsReferences);
-        }
-        return resolveVariantsReferences(draftBuilder);
+        return variantReferenceResolver.resolveReferences(masterVariantDraft)
+                                       .thenApply(draftBuilder::masterVariant)
+                                       .thenCompose(this::resolveVariantsReferences);
     }
 
     @Nonnull
@@ -353,5 +367,71 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
                         format(FAILED_TO_RESOLVE_REFERENCE, State.referenceTypeId(), draftBuilder.getKey(),
                             errorMessage)));
                 }));
+    }
+
+    /**
+     * Calls the {@code cacheKeysToIds} service methods to fetch all the referenced keys
+     * (i.e product type, product attribute) from the commercetools to populate caches for the reference resolution.
+     *
+     * <p>Note: This method is meant be only used internally by the library to improve performance.
+     *
+     * @param referencedKeys a wrapper for the product references to fetch and cache the id's for.
+     * @return {@link CompletionStage}&lt;{@link Map}&lt;{@link String}&gt;{@link String}&gt;&gt; in which the results
+     *     of it's completions contains a map of requested references keys -&gt; ids of product references.
+     */
+    @Nonnull
+    public CompletableFuture<Map<String, String>> populateKeyToIdCachesForReferencedKeys(
+        @Nonnull final ProductBatchValidator.ReferencedKeys referencedKeys) {
+
+        final List<CompletionStage<Map<String, String>>> futures = new ArrayList<>();
+
+        final Set<String> productKeys = referencedKeys.getProductKeys();
+        if (!productKeys.isEmpty()) {
+            futures.add(productService.cacheKeysToIds(productKeys));
+        }
+
+        final Set<String> productTypeKeys = referencedKeys.getProductTypeKeys();
+        if (!productTypeKeys.isEmpty()) {
+            futures.add(productTypeService.cacheKeysToIds(productTypeKeys));
+        }
+
+        final Set<String> categoryKeys = referencedKeys.getCategoryKeys();
+        if (!categoryKeys.isEmpty()) {
+            futures.add(categoryService.cacheKeysToIds(categoryKeys));
+        }
+
+        final Set<String> taxCategoryKeys = referencedKeys.getTaxCategoryKeys();
+        if (!taxCategoryKeys.isEmpty()) {
+            futures.add(taxCategoryService.cacheKeysToIds(taxCategoryKeys));
+        }
+
+        final Set<String> typeKeys = referencedKeys.getTypeKeys();
+        if (!typeKeys.isEmpty()) {
+            futures.add(typeService.cacheKeysToIds(typeKeys));
+        }
+
+        final Set<String> channelKeys = referencedKeys.getChannelKeys();
+        if (!channelKeys.isEmpty()) {
+            futures.add(channelService.cacheKeysToIds(typeKeys));
+        }
+
+        final Set<String> stateKeys = referencedKeys.getStateKeys();
+        if (!stateKeys.isEmpty()) {
+            futures.add(stateService.cacheKeysToIds(stateKeys));
+        }
+
+        final Set<String> customerGroupKeys = referencedKeys.getCustomerGroupKeys();
+        if (!customerGroupKeys.isEmpty()) {
+            futures.add(customerGroupService.cacheKeysToIds(customerGroupKeys));
+        }
+
+        final Set<CustomObjectCompositeIdentifier> customObjectCompositeIdentifiers =
+            referencedKeys.getCustomObjectCompositeIdentifiers();
+        if (!customObjectCompositeIdentifiers.isEmpty()) {
+            futures.add(customObjectService.cacheKeysToIds(customObjectCompositeIdentifiers));
+        }
+
+        return collectionOfFuturesToFutureOfCollection(futures, toList())
+            .thenCompose(ignored -> productService.cacheKeysToIds(Collections.emptySet())); // return all cache.
     }
 }

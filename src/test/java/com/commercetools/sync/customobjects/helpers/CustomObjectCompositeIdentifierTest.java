@@ -6,6 +6,7 @@ import io.sphere.sdk.customobjects.CustomObjectDraft;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -53,6 +54,22 @@ public class CustomObjectCompositeIdentifierTest {
         assertThat(customObjectCompositeIdentifier).isNotNull();
         assertThat(customObjectCompositeIdentifier.getContainer()).isEqualTo(CONTAINER);
         assertThat(customObjectCompositeIdentifier.getKey()).isEqualTo(KEY);
+    }
+
+    @Test
+    void of_WithEmptyKeyAndContainer_ShouldThrowAnError() {
+        assertThatThrownBy(() -> CustomObjectCompositeIdentifier.of("", ""))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("The container \"\" does not have the correct format. "
+                + "Key and container need to match [-_~.a-zA-Z0-9]+.");
+    }
+
+    @Test
+    void of_WithInvalidIdentifierAsString_ShouldThrowAnError() {
+        assertThatThrownBy(() -> CustomObjectCompositeIdentifier.of("aContainer-andKey"))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("The custom object identifier value: \"aContainer-andKey\" does not have the correct format. "
+                + "The correct format must have a vertical bar \"|\" character between the container and key.");
     }
 
     @Test

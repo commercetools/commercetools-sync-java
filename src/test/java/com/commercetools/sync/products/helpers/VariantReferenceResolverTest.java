@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customers.Customer;
+import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.AssetDraftBuilder;
 import io.sphere.sdk.models.DefaultCurrencyUnits;
@@ -43,6 +44,7 @@ import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockC
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createReferenceObject;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCategoryService;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomObjectService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductTypeService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getProductReferenceWithRandomId;
@@ -60,6 +62,8 @@ class VariantReferenceResolverTest {
     private static final String PRODUCT_ID = UUID.randomUUID().toString();
     private static final String PRODUCT_TYPE_ID = UUID.randomUUID().toString();
     private static final String CATEGORY_ID = UUID.randomUUID().toString();
+    private static final String CUSTOM_OBJECT_ID = UUID.randomUUID().toString();
+
     private VariantReferenceResolver referenceResolver;
 
     @BeforeEach
@@ -71,7 +75,8 @@ class VariantReferenceResolverTest {
             mock(CustomerGroupService.class),
             getMockProductService(PRODUCT_ID),
             getMockProductTypeService(PRODUCT_TYPE_ID),
-            getMockCategoryService(CATEGORY_ID));
+            getMockCategoryService(CATEGORY_ID),
+            getMockCustomObjectService(CUSTOM_OBJECT_ID));
     }
 
     @Test
@@ -255,6 +260,8 @@ class VariantReferenceResolverTest {
         final ObjectNode categoryReference = createReferenceObject("foo", Category.referenceTypeId());
         final ObjectNode productTypeReference = createReferenceObject("foo", ProductType.referenceTypeId());
         final ObjectNode customerReference = createReferenceObject("foo", Customer.referenceTypeId());
+        final ObjectNode customObjectReference =
+            createReferenceObject("container|key", CustomObject.referenceTypeId());
 
         final AttributeDraft categoryReferenceAttribute = AttributeDraft
             .of("cat-ref", categoryReference);
@@ -264,13 +271,16 @@ class VariantReferenceResolverTest {
             .of("customer-ref", customerReference);
         final AttributeDraft textAttribute = AttributeDraft
             .of("attributeName", "textValue");
+        final AttributeDraft customObjectReferenceAttribute = AttributeDraft
+            .of("customObject-ref", customObjectReference);
 
         final List<AttributeDraft> attributeDrafts =
             Arrays.asList(productReferenceSetAttribute,
                 categoryReferenceAttribute,
                 productTypeReferenceAttribute,
                 customerReferenceAttribute,
-                textAttribute);
+                textAttribute,
+                customObjectReferenceAttribute);
 
         final ProductVariantDraft productVariantDraft = ProductVariantDraftBuilder
             .of()
@@ -284,7 +294,7 @@ class VariantReferenceResolverTest {
 
         // assertions
         final List<AttributeDraft> resolvedBuilderAttributes = resolvedBuilder.getAttributes();
-        assertThat(resolvedBuilderAttributes).hasSize(5);
+        assertThat(resolvedBuilderAttributes).hasSize(6);
         assertThat(resolvedBuilderAttributes).contains(textAttribute);
 
         final AttributeDraft resolvedProductReferenceSetAttribute = resolvedBuilderAttributes.get(0);
@@ -331,6 +341,17 @@ class VariantReferenceResolverTest {
             .isEqualTo(customerReference.get(REFERENCE_ID_FIELD));
         assertThat(resolvedCustomerReferenceAttributeValue.get(REFERENCE_TYPE_ID_FIELD).asText())
             .isEqualTo(Customer.referenceTypeId());
+
+        final AttributeDraft resolvedCustomObjectReferenceAttribute = resolvedBuilderAttributes.get(5);
+        assertThat(resolvedCustomObjectReferenceAttribute).isNotNull();
+
+        final JsonNode resolvedCustomObjectAttributeValue = resolvedCustomObjectReferenceAttribute.getValue();
+        assertThat(resolvedCustomObjectAttributeValue).isNotNull();
+
+        assertThat(resolvedCustomObjectAttributeValue.get(REFERENCE_ID_FIELD).asText())
+            .isEqualTo(CUSTOM_OBJECT_ID);
+        assertThat(resolvedCustomObjectAttributeValue.get(REFERENCE_TYPE_ID_FIELD).asText())
+            .isEqualTo(CustomObject.referenceTypeId());
     }
 
     @Test

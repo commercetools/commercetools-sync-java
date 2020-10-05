@@ -24,6 +24,7 @@ import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithRandomProductType;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomObjectService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockProductTypeService;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getMockStateService;
@@ -43,6 +44,7 @@ class TaxCategoryReferenceResolverTest {
     private static final String TAX_CATEGORY_ID = "taxCategoryId";
     private static final String STATE_ID = "stateId";
     private static final String PRODUCT_ID = "productId";
+    private static final String CUSTOM_OBJECT_ID = "customObjectId";
 
     private ProductReferenceResolver referenceResolver;
     private TaxCategoryService taxCategoryService;
@@ -57,7 +59,8 @@ class TaxCategoryReferenceResolverTest {
         referenceResolver = new ProductReferenceResolver(syncOptions,
             getMockProductTypeService(PRODUCT_TYPE_ID), mock(CategoryService.class), getMockTypeService(),
             getMockChannelService(getMockSupplyChannel(CHANNEL_ID, CHANNEL_KEY)), mock(CustomerGroupService.class),
-            taxCategoryService, getMockStateService(STATE_ID), getMockProductService(PRODUCT_ID));
+            taxCategoryService, getMockStateService(STATE_ID), getMockProductService(PRODUCT_ID),
+            getMockCustomObjectService(CUSTOM_OBJECT_ID));
     }
 
     @Test

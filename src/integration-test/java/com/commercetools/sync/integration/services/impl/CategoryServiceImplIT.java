@@ -42,7 +42,6 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.g
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
-import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -119,7 +118,8 @@ class CategoryServiceImplIT {
 
     @Test
     void cacheKeysToIds_ShouldCacheCategoryKeysOnlyFirstTime() {
-        Map<String, String> cache = categoryService.cacheKeysToIds().toCompletableFuture().join();
+        Map<String, String> cache = categoryService.cacheKeysToIds(Collections.singleton(oldCategoryKey))
+                                                   .toCompletableFuture().join();
         assertThat(cache).hasSize(1);
 
         // Create new category without caching
@@ -132,30 +132,10 @@ class CategoryServiceImplIT {
 
         CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(categoryDraft)).toCompletableFuture().join();
 
-        cache = categoryService.cacheKeysToIds().toCompletableFuture().join();
+        cache = categoryService.cacheKeysToIds(Collections.singleton(oldCategoryKey)).toCompletableFuture().join();
         assertThat(cache).hasSize(1);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
-    }
-
-    @Test
-    void cacheKeysToIds_WithTargetCategoriesWithNoKeys_ShouldGiveAWarningAboutKeyNotSetAndNotCacheKey() {
-        // Create new category without key
-        final CategoryDraft categoryDraft = CategoryDraftBuilder
-            .of(LocalizedString.of(Locale.ENGLISH, "classic furniture"),
-                LocalizedString.of(Locale.ENGLISH, "classic-furniture", Locale.GERMAN, "klassische-moebel"))
-            .build();
-
-        final Category createdCategory = CTP_TARGET_CLIENT.execute(CategoryCreateCommand.of(categoryDraft))
-                                                          .toCompletableFuture().join();
-
-        final Map<String, String> cache = categoryService.cacheKeysToIds().toCompletableFuture().join();
-        assertThat(cache).hasSize(1);
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-        assertThat(warningCallBackMessages).hasSize(1);
-        assertThat(warningCallBackMessages.get(0)).isEqualTo(format("Category with id: '%s' has no key set. Keys are"
-            + " required for category matching.", createdCategory.getId()));
     }
 
     @Test

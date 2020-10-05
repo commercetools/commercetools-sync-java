@@ -4,7 +4,7 @@ import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.commons.exceptions.InvalidReferenceException;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.producttypes.helpers.AttributeDefinitionReferenceResolver;
-import com.commercetools.sync.producttypes.helpers.ProductTypeBatchProcessor;
+import com.commercetools.sync.producttypes.helpers.ProductTypeBatchValidator;
 import com.commercetools.sync.producttypes.helpers.ProductTypeReferenceResolver;
 import com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics;
 import com.commercetools.sync.services.ProductTypeService;
@@ -34,7 +34,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
-import static com.commercetools.sync.producttypes.helpers.ProductTypeBatchProcessor.getProductTypeKey;
+import static com.commercetools.sync.producttypes.helpers.ProductTypeBatchValidator.getProductTypeKey;
 import static com.commercetools.sync.producttypes.utils.ProductTypeSyncUtils.buildActions;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
@@ -54,6 +54,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
 
     private final ProductTypeService productTypeService;
     private final ProductTypeReferenceResolver referenceResolver;
+    private final ProductTypeBatchValidator batchValidator;
 
     /**
      * The following set ({@code readyToResolve}) is thread-safe because it is accessed/modified in a concurrent
@@ -84,7 +85,8 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
 
         super(new ProductTypeSyncStatistics(), productTypeSyncOptions);
         this.productTypeService = productTypeService;
-        this.referenceResolver = new ProductTypeReferenceResolver(productTypeSyncOptions, productTypeService);
+        this.referenceResolver = new ProductTypeReferenceResolver(getSyncOptions(), productTypeService);
+        this.batchValidator = new ProductTypeBatchValidator(getSyncOptions(), getStatistics());
     }
 
     /**
@@ -108,7 +110,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
 
     /**
      * This method first creates a new {@link Set} of valid {@link ProductTypeDraft} elements. For more on the rules of
-     * validation, check: {@link ProductTypeBatchProcessor#validateBatch()}. Using the resulting set of
+     * validation, check: {@link ProductTypeBatchValidator#validateAndCollectReferencedKeys}. Using the resulting set of
      * {@code validProductTypeDrafts}, the matching productTypes in the target CTP project are fetched then the method
      * {@link ProductTypeSync#syncBatch(Set, Set, Map)} is called to perform the sync (<b>update</b> or <b>create</b>
      * requests accordingly) on the target project.
@@ -130,13 +132,20 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
     protected CompletionStage<ProductTypeSyncStatistics> processBatch(@Nonnull final List<ProductTypeDraft> batch) {
 
         readyToResolve = ConcurrentHashMap.newKeySet();
-        final ProductTypeBatchProcessor batchProcessor = new ProductTypeBatchProcessor(batch, this);
-        batchProcessor.validateBatch();
 
-        final Set<String> keysToCache = batchProcessor.getKeysToCache();
+        final ImmutablePair<Set<ProductTypeDraft>, Set<String>> result =
+            batchValidator.validateAndCollectReferencedKeys(batch);
+
+        final Set<ProductTypeDraft> validDrafts = result.getLeft();
+        if (validDrafts.isEmpty()) {
+            statistics.incrementProcessed(batch.size());
+            return CompletableFuture.completedFuture(statistics);
+        }
+
+        final Set<String> productTypeKeys = result.getRight();
 
         return productTypeService
-            .cacheKeysToIds(keysToCache)
+            .cacheKeysToIds(productTypeKeys)
             .handle(ImmutablePair::new)
             .thenCompose(cachingResponse -> {
 
@@ -145,13 +154,12 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
 
                 if (cachingException != null) {
                     handleError(new SyncException("Failed to build a cache of keys to ids.", cachingException),
-                        keysToCache.size());
+                        validDrafts.size());
                     return CompletableFuture.completedFuture(null);
                 }
 
 
-                final Set<String> batchDraftKeys = batchProcessor
-                    .getValidDrafts()
+                final Set<String> batchDraftKeys = validDrafts
                     .stream()
                     .map(ProductTypeDraft::getKey)
                     .collect(Collectors.toSet());
@@ -168,7 +176,7 @@ public class ProductTypeSync extends BaseSync<ProductTypeDraft, ProductTypeSyncS
                             handleError(new SyncException(errorMessage, exception), batchDraftKeys.size());
                             return CompletableFuture.completedFuture(null);
                         } else {
-                            return syncBatch(matchingProductTypes, batchProcessor.getValidDrafts(), keyToIdCache)
+                            return syncBatch(matchingProductTypes, validDrafts, keyToIdCache)
                                 .thenApply(ignoredResult -> buildProductTypesToUpdateMap())
                                 .thenCompose(this::resolveMissingNestedReferences);
                         }

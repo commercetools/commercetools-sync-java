@@ -28,12 +28,35 @@
 
 -->
 
-<!--
-### 2.x.x - MM xx, 2020
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/2.0.0...2.0.1) |
-[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.0.1/) | 
-[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.0.1)
--->
+### 2.2.1 - Sep 29, 2020
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/2.2.0...2.2.1) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.2.1/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.2.1)
+
+- 🐞 **Bug Fixes** (1)
+    - **Product Sync** - Fixed a bug in the `ProductSync` related handling of unresolved product references provided in 
+    different batches. [#580](https://github.com/commercetools/commercetools-sync-java/issues/580)
+
+
+### 2.2.0 - Sep 25, 2020
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/2.1.0...2.2.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.2.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.2.0)
+
+- 🎉 **New Features** (2)
+    - **Product Sync** - Added support for resolving `key-value-document` (custom object) references on attributes of type `Reference`, `Set` of `Reference`, `NestedType` or `Set` of `NestedType`. [#564](https://github.com/commercetools/commercetools-sync-java/issues/564)     
+    - Introduced new concept for the validation of `the drafts in batches` for each `Sync` instance, exposed with 
+    `BaseBatchValidator` implementations (i.e. ProductBatchValidator, CategoryBatchValidator). [#233](https://github.com/commercetools/commercetools-sync-java/issues/233)
+    
+- ✨ **Enhancements** (2)    
+    - **Category Sync** - Passed category keys in batch to `cacheKeysToIds` method of `CategoryService` to avoid fetching all categories for every batch. 
+[#235](https://github.com/commercetools/commercetools-sync-java/issues/235)
+    - Populated `keyToId` caches in services before reference resolution to improve the performance of the library 
+    with collecting referenced keys in batches of drafts. [#235](https://github.com/commercetools/commercetools-sync-java/issues/235)
+
+- 🛠️ **Dependency Updates** (1)
+    - `mockito-junit-jupiter` `3.5.11` ->  [`3.5.13`](https://github.com/mockito/mockito/releases/tag/v3.5.13) 
+
 
 ### 2.1.0 - Sep 21, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/2.0.0...2.1.0) |

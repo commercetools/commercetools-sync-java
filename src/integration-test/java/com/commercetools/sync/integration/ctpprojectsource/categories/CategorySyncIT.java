@@ -409,10 +409,6 @@ class CategorySyncIT {
                 assertThat(fieldErrors).allSatisfy(error -> assertThat(error.getField()).isEqualTo("slug.en"));
             });
 
-        assertThat(callBackWarningResponses)
-            .hasSize(2)
-            .allSatisfy(warningMessage ->
-                assertThat(warningMessage)
-                    .matches("Category with id: '.*' has no key set. Keys are required for category matching."));
+        assertThat(callBackWarningResponses).isEmpty();
     }
 }

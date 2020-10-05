@@ -4,25 +4,22 @@ import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.impl.TaxCategoryServiceImpl;
+import com.commercetools.sync.taxcategories.helpers.TaxCategoryBatchValidator;
 import com.commercetools.sync.taxcategories.helpers.TaxCategorySyncStatistics;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import io.sphere.sdk.taxcategories.TaxCategoryDraft;
-import io.sphere.sdk.taxcategories.TaxRateDraft;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.taxcategories.utils.TaxCategorySyncUtils.buildActions;
@@ -32,23 +29,14 @@ import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toMap;
-import static java.util.stream.Collectors.toSet;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncStatistics, TaxCategorySyncOptions> {
 
     private static final String TAX_CATEGORY_FETCH_FAILED = "Failed to fetch existing tax categories with keys: '%s'.";
     private static final String TAX_CATEGORY_UPDATE_FAILED = "Failed to update tax category with key: '%s'. Reason: %s";
-    private static final String TAX_CATEGORY_DRAFT_HAS_NO_KEY = "Failed to process tax category draft without key.";
-    private static final String TAX_CATEGORY_DRAFT_IS_NULL = "Failed to process null tax category draft.";
-    private static final String TAX_CATEGORY_DUPLICATED_COUNTRY = "Tax rate drafts have duplicated country "
-            + "codes. Duplicated tax rate country code: '%s'. Tax rate country codes and "
-            + "states are expected to be unique inside their tax category.";
-    private static final String TAX_CATEGORY_DUPLICATED_COUNTRY_AND_STATE = "Tax rate drafts have duplicated country "
-        + "codes and states. Duplicated tax rate country code: '%s'. state : '%s'. Tax rate country codes and "
-        + "states are expected to be unique inside their tax category.";
 
     private final TaxCategoryService taxCategoryService;
+    private final TaxCategoryBatchValidator batchValidator;
 
     public TaxCategorySync(@Nonnull final TaxCategorySyncOptions taxCategorySyncOptions) {
         this(taxCategorySyncOptions, new TaxCategoryServiceImpl(taxCategorySyncOptions));
@@ -70,6 +58,7 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
                     @Nonnull final TaxCategoryService taxCategoryService) {
         super(new TaxCategorySyncStatistics(), taxCategorySyncOptions);
         this.taxCategoryService = taxCategoryService;
+        this.batchValidator = new TaxCategoryBatchValidator(getSyncOptions(), getStatistics());
     }
 
     @Override
@@ -80,10 +69,10 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
 
     /**
      * This method first creates a new {@link Set} of valid {@link TaxCategoryDraft} elements. For more on the rules of
-     * validation, check: {@link TaxCategorySync#validateDraft(TaxCategoryDraft)}. Using the resulting set of
-     * {@code validTaxCategoryDrafts}, the matching tax categories in the target CTP project are fetched then the method
-     * {@link TaxCategorySync#syncBatch(Set, Set)} is called to perform the sync (<b>update</b> or <b>create</b>
-     * requests accordingly) on the target project.
+     * validation, check: {@link TaxCategoryBatchValidator#validateAndCollectReferencedKeys(List)}. Using the resulting
+     * set of {@code validTaxCategoryDrafts}, the matching tax categories in the target CTP project are fetched then
+     * the method {@link TaxCategorySync#syncBatch(Set, Set)} is called to perform the sync (<b>update</b> or
+     * <b>create</b> requests accordingly) on the target project.
      *
      * <p> In case of error during of fetching of existing tax categories, the error callback will be triggered.
      * And the sync process would stop for the given batch.
@@ -96,63 +85,37 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
      */
     @Override
     protected CompletionStage<TaxCategorySyncStatistics> processBatch(@Nonnull final List<TaxCategoryDraft> batch) {
-        final Set<TaxCategoryDraft> validTaxCategoryDrafts = batch.stream()
-            .filter(this::validateDraft)
-            .collect(toSet());
 
-        if (validTaxCategoryDrafts.isEmpty()) {
+        final ImmutablePair<Set<TaxCategoryDraft>, Set<String>> result =
+            batchValidator.validateAndCollectReferencedKeys(batch);
+
+        final Set<TaxCategoryDraft> validDrafts = result.getLeft();
+        if (validDrafts.isEmpty()) {
             statistics.incrementProcessed(batch.size());
-            return completedFuture(statistics);
-        } else {
-            final Set<String> keys = validTaxCategoryDrafts.stream().map(TaxCategoryDraft::getKey).collect(toSet());
-            return taxCategoryService
-                .fetchMatchingTaxCategoriesByKeys(keys)
-                .handle(ImmutablePair::new)
-                .thenCompose(fetchResponse -> {
-                    Set<TaxCategory> fetchedTaxCategories = fetchResponse.getKey();
-                    final Throwable exception = fetchResponse.getValue();
-
-                    if (exception != null) {
-                        final String errorMessage = format(TAX_CATEGORY_FETCH_FAILED, keys);
-                        handleError(new SyncException(errorMessage, exception),null,null,null,
-                            keys.size());
-                        return completedFuture(null);
-                    } else {
-                        return syncBatch(fetchedTaxCategories, validTaxCategoryDrafts);
-                    }
-                })
-                .thenApply(ignored -> {
-                    statistics.incrementProcessed(batch.size());
-                    return statistics;
-                });
+            return CompletableFuture.completedFuture(statistics);
         }
-    }
+        final Set<String> validTaxCategoryKeys = result.getRight();
 
-    /**
-     * Checks if a draft is valid for further processing. If so, then returns {@code true}. Otherwise handles an error
-     * and returns {@code false}. A valid draft is a {@link TaxCategoryDraft} object that is not {@code null} and its
-     * key is not empty and tax rates are not duplicated.
-     *
-     * @param draft nullable draft
-     * @return boolean that indicate if given {@code draft} is valid for sync
-     */
-    private boolean validateDraft(@Nullable final TaxCategoryDraft draft) {
-        if (draft == null) {
-            handleError(new SyncException(TAX_CATEGORY_DRAFT_IS_NULL));
-        } else if (isBlank(draft.getKey())) {
-            handleError(new SyncException(TAX_CATEGORY_DRAFT_HAS_NO_KEY));
-        } else if (draft.getTaxRates() != null && !draft.getTaxRates().isEmpty()) {
-            return validateIfDuplicateCountryAndState(draft.getTaxRates());
-        } else {
-            return true;
-        }
+        return taxCategoryService
+            .fetchMatchingTaxCategoriesByKeys(validTaxCategoryKeys)
+            .handle(ImmutablePair::new)
+            .thenCompose(fetchResponse -> {
+                Set<TaxCategory> fetchedTaxCategories = fetchResponse.getKey();
+                final Throwable exception = fetchResponse.getValue();
 
-        return false;
-    }
-
-
-    private void handleError(@Nonnull final SyncException syncException) {
-        handleError(syncException, null, null, null,1);
+                if (exception != null) {
+                    final String errorMessage = format(TAX_CATEGORY_FETCH_FAILED, validTaxCategoryKeys);
+                    handleError(new SyncException(errorMessage, exception),null,null,null,
+                        validTaxCategoryKeys.size());
+                    return completedFuture(null);
+                } else {
+                    return syncBatch(fetchedTaxCategories, validDrafts);
+                }
+            })
+            .thenApply(ignored -> {
+                statistics.incrementProcessed(batch.size());
+                return statistics;
+            });
     }
 
     /**
@@ -160,7 +123,7 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
      * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
      * incrementing the total number of failed states to sync.
      *
-     * @param SyncException The exception describing the reason(s) of failure.
+     * @param syncException The exception describing the reason(s) of failure.
      * @param entry         The Resource, which should be updated
      * @param draft         The draft, which should be sync
      * @param updateActions Generated update actions
@@ -231,42 +194,6 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
                 })
             )
             .orElse(completedFuture(Optional.empty()));
-    }
-
-    private boolean validateIfDuplicateCountryAndState(final List<TaxRateDraft> taxRateDrafts) {
-        /*
-        For TaxRates uniqueness could be ensured by country code and states.
-        So in tax category sync are using country code and states for matching.
-
-        Representation of the commercetools platform error when country code is duplicated,
-            {
-                "statusCode": 400,
-                "message": "A duplicate value '{\"country\":\"DE\"}' exists for field 'country'.",
-                "errors": [
-                    {
-                        "code": "DuplicateField",
-                        ....
-                ]
-            }
-        */
-        Map<String,Map<String, Long>> map = taxRateDrafts.stream().collect(
-                Collectors.groupingBy(draft -> Objects.toString(draft.getCountry(), ""),
-                    Collectors.groupingBy(draft -> Objects.toString(draft.getState(), ""),
-                        Collectors.counting())));
-
-        for (Map.Entry<String, Map<String, Long>> countryEntry : map.entrySet()) {
-            for (Map.Entry<String, Long> stateEntry: countryEntry.getValue().entrySet()) {
-                if (stateEntry.getValue() > 1L) {
-                    String errorMessage = StringUtils.isBlank(stateEntry.getKey())
-                        ? format(TAX_CATEGORY_DUPLICATED_COUNTRY, countryEntry.getKey())
-                        : format(TAX_CATEGORY_DUPLICATED_COUNTRY_AND_STATE, countryEntry.getKey(), stateEntry.getKey());
-                    handleError(new SyncException(errorMessage));
-                    return false;
-                }
-            }
-        }
-
-        return true;
     }
 
     @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
