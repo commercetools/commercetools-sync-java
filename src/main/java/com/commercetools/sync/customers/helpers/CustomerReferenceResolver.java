@@ -4,7 +4,6 @@ import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.helpers.CustomReferenceResolver;
 import com.commercetools.sync.customers.CustomerSyncOptions;
 import com.commercetools.sync.services.CustomerGroupService;
-import com.commercetools.sync.services.StoreService;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.customers.CustomerDraft;
@@ -14,17 +13,12 @@ import io.sphere.sdk.stores.Store;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CompletionStage;
-import java.util.stream.Collectors;
 
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
-import static java.util.stream.Collectors.joining;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public final class CustomerReferenceResolver
     extends CustomReferenceResolver<CustomerDraft, CustomerDraftBuilder, CustomerSyncOptions> {
@@ -36,10 +30,8 @@ public final class CustomerReferenceResolver
     public static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
         + "CustomerDraft with key:'%s'.";
     public static final String CUSTOMER_GROUP_DOES_NOT_EXIST = "CustomerGroup with key '%s' doesn't exist.";
-    public static final String STORES_DO_NOT_EXIST = "Stores with keys '%s' don't exist.";
 
     private final CustomerGroupService customerGroupService;
-    private final StoreService storeService;
 
     /**
      * Takes a {@link CustomerSyncOptions} instance, a  {@link TypeService} to instantiate a
@@ -50,16 +42,13 @@ public final class CustomerReferenceResolver
      *                    and/or configuration and other sync-specific options.
      * @param typeService the service to fetch the custom types for reference resolution.
      * @param customerGroupService the service to fetch the customer groups for reference resolution.
-     * @param storeService the service to fetch the stores for reference resolution.
      */
     public CustomerReferenceResolver(
         @Nonnull final CustomerSyncOptions options,
         @Nonnull final TypeService typeService,
-        @Nonnull final CustomerGroupService customerGroupService,
-        @Nonnull final StoreService storeService) {
+        @Nonnull final CustomerGroupService customerGroupService) {
         super(options, typeService);
         this.customerGroupService = customerGroupService;
-        this.storeService = storeService;
     }
 
     /**
@@ -155,55 +144,24 @@ public final class CustomerReferenceResolver
         if (storeResourceIdentifiers == null || storeResourceIdentifiers.isEmpty()) {
             return completedFuture(draftBuilder);
         }
-
-        final Set<String> storeKeys = new HashSet<>();
-        final List<ResourceIdentifier<Store>> directStoreResourceIdentifiers = new ArrayList<>();
+        final List<ResourceIdentifier<Store>> resolvedReferences = new ArrayList<>();
         for (ResourceIdentifier<Store> storeResourceIdentifier : storeResourceIdentifiers) {
-            if (storeResourceIdentifier != null && storeResourceIdentifier.getId() == null) {
-                try {
-                    final String storeKey = getKeyFromResourceIdentifier(storeResourceIdentifier);
-                    storeKeys.add(storeKey);
-                } catch (ReferenceResolutionException referenceResolutionException) {
-                    return exceptionallyCompletedFuture(
-                        new ReferenceResolutionException(
-                            format(FAILED_TO_RESOLVE_STORE_REFERENCE,
-                                draftBuilder.getKey(), referenceResolutionException.getMessage())));
+            if (storeResourceIdentifier != null) {
+                if (storeResourceIdentifier.getId() == null) {
+                    try {
+                        final String storeKey = getKeyFromResourceIdentifier(storeResourceIdentifier);
+                        resolvedReferences.add(ResourceIdentifier.ofKey(storeKey));
+                    } catch (ReferenceResolutionException referenceResolutionException) {
+                        return exceptionallyCompletedFuture(
+                            new ReferenceResolutionException(
+                                format(FAILED_TO_RESOLVE_STORE_REFERENCE,
+                                    draftBuilder.getKey(), referenceResolutionException.getMessage())));
+                    }
+                } else {
+                    resolvedReferences.add(ResourceIdentifier.ofId(storeResourceIdentifier.getId()));
                 }
-            } else {
-                directStoreResourceIdentifiers.add(storeResourceIdentifier);
             }
         }
-        return fetchAndResolveStoreReferences(draftBuilder, storeKeys, directStoreResourceIdentifiers);
-    }
-
-    @Nonnull
-    private CompletionStage<CustomerDraftBuilder> fetchAndResolveStoreReferences(
-        @Nonnull final CustomerDraftBuilder draftBuilder,
-        @Nonnull final Set<String> storeKeys,
-        @Nonnull final List<ResourceIdentifier<Store>> directStoreReferences) {
-
-        return storeService
-            .cacheKeysToIds(storeKeys)
-            .thenCompose(storeKeyToIdMap -> {
-                final String keysNotExists = storeKeys
-                    .stream()
-                    .filter(storeKey -> !storeKeyToIdMap.containsKey(storeKey))
-                    .collect(joining(", "));
-
-                if (!isBlank(keysNotExists)) {
-                    final String errorMessage = format(STORES_DO_NOT_EXIST, keysNotExists);
-                    return exceptionallyCompletedFuture(new ReferenceResolutionException(
-                        format(FAILED_TO_RESOLVE_STORE_REFERENCE, draftBuilder.getKey(), errorMessage)));
-                }
-
-                final List<ResourceIdentifier<Store>> resolvedReferences =
-                    storeKeys.stream()
-                             .map(storeKeyToIdMap::get)
-                             .map(ResourceIdentifier::<Store>ofId)
-                             .collect(Collectors.toList());
-
-                resolvedReferences.addAll(directStoreReferences);
-                return completedFuture(draftBuilder.stores(resolvedReferences));
-            });
+        return completedFuture(draftBuilder.stores(resolvedReferences));
     }
 }
