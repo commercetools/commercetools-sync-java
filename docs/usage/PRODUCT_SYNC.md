@@ -63,16 +63,16 @@ final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(spher
 
 #### About SyncOptions
 `SyncOptions` is an object which provides a place for users to add certain configurations to customize the sync process.
-Here are configurations included :
+Available configurations:
 
 ##### 1. `errorCallback`
-A callback that is called whenever an error event occurs during the sync process. It contains the following
-information about the error-event:
+A callback that is called whenever an error event occurs during the sync process. It contains the following context 
+about the error-event:
 
 * sync exception
 * product draft from the source
-* product of the target project
-* the update-actions, which failed
+* product of the target project (only provided if an existing product could be found)
+* the update-actions, which failed (only provided if an existing product could be found)
 
 ##### Example 
 ````java
@@ -89,7 +89,7 @@ information about the warning message:
 
 * sync exception
 * product draft from the source 
-* product of the target project
+* product of the target project (only provided if an existing product could be found)
 
 ##### Example 
 ````java
@@ -102,11 +102,12 @@ information about the warning message:
 
 ##### 3. `beforeUpdateCallback`
 During the sync process if a target product and a product draft are matched, this callback can be used to intercept 
-the **_update_** request just before it is sent to CTP. It contains following information :
+the **_update_** request just before it is sent to CTP. This allows the user to modify update actions array with custom 
+actions or discard unwanted actions. The callback provides the following information :
  
  * product draft from the source
  * product from the target project
- * update actions that were calculated after comparing both.  
+ * update actions that were calculated after comparing both
 
 ##### Example
 ````java
@@ -122,9 +123,9 @@ final ProductSyncOptions productSyncOptions =
 
 ##### 4. `beforeCreateCallback`
 During the sync process if a product draft should be created, this callback can be used to intercept 
-the **_create_** request just before it sent to CTP.  It contains following information : 
+the **_create_** request just before it is sent to Commercetools platform.  It contains following information : 
 
- * product draft that should be created.
+ * product draft that should be created
  
 ##### Example
 ````java
@@ -140,10 +141,10 @@ final ProductSyncOptions productSyncOptions =
 
 ##### 5. `batchSize`
 A number that could be used to set the batch size with which products are fetched and processed,
-as products are obtained from the target CTP project in batches for better performance. The algorithm accumulates up to
-`batchSize` resources from the input list, then fetches the corresponding products from the target CTP project
-in a single request. Playing with this option can slightly improve or reduce processing speed. If it is not set, the 
-default batch size is 30 for product sync.
+as products are obtained from the target project on commercetools platform in batches for better performance. The 
+algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding products from the 
+target project on commecetools platform in a single request. Playing with this option can slightly improve or reduce 
+processing speed. If it is not set, the default batch size is 30 for product sync.
 ##### Example
 ````java                         
 final ProductSyncOptions productSyncOptions = 
