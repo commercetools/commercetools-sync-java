@@ -5,8 +5,6 @@ import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 import com.commercetools.sync.customers.CustomerSyncOptions;
 import io.sphere.sdk.customers.CustomerDraft;
 import io.sphere.sdk.models.Address;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.stores.Store;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
@@ -100,8 +98,6 @@ public class CustomerBatchValidator
         } else if (isBlank(customerDraft.getEmail())) {
             handleError(format(CUSTOMER_DRAFT_EMAIL_NOT_SET, customerDraft.getKey()));
         } else if (hasValidAddresses(customerDraft)) {
-            // todo (ahmetoz)
-            // what to do for password ?
             return hasValidBillingAndShippingAddresses(customerDraft);
         }
         return false;
@@ -210,25 +206,11 @@ public class CustomerBatchValidator
             referencedKeys.customerGroupKeys::add);
         collectReferencedKeyFromCustomFieldsDraft(customerDraft.getCustom(),
             referencedKeys.typeKeys::add);
-        collectReferencedStoreKeys(customerDraft.getStores(), referencedKeys.storeKeys);
-    }
-
-    private void collectReferencedStoreKeys(
-        @Nullable final List<ResourceIdentifier<Store>> stores,
-        @Nonnull final Set<String> storeKeys) {
-
-        if (stores != null) {
-            stores.stream()
-                  .filter(Objects::nonNull)
-                  .forEach(resourceIdentifier ->
-                      collectReferencedKeyFromResourceIdentifier(resourceIdentifier, storeKeys::add));
-        }
     }
 
     public static class ReferencedKeys {
         private final Set<String> customerGroupKeys = new HashSet<>();
         private final Set<String> typeKeys = new HashSet<>();
-        private final Set<String> storeKeys = new HashSet<>();
 
         public Set<String> getTypeKeys() {
             return typeKeys;
@@ -236,10 +218,6 @@ public class CustomerBatchValidator
 
         public Set<String> getCustomerGroupKeys() {
             return customerGroupKeys;
-        }
-
-        public Set<String> getStoreKeys() {
-            return storeKeys;
         }
     }
 }

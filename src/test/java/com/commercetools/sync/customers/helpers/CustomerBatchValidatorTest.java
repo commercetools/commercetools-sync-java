@@ -294,7 +294,6 @@ class CustomerBatchValidatorTest {
         assertThat(pair.getLeft()).containsExactlyInAnyOrder(customerDraft, customerDraft2);
         assertThat(pair.getRight().getTypeKeys()).containsExactlyInAnyOrder("typeKey");
         assertThat(pair.getRight().getCustomerGroupKeys()).containsExactlyInAnyOrder("customerGroupKey");
-        assertThat(pair.getRight().getStoreKeys()).containsExactlyInAnyOrder("storeKey1", "storeKey2");
     }
 
     @Nonnull
