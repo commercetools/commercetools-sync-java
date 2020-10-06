@@ -236,108 +236,115 @@ public final class CustomerUpdateActionUtils {
     }
 
     /**
-     * Compares the {@code CustomerNumber} values of a {@link Customer} and a {@link CustomerDraft}
+     * Compares the {@code customerNumber} values of a {@link Customer} and a {@link CustomerDraft}
      * and returns an {@link Optional} of update action, which would contain the {@code "setCustomerNumber"}
      * {@link UpdateAction}. If both {@link Customer} and {@link CustomerDraft} have the same
-     * {@code CustomerNumber} values, then no update action is needed and empty optional will be returned.
+     * {@code customerNumber} values, then no update action is needed and empty optional will be returned.
      *
-     * @param oldCustomer the Customer that should be updated.
-     * @param newCustomer the Customer draft that contains the new customer number.
+     * @param oldCustomer the customer that should be updated.
+     * @param newCustomer the customer draft that contains the new customer number.
      * @return optional containing update action or empty optional if customer numbers are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<Customer>> setCustomerNumberUpdateAction
-    (@Nonnull final Customer oldCustomer,
-     @Nonnull final CustomerDraft newCustomer) {
+    public static Optional<UpdateAction<Customer>> buildSetCustomerNumberUpdateAction(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
 
-        return buildUpdateAction(oldCustomer.getCustomerNumber(),
-            newCustomer.getCustomerNumber(), () -> SetCustomerNumber.of(newCustomer.getCustomerNumber()));
+        return buildUpdateAction(oldCustomer.getCustomerNumber(), newCustomer.getCustomerNumber(),
+            () -> SetCustomerNumber.of(newCustomer.getCustomerNumber()));
     }
 
     /**
-     * Compares the {@code ExternalId} values of a {@link Customer} and a {@link CustomerDraft}
+     * Compares the {@code externalId} values of a {@link Customer} and a {@link CustomerDraft}
      * and returns an {@link Optional} of update action, which would contain the {@code "setExternalId"}
      * {@link UpdateAction}. If both {@link Customer} and {@link CustomerDraft} have the same
-     * {@code ExternalId} values, then no update action is needed and empty optional will be returned.
+     * {@code externalId} values, then no update action is needed and empty optional will be returned.
      *
-     * @param oldCustomer the Customer that should be updated.
-     * @param newCustomer the Customer draft that contains the new external Id.
-     * @return optional containing update action or empty optional if external Ids are identical.
+     * @param oldCustomer the customer that should be updated.
+     * @param newCustomer the customer draft that contains the new external id.
+     * @return optional containing update action or empty optional if external ids are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<Customer>> setExternalIdUpdateAction(@Nonnull final Customer oldCustomer,
-                                                                             @Nonnull final CustomerDraft newCustomer) {
+    public static Optional<UpdateAction<Customer>> buildSetExternalIdUpdateAction(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
 
-        return buildUpdateAction((oldCustomer.getExternalId()), newCustomer.getExternalId(),
+        return buildUpdateAction(oldCustomer.getExternalId(), newCustomer.getExternalId(),
             () -> SetExternalId.of(newCustomer.getExternalId()));
     }
 
     /**
-     * Compares the {@code CompanyName} values of a {@link Customer} and a {@link CustomerDraft}
+     * Compares the {@code companyName} values of a {@link Customer} and a {@link CustomerDraft}
      * and returns an {@link Optional} of update action, which would contain the {@code "setCompanyName"}
      * {@link UpdateAction}. If both {@link Customer} and {@link CustomerDraft} have the same
-     * {@code CompanyName} values, then no update action is needed and empty optional will be returned.
+     * {@code companyName} values, then no update action is needed and empty optional will be returned.
      *
-     * @param oldCustomer the Customer that should be updated.
-     * @param newCustomer the Customer draft that contains the new company name.
+     * @param oldCustomer the customer that should be updated.
+     * @param newCustomer the customer draft that contains the new company name.
      * @return optional containing update action or empty optional if company names are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<Customer>> setCompanyNameUpdateAction(@Nonnull final Customer oldCustomer,
-                                                                              @Nonnull final CustomerDraft newCustomer) {
+    public static Optional<UpdateAction<Customer>> buildSetCompanyNameUpdateAction(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
 
         return buildUpdateAction(oldCustomer.getCompanyName(), newCustomer.getCompanyName(),
-            () -> SetCompanyName.of(
-                newCustomer.getCompanyName()));
+            () -> SetCompanyName.of(newCustomer.getCompanyName()));
     }
 
     /**
-     * Compares the {@code DateOfBirth} values of a {@link Customer} and a {@link CustomerDraft}
+     * Compares the {@code dateOfBirth} values of a {@link Customer} and a {@link CustomerDraft}
      * and returns an {@link Optional} of update action, which would contain the {@code "setDateOfBirth"}
      * {@link UpdateAction}. If both {@link Customer} and {@link CustomerDraft} have the same
-     * {@code DateOfBirth} values, then no update action is needed and empty optional will be returned.
+     * {@code dateOfBirth} values, then no update action is needed and empty optional will be returned.
      *
-     * @param oldCustomer the Customer that should be updated.
-     * @param newCustomer the Customer draft that contains the new date of birth.
+     * @param oldCustomer the customer that should be updated.
+     * @param newCustomer the customer draft that contains the new date of birth.
      * @return optional containing update action or empty optional if dates of birth are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<Customer>> setDateOfBirthUpdateAction(@Nonnull final Customer oldCustomer,
-                                                                              @Nonnull final CustomerDraft newCustomer) {
+    public static Optional<UpdateAction<Customer>> setDateOfBirthUpdateAction(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
+
         return buildUpdateAction(oldCustomer.getDateOfBirth(), newCustomer.getDateOfBirth(),
             () -> SetDateOfBirth.of(newCustomer.getDateOfBirth()));
     }
 
     /**
-     * Compares the {@code VatId} values of a {@link Customer} and a {@link CustomerDraft}
+     * Compares the {@code vatId} values of a {@link Customer} and a {@link CustomerDraft}
      * and returns an {@link Optional} of update action, which would contain the {@code "setVatId"}
      * {@link UpdateAction}. If both {@link Customer} and {@link CustomerDraft} have the same
-     * {@code VatId} values, then no update action is needed and empty optional will be returned.
+     * {@code vatId} values, then no update action is needed and empty optional will be returned.
      *
-     * @param oldCustomer the Customer that should be updated.
-     * @param newCustomer the Customer draft that contains the new vat Id.
-     * @return optional containing update action or empty optional if vat Ids are identical.
+     * @param oldCustomer the customer that should be updated.
+     * @param newCustomer the customer draft that contains the new vat id.
+     * @return optional containing update action or empty optional if vat ids are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<Customer>> setVatIdUpdateAction(@Nonnull final Customer oldCustomer,
-                                                                        @Nonnull final CustomerDraft newCustomer) {
+    public static Optional<UpdateAction<Customer>> buildSetVatIdUpdateAction(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
+
         return buildUpdateAction(oldCustomer.getVatId(), newCustomer.getVatId(),
             () -> SetVatId.of(newCustomer.getVatId()));
     }
 
     /**
-     * Compares the {@code Locale} values of a {@link Customer} and a {@link CustomerDraft}
+     * Compares the {@code locale} values of a {@link Customer} and a {@link CustomerDraft}
      * and returns an {@link Optional} of update action, which would contain the {@code "setLocale"}
      * {@link UpdateAction}. If both {@link Customer} and {@link CustomerDraft} have the same
-     * {@code Locale} values, then no update action is needed and empty optional will be returned.
+     * {@code locale} values, then no update action is needed and empty optional will be returned.
      *
-     * @param oldCustomer the Customer that should be updated.
-     * @param newCustomer the Customer draft that contains the new locale.
+     * @param oldCustomer the customer that should be updated.
+     * @param newCustomer the customer draft that contains the new locale.
      * @return optional containing update action or empty optional if locales are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<Customer>> setLocaleUpdateAction(@Nonnull final Customer oldCustomer,
-                                                                         @Nonnull final CustomerDraft newCustomer) {
+    public static Optional<UpdateAction<Customer>> buildSetLocaleUpdateAction(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
+
         return buildUpdateAction(oldCustomer.getLocale(), newCustomer.getLocale(),
             () -> SetLocale.of(newCustomer.getLocale()));
     }

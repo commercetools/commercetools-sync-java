@@ -26,18 +26,18 @@ import java.util.Locale;
 import java.util.Optional;
 
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildChangeEmailUpdateAction;
-import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.setCompanyNameUpdateAction;
-import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.setCustomerNumberUpdateAction;
+import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetCompanyNameUpdateAction;
+import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetCustomerNumberUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.setDateOfBirthUpdateAction;
-import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.setExternalIdUpdateAction;
+import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetExternalIdUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetFirstNameUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.setKeyUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetLastNameUpdateAction;
-import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.setLocaleUpdateAction;
+import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetLocaleUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetMiddleNameUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetSalutationUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetTitleUpdateAction;
-import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.setVatIdUpdateAction;
+import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetVatIdUpdateAction;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -183,7 +183,7 @@ public class CustomerUpdateActionUtilsTest {
 
     @Test
     void buildSetCustomerNumberUpdateAction_withDifferentValues_ShouldReturnAction() {
-        final Optional<UpdateAction<Customer>> result = setCustomerNumberUpdateAction(old, newDifferent);
+        final Optional<UpdateAction<Customer>> result = buildSetCustomerNumberUpdateAction(old, newDifferent);
 
         assertThat(result).containsInstanceOf(SetCustomerNumber.class);
         assertThat(result).contains(SetCustomerNumber.of(newDifferent.getCustomerNumber()));
@@ -191,14 +191,14 @@ public class CustomerUpdateActionUtilsTest {
 
     @Test
     void buildSetCustomerNumberUpdateAction_withSameValues_ShouldReturnEmptyOptional() {
-        final Optional<UpdateAction<Customer>> result = setCustomerNumberUpdateAction(old, newSame);
+        final Optional<UpdateAction<Customer>> result = buildSetCustomerNumberUpdateAction(old, newSame);
 
         assertThat(result).isEmpty();
     }
 
     @Test
     void buildSetExternalIdUpdateAction_withDifferentValues_ShouldReturnAction() {
-        final Optional<UpdateAction<Customer>> result = setExternalIdUpdateAction(old, newDifferent);
+        final Optional<UpdateAction<Customer>> result = buildSetExternalIdUpdateAction(old, newDifferent);
 
         assertThat(result).containsInstanceOf(SetExternalId.class);
         assertThat(result).contains(SetExternalId.of(newDifferent.getExternalId()));
@@ -206,14 +206,14 @@ public class CustomerUpdateActionUtilsTest {
 
     @Test
     void buildSetExternalIdUpdateAction_withSameValues_ShouldReturnEmptyOptional() {
-        final Optional<UpdateAction<Customer>> result = setExternalIdUpdateAction(old, newSame);
+        final Optional<UpdateAction<Customer>> result = buildSetExternalIdUpdateAction(old, newSame);
 
         assertThat(result).isEmpty();
     }
 
     @Test
     void buildSetCompanyNameUpdateAction_withDifferentValues_ShouldReturnAction() {
-        final Optional<UpdateAction<Customer>> result = setCompanyNameUpdateAction(old, newDifferent);
+        final Optional<UpdateAction<Customer>> result = buildSetCompanyNameUpdateAction(old, newDifferent);
 
         assertThat(result).containsInstanceOf(SetCompanyName.class);
         assertThat(result).contains(SetCompanyName.of(newDifferent.getCompanyName()));
@@ -221,7 +221,7 @@ public class CustomerUpdateActionUtilsTest {
 
     @Test
     void buildSetCompanyNameUpdateAction_withSameValues_ShouldReturnEmptyOptional() {
-        final Optional<UpdateAction<Customer>> result = setCompanyNameUpdateAction(old, newSame);
+        final Optional<UpdateAction<Customer>> result = buildSetCompanyNameUpdateAction(old, newSame);
 
         assertThat(result).isEmpty();
     }
@@ -243,7 +243,7 @@ public class CustomerUpdateActionUtilsTest {
 
     @Test
     void buildSetVatIdUpdateAction_withDifferentValues_ShouldReturnAction() {
-        final Optional<UpdateAction<Customer>> result = setVatIdUpdateAction(old, newDifferent);
+        final Optional<UpdateAction<Customer>> result = buildSetVatIdUpdateAction(old, newDifferent);
 
         assertThat(result).containsInstanceOf(SetVatId.class);
         assertThat(result).contains(SetVatId.of(newDifferent.getVatId()));
@@ -251,14 +251,14 @@ public class CustomerUpdateActionUtilsTest {
 
     @Test
     void buildSetVatIdUpdateAction_withSameValues_ShouldReturnEmptyOptional() {
-        final Optional<UpdateAction<Customer>> result = setVatIdUpdateAction(old, newSame);
+        final Optional<UpdateAction<Customer>> result = buildSetVatIdUpdateAction(old, newSame);
 
         assertThat(result).isEmpty();
     }
 
     @Test
     void buildSetLocaleUpdateAction_withDifferentValues_ShouldReturnAction() {
-        final Optional<UpdateAction<Customer>> result = setLocaleUpdateAction(old, newDifferent);
+        final Optional<UpdateAction<Customer>> result = buildSetLocaleUpdateAction(old, newDifferent);
 
         assertThat(result).containsInstanceOf(SetLocale.class);
         assertThat(result).contains(SetLocale.of(newDifferent.getLocale()));
@@ -266,7 +266,7 @@ public class CustomerUpdateActionUtilsTest {
 
     @Test
     void buildSetLocaleUpdateAction_withSameValues_ShouldReturnEmptyOptional() {
-        final Optional<UpdateAction<Customer>> result = setLocaleUpdateAction(old, newSame);
+        final Optional<UpdateAction<Customer>> result = buildSetLocaleUpdateAction(old, newSame);
 
         assertThat(result).isEmpty();
     }
