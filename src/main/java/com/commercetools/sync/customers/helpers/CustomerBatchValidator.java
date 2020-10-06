@@ -1,7 +1,6 @@
 package com.commercetools.sync.customers.helpers;
 
 import com.commercetools.sync.commons.helpers.BaseBatchValidator;
-import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 import com.commercetools.sync.customers.CustomerSyncOptions;
 import io.sphere.sdk.customers.CustomerDraft;
 import io.sphere.sdk.models.Address;
@@ -21,7 +20,7 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class CustomerBatchValidator
-    extends BaseBatchValidator<CustomerDraft, CustomerSyncOptions, BaseSyncStatistics> {
+    extends BaseBatchValidator<CustomerDraft, CustomerSyncOptions, CustomerSyncStatistics> {
 
     static final String CUSTOMER_DRAFT_IS_NULL = "CustomerDraft is null.";
     static final String CUSTOMER_DRAFT_KEY_NOT_SET = "CustomerDraft with email: %s doesn't have a key. "
@@ -45,7 +44,7 @@ public class CustomerBatchValidator
         + "Please make sure all customer drafts have valid index values for the 'shippingAddresses'.";
 
     public CustomerBatchValidator(@Nonnull final CustomerSyncOptions syncOptions,
-                                  @Nonnull final BaseSyncStatistics syncStatistics) {
+                                  @Nonnull final CustomerSyncStatistics syncStatistics) {
         super(syncOptions, syncStatistics);
     }
 
