@@ -139,102 +139,6 @@ public final class CustomerUpdateActionUtils {
             () -> SetSalutation.of(newCustomer.getSalutation()));
     }
 
-    public Optional<UpdateAction<Customer>> setDefaultShippingAddressUpdateAction
-        (@Nonnull final Customer oldCustomer,
-         @Nonnull final CustomerDraft newCustomer) {
-
-        return buildUpdateAction(oldCustomer.getDefaultShippingAddress(),
-            newCustomer.getDefaultShippingAddress(), () -> SetDefaultShippingAddress.of(
-                String.valueOf(newCustomer.getDefaultShippingAddress())));
-
-    }
-
-    //TODO implement addShippingAddressIdentifierUpdateAction
-    public Optional<UpdateAction<Customer>> addShippingAddressIdentifierUpdateAction(
-        @Nonnull final Customer oldCustomer,
-        @Nonnull final CustomerDraft newCustomer) {
-
-//        final List<Address> oldShippingAddresses = oldCustomer.getShippingAddresses();
-//        final List<Integer> newShippingAddresses = newCustomer.getShippingAddresses();
-//
-//        final Map<String, Customer> oldShippingAddressMap = oldShippingAddresses
-//            .stream()
-//            .collect();
-        return null;
-    }
-
-    //TODO implement removeShippingAddressIdentifierUpdateAction
-    public Optional<UpdateAction<Customer>> removeShippingAddressIdentifierUpdateAction(
-        @Nonnull final Customer oldCustomer,
-        @Nonnull final CustomerDraft newCustomer) {
-
-//        final List<Address> oldAddresses = oldCustomer.getAddresses();
-//        final List<Address> newAddresses = newCustomer.getAddresses();
-//
-//        return buildUpdateActions(oldAddresses, newAddresses, () -> {
-//            final List<UpdateAction<Customer>> updateActions = new ArrayList<>();
-//            filterCollection(oldAddresses, oldAddressReference ->
-//                !newAddresses.contains(oldAddressReference.getId()))
-//                .forEach(addressReference ->
-//                    updateActions.add(RemoveShippingAddressId.of(addressReference.getId())));
-
-//            return updateActions;
-//        });
-        return null;
-    }
-
-    //TODO implement setDefaultBillingAddressUpdateAction
-    public Optional<UpdateAction<Customer>> setDefaultBillingAddressUpdateAction
-    (@Nonnull final Customer oldCustomer,
-     @Nonnull final CustomerDraft newCustomer) {
-
-        return null;
-    }
-
-    //TODO implement addBillingAddressIdentifierUpdateAction
-    public Optional<UpdateAction<Customer>> addBillingAddressIdentifierUpdateAction(@Nonnull final Customer oldCustomer,
-                                                                                    @Nonnull final CustomerDraft newCustomer) {
-
-//        return CommonTypeUpdateActionUtils.buildUpdateAction(oldCustomer.getBillingAddressIds(),
-//            newCustomer.getBillingAddresses(), () -> AddBillingAddressId.of(
-//                newCustomer.getBillingAddresses()));
-        return null;
-    }
-
-    //TODO implement removeBillingAddressIdentifier
-    public Optional<UpdateAction<Customer>> removeBillingAddressIdentifier(@Nonnull final Customer oldCustomer,
-                                                                           @Nonnull final CustomerDraft newCustomer) {
-
-//        final List<Address> oldAddresses = oldCustomer.getAddresses();
-//        final List<Address> newAddresses = newCustomer.getAddresses();
-//
-//        return buildUpdateActions(oldAddresses, newAddresses, () -> {
-//            final List<UpdateAction<Customer>> updateActions = new ArrayList<>();
-//            filterCollection(oldAddresses, oldAddressReference ->
-//                !newAddresses.contains(oldAddressReference.))
-//                .forEach(addressReference ->
-//                    updateActions.add(RemoveShippingAddressId.of(addressReference.getId())));
-//
-//            return updateActions;
-//        });
-        return null;
-    }
-
-    //TODO implement setCustomerGroupUpdateAction
-    public static Optional<UpdateAction<Customer>> setCustomerGroupUpdateAction
-        (@Nonnull final Customer oldCustomer,
-         @Nonnull final CustomerDraft newCustomer) {
-
-//        final Referenceable<CustomerGroup> oldCustomerGroup = oldCustomer.getCustomerGroup();
-//        final ResourceIdentifier<CustomerGroup> newCustomerGroup = newCustomer.getCustomerGroup();
-//
-//        return CommonTypeUpdateActionUtils.buildUpdateActions(oldCustomerGroup, newCustomerGroup,
-//            () -> SetCustomerGroup.of(
-//                newCustomer);
-        return null;
-
-    }
-
     /**
      * Compares the {@code customerNumber} values of a {@link Customer} and a {@link CustomerDraft}
      * and returns an {@link Optional} of update action, which would contain the {@code "setCustomerNumber"}
@@ -347,6 +251,102 @@ public final class CustomerUpdateActionUtils {
 
         return buildUpdateAction(oldCustomer.getLocale(), newCustomer.getLocale(),
             () -> SetLocale.of(newCustomer.getLocale()));
+    }
+
+    public Optional<UpdateAction<Customer>> setDefaultShippingAddressUpdateAction
+        (@Nonnull final Customer oldCustomer,
+         @Nonnull final CustomerDraft newCustomer) {
+
+        return buildUpdateAction(oldCustomer.getDefaultShippingAddress(),
+            newCustomer.getDefaultShippingAddress(), () -> SetDefaultShippingAddress.of(
+                String.valueOf(newCustomer.getDefaultShippingAddress())));
+
+    }
+
+    //TODO implement addShippingAddressIdentifierUpdateAction
+    public Optional<UpdateAction<Customer>> addShippingAddressIdentifierUpdateAction(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
+
+//        final List<Address> oldShippingAddresses = oldCustomer.getShippingAddresses();
+//        final List<Integer> newShippingAddresses = newCustomer.getShippingAddresses();
+//
+//        final Map<String, Customer> oldShippingAddressMap = oldShippingAddresses
+//            .stream()
+//            .collect();
+        return null;
+    }
+
+    //TODO implement removeShippingAddressIdentifierUpdateAction
+    public Optional<UpdateAction<Customer>> removeShippingAddressIdentifierUpdateAction(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
+
+//        final List<Address> oldAddresses = oldCustomer.getAddresses();
+//        final List<Address> newAddresses = newCustomer.getAddresses();
+//
+//        return buildUpdateActions(oldAddresses, newAddresses, () -> {
+//            final List<UpdateAction<Customer>> updateActions = new ArrayList<>();
+//            filterCollection(oldAddresses, oldAddressReference ->
+//                !newAddresses.contains(oldAddressReference.getId()))
+//                .forEach(addressReference ->
+//                    updateActions.add(RemoveShippingAddressId.of(addressReference.getId())));
+
+//            return updateActions;
+//        });
+        return null;
+    }
+
+    //TODO implement setDefaultBillingAddressUpdateAction
+    public Optional<UpdateAction<Customer>> setDefaultBillingAddressUpdateAction
+    (@Nonnull final Customer oldCustomer,
+     @Nonnull final CustomerDraft newCustomer) {
+
+        return null;
+    }
+
+    //TODO implement addBillingAddressIdentifierUpdateAction
+    public Optional<UpdateAction<Customer>> addBillingAddressIdentifierUpdateAction(@Nonnull final Customer oldCustomer,
+                                                                                    @Nonnull final CustomerDraft newCustomer) {
+
+//        return CommonTypeUpdateActionUtils.buildUpdateAction(oldCustomer.getBillingAddressIds(),
+//            newCustomer.getBillingAddresses(), () -> AddBillingAddressId.of(
+//                newCustomer.getBillingAddresses()));
+        return null;
+    }
+
+    //TODO implement removeBillingAddressIdentifier
+    public Optional<UpdateAction<Customer>> removeBillingAddressIdentifier(@Nonnull final Customer oldCustomer,
+                                                                           @Nonnull final CustomerDraft newCustomer) {
+
+//        final List<Address> oldAddresses = oldCustomer.getAddresses();
+//        final List<Address> newAddresses = newCustomer.getAddresses();
+//
+//        return buildUpdateActions(oldAddresses, newAddresses, () -> {
+//            final List<UpdateAction<Customer>> updateActions = new ArrayList<>();
+//            filterCollection(oldAddresses, oldAddressReference ->
+//                !newAddresses.contains(oldAddressReference.))
+//                .forEach(addressReference ->
+//                    updateActions.add(RemoveShippingAddressId.of(addressReference.getId())));
+//
+//            return updateActions;
+//        });
+        return null;
+    }
+
+    //TODO implement setCustomerGroupUpdateAction
+    public static Optional<UpdateAction<Customer>> setCustomerGroupUpdateAction
+        (@Nonnull final Customer oldCustomer,
+         @Nonnull final CustomerDraft newCustomer) {
+
+//        final Referenceable<CustomerGroup> oldCustomerGroup = oldCustomer.getCustomerGroup();
+//        final ResourceIdentifier<CustomerGroup> newCustomerGroup = newCustomer.getCustomerGroup();
+//
+//        return CommonTypeUpdateActionUtils.buildUpdateActions(oldCustomerGroup, newCustomerGroup,
+//            () -> SetCustomerGroup.of(
+//                newCustomer);
+        return null;
+
     }
 
     //TODO implement setCustomTypeUpdateAction
