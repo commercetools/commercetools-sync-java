@@ -1,10 +1,12 @@
 package com.commercetools.sync.customers.utils;
 
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
 import io.sphere.sdk.customers.commands.updateactions.ChangeEmail;
 import io.sphere.sdk.customers.commands.updateactions.SetCompanyName;
+import io.sphere.sdk.customers.commands.updateactions.SetCustomerGroup;
 import io.sphere.sdk.customers.commands.updateactions.SetCustomerNumber;
 import io.sphere.sdk.customers.commands.updateactions.SetDateOfBirth;
 import io.sphere.sdk.customers.commands.updateactions.SetExternalId;
@@ -15,11 +17,18 @@ import io.sphere.sdk.customers.commands.updateactions.SetMiddleName;
 import io.sphere.sdk.customers.commands.updateactions.SetSalutation;
 import io.sphere.sdk.customers.commands.updateactions.SetTitle;
 import io.sphere.sdk.customers.commands.updateactions.SetVatId;
+import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.Referenceable;
+import io.sphere.sdk.models.ResourceIdentifier;
+import io.sphere.sdk.models.ResourceImpl;
+import io.sphere.sdk.types.Custom;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActionForReferences;
 
 public final class CustomerUpdateActionUtils {
 
@@ -251,19 +260,40 @@ public final class CustomerUpdateActionUtils {
             () -> SetLocale.of(newCustomer.getLocale()));
     }
 
-    //TODO implement setCustomerGroupUpdateAction
-    public static Optional<UpdateAction<Customer>> setCustomerGroupUpdateAction
-        (@Nonnull final Customer oldCustomer,
-         @Nonnull final CustomerDraft newCustomer) {
 
-//        final Referenceable<CustomerGroup> oldCustomerGroup = oldCustomer.getCustomerGroup();
-//        final ResourceIdentifier<CustomerGroup> newCustomerGroup = newCustomer.getCustomerGroup();
-//
-//        return CommonTypeUpdateActionUtils.buildUpdateActions(oldCustomerGroup, newCustomerGroup,
-//            () -> SetCustomerGroup.of(
-//                newCustomer);
-        return null;
+    /**
+     * Compares the {@link CustomerGroup} references of an old {@link Customer} and
+     * new {@link CustomerDraft}. If they are different - return {@link SetCustomerGroup} update action.
+     *
+     * <p>If the old value is set, but the new one is empty - the command will unset the customer group.
+     *
+     * @param oldCustomer the customer that should be updated.
+     * @param newCustomer the customer draft with new {@link CustomerGroup} reference.
+     * @return An optional with {@link SetCustomerGroup} update action.
+     */
+    @Nonnull
+    public static Optional<UpdateAction<Customer>> buildSetCustomerGroupUpdateAction(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
 
+        return buildUpdateActionForReferences(oldCustomer.getCustomerGroup(), newCustomer.getCustomerGroup(),
+            () -> SetCustomerGroup.of(mapResourceIdentifierToReferenceable(newCustomer.getCustomerGroup())));
     }
 
+    @Nullable
+    private static Referenceable<CustomerGroup> mapResourceIdentifierToReferenceable(
+        @Nullable final ResourceIdentifier<CustomerGroup> resourceIdentifier) {
+
+        if (resourceIdentifier == null) {
+            return null; // unset
+        }
+
+        // todo (ahmetoz) add an issue to JVM SDK so SetCustomerGroup could be created with a ResourceIdentifier
+        return new ResourceImpl<CustomerGroup>(null, null, null, null) {
+            @Override
+            public Reference<CustomerGroup> toReference() {
+                return Reference.of(CustomerGroup.referenceTypeId(), resourceIdentifier.getId());
+            }
+        };
+    }
 }

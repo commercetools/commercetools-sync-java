@@ -1,12 +1,14 @@
 package com.commercetools.sync.customers.utils;
 
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
 import io.sphere.sdk.customers.CustomerDraftBuilder;
 import io.sphere.sdk.customers.CustomerName;
 import io.sphere.sdk.customers.commands.updateactions.ChangeEmail;
 import io.sphere.sdk.customers.commands.updateactions.SetCompanyName;
+import io.sphere.sdk.customers.commands.updateactions.SetCustomerGroup;
 import io.sphere.sdk.customers.commands.updateactions.SetCustomerNumber;
 import io.sphere.sdk.customers.commands.updateactions.SetDateOfBirth;
 import io.sphere.sdk.customers.commands.updateactions.SetExternalId;
@@ -17,15 +19,19 @@ import io.sphere.sdk.customers.commands.updateactions.SetMiddleName;
 import io.sphere.sdk.customers.commands.updateactions.SetSalutation;
 import io.sphere.sdk.customers.commands.updateactions.SetTitle;
 import io.sphere.sdk.customers.commands.updateactions.SetVatId;
+import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.UUID;
 
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildChangeEmailUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetCompanyNameUpdateAction;
+import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetCustomerGroupUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetCustomerNumberUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetExternalIdUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetFirstNameUpdateAction;
@@ -271,5 +277,81 @@ public class CustomerUpdateActionUtilsTest {
         final Optional<UpdateAction<Customer>> result = buildSetLocaleUpdateAction(old, newSame);
 
         assertThat(result).isEmpty();
+    }
+
+    @Test
+    void buildSetCustomerGroupAction_WithSameReference_ShouldNotReturnAction() {
+        final String customerGroupId = UUID.randomUUID().toString();
+        final Reference<CustomerGroup> customerGroupReference =
+            Reference.of(CustomerGroup.referenceTypeId(), customerGroupId);
+
+        final Customer oldCustomer = mock(Customer.class);
+        when(oldCustomer.getCustomerGroup()).thenReturn(customerGroupReference);
+
+        final CustomerDraft newCustomer =
+            CustomerDraftBuilder.of("email", "pass")
+                                .customerGroup(ResourceIdentifier.ofId(customerGroupId))
+                                .build();
+
+        final Optional<UpdateAction<Customer>> result = buildSetCustomerGroupUpdateAction(oldCustomer, newCustomer);
+        assertThat(result).isNotPresent();
+    }
+
+    @Test
+    void buildSetCustomerGroupAction_WithDifferentReference_ShouldReturnAction() {
+        final String customerGroupId = UUID.randomUUID().toString();
+        final Reference<CustomerGroup> customerGroupReference =
+            Reference.of(CustomerGroup.referenceTypeId(), customerGroupId);
+
+        final Customer oldCustomer = mock(Customer.class);
+        when(oldCustomer.getCustomerGroup()).thenReturn(customerGroupReference);
+
+        final String resolvedCustomerGroupId = UUID.randomUUID().toString();
+        final CustomerDraft newCustomer =
+            CustomerDraftBuilder.of("email", "pass")
+                                .customerGroup(ResourceIdentifier.ofId(resolvedCustomerGroupId))
+                                .build();
+
+        final Optional<UpdateAction<Customer>> result = buildSetCustomerGroupUpdateAction(oldCustomer, newCustomer);
+        assertThat(result).isPresent();
+        assertThat(result).containsInstanceOf(SetCustomerGroup.class);
+        assertThat(((SetCustomerGroup) result.get()).getCustomerGroup())
+            .isEqualTo(Reference.of(CustomerGroup.referenceTypeId(), resolvedCustomerGroupId));
+    }
+
+    @Test
+    void buildSetCustomerGroupAction_WithOnlyNewReference_ShouldReturnAction() {
+        final Customer oldCustomer = mock(Customer.class);
+        final String newCustomerGroupId = UUID.randomUUID().toString();
+        final CustomerDraft newCustomer =
+            CustomerDraftBuilder.of("email", "pass")
+                                .customerGroup(ResourceIdentifier.ofId(newCustomerGroupId))
+                                .build();
+
+        final Optional<UpdateAction<Customer>> result = buildSetCustomerGroupUpdateAction(oldCustomer, newCustomer);
+        assertThat(result).isPresent();
+        assertThat(result).containsInstanceOf(SetCustomerGroup.class);
+        assertThat(((SetCustomerGroup) result.get()).getCustomerGroup())
+            .isEqualTo(Reference.of(CustomerGroup.referenceTypeId(), newCustomerGroupId));
+    }
+
+    @Test
+    void buildSetCustomerGroupAction_WithoutNewReference_ShouldReturnUnsetAction() {
+        final String customerGroupId = UUID.randomUUID().toString();
+        final Reference<CustomerGroup> customerGroupReference =
+            Reference.of(CustomerGroup.referenceTypeId(), customerGroupId);
+
+        final Customer oldCustomer = mock(Customer.class);
+        when(oldCustomer.getCustomerGroup()).thenReturn(customerGroupReference);
+
+        final CustomerDraft newCustomer =
+            CustomerDraftBuilder.of("email", "pass")
+                                .build();
+
+        final Optional<UpdateAction<Customer>> result = buildSetCustomerGroupUpdateAction(oldCustomer, newCustomer);
+        assertThat(result).isPresent();
+        assertThat(result).containsInstanceOf(SetCustomerGroup.class);
+        //Note: If the old value is set, but the new one is empty - the command will unset the customer group.
+        assertThat(((SetCustomerGroup) result.get()).getCustomerGroup()).isNull();
     }
 }
