@@ -296,7 +296,7 @@ class CustomerBatchValidatorTest {
                                 .shippingAddresses(asList(0, 1))
                                 .build();
 
-        final CustomerDraft customerDraft2=
+        final CustomerDraft customerDraft2 =
             CustomerDraftBuilder.of("email", "pass")
                                 .key("key")
                                 .addresses(null)
