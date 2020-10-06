@@ -14,6 +14,7 @@ import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.b
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetCompanyNameUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetCustomerGroupUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetCustomerNumberUpdateAction;
+import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetDateOfBirthUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetExternalIdUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetFirstNameUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetLastNameUpdateAction;
@@ -21,9 +22,10 @@ import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.b
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetMiddleNameUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetSalutationUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetTitleUpdateAction;
-import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetDateOfBirthUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetVatIdUpdateAction;
+import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildStoreUpdateActions;
 
+// todo (ahmetoz) cover all cases for the buildActions.
 public final class CustomerSyncUtils {
 
     private static final CustomerCustomActionBuilder customerCustomActionBuilder = new CustomerCustomActionBuilder();
@@ -72,8 +74,12 @@ public final class CustomerSyncUtils {
 
         updateActions.addAll(customerCustomUpdateActions);
 
+        // todo (ahmetoz) add address actions.
 
-        // todo (ahmetoz) add store and address actions.
+        final List<UpdateAction<Customer>> buildStoreUpdateActions =
+            buildStoreUpdateActions(oldCustomer, newCustomer);
+
+        updateActions.addAll(buildStoreUpdateActions);
 
         return updateActions;
     }

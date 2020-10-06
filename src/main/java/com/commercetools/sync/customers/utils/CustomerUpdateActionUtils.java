@@ -4,7 +4,9 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
+import io.sphere.sdk.customers.commands.updateactions.AddStore;
 import io.sphere.sdk.customers.commands.updateactions.ChangeEmail;
+import io.sphere.sdk.customers.commands.updateactions.RemoveStore;
 import io.sphere.sdk.customers.commands.updateactions.SetCompanyName;
 import io.sphere.sdk.customers.commands.updateactions.SetCustomerGroup;
 import io.sphere.sdk.customers.commands.updateactions.SetCustomerNumber;
@@ -15,19 +17,29 @@ import io.sphere.sdk.customers.commands.updateactions.SetLastName;
 import io.sphere.sdk.customers.commands.updateactions.SetLocale;
 import io.sphere.sdk.customers.commands.updateactions.SetMiddleName;
 import io.sphere.sdk.customers.commands.updateactions.SetSalutation;
+import io.sphere.sdk.customers.commands.updateactions.SetStores;
 import io.sphere.sdk.customers.commands.updateactions.SetTitle;
 import io.sphere.sdk.customers.commands.updateactions.SetVatId;
+import io.sphere.sdk.models.KeyReference;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.Referenceable;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.ResourceImpl;
+import io.sphere.sdk.stores.Store;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActionForReferences;
+import static java.util.stream.Collectors.toMap;
 
 public final class CustomerUpdateActionUtils {
 
@@ -293,5 +305,136 @@ public final class CustomerUpdateActionUtils {
                 return Reference.of(CustomerGroup.referenceTypeId(), resourceIdentifier.getId());
             }
         };
+    }
+
+    /**
+     * Compares the stores of a {@link Customer} and a {@link CustomerDraft}. It returns a {@link List} of
+     * {@link UpdateAction}&lt;{@link Customer}&gt; as a result. If no update action is needed, for example in
+     * case where both the {@link Customer} and the {@link CustomerDraft} have the identical stores, an empty
+     * {@link List} is returned.
+     *
+     * <p>Note: Null values of the stores are filtered out.
+     *
+     * @param oldCustomer the customer which should be updated.
+     * @param newCustomer the customer draft where we get the new data.
+     * @return A list of customer store-related update actions.
+     */
+    @Nonnull
+    public static List<UpdateAction<Customer>> buildStoreUpdateActions(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
+
+        final List<KeyReference<Store>> oldStores = oldCustomer.getStores();
+        final List<ResourceIdentifier<Store>> newStores = newCustomer.getStores();
+
+        return buildSetStoreUpdateAction(oldStores, newStores)
+            .map(Collections::singletonList)
+            .orElseGet(() -> {
+                if (oldStores != null && newStores != null) {
+                    final List<UpdateAction<Customer>> updateActions =
+                        buildRemoveStoreUpdateActions(oldStores, newStores);
+
+                    updateActions.addAll(buildAddStoreUpdateActions(oldStores, newStores));
+                    return updateActions;
+                }
+
+                return Collections.emptyList();
+            });
+    }
+
+    /**
+     * Compares the {@link List} of {@link Store} {@link KeyReference}s and {@link Store} {@link ResourceIdentifier}s
+     * of a {@link CustomerDraft} and a {@link Customer}. It returns a {@link SetStores} update action as a result.
+     * If both the {@link Customer} and the {@link CustomerDraft} have the same set of stores, then no update actions
+     * are needed and hence an empty {@link List} is returned.
+     *
+     * <p>Note: Null values of the stores are filtered out.
+     *
+     * @param oldStores the stores which should be updated.
+     * @param newStores the stores where we get the new store.
+     * @return A list containing the update actions or an empty list if the store references are identical.
+     */
+    @Nonnull
+    private static Optional<UpdateAction<Customer>> buildSetStoreUpdateAction(
+        @Nullable final List<KeyReference<Store>> oldStores,
+        @Nullable final List<ResourceIdentifier<Store>> newStores) {
+
+        if (oldStores != null && !oldStores.isEmpty()) {
+            if (newStores == null || newStores.isEmpty()) {
+                return Optional.of(SetStores.of(null));
+            }
+        } else if (newStores != null && !newStores.isEmpty()) {
+            final List<ResourceIdentifier<Store>> stores =
+                newStores.stream()
+                         .filter(Objects::nonNull)
+                         .collect(Collectors.toList());
+            if (!stores.isEmpty()) {
+                return Optional.of(SetStores.of(stores));
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * Compares the {@link List} of {@link Store} {@link KeyReference}s and {@link Store} {@link ResourceIdentifier}s
+     * of a {@link CustomerDraft} and a {@link Customer}. It returns a {@link List} of {@link RemoveStore} update
+     * actions as a result, if the old store needs to be removed from a customer to have the same set of stores as
+     * the new customer. If both the {@link Customer} and the {@link CustomerDraft} have the same set of stores,
+     * then no update actions are needed and hence an empty {@link List} is returned.
+     *
+     * <p>Note: Null values of the stores are filtered out.
+     *
+     * @param oldStores the stores which should be updated.
+     * @param newStores the stores where we get the new store.
+     * @return A list containing the update actions or an empty list if the store references are identical.
+     */
+    @Nonnull
+    private static List<UpdateAction<Customer>> buildRemoveStoreUpdateActions(
+        @Nonnull final List<KeyReference<Store>> oldStores,
+        @Nonnull final List<ResourceIdentifier<Store>> newStores) {
+
+        final Map<String, ResourceIdentifier<Store>> newStoreKeyToStoreMap =
+            newStores.stream()
+                     .filter(Objects::nonNull)
+                     .collect(toMap(ResourceIdentifier::getKey, Function.identity()));
+
+        return oldStores
+            .stream()
+            .filter(Objects::nonNull)
+            .filter(storeKeyReference -> !newStoreKeyToStoreMap.containsKey(storeKeyReference.getKey()))
+            .map(storeKeyReference -> RemoveStore.of(newStoreKeyToStoreMap.get(storeKeyReference.getKey())))
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Compares the {@link List} of {@link Store} {@link KeyReference}s and {@link Store} {@link ResourceIdentifier}s
+     * of a {@link CustomerDraft} and a {@link Customer}. It returns a {@link List} of {@link AddStore} update actions
+     * as a result, if the old store needs to be added to a customer to have the same set of stores as the new customer.
+     * If both the {@link Customer} and the {@link CustomerDraft} have the same set of stores, then no update actions
+     * are needed and hence an empty {@link List} is returned.
+     *
+     * <p>Note: Null values of the stores are filtered out.
+     *
+     * @param oldStores the stores which should be updated.
+     * @param newStores the stores where we get the new store.
+     * @return A list containing the update actions or an empty list if the store references are identical.
+     */
+    @Nonnull
+    private static List<UpdateAction<Customer>> buildAddStoreUpdateActions(
+        @Nonnull final List<KeyReference<Store>> oldStores,
+        @Nonnull final List<ResourceIdentifier<Store>> newStores) {
+
+        final Map<String, KeyReference<Store>> oldStoreKeyToStoreMap =
+            oldStores.stream()
+                     .filter(Objects::nonNull)
+                     .collect(toMap(KeyReference::getKey, Function.identity()));
+
+        return newStores
+            .stream()
+            .filter(Objects::nonNull)
+            .filter(storeResourceIdentifier -> !oldStoreKeyToStoreMap.containsKey(storeResourceIdentifier.getKey()))
+            .map(AddStore::of)
+            .collect(Collectors.toList());
     }
 }
