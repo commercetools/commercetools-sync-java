@@ -46,10 +46,8 @@ public class CustomerUpdateActionUtilsTest {
     private static CustomerDraft newSame;
     private static CustomerDraft newDifferent;
 
-
     @BeforeEach
     void setup() {
-
         CustomerName oldCustomerName = CustomerName.of("old-title", "old-firstName",
             "old-middleName", "old-lastName");
         CustomerName newCustomerName = CustomerName.of("new-title", "new-firstName",
@@ -60,7 +58,7 @@ public class CustomerUpdateActionUtilsTest {
         final String salutation = "salutation1";
         final String vatId = "vatId1";
         final String locale = "DE";
-        final String birthdate = "1990-10-01";
+        final String birthDate = "1990-10-01";
         final String externalId = "externalId1";
         final String customerNumber = "1234";
 
@@ -76,16 +74,22 @@ public class CustomerUpdateActionUtilsTest {
         when(old.getCustomerNumber()).thenReturn(customerNumber);
         when(old.getExternalId()).thenReturn(externalId);
         when(old.getCompanyName()).thenReturn(companyName);
-        when(old.getDateOfBirth()).thenReturn(LocalDate.parse(birthdate));
+        when(old.getDateOfBirth()).thenReturn(LocalDate.parse(birthDate));
         when(old.getVatId()).thenReturn(vatId);
         when(old.getLocale()).thenReturn(Locale.forLanguageTag(locale));
 
 
-        newSame = CustomerDraftBuilder.of(oldCustomerName, "old-email", "oldPW").key(key)
-                                      .companyName(companyName).salutation(salutation)
-                                      .dateOfBirth(LocalDate.parse(birthdate)).locale(Locale.forLanguageTag(locale))
-                                      .vatId(vatId).externalId(externalId).customerNumber(customerNumber)
+        newSame = CustomerDraftBuilder.of(oldCustomerName, "old-email", "oldPW")
+                                      .key(key)
+                                      .companyName(companyName)
+                                      .salutation(salutation)
+                                      .dateOfBirth(LocalDate.parse(birthDate))
+                                      .locale(Locale.forLanguageTag(locale))
+                                      .vatId(vatId)
+                                      .externalId(externalId)
+                                      .customerNumber(customerNumber)
                                       .build();
+
         newDifferent = CustomerDraftBuilder.of(newCustomerName, "new-email", "newPW").build();
     }
 
