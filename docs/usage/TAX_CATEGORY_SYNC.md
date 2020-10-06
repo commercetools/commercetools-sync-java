@@ -36,7 +36,6 @@ fields set, otherwise they won't be matched.
 final TaxCategorySyncOptions taxCategorySyncOptions = TaxCategorySyncOptionsBuilder.of(sphereClient).build();
 ````
 
-
 #### About SyncOptions
 `SyncOptions` is an object which provides a place for users to add certain configurations to customize the sync process.
 Available configurations:
@@ -67,7 +66,7 @@ following context about the warning message:
 
 * sync exception
 * tax category draft from the source 
-* tax category of the target project (only provided if an existing type could be found)
+* tax category of the target project (only provided if an existing tax category could be found)
 
 ##### Example 
 ````java
