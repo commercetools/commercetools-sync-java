@@ -122,8 +122,8 @@ final Logger logger = LoggerFactory.getLogger(TaxCategorySync.class);
                     return callbackDraft;
                 };
                          
-final TypeSyncOptions typeSyncOptions = 
-         TypeSyncOptionsBuilder.of(sphereClient).beforeCreateCallback(beforeCreateTypeCallback).build();
+final TaxCategorySyncOptions taxCategorySyncOptions = 
+         TaxCategorySyncOptionsBuilder.of(sphereClient).beforeCreateCallback(beforeCreateTaxCategoryCallback).build();
 ````
 
 ##### 5. `batchSize`
