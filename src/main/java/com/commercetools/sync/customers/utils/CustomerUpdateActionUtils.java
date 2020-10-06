@@ -397,13 +397,14 @@ public final class CustomerUpdateActionUtils {
         final Map<String, ResourceIdentifier<Store>> newStoreKeyToStoreMap =
             newStores.stream()
                      .filter(Objects::nonNull)
+                     .filter(storeResourceIdentifier -> storeResourceIdentifier.getKey() != null)
                      .collect(toMap(ResourceIdentifier::getKey, Function.identity()));
 
         return oldStores
             .stream()
             .filter(Objects::nonNull)
             .filter(storeKeyReference -> !newStoreKeyToStoreMap.containsKey(storeKeyReference.getKey()))
-            .map(storeKeyReference -> RemoveStore.of(newStoreKeyToStoreMap.get(storeKeyReference.getKey())))
+            .map(storeKeyReference -> RemoveStore.of(ResourceIdentifier.ofKey(storeKeyReference.getKey())))
             .collect(Collectors.toList());
     }
 

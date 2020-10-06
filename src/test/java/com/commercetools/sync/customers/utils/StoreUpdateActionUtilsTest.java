@@ -4,24 +4,24 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
 import io.sphere.sdk.customers.CustomerDraftBuilder;
+import io.sphere.sdk.customers.commands.updateactions.AddStore;
+import io.sphere.sdk.customers.commands.updateactions.RemoveStore;
 import io.sphere.sdk.customers.commands.updateactions.SetStores;
 import io.sphere.sdk.models.KeyReference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.stores.Store;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Array;
-import java.util.Arrays;
 import java.util.List;
 
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildStoreUpdateActions;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-// todo (ahmetoz) cover remove and add actions.
 public class StoreUpdateActionUtilsTest {
 
     @Test
@@ -36,10 +36,9 @@ public class StoreUpdateActionUtilsTest {
                                 .stores(singletonList(ResourceIdentifier.ofKey("store-key")))
                                 .build();
 
-        final List<UpdateAction<Customer>> setStoreUpdateAction =
-            buildStoreUpdateActions(oldCustomer, newCustomer);
+        final List<UpdateAction<Customer>> updateActions = buildStoreUpdateActions(oldCustomer, newCustomer);
 
-        assertThat(setStoreUpdateAction).isEmpty();
+        assertThat(updateActions).isEmpty();
     }
 
     @Test
@@ -54,10 +53,10 @@ public class StoreUpdateActionUtilsTest {
                                 .stores(newStores)
                                 .build();
 
-        final List<UpdateAction<Customer>> setStoreUpdateAction =
+        final List<UpdateAction<Customer>> updateActions =
             buildStoreUpdateActions(oldCustomer, newCustomer);
 
-        assertThat(setStoreUpdateAction)
+        assertThat(updateActions)
             .isNotEmpty()
             .containsExactly(SetStores.of(newStores));
     }
@@ -74,10 +73,10 @@ public class StoreUpdateActionUtilsTest {
                                 .stores(newStores)
                                 .build();
 
-        final List<UpdateAction<Customer>> setStoreUpdateAction =
+        final List<UpdateAction<Customer>> updateActions =
             buildStoreUpdateActions(oldCustomer, newCustomer);
 
-        assertThat(setStoreUpdateAction)
+        assertThat(updateActions)
             .isNotEmpty()
             .containsExactly(SetStores.of(newStores));
     }
@@ -88,17 +87,17 @@ public class StoreUpdateActionUtilsTest {
         when(oldCustomer.getStores()).thenReturn(emptyList());
 
         final List<ResourceIdentifier<Store>> newStores =
-            Arrays.asList(ResourceIdentifier.ofKey("store-key"), null);
+            asList(ResourceIdentifier.ofKey("store-key"), null);
 
         final CustomerDraft newCustomer =
             CustomerDraftBuilder.of("email", "pass")
                                 .stores(newStores)
                                 .build();
 
-        final List<UpdateAction<Customer>> setStoreUpdateAction =
+        final List<UpdateAction<Customer>> updateActions =
             buildStoreUpdateActions(oldCustomer, newCustomer);
 
-        assertThat(setStoreUpdateAction)
+        assertThat(updateActions)
             .isNotEmpty()
             .containsExactly(SetStores.of(singletonList(ResourceIdentifier.ofKey("store-key"))));
     }
@@ -109,36 +108,36 @@ public class StoreUpdateActionUtilsTest {
         when(oldCustomer.getStores()).thenReturn(emptyList());
 
         final List<ResourceIdentifier<Store>> newStores =
-            Arrays.asList(null, null);
+            asList(null, null);
 
         final CustomerDraft newCustomer =
             CustomerDraftBuilder.of("email", "pass")
                                 .stores(newStores)
                                 .build();
 
-        final List<UpdateAction<Customer>> setStoreUpdateAction =
+        final List<UpdateAction<Customer>> updateActions =
             buildStoreUpdateActions(oldCustomer, newCustomer);
 
-        assertThat(setStoreUpdateAction).isEmpty();
+        assertThat(updateActions).isEmpty();
     }
 
     @Test
     void buildStoreUpdateActions_WithBothNullStoreReferences_ShouldNotReturnAction() {
         final Customer oldCustomer = mock(Customer.class);
-        when(oldCustomer.getStores()).thenReturn(Arrays.asList(null, null));
+        when(oldCustomer.getStores()).thenReturn(asList(null, null));
 
         final List<ResourceIdentifier<Store>> newStores =
-            Arrays.asList(null, null);
+            asList(null, null);
 
         final CustomerDraft newCustomer =
             CustomerDraftBuilder.of("email", "pass")
                                 .stores(newStores)
                                 .build();
 
-        final List<UpdateAction<Customer>> setStoreUpdateAction =
+        final List<UpdateAction<Customer>> updateActions =
             buildStoreUpdateActions(oldCustomer, newCustomer);
 
-        assertThat(setStoreUpdateAction).isEmpty();
+        assertThat(updateActions).isEmpty();
     }
 
     @Test
@@ -153,10 +152,10 @@ public class StoreUpdateActionUtilsTest {
                                 .stores(null)
                                 .build();
 
-        final List<UpdateAction<Customer>> setStoreUpdateAction =
+        final List<UpdateAction<Customer>> updateActions =
             buildStoreUpdateActions(oldCustomer, newCustomer);
 
-        assertThat(setStoreUpdateAction)
+        assertThat(updateActions)
             .isNotEmpty()
             .containsExactly(SetStores.of(null));
     }
@@ -173,10 +172,10 @@ public class StoreUpdateActionUtilsTest {
                                 .stores(emptyList())
                                 .build();
 
-        final List<UpdateAction<Customer>> setStoreUpdateAction =
+        final List<UpdateAction<Customer>> updateActions =
             buildStoreUpdateActions(oldCustomer, newCustomer);
 
-        assertThat(setStoreUpdateAction)
+        assertThat(updateActions)
             .isNotEmpty()
             .containsExactly(SetStores.of(null));
     }
@@ -191,10 +190,10 @@ public class StoreUpdateActionUtilsTest {
                                 .stores(null)
                                 .build();
 
-        final List<UpdateAction<Customer>> setStoreUpdateAction =
+        final List<UpdateAction<Customer>> updateActions =
             buildStoreUpdateActions(oldCustomer, newCustomer);
 
-        assertThat(setStoreUpdateAction).isEmpty();
+        assertThat(updateActions).isEmpty();
     }
 
     @Test
@@ -207,9 +206,118 @@ public class StoreUpdateActionUtilsTest {
                                 .stores(emptyList())
                                 .build();
 
-        final List<UpdateAction<Customer>> setStoreUpdateAction =
+        final List<UpdateAction<Customer>> updateActions =
             buildStoreUpdateActions(oldCustomer, newCustomer);
 
-        assertThat(setStoreUpdateAction).isEmpty();
+        assertThat(updateActions).isEmpty();
+    }
+
+    @Test
+    void buildStoreUpdateActions_WithNewStores_ShouldReturnAddStoreActions() {
+        final Customer oldCustomer = mock(Customer.class);
+        final KeyReference<Store> keyReference1 = mock(KeyReference.class);
+        when(keyReference1.getKey()).thenReturn("store-key1");
+        when(oldCustomer.getStores()).thenReturn(singletonList(keyReference1));
+
+        final List<ResourceIdentifier<Store>> newStores =
+            asList(ResourceIdentifier.ofKey("store-key1"), ResourceIdentifier.ofKey("store-key2"),
+                ResourceIdentifier.ofKey("store-key3"));
+
+        final CustomerDraft newCustomer =
+            CustomerDraftBuilder.of("email", "pass")
+                                .stores(newStores)
+                                .build();
+
+        final List<UpdateAction<Customer>> updateActions =
+            buildStoreUpdateActions(oldCustomer, newCustomer);
+
+        assertThat(updateActions)
+            .isNotEmpty()
+            .containsExactly(AddStore.of(newStores.get(1)), AddStore.of(newStores.get(2)));
+    }
+
+    @Test
+    void buildStoreUpdateActions_WithLessStores_ShouldReturnRemoveStoreActions() {
+        final Customer oldCustomer = mock(Customer.class);
+        final KeyReference<Store> keyReference1 = mock(KeyReference.class);
+        when(keyReference1.getKey()).thenReturn("store-key1");
+        final KeyReference<Store> keyReference2 = mock(KeyReference.class);
+        when(keyReference2.getKey()).thenReturn("store-key2");
+        final KeyReference<Store> keyReference3 = mock(KeyReference.class);
+        when(keyReference3.getKey()).thenReturn("store-key3");
+
+        final List<KeyReference<Store>> keyReferences = asList(keyReference1, keyReference2, keyReference3);
+        when(oldCustomer.getStores()).thenReturn(keyReferences);
+
+        final CustomerDraft newCustomer =
+            CustomerDraftBuilder.of("email", "pass")
+                                .stores(singletonList(ResourceIdentifier.ofKey("store-key1")))
+                                .build();
+
+        final List<UpdateAction<Customer>> updateActions =
+            buildStoreUpdateActions(oldCustomer, newCustomer);
+
+        assertThat(updateActions)
+            .isNotEmpty()
+            .containsExactly(
+                RemoveStore.of(ResourceIdentifier.ofKey("store-key2")),
+                RemoveStore.of(ResourceIdentifier.ofKey("store-key3")));
+    }
+
+    @Test
+    void buildStoreUpdateActions_WithMixedStores_ShouldReturnAddAndRemoveStoreActions() {
+        final Customer oldCustomer = mock(Customer.class);
+        final KeyReference<Store> keyReference1 = mock(KeyReference.class);
+        when(keyReference1.getKey()).thenReturn("store-key1");
+        final KeyReference<Store> keyReference3 = mock(KeyReference.class);
+        when(keyReference3.getKey()).thenReturn("store-key3");
+        final KeyReference<Store> keyReference4 = mock(KeyReference.class);
+        when(keyReference4.getKey()).thenReturn("store-key4");
+
+        final List<KeyReference<Store>> keyReferences = asList(keyReference1, keyReference3, keyReference4);
+        when(oldCustomer.getStores()).thenReturn(keyReferences);
+
+        final List<ResourceIdentifier<Store>> newStores =
+            asList(ResourceIdentifier.ofKey("store-key1"), ResourceIdentifier.ofKey("store-key2"),
+                ResourceIdentifier.ofKey("store-key3"));
+
+        final CustomerDraft newCustomer =
+            CustomerDraftBuilder.of("email", "pass")
+                                .stores(newStores)
+                                .build();
+
+        final List<UpdateAction<Customer>> updateActions =
+            buildStoreUpdateActions(oldCustomer, newCustomer);
+
+        assertThat(updateActions)
+            .isNotEmpty()
+            .containsExactly(
+                RemoveStore.of(ResourceIdentifier.ofKey("store-key4")),
+                AddStore.of(ResourceIdentifier.ofKey("store-key2")));
+    }
+
+    @Test
+    void buildStoreUpdateActions_WithNewStoresWithOnlyIdReference_ShouldReturnAddStoreActions() {
+        final Customer oldCustomer = mock(Customer.class);
+        final KeyReference<Store> keyReference1 = mock(KeyReference.class);
+        when(keyReference1.getKey()).thenReturn("store-key1");
+        when(oldCustomer.getStores()).thenReturn(singletonList(keyReference1));
+
+        final List<ResourceIdentifier<Store>> newStores =
+            asList(ResourceIdentifier.ofKey("store-key1"),
+                ResourceIdentifier.ofId("store-id2"),
+                ResourceIdentifier.ofId("store-id3"));
+
+        final CustomerDraft newCustomer =
+            CustomerDraftBuilder.of("email", "pass")
+                                .stores(newStores)
+                                .build();
+
+        final List<UpdateAction<Customer>> updateActions =
+            buildStoreUpdateActions(oldCustomer, newCustomer);
+
+        assertThat(updateActions)
+            .isNotEmpty()
+            .containsExactly(AddStore.of(newStores.get(1)), AddStore.of(newStores.get(2)));
     }
 }
