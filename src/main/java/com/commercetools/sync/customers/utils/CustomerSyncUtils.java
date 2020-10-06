@@ -65,10 +65,10 @@ public final class CustomerSyncUtils {
         );
 
         final List<UpdateAction<Customer>> customerCustomUpdateActions =
-                buildPrimaryResourceCustomUpdateActions(oldCustomer,
-                        newCustomer,
-                        customerCustomActionBuilder,
-                        syncOptions);
+            buildPrimaryResourceCustomUpdateActions(oldCustomer,
+                newCustomer,
+                customerCustomActionBuilder,
+                syncOptions);
 
         updateActions.addAll(customerCustomUpdateActions);
 
@@ -78,5 +78,6 @@ public final class CustomerSyncUtils {
         return updateActions;
     }
 
-    private CustomerSyncUtils() { }
+    private CustomerSyncUtils() {
+    }
 }

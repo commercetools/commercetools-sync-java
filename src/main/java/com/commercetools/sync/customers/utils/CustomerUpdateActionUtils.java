@@ -259,7 +259,6 @@ public final class CustomerUpdateActionUtils {
             () -> SetLocale.of(newCustomer.getLocale()));
     }
 
-
     /**
      * Compares the {@link CustomerGroup} references of an old {@link Customer} and
      * new {@link CustomerDraft}. If they are different - return {@link SetCustomerGroup} update action.
