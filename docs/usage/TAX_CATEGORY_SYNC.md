@@ -36,25 +36,108 @@ fields set, otherwise they won't be matched.
 final TaxCategorySyncOptions taxCategorySyncOptions = TaxCategorySyncOptionsBuilder.of(sphereClient).build();
 ````
 
+
 #### About SyncOptions
 `SyncOptions` is an object which provides a place for users to add certain configurations to customize the sync process.
-Here are configurations included :
+Available configurations:
 
-1.[`errorCallback`](SYNC_OPTIONS.md#errorcallback) - A callback which is triggered when error event occurs during 
-sync process.
+##### 1. `errorCallback`
+A callback that is called whenever an error event occurs during the sync process. Each resource executes its own 
+error-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+following context about the error-event:
 
-2.[`warningCallback`](SYNC_OPTIONS.md#warningcallback) - A callback which is triggered when warning event occurs during
-syc process.
+* sync exception
+* tax category draft from the source
+* tax category of the target project (only provided if an existing tax category could be found)
+* the update-actions, which failed (only provided if an existing tax category could be found)
 
-3.[`beforeUpdateCallback`](SYNC_OPTIONS.md#beforeupdatecallback) - A callback which intercepts the update request
-just before the request is sent to CTP.
+##### Example 
+````java
+ final Logger logger = LoggerFactory.getLogger(TaxCategorySync.class);
+ final TaxCategorySyncOptions taxCategorySyncOptions = TaxCategorySyncOptionsBuilder
+         .of(sphereClient)
+         .errorCallback((syncException, draft, taxCategory, updateActions) -> 
+            logger.error(new SyncException("My customized message"), syncException)).build();
+````
+    
+##### 2. `warningCallback`
+A callback that is called whenever a warning event occurs during the sync process. Each resource executes its own 
+warning-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+following context about the warning message:
+
+* sync exception
+* tax category draft from the source 
+* tax category of the target project (only provided if an existing type could be found)
+
+##### Example 
+````java
+ final Logger logger = LoggerFactory.getLogger(TaxCategorySync.class);
+ final TaxCategorySyncOptions taxCategorySyncOptions = TaxCategorySyncOptionsBuilder
+         .of(sphereClient)
+         .warningCallback((syncException, draft, taxCategory, updateActions) -> 
+            logger.warn(new SyncException("My customized message"), syncException)).build();
+````
+
+##### 3. `beforeUpdateCallback`
+During the sync process if a target tax category and a tax category draft are matched, this callback can be used to 
+intercept the **_update_** request just before it is sent to commercetools platform. This allows the user to modify 
+update actions array with custom actions or discard unwanted actions. The callback provides the following information :
  
-4.[`beforeCreateCallback`](SYNC_OPTIONS.md#beforecreatecallback) - A callback which intercepts the create request
-ust before the request is sent to CTP.
- 
-5.[`batchsize`](SYNC_OPTIONS.md#batchsize) - It defines how many tax categories are fetched into a batch and processed.
+ * tax category draft from the source
+ * tax category from the target project
+ * update actions that were calculated after comparing both
 
-[More information about Sync Options](SYNC_OPTIONS.md). 
+##### Example
+````java
+final TriFunction<
+        List<UpdateAction<TaxCategory>>, TaxCategoryDraft, TaxCategory, List<UpdateAction<TaxCategory>>> 
+            beforeUpdateTaxCategoryCallback =
+            (updateActions, newTaxCategoryDraft, oldTaxCategory) ->  updateActions.stream()
+                    .filter(updateAction -> !(updateAction instanceof RemoveTaxRate))
+                    .collect(Collectors.toList());
+                        
+final TaxCategorySyncOptions taxCategorySyncOptions = 
+        TaxCategorySyncOptionsBuilder.of(sphereClient).beforeUpdateCallback(beforeUpdateTaxCategoryCallback).build();
+````
+
+##### 4. `beforeCreateCallback`
+During the sync process if a type draft should be created, this callback can be used to intercept 
+the **_create_** request just before it is sent to commercetools platform.  It contains following information : 
+
+ * tax category draft that should be created
+ 
+##### Example (Logging tax rate and their corresponding names of which is going to be created)
+````java
+final Logger logger = LoggerFactory.getLogger(TaxCategorySync.class);
+        final Function<TaxCategoryDraft, TaxCategoryDraft> beforeCreateTaxCategoryCallback =
+                (callbackDraft) -> {
+                    logger.info(String.format("Tax Category to be created : %s", callbackDraft.getName()));
+                    List<TaxRateDraft> taxRateDrafts = callbackDraft.getTaxRates();
+                    taxRateDrafts.forEach(rateDraft -> 
+                        logger.info(String.format(
+                                "Tax Rate %s with rate %s %", 
+                                rateDraft.getName(),
+                                BigDecimal.valueOf(rateDraft.getAmount()).multiply(BigDecimal.valueOf(100)).toString())
+                        )
+                    );
+                    return callbackDraft;
+                };
+                         
+final TypeSyncOptions typeSyncOptions = 
+         TypeSyncOptionsBuilder.of(sphereClient).beforeCreateCallback(beforeCreateTypeCallback).build();
+````
+
+##### 5. `batchSize`
+A number that could be used to set the batch size with which tax categories are fetched and processed,
+as tax categories are obtained from the target project on commercetools platform in batches for better performance. The 
+algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding tax categories 
+from the target project on commecetools platform in a single request. Playing with this option can slightly improve or 
+reduce processing speed. If it is not set, the default batch size is 50 for tax category sync.
+##### Example
+````java                         
+final TypeSyncOptions typeSyncOptions = 
+         TypeSyncOptionsBuilder.of(sphereClient).batchSize(30).build();
+````
 
 #### Running the sync
 After all the aforementioned points in the previous section have been fulfilled, to run the sync:
