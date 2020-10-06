@@ -125,7 +125,7 @@ A number that could be used to set the batch size with which types are fetched a
 as types are obtained from the target project on commercetools platform in batches for better performance. The 
 algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding types 
 from the target project on commecetools platform in a single request. Playing with this option can slightly improve or 
-reduce processing speed. If it is not set, the default batch size is 50 for product type sync.
+reduce processing speed. If it is not set, the default batch size is 50 for type sync.
 ##### Example
 ````java                         
 final TypeSyncOptions typeSyncOptions = 

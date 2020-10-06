@@ -135,7 +135,7 @@ A number that could be used to set the batch size with which cart discounts are 
 as cart discounts are obtained from the target project on commercetools platform in batches for better performance. The 
 algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding cart discounts 
 from the target project on commecetools platform in a single request. Playing with this option can slightly improve or 
-reduce processing speed. If it is not set, the default batch size is 50 for product type sync.
+reduce processing speed. If it is not set, the default batch size is 50 for cart discount sync.
 ##### Example
 ````java                         
 final CartDiscountSyncOptions cartDiscountSyncOptions = 
