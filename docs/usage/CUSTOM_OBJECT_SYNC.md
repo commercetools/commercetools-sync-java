@@ -35,25 +35,87 @@ same `key` and `container` fields set, otherwise they won't be matched.
 final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder.of(sphereClient).build();
 ````
 
+
 #### About SyncOptions
 `SyncOptions` is an object which provides a place for users to add certain configurations to customize the sync process.
-Here are configurations included :
+Available configurations:
 
-1.[`errorCallback`](SYNC_OPTIONS.md#errorcallback) - A callback which is triggered when error event occurs during 
-sync process.
+##### 1. `errorCallback`
+A callback that is called whenever an error event occurs during the sync process. Each resource executes its own 
+error-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+following context about the error-event:
 
-2.[`warningCallback`](SYNC_OPTIONS.md#warningcallback) - A callback which is triggered when warning event occurs during
-syc process.
+* sync exception
+* custom object draft from the source
+* custom object of the target project (only provided if an existing custom object could be found)
+* the update-actions, which failed (only provided if an existing custom object could be found)
 
-3.[`beforeUpdateCallback`](SYNC_OPTIONS.md#beforeupdatecallback) - A callback which intercepts the update request
-just before the request is sent to CTP.
+##### Example 
+````java
+ final Logger logger = LoggerFactory.getLogger(CustomObjectSync.class);
+ final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder
+         .of(sphereClient)
+         .errorCallback((syncException, draft, customObject, updateActions) -> 
+            logger.error(new SyncException("My customized message"), syncException)).build();
+````
+    
+##### 2. `warningCallback`
+A callback that is called whenever a warning event occurs during the sync process. Each resource executes its own 
+warning-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+following context about the warning message:
+
+* sync exception
+* custom object draft from the source 
+* custom object of the target project (only provided if an existing custom object could be found)
+
+##### Example 
+````java
+ final Logger logger = LoggerFactory.getLogger(CustomObjectSync.class);
+ final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder
+         .of(sphereClient)
+         .warningCallback((syncException, draft, customObject, updateActions) -> 
+            logger.warn(new SyncException("My customized message"), syncException)).build();
+````
+
+##### 3. `beforeUpdateCallback`
+In theory, `CustomObjectSyncOptions` provides callback before update operation. User can customize own callback and inject
+into sync options. However, in actual case, `beforeUpdateCallback`is not triggered in custom object sync process. When
+new custom object draft has the same key and container as existing custom object but different in custom object values, 
+sync process automatically perform update operation. The value of corresponding custom object in target project is 
+overwritten. This approach is different from other resources and no update action is involved.
+
+No example is applicable.
+
+##### 4. `beforeCreateCallback`
+During the sync process if a custom object draft should be created, this callback can be used to intercept 
+the **_create_** request just before it is sent to commercetools platform.  It contains following information : 
+
+ * custom object draft that should be created
  
-4.[`beforeCreateCallback`](SYNC_OPTIONS.md#beforecreatecallback) - A callback which intercepts the create request
-ust before the request is sent to CTP.
- 
-5.[`batchsize`](SYNC_OPTIONS.md#batchsize) - It defines how many custom objects are fetched into a batch and processed.
+##### Example (Logging the key/container pair of custom object draft)
+````java
+final Logger logger = LoggerFactory.getLogger(CustomObjectSync.class);
+final Function<CustomObjectDraft, CustomObjectDraft> beforeCreateCustomObjectCallback =
+        (callbackDraft) -> {
+            logger.info(String.format("Key/Container pair : %s/%s", callbackDraft.getKey(), callbackDraft.getContainer()));
+            return callbackDraft;
+        };
+                         
+final CustomObjectSyncOptions customObjectSyncOptions = 
+         CustomObjectSyncOptionsBuilder.of(sphereClient).beforeCreateCallback(beforeCreateCustomObjectCallback).build();
+````
 
-[More information about Sync Options](SYNC_OPTIONS.md). 
+##### 5. `batchSize`
+A number that could be used to set the batch size with which custom objects are fetched and processed,
+as custom objects are obtained from the target project on commercetools platform in batches for better performance. The 
+algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding custom objects 
+from the target project on commecetools platform in a single request. Playing with this option can slightly improve or 
+reduce processing speed. If it is not set, the default batch size is 50 for custom object sync.
+##### Example
+````java                         
+final CustomObjectSyncOptions customObjectSyncOptions = 
+         CustomObjectSyncOptionsBuilder.of(sphereClient).batchSize(30).build();
+````
 
 #### Running the sync
 After all the aforementioned points in the previous section have been fulfilled, to run the sync:
