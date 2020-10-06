@@ -100,7 +100,8 @@ public class AddressesUpdateActionUtilsTest {
     //project.
 
     @Test
-    void buildAddressUpdateActions_withNewAddressesAndRemovedAddresses_shouldReturnAction() throws BuildUpdateActionException {
+    void buildAddressUpdateActions_withNewAddressesAndRemovedAddresses_shouldReturnAction()
+        throws BuildUpdateActionException {
 
         final List<Address> oldAddresses = asList(old, anotherAddress);
 

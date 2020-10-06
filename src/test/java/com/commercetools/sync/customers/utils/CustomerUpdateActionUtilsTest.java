@@ -56,8 +56,6 @@ public class CustomerUpdateActionUtilsTest {
     void setup() {
         CustomerName oldCustomerName = CustomerName.of("old-title", "old-firstName",
             "old-middleName", "old-lastName");
-        CustomerName newCustomerName = CustomerName.of("new-title", "new-firstName",
-            "new-middleName", "new-lastName");
 
         final String key = "key1";
         final String companyName = "companyName1";
@@ -95,6 +93,9 @@ public class CustomerUpdateActionUtilsTest {
                                       .externalId(externalId)
                                       .customerNumber(customerNumber)
                                       .build();
+
+        CustomerName newCustomerName = CustomerName.of("new-title", "new-firstName",
+            "new-middleName", "new-lastName");
 
         newDifferent = CustomerDraftBuilder.of(newCustomerName, "new-email", "newPW").build();
     }

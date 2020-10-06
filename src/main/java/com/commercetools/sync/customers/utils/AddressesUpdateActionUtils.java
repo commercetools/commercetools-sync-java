@@ -30,6 +30,13 @@ import static java.util.stream.Collectors.toMap;
 
 public final class AddressesUpdateActionUtils {
 
+    /**
+     * todo: add missing javadoc.
+     * @param oldAddresses a
+     * @param newAddresses a
+     * @return a
+     * @throws BuildUpdateActionException a
+     */
     @Nonnull
     public static List<UpdateAction<Customer>> buildAddressUpdateActions(@Nonnull final List<Address> oldAddresses,
                                                                          @Nullable final List<Address> newAddresses)
@@ -122,7 +129,7 @@ public final class AddressesUpdateActionUtils {
     }
 
 
-    public static Optional<UpdateAction<Customer>> setDefaultShippingAddressUpdateAction(
+    private static Optional<UpdateAction<Customer>> setDefaultShippingAddressUpdateAction(
         @Nonnull final Customer oldCustomer,
         @Nonnull final CustomerDraft newCustomer) {
         // find the address in that index, be aware the null pointer exceptions
@@ -134,7 +141,7 @@ public final class AddressesUpdateActionUtils {
     }
 
     //TODO implement addShippingAddressIdentifierUpdateAction
-    public static List<UpdateAction<Customer>> buildAddShippingAddressIdentifierUpdateAction(
+    private static List<UpdateAction<Customer>> buildAddShippingAddressIdentifierUpdateAction(
         @Nonnull final Customer oldCustomer,
         @Nonnull final CustomerDraft newCustomer) {
 
@@ -151,29 +158,29 @@ public final class AddressesUpdateActionUtils {
     }
 
     //TODO implement removeShippingAddressIdentifierUpdateAction
-    public static Optional<UpdateAction<Customer>> removeShippingAddressIdentifierUpdateAction(
+    private static Optional<UpdateAction<Customer>> removeShippingAddressIdentifierUpdateAction(
         @Nonnull final Customer oldCustomer,
         @Nonnull final CustomerDraft newCustomer) {
 
-//        final List<Address> oldAddresses = oldCustomer.getAddresses();
-//        final List<Address> newAddresses = newCustomer.getAddresses();
-//
-//        return buildUpdateActions(oldAddresses, newAddresses, () -> {
-//            final List<UpdateAction<Customer>> updateActions = new ArrayList<>();
-//            filterCollection(oldAddresses, oldAddressReference ->
-//                !newAddresses.contains(oldAddressReference.getId()))
-//                .forEach(addressReference ->
-//                    updateActions.add(RemoveShippingAddressId.of(addressReference.getId())));
-
-//            return updateActions;
-//        });
-        return null;
+        //        final List<Address> oldAddresses = oldCustomer.getAddresses();
+        //        final List<Address> newAddresses = newCustomer.getAddresses();
+        //
+        //        return buildUpdateActions(oldAddresses, newAddresses, () -> {
+        //            final List<UpdateAction<Customer>> updateActions = new ArrayList<>();
+        //            filterCollection(oldAddresses, oldAddressReference ->
+        //                !newAddresses.contains(oldAddressReference.getId()))
+        //                .forEach(addressReference ->
+        //                    updateActions.add(RemoveShippingAddressId.of(addressReference.getId())));
+        //
+        //            return updateActions;
+        //        });
+        return Optional.empty();
     }
 
     //TODO implement setDefaultBillingAddressUpdateAction
-    public static Optional<UpdateAction<Customer>> setDefaultBillingAddressUpdateAction
-    (@Nonnull final Customer oldCustomer,
-     @Nonnull final CustomerDraft newCustomer) {
+    private static Optional<UpdateAction<Customer>> setDefaultBillingAddressUpdateAction(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
 
         // find the address in that index, be aware the null pointer exceptions
         Address address = newCustomer.getAddresses().get(newCustomer.getDefaultBillingAddress());
@@ -184,9 +191,9 @@ public final class AddressesUpdateActionUtils {
     }
 
     //TODO implement addBillingAddressIdentifierUpdateAction
-    public static List<UpdateAction<Customer>> addBillingAddressIdentifierUpdateAction
-    (@Nonnull final Customer oldCustomer,
-     @Nonnull final CustomerDraft newCustomer) {
+    private static List<UpdateAction<Customer>> addBillingAddressIdentifierUpdateAction(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
 
         final List<Address> oldShippingAddresses = oldCustomer.getBillingAddresses();
         final List<Address> newAddresses = newCustomer.getAddresses();
@@ -201,24 +208,24 @@ public final class AddressesUpdateActionUtils {
     }
 
     //TODO implement removeBillingAddressIdentifier
-    public static Optional<UpdateAction<Customer>> removeBillingAddressIdentifier(@Nonnull final Customer oldCustomer,
-                                                                                  @Nonnull final CustomerDraft newCustomer) {
+    private static Optional<UpdateAction<Customer>> removeBillingAddressIdentifier(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
 
-//        final List<Address> oldAddresses = oldCustomer.getAddresses();
-//        final List<Address> newAddresses = newCustomer.getAddresses();
-//
-//        return buildUpdateActions(oldAddresses, newAddresses, () -> {
-//            final List<UpdateAction<Customer>> updateActions = new ArrayList<>();
-//            filterCollection(oldAddresses, oldAddressReference ->
-//                !newAddresses.contains(oldAddressReference.))
-//                .forEach(addressReference ->
-//                    updateActions.add(RemoveShippingAddressId.of(addressReference.getId())));
-//
-//            return updateActions;
-//        });
-        return null;
+        //        final List<Address> oldAddresses = oldCustomer.getAddresses();
+        //        final List<Address> newAddresses = newCustomer.getAddresses();
+        //
+        //        return buildUpdateActions(oldAddresses, newAddresses, () -> {
+        //            final List<UpdateAction<Customer>> updateActions = new ArrayList<>();
+        //            filterCollection(oldAddresses, oldAddressReference ->
+        //                !newAddresses.contains(oldAddressReference.))
+        //                .forEach(addressReference ->
+        //                    updateActions.add(RemoveShippingAddressId.of(addressReference.getId())));
+        //
+        //            return updateActions;
+        //        });
+        return Optional.empty();
     }
-
 
     private AddressesUpdateActionUtils() {
     }
