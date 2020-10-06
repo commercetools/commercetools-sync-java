@@ -32,7 +32,7 @@ import static org.apache.http.util.TextUtils.isBlank;
 public final class CustomerReferenceResolutionUtils {
 
     /**
-     * Returns an {@link List}&lt;{@link CustomerDraft}&gt; consisting of the results of applying the
+     * Returns a {@link List}&lt;{@link CustomerDraft}&gt; consisting of the results of applying the
      * mapping from {@link Customer} to {@link CustomerDraft} with considering reference resolution.
      *
      * <table summary="Mapping of Reference fields for the reference resolution">
