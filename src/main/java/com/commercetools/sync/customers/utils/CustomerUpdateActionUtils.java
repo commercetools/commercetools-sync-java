@@ -10,7 +10,6 @@ import io.sphere.sdk.customers.commands.updateactions.SetDateOfBirth;
 import io.sphere.sdk.customers.commands.updateactions.SetDefaultShippingAddress;
 import io.sphere.sdk.customers.commands.updateactions.SetExternalId;
 import io.sphere.sdk.customers.commands.updateactions.SetFirstName;
-import io.sphere.sdk.customers.commands.updateactions.SetKey;
 import io.sphere.sdk.customers.commands.updateactions.SetLastName;
 import io.sphere.sdk.customers.commands.updateactions.SetLocale;
 import io.sphere.sdk.customers.commands.updateactions.SetMiddleName;
