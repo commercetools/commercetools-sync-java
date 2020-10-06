@@ -25,18 +25,18 @@ import java.time.LocalDate;
 import java.util.Locale;
 import java.util.Optional;
 
-import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.changeEmailUpdateAction;
+import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildChangeEmailUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.setCompanyNameUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.setCustomerNumberUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.setDateOfBirthUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.setExternalIdUpdateAction;
-import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.setFirstNameUpdateAction;
+import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetFirstNameUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.setKeyUpdateAction;
-import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.setLastNameUpdateAction;
+import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetLastNameUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.setLocaleUpdateAction;
-import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.setMiddleNameUpdateAction;
-import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.setSalutationUpdateAction;
-import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.setTitleUpdateAction;
+import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetMiddleNameUpdateAction;
+import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetSalutationUpdateAction;
+import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetTitleUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.setVatIdUpdateAction;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -93,7 +93,7 @@ public class CustomerUpdateActionUtilsTest {
 
     @Test
     void buildChangeEmailUpdateAction_WithDifferentValues_ShouldReturnAction() {
-        final Optional<UpdateAction<Customer>> result = changeEmailUpdateAction(old, newDifferent);
+        final Optional<UpdateAction<Customer>> result = buildChangeEmailUpdateAction(old, newDifferent);
 
         assertThat(result).containsInstanceOf(ChangeEmail.class);
         assertThat(result).contains(ChangeEmail.of(newDifferent.getEmail()));
@@ -101,30 +101,29 @@ public class CustomerUpdateActionUtilsTest {
 
     @Test
     void buildChangeEmailUpdateAction_WithSameValues_ShouldReturnEmptyOptional() {
-        final Optional<UpdateAction<Customer>> result = changeEmailUpdateAction(old, newSame);
+        final Optional<UpdateAction<Customer>> result = buildChangeEmailUpdateAction(old, newSame);
 
         assertThat(result).isEmpty();
     }
 
     @Test
     void buildSetFirstNameUpdateAction_WithDifferentValues_ShouldReturnAction() {
-        final Optional<UpdateAction<Customer>> result = setFirstNameUpdateAction(old, newDifferent);
+        final Optional<UpdateAction<Customer>> result = buildSetFirstNameUpdateAction(old, newDifferent);
 
         assertThat(result).containsInstanceOf(SetFirstName.class);
         assertThat(result).contains(SetFirstName.of(newDifferent.getFirstName()));
-
     }
 
     @Test
     void buildSetFirstNameUpdateAction_WithSameValues_ShouldReturnEmptyOptional() {
-        final Optional<UpdateAction<Customer>> result = setFirstNameUpdateAction(old, newSame);
+        final Optional<UpdateAction<Customer>> result = buildSetFirstNameUpdateAction(old, newSame);
 
         assertThat(result).isEmpty();
     }
 
     @Test
     void buildSetLastNameUpdateAction_WithDifferentValues_ShouldReturnAction() {
-        final Optional<UpdateAction<Customer>> result = setLastNameUpdateAction(old, newDifferent);
+        final Optional<UpdateAction<Customer>> result = buildSetLastNameUpdateAction(old, newDifferent);
 
         assertThat(result).containsInstanceOf(SetLastName.class);
         assertThat(result).contains(SetLastName.of(newDifferent.getLastName()));
@@ -132,14 +131,14 @@ public class CustomerUpdateActionUtilsTest {
 
     @Test
     void buildSetLastNameUpdateAction_withSameValues_ShouldReturnEmptyOptional() {
-        final Optional<UpdateAction<Customer>> result = setLastNameUpdateAction(old, newSame);
+        final Optional<UpdateAction<Customer>> result = buildSetLastNameUpdateAction(old, newSame);
 
         assertThat(result).isEmpty();
     }
 
     @Test
     void buildSetMiddleNameUpdateAction_withDifferentValues_ShouldReturnAction() {
-        final Optional<UpdateAction<Customer>> result = setMiddleNameUpdateAction(old, newDifferent);
+        final Optional<UpdateAction<Customer>> result = buildSetMiddleNameUpdateAction(old, newDifferent);
 
         assertThat(result).containsInstanceOf(SetMiddleName.class);
         assertThat(result).contains(SetMiddleName.of(newDifferent.getMiddleName()));
@@ -147,14 +146,14 @@ public class CustomerUpdateActionUtilsTest {
 
     @Test
     void buildSetMiddleNameUpdateAction_withSameValues_ShouldReturnEmptyOptional() {
-        final Optional<UpdateAction<Customer>> result = setMiddleNameUpdateAction(old, newSame);
+        final Optional<UpdateAction<Customer>> result = buildSetMiddleNameUpdateAction(old, newSame);
 
         assertThat(result).isEmpty();
     }
 
     @Test
     void buildSetTitleUpdateAction_withDifferentValues_ShouldReturnAction() {
-        final Optional<UpdateAction<Customer>> result = setTitleUpdateAction(old, newDifferent);
+        final Optional<UpdateAction<Customer>> result = buildSetTitleUpdateAction(old, newDifferent);
 
         assertThat(result).containsInstanceOf(SetTitle.class);
         assertThat(result).contains(SetTitle.of(newDifferent.getTitle()));
@@ -162,14 +161,14 @@ public class CustomerUpdateActionUtilsTest {
 
     @Test
     void buildSetTitleUpdateAction_withSameValues_ShouldReturnEmptyOptional() {
-        final Optional<UpdateAction<Customer>> result = setTitleUpdateAction(old, newSame);
+        final Optional<UpdateAction<Customer>> result = buildSetTitleUpdateAction(old, newSame);
 
         assertThat(result).isEmpty();
     }
 
     @Test
     void buildSetSalutationUpdateAction_withDifferentValues_ShouldReturnAction() {
-        final Optional<UpdateAction<Customer>> result = setSalutationUpdateAction(old, newDifferent);
+        final Optional<UpdateAction<Customer>> result = buildSetSalutationUpdateAction(old, newDifferent);
 
         assertThat(result).containsInstanceOf(SetSalutation.class);
         assertThat(result).contains(SetSalutation.of(newDifferent.getSalutation()));
@@ -177,7 +176,7 @@ public class CustomerUpdateActionUtilsTest {
 
     @Test
     void buildSetSalutationUpdateAction_withSameValues_ShouldReturnEmptyOptional() {
-        final Optional<UpdateAction<Customer>> result = setSalutationUpdateAction(old, newSame);
+        final Optional<UpdateAction<Customer>> result = buildSetSalutationUpdateAction(old, newSame);
 
         assertThat(result).isEmpty();
     }

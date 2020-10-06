@@ -1,6 +1,5 @@
 package com.commercetools.sync.customers.utils;
 
-import com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
@@ -22,6 +21,8 @@ import io.sphere.sdk.customers.commands.updateactions.SetVatId;
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
+import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
+
 public final class CustomerUpdateActionUtils {
 
     /**
@@ -30,68 +31,73 @@ public final class CustomerUpdateActionUtils {
      * {@link UpdateAction}. If both {@link Customer} and {@link CustomerDraft} have the same
      * {@code email} values, then no update action is needed and empty optional will be returned.
      *
-     * @param oldCustomer the Customer that should be updated.
-     * @param newCustomer the Customer draft that contains the new email.
+     * @param oldCustomer the customer that should be updated.
+     * @param newCustomer the customer draft that contains the new email.
      * @return optional containing update action or empty optional if emails are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<Customer>> changeEmailUpdateAction(@Nonnull final Customer oldCustomer,
-                                                                           @Nonnull final CustomerDraft newCustomer) {
+    public static Optional<UpdateAction<Customer>> buildChangeEmailUpdateAction(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
 
-        return CommonTypeUpdateActionUtils.buildUpdateAction(oldCustomer.getEmail(), newCustomer.getEmail(),
-            () -> ChangeEmail.of(
-                newCustomer.getEmail()));
+        return buildUpdateAction(oldCustomer.getEmail(), newCustomer.getEmail(),
+            () -> ChangeEmail.of(newCustomer.getEmail()));
     }
 
     /**
-     * Compares the {@code FirstName} values of a {@link Customer} and a {@link CustomerDraft}
+     * Compares the {@code firstName} values of a {@link Customer} and a {@link CustomerDraft}
      * and returns an {@link Optional} of update action, which would contain the {@code "setFirstName"}
      * {@link UpdateAction}. If both {@link Customer} and {@link CustomerDraft} have the same
-     * {@code FirstName} values, then no update action is needed and empty optional will be returned.
+     * {@code firstName} values, then no update action is needed and empty optional will be returned.
      *
-     * @param oldCustomer the Customer that should be updated.
-     * @param newCustomer the Customer draft that contains the new name.
-     * @return optional containing update action or empty optional if names are identical.
+     * @param oldCustomer the customer that should be updated.
+     * @param newCustomer the customer draft that contains the new first name.
+     * @return optional containing update action or empty optional if first names are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<Customer>> setFirstNameUpdateAction(@Nonnull final Customer oldCustomer,
-                                                                            @Nonnull final CustomerDraft newCustomer) {
+    public static Optional<UpdateAction<Customer>> buildSetFirstNameUpdateAction(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
 
-        return CommonTypeUpdateActionUtils.buildUpdateAction(oldCustomer.getFirstName(), newCustomer.getFirstName(),
+        return buildUpdateAction(oldCustomer.getFirstName(), newCustomer.getFirstName(),
             () -> SetFirstName.of(newCustomer.getFirstName()));
     }
 
     /**
-     * Compares the {@code LastName} values of a {@link Customer} and a {@link CustomerDraft}
+     * Compares the {@code lastName} values of a {@link Customer} and a {@link CustomerDraft}
      * and returns an {@link Optional} of update action, which would contain the {@code "setLastName"}
      * {@link UpdateAction}. If both {@link Customer} and {@link CustomerDraft} have the same
-     * {@code LastName} values, then no update action is needed and empty optional will be returned.
+     * {@code lastName} values, then no update action is needed and empty optional will be returned.
      *
-     * @param oldCustomer the Customer that should be updated.
-     * @param newCustomer the Customer draft that contains the new name.
-     * @return optional containing update action or empty optional if names are identical.
+     * @param oldCustomer the customer that should be updated.
+     * @param newCustomer the customer draft that contains the new last name.
+     * @return optional containing update action or empty optional if last names are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<Customer>> setLastNameUpdateAction(@Nonnull final Customer oldCustomer,
-                                                                           @Nonnull final CustomerDraft newCustomer) {
-        return CommonTypeUpdateActionUtils.buildUpdateAction(oldCustomer.getLastName(), newCustomer.getLastName(),
+    public static Optional<UpdateAction<Customer>> buildSetLastNameUpdateAction(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
+
+        return buildUpdateAction(oldCustomer.getLastName(), newCustomer.getLastName(),
             () -> SetLastName.of(newCustomer.getLastName()));
     }
 
     /**
-     * Compares the {@code MiddleName} values of a {@link Customer} and a {@link CustomerDraft}
+     * Compares the {@code middleName} values of a {@link Customer} and a {@link CustomerDraft}
      * and returns an {@link Optional} of update action, which would contain the {@code "setMiddleName"}
      * {@link UpdateAction}. If both {@link Customer} and {@link CustomerDraft} have the same
-     * {@code MiddleName} values, then no update action is needed and empty optional will be returned.
+     * {@code middleName} values, then no update action is needed and empty optional will be returned.
      *
-     * @param oldCustomer the Customer that should be updated.
-     * @param newCustomer the Customer draft that contains the new name.
-     * @return optional containing update action or empty optional if names are identical.
+     * @param oldCustomer the customer that should be updated.
+     * @param newCustomer the customer draft that contains the new middle name.
+     * @return optional containing update action or empty optional if middle names are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<Customer>> setMiddleNameUpdateAction(@Nonnull final Customer oldCustomer,
-                                                                             @Nonnull final CustomerDraft newCustomer) {
-        return CommonTypeUpdateActionUtils.buildUpdateAction(oldCustomer.getMiddleName(), newCustomer.getMiddleName(),
+    public static Optional<UpdateAction<Customer>> buildSetMiddleNameUpdateAction(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
+
+        return buildUpdateAction(oldCustomer.getMiddleName(), newCustomer.getMiddleName(),
             () -> SetMiddleName.of(newCustomer.getMiddleName()));
     }
 
@@ -101,31 +107,35 @@ public final class CustomerUpdateActionUtils {
      * {@link UpdateAction}. If both {@link Customer} and {@link CustomerDraft} have the same
      * {@code title} values, then no update action is needed and empty optional will be returned.
      *
-     * @param oldCustomer the Customer that should be updated.
-     * @param newCustomer the Customer draft that contains the new title.
+     * @param oldCustomer the customer that should be updated.
+     * @param newCustomer the customer draft that contains the new title.
      * @return optional containing update action or empty optional if titles are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<Customer>> setTitleUpdateAction(@Nonnull final Customer oldCustomer,
-                                                                        @Nonnull final CustomerDraft newCustomer) {
-        return CommonTypeUpdateActionUtils.buildUpdateAction(oldCustomer.getTitle(), newCustomer.getTitle(),
+    public static Optional<UpdateAction<Customer>> buildSetTitleUpdateAction(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
+
+        return buildUpdateAction(oldCustomer.getTitle(), newCustomer.getTitle(),
             () -> SetTitle.of(newCustomer.getTitle()));
     }
 
     /**
-     * Compares the {@code Salutation} values of a {@link Customer} and a {@link CustomerDraft}
+     * Compares the {@code salutation} values of a {@link Customer} and a {@link CustomerDraft}
      * and returns an {@link Optional} of update action, which would contain the {@code "SetSalutation"}
      * {@link UpdateAction}. If both {@link Customer} and {@link CustomerDraft} have the same
-     * {@code Salutation} values, then no update action is needed and empty optional will be returned.
+     * {@code salutation} values, then no update action is needed and empty optional will be returned.
      *
      * @param oldCustomer the Customer that should be updated.
      * @param newCustomer the Customer draft that contains the new salutation.
      * @return optional containing update action or empty optional if salutations are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<Customer>> setSalutationUpdateAction(@Nonnull final Customer oldCustomer,
-                                                                             @Nonnull final CustomerDraft newCustomer) {
-        return CommonTypeUpdateActionUtils.buildUpdateAction(oldCustomer.getSalutation(), newCustomer.getSalutation(),
+    public static Optional<UpdateAction<Customer>> buildSetSalutationUpdateAction(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
+
+        return buildUpdateAction(oldCustomer.getSalutation(), newCustomer.getSalutation(),
             () -> SetSalutation.of(newCustomer.getSalutation()));
     }
 
@@ -133,7 +143,7 @@ public final class CustomerUpdateActionUtils {
         (@Nonnull final Customer oldCustomer,
          @Nonnull final CustomerDraft newCustomer) {
 
-        return CommonTypeUpdateActionUtils.buildUpdateAction(oldCustomer.getDefaultShippingAddress(),
+        return buildUpdateAction(oldCustomer.getDefaultShippingAddress(),
             newCustomer.getDefaultShippingAddress(), () -> SetDefaultShippingAddress.of(
                 String.valueOf(newCustomer.getDefaultShippingAddress())));
 
@@ -240,7 +250,7 @@ public final class CustomerUpdateActionUtils {
     (@Nonnull final Customer oldCustomer,
      @Nonnull final CustomerDraft newCustomer) {
 
-        return CommonTypeUpdateActionUtils.buildUpdateAction(oldCustomer.getCustomerNumber(),
+        return buildUpdateAction(oldCustomer.getCustomerNumber(),
             newCustomer.getCustomerNumber(), () -> SetCustomerNumber.of(newCustomer.getCustomerNumber()));
     }
 
@@ -258,7 +268,7 @@ public final class CustomerUpdateActionUtils {
     public static Optional<UpdateAction<Customer>> setExternalIdUpdateAction(@Nonnull final Customer oldCustomer,
                                                                              @Nonnull final CustomerDraft newCustomer) {
 
-        return CommonTypeUpdateActionUtils.buildUpdateAction((oldCustomer.getExternalId()), newCustomer.getExternalId(),
+        return buildUpdateAction((oldCustomer.getExternalId()), newCustomer.getExternalId(),
             () -> SetExternalId.of(newCustomer.getExternalId()));
     }
 
@@ -276,7 +286,7 @@ public final class CustomerUpdateActionUtils {
     public static Optional<UpdateAction<Customer>> setCompanyNameUpdateAction(@Nonnull final Customer oldCustomer,
                                                                               @Nonnull final CustomerDraft newCustomer) {
 
-        return CommonTypeUpdateActionUtils.buildUpdateAction(oldCustomer.getCompanyName(), newCustomer.getCompanyName(),
+        return buildUpdateAction(oldCustomer.getCompanyName(), newCustomer.getCompanyName(),
             () -> SetCompanyName.of(
                 newCustomer.getCompanyName()));
     }
@@ -294,7 +304,7 @@ public final class CustomerUpdateActionUtils {
     @Nonnull
     public static Optional<UpdateAction<Customer>> setDateOfBirthUpdateAction(@Nonnull final Customer oldCustomer,
                                                                               @Nonnull final CustomerDraft newCustomer) {
-        return CommonTypeUpdateActionUtils.buildUpdateAction(oldCustomer.getDateOfBirth(), newCustomer.getDateOfBirth(),
+        return buildUpdateAction(oldCustomer.getDateOfBirth(), newCustomer.getDateOfBirth(),
             () -> SetDateOfBirth.of(newCustomer.getDateOfBirth()));
     }
 
@@ -311,7 +321,7 @@ public final class CustomerUpdateActionUtils {
     @Nonnull
     public static Optional<UpdateAction<Customer>> setVatIdUpdateAction(@Nonnull final Customer oldCustomer,
                                                                         @Nonnull final CustomerDraft newCustomer) {
-        return CommonTypeUpdateActionUtils.buildUpdateAction(oldCustomer.getVatId(), newCustomer.getVatId(),
+        return buildUpdateAction(oldCustomer.getVatId(), newCustomer.getVatId(),
             () -> SetVatId.of(newCustomer.getVatId()));
     }
 
@@ -328,7 +338,7 @@ public final class CustomerUpdateActionUtils {
     @Nonnull
     public static Optional<UpdateAction<Customer>> setLocaleUpdateAction(@Nonnull final Customer oldCustomer,
                                                                          @Nonnull final CustomerDraft newCustomer) {
-        return CommonTypeUpdateActionUtils.buildUpdateAction(oldCustomer.getLocale(), newCustomer.getLocale(),
+        return buildUpdateAction(oldCustomer.getLocale(), newCustomer.getLocale(),
             () -> SetLocale.of(newCustomer.getLocale()));
     }
 
@@ -345,7 +355,7 @@ public final class CustomerUpdateActionUtils {
     @Nonnull
     public static Optional<UpdateAction<Customer>> setKeyUpdateAction(@Nonnull final Customer oldCustomer,
                                                                       @Nonnull final CustomerDraft newCustomer) {
-        return CommonTypeUpdateActionUtils.buildUpdateAction(oldCustomer.getKey(), newCustomer.getKey(),
+        return buildUpdateAction(oldCustomer.getKey(), newCustomer.getKey(),
             () -> SetKey.of(newCustomer.getKey()));
     }
 
