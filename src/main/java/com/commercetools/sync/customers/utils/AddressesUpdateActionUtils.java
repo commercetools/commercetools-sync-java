@@ -29,7 +29,7 @@ import static java.util.stream.Collectors.toMap;
 public final class AddressesUpdateActionUtils {
 
     @Nonnull
-    public List<UpdateAction<Customer>> buildAddressUpdateActions(@Nonnull final List<Address> oldAddresses,
+    public static List<UpdateAction<Customer>> buildAddressUpdateActions(@Nonnull final List<Address> oldAddresses,
                                                                   @Nullable final List<Address> newAddresses)
         throws BuildUpdateActionException {
         if (newAddresses != null) {
@@ -47,7 +47,7 @@ public final class AddressesUpdateActionUtils {
     }
 
     @Nonnull
-    private List<UpdateAction<Customer>> buildUpdateActions(@Nonnull final List<Address> oldAddresses,
+    private static List<UpdateAction<Customer>> buildUpdateActions(@Nonnull final List<Address> oldAddresses,
                                                                    @Nonnull final List<Address> newAddresses)
         throws BuildUpdateActionException {
 
@@ -120,7 +120,7 @@ public final class AddressesUpdateActionUtils {
     }
 
 
-    public Optional<UpdateAction<Customer>> setDefaultShippingAddressUpdateAction
+    public static Optional<UpdateAction<Customer>> setDefaultShippingAddressUpdateAction
         (@Nonnull final Customer oldCustomer,
          @Nonnull final CustomerDraft newCustomer) {
 
@@ -131,7 +131,7 @@ public final class AddressesUpdateActionUtils {
     }
 
     //TODO implement addShippingAddressIdentifierUpdateAction
-    public Optional<UpdateAction<Customer>> addShippingAddressIdentifierUpdateAction(
+    public static Optional<UpdateAction<Customer>> addShippingAddressIdentifierUpdateAction(
         @Nonnull final Customer oldCustomer,
         @Nonnull final CustomerDraft newCustomer) {
 
@@ -145,7 +145,7 @@ public final class AddressesUpdateActionUtils {
     }
 
     //TODO implement removeShippingAddressIdentifierUpdateAction
-    public Optional<UpdateAction<Customer>> removeShippingAddressIdentifierUpdateAction(
+    public static Optional<UpdateAction<Customer>> removeShippingAddressIdentifierUpdateAction(
         @Nonnull final Customer oldCustomer,
         @Nonnull final CustomerDraft newCustomer) {
 
@@ -165,7 +165,7 @@ public final class AddressesUpdateActionUtils {
     }
 
     //TODO implement setDefaultBillingAddressUpdateAction
-    public Optional<UpdateAction<Customer>> setDefaultBillingAddressUpdateAction
+    public static Optional<UpdateAction<Customer>> setDefaultBillingAddressUpdateAction
     (@Nonnull final Customer oldCustomer,
      @Nonnull final CustomerDraft newCustomer) {
 
@@ -173,7 +173,7 @@ public final class AddressesUpdateActionUtils {
     }
 
     //TODO implement addBillingAddressIdentifierUpdateAction
-    public Optional<UpdateAction<Customer>> addBillingAddressIdentifierUpdateAction(@Nonnull final Customer oldCustomer,
+    public static Optional<UpdateAction<Customer>> addBillingAddressIdentifierUpdateAction(@Nonnull final Customer oldCustomer,
                                                                                     @Nonnull final CustomerDraft newCustomer) {
 
 //        return CommonTypeUpdateActionUtils.buildUpdateAction(oldCustomer.getBillingAddressIds(),
@@ -183,7 +183,7 @@ public final class AddressesUpdateActionUtils {
     }
 
     //TODO implement removeBillingAddressIdentifier
-    public Optional<UpdateAction<Customer>> removeBillingAddressIdentifier(@Nonnull final Customer oldCustomer,
+    public static Optional<UpdateAction<Customer>> removeBillingAddressIdentifier(@Nonnull final Customer oldCustomer,
                                                                            @Nonnull final CustomerDraft newCustomer) {
 
 //        final List<Address> oldAddresses = oldCustomer.getAddresses();
