@@ -88,7 +88,6 @@ class CustomerReferenceResolverTest {
             .custom(newCustomFieldsDraft);
 
         assertThat(referenceResolver.resolveCustomTypeReference(customerDraftBuilder).toCompletableFuture())
-            .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format("Failed to resolve custom type reference on CustomerDraft with "
@@ -103,7 +102,6 @@ class CustomerReferenceResolverTest {
             .custom(CustomFieldsDraft.ofTypeKeyAndJson("", emptyMap()));
 
         assertThat(referenceResolver.resolveCustomTypeReference(customerDraftBuilder).toCompletableFuture())
-            .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format("Failed to resolve custom type reference on CustomerDraft with "
@@ -178,15 +176,10 @@ class CustomerReferenceResolverTest {
         final String expectedMessageWithCause = format(FAILED_TO_RESOLVE_CUSTOMER_GROUP_REFERENCE,
             "dummyKey", format(CUSTOMER_GROUP_DOES_NOT_EXIST, "anyKey"));
 
-        referenceResolver.resolveCustomerGroupReference(customerDraftBuilder)
-                         .exceptionally(exception -> {
-                             assertThat(exception).hasCauseExactlyInstanceOf(ReferenceResolutionException.class);
-                             assertThat(exception.getCause().getMessage())
-                                 .isEqualTo(expectedMessageWithCause);
-                             return null;
-                         })
-                         .toCompletableFuture()
-                         .join();
+        assertThat(referenceResolver.resolveCustomerGroupReference(customerDraftBuilder))
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(ReferenceResolutionException.class)
+            .hasMessage(expectedMessageWithCause);
     }
 
     @Test
@@ -197,7 +190,6 @@ class CustomerReferenceResolverTest {
             .key("dummyKey");
 
         assertThat(referenceResolver.resolveCustomerGroupReference(customerDraftBuilder).toCompletableFuture())
-            .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format(FAILED_TO_RESOLVE_CUSTOMER_GROUP_REFERENCE, "dummyKey",
@@ -212,7 +204,6 @@ class CustomerReferenceResolverTest {
             .key("dummyKey");
 
         assertThat(referenceResolver.resolveCustomerGroupReference(customerDraftBuilder).toCompletableFuture())
-            .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format(FAILED_TO_RESOLVE_CUSTOMER_GROUP_REFERENCE, "dummyKey",
