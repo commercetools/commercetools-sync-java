@@ -4,7 +4,6 @@ import com.commercetools.sync.commons.helpers.BaseBatchValidator;
 import com.commercetools.sync.customers.CustomerSyncOptions;
 import io.sphere.sdk.customers.CustomerDraft;
 import io.sphere.sdk.models.Address;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -14,6 +13,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
+
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
