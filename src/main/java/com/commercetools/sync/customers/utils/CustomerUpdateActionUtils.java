@@ -21,7 +21,6 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.Referenceable;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.ResourceImpl;
-import io.sphere.sdk.types.Custom;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -214,7 +213,7 @@ public final class CustomerUpdateActionUtils {
      * @return optional containing update action or empty optional if dates of birth are identical.
      */
     @Nonnull
-    public static Optional<UpdateAction<Customer>> setDateOfBirthUpdateAction(
+    public static Optional<UpdateAction<Customer>> buildSetDateOfBirthUpdateAction(
         @Nonnull final Customer oldCustomer,
         @Nonnull final CustomerDraft newCustomer) {
 

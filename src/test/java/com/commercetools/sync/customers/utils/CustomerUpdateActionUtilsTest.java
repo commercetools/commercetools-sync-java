@@ -41,7 +41,7 @@ import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.b
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetSalutationUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetTitleUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetVatIdUpdateAction;
-import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.setDateOfBirthUpdateAction;
+import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetDateOfBirthUpdateAction;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -236,7 +236,7 @@ public class CustomerUpdateActionUtilsTest {
 
     @Test
     void buildSetDateOfBirthUpdateAction_withDifferentValues_ShouldReturnAction() {
-        final Optional<UpdateAction<Customer>> result = setDateOfBirthUpdateAction(old, newDifferent);
+        final Optional<UpdateAction<Customer>> result = buildSetDateOfBirthUpdateAction(old, newDifferent);
 
         assertThat(result).containsInstanceOf(SetDateOfBirth.class);
         assertThat(result).contains(SetDateOfBirth.of(newDifferent.getDateOfBirth()));
@@ -244,7 +244,7 @@ public class CustomerUpdateActionUtilsTest {
 
     @Test
     void buildSetDateOfBirthUpdateAction_withSameValues_ShouldReturnEmptyOptional() {
-        final Optional<UpdateAction<Customer>> result = setDateOfBirthUpdateAction(old, newSame);
+        final Optional<UpdateAction<Customer>> result = buildSetDateOfBirthUpdateAction(old, newSame);
 
         assertThat(result).isEmpty();
     }
