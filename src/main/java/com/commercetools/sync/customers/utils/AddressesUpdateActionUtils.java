@@ -9,11 +9,13 @@ import io.sphere.sdk.customers.CustomerDraft;
 import io.sphere.sdk.customers.commands.updateactions.AddAddress;
 import io.sphere.sdk.customers.commands.updateactions.ChangeAddress;
 import io.sphere.sdk.customers.commands.updateactions.RemoveAddress;
+import io.sphere.sdk.customers.commands.updateactions.SetDefaultBillingAddress;
 import io.sphere.sdk.customers.commands.updateactions.SetDefaultShippingAddress;
 import io.sphere.sdk.models.Address;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -30,7 +32,7 @@ public final class AddressesUpdateActionUtils {
 
     @Nonnull
     public static List<UpdateAction<Customer>> buildAddressUpdateActions(@Nonnull final List<Address> oldAddresses,
-                                                                  @Nullable final List<Address> newAddresses)
+                                                                         @Nullable final List<Address> newAddresses)
         throws BuildUpdateActionException {
         if (newAddresses != null) {
             return buildUpdateActions(oldAddresses, newAddresses
@@ -120,28 +122,32 @@ public final class AddressesUpdateActionUtils {
     }
 
 
-    public static Optional<UpdateAction<Customer>> setDefaultShippingAddressUpdateAction
-        (@Nonnull final Customer oldCustomer,
-         @Nonnull final CustomerDraft newCustomer) {
-
-        return buildUpdateAction(oldCustomer.getDefaultShippingAddress(),
-            newCustomer.getDefaultShippingAddress(), () -> SetDefaultShippingAddress.of(
-                String.valueOf(newCustomer.getDefaultShippingAddress())));
-
+    public static Optional<UpdateAction<Customer>> setDefaultShippingAddressUpdateAction(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
+        // find the address in that index, be aware the null pointer exceptions
+        Address address = newCustomer.getAddresses().get(newCustomer.getDefaultShippingAddress());
+        String addressId = address.getId();
+        //
+        return buildUpdateAction(oldCustomer.getDefaultShippingAddressId(),
+            addressId, () -> SetDefaultShippingAddress.of(addressId));
     }
 
     //TODO implement addShippingAddressIdentifierUpdateAction
-    public static Optional<UpdateAction<Customer>> addShippingAddressIdentifierUpdateAction(
+    public static List<UpdateAction<Customer>> buildAddShippingAddressIdentifierUpdateAction(
         @Nonnull final Customer oldCustomer,
         @Nonnull final CustomerDraft newCustomer) {
 
-//        final List<Address> oldShippingAddresses = oldCustomer.getShippingAddresses();
-//        final List<Integer> newShippingAddresses = newCustomer.getShippingAddresses();
-//
-//        final Map<String, Customer> oldShippingAddressMap = oldShippingAddresses
-//            .stream()
-//            .collect();
-        return null;
+        final List<Address> oldShippingAddresses = oldCustomer.getShippingAddresses();
+        final List<Address> newAddresses = newCustomer.getAddresses();
+        final List<Integer> newShippingAddressesIndices = newCustomer.getShippingAddresses();
+
+        final List<Address> newShippingAddresses = new ArrayList<>();
+        for (Integer newShippingAddressesIndex : newShippingAddressesIndices) {
+            newShippingAddresses.add(newAddresses.get(newShippingAddressesIndex));
+        }
+
+        return AddressesUpdateActionUtils.buildAddAddressUpdateActions(oldShippingAddresses, newShippingAddresses);
     }
 
     //TODO implement removeShippingAddressIdentifierUpdateAction
@@ -169,22 +175,34 @@ public final class AddressesUpdateActionUtils {
     (@Nonnull final Customer oldCustomer,
      @Nonnull final CustomerDraft newCustomer) {
 
-        return null;
+        // find the address in that index, be aware the null pointer exceptions
+        Address address = newCustomer.getAddresses().get(newCustomer.getDefaultBillingAddress());
+        String addressId = address.getId();
+        //
+        return buildUpdateAction(oldCustomer.getDefaultBillingAddressId(),
+            addressId, () -> SetDefaultBillingAddress.of(addressId));
     }
 
     //TODO implement addBillingAddressIdentifierUpdateAction
-    public static Optional<UpdateAction<Customer>> addBillingAddressIdentifierUpdateAction(@Nonnull final Customer oldCustomer,
-                                                                                    @Nonnull final CustomerDraft newCustomer) {
+    public static List<UpdateAction<Customer>> addBillingAddressIdentifierUpdateAction
+    (@Nonnull final Customer oldCustomer,
+     @Nonnull final CustomerDraft newCustomer) {
 
-//        return CommonTypeUpdateActionUtils.buildUpdateAction(oldCustomer.getBillingAddressIds(),
-//            newCustomer.getBillingAddresses(), () -> AddBillingAddressId.of(
-//                newCustomer.getBillingAddresses()));
-        return null;
+        final List<Address> oldShippingAddresses = oldCustomer.getBillingAddresses();
+        final List<Address> newAddresses = newCustomer.getAddresses();
+        final List<Integer> newBillingAddressesIndices = newCustomer.getBillingAddresses();
+
+        final List<Address> newBillingAddresses = new ArrayList<>();
+        for (Integer newShippingAddressesIndex : newBillingAddressesIndices) {
+            newBillingAddresses.add(newAddresses.get(newShippingAddressesIndex));
+        }
+
+        return AddressesUpdateActionUtils.buildAddAddressUpdateActions(oldShippingAddresses, newBillingAddresses);
     }
 
     //TODO implement removeBillingAddressIdentifier
     public static Optional<UpdateAction<Customer>> removeBillingAddressIdentifier(@Nonnull final Customer oldCustomer,
-                                                                           @Nonnull final CustomerDraft newCustomer) {
+                                                                                  @Nonnull final CustomerDraft newCustomer) {
 
 //        final List<Address> oldAddresses = oldCustomer.getAddresses();
 //        final List<Address> newAddresses = newCustomer.getAddresses();
