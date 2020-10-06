@@ -65,10 +65,6 @@ public class CustomerBatchValidator
      * <li>It has valid 'billingAddresses' and 'shippingAddresses'</li>
      * </ol>
      *
-     * <p>Note that {@link io.sphere.sdk.customers.CustomerDraftDsl} is validating the 'defaultBillingAddress' and
-     * 'defaultShippingAddress' with '#isValidAddressIndex' method in it's constructor, so default values are not
-     * possible to be invalid.
-     *
      * @param customerDrafts the customer drafts to validate and collect referenced keys.
      * @return {@link ImmutablePair}&lt;{@link Set}&lt;{@link CustomerDraft}&gt;,
      *      {@link CustomerBatchValidator.ReferencedKeys}&gt; which contains the {@link Set} of valid drafts and
