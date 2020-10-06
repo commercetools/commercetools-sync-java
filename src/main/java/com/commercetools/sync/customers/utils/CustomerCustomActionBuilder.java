@@ -15,27 +15,32 @@ public class CustomerCustomActionBuilder implements GenericCustomActionBuilder<C
 
     @Nonnull
     @Override
-    public UpdateAction<Customer> buildRemoveCustomTypeAction(@Nullable final Integer variantId,
-                                                              @Nullable final String objectId) {
+    public UpdateAction<Customer> buildRemoveCustomTypeAction(
+        @Nullable final Integer variantId,
+        @Nullable final String objectId) {
+
         return SetCustomType.ofRemoveType();
     }
 
     @Nonnull
     @Override
     public UpdateAction<Customer> buildSetCustomTypeAction(
-            @Nullable final Integer variantId,
-            @Nullable final String objectId,
-            @Nonnull final String customTypeId,
-            @Nullable final Map<String, JsonNode> customFieldsJsonMap) {
+        @Nullable final Integer variantId,
+        @Nullable final String objectId,
+        @Nonnull final String customTypeId,
+        @Nullable final Map<String, JsonNode> customFieldsJsonMap) {
+
         return SetCustomType.ofTypeIdAndJson(customTypeId, customFieldsJsonMap);
     }
 
     @Nonnull
     @Override
-    public UpdateAction<Customer> buildSetCustomFieldAction(@Nullable final Integer variantId,
-                                                                @Nullable final String objectId,
-                                                                @Nullable final String customFieldName,
-                                                                @Nullable final JsonNode customFieldValue) {
+    public UpdateAction<Customer> buildSetCustomFieldAction(
+        @Nullable final Integer variantId,
+        @Nullable final String objectId,
+        @Nullable final String customFieldName,
+        @Nullable final JsonNode customFieldValue) {
+
         return SetCustomField.ofJson(customFieldName, customFieldValue);
     }
 }
