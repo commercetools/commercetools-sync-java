@@ -124,12 +124,12 @@ the **_create_** request just before it is sent to commercetools platform.  It c
 
  * product type draft that should be created
  
-##### Example (Logging of description from product type draft)
+##### Example (Logging of product type name from product type draft)
 ````java
 final Logger logger = LoggerFactory.getLogger(ProductTypeSync.class);
 final Function<ProductTypeDraft, ProductTypeDraft> beforeCreateProductTypeCallback =
                 (callbackDraft) -> {
-                    logger.info(String.format("ProductType Description : %s", callbackDraft.getDescription()));
+                    logger.info(String.format("ProductType : %s", callbackDraft.getName()));
                     return callbackDraft;
                 };
                          

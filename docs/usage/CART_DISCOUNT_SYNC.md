@@ -122,7 +122,7 @@ the **_create_** request just before it is sent to commercetools platform.  It c
 final Logger logger = LoggerFactory.getLogger(CartDiscountSync.class);
 final Function<CartDiscountDraft, CartDiscountDraft> beforeCreateCartDiscountCallback =
             (callbackDraft) -> {
-                logger.info(String.format("Is cart discount %s active : %s", callbackDraft.getDescription(), callbackDraft.isActive()));
+                logger.info(String.format("Is cart discount %s active : %s", callbackDraft.getName(), callbackDraft.isActive()));
                 return callbackDraft;
             };
                          

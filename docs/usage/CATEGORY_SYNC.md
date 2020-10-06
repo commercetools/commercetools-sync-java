@@ -118,13 +118,13 @@ the **_create_** request just before it is sent to commercetools platform.  It c
 
  * category draft that should be created
  
-##### Example (Logging of description from category draft)
+##### Example (Logging of category name from category draft)
 ````java
 final Logger logger = LoggerFactory.getLogger(CategorySync.class);
 
 final Function<CategoryDraft, CategoryDraft> beforeCreateCategoryCallback =
             (callbackDraft) -> {
-                logger.info(String.format("Category Description : %s", callbackDraft.getDescription()));
+                logger.info(String.format("Category : %s", callbackDraft.getName()));
                 return callbackDraft;
             };
 
