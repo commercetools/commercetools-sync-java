@@ -34,8 +34,8 @@ public final class CustomerReferenceResolver
     private final CustomerGroupService customerGroupService;
 
     /**
-     * Takes a {@link CustomerSyncOptions} instance, a  {@link TypeService} to instantiate a
-     * {@link CustomerReferenceResolver} instance that could be used to resolve the customer drafts in the
+     * Takes a {@link CustomerSyncOptions} instance, a {@link TypeService} and a {@link CustomerGroupService} to
+     * instantiate a {@link CustomerReferenceResolver} instance that could be used to resolve the customer drafts in the
      * CTP project specified in the injected {@link CustomerSyncOptions} instance.
      *
      * @param options     the container of all the options of the sync process including the CTP project client
