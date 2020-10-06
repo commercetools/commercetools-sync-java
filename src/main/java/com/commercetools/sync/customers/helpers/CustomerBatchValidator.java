@@ -59,11 +59,17 @@ public class CustomerBatchValidator
      * <li>It is not null</li>
      * <li>It has a key which is not blank (null/empty)</li>
      * <li>It has a email which is not blank (null/empty)</li>
-     * <li>It has not null addresses</li>
-     * <li>It has valid addresses with keys is not blank (null/empty)</li>
-     * <li>It has unique address keys</li>
-     * <li>It has valid 'billingAddresses' and 'shippingAddresses'</li>
+     * <li><b>Each address</b> in the addresses list satisfies the following conditions:
+     * <ol>
+     * <li>It is not null</li>
+     * <li>It has a key which is not blank (null/empty)</li>
+     * <li>It has a unique key</li>
      * </ol>
+     * </li>
+     * <li><b>Each address index</b> in the 'billing' and 'shipping' addresses list are valid and contained
+     * in the addresses list.
+     * </ol>
+     *
      *
      * @param customerDrafts the customer drafts to validate and collect referenced keys.
      * @return {@link ImmutablePair}&lt;{@link Set}&lt;{@link CustomerDraft}&gt;,
