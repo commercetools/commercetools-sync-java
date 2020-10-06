@@ -5,9 +5,11 @@ import com.commercetools.sync.commons.exceptions.DuplicateKeyException;
 import com.commercetools.sync.commons.exceptions.DuplicateNameException;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customers.Customer;
+import io.sphere.sdk.customers.CustomerDraft;
 import io.sphere.sdk.customers.commands.updateactions.AddAddress;
 import io.sphere.sdk.customers.commands.updateactions.ChangeAddress;
 import io.sphere.sdk.customers.commands.updateactions.RemoveAddress;
+import io.sphere.sdk.customers.commands.updateactions.SetDefaultShippingAddress;
 import io.sphere.sdk.models.Address;
 
 import javax.annotation.Nonnull;
@@ -15,16 +17,19 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
-final class AddressesUpdateActionUtils {
+public final class AddressesUpdateActionUtils {
 
-    static List<UpdateAction<Customer>> buildAddressUpdateActions(@Nonnull final List<Address> oldAddresses,
+    @Nonnull
+    public List<UpdateAction<Customer>> buildAddressUpdateActions(@Nonnull final List<Address> oldAddresses,
                                                                   @Nullable final List<Address> newAddresses)
         throws BuildUpdateActionException {
         if (newAddresses != null) {
@@ -42,7 +47,7 @@ final class AddressesUpdateActionUtils {
     }
 
     @Nonnull
-    private static List<UpdateAction<Customer>> buildUpdateActions(@Nonnull final List<Address> oldAddresses,
+    private List<UpdateAction<Customer>> buildUpdateActions(@Nonnull final List<Address> oldAddresses,
                                                                    @Nonnull final List<Address> newAddresses)
         throws BuildUpdateActionException {
 
@@ -113,6 +118,89 @@ final class AddressesUpdateActionUtils {
             .map(AddAddress::of)
             .collect(toList());
     }
+
+
+    public Optional<UpdateAction<Customer>> setDefaultShippingAddressUpdateAction
+        (@Nonnull final Customer oldCustomer,
+         @Nonnull final CustomerDraft newCustomer) {
+
+        return buildUpdateAction(oldCustomer.getDefaultShippingAddress(),
+            newCustomer.getDefaultShippingAddress(), () -> SetDefaultShippingAddress.of(
+                String.valueOf(newCustomer.getDefaultShippingAddress())));
+
+    }
+
+    //TODO implement addShippingAddressIdentifierUpdateAction
+    public Optional<UpdateAction<Customer>> addShippingAddressIdentifierUpdateAction(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
+
+//        final List<Address> oldShippingAddresses = oldCustomer.getShippingAddresses();
+//        final List<Integer> newShippingAddresses = newCustomer.getShippingAddresses();
+//
+//        final Map<String, Customer> oldShippingAddressMap = oldShippingAddresses
+//            .stream()
+//            .collect();
+        return null;
+    }
+
+    //TODO implement removeShippingAddressIdentifierUpdateAction
+    public Optional<UpdateAction<Customer>> removeShippingAddressIdentifierUpdateAction(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
+
+//        final List<Address> oldAddresses = oldCustomer.getAddresses();
+//        final List<Address> newAddresses = newCustomer.getAddresses();
+//
+//        return buildUpdateActions(oldAddresses, newAddresses, () -> {
+//            final List<UpdateAction<Customer>> updateActions = new ArrayList<>();
+//            filterCollection(oldAddresses, oldAddressReference ->
+//                !newAddresses.contains(oldAddressReference.getId()))
+//                .forEach(addressReference ->
+//                    updateActions.add(RemoveShippingAddressId.of(addressReference.getId())));
+
+//            return updateActions;
+//        });
+        return null;
+    }
+
+    //TODO implement setDefaultBillingAddressUpdateAction
+    public Optional<UpdateAction<Customer>> setDefaultBillingAddressUpdateAction
+    (@Nonnull final Customer oldCustomer,
+     @Nonnull final CustomerDraft newCustomer) {
+
+        return null;
+    }
+
+    //TODO implement addBillingAddressIdentifierUpdateAction
+    public Optional<UpdateAction<Customer>> addBillingAddressIdentifierUpdateAction(@Nonnull final Customer oldCustomer,
+                                                                                    @Nonnull final CustomerDraft newCustomer) {
+
+//        return CommonTypeUpdateActionUtils.buildUpdateAction(oldCustomer.getBillingAddressIds(),
+//            newCustomer.getBillingAddresses(), () -> AddBillingAddressId.of(
+//                newCustomer.getBillingAddresses()));
+        return null;
+    }
+
+    //TODO implement removeBillingAddressIdentifier
+    public Optional<UpdateAction<Customer>> removeBillingAddressIdentifier(@Nonnull final Customer oldCustomer,
+                                                                           @Nonnull final CustomerDraft newCustomer) {
+
+//        final List<Address> oldAddresses = oldCustomer.getAddresses();
+//        final List<Address> newAddresses = newCustomer.getAddresses();
+//
+//        return buildUpdateActions(oldAddresses, newAddresses, () -> {
+//            final List<UpdateAction<Customer>> updateActions = new ArrayList<>();
+//            filterCollection(oldAddresses, oldAddressReference ->
+//                !newAddresses.contains(oldAddressReference.))
+//                .forEach(addressReference ->
+//                    updateActions.add(RemoveShippingAddressId.of(addressReference.getId())));
+//
+//            return updateActions;
+//        });
+        return null;
+    }
+
 
     private AddressesUpdateActionUtils() {
     }
