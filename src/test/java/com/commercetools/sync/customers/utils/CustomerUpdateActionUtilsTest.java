@@ -11,7 +11,6 @@ import io.sphere.sdk.customers.commands.updateactions.SetCustomerNumber;
 import io.sphere.sdk.customers.commands.updateactions.SetDateOfBirth;
 import io.sphere.sdk.customers.commands.updateactions.SetExternalId;
 import io.sphere.sdk.customers.commands.updateactions.SetFirstName;
-import io.sphere.sdk.customers.commands.updateactions.SetKey;
 import io.sphere.sdk.customers.commands.updateactions.SetLastName;
 import io.sphere.sdk.customers.commands.updateactions.SetLocale;
 import io.sphere.sdk.customers.commands.updateactions.SetMiddleName;
@@ -28,16 +27,15 @@ import java.util.Optional;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildChangeEmailUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetCompanyNameUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetCustomerNumberUpdateAction;
-import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.setDateOfBirthUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetExternalIdUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetFirstNameUpdateAction;
-import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.setKeyUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetLastNameUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetLocaleUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetMiddleNameUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetSalutationUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetTitleUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetVatIdUpdateAction;
+import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.setDateOfBirthUpdateAction;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -267,21 +265,6 @@ public class CustomerUpdateActionUtilsTest {
     @Test
     void buildSetLocaleUpdateAction_withSameValues_ShouldReturnEmptyOptional() {
         final Optional<UpdateAction<Customer>> result = buildSetLocaleUpdateAction(old, newSame);
-
-        assertThat(result).isEmpty();
-    }
-
-    @Test
-    void buildSetKeyUpdateAction_withDifferentValues_ShouldReturnAction() {
-        final Optional<UpdateAction<Customer>> result = setKeyUpdateAction(old, newDifferent);
-
-        assertThat(result).containsInstanceOf(SetKey.class);
-        assertThat(result).contains(SetKey.of(newDifferent.getKey()));
-    }
-
-    @Test
-    void buildSetKeyUpdateAction_withSameValues_ShouldReturnEmptyOptional() {
-        final Optional<UpdateAction<Customer>> result = setKeyUpdateAction(old, newSame);
 
         assertThat(result).isEmpty();
     }

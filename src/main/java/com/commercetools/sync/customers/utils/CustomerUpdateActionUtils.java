@@ -349,23 +349,6 @@ public final class CustomerUpdateActionUtils {
             () -> SetLocale.of(newCustomer.getLocale()));
     }
 
-    /**
-     * Compares the {@code Key} values of a {@link Customer} and a {@link CustomerDraft}
-     * and returns an {@link Optional} of update action, which would contain the {@code "setKey"}
-     * {@link UpdateAction}. If both {@link Customer} and {@link CustomerDraft} have the same
-     * {@code Key} values, then no update action is needed and empty optional will be returned.
-     *
-     * @param oldCustomer the Customer that should be updated.
-     * @param newCustomer the Customer draft that contains the new key.
-     * @return optional containing update action or empty optional if keys are identical.
-     */
-    @Nonnull
-    public static Optional<UpdateAction<Customer>> setKeyUpdateAction(@Nonnull final Customer oldCustomer,
-                                                                      @Nonnull final CustomerDraft newCustomer) {
-        return buildUpdateAction(oldCustomer.getKey(), newCustomer.getKey(),
-            () -> SetKey.of(newCustomer.getKey()));
-    }
-
     //TODO implement setCustomTypeUpdateAction
     //TODO implement setCustomFieldUpdateAction
     //TODO implement setStoresUpdateAction
