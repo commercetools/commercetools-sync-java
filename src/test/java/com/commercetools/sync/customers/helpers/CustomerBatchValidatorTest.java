@@ -26,6 +26,7 @@ import static com.commercetools.sync.customers.helpers.CustomerBatchValidator.BI
 import static com.commercetools.sync.customers.helpers.CustomerBatchValidator.CUSTOMER_DRAFT_EMAIL_NOT_SET;
 import static com.commercetools.sync.customers.helpers.CustomerBatchValidator.CUSTOMER_DRAFT_IS_NULL;
 import static com.commercetools.sync.customers.helpers.CustomerBatchValidator.CUSTOMER_DRAFT_KEY_NOT_SET;
+import static com.commercetools.sync.customers.helpers.CustomerBatchValidator.CUSTOMER_DRAFT_PASSWORD_NOT_SET;
 import static com.commercetools.sync.customers.helpers.CustomerBatchValidator.SHIPPING_ADDRESSES_ARE_NOT_VALID;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -119,6 +120,32 @@ class CustomerBatchValidatorTest {
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0))
             .isEqualTo(format(CUSTOMER_DRAFT_EMAIL_NOT_SET, customerDraft.getKey()));
+        assertThat(validDrafts).isEmpty();
+    }
+
+    @Test
+    void validateAndCollectReferencedKeys_WithCustomerDraftWithNullPassword_ShouldHaveValidationErrorAndEmptyResult() {
+        final CustomerDraft customerDraft = CustomerDraftBuilder.of("email", null)
+                                                                .key("key")
+                                                                .build();
+        final Set<CustomerDraft> validDrafts = getValidDrafts(singletonList(customerDraft));
+
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0))
+            .isEqualTo(format(CUSTOMER_DRAFT_PASSWORD_NOT_SET, customerDraft.getKey()));
+        assertThat(validDrafts).isEmpty();
+    }
+
+    @Test
+    void validateAndCollectReferencedKeys_WithCustomerDraftWithEmptyPassword_ShouldHaveValidationErrorAndEmptyResult() {
+        final CustomerDraft customerDraft = CustomerDraftBuilder.of("email", EMPTY)
+                                                                .key("key")
+                                                                .build();
+        final Set<CustomerDraft> validDrafts = getValidDrafts(singletonList(customerDraft));
+
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0))
+            .isEqualTo(format(CUSTOMER_DRAFT_PASSWORD_NOT_SET, customerDraft.getKey()));
         assertThat(validDrafts).isEmpty();
     }
 

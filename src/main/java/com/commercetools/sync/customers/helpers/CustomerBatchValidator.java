@@ -28,6 +28,8 @@ public class CustomerBatchValidator
         + "Please make sure all customer drafts have keys.";
     static final String CUSTOMER_DRAFT_EMAIL_NOT_SET = "CustomerDraft with key: %s doesn't have an email. "
         + "Please make sure all customer drafts have emails.";
+    static final String CUSTOMER_DRAFT_PASSWORD_NOT_SET = "CustomerDraft with key: %s doesn't have a password. "
+        + "Please make sure all customer drafts have passwords.";
 
     static final String ADDRESSES_ARE_NULL = "CustomerDraft with key: '%s' has null addresses on indexes: '%s'. "
         + "Please make sure each address is set in the addresses list.";
@@ -99,6 +101,8 @@ public class CustomerBatchValidator
             handleError(format(CUSTOMER_DRAFT_KEY_NOT_SET, customerDraft.getEmail()));
         } else if (isBlank(customerDraft.getEmail())) {
             handleError(format(CUSTOMER_DRAFT_EMAIL_NOT_SET, customerDraft.getKey()));
+        } else if (isBlank(customerDraft.getPassword())) {
+            handleError(format(CUSTOMER_DRAFT_PASSWORD_NOT_SET, customerDraft.getKey()));
         } else if (hasValidAddresses(customerDraft)) {
             return hasValidBillingAndShippingAddresses(customerDraft);
         }
