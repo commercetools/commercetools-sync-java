@@ -298,7 +298,7 @@ public final class CustomerUpdateActionUtils {
             return null; // unset
         }
 
-        // todo (ahmetoz) add an issue to JVM SDK so SetCustomerGroup could be created with a ResourceIdentifier
+        // TODO (JVM-SDK), see: SUPPORT-10261 SetCustomerGroup could be created with a ResourceIdentifier
         return new ResourceImpl<CustomerGroup>(null, null, null, null) {
             @Override
             public Reference<CustomerGroup> toReference() {
