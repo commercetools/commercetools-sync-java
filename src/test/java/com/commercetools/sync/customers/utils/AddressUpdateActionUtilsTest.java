@@ -287,9 +287,9 @@ class AddressUpdateActionUtilsTest {
                                         .withId("address-id-new-2");
 
         final Address address3 = Address.of(CountryCode.DE)
-                                       .withKey("address-key-3")
-                                       .withBuilding("no 1")
-                                       .withId("address-id-new-3");
+                                        .withKey("address-key-3")
+                                        .withBuilding("no 1")
+                                        .withId("address-id-new-3");
 
         final CustomerDraft newCustomer =
             CustomerDraftBuilder.of("email", "pass")
@@ -752,9 +752,9 @@ class AddressUpdateActionUtilsTest {
                 .shippingAddresses(singletonList(-1))
                 .build();
 
-       assertThatThrownBy(() -> buildAddShippingAddressUpdateActions(oldCustomer, newCustomer))
-           .isExactlyInstanceOf(IllegalArgumentException.class)
-           .hasMessage(format("Addresses list does not contain an address at the index: %s", -1));
+        assertThatThrownBy(() -> buildAddShippingAddressUpdateActions(oldCustomer, newCustomer))
+            .isExactlyInstanceOf(IllegalArgumentException.class)
+            .hasMessage(format("Addresses list does not contain an address at the index: %s", -1));
     }
 
     @Test

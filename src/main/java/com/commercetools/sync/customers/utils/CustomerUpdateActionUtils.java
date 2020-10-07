@@ -750,7 +750,7 @@ public final class CustomerUpdateActionUtils {
     }
 
     @Nullable
-    public static String getAddressKeyAt(
+    private static String getAddressKeyAt(
         @Nullable final List<Address> addressList,
         @Nullable final Integer index) {
 
@@ -761,7 +761,7 @@ public final class CustomerUpdateActionUtils {
                     if (address == null) {
                         throw new IllegalArgumentException(
                             format("Address is null at the index: %s of the addresses list.", index));
-                    } else if (isBlank(address.getKey())){
+                    } else if (isBlank(address.getKey())) {
                         throw new IllegalArgumentException(
                             format("Address does not have a key at the index: %s of the addresses list.", index));
                     }
