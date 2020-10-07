@@ -230,11 +230,10 @@ public class AddressesUpdateActionUtilsTest {
     }
 
     @Test
-    void buildRemoveAddressUpdateActions_withEmptyDraftWithExistingAddress_shouldReturnAction(){
+    void buildRemoveAddressUpdateActions_withEmptyDraftWithExistingAddresses_shouldReturnAction(){
 
         final String key = "old-key";
         final String key2 = "old-key2";
-        final String newKey = "new-key";
         final String id = "old-id";
         final String id2 = "old-id2";
 
@@ -247,10 +246,10 @@ public class AddressesUpdateActionUtilsTest {
         when(anotherAddress.getId()).thenReturn(id2);
 
         final List<Address> oldAddresses = asList(old, anotherAddress);
-        final List<Address> newAddresses = Collections.singletonList(old);
+        final List<Address> newAddresses = Collections.emptyList();
         final List<UpdateAction<Customer>> result = buildRemoveAddressUpdateActions(oldAddresses, newAddresses);
 
-        assertThat(result).contains(RemoveAddress.of(anotherAddress));
+        assertThat(result).contains(RemoveAddress.of(anotherAddress), RemoveAddress.of(old));
 
     }
 
