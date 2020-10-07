@@ -1,11 +1,9 @@
 package com.commercetools.sync.customers.helpers;
 
 import com.commercetools.sync.commons.helpers.BaseBatchValidator;
-import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 import com.commercetools.sync.customers.CustomerSyncOptions;
 import io.sphere.sdk.customers.CustomerDraft;
 import io.sphere.sdk.models.Address;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -16,18 +14,22 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class CustomerBatchValidator
-    extends BaseBatchValidator<CustomerDraft, CustomerSyncOptions, BaseSyncStatistics> {
+    extends BaseBatchValidator<CustomerDraft, CustomerSyncOptions, CustomerSyncStatistics> {
 
-    public static final String CUSTOMER_DRAFT_IS_NULL = "CustomerDraft is null.";
-    public static final String CUSTOMER_DRAFT_KEY_NOT_SET = "CustomerDraft with email: %s doesn't have a key. "
+    static final String CUSTOMER_DRAFT_IS_NULL = "CustomerDraft is null.";
+    static final String CUSTOMER_DRAFT_KEY_NOT_SET = "CustomerDraft with email: %s doesn't have a key. "
         + "Please make sure all customer drafts have keys.";
-    public static final String CUSTOMER_DRAFT_EMAIL_NOT_SET = "CustomerDraft with key: %s doesn't have an email. "
+    static final String CUSTOMER_DRAFT_EMAIL_NOT_SET = "CustomerDraft with key: %s doesn't have an email. "
         + "Please make sure all customer drafts have emails.";
+    static final String CUSTOMER_DRAFT_PASSWORD_NOT_SET = "CustomerDraft with key: %s doesn't have a password. "
+        + "Please make sure all customer drafts have passwords.";
 
     static final String ADDRESSES_ARE_NULL = "CustomerDraft with key: '%s' has null addresses on indexes: '%s'. "
         + "Please make sure each address is set in the addresses list.";
@@ -45,7 +47,7 @@ public class CustomerBatchValidator
         + "Please make sure all customer drafts have valid index values for the 'shippingAddresses'.";
 
     public CustomerBatchValidator(@Nonnull final CustomerSyncOptions syncOptions,
-                                  @Nonnull final BaseSyncStatistics syncStatistics) {
+                                  @Nonnull final CustomerSyncStatistics syncStatistics) {
         super(syncOptions, syncStatistics);
     }
 
@@ -60,15 +62,17 @@ public class CustomerBatchValidator
      * <li>It is not null</li>
      * <li>It has a key which is not blank (null/empty)</li>
      * <li>It has a email which is not blank (null/empty)</li>
-     * <li>It has not null addresses</li>
-     * <li>It has valid addresses with keys is not blank (null/empty)</li>
-     * <li>It has unique address keys</li>
-     * <li>It has valid 'billingAddresses' and 'shippingAddresses'</li>
+     * <li><b>Each address</b> in the addresses list satisfies the following conditions:
+     * <ol>
+     * <li>It is not null</li>
+     * <li>It has a key which is not blank (null/empty)</li>
+     * <li>It has a unique key</li>
+     * </ol>
+     * </li>
+     * <li><b>Each address index</b> in the 'billing' and 'shipping' addresses list are valid and contained
+     * in the addresses list.
      * </ol>
      *
-     * <p>Note that {@link io.sphere.sdk.customers.CustomerDraftDsl} is validating the 'defaultBillingAddress' and
-     * 'defaultShippingAddress' with '#isValidAddressIndex' method in it's constructor, so default values are not
-     * possible to be invalid.
      *
      * @param customerDrafts the customer drafts to validate and collect referenced keys.
      * @return {@link ImmutablePair}&lt;{@link Set}&lt;{@link CustomerDraft}&gt;,
@@ -97,6 +101,8 @@ public class CustomerBatchValidator
             handleError(format(CUSTOMER_DRAFT_KEY_NOT_SET, customerDraft.getEmail()));
         } else if (isBlank(customerDraft.getEmail())) {
             handleError(format(CUSTOMER_DRAFT_EMAIL_NOT_SET, customerDraft.getKey()));
+        } else if (isBlank(customerDraft.getPassword())) {
+            handleError(format(CUSTOMER_DRAFT_PASSWORD_NOT_SET, customerDraft.getKey()));
         } else if (hasValidAddresses(customerDraft)) {
             return hasValidBillingAndShippingAddresses(customerDraft);
         }
