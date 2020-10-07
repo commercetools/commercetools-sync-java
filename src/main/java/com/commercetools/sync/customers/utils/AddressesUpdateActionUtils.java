@@ -56,7 +56,7 @@ public final class AddressesUpdateActionUtils {
     }
 
     @Nonnull
-    private static List<UpdateAction<Customer>> buildUpdateActions(@Nonnull final List<Address> oldAddresses,
+    protected static List<UpdateAction<Customer>> buildUpdateActions(@Nonnull final List<Address> oldAddresses,
                                                                    @Nonnull final List<Address> newAddresses)
         throws BuildUpdateActionException {
 
@@ -76,7 +76,7 @@ public final class AddressesUpdateActionUtils {
     }
 
     @Nonnull
-    private static List<UpdateAction<Customer>> buildRemoveAddressUpdateActions(
+    protected static List<UpdateAction<Customer>> buildRemoveAddressUpdateActions(
         @Nonnull final List<Address> oldAddresses,
         @Nonnull final List<Address> newAddresses) {
         final Map<String, Address> newAddressesKeyMap = newAddresses
@@ -113,7 +113,7 @@ public final class AddressesUpdateActionUtils {
     }
 
     @Nonnull
-    private static List<UpdateAction<Customer>> buildAddAddressUpdateActions(
+    protected static List<UpdateAction<Customer>> buildAddAddressUpdateActions(
         @Nonnull final List<Address> oldAddresses,
         @Nonnull final List<Address> newAddresses) {
         final Map<String, Address> oldAddressKeyMap = oldAddresses
