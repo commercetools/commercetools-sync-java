@@ -1,11 +1,20 @@
 package com.commercetools.sync.customers.utils;
 
+import com.commercetools.sync.customers.commands.updateactions.AddBillingAddressIdWithKey;
+import com.commercetools.sync.customers.commands.updateactions.AddShippingAddressIdWithKey;
+import com.commercetools.sync.customers.commands.updateactions.SetDefaultBillingAddressWitKey;
+import com.commercetools.sync.customers.commands.updateactions.SetDefaultShippingAddressWitKey;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
+import io.sphere.sdk.customers.commands.updateactions.AddAddress;
 import io.sphere.sdk.customers.commands.updateactions.AddStore;
+import io.sphere.sdk.customers.commands.updateactions.ChangeAddress;
 import io.sphere.sdk.customers.commands.updateactions.ChangeEmail;
+import io.sphere.sdk.customers.commands.updateactions.RemoveAddress;
+import io.sphere.sdk.customers.commands.updateactions.RemoveBillingAddressId;
+import io.sphere.sdk.customers.commands.updateactions.RemoveShippingAddressId;
 import io.sphere.sdk.customers.commands.updateactions.RemoveStore;
 import io.sphere.sdk.customers.commands.updateactions.SetCompanyName;
 import io.sphere.sdk.customers.commands.updateactions.SetCustomerGroup;
@@ -20,6 +29,7 @@ import io.sphere.sdk.customers.commands.updateactions.SetSalutation;
 import io.sphere.sdk.customers.commands.updateactions.SetStores;
 import io.sphere.sdk.customers.commands.updateactions.SetTitle;
 import io.sphere.sdk.customers.commands.updateactions.SetVatId;
+import io.sphere.sdk.models.Address;
 import io.sphere.sdk.models.KeyReference;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.Referenceable;
@@ -29,20 +39,25 @@ import io.sphere.sdk.stores.Store;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActionForReferences;
+import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
-// todo (ahmetoz) add jvm sdk support ticket for anonymous id update actions.
 public final class CustomerUpdateActionUtils {
 
     /**
@@ -439,5 +454,541 @@ public final class CustomerUpdateActionUtils {
             .filter(storeResourceIdentifier -> !oldStoreKeyToStoreMap.containsKey(storeResourceIdentifier.getKey()))
             .map(AddStore::of)
             .collect(toList());
+    }
+
+    /**
+     * Compares the stores of a {@link Customer} and a {@link CustomerDraft}. It returns a {@link List} of
+     * {@link UpdateAction}&lt;{@link Customer}&gt; as a result. If no update action is needed, for example in
+     * case where both the {@link Customer} and the {@link CustomerDraft} have the identical stores, an empty
+     * {@link List} is returned.
+     *
+     * @param oldCustomer the customer which should be updated.
+     * @param newCustomer the customer draft where we get the new data.
+     * @return A list of customer store-related update actions.
+     */
+    @Nonnull
+    public static List<UpdateAction<Customer>> buildAllAddressUpdateActions(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
+
+        final List<UpdateAction<Customer>> addressActions = new ArrayList<>();
+
+        final List<UpdateAction<Customer>> removeAddressActions =
+            buildRemoveAddressUpdateActions(oldCustomer, newCustomer);
+
+        addressActions.addAll(removeAddressActions);
+        addressActions.addAll(buildChangeAddressUpdateActions(oldCustomer, newCustomer));
+        addressActions.addAll(buildAddAddressUpdateActions(oldCustomer, newCustomer));
+
+        addressActions.addAll(
+            collectAndFilterRemoveShippingAndBillingActions(removeAddressActions, oldCustomer, newCustomer));
+
+        buildSetDefaultShippingAddressUpdateAction(oldCustomer, newCustomer).ifPresent(addressActions::add);
+        buildSetDefaultBillingAddressUpdateAction(oldCustomer, newCustomer).ifPresent(addressActions::add);
+
+        addressActions.addAll(buildAddShippingAddressUpdateActions(oldCustomer, newCustomer));
+        addressActions.addAll(buildAddBillingAddressUpdateActions(oldCustomer, newCustomer));
+
+        return addressActions;
+    }
+
+    @Nonnull
+    private static List<UpdateAction<Customer>> collectAndFilterRemoveShippingAndBillingActions(
+        @Nonnull final List<UpdateAction<Customer>> removeAddressActions,
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
+
+        /* An action combination like below will cause a bad request error in API, so we need to filter out
+         to avoid such cases:
+
+            {
+                "version": 1,
+                "actions": [
+                    {
+                        "action" : "removeAddress",
+                        "addressId": "-FWSGZNy"
+                    },
+                    {
+                        "action" : "removeBillingAddressId",
+                        "addressId" : "-FWSGZNy"
+                    }
+                ]
+            }
+
+            {
+                "statusCode": 400,
+                "message": "The customers billingAddressIds don't contain id '-FWSGZNy'.",
+                "errors": [
+                    {
+                        "code": "InvalidOperation",
+                        "message": "The customers billingAddressIds don't contain id '-FWSGZNy'.",
+                        "action": {
+                            "action": "removeBillingAddressId",
+                            "addressId": "-FWSGZNy"
+                        },
+                        "actionIndex": 2
+                    }
+                ]
+            }
+         */
+        final Set<String> addressIdsToRemove =
+            removeAddressActions.stream()
+                                .map(customerUpdateAction -> (RemoveAddress)customerUpdateAction)
+                                .map(RemoveAddress::getAddressId)
+                                .collect(toSet());
+
+
+        final List<UpdateAction<Customer>> removeActions = new ArrayList<>();
+
+        removeActions.addAll(buildRemoveShippingAddressUpdateActions(oldCustomer, newCustomer)
+            .stream()
+            .map(customerUpdateAction -> (RemoveShippingAddressId)customerUpdateAction)
+            .filter(action -> !addressIdsToRemove.contains(action.getAddressId()))
+            .collect(toList()));
+
+        removeActions.addAll(buildRemoveBillingAddressUpdateActions(oldCustomer, newCustomer)
+            .stream()
+            .map(customerUpdateAction -> (RemoveBillingAddressId)customerUpdateAction)
+            .filter(action -> !addressIdsToRemove.contains(action.getAddressId()))
+            .collect(toList()));
+
+        return removeActions;
+    }
+
+    /**
+     * Compares the {@link List} of a {@link CustomerDraft#getAddresses()} and a {@link Customer#getAddresses()}.
+     * It returns a {@link List} of {@link RemoveAddress} update actions as a result, if the old address needs to be
+     * removed from the {@code oldCustomer} to have the same set of addresses as the {@code newCustomer}.
+     * If both the {@link Customer} and the {@link CustomerDraft} have the same set of addresses,
+     * then no update actions are needed and hence an empty {@link List} is returned.
+     *
+     * <p>Notes:
+     * <li>Addresses are matching by their keys. </li>
+     * <li>Null values of the new addresses are filtered out.</li>
+     * <li>Address values without keys are filtered out.</li>
+     *
+     * @param oldCustomer the customer which should be updated.
+     * @param newCustomer the customer draft where we get the new addresses.
+     * @return A list containing the update actions or an empty list if the addresses are identical.
+     */
+    @Nonnull
+    public static List<UpdateAction<Customer>> buildRemoveAddressUpdateActions(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
+
+        if (oldCustomer.getAddresses().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        if (newCustomer.getAddresses() == null || newCustomer.getAddresses().isEmpty()) {
+
+            return oldCustomer.getAddresses()
+                              .stream()
+                              .map(address -> RemoveAddress.of(address.getId()))
+                              .collect(Collectors.toList());
+        }
+
+        final Set<String> newAddressKeys =
+            newCustomer.getAddresses()
+                       .stream()
+                       .filter(Objects::nonNull)
+                       .filter(newAddress -> !isBlank(newAddress.getKey()))
+                       .map(Address::getKey)
+                       .collect(toSet());
+
+        return oldCustomer.getAddresses()
+                          .stream()
+                          .filter(oldAddress -> isBlank(oldAddress.getKey())
+                              || !newAddressKeys.contains(oldAddress.getKey()))
+                          .map(RemoveAddress::of)
+                          .collect(toList());
+    }
+
+    /**
+     * Compares the {@link List} of a {@link CustomerDraft#getAddresses()} and a {@link Customer#getAddresses()}.
+     * It returns a {@link List} of {@link ChangeAddress} update actions as a result, if the old address needs to be
+     * changed/updated from the {@code oldCustomer} to have the same set of addresses as the {@code newCustomer}.
+     * If both the {@link Customer} and the {@link CustomerDraft} have the same set of addresses,
+     * then no update actions are needed and hence an empty {@link List} is returned.
+     *
+     * <p>Notes:
+     * <li>Addresses are matching by their keys. </li>
+     * <li>Null values of the new addresses are filtered out.</li>
+     * <li>Address values without keys are filtered out.</li>
+     *
+     * @param oldCustomer the customer which should be updated.
+     * @param newCustomer the customer draft where we get the new addresses.
+     * @return A list containing the update actions or an empty list if the addresses are identical.
+     */
+    @Nonnull
+    public static List<UpdateAction<Customer>> buildChangeAddressUpdateActions(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
+
+        if (newCustomer.getAddresses() == null || newCustomer.getAddresses().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        final Map<String, Address> oldAddressKeyToAddressMap =
+            oldCustomer.getAddresses()
+                       .stream()
+                       .filter(address -> !isBlank(address.getKey()))
+                       .collect(toMap(Address::getKey, identity()));
+
+        return newCustomer.getAddresses()
+                          .stream()
+                          .filter(Objects::nonNull)
+                          .filter(newAddress -> !isBlank(newAddress.getKey()))
+                          .filter(newAddress -> oldAddressKeyToAddressMap.containsKey(newAddress.getKey()))
+                          .map(newAddress -> {
+                              final Address oldAddress = oldAddressKeyToAddressMap.get(newAddress.getKey());
+                              if (!newAddress.equalsIgnoreId(oldAddress)) {
+                                  return ChangeAddress.of(oldAddress.getId(), newAddress);
+                              }
+                              return null;
+                          })
+                          .filter(Objects::nonNull)
+                          .collect(toList());
+    }
+
+    /**
+     * Compares the {@link List} of a {@link CustomerDraft#getAddresses()} and a {@link Customer#getAddresses()}.
+     * It returns a {@link List} of {@link AddAddress} update actions as a result, if the new address needs to be
+     * added to have the same set of addresses as the {@code newCustomer}.
+     * If both the {@link Customer} and the {@link CustomerDraft} have the same set of addresses,
+     * then no update actions are needed and hence an empty {@link List} is returned.
+     *
+     * <p>Notes:
+     * <li>Addresses are matching by their keys. </li>
+     * <li>Null values of the new addresses are filtered out.</li>
+     * <li>Address values without keys are filtered out.</li>
+     *
+     * @param oldCustomer the customer which should be updated.
+     * @param newCustomer the customer draft where we get the new addresses.
+     * @return A list containing the update actions or an empty list if the addresses are identical.
+     */
+    @Nonnull
+    public static List<UpdateAction<Customer>> buildAddAddressUpdateActions(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
+
+        if (newCustomer.getAddresses() == null || newCustomer.getAddresses().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        final Map<String, Address> oldAddressKeyToAddressMap =
+            oldCustomer.getAddresses()
+                       .stream()
+                       .filter(address -> !isBlank(address.getKey()))
+                       .collect(toMap(Address::getKey, identity()));
+
+        return newCustomer.getAddresses()
+                          .stream()
+                          .filter(Objects::nonNull)
+                          .filter(newAddress -> !isBlank(newAddress.getKey()))
+                          .filter(newAddress -> !oldAddressKeyToAddressMap.containsKey(newAddress.getKey()))
+                          .map(AddAddress::of)
+                          .collect(toList());
+    }
+
+    /**
+     * Compares the {@link Customer#getDefaultShippingAddress()} and {@link CustomerDraft#getDefaultShippingAddress()}.
+     * If they are different - return {@link SetDefaultShippingAddressWitKey} update action. If the old shipping address
+     * id value is set, but the new one is empty - the command will unset the default shipping address.
+     *
+     * @param oldCustomer the customer that should be updated.
+     * @param newCustomer the customer draft with new default shipping address.
+     * @return An optional with {@link SetDefaultShippingAddressWitKey} update action.
+     */
+    @Nonnull
+    public static Optional<UpdateAction<Customer>> buildSetDefaultShippingAddressUpdateAction(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
+
+        final Address oldAddress = oldCustomer.getDefaultShippingAddress();
+        final String newAddressKey =
+            getAddressKeyAt(newCustomer.getAddresses(), newCustomer.getDefaultShippingAddress());
+
+        if (newAddressKey != null) {
+            if (oldAddress == null || !Objects.equals(oldAddress.getKey(), newAddressKey)) {
+                return Optional.of(SetDefaultShippingAddressWitKey.of(newAddressKey));
+            }
+        } else if (oldAddress != null) { // unset
+            return Optional.of(SetDefaultShippingAddressWitKey.of(null));
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * Compares the {@link Customer#getDefaultBillingAddress()} and {@link CustomerDraft#getDefaultBillingAddress()}.
+     * If they are different - return {@link SetDefaultShippingAddressWitKey} update action. If the old billing address
+     * id value is set, but the new one is empty - the command will unset the default billing address.
+     *
+     * @param oldCustomer the customer that should be updated.
+     * @param newCustomer the customer draft with new default billing address.
+     * @return An optional with {@link SetDefaultShippingAddressWitKey} update action.
+     */
+    @Nonnull
+    public static Optional<UpdateAction<Customer>> buildSetDefaultBillingAddressUpdateAction(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
+
+        final Address oldAddress = oldCustomer.getDefaultBillingAddress();
+        final String newAddressKey =
+            getAddressKeyAt(newCustomer.getAddresses(), newCustomer.getDefaultBillingAddress());
+
+        if (newAddressKey != null) {
+            if (oldAddress == null || !Objects.equals(oldAddress.getKey(), newAddressKey)) {
+                return Optional.of(SetDefaultBillingAddressWitKey.of(newAddressKey));
+            }
+        } else if (oldAddress != null) { // unset
+            return Optional.of(SetDefaultBillingAddressWitKey.of(null));
+        }
+
+        return Optional.empty();
+    }
+
+    @Nullable
+    public static String getAddressKeyAt(
+        @Nullable final List<Address> addressList,
+        @Nullable final Integer index) {
+
+        if (index != null) {
+            if (addressList != null) {
+                if (index >= 0 && index < addressList.size()) {
+                    final Address address = addressList.get(index);
+                    if (address == null) {
+                        throw new IllegalArgumentException(
+                            format("Address is null at the index: %s of the addresses list.", index));
+                    } else if (isBlank(address.getKey())){
+                        throw new IllegalArgumentException(
+                            format("Address does not have a key at the index: %s of the addresses list.", index));
+                    }
+
+                    return address.getKey();
+                }
+            }
+
+            throw new IllegalArgumentException(
+                format("Addresses list does not contain an address at the index: %s", index));
+        }
+
+        return null;
+    }
+
+    /**
+     * Compares the {@link List} of a {@link Customer#getShippingAddresses()} and a
+     * {@link CustomerDraft#getShippingAddresses()}. It returns a {@link List} of {@link AddShippingAddressIdWithKey}
+     * update actions as a result, if the new shipping address needs to be added to have the same set of addresses as
+     * the {@code newCustomer}. If both the {@link Customer} and the {@link CustomerDraft} have the same set of
+     * shipping addresses, then no update actions are needed and hence an empty {@link List} is returned.
+     *
+     * <p>Notes:
+     * <li>Addresses are matching by their keys. </li>
+     * <li>Old address values without keys are filtered out.</li>
+     * <li><b>Each address</b> in the new addresses list satisfies the following conditions:
+     * <ol>
+     * <li>It is not null</li>
+     * <li>It has a key which is not blank (null/empty)</li>
+     * </ol>
+     * Otherwise, a {@link IllegalArgumentException} will be thrown.
+     * </li>
+     *
+     * @param oldCustomer the customer which should be updated.
+     * @param newCustomer the customer draft where we get the new shipping addresses.
+     * @return A list containing the update actions or an empty list if the shipping addresses are identical.
+     */
+    @Nonnull
+    public static List<UpdateAction<Customer>> buildAddShippingAddressUpdateActions(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
+
+        if (newCustomer.getShippingAddresses() == null
+            || newCustomer.getShippingAddresses().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        final Map<String, Address> oldAddressKeyToAddressMap =
+            oldCustomer.getShippingAddresses()
+                       .stream()
+                       .filter(address -> !isBlank(address.getKey()))
+                       .collect(toMap(Address::getKey, identity()));
+
+        final Set<String> newAddressKeys =
+            newCustomer.getShippingAddresses()
+                       .stream()
+                       .map(index -> getAddressKeyAt(newCustomer.getAddresses(), index))
+                       .collect(toSet());
+
+        return newAddressKeys
+            .stream()
+            .filter(newAddressKey -> !oldAddressKeyToAddressMap.containsKey(newAddressKey))
+            .map(AddShippingAddressIdWithKey::of)
+            .collect(toList());
+    }
+
+    /**
+     * Compares the {@link List} of a {@link Customer#getShippingAddresses()} and a
+     * {@link CustomerDraft#getShippingAddresses()}. It returns a {@link List} of {@link RemoveShippingAddressId}
+     * update actions as a result, if the old shipping address needs to be removed to have the same set of addresses as
+     * the {@code newCustomer}. If both the {@link Customer} and the {@link CustomerDraft} have the same set of
+     * shipping addresses, then no update actions are needed and hence an empty {@link List} is returned.
+     *
+     *
+     * <p>Notes:
+     * <li>Addresses are matching by their keys. </li>
+     * <li>Old shipping addresses without keys will be removed.</li>
+     * <li><b>Each address</b> in the new addresses list satisfies the following conditions:
+     * <ol>
+     * <li>It exists in the given index.</li>
+     * <li>It has a key which is not blank (null/empty)</li>
+     * </ol>
+     * Otherwise, a {@link IllegalArgumentException} will be thrown.
+     * </li>
+     *
+     * @param oldCustomer the customer which should be updated.
+     * @param newCustomer the customer draft where we get the new shipping addresses.
+     * @return A list containing the update actions or an empty list if the shipping addresses are identical.
+     */
+    @Nonnull
+    public static List<UpdateAction<Customer>> buildRemoveShippingAddressUpdateActions(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
+
+        if ((oldCustomer.getShippingAddresses() == null
+            || oldCustomer.getShippingAddresses().isEmpty())) {
+
+            return Collections.emptyList();
+        }
+
+        if (newCustomer.getShippingAddresses() == null
+            || newCustomer.getShippingAddresses().isEmpty()) {
+
+            return oldCustomer.getShippingAddresses()
+                              .stream()
+                              .map(address -> RemoveShippingAddressId.of(address.getId()))
+                              .collect(Collectors.toList());
+        }
+
+        final Set<String> newAddressKeys =
+            newCustomer.getShippingAddresses()
+                       .stream()
+                       .map(index -> getAddressKeyAt(newCustomer.getAddresses(), index))
+                       .collect(toSet());
+
+        return oldCustomer.getShippingAddresses()
+                          .stream()
+                          .filter(address -> isBlank(address.getKey()) || !newAddressKeys.contains(address.getKey()))
+                          .map(address -> RemoveShippingAddressId.of(address.getId()))
+                          .collect(toList());
+    }
+
+    /**
+     * Compares the {@link List} of a {@link Customer#getBillingAddresses()} and a
+     * {@link CustomerDraft#getBillingAddresses()}. It returns a {@link List} of {@link AddBillingAddressIdWithKey}
+     * update actions as a result, if the new billing address needs to be added to have the same set of addresses as
+     * the {@code newCustomer}. If both the {@link Customer} and the {@link CustomerDraft} have the same set of
+     * billing addresses, then no update actions are needed and hence an empty {@link List} is returned.
+     *
+     * <p>Notes:
+     * <li>Addresses are matching by their keys. </li>
+     * <li>Old address values without keys are filtered out.</li>
+     * <li><b>Each address</b> in the new addresses list satisfies the following conditions:
+     * <ol>
+     * <li>It is not null</li>
+     * <li>It has a key which is not blank (null/empty)</li>
+     * </ol>
+     * Otherwise, a {@link IllegalArgumentException} will be thrown.
+     * </li>
+     *
+     * @param oldCustomer the customer which should be updated.
+     * @param newCustomer the customer draft where we get the new billing addresses.
+     * @return A list containing the update actions or an empty list if the billing addresses are identical.
+     */
+    @Nonnull
+    public static List<UpdateAction<Customer>> buildAddBillingAddressUpdateActions(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
+
+        if (newCustomer.getBillingAddresses() == null
+            || newCustomer.getBillingAddresses().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        final Map<String, Address> oldAddressKeyToAddressMap =
+            oldCustomer.getBillingAddresses()
+                       .stream()
+                       .filter(address -> !isBlank(address.getKey()))
+                       .collect(toMap(Address::getKey, identity()));
+
+
+        final Set<String> newAddressKeys =
+            newCustomer.getBillingAddresses()
+                       .stream()
+                       .map(index -> getAddressKeyAt(newCustomer.getAddresses(), index))
+                       .collect(toSet());
+
+        return newAddressKeys
+            .stream()
+            .filter(newAddressKey -> !oldAddressKeyToAddressMap.containsKey(newAddressKey))
+            .map(AddBillingAddressIdWithKey::of)
+            .collect(toList());
+    }
+
+    /**
+     * Compares the {@link List} of a {@link Customer#getBillingAddresses()} and a
+     * {@link CustomerDraft#getBillingAddresses()}. It returns a {@link List} of {@link RemoveBillingAddressId}
+     * update actions as a result, if the old billing address needs to be removed to have the same set of addresses as
+     * the {@code newCustomer}. If both the {@link Customer} and the {@link CustomerDraft} have the same set of
+     * billing addresses, then no update actions are needed and hence an empty {@link List} is returned.
+     *
+     * <p>Notes:
+     * <li>Addresses are matching by their keys. </li>
+     * <li>Null values of the old addresses are filtered out.</li>
+     * <li>Old shipping address values without keys are filtered out.</li>
+     * <li><b>Each address</b> in the new addresses list satisfies the following conditions:
+     * <ol>
+     * <li>It exists in the given index.</li>
+     * <li>It has a key which is not blank (null/empty)</li>
+     * </ol>
+     * Otherwise, a {@link IllegalArgumentException} will be thrown.
+     * </li>
+     *
+     * @param oldCustomer the customer which should be updated.
+     * @param newCustomer the customer draft where we get the new shipping addresses.
+     * @return A list containing the update actions or an empty list if the shipping addresses are identical.
+     */
+    @Nonnull
+    public static List<UpdateAction<Customer>> buildRemoveBillingAddressUpdateActions(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomer) {
+
+        if ((oldCustomer.getBillingAddresses() == null
+            || oldCustomer.getBillingAddresses().isEmpty())) {
+
+            return Collections.emptyList();
+        }
+
+        if (newCustomer.getBillingAddresses() == null
+            || newCustomer.getBillingAddresses().isEmpty()) {
+
+            return oldCustomer.getBillingAddresses()
+                              .stream()
+                              .map(address -> RemoveBillingAddressId.of(address.getId()))
+                              .collect(Collectors.toList());
+        }
+
+        final Set<String> newAddressKeys =
+            newCustomer.getBillingAddresses()
+                       .stream()
+                       .map(index -> getAddressKeyAt(newCustomer.getAddresses(), index))
+                       .collect(toSet());
+
+        return oldCustomer.getBillingAddresses()
+                          .stream()
+                          .filter(address -> isBlank(address.getKey()) || !newAddressKeys.contains(address.getKey()))
+                          .map(address -> RemoveBillingAddressId.of(address.getId()))
+                          .collect(toList());
     }
 }

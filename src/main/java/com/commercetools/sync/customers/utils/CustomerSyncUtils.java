@@ -10,6 +10,7 @@ import java.util.List;
 
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildPrimaryResourceCustomUpdateActions;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
+import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildAllAddressUpdateActions;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildChangeEmailUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetCompanyNameUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetCustomerGroupUpdateAction;
@@ -25,7 +26,6 @@ import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.b
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetVatIdUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildStoreUpdateActions;
 
-// todo (ahmetoz) cover all cases for the buildActions.
 public final class CustomerSyncUtils {
 
     private static final CustomerCustomActionBuilder customerCustomActionBuilder = new CustomerCustomActionBuilder();
@@ -66,6 +66,11 @@ public final class CustomerSyncUtils {
             buildSetLocaleUpdateAction(oldCustomer, newCustomer)
         );
 
+        final List<UpdateAction<Customer>> addressUpdateActions =
+            buildAllAddressUpdateActions(oldCustomer, newCustomer);
+
+        updateActions.addAll(addressUpdateActions);
+
         final List<UpdateAction<Customer>> customerCustomUpdateActions =
             buildPrimaryResourceCustomUpdateActions(oldCustomer,
                 newCustomer,
@@ -73,8 +78,6 @@ public final class CustomerSyncUtils {
                 syncOptions);
 
         updateActions.addAll(customerCustomUpdateActions);
-
-        // todo (ahmetoz) add address actions.
 
         final List<UpdateAction<Customer>> buildStoreUpdateActions =
             buildStoreUpdateActions(oldCustomer, newCustomer);
