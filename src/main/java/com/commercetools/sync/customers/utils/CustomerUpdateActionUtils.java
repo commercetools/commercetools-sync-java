@@ -42,6 +42,7 @@ import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.b
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toMap;
 
+// todo (ahmetoz) add jvm sdk support ticket for anonymous id update actions.
 public final class CustomerUpdateActionUtils {
 
     /**
