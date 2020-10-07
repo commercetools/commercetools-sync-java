@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActionForReferences;
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toMap;
 
 public final class CustomerUpdateActionUtils {
@@ -338,7 +339,7 @@ public final class CustomerUpdateActionUtils {
                     return updateActions;
                 }
 
-                return Collections.emptyList();
+                return emptyList();
             });
     }
 
@@ -361,7 +362,7 @@ public final class CustomerUpdateActionUtils {
 
         if (oldStores != null && !oldStores.isEmpty()) {
             if (newStores == null || newStores.isEmpty()) {
-                return Optional.of(SetStores.of(null));
+                return Optional.of(SetStores.of(emptyList()));
             }
         } else if (newStores != null && !newStores.isEmpty()) {
             final List<ResourceIdentifier<Store>> stores =

@@ -157,7 +157,7 @@ public class StoreUpdateActionUtilsTest {
 
         assertThat(updateActions)
             .isNotEmpty()
-            .containsExactly(SetStores.of(null));
+            .containsExactly(SetStores.of(emptyList()));
     }
 
     @Test
@@ -177,7 +177,7 @@ public class StoreUpdateActionUtilsTest {
 
         assertThat(updateActions)
             .isNotEmpty()
-            .containsExactly(SetStores.of(null));
+            .containsExactly(SetStores.of(emptyList()));
     }
 
     @Test
