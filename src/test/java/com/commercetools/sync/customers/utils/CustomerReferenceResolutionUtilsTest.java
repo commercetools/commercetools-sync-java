@@ -157,6 +157,31 @@ class CustomerReferenceResolutionUtilsTest {
     }
 
     @Test
+    void mapToCustomerDrafts_WithNullIdOnAddresses_ShouldReturnResourceIdentifiersWithCorrectIndexes() {
+        final Customer mockCustomer = mock(Customer.class);
+
+        when(mockCustomer.getAddresses()).thenReturn(asList(
+            Address.of(CountryCode.DE).withId("address-id1"),
+            Address.of(CountryCode.US).withId(null),
+            Address.of(CountryCode.US).withId("address-id3")));
+        when(mockCustomer.getDefaultBillingAddressId()).thenReturn("address-id1");
+        when(mockCustomer.getDefaultShippingAddressId()).thenReturn("address-id2");
+        when(mockCustomer.getBillingAddressIds()).thenReturn(asList("address-id1", "address-id3"));
+        when(mockCustomer.getShippingAddressIds()).thenReturn(null);
+
+        final List<CustomerDraft> referenceReplacedDrafts =
+            CustomerReferenceResolutionUtils.mapToCustomerDrafts(singletonList(mockCustomer));
+
+        final CustomerDraft customerDraft = referenceReplacedDrafts.get(0);
+
+        assertThat(customerDraft.getAddresses()).isEqualTo(mockCustomer.getAddresses());
+        assertThat(customerDraft.getDefaultBillingAddress()).isEqualTo(0);
+        assertThat(customerDraft.getDefaultShippingAddress()).isNull();
+        assertThat(customerDraft.getBillingAddresses()).isEqualTo(asList(0, 2));
+        assertThat(customerDraft.getShippingAddresses()).isNull();
+    }
+
+    @Test
     void buildCustomerQuery_Always_ShouldReturnQueryWithAllNeededReferencesExpanded() {
         final CustomerQuery customerQuery = CustomerReferenceResolutionUtils.buildCustomerQuery();
         assertThat(customerQuery.expansionPaths())

@@ -26,6 +26,7 @@ import static com.commercetools.sync.customers.helpers.CustomerBatchValidator.BI
 import static com.commercetools.sync.customers.helpers.CustomerBatchValidator.CUSTOMER_DRAFT_EMAIL_NOT_SET;
 import static com.commercetools.sync.customers.helpers.CustomerBatchValidator.CUSTOMER_DRAFT_IS_NULL;
 import static com.commercetools.sync.customers.helpers.CustomerBatchValidator.CUSTOMER_DRAFT_KEY_NOT_SET;
+import static com.commercetools.sync.customers.helpers.CustomerBatchValidator.CUSTOMER_DRAFT_PASSWORD_NOT_SET;
 import static com.commercetools.sync.customers.helpers.CustomerBatchValidator.SHIPPING_ADDRESSES_ARE_NOT_VALID;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -119,6 +120,32 @@ class CustomerBatchValidatorTest {
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0))
             .isEqualTo(format(CUSTOMER_DRAFT_EMAIL_NOT_SET, customerDraft.getKey()));
+        assertThat(validDrafts).isEmpty();
+    }
+
+    @Test
+    void validateAndCollectReferencedKeys_WithCustomerDraftWithNullPassword_ShouldHaveValidationErrorAndEmptyResult() {
+        final CustomerDraft customerDraft = CustomerDraftBuilder.of("email", null)
+                                                                .key("key")
+                                                                .build();
+        final Set<CustomerDraft> validDrafts = getValidDrafts(singletonList(customerDraft));
+
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0))
+            .isEqualTo(format(CUSTOMER_DRAFT_PASSWORD_NOT_SET, customerDraft.getKey()));
+        assertThat(validDrafts).isEmpty();
+    }
+
+    @Test
+    void validateAndCollectReferencedKeys_WithCustomerDraftWithEmptyPassword_ShouldHaveValidationErrorAndEmptyResult() {
+        final CustomerDraft customerDraft = CustomerDraftBuilder.of("email", EMPTY)
+                                                                .key("key")
+                                                                .build();
+        final Set<CustomerDraft> validDrafts = getValidDrafts(singletonList(customerDraft));
+
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0))
+            .isEqualTo(format(CUSTOMER_DRAFT_PASSWORD_NOT_SET, customerDraft.getKey()));
         assertThat(validDrafts).isEmpty();
     }
 
@@ -243,6 +270,75 @@ class CustomerBatchValidatorTest {
         assertThat(errorCallBackMessages.get(0))
             .isEqualTo(format(SHIPPING_ADDRESSES_ARE_NOT_VALID, "key", "[3, 4, null]"));
         assertThat(validDrafts).isEmpty();
+    }
+
+    @Test
+    void validateAndCollectReferencedKeys_WithAllValidAddresses_ShouldNotHaveValidationError() {
+        final CustomerDraft customerDraft =
+            CustomerDraftBuilder.of("email", "pass")
+                                .key("key")
+                                .addresses(asList(
+                                    Address.of(CountryCode.DE).withKey("address-key1"),
+                                    Address.of(CountryCode.FR).withKey("address-key2"),
+                                    Address.of(CountryCode.US).withKey("address-key3")))
+                                .defaultShippingAddress(0)
+                                .shippingAddresses(asList(0,1))
+                                .defaultBillingAddress(1)
+                                .billingAddresses(asList(1,2))
+                                .build();
+
+        final Set<CustomerDraft> validDrafts = getValidDrafts(singletonList(customerDraft));
+
+        assertThat(errorCallBackMessages).hasSize(0);
+        assertThat(validDrafts).containsExactly(customerDraft);
+    }
+
+    @Test
+    void validateAndCollectReferencedKeys_WithEmptyBillingAndShippingAddresses_ShouldNotHaveValidationError() {
+        final CustomerDraft customerDraft =
+            CustomerDraftBuilder.of("email", "pass")
+                                .key("key")
+                                .addresses(asList(
+                                    Address.of(CountryCode.DE).withKey("address-key1"),
+                                    Address.of(CountryCode.FR).withKey("address-key2"),
+                                    Address.of(CountryCode.US).withKey("address-key3")))
+                                .defaultShippingAddress(0)
+                                .shippingAddresses(emptyList())
+                                .defaultBillingAddress(1)
+                                .billingAddresses(emptyList())
+                                .build();
+
+        final Set<CustomerDraft> validDrafts = getValidDrafts(singletonList(customerDraft));
+
+        assertThat(errorCallBackMessages).hasSize(0);
+        assertThat(validDrafts).containsExactly(customerDraft);
+    }
+
+    @Test
+    void validateAndCollectReferencedKeys_WithIndexesWithoutAddresses_ShouldHaveValidationErrorAndEmptyResult() {
+        final CustomerDraft customerDraft1 =
+            CustomerDraftBuilder.of("email", "pass")
+                                .key("key")
+                                .addresses(emptyList())
+                                .shippingAddresses(asList(0, 1))
+                                .build();
+
+        final CustomerDraft customerDraft2 =
+            CustomerDraftBuilder.of("email", "pass")
+                                .key("key")
+                                .addresses(null)
+                                .billingAddresses(asList(0, 1))
+                                .build();
+
+        final Set<CustomerDraft> validDrafts = getValidDrafts(asList(customerDraft1, customerDraft2));
+
+        assertThat(errorCallBackMessages).hasSize(2);
+        assertThat(errorCallBackMessages.get(0))
+            .isEqualTo(format(SHIPPING_ADDRESSES_ARE_NOT_VALID, "key", "[0, 1]"));
+        assertThat(errorCallBackMessages.get(1))
+            .isEqualTo(format(BILLING_ADDRESSES_ARE_NOT_VALID, "key", "[0, 1]"));
+        assertThat(validDrafts).isEmpty();
+
     }
 
     @Test

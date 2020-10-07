@@ -49,9 +49,6 @@ class CustomerReferenceResolverTest {
     private static final String CUSTOMER_GROUP_KEY = "customer-group-key";
     private static final String CUSTOMER_GROUP_ID = UUID.randomUUID().toString();
 
-    /**
-     * Sets up the services and the options needed for reference resolution.
-     */
     @BeforeEach
     void setup() {
         final CustomerSyncOptions syncOptions = CustomerSyncOptionsBuilder
@@ -91,7 +88,6 @@ class CustomerReferenceResolverTest {
             .custom(newCustomFieldsDraft);
 
         assertThat(referenceResolver.resolveCustomTypeReference(customerDraftBuilder).toCompletableFuture())
-            .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format("Failed to resolve custom type reference on CustomerDraft with "
@@ -106,7 +102,6 @@ class CustomerReferenceResolverTest {
             .custom(CustomFieldsDraft.ofTypeKeyAndJson("", emptyMap()));
 
         assertThat(referenceResolver.resolveCustomTypeReference(customerDraftBuilder).toCompletableFuture())
-            .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format("Failed to resolve custom type reference on CustomerDraft with "
@@ -124,7 +119,6 @@ class CustomerReferenceResolverTest {
         when(typeService.fetchCachedTypeId(anyString()))
             .thenReturn(completedFuture(Optional.empty()));
 
-        // Test and assertion
         final String expectedExceptionMessage =
             format(FAILED_TO_RESOLVE_CUSTOM_TYPE, customerDraftBuilder.getKey());
         final String expectedMessageWithCause =
@@ -182,15 +176,10 @@ class CustomerReferenceResolverTest {
         final String expectedMessageWithCause = format(FAILED_TO_RESOLVE_CUSTOMER_GROUP_REFERENCE,
             "dummyKey", format(CUSTOMER_GROUP_DOES_NOT_EXIST, "anyKey"));
 
-        referenceResolver.resolveCustomerGroupReference(customerDraftBuilder)
-                         .exceptionally(exception -> {
-                             assertThat(exception).hasCauseExactlyInstanceOf(ReferenceResolutionException.class);
-                             assertThat(exception.getCause().getMessage())
-                                 .isEqualTo(expectedMessageWithCause);
-                             return null;
-                         })
-                         .toCompletableFuture()
-                         .join();
+        assertThat(referenceResolver.resolveCustomerGroupReference(customerDraftBuilder))
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(ReferenceResolutionException.class)
+            .hasMessage(expectedMessageWithCause);
     }
 
     @Test
@@ -201,7 +190,6 @@ class CustomerReferenceResolverTest {
             .key("dummyKey");
 
         assertThat(referenceResolver.resolveCustomerGroupReference(customerDraftBuilder).toCompletableFuture())
-            .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format(FAILED_TO_RESOLVE_CUSTOMER_GROUP_REFERENCE, "dummyKey",
@@ -216,7 +204,6 @@ class CustomerReferenceResolverTest {
             .key("dummyKey");
 
         assertThat(referenceResolver.resolveCustomerGroupReference(customerDraftBuilder).toCompletableFuture())
-            .hasFailed()
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format(FAILED_TO_RESOLVE_CUSTOMER_GROUP_REFERENCE, "dummyKey",
@@ -292,17 +279,30 @@ class CustomerReferenceResolverTest {
                 ResourceIdentifier.ofId("store-id-3")))
             .key("dummyKey");
 
-        // test
         final CustomerDraftBuilder resolvedDraft = referenceResolver
             .resolveStoreReferences(customerDraftBuilder)
             .toCompletableFuture()
             .join();
 
-        // assertion
         assertThat(resolvedDraft.getStores())
             .containsExactly(ResourceIdentifier.ofKey("store-key1"),
                 ResourceIdentifier.ofKey("store-key2"),
                 ResourceIdentifier.ofId("store-id-3"));
+    }
+
+    @Test
+    void resolveStoreReferences_WithNullStore_ShouldResolveReferences() {
+        final CustomerDraftBuilder customerDraftBuilder = CustomerDraftBuilder
+            .of("email@example.com", "secret123")
+            .stores(singletonList(null))
+            .key("dummyKey");
+
+        final CustomerDraftBuilder resolvedDraft = referenceResolver
+            .resolveStoreReferences(customerDraftBuilder)
+            .toCompletableFuture()
+            .join();
+
+        assertThat(resolvedDraft.getStores()).isEmpty();
     }
 
     @Test
@@ -312,7 +312,6 @@ class CustomerReferenceResolverTest {
             .stores(singletonList(ResourceIdentifier.ofKey(null)))
             .key("dummyKey");
 
-        // test and assertion
         assertThat(referenceResolver.resolveStoreReferences(customerDraftBuilder))
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
@@ -326,7 +325,6 @@ class CustomerReferenceResolverTest {
             .stores(singletonList(ResourceIdentifier.ofKey(" ")))
             .key("dummyKey");
 
-        // test and assertion
         assertThat(referenceResolver.resolveStoreReferences(customerDraftBuilder))
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
