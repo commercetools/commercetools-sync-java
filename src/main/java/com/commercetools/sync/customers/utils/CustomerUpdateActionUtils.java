@@ -34,12 +34,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActionForReferences;
 import static java.util.Collections.emptyList;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 
 // todo (ahmetoz) add jvm sdk support ticket for anonymous id update actions.
@@ -369,7 +369,7 @@ public final class CustomerUpdateActionUtils {
             final List<ResourceIdentifier<Store>> stores =
                 newStores.stream()
                          .filter(Objects::nonNull)
-                         .collect(Collectors.toList());
+                         .collect(toList());
             if (!stores.isEmpty()) {
                 return Optional.of(SetStores.of(stores));
             }
@@ -400,14 +400,14 @@ public final class CustomerUpdateActionUtils {
             newStores.stream()
                      .filter(Objects::nonNull)
                      .filter(storeResourceIdentifier -> storeResourceIdentifier.getKey() != null)
-                     .collect(toMap(ResourceIdentifier::getKey, Function.identity()));
+                     .collect(toMap(ResourceIdentifier::getKey, identity()));
 
         return oldStores
             .stream()
             .filter(Objects::nonNull)
             .filter(storeKeyReference -> !newStoreKeyToStoreMap.containsKey(storeKeyReference.getKey()))
             .map(storeKeyReference -> RemoveStore.of(ResourceIdentifier.ofKey(storeKeyReference.getKey())))
-            .collect(Collectors.toList());
+            .collect(toList());
     }
 
     /**
@@ -431,13 +431,13 @@ public final class CustomerUpdateActionUtils {
         final Map<String, KeyReference<Store>> oldStoreKeyToStoreMap =
             oldStores.stream()
                      .filter(Objects::nonNull)
-                     .collect(toMap(KeyReference::getKey, Function.identity()));
+                     .collect(toMap(KeyReference::getKey, identity()));
 
         return newStores
             .stream()
             .filter(Objects::nonNull)
             .filter(storeResourceIdentifier -> !oldStoreKeyToStoreMap.containsKey(storeResourceIdentifier.getKey()))
             .map(AddStore::of)
-            .collect(Collectors.toList());
+            .collect(toList());
     }
 }
