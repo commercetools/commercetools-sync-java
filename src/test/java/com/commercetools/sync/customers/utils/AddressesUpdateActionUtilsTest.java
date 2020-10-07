@@ -5,6 +5,7 @@ import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.commands.updateactions.AddAddress;
+import io.sphere.sdk.customers.commands.updateactions.ChangeAddress;
 import io.sphere.sdk.customers.commands.updateactions.RemoveAddress;
 import io.sphere.sdk.models.Address;
 import io.sphere.sdk.models.AddressBuilder;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Collections;
 import java.util.List;
 
+import static com.commercetools.sync.customers.utils.AddressesUpdateActionUtils.buildAddAddressUpdateActions;
 import static com.commercetools.sync.customers.utils.AddressesUpdateActionUtils.buildAddressUpdateActions;
 import static com.commercetools.sync.customers.utils.AddressesUpdateActionUtils.buildRemoveAddressUpdateActions;
 import static java.util.Arrays.asList;
@@ -21,34 +23,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class AddressesUpdateActionUtilsTest {
-
-//    private static Address old;
-//    private static Address newSame;
-//    private static Address newDifferent;
-//    private static Address anotherAddress;
-
-//    @BeforeEach
-//    void setup() {
-//
-//        final String key = "old-key";
-//        final String key2 = "old-key2";
-//        final String newKey = "new-key";
-//        final String id = "old-id";
-//        final String id2 = "old-id2";
-//        final String newId = "newId";
-//
-//
-//        old = mock(Address.class);
-//        when(old.getKey()).thenReturn(key);
-//        when(old.getId()).thenReturn(id);
-//
-//        anotherAddress = mock(Address.class);
-//        when(anotherAddress.getKey()).thenReturn(key2);
-//        when(anotherAddress.getId()).thenReturn(id2);
-//
-//        newSame = AddressBuilder.of(CountryCode.DE).key(key).build();
-//        newDifferent = AddressBuilder.of(newSame).key(newKey).build();
-//    }
 
     //case 1:
     //Addresses in the draft, but no address in target, create all addresses in the draft to the target
@@ -176,8 +150,6 @@ public class AddressesUpdateActionUtilsTest {
 
     }
 
-    //TODO test cases for buildRemoveAddressUpdateActions
-
     @Test
     void buildRemoveAddressUpdateActions_withNewAddressWithExisting_shouldReturnAction(){
 
@@ -253,10 +225,82 @@ public class AddressesUpdateActionUtilsTest {
 
     }
 
-    //TODO test cases for buildAddAddressUpdateActions
+    @Test
+    void buildRemoveAddressUpdateActions_withSameDraftAsExistingAddresses_shouldReturnAction(){
 
+        final String key = "old-key";
+        final String key2 = "old-key2";
+        final String id = "old-id";
+        final String id2 = "old-id2";
 
+        final Address old = mock(Address.class);
+        when(old.getKey()).thenReturn(key);
+        when(old.getId()).thenReturn(id);
 
+        final Address anotherAddress = mock(Address.class);
+        when(anotherAddress.getKey()).thenReturn(key2);
+        when(anotherAddress.getId()).thenReturn(id2);
 
+        final List<Address> oldAddresses = asList(old, anotherAddress);
+        final List<Address> newAddresses = asList(old, anotherAddress);
+        final List<UpdateAction<Customer>> result = buildRemoveAddressUpdateActions(oldAddresses, newAddresses);
 
+        assertThat(result).contains(ChangeAddress.of(key, old), ChangeAddress.of(key2, anotherAddress));
+
+    }
+
+    @Test
+    void buildAddAddressUpdateActions_withNewAddressWithExisting_shouldReturnAction() throws BuildUpdateActionException {
+
+        final String key = "old-key";
+        final String key2 = "old-key2";
+        final String newKey = "new-key";
+        final String id = "old-id";
+        final String id2 = "old-id2";
+
+        final Address old = mock(Address.class);
+        when(old.getKey()).thenReturn(key);
+        when(old.getId()).thenReturn(id);
+
+        final Address anotherAddress = mock(Address.class);
+        when(anotherAddress.getKey()).thenReturn(key2);
+        when(anotherAddress.getId()).thenReturn(id2);
+
+        final Address newSame = AddressBuilder.of(CountryCode.DE).key(key).build();
+        final Address newDifferent = AddressBuilder.of(newSame).key(newKey).build();
+
+        final List<Address> oldAddresses = asList(old, anotherAddress);
+
+        final List<Address> newAddresses = asList(old, anotherAddress, newDifferent);
+        final List<UpdateAction<Customer>> result = buildAddAddressUpdateActions(oldAddresses, newAddresses);
+
+        assertThat(result).contains(AddAddress.of(newDifferent));
+    }
+
+    @Test
+    void buildAddAddressUpdateActions_withNewAddressWithoutExisting_shouldReturnAction() {
+
+        final String key = "old-key";
+        final String key2 = "old-key2";
+        final String newKey = "new-key";
+        final String id = "old-id";
+        final String id2 = "old-id2";
+
+        final Address old = mock(Address.class);
+        when(old.getKey()).thenReturn(key);
+        when(old.getId()).thenReturn(id);
+
+        final Address anotherAddress = mock(Address.class);
+        when(anotherAddress.getKey()).thenReturn(key2);
+        when(anotherAddress.getId()).thenReturn(id2);
+
+        final Address newSame = AddressBuilder.of(CountryCode.DE).key(key).build();
+        final Address newDifferent = AddressBuilder.of(newSame).key(newKey).build();
+
+        final List<Address> oldAddresses = Collections.emptyList();
+        final List<Address> newAddresses = asList(newDifferent, anotherAddress);
+        final List<UpdateAction<Customer>> result = buildAddAddressUpdateActions(oldAddresses, newAddresses);
+
+        assertThat(result).contains(AddAddress.of(newDifferent), AddAddress.of(anotherAddress));
+    }
 }
