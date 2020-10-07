@@ -23,10 +23,10 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 public class CustomerBatchValidator
     extends BaseBatchValidator<CustomerDraft, CustomerSyncOptions, CustomerSyncStatistics> {
 
-    static final String CUSTOMER_DRAFT_IS_NULL = "CustomerDraft is null.";
-    static final String CUSTOMER_DRAFT_KEY_NOT_SET = "CustomerDraft with email: %s doesn't have a key. "
+    public static final String CUSTOMER_DRAFT_IS_NULL = "CustomerDraft is null.";
+    public static final String CUSTOMER_DRAFT_KEY_NOT_SET = "CustomerDraft with email: %s doesn't have a key. "
         + "Please make sure all customer drafts have keys.";
-    static final String CUSTOMER_DRAFT_EMAIL_NOT_SET = "CustomerDraft with key: %s doesn't have an email. "
+    public static final String CUSTOMER_DRAFT_EMAIL_NOT_SET = "CustomerDraft with key: %s doesn't have an email. "
         + "Please make sure all customer drafts have emails.";
     static final String CUSTOMER_DRAFT_PASSWORD_NOT_SET = "CustomerDraft with key: %s doesn't have a password. "
         + "Please make sure all customer drafts have passwords.";
