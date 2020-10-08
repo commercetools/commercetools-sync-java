@@ -4,6 +4,7 @@ import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 
@@ -53,7 +54,7 @@ public class BaseSyncOptions<U, V> {
      * @return the {@link SphereClient} responsible for interaction with the target CTP project.
      */
     public SphereClient getCtpClient() {
-        return ctpClient;
+        return CustomHeaderSphereClientDecorator.of(ctpClient);
     }
 
     /**
