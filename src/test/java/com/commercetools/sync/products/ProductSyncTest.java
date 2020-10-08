@@ -19,16 +19,16 @@ import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
-import io.sphere.sdk.products.queries.ProductQuery;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH;
@@ -125,13 +125,11 @@ class ProductSyncTest {
         // assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
-                assertThat(message).contains("Failed to build a cache of keys to ids.")
-            );
+            .singleElement().asString().contains("Failed to build a cache of keys to ids.");
 
         assertThat(exceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> {
+            .singleElement().satisfies(throwable -> {
                 assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
                 assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
             });
@@ -148,11 +146,9 @@ class ProductSyncTest {
                 .state(null)
                 .build();
 
-
-
         final SphereClient mockClient = mock(SphereClient.class);
-        when(mockClient.execute(any(ProductQuery.class)))
-                .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
+
+
 
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> exceptions = new ArrayList<>();
@@ -165,6 +161,10 @@ class ProductSyncTest {
                 .build();
 
         final ProductService productService = spy(new ProductServiceImpl(syncOptions));
+        CompletableFuture<Set<Product>> future = new CompletableFuture<>();
+        future.completeExceptionally(new CompletionException(new SphereException()));
+        when(productService.fetchMatchingProductsByKeys(anySet())).thenReturn(future);
+
         final Map<String, String> keyToIds = new HashMap<>();
         keyToIds.put(productDraft.getKey(), UUID.randomUUID().toString());
         when(productService.cacheKeysToIds(anySet())).thenReturn(completedFuture(keyToIds));
@@ -175,7 +175,6 @@ class ProductSyncTest {
 
         final CategoryService categoryService = mock(CategoryService.class);
         when(categoryService.fetchMatchingCategoriesByKeys(any())).thenReturn(completedFuture(emptySet()));
-
 
         final ProductSync productSync = new ProductSync(syncOptions, productService,
                 productTypeService, categoryService, mock(TypeService.class),
@@ -189,16 +188,16 @@ class ProductSyncTest {
                 .sync(singletonList(productDraft))
                 .toCompletableFuture().join();
 
-        // assertions
+        // assertion
         assertThat(errorMessages)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(message ->
+                .singleElement().satisfies(message ->
                         assertThat(message).contains("Failed to fetch existing products")
             );
 
         assertThat(exceptions)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(throwable -> {
+                .singleElement().satisfies(throwable -> {
                     assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
                     assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
                 });
@@ -242,7 +241,6 @@ class ProductSyncTest {
 
         // test
         productSync.sync(singletonList(productDraft)).toCompletableFuture().join();
-
 
         // assertion
         verify(spyProductSyncOptions).applyBeforeCreateCallback(any());
@@ -352,11 +350,9 @@ class ProductSyncTest {
             productSync.sync(singletonList(productDraft)).toCompletableFuture().join();
 
         // assertion
-
-        // assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
+            .singleElement().satisfies(message ->
                 assertThat(message).contains("Failed to update Product with key: 'productKey1'. Reason: Failed to"
                     + " fetch a productType for the product to build the products' attributes metadata.")
             );
