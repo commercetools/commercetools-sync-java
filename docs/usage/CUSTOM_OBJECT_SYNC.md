@@ -92,18 +92,7 @@ the **_create_** request just before it is sent to commercetools platform.  It c
 
  * custom object draft that should be created
  
-##### Example (Logging the key/container pair of custom object draft)
-````java
-final Logger logger = LoggerFactory.getLogger(CustomObjectSync.class);
-final Function<CustomObjectDraft, CustomObjectDraft> beforeCreateCustomObjectCallback =
-        (callbackDraft) -> {
-            logger.info(String.format("Key/Container pair : %s/%s", callbackDraft.getKey(), callbackDraft.getContainer()));
-            return callbackDraft;
-        };
-                         
-final CustomObjectSyncOptions customObjectSyncOptions = 
-         CustomObjectSyncOptionsBuilder.of(sphereClient).beforeCreateCallback(beforeCreateCustomObjectCallback).build();
-````
+Please refer to [example in product sync document](PRODUCT_SYNC.md#example-set-publish-stage-if-category-references-of-given-product-draft-exists).
 
 ##### 5. `batchSize`
 A number that could be used to set the batch size with which custom objects are fetched and processed,

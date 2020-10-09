@@ -118,19 +118,7 @@ the **_create_** request just before it is sent to commercetools platform.  It c
 
  * category draft that should be created
  
-##### Example (Logging of category name from category draft)
-````java
-final Logger logger = LoggerFactory.getLogger(CategorySync.class);
-
-final Function<CategoryDraft, CategoryDraft> beforeCreateCategoryCallback =
-            (callbackDraft) -> {
-                logger.info(String.format("Category : %s", callbackDraft.getName()));
-                return callbackDraft;
-            };
-
-final CategorySyncOptions categorySyncOptions =
-            CategorySyncOptionsBuilder.of(sphereClient).beforeCreateCallback(beforeCreateCategoryCallback).build();
-````
+Please refer to [example in product sync document](PRODUCT_SYNC.md#example-set-publish-stage-if-category-references-of-given-product-draft-exists).
 
 ##### 5. `batchSize`
 A number that could be used to set the batch size with which categories are fetched and processed,

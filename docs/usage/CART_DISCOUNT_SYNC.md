@@ -117,18 +117,7 @@ the **_create_** request just before it is sent to commercetools platform.  It c
 
  * cart discount draft that should be created
  
-##### Example (Logging the activeness of cart discount draft)
-````java
-final Logger logger = LoggerFactory.getLogger(CartDiscountSync.class);
-final Function<CartDiscountDraft, CartDiscountDraft> beforeCreateCartDiscountCallback =
-            (callbackDraft) -> {
-                logger.info(String.format("Is cart discount %s active : %s", callbackDraft.getName(), callbackDraft.isActive()));
-                return callbackDraft;
-            };
-                         
-final CartDiscountSyncOptions cartDiscountSyncOptions = 
-         CartDiscountSyncOptionsBuilder.of(sphereClient).beforeCreateCallback(beforeCreateCartDiscountCallback).build();
-````
+Please refer to [example in product sync document](PRODUCT_SYNC.md#example-set-publish-stage-if-category-references-of-given-product-draft-exists).
 
 ##### 5. `batchSize`
 A number that could be used to set the batch size with which cart discounts are fetched and processed,

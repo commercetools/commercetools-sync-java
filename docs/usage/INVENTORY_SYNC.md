@@ -119,23 +119,8 @@ the **_create_** request just before it is sent to commercetools platform.  It c
 
  * inventory entry draft that should be created
  
-##### Example (Logging of inventory SKU and quantity on stock which going to be created)
-````java
-final Logger logger = LoggerFactory.getLogger(InventorySync.class);
-        final Function<InventoryEntryDraft, InventoryEntryDraft> beforeCreateInventoryCallback =
-                (callbackDraft) -> {
-                    logger.info(String.format(
-                            "Quantity on stock (SKU : %s) : %s",
-                            callbackDraft.getSku(),
-                            callbackDraft.getQuantityOnStock()));
-
-                    return callbackDraft;
-                };
+Please refer to [example in product sync document](PRODUCT_SYNC.md#example-set-publish-stage-if-category-references-of-given-product-draft-exists).
                          
-final InventorySyncOptions inventorySyncOptions = 
-        InventorySyncOptionsBuilder.of(sphereClient).beforeCreateCallback(beforeCreateInventoryCallback).build();
-````
-
 ##### 5. `batchSize`
 A number that could be used to set the batch size with which inventories are fetched and processed,
 as inventories are obtained from the target project on commercetools platform in batches for better performance. The 

@@ -104,27 +104,8 @@ During the sync process if a type draft should be created, this callback can be 
 the **_create_** request just before it is sent to commercetools platform.  It contains following information : 
 
  * tax category draft that should be created
- 
-##### Example (Logging tax rate and their corresponding names of which is going to be created)
-````java
-final Logger logger = LoggerFactory.getLogger(TaxCategorySync.class);
-        final Function<TaxCategoryDraft, TaxCategoryDraft> beforeCreateTaxCategoryCallback =
-                (callbackDraft) -> {
-                    logger.info(String.format("Tax Category to be created : %s", callbackDraft.getName()));
-                    List<TaxRateDraft> taxRateDrafts = callbackDraft.getTaxRates();
-                    taxRateDrafts.forEach(rateDraft -> 
-                        logger.info(String.format(
-                                "Tax Rate %s with rate %s %", 
-                                rateDraft.getName(),
-                                BigDecimal.valueOf(rateDraft.getAmount()).multiply(BigDecimal.valueOf(100)).toString())
-                        )
-                    );
-                    return callbackDraft;
-                };
-                         
-final TaxCategorySyncOptions taxCategorySyncOptions = 
-         TaxCategorySyncOptionsBuilder.of(sphereClient).beforeCreateCallback(beforeCreateTaxCategoryCallback).build();
-````
+
+Please refer to [example in product sync document](PRODUCT_SYNC.md#example-set-publish-stage-if-category-references-of-given-product-draft-exists).
 
 ##### 5. `batchSize`
 A number that could be used to set the batch size with which tax categories are fetched and processed,

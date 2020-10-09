@@ -119,19 +119,8 @@ During the sync process if a state draft should be created, this callback can be
 the **_create_** request just before it is sent to commercetools platform.  It contains following information : 
 
  * state draft that should be created
- 
-##### Example (Logging initial status of the states which are going to be created)
-````java
-final Logger logger = LoggerFactory.getLogger(StateSync.class);
-final Function<StateDraft, StateDraft> beforeCreateStateCallback =
-        (callbackDraft) -> {
-            logger.info(String.format("Initial state of %s : %s", callbackDraft.getName(), callbackDraft.isInitial()));
-            return callbackDraft;
-        };
-                         
-final StateSyncOptions stateSyncOptions = 
-         StateSyncOptionsBuilder.of(sphereClient).beforeCreateCallback(beforeCreateStateCallback).build();
-````
+
+Please refer to [example in product sync document](PRODUCT_SYNC.md#example-set-publish-stage-if-category-references-of-given-product-draft-exists).
 
 ##### 5. `batchSize`
 A number that could be used to set the batch size with which states are fetched and processed,

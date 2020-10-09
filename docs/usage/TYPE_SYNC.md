@@ -107,18 +107,7 @@ the **_create_** request just before it is sent to commercetools platform.  It c
 
  * type draft that should be created
  
-##### Example (Logging name of the types which is going to be created)
-````java
-final Logger logger = LoggerFactory.getLogger(TypeSync.class);
-final Function<TypeDraft, TypeDraft> beforeCreateTypeCallback =
-        (callbackDraft) -> {
-            logger.info(String.format("Type to be created : %s", callbackDraft.getName()));
-            return callbackDraft;
-        };
-                         
-final TypeSyncOptions typeSyncOptions = 
-         TypeSyncOptionsBuilder.of(sphereClient).beforeCreateCallback(beforeCreateTypeCallback).build();
-````
+Please refer to [example in product sync document](PRODUCT_SYNC.md#example-set-publish-stage-if-category-references-of-given-product-draft-exists).
 
 ##### 5. `batchSize`
 A number that could be used to set the batch size with which types are fetched and processed,
