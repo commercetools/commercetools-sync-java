@@ -129,20 +129,16 @@ the **_create_** request just before it is sent to commercetools platform.  It c
 
  * product draft that should be created
  
-##### Example (Logging of search keywords from product draft)
+##### Example (Set publish stage if category references of given product draft exists)
 ````java
 final Function<ProductDraft, ProductDraft> beforeCreateProductCallback =
-         (callbackDraft) -> {
-                Map<Locale, List<SearchKeyword>> searchKeywordLocaleMap = callbackDraft.getSearchKeywords().getContent();
-
-                List<String> searchKeywords = searchKeywordLocaleMap.entrySet().stream().flatMap(
-                    keywordEntry -> keywordEntry.getValue().stream().map(
-                        keyword -> String.format("Search Keywords (Locale : %s ) : %s)", keywordEntry.getKey(), keyword.getText())))
-                    .collect(Collectors.toList());
-
-                searchKeywords.forEach(keywordWithLocale -> logger.info(keywordWithLocale));
-
-         };
+        (callbackDraft) -> {
+            Set<ResourceIdentifier<Category>> categoryResourceIdentifier = callbackDraft.getCategories();
+            if (categoryResourceIdentifier!=null && !categoryResourceIdentifier.isEmpty()) {
+                return ProductDraftBuilder.of(callbackDraft).isPublish(true).build();
+            }
+            return callbackDraft;
+        };
                          
 final ProductSyncOptions productSyncOptions = 
          ProductSyncOptionsBuilder.of(sphereClient).beforeCreateCallback(beforeCreateProductCallback).build();
