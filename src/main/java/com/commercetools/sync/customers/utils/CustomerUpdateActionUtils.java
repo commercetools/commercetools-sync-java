@@ -325,7 +325,8 @@ public final class CustomerUpdateActionUtils {
     }
 
     /**
-     * Compares the stores of a {@link Customer} and a {@link CustomerDraft}. It returns a {@link List} of
+     * Compares the {@link List} of {@link Store} {@link KeyReference}s and {@link Store} {@link ResourceIdentifier}s
+     * of a {@link CustomerDraft} and a {@link Customer}. It returns a {@link List} of
      * {@link UpdateAction}&lt;{@link Customer}&gt; as a result. If no update action is needed, for example in
      * case where both the {@link Customer} and the {@link CustomerDraft} have the identical stores, an empty
      * {@link List} is returned.
@@ -334,7 +335,7 @@ public final class CustomerUpdateActionUtils {
      *
      * @param oldCustomer the customer which should be updated.
      * @param newCustomer the customer draft where we get the new data.
-     * @return A list of customer store-related update actions.
+     * @return A list of customer store-related update actions or an empty list if the store references are identical.
      */
     @Nonnull
     public static List<UpdateAction<Customer>> buildStoreUpdateActions(
@@ -344,53 +345,27 @@ public final class CustomerUpdateActionUtils {
         final List<KeyReference<Store>> oldStores = oldCustomer.getStores();
         final List<ResourceIdentifier<Store>> newStores = newCustomer.getStores();
 
-        return buildSetStoreUpdateAction(oldStores, newStores)
-            .map(Collections::singletonList)
-            .orElseGet(() -> {
-                if (oldStores != null && newStores != null) {
-                    final List<UpdateAction<Customer>> updateActions =
-                        buildRemoveStoreUpdateActions(oldStores, newStores);
-
-                    updateActions.addAll(buildAddStoreUpdateActions(oldStores, newStores));
-                    return updateActions;
-                }
-
-                return emptyList();
-            });
-    }
-
-    /**
-     * Compares the {@link List} of {@link Store} {@link KeyReference}s and {@link Store} {@link ResourceIdentifier}s
-     * of a {@link CustomerDraft} and a {@link Customer}. It returns a {@link SetStores} update action as a result.
-     * If both the {@link Customer} and the {@link CustomerDraft} have the same set of stores, then no update actions
-     * are needed and hence an empty {@link List} is returned.
-     *
-     * <p>Note: Null values of the stores are filtered out.
-     *
-     * @param oldStores the stores which should be updated.
-     * @param newStores the stores where we get the new store.
-     * @return A list containing the update actions or an empty list if the store references are identical.
-     */
-    @Nonnull
-    private static Optional<UpdateAction<Customer>> buildSetStoreUpdateAction(
-        @Nullable final List<KeyReference<Store>> oldStores,
-        @Nullable final List<ResourceIdentifier<Store>> newStores) {
-
         if (oldStores != null && !oldStores.isEmpty()) {
             if (newStores == null || newStores.isEmpty()) {
-                return Optional.of(SetStores.of(emptyList()));
+                return Collections.singletonList(SetStores.of(emptyList()));
             }
         } else if (newStores != null && !newStores.isEmpty()) {
             final List<ResourceIdentifier<Store>> stores =
-                newStores.stream()
-                         .filter(Objects::nonNull)
-                         .collect(toList());
+                    newStores.stream()
+                            .filter(Objects::nonNull)
+                            .collect(toList());
             if (!stores.isEmpty()) {
-                return Optional.of(SetStores.of(stores));
+                return Collections.singletonList(SetStores.of(stores));
             }
-        }
+        } else if (oldStores != null && newStores != null) {
+            final List<UpdateAction<Customer>> updateActions =
+                    buildRemoveStoreUpdateActions(oldStores, newStores);
 
-        return Optional.empty();
+            updateActions.addAll(buildAddStoreUpdateActions(oldStores, newStores));
+            return updateActions;
+        }
+        return Collections.emptyList();
+
     }
 
     /**
