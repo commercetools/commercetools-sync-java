@@ -751,30 +751,28 @@ public final class CustomerUpdateActionUtils {
 
     @Nullable
     private static String getAddressKeyAt(
-        @Nullable final List<Address> addressList,
-        @Nullable final Integer index) {
+            @Nullable final List<Address> addressList,
+            @Nullable final Integer index) {
 
-        if (index != null) {
-            if (addressList != null) {
-                if (index >= 0 && index < addressList.size()) {
-                    final Address address = addressList.get(index);
-                    if (address == null) {
-                        throw new IllegalArgumentException(
-                            format("Address is null at the index: %s of the addresses list.", index));
-                    } else if (isBlank(address.getKey())) {
-                        throw new IllegalArgumentException(
-                            format("Address does not have a key at the index: %s of the addresses list.", index));
-                    }
-
-                    return address.getKey();
-                }
-            }
-
-            throw new IllegalArgumentException(
-                format("Addresses list does not contain an address at the index: %s", index));
+        if (index == null)  {
+            return null;
         }
 
-        return null;
+        if (addressList == null || index < 0 || index >= addressList.size()) {
+            throw new IllegalArgumentException(
+                    format("Addresses list does not contain an address at the index: %s", index));
+        }
+
+        final Address address = addressList.get(index);
+        if (address == null) {
+            throw new IllegalArgumentException(
+                    format("Address is null at the index: %s of the addresses list.", index));
+        } else if (isBlank(address.getKey())) {
+            throw new IllegalArgumentException(
+                    format("Address does not have a key at the index: %s of the addresses list.", index));
+        } else {
+            return address.getKey();
+        }
     }
 
     /**
