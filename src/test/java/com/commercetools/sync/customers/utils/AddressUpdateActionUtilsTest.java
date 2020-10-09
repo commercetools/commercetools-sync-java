@@ -15,14 +15,12 @@ import io.sphere.sdk.customers.commands.updateactions.RemoveAddress;
 import io.sphere.sdk.customers.commands.updateactions.RemoveBillingAddressId;
 import io.sphere.sdk.customers.commands.updateactions.RemoveShippingAddressId;
 import io.sphere.sdk.models.Address;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildAddAddressUpdateActions;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildAddBillingAddressUpdateActions;
@@ -134,7 +132,7 @@ class AddressUpdateActionUtilsTest {
                                         .withId("address-id-new-3");
         final CustomerDraft newCustomer =
             CustomerDraftBuilder.of("email", "pass")
-                                .addresses(asList(address3))
+                                .addresses(singletonList(address3))
                                 .defaultShippingAddress(0)
                                 .defaultBillingAddress(0)
                                 .build();
