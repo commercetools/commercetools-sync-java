@@ -857,7 +857,8 @@ class AddressUpdateActionUtilsTest {
             buildAddShippingAddressUpdateActions(oldCustomer, newCustomer);
 
         // assertions
-        assertThat(updateActions).containsExactly(AddShippingAddressIdWithKey.of("address-key-2"));    }
+        assertThat(updateActions).containsExactly(AddShippingAddressIdWithKey.of("address-key-2"));
+    }
 
     @Test
     void buildAddShippingAddressUpdateActions_WithNewShippingAddresses_ShouldReturnAddShippingAddressActions() {
