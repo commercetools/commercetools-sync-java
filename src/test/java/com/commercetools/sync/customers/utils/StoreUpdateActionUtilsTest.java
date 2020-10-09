@@ -11,6 +11,8 @@ import io.sphere.sdk.models.KeyReference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.stores.Store;
 import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildStoreUpdateActions;
@@ -23,9 +25,16 @@ import static org.mockito.Mockito.when;
 
 public class StoreUpdateActionUtilsTest {
 
+    private Customer oldCustomer;
+
+    @BeforeEach
+    void setup() {
+        oldCustomer = mock(Customer.class);
+    }
+
     @Test
     void buildStoreUpdateActions_WithSameStores_ShouldNotReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         final KeyReference<Store> keyReference1 = mock(KeyReference.class);
         when(keyReference1.getKey()).thenReturn("store-key");
         when(oldCustomer.getStores()).thenReturn(singletonList(keyReference1));
@@ -42,7 +51,7 @@ public class StoreUpdateActionUtilsTest {
 
     @Test
     void buildStoreUpdateActions_WithNullOldStores_ShouldReturnOnlySetStoreAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getStores()).thenReturn(null);
 
         final List<ResourceIdentifier<Store>> newStores = singletonList(ResourceIdentifier.ofKey("store-key"));
@@ -62,7 +71,7 @@ public class StoreUpdateActionUtilsTest {
 
     @Test
     void buildStoreUpdateActions_WithEmptyOldStores_ShouldReturnOnlySetStoreAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getStores()).thenReturn(emptyList());
 
         final List<ResourceIdentifier<Store>> newStores = singletonList(ResourceIdentifier.ofKey("store-key"));
@@ -82,7 +91,7 @@ public class StoreUpdateActionUtilsTest {
 
     @Test
     void buildStoreUpdateActions_WithEmptyOldStores_ShouldReturnOnlySetStoreWithoutNullReferencesInIt() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getStores()).thenReturn(emptyList());
 
         final List<ResourceIdentifier<Store>> newStores =
@@ -103,7 +112,7 @@ public class StoreUpdateActionUtilsTest {
 
     @Test
     void buildStoreUpdateActions_WithOnlyNullNewStores_ShouldNotReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getStores()).thenReturn(emptyList());
 
         final List<ResourceIdentifier<Store>> newStores =
@@ -122,7 +131,7 @@ public class StoreUpdateActionUtilsTest {
 
     @Test
     void buildStoreUpdateActions_WithBothNullStoreReferences_ShouldNotReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getStores()).thenReturn(asList(null, null));
 
         final List<ResourceIdentifier<Store>> newStores =
@@ -141,7 +150,7 @@ public class StoreUpdateActionUtilsTest {
 
     @Test
     void buildStoreUpdateActions_WithNullNewStores_ShouldReturnSetStoreActionWithUnset() {
-        final Customer oldCustomer = mock(Customer.class);
+
         final KeyReference<Store> keyReference1 = mock(KeyReference.class);
         when(keyReference1.getKey()).thenReturn("store-key");
         when(oldCustomer.getStores()).thenReturn(singletonList(keyReference1));
@@ -161,7 +170,7 @@ public class StoreUpdateActionUtilsTest {
 
     @Test
     void buildStoreUpdateActions_WithEmptyNewStores_ShouldReturnSetStoreActionWithUnset() {
-        final Customer oldCustomer = mock(Customer.class);
+
         final KeyReference<Store> keyReference1 = mock(KeyReference.class);
         when(keyReference1.getKey()).thenReturn("store-key");
         when(oldCustomer.getStores()).thenReturn(singletonList(keyReference1));
@@ -181,7 +190,7 @@ public class StoreUpdateActionUtilsTest {
 
     @Test
     void buildStoreUpdateActions_WithBothNullStores_ShouldNotReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getStores()).thenReturn(null);
 
         final CustomerDraft newCustomer =
@@ -197,7 +206,7 @@ public class StoreUpdateActionUtilsTest {
 
     @Test
     void buildStoreUpdateActions_WithBothEmptyStores_ShouldNotReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getStores()).thenReturn(emptyList());
 
         final CustomerDraft newCustomer =
@@ -213,7 +222,7 @@ public class StoreUpdateActionUtilsTest {
 
     @Test
     void buildStoreUpdateActions_WithNewStores_ShouldReturnAddStoreActions() {
-        final Customer oldCustomer = mock(Customer.class);
+
         final KeyReference<Store> keyReference1 = mock(KeyReference.class);
         when(keyReference1.getKey()).thenReturn("store-key1");
         when(oldCustomer.getStores()).thenReturn(singletonList(keyReference1));
@@ -237,7 +246,7 @@ public class StoreUpdateActionUtilsTest {
 
     @Test
     void buildStoreUpdateActions_WithLessStores_ShouldReturnRemoveStoreActions() {
-        final Customer oldCustomer = mock(Customer.class);
+
         final KeyReference<Store> keyReference1 = mock(KeyReference.class);
         when(keyReference1.getKey()).thenReturn("store-key1");
         final KeyReference<Store> keyReference2 = mock(KeyReference.class);
@@ -265,7 +274,7 @@ public class StoreUpdateActionUtilsTest {
 
     @Test
     void buildStoreUpdateActions_WithMixedStores_ShouldReturnAddAndRemoveStoreActions() {
-        final Customer oldCustomer = mock(Customer.class);
+
         final KeyReference<Store> keyReference1 = mock(KeyReference.class);
         when(keyReference1.getKey()).thenReturn("store-key1");
         final KeyReference<Store> keyReference3 = mock(KeyReference.class);
@@ -297,7 +306,7 @@ public class StoreUpdateActionUtilsTest {
 
     @Test
     void buildStoreUpdateActions_WithNewStoresWithOnlyIdReference_ShouldReturnAddStoreActions() {
-        final Customer oldCustomer = mock(Customer.class);
+
         final KeyReference<Store> keyReference1 = mock(KeyReference.class);
         when(keyReference1.getKey()).thenReturn("store-key1");
         when(oldCustomer.getStores()).thenReturn(singletonList(keyReference1));
