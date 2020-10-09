@@ -2,8 +2,8 @@ package com.commercetools.sync.customers.utils;
 
 import com.commercetools.sync.customers.commands.updateactions.AddBillingAddressIdWithKey;
 import com.commercetools.sync.customers.commands.updateactions.AddShippingAddressIdWithKey;
-import com.commercetools.sync.customers.commands.updateactions.SetDefaultBillingAddressWitKey;
-import com.commercetools.sync.customers.commands.updateactions.SetDefaultShippingAddressWitKey;
+import com.commercetools.sync.customers.commands.updateactions.SetDefaultBillingAddressWithKey;
+import com.commercetools.sync.customers.commands.updateactions.SetDefaultShippingAddressWithKey;
 import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customers.Customer;
@@ -76,8 +76,8 @@ class AddressUpdateActionUtilsTest {
             RemoveAddress.of("address-id-1"),
             ChangeAddress.of("address-id-2", address2),
             AddAddress.of(address3),
-            SetDefaultShippingAddressWitKey.of("address-key-3"),
-            SetDefaultBillingAddressWitKey.of("address-key-2"));
+            SetDefaultShippingAddressWithKey.of("address-key-3"),
+            SetDefaultBillingAddressWithKey.of("address-key-2"));
     }
 
     @Test
@@ -525,7 +525,7 @@ class AddressUpdateActionUtilsTest {
 
         assertThat(customerUpdateAction)
             .isPresent()
-            .contains(SetDefaultShippingAddressWitKey.of("address-key-2"));
+            .contains(SetDefaultShippingAddressWithKey.of("address-key-2"));
     }
 
     @Test
@@ -553,7 +553,7 @@ class AddressUpdateActionUtilsTest {
 
         assertThat(customerUpdateAction)
             .isPresent()
-            .contains(SetDefaultShippingAddressWitKey.of(null));
+            .contains(SetDefaultShippingAddressWithKey.of(null));
     }
 
     @Test
@@ -605,7 +605,7 @@ class AddressUpdateActionUtilsTest {
 
         assertThat(customerUpdateAction)
             .isPresent()
-            .contains(SetDefaultBillingAddressWitKey.of("address-key-2"));
+            .contains(SetDefaultBillingAddressWithKey.of("address-key-2"));
     }
 
     @Test
@@ -633,7 +633,7 @@ class AddressUpdateActionUtilsTest {
 
         assertThat(customerUpdateAction)
             .isPresent()
-            .contains(SetDefaultBillingAddressWitKey.of(null));
+            .contains(SetDefaultBillingAddressWithKey.of(null));
     }
 
     @Test

@@ -2,8 +2,8 @@ package com.commercetools.sync.customers.utils;
 
 import com.commercetools.sync.customers.commands.updateactions.AddBillingAddressIdWithKey;
 import com.commercetools.sync.customers.commands.updateactions.AddShippingAddressIdWithKey;
-import com.commercetools.sync.customers.commands.updateactions.SetDefaultBillingAddressWitKey;
-import com.commercetools.sync.customers.commands.updateactions.SetDefaultShippingAddressWitKey;
+import com.commercetools.sync.customers.commands.updateactions.SetDefaultBillingAddressWithKey;
+import com.commercetools.sync.customers.commands.updateactions.SetDefaultShippingAddressWithKey;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.customers.Customer;
@@ -693,12 +693,12 @@ public final class CustomerUpdateActionUtils {
 
     /**
      * Compares the {@link Customer#getDefaultShippingAddress()} and {@link CustomerDraft#getDefaultShippingAddress()}.
-     * If they are different - return {@link SetDefaultShippingAddressWitKey} update action. If the old shipping address
+     * If they are different - return {@link SetDefaultShippingAddressWithKey} update action. If the old shipping address
      * id value is set, but the new one is empty - the command will unset the default shipping address.
      *
      * @param oldCustomer the customer that should be updated.
      * @param newCustomer the customer draft with new default shipping address.
-     * @return An optional with {@link SetDefaultShippingAddressWitKey} update action.
+     * @return An optional with {@link SetDefaultShippingAddressWithKey} update action.
      */
     @Nonnull
     public static Optional<UpdateAction<Customer>> buildSetDefaultShippingAddressUpdateAction(
@@ -711,10 +711,10 @@ public final class CustomerUpdateActionUtils {
 
         if (newAddressKey != null) {
             if (oldAddress == null || !Objects.equals(oldAddress.getKey(), newAddressKey)) {
-                return Optional.of(SetDefaultShippingAddressWitKey.of(newAddressKey));
+                return Optional.of(SetDefaultShippingAddressWithKey.of(newAddressKey));
             }
         } else if (oldAddress != null) { // unset
-            return Optional.of(SetDefaultShippingAddressWitKey.of(null));
+            return Optional.of(SetDefaultShippingAddressWithKey.of(null));
         }
 
         return Optional.empty();
@@ -722,12 +722,12 @@ public final class CustomerUpdateActionUtils {
 
     /**
      * Compares the {@link Customer#getDefaultBillingAddress()} and {@link CustomerDraft#getDefaultBillingAddress()}.
-     * If they are different - return {@link SetDefaultShippingAddressWitKey} update action. If the old billing address
+     * If they are different - return {@link SetDefaultShippingAddressWithKey} update action. If the old billing address
      * id value is set, but the new one is empty - the command will unset the default billing address.
      *
      * @param oldCustomer the customer that should be updated.
      * @param newCustomer the customer draft with new default billing address.
-     * @return An optional with {@link SetDefaultShippingAddressWitKey} update action.
+     * @return An optional with {@link SetDefaultShippingAddressWithKey} update action.
      */
     @Nonnull
     public static Optional<UpdateAction<Customer>> buildSetDefaultBillingAddressUpdateAction(
@@ -740,10 +740,10 @@ public final class CustomerUpdateActionUtils {
 
         if (newAddressKey != null) {
             if (oldAddress == null || !Objects.equals(oldAddress.getKey(), newAddressKey)) {
-                return Optional.of(SetDefaultBillingAddressWitKey.of(newAddressKey));
+                return Optional.of(SetDefaultBillingAddressWithKey.of(newAddressKey));
             }
         } else if (oldAddress != null) { // unset
-            return Optional.of(SetDefaultBillingAddressWitKey.of(null));
+            return Optional.of(SetDefaultBillingAddressWithKey.of(null));
         }
 
         return Optional.empty();
