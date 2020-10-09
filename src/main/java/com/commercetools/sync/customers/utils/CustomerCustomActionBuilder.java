@@ -13,6 +13,17 @@ import java.util.Map;
 
 public class CustomerCustomActionBuilder implements GenericCustomActionBuilder<Customer> {
 
+    private static final CustomerCustomActionBuilder builder = new CustomerCustomActionBuilder();
+
+    private CustomerCustomActionBuilder() {
+        super();
+    }
+
+    @Nonnull
+    public static CustomerCustomActionBuilder of() {
+        return builder;
+    }
+
     @Nonnull
     @Override
     public UpdateAction<Customer> buildRemoveCustomTypeAction(

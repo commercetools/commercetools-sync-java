@@ -28,7 +28,7 @@ import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.b
 
 public final class CustomerSyncUtils {
 
-    private static final CustomerCustomActionBuilder customerCustomActionBuilder = new CustomerCustomActionBuilder();
+    private static final CustomerCustomActionBuilder customerCustomActionBuilder = CustomerCustomActionBuilder.of();
 
     /**
      * Compares all the fields of a {@link Customer} and a {@link CustomerDraft}. It returns a {@link List} of
