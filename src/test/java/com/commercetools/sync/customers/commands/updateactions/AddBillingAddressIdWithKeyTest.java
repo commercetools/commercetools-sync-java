@@ -8,8 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class AddBillingAddressIdWithKeyTest {
 
     @Test
-    void whenAddBillingAddressIdWithKeyIsCreated_thenGetAddressKeyReturnsCorrectKey(){
-
+    void whenAddBillingAddressIdWithKeyIsCreated_thenGetAddressKeyReturnsCorrectKey() {
 
         final String billingAddressKey = "key";
         final AddBillingAddressIdWithKey addBillingAddressIdWithKey = AddBillingAddressIdWithKey.of(billingAddressKey);

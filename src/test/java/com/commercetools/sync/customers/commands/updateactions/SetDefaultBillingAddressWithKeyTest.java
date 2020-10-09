@@ -8,10 +8,11 @@ import static org.junit.jupiter.api.Assertions.*;
 class SetDefaultBillingAddressWithKeyTest {
 
     @Test
-    void whenSetDefaultBillingAddressWithKeyIsCreated_thenGetAddressKeyReturnsCorrectKey(){
+    void whenSetDefaultBillingAddressWithKeyIsCreated_thenGetAddressKeyReturnsCorrectKey() {
 
         final String billingAddressKey = "key";
-        final SetDefaultBillingAddressWithKey setDefaultBillingAddressWithKey = SetDefaultBillingAddressWithKey.of(billingAddressKey);
+        final SetDefaultBillingAddressWithKey setDefaultBillingAddressWithKey = SetDefaultBillingAddressWithKey
+            .of(billingAddressKey);
 
         assertThat(setDefaultBillingAddressWithKey.getAddressKey()).isEqualTo("key");
     }
