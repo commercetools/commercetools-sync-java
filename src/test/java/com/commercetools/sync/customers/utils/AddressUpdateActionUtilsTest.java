@@ -17,6 +17,8 @@ import io.sphere.sdk.customers.commands.updateactions.RemoveShippingAddressId;
 import io.sphere.sdk.models.Address;
 import java.util.List;
 import java.util.Optional;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildAddAddressUpdateActions;
@@ -40,9 +42,16 @@ import static org.mockito.Mockito.when;
 
 class AddressUpdateActionUtilsTest {
 
+    private Customer oldCustomer;
+
+    @BeforeEach
+    void setup() {
+        oldCustomer = mock(Customer.class);
+    }
+    
     @Test
     void buildAllAddressUpdateActions_WithDifferentAddresses_ShouldReturnAddressAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(asList(
             Address.of(CountryCode.DE).withId("address-id-1"),
             Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2").withBuilding("no 1")
@@ -81,7 +90,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildAllAddressUpdateActions_WithSameAddresses_ShouldNotReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(asList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1").withPostalCode("123"),
             Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2").withBuilding("no 1")
@@ -107,7 +116,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildRemoveAddressUpdateActions_WithoutOldAddresses_ShouldNotReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(emptyList());
 
         final CustomerDraft newCustomer =
@@ -123,7 +132,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildRemoveAddressUpdateActions_WithNullNewAddresses_ShouldReturnRemoveAddressActions() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(asList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1"),
             Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2")
@@ -144,7 +153,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildRemoveAddressUpdateActions_WithEmptyNewAddresses_ShouldReturnRemoveAddressActions() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(asList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1"),
             Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2")
@@ -165,7 +174,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildRemoveAddressUpdateActions_WithNullAddresses_ShouldReturnRemoveAddressActions() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(asList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1"),
             Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2")
@@ -185,7 +194,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildRemoveAddressUpdateActions_WithAddressesWithoutKeys_ShouldReturnRemoveAddressActions() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(asList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1"),
             Address.of(CountryCode.DE).withId("address-id-2")
@@ -205,7 +214,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildChangeAddressUpdateActions_WithoutNewAddresses_ShouldNotReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(asList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1"),
             Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2")
@@ -224,7 +233,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildChangeAddressUpdateActions_WithEmptyNewAddresses_ShouldNotReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(asList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1"),
             Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2")
@@ -243,7 +252,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildChangeAddressUpdateActions_WithSameAddresses_ShouldNotReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(asList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1").withPostalCode("123"),
             Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2").withBuilding("no 1")
@@ -269,7 +278,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildChangeAddressUpdateActions_WithDifferentAddressesData_ShouldReturnChangeAddressActions() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(asList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1").withPostalCode("321"),
             Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2").withBuilding("no 2")
@@ -303,7 +312,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildChangeAddressUpdateActions_WithNullAddresses_ShouldNotReturnChangeAddressActions() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
         ));
@@ -321,7 +330,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildChangeAddressUpdateActions_WithAddressesWithoutKeys_ShouldNotReturnChangeAddressActions() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
         ));
@@ -340,7 +349,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildAddAddressUpdateActions_WithoutNewAddresses_ShouldNotReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(asList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1"),
             Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2")
@@ -359,7 +368,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildAddAddressUpdateActions_WithEmptyNewAddresses_ShouldNotReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(asList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1"),
             Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2")
@@ -378,7 +387,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildAddAddressUpdateActions_WithSameAddresses_ShouldNotReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(asList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1").withPostalCode("123"),
             Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2").withBuilding("no 1")
@@ -404,7 +413,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildAddAddressUpdateActions_WithNewAddresses_ShouldReturnAddAddressActions() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(asList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1").withPostalCode("123"),
             Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2").withBuilding("no 1")
@@ -438,7 +447,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildAddAddressUpdateActions_WithNullAddresses_ShouldNotReturnAddAddressActions() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(asList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1"),
             Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2")
@@ -457,7 +466,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildAddAddressUpdateActions_WithAddressesWithoutKeys_ShouldNotReturnAddAddressActions() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(asList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1"),
             Address.of(CountryCode.DE).withId("address-id-2")
@@ -477,7 +486,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildSetDefaultShippingAddressUpdateAction_WithSameDefaultShippingAddress_ShouldNotReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(asList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1"),
             Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2")
@@ -502,7 +511,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildSetDefaultShippingAddressUpdateAction_WithDifferentDefaultShippingAddress_ShouldReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(asList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1"),
             Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2")
@@ -529,7 +538,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildSetDefaultShippingAddressUpdateAction_WithoutDefaultShippingAddress_ShouldReturnUnsetAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(asList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1"),
             Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2")
@@ -557,7 +566,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildSetDefaultBillingAddressUpdateAction_WithSameDefaultBillingAddress_ShouldNotReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(asList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1"),
             Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2")
@@ -582,7 +591,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildSetDefaultBillingAddressUpdateAction_WithDifferentDefaultBillingAddress_ShouldReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(asList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1"),
             Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2")
@@ -609,7 +618,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildSetDefaultBillingAddressUpdateAction_WithoutDefaultBillingAddress_ShouldReturnUnsetAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(asList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1"),
             Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2")
@@ -637,7 +646,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildAddShippingAddressUpdateActions_WithoutNewShippingAddresses_ShouldNotReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
         ));
@@ -658,7 +667,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildAddShippingAddressUpdateActions_WithEmptyShippingAddresses_ShouldNotReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
         ));
@@ -679,7 +688,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildAddShippingAddressUpdateActions_WithSameShippingAddresses_ShouldNotReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
         ));
@@ -703,7 +712,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildAddShippingAddressUpdateActions_WithNewShippingAddresses_ShouldReturnAddShippingAddressActions() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(asList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1").withPostalCode("123"),
             Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2").withBuilding("no 1")
@@ -735,7 +744,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildAddShippingAddressUpdateActions_WithShippingAddressIdLessThanZero_ShouldThrowIllegalArgumentException() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
         ));
@@ -758,7 +767,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildAddShippingAddressUpdateActions_InOutBoundOfTheExistingIndexes_ShouldThrowIllegalArgumentException() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
         ));
@@ -781,7 +790,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildAddShippingAddressUpdateActions_InWithNullAddress_ShouldThrowIllegalArgumentException() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
         ));
@@ -802,7 +811,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildAddShippingAddressUpdateActions_InWithBlankKey_ShouldThrowIllegalArgumentException() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
         ));
@@ -825,7 +834,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildRemoveShippingAddressUpdateActions_WithEmptyOldShippingAddresses_ShouldNotReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
         ));
@@ -844,7 +853,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildRemoveShippingAddressUpdateActions_WitNullOldShippingAddresses_ShouldNotReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
         ));
@@ -863,7 +872,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildRemoveShippingAddressUpdateActions_WithEmptyNewShippingAddresses_ShouldReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
         ));
@@ -887,7 +896,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildRemoveShippingAddressUpdateActions_WithNullNewShippingAddresses_ShouldReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
         ));
@@ -911,7 +920,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildRemoveShippingAddressUpdateActions_WithSameShippingAddresses_ShouldNotReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
         ));
@@ -935,7 +944,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildRemoveShippingAddressUpdateActions_WithLessShippingAddresses_ShouldReturnRemoveShippingAddressActions() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(asList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1"),
             Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2")
@@ -962,7 +971,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildAddBillingAddressUpdateActions_WithoutNewBillingAddresses_ShouldNotReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
         ));
@@ -983,7 +992,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildAddBillingAddressUpdateActions_WithEmptyBillingAddresses_ShouldNotReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
         ));
@@ -1004,7 +1013,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildAddBillingAddressUpdateActions_WithSameBillingAddresses_ShouldNotReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
         ));
@@ -1028,7 +1037,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildAddBillingAddressUpdateActions_WithNewBillingAddresses_ShouldReturnAddBillingAddressActions() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(asList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1").withPostalCode("123"),
             Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2").withBuilding("no 1")
@@ -1060,7 +1069,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildAddBillingAddressUpdateActions_WithShippingAddressIdLessThanZero_ShouldThrowIllegalArgumentException() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
         ));
@@ -1083,7 +1092,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildAddBillingAddressUpdateActions_InOutBoundOfTheExistingIndexes_ShouldThrowIllegalArgumentException() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
         ));
@@ -1106,7 +1115,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildAddBillingAddressUpdateActions_InWithNullAddress_ShouldThrowIllegalArgumentException() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
         ));
@@ -1127,7 +1136,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildAddBillingAddressUpdateActions_InWithBlankKey_ShouldThrowIllegalArgumentException() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
         ));
@@ -1150,7 +1159,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildRemoveBillingAddressUpdateActions_WithEmptyOldBillingAddresses_ShouldNotReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
         ));
@@ -1169,7 +1178,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildRemoveBillingAddressUpdateActions_WitNullOldBillingAddresses_ShouldNotReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
         ));
@@ -1188,7 +1197,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildRemoveBillingAddressUpdateActions_WithEmptyNewBillingAddresses_ShouldReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
         ));
@@ -1212,7 +1221,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildRemoveBillingAddressUpdateActions_WithNullNewBillingAddresses_ShouldReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
         ));
@@ -1236,7 +1245,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildRemoveBillingAddressUpdateActions_WithSameBillingAddresses_ShouldNotReturnAction() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
         ));
@@ -1260,7 +1269,7 @@ class AddressUpdateActionUtilsTest {
 
     @Test
     void buildRemoveBillingAddressUpdateActions_WithLessBillingAddresses_ShouldReturnRemoveBillingAddressActions() {
-        final Customer oldCustomer = mock(Customer.class);
+
         when(oldCustomer.getAddresses()).thenReturn(asList(
             Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1"),
             Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2")
