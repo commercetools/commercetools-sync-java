@@ -693,8 +693,8 @@ public final class CustomerUpdateActionUtils {
 
     /**
      * Compares the {@link Customer#getDefaultShippingAddress()} and {@link CustomerDraft#getDefaultShippingAddress()}.
-     * If they are different - return {@link SetDefaultShippingAddressWithKey} update action. If the old shipping address
-     * id value is set, but the new one is empty - the command will unset the default shipping address.
+     * If they are different - return {@link SetDefaultShippingAddressWithKey} update action. If the old shipping
+     * address is set, but the new one is empty - the command will unset the default shipping address.
      *
      * @param oldCustomer the customer that should be updated.
      * @param newCustomer the customer draft with new default shipping address.
