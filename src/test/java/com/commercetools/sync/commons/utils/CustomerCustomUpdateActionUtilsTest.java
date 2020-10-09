@@ -9,10 +9,9 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.commands.updateactions.SetCustomField;
 import io.sphere.sdk.customers.commands.updateactions.SetCustomType;
-import org.junit.jupiter.api.Test;
-
 import java.util.HashMap;
 import java.util.UUID;
+import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.commons.asserts.actions.AssertionsForUpdateActions.assertThat;
 import static io.sphere.sdk.models.ResourceIdentifier.ofId;
@@ -28,7 +27,7 @@ class CustomerCustomUpdateActionUtilsTest {
 
         final UpdateAction<Customer> updateAction =
             GenericUpdateActionUtils.buildTypedSetCustomTypeUpdateAction(newCustomTypeId, new HashMap<>(),
-                mock(Customer.class), new CustomerCustomActionBuilder(), null, Customer::getId,
+                mock(Customer.class), CustomerCustomActionBuilder.of(), null, Customer::getId,
                 customerResource -> customerResource.toReference().getTypeId(), customerResource -> null,
                 CustomerSyncOptionsBuilder.of(mock(SphereClient.class)).build()).orElse(null);
 
@@ -39,7 +38,7 @@ class CustomerCustomUpdateActionUtilsTest {
     @Test
     void buildRemoveCustomTypeAction_WithCustomerResource_ShouldBuildCustomerUpdateAction() {
         final UpdateAction<Customer> updateAction =
-            new CustomerCustomActionBuilder().buildRemoveCustomTypeAction(null, null);
+            CustomerCustomActionBuilder.of().buildRemoveCustomTypeAction(null, null);
 
         assertThat(updateAction).isInstanceOf(SetCustomType.class);
         assertThat((SetCustomType) updateAction).hasValues("setCustomType", null, ofId(null));
@@ -50,7 +49,7 @@ class CustomerCustomUpdateActionUtilsTest {
         final JsonNode customFieldValue = JsonNodeFactory.instance.textNode("foo");
         final String customFieldName = "name";
 
-        final UpdateAction<Customer> updateAction = new CustomerCustomActionBuilder()
+        final UpdateAction<Customer> updateAction = CustomerCustomActionBuilder.of()
             .buildSetCustomFieldAction(null, null, customFieldName, customFieldValue);
 
         assertThat(updateAction).isInstanceOf(SetCustomField.class);
