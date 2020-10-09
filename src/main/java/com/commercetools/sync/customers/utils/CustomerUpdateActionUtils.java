@@ -457,14 +457,14 @@ public final class CustomerUpdateActionUtils {
     }
 
     /**
-     * Compares the stores of a {@link Customer} and a {@link CustomerDraft}. It returns a {@link List} of
-     * {@link UpdateAction}&lt;{@link Customer}&gt; as a result. If no update action is needed, for example in
-     * case where both the {@link Customer} and the {@link CustomerDraft} have the identical stores, an empty
+     * Compares the addresses of a {@link Customer} and a {@link CustomerDraft}. It returns a {@link List} of
+     * {@link UpdateAction}&lt;{@link Customer}&gt; as a result. If both the {@link Customer} and the
+     * {@link CustomerDraft} have the same set of addresses, then no update actions are needed and hence an empty
      * {@link List} is returned.
      *
      * @param oldCustomer the customer which should be updated.
      * @param newCustomer the customer draft where we get the new data.
-     * @return A list of customer store-related update actions.
+     * @return A list of customer address-related update actions.
      */
     @Nonnull
     public static List<UpdateAction<Customer>> buildAllAddressUpdateActions(
