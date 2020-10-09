@@ -60,6 +60,9 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public final class CustomerUpdateActionUtils {
 
+    private CustomerUpdateActionUtils() {
+    }
+
     /**
      * Compares the {@code email} values of a {@link Customer} and a {@link CustomerDraft}
      * and returns an {@link Optional} of update action, which would contain the {@code "changeEmail"}
