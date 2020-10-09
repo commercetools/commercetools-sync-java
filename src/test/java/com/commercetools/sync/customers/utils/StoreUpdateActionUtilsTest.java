@@ -10,9 +10,8 @@ import io.sphere.sdk.customers.commands.updateactions.SetStores;
 import io.sphere.sdk.models.KeyReference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.stores.Store;
-import org.junit.jupiter.api.Test;
-
 import java.util.List;
+import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildStoreUpdateActions;
 import static java.util.Arrays.asList;
