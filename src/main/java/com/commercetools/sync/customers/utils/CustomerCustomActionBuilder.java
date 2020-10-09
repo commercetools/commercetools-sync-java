@@ -11,7 +11,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Map;
 
-public class CustomerCustomActionBuilder implements GenericCustomActionBuilder<Customer> {
+public final class CustomerCustomActionBuilder implements GenericCustomActionBuilder<Customer> {
 
     private static final CustomerCustomActionBuilder builder = new CustomerCustomActionBuilder();
 
