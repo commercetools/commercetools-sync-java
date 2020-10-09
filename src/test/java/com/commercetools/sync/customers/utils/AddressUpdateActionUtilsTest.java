@@ -15,10 +15,13 @@ import io.sphere.sdk.customers.commands.updateactions.RemoveAddress;
 import io.sphere.sdk.customers.commands.updateactions.RemoveBillingAddressId;
 import io.sphere.sdk.customers.commands.updateactions.RemoveShippingAddressId;
 import io.sphere.sdk.models.Address;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildAddAddressUpdateActions;
@@ -48,7 +51,7 @@ class AddressUpdateActionUtilsTest {
     void setup() {
         oldCustomer = mock(Customer.class);
     }
-    
+
     @Test
     void buildAllAddressUpdateActions_WithDifferentAddresses_ShouldReturnAddressAction() {
 
@@ -115,6 +118,39 @@ class AddressUpdateActionUtilsTest {
     }
 
     @Test
+    void buildAllAddressUpdateActions_withCollectAndFilterRemoveShippingAndBillingActions_ShouldReturnAddressActions() {
+        // preparation
+        when(oldCustomer.getAddresses()).thenReturn(asList(
+            Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1").withBuilding("no 1"),
+            Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2").withBuilding("no 2")
+        ));
+        when(oldCustomer.getDefaultShippingAddress())
+            .thenReturn(Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2"));
+        when(oldCustomer.getDefaultBillingAddress())
+            .thenReturn(Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1"));
+
+        final Address address3 = Address.of(CountryCode.DE)
+                                        .withKey("address-key-3")
+                                        .withId("address-id-new-3");
+        final CustomerDraft newCustomer =
+            CustomerDraftBuilder.of("email", "pass")
+                                .addresses(asList(address3))
+                                .defaultShippingAddress(0)
+                                .defaultBillingAddress(0)
+                                .build();
+        // test
+        final List<UpdateAction<Customer>> updateActions =
+            buildAllAddressUpdateActions(oldCustomer, newCustomer);
+        // assertions
+        assertThat(updateActions).containsExactly(
+            RemoveAddress.of("address-id-1"),
+            RemoveAddress.of("address-id-2"),
+            AddAddress.of(address3),
+            SetDefaultShippingAddressWithKey.of("address-key-3"),
+            SetDefaultBillingAddressWithKey.of("address-key-3"));
+    }
+
+    @Test
     void buildRemoveAddressUpdateActions_WithoutOldAddresses_ShouldNotReturnAction() {
 
         when(oldCustomer.getAddresses()).thenReturn(emptyList());
@@ -128,6 +164,23 @@ class AddressUpdateActionUtilsTest {
             buildRemoveAddressUpdateActions(oldCustomer, newCustomer);
 
         assertThat(updateActions).isEmpty();
+    }
+
+    @Test
+    void buildRemoveAddressUpdateActions_WithEmptyAddressKey_ShouldReturnAction() {
+        // preparation
+        when(oldCustomer.getAddresses()).thenReturn(singletonList(
+            Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1").withBuilding("no 1")));
+        final CustomerDraft newCustomer =
+            CustomerDraftBuilder.of("email", "pass")
+                                .addresses(singletonList(Address.of(CountryCode.DE).withKey("")))
+                                .build();
+        // test
+        final List<UpdateAction<Customer>> updateActions =
+            buildRemoveAddressUpdateActions(oldCustomer, newCustomer);
+
+        // assertions
+        assertThat(updateActions).containsExactly(RemoveAddress.of("address-id-1"));
     }
 
     @Test
@@ -485,6 +538,26 @@ class AddressUpdateActionUtilsTest {
     }
 
     @Test
+    void buildAddAddressUpdateActions_WithEmptyAddressKey_ShouldNotReturnAction() {
+        // preparation
+        final Address address1 = Address.of(CountryCode.DE)
+                                        .withKey("address-key-1")
+                                        .withBuilding("no 1")
+                                        .withId("address-id-1");
+        when(oldCustomer.getAddresses()).thenReturn(Collections.singletonList(address1));
+        final CustomerDraft newCustomer =
+            CustomerDraftBuilder.of("email", "pass")
+                                .addresses(singletonList(Address.of(CountryCode.DE).withKey("")))
+                                .build();
+        // test
+        final List<UpdateAction<Customer>> updateActions =
+            buildAddAddressUpdateActions(oldCustomer, newCustomer);
+
+        // assertions
+        assertThat(updateActions).isEmpty();
+    }
+
+    @Test
     void buildSetDefaultShippingAddressUpdateAction_WithSameDefaultShippingAddress_ShouldNotReturnAction() {
 
         when(oldCustomer.getAddresses()).thenReturn(asList(
@@ -531,6 +604,29 @@ class AddressUpdateActionUtilsTest {
         final Optional<UpdateAction<Customer>> customerUpdateAction =
             buildSetDefaultShippingAddressUpdateAction(oldCustomer, newCustomer);
 
+        assertThat(customerUpdateAction)
+            .isPresent()
+            .contains(SetDefaultShippingAddressWithKey.of("address-key-2"));
+    }
+
+    @Test
+    void buildSetDefaultShippingAddressUpdateAction_WithNoExistingShippingAddress_ShouldReturnAction() {
+        // preparation
+        when(oldCustomer.getAddresses()).thenReturn(emptyList());
+        when(oldCustomer.getDefaultShippingAddress()).thenReturn(null);
+        final CustomerDraft newCustomer =
+            CustomerDraftBuilder.of("email", "pass")
+                                .addresses(asList(
+                                    Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1"),
+                                    Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2")
+                                ))
+                                .defaultShippingAddress(1)
+                                .build();
+        // test
+        final Optional<UpdateAction<Customer>> customerUpdateAction =
+            buildSetDefaultShippingAddressUpdateAction(oldCustomer, newCustomer);
+
+        // assertions
         assertThat(customerUpdateAction)
             .isPresent()
             .contains(SetDefaultShippingAddressWithKey.of("address-key-2"));
@@ -645,6 +741,29 @@ class AddressUpdateActionUtilsTest {
     }
 
     @Test
+    void buildSetDefaultBillingAddressUpdateAction_WithNoExistingBillingAddress_ShouldReturnAction() {
+        // preparation
+        when(oldCustomer.getAddresses()).thenReturn(emptyList());
+        when(oldCustomer.getDefaultBillingAddress()).thenReturn(null);
+        final CustomerDraft newCustomer =
+            CustomerDraftBuilder.of("email", "pass")
+                                .addresses(asList(
+                                    Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1"),
+                                    Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2")
+                                ))
+                                .defaultBillingAddress(1)
+                                .build();
+        // test
+        final Optional<UpdateAction<Customer>> customerUpdateAction =
+            buildSetDefaultBillingAddressUpdateAction(oldCustomer, newCustomer);
+
+        // assertions
+        assertThat(customerUpdateAction)
+            .isPresent()
+            .contains(SetDefaultBillingAddressWithKey.of("address-key-2"));
+    }
+
+    @Test
     void buildAddShippingAddressUpdateActions_WithoutNewShippingAddresses_ShouldNotReturnAction() {
 
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
@@ -709,6 +828,38 @@ class AddressUpdateActionUtilsTest {
 
         assertThat(updateActions).isEmpty();
     }
+
+    @Test
+    void buildAddShippingAddressUpdateActions_WithEmptyAddressKey_ShouldReturnAction() {
+        // preparation
+        when(oldCustomer.getAddresses()).thenReturn(asList(
+            Address.of(CountryCode.DE).withKey("").withId("address-id-1").withPostalCode("123"),
+            Address.of(CountryCode.DE).withKey("").withId("address-id-2").withBuilding("no 1")
+        ));
+        when(oldCustomer.getShippingAddresses())
+            .thenReturn(singletonList(Address.of(CountryCode.DE).withKey("").withId("address-id-1")));
+
+        final Address address1 = Address.of(CountryCode.DE)
+                                        .withKey("address-key-1")
+                                        .withPostalCode("123")
+                                        .withId("address-id-new-1");
+
+        final Address address2 = Address.of(CountryCode.DE)
+                                        .withKey("address-key-2")
+                                        .withBuilding("no 2")
+                                        .withId("address-id-new-2");
+
+        final CustomerDraft newCustomer =
+            CustomerDraftBuilder.of("email", "pass")
+                                .addresses(asList(address1, address2))
+                                .shippingAddresses(singletonList(1))
+                                .build();
+        // test
+        final List<UpdateAction<Customer>> updateActions =
+            buildAddShippingAddressUpdateActions(oldCustomer, newCustomer);
+
+        // assertions
+        assertThat(updateActions).containsExactly(AddShippingAddressIdWithKey.of("address-key-2"));    }
 
     @Test
     void buildAddShippingAddressUpdateActions_WithNewShippingAddresses_ShouldReturnAddShippingAddressActions() {
@@ -786,6 +937,50 @@ class AddressUpdateActionUtilsTest {
         assertThatThrownBy(() -> buildAddShippingAddressUpdateActions(oldCustomer, newCustomer))
             .isExactlyInstanceOf(IllegalArgumentException.class)
             .hasMessage(format("Addresses list does not contain an address at the index: %s", 2));
+    }
+
+    @Test
+    void buildAddShippingAddressUpdateActions_WithAddressListSizeNull_ShouldThrowIllegalArgumentException() {
+
+        when(oldCustomer.getAddresses()).thenReturn(singletonList(
+            Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
+        ));
+        when(oldCustomer.getShippingAddresses())
+            .thenReturn(singletonList(Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")));
+
+        final CustomerDraft newCustomer =
+            CustomerDraftBuilder
+                .of("email", "pass")
+                .addresses(null)
+                .shippingAddresses(singletonList(0))
+                .build();
+
+        assertThatThrownBy(() -> buildAddShippingAddressUpdateActions(oldCustomer, newCustomer))
+            .isExactlyInstanceOf(IllegalArgumentException.class)
+            .hasMessage(format("Addresses list does not contain an address at the index: %s", 0));
+    }
+
+    @Test
+    void buildAddShippingAddressUpdateActions_WithIndexBiggerThanListSize_ShouldThrowIllegalArgumentException() {
+
+        when(oldCustomer.getAddresses()).thenReturn(singletonList(
+            Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
+        ));
+        when(oldCustomer.getShippingAddresses())
+            .thenReturn(singletonList(Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")));
+
+        final CustomerDraft newCustomer =
+            CustomerDraftBuilder
+                .of("email", "pass")
+                .addresses(singletonList(
+                    Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
+                ))
+                .shippingAddresses(singletonList(3))
+                .build();
+
+        assertThatThrownBy(() -> buildAddShippingAddressUpdateActions(oldCustomer, newCustomer))
+            .isExactlyInstanceOf(IllegalArgumentException.class)
+            .hasMessage(format("Addresses list does not contain an address at the index: %s", 3));
     }
 
     @Test
