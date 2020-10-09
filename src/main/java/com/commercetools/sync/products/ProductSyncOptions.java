@@ -18,7 +18,7 @@ import java.util.function.Function;
 
 import static java.util.Optional.ofNullable;
 
-public final class ProductSyncOptions extends BaseSyncOptions<Product, ProductDraft> {
+public class ProductSyncOptions extends BaseSyncOptions<Product, ProductDraft> {
     private final SyncFilter syncFilter; // which attributes to calculate update actions to black list or white list
     private final boolean ensurePriceChannels;
 

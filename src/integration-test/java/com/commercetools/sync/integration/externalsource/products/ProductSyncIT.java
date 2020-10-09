@@ -4,7 +4,7 @@ import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
-import com.commercetools.sync.products.ProductSyncOptionsBuilder;
+import com.commercetools.sync.products.ProductSyncOptionsWithUndecoratedClientBuilder;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.categories.Category;
@@ -164,8 +164,7 @@ class ProductSyncIT {
     private ProductSyncOptions buildSyncOptions() {
         final TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>> warningCallBack =
             (exception, newResource, oldResource) -> warningCallBackMessages.add(exception.getMessage());
-
-        return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+        return ProductSyncOptionsWithUndecoratedClientBuilder.of(CTP_TARGET_CLIENT)
                                         .errorCallback((exception, oldResource, newResource, updateActions)
                                             -> collectErrors(exception.getMessage(), exception.getCause()))
                                         .warningCallback(warningCallBack)
@@ -218,7 +217,7 @@ class ProductSyncIT {
                 = (exception, newResource, oldResource) -> warningCallBackMessages.add(exception.getMessage());
 
 
-        ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+        ProductSyncOptions syncOptions = ProductSyncOptionsWithUndecoratedClientBuilder.of(CTP_TARGET_CLIENT)
                 .errorCallback((exception, oldResource, newResource, actions)
                     -> collectErrors(exception.getMessage(), exception.getCause()))
                 .warningCallback(warningCallBack)
@@ -252,7 +251,7 @@ class ProductSyncIT {
                 .build();
 
         final String keyPrefix = "callback_";
-        final ProductSyncOptions options = ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+        final ProductSyncOptions options = ProductSyncOptionsWithUndecoratedClientBuilder.of(CTP_TARGET_CLIENT)
                 .errorCallback((exception, oldResource, newResource, updateActions)
                     -> collectErrors(exception.getMessage(), exception.getCause()))
                 .warningCallback((exception, oldResource, newResource)
@@ -376,7 +375,7 @@ class ProductSyncIT {
         // preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdate();
 
-        final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder
+        final ProductSyncOptions spyOptions = ProductSyncOptionsWithUndecoratedClientBuilder
             .of(spyClient)
             .errorCallback((exception, oldResource, newResource, updateActions)
                 -> collectErrors(exception.getMessage(), exception.getCause()))
@@ -417,7 +416,7 @@ class ProductSyncIT {
         // preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
 
-        final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder
+        final ProductSyncOptions spyOptions = ProductSyncOptionsWithUndecoratedClientBuilder
             .of(spyClient)
             .errorCallback((exception, oldResource, newResource, updateActions)
                 -> collectErrors(exception.getMessage(), exception.getCause()))
@@ -468,7 +467,7 @@ class ProductSyncIT {
         // preparation
         final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
 
-        final ProductSyncOptions spyOptions = ProductSyncOptionsBuilder
+        final ProductSyncOptions spyOptions = ProductSyncOptionsWithUndecoratedClientBuilder
             .of(spyClient)
             .errorCallback((exception, oldResource, newResource, updateActions)
                 -> collectErrors(exception.getMessage(), exception.getCause()))
@@ -851,7 +850,7 @@ class ProductSyncIT {
         final TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>> warningCallBack =
             (exception, newResource, oldResource) -> warningCallBackMessages.add(exception.getMessage());
 
-        final ProductSyncOptions customOptions = ProductSyncOptionsBuilder
+        final ProductSyncOptions customOptions = ProductSyncOptionsWithUndecoratedClientBuilder
             .of(CTP_TARGET_CLIENT)
             .errorCallback((exception, oldResource, newResource, actions)
                 -> collectErrors(exception.getMessage(), exception.getCause()))

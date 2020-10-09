@@ -2,7 +2,7 @@ package com.commercetools.sync.integration.ctpprojectsource.products;
 
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
-import com.commercetools.sync.products.ProductSyncOptionsBuilder;
+import com.commercetools.sync.products.ProductSyncOptionsWithUndecoratedClientBuilder;
 import com.commercetools.sync.products.SyncFilter;
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -170,7 +170,7 @@ class ProductSyncIT {
     }
 
     private ProductSyncOptions buildSyncOptions() {
-        return ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+        return ProductSyncOptionsWithUndecoratedClientBuilder.of(CTP_TARGET_CLIENT)
                                         .errorCallback(
                                             (exception, oldResource, newResource, updateActions) -> errorCallback(
                                                 exception.getMessage(), exception.getCause()))
@@ -334,7 +334,7 @@ class ProductSyncIT {
         // Preparation
         // Create custom options with whitelisting and action filter callback..
         final ProductSyncOptions customSyncOptions =
-            ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+                ProductSyncOptionsWithUndecoratedClientBuilder.of(CTP_TARGET_CLIENT)
                                      .errorCallback((exception, oldResource, newResource, updateActions) ->
                                             errorCallback(exception.getMessage(), exception.getCause()))
                                      .warningCallback((exception, oldResource, newResources) ->
@@ -460,7 +460,7 @@ class ProductSyncIT {
         // Preparation
         // Create custom options with whitelisting and action filter callback..
         final ProductSyncOptions customSyncOptions =
-            ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+                ProductSyncOptionsWithUndecoratedClientBuilder.of(CTP_TARGET_CLIENT)
                                      .errorCallback((exception, oldResource, newResource, updateActions) ->
                                             errorCallback(exception.getMessage(), exception.getCause()))
                                      .warningCallback((exception, oldResource, newResources) ->
@@ -530,7 +530,7 @@ class ProductSyncIT {
         // Preparation
         // Create custom options with whitelisting and action filter callback..
         final ProductSyncOptions customSyncOptions =
-            ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+                ProductSyncOptionsWithUndecoratedClientBuilder.of(CTP_TARGET_CLIENT)
                                      .errorCallback((exception, newResource, oldResource, updateActions) -> {
                                          errorCallBackMessages.add(exception.getMessage());
                                          errorCallBackExceptions.add(exception.getCause());
