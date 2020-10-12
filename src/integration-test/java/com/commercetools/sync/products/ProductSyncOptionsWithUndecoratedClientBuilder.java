@@ -8,7 +8,9 @@ import io.sphere.sdk.products.ProductDraft;
 import javax.annotation.Nonnull;
 
 public final class ProductSyncOptionsWithUndecoratedClientBuilder
-    extends BaseSyncOptionsBuilder<ProductSyncOptionsWithUndecoratedClientBuilder, ProductSyncOptions, Product, ProductDraft> {
+    extends BaseSyncOptionsBuilder<ProductSyncOptionsWithUndecoratedClientBuilder,
+        ProductSyncOptions, Product, ProductDraft> {
+
     public static final int BATCH_SIZE_DEFAULT = 30;
     private SyncFilter syncFilter;
     static final boolean ENSURE_CHANNELS_DEFAULT = false;
