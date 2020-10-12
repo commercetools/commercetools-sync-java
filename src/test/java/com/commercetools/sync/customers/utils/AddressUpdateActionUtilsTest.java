@@ -115,38 +115,26 @@ class AddressUpdateActionUtilsTest {
         assertThat(updateActions).isEmpty();
     }
 
-    //TODO: still missing coverage
-    @Test
-    void buildAllAddressUpdateActions_withCollectAndFilterRemoveShippingAndBillingActions_ShouldReturnAddressActions() {
-        // preparation
-        when(oldCustomer.getAddresses()).thenReturn(asList(
-            Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1").withBuilding("no 1"),
-            Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2").withBuilding("no 2")
-        ));
-        when(oldCustomer.getDefaultShippingAddress())
-            .thenReturn(Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2"));
-        when(oldCustomer.getDefaultBillingAddress())
-            .thenReturn(Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1"));
+    //TODO: check if coverage is covered by this test case
 
-        final Address address3 = Address.of(CountryCode.DE)
-                                        .withKey("address-key-3")
-                                        .withId("address-id-new-3");
+    @Test
+    void buildAllAddressUpdateActions_withRemovedAddresses_ShouldFilterOutRemoveBillingAndShippingAddressIdActions() {
+        // preparation
+        when(oldCustomer.getAddresses()).thenReturn(singletonList(
+            Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1").withBuilding("no 1")
+        ));
+        when(oldCustomer.getBillingAddresses())
+            .thenReturn(singletonList(Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")));
+        when(oldCustomer.getShippingAddresses())
+            .thenReturn(singletonList(Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")));
         final CustomerDraft newCustomer =
             CustomerDraftBuilder.of("email", "pass")
-                                .addresses(singletonList(address3))
-                                .defaultShippingAddress(0)
-                                .defaultBillingAddress(0)
                                 .build();
         // test
         final List<UpdateAction<Customer>> updateActions =
             buildAllAddressUpdateActions(oldCustomer, newCustomer);
         // assertions
-        assertThat(updateActions).containsExactly(
-            RemoveAddress.of("address-id-1"),
-            RemoveAddress.of("address-id-2"),
-            AddAddress.of(address3),
-            SetDefaultShippingAddressWithKey.of("address-key-3"),
-            SetDefaultBillingAddressWithKey.of("address-key-3"));
+        assertThat(updateActions).containsExactly(RemoveAddress.of("address-id-1"));
     }
 
     @Test
@@ -1046,11 +1034,29 @@ class AddressUpdateActionUtilsTest {
         assertThat(updateActions).isEmpty();
     }
 
-    //TODO: add test for buildRemoveShippingAddressUpdateActions with empty key
+    //TODO: check if this test increases coverage
 
     @Test
-    void buildRemoveShippingAddressUpdateActions_WithBlankOldKey_ShouldNotReturnAction(){
+    void buildRemoveShippingAddressUpdateActions_WithBlankOldKey_ShouldReturnAction() {
+        // preparation
+        when(oldCustomer.getAddresses()).thenReturn(singletonList(
+            Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
+        ));
+        when(oldCustomer.getShippingAddresses()).thenReturn(
+            singletonList(Address.of(CountryCode.DE).withKey("")));
+        final CustomerDraft newCustomer =
+            CustomerDraftBuilder
+                .of("email", "pass")
+                .addresses(singletonList(
+                    Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
+                ))
+                .build();
+        // test
+        final List<UpdateAction<Customer>> updateActions =
+            buildRemoveShippingAddressUpdateActions(oldCustomer, newCustomer);
 
+        // assertions
+        assertThat(updateActions).containsExactly(RemoveShippingAddressId.of(null));
     }
 
     @Test
@@ -1502,10 +1508,28 @@ class AddressUpdateActionUtilsTest {
         assertThat(updateActions).isEmpty();
     }
 
-    //TODO: add test for removeBillingAddressUpdateActions_WithEmptyOldKey
+    //TODO: check if this test increases coverage
     @Test
-    void buildRemoveBillingAddressUpdateActions_WithEmptyOldKey_ShouldNotReturnAction(){
+    void buildRemoveBillingAddressUpdateActions_WithEmptyOldKey_ShouldNotReturnAction() {
+        // preparation
+        when(oldCustomer.getAddresses()).thenReturn(singletonList(
+            Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
+        ));
+        when(oldCustomer.getBillingAddresses()).thenReturn(
+            singletonList(Address.of(CountryCode.DE).withKey("")));
+        final CustomerDraft newCustomer =
+            CustomerDraftBuilder
+                .of("email", "pass")
+                .addresses(singletonList(
+                    Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")
+                ))
+                .build();
+        // test
+        final List<UpdateAction<Customer>> updateActions =
+            buildRemoveBillingAddressUpdateActions(oldCustomer, newCustomer);
 
+        // assertions
+        assertThat(updateActions).containsExactly(RemoveBillingAddressId.of(null));
     }
 
     @Test
