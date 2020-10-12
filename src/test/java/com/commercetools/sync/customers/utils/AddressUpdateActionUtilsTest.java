@@ -138,33 +138,6 @@ class AddressUpdateActionUtilsTest {
     }
 
     @Test
-    void buildAllAddressUpdateActions_withoutRemovedAddresses_ShouldNotFilter() {
-        // preparation
-        when(oldCustomer.getAddresses()).thenReturn(asList(
-            Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1"),
-            Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2")
-        ));
-        when(oldCustomer.getBillingAddresses())
-            .thenReturn(singletonList(Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1")));
-        when(oldCustomer.getShippingAddresses())
-            .thenReturn(singletonList(Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2")));
-
-        final Address address1 = Address.of(CountryCode.DE).withKey("address-key-1").withId("address-id-1");
-        final Address address2 = Address.of(CountryCode.DE).withKey("address-key-2").withId("address-id-2");
-        final CustomerDraft newCustomer =
-            CustomerDraftBuilder.of("email", "pass")
-                                .addresses(asList(address1, address2))
-                                .defaultBillingAddress(0)
-                                .defaultShippingAddress(1)
-                                .build();
-        // test
-        final List<UpdateAction<Customer>> updateActions =
-            buildAllAddressUpdateActions(oldCustomer, newCustomer);
-        // assertions
-        assertThat(updateActions).isEmpty();
-    }
-
-    @Test
     void buildRemoveAddressUpdateActions_WithoutOldAddresses_ShouldNotReturnAction() {
 
         when(oldCustomer.getAddresses()).thenReturn(emptyList());
