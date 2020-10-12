@@ -148,8 +148,6 @@ class ProductSyncTest {
 
         final SphereClient mockClient = mock(SphereClient.class);
 
-
-
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> exceptions = new ArrayList<>();
         final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder
