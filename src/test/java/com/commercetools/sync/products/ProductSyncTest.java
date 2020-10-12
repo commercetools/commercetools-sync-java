@@ -159,9 +159,8 @@ class ProductSyncTest {
                 .build();
 
         final ProductService productService = spy(new ProductServiceImpl(syncOptions));
-        CompletableFuture<Set<Product>> future = new CompletableFuture<>();
-        future.completeExceptionally(new CompletionException(new SphereException()));
-        when(productService.fetchMatchingProductsByKeys(anySet())).thenReturn(future);
+        when(productService.fetchMatchingProductsByKeys(anySet()))
+                .thenReturn(supplyAsync(() -> { throw new CompletionException( new SphereException()); }));
 
         final Map<String, String> keyToIds = new HashMap<>();
         keyToIds.put(productDraft.getKey(), UUID.randomUUID().toString());
