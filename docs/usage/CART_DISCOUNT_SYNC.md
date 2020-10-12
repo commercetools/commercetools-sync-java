@@ -11,6 +11,7 @@ against a [CartDiscountDraft](https://docs.commercetools.com/http-api-projects-c
 - [Usage](#usage)
   - [Sync list of cart discount drafts](#sync-list-of-cart-discount-drafts)
     - [Prerequisites](#prerequisites)
+    - [About SyncOptions](#about-syncoptions)
     - [Running the sync](#running-the-sync)
     - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)
   - [Build all update actions](#build-all-update-actions)
@@ -47,7 +48,88 @@ actual ids of the type reference, the `key` of the `Type` has to be supplied.
 final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder.of(sphereClient).build();
 ````
 
-[More information about Sync Options](SYNC_OPTIONS.md).
+#### About SyncOptions
+`SyncOptions` is an object which provides a place for users to add certain configurations to customize the sync process.
+Available configurations:
+
+##### 1. `errorCallback`
+A callback that is called whenever an error event occurs during the sync process. Each resource executes its own 
+error-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+following context about the error-event:
+
+* sync exception
+* cart discount draft from the source
+* cart discount of the target project (only provided if an existing cart discount could be found)
+* the update-actions, which failed (only provided if an existing cart discount could be found)
+
+##### Example 
+````java
+ final Logger logger = LoggerFactory.getLogger(CartDiscountSync.class);
+ final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
+         .of(sphereClient)
+         .errorCallback((syncException, draft, cartDiscount, updateActions) -> 
+            logger.error(new SyncException("My customized message"), syncException)).build();
+````
+    
+##### 2. `warningCallback`
+A callback that is called whenever a warning event occurs during the sync process. Each resource executes its own 
+warning-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+following context about the warning message:
+
+* sync exception
+* cart discount draft from the source 
+* cart discount of the target project (only provided if an existing cart discount could be found)
+
+##### Example 
+````java
+ final Logger logger = LoggerFactory.getLogger(CartDiscountSync.class);
+ final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
+         .of(sphereClient)
+         .warningCallback((syncException, draft, cartDiscount, updateActions) -> 
+            logger.warn(new SyncException("My customized message"), syncException)).build();
+````
+
+##### 3. `beforeUpdateCallback`
+During the sync process if a target cart discount and a cart discount draft are matched, this callback can be used to 
+intercept the **_update_** request just before it is sent to commercetools platform. This allows the user to modify 
+update actions array with custom actions or discard unwanted actions. The callback provides the following information :
+ 
+ * cart discount draft from the source
+ * cart discount from the target project
+ * update actions that were calculated after comparing both
+
+##### Example
+````java
+final TriFunction<
+        List<UpdateAction<CartDiscount>>, CartDiscountDraft, CartDiscount, List<UpdateAction<CartDiscount>>> 
+            beforeUpdateCartDiscountCallback =
+            (updateActions, newCartDiscountDraft, oldCartDiscount) ->  updateActions.stream()
+                    .filter(updateAction -> !(updateAction instanceof ChangeCartPredicate))
+                    .collect(Collectors.toList());
+                        
+final CartDiscountSyncOptions cartDiscountSyncOptions = 
+        CartDiscountSyncOptionsBuilder.of(sphereClient).beforeUpdateCallback(beforeUpdateCartDiscountCallback).build();
+````
+
+##### 4. `beforeCreateCallback`
+During the sync process if a cart discount draft should be created, this callback can be used to intercept 
+the **_create_** request just before it is sent to commercetools platform.  It contains following information : 
+
+ * cart discount draft that should be created
+ 
+Please refer to [example in product sync document](PRODUCT_SYNC.md#example-set-publish-stage-if-category-references-of-given-product-draft-exists).
+
+##### 5. `batchSize`
+A number that could be used to set the batch size with which cart discounts are fetched and processed,
+as cart discounts are obtained from the target project on commercetools platform in batches for better performance. The 
+algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding cart discounts 
+from the target project on commecetools platform in a single request. Playing with this option can slightly improve or 
+reduce processing speed. If it is not set, the default batch size is 50 for cart discount sync.
+##### Example
+````java                         
+final CartDiscountSyncOptions cartDiscountSyncOptions = 
+         CartDiscountSyncOptionsBuilder.of(sphereClient).batchSize(30).build();
+````
 
 #### Running the sync
 After all the aforementioned points in the previous section have been fulfilled, to run the sync:
