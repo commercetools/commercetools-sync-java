@@ -115,6 +115,7 @@ class AddressUpdateActionUtilsTest {
         assertThat(updateActions).isEmpty();
     }
 
+    //TODO: still missing coverage
     @Test
     void buildAllAddressUpdateActions_withCollectAndFilterRemoveShippingAndBillingActions_ShouldReturnAddressActions() {
         // preparation
@@ -1045,6 +1046,13 @@ class AddressUpdateActionUtilsTest {
         assertThat(updateActions).isEmpty();
     }
 
+    //TODO: add test for buildRemoveShippingAddressUpdateActions with empty key
+
+    @Test
+    void buildRemoveShippingAddressUpdateActions_WithBlankOldKey_ShouldNotReturnAction(){
+
+    }
+
     @Test
     void buildRemoveShippingAddressUpdateActions_WitNullOldShippingAddresses_ShouldNotReturnAction() {
 
@@ -1262,6 +1270,39 @@ class AddressUpdateActionUtilsTest {
     }
 
     @Test
+    void buildAddBillingAddressUpdateActions_WithEmptyAddressKey_ShouldReturnAction() {
+        // preparation
+        when(oldCustomer.getAddresses()).thenReturn(asList(
+            Address.of(CountryCode.DE).withKey("").withId("address-id-1").withPostalCode("123"),
+            Address.of(CountryCode.DE).withKey("").withId("address-id-2").withBuilding("no 1")
+        ));
+        when(oldCustomer.getBillingAddresses())
+            .thenReturn(singletonList(Address.of(CountryCode.DE).withKey("").withId("address-id-1")));
+
+        final Address address1 = Address.of(CountryCode.DE)
+                                        .withKey("address-key-1")
+                                        .withPostalCode("123")
+                                        .withId("address-id-new-1");
+
+        final Address address2 = Address.of(CountryCode.DE)
+                                        .withKey("address-key-2")
+                                        .withBuilding("no 2")
+                                        .withId("address-id-new-2");
+
+        final CustomerDraft newCustomer =
+            CustomerDraftBuilder.of("email", "pass")
+                                .addresses(asList(address1, address2))
+                                .billingAddresses(singletonList(1))
+                                .build();
+        // test
+        final List<UpdateAction<Customer>> updateActions =
+            buildAddBillingAddressUpdateActions(oldCustomer, newCustomer);
+
+        // assertions
+        assertThat(updateActions).containsExactly(AddBillingAddressIdWithKey.of("address-key-2"));
+    }
+
+    @Test
     void buildAddBillingAddressUpdateActions_WithShippingAddressIdLessThanZero_ShouldThrowIllegalArgumentException() {
 
         when(oldCustomer.getAddresses()).thenReturn(singletonList(
@@ -1459,6 +1500,12 @@ class AddressUpdateActionUtilsTest {
             buildRemoveBillingAddressUpdateActions(oldCustomer, newCustomer);
 
         assertThat(updateActions).isEmpty();
+    }
+
+    //TODO: add test for removeBillingAddressUpdateActions_WithEmptyOldKey
+    @Test
+    void buildRemoveBillingAddressUpdateActions_WithEmptyOldKey_ShouldNotReturnAction(){
+
     }
 
     @Test
