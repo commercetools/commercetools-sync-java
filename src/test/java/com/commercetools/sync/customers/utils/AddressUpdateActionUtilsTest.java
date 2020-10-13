@@ -115,8 +115,6 @@ class AddressUpdateActionUtilsTest {
         assertThat(updateActions).isEmpty();
     }
 
-    //TODO: check if coverage is covered by this test case
-
     @Test
     void buildAllAddressUpdateActions_withRemovedAddresses_ShouldFilterOutRemoveBillingAndShippingAddressIdActions() {
         // preparation
@@ -1034,8 +1032,6 @@ class AddressUpdateActionUtilsTest {
         assertThat(updateActions).isEmpty();
     }
 
-    //TODO: check if this test increases coverage
-
     @Test
     void buildRemoveShippingAddressUpdateActions_WithBlankOldKey_ShouldReturnAction() {
         // preparation
@@ -1569,7 +1565,6 @@ class AddressUpdateActionUtilsTest {
         assertThat(updateActions).isEmpty();
     }
 
-    //TODO: check if this test increases coverage
     @Test
     void buildRemoveBillingAddressUpdateActions_WithEmptyOldKey_ShouldNotReturnAction() {
         // preparation
