@@ -150,14 +150,6 @@ public class CustomerSync extends BaseSync<CustomerDraft, CustomerSyncStatistics
             });
     }
 
-    /**
-     * Given a set of customer drafts, attempts to sync the drafts with the existing customers in the CTP
-     * project. The customer and the draft are considered to match if they have the same key.
-     *
-     * @param oldCustomers old customers.
-     * @param newCustomerDrafts drafts that need to be synced.
-     * @return a {@link CompletionStage} which contains an empty result after execution of the update
-     */
     @Nonnull
     private CompletionStage<Void> syncBatch(
         @Nonnull final Set<Customer> oldCustomers,
@@ -290,14 +282,6 @@ public class CustomerSync extends BaseSync<CustomerDraft, CustomerSyncStatistics
             .orElseGet(() -> CompletableFuture.completedFuture(null));
     }
 
-    /**
-     * Given a {@link String} {@code errorMessage} and a {@link Throwable} {@code exception}, this method calls the
-     * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
-     * incrementing the total number of failed customer to sync with the supplied {@code failedTimes}.
-     *
-     * @param syncException The exception that  caused the failure.
-     * @param failedTimes  The number of times that the failed customers counter is incremented.
-     */
     private void handleError(@Nonnull final SyncException syncException,
                              final int failedTimes) {
         syncOptions.applyErrorCallback(syncException);
