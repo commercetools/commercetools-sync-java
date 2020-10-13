@@ -22,7 +22,7 @@
    **Critical Bug Fixes** (n) 🔥 
    **Bug Fixes** (n)🐞
    - **Category Sync** - Sync now supports product variant images syncing. [#114](https://github.com/commercetools/commercetools-sync-java/issues/114)
-   - **Build Tools** - Convenient handeling of env vars for integration tests.
+   - **Build Tools** - Convenient handling of env vars for integration tests.
 
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 

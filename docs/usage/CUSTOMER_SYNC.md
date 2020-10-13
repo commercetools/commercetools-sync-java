@@ -26,11 +26,10 @@ target CTP project. The customers in the target project need to have the `key` f
 matched.
 
 2. To sync customer address data, every customer [Address](https://docs.commercetools.com/api/types#address) needs a 
-unique key. 
+unique key to match the existing `Address` with the new Address. 
 
 3. Every customer may have a reference to their [CustomerGroup](https://docs.commercetools.com/api/projects/customerGroups#customergroup) 
 and/or the [Type](https://docs.commercetools.com/api/projects/customers#set-custom-type) of their custom fields. 
-Types match by their `key`.
 The `CustomerGroup` and `Type` references should be expanded with a key.
 Any reference that is not expanded will have its id in place and not replaced by the key will be considered as existing 
 resources on the target commercetools project and the library will issue an update/create an API request without reference
@@ -98,5 +97,5 @@ More examples of those utils for different cart discounts can be found [here](TO
 
 
 ##Caveats
-Customer passwords are not being synced by the customer sync.
+Customer passwords are not being synced.
 
