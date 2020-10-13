@@ -34,6 +34,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -223,15 +224,25 @@ class ProductServiceImplIT {
                 .build();
         final ProductService spyProductService = new ProductServiceImpl(productSyncOptions);
 
+        final ProductDraft productDraft1 = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
+            productType.toReference())
+            .categories(emptyList())
+            .taxCategory(null)
+            .state(null)
+            .categoryOrderHints(null)
+            .build();
+        Product product2 =
+            CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft1)).toCompletableFuture().join();
 
-        Map<String, String> cache = spyProductService.cacheKeysToIds(singleton(product.getKey()))
-                                                     .toCompletableFuture().join();
-        assertThat(cache).hasSize(1);
+        Set<String> keys = Arrays.asList(product.getKey(), product2.getKey()).stream().collect(Collectors.toSet());
+        Map<String, String> cache = spyProductService.cacheKeysToIds(keys).toCompletableFuture().join();
+        assertThat(cache).hasSize(2);
 
         // Attempt to cache same (already cached) key.
         cache = spyProductService.cacheKeysToIds(singleton(product.getKey()))
                                  .toCompletableFuture().join();
-        assertThat(cache).hasSize(1);
+        assertThat(cache).hasSize(2);
+        assertThat(cache).containsKeys(product.getKey(), product2.getKey());
 
         // verify only 1 request was made to fetch id the first time, but not second time since it's already in cache.
         verify(spyClient, times(1)).execute(any());

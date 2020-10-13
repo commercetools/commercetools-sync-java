@@ -2,6 +2,7 @@ package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.types.helpers.TypeGraphQlRequest;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
@@ -36,10 +37,7 @@ public final class TypeServiceImpl extends BaseServiceWithKey<TypeDraft, Type, B
     public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> typeKeys) {
 
         return cacheKeysToIds(
-            typeKeys, keysNotCached -> TypeQueryBuilder
-                .of()
-                .plusPredicates(typeQueryModel -> typeQueryModel.key().isIn(keysNotCached))
-                .build());
+            typeKeys, keysNotCached -> new TypeGraphQlRequest(keysNotCached));
     }
 
     @Nonnull

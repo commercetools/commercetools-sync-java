@@ -2,6 +2,7 @@ package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.states.StateSyncOptions;
+import com.commercetools.sync.states.helpers.StateGraphQlRequest;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateDraft;
@@ -39,10 +40,7 @@ public final class StateServiceImpl
 
         return cacheKeysToIds(
             keys,
-            keysNotCached -> StateQueryBuilder
-                .of()
-                .plusPredicates(queryModel -> queryModel.key().isIn(keysNotCached))
-                .build());
+            keysNotCached -> new StateGraphQlRequest(keysNotCached));
     }
 
     @Nonnull

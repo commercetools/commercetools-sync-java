@@ -1,9 +1,12 @@
 package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.commons.models.ResourceKeyId;
+import com.commercetools.sync.commons.helpers.BaseGraphQlResult;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
+import com.commercetools.sync.products.helpers.ProductGraphQlRequest;
 import com.commercetools.sync.services.ProductService;
 import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.SphereClient;
@@ -286,34 +289,34 @@ class BaseServiceImplTest {
     @Test
     void cacheKeysToIds_WithNoCachedKeys_ShouldMakeRequestAndReturnCachedEntry() {
         //preparation
-        final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
-        final Product mockProductResult = mock(Product.class);
+        final BaseGraphQlResult graphQlQueryResult = mock(BaseGraphQlResult.class);
+        final ResourceKeyId mockResourceKeyId = mock(ResourceKeyId.class);
         final String key = "testKey";
         final String id = "testId";
-        when(mockProductResult.getKey()).thenReturn(key);
-        when(mockProductResult.getId()).thenReturn(id);
-        when(pagedQueryResult.getResults()).thenReturn(singletonList(mockProductResult));
-        when(client.execute(any())).thenReturn(completedFuture(pagedQueryResult));
+        when(mockResourceKeyId.getKey()).thenReturn(key);
+        when(mockResourceKeyId.getId()).thenReturn(id);
+        when(graphQlQueryResult.getResults()).thenReturn(singleton(mockResourceKeyId));
+        when(client.execute(any())).thenReturn(completedFuture(graphQlQueryResult));
 
         //test
         final Map<String, String> optional = service.cacheKeysToIds(singleton("testKey")).toCompletableFuture().join();
 
         //assertions
         assertThat(optional).containsExactly(MapEntry.entry(key, id));
-        verify(client, times(1)).execute(any(ProductQuery.class));
+        verify(client, times(1)).execute(any(ProductGraphQlRequest.class));
     }
 
     @Test
     void cacheKeysToIds_WithBadGateWayException_ShouldCompleteExceptionally() {
         //preparation
-        final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
-        final Product mockProductResult = mock(Product.class);
+        final BaseGraphQlResult graphQlQueryResult = mock(BaseGraphQlResult.class);
+        final ResourceKeyId mockResourceKeyId = mock(ResourceKeyId.class);
         final String key = "testKey";
         final String id = "testId";
-        when(mockProductResult.getKey()).thenReturn(key);
-        when(mockProductResult.getId()).thenReturn(id);
-        when(pagedQueryResult.getResults()).thenReturn(singletonList(mockProductResult));
-        when(client.execute(any(ProductQuery.class)))
+        when(mockResourceKeyId.getKey()).thenReturn(key);
+        when(mockResourceKeyId.getId()).thenReturn(id);
+        when(graphQlQueryResult.getResults()).thenReturn(singleton(mockResourceKeyId));
+        when(client.execute(any(ProductGraphQlRequest.class)))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
 
         //test
@@ -321,6 +324,6 @@ class BaseServiceImplTest {
 
         //assertions
         assertThat(result).hasFailedWithThrowableThat().isExactlyInstanceOf(BadGatewayException.class);
-        verify(client, times(1)).execute(any(ProductQuery.class));
+        verify(client, times(1)).execute(any(ProductGraphQlRequest.class));
     }
 }

@@ -1,11 +1,15 @@
 package com.commercetools.sync.commons.utils;
 
+import com.commercetools.sync.commons.helpers.BaseGraphQlRequest;
+import com.commercetools.sync.commons.helpers.BaseGraphQlResult;
+import com.commercetools.sync.commons.models.ResourceKeyId;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.ResourceView;
 import io.sphere.sdk.queries.QueryDsl;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -111,6 +115,14 @@ public final class CtpQueryUtils {
         queryAll(@Nonnull final SphereClient client, @Nonnull final QueryDsl<T, C> query,
                  @Nonnull final Consumer<List<T>> pageConsumer, final int pageSize) {
         final QueryAll<T, C, Void> queryAll = QueryAll.of(client, query, pageSize);
+        return queryAll.run(pageConsumer);
+    }
+
+    @Nonnull
+    public static <T extends BaseGraphQlResult> CompletionStage<Void>
+        queryAll(@Nonnull final SphereClient client, @Nonnull final BaseGraphQlRequest<T> query,
+                 @Nonnull final Consumer<Set<ResourceKeyId>> pageConsumer, final int pageSize) {
+        GraphQlQueryAll<T> queryAll = GraphQlQueryAll.of(client, query, pageSize);
         return queryAll.run(pageConsumer);
     }
 
