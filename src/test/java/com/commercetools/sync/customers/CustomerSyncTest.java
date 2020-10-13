@@ -8,6 +8,8 @@ import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.CustomerService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
+import io.sphere.sdk.client.BadRequestException;
+import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
@@ -29,8 +31,10 @@ import static com.commercetools.sync.customers.helpers.CustomerBatchValidator.CU
 import static com.commercetools.sync.customers.helpers.CustomerBatchValidator.CUSTOMER_DRAFT_IS_NULL;
 import static com.commercetools.sync.customers.helpers.CustomerBatchValidator.CUSTOMER_DRAFT_KEY_NOT_SET;
 import static com.commercetools.sync.customers.helpers.CustomerReferenceResolver.FAILED_TO_RESOLVE_CUSTOM_TYPE;
+import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
@@ -42,6 +46,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 import static org.assertj.core.api.InstanceOfAssertFactories.THROWABLE;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -133,7 +138,9 @@ public class CustomerSyncTest {
         // preparation
         final TypeService typeService = spy(new TypeServiceImpl(syncOptions));
         when(typeService.cacheKeysToIds(anySet()))
-            .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
+            .thenReturn(supplyAsync(() -> {
+                throw new SphereException();
+            }));
 
         final CustomerSync customerSync = new CustomerSync(syncOptions, mock(CustomerService.class),
             typeService, mock(CustomerGroupService.class));
@@ -175,7 +182,9 @@ public class CustomerSyncTest {
         final CustomerService mockCustomerService = mock(CustomerService.class);
 
         when(mockCustomerService.fetchMatchingCustomersByKeys(singleton("customer-key")))
-            .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
+            .thenReturn(supplyAsync(() -> {
+                throw new SphereException();
+            }));
 
         final CustomerSync customerSync = new CustomerSync(syncOptions, mockCustomerService,
             mock(TypeService.class), mock(CustomerGroupService.class));
@@ -319,4 +328,244 @@ public class CustomerSyncTest {
         verify(spyCustomerSyncOptions, never()).applyBeforeUpdateCallback(any(), any(), any());
     }
 
+    @Test
+    void sync_WithOnlyDraftsToUpdate_ShouldOnlyCallBeforeUpdateCallback() {
+        // preparation
+        final CustomerService mockCustomerService = mock(CustomerService.class);
+        final Customer mockCustomer = mock(Customer.class);
+        when(mockCustomer.getKey()).thenReturn("customerKey");
+
+        when(mockCustomerService.fetchMatchingCustomersByKeys(anySet()))
+            .thenReturn(completedFuture(singleton(mockCustomer)));
+
+        when(mockCustomerService.updateCustomer(any(), anyList()))
+            .thenReturn(completedFuture(mockCustomer));
+
+        final CustomerSyncOptions spyCustomerSyncOptions = spy(syncOptions);
+        final CustomerSync customerSync = new CustomerSync(spyCustomerSyncOptions, mockCustomerService,
+            mock(TypeService.class), mock(CustomerGroupService.class));
+
+        final CustomerDraft customerDraft =
+            CustomerDraftBuilder.of("email", "pass")
+                                .key("customerKey")
+                                .build();
+
+        //test
+        final CustomerSyncStatistics customerSyncStatistics = customerSync
+            .sync(singletonList(customerDraft))
+            .toCompletableFuture()
+            .join();
+
+        // assertions
+        AssertionsForStatistics.assertThat(customerSyncStatistics).hasValues(1, 0, 1, 0);
+
+        verify(spyCustomerSyncOptions).applyBeforeUpdateCallback(any(), any(), any());
+        verify(spyCustomerSyncOptions, never()).applyBeforeCreateCallback(customerDraft);
+    }
+
+    @Test
+    void sync_WithoutUpdateActions_ShouldNotIncrementUpdated() {
+        // preparation
+        final CustomerService mockCustomerService = mock(CustomerService.class);
+        final Customer mockCustomer = mock(Customer.class);
+        when(mockCustomer.getKey()).thenReturn("customerKey");
+        when(mockCustomer.getEmail()).thenReturn("email");
+
+        when(mockCustomerService.fetchMatchingCustomersByKeys(anySet()))
+            .thenReturn(completedFuture(singleton(mockCustomer)));
+
+        final CustomerSyncOptions spyCustomerSyncOptions = spy(syncOptions);
+        final CustomerSync customerSync = new CustomerSync(spyCustomerSyncOptions, mockCustomerService,
+            mock(TypeService.class), mock(CustomerGroupService.class));
+
+        final CustomerDraft customerDraft =
+            CustomerDraftBuilder.of("email", "pass")
+                                .key("customerKey")
+                                .build();
+
+        //test
+        final CustomerSyncStatistics customerSyncStatistics = customerSync
+            .sync(singletonList(customerDraft))
+            .toCompletableFuture()
+            .join();
+
+        // assertions
+        AssertionsForStatistics.assertThat(customerSyncStatistics).hasValues(1, 0, 0, 0);
+
+        verify(spyCustomerSyncOptions).applyBeforeUpdateCallback(emptyList(), customerDraft, mockCustomer);
+        verify(spyCustomerSyncOptions, never()).applyBeforeCreateCallback(customerDraft);
+    }
+
+    @Test
+    void sync_WithBadRequestException_ShouldFailToUpdateAndIncreaseFailedCounter() {
+        // preparation
+        final CustomerService mockCustomerService = mock(CustomerService.class);
+        final Customer mockCustomer = mock(Customer.class);
+        when(mockCustomer.getKey()).thenReturn("customerKey");
+
+        when(mockCustomerService.fetchMatchingCustomersByKeys(anySet()))
+            .thenReturn(completedFuture(singleton(mockCustomer)));
+
+        when(mockCustomerService.updateCustomer(any(), anyList()))
+            .thenReturn(exceptionallyCompletedFuture(new BadRequestException("Invalid request")));
+
+        final CustomerSyncOptions spyCustomerSyncOptions = spy(syncOptions);
+        final CustomerSync customerSync = new CustomerSync(spyCustomerSyncOptions, mockCustomerService,
+            mock(TypeService.class), mock(CustomerGroupService.class));
+
+        final CustomerDraft customerDraft =
+            CustomerDraftBuilder.of("email", "pass")
+                                .key("customerKey")
+                                .build();
+
+        //test
+        final CustomerSyncStatistics customerSyncStatistics = customerSync
+            .sync(singletonList(customerDraft))
+            .toCompletableFuture()
+            .join();
+
+        // assertions
+        AssertionsForStatistics.assertThat(customerSyncStatistics).hasValues(1, 0, 0, 1);
+
+        assertThat(errorMessages)
+            .hasSize(1)
+            .singleElement(as(STRING))
+            .contains("Invalid request");
+
+        assertThat(exceptions)
+            .hasSize(1)
+            .singleElement(as(THROWABLE))
+            .isExactlyInstanceOf(SyncException.class)
+            .hasRootCauseExactlyInstanceOf(BadRequestException.class);
+    }
+
+    @Test
+    void sync_WithConcurrentModificationException_ShouldRetryToUpdateNewCustomerWithSuccess() {
+        // preparation
+        final CustomerService mockCustomerService = mock(CustomerService.class);
+        final Customer mockCustomer = mock(Customer.class);
+        when(mockCustomer.getKey()).thenReturn("customerKey");
+
+        when(mockCustomerService.fetchMatchingCustomersByKeys(anySet()))
+            .thenReturn(completedFuture(singleton(mockCustomer)));
+
+        when(mockCustomerService.updateCustomer(any(), anyList()))
+            .thenReturn(exceptionallyCompletedFuture(new SphereException(new ConcurrentModificationException())))
+            .thenReturn(completedFuture(mockCustomer));
+
+        when(mockCustomerService.fetchCustomerByKey("customerKey"))
+            .thenReturn(completedFuture(Optional.of(mockCustomer)));
+
+        final CustomerSyncOptions spyCustomerSyncOptions = spy(syncOptions);
+        final CustomerSync customerSync = new CustomerSync(spyCustomerSyncOptions, mockCustomerService,
+            mock(TypeService.class), mock(CustomerGroupService.class));
+
+        final CustomerDraft customerDraft =
+            CustomerDraftBuilder.of("email", "pass")
+                                .key("customerKey")
+                                .build();
+
+        //test
+        final CustomerSyncStatistics customerSyncStatistics = customerSync
+            .sync(singletonList(customerDraft))
+            .toCompletableFuture()
+            .join();
+
+        // assertions
+        AssertionsForStatistics.assertThat(customerSyncStatistics).hasValues(1, 0, 1, 0);
+    }
+
+    @Test
+    void sync_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
+        // preparation
+        final CustomerService mockCustomerService = mock(CustomerService.class);
+        final Customer mockCustomer = mock(Customer.class);
+        when(mockCustomer.getKey()).thenReturn("customerKey");
+
+        when(mockCustomerService.fetchMatchingCustomersByKeys(anySet()))
+            .thenReturn(completedFuture(singleton(mockCustomer)));
+
+        when(mockCustomerService.updateCustomer(any(), anyList()))
+            .thenReturn(exceptionallyCompletedFuture(new SphereException(new ConcurrentModificationException())))
+            .thenReturn(completedFuture(mockCustomer));
+
+        when(mockCustomerService.fetchCustomerByKey("customerKey"))
+            .thenReturn(exceptionallyCompletedFuture(new SphereException()));
+
+        final CustomerSyncOptions spyCustomerSyncOptions = spy(syncOptions);
+        final CustomerSync customerSync = new CustomerSync(spyCustomerSyncOptions, mockCustomerService,
+            mock(TypeService.class), mock(CustomerGroupService.class));
+
+        final CustomerDraft customerDraft =
+            CustomerDraftBuilder.of("email", "pass")
+                                .key("customerKey")
+                                .build();
+
+        //test
+        final CustomerSyncStatistics customerSyncStatistics = customerSync
+            .sync(singletonList(customerDraft))
+            .toCompletableFuture()
+            .join();
+
+        // assertions
+        AssertionsForStatistics.assertThat(customerSyncStatistics).hasValues(1, 0, 0, 1);
+
+        assertThat(errorMessages)
+            .hasSize(1)
+            .singleElement(as(STRING))
+            .contains("Failed to fetch from CTP while retrying after concurrency modification.");
+
+        assertThat(exceptions)
+            .hasSize(1)
+            .singleElement(as(THROWABLE))
+            .isExactlyInstanceOf(SyncException.class)
+            .hasRootCauseExactlyInstanceOf(SphereException.class);
+    }
+
+    @Test
+    void sync_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
+        // preparation
+        final CustomerService mockCustomerService = mock(CustomerService.class);
+        final Customer mockCustomer = mock(Customer.class);
+        when(mockCustomer.getKey()).thenReturn("customerKey");
+
+        when(mockCustomerService.fetchMatchingCustomersByKeys(anySet()))
+            .thenReturn(completedFuture(singleton(mockCustomer)));
+
+        when(mockCustomerService.updateCustomer(any(), anyList()))
+            .thenReturn(exceptionallyCompletedFuture(new SphereException(new ConcurrentModificationException())))
+            .thenReturn(completedFuture(mockCustomer));
+
+        when(mockCustomerService.fetchCustomerByKey("customerKey"))
+            .thenReturn(completedFuture(Optional.empty()));
+
+        final CustomerSyncOptions spyCustomerSyncOptions = spy(syncOptions);
+        final CustomerSync customerSync = new CustomerSync(spyCustomerSyncOptions, mockCustomerService,
+            mock(TypeService.class), mock(CustomerGroupService.class));
+
+        final CustomerDraft customerDraft =
+            CustomerDraftBuilder.of("email", "pass")
+                                .key("customerKey")
+                                .build();
+
+        //test
+        final CustomerSyncStatistics customerSyncStatistics = customerSync
+            .sync(singletonList(customerDraft))
+            .toCompletableFuture()
+            .join();
+
+        // assertions
+        AssertionsForStatistics.assertThat(customerSyncStatistics).hasValues(1, 0, 0, 1);
+
+        assertThat(errorMessages)
+            .hasSize(1)
+            .singleElement(as(STRING))
+            .contains("Not found when attempting to fetch while retrying after concurrency modification.");
+
+        assertThat(exceptions)
+            .hasSize(1)
+            .singleElement(as(THROWABLE))
+            .isExactlyInstanceOf(SyncException.class)
+            .hasNoCause();
+    }
 }

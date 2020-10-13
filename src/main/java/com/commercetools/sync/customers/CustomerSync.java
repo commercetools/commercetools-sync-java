@@ -12,6 +12,7 @@ import com.commercetools.sync.services.impl.CustomerGroupServiceImpl;
 import com.commercetools.sync.services.impl.CustomerServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -25,6 +26,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
+import static com.commercetools.sync.customers.utils.CustomerSyncUtils.buildActions;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
@@ -35,9 +37,10 @@ import static java.util.stream.Collectors.toSet;
  * This class syncs customer drafts with the corresponding customers in the CTP project.
  */
 public class CustomerSync extends BaseSync<CustomerDraft, CustomerSyncStatistics, CustomerSyncOptions> {
-    private static final String CTP_CUSTOMER_FETCH_FAILED =
-        "Failed to fetch existing customers with keys: '%s'.";
+
+    private static final String CTP_CUSTOMER_FETCH_FAILED = "Failed to fetch existing customers with keys: '%s'.";
     private static final String FAILED_TO_PROCESS = "Failed to process the CustomerDraft with key:'%s'. Reason: %s";
+    private static final String CTP_CUSTOMER_UPDATE_FAILED = "Failed to update customer with key: '%s'. Reason: %s";
 
     private final CustomerService customerService;
     private final CustomerReferenceResolver referenceResolver;
@@ -198,8 +201,76 @@ public class CustomerSync extends BaseSync<CustomerDraft, CustomerSyncStatistics
         @Nonnull final Customer oldCustomer,
         @Nonnull final CustomerDraft newCustomerDraft) {
 
-        // todo (ahmetoz) no action utils, yet.
+        final List<UpdateAction<Customer>> updateActions =
+            buildActions(oldCustomer, newCustomerDraft, syncOptions);
+
+        final List<UpdateAction<Customer>> updateActionsAfterCallback
+            = syncOptions.applyBeforeUpdateCallback(updateActions, newCustomerDraft, oldCustomer);
+
+        if (!updateActionsAfterCallback.isEmpty()) {
+            return updateCustomer(oldCustomer, newCustomerDraft, updateActionsAfterCallback);
+        }
+
         return completedFuture(null);
+    }
+
+    @Nonnull
+    private CompletionStage<Void> updateCustomer(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomerDraft,
+        @Nonnull final List<UpdateAction<Customer>> updateActionsAfterCallback) {
+
+        return customerService
+            .updateCustomer(oldCustomer, updateActionsAfterCallback)
+            .handle(ImmutablePair::of)
+            .thenCompose(updateResponse -> {
+                final Throwable exception = updateResponse.getValue();
+                if (exception != null) {
+                    return executeSupplierIfConcurrentModificationException(
+                        exception,
+                        () -> fetchAndUpdate(oldCustomer, newCustomerDraft),
+                        () -> {
+                            final String errorMessage =
+                                format(CTP_CUSTOMER_UPDATE_FAILED, newCustomerDraft.getKey(), exception.getMessage());
+                            handleError(new SyncException(errorMessage, exception), 1);
+                            return CompletableFuture.completedFuture(null);
+                        });
+                } else {
+                    statistics.incrementUpdated();
+                    return CompletableFuture.completedFuture(null);
+                }
+            });
+    }
+
+    @Nonnull
+    private CompletionStage<Void> fetchAndUpdate(
+        @Nonnull final Customer oldCustomer,
+        @Nonnull final CustomerDraft newCustomerDraft) {
+
+        final String customerKey = oldCustomer.getKey();
+        return customerService
+            .fetchCustomerByKey(customerKey)
+            .handle(ImmutablePair::of)
+            .thenCompose(fetchResponse -> {
+                final Optional<Customer> fetchedCustomerOptional = fetchResponse.getKey();
+                final Throwable exception = fetchResponse.getValue();
+
+                if (exception != null) {
+                    final String errorMessage = format(CTP_CUSTOMER_UPDATE_FAILED, customerKey,
+                        "Failed to fetch from CTP while retrying after concurrency modification.");
+                    handleError(new SyncException(errorMessage, exception), 1);
+                    return CompletableFuture.completedFuture(null);
+                }
+
+                return fetchedCustomerOptional
+                    .map(fetchedCustomer -> buildActionsAndUpdate(fetchedCustomer, newCustomerDraft))
+                    .orElseGet(() -> {
+                        final String errorMessage = format(CTP_CUSTOMER_UPDATE_FAILED, customerKey,
+                            "Not found when attempting to fetch while retrying after concurrency modification.");
+                        handleError(new SyncException(errorMessage, null), 1);
+                        return CompletableFuture.completedFuture(null);
+                    });
+            });
     }
 
     @Nonnull
