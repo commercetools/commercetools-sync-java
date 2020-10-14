@@ -28,100 +28,51 @@ import java.util.Objects;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CustomerGroupITUtils.createCustomerGroup;
-import static com.commercetools.sync.integration.commons.utils.CustomerGroupITUtils.deleteCustomerGroups;
-import static com.commercetools.sync.integration.commons.utils.CustomerITUtils.createCustomer;
 import static com.commercetools.sync.integration.commons.utils.CustomerITUtils.createCustomerCustomType;
-import static com.commercetools.sync.integration.commons.utils.CustomerITUtils.deleteCustomers;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
+import static com.commercetools.sync.integration.commons.utils.CustomerITUtils.createSampleCustomerJohnDoe;
+import static com.commercetools.sync.integration.commons.utils.CustomerITUtils.deleteCustomerSyncTestData;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.StoreITUtils.createStore;
-import static com.commercetools.sync.integration.commons.utils.StoreITUtils.deleteStores;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class CustomerSyncIT {
-
-    private Store storeBerlin;
-    private Store storeHamburg;
-    private Store storeMunich;
-    private Type customTypeGoldMember;
-    private CustomerGroup customerGroupGoldMember;
-
     private CustomerDraft customerDraftJohnDoe;
-    private Customer customerJohnDoe;
+
+    private List<String> errorMessages;
+    private List<Throwable> exceptions;
+    private CustomerSync customerSync;
 
     @BeforeEach
     void setup() {
-        deleteCustomersAndTheirReferences();
+        deleteCustomerSyncTestData(CTP_TARGET_CLIENT);
+        customerDraftJohnDoe = createSampleCustomerJohnDoe(CTP_TARGET_CLIENT);
+        setUpCustomerSync();
+    }
 
-        storeBerlin = createStore(CTP_TARGET_CLIENT, "store-berlin");
-        storeHamburg = createStore(CTP_TARGET_CLIENT, "store-hamburg");
-        storeMunich = createStore(CTP_TARGET_CLIENT, "store-munich");
-
-        customTypeGoldMember =
-            createCustomerCustomType("customer-type-gold", Locale.ENGLISH, "gold customers", CTP_TARGET_CLIENT);
-
-        customerGroupGoldMember =
-            createCustomerGroup(CTP_TARGET_CLIENT, "gold members", "gold");
-
-        customerDraftJohnDoe =
-            CustomerDraftBuilder
-                .of("john@example.com", "12345")
-                .customerNumber("gold-1")
-                .key("customer-key")
-                .stores(asList(
-                    ResourceIdentifier.ofKey(storeBerlin.getKey()),
-                    ResourceIdentifier.ofKey(storeHamburg.getKey()),
-                    ResourceIdentifier.ofKey(storeMunich.getKey())))
-                .firstName("John")
-                .lastName("Doe")
-                .middleName("Jr")
-                .title("Mr")
-                .salutation("Dear")
-                .dateOfBirth(LocalDate.now().minusYears(28))
-                .companyName("Acme Corporation")
-                .vatId("DE999999999")
-                .emailVerified(true)
-                .customerGroup(ResourceIdentifier.ofKey(customerGroupGoldMember.getKey()))
-                .addresses(asList(
-                    Address.of(CountryCode.DE).withCity("berlin").withKey("address1"),
-                    Address.of(CountryCode.DE).withCity("hamburg").withKey("address2"),
-                    Address.of(CountryCode.DE).withCity("munich").withKey("address3")))
-                .defaultBillingAddress(0)
-                .billingAddresses(asList(0, 1))
-                .defaultShippingAddress(2)
-                .shippingAddresses(singletonList(2))
-                .custom(CustomFieldsDraft.ofTypeKeyAndJson(customTypeGoldMember.getKey(), emptyMap()))
-                .locale(Locale.ENGLISH)
-                .build();
-
-        customerJohnDoe = createCustomer(CTP_TARGET_CLIENT, customerDraftJohnDoe);
+    private void setUpCustomerSync() {
+        errorMessages = new ArrayList<>();
+        exceptions = new ArrayList<>();
+        CustomerSyncOptions customerSyncOptions = CustomerSyncOptionsBuilder
+            .of(CTP_TARGET_CLIENT)
+            .errorCallback((exception, oldResource, newResource, actions) -> {
+                errorMessages.add(exception.getMessage());
+                exceptions.add(exception);
+            })
+            .build();
+        customerSync = new CustomerSync(customerSyncOptions);
     }
 
     @AfterAll
     static void tearDown() {
-        deleteCustomersAndTheirReferences();
-    }
-
-    static void deleteCustomersAndTheirReferences() {
-        deleteCustomers(CTP_TARGET_CLIENT);
-        deleteTypes(CTP_TARGET_CLIENT);
-        deleteStores(CTP_TARGET_CLIENT);
-        deleteCustomerGroups(CTP_TARGET_CLIENT);
+        deleteCustomerSyncTestData(CTP_TARGET_CLIENT);
     }
 
     @Test
     void sync_WithSameCustomer_ShouldNotUpdateCustomer() {
-        final CustomerDraft sameCustomerDraft =
-            CustomerDraftBuilder.of(customerDraftJohnDoe)
-                                .build();
-        final CustomerSyncOptions customerSyncOptions = CustomerSyncOptionsBuilder
-            .of(CTP_TARGET_CLIENT)
-            .build();
-
-        final CustomerSync customerSync = new CustomerSync(customerSyncOptions);
+        final CustomerDraft sameCustomerDraft = CustomerDraftBuilder.of(customerDraftJohnDoe).build();
 
         final CustomerSyncStatistics customerSyncStatistics = customerSync
             .sync(singletonList(sameCustomerDraft))
@@ -129,6 +80,11 @@ class CustomerSyncIT {
             .join();
 
         assertThat(customerSyncStatistics).hasValues(1, 0, 0, 0);
+        assertThat(errorMessages).isEmpty();
+        assertThat(exceptions).isEmpty();
+        assertThat(customerSyncStatistics
+            .getReportMessage())
+            .isEqualTo("Summary: 1 customers were processed in total (0 created, 0 updated and 0 failed to sync).");
     }
 
     @Test
@@ -136,15 +92,10 @@ class CustomerSyncIT {
         final CustomerDraft newCustomerDraft =
             CustomerDraftBuilder.of(customerDraftJohnDoe)
                                 .emailVerified(false)
-                                .email("jane@example.com")
-                                .customerNumber("customer-2")
-                                .firstName("Jane")
-                                .lastName("Doe")
-                                .title("Miss")
-                                .key("new-customer-key")
+                                .email("john-2@example.com")
+                                .customerNumber("gold-2")
+                                .key("customer-key-john-doe-2")
                                 .build();
-
-        //todo: update custom type values
 
         final CustomerSyncOptions customerSyncOptions = CustomerSyncOptionsBuilder
             .of(CTP_TARGET_CLIENT)
@@ -158,6 +109,11 @@ class CustomerSyncIT {
             .join();
 
         assertThat(customerSyncStatistics).hasValues(1, 1, 0, 0);
+        assertThat(errorMessages).isEmpty();
+        assertThat(exceptions).isEmpty();
+        assertThat(customerSyncStatistics
+            .getReportMessage())
+            .isEqualTo("Summary: 1 customers were processed in total (1 created, 0 updated and 0 failed to sync).");
     }
 
     @Test
@@ -167,18 +123,17 @@ class CustomerSyncIT {
                                 .email("JOhn@example.com")
                                 .build();
 
-        final CustomerSyncOptions customerSyncOptions = CustomerSyncOptionsBuilder
-            .of(CTP_TARGET_CLIENT)
-            .build();
-
-        final CustomerSync customerSync = new CustomerSync(customerSyncOptions);
-
         final CustomerSyncStatistics customerSyncStatistics = customerSync
             .sync(singletonList(updatedCustomerDraft))
             .toCompletableFuture()
             .join();
 
         assertThat(customerSyncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(errorMessages).isEmpty();
+        assertThat(exceptions).isEmpty();
+        assertThat(customerSyncStatistics
+            .getReportMessage())
+            .isEqualTo("Summary: 1 customers were processed in total (0 created, 1 updated and 0 failed to sync).");
     }
 
     @Disabled
@@ -208,9 +163,9 @@ class CustomerSyncIT {
                 .key("customer-key")
                 .stores(asList(
                     ResourceIdentifier.ofKey(storeCologne.getKey()),
-                    ResourceIdentifier.ofKey(storeHamburg.getKey()),
-                    ResourceIdentifier.ofKey(storeBerlin.getKey()),
-                    ResourceIdentifier.ofKey(storeMunich.getKey())))
+                    ResourceIdentifier.ofKey("store-hamburg"),
+                    ResourceIdentifier.ofKey("store-berlin"),
+                    ResourceIdentifier.ofKey("store-munich")))
                 .firstName("Jane")
                 .lastName("Doe")
                 .middleName("")
@@ -233,10 +188,10 @@ class CustomerSyncIT {
                 .locale(Locale.FRENCH)
                 .build();
 
-        final CustomerDraft newCustomerDraft =
-            CustomerDraftBuilder.of(customerDraftJohnDoe)
-                                .email("jane@example.com")
-                                .build();
+        //        final CustomerDraft newCustomerDraft =
+        //            CustomerDraftBuilder.of(customerDraftJohnDoe)
+        //                                .email("jane@example.com")
+        //                                .build();
 
 
         final List<UpdateAction<Customer>> updateActionList = new ArrayList<>();
