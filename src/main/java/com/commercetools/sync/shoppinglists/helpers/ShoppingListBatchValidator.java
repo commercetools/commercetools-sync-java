@@ -42,7 +42,7 @@ public class ShoppingListBatchValidator
      * @param shoppingListDrafts the shopping list drafts to validate and collect referenced type keys.
      * @return {@link ImmutablePair}&lt;{@link Set}&lt;{@link ShoppingListDraft}&gt;,
      *      {@link Set}&lt;{@link String}&gt;&gt; which contains the {@link Set} of valid drafts and
-     *      valid shopping list keys.
+     *      referenced type keys.
      */
     @Override
     public ImmutablePair<Set<ShoppingListDraft>, Set<String>> validateAndCollectReferencedKeys(
