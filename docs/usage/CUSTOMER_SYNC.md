@@ -122,18 +122,8 @@ During the sync process if a cart discount draft should be created, this callbac
 the **_create_** request just before it is sent to commercetools platform.  It contains following information : 
 
  * customer draft that should be created
- ````java
-
- final Function<CustomerDraft, CustomerDraft> draftFunction =
-             customerDraft -> CustomerDraftBuilder.of(customerDraft)
-                                                  .key(customerDraft.getKey() + "_filteredKey")
-                                                  .build();
- 
-final CustomerSyncOptions customerSyncOptions = CustomerSyncOptionsBuilder
-                                                  .of(CTP_CLIENT)
-                                                  .beforeCreateCallback(draftFunction)
-                                                  .build();
-````
+ ##### Example
+ Please refer to the [example in the product sync document](https://github.com/commercetools/commercetools-sync-java/blob/master/docs/usage/PRODUCT_SYNC.md#example-set-publish-stage-if-category-references-of-given-product-draft-exists).
 
 ##### 5. `batchSize`
 A number that could be used to set the batch size with which customers are fetched and processed,
