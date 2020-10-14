@@ -128,9 +128,9 @@ the **_create_** request just before it is sent to commercetools platform.  It c
 ##### 5. `batchSize`
 A number that could be used to set the batch size with which customers are fetched and processed,
 as customers are obtained from the target project on commercetools platform in batches for better performance. The 
-algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding cart discounts 
+algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding customers
 from the target project on commercetools platform in a single request. Playing with this option can slightly improve or 
-reduce processing speed. If it is not set, the default batch size is 50 for customer discount sync.
+reduce processing speed. If it is not set, the default batch size is 50 for customer sync.
 ##### Example
 ````java                         
 final CustomerSyncOptions customerSyncOptions = 
