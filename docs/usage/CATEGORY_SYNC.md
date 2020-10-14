@@ -11,6 +11,7 @@ against a [CategoryDraft](https://docs.commercetools.com/http-api-projects-categ
 - [Usage](#usage)
   - [Sync list of category drafts](#sync-list-of-category-drafts)
     - [Prerequisites](#prerequisites)
+    - [About SyncOptions](#about-syncoptions)
     - [Running the sync](#running-the-sync)
   - [Build all update actions](#build-all-update-actions)
   - [Build particular update action(s)](#build-particular-update-actions)
@@ -48,7 +49,88 @@ actual ids of the references, their `key`s has to be supplied.
 final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(sphereClient).build();
 ````
 
-[More information about Sync Options](SYNC_OPTIONS.md).
+#### About SyncOptions
+`SyncOptions` is an object which provides a place for users to add certain configurations to customize the sync process.
+Available configurations:
+
+##### 1. `errorCallback`
+A callback that is called whenever an error event occurs during the sync process. Each resource executes its own 
+error-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+following context about the error-event:
+
+* sync exception
+* category draft from the source
+* category of the target project (only provided if an existing category could be found)
+* the update-actions, which failed (only provided if an existing category could be found)
+
+##### Example 
+````java
+ final Logger logger = LoggerFactory.getLogger(CategorySync.class);
+ final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
+         .of(sphereClient)
+         .errorCallback((syncException, draft, category, updateActions) -> 
+            logger.error(new SyncException("My customized message"), syncException)).build();
+````
+    
+##### 2. `warningCallback`
+A callback that is called whenever a warning event occurs during the sync process. Each resource executes its own 
+warning-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+following context about the warning message:
+
+* sync exception
+* category draft from the source 
+* category of the target project (only provided if an existing category could be found)
+
+##### Example 
+````java
+ final Logger logger = LoggerFactory.getLogger(CategorySync.class);
+ final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
+         .of(sphereClient)
+         .warningCallback((syncException, draft, category, updateActions) -> 
+            logger.warn(new SyncException("My customized message"), syncException)).build();
+````
+
+##### 3. `beforeUpdateCallback`
+During the sync process if a target category and a category draft are matched, this callback can be used to 
+intercept the **_update_** request just before it is sent to commercetools platform. This allows the user to modify 
+update actions array with custom actions or discard unwanted actions. The callback provides the following information :
+ 
+ * category draft from the source
+ * category from the target project
+ * update actions that were calculated after comparing both
+
+##### Example
+````java
+final TriFunction<
+        List<UpdateAction<Category>>, CategoryDraft, Category, List<UpdateAction<Category>>> 
+            beforeUpdateCategoryCallback =
+            (updateActions, newCategoryDraft, oldCategory) ->  updateActions.stream()
+                    .filter(updateAction -> !(updateAction instanceof RemoveAsset))
+                    .collect(Collectors.toList());
+                        
+final CategorySyncOptions categorySyncOptions = 
+        CategorySyncOptionsBuilder.of(sphereClient).beforeUpdateCallback(beforeUpdateCategoryCallback).build();
+````
+
+##### 4. `beforeCreateCallback`
+During the sync process if a category draft should be created, this callback can be used to intercept 
+the **_create_** request just before it is sent to commercetools platform.  It contains following information : 
+
+ * category draft that should be created
+ 
+Please refer to [example in product sync document](PRODUCT_SYNC.md#example-set-publish-stage-if-category-references-of-given-product-draft-exists).
+
+##### 5. `batchSize`
+A number that could be used to set the batch size with which categories are fetched and processed,
+as categories are obtained from the target project on commercetools platform in batches for better performance. The 
+algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding categories
+from the target project on commecetools platform in a single request. Playing with this option can slightly improve or 
+reduce processing speed. If it is not set, the default batch size is 50 for category sync.
+##### Example
+````java                         
+final CategorySyncOptions categorySyncOptions = 
+         CategorySyncOptionsBuilder.of(sphereClient).batchSize(30).build();
+````
 
 #### Running the sync
 After all the aforementioned points in the previous section have been fulfilled, to run the sync:

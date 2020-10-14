@@ -10,7 +10,8 @@ against a [ProductDraft](https://docs.commercetools.com/http-api-projects-produc
 
 - [Usage](#usage)
   - [Sync list of product drafts](#sync-list-of-product-drafts)
-    - [Prerequisites](#prerequisites)
+    - [Prerequisites](#about-syncoptions)
+    - [About SyncOptions](#about-syncoptions)
     - [Running the sync](#running-the-sync)
       - [Persistence of ProductDrafts with Irresolvable References](#persistence-of-productdrafts-with-irresolvable-references)
       - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)
@@ -28,8 +29,8 @@ against a [ProductDraft](https://docs.commercetools.com/http-api-projects-produc
 
 #### Prerequisites
 1. The sync expects a list of `ProductDraft`s that have their `key` fields set to be matched with
-products in the target CTP project. Also, the products in the target project are expected to have the `key` fields set,
-otherwise they won't be matched.
+products in the target commercetools project. Also, the products in the target project are expected to have the `key` 
+fields set, otherwise they won't be matched.
 
 2. The sync expects all variants of the supplied list of `ProductDraft`s to have their `sku` fields set. Also,
 all the variants in the target project are expected to have the `sku` fields set.
@@ -59,7 +60,136 @@ order for the sync to resolve the actual ids of those references, those `key`s h
 // instantiating a ProductSyncOptions
 final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(sphereClient).build();
 ````
-[More information about Sync Options](SYNC_OPTIONS.md). 
+
+#### About SyncOptions
+`SyncOptions` is an object which provides a place for users to add certain configurations to customize the sync process.
+Available configurations:
+
+##### 1. `errorCallback`
+A callback that is called whenever an error event occurs during the sync process. Each resource executes its own 
+error-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+following context about the error-event:
+
+* sync exception
+* product draft from the source
+* product of the target project (only provided if an existing product could be found)
+* the update-actions, which failed (only provided if an existing product could be found)
+
+##### Example 
+````java
+ final Logger logger = LoggerFactory.getLogger(ProductSync.class);
+ final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder
+         .of(sphereClient)
+         .errorCallback((syncException, draft, product, updateActions) -> 
+            logger.error(new SyncException("My customized message"), syncException)).build();
+````
+    
+##### 2. `warningCallback`
+A callback that is called whenever a warning event occurs during the sync process. Each resource executes its own 
+warning-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+following context about the warning message:
+
+* sync exception
+* product draft from the source 
+* product of the target project (only provided if an existing product could be found)
+
+##### Example 
+````java
+ final Logger logger = LoggerFactory.getLogger(ProductSync.class);
+ final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder
+         .of(sphereClient)
+         .warningCallback((syncException, draft, product, updateActions) -> 
+            logger.warn(new SyncException("My customized message"), syncException)).build();
+````
+
+##### 3. `beforeUpdateCallback`
+During the sync process if a target product and a product draft are matched, this callback can be used to intercept 
+the **_update_** request just before it is sent to commercetools platform. This allows the user to modify update 
+actions array with custom actions or discard unwanted actions. The callback provides the following information :
+ 
+ * product draft from the source
+ * product from the target project
+ * update actions that were calculated after comparing both
+
+##### Example
+````java
+final TriFunction<
+        List<UpdateAction<Product>>, ProductDraft, Product, List<UpdateAction<Product>>> beforeUpdateProductCallback =
+            (updateActions, newProductDraft, oldProduct) ->  updateActions.stream()
+                    .filter(updateAction -> !(updateAction instanceof RemoveVariant))
+                    .collect(Collectors.toList());
+                        
+final ProductSyncOptions productSyncOptions = 
+        ProductSyncOptionsBuilder.of(sphereClient).beforeUpdateCallback(beforeUpdateProductCallback).build();
+````
+
+##### 4. `beforeCreateCallback`
+During the sync process if a product draft should be created, this callback can be used to intercept 
+the **_create_** request just before it is sent to commercetools platform.  It contains following information : 
+
+ * product draft that should be created
+ 
+##### Example (Set publish stage if category references of given product draft exists)
+````java
+final Function<ProductDraft, ProductDraft> beforeCreateProductCallback =
+        (callbackDraft) -> {
+            Set<ResourceIdentifier<Category>> categoryResourceIdentifier = callbackDraft.getCategories();
+            if (categoryResourceIdentifier!=null && !categoryResourceIdentifier.isEmpty()) {
+                return ProductDraftBuilder.of(callbackDraft).isPublish(true).build();
+            }
+            return callbackDraft;
+        };
+                         
+final ProductSyncOptions productSyncOptions = 
+         ProductSyncOptionsBuilder.of(sphereClient).beforeCreateCallback(beforeCreateProductCallback).build();
+````
+
+##### 5. `batchSize`
+A number that could be used to set the batch size with which products are fetched and processed,
+as products are obtained from the target project on commercetools platform in batches for better performance. The 
+algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding products from the 
+target project on commecetools platform in a single request. Playing with this option can slightly improve or reduce 
+processing speed. If it is not set, the default batch size is 30 for product sync.
+##### Example
+````java                         
+final ProductSyncOptions productSyncOptions = 
+         ProductSyncOptionsBuilder.of(sphereClient).batchSize(50).build();
+````
+
+##### 6. `syncFilter` 
+It represents either a blacklist or a whitelist for filtering certain update action groups. 
+  
+  - __Blacklisting__ an update action group means that everything in products will be synced except for any group 
+  in the blacklist. A typical use case is to blacklist prices when syncing products. In other words, syncing everything 
+  in products except prices.
+  
+    ````java                         
+    final ProductSyncOptions syncOptions = syncOptionsBuilder.syncFilter(ofBlackList(ActionGroup.PRICES)).build();
+    ````
+  
+  - __Whitelisting__ an update action group means that the groups in this whitelist will be the *only* group synced in 
+  products. One use case could be to whitelist prices when syncing products. In other words, syncing prices only in 
+  products and nothing else.
+  
+    ````java                         
+    final ProductSyncOptions syncOptions = syncOptionsBuilder.syncFilter(ofWhiteList(ActionGroup.PRICES)).build();
+    ````
+  
+  - The list of action groups allowed to be blacklisted or whitelisted on products can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/products/ActionGroup.java). 
+
+##### 7. `ensureChannels` 
+A flag to indicate whether the sync process should create price channel of the given key when it doesn't exist in a 
+target project yet.
+- If `ensureChannels` is set to `false` this product won't be synced and the `errorCallback` will be triggered.
+- If `ensureChannels` is set to `true` the sync will attempt to create the missing channel with the given key. 
+If it fails to create the price channel, the product won't sync and `errorCallback` will be triggered.
+- If not provided, it is set to `false` by default.
+
+##### Example
+````java                         
+final ProductSyncOptions productSyncOptions = 
+         ProductSyncOptionsBuilder.of(sphereClient).ensureChannels(true).build();
+````
 
 #### Running the sync
 After all the aforementioned points in the previous section have been fulfilled, to run the sync:
@@ -92,7 +222,7 @@ It could be that Y is not supplied before X, which means the sync could fail cre
 It could also be that Y is not supplied at all in this batch but at a later batch.
  
 The library keep tracks of such "referencing" drafts like X and persists them in storage 
-(**CTP `customObjects` in the target project** , in this case) 
+(**Commercetools platform `customObjects` in the target project** , in this case) 
 to keep them and create/update them accordingly whenever the referenced drafts exist in the target project.
 
 The `customObject` will have a `container:` **`"commercetools-sync-java.UnresolvedReferencesService.productDrafts"`**
@@ -162,7 +292,7 @@ As soon, as the referenced productDrafts are supplied to the sync, the draft wil
 
 ##### More examples of how to use the sync
 
-1. [Sync from another CTP project as a source](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/ProductSyncIT.java).
+1. [Sync from another commercetools project as a source](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/ctpprojectsource/products/ProductSyncIT.java).
 2. [Sync from an external source](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncIT.java). 
 3. [Sync with blacklisting/whitelisting](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/products/ProductSyncFilterIT.java).
 
