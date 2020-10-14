@@ -196,6 +196,6 @@ More examples for particular update actions can be found in the test scenarios f
 and [AddressUpdateActionUtils](https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/customers/utils/AddressUpdateActionUtilsTest.java).
 
 
-##Caveats
+## Caveats
 The library does not support the synchronization of the `password` field of existing customers.
 For customers that do not exist in the project, a password will be created with the given customer draft’s password.
