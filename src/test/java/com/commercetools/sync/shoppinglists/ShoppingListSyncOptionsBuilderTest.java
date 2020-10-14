@@ -102,12 +102,14 @@ class ShoppingListSyncOptionsBuilderTest {
 
     @Test
     void shoppingListSyncOptionsBuilderSetters_ShouldBeCallableAfterBaseSyncOptionsBuildSetters() {
-        final ShoppingListSyncOptions shoppingListSyncOptions = ShoppingListSyncOptionsBuilder
-            .of(CTP_CLIENT)
-            .batchSize(30)
-            .beforeCreateCallback((newShoppingList) -> null)
-            .beforeUpdateCallback((updateActions, newShoppingList, oldShoppingList) -> emptyList())
-            .build();
+        final ShoppingListSyncOptions shoppingListSyncOptions =
+            ShoppingListSyncOptionsBuilder.of(CTP_CLIENT)
+                                          .batchSize(30)
+                                          .beforeCreateCallback((newShoppingList) -> null)
+                                          .beforeUpdateCallback(
+                                              (updateActions, newShoppingList, oldShoppingList) -> emptyList())
+                                          .build();
+        
         assertThat(shoppingListSyncOptions).isNotNull();
     }
 
@@ -129,10 +131,11 @@ class ShoppingListSyncOptionsBuilderTest {
         assertThat(shoppingListSyncOptionsWithZeroBatchSize.getBatchSize())
             .isEqualTo(ShoppingListSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
 
-        final ShoppingListSyncOptions shoppingListSyncOptionsWithNegativeBatchSize = ShoppingListSyncOptionsBuilder
-            .of(CTP_CLIENT)
-            .batchSize(-100)
-            .build();
+        final ShoppingListSyncOptions shoppingListSyncOptionsWithNegativeBatchSize =
+            ShoppingListSyncOptionsBuilder.of(CTP_CLIENT)
+                                          .batchSize(-100)
+                                          .build();
+
         assertThat(shoppingListSyncOptionsWithNegativeBatchSize.getBatchSize())
             .isEqualTo(ShoppingListSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
     }
@@ -225,10 +228,10 @@ class ShoppingListSyncOptionsBuilderTest {
                                             .key(format("%s_filteredKey", shoppingListDraft.getKey()))
                                             .build();
 
-        final ShoppingListSyncOptions shoppingListSyncOptions = ShoppingListSyncOptionsBuilder
-            .of(CTP_CLIENT)
-            .beforeCreateCallback(draftFunction)
-            .build();
+        final ShoppingListSyncOptions shoppingListSyncOptions =
+            ShoppingListSyncOptionsBuilder.of(CTP_CLIENT)
+                                          .beforeCreateCallback(draftFunction)
+                                          .build();
 
         assertThat(shoppingListSyncOptions.getBeforeCreateCallback()).isNotNull();
 
@@ -258,10 +261,11 @@ class ShoppingListSyncOptionsBuilderTest {
     @Test
     void applyBeforeCreateCallBack_WithCallbackReturningNull_ShouldReturnEmptyOptional() {
         final Function<ShoppingListDraft, ShoppingListDraft> draftFunction = shoppingListDraft -> null;
-        final ShoppingListSyncOptions shoppingListSyncOptions = ShoppingListSyncOptionsBuilder.of(CTP_CLIENT)
-                                                                                              .beforeCreateCallback(
-                                                                                                  draftFunction)
-                                                                                              .build();
+        final ShoppingListSyncOptions shoppingListSyncOptions =
+            ShoppingListSyncOptionsBuilder.of(CTP_CLIENT)
+                                          .beforeCreateCallback(draftFunction)
+                                          .build();
+
         assertThat(shoppingListSyncOptions.getBeforeCreateCallback()).isNotNull();
 
         final ShoppingListDraft resourceDraft = mock(ShoppingListDraft.class);
