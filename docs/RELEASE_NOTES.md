@@ -28,9 +28,9 @@
 
 -->
 ### 2.3.0 - Oct 14, 2020
-[Commits]()
-[Javadoc]()
-[Jar]()
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/2.2.1...2.3.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.3.0/) |
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.3.0)
 
 - 🎉 **New Features** (1)
     - **Customer Sync** - Added support for syncing customers between ctp projects. [#579](https://github.com/commercetools/commercetools-sync-java/issues/579)
