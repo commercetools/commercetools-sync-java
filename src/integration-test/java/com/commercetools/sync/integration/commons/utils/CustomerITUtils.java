@@ -16,6 +16,7 @@ import io.sphere.sdk.stores.Store;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
 import io.sphere.sdk.types.Type;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
 import java.time.LocalDate;
@@ -56,7 +57,8 @@ public final class CustomerITUtils {
         queryAndExecute(ctpClient, CustomerQuery.of(), CustomerDeleteCommand::of);
     }
 
-    public static CustomerDraft createSampleCustomerJohnDoe(@Nonnull final SphereClient ctpClient) {
+    public static ImmutablePair<Customer, CustomerDraft> createSampleCustomerJohnDoe(
+        @Nonnull final SphereClient ctpClient) {
 
         final Store storeBerlin = createStore(ctpClient, "store-berlin");
         final Store storeHamburg = createStore(ctpClient, "store-hamburg");
@@ -97,14 +99,14 @@ public final class CustomerITUtils {
             .locale(Locale.ENGLISH)
             .build();
 
-        createCustomer(ctpClient, customerDraftJohnDoe);
-        return customerDraftJohnDoe;
+        final Customer customer = createCustomer(ctpClient, customerDraftJohnDoe);
+        return ImmutablePair.of(customer, customerDraftJohnDoe);
     }
 
     public static void createSampleCustomerJaneDoe(@Nonnull final SphereClient ctpClient) {
         final CustomerDraft customerDraftJaneDoe = CustomerDraftBuilder
             .of("jane@example.com", "12345")
-            .customerNumber("silver-1")
+            .customerNumber("random-1")
             .key("customer-key-jane-doe")
             .firstName("Jane")
             .lastName("Doe")
@@ -112,7 +114,7 @@ public final class CustomerITUtils {
             .title("Miss")
             .salutation("Dear")
             .dateOfBirth(LocalDate.now().minusYears(25))
-            .companyName("Acme Corporation 2")
+            .companyName("Acme Corporation")
             .vatId("FR000000000")
             .emailVerified(false)
             .addresses(asList(
