@@ -31,7 +31,7 @@ productSync.sync(batch1)
 By design, scaling the sync process should **not** be done by executing the batches themselves in parallel. However, it can be done either by:
  
  - Changing the number of [max parallel requests](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L116) within the `sphereClient` configuration. It defines how many requests the client can execute in parallel.
- - or changing the draft [batch size](https://commercetools.github.io/commercetools-sync-java/v/2.2.1/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-). It defines how many drafts can one batch contain.
+ - or changing the draft [batch size](https://commercetools.github.io/commercetools-sync-java/v/2.3.0/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-). It defines how many drafts can one batch contain.
  
 The current overridable default [configuration](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) of the `sphereClient` 
 is the recommended good balance for stability and performance for the sync process.
