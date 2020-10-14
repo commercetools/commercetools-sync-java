@@ -2,43 +2,35 @@ package com.commercetools.sync.shoppinglists.helpers;
 
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 
-import com.commercetools.sync.commons.helpers.BaseReferenceResolver;
+import com.commercetools.sync.commons.helpers.CustomReferenceResolver;
 import com.commercetools.sync.services.CustomerService;
-import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
-import com.commercetools.sync.states.helpers.StateReferenceResolver;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.shoppinglists.*;
+
+import io.sphere.sdk.shoppinglists.LineItemDraft;
+import io.sphere.sdk.shoppinglists.ShoppingListDraft;
+import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
+import io.sphere.sdk.shoppinglists.TextLineItemDraft;
 import io.sphere.sdk.states.State;
-import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.types.Type;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletionStage;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 
-import static io.sphere.sdk.types.CustomFieldsDraft.ofTypeIdAndJson;
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 
 public final class ShoppingListReferenceResolver
-    extends BaseReferenceResolver<ShoppingListDraft, ShoppingListSyncOptions> {
+    extends CustomReferenceResolver<ShoppingListDraft, ShoppingListDraftBuilder, ShoppingListSyncOptions> {
 
     private final CustomerService customerService;
-    private final TypeService typeService;
     private final LineItemReferenceResolver lineItemReferenceResolver;
     private final TextLineItemReferenceResolver textLineItemReferenceResolver;
 
@@ -50,23 +42,23 @@ public final class ShoppingListReferenceResolver
             + "ShoppingListDraft with key:'%s'. Reason: %s";
 
     /**
-     * Takes a {@link ShoppingListSyncOptions} instance, a {@link StateService} to instantiate a
-     * {@link StateReferenceResolver} instance that could be used to resolve the category drafts in the
-     * CTP project specified in the injected {@link ShoppingListSyncOptions} instance.
+     * Takes a {@link ShoppingListSyncOptions} instance, a {@link CustomerService} and {@link TypeService} to
+     * instantiate a {@link ShoppingListReferenceResolver} instance that could be used to resolve the category drafts
+     * in the CTP project specified in the injected {@link ShoppingListSyncOptions} instance.
      *
-     * @param shoppingListSyncOptions   the container of all the options of the sync process including the CTP project client
-     *                                  and/or configuration and other sync-specific options.
-     * @param customerService       the service to fetch the states for reference resolution.
+     * @param shoppingListSyncOptions   the container of all the options of the sync process including the CTP project
+     *                                  client and/or configuration and other sync-specific options.
+     * @param customerService       the service to fetch the customers for reference resolution.
+     * @param typeService           the service to fetch the types for reference resolution.
      */
     public ShoppingListReferenceResolver(@Nonnull final ShoppingListSyncOptions shoppingListSyncOptions,
-
                                         @Nonnull final CustomerService customerService,
                                         @Nonnull final TypeService typeService) {
-        super(shoppingListSyncOptions);
+
+        super(shoppingListSyncOptions, typeService);
         this.lineItemReferenceResolver = new LineItemReferenceResolver(shoppingListSyncOptions, typeService);
         this.textLineItemReferenceResolver = new TextLineItemReferenceResolver(shoppingListSyncOptions, typeService);
         this.customerService = customerService;
-        this.typeService = typeService;
     }
 
     /**
@@ -108,34 +100,15 @@ public final class ShoppingListReferenceResolver
     }
 
     @Nonnull
-    private CompletionStage<ShoppingListDraftBuilder> resolveCustomTypeReference(
+    protected CompletionStage<ShoppingListDraftBuilder> resolveCustomTypeReference(
             @Nonnull final ShoppingListDraftBuilder draftBuilder) {
-        final Function<ShoppingListDraftBuilder, CustomFieldsDraft> customGetter = ShoppingListDraftBuilder::getCustom;
-        final BiFunction<
-                ShoppingListDraftBuilder,
-                CustomFieldsDraft,
-                ShoppingListDraftBuilder> customSetter = ShoppingListDraftBuilder::custom;
+
         final String errorMessage  = format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draftBuilder.getKey());
 
-        final CustomFieldsDraft custom = customGetter.apply(draftBuilder);
-
-        if (custom != null) {
-            final ResourceIdentifier<Type> customType = custom.getType();
-
-            if (customType.getId() == null) {
-                String customTypeKey;
-
-                try {
-                    customTypeKey = getCustomTypeKey(customType, errorMessage);
-                } catch (ReferenceResolutionException referenceResolutionException) {
-                    return exceptionallyCompletedFuture(referenceResolutionException);
-                }
-
-                return fetchAndResolveTypeReference(draftBuilder, customSetter, custom.getFields(), customTypeKey,
-                        errorMessage);
-            }
-        }
-        return completedFuture(draftBuilder);
+        return resolveCustomTypeReference(
+                draftBuilder,
+                ShoppingListDraftBuilder::getCustom,
+                ShoppingListDraftBuilder::custom, errorMessage);
     }
 
     @Nonnull
@@ -183,46 +156,4 @@ public final class ShoppingListReferenceResolver
                                 errorMessage)));
                 }));
     }
-
-    @Nonnull
-    private String getCustomTypeKey(
-            @Nonnull final ResourceIdentifier<Type> customType,
-            @Nonnull final String referenceResolutionErrorMessage) throws ReferenceResolutionException {
-
-        try {
-            return getKeyFromResourceIdentifier(customType);
-        } catch (ReferenceResolutionException exception) {
-            final String errorMessage =
-                    format("%s Reason: %s", referenceResolutionErrorMessage, exception.getMessage());
-            throw new ReferenceResolutionException(errorMessage, exception);
-        }
-    }
-
-    @Nonnull
-    private CompletionStage<ShoppingListDraftBuilder> fetchAndResolveTypeReference(
-            @Nonnull final ShoppingListDraftBuilder draftBuilder,
-            @Nonnull final BiFunction<
-                    ShoppingListDraftBuilder,
-                    CustomFieldsDraft,
-                    ShoppingListDraftBuilder> customSetter,
-            @Nullable final Map<String, JsonNode> customFields,
-            @Nonnull final String typeKey,
-            @Nonnull final String referenceResolutionErrorMessage) {
-
-        return typeService
-                .fetchCachedTypeId(typeKey)
-                .thenCompose(resolvedTypeIdOptional -> resolvedTypeIdOptional
-                        .map(resolvedTypeId ->
-                                completedFuture(
-                                        customSetter.apply(draftBuilder, ofTypeIdAndJson(resolvedTypeId, customFields))))
-                        .orElseGet(() -> {
-                            final String errorMessage =
-                                    format("%s Reason: %s",
-                                            referenceResolutionErrorMessage,
-                                            format(TYPE_DOES_NOT_EXIST, typeKey));
-                            return exceptionallyCompletedFuture(new ReferenceResolutionException(errorMessage));
-                        }));
-    }
-
-
 }
