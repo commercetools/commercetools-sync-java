@@ -13,7 +13,7 @@
 
 6. Depending on the contents of the release use the subitems below to 
   document the new changes in the release accordingly. Please always include
-  a link to the releated issue number. 
+  a link to the related issue number. 
    **New Features** (n) 🎉 
    **Breaking Changes** (n) 🚧 
    **Enhancements** (n) ✨
@@ -22,11 +22,22 @@
    **Critical Bug Fixes** (n) 🔥 
    **Bug Fixes** (n)🐞
    - **Category Sync** - Sync now supports product variant images syncing. [#114](https://github.com/commercetools/commercetools-sync-java/issues/114)
-   - **Build Tools** - Convinient handelling of env vars for integration tests.
+   - **Build Tools** - Convenient handling of env vars for integration tests.
 
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 
 -->
+### 2.3.0 - Oct 14, 2020
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/2.2.1...2.3.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.3.0/) |
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.3.0)
+
+- 🎉 **New Features** (1)
+    - **Customer Sync** - Added support for syncing customers between ctp projects. [#579](https://github.com/commercetools/commercetools-sync-java/issues/579)
+    - **Customer Sync** - Introduced `CustomerSyncUtils` which calculates all needed update actions after comparing a `Customer` and a `CustomerDraft`. [#579](https://github.com/commercetools/commercetools-sync-java/issues/579)
+    - **Customer Sync** - Introduced `CustomerUpdateActionUtils` which contains utils for calculating needed update actions after comparing individual fields of a `Customer` and a `CustomerDraft`. [#579](https://github.com/commercetools/commercetools-sync-java/issues/579)
+    - **Customer Sync** - Introduced `CustomerReferenceResolutionUtils` which resolves CustomerGroup and Type references from a Customer to a CustomerDraft. [#579](https://github.com/commercetools/commercetools-sync-java/issues/579)
+        
 
 ### 2.2.1 - Sep 29, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/2.2.0...2.2.1) |
