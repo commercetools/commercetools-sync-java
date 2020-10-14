@@ -197,5 +197,5 @@ and [AddressUpdateActionUtils](https://github.com/commercetools/commercetools-sy
 
 
 ##Caveats
-Customer passwords are not being synced.
-
+The library does not support the synchronization of the `password` field of existing customers.
+For customers that do not exist in the project, a password will be created with the given customer draft’s password.
