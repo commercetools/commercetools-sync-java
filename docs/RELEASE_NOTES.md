@@ -34,7 +34,10 @@
 
 - 🎉 **New Features** (1)
     - **Customer Sync** - Added support for syncing customers between ctp projects. [#579](https://github.com/commercetools/commercetools-sync-java/issues/579)
-
+    - **Customer Sync** - Introduced `CustomerSyncUtils` which calculates all needed update actions after comparing a `Customer` and a `CustomerDraft`. [#579](https://github.com/commercetools/commercetools-sync-java/issues/579)
+    - **Customer Sync** - Introduced `CustomerUpdateActionUtils` which contains utils for calculating needed update actions after comparing individual fields of a `Customer` and a `CustomerDraft`. [#579](https://github.com/commercetools/commercetools-sync-java/issues/579)
+    - **Customer Sync** - Introduced `CustomerReferenceResolutionUtils` which resolves CustomerGroup and Type references from a Customer to a CustomerDraft. [#579](https://github.com/commercetools/commercetools-sync-java/issues/579)
+        
 
 ### 2.2.1 - Sep 29, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/2.2.0...2.2.1) |
