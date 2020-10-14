@@ -93,7 +93,7 @@ One example is the `buildChangeEmailUpdateAction` which compare email addresses:
 Optional<UpdateAction<Customer>> updateAction = CustomerUpdateActionUtils.buildChangeEmailAction(oldCustomer, customerDraft);
 ````
 
-More examples of those utils for different cart discounts can be found [here](TODO: add link).
+More examples of those utils for different cart discounts can be found [here](TODO: add link later).
 
 
 ##Caveats
