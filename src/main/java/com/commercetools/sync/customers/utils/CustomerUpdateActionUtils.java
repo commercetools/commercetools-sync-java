@@ -458,7 +458,7 @@ public final class CustomerUpdateActionUtils {
      * @return A list containing the update actions or an empty list if the store references are identical.
      */
     @Nonnull
-    private static List<UpdateAction<Customer>> buildRemoveStoreUpdateActions(
+    public static List<UpdateAction<Customer>> buildRemoveStoreUpdateActions(
         @Nonnull final List<KeyReference<Store>> oldStores,
         @Nonnull final List<ResourceIdentifier<Store>> newStores) {
 
@@ -490,7 +490,7 @@ public final class CustomerUpdateActionUtils {
      * @return A list containing the update actions or an empty list if the store references are identical.
      */
     @Nonnull
-    private static List<UpdateAction<Customer>> buildAddStoreUpdateActions(
+    public static List<UpdateAction<Customer>> buildAddStoreUpdateActions(
         @Nonnull final List<KeyReference<Store>> oldStores,
         @Nonnull final List<ResourceIdentifier<Store>> newStores) {
 
