@@ -10,7 +10,9 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.Referenceable;
 import io.sphere.sdk.models.ResourceIdentifier;
+import io.sphere.sdk.models.ResourceImpl;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
@@ -39,6 +41,7 @@ import io.sphere.sdk.search.SearchKeywords;
 import io.sphere.sdk.states.State;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -782,8 +785,25 @@ public final class ProductUpdateActionUtils {
         @Nonnull final Product oldProduct,
         @Nonnull final ProductDraft newProduct) {
         return ofNullable(newProduct.getState() != null && !Objects.equals(oldProduct.getState(), newProduct.getState())
-            ? TransitionState.of(newProduct.getState(), true)
+            ? TransitionState.of(mapResourceIdentifierToReferenceable(newProduct.getState()), true)
             : null);
+    }
+
+    @Nullable
+    private static Referenceable<State> mapResourceIdentifierToReferenceable(
+        @Nullable final ResourceIdentifier<State> resourceIdentifier) {
+
+        if (resourceIdentifier == null) {
+            return null; // unset
+        }
+
+        // TODO (JVM-SDK), see: SUPPORT-10336 TransitionState needs to be created with a ResourceIdentifier
+        return new ResourceImpl<State>(null, null, null, null) {
+            @Override
+            public Reference<State> toReference() {
+                return Reference.of(State.referenceTypeId(), resourceIdentifier.getId());
+            }
+        };
     }
 
     /**
