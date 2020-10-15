@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@SuppressWarnings("unchecked")
 public class StoreUpdateActionUtilsTest {
 
     private Customer oldCustomer;
@@ -273,7 +274,7 @@ public class StoreUpdateActionUtilsTest {
     }
 
     @Test
-    void buildStoreUpdateActions_WithMixedStores_ShouldReturnAddAndRemoveStoreActions() {
+    void buildStoreUpdateActions_WithMixedStores_ShouldReturnSetStoresAction() {
 
         final KeyReference<Store> keyReference1 = mock(KeyReference.class);
         when(keyReference1.getKey()).thenReturn("store-key1");
@@ -299,9 +300,10 @@ public class StoreUpdateActionUtilsTest {
 
         assertThat(updateActions)
             .isNotEmpty()
-            .containsExactly(
-                RemoveStore.of(ResourceIdentifier.ofKey("store-key4")),
-                AddStore.of(ResourceIdentifier.ofKey("store-key2")));
+            .containsExactly(SetStores.of(
+                asList(ResourceIdentifier.ofKey("store-key1"),
+                       ResourceIdentifier.ofKey("store-key2"),
+                       ResourceIdentifier.ofKey("store-key3"))));
     }
 
     @Test

@@ -27,6 +27,7 @@ import io.sphere.sdk.customers.commands.updateactions.SetFirstName;
 import io.sphere.sdk.customers.commands.updateactions.SetLocale;
 import io.sphere.sdk.customers.commands.updateactions.SetMiddleName;
 import io.sphere.sdk.customers.commands.updateactions.SetSalutation;
+import io.sphere.sdk.customers.commands.updateactions.SetStores;
 import io.sphere.sdk.customers.commands.updateactions.SetTitle;
 import io.sphere.sdk.customers.commands.updateactions.SetVatId;
 import io.sphere.sdk.models.Address;
@@ -47,6 +48,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.CUSTOMER_NUMBER_EXISTS_WARNING;
 import static com.commercetools.sync.integration.commons.utils.CustomerGroupITUtils.createCustomerGroup;
 import static com.commercetools.sync.integration.commons.utils.CustomerITUtils.createSampleCustomerJohnDoe;
 import static com.commercetools.sync.integration.commons.utils.CustomerITUtils.deleteCustomerSyncTestData;
@@ -55,6 +57,7 @@ import static com.commercetools.sync.integration.commons.utils.ITUtils.LOCALISED
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createCustomFieldsJsonMap;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.StoreITUtils.createStore;
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toMap;
@@ -65,6 +68,7 @@ class CustomerSyncIT {
     private Customer customerJohnDoe;
 
     private List<String> errorMessages;
+    private List<String> warningMessages;
     private List<Throwable> exceptions;
     private List<UpdateAction<Customer>> updateActionList;
     private CustomerSync customerSync;
@@ -82,6 +86,7 @@ class CustomerSyncIT {
     private void setUpCustomerSync() {
         errorMessages = new ArrayList<>();
         exceptions = new ArrayList<>();
+        warningMessages = new ArrayList<>();
         updateActionList = new ArrayList<>();
 
         CustomerSyncOptions customerSyncOptions = CustomerSyncOptionsBuilder
@@ -90,6 +95,8 @@ class CustomerSyncIT {
                 errorMessages.add(exception.getMessage());
                 exceptions.add(exception);
             })
+            .warningCallback((exception, oldResource, newResource)
+                -> warningMessages.add(exception.getMessage()))
             .beforeUpdateCallback((updateActions, customerDraft, customer) -> {
                 updateActionList.addAll(Objects.requireNonNull(updateActions));
                 return updateActions;
@@ -112,9 +119,10 @@ class CustomerSyncIT {
             .toCompletableFuture()
             .join();
 
-        assertThat(customerSyncStatistics).hasValues(1, 0, 0, 0);
         assertThat(errorMessages).isEmpty();
+        assertThat(warningMessages).isEmpty();
         assertThat(exceptions).isEmpty();
+        assertThat(customerSyncStatistics).hasValues(1, 0, 0, 0);
         assertThat(customerSyncStatistics
             .getReportMessage())
             .isEqualTo("Summary: 1 customers were processed in total (0 created, 0 updated and 0 failed to sync).");
@@ -141,9 +149,12 @@ class CustomerSyncIT {
             .toCompletableFuture()
             .join();
 
-        assertThat(customerSyncStatistics).hasValues(1, 1, 0, 0);
         assertThat(errorMessages).isEmpty();
+        assertThat(warningMessages).isEmpty();
         assertThat(exceptions).isEmpty();
+        assertThat(updateActionList).isEmpty();
+
+        assertThat(customerSyncStatistics).hasValues(1, 1, 0, 0);
         assertThat(customerSyncStatistics
             .getReportMessage())
             .isEqualTo("Summary: 1 customers were processed in total (1 created, 0 updated and 0 failed to sync).");
@@ -151,9 +162,15 @@ class CustomerSyncIT {
 
     @Test
     void sync_WithUpdatedCustomer_ShouldUpdateCustomer() {
+        final Store storeCologne = createStore(CTP_TARGET_CLIENT, "store-cologne");
         final CustomerDraft updatedCustomerDraft =
             CustomerDraftBuilder.of(customerDraftJohnDoe)
-                                .email("JOhn@example.com")
+                                .customerNumber("gold-new") // from gold-1, but can not be changed.
+                                .email("john-new@example.com") //from john@example.com
+                                .stores(asList( // store-cologne is added, store-munich is removed
+                                    ResourceIdentifier.ofKey(storeCologne.getKey()),
+                                    ResourceIdentifier.ofKey("store-hamburg"),
+                                    ResourceIdentifier.ofKey("store-berlin")))
                                 .build();
 
         final CustomerSyncStatistics customerSyncStatistics = customerSync
@@ -161,9 +178,19 @@ class CustomerSyncIT {
             .toCompletableFuture()
             .join();
 
-        assertThat(customerSyncStatistics).hasValues(1, 0, 1, 0);
         assertThat(errorMessages).isEmpty();
+        assertThat(warningMessages)
+            .containsExactly(format(CUSTOMER_NUMBER_EXISTS_WARNING, updatedCustomerDraft.getKey(), "gold-1"));
         assertThat(exceptions).isEmpty();
+        assertThat(updateActionList).containsExactly(
+            ChangeEmail.of("john-new@example.com"),
+            SetStores.of(asList(
+                ResourceIdentifier.ofKey("store-cologne"),
+                ResourceIdentifier.ofKey("store-hamburg"),
+                ResourceIdentifier.ofKey("store-berlin")))
+        );
+
+        assertThat(customerSyncStatistics).hasValues(1, 0, 1, 0);
         assertThat(customerSyncStatistics
             .getReportMessage())
             .isEqualTo("Summary: 1 customers were processed in total (0 created, 1 updated and 0 failed to sync).");
@@ -214,12 +241,8 @@ class CustomerSyncIT {
             .join();
 
         assertThat(errorMessages).isEmpty();
+        assertThat(warningMessages).isEmpty();
         assertThat(exceptions).isEmpty();
-
-        assertThat(customerSyncStatistics).hasValues(1, 0, 1, 0);
-        assertThat(customerSyncStatistics
-            .getReportMessage())
-            .isEqualTo("Summary: 1 customers were processed in total (0 created, 1 updated and 0 failed to sync).");
 
         final Map<String, String> addressKeyToIdMap =
             customerJohnDoe.getAddresses().stream().collect(toMap(Address::getKey, Address::getId));
@@ -246,5 +269,10 @@ class CustomerSyncIT {
             SetCustomField.ofJson(BOOLEAN_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.booleanNode(false)),
             AddStore.of(ResourceIdentifier.ofKey(storeCologne.getKey()))
         );
+
+        assertThat(customerSyncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(customerSyncStatistics
+            .getReportMessage())
+            .isEqualTo("Summary: 1 customers were processed in total (0 created, 1 updated and 0 failed to sync).");
     }
 }
