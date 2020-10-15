@@ -113,9 +113,9 @@ class CustomerSyncIT {
             .toCompletableFuture()
             .join();
 
-        assertThat(customerSyncStatistics).hasValues(1, 0, 0, 0);
         assertThat(errorMessages).isEmpty();
         assertThat(exceptions).isEmpty();
+        assertThat(customerSyncStatistics).hasValues(1, 0, 0, 0);
         assertThat(customerSyncStatistics
             .getReportMessage())
             .isEqualTo("Summary: 1 customers were processed in total (0 created, 0 updated and 0 failed to sync).");
@@ -142,13 +142,14 @@ class CustomerSyncIT {
             .toCompletableFuture()
             .join();
 
+        assertThat(errorMessages).isEmpty();
+        assertThat(exceptions).isEmpty();
+        assertThat(updateActionList).isEmpty();
+
         assertThat(customerSyncStatistics).hasValues(1, 1, 0, 0);
         assertThat(customerSyncStatistics
             .getReportMessage())
             .isEqualTo("Summary: 1 customers were processed in total (1 created, 0 updated and 0 failed to sync).");
-        assertThat(errorMessages).isEmpty();
-        assertThat(exceptions).isEmpty();
-        assertThat(updateActionList).isEmpty();
     }
 
     @Test
@@ -168,10 +169,6 @@ class CustomerSyncIT {
             .toCompletableFuture()
             .join();
 
-        assertThat(customerSyncStatistics).hasValues(1, 0, 1, 0);
-        assertThat(customerSyncStatistics
-            .getReportMessage())
-            .isEqualTo("Summary: 1 customers were processed in total (0 created, 1 updated and 0 failed to sync).");
 
         assertThat(errorMessages).isEmpty();
         assertThat(exceptions).isEmpty();
@@ -182,6 +179,11 @@ class CustomerSyncIT {
                 ResourceIdentifier.ofKey("store-hamburg"),
                 ResourceIdentifier.ofKey("store-berlin")))
         );
+
+        assertThat(customerSyncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(customerSyncStatistics
+            .getReportMessage())
+            .isEqualTo("Summary: 1 customers were processed in total (0 created, 1 updated and 0 failed to sync).");
     }
 
     @Test
@@ -231,11 +233,6 @@ class CustomerSyncIT {
         assertThat(errorMessages).isEmpty();
         assertThat(exceptions).isEmpty();
 
-        assertThat(customerSyncStatistics).hasValues(1, 0, 1, 0);
-        assertThat(customerSyncStatistics
-            .getReportMessage())
-            .isEqualTo("Summary: 1 customers were processed in total (0 created, 1 updated and 0 failed to sync).");
-
         final Map<String, String> addressKeyToIdMap =
             customerJohnDoe.getAddresses().stream().collect(toMap(Address::getKey, Address::getId));
 
@@ -261,5 +258,10 @@ class CustomerSyncIT {
             SetCustomField.ofJson(BOOLEAN_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.booleanNode(false)),
             AddStore.of(ResourceIdentifier.ofKey(storeCologne.getKey()))
         );
+
+        assertThat(customerSyncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(customerSyncStatistics
+            .getReportMessage())
+            .isEqualTo("Summary: 1 customers were processed in total (0 created, 1 updated and 0 failed to sync).");
     }
 }
