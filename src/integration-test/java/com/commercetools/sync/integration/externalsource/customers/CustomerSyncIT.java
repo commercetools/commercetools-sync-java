@@ -48,6 +48,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.CUSTOMER_NUMBER_EXISTS_WARNING;
 import static com.commercetools.sync.integration.commons.utils.CustomerGroupITUtils.createCustomerGroup;
 import static com.commercetools.sync.integration.commons.utils.CustomerITUtils.createSampleCustomerJohnDoe;
 import static com.commercetools.sync.integration.commons.utils.CustomerITUtils.deleteCustomerSyncTestData;
@@ -56,6 +57,7 @@ import static com.commercetools.sync.integration.commons.utils.ITUtils.LOCALISED
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createCustomFieldsJsonMap;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.StoreITUtils.createStore;
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toMap;
@@ -66,6 +68,7 @@ class CustomerSyncIT {
     private Customer customerJohnDoe;
 
     private List<String> errorMessages;
+    private List<String> warningMessages;
     private List<Throwable> exceptions;
     private List<UpdateAction<Customer>> updateActionList;
     private CustomerSync customerSync;
@@ -83,6 +86,7 @@ class CustomerSyncIT {
     private void setUpCustomerSync() {
         errorMessages = new ArrayList<>();
         exceptions = new ArrayList<>();
+        warningMessages = new ArrayList<>();
         updateActionList = new ArrayList<>();
 
         CustomerSyncOptions customerSyncOptions = CustomerSyncOptionsBuilder
@@ -91,6 +95,8 @@ class CustomerSyncIT {
                 errorMessages.add(exception.getMessage());
                 exceptions.add(exception);
             })
+            .warningCallback((exception, oldResource, newResource)
+                -> warningMessages.add(exception.getMessage()))
             .beforeUpdateCallback((updateActions, customerDraft, customer) -> {
                 updateActionList.addAll(Objects.requireNonNull(updateActions));
                 return updateActions;
@@ -114,6 +120,7 @@ class CustomerSyncIT {
             .join();
 
         assertThat(errorMessages).isEmpty();
+        assertThat(warningMessages).isEmpty();
         assertThat(exceptions).isEmpty();
         assertThat(customerSyncStatistics).hasValues(1, 0, 0, 0);
         assertThat(customerSyncStatistics
@@ -143,6 +150,7 @@ class CustomerSyncIT {
             .join();
 
         assertThat(errorMessages).isEmpty();
+        assertThat(warningMessages).isEmpty();
         assertThat(exceptions).isEmpty();
         assertThat(updateActionList).isEmpty();
 
@@ -157,7 +165,8 @@ class CustomerSyncIT {
         final Store storeCologne = createStore(CTP_TARGET_CLIENT, "store-cologne");
         final CustomerDraft updatedCustomerDraft =
             CustomerDraftBuilder.of(customerDraftJohnDoe)
-                                .email("john-new@example.com") // from john@example.com
+                                .customerNumber("gold-new") // from gold-1, but can not be changed.
+                                .email("john-new@example.com") //from john@example.com
                                 .stores(asList( // store-cologne is added, store-munich is removed
                                     ResourceIdentifier.ofKey(storeCologne.getKey()),
                                     ResourceIdentifier.ofKey("store-hamburg"),
@@ -169,8 +178,9 @@ class CustomerSyncIT {
             .toCompletableFuture()
             .join();
 
-
         assertThat(errorMessages).isEmpty();
+        assertThat(warningMessages)
+            .containsExactly(format(CUSTOMER_NUMBER_EXISTS_WARNING, updatedCustomerDraft.getKey(), "gold-1"));
         assertThat(exceptions).isEmpty();
         assertThat(updateActionList).containsExactly(
             ChangeEmail.of("john-new@example.com"),
@@ -231,6 +241,7 @@ class CustomerSyncIT {
             .join();
 
         assertThat(errorMessages).isEmpty();
+        assertThat(warningMessages).isEmpty();
         assertThat(exceptions).isEmpty();
 
         final Map<String, String> addressKeyToIdMap =

@@ -1,5 +1,7 @@
 package com.commercetools.sync.customers.utils;
 
+import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.customers.CustomerSyncOptions;
 import com.commercetools.sync.customers.commands.updateactions.AddBillingAddressIdWithKey;
 import com.commercetools.sync.customers.commands.updateactions.AddShippingAddressIdWithKey;
 import com.commercetools.sync.customers.commands.updateactions.SetDefaultBillingAddressWithKey;
@@ -60,6 +62,10 @@ import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public final class CustomerUpdateActionUtils {
+
+    public static final String CUSTOMER_NUMBER_EXISTS_WARNING = "Customer with key: \"%s\" has "
+        + "already a customer number \"%s\", once it's set it cannot be changed. "
+        + "Hereby, the update action is not created.";
 
     private CustomerUpdateActionUtils() {
     }
@@ -184,17 +190,35 @@ public final class CustomerUpdateActionUtils {
      * {@link UpdateAction}. If both {@link Customer} and {@link CustomerDraft} have the same
      * {@code customerNumber} values, then no update action is needed and empty optional will be returned.
      *
+     * <p>Note: Customer number should be unique across a project. Once it's set it cannot be changed. For this case,
+     * warning callback will be triggered and an empty optional will be returned.
+     *
      * @param oldCustomer the customer that should be updated.
      * @param newCustomer the customer draft that contains the new customer number.
+     * @param syncOptions responsible for supplying the sync options to the sync utility method. It is used for
+     *                    triggering the warning callback when trying to change an existing customer number.
      * @return optional containing update action or empty optional if customer numbers are identical.
      */
     @Nonnull
     public static Optional<UpdateAction<Customer>> buildSetCustomerNumberUpdateAction(
         @Nonnull final Customer oldCustomer,
-        @Nonnull final CustomerDraft newCustomer) {
+        @Nonnull final CustomerDraft newCustomer,
+        @Nonnull final CustomerSyncOptions syncOptions) {
 
-        return buildUpdateAction(oldCustomer.getCustomerNumber(), newCustomer.getCustomerNumber(),
-            () -> SetCustomerNumber.of(newCustomer.getCustomerNumber()));
+        final Optional<UpdateAction<Customer>> setCustomerNumberAction =
+            buildUpdateAction(oldCustomer.getCustomerNumber(), newCustomer.getCustomerNumber(),
+                () -> SetCustomerNumber.of(newCustomer.getCustomerNumber()));
+
+        if (setCustomerNumberAction.isPresent() && !isBlank(oldCustomer.getCustomerNumber())) {
+
+            syncOptions.applyWarningCallback(
+                new SyncException(format(CUSTOMER_NUMBER_EXISTS_WARNING, oldCustomer.getKey(),
+                    oldCustomer.getCustomerNumber())), oldCustomer, newCustomer);
+
+            return Optional.empty();
+        }
+
+        return setCustomerNumberAction;
     }
 
     /**

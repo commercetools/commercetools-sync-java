@@ -58,7 +58,7 @@ public final class CustomerSyncUtils {
             buildSetTitleUpdateAction(oldCustomer, newCustomer),
             buildSetSalutationUpdateAction(oldCustomer, newCustomer),
             buildSetCustomerGroupUpdateAction(oldCustomer, newCustomer),
-            buildSetCustomerNumberUpdateAction(oldCustomer, newCustomer),
+            buildSetCustomerNumberUpdateAction(oldCustomer, newCustomer, syncOptions),
             buildSetExternalIdUpdateAction(oldCustomer, newCustomer),
             buildSetCompanyNameUpdateAction(oldCustomer, newCustomer),
             buildSetDateOfBirthUpdateAction(oldCustomer, newCustomer),

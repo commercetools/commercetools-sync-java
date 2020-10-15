@@ -1,5 +1,8 @@
 package com.commercetools.sync.customers.utils;
 
+import com.commercetools.sync.customers.CustomerSyncOptions;
+import com.commercetools.sync.customers.CustomerSyncOptionsBuilder;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.customers.Customer;
@@ -21,17 +24,22 @@ import io.sphere.sdk.customers.commands.updateactions.SetTitle;
 import io.sphere.sdk.customers.commands.updateactions.SetVatId;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
-import java.time.LocalDate;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.UUID;
+
+import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.CUSTOMER_NUMBER_EXISTS_WARNING;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildChangeEmailUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetCompanyNameUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetCustomerGroupUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetCustomerNumberUpdateAction;
+import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetDateOfBirthUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetExternalIdUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetFirstNameUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetLastNameUpdateAction;
@@ -40,7 +48,7 @@ import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.b
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetSalutationUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetTitleUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetVatIdUpdateAction;
-import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetDateOfBirthUpdateAction;
+import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -190,18 +198,81 @@ public class CustomerUpdateActionUtilsTest {
     }
 
     @Test
-    void buildSetCustomerNumberUpdateAction_withDifferentValues_ShouldReturnAction() {
-        final Optional<UpdateAction<Customer>> result = buildSetCustomerNumberUpdateAction(old, newDifferent);
+    void buildSetCustomerNumberUpdateAction_withDifferentValues_ShouldNotReturnActionAndAddWarningCallback() {
+        final List<String> warningMessages = new ArrayList<>();
+        final CustomerSyncOptions customerSyncOptions =
+            CustomerSyncOptionsBuilder.of(mock(SphereClient.class))
+                                      .warningCallback((exception, oldResource, newResource)
+                                          -> warningMessages.add(exception.getMessage()))
+                                      .build();
 
-        assertThat(result).containsInstanceOf(SetCustomerNumber.class);
-        assertThat(result).contains(SetCustomerNumber.of(newDifferent.getCustomerNumber()));
+        final Optional<UpdateAction<Customer>> result =
+            buildSetCustomerNumberUpdateAction(old, newDifferent, customerSyncOptions);
+
+        assertThat(result).isEmpty();
+        assertThat(warningMessages).containsExactly(format(CUSTOMER_NUMBER_EXISTS_WARNING, old.getKey(), "1234"));
     }
 
     @Test
     void buildSetCustomerNumberUpdateAction_withSameValues_ShouldReturnEmptyOptional() {
-        final Optional<UpdateAction<Customer>> result = buildSetCustomerNumberUpdateAction(old, newSame);
+        final List<String> warningMessages = new ArrayList<>();
+        final CustomerSyncOptions customerSyncOptions =
+            CustomerSyncOptionsBuilder.of(mock(SphereClient.class))
+                                      .warningCallback((exception, oldResource, newResource)
+                                          -> warningMessages.add(exception.getMessage()))
+                                      .build();
+
+        final Optional<UpdateAction<Customer>> result =
+            buildSetCustomerNumberUpdateAction(old, newSame, customerSyncOptions);
 
         assertThat(result).isEmpty();
+        assertThat(warningMessages).isEmpty();
+    }
+
+    @Test
+    void buildSetCustomerNumberUpdateAction_withEmptyOldValueAndANewValue_ShouldReturnAction() {
+        final List<String> warningMessages = new ArrayList<>();
+        final CustomerSyncOptions customerSyncOptions =
+            CustomerSyncOptionsBuilder.of(mock(SphereClient.class))
+                                      .warningCallback((exception, oldResource, newResource)
+                                          -> warningMessages.add(exception.getMessage()))
+                                      .build();
+
+        Customer oldCustomer = mock(Customer.class);
+        when(oldCustomer.getCustomerNumber()).thenReturn(" ");
+
+        CustomerDraft newCustomer = mock(CustomerDraft.class);
+        when(newCustomer.getCustomerNumber()).thenReturn("customer-number");
+
+        final Optional<UpdateAction<Customer>> result =
+            buildSetCustomerNumberUpdateAction(oldCustomer, newCustomer, customerSyncOptions);
+
+        assertThat(result).containsInstanceOf(SetCustomerNumber.class);
+        assertThat(result).contains(SetCustomerNumber.of("customer-number"));
+        assertThat(warningMessages).isEmpty();
+    }
+
+    @Test
+    void buildSetCustomerNumberUpdateAction_withNullOldValueAndANewValue_ShouldReturnAction() {
+        final List<String> warningMessages = new ArrayList<>();
+        final CustomerSyncOptions customerSyncOptions =
+            CustomerSyncOptionsBuilder.of(mock(SphereClient.class))
+                                      .warningCallback((exception, oldResource, newResource)
+                                          -> warningMessages.add(exception.getMessage()))
+                                      .build();
+
+        Customer oldCustomer = mock(Customer.class);
+        when(oldCustomer.getCustomerNumber()).thenReturn(null);
+
+        CustomerDraft newCustomer = mock(CustomerDraft.class);
+        when(newCustomer.getCustomerNumber()).thenReturn("customer-number");
+
+        final Optional<UpdateAction<Customer>> result =
+            buildSetCustomerNumberUpdateAction(oldCustomer, newCustomer, customerSyncOptions);
+
+        assertThat(result).containsInstanceOf(SetCustomerNumber.class);
+        assertThat(result).contains(SetCustomerNumber.of("customer-number"));
+        assertThat(warningMessages).isEmpty();
     }
 
     @Test
