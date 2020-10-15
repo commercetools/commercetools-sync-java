@@ -202,11 +202,11 @@ public abstract class BaseSyncStatistics {
         final long remainingMillis = latestBatchProcessingTimeInMillis - completeSecondsInMillis;
 
         latestBatchHumanReadableProcessingTime = format("%dd, %dh, %dm, %ds, %dms",
-                latestBatchProcessingTimeInDays,
-                remainingHours,
-                remainingMinutes,
-                remainingSeconds,
-                remainingMillis
+            latestBatchProcessingTimeInDays,
+          remainingHours,
+          remainingMinutes,
+          remainingSeconds,
+          remainingMillis
         );
     }
 
@@ -295,7 +295,7 @@ public abstract class BaseSyncStatistics {
      */
     protected String getDefaultReportMessageForResource(@Nonnull final String resourceString) {
         return format(
-                "Summary: %s %s were processed in total (%s created, %s updated and %s failed to sync).",
-                getProcessed(), resourceString, getCreated(), getUpdated(), getFailed());
+            "Summary: %s %s were processed in total (%s created, %s updated and %s failed to sync).",
+            getProcessed(), resourceString, getCreated(), getUpdated(), getFailed());
     }
 }

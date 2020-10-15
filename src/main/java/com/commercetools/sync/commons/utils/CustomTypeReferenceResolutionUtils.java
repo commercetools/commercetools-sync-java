@@ -55,7 +55,7 @@ public final class CustomTypeReferenceResolutionUtils {
         if (custom != null) {
             if (custom.getType().getObj() != null) {
                 return CustomFieldsDraft.ofTypeKeyAndJson(custom.getType().getObj().getKey(),
-                        custom.getFieldsJsonMap());
+                    custom.getFieldsJsonMap());
             }
             return CustomFieldsDraftBuilder.of(custom).build();
         }
