@@ -60,10 +60,10 @@ class ProductBatchValidatorTest {
         errorCallBackMessages = new ArrayList<>();
         final SphereClient ctpClient = mock(SphereClient.class);
         syncOptions = ProductSyncOptionsBuilder.of(ctpClient)
-                                               .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                                                   errorCallBackMessages.add(exception.getMessage());
-                                               })
-                                               .build();
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorCallBackMessages.add(exception.getMessage());
+                })
+                .build();
         syncStatistics = mock(ProductSyncStatistics.class);
     }
 
@@ -343,26 +343,15 @@ class ProductBatchValidatorTest {
 
         final List<AttributeDraft> attributes = asList(null, productReferenceAttribute, productReferenceSetAttribute);
 
-        final PriceDraft priceDraft = PriceDraftBuilder
-            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
-            .custom(CustomFieldsDraft.ofTypeKeyAndJson("customTypeKey", new HashMap<>()))
-            .customerGroup(CustomerGroup.referenceOfId("customerGroupKey"))
-            .channel(ResourceIdentifier.ofKey("channelKey"))
-            .build();
-
-        final ProductVariantDraft validVariantDraft =
-            ProductVariantDraftBuilder.of()
-                                      .key("variantKey")
-                                      .sku("variantSku")
-                                      .attributes(attributes)
-                                      .prices(singletonList(priceDraft))
-                                      .build();
-
-        final ProductVariantDraft invalidVariantDraft =
-            ProductVariantDraftBuilder.of()
-                                      .key("invalidVariant")
-                                      .attributes(attributes)
-                                      .build();
+        final ProductVariantDraft validVariantDraft = ProductVariantDraftBuilder.of()
+                                                                                .key("variantKey")
+                                                                                .sku("variantSku")
+                                                                                .attributes(attributes)
+                                                                                .build();
+        final ProductVariantDraft invalidVariantDraft = ProductVariantDraftBuilder.of()
+                                                                                  .key("invalidVariant")
+                                                                                  .attributes(attributes)
+                                                                                  .build();
 
         final ProductDraft validProductDraft = mock(ProductDraft.class);
         when(validProductDraft.getKey()).thenReturn("validProductDraft");
@@ -391,9 +380,6 @@ class ProductBatchValidatorTest {
         assertThat(pair.getLeft()).containsExactly(validProductDraft);
         assertThat(pair.getRight().getProductKeys()).hasSize(2);
         assertThat(pair.getRight().getProductKeys()).containsExactlyInAnyOrder("foo", "bar");
-        assertThat(pair.getRight().getTypeKeys()).containsExactly("customTypeKey");
-        assertThat(pair.getRight().getChannelKeys()).containsExactly("channelKey");
-        assertThat(pair.getRight().getCustomerGroupKeys()).containsExactly("customerGroupKey");
 
         assertThat(errorCallBackMessages).hasSize(5);
         assertThat(errorCallBackMessages).containsExactlyInAnyOrder(
@@ -402,6 +388,60 @@ class ProductBatchValidatorTest {
             format(PRODUCT_VARIANT_DRAFT_IS_NULL, 0, inValidProductDraft1.getKey()),
             format(PRODUCT_VARIANT_DRAFT_SKU_NOT_SET, 0, inValidProductDraft2.getKey()),
             format(PRODUCT_VARIANT_DRAFT_SKU_NOT_SET, 1, inValidProductDraft2.getKey()));
+    }
+
+
+    @Test
+    void validateAndCollectReferencedKeys_WithCustomerGroupRefsInPrices_ShouldCollectReferencesCorrectly() {
+        final PriceDraft priceDraft = PriceDraftBuilder
+            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson("customTypeKey", new HashMap<>()))
+            .customerGroup(CustomerGroup.referenceOfId("customerGroupKey"))
+            .channel(ResourceIdentifier.ofKey("channelKey"))
+            .build();
+
+        final PriceDraft priceDraftWithBlankCustomerGroup = PriceDraftBuilder
+            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+            .customerGroup(CustomerGroup.referenceOfId(" "))
+            .build();
+
+        final PriceDraft priceDraftWithNullCustomerGroupId = PriceDraftBuilder
+            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+            .customerGroup(CustomerGroup.referenceOfId(null))
+            .build();
+
+        final PriceDraft priceDraftWithNullCustomerGroup = PriceDraftBuilder
+            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+            .customerGroup(null)
+            .build();
+
+        final ProductVariantDraft validVariantDraft =
+            ProductVariantDraftBuilder.of()
+                                      .key("variantKey")
+                                      .sku("variantSku")
+                                      .prices(asList(priceDraft,
+                                          priceDraftWithBlankCustomerGroup,
+                                          priceDraftWithNullCustomerGroup,
+                                          priceDraftWithNullCustomerGroupId))
+                                      .build();
+
+        final ProductDraft validProductDraft = mock(ProductDraft.class);
+        when(validProductDraft.getKey()).thenReturn("validProductDraft");
+        when(validProductDraft.getMasterVariant()).thenReturn(validVariantDraft);
+        when(validProductDraft.getVariants()).thenReturn(singletonList(validVariantDraft));
+
+        final List<ProductDraft> productDrafts = singletonList(validProductDraft);
+
+        final ProductBatchValidator productBatchValidator = new ProductBatchValidator(syncOptions, syncStatistics);
+        final ImmutablePair<Set<ProductDraft>, ProductBatchValidator.ReferencedKeys> pair =
+            productBatchValidator.validateAndCollectReferencedKeys(productDrafts);
+
+        assertThat(errorCallBackMessages).hasSize(0);
+        assertThat(pair.getLeft()).hasSize(1);
+        assertThat(pair.getLeft()).containsExactly(validProductDraft);
+        assertThat(pair.getRight().getTypeKeys()).containsExactly("customTypeKey");
+        assertThat(pair.getRight().getChannelKeys()).containsExactly("channelKey");
+        assertThat(pair.getRight().getCustomerGroupKeys()).containsExactly("customerGroupKey");
     }
 
     @Test
