@@ -38,10 +38,9 @@ public class ProductSyncStatistics extends BaseSyncStatistics {
      */
     @Override
     public String getReportMessage() {
-        reportMessage = format("Summary: %s product(s) were processed in total "
+        return format("Summary: %s product(s) were processed in total "
                 + "(%s created, %s updated, %s failed to sync and %s product(s) with missing reference(s)).",
             getProcessed(), getCreated(), getUpdated(), getFailed(), getNumberOfProductsWithMissingParents());
-        return reportMessage;
     }
 
     /**

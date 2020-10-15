@@ -56,10 +56,11 @@ nav:
       - TaxCategory Sync: usage/TAX_CATEGORY_SYNC.md
       - State Sync: usage/STATE_SYNC.md
       - CustomObject Sync: usage/CUSTOM_OBJECT_SYNC.md
+      - Customer Sync: usage/CUSTOMER_SYNC.md
       - Advanced:
         - Sync Options: usage/SYNC_OPTIONS.md
         - Usage Tips: usage/IMPORTANT_USAGE_TIPS.md
-  - Javadoc: https://commercetools.github.io/commercetools-sync-java/v/2.2.1/
+  - Javadoc: https://commercetools.github.io/commercetools-sync-java/v/2.3.0/
   - Release notes: RELEASE_NOTES.md
   - Roadmap: https://github.com/commercetools/commercetools-sync-java/milestones
   - Issues: https://github.com/commercetools/commercetools-sync-java/issues
