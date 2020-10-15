@@ -105,8 +105,8 @@ public final class CategoryReferenceResolutionUtils {
     public static CategoryQuery buildCategoryQuery() {
         return CategoryQuery.of()
             .withLimit(QueryExecutionUtils.DEFAULT_PAGE_SIZE)
-            .withExpansionPaths(ExpansionPath.of("custom.type"))
-            .plusExpansionPaths(ExpansionPath.of("assets[*].custom.type"))
+            .withExpansionPaths(ExpansionPath.of(""))
+            .plusExpansionPaths(ExpansionPath.of("custom.type"))
             .plusExpansionPaths(CategoryExpansionModel::parent);
     }
 }
