@@ -35,7 +35,7 @@ otherwise they won't be matched.
 These references are matched by their `key`s. Therefore, in order for the sync to resolve the 
 actual ids of the references, their `key`s has to be supplied.
  
-   - When syncing from a source commercetools project, you can use [`mapToCategoryDrafts`](https://commercetools.github.io/commercetools-sync-java/v/2.2.1/com/commercetools/sync/categories/utils/CategoryReferenceResolutionUtils.html#mapToCategoryDrafts-java.util.List-)
+   - When syncing from a source commercetools project, you can use [`mapToCategoryDrafts`](https://commercetools.github.io/commercetools-sync-java/v/2.3.0/com/commercetools/sync/categories/utils/CategoryReferenceResolutionUtils.html#mapToCategoryDrafts-java.util.List-)
      method that maps from a `Category` to `CategoryDraft` in order to make them ready for reference resolution by the sync:
      ````java     
      final List<CategoryDraft> categoryDrafts = CategoryReferenceResolutionUtils.mapToCategoryDrafts(categories);

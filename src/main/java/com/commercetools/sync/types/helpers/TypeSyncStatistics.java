@@ -2,8 +2,6 @@ package com.commercetools.sync.types.helpers;
 
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 
-import static java.lang.String.format;
-
 public class TypeSyncStatistics extends BaseSyncStatistics {
     /**
      * Builds a summary of the type sync statistics instance that looks like the following example:
@@ -14,10 +12,6 @@ public class TypeSyncStatistics extends BaseSyncStatistics {
      */
     @Override
     public String getReportMessage() {
-        reportMessage = format(
-            "Summary: %s types were processed in total (%s created, %s updated and %s failed to sync).",
-            getProcessed(), getCreated(), getUpdated(), getFailed());
-
-        return reportMessage;
+        return getDefaultReportMessageForResource("types");
     }
 }

@@ -109,4 +109,11 @@ class BaseSyncStatisticsTest {
         assertThat(baseSyncStatistics.getLatestBatchHumanReadableProcessingTime())
             .contains(format(", %dms", remainingMillis));
     }
+
+    @Test
+    void getDefaultReportMessageForResource_withResourceString_ShouldBuildCorrectSummary() {
+        String message = baseSyncStatistics.getDefaultReportMessageForResource("resources");
+        assertThat(message).isEqualTo("Summary: 0 resources were processed in total (0 created, 0 updated and 0 "
+            + "failed to sync).");
+    }
 }
