@@ -379,18 +379,30 @@
           
           
 
+
+  <li class="md-nav__item">
+    <a href="../CUSTOMER_SYNC/" title="Customer Sync" class="md-nav__link">
+      Customer Sync
+    </a>
+  </li>
+
+        
+          
+          
+          
+
   
 
 
   <li class="md-nav__item md-nav__item--active md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-11" type="checkbox" id="nav-2-11" checked>
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-12" type="checkbox" id="nav-2-12" checked>
     
-    <label class="md-nav__link" for="nav-2-11">
+    <label class="md-nav__link" for="nav-2-12">
       Advanced
     </label>
     <nav class="md-nav" data-md-component="collapsible" data-md-level="2">
-      <label class="md-nav__title" for="nav-2-11">
+      <label class="md-nav__title" for="nav-2-12">
         Advanced
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
@@ -481,7 +493,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/2.2.1/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/2.3.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -619,7 +631,7 @@ used in a sequential fashion:
 By design, scaling the sync process should <strong>not</strong> be done by executing the batches themselves in parallel. However, it can be done either by:</p>
 <ul>
 <li>Changing the number of <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L116">max parallel requests</a> within the <code>sphereClient</code> configuration. It defines how many requests the client can execute in parallel.</li>
-<li>or changing the draft <a href="https://commercetools.github.io/commercetools-sync-java/v/2.2.1/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-">batch size</a>. It defines how many drafts can one batch contain.</li>
+<li>or changing the draft <a href="https://commercetools.github.io/commercetools-sync-java/v/2.3.0/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-">batch size</a>. It defines how many drafts can one batch contain.</li>
 </ul>
 <p>The current overridable default <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45">configuration</a> of the <code>sphereClient</code> 
 is the recommended good balance for stability and performance for the sync process.</p>
