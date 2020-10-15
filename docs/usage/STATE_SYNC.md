@@ -11,6 +11,7 @@ against a [StateDraft](https://docs.commercetools.com/http-api-projects-states#s
 - [Usage](#usage)
   - [Sync list of State drafts](#sync-list-of-state-drafts)
     - [Prerequisites](#prerequisites)
+    - [About SyncOptions](#about-syncoptions)
     - [Running the sync](#running-the-sync)
       - [Persistence of StateDrafts with missing references](#persistence-of-statedrafts-with-irresolvable-references)
     - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)  
@@ -49,7 +50,89 @@ otherwise they won't be matched.
 // instantiating a StateSyncOptions
    final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder.of(sphereClient).build();
 ````
-[More information about Sync Options](SYNC_OPTIONS.md). 
+
+#### About SyncOptions
+`SyncOptions` is an object which provides a place for users to add certain configurations to customize the sync process.
+Available configurations:
+
+##### 1. `errorCallback`
+A callback that is called whenever an error event occurs during the sync process. Each resource executes its own 
+error-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+following context about the error-event:
+
+* sync exception
+* state draft from the source
+* state of the target project (only provided if an existing state could be found)
+* the update-actions, which failed (only provided if an existing state could be found)
+
+##### Example 
+````java
+ final Logger logger = LoggerFactory.getLogger(StateSync.class);
+ final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+         .of(sphereClient)
+         .errorCallback((syncException, draft, state, updateActions) -> 
+            logger.error(new SyncException("My customized message"), syncException)).build();
+````
+    
+##### 2. `warningCallback`
+A callback that is called whenever a warning event occurs during the sync process. Each resource executes its own 
+warning-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+following context about the warning message:
+
+* sync exception
+* state draft from the source 
+* state of the target project (only provided if an existing state could be found)
+
+##### Example 
+````java
+ final Logger logger = LoggerFactory.getLogger(StateSync.class);
+ final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+         .of(sphereClient)
+         .warningCallback((syncException, draft, state, updateActions) -> 
+            logger.warn(new SyncException("My customized message"), syncException)).build();
+````
+
+##### 3. `beforeUpdateCallback`
+During the sync process if a target state and a state draft are matched, this callback can be used to 
+intercept the **_update_** request just before it is sent to commercetools platform. This allows the user to modify 
+update actions array with custom actions or discard unwanted actions. The callback provides the following information :
+ 
+ * state draft from the source
+ * state from the target project
+ * update actions that were calculated after comparing both
+
+##### Example
+````java
+final TriFunction<
+        List<UpdateAction<State>>, StateDraft, State, List<UpdateAction<State>>> 
+            beforeUpdateStateCallback =
+            (updateActions, newStateDraft, oldState) ->  updateActions.stream()
+                    .filter(updateAction -> !(updateAction instanceof RemoveRoles))
+                    .collect(Collectors.toList());
+                        
+final StateSyncOptions stateSyncOptions = 
+        StateSyncOptionsBuilder.of(sphereClient).beforeUpdateCallback(beforeUpdateStateCallback).build();
+````
+
+##### 4. `beforeCreateCallback`
+During the sync process if a state draft should be created, this callback can be used to intercept 
+the **_create_** request just before it is sent to commercetools platform.  It contains following information : 
+
+ * state draft that should be created
+
+Please refer to [example in product sync document](PRODUCT_SYNC.md#example-set-publish-stage-if-category-references-of-given-product-draft-exists).
+
+##### 5. `batchSize`
+A number that could be used to set the batch size with which states are fetched and processed,
+as states are obtained from the target project on commercetools platform in batches for better performance. The 
+algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding states
+from the target project on commecetools platform in a single request. Playing with this option can slightly improve or 
+reduce processing speed. If it is not set, the default batch size is 50 for state sync.
+##### Example
+````java                         
+final StateSyncOptions stateSyncOptions = 
+         StateSyncOptionsBuilder.of(sphereClient).batchSize(30).build();
+````
 
 #### Running the sync
 After all the aforementioned points in the previous section have been fulfilled, run the sync as follows:

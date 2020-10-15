@@ -2,8 +2,6 @@ package com.commercetools.sync.taxcategories.helpers;
 
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 
-import static java.lang.String.format;
-
 /**
  * Tax category sync statistics.
  * Keeps track of processed, created, updated and failed states through whole sync process.
@@ -19,10 +17,7 @@ public final class TaxCategorySyncStatistics extends BaseSyncStatistics {
      */
     @Override
     public String getReportMessage() {
-        reportMessage = format(
-            "Summary: %s tax categories were processed in total (%s created, %s updated and %s failed to sync).",
-            getProcessed(), getCreated(), getUpdated(), getFailed());
-        return reportMessage;
+        return getDefaultReportMessageForResource("tax categories");
     }
 
 }
