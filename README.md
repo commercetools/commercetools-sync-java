@@ -22,6 +22,8 @@ The library supports synchronising the following entities in commercetools
  - [States](/docs/usage/STATE_SYNC.md)
  - [TaxCategories](/docs/usage/TAX_CATEGORY_SYNC.md)
  - [CustomObjects](/docs/usage/CUSTOM_OBJECT_SYNC.md)
+ - [Customers](/docs/usage/CUSTOMER_SYNC.md)
+
 
 ![commercetools-java-sync-final 001](https://user-images.githubusercontent.com/9512131/31230702-0f2255a6-a9e5-11e7-9412-04ed52641dde.png)
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
