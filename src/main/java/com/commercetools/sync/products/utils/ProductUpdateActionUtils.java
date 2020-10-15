@@ -41,7 +41,6 @@ import io.sphere.sdk.search.SearchKeywords;
 import io.sphere.sdk.states.State;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -785,19 +784,14 @@ public final class ProductUpdateActionUtils {
         @Nonnull final Product oldProduct,
         @Nonnull final ProductDraft newProduct) {
         return ofNullable(newProduct.getState() != null && !Objects.equals(oldProduct.getState(), newProduct.getState())
-            ? TransitionState.of(mapResourceIdentifierToReferenceable(newProduct.getState()), true)
+            ? TransitionState.of(mapResourceIdentifierToReferencable(newProduct.getState()), true)
             : null);
     }
 
-    @Nullable
-    private static Referenceable<State> mapResourceIdentifierToReferenceable(
-        @Nullable final ResourceIdentifier<State> resourceIdentifier) {
 
-        if (resourceIdentifier == null) {
-            return null; // unset
-        }
-
-        // TODO (JVM-SDK), see: SUPPORT-10336 TransitionState needs to be created with a ResourceIdentifier
+    @Nonnull // TODO (JVM-SDK), see: SUPPORT-10336 TransitionState needs to be created with a ResourceIdentifier
+    private static Referenceable<State> mapResourceIdentifierToReferencable(
+        @Nonnull final ResourceIdentifier<State> resourceIdentifier) {
         return new ResourceImpl<State>(null, null, null, null) {
             @Override
             public Reference<State> toReference() {
