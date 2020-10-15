@@ -168,7 +168,6 @@ public final class CustomerITUtils {
             ResourceTypeIdsSetBuilder.of().addCustomers(),
             ctpClient);
     }
-    
     private CustomerITUtils() {
     }
 }
