@@ -7,20 +7,28 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.customobjects.CustomObject;
+import io.sphere.sdk.models.DefaultCurrencyUnits;
 import io.sphere.sdk.models.ResourceIdentifier;
+import io.sphere.sdk.products.PriceDraft;
+import io.sphere.sdk.products.PriceDraftBuilder;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductVariantDraft;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
 import io.sphere.sdk.products.attributes.AttributeDraft;
 import io.sphere.sdk.states.State;
+import io.sphere.sdk.types.CustomFieldsDraft;
+import io.sphere.sdk.utils.MoneyImpl;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -52,10 +60,10 @@ class ProductBatchValidatorTest {
         errorCallBackMessages = new ArrayList<>();
         final SphereClient ctpClient = mock(SphereClient.class);
         syncOptions = ProductSyncOptionsBuilder.of(ctpClient)
-                .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                    errorCallBackMessages.add(exception.getMessage());
-                })
-                .build();
+                                               .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                                                   errorCallBackMessages.add(exception.getMessage());
+                                               })
+                                               .build();
         syncStatistics = mock(ProductSyncStatistics.class);
     }
 
@@ -335,15 +343,26 @@ class ProductBatchValidatorTest {
 
         final List<AttributeDraft> attributes = asList(null, productReferenceAttribute, productReferenceSetAttribute);
 
-        final ProductVariantDraft validVariantDraft = ProductVariantDraftBuilder.of()
-                                                                                .key("variantKey")
-                                                                                .sku("variantSku")
-                                                                                .attributes(attributes)
-                                                                                .build();
-        final ProductVariantDraft invalidVariantDraft = ProductVariantDraftBuilder.of()
-                                                                                  .key("invalidVariant")
-                                                                                  .attributes(attributes)
-                                                                                  .build();
+        final PriceDraft priceDraft = PriceDraftBuilder
+            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson("customTypeKey", new HashMap<>()))
+            .customerGroup(CustomerGroup.referenceOfId("customerGroupKey"))
+            .channel(ResourceIdentifier.ofKey("channelKey"))
+            .build();
+
+        final ProductVariantDraft validVariantDraft =
+            ProductVariantDraftBuilder.of()
+                                      .key("variantKey")
+                                      .sku("variantSku")
+                                      .attributes(attributes)
+                                      .prices(singletonList(priceDraft))
+                                      .build();
+
+        final ProductVariantDraft invalidVariantDraft =
+            ProductVariantDraftBuilder.of()
+                                      .key("invalidVariant")
+                                      .attributes(attributes)
+                                      .build();
 
         final ProductDraft validProductDraft = mock(ProductDraft.class);
         when(validProductDraft.getKey()).thenReturn("validProductDraft");
@@ -372,6 +391,9 @@ class ProductBatchValidatorTest {
         assertThat(pair.getLeft()).containsExactly(validProductDraft);
         assertThat(pair.getRight().getProductKeys()).hasSize(2);
         assertThat(pair.getRight().getProductKeys()).containsExactlyInAnyOrder("foo", "bar");
+        assertThat(pair.getRight().getTypeKeys()).containsExactly("customTypeKey");
+        assertThat(pair.getRight().getChannelKeys()).containsExactly("channelKey");
+        assertThat(pair.getRight().getCustomerGroupKeys()).containsExactly("customerGroupKey");
 
         assertThat(errorCallBackMessages).hasSize(5);
         assertThat(errorCallBackMessages).containsExactlyInAnyOrder(
