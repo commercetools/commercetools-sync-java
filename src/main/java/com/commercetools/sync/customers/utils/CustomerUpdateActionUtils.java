@@ -64,7 +64,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 public final class CustomerUpdateActionUtils {
 
     public static final String CUSTOMER_NUMBER_EXISTS_WARNING = "Customer with key: \"%s\" has "
-        + "already a customer number \"%s\", once it's set it cannot be changed. "
+        + "already a customer number: \"%s\", once it's set it cannot be changed. "
         + "Hereby, the update action is not created.";
 
     private CustomerUpdateActionUtils() {
