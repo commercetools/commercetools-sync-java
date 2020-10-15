@@ -7,6 +7,7 @@ import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import io.sphere.sdk.shoppinglists.TextLineItemDraft;
 import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
 import javax.annotation.Nonnull;
+import java.util.Locale;
 import java.util.concurrent.CompletionStage;
 
 import static java.lang.String.format;
@@ -14,8 +15,8 @@ import static java.lang.String.format;
 public final class TextLineItemReferenceResolver
     extends CustomReferenceResolver<TextLineItemDraft, TextLineItemDraftBuilder, ShoppingListSyncOptions> {
 
-    private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
-            + "TextLineItemDraft with key:'%s'. Reason: %s";
+    static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
+            + "TextLineItemDraft with name:'%s'.";
 
     /**
      * Takes a {@link ShoppingListSyncOptions} instance, a {@link TypeService} to instantiate a

@@ -39,7 +39,7 @@ public final class ShoppingListReferenceResolver
     private static final String CUSTOMER_DOES_NOT_EXIST = "Customer with key '%s' doesn't exist.";
     private static final String TYPE_DOES_NOT_EXIST = "Type with key '%s' doesn't exist.";
     private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
-            + "ShoppingListDraft with key:'%s'. Reason: %s";
+            + "ShoppingListDraft with key:'%s'. ";
 
     /**
      * Takes a {@link ShoppingListSyncOptions} instance, a {@link CustomerService} and {@link TypeService} to
@@ -80,7 +80,7 @@ public final class ShoppingListReferenceResolver
     }
 
     @Nonnull
-    private CompletionStage<ShoppingListDraftBuilder> resolveCustomerReferences(
+    protected CompletionStage<ShoppingListDraftBuilder> resolveCustomerReferences(
             @Nonnull final ShoppingListDraftBuilder draftBuilder) {
 
         final Reference<Customer> customerReference = draftBuilder.getCustomer();

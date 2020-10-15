@@ -15,8 +15,8 @@ import static java.lang.String.format;
 public final class LineItemReferenceResolver
     extends CustomReferenceResolver<LineItemDraft, LineItemDraftBuilder, ShoppingListSyncOptions> {
 
-    private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
-            + "LineItemDraft with key:'%s'. Reason: %s";
+    static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
+            + "LineItemDraft with key:'%s'.";
 
     /**
      * Takes a {@link ShoppingListSyncOptions} instance, a {@link TypeService} to instantiate a
