@@ -6,6 +6,7 @@ import io.sphere.sdk.customers.Customer;
 import javax.annotation.Nullable;
 
 // TODO (JVM-SDK), see: SUPPORT-10260, Address selection by key is not supported yet.
+// https://github.com/commercetools/commercetools-jvm-sdk/issues/2071
 public final class SetDefaultBillingAddressWithKey extends UpdateActionImpl<Customer> {
     private final String addressKey;
 

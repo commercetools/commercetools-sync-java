@@ -52,6 +52,7 @@ import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.b
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActionForReferences;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -319,6 +320,7 @@ public final class CustomerUpdateActionUtils {
         }
 
         // TODO (JVM-SDK), see: SUPPORT-10261 SetCustomerGroup could be created with a ResourceIdentifier
+        // https://github.com/commercetools/commercetools-jvm-sdk/issues/2072
         return new ResourceImpl<CustomerGroup>(null, null, null, null) {
             @Override
             public Reference<CustomerGroup> toReference() {
@@ -349,17 +351,30 @@ public final class CustomerUpdateActionUtils {
 
         return buildSetStoreUpdateAction(oldStores, newStores)
             .map(Collections::singletonList)
-            .orElseGet(() -> {
-                if (oldStores != null && newStores != null) {
-                    final List<UpdateAction<Customer>> updateActions =
-                        buildRemoveStoreUpdateActions(oldStores, newStores);
+            .orElseGet(() -> prepareStoreActions(oldStores, newStores));
+    }
 
-                    updateActions.addAll(buildAddStoreUpdateActions(oldStores, newStores));
-                    return updateActions;
-                }
+    private static List<UpdateAction<Customer>> prepareStoreActions(
+        @Nullable final List<KeyReference<Store>> oldStores,
+        @Nullable final List<ResourceIdentifier<Store>> newStores) {
 
-                return emptyList();
-            });
+        if (oldStores != null && newStores != null) {
+            final List<UpdateAction<Customer>> removeStoreUpdateActions =
+                buildRemoveStoreUpdateActions(oldStores, newStores);
+
+            final List<UpdateAction<Customer>> addStoreUpdateActions =
+                buildAddStoreUpdateActions(oldStores, newStores);
+
+            if (!removeStoreUpdateActions.isEmpty() && !addStoreUpdateActions.isEmpty()) {
+                return buildSetStoreUpdateAction(newStores)
+                    .map(Collections::singletonList)
+                    .orElseGet(Collections::emptyList);
+            }
+
+            return removeStoreUpdateActions.isEmpty() ? addStoreUpdateActions : removeStoreUpdateActions;
+        }
+
+        return emptyList();
     }
 
     /**
@@ -384,13 +399,22 @@ public final class CustomerUpdateActionUtils {
                 return Optional.of(SetStores.of(emptyList()));
             }
         } else if (newStores != null && !newStores.isEmpty()) {
-            final List<ResourceIdentifier<Store>> stores =
-                newStores.stream()
-                         .filter(Objects::nonNull)
-                         .collect(toList());
-            if (!stores.isEmpty()) {
-                return Optional.of(SetStores.of(stores));
-            }
+            return buildSetStoreUpdateAction(newStores);
+        }
+
+        return Optional.empty();
+    }
+
+    private static Optional<UpdateAction<Customer>> buildSetStoreUpdateAction(
+        @Nonnull final List<ResourceIdentifier<Store>> newStores) {
+
+        final List<ResourceIdentifier<Store>> stores =
+            newStores.stream()
+                     .filter(Objects::nonNull)
+                     .collect(toList());
+
+        if (!stores.isEmpty()) {
+            return Optional.of(SetStores.of(stores));
         }
 
         return Optional.empty();

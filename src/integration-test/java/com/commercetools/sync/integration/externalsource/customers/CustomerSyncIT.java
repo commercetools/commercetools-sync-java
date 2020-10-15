@@ -27,6 +27,7 @@ import io.sphere.sdk.customers.commands.updateactions.SetFirstName;
 import io.sphere.sdk.customers.commands.updateactions.SetLocale;
 import io.sphere.sdk.customers.commands.updateactions.SetMiddleName;
 import io.sphere.sdk.customers.commands.updateactions.SetSalutation;
+import io.sphere.sdk.customers.commands.updateactions.SetStores;
 import io.sphere.sdk.customers.commands.updateactions.SetTitle;
 import io.sphere.sdk.customers.commands.updateactions.SetVatId;
 import io.sphere.sdk.models.Address;
@@ -142,18 +143,24 @@ class CustomerSyncIT {
             .join();
 
         assertThat(customerSyncStatistics).hasValues(1, 1, 0, 0);
-        assertThat(errorMessages).isEmpty();
-        assertThat(exceptions).isEmpty();
         assertThat(customerSyncStatistics
             .getReportMessage())
             .isEqualTo("Summary: 1 customers were processed in total (1 created, 0 updated and 0 failed to sync).");
+        assertThat(errorMessages).isEmpty();
+        assertThat(exceptions).isEmpty();
+        assertThat(updateActionList).isEmpty();
     }
 
     @Test
     void sync_WithUpdatedCustomer_ShouldUpdateCustomer() {
+        final Store storeCologne = createStore(CTP_TARGET_CLIENT, "store-cologne");
         final CustomerDraft updatedCustomerDraft =
             CustomerDraftBuilder.of(customerDraftJohnDoe)
-                                .email("JOhn@example.com")
+                                .email("john-new@example.com") // from john@example.com
+                                .stores(asList( // store-cologne is added, store-munich is removed
+                                    ResourceIdentifier.ofKey(storeCologne.getKey()),
+                                    ResourceIdentifier.ofKey("store-hamburg"),
+                                    ResourceIdentifier.ofKey("store-berlin")))
                                 .build();
 
         final CustomerSyncStatistics customerSyncStatistics = customerSync
@@ -162,11 +169,19 @@ class CustomerSyncIT {
             .join();
 
         assertThat(customerSyncStatistics).hasValues(1, 0, 1, 0);
-        assertThat(errorMessages).isEmpty();
-        assertThat(exceptions).isEmpty();
         assertThat(customerSyncStatistics
             .getReportMessage())
             .isEqualTo("Summary: 1 customers were processed in total (0 created, 1 updated and 0 failed to sync).");
+
+        assertThat(errorMessages).isEmpty();
+        assertThat(exceptions).isEmpty();
+        assertThat(updateActionList).containsExactly(
+            ChangeEmail.of("john-new@example.com"),
+            SetStores.of(asList(
+                ResourceIdentifier.ofKey("store-cologne"),
+                ResourceIdentifier.ofKey("store-hamburg"),
+                ResourceIdentifier.ofKey("store-berlin")))
+        );
     }
 
     @Test
