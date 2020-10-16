@@ -8,12 +8,11 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.shoppinglists.LineItemDraftBuilder;
 import io.sphere.sdk.types.CustomFieldsDraft;
+import io.sphere.sdk.utils.CompletableFutureUtils;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-
-import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
