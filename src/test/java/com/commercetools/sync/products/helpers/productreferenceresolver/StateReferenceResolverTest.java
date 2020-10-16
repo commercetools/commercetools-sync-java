@@ -8,7 +8,7 @@ import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.StateService;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.states.State;
@@ -20,7 +20,7 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_REFERENCE;
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockChannelService;
 import static com.commercetools.sync.inventories.InventorySyncMockUtils.getMockSupplyChannel;
 import static com.commercetools.sync.products.ProductSyncMockUtils.getBuilderWithRandomProductType;
@@ -66,7 +66,7 @@ class StateReferenceResolverTest {
     @Test
     void resolveStateReference_WithKeys_ShouldResolveReference() {
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType()
-            .state(State.referenceOfId("stateKey"));
+            .state(ResourceIdentifier.ofKey("stateKey"));
 
         final ProductDraftBuilder resolvedDraft = referenceResolver.resolveStateReference(productBuilder)
                                                                    .toCompletableFuture().join();
@@ -88,7 +88,7 @@ class StateReferenceResolverTest {
     @Test
     void resolveStateReference_WithNonExistentState_ShouldNotResolveReference() {
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType()
-            .state(State.referenceOfId("nonExistentKey"))
+            .state(ResourceIdentifier.ofKey("nonExistentKey"))
             .key("dummyKey");
 
         when(stateService.fetchCachedStateId(anyString()))
@@ -110,9 +110,9 @@ class StateReferenceResolverTest {
     }
 
     @Test
-    void resolveStateReference_WithNullIdOnStateReference_ShouldNotResolveReference() {
+    void resolveStateReference_WithNullKeyOnStateReference_ShouldNotResolveReference() {
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType()
-            .state(Reference.of(State.referenceTypeId(), (String)null))
+            .state(ResourceIdentifier.ofKey(null))
             .key("dummyKey");
 
         assertThat(referenceResolver.resolveStateReference(productBuilder).toCompletableFuture())
@@ -120,13 +120,13 @@ class StateReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format("Failed to resolve 'state' resource identifier on ProductDraft with "
-                + "key:'%s'. Reason: %s", productBuilder.getKey(), BLANK_ID_VALUE_ON_REFERENCE));
+                + "key:'%s'. Reason: %s", productBuilder.getKey(), BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
-    void resolveStateReference_WithEmptyIdOnStateReference_ShouldNotResolveReference() {
+    void resolveStateReference_WithEmptyKeyOnStateReference_ShouldNotResolveReference() {
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType()
-            .state(State.referenceOfId(""))
+            .state(ResourceIdentifier.ofKey(""))
             .key("dummyKey");
 
         assertThat(referenceResolver.resolveStateReference(productBuilder).toCompletableFuture())
@@ -134,13 +134,13 @@ class StateReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format("Failed to resolve 'state' resource identifier on ProductDraft with "
-                + "key:'%s'. Reason: %s", productBuilder.getKey(), BLANK_ID_VALUE_ON_REFERENCE));
+                + "key:'%s'. Reason: %s", productBuilder.getKey(), BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
     void resolveStateReference_WithExceptionOnFetch_ShouldNotResolveReference() {
         final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType()
-            .state(State.referenceOfId("stateKey"))
+            .state(ResourceIdentifier.ofKey("stateKey"))
             .key("dummyKey");
 
         final CompletableFuture<Optional<String>> futureThrowingSphereException = new CompletableFuture<>();
@@ -152,5 +152,17 @@ class StateReferenceResolverTest {
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(SphereException.class)
             .hasMessageContaining("CTP error on fetch");
+    }
+
+    @Test
+    void resolveStateReference_WithIdOnStateReference_ShouldNotResolveReference() {
+        final ProductDraftBuilder productBuilder = getBuilderWithRandomProductType()
+            .state(ResourceIdentifier.ofId("existing-id"))
+            .key("dummyKey");
+
+        assertThat(referenceResolver.resolveStateReference(productBuilder).toCompletableFuture())
+            .hasNotFailed()
+            .isCompletedWithValueMatching(resolvedDraft -> Objects.equals(resolvedDraft.getState(),
+                productBuilder.getState()));
     }
 }
