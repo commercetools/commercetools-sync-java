@@ -34,11 +34,10 @@ public final class ShoppingListReferenceResolver
     private final LineItemReferenceResolver lineItemReferenceResolver;
     private final TextLineItemReferenceResolver textLineItemReferenceResolver;
 
-    private static final String FAILED_TO_RESOLVE_REFERENCE = "Failed to resolve 'transition' reference on "
+    static final String FAILED_TO_RESOLVE_REFERENCE = "Failed to resolve 'customer' reference on "
             + "ShoppingListDraft with key:'%s'. Reason: %s";
-    private static final String CUSTOMER_DOES_NOT_EXIST = "Customer with key '%s' doesn't exist.";
-    private static final String TYPE_DOES_NOT_EXIST = "Type with key '%s' doesn't exist.";
-    private static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
+    static final String CUSTOMER_DOES_NOT_EXIST = "Customer with key '%s' doesn't exist.";
+    static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
             + "ShoppingListDraft with key:'%s'. ";
 
     /**
@@ -72,7 +71,7 @@ public final class ShoppingListReferenceResolver
      */
     @Nonnull
     public CompletionStage<ShoppingListDraft> resolveReferences(@Nonnull final ShoppingListDraft shoppingListDraft) {
-        return resolveCustomerReferences(ShoppingListDraftBuilder.of(shoppingListDraft))
+        return resolveCustomerReference(ShoppingListDraftBuilder.of(shoppingListDraft))
                     .thenCompose(this::resolveCustomTypeReference)
                     .thenCompose(this::resolveLineItemReferences)
                     .thenCompose(this::resolveTextLineItemReferences)
@@ -80,7 +79,7 @@ public final class ShoppingListReferenceResolver
     }
 
     @Nonnull
-    protected CompletionStage<ShoppingListDraftBuilder> resolveCustomerReferences(
+    protected CompletionStage<ShoppingListDraftBuilder> resolveCustomerReference(
             @Nonnull final ShoppingListDraftBuilder draftBuilder) {
 
         final Reference<Customer> customerReference = draftBuilder.getCustomer();
@@ -90,7 +89,7 @@ public final class ShoppingListReferenceResolver
                 customerKey = getIdFromReference(customerReference);
             } catch (ReferenceResolutionException referenceResolutionException) {
                 return exceptionallyCompletedFuture(new ReferenceResolutionException(
-                    format(FAILED_TO_RESOLVE_REFERENCE, State.referenceTypeId(), draftBuilder.getKey(),
+                    format(FAILED_TO_RESOLVE_REFERENCE, draftBuilder.getKey(),
                         referenceResolutionException.getMessage())));
             }
 
@@ -152,8 +151,7 @@ public final class ShoppingListReferenceResolver
                 .orElseGet(() -> {
                     final String errorMessage = format(CUSTOMER_DOES_NOT_EXIST, customerKey);
                     return exceptionallyCompletedFuture(new ReferenceResolutionException(
-                        format(FAILED_TO_RESOLVE_REFERENCE, State.referenceTypeId(), draftBuilder.getKey(),
-                                errorMessage)));
+                        format(FAILED_TO_RESOLVE_REFERENCE, draftBuilder.getKey(), errorMessage)));
                 }));
     }
 }
