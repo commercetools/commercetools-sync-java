@@ -23,8 +23,8 @@ public final class LineItemReferenceResolver
      * {@link LineItemReferenceResolver} instance that could be used to resolve the line-item drafts in the
      * CTP project specified in the injected {@link ShoppingListSyncOptions} instance.
      *
-     * @param shoppingListSyncOptions   the container of all the options of the sync process including the CTP project client
-     *                                  and/or configuration and other sync-specific options.
+     * @param shoppingListSyncOptions   the container of all the options of the sync process including the CTP project
+     *                                  client and/or configuration and other sync-specific options.
      * @param typeService       the service to fetch the types for reference resolution.
      */
     public LineItemReferenceResolver(@Nonnull final ShoppingListSyncOptions shoppingListSyncOptions,

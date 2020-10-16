@@ -78,8 +78,7 @@ public final class ShoppingListReferenceResolutionUtils {
      * the library will issues an update/create API request without reference resolution.
      *
      * @param shoppingLists the shopping lists with expanded references.
-     * @return a {@link List} of {@link ShoppingListDraft} built from the
-     * supplied {@link List} of {@link ShoppingList}.
+     * @return a {@link List} of {@link ShoppingListDraft} built from the supplied {@link List} of {@link ShoppingList}.
      */
     @Nonnull
     public static List<ShoppingListDraft> mapToShoppingListDrafts(
@@ -179,7 +178,7 @@ public final class ShoppingListReferenceResolutionUtils {
      * are not needed, to avoid unnecessarily bigger payloads fetched from the source project.
      *
      * @return the query for fetching shopping lists from the source CTP project with all the aforementioned references
-     * expanded.
+     *         expanded.
      */
     public static ShoppingListQuery buildShoppingListQuery() {
         return ShoppingListQuery.of()

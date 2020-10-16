@@ -6,8 +6,8 @@ import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import io.sphere.sdk.shoppinglists.TextLineItemDraft;
 import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
+
 import javax.annotation.Nonnull;
-import java.util.Locale;
 import java.util.concurrent.CompletionStage;
 
 import static java.lang.String.format;

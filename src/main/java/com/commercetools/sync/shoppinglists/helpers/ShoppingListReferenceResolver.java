@@ -1,27 +1,22 @@
 package com.commercetools.sync.shoppinglists.helpers;
 
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
-
 import com.commercetools.sync.commons.helpers.CustomReferenceResolver;
 import com.commercetools.sync.services.CustomerService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
-
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.models.Reference;
-
 import io.sphere.sdk.shoppinglists.LineItemDraft;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
 import io.sphere.sdk.shoppinglists.TextLineItemDraft;
-import io.sphere.sdk.states.State;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
-
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
