@@ -1,6 +1,7 @@
 package com.commercetools.sync.commons;
 
 import com.commercetools.sync.services.CategoryService;
+import com.commercetools.sync.services.CustomerService;
 import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -143,5 +144,23 @@ public class MockUtils {
         final Asset asset = mock(Asset.class);
         when(asset.getCustom()).thenReturn(mockCustomFields);
         return asset;
+    }
+
+    /**
+     * Creates a mock {@link CustomerService} that returns a dummy customer id of value "customerId" instance
+     * whenever the following method is called on the service:
+     * <ul>
+     * <li>{@link CustomerService#fetchCachedCustomerId(String)}</li>
+     * </ul>
+     *
+     * @return the created mock of the {@link CustomerService}.
+     */
+    public static CustomerService getMockCustomerService() {
+        final CustomerService customerService = mock(CustomerService.class);
+        when(customerService.fetchCachedCustomerId(anyString()))
+                .thenReturn(completedFuture(Optional.of("customerId")));
+        when(customerService.cacheKeysToIds(anySet()))
+                .thenReturn(completedFuture(Collections.singletonMap("customerKey", "customerId")));
+        return customerService;
     }
 }
