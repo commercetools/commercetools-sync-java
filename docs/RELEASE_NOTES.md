@@ -26,7 +26,7 @@
 
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 
-### 2.4.0 - MMM DD, 2020
+### 3.0.0 - MMM DD, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/2.3.0...2.4.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.4.0/) |
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.4.0)
