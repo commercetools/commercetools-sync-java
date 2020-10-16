@@ -24,11 +24,17 @@ against a [TaxCategoryDraft](https://docs.commercetools.com/http-api-projects-ta
 ### Sync list of TaxCategoryDrafts
 
 #### Prerequisites
-1. The sync expects a list of `TaxCategoryDraft`s that have their `key` fields set to be matched with
+1. Create a `sphereClient`:
+Use the `ClientConfigurationUtils#createClient` util which applies the best practices for `SphereClient` creation.
+
+    If you have special requirements on the sphere client creation, then you can use the following:  
+    - Limit the number of concurrent requests done to CTP. This can be done by decorating the `sphereClient` with [QueueSphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/QueueSphereClientDecorator.html)
+ 
+    - Retry decorator on 5xx errors with a retry strategy. This can be achieved by decorating the `sphereClient` with the [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
+
+2. The sync expects a list of `TaxCategoryDraft`s that have their `key` fields set to be matched with
 tax categories in the target CTP project. Also, the tax categories in the target project are expected to have the `key`
 fields set, otherwise they won't be matched.
-
-2. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
 3. After the `sphereClient` is set up, a `TaxCategorySyncOptions` should be be built as follows:
 ````java

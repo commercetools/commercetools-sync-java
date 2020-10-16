@@ -26,10 +26,18 @@ against a [InventoryEntryDraft](https://docs.commercetools.com/http-api-projects
 <!-- TODO - GITHUB ISSUE#138: Split into explanation of how to "sync from project to project" vs "import from feed"-->
 
 #### Prerequisites
-1. The sync expects a list of `InventoryEntryDraft`s that have their `sku` fields set,
+1. Create a `sphereClient`:
+Use the `ClientConfigurationUtils#createClient` util which applies the best practices for `SphereClient` creation.
+
+    If you have special requirements on the sphere client creation, then you can use the following:  
+    - Limit the number of concurrent requests done to CTP. This can be done by decorating the `sphereClient` with [QueueSphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/QueueSphereClientDecorator.html)
+ 
+    - Retry decorator on 5xx errors with a retry strategy. This can be achieved by decorating the `sphereClient` with the [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
+
+2. The sync expects a list of `InventoryEntryDraft`s that have their `sku` fields set,
    otherwise the sync will trigger an `errorCallback` function set by the user (more on it can be found down below in the options explanations).
 
-2. Every inventory entry may have a reference to a supply `Channel` and a reference to the `Type` of its custom fields. These
+3. Every inventory entry may have a reference to a supply `Channel` and a reference to the `Type` of its custom fields. These
    references are matched by their `key`s. Therefore, in order for the sync to resolve the actual ids of those references,
    their `key`s has to be supplied.
    
@@ -38,15 +46,12 @@ against a [InventoryEntryDraft](https://docs.commercetools.com/http-api-projects
      ````java
      final List<InventoryEntryDraft> inventoryEntryDrafts = InventoryReferenceResolutionUtils.mapToInventoryEntryDrafts(inventoryEntries);
      ````
-     
-3. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
-4. After the `sphereClient` is setup, a `InventorySyncOptions` should be built as follows: 
+4. After the `sphereClient` is set up, an `InventorySyncOptions` should be built as follows: 
 ````java
 // instantiating a InventorySyncOptions
 final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(sphereClient).build();
 ````
-
 
 #### About SyncOptions
 `SyncOptions` is an object which provides a place for users to add certain configurations to customize the sync process.

@@ -26,12 +26,19 @@ against a [CategoryDraft](https://docs.commercetools.com/http-api-projects-categ
 <!-- TODO - GITHUB ISSUE#138: Split into explanation of how to "sync from project to project" vs "import from feed"-->
 
 #### Prerequisites
+1. Create a `sphereClient`:
+Use the `ClientConfigurationUtils#createClient` util which applies the best practices for `SphereClient` creation.
 
-1. The sync expects a list of `CategoryDraft`s that have their `key` fields set to be matched with
+    If you have special requirements on the sphere client creation, then you can use the following:  
+    - Limit the number of concurrent requests done to CTP. This can be done by decorating the `sphereClient` with [QueueSphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/QueueSphereClientDecorator.html)
+ 
+    - Retry decorator on 5xx errors with a retry strategy. This can be achieved by decorating the `sphereClient` with the [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
+
+2. The sync expects a list of `CategoryDraft`s that have their `key` fields set to be matched with
 categories in the target CTP project. Also, the categories in the target project are expected to have the `key` fields set,
 otherwise they won't be matched.
 
-2. Every category may have a reference to a `parent category` and a reference to the `Type` of its custom fields. 
+3. Every category may have a reference to a `parent category` and a reference to the `Type` of its custom fields. 
 These references are matched by their `key`s. Therefore, in order for the sync to resolve the 
 actual ids of the references, their `key`s has to be supplied.
  
@@ -40,8 +47,6 @@ actual ids of the references, their `key`s has to be supplied.
      ````java     
      final List<CategoryDraft> categoryDrafts = CategoryReferenceResolutionUtils.mapToCategoryDrafts(categories);
      ````  
-
-3. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
 4. After the `sphereClient` is set up, a `CategorySyncOptions` should be built as follows: 
 ````java
