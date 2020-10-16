@@ -4,7 +4,6 @@ import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.shoppinglists.LineItem;
 import io.sphere.sdk.shoppinglists.LineItemDraft;
 import io.sphere.sdk.shoppinglists.LineItemDraftBuilder;
@@ -16,7 +15,6 @@ import io.sphere.sdk.shoppinglists.TextLineItemDraft;
 import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
 import io.sphere.sdk.shoppinglists.expansion.ShoppingListExpansionModel;
 import io.sphere.sdk.shoppinglists.queries.ShoppingListQuery;
-import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
 
 import javax.annotation.Nonnull;
@@ -24,7 +22,6 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft;
 import static com.commercetools.sync.commons.utils.SyncUtils.getReferenceWithKeyReplaced;
@@ -98,7 +95,7 @@ public final class ShoppingListReferenceResolutionUtils {
         // see: https://github.com/commercetools/commercetools-sync-java/pull/589
         final Reference<Customer> customerReferenceWithKeyReplaced =
             getReferenceWithKeyReplaced(shoppingList.getCustomer(),
-                () -> Customer.referenceOfId(shoppingList.getCustomer().getKey()));
+                () -> Customer.referenceOfId(shoppingList.getCustomer().getObj().getKey()));
 
         return ShoppingListDraftBuilder
             .of(shoppingList.getName())
@@ -108,7 +105,7 @@ public final class ShoppingListReferenceResolutionUtils {
             .slug(shoppingList.getSlug())
             .lineItems(mapToLineItemDrafts(shoppingList.getLineItems()))
             .textLineItems(mapToTextLineItemDrafts(shoppingList.getTextLineItems()))
-            .custom(CustomFieldsDraft.ofCustomFields(shoppingList.getCustom()))
+            .custom(mapToCustomFieldsDraft(shoppingList))
             .deleteDaysAfterLastModification(shoppingList.getDeleteDaysAfterLastModification())
             .build();
     }
@@ -124,43 +121,46 @@ public final class ShoppingListReferenceResolutionUtils {
         return lineItems.stream()
                         .filter(Objects::nonNull)
                         .map(ShoppingListReferenceResolutionUtils::mapToLineItemDraft)
-                        .collect(Collectors.toList());
+                        .filter(Objects::nonNull)
+                        .collect(toList());
     }
 
-    @Nonnull
+    @Nullable
     private static LineItemDraft mapToLineItemDraft(@Nonnull final LineItem lineItem) {
-        // todo (ahmetoz) don't allow using variant id for product variant selection.
-        // todo (ahmetoz) need to ensure how variant is returned with query.
-        final ProductVariant productVariant = lineItem.getVariant();
-        LineItemDraftBuilder builder;
-        if (productVariant != null) {
-            builder = LineItemDraftBuilder
-                .ofSku(productVariant.getSku(), lineItem.getQuantity())
-                .variantId(productVariant.getId());
-        } else {
-            builder = LineItemDraftBuilder
-                .of(lineItem.getProductId())
-                .quantity(lineItem.getQuantity());
+
+        if (lineItem.getVariant() != null) {
+            return LineItemDraftBuilder
+                .ofSku(lineItem.getVariant().getSku(), lineItem.getQuantity())
+                .addedAt(lineItem.getAddedAt())
+                .custom(mapToCustomFieldsDraft(lineItem.getCustom()))
+                .build();
         }
 
-        return builder
-            .custom(mapToCustomFieldsDraft(lineItem.getCustom()))
-            .build();
+        return null;
     }
 
-    @Nonnull
-    private static List<TextLineItemDraft> mapToTextLineItemDrafts(@Nonnull final List<TextLineItem> textLineItems) {
+    @Nullable
+    private static List<TextLineItemDraft> mapToTextLineItemDrafts(
+        @Nullable final List<TextLineItem> textLineItems) {
+
+        if (textLineItems == null) {
+            return null;
+        }
+
         return textLineItems.stream()
                             .filter(Objects::nonNull)
                             .map(ShoppingListReferenceResolutionUtils::mapToTextLineItemDraft)
-                            .collect(Collectors.toList());
+                            .collect(toList());
     }
 
     @Nonnull
     private static TextLineItemDraft mapToTextLineItemDraft(@Nonnull final TextLineItem textLineItem) {
+
         return TextLineItemDraftBuilder.of(textLineItem.getName(), textLineItem.getQuantity())
                                        .description(textLineItem.getDescription())
-                                       .custom(mapToCustomFieldsDraft(textLineItem.getCustom())).build();
+                                       .addedAt(textLineItem.getAddedAt())
+                                       .custom(mapToCustomFieldsDraft(textLineItem.getCustom()))
+                                       .build();
     }
 
     /**
@@ -168,9 +168,10 @@ public final class ShoppingListReferenceResolutionUtils {
      * needed references expanded for the sync:
      * <ul>
      *     <li>Customer</li>
-     *     <li>Custom Type of Shopping List</li>
-     *     <li>Custom Types of LineItems</li>
-     *     <li>Custom Types of TextLineItems</li>
+     *     <li>Custom Type of the Shopping List</li>
+     *     <li>Variants of the LineItems</li>
+     *     <li>Custom Types of the LineItems</li>
+     *     <li>Custom Types of the TextLineItems</li>
      * </ul>
      *
      * <p>Note: Please only use this util if you desire to sync all the aforementioned references from
@@ -184,6 +185,7 @@ public final class ShoppingListReferenceResolutionUtils {
         return ShoppingListQuery.of()
                                 .withExpansionPaths(ShoppingListExpansionModel::customer)
                                 .plusExpansionPaths(ExpansionPath.of("custom.type"))
+                                .plusExpansionPaths(ExpansionPath.of("lineItems[*].variant"))
                                 .plusExpansionPaths(ExpansionPath.of("lineItems[*].custom.type"))
                                 .plusExpansionPaths(ExpansionPath.of("textLineItems[*].custom.type"));
     }
