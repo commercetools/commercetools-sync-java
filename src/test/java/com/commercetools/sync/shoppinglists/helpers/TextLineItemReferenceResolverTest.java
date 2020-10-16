@@ -109,8 +109,9 @@ class TextLineItemReferenceResolverTest {
 
         // assertion
         assertThat(resolvedDraftCompletionStage)
-                .isCompletedExceptionally()
-                .withFailMessage("CTP error on fetch");
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(SphereException.class)
+            .hasMessageContaining("CTP error on fetch");
     }
 
     @Test
