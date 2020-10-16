@@ -16,7 +16,7 @@ import static java.lang.String.format;
 public final class LineItemReferenceResolver
     extends CustomReferenceResolver<LineItemDraft, LineItemDraftBuilder, ShoppingListSyncOptions> {
 
-    static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type resource identifier on "
+    static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
         + "LineItemDraft with SKU: '%s'.";
 
     /**
