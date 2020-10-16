@@ -78,7 +78,7 @@ class ShoppingListsReferenceResolutionUtilsTest {
 
         assertThat(shoppingListDrafts).hasSize(3);
         shoppingListDrafts.forEach(draft -> {
-            assertThat(draft.getCustomer().getId()).isEqualTo("customerKey");
+            assertThat(draft.getCustomer().getKey()).isEqualTo("customerKey");
             assertThat(draft.getCustom().getType().getKey()).isEqualTo("customTypeKey");
 
             assertThat(draft.getLineItems()).containsExactly(

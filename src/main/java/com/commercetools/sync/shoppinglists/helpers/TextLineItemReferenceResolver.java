@@ -16,16 +16,16 @@ public final class TextLineItemReferenceResolver
     extends CustomReferenceResolver<TextLineItemDraft, TextLineItemDraftBuilder, ShoppingListSyncOptions> {
 
     static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
-            + "TextLineItemDraft with name:'%s'.";
+        + "TextLineItemDraft with name: '%s'.";
 
     /**
      * Takes a {@link ShoppingListSyncOptions} instance, a {@link TypeService} to instantiate a
      * {@link TextLineItemReferenceResolver} instance that could be used to resolve the text line-item drafts in the
      * CTP project specified in the injected {@link ShoppingListSyncOptions} instance.
      *
-     * @param shoppingListSyncOptions   the container of all the options of the sync process including the CTP project
-     *                                  client and/or configuration and other sync-specific options.
-     * @param typeService               the service to fetch the types for reference resolution.
+     * @param shoppingListSyncOptions the container of all the options of the sync process including the CTP project
+     *                                client and/or configuration and other sync-specific options.
+     * @param typeService             the service to fetch the types for reference resolution.
      */
     public TextLineItemReferenceResolver(@Nonnull final ShoppingListSyncOptions shoppingListSyncOptions,
                                          @Nonnull final TypeService typeService) {
@@ -47,19 +47,17 @@ public final class TextLineItemReferenceResolver
     @Nonnull
     public CompletionStage<TextLineItemDraft> resolveReferences(@Nonnull final TextLineItemDraft textLineItemDraft) {
         return resolveCustomTypeReference(TextLineItemDraftBuilder.of(textLineItemDraft))
-                .thenApply(TextLineItemDraftBuilder::build);
+            .thenApply(TextLineItemDraftBuilder::build);
     }
 
     @Nonnull
     protected CompletionStage<TextLineItemDraftBuilder> resolveCustomTypeReference(
-            @Nonnull final TextLineItemDraftBuilder draftBuilder) {
-
-        final String errorMessage  = format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draftBuilder.getName());
+        @Nonnull final TextLineItemDraftBuilder draftBuilder) {
 
         return resolveCustomTypeReference(
-                    draftBuilder,
-                    TextLineItemDraftBuilder::getCustom,
-                    TextLineItemDraftBuilder::custom,
-                    errorMessage);
+            draftBuilder,
+            TextLineItemDraftBuilder::getCustom,
+            TextLineItemDraftBuilder::custom,
+            format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draftBuilder.getName()));
     }
 }

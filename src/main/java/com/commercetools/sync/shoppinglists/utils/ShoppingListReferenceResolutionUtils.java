@@ -24,7 +24,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft;
-import static com.commercetools.sync.commons.utils.SyncUtils.getReferenceWithKeyReplaced;
+import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -91,17 +91,11 @@ public final class ShoppingListReferenceResolutionUtils {
     @Nonnull
     private static ShoppingListDraft mapToShoppingListDraft(@Nonnull final ShoppingList shoppingList) {
 
-        // todo (ahmetoz) shopping list customer will be migrated to ResourceIdentifier with SDK 1.54.0.
-        // see: https://github.com/commercetools/commercetools-sync-java/pull/589
-        final Reference<Customer> customerReferenceWithKeyReplaced =
-            getReferenceWithKeyReplaced(shoppingList.getCustomer(),
-                () -> Customer.referenceOfId(shoppingList.getCustomer().getObj().getKey()));
-
         return ShoppingListDraftBuilder
             .of(shoppingList.getName())
             .description(shoppingList.getDescription())
             .key(shoppingList.getKey())
-            .customer(customerReferenceWithKeyReplaced)
+            .customer(getResourceIdentifierWithKey(shoppingList.getCustomer()))
             .slug(shoppingList.getSlug())
             .lineItems(mapToLineItemDrafts(shoppingList.getLineItems()))
             .textLineItems(mapToTextLineItemDrafts(shoppingList.getTextLineItems()))

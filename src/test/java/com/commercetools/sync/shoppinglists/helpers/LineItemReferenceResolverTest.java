@@ -9,10 +9,12 @@ import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.shoppinglists.LineItemDraftBuilder;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.utils.CompletableFutureUtils;
+
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -49,16 +51,16 @@ class LineItemReferenceResolverTest {
         // preparation
         final String customTypeId = "customTypeId";
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
-                .ofTypeIdAndJson(customTypeId, new HashMap<>());
+            .ofTypeIdAndJson(customTypeId, new HashMap<>());
 
         final LineItemDraftBuilder draftBuilder =
-                LineItemDraftBuilder.ofSku("dummy-sku", 10L)
-                        .custom(customFieldsDraft);
+            LineItemDraftBuilder.ofSku("dummy-sku", 10L)
+                                .custom(customFieldsDraft);
 
         // test
         final LineItemDraftBuilder resolvedDraft = referenceResolver
-                .resolveCustomTypeReference(draftBuilder)
-                .toCompletableFuture().join();
+            .resolveCustomTypeReference(draftBuilder)
+            .toCompletableFuture().join();
 
         // assertion
         assertThat(resolvedDraft.getCustom()).isNotNull();
@@ -71,16 +73,16 @@ class LineItemReferenceResolverTest {
 
         // preparation
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
-                .ofTypeKeyAndJson("customTypeKey", new HashMap<>());
+            .ofTypeKeyAndJson("customTypeKey", new HashMap<>());
 
         final LineItemDraftBuilder draftBuilder =
-                LineItemDraftBuilder.ofSku("dummy-sku", 10L)
-                        .custom(customFieldsDraft);
+            LineItemDraftBuilder.ofSku("dummy-sku", 10L)
+                                .custom(customFieldsDraft);
 
         // test
         final LineItemDraftBuilder resolvedDraft = referenceResolver
-                .resolveCustomTypeReference(draftBuilder)
-                .toCompletableFuture().join();
+            .resolveCustomTypeReference(draftBuilder)
+            .toCompletableFuture().join();
 
         // assertion
         assertThat(resolvedDraft.getCustom()).isNotNull();
@@ -92,70 +94,71 @@ class LineItemReferenceResolverTest {
     void resolveCustomTypeReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
         // preparation
         when(typeService.fetchCachedTypeId(anyString()))
-                .thenReturn(CompletableFutureUtils.failed(new SphereException("CTP error on fetch")));
+            .thenReturn(CompletableFutureUtils.failed(new SphereException("CTP error on fetch")));
 
         final String customTypeKey = "customTypeKey";
         final CustomFieldsDraft customFieldsDraft =
-                CustomFieldsDraft.ofTypeKeyAndJson(customTypeKey, new HashMap<>());
+            CustomFieldsDraft.ofTypeKeyAndJson(customTypeKey, new HashMap<>());
         final LineItemDraftBuilder draftBuilder =
-                LineItemDraftBuilder.ofSku("dummy-sku", 10L)
-                        .custom(customFieldsDraft);
+            LineItemDraftBuilder.ofSku("dummy-sku", 10L)
+                                .custom(customFieldsDraft);
 
         // test
         final CompletionStage<LineItemDraftBuilder> resolvedDraftCompletionStage = referenceResolver
-                .resolveCustomTypeReference(draftBuilder);
+            .resolveCustomTypeReference(draftBuilder);
 
         // assertion
         assertThat(resolvedDraftCompletionStage)
-                .hasFailedWithThrowableThat()
-                .isExactlyInstanceOf(SphereException.class)
-                .hasMessageContaining("CTP error on fetch");
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(SphereException.class)
+            .hasMessageContaining("CTP error on fetch");
     }
 
     @Test
     void resolveCustomTypeReference_WithNonExistentCustomType_ShouldCompleteExceptionally() {
         final String customTypeKey = "customTypeKey";
         final CustomFieldsDraft customFieldsDraft =
-                CustomFieldsDraft.ofTypeKeyAndJson(customTypeKey, new HashMap<>());
+            CustomFieldsDraft.ofTypeKeyAndJson(customTypeKey, new HashMap<>());
 
         final LineItemDraftBuilder draftBuilder =
-                LineItemDraftBuilder.ofSku("dummy-sku", 10L)
-                        .custom(customFieldsDraft);
+            LineItemDraftBuilder.ofSku("dummy-sku", 10L)
+                                .custom(customFieldsDraft);
 
         when(typeService.fetchCachedTypeId(anyString()))
-                .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
         // test
         final CompletionStage<LineItemDraftBuilder> resolvedDraftCompletionStage = referenceResolver
-                .resolveCustomTypeReference(draftBuilder);
+            .resolveCustomTypeReference(draftBuilder);
 
         // assertion
         final String expectedExceptionMessage = format(FAILED_TO_RESOLVE_CUSTOM_TYPE,
-                draftBuilder.getSku());
+            draftBuilder.getSku());
 
         final String expectedMessageWithCause =
-                format("%s Reason: %s", expectedExceptionMessage, format(TYPE_DOES_NOT_EXIST, customTypeKey));;
+            format("%s Reason: %s", expectedExceptionMessage, format(TYPE_DOES_NOT_EXIST, customTypeKey));
+        ;
         assertThat(resolvedDraftCompletionStage)
-                .hasFailedWithThrowableThat()
-                .isExactlyInstanceOf(ReferenceResolutionException.class)
-                .hasMessage(expectedMessageWithCause);
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(ReferenceResolutionException.class)
+            .hasMessage(expectedMessageWithCause);
     }
 
     @Test
     void resolveCustomTypeReference_WithEmptyKeyOnCustomTypeResId_ShouldCompleteExceptionally() {
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
-                .ofTypeKeyAndJson("", new HashMap<>());
+            .ofTypeKeyAndJson("", new HashMap<>());
 
         final LineItemDraftBuilder draftBuilder =
-                LineItemDraftBuilder.ofSku("dummy-sku", 10L)
-                        .custom(customFieldsDraft);
+            LineItemDraftBuilder.ofSku("dummy-sku", 10L)
+                                .custom(customFieldsDraft);
 
         // assertion
         assertThat(referenceResolver.resolveCustomTypeReference(draftBuilder))
-                .hasFailedWithThrowableThat()
-                .isExactlyInstanceOf(ReferenceResolutionException.class)
-                .hasMessage(format("Failed to resolve custom type reference on LineItemDraft"
-                        + " with key:'dummy-sku'. Reason: %s", BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+            .hasFailedWithThrowableThat()
+            .isExactlyInstanceOf(ReferenceResolutionException.class)
+            .hasMessage(format("Failed to resolve custom type reference on LineItemDraft"
+                + " with SKU: 'dummy-sku'. Reason: %s", BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
 
     }
 }
