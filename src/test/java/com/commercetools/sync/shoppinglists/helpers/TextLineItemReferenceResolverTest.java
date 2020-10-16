@@ -7,18 +7,17 @@ import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.SphereException;
+import io.sphere.sdk.shoppinglists.TextLineItemDraft;
 import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.utils.CompletableFutureUtils;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
@@ -48,21 +47,24 @@ class TextLineItemReferenceResolverTest {
     }
 
     @Test
-    void resolveCustomTypeReference_WithNonNullIdOnCustomTypeResId_ShouldResolveCustomTypeReference() {
+    void resolveReferences_WithNonNullIdOnCustomTypeResId_ShouldResolveCustomTypeReference() {
 
         // preparation
         final String customTypeId = "customTypeId";
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
             .ofTypeIdAndJson(customTypeId, new HashMap<>());
 
-        final TextLineItemDraftBuilder draftBuilder =
-            TextLineItemDraftBuilder.of(LocalizedString.of(Locale.ENGLISH, "dummy-custom-key"), 10L)
-                                    .custom(customFieldsDraft);
+        final TextLineItemDraft textLineItemDraft =
+            TextLineItemDraftBuilder
+                .of(LocalizedString.of(Locale.ENGLISH, "dummy-custom-key"), 10L)
+                .custom(customFieldsDraft)
+                .build();
 
         // test
-        final TextLineItemDraftBuilder resolvedDraft = referenceResolver
-            .resolveCustomTypeReference(draftBuilder)
-            .toCompletableFuture().join();
+        final TextLineItemDraft resolvedDraft = referenceResolver
+            .resolveReferences(textLineItemDraft)
+            .toCompletableFuture()
+            .join();
 
         // assertion
         assertThat(resolvedDraft.getCustom()).isNotNull();
@@ -71,20 +73,23 @@ class TextLineItemReferenceResolverTest {
     }
 
     @Test
-    void resolveCustomTypeReference_WithNonNullKeyOnCustomTypeResId_ShouldResolveCustomTypeReference() {
+    void resolveReferences_WithNonNullKeyOnCustomTypeResId_ShouldResolveCustomTypeReference() {
 
         // preparation
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
             .ofTypeKeyAndJson("customTypeKey", new HashMap<>());
 
-        final TextLineItemDraftBuilder draftBuilder =
-            TextLineItemDraftBuilder.of(LocalizedString.of(Locale.ENGLISH, "dummy-custom-key"), 10L)
-                                    .custom(customFieldsDraft);
+        final TextLineItemDraft textLineItemDraft =
+            TextLineItemDraftBuilder
+                .of(LocalizedString.of(Locale.ENGLISH, "dummy-custom-key"), 10L)
+                .custom(customFieldsDraft)
+                .build();
 
         // test
-        final TextLineItemDraftBuilder resolvedDraft = referenceResolver
-            .resolveCustomTypeReference(draftBuilder)
-            .toCompletableFuture().join();
+        final TextLineItemDraft resolvedDraft = referenceResolver
+            .resolveReferences(textLineItemDraft)
+            .toCompletableFuture()
+            .join();
 
         // assertion
         assertThat(resolvedDraft.getCustom()).isNotNull();
@@ -93,7 +98,7 @@ class TextLineItemReferenceResolverTest {
     }
 
     @Test
-    void resolveCustomTypeReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
+    void resolveReferences_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
         // preparation
         when(typeService.fetchCachedTypeId(anyString()))
             .thenReturn(CompletableFutureUtils.failed(new SphereException("CTP error on fetch")));
@@ -101,62 +106,60 @@ class TextLineItemReferenceResolverTest {
         final String customTypeKey = "customTypeKey";
         final CustomFieldsDraft customFieldsDraft =
             CustomFieldsDraft.ofTypeKeyAndJson(customTypeKey, new HashMap<>());
-        final TextLineItemDraftBuilder draftBuilder =
-            TextLineItemDraftBuilder.of(LocalizedString.of(Locale.ENGLISH, "dummy-custom-key"), 10L)
-                                    .custom(customFieldsDraft);
 
-        // test
-        final CompletionStage<TextLineItemDraftBuilder> resolvedDraftCompletionStage = referenceResolver
-            .resolveCustomTypeReference(draftBuilder);
+        final TextLineItemDraft textLineItemDraft =
+            TextLineItemDraftBuilder
+                .of(LocalizedString.of(Locale.ENGLISH, "dummy-custom-key"), 10L)
+                .custom(customFieldsDraft)
+                .build();
 
         // assertion
-        assertThat(resolvedDraftCompletionStage)
+        assertThat(referenceResolver.resolveReferences(textLineItemDraft))
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(SphereException.class)
             .hasMessageContaining("CTP error on fetch");
     }
 
     @Test
-    void resolveCustomTypeReference_WithNonExistentCustomType_ShouldCompleteExceptionally() {
+    void resolveReferences_WithNonExistentCustomType_ShouldCompleteExceptionally() {
         final String customTypeKey = "customTypeKey";
         final CustomFieldsDraft customFieldsDraft =
             CustomFieldsDraft.ofTypeKeyAndJson(customTypeKey, new HashMap<>());
 
-        final TextLineItemDraftBuilder draftBuilder =
-            TextLineItemDraftBuilder.of(LocalizedString.of(Locale.ENGLISH, "dummy-custom-key"), 10L)
-                                    .custom(customFieldsDraft);
+        final TextLineItemDraft textLineItemDraft =
+            TextLineItemDraftBuilder
+                .of(LocalizedString.of(Locale.ENGLISH, "dummy-custom-key"), 10L)
+                .custom(customFieldsDraft)
+                .build();
 
         when(typeService.fetchCachedTypeId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-        // test
-        final CompletionStage<TextLineItemDraftBuilder> resolvedDraftCompletionStage = referenceResolver
-            .resolveCustomTypeReference(draftBuilder);
-
         // assertion
-        final String expectedExceptionMessage = format(FAILED_TO_RESOLVE_CUSTOM_TYPE,
-            draftBuilder.getName());
+        final String expectedExceptionMessage = format(FAILED_TO_RESOLVE_CUSTOM_TYPE, textLineItemDraft.getName());
 
         final String expectedMessageWithCause =
             format("%s Reason: %s", expectedExceptionMessage, format(TYPE_DOES_NOT_EXIST, customTypeKey));
         ;
-        assertThat(resolvedDraftCompletionStage)
+        assertThat(referenceResolver.resolveReferences(textLineItemDraft))
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(expectedMessageWithCause);
     }
 
     @Test
-    void resolveCustomTypeReference_WithEmptyKeyOnCustomTypeResId_ShouldCompleteExceptionally() {
+    void resolveReferences_WithEmptyKeyOnCustomTypeResId_ShouldCompleteExceptionally() {
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
             .ofTypeKeyAndJson("", new HashMap<>());
 
-        final TextLineItemDraftBuilder draftBuilder =
-            TextLineItemDraftBuilder.of(LocalizedString.of(Locale.ENGLISH, "dummy-custom-key"), 10L)
-                                    .custom(customFieldsDraft);
+        final TextLineItemDraft textLineItemDraft =
+            TextLineItemDraftBuilder
+                .of(LocalizedString.of(Locale.ENGLISH, "dummy-custom-key"), 10L)
+                .custom(customFieldsDraft)
+                .build();
 
         // assertion
-        assertThat(referenceResolver.resolveCustomTypeReference(draftBuilder))
+        assertThat(referenceResolver.resolveReferences(textLineItemDraft))
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format("Failed to resolve custom type reference on TextLineItemDraft"
