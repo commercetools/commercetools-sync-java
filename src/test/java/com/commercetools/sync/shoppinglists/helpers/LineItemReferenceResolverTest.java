@@ -46,7 +46,6 @@ class LineItemReferenceResolverTest {
 
     @Test
     void resolveReferences_WithNonNullIdOnCustomTypeResId_ShouldResolveCustomTypeReference() {
-
         // preparation
         final String customTypeId = "customTypeId";
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
@@ -66,12 +65,10 @@ class LineItemReferenceResolverTest {
         // assertion
         assertThat(resolvedDraft.getCustom()).isNotNull();
         assertThat(resolvedDraft.getCustom().getType().getId()).isEqualTo(customTypeId);
-
     }
 
     @Test
     void resolveReferences_WithNonNullKeyOnCustomTypeResId_ShouldResolveCustomTypeReference() {
-
         // preparation
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
             .ofTypeKeyAndJson("customTypeKey", new HashMap<>());
@@ -90,7 +87,6 @@ class LineItemReferenceResolverTest {
         // assertion
         assertThat(resolvedDraft.getCustom()).isNotNull();
         assertThat(resolvedDraft.getCustom().getType().getId()).isEqualTo("typeId");
-
     }
 
     @Test

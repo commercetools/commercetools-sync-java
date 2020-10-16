@@ -101,6 +101,7 @@ public final class ShoppingListReferenceResolutionUtils {
             .textLineItems(mapToTextLineItemDrafts(shoppingList.getTextLineItems()))
             .custom(mapToCustomFieldsDraft(shoppingList))
             .deleteDaysAfterLastModification(shoppingList.getDeleteDaysAfterLastModification())
+            .anonymousId(shoppingList.getAnonymousId())
             .build();
     }
 

@@ -10,12 +10,18 @@ import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
+import io.sphere.sdk.shoppinglists.LineItemDraft;
+import io.sphere.sdk.shoppinglists.LineItemDraftBuilder;
+import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
+import io.sphere.sdk.shoppinglists.TextLineItemDraft;
+import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Objects;
@@ -31,6 +37,9 @@ import static com.commercetools.sync.shoppinglists.helpers.ShoppingListReference
 import static com.commercetools.sync.shoppinglists.helpers.ShoppingListReferenceResolver.FAILED_TO_RESOLVE_CUSTOMER_REFERENCE;
 import static com.commercetools.sync.shoppinglists.helpers.ShoppingListReferenceResolver.FAILED_TO_RESOLVE_CUSTOM_TYPE;
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -305,5 +314,83 @@ class ShoppingListReferenceResolverTest {
             .hasNotFailed()
             .isCompletedWithValueMatching(resolvedDraft ->
                 Objects.equals(resolvedDraft.getCustomer(), draftBuilder.getCustomer()));
+    }
+
+    @Test
+    void resolveReferences_WithoutReferences_ShouldNotResolveReferences() {
+        final ShoppingListDraft shoppingListDraft = ShoppingListDraftBuilder
+            .of(LocalizedString.ofEnglish("name"))
+            .key("shoppingList-key")
+            .build();
+
+        final ShoppingListDraft resolvedDraft = referenceResolver
+            .resolveReferences(shoppingListDraft)
+            .toCompletableFuture()
+            .join();
+
+        assertThat(resolvedDraft).isEqualTo(shoppingListDraft);
+    }
+
+    @Test
+    void resolveReferences_WithAllValidFieldsAndReferences_ShouldResolveReferences() {
+        final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
+            .ofTypeKeyAndJson("typeKey", new HashMap<>());
+
+        final ZonedDateTime addedAt = ZonedDateTime.now();
+        final LineItemDraft lineItemDraft =
+            LineItemDraftBuilder.ofSku("variant-sku", 20L)
+                                .custom(customFieldsDraft)
+                                .addedAt(addedAt)
+                                .build();
+
+        final TextLineItemDraft textLineItemDraft =
+            TextLineItemDraftBuilder
+                .of(LocalizedString.ofEnglish("textLineItemName"), 10L)
+                .description(LocalizedString.ofEnglish("desc"))
+                .custom(customFieldsDraft)
+                .addedAt(addedAt)
+                .build();
+
+        final ShoppingListDraft shoppingListDraft = ShoppingListDraftBuilder
+            .of(LocalizedString.ofEnglish("name"))
+            .key("shoppingList-key")
+            .description(LocalizedString.ofEnglish("desc"))
+            .slug(LocalizedString.ofEnglish("slug"))
+            .deleteDaysAfterLastModification(0)
+            .anonymousId("anonymousId")
+            .lineItems(asList(null, lineItemDraft))
+            .textLineItems(asList(null, textLineItemDraft))
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson("typeKey", emptyMap()))
+            .customer(ResourceIdentifier.ofKey("customerKey"))
+            .build();
+
+        final ShoppingListDraft resolvedDraft = referenceResolver
+            .resolveReferences(shoppingListDraft)
+            .toCompletableFuture()
+            .join();
+
+        final ShoppingListDraft expectedDraft = ShoppingListDraftBuilder
+            .of(LocalizedString.ofEnglish("name"))
+            .key("shoppingList-key")
+            .description(LocalizedString.ofEnglish("desc"))
+            .slug(LocalizedString.ofEnglish("slug"))
+            .deleteDaysAfterLastModification(0)
+            .anonymousId("anonymousId")
+            .custom(CustomFieldsDraft.ofTypeIdAndJson("typeId", new HashMap<>()))
+            .customer(Customer.referenceOfId("customerId").toResourceIdentifier())
+            .lineItems(singletonList(LineItemDraftBuilder
+                .ofSku("variant-sku", 20L)
+                .custom(CustomFieldsDraft.ofTypeIdAndJson("typeId", new HashMap<>()))
+                .addedAt(addedAt)
+                .build()))
+            .textLineItems(singletonList(TextLineItemDraftBuilder
+                .of(LocalizedString.ofEnglish("textLineItemName"), 10L)
+                .description(LocalizedString.ofEnglish("desc"))
+                .custom(CustomFieldsDraft.ofTypeIdAndJson("typeId", new HashMap<>()))
+                .addedAt(addedAt)
+                .build()))
+            .build();
+
+        assertThat(resolvedDraft).isEqualTo(expectedDraft);
     }
 }

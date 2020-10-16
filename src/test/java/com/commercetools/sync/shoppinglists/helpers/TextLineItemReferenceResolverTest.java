@@ -48,7 +48,6 @@ class TextLineItemReferenceResolverTest {
 
     @Test
     void resolveReferences_WithNonNullIdOnCustomTypeResId_ShouldResolveCustomTypeReference() {
-
         // preparation
         final String customTypeId = "customTypeId";
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
@@ -74,7 +73,6 @@ class TextLineItemReferenceResolverTest {
 
     @Test
     void resolveReferences_WithNonNullKeyOnCustomTypeResId_ShouldResolveCustomTypeReference() {
-
         // preparation
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
             .ofTypeKeyAndJson("customTypeKey", new HashMap<>());
@@ -94,7 +92,6 @@ class TextLineItemReferenceResolverTest {
         // assertion
         assertThat(resolvedDraft.getCustom()).isNotNull();
         assertThat(resolvedDraft.getCustom().getType().getId()).isEqualTo("typeId");
-
     }
 
     @Test

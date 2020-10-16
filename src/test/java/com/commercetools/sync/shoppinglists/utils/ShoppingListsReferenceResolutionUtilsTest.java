@@ -158,6 +158,7 @@ class ShoppingListsReferenceResolutionUtilsTest {
         when(mockShoppingList.getKey()).thenReturn("key");
         when(mockShoppingList.getSlug()).thenReturn(LocalizedString.ofEnglish("slug"));
         when(mockShoppingList.getDeleteDaysAfterLastModification()).thenReturn(2);
+        when(mockShoppingList.getAnonymousId()).thenReturn("anonymousId");
 
         when(mockShoppingList.getCustomer()).thenReturn(null);
         when(mockShoppingList.getCustom()).thenReturn(null);
@@ -174,6 +175,7 @@ class ShoppingListsReferenceResolutionUtilsTest {
                 .key("key")
                 .slug(LocalizedString.ofEnglish("slug"))
                 .deleteDaysAfterLastModification(2)
+                .anonymousId("anonymousId")
                 .build()
         );
     }

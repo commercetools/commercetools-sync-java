@@ -7,13 +7,10 @@ import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.shoppinglists.LineItemDraft;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
-import io.sphere.sdk.shoppinglists.TextLineItemDraft;
 
 import javax.annotation.Nonnull;
-import java.util.List;
 import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
@@ -126,13 +123,12 @@ public final class ShoppingListReferenceResolver
     private CompletionStage<ShoppingListDraftBuilder> resolveLineItemReferences(
         @Nonnull final ShoppingListDraftBuilder draftBuilder) {
 
-        final List<LineItemDraft> lineItemDrafts = draftBuilder.getLineItems();
-
-        if (lineItemDrafts != null && !lineItemDrafts.isEmpty()) {
-            return mapValuesToFutureOfCompletedValues(lineItemDrafts,
-                lineItemReferenceResolver::resolveReferences, toList())
+        if (draftBuilder.getLineItems() != null) {
+            return mapValuesToFutureOfCompletedValues(
+                draftBuilder.getLineItems(), lineItemReferenceResolver::resolveReferences, toList())
                 .thenApply(draftBuilder::lineItems);
         }
+
         return completedFuture(draftBuilder);
     }
 
@@ -140,13 +136,12 @@ public final class ShoppingListReferenceResolver
     private CompletionStage<ShoppingListDraftBuilder> resolveTextLineItemReferences(
         @Nonnull final ShoppingListDraftBuilder draftBuilder) {
 
-        final List<TextLineItemDraft> textLineItemDrafts = draftBuilder.getTextLineItems();
-
-        if (textLineItemDrafts != null && !textLineItemDrafts.isEmpty()) {
-            return mapValuesToFutureOfCompletedValues(textLineItemDrafts,
-                textLineItemReferenceResolver::resolveReferences, toList())
+        if (draftBuilder.getTextLineItems() != null) {
+            return mapValuesToFutureOfCompletedValues(
+                draftBuilder.getTextLineItems(), textLineItemReferenceResolver::resolveReferences, toList())
                 .thenApply(draftBuilder::textLineItems);
         }
+
         return completedFuture(draftBuilder);
     }
 }
