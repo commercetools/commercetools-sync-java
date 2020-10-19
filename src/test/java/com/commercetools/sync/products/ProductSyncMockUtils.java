@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.customergroups.CustomerGroup;
+import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
@@ -187,7 +188,7 @@ public class ProductSyncMockUtils {
     public static ProductDraft createProductDraft(@Nonnull final String jsonResourcePath,
                                                   @Nonnull final ResourceIdentifiable<ProductType> productTypeReference,
                                                   @Nullable final ResourceIdentifier<TaxCategory> taxCategoryReference,
-                                                  @Nullable final Reference<State> stateReference,
+                                                  @Nullable final ResourceIdentifier<State> stateReference,
                                                   @Nonnull final Set<ResourceIdentifier<Category>>
                                                       categoryResourceIdentifiers,
                                                   @Nullable final CategoryOrderHints categoryOrderHints) {
@@ -504,5 +505,19 @@ public class ProductSyncMockUtils {
         when(customObjectService.fetchCachedCustomObjectId(any()))
             .thenReturn(CompletableFuture.completedFuture(Optional.of(id)));
         return customObjectService;
+    }
+
+    /**
+     * Creates a mock {@link Customer} with the supplied {@code id} and {@code key}.
+     *
+     * @param id  the id of the created mock {@link Customer}.
+     * @param key the key of the created mock {@link CustomerGroup}.
+     * @return a mock customerGroup with the supplied id and key.
+     */
+    public static Customer getMockCustomer(final String id, final String key) {
+        final Customer customer = mock(Customer.class);
+        when(customer.getId()).thenReturn(id);
+        when(customer.getKey()).thenReturn(key);
+        return customer;
     }
 }

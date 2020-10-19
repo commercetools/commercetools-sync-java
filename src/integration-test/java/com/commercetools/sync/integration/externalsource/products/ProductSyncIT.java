@@ -341,7 +341,8 @@ class ProductSyncIT {
     void sync_withEqualProduct_shouldNotUpdateProduct() {
         final ProductDraft productDraft =
             createProductDraft(PRODUCT_KEY_1_RESOURCE_PATH, ProductType.referenceOfId(productType.getKey()),
-                ResourceIdentifier.ofKey(targetTaxCategory.getKey()), State.referenceOfId(targetProductState.getKey()),
+                ResourceIdentifier.ofKey(targetTaxCategory.getKey()),
+                ResourceIdentifier.ofKey(targetProductState.getKey()),
                 categoryResourceIdentifiersWithKeys, categoryOrderHintsWithKeys);
 
         final ProductSync productSync = new ProductSync(syncOptions);
@@ -358,7 +359,8 @@ class ProductSyncIT {
     void sync_withChangedProduct_shouldUpdateProduct() {
         final ProductDraft productDraft =
             createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, ProductType.referenceOfId(productType.getKey()),
-                ResourceIdentifier.ofKey(targetTaxCategory.getKey()), State.referenceOfId(targetProductState.getKey()),
+                ResourceIdentifier.ofKey(targetTaxCategory.getKey()),
+                ResourceIdentifier.ofKey(targetProductState.getKey()),
                 categoryResourceIdentifiersWithKeys, categoryOrderHintsWithKeys);
 
         final ProductSync productSync = new ProductSync(syncOptions);
@@ -388,7 +390,8 @@ class ProductSyncIT {
 
         final ProductDraft productDraft =
             createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, ResourceIdentifier.ofKey(productType.getKey()),
-                ResourceIdentifier.ofKey(targetTaxCategory.getKey()), State.referenceOfId(targetProductState.getKey()),
+                ResourceIdentifier.ofKey(targetTaxCategory.getKey()),
+                ResourceIdentifier.ofKey(targetProductState.getKey()),
                 categoryResourceIdentifiersWithKeys, categoryOrderHintsWithKeys);
 
         final ProductSyncStatistics syncStatistics =
@@ -428,9 +431,12 @@ class ProductSyncIT {
         final ProductSync spyProductSync = new ProductSync(spyOptions);
 
         final ProductDraft productDraft =
-            createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, ProductType.referenceOfId(productType.getKey()),
-                ResourceIdentifier.ofKey(targetTaxCategory.getKey()), State.referenceOfId(targetProductState.getKey()),
-                categoryResourceIdentifiersWithKeys, categoryOrderHintsWithKeys);
+            createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
+                ProductType.referenceOfId(productType.getKey()),
+                ResourceIdentifier.ofKey(targetTaxCategory.getKey()),
+                ResourceIdentifier.ofKey(targetProductState.getKey()),
+                categoryResourceIdentifiersWithKeys,
+                categoryOrderHintsWithKeys);
 
         final ProductSyncStatistics syncStatistics =
             executeBlocking(spyProductSync.sync(singletonList(productDraft)));
@@ -479,9 +485,12 @@ class ProductSyncIT {
         final ProductSync spyProductSync = new ProductSync(spyOptions);
 
         final ProductDraft productDraft =
-            createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, ProductType.referenceOfId(productType.getKey()),
-                ResourceIdentifier.ofKey(targetTaxCategory.getKey()), State.referenceOfId(targetProductState.getKey()),
-                categoryResourceIdentifiersWithKeys, categoryOrderHintsWithKeys);
+            createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
+                ProductType.referenceOfId(productType.getKey()),
+                ResourceIdentifier.ofKey(targetTaxCategory.getKey()),
+                ResourceIdentifier.ofKey(targetProductState.getKey()),
+                categoryResourceIdentifiersWithKeys,
+                categoryOrderHintsWithKeys);
 
         final ProductSyncStatistics syncStatistics =
             executeBlocking(spyProductSync.sync(singletonList(productDraft)));
@@ -536,7 +545,7 @@ class ProductSyncIT {
         // Prepare batches from external source
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
             ResourceIdentifier.ofKey(productType.getKey()), ResourceIdentifier.ofKey(targetTaxCategory.getKey()),
-            State.referenceOfId(targetProductState.getKey()), categoryResourceIdentifiersWithKeys,
+            ResourceIdentifier.ofKey(targetProductState.getKey()), categoryResourceIdentifiersWithKeys,
             categoryOrderHintsWithKeys);
 
         final List<ProductDraft> batch1 = new ArrayList<>();
@@ -587,13 +596,13 @@ class ProductSyncIT {
         // Prepare batches from external source
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
             ResourceIdentifier.ofKey(productType.getKey()), ResourceIdentifier.ofKey(targetTaxCategory.getKey()),
-            State.referenceOfId(targetProductState.getKey()), categoryResourceIdentifiersWithKeys,
+            ResourceIdentifier.ofKey(targetProductState.getKey()), categoryResourceIdentifiersWithKeys,
             categoryOrderHintsWithKeys);
 
         final ProductDraft key3Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             ResourceIdentifier.ofKey(productType.getKey()))
             .taxCategory(ResourceIdentifier.ofKey(targetTaxCategory.getKey()))
-            .state(State.referenceOfId(targetProductState.getKey()))
+            .state(ResourceIdentifier.ofKey(targetProductState.getKey()))
             .categories(new ArrayList<>())
             .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
             .key("productKey3")
@@ -604,7 +613,7 @@ class ProductSyncIT {
         final ProductDraft key4Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             ResourceIdentifier.ofKey(productType.getKey()))
             .taxCategory(ResourceIdentifier.ofKey(targetTaxCategory.getKey()))
-            .state(State.referenceOfId(targetProductState.getKey()))
+            .state(ResourceIdentifier.ofKey(targetProductState.getKey()))
             .categories(new ArrayList<>())
             .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
             .key("productKey4")
@@ -615,7 +624,7 @@ class ProductSyncIT {
         final ProductDraft key5Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             ResourceIdentifier.ofKey(productType.getKey()))
             .taxCategory(ResourceIdentifier.ofKey(targetTaxCategory.getKey()))
-            .state(State.referenceOfId(targetProductState.getKey()))
+            .state(ResourceIdentifier.ofKey(targetProductState.getKey()))
             .categories(new ArrayList<>())
             .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
             .key("productKey5")
@@ -626,7 +635,7 @@ class ProductSyncIT {
         final ProductDraft key6Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
             ResourceIdentifier.ofKey(productType.getKey()))
             .taxCategory(ResourceIdentifier.ofKey(targetTaxCategory.getKey()))
-            .state(State.referenceOfId(targetProductState.getKey()))
+            .state(ResourceIdentifier.ofKey(targetProductState.getKey()))
             .categories(new ArrayList<>())
             .categoryOrderHints(CategoryOrderHints.of(new HashMap<>()))
             .key("productKey6")
@@ -655,7 +664,7 @@ class ProductSyncIT {
         // Prepare batches from external source
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
             ResourceIdentifier.ofKey(productType.getKey()), ResourceIdentifier.ofKey(targetTaxCategory.getKey()),
-            State.referenceOfId(targetProductState.getKey()), categoryResourceIdentifiersWithKeys,
+            ResourceIdentifier.ofKey(targetProductState.getKey()), categoryResourceIdentifiersWithKeys,
             categoryOrderHintsWithKeys);
 
         final ProductDraft key3Draft = createProductDraftBuilder(PRODUCT_KEY_2_RESOURCE_PATH,
@@ -746,7 +755,7 @@ class ProductSyncIT {
         // Prepare batches from external source
         final ProductDraft productDraft = createProductDraft(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
             ProductType.reference(productType.getKey()), ResourceIdentifier.ofKey(targetTaxCategory.getKey()),
-            State.referenceOfId(targetProductState.getKey()), categoryResourceIdentifiersWithKeys,
+            ResourceIdentifier.ofKey(targetProductState.getKey()), categoryResourceIdentifiersWithKeys,
             categoryOrderHintsWithKeys);
 
         // Draft with null key

@@ -7,6 +7,7 @@ import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import io.sphere.sdk.shoppinglists.LineItemDraft;
 import io.sphere.sdk.shoppinglists.LineItemDraftBuilder;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
+
 import javax.annotation.Nonnull;
 import java.util.concurrent.CompletionStage;
 
@@ -16,16 +17,16 @@ public final class LineItemReferenceResolver
     extends CustomReferenceResolver<LineItemDraft, LineItemDraftBuilder, ShoppingListSyncOptions> {
 
     static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on "
-            + "LineItemDraft with key:'%s'.";
+        + "LineItemDraft with SKU: '%s'.";
 
     /**
      * Takes a {@link ShoppingListSyncOptions} instance, a {@link TypeService} to instantiate a
-     * {@link LineItemReferenceResolver} instance that could be used to resolve the line-item drafts in the
-     * CTP project specified in the injected {@link ShoppingListSyncOptions} instance.
+     * {@link LineItemReferenceResolver} instance that could be used to resolve the custom type references of the
+     * line item drafts in the CTP project specified in the injected {@link ShoppingListSyncOptions} instance.
      *
-     * @param shoppingListSyncOptions   the container of all the options of the sync process including the CTP project client
-     *                                  and/or configuration and other sync-specific options.
-     * @param typeService       the service to fetch the types for reference resolution.
+     * @param shoppingListSyncOptions the container of all the options of the sync process including the CTP project
+     *                                client and/or configuration and other sync-specific options.
+     * @param typeService             the service to fetch the types for reference resolution.
      */
     public LineItemReferenceResolver(@Nonnull final ShoppingListSyncOptions shoppingListSyncOptions,
                                      @Nonnull final TypeService typeService) {
@@ -35,7 +36,7 @@ public final class LineItemReferenceResolver
     }
 
     /**
-     * Given a {@link ShoppingListDraft} this method attempts to resolve the attribute definition references to return
+     * Given a {@link ShoppingListDraft} this method attempts to resolve the custom type reference to return
      * a {@link CompletionStage} which contains a new instance of the draft with the resolved references.
      *
      * @param lineItemDraft the lineItemDraft to resolve its references.
@@ -47,20 +48,18 @@ public final class LineItemReferenceResolver
     @Nonnull
     public CompletionStage<LineItemDraft> resolveReferences(@Nonnull final LineItemDraft lineItemDraft) {
         return resolveCustomTypeReference(LineItemDraftBuilder.of(lineItemDraft))
-                .thenApply(LineItemDraftBuilder::build);
+            .thenApply(LineItemDraftBuilder::build);
     }
 
     @Nonnull
     protected CompletionStage<LineItemDraftBuilder> resolveCustomTypeReference(
-            @Nonnull final LineItemDraftBuilder draftBuilder) {
-
-        final String errorMessage  = format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draftBuilder.getSku());
+        @Nonnull final LineItemDraftBuilder draftBuilder) {
 
         return resolveCustomTypeReference(
-                draftBuilder,
-                LineItemDraftBuilder::getCustom,
-                LineItemDraftBuilder::custom,
-                errorMessage);
+            draftBuilder,
+            LineItemDraftBuilder::getCustom,
+            LineItemDraftBuilder::custom,
+            format(FAILED_TO_RESOLVE_CUSTOM_TYPE, draftBuilder.getSku()));
 
     }
 }

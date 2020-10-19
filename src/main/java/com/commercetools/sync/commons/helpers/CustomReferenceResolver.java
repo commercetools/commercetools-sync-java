@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.models.Builder;
 import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.types.CustomDraft;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
 
