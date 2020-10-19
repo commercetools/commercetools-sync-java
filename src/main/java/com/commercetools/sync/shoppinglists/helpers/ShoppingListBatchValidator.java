@@ -2,11 +2,14 @@ package com.commercetools.sync.shoppinglists.helpers;
 
 import com.commercetools.sync.commons.helpers.BaseBatchValidator;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
+import io.sphere.sdk.shoppinglists.LineItemDraft;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
+import io.sphere.sdk.shoppinglists.TextLineItemDraft;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -14,6 +17,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class ShoppingListBatchValidator
@@ -24,6 +28,14 @@ public class ShoppingListBatchValidator
     static final String SHOPPING_LIST_DRAFT_IS_NULL = "ShoppingListDraft is null.";
     static final String SHOPPING_LIST_DRAFT_NAME_NOT_SET = "ShoppingListDraft with key: %s doesn't have a name. "
         + "Please make sure all shopping list drafts have names.";
+    static final String LINE_ITEM_DRAFT_IS_NULL = "LineItemDraft at position '%d' of ShoppingListDraft "
+        + "with key '%s' is null.";
+    static final String LINE_ITEM_DRAFT_SKU_NOT_SET = "LineItemDraft at position '%d' of "
+        + "ShoppingListDraft with key '%s' has no SKU set. Please make sure all lineItems have SKUs.";
+    static final String TEXT_LINE_ITEM_DRAFT_IS_NULL = "TextLineItemDraft at position '%d' of ShoppingListDraft "
+        + "with key '%s' is null.";
+    static final String TEXT_LINE_ITEM_DRAFT_NAME_NOT_SET = "LineItemDraft at position '%d' of "
+        + "ShoppingListDraft with key '%s' has no name set. Please make sure all textLineItems have names.";
 
     public ShoppingListBatchValidator(@Nonnull final ShoppingListSyncOptions syncOptions,
                                       @Nonnull final ShoppingListSyncStatistics syncStatistics) {
@@ -41,12 +53,22 @@ public class ShoppingListBatchValidator
      * <li>It is not null</li>
      * <li>It has a key which is not blank (null/empty)</li>
      * <li>It has a name which is not null</li>
+     * <li>It has all lineItems AND textLineItems valid</li>
+     * <li>A lineItem is valid if it satisfies the following conditions:
+     * <ol>
+     * <li>It has a SKU which is not blank (null/empty)</li>
+     * </ol>
+     * <li>A textLineItem is valid if it satisfies the following conditions:
+     * <ol>
+     * <li>It has a name which is not blank (null/empty)</li>
+     * </ol>
+     * </li>
      * </ol>
      *
      * @param shoppingListDrafts the shopping list drafts to validate and collect referenced type keys.
      * @return {@link ImmutablePair}&lt;{@link Set}&lt;{@link ShoppingListDraft}&gt;,
      * {@link ReferencedKeys}&gt; which contains the {@link Set} of valid drafts and
-     *      referenced keys within a wrapper.
+     * referenced keys within a wrapper.
      */
     @Override
     public ImmutablePair<Set<ShoppingListDraft>, ReferencedKeys> validateAndCollectReferencedKeys(
@@ -72,10 +94,66 @@ public class ShoppingListBatchValidator
         } else if (shoppingListDraft.getName() == null || shoppingListDraft.getName().getLocales().isEmpty()) {
             handleError(format(SHOPPING_LIST_DRAFT_NAME_NOT_SET, shoppingListDraft.getKey()));
         } else {
-            return true;
+            final List<String> draftErrors = getErrorsInAllLineItemsAndTextLineItems(shoppingListDraft);
+            if (!draftErrors.isEmpty()) {
+                draftErrors.forEach(this::handleError);
+            } else {
+                return true;
+            }
         }
 
         return false;
+    }
+
+
+    @Nonnull
+    private List<String> getErrorsInAllLineItemsAndTextLineItems(@Nonnull final ShoppingListDraft shoppingListDraft) {
+        final List<String> errorMessages = new ArrayList<>();
+        final List<LineItemDraft> lineItemDrafts = shoppingListDraft.getLineItems();
+
+        for (int i = 0; i < lineItemDrafts.size(); i++) {
+            errorMessages.addAll(getLineItemDraftErrorsInAllLineItems(lineItemDrafts.get(i),
+                i, requireNonNull(shoppingListDraft.getKey())));
+        }
+
+        final List<TextLineItemDraft> textLineItems = shoppingListDraft.getTextLineItems();
+
+        for (int i = 0; i < textLineItems.size(); i++) {
+            errorMessages.addAll(getTextLineItemDraftErrorsInAllTextLineItems(textLineItems.get(i),
+                i, requireNonNull(shoppingListDraft.getKey())));
+        }
+
+        return errorMessages;
+    }
+
+    @Nonnull
+    private List<String> getLineItemDraftErrorsInAllLineItems(@Nullable final LineItemDraft lineItemDraft,
+                                                              final int variantPosition,
+                                                              @Nonnull final String shoppingListDraftKey) {
+        final List<String> errorMessages = new ArrayList<>();
+        if (lineItemDraft != null) {
+            if (isBlank(lineItemDraft.getSku())) {
+                errorMessages.add(format(LINE_ITEM_DRAFT_SKU_NOT_SET, variantPosition, shoppingListDraftKey));
+            }
+        } else {
+            errorMessages.add(format(LINE_ITEM_DRAFT_IS_NULL, variantPosition, shoppingListDraftKey));
+        }
+        return errorMessages;
+    }
+
+    @Nonnull
+    private List<String> getTextLineItemDraftErrorsInAllTextLineItems(
+        @Nullable final TextLineItemDraft textLineItemDraft, final int variantPosition,
+        @Nonnull final String shoppingListDraftKey) {
+        final List<String> errorMessages = new ArrayList<>();
+        if (textLineItemDraft != null) {
+            if (textLineItemDraft.getName() == null || textLineItemDraft.getName().getLocales().isEmpty()) {
+                errorMessages.add(format(TEXT_LINE_ITEM_DRAFT_NAME_NOT_SET, variantPosition, shoppingListDraftKey));
+            }
+        } else {
+            errorMessages.add(format(TEXT_LINE_ITEM_DRAFT_IS_NULL, variantPosition, shoppingListDraftKey));
+        }
+        return errorMessages;
     }
 
     private void collectReferencedKeys(
