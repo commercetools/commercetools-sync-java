@@ -3,7 +3,12 @@ package com.commercetools.sync.shoppinglists.helpers;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.customers.Customer;
+import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.shoppinglists.LineItemDraft;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
+import io.sphere.sdk.shoppinglists.TextLineItemDraft;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +23,9 @@ import java.util.Set;
 
 import static com.commercetools.sync.shoppinglists.helpers.ShoppingListBatchValidator.SHOPPING_LIST_DRAFT_IS_NULL;
 import static com.commercetools.sync.shoppinglists.helpers.ShoppingListBatchValidator.SHOPPING_LIST_DRAFT_KEY_NOT_SET;
+import static com.commercetools.sync.shoppinglists.helpers.ShoppingListBatchValidator.SHOPPING_LIST_DRAFT_NAME_NOT_SET;
 import static java.lang.String.format;
+import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -53,7 +60,7 @@ class ShoppingListBatchValidatorTest {
 
     @Test
     void validateAndCollectReferencedKeys_WithNullShoppingListDraft_ShouldHaveValidationErrorAndEmptyResult() {
-        final Set<ShoppingListDraft> validDrafts = getValidDrafts(Collections.singletonList(null));
+        final Set<ShoppingListDraft> validDrafts = getValidDrafts(singletonList(null));
 
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(SHOPPING_LIST_DRAFT_IS_NULL);
@@ -63,7 +70,7 @@ class ShoppingListBatchValidatorTest {
     @Test
     void validateAndCollectReferencedKeys_WithShoppingListDraftWithNullKey_ShouldHaveValidationErrorAndEmptyResult() {
         final ShoppingListDraft shoppingListDraft = mock(ShoppingListDraft.class);
-        final Set<ShoppingListDraft> validDrafts = getValidDrafts(Collections.singletonList(shoppingListDraft));
+        final Set<ShoppingListDraft> validDrafts = getValidDrafts(singletonList(shoppingListDraft));
 
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0))
@@ -75,7 +82,8 @@ class ShoppingListBatchValidatorTest {
     void validateAndCollectReferencedKeys_WithShoppingListDraftWithEmptyKey_ShouldHaveValidationErrorAndEmptyResult() {
         final ShoppingListDraft shoppingListDraft = mock(ShoppingListDraft.class);
         when(shoppingListDraft.getKey()).thenReturn(EMPTY);
-        final Set<ShoppingListDraft> validDrafts = getValidDrafts(Collections.singletonList(shoppingListDraft));
+        when(shoppingListDraft.getName()).thenReturn(LocalizedString.empty());
+        final Set<ShoppingListDraft> validDrafts = getValidDrafts(singletonList(shoppingListDraft));
 
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0))
@@ -84,37 +92,78 @@ class ShoppingListBatchValidatorTest {
     }
 
     @Test
+    void validateAndCollectReferencedKeys_WithShoppingListDraftWithNullName_ShouldHaveValidationErrorAndEmptyResult() {
+        final ShoppingListDraft shoppingListDraft = mock(ShoppingListDraft.class);
+        when(shoppingListDraft.getKey()).thenReturn("validDraftKey");
+        final Set<ShoppingListDraft> validDrafts = getValidDrafts(singletonList(shoppingListDraft));
+
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0))
+            .isEqualTo(format(SHOPPING_LIST_DRAFT_NAME_NOT_SET, shoppingListDraft.getKey()));
+        assertThat(validDrafts).isEmpty();
+    }
+
+    @Test
+    void validateAndCollectReferencedKeys_WithShoppingListDraftWithEmptyName_ShouldHaveValidationErrorAndEmptyResult() {
+        final ShoppingListDraft shoppingListDraft = mock(ShoppingListDraft.class);
+        when(shoppingListDraft.getKey()).thenReturn("validDraftKey");
+        when(shoppingListDraft.getName()).thenReturn(LocalizedString.of());
+        final Set<ShoppingListDraft> validDrafts = getValidDrafts(singletonList(shoppingListDraft));
+
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0))
+            .isEqualTo(format(SHOPPING_LIST_DRAFT_NAME_NOT_SET, shoppingListDraft.getKey()));
+        assertThat(validDrafts).isEmpty();
+    }
+
+    @Test
     void validateAndCollectReferencedKeys_WithValidDrafts_ShouldReturnCorrectResults() {
         final ShoppingListDraft validShoppingListDraft = mock(ShoppingListDraft.class);
         when(validShoppingListDraft.getKey()).thenReturn("validDraftKey");
+        when(validShoppingListDraft.getName()).thenReturn(LocalizedString.ofEnglish("name"));
         when(validShoppingListDraft.getCustom())
             .thenReturn(CustomFieldsDraft.ofTypeKeyAndJson("typeKey", Collections.emptyMap()));
+        LineItemDraft lineItem = mock(LineItemDraft.class);
+        when(lineItem.getCustom()).thenReturn(CustomFieldsDraft.ofTypeKeyAndJson("lineItemTypeKey",
+            Collections.emptyMap()));
+        when(validShoppingListDraft.getLineItems()).thenReturn(singletonList(lineItem));
+        TextLineItemDraft textLineItem = mock(TextLineItemDraft.class);
+        when(textLineItem.getCustom()).thenReturn(CustomFieldsDraft.ofTypeKeyAndJson("textLineItemTypeKey",
+            Collections.emptyMap()));
+        when(validShoppingListDraft.getTextLineItems()).thenReturn(singletonList(textLineItem));
+        Customer customer = mock(Customer.class);
+        when(customer.getId()).thenReturn("customerKey");
+        final Reference<Customer> customerReference = Customer.referenceOfId(customer.getId());
+        when(validShoppingListDraft.getCustomer()).thenReturn(customerReference);
 
-        final ShoppingListDraft validMainShoppingListDraft = mock(ShoppingListDraft.class);
-        when(validMainShoppingListDraft.getKey()).thenReturn("validDraftKey1");
+        final ShoppingListDraft invalidNameShoppingListDraft = mock(ShoppingListDraft.class);
+        when(invalidNameShoppingListDraft.getKey()).thenReturn("validDraftKey1");
 
         final ShoppingListDraft invalidShoppingListDraft = mock(ShoppingListDraft.class);
 
         final ShoppingListBatchValidator shoppingListBatchValidator =
             new ShoppingListBatchValidator(syncOptions, syncStatistics);
-        final ImmutablePair<Set<ShoppingListDraft>, Set<String>> pair
+        final ImmutablePair<Set<ShoppingListDraft>, ShoppingListBatchValidator.ReferencedKeys> pair
             = shoppingListBatchValidator.validateAndCollectReferencedKeys(
-            Arrays.asList(validShoppingListDraft, invalidShoppingListDraft, validMainShoppingListDraft));
+            Arrays.asList(validShoppingListDraft, invalidShoppingListDraft, invalidNameShoppingListDraft));
 
-        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages).hasSize(2);
         assertThat(errorCallBackMessages.get(0))
             .isEqualTo(format(SHOPPING_LIST_DRAFT_KEY_NOT_SET, invalidShoppingListDraft.getName()));
-        assertThat(pair.getLeft())
-            .containsExactlyInAnyOrder(validShoppingListDraft, validMainShoppingListDraft);
-        assertThat(pair.getRight())
-            .containsExactlyInAnyOrder("typeKey");
+        assertThat(errorCallBackMessages.get(1))
+            .isEqualTo(format(SHOPPING_LIST_DRAFT_NAME_NOT_SET, invalidNameShoppingListDraft.getKey()));
+        assertThat(pair.getLeft()).containsExactly(validShoppingListDraft);
+        assertThat(pair.getRight().getTypeKeys())
+            .containsExactlyInAnyOrder("typeKey", "lineItemTypeKey", "textLineItemTypeKey");
+        assertThat(pair.getRight().getCustomerKeys())
+            .containsExactlyInAnyOrder("customerKey");
     }
 
     @Nonnull
     private Set<ShoppingListDraft> getValidDrafts(@Nonnull final List<ShoppingListDraft> shoppingListDrafts) {
         final ShoppingListBatchValidator shoppingListBatchValidator =
             new ShoppingListBatchValidator(syncOptions, syncStatistics);
-        final ImmutablePair<Set<ShoppingListDraft>, Set<String>> pair =
+        final ImmutablePair<Set<ShoppingListDraft>, ShoppingListBatchValidator.ReferencedKeys> pair =
             shoppingListBatchValidator.validateAndCollectReferencedKeys(shoppingListDrafts);
         return pair.getLeft();
     }
