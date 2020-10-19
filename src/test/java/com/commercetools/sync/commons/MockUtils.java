@@ -6,6 +6,8 @@ import com.commercetools.sync.services.TypeService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.categories.Category;
+import io.sphere.sdk.customergroups.CustomerGroup;
+import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.models.Asset;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.types.CustomFields;
@@ -162,5 +164,19 @@ public class MockUtils {
         when(customerService.cacheKeysToIds(anySet()))
                 .thenReturn(completedFuture(Collections.singletonMap("customerKey", "customerId")));
         return customerService;
+    }
+
+    /**
+     * Creates a mock {@link Customer} with the supplied {@code id} and {@code key}.
+     *
+     * @param id  the id of the created mock {@link Customer}.
+     * @param key the key of the created mock {@link CustomerGroup}.
+     * @return a mock customerGroup with the supplied id and key.
+     */
+    public static Customer getMockCustomer(final String id, final String key) {
+        final Customer customer = mock(Customer.class);
+        when(customer.getId()).thenReturn(id);
+        when(customer.getKey()).thenReturn(key);
+        return customer;
     }
 }

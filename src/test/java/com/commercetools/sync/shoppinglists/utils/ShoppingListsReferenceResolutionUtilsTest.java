@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import static com.commercetools.sync.commons.MockUtils.getMockCustomer;
 import static com.commercetools.sync.commons.MockUtils.getTypeMock;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomer;
 import static com.commercetools.sync.shoppinglists.utils.ShoppingListReferenceResolutionUtils.buildShoppingListQuery;
 import static com.commercetools.sync.shoppinglists.utils.ShoppingListReferenceResolutionUtils.mapToShoppingListDrafts;
 import static java.util.Collections.emptyList;
