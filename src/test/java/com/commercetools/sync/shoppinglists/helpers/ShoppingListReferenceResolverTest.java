@@ -87,7 +87,7 @@ class ShoppingListReferenceResolverTest {
     }
 
     @Test
-    void resolveCustomTypeReference_WithNonNullKeyOnCustomTypeResId_ShouldResolveCustomTypeReference() {
+    void resolveCustomTypeReference_WithCustomTypeId_ShouldNotResolveCustomTypeReferenceWithKey() {
         final String customTypeId = "customTypeId";
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
             .ofTypeIdAndJson(customTypeId, new HashMap<>());
@@ -105,7 +105,7 @@ class ShoppingListReferenceResolverTest {
 
         // assertion
         assertThat(resolvedDraft.getCustom()).isNotNull();
-        assertThat(resolvedDraft.getCustom().getType().getId()).isEqualTo(customTypeId);
+        assertThat(resolvedDraft.getCustom()).isEqualTo(customFieldsDraft);
 
     }
 
