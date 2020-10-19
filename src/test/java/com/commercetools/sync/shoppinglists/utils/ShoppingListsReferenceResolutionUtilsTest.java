@@ -96,7 +96,7 @@ class ShoppingListsReferenceResolutionUtilsTest {
     }
 
     @Test
-    void mapToShoppingListDrafts_WithNonExpandedReferences_ShouldReturnResourceIdentifiersWithKeys() {
+    void mapToShoppingListDrafts_WithNonExpandedReferences_ShouldReturnResourceIdentifiersWithoutReferencedKeys() {
         final String customTypeId = UUID.randomUUID().toString();
         final String customerId = UUID.randomUUID().toString();
 
