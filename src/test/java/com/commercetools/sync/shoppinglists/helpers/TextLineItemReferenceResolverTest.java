@@ -47,7 +47,7 @@ class TextLineItemReferenceResolverTest {
     }
 
     @Test
-    void resolveReferences_WithNonNullIdOnCustomTypeResId_ShouldResolveCustomTypeReference() {
+    void resolveReferences_WithCustomTypeId_ShouldNotResolveCustomTypeReferenceWithKey() {
         // preparation
         final String customTypeId = "customTypeId";
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
@@ -67,8 +67,7 @@ class TextLineItemReferenceResolverTest {
 
         // assertion
         assertThat(resolvedDraft.getCustom()).isNotNull();
-        assertThat(resolvedDraft.getCustom().getType().getId()).isEqualTo(customTypeId);
-
+        assertThat(resolvedDraft.getCustom()).isEqualTo(customFieldsDraft);
     }
 
     @Test
