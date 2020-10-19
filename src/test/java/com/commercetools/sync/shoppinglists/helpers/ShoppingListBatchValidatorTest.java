@@ -199,10 +199,12 @@ class ShoppingListBatchValidatorTest {
         LineItemDraft lineItem = mock(LineItemDraft.class);
         when(lineItem.getCustom()).thenReturn(CustomFieldsDraft.ofTypeKeyAndJson("lineItemTypeKey",
             emptyMap()));
+        when(lineItem.getSku()).thenReturn("validSku");
         when(validShoppingListDraft.getLineItems()).thenReturn(singletonList(lineItem));
         TextLineItemDraft textLineItem = mock(TextLineItemDraft.class);
         when(textLineItem.getCustom()).thenReturn(CustomFieldsDraft.ofTypeKeyAndJson("textLineItemTypeKey",
             emptyMap()));
+        when(textLineItem.getName()).thenReturn(LocalizedString.ofEnglish("validName"));
         when(validShoppingListDraft.getTextLineItems()).thenReturn(singletonList(textLineItem));
         Customer customer = mock(Customer.class);
         when(customer.getId()).thenReturn("customerKey");
@@ -230,6 +232,38 @@ class ShoppingListBatchValidatorTest {
             .containsExactlyInAnyOrder("typeKey", "lineItemTypeKey", "textLineItemTypeKey");
         assertThat(pair.getRight().getCustomerKeys())
             .containsExactlyInAnyOrder("customerKey");
+    }
+
+    @Test
+    void validateAndCollectReferencedKeys_WithEmptyKeys_ShouldNotCollectKeys() {
+        final ShoppingListDraft validShoppingListDraft = mock(ShoppingListDraft.class);
+        when(validShoppingListDraft.getKey()).thenReturn("validDraftKey");
+        when(validShoppingListDraft.getName()).thenReturn(LocalizedString.ofEnglish("name"));
+        when(validShoppingListDraft.getCustom())
+            .thenReturn(CustomFieldsDraft.ofTypeKeyAndJson(EMPTY, emptyMap()));
+        LineItemDraft lineItem = mock(LineItemDraft.class);
+        when(lineItem.getCustom()).thenReturn(CustomFieldsDraft.ofTypeKeyAndJson(EMPTY,
+            emptyMap()));
+        when(lineItem.getSku()).thenReturn("validSku");
+        when(validShoppingListDraft.getLineItems()).thenReturn(singletonList(lineItem));
+        TextLineItemDraft textLineItem = mock(TextLineItemDraft.class);
+        when(textLineItem.getCustom()).thenReturn(CustomFieldsDraft.ofTypeKeyAndJson(EMPTY,
+            emptyMap()));
+        when(textLineItem.getName()).thenReturn(LocalizedString.ofEnglish("validName"));
+        when(validShoppingListDraft.getTextLineItems()).thenReturn(singletonList(textLineItem));
+        final Reference<Customer> customerReference = Customer.referenceOfId(EMPTY);
+        when(validShoppingListDraft.getCustomer()).thenReturn(customerReference);
+
+        final ShoppingListBatchValidator shoppingListBatchValidator =
+            new ShoppingListBatchValidator(syncOptions, syncStatistics);
+        final ImmutablePair<Set<ShoppingListDraft>, ShoppingListBatchValidator.ReferencedKeys> pair
+            = shoppingListBatchValidator.validateAndCollectReferencedKeys(
+            Arrays.asList(validShoppingListDraft));
+
+        assertThat(pair.getLeft()).contains(validShoppingListDraft);
+        assertThat(pair.getRight().getCustomerKeys()).isEmpty();
+        assertThat(pair.getRight().getTypeKeys()).isEmpty();
+        assertThat(errorCallBackMessages).hasSize(0);
     }
 
     @Nonnull
