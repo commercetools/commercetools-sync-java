@@ -149,6 +149,7 @@ public final class ShoppingListReferenceResolutionUtils {
         shoppingList.getCustomer();
 
         return ShoppingListDraftBuilder.of(shoppingList.getName())
+                .key(shoppingList.getKey())
                 .customer(replaceCustomerIdWithKey(shoppingList.getCustomer()))
                 .custom(CustomFieldsDraft.ofCustomFields(shoppingList.getCustom()))
                 .plusLineItems(mapToLineItemDrafts(shoppingList.getLineItems()))
