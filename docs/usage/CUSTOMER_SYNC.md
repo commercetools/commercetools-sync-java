@@ -35,7 +35,7 @@ Any reference that is not expanded will have its id in place and not replaced by
 resources on the target commercetools project and the library will issue an update/create an API request without reference
 resolution.
 
-     - When syncing from a source commercetools project, you can use [`mapToCustomerDrafts`](https://commercetools.github.io/commercetools-sync-java/v/2.3.0/com/commercetools/sync/customers/utils/CustomerReferenceResolutionUtils.html#mapToCustomerDrafts-java.util.List-)
+ - When syncing from a source commercetools project, you can use [`mapToCustomerDrafts`](TODO: insert link once existing)
     method that maps from a `Customer` to `CustomerDraft` to make them ready for reference resolution by the sync:
 
     ````java
@@ -51,91 +51,6 @@ final CustomerSyncOptions customerSyncOptions = CustomerSyncOptionsBuilder.of(sp
 ````
 
 [More information about Sync Options](SYNC_OPTIONS.md).
-
-#### About SyncOptions
-`SyncOptions` is an object which provides a place for users to add certain configurations to customize the sync process.
-Available configurations:
-
-##### 1. `errorCallback`
-A callback that is called whenever an error event occurs during the sync process. Each resource executes its own 
-error-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
-following context about the error-event:
-
-* sync exception
-* customer draft from the source
-* customer of the target project (only provided if an existing customer could be found)
-* the update-actions, which failed (only provided if an existing customer could be found)
-
-##### Example 
-````java
- final Logger logger = LoggerFactory.getLogger(CustomerSync.class);
- final CustomerSyncOptions customerSyncOptions = CustomerSyncOptionsBuilder
-         .of(sphereClient)
-         .errorCallback((syncException, draft, customer, updateActions) -> 
-            logger.error(new SyncException("My customized message"), syncException)).build();
-````
-    
-##### 2. `warningCallback`
-A callback that is called whenever a warning event occurs during the sync process. Each resource executes its own 
-warning-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
-following context about the warning message:
-
-* sync exception
-* customer draft from the source 
-* customer of the target project (only provided if an existing cart discount could be found)
-
-##### Example 
-````java
- final Logger logger = LoggerFactory.getLogger(CustomerSync.class);
- final CustomerSyncOptions customerSyncOptions = CustomerSyncOptionsBuilder
-         .of(sphereClient)
-         .warningCallback((syncException, draft, customer, updateActions) -> 
-            logger.warn(new SyncException("My customized message"), syncException)).build();
-````
-
-##### 3. `beforeUpdateCallback`
-During the sync process if a target customer and a customer draft are matched, this callback can be used to 
-intercept the **_update_** request just before it is sent to commercetools platform. This allows the user to modify 
-update actions array with custom actions or discard unwanted actions. The callback provides the following information :
- 
- * customer draft from the source
- * customer from the target project
- * update actions that were calculated after comparing both
-
-##### Example
-````java
-final TriFunction<List<UpdateAction<Customer>>, CustomerDraft, Customer,
-                  List<UpdateAction<Customer>>> beforeUpdateCallback, =
-            (updateActions, newCustomerDraft, oldCustomer) ->  updateActions
-                    .stream()
-                    .filter(updateAction -> !(updateAction instanceof SetLastName))
-                    .collect(Collectors.toList());
-                        
-final CustomerSyncOptions customerSyncOptions = CustomerSyncOptionsBuilder
-                    .of(CTP_CLIENT)
-                    .beforeUpdateCallback(beforeUpdateCallback)
-                    .build();
-````
-
-##### 4. `beforeCreateCallback`
-During the sync process if a cart discount draft should be created, this callback can be used to intercept 
-the **_create_** request just before it is sent to commercetools platform.  It contains following information : 
-
- * customer draft that should be created
- ##### Example
- Please refer to the [example in the product sync document](https://github.com/commercetools/commercetools-sync-java/blob/master/docs/usage/PRODUCT_SYNC.md#example-set-publish-stage-if-category-references-of-given-product-draft-exists).
-
-##### 5. `batchSize`
-A number that could be used to set the batch size with which customers are fetched and processed,
-as customers are obtained from the target project on commercetools platform in batches for better performance. The 
-algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding customers
-from the target project on commercetools platform in a single request. Playing with this option can slightly improve or 
-reduce processing speed. If it is not set, the default batch size is 50 for customer sync.
-##### Example
-````java                         
-final CustomerSyncOptions customerSyncOptions = 
-         CustomerSyncOptionsBuilder.of(sphereClient).batchSize(30).build();
-````
 
 #### Running the sync
 When all prerequisites are fulfilled, follow those steps to run the sync:
@@ -165,10 +80,6 @@ __Note__ The statistics object contains the processing time of the last batch on
 
 #### More examples of how to use the sync
 
- [Sync from an external source](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/customers/CustomerSyncIT.java).
-
-*Make sure to read the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md) for optimal performance.*
-
 ### Build all update actions
 A utility method provided by the library to compare a `Customer` to a new `CustomerDraft`. The results are collected in a list of customer update actions.
 ```java
@@ -182,10 +93,9 @@ One example is the `buildChangeEmailUpdateAction` which compare email addresses:
 Optional<UpdateAction<Customer>> updateAction = CustomerUpdateActionUtils.buildChangeEmailAction(oldCustomer, customerDraft);
 ````
 
-More examples for particular update actions can be found in the test scenarios for [CustomerUpdateActionUtils](https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/customers/utils/CustomerUpdateActionUtilsTest.java)
-and [AddressUpdateActionUtils](https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/customers/utils/AddressUpdateActionUtilsTest.java).
+More examples of those utils for different cart discounts can be found [here](TODO: add link).
 
 
-## Caveats
-The library does not support the synchronization of the `password` field of existing customers.
-For customers that do not exist in the project, a password will be created with the given customer draft’s password.
+##Caveats
+Customer passwords are not being synced.
+
