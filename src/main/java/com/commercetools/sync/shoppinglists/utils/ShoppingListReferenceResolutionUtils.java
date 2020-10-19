@@ -28,7 +28,7 @@ import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifi
 import static java.util.stream.Collectors.toList;
 
 /**
- * Util class which provides utilities that can be used when syncing resources from a source commercetools project
+ * Util class which provides utilities that can be used when syncing shopping lists from a source commercetools project
  * to a target one.
  */
 public final class ShoppingListReferenceResolutionUtils {
