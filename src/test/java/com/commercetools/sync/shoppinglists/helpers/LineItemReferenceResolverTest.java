@@ -46,7 +46,6 @@ class LineItemReferenceResolverTest {
 
     @Test
     void resolveReferences_WithCustomTypeId_ShouldNotResolveCustomTypeReferenceWithKey() {
-        // preparation
         final String customTypeId = "customTypeId";
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
             .ofTypeIdAndJson(customTypeId, new HashMap<>());
@@ -56,20 +55,17 @@ class LineItemReferenceResolverTest {
                                 .custom(customFieldsDraft)
                                 .build();
 
-        // test
         final LineItemDraft resolvedDraft = referenceResolver
             .resolveReferences(lineItemDraft)
             .toCompletableFuture()
             .join();
 
-        // assertion
         assertThat(resolvedDraft.getCustom()).isNotNull();
         assertThat(resolvedDraft.getCustom()).isEqualTo(customFieldsDraft);
     }
 
     @Test
     void resolveReferences_WithNonNullKeyOnCustomTypeResId_ShouldResolveCustomTypeReference() {
-        // preparation
         final CustomFieldsDraft customFieldsDraft = CustomFieldsDraft
             .ofTypeKeyAndJson("customTypeKey", new HashMap<>());
 
@@ -78,20 +74,17 @@ class LineItemReferenceResolverTest {
                                 .custom(customFieldsDraft)
                                 .build();
 
-        // test
         final LineItemDraft resolvedDraft = referenceResolver
             .resolveReferences(lineItemDraft)
             .toCompletableFuture()
             .join();
 
-        // assertion
         assertThat(resolvedDraft.getCustom()).isNotNull();
         assertThat(resolvedDraft.getCustom().getType().getId()).isEqualTo("typeId");
     }
 
     @Test
     void resolveReferences_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
-        // preparation
         when(typeService.fetchCachedTypeId(anyString()))
             .thenReturn(CompletableFutureUtils.failed(new SphereException("CTP error on fetch")));
 
@@ -104,7 +97,6 @@ class LineItemReferenceResolverTest {
                                 .custom(customFieldsDraft)
                                 .build();
 
-        // assertion
         assertThat(referenceResolver.resolveReferences(lineItemDraft))
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(SphereException.class)
@@ -125,12 +117,11 @@ class LineItemReferenceResolverTest {
         when(typeService.fetchCachedTypeId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-        // assertion
         final String expectedExceptionMessage = format(FAILED_TO_RESOLVE_CUSTOM_TYPE, lineItemDraft.getSku());
 
         final String expectedMessageWithCause =
             format("%s Reason: %s", expectedExceptionMessage, format(TYPE_DOES_NOT_EXIST, customTypeKey));
-        ;
+
         assertThat(referenceResolver.resolveReferences(lineItemDraft))
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
@@ -147,7 +138,6 @@ class LineItemReferenceResolverTest {
                                 .custom(customFieldsDraft)
                                 .build();
 
-        // assertion
         assertThat(referenceResolver.resolveReferences(lineItemDraft))
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)

@@ -75,12 +75,10 @@ class ShoppingListReferenceResolverTest {
                 .custom(customFieldsDraft)
                 .description(LocalizedString.of(Locale.ENGLISH, "DESCRIPTION"));
 
-        // test
         final ShoppingListDraftBuilder resolvedDraft = referenceResolver
             .resolveCustomTypeReference(draftBuilder)
             .toCompletableFuture().join();
 
-        // assertion
         assertThat(resolvedDraft.getCustom()).isNotNull();
         assertThat(resolvedDraft.getCustom().getType().getId()).isEqualTo("typeId");
 
@@ -98,20 +96,16 @@ class ShoppingListReferenceResolverTest {
                 .custom(customFieldsDraft)
                 .description(LocalizedString.of(Locale.ENGLISH, "DESCRIPTION"));
 
-        // test
         final ShoppingListDraftBuilder resolvedDraft = referenceResolver
             .resolveCustomTypeReference(draftBuilder)
             .toCompletableFuture().join();
 
-        // assertion
         assertThat(resolvedDraft.getCustom()).isNotNull();
         assertThat(resolvedDraft.getCustom()).isEqualTo(customFieldsDraft);
-
     }
 
     @Test
     void resolveCustomTypeReference_WithExceptionOnCustomTypeFetch_ShouldNotResolveReferences() {
-        // preparation
         when(typeService.fetchCachedTypeId(anyString()))
             .thenReturn(CompletableFutureUtils.failed(new SphereException("CTP error on fetch")));
 
@@ -124,11 +118,9 @@ class ShoppingListReferenceResolverTest {
                 .custom(customFieldsDraft)
                 .description(LocalizedString.of(Locale.ENGLISH, "DESCRIPTION"));
 
-        // test
         final CompletionStage<ShoppingListDraftBuilder> resolvedDraftCompletionStage = referenceResolver
             .resolveCustomTypeReference(draftBuilder);
 
-        // assertion
         assertThat(resolvedDraftCompletionStage)
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(SphereException.class)
@@ -178,18 +170,15 @@ class ShoppingListReferenceResolverTest {
                 .custom(customFieldsDraft)
                 .description(LocalizedString.of(Locale.ENGLISH, "DESCRIPTION"));
 
-        // assertion
         assertThat(referenceResolver.resolveCustomTypeReference(draftBuilder))
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
             .hasMessage(format("Failed to resolve custom type reference on ShoppingListDraft"
                 + " with key:'null'.  Reason: %s", BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
-
     }
 
     @Test
     void resolveCustomerReference_WithCustomerKey_ShouldResolveCustomerReference() {
-        // preparation
         when(customerService.fetchCachedCustomerId("customerKey"))
             .thenReturn(CompletableFuture.completedFuture(Optional.of("customerId")));
 
@@ -199,31 +188,26 @@ class ShoppingListReferenceResolverTest {
                         .customer(ResourceIdentifier.ofKey("customerKey"))
                         .description(LocalizedString.of(Locale.ENGLISH, "DESCRIPTION"));
 
-        // test
         final ShoppingListDraftBuilder resolvedDraft = referenceResolver
                 .resolveCustomerReference(draftBuilder)
                 .toCompletableFuture()
                 .join();
 
-        // assertion
         assertThat(resolvedDraft.getCustomer()).isNotNull();
         assertThat(resolvedDraft.getCustomer().getId()).isEqualTo("customerId");
     }
 
     @Test
     void resolveCustomerReference_WithNullCustomerReference_ShouldNotResolveCustomerReference() {
-        // preparation
         final ShoppingListDraftBuilder draftBuilder =
             ShoppingListDraftBuilder
                 .of(LocalizedString.of(Locale.ENGLISH, "NAME"))
                 .customer((ResourceIdentifier<Customer>) null)
                 .description(LocalizedString.of(Locale.ENGLISH, "DESCRIPTION"));
 
-        // test
         final ShoppingListDraftBuilder referencesResolvedDraft =
             referenceResolver.resolveCustomerReference(draftBuilder).toCompletableFuture().join();
 
-        // assertion
         assertThat(referencesResolvedDraft.getCustom()).isNull();
     }
 
@@ -247,14 +231,12 @@ class ShoppingListReferenceResolverTest {
 
     @Test
     void resolveCustomerReference_WithNullCustomerKey_ShouldNotResolveCustomerReference() {
-        // preparation
         final ShoppingListDraftBuilder draftBuilder =
             ShoppingListDraftBuilder
                 .of(LocalizedString.of(Locale.ENGLISH, "NAME"))
                 .customer(ResourceIdentifier.ofKey(null))
                 .description(LocalizedString.of(Locale.ENGLISH, "DESCRIPTION"));
 
-        // test and assertion
         assertThat(referenceResolver.resolveCustomerReference(draftBuilder).toCompletableFuture())
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
@@ -264,14 +246,12 @@ class ShoppingListReferenceResolverTest {
 
     @Test
     void resolveCustomerReference_WithEmptyCustomerKey_ShouldNotResolveCustomerReference() {
-        // preparation
         final ShoppingListDraftBuilder draftBuilder =
             ShoppingListDraftBuilder
                 .of(LocalizedString.of(Locale.ENGLISH, "NAME"))
                 .customer(ResourceIdentifier.ofKey(" "))
                 .description(LocalizedString.of(Locale.ENGLISH, "DESCRIPTION"));
 
-        // test and assertion
         assertThat(referenceResolver.resolveCustomerReference(draftBuilder).toCompletableFuture())
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
@@ -281,7 +261,6 @@ class ShoppingListReferenceResolverTest {
 
     @Test
     void resolveCustomerReference_WithNonExistingCustomerKey_ShouldNotResolveCustomerReference() {
-        // preparation
         when(customerService.fetchCachedCustomerId(anyString()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
@@ -292,7 +271,6 @@ class ShoppingListReferenceResolverTest {
                 .customer(ResourceIdentifier.ofKey(customerKey))
                 .description(LocalizedString.of(Locale.ENGLISH, "DESCRIPTION"));
 
-        // test and assertion
         assertThat(referenceResolver.resolveCustomerReference(draftBuilder).toCompletableFuture())
             .hasFailedWithThrowableThat()
             .isExactlyInstanceOf(ReferenceResolutionException.class)
@@ -302,14 +280,12 @@ class ShoppingListReferenceResolverTest {
 
     @Test
     void resolveCustomerReference_WithIdOnCustomerReference_ShouldNotResolveReference() {
-        // preparation
         final ShoppingListDraftBuilder draftBuilder =
             ShoppingListDraftBuilder
                 .of(LocalizedString.of(Locale.ENGLISH, "NAME"))
                 .customer(ResourceIdentifier.ofId("existingId"))
                 .description(LocalizedString.of(Locale.ENGLISH, "DESCRIPTION"));
 
-        // test and assertion
         assertThat(referenceResolver.resolveCustomerReference(draftBuilder).toCompletableFuture())
             .hasNotFailed()
             .isCompletedWithValueMatching(resolvedDraft ->
