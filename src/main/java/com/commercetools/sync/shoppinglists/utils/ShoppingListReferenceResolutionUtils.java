@@ -82,10 +82,10 @@ public final class ShoppingListReferenceResolutionUtils {
         @Nonnull final List<ShoppingList> shoppingLists) {
 
         return shoppingLists
-                .stream()
-                .filter(Objects::nonNull)
-                .map(ShoppingListReferenceResolutionUtils::mapToShoppingListDraft)
-                .collect(toList());
+            .stream()
+            .filter(Objects::nonNull)
+            .map(ShoppingListReferenceResolutionUtils::mapToShoppingListDraft)
+            .collect(toList());
     }
 
     @Nonnull
@@ -114,10 +114,10 @@ public final class ShoppingListReferenceResolutionUtils {
         }
 
         return lineItems.stream()
-            .filter(Objects::nonNull)
-            .map(ShoppingListReferenceResolutionUtils::mapToLineItemDraft)
-            .filter(Objects::nonNull)
-            .collect(toList());
+                        .filter(Objects::nonNull)
+                        .map(ShoppingListReferenceResolutionUtils::mapToLineItemDraft)
+                        .filter(Objects::nonNull)
+                        .collect(toList());
     }
 
     @Nullable
@@ -143,19 +143,19 @@ public final class ShoppingListReferenceResolutionUtils {
         }
 
         return textLineItems.stream()
-            .filter(Objects::nonNull)
-            .map(ShoppingListReferenceResolutionUtils::mapToTextLineItemDraft)
-            .collect(toList());
+                            .filter(Objects::nonNull)
+                            .map(ShoppingListReferenceResolutionUtils::mapToTextLineItemDraft)
+                            .collect(toList());
     }
 
     @Nonnull
     private static TextLineItemDraft mapToTextLineItemDraft(@Nonnull final TextLineItem textLineItem) {
 
         return TextLineItemDraftBuilder.of(textLineItem.getName(), textLineItem.getQuantity())
-            .description(textLineItem.getDescription())
-            .addedAt(textLineItem.getAddedAt())
-            .custom(mapToCustomFieldsDraft(textLineItem.getCustom()))
-            .build();
+                                       .description(textLineItem.getDescription())
+                                       .addedAt(textLineItem.getAddedAt())
+                                       .custom(mapToCustomFieldsDraft(textLineItem.getCustom()))
+                                       .build();
     }
 
     /**
@@ -178,11 +178,11 @@ public final class ShoppingListReferenceResolutionUtils {
      */
     public static ShoppingListQuery buildShoppingListQuery() {
         return ShoppingListQuery.of()
-            .withExpansionPaths(ShoppingListExpansionModel::customer)
-            .plusExpansionPaths(ExpansionPath.of("custom.type"))
-            .plusExpansionPaths(ExpansionPath.of("lineItems[*].variant"))
-            .plusExpansionPaths(ExpansionPath.of("lineItems[*].custom.type"))
-            .plusExpansionPaths(ExpansionPath.of("textLineItems[*].custom.type"));
+                                .withExpansionPaths(ShoppingListExpansionModel::customer)
+                                .plusExpansionPaths(ExpansionPath.of("custom.type"))
+                                .plusExpansionPaths(ExpansionPath.of("lineItems[*].variant"))
+                                .plusExpansionPaths(ExpansionPath.of("lineItems[*].custom.type"))
+                                .plusExpansionPaths(ExpansionPath.of("textLineItems[*].custom.type"));
     }
 
     private ShoppingListReferenceResolutionUtils() {
