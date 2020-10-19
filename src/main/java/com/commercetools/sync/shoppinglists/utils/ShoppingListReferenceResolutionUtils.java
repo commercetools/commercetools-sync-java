@@ -187,6 +187,7 @@ public final class ShoppingListReferenceResolutionUtils {
                 .withLimit(QueryExecutionUtils.DEFAULT_PAGE_SIZE)
                 .withExpansionPaths(ExpansionPath.of("custom.type"))
                 .plusExpansionPaths(ExpansionPath.of("lineItems[*].custom.type"))
+                .plusExpansionPaths(ExpansionPath.of("lineItems[*].variant"))
                 .plusExpansionPaths(ExpansionPath.of("textLineItems[*].custom.type"))
                 .plusExpansionPaths(ShoppingListExpansionModel::customer);
     }
