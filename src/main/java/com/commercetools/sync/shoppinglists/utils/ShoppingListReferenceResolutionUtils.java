@@ -1,34 +1,30 @@
 package com.commercetools.sync.shoppinglists.utils;
 
-import com.commercetools.sync.commons.exceptions.ReferenceReplacementException;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.products.ProductVariant;
-import io.sphere.sdk.queries.QueryExecutionUtils;
-import io.sphere.sdk.shoppinglists.ShoppingList;
-import io.sphere.sdk.shoppinglists.ShoppingListDraft;
-import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
 import io.sphere.sdk.shoppinglists.LineItem;
 import io.sphere.sdk.shoppinglists.LineItemDraft;
 import io.sphere.sdk.shoppinglists.LineItemDraftBuilder;
+import io.sphere.sdk.shoppinglists.ShoppingList;
+import io.sphere.sdk.shoppinglists.ShoppingListDraft;
+import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
 import io.sphere.sdk.shoppinglists.TextLineItem;
 import io.sphere.sdk.shoppinglists.TextLineItemDraft;
 import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
 import io.sphere.sdk.shoppinglists.expansion.ShoppingListExpansionModel;
 import io.sphere.sdk.shoppinglists.queries.ShoppingListQuery;
-import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
+
 import javax.annotation.Nonnull;
-import java.util.HashSet;
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.utils.CustomTypeReferenceResolutionUtils.mapToCustomFieldsDraft;
-import static com.commercetools.sync.commons.utils.SyncUtils.getReferenceWithKeyReplaced;
+import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -79,100 +75,98 @@ public final class ShoppingListReferenceResolutionUtils {
      * the library will issues an update/create API request without reference resolution.
      *
      * @param shoppingLists the shopping lists with expanded references.
-     * @return a {@link List} of {@link ShoppingListDraft} built from the
-     *         supplied {@link List} of {@link ShoppingList}.
+     * @return a {@link List} of {@link ShoppingListDraft} built from the supplied {@link List} of {@link ShoppingList}.
      */
     @Nonnull
     public static List<ShoppingListDraft> mapToShoppingListDrafts(
-        @Nonnull final List<ShoppingList> shoppingLists) {
+            @Nonnull final List<ShoppingList> shoppingLists) {
 
-        final Set<Throwable> errors = new HashSet<>();
-
-        final List<ShoppingListDraft> referenceReplacedDrafts = shoppingLists
-            .stream()
-            .filter(Objects::nonNull)
-            .map(shoppingList -> buildShoppingListDraft(shoppingList))
-            .collect(toList());
-
-        if (!errors.isEmpty()) {
-            throw new ReferenceReplacementException("Some errors occurred during reference replacement.", errors);
-        }
-
-        return referenceReplacedDrafts;
-    }
-
-
-    @Nonnull
-    private static List<LineItemDraft> mapToLineItemDrafts(@Nonnull final List<LineItem> lineItems) {
-        return lineItems.stream()
+        return shoppingLists
+                .stream()
                 .filter(Objects::nonNull)
-                .map(lineItem -> mapToLineItemDraft(lineItem))
-                .collect(Collectors.toList());
+                .map(ShoppingListReferenceResolutionUtils::mapToShoppingListDraft)
+                .collect(toList());
     }
 
     @Nonnull
-    private static LineItemDraft mapToLineItemDraft(@Nonnull final LineItem lineItem) {
-        final ProductVariant productVariant = lineItem.getVariant();
-        LineItemDraftBuilder builder;
-        if (productVariant!=null) {
-            builder = LineItemDraftBuilder
-                    .ofSku(productVariant.getSku(), lineItem.getQuantity())
-                    .variantId(productVariant.getId());
-        } else {
-            builder = LineItemDraftBuilder
-                    .of(lineItem.getProductId())
-                    .quantity(lineItem.getQuantity());
-        }
+    private static ShoppingListDraft mapToShoppingListDraft(@Nonnull final ShoppingList shoppingList) {
 
-        return builder
-                .custom(mapToCustomFieldsDraft(lineItem.getCustom()))
+        return ShoppingListDraftBuilder
+                .of(shoppingList.getName())
+                .description(shoppingList.getDescription())
+                .key(shoppingList.getKey())
+                .customer(getResourceIdentifierWithKey(shoppingList.getCustomer()))
+                .slug(shoppingList.getSlug())
+                .lineItems(mapToLineItemDrafts(shoppingList.getLineItems()))
+                .textLineItems(mapToTextLineItemDrafts(shoppingList.getTextLineItems()))
+                .custom(mapToCustomFieldsDraft(shoppingList))
+                .deleteDaysAfterLastModification(shoppingList.getDeleteDaysAfterLastModification())
+                .anonymousId(shoppingList.getAnonymousId())
                 .build();
     }
 
-    @Nonnull
-    private static List<TextLineItemDraft> mapToTextLineItemDrafts(@Nonnull final List<TextLineItem> textLineItems) {
+    @Nullable
+    private static List<LineItemDraft> mapToLineItemDrafts(
+            @Nullable final List<LineItem> lineItems) {
+
+        if (lineItems == null) {
+            return null;
+        }
+
+        return lineItems.stream()
+                .filter(Objects::nonNull)
+                .map(ShoppingListReferenceResolutionUtils::mapToLineItemDraft)
+                .filter(Objects::nonNull)
+                .collect(toList());
+    }
+
+    @Nullable
+    private static LineItemDraft mapToLineItemDraft(@Nonnull final LineItem lineItem) {
+
+        if (lineItem.getVariant() != null) {
+            return LineItemDraftBuilder
+                    .ofSku(lineItem.getVariant().getSku(), lineItem.getQuantity())
+                    .addedAt(lineItem.getAddedAt())
+                    .custom(mapToCustomFieldsDraft(lineItem.getCustom()))
+                    .build();
+        }
+
+        return null;
+    }
+
+    @Nullable
+    private static List<TextLineItemDraft> mapToTextLineItemDrafts(
+            @Nullable final List<TextLineItem> textLineItems) {
+
+        if (textLineItems == null) {
+            return null;
+        }
+
         return textLineItems.stream()
                 .filter(Objects::nonNull)
-                .map(textLineItem -> mapToTextLineItemDraft(textLineItem))
-                .collect(Collectors.toList());
+                .map(ShoppingListReferenceResolutionUtils::mapToTextLineItemDraft)
+                .collect(toList());
     }
 
     @Nonnull
     private static TextLineItemDraft mapToTextLineItemDraft(@Nonnull final TextLineItem textLineItem) {
-        return  TextLineItemDraftBuilder.of(textLineItem.getName(), textLineItem.getQuantity())
+
+        return TextLineItemDraftBuilder.of(textLineItem.getName(), textLineItem.getQuantity())
                 .description(textLineItem.getDescription())
-                .custom(mapToCustomFieldsDraft(textLineItem.getCustom())).build();
-    }
-
-    @Nonnull
-    private static ShoppingListDraft buildShoppingListDraft(@Nonnull final ShoppingList shoppingList) {
-        shoppingList.getCustomer();
-
-        return ShoppingListDraftBuilder.of(shoppingList.getName())
-                .key(shoppingList.getKey())
-                .customer(replaceCustomerIdWithKey(shoppingList.getCustomer()))
-                .custom(CustomFieldsDraft.ofCustomFields(shoppingList.getCustom()))
-                .plusLineItems(mapToLineItemDrafts(shoppingList.getLineItems()))
-                .plusTextLineItems(mapToTextLineItemDrafts(shoppingList.getTextLineItems()))
+                .addedAt(textLineItem.getAddedAt())
+                .custom(mapToCustomFieldsDraft(textLineItem.getCustom()))
                 .build();
-    }
-
-    @Nonnull
-    private static Reference<Customer> replaceCustomerIdWithKey(@Nonnull final Reference<Customer> customerReference) {
-
-        return getReferenceWithKeyReplaced(customerReference,
-                    () -> Customer.referenceOfId(customerReference.getKey()));
-
     }
 
     /**
      * Builds a {@link ShoppingListQuery} for fetching shopping lists from a source CTP project with all the
      * needed references expanded for the sync:
      * <ul>
-     *     <li>Customer </li>
-     *     <li>Custom Type</li>
-     *     <li>Lists of LineItems</li>
-     *     <li>Lists of TextLineItems</li>
+     *     <li>Customer</li>
+     *     <li>Custom Type of the Shopping List</li>
+     *     <li>Variants of the LineItems</li>
+     *     <li>Custom Types of the LineItems</li>
+     *     <li>Custom Types of the TextLineItems</li>
      * </ul>
      *
      * <p>Note: Please only use this util if you desire to sync all the aforementioned references from
@@ -184,12 +178,11 @@ public final class ShoppingListReferenceResolutionUtils {
      */
     public static ShoppingListQuery buildShoppingListQuery() {
         return ShoppingListQuery.of()
-                .withLimit(QueryExecutionUtils.DEFAULT_PAGE_SIZE)
-                .withExpansionPaths(ExpansionPath.of("custom.type"))
-                .plusExpansionPaths(ExpansionPath.of("lineItems[*].custom.type"))
+                .withExpansionPaths(ShoppingListExpansionModel::customer)
+                .plusExpansionPaths(ExpansionPath.of("custom.type"))
                 .plusExpansionPaths(ExpansionPath.of("lineItems[*].variant"))
-                .plusExpansionPaths(ExpansionPath.of("textLineItems[*].custom.type"))
-                .plusExpansionPaths(ShoppingListExpansionModel::customer);
+                .plusExpansionPaths(ExpansionPath.of("lineItems[*].custom.type"))
+                .plusExpansionPaths(ExpansionPath.of("textLineItems[*].custom.type"));
     }
 
     private ShoppingListReferenceResolutionUtils() {
