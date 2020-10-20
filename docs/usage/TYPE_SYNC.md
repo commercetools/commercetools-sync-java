@@ -131,17 +131,17 @@ final TypeSyncOptions typeSyncOptions =
 If you want to customize the sync process, consider the following:
 The sync library is not meant to be executed in a parallel fashion. For example:
 ````java
-final ProductSync productSync = new ProductSync(syncOptions);
-final CompletableFuture<ProductSyncStatistics> syncFuture1 = productSync.sync(batch1).toCompletableFuture();
-final CompletableFuture<ProductSyncStatistics> syncFuture2 = productSync.sync(batch2).toCompletableFuture();
+final TypeSync typeSync = new TypeSync(syncOptions);
+final CompletableFuture<TypeSyncStatistics> syncFuture1 = typeSync.sync(batch1).toCompletableFuture();
+final CompletableFuture<TypeSyncStatistics> syncFuture2 = typeSync.sync(batch2).toCompletableFuture();
 CompletableFuture.allOf(syncFuture1, syncFuture2).join;
 ````
 The aforementioned example demonstrates how the library should **NOT** be used. The library, however, should be instead
 used in a sequential fashion:
 ````java
-final ProductSync productSync = new ProductSync(syncOptions);
-productSync.sync(batch1)
-           .thenCompose(result -> productSync.sync(batch2))
+final TypeSync typeSync = new TypeSync(syncOptions);
+typeSync.sync(batch1)
+           .thenCompose(result -> typeSync.sync(batch2))
            .toCompletableFuture()
            .join();
 ````
