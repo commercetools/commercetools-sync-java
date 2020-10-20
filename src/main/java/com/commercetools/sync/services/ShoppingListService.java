@@ -100,9 +100,9 @@ public interface ShoppingListService {
     /**
      * Given a {@link ShoppingList} and a {@link List}&lt;{@link UpdateAction}&lt;{@link ShoppingList}&gt;&gt;, this
      * method issues an update request with these update actions on this {@link ShoppingList} in the CTP project defined
-     * in a potentially injected {@link SphereClient}. This method returns {
-     * @link CompletionStage}&lt;{@link ShoppingList}&gt; in which the result of it's completion contains an instance of
-     * the {@link ShoppingList} which was updated in the CTP project.
+     * in a potentially injected {@link SphereClient}. This method returns
+     * {@link CompletionStage}&lt;{@link ShoppingList}&gt; in which the result of it's completion contains an instance
+     * of the {@link ShoppingList} which was updated in the CTP project.
      *
      * @param shoppingList         the {@link ShoppingList} to update.
      * @param updateActions the update actions to update the {@link ShoppingList} with.
