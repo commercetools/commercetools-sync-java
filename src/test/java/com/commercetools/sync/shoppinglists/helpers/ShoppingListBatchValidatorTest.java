@@ -5,7 +5,7 @@ import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.shoppinglists.LineItemDraft;
 import io.sphere.sdk.shoppinglists.LineItemDraftBuilder;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
@@ -207,9 +207,9 @@ class ShoppingListBatchValidatorTest {
         when(textLineItem.getName()).thenReturn(LocalizedString.ofEnglish("validName"));
         when(validShoppingListDraft.getTextLineItems()).thenReturn(singletonList(textLineItem));
         Customer customer = mock(Customer.class);
-        when(customer.getId()).thenReturn("customerKey");
-        final Reference<Customer> customerReference = Customer.referenceOfId(customer.getId());
-        when(validShoppingListDraft.getCustomer()).thenReturn(customerReference);
+        when(customer.getKey()).thenReturn("customerKey");
+        final ResourceIdentifier<Customer> customerResourceIdentifier = ResourceIdentifier.ofKey(customer.getKey());
+        when(validShoppingListDraft.getCustomer()).thenReturn(customerResourceIdentifier);
 
         final ShoppingListDraft invalidNameShoppingListDraft = mock(ShoppingListDraft.class);
         when(invalidNameShoppingListDraft.getKey()).thenReturn("validDraftKey1");
@@ -251,8 +251,8 @@ class ShoppingListBatchValidatorTest {
             emptyMap()));
         when(textLineItem.getName()).thenReturn(LocalizedString.ofEnglish("validName"));
         when(validShoppingListDraft.getTextLineItems()).thenReturn(singletonList(textLineItem));
-        final Reference<Customer> customerReference = Customer.referenceOfId(EMPTY);
-        when(validShoppingListDraft.getCustomer()).thenReturn(customerReference);
+        final ResourceIdentifier<Customer> customerResourceIdentifier = ResourceIdentifier.ofKey(EMPTY);
+        when(validShoppingListDraft.getCustomer()).thenReturn(customerResourceIdentifier);
 
         final ShoppingListBatchValidator shoppingListBatchValidator =
             new ShoppingListBatchValidator(syncOptions, syncStatistics);

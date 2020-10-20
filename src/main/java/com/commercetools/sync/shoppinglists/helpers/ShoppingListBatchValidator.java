@@ -160,7 +160,7 @@ public class ShoppingListBatchValidator
         @Nonnull final ReferencedKeys referencedKeys,
         @Nonnull final ShoppingListDraft shoppingListDraft) {
 
-        collectReferencedKeyFromReference(shoppingListDraft.getCustomer(),
+        collectReferencedKeyFromResourceIdentifier(shoppingListDraft.getCustomer(),
             referencedKeys.customerKeys::add);
         collectReferencedKeyFromCustomFieldsDraft(shoppingListDraft.getCustom(),
             referencedKeys.typeKeys::add);
