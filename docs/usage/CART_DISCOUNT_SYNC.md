@@ -28,7 +28,7 @@ against a [CartDiscountDraft](https://docs.commercetools.com/http-api-projects-c
 1. Create a `sphereClient`:
 Use the `ClientConfigurationUtils#createClient` util which applies the best practices for `SphereClient` creation.
 
-    If you have special requirements on the sphere client creation, then you can use the following:  
+    If you have custom requirements on the sphere client creation, then please make sure that you apply at least the following decorators:
     - Limit the number of concurrent requests done to CTP. This can be done by decorating the `sphereClient` with [QueueSphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/QueueSphereClientDecorator.html)
  
     - Retry decorator on 5xx errors with a retry strategy. This can be achieved by decorating the `sphereClient` with the [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
