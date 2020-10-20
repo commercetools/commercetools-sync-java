@@ -190,6 +190,24 @@ class ShoppingListBatchValidatorTest {
     }
 
     @Test
+    void validateAndCollectReferencedKeys_WithTextLineItemDraftWithNullName_ShouldHaveValidationErrorAndEmptyResult() {
+        final ShoppingListDraft shoppingListDraft = mock(ShoppingListDraft.class);
+        when(shoppingListDraft.getKey()).thenReturn("validDraftKey");
+        when(shoppingListDraft.getName()).thenReturn(LocalizedString.ofEnglish("validDraftName"));
+        when(shoppingListDraft.getLineItems()).thenReturn(singletonList(LineItemDraftBuilder.ofSku("123",
+            Long.valueOf(1)).build()));
+        when(shoppingListDraft.getTextLineItems()).thenReturn(
+            singletonList(TextLineItemDraftBuilder.of(null,
+                Long.valueOf(1)).build()));
+        final Set<ShoppingListDraft> validDrafts = getValidDrafts(singletonList(shoppingListDraft));
+
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0))
+            .isEqualTo(format(TEXT_LINE_ITEM_DRAFT_NAME_NOT_SET, 0, shoppingListDraft.getKey()));
+        assertThat(validDrafts).isEmpty();
+    }
+
+    @Test
     void validateAndCollectReferencedKeys_WithValidDrafts_ShouldReturnCorrectResults() {
         final ShoppingListDraft validShoppingListDraft = mock(ShoppingListDraft.class);
         when(validShoppingListDraft.getKey()).thenReturn("validDraftKey");
@@ -211,8 +229,11 @@ class ShoppingListBatchValidatorTest {
         final ResourceIdentifier<Customer> customerResourceIdentifier = ResourceIdentifier.ofKey(customer.getKey());
         when(validShoppingListDraft.getCustomer()).thenReturn(customerResourceIdentifier);
 
-        final ShoppingListDraft invalidNameShoppingListDraft = mock(ShoppingListDraft.class);
-        when(invalidNameShoppingListDraft.getKey()).thenReturn("validDraftKey1");
+        final ShoppingListDraft validShoppingListDraftWithoutReferences = mock(ShoppingListDraft.class);
+        when(validShoppingListDraftWithoutReferences.getKey()).thenReturn("validDraftKey");
+        when(validShoppingListDraftWithoutReferences.getName()).thenReturn(LocalizedString.ofEnglish("name"));
+        when(validShoppingListDraftWithoutReferences.getLineItems()).thenReturn(null);
+        when(validShoppingListDraftWithoutReferences.getTextLineItems()).thenReturn(null);
 
         final ShoppingListDraft invalidShoppingListDraft = mock(ShoppingListDraft.class);
 
@@ -220,14 +241,13 @@ class ShoppingListBatchValidatorTest {
             new ShoppingListBatchValidator(syncOptions, syncStatistics);
         final ImmutablePair<Set<ShoppingListDraft>, ShoppingListBatchValidator.ReferencedKeys> pair
             = shoppingListBatchValidator.validateAndCollectReferencedKeys(
-            Arrays.asList(validShoppingListDraft, invalidShoppingListDraft, invalidNameShoppingListDraft));
+            Arrays.asList(validShoppingListDraft, invalidShoppingListDraft, validShoppingListDraftWithoutReferences));
 
-        assertThat(errorCallBackMessages).hasSize(2);
+        assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0))
             .isEqualTo(format(SHOPPING_LIST_DRAFT_KEY_NOT_SET, invalidShoppingListDraft.getName()));
-        assertThat(errorCallBackMessages.get(1))
-            .isEqualTo(format(SHOPPING_LIST_DRAFT_NAME_NOT_SET, invalidNameShoppingListDraft.getKey()));
-        assertThat(pair.getLeft()).containsExactly(validShoppingListDraft);
+        assertThat(pair.getLeft())
+            .containsExactlyInAnyOrder(validShoppingListDraft, validShoppingListDraftWithoutReferences);
         assertThat(pair.getRight().getTypeKeys())
             .containsExactlyInAnyOrder("typeKey", "lineItemTypeKey", "textLineItemTypeKey");
         assertThat(pair.getRight().getCustomerKeys())

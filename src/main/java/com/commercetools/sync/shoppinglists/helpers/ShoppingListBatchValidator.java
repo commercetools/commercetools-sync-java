@@ -109,14 +109,16 @@ public class ShoppingListBatchValidator
     @Nonnull
     private List<String> getErrorsInAllLineItemsAndTextLineItems(@Nonnull final ShoppingListDraft shoppingListDraft) {
         final List<String> errorMessages = new ArrayList<>();
-        final List<LineItemDraft> lineItemDrafts = shoppingListDraft.getLineItems();
+        final List<LineItemDraft> lineItemDrafts = shoppingListDraft.getLineItems() == null ? new ArrayList<>() :
+            shoppingListDraft.getLineItems();
 
         for (int i = 0; i < lineItemDrafts.size(); i++) {
             errorMessages.addAll(getLineItemDraftErrorsInAllLineItems(lineItemDrafts.get(i),
                 i, requireNonNull(shoppingListDraft.getKey())));
         }
 
-        final List<TextLineItemDraft> textLineItems = shoppingListDraft.getTextLineItems();
+        final List<TextLineItemDraft> textLineItems = shoppingListDraft.getTextLineItems() == null ? new ArrayList<>() :
+            shoppingListDraft.getTextLineItems();
 
         for (int i = 0; i < textLineItems.size(); i++) {
             errorMessages.addAll(getTextLineItemDraftErrorsInAllTextLineItems(textLineItems.get(i),
