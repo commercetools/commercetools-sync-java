@@ -47,7 +47,7 @@ public interface ShoppingListService {
      * Given a shopping list key, this method fetches a shopping list that matches given key in the CTP project defined
      * in a potentially injected {@link SphereClient}. If there is no matching shopping list, an empty {@link Optional}
      * will be returned in the returned future. A mapping of the key to the id of the fetched shopping list is persisted
-     * in an in -memory map.
+     * in an in-memory map.
      *
      * @param key the key of the shopping list to fetch.
      * @return {@link CompletionStage}&lt;{@link Optional}&gt; in which the result of it's completion contains an
