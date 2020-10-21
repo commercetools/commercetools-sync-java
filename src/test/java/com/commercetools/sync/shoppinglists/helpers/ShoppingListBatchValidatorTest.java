@@ -171,6 +171,24 @@ class ShoppingListBatchValidatorTest {
     }
 
     @Test
+    void validateAndCollectReferencedKeys_WithLineItemAndTextLineItemError_ShouldHaveOneCallback() {
+        final ShoppingListDraft shoppingListDraft = mock(ShoppingListDraft.class);
+        when(shoppingListDraft.getKey()).thenReturn("validDraftKey");
+        when(shoppingListDraft.getName()).thenReturn(LocalizedString.ofEnglish("validDraftName"));
+        when(shoppingListDraft.getLineItems()).thenReturn(singletonList(LineItemDraftBuilder.ofSku("",
+            1L).build()));
+        when(shoppingListDraft.getTextLineItems()).thenReturn(singletonList(null));
+
+        final Set<ShoppingListDraft> validDrafts = getValidDrafts(singletonList(shoppingListDraft));
+
+        assertThat(errorCallBackMessages).hasSize(1);
+        assertThat(errorCallBackMessages.get(0))
+            .isEqualTo(format("%s,%s", format(LINE_ITEM_DRAFT_SKU_NOT_SET, 0, shoppingListDraft.getKey()),
+                format(TEXT_LINE_ITEM_DRAFT_IS_NULL,0, shoppingListDraft.getKey())));
+        assertThat(validDrafts).isEmpty();
+    }
+
+    @Test
     void validateAndCollectReferencedKeys_WithTextLineItemDraftWithEmptyName_ShouldHaveValidationErrorAndEmptyResult() {
         final ShoppingListDraft shoppingListDraft = mock(ShoppingListDraft.class);
         when(shoppingListDraft.getKey()).thenReturn("validDraftKey");

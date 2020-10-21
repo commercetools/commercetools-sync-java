@@ -14,9 +14,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static java.lang.String.format;
+import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class ShoppingListBatchValidator
@@ -78,7 +79,7 @@ public class ShoppingListBatchValidator
             .filter(this::isValidShoppingListDraft)
             .peek(shoppingListDraft ->
                 collectReferencedKeys(referencedKeys, shoppingListDraft))
-            .collect(Collectors.toSet());
+            .collect(toSet());
 
         return ImmutablePair.of(validDrafts, referencedKeys);
     }
@@ -95,7 +96,8 @@ public class ShoppingListBatchValidator
         } else {
             final List<String> draftErrors = getErrorsInAllLineItemsAndTextLineItems(shoppingListDraft);
             if (!draftErrors.isEmpty()) {
-                draftErrors.forEach(this::handleError);
+                final String concatenatedErrors = draftErrors.stream().collect(joining(","));
+                this.handleError(concatenatedErrors);
             } else {
                 return true;
             }
