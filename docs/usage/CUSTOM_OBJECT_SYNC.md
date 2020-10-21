@@ -23,18 +23,19 @@ against a [CustomObjectDraft](https://docs.commercetools.com/http-api-projects-c
 ### Sync list of CustomObjectDrafts
 
 #### Prerequisites
-1. The sync expects a list of `CustomObjectDraft`s that have their `key` and `container` fields set to be matched with
+1. Create a `sphereClient`:
+Use the `ClientConfigurationUtils#createClient` util which applies the best practices for `SphereClient` creation.
+If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
+
+2. The sync expects a list of `CustomObjectDraft`s that have their `key` and `container` fields set to be matched with
 custom objects in the target CTP project. Therefore, the custom objects in the target project are expected to have the 
 same `key` and `container` fields set, otherwise they won't be matched.
-
-2. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
 3. After the `sphereClient` is set up, a `CustomObjectSyncOptions` should be be built as follows:
 ````java
 // instantiating a CustomObjectSyncOptions
 final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder.of(sphereClient).build();
 ````
-
 
 #### About SyncOptions
 `SyncOptions` is an object which provides a place for users to add certain configurations to customize the sync process.

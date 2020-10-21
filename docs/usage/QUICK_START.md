@@ -89,4 +89,4 @@ implementation 'com.commercetools:commercetools-sync-java:2.3.0'
 [Category Sync](CATEGORY_SYNC.md), [Inventory Sync](INVENTORY_SYNC.md), 
 [Type Sync](TYPE_SYNC.md), [CartDiscount Sync](CART_DISCOUNT_SYNC.md),
 [TaxCategory Sync](/docs/usage/TAX_CATEGORY_SYNC.md), [State Sync](/docs/usage/STATE_SYNC.md), 
-[CustomObject Sync](/docs/usage/CUSTOM_OBJECT_SYNC.md)*
+[CustomObject Sync](/docs/usage/CUSTOM_OBJECT_SYNC.md), [Customer Sync](/docs/usage/CUSTOMER_SYNC.md)*

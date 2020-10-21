@@ -26,11 +26,15 @@ against a [StateDraft](https://docs.commercetools.com/http-api-projects-states#s
 <!-- TODO - GITHUB ISSUE#138: Split into explanation of how to "sync from project to project" vs "import from feed"-->
 
 #### Prerequisites
-1. The sync expects a list of `StateDraft`s that have their `key` fields set to be matched with
+1. Create a `sphereClient`:
+Use the `ClientConfigurationUtils#createClient` util which applies the best practices for `SphereClient` creation.
+If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
+
+2. The sync expects a list of `StateDraft`s that have their `key` fields set to be matched with
 states in the target commercetools project. Also, the states in the target project are expected to have the `key` fields set,
 otherwise they won't be matched.
 
-2. Every state may have several `transitions` to other states. Therefore, in order for the sync to resolve the actual ids of those transitions,
+3. Every state may have several `transitions` to other states. Therefore, in order for the sync to resolve the actual ids of those transitions,
  those `key`s have to be supplied in the following way:
     - Provide the `key` value on the `id` field of the transition. This means that calling `getId()` on the
       transition would return its `key`. 
@@ -42,10 +46,8 @@ otherwise they won't be matched.
          // Puts the keys in the reference id fields to prepare for reference resolution
          final List<StateDraft> stateDrafts = StateReferenceResolutionUtils.mapToStateDrafts(states);
          ````
-     
-4. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
-5. After the `sphereClient` is set up, a `StateSyncOptions` should be built as follows: 
+4. After the `sphereClient` is set up, a `StateSyncOptions` should be built as follows: 
 ````java
 // instantiating a StateSyncOptions
    final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder.of(sphereClient).build();

@@ -21,14 +21,18 @@ against a [CustomerDraft](https://docs.commercetools.com/api/projects/customers#
 ### Sync list of customer drafts
 
 #### Prerequisites
-1. The sync expects a list of `CustomerDraft`s that have their `key` fields set to be matched with customers in the 
+1. Create a `sphereClient`:
+Use the `ClientConfigurationUtils#createClient` util which applies the best practices for `SphereClient` creation.
+If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
+  
+2. The sync expects a list of `CustomerDraft`s that have their `key` fields set to be matched with customers in the 
 target CTP project. The customers in the target project need to have the `key` fields set, otherwise they won't be 
 matched.
 
-2. To sync customer address data, every customer [Address](https://docs.commercetools.com/api/types#address) needs a 
+3. To sync customer address data, every customer [Address](https://docs.commercetools.com/api/types#address) needs a 
 unique key to match the existing `Address` with the new Address. 
 
-3. Every customer may have a reference to their [CustomerGroup](https://docs.commercetools.com/api/projects/customerGroups#customergroup) 
+4. Every customer may have a reference to their [CustomerGroup](https://docs.commercetools.com/api/projects/customerGroups#customergroup) 
 and/or the [Type](https://docs.commercetools.com/api/projects/customers#set-custom-type) of their custom fields. 
 The `CustomerGroup` and `Type` references should be expanded with a key.
 Any reference that is not expanded will have its id in place and not replaced by the key will be considered as existing 
@@ -41,8 +45,6 @@ resolution.
     ````java
     final List<CustomerDraft> customerDrafts = CustomerReferenceResolutionUtils.mapToCustomertDrafts(customerDrafts);
     ````
-
-4. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
 5. After the `sphereClient` is set up, a `CustomerSyncOptions` should be built as follows:
 ````java
