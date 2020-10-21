@@ -173,7 +173,6 @@ public class ShoppingListBatchValidator
             referencedKeys.typeKeys::add);
         collectReferencedKeysInLineItems(referencedKeys, shoppingListDraft);
         collectReferencedKeysInTextLineItems(referencedKeys, shoppingListDraft);
-
     }
 
     private void collectReferencedKeysInLineItems(

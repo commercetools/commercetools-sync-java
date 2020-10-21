@@ -123,7 +123,6 @@ class ShoppingListBatchValidatorTest {
         assertThat(validDrafts).isEmpty();
     }
 
-
     @Test
     void validateAndCollectReferencedKeys_WithLineItemDraftIsNull_ShouldHaveValidationErrorAndEmptyResult() {
         final ShoppingListDraft shoppingListDraft = mock(ShoppingListDraft.class);
@@ -145,7 +144,7 @@ class ShoppingListBatchValidatorTest {
         when(shoppingListDraft.getKey()).thenReturn("validDraftKey");
         when(shoppingListDraft.getName()).thenReturn(LocalizedString.ofEnglish("validDraftName"));
         when(shoppingListDraft.getLineItems()).thenReturn(singletonList(LineItemDraftBuilder.ofSku("",
-            Long.valueOf(1)).build()));
+            1L).build()));
 
         final Set<ShoppingListDraft> validDrafts = getValidDrafts(singletonList(shoppingListDraft));
 
@@ -161,7 +160,7 @@ class ShoppingListBatchValidatorTest {
         when(shoppingListDraft.getKey()).thenReturn("validDraftKey");
         when(shoppingListDraft.getName()).thenReturn(LocalizedString.ofEnglish("validDraftName"));
         when(shoppingListDraft.getLineItems()).thenReturn(singletonList(LineItemDraftBuilder.ofSku("123",
-            Long.valueOf(1)).build()));
+            1L).build()));
         when(shoppingListDraft.getTextLineItems()).thenReturn(singletonList(null));
         final Set<ShoppingListDraft> validDrafts = getValidDrafts(singletonList(shoppingListDraft));
 
@@ -177,10 +176,10 @@ class ShoppingListBatchValidatorTest {
         when(shoppingListDraft.getKey()).thenReturn("validDraftKey");
         when(shoppingListDraft.getName()).thenReturn(LocalizedString.ofEnglish("validDraftName"));
         when(shoppingListDraft.getLineItems()).thenReturn(singletonList(LineItemDraftBuilder.ofSku("123",
-            Long.valueOf(1)).build()));
+            1L).build()));
         when(shoppingListDraft.getTextLineItems()).thenReturn(
             singletonList(TextLineItemDraftBuilder.of(LocalizedString.empty(),
-                Long.valueOf(1)).build()));
+                1L).build()));
         final Set<ShoppingListDraft> validDrafts = getValidDrafts(singletonList(shoppingListDraft));
 
         assertThat(errorCallBackMessages).hasSize(1);
@@ -195,10 +194,10 @@ class ShoppingListBatchValidatorTest {
         when(shoppingListDraft.getKey()).thenReturn("validDraftKey");
         when(shoppingListDraft.getName()).thenReturn(LocalizedString.ofEnglish("validDraftName"));
         when(shoppingListDraft.getLineItems()).thenReturn(singletonList(LineItemDraftBuilder.ofSku("123",
-            Long.valueOf(1)).build()));
+            1L).build()));
         when(shoppingListDraft.getTextLineItems()).thenReturn(
             singletonList(TextLineItemDraftBuilder.of(null,
-                Long.valueOf(1)).build()));
+                1L).build()));
         final Set<ShoppingListDraft> validDrafts = getValidDrafts(singletonList(shoppingListDraft));
 
         assertThat(errorCallBackMessages).hasSize(1);
