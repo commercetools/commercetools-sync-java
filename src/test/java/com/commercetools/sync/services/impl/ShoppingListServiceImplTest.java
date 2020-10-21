@@ -219,7 +219,7 @@ class ShoppingListServiceImplTest {
 
         assertThat(errors.values())
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(exception -> {
+                .singleElement().satisfies(exception -> {
                     assertThat(exception).isExactlyInstanceOf(SyncException.class);
                     assertThat(exception.getCause()).isExactlyInstanceOf(InternalServerErrorException.class);
                 });
