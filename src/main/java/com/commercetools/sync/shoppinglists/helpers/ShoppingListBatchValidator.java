@@ -2,6 +2,7 @@ package com.commercetools.sync.shoppinglists.helpers;
 
 import com.commercetools.sync.commons.helpers.BaseBatchValidator;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
+import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.shoppinglists.LineItemDraft;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.TextLineItemDraft;
@@ -12,12 +13,10 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
-import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class ShoppingListBatchValidator
@@ -65,7 +64,7 @@ public class ShoppingListBatchValidator
      * </li>
      * </ol>
      *
-     * @param shoppingListDrafts the shopping list drafts to validate and collect referenced type keys.
+     * @param shoppingListDrafts the shopping list drafts to validate and collect referenced keys.
      * @return {@link ImmutablePair}&lt;{@link Set}&lt;{@link ShoppingListDraft}&gt;,
      * {@link ReferencedKeys}&gt; which contains the {@link Set} of valid drafts and
      *      referenced keys within a wrapper.
@@ -91,7 +90,7 @@ public class ShoppingListBatchValidator
             handleError(SHOPPING_LIST_DRAFT_IS_NULL);
         } else if (isBlank(shoppingListDraft.getKey())) {
             handleError(format(SHOPPING_LIST_DRAFT_KEY_NOT_SET, shoppingListDraft.getName()));
-        } else if (shoppingListDraft.getName() == null || shoppingListDraft.getName().getLocales().isEmpty()) {
+        } else if (isNullOrEmptyLocalizedString(shoppingListDraft.getName())) {
             handleError(format(SHOPPING_LIST_DRAFT_NAME_NOT_SET, shoppingListDraft.getKey()));
         } else {
             final List<String> draftErrors = getErrorsInAllLineItemsAndTextLineItems(shoppingListDraft);
@@ -109,20 +108,21 @@ public class ShoppingListBatchValidator
     @Nonnull
     private List<String> getErrorsInAllLineItemsAndTextLineItems(@Nonnull final ShoppingListDraft shoppingListDraft) {
         final List<String> errorMessages = new ArrayList<>();
-        final List<LineItemDraft> lineItemDrafts = shoppingListDraft.getLineItems() == null ? new ArrayList<>() :
-            shoppingListDraft.getLineItems();
 
-        for (int i = 0; i < lineItemDrafts.size(); i++) {
-            errorMessages.addAll(getLineItemDraftErrorsInAllLineItems(lineItemDrafts.get(i),
-                i, requireNonNull(shoppingListDraft.getKey())));
+        if (shoppingListDraft.getLineItems() != null) {
+            final List<LineItemDraft> lineItemDrafts = shoppingListDraft.getLineItems();
+            for (int i = 0; i < lineItemDrafts.size(); i++) {
+                errorMessages.addAll(getLineItemDraftErrorsInAllLineItems(lineItemDrafts.get(i),
+                    i, shoppingListDraft.getKey()));
+            }
         }
 
-        final List<TextLineItemDraft> textLineItems = shoppingListDraft.getTextLineItems() == null ? new ArrayList<>() :
-            shoppingListDraft.getTextLineItems();
-
-        for (int i = 0; i < textLineItems.size(); i++) {
-            errorMessages.addAll(getTextLineItemDraftErrorsInAllTextLineItems(textLineItems.get(i),
-                i, requireNonNull(shoppingListDraft.getKey())));
+        if (shoppingListDraft.getTextLineItems() != null) {
+            final List<TextLineItemDraft> textLineItems = shoppingListDraft.getTextLineItems();
+            for (int i = 0; i < textLineItems.size(); i++) {
+                errorMessages.addAll(getTextLineItemDraftErrorsInAllTextLineItems(textLineItems.get(i),
+                    i, shoppingListDraft.getKey()));
+            }
         }
 
         return errorMessages;
@@ -149,13 +149,17 @@ public class ShoppingListBatchValidator
         @Nonnull final String shoppingListDraftKey) {
         final List<String> errorMessages = new ArrayList<>();
         if (textLineItemDraft != null) {
-            if (textLineItemDraft.getName() == null || textLineItemDraft.getName().getLocales().isEmpty()) {
+            if (isNullOrEmptyLocalizedString(textLineItemDraft.getName())) {
                 errorMessages.add(format(TEXT_LINE_ITEM_DRAFT_NAME_NOT_SET, variantPosition, shoppingListDraftKey));
             }
         } else {
             errorMessages.add(format(TEXT_LINE_ITEM_DRAFT_IS_NULL, variantPosition, shoppingListDraftKey));
         }
         return errorMessages;
+    }
+
+    private boolean isNullOrEmptyLocalizedString(@Nonnull final LocalizedString localizedString) {
+        return localizedString == null || localizedString.getLocales().isEmpty();
     }
 
     private void collectReferencedKeys(
@@ -168,7 +172,6 @@ public class ShoppingListBatchValidator
             referencedKeys.typeKeys::add);
         collectReferencedKeysInLineItems(referencedKeys, shoppingListDraft);
         collectReferencedKeysInTextLineItems(referencedKeys, shoppingListDraft);
-
     }
 
     private void collectReferencedKeysInLineItems(
@@ -182,7 +185,6 @@ public class ShoppingListBatchValidator
         shoppingListDraft
             .getLineItems()
             .stream()
-            .filter(Objects::nonNull)
             .forEach(lineItemDraft -> {
                 collectReferencedKeyFromCustomFieldsDraft(lineItemDraft.getCustom(),
                     referencedKeys.typeKeys::add);
@@ -200,7 +202,6 @@ public class ShoppingListBatchValidator
         shoppingListDraft
             .getTextLineItems()
             .stream()
-            .filter(Objects::nonNull)
             .forEach(textLineItemDraft -> {
                 collectReferencedKeyFromCustomFieldsDraft(textLineItemDraft.getCustom(),
                     referencedKeys.typeKeys::add);
