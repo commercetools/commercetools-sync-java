@@ -2,6 +2,7 @@ package com.commercetools.sync.shoppinglists.helpers;
 
 import com.commercetools.sync.commons.helpers.BaseBatchValidator;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
+import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.shoppinglists.LineItemDraft;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.TextLineItemDraft;
@@ -91,7 +92,7 @@ public class ShoppingListBatchValidator
             handleError(SHOPPING_LIST_DRAFT_IS_NULL);
         } else if (isBlank(shoppingListDraft.getKey())) {
             handleError(format(SHOPPING_LIST_DRAFT_KEY_NOT_SET, shoppingListDraft.getName()));
-        } else if (shoppingListDraft.getName() == null || shoppingListDraft.getName().getLocales().isEmpty()) {
+        } else if (isNullOrEmptyLocalizedString(shoppingListDraft.getName())) {
             handleError(format(SHOPPING_LIST_DRAFT_NAME_NOT_SET, shoppingListDraft.getKey()));
         } else {
             final List<String> draftErrors = getErrorsInAllLineItemsAndTextLineItems(shoppingListDraft);
@@ -149,13 +150,17 @@ public class ShoppingListBatchValidator
         @Nonnull final String shoppingListDraftKey) {
         final List<String> errorMessages = new ArrayList<>();
         if (textLineItemDraft != null) {
-            if (textLineItemDraft.getName() == null || textLineItemDraft.getName().getLocales().isEmpty()) {
+            if (isNullOrEmptyLocalizedString(textLineItemDraft.getName())) {
                 errorMessages.add(format(TEXT_LINE_ITEM_DRAFT_NAME_NOT_SET, variantPosition, shoppingListDraftKey));
             }
         } else {
             errorMessages.add(format(TEXT_LINE_ITEM_DRAFT_IS_NULL, variantPosition, shoppingListDraftKey));
         }
         return errorMessages;
+    }
+
+    private boolean isNullOrEmptyLocalizedString(@Nonnull final LocalizedString localizedString) {
+        return localizedString == null || localizedString.getLocales().isEmpty();
     }
 
     private void collectReferencedKeys(
