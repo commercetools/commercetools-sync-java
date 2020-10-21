@@ -13,12 +13,10 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
-import static java.util.Objects.requireNonNull;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class ShoppingListBatchValidator
@@ -110,20 +108,21 @@ public class ShoppingListBatchValidator
     @Nonnull
     private List<String> getErrorsInAllLineItemsAndTextLineItems(@Nonnull final ShoppingListDraft shoppingListDraft) {
         final List<String> errorMessages = new ArrayList<>();
-        final List<LineItemDraft> lineItemDrafts = shoppingListDraft.getLineItems() == null ? new ArrayList<>() :
-            shoppingListDraft.getLineItems();
 
-        for (int i = 0; i < lineItemDrafts.size(); i++) {
-            errorMessages.addAll(getLineItemDraftErrorsInAllLineItems(lineItemDrafts.get(i),
-                i, requireNonNull(shoppingListDraft.getKey())));
+        if (shoppingListDraft.getLineItems() != null) {
+        final List<LineItemDraft> lineItemDrafts = shoppingListDraft.getLineItems();
+            for (int i = 0; i < lineItemDrafts.size(); i++) {
+                errorMessages.addAll(getLineItemDraftErrorsInAllLineItems(lineItemDrafts.get(i),
+                    i, shoppingListDraft.getKey()));
+            }
         }
 
-        final List<TextLineItemDraft> textLineItems = shoppingListDraft.getTextLineItems() == null ? new ArrayList<>() :
-            shoppingListDraft.getTextLineItems();
-
-        for (int i = 0; i < textLineItems.size(); i++) {
-            errorMessages.addAll(getTextLineItemDraftErrorsInAllTextLineItems(textLineItems.get(i),
-                i, requireNonNull(shoppingListDraft.getKey())));
+        if (shoppingListDraft.getTextLineItems() != null) {
+            final List<TextLineItemDraft> textLineItems = shoppingListDraft.getTextLineItems();
+            for (int i = 0; i < textLineItems.size(); i++) {
+                errorMessages.addAll(getTextLineItemDraftErrorsInAllTextLineItems(textLineItems.get(i),
+                    i, shoppingListDraft.getKey()));
+            }
         }
 
         return errorMessages;
@@ -186,7 +185,6 @@ public class ShoppingListBatchValidator
         shoppingListDraft
             .getLineItems()
             .stream()
-            .filter(Objects::nonNull)
             .forEach(lineItemDraft -> {
                 collectReferencedKeyFromCustomFieldsDraft(lineItemDraft.getCustom(),
                     referencedKeys.typeKeys::add);
@@ -204,7 +202,6 @@ public class ShoppingListBatchValidator
         shoppingListDraft
             .getTextLineItems()
             .stream()
-            .filter(Objects::nonNull)
             .forEach(textLineItemDraft -> {
                 collectReferencedKeyFromCustomFieldsDraft(textLineItemDraft.getCustom(),
                     referencedKeys.typeKeys::add);
