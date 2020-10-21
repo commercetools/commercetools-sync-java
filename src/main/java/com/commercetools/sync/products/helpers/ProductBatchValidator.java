@@ -114,7 +114,7 @@ public class ProductBatchValidator
         collectReferencedKeysInVariants(referencedKeys, productDraft);
         collectReferencedKeyFromResourceIdentifier(productDraft.getTaxCategory(),
             referencedKeys.taxCategoryKeys::add);
-        collectReferencedKeyFromReference(productDraft.getState(), referencedKeys.stateKeys::add);
+        collectReferencedKeyFromResourceIdentifier(productDraft.getState(), referencedKeys.stateKeys::add);
     }
 
     private void collectReferencedKeysInCategories(
