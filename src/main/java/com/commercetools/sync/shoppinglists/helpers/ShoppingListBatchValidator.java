@@ -33,7 +33,7 @@ public class ShoppingListBatchValidator
         + "ShoppingListDraft with key '%s' has no SKU set. Please make sure all lineItems have SKUs.";
     static final String TEXT_LINE_ITEM_DRAFT_IS_NULL = "TextLineItemDraft at position '%d' of ShoppingListDraft "
         + "with key '%s' is null.";
-    static final String TEXT_LINE_ITEM_DRAFT_NAME_NOT_SET = "LineItemDraft at position '%d' of "
+    static final String TEXT_LINE_ITEM_DRAFT_NAME_NOT_SET = "TextLineItemDraft at position '%d' of "
         + "ShoppingListDraft with key '%s' has no name set. Please make sure all textLineItems have names.";
 
     public ShoppingListBatchValidator(@Nonnull final ShoppingListSyncOptions syncOptions,
@@ -130,30 +130,30 @@ public class ShoppingListBatchValidator
 
     @Nonnull
     private List<String> getLineItemDraftErrorsInAllLineItems(@Nullable final LineItemDraft lineItemDraft,
-                                                              final int variantPosition,
+                                                              final int itemPosition,
                                                               @Nonnull final String shoppingListDraftKey) {
         final List<String> errorMessages = new ArrayList<>();
         if (lineItemDraft != null) {
             if (isBlank(lineItemDraft.getSku())) {
-                errorMessages.add(format(LINE_ITEM_DRAFT_SKU_NOT_SET, variantPosition, shoppingListDraftKey));
+                errorMessages.add(format(LINE_ITEM_DRAFT_SKU_NOT_SET, itemPosition, shoppingListDraftKey));
             }
         } else {
-            errorMessages.add(format(LINE_ITEM_DRAFT_IS_NULL, variantPosition, shoppingListDraftKey));
+            errorMessages.add(format(LINE_ITEM_DRAFT_IS_NULL, itemPosition, shoppingListDraftKey));
         }
         return errorMessages;
     }
 
     @Nonnull
     private List<String> getTextLineItemDraftErrorsInAllTextLineItems(
-        @Nullable final TextLineItemDraft textLineItemDraft, final int variantPosition,
+        @Nullable final TextLineItemDraft textLineItemDraft, final int itemPosition,
         @Nonnull final String shoppingListDraftKey) {
         final List<String> errorMessages = new ArrayList<>();
         if (textLineItemDraft != null) {
             if (isNullOrEmptyLocalizedString(textLineItemDraft.getName())) {
-                errorMessages.add(format(TEXT_LINE_ITEM_DRAFT_NAME_NOT_SET, variantPosition, shoppingListDraftKey));
+                errorMessages.add(format(TEXT_LINE_ITEM_DRAFT_NAME_NOT_SET, itemPosition, shoppingListDraftKey));
             }
         } else {
-            errorMessages.add(format(TEXT_LINE_ITEM_DRAFT_IS_NULL, variantPosition, shoppingListDraftKey));
+            errorMessages.add(format(TEXT_LINE_ITEM_DRAFT_IS_NULL, itemPosition, shoppingListDraftKey));
         }
         return errorMessages;
     }
