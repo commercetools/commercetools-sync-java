@@ -65,6 +65,7 @@ public final class ShoppingListServiceImpl extends BaseService<ShoppingListDraft
     @Override
     public CompletionStage<Optional<ShoppingList>> createShoppingList(
         @Nonnull final ShoppingListDraft shoppingListDraft) {
+
         return createResource(shoppingListDraft, ShoppingListDraft::getKey, ShoppingListCreateCommand::of);
     }
 
@@ -73,6 +74,7 @@ public final class ShoppingListServiceImpl extends BaseService<ShoppingListDraft
     public CompletionStage<ShoppingList> updateShoppingList(
         @Nonnull final ShoppingList shoppingList,
         @Nonnull final List<UpdateAction<ShoppingList>> updateActions) {
+
         return updateResource(shoppingList, ShoppingListUpdateCommand::of, updateActions);
     }
 }
