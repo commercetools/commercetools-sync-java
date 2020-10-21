@@ -110,7 +110,7 @@ public class ShoppingListBatchValidator
         final List<String> errorMessages = new ArrayList<>();
 
         if (shoppingListDraft.getLineItems() != null) {
-        final List<LineItemDraft> lineItemDrafts = shoppingListDraft.getLineItems();
+            final List<LineItemDraft> lineItemDrafts = shoppingListDraft.getLineItems();
             for (int i = 0; i < lineItemDrafts.size(); i++) {
                 errorMessages.addAll(getLineItemDraftErrorsInAllLineItems(lineItemDrafts.get(i),
                     i, shoppingListDraft.getKey()));
