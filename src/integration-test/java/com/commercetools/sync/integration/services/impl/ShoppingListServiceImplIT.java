@@ -18,6 +18,8 @@ import io.sphere.sdk.shoppinglists.ShoppingList;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
 import io.sphere.sdk.shoppinglists.ShoppingListDraftDsl;
+import io.sphere.sdk.shoppinglists.TextLineItemDraft;
+import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeName;
 import io.sphere.sdk.shoppinglists.queries.ShoppingListQuery;
 import org.junit.jupiter.api.AfterAll;
@@ -117,13 +119,17 @@ class ShoppingListServiceImplIT {
 
     @Test
     void fetchMatchingShoppingListsByKeys_WithExistingShoppingListsKeys_ShouldReturnShoppingLists() {
+        ShoppingList otherShoppingList = createShoppingList(CTP_TARGET_CLIENT, "other_name", "other_key");
+        final Set<String> shoppingListKeys = new HashSet<>();
+        shoppingListKeys.add(shoppingList.getKey());
+        shoppingListKeys.add(otherShoppingList.getKey());
         Set<ShoppingList> shoppingLists =
-            shoppingListService.fetchMatchingShoppingListsByKeys(singleton(shoppingList.getKey()))
+            shoppingListService.fetchMatchingShoppingListsByKeys(shoppingListKeys)
                                .toCompletableFuture()
                                .join();
 
 
-        assertThat(shoppingLists).hasSize(1);
+        assertThat(shoppingLists).hasSize(2);
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(errorCallBackExceptions).isEmpty();
     }
@@ -181,10 +187,13 @@ class ShoppingListServiceImplIT {
             .build();
         executeBlocking(CTP_TARGET_CLIENT.execute(ProductCreateCommand.of(productDraft)));
         LineItemDraft lineItemDraft = LineItemDraftBuilder.ofSku("sku-new", Long.valueOf(1)).build();
+        TextLineItemDraft textLineItemDraft =
+            TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("text"), 1L).build();
         final ShoppingListDraftDsl newShoppingListDraft =
             ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("new_name"))
                                     .key("new_key")
                                     .plusLineItems(lineItemDraft)
+                                    .plusTextLineItems(textLineItemDraft)
                                     .build();
 
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
@@ -212,8 +221,8 @@ class ShoppingListServiceImplIT {
                 assertThat(created.getKey()).isEqualTo(queried.getKey());
                 assertThat(created.getName()).isEqualTo(queried.getName());
                 assertThat(created.getLineItems()).hasSize(1);
+                assertThat(created.getTextLineItems()).hasSize(1);
             }));
-
     }
 
     @Test
