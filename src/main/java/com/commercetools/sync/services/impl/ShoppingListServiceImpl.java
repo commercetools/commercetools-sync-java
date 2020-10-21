@@ -36,7 +36,7 @@ public final class ShoppingListServiceImpl extends BaseService<ShoppingListDraft
     public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> shoppingListKeys) {
 
         return cacheKeysToIds(
-            shoppingListKeys, shoppingList -> shoppingList.getKey(), keysNotCached -> ShoppingListQueryBuilder
+            shoppingListKeys, ShoppingList::getKey, keysNotCached -> ShoppingListQueryBuilder
                 .of()
                 .plusPredicates(shoppingListQueryModel -> shoppingListQueryModel.key().isIn(keysNotCached))
                 .build());
@@ -46,7 +46,7 @@ public final class ShoppingListServiceImpl extends BaseService<ShoppingListDraft
     @Override
     public CompletionStage<Set<ShoppingList>> fetchMatchingShoppingListsByKeys(@Nonnull final Set<String> keys) {
 
-        return fetchMatchingResources(keys, shoppingList -> shoppingList.getKey(),
+        return fetchMatchingResources(keys, ShoppingList::getKey,
             () -> ShoppingListQueryBuilder
                 .of()
                 .plusPredicates(queryModel -> queryModel.key().isIn(keys))
