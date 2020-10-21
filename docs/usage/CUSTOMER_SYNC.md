@@ -23,12 +23,8 @@ against a [CustomerDraft](https://docs.commercetools.com/api/projects/customers#
 #### Prerequisites
 1. Create a `sphereClient`:
 Use the `ClientConfigurationUtils#createClient` util which applies the best practices for `SphereClient` creation.
-
-   If you have custom requirements on the sphere client creation, then please make sure you apply at least the following decorators:
-    - Limit the number of concurrent requests done to CTP. This can be done by decorating the `sphereClient` with [QueueSphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/QueueSphereClientDecorator.html).
-    
-    - Retry decorator on 5xx errors with a retry strategy. This can be achieved by decorating the `sphereClient` with the [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
-
+If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
+  
 2. The sync expects a list of `CustomerDraft`s that have their `key` fields set to be matched with customers in the 
 target CTP project. The customers in the target project need to have the `key` fields set, otherwise they won't be 
 matched.
@@ -142,34 +138,6 @@ reduce processing speed. If it is not set, the default batch size is 50 for cust
 final CustomerSyncOptions customerSyncOptions = 
          CustomerSyncOptionsBuilder.of(sphereClient).batchSize(30).build();
 ````
-
-#### Tuning the Sync Process 
-If you want to customize the sync process, consider the following:
-The sync library is not meant to be executed in a parallel fashion. For example:
-````java
-final CustomerSync customerSync = new CustomerSync(syncOptions);
-final CompletableFuture<CustomerSyncStatistics> syncFuture1 = customerSync.sync(batch1).toCompletableFuture();
-final CompletableFuture<CustomerSyncStatistics> syncFuture2 = customerSync.sync(batch2).toCompletableFuture();
-CompletableFuture.allOf(syncFuture1, syncFuture2).join;
-````
-The aforementioned example demonstrates how the library should **NOT** be used. The library, however, should be instead
-used in a sequential fashion:
-````java
-final CustomerSync customerSync = new CustomerSync(syncOptions);
-customerSync.sync(batch1)
-           .thenCompose(result -> customerSync.sync(batch2))
-           .toCompletableFuture()
-           .join();
-````
-By design, scaling the sync process should **not** be done by executing the batches themselves in parallel. However, it can be done either by:
- 
- - Changing the number of [max parallel requests](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L116) within the `sphereClient` configuration. It defines how many requests the client can execute in parallel.
- - or changing the draft [batch size](https://commercetools.github.io/commercetools-sync-java/v/2.3.0/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-). It defines how many drafts can one batch contain.
- 
-The current overridable default [configuration](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) of the `sphereClient` 
-is the recommended good balance for stability and performance for the sync process.
-
-In order to exploit the number of `max parallel requests`, the `batch size` should have a value set which is equal or higher.
 
 #### Running the sync
 When all prerequisites are fulfilled, follow those steps to run the sync:

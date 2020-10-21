@@ -1,11 +1,11 @@
 # Important Usage Tips
 
-#### `SphereClient` Creation
-It is an important responsibility of the user of the library to instantiate a `sphereClient` that does the following:
+#### Customized `SphereClient` Creation
+When creating a customized `SphereClient` the following remarks should be considered:
 
-- Limits the number of concurrent requests done to CTP. This can be done by decorating the `sphereClient` with [QueueSphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/QueueSphereClientDecorator.html)
+- Limit the number of concurrent requests done to CTP. This can be done by decorating the `sphereClient` with [QueueSphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/QueueSphereClientDecorator.html)
  
-- Retries on 5xx errors with a retry strategy. This can be achieved by decorating the `sphereClient` with the [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
+- Retry on 5xx errors with a retry strategy. This can be achieved by decorating the `sphereClient` with the [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
    
 If you have no special requirements on the sphere client creation, then you can use the `ClientConfigurationUtils#createClient` 
 util which applies the best practices for `SphereClient` creation.
