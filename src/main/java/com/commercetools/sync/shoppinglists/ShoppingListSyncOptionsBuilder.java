@@ -8,8 +8,8 @@ import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import javax.annotation.Nonnull;
 
 public final class ShoppingListSyncOptionsBuilder
-        extends BaseSyncOptionsBuilder<ShoppingListSyncOptionsBuilder, ShoppingListSyncOptions, ShoppingList,
-        ShoppingListDraft> {
+    extends BaseSyncOptionsBuilder<ShoppingListSyncOptionsBuilder, ShoppingListSyncOptions, ShoppingList,
+    ShoppingListDraft> {
 
     public static final int BATCH_SIZE_DEFAULT = 50;
 
@@ -36,12 +36,12 @@ public final class ShoppingListSyncOptionsBuilder
     @Override
     public ShoppingListSyncOptions build() {
         return new ShoppingListSyncOptions(
-                ctpClient,
-                errorCallback,
-                warningCallback,
-                batchSize,
-                beforeUpdateCallback,
-                beforeCreateCallback
+            ctpClient,
+            errorCallback,
+            warningCallback,
+            batchSize,
+            beforeUpdateCallback,
+            beforeCreateCallback
         );
     }
 
