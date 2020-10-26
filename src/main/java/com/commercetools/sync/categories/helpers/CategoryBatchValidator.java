@@ -39,7 +39,6 @@ public class CategoryBatchValidator
      * <ol>
      * <li>It is not null</li>
      * <li>It has a key which is not blank (null/empty)</li>
-     * </li>
      * </ol>
      *
      * @param categoryDrafts the category drafts to validate and collect referenced keys.

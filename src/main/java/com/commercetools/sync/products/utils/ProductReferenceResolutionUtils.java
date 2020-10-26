@@ -34,7 +34,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.commercetools.sync.commons.utils.SyncUtils.getReferenceWithKeyReplaced;
 import static com.commercetools.sync.commons.utils.SyncUtils.getResourceIdentifierWithKey;
 import static java.util.stream.Collectors.toList;
 
@@ -100,7 +99,7 @@ public final class ProductReferenceResolutionUtils {
      *     <tr>
      *        <td>state *</td>
      *        <td>{@link Reference}&lt;{@link State}&gt;</td>
-     *        <td>{@link Reference}&lt;{@link State}&gt; (with key replaced with id field)</td>
+     *        <td>{@link ResourceIdentifier}&lt;{@link State}&gt;</td>
      *     </tr>
      *   </tbody>
      * </table>
@@ -139,8 +138,7 @@ public final class ProductReferenceResolutionUtils {
                                           .categories(categoryResourceIdentifiers)
                                           .categoryOrderHints(categoryOrderHintsWithKeys)
                                           .taxCategory(getResourceIdentifierWithKey(product.getTaxCategory()))
-                                          .state(getReferenceWithKeyReplaced(product.getState(),
-                                              () -> State.referenceOfId(product.getState().getObj().getKey())))
+                                          .state(getResourceIdentifierWithKey(product.getState()))
                                           .build();
             })
             .collect(Collectors.toList());

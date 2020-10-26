@@ -127,8 +127,11 @@ class ProductReferenceResolutionUtilsTest {
                                                          ResourceIdentifier.ofKey(taxCategory.getKey()));
 
         assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getState)
-                                                     .extracting(ResourceIdentifier::getId)
-                                                     .containsExactly(state.getKey(), state.getKey(), state.getId());
+                                                     .asList()
+                                                     .containsExactly(
+                                                         ResourceIdentifier.ofKey(state.getKey()),
+                                                         ResourceIdentifier.ofKey(state.getKey()),
+                                                         ResourceIdentifier.ofId(state.getId()));
 
         final String asset2CustomTypeId = asset2.getCustom().getType().getId();
         final String assetCustomTypeKey = customType.getKey();
@@ -160,6 +163,7 @@ class ProductReferenceResolutionUtilsTest {
         final State state = getStateMock(resourceKey);
         final Reference<State> stateReference =
             Reference.ofResourceTypeIdAndIdAndObj(State.referenceTypeId(), state.getId(), state);
+        final Reference<State> nonExpandedStateReference = State.referenceOfId(state.getId());
 
         final Channel channel = getChannelMock(resourceKey);
 
@@ -180,15 +184,14 @@ class ProductReferenceResolutionUtilsTest {
         when(productWithNonExpandedProductType.getTaxCategory()).thenReturn(taxCategoryReference);
         when(productWithNonExpandedProductType.getState()).thenReturn(stateReference);
 
-        final Product productWithNonExpandedTaxCategory = getProductMock(singletonList(productVariant));
+        final Product productWithNonExpandedTaxCategoryAndState = getProductMock(singletonList(productVariant));
 
-        when(productWithNonExpandedTaxCategory.getProductType()).thenReturn(productTypeReference);
-        when(productWithNonExpandedTaxCategory.getTaxCategory())
-            .thenReturn(nonExpandedTaxCategoryReference);
-        when(productWithNonExpandedTaxCategory.getState()).thenReturn(stateReference);
+        when(productWithNonExpandedTaxCategoryAndState.getProductType()).thenReturn(productTypeReference);
+        when(productWithNonExpandedTaxCategoryAndState.getTaxCategory()).thenReturn(nonExpandedTaxCategoryReference);
+        when(productWithNonExpandedTaxCategoryAndState.getState()).thenReturn(nonExpandedStateReference);
 
         final List<Product> products =
-            asList(productWithNonExpandedProductType, productWithNonExpandedTaxCategory, null);
+            asList(productWithNonExpandedProductType, productWithNonExpandedTaxCategoryAndState, null);
 
 
         final List<ProductDraft> productDraftsWithKeysOnReferences = ProductReferenceResolutionUtils
@@ -211,8 +214,10 @@ class ProductReferenceResolutionUtilsTest {
                                                          ResourceIdentifier.ofId(taxCategory.getId()));
 
         assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getState)
-                                                     .extracting(ResourceIdentifier::getId)
-                                                     .containsExactly(state.getKey(), state.getKey());
+                                                     .asList()
+                                                     .containsExactly(
+                                                         ResourceIdentifier.ofKey(state.getKey()),
+                                                         ResourceIdentifier.ofId(state.getId()));
 
         assertThat(productDraftsWithKeysOnReferences).extracting(ProductDraft::getMasterVariant)
                                                      .flatExtracting(ProductVariantDraft::getPrices)

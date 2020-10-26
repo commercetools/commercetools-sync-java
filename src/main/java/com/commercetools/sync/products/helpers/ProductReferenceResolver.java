@@ -14,7 +14,6 @@ import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.categories.Category;
-import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
 import io.sphere.sdk.products.ProductDraft;
@@ -335,11 +334,11 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
     @Nonnull
     public CompletionStage<ProductDraftBuilder> resolveStateReference(
         @Nonnull final ProductDraftBuilder draftBuilder) {
-        final Reference<State> stateReference = draftBuilder.getState();
-        if (stateReference != null) {
+        final ResourceIdentifier<State> stateReference = draftBuilder.getState();
+        if (stateReference != null && stateReference.getId() == null) {
             String stateKey;
             try {
-                stateKey = getIdFromReference(stateReference);
+                stateKey = getKeyFromResourceIdentifier(stateReference);
             } catch (ReferenceResolutionException referenceResolutionException) {
                 return exceptionallyCompletedFuture(new ReferenceResolutionException(
                     format(FAILED_TO_RESOLVE_REFERENCE, State.referenceTypeId(), draftBuilder.getKey(),
@@ -432,6 +431,6 @@ public final class ProductReferenceResolver extends BaseReferenceResolver<Produc
         }
 
         return collectionOfFuturesToFutureOfCollection(futures, toList())
-            .thenApply(maps -> productKeys.isEmpty() ? Collections.emptyMap() : maps.get(0));
+            .thenCompose(ignored -> productService.cacheKeysToIds(Collections.emptySet())); // return all cache.
     }
 }
