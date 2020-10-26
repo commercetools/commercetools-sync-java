@@ -2,6 +2,7 @@ package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.customers.CustomerSyncOptions;
+import com.commercetools.sync.customers.helpers.CustomerGraphQlRequest;
 import com.commercetools.sync.services.CustomerService;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customers.Customer;
@@ -37,10 +38,7 @@ public final class CustomerServiceImpl extends BaseServiceWithKey<CustomerDraft,
     @Override
     public CompletionStage<Map<String, String>> cacheKeysToIds(
         @Nonnull final Set<String> keysToCache) {
-        return cacheKeysToIds(keysToCache, keysNotCached -> CustomerQueryBuilder
-            .of()
-            .plusPredicates(customerQueryModel -> customerQueryModel.key().isIn(keysNotCached))
-            .build());
+        return cacheKeysToIds(keysToCache, keysNotCached -> new CustomerGraphQlRequest(keysNotCached));
     }
 
     @Nonnull
