@@ -11,6 +11,7 @@ against a [InventoryEntryDraft](https://docs.commercetools.com/http-api-projects
 - [Usage](#usage)
   - [Sync list of inventory entry drafts](#sync-list-of-inventory-entry-drafts)
     - [Prerequisites](#prerequisites)
+    - [About SyncOptions](#about-syncoptions)
     - [Running the sync](#running-the-sync)
   - [Build all update actions](#build-all-update-actions)
   - [Build particular update action(s)](#build-particular-update-actions)
@@ -25,27 +26,128 @@ against a [InventoryEntryDraft](https://docs.commercetools.com/http-api-projects
 <!-- TODO - GITHUB ISSUE#138: Split into explanation of how to "sync from project to project" vs "import from feed"-->
 
 #### Prerequisites
-1. The sync expects a list of `InventoryEntryDraft`s that have their `sku` fields set,
+1. Create a `sphereClient`:
+Use the `ClientConfigurationUtils#createClient` util which applies the best practices for `SphereClient` creation.
+If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
+
+2. The sync expects a list of `InventoryEntryDraft`s that have their `sku` fields set,
    otherwise the sync will trigger an `errorCallback` function set by the user (more on it can be found down below in the options explanations).
 
-2. Every inventory entry may have a reference to a supply `Channel` and a reference to the `Type` of its custom fields. These
+3. Every inventory entry may have a reference to a supply `Channel` and a reference to the `Type` of its custom fields. These
    references are matched by their `key`s. Therefore, in order for the sync to resolve the actual ids of those references,
    their `key`s has to be supplied.
    
-   - When syncing from a source commercetools project, you can use [`mapToInventoryEntryDrafts`](https://commercetools.github.io/commercetools-sync-java/v/2.2.0/com/commercetools/sync/inventories/utils/InventoryReferenceResolutionUtils.html#mapToInventoryEntryDrafts-java.util.List-)
+   - When syncing from a source commercetools project, you can use [`mapToInventoryEntryDrafts`](https://commercetools.github.io/commercetools-sync-java/v/2.3.0/com/commercetools/sync/inventories/utils/InventoryReferenceResolutionUtils.html#mapToInventoryEntryDrafts-java.util.List-)
      method that that maps from a `InventoryEntry` to `InventoryEntryDraft` in order to make them ready for reference resolution by the sync:
      ````java
      final List<InventoryEntryDraft> inventoryEntryDrafts = InventoryReferenceResolutionUtils.mapToInventoryEntryDrafts(inventoryEntries);
      ````
-     
-3. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
-4. After the `sphereClient` is setup, a `InventorySyncOptions` should be built as follows: 
+4. After the `sphereClient` is set up, an `InventorySyncOptions` should be built as follows: 
 ````java
 // instantiating a InventorySyncOptions
 final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(sphereClient).build();
 ````
-[More information about Sync Options](SYNC_OPTIONS.md).
+
+#### About SyncOptions
+`SyncOptions` is an object which provides a place for users to add certain configurations to customize the sync process.
+Available configurations:
+
+##### 1. `errorCallback`
+A callback that is called whenever an error event occurs during the sync process. Each resource executes its own 
+error-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+following context about the error-event:
+
+* sync exception
+* inventory entry draft from the source
+* inventory entry of the target project (only provided if an existing inventory entry could be found)
+* the update-actions, which failed (only provided if an existing inventory entry could be found)
+
+##### Example 
+````java
+ final Logger logger = LoggerFactory.getLogger(InventorySync.class);
+ final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder
+         .of(sphereClient)
+         .errorCallback((syncException, draft, inventoryEntry, updateActions) -> 
+            logger.error(new SyncException("My customized message"), syncException)).build();
+````
+    
+##### 2. `warningCallback`
+A callback that is called whenever a warning event occurs during the sync process. Each resource executes its own 
+warning-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+following context about the warning message:
+
+* sync exception
+* inventory entry draft from the source 
+* inventory entry of the target project (only provided if an existing inventory entry could be found)
+
+##### Example 
+````java
+ final Logger logger = LoggerFactory.getLogger(InventorySync.class);
+ final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder
+         .of(sphereClient)
+         .warningCallback((syncException, draft, inventoryEntry, updateActions) -> 
+            logger.warn(new SyncException("My customized message"), syncException)).build();
+````
+
+##### 3. `beforeUpdateCallback`
+During the sync process if a target inventory entry and a inventory entry draft are matched, this callback can be used 
+to intercept the **_update_** request just before it is sent to commercetools platform. This allows the user to modify 
+update actions array with custom actions or discard unwanted actions. The callback provides the following information :
+ 
+ * inventory entry draft from the source
+ * inventory from the target project
+ * update actions that were calculated after comparing both
+
+##### Example
+````java
+final TriFunction<
+        List<UpdateAction<InventoryEntry>>, 
+        InventoryEntryDraft, 
+        InventoryEntry, 
+        List<UpdateAction<InventoryEntry>>> beforeUpdateInventoryCallback =
+            (updateActions, newInventoryEntryDraft, oldInventoryEntry) ->  updateActions.stream()
+                    .filter(updateAction -> !(updateAction instanceof RemoveQuantity))
+                    .collect(Collectors.toList());
+                        
+final InventorySyncOptions inventorySyncOptions = 
+        InventorySyncOptionsBuilder.of(sphereClient).beforeUpdateCallback(beforeUpdateInventoryCallback).build();
+````
+
+##### 4. `beforeCreateCallback`
+During the sync process if a inventory entry draft should be created, this callback can be used to intercept 
+the **_create_** request just before it is sent to commercetools platform.  It contains following information : 
+
+ * inventory entry draft that should be created
+ 
+Please refer to [example in product sync document](PRODUCT_SYNC.md#example-set-publish-stage-if-category-references-of-given-product-draft-exists).
+                         
+##### 5. `batchSize`
+A number that could be used to set the batch size with which inventories are fetched and processed,
+as inventories are obtained from the target project on commercetools platform in batches for better performance. The 
+algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding inventories from 
+the target project on commecetools platform in a single request. Playing with this option can slightly improve or 
+reduce processing speed. If it is not set, the default batch size is 150 for inventory sync.
+
+##### Example
+````java                         
+final InventorySyncOptions inventorySyncOptions = 
+         InventorySyncOptionsBuilder.of(sphereClient).batchSize(100).build();
+````
+
+##### 6. `ensureChannels` 
+A flag to indicate whether the sync process should create supply channel of the given key when it doesn't exist in a 
+target project yet.
+- If `ensureChannels` is set to `false` this inventory won't be synced and the `errorCallback` will be triggered.
+- If `ensureChannels` is set to `true` the sync will attempt to create the missing supply channel with the given key. 
+If it fails to create the supply channel, the inventory won't sync and `errorCallback` will be triggered.
+- If not provided, it is set to `false` by default.
+
+##### Example
+````java                         
+final InventorySyncOptions inventorySyncOptions = 
+         InventorySyncOptionsBuilder.of(sphereClient).ensureChannels(true).build();
+````
 
 #### Running the sync
 After all the aforementioned points in the previous section have been fulfilled, to run the sync:

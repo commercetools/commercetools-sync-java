@@ -1,11 +1,11 @@
 # Important Usage Tips
 
-#### `SphereClient` Creation
-It is an important responsibility of the user of the library to instantiate a `sphereClient` that does the following:
+#### Customized `SphereClient` Creation
+When creating a customized `SphereClient` the following remarks should be considered:
 
-- Limits the number of concurrent requests done to CTP. This can be done by decorating the `sphereClient` with [QueueSphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/QueueSphereClientDecorator.html)
+- Limit the number of concurrent requests done to CTP. This can be done by decorating the `sphereClient` with [QueueSphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/QueueSphereClientDecorator.html)
  
-- Retries on 5xx errors with a retry strategy. This can be achieved by decorating the `sphereClient` with the [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
+- Retry on 5xx errors with a retry strategy. This can be achieved by decorating the `sphereClient` with the [RetrySphereClientDecorator](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html)
    
 If you have no special requirements on the sphere client creation, then you can use the `ClientConfigurationUtils#createClient` 
 util which applies the best practices for `SphereClient` creation.
@@ -31,7 +31,7 @@ productSync.sync(batch1)
 By design, scaling the sync process should **not** be done by executing the batches themselves in parallel. However, it can be done either by:
  
  - Changing the number of [max parallel requests](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L116) within the `sphereClient` configuration. It defines how many requests the client can execute in parallel.
- - or changing the draft [batch size](https://commercetools.github.io/commercetools-sync-java/v/2.2.0/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-). It defines how many drafts can one batch contain.
+ - or changing the draft [batch size](https://commercetools.github.io/commercetools-sync-java/v/2.3.0/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-). It defines how many drafts can one batch contain.
  
 The current overridable default [configuration](https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) of the `sphereClient` 
 is the recommended good balance for stability and performance for the sync process.

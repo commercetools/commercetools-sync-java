@@ -2,8 +2,6 @@ package com.commercetools.sync.cartdiscounts.helpers;
 
 import com.commercetools.sync.commons.helpers.BaseSyncStatistics;
 
-import static java.lang.String.format;
-
 public final class CartDiscountSyncStatistics extends BaseSyncStatistics {
 
     /**
@@ -15,10 +13,6 @@ public final class CartDiscountSyncStatistics extends BaseSyncStatistics {
      */
     @Override
     public String getReportMessage() {
-        reportMessage = format(
-            "Summary: %s cart discounts were processed in total (%s created, %s updated and %s failed to sync).",
-            getProcessed(), getCreated(), getUpdated(), getFailed());
-
-        return reportMessage;
+        return getDefaultReportMessageForResource("cart discounts");
     }
 }
