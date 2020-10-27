@@ -7,7 +7,7 @@ against a [CustomerDraft](https://docs.commercetools.com/api/projects/customers#
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 - [Usage](#usage)
-  - [Sync list of cart discount drafts](#sync-list-of-customer-drafts)
+  - [Sync list of customer drafts](#sync-list-of-customer-drafts)
     - [Prerequisites](#prerequisites)
     - [Running the sync](#running-the-sync)
     - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)
