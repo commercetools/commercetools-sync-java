@@ -19,33 +19,40 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 /**
  * @param <T> Subclass of {@link BaseGraphQlResult} used to deserialize the graphql query results
  */
-public abstract class BaseGraphQlRequest<T extends BaseGraphQlResult>
+public abstract class BaseGraphQlRequest<U extends BaseGraphQlRequest<U, T>, T extends BaseGraphQlResult>
     implements SphereRequest<BaseGraphQlResult> {
     protected final Set<String> keysToSearch;
     protected final String endpoint;
     protected final Class<T> resultClazz;
-    protected final long limit;
+    private long limit = 500;
     private String queryPredicate = null;
 
     protected BaseGraphQlRequest(@Nonnull final Set<String> keysToSearch, @Nonnull final String endpoint,
-                                 @Nonnull final Class<T> resultClazz, final long limit) {
+                                 @Nonnull final Class<T> resultClazz) {
+
         this.keysToSearch = keysToSearch;
         this.endpoint = endpoint;
         this.resultClazz = resultClazz;
-        this.limit = 1;
     }
 
     @Nonnull
-    public <T extends BaseGraphQlResult> BaseGraphQlRequest<T> withPredicate(
-        @Nonnull final BaseGraphQlRequest<T> query, final String predicate) {
+    public U withPredicate(final String predicate) {
 
-        query.queryPredicate = predicate;
-        return query;
+        this.queryPredicate = predicate;
+        return getThis();
+    }
+
+    @Nonnull
+    public U withLimit(final long limit) {
+
+        this.limit = limit;
+        return getThis();
     }
 
     @Nullable
     @Override
     public T deserialize(final HttpResponse httpResponse) {
+
         final JsonNode rootJsonNode = SphereJsonUtils.parse(httpResponse.getResponseBody());
         if (rootJsonNode.isNull()) {
             return null;
@@ -68,7 +75,8 @@ public abstract class BaseGraphQlRequest<T extends BaseGraphQlResult>
      * @return a string representing a graphql query
      */
     @Nonnull
-    public String buildQueryString() {
+    String buildQueryString() {
+
         if (isBlank(this.endpoint)) {
             return StringUtils.EMPTY;
         }
@@ -101,8 +109,19 @@ public abstract class BaseGraphQlRequest<T extends BaseGraphQlResult>
 
     @Nonnull
     private static String createWhereQuery(@Nonnull final String commaSeparatedKeys) {
+
         return format("key in (%s)", commaSeparatedKeys);
     }
+
+    /**
+     * Returns {@code this} instance of {@code U}, which extends {@link BaseGraphQlRequest}. The purpose of this
+     * method is to make sure that {@code this} is an instance of a class which extends {@link BaseGraphQlRequest}
+     * in order to be used in the generic methods of the class. Otherwise, without this method, the methods above would
+     * need to cast {@code this to U} which could lead to a runtime error of the class was extended in a wrong way.
+     *
+     * @return an instance of the class that overrides this method.
+     */
+    protected abstract U getThis();
 
 }
 

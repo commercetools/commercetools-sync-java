@@ -118,12 +118,27 @@ public final class CtpQueryUtils {
         return queryAll.run(pageConsumer);
     }
 
+    /**
+     * Creates a graphQL query to fetch all elements where keys matching given set of keys with pagination using a
+     * combination of limit and id sorting.
+     *
+     * <p>The method takes a {@link Consumer} that is applied on every page of the queried elements.
+     *
+     * <p>NOTE: This method fetches all paged results sequentially as opposed to fetching the pages in parallel.     *
+     *
+     * @param <T>               type of the query result element
+     * @param <U>               type of the query request element
+     * @param client            commercetools client
+     * @param graphQlRequest    graphql query containing predicates and pagination limits
+     * @param pageConsumer      consumer applied on every page queried
+     * @return a completion stage containing void as a result after the consumer was applied on all pages.
+     */
     @Nonnull
-    public static <T extends BaseGraphQlResult> CompletionStage<Void>
-        queryAll(@Nonnull final SphereClient client, @Nonnull final BaseGraphQlRequest<T> query,
-                 @Nonnull final Consumer<Set<ResourceKeyId>> pageConsumer, final int pageSize) {
-        GraphQlQueryAll<T> queryAll = GraphQlQueryAll.of(client, query, pageSize);
-        return queryAll.run(pageConsumer);
+    public static <T extends BaseGraphQlResult, U extends BaseGraphQlRequest<U, T>> CompletionStage<Void>
+        queryAll(@Nonnull final SphereClient client, @Nonnull final BaseGraphQlRequest<U, T> graphQlRequest,
+                 @Nonnull final Consumer<Set<ResourceKeyId>> pageConsumer) {
+        GraphQlQueryAll<U, T> graphQlQueryAll = GraphQlQueryAll.of(client, graphQlRequest, DEFAULT_PAGE_SIZE);
+        return graphQlQueryAll.run(pageConsumer);
     }
 
     private CtpQueryUtils() {
