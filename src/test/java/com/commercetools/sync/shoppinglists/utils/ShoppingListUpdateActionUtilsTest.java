@@ -5,6 +5,7 @@ import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.shoppinglists.ShoppingList;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeName;
+import io.sphere.sdk.shoppinglists.commands.updateactions.SetDescription;
 import io.sphere.sdk.shoppinglists.commands.updateactions.SetSlug;
 import org.junit.jupiter.api.Test;
 
@@ -12,6 +13,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActionUtils.buildChangeNameUpdateAction;
+import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActionUtils.buildSetDescriptionUpdateAction;
 import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActionUtils.buildSetSlugUpdateAction;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -115,4 +117,54 @@ class ShoppingListUpdateActionUtilsTest {
         assertThat(changeNameUpdateAction).isNotNull();
         assertThat(changeNameUpdateAction).isNotPresent();
     }
+
+    @Test
+    void buildSetDescriptionUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
+        final ShoppingList oldShoppingList = mock(ShoppingList.class);
+        when(oldShoppingList.getDescription()).thenReturn(LocalizedString.of(LOCALE, "oldDescription"));
+
+        final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
+        when(newShoppingList.getDescription()).thenReturn(LocalizedString.of(LOCALE, "newDescription"));
+
+        final UpdateAction<ShoppingList> setDescriptionUpdateAction =
+            buildSetDescriptionUpdateAction(oldShoppingList, newShoppingList).orElse(null);
+
+        assertThat(setDescriptionUpdateAction).isNotNull();
+        assertThat(setDescriptionUpdateAction.getAction()).isEqualTo("setDescription");
+        assertThat(((SetDescription) setDescriptionUpdateAction).getDescription())
+            .isEqualTo(LocalizedString.of(LOCALE, "newDescription"));
+    }
+
+    @Test
+    void buildSetDescriptionUpdateAction_WithNullValues_ShouldBuildUpdateAction() {
+        final ShoppingList oldShoppingList = mock(ShoppingList.class);
+        when(oldShoppingList.getDescription()).thenReturn(LocalizedString.of(LOCALE, "oldDescription"));
+
+        final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
+        when(newShoppingList.getDescription()).thenReturn(null);
+
+        final UpdateAction<ShoppingList> setDescriptionUpdateAction =
+            buildSetDescriptionUpdateAction(oldShoppingList, newShoppingList).orElse(null);
+
+        assertThat(setDescriptionUpdateAction).isNotNull();
+        assertThat(setDescriptionUpdateAction.getAction()).isEqualTo("setDescription");
+        assertThat(((SetDescription) setDescriptionUpdateAction).getDescription()).isEqualTo(null);
+    }
+
+    @Test
+    void buildSetDescriptionUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
+        final ShoppingList oldShoppingList = mock(ShoppingList.class);
+        when(oldShoppingList.getDescription()).thenReturn(LocalizedString.of(LOCALE, "oldDescription"));
+
+        final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
+        when(newShoppingList.getDescription())
+            .thenReturn(LocalizedString.of(LOCALE, "oldDescription"));
+
+        final Optional<UpdateAction<ShoppingList>> setDescriptionUpdateAction =
+            buildSetDescriptionUpdateAction(oldShoppingList, newShoppingList);
+
+        assertThat(setDescriptionUpdateAction).isNotNull();
+        assertThat(setDescriptionUpdateAction).isNotPresent();
+    }
+
 }
