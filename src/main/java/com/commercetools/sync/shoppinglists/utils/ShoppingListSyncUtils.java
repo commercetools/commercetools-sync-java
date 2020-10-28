@@ -1,6 +1,5 @@
 package com.commercetools.sync.shoppinglists.utils;
 
-import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
