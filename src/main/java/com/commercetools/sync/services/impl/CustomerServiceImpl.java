@@ -1,7 +1,7 @@
 package com.commercetools.sync.services.impl;
 
+import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.customers.CustomerSyncOptions;
 import com.commercetools.sync.services.CustomerService;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customers.Customer;
@@ -26,10 +26,10 @@ import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 
-public final class CustomerServiceImpl extends BaseServiceWithKey<CustomerDraft, Customer, CustomerSyncOptions,
+public final class CustomerServiceImpl extends BaseServiceWithKey<CustomerDraft, Customer, BaseSyncOptions,
     CustomerQuery, CustomerQueryModel, CustomerExpansionModel<Customer>> implements CustomerService {
 
-    public CustomerServiceImpl(@Nonnull final CustomerSyncOptions syncOptions) {
+    public CustomerServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
         super(syncOptions);
     }
 
