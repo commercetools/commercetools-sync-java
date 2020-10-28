@@ -2,6 +2,8 @@ package com.commercetools.sync.shoppinglists.utils;
 
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.customers.Customer;
+import io.sphere.sdk.customers.CustomerDraft;
 import io.sphere.sdk.shoppinglists.ShoppingList;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 
@@ -18,11 +20,21 @@ import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActio
 
 public class ShoppingListSyncUtils {
 
+    /**
+     * Compares all the fields of a {@link Customer} and a {@link CustomerDraft}. It returns a {@link List} of
+     * {@link UpdateAction}&lt;{@link Customer}&gt; as a result. If no update action is needed, for example in
+     * case where both the {@link CustomerDraft} and the {@link CustomerDraft} have the same fields, an empty
+     * {@link List} is returned.
+     *
+     * @param oldShoppingList the shopping list which should be updated.
+     * @param newShoppingList the shopping list draft where we get the new data
+     * @return A list of shopping list specific update actions.
+     */
+
     @Nonnull
     public static List<UpdateAction<ShoppingList>> buildActions(
         @Nonnull final ShoppingList oldShoppingList,
-        @Nonnull final ShoppingListDraft newShoppingList,
-        @Nonnull final ShoppingListSyncOptions syncOptions) {
+        @Nonnull final ShoppingListDraft newShoppingList) {
 
         final List<UpdateAction<ShoppingList>> updateActions = filterEmptyOptionals(
             buildSetSlugUpdateAction(oldShoppingList, newShoppingList),
