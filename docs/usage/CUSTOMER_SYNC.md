@@ -6,14 +6,18 @@ against a [CustomerDraft](https://docs.commercetools.com/api/projects/customers#
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+
 - [Usage](#usage)
   - [Sync list of customer drafts](#sync-list-of-customer-drafts)
     - [Prerequisites](#prerequisites)
+    - [About SyncOptions](#about-syncoptions)
     - [Running the sync](#running-the-sync)
     - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)
   - [Build all update actions](#build-all-update-actions)
   - [Build particular update action(s)](#build-particular-update-actions)
 - [Caveats](#caveats)
+
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Usage

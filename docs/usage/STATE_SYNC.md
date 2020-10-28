@@ -13,10 +13,10 @@ against a [StateDraft](https://docs.commercetools.com/http-api-projects-states#s
     - [Prerequisites](#prerequisites)
     - [About SyncOptions](#about-syncoptions)
     - [Running the sync](#running-the-sync)
-      - [Persistence of StateDrafts with missing references](#persistence-of-statedrafts-with-irresolvable-references)
-    - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)  
+    - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)
   - [Build all update actions](#build-all-update-actions)
   - [Build particular update action(s)](#build-particular-update-actions)
+
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Usage
