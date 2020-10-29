@@ -24,6 +24,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
+import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.DEFAULT_TIMEOUT;
+import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.DEFAULT_TIMEOUT_TIME_UNIT;
+import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.MAX_RETRIES;
+import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.MAX_TIMEOUT;
+import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.calculateDurationWithExponentialRandomBackoff;
 import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.decorateSphereClient;
 import static io.sphere.sdk.client.TestDoubleSphereClientFactory.createHttpTestDouble;
 import static java.util.Collections.singletonList;
@@ -135,6 +140,26 @@ class ClientConfigurationUtilsTest {
 
         // No retry, only first request.
         verify(mockSphereUnderlyingClient, times(1)).execute(customerUpdateCommand);
+    }
+
+    @Test
+    void calculateExponentialRandomBackoff_withRetries_ShouldReturnRandomisedDurations() {
+        final long timeoutInSeconds = TimeUnit.SECONDS.convert(DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_TIME_UNIT);
+        final long maxTimeoutInSeconds = TimeUnit.SECONDS.convert(MAX_TIMEOUT, DEFAULT_TIMEOUT_TIME_UNIT);
+        final long randomMax = maxTimeoutInSeconds - timeoutInSeconds;
+
+        assertThat(MAX_RETRIES).isGreaterThan(1);
+
+        for (long failedRetryAttempt = 0; failedRetryAttempt < MAX_RETRIES; failedRetryAttempt++) {
+            final long timeoutMultipliedByTriedAttempts = timeoutInSeconds * failedRetryAttempt;
+
+            // one example result:
+            // retry 1 -> 14 sec, retry 2 -> 43 sec, retry 3 -> 64 sec, retry 4 -> 102 sec, retry 5 -> 120 sec
+            final Duration duration = calculateDurationWithExponentialRandomBackoff(failedRetryAttempt);
+            assertThat(duration.getSeconds())
+                .isGreaterThanOrEqualTo(timeoutMultipliedByTriedAttempts)
+                .isLessThanOrEqualTo(timeoutMultipliedByTriedAttempts + randomMax);
+        }
     }
 
     private CustomerUpdateCommand getCustomerUpdateCommand() {

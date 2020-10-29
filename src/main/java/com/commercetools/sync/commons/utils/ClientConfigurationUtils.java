@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -31,9 +32,10 @@ import static io.sphere.sdk.http.HttpStatusCode.SERVICE_UNAVAILABLE_503;
 
 public final class ClientConfigurationUtils {
     private static HttpClient httpClient;
-    private static final long DEFAULT_TIMEOUT = 30000;
-    private static final TimeUnit DEFAULT_TIMEOUT_TIME_UNIT = TimeUnit.MILLISECONDS;
-    private static final int MAX_RETRIES = 5;
+    protected static final long DEFAULT_TIMEOUT = 30000;
+    protected static final long MAX_TIMEOUT = 50000;
+    protected static final TimeUnit DEFAULT_TIMEOUT_TIME_UNIT = TimeUnit.MILLISECONDS;
+    protected static final int MAX_RETRIES = 5;
     private static final int MAX_PARALLEL_REQUESTS = 20;
 
     private static final Map<SphereClientConfig, SphereClient> delegatesCache = new HashMap<>();
@@ -63,7 +65,7 @@ public final class ClientConfigurationUtils {
             final SphereClient underlyingClient = createSphereClient(clientConfig);
             final SphereClient decoratedClient = decorateSphereClient(underlyingClient,
                 MAX_RETRIES,
-                context -> Duration.ofSeconds(context.getAttempt() * 2));
+                context -> calculateDurationWithExponentialRandomBackoff(context.getAttempt()));
 
             delegatesCache.put(clientConfig, decoratedClient);
         }
@@ -110,10 +112,32 @@ public final class ClientConfigurationUtils {
         @Nonnull final Function<RetryContext, Duration> durationFunction) {
 
         final RetryAction scheduledRetry = RetryAction.ofScheduledRetry(maxRetryAttempt, durationFunction);
-        final RetryPredicate matcher = RetryPredicate
+        final RetryPredicate http5xxMatcher = RetryPredicate
             .ofMatchingStatusCodes(BAD_GATEWAY_502, SERVICE_UNAVAILABLE_503, GATEWAY_TIMEOUT_504);
-        final List<RetryRule> retryRules = Collections.singletonList(RetryRule.of(matcher, scheduledRetry));
+        final List<RetryRule> retryRules = Collections.singletonList(RetryRule.of(http5xxMatcher, scheduledRetry));
         return RetrySphereClientDecorator.of(delegate, retryRules);
+    }
+
+    /**
+     * Computes a exponential backoff time delay in seconds, that grows with failed retry attempts count
+     * with a random interval between {@code DEFAULT_TIMEOUT} and {@code MAX_TIMEOUT}.
+     *
+     * @param retryAttempt the number of attempts already tried by the client.
+     * @return a computed variable delay in seconds, that grows with the number of failed attempts.
+     */
+    protected static Duration calculateDurationWithExponentialRandomBackoff(final Long retryAttempt) {
+        final long timeoutInSeconds = TimeUnit.SECONDS.convert(DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_TIME_UNIT);
+        final long maxTimeoutInSeconds = TimeUnit.SECONDS.convert(MAX_TIMEOUT, DEFAULT_TIMEOUT_TIME_UNIT);
+        final long randomNumberInRange = getRandomNumberInRange(timeoutInSeconds, maxTimeoutInSeconds);
+
+        final long failedRetryAttempt = retryAttempt - 1; // first call is not a retry.
+        final long timeoutMultipliedByFailedAttempts = timeoutInSeconds * failedRetryAttempt;
+
+        return Duration.ofSeconds(timeoutMultipliedByFailedAttempts + randomNumberInRange);
+    }
+
+    private static long getRandomNumberInRange(final long min, final long max) {
+        return new Random().longs(min + 1, max + 1).limit(1).findFirst().orElse(min);
     }
 
     private static SphereClient withLimitedParallelRequests(final SphereClient delegate) {
