@@ -1,7 +1,6 @@
 package com.commercetools.sync.shoppinglists.utils;
 
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
@@ -319,5 +318,4 @@ class ShoppingListUpdateActionUtilsTest {
         assertThat(setDeleteDaysUpdateAction).isNotNull();
         assertThat(setDeleteDaysUpdateAction).containsInstanceOf(SetDeleteDaysAfterLastModification.class);
     }
-
 }

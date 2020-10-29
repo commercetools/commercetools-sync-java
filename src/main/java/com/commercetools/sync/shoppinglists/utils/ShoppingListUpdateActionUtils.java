@@ -19,13 +19,13 @@ import io.sphere.sdk.shoppinglists.commands.updateactions.SetSlug;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.swing.text.html.Option;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActionForReferences;
 
 public final class ShoppingListUpdateActionUtils {
+
     private ShoppingListUpdateActionUtils() {
     }
 
@@ -122,14 +122,14 @@ public final class ShoppingListUpdateActionUtils {
     }
 
     /**
-     * Compares the AnonymousIds of {@link ShoppingList} and a {@link ShoppingListDraft} and
+     * Compares the anonymousIds of {@link ShoppingList} and a {@link ShoppingListDraft} and
      * returns an {@link UpdateAction}&lt;{@link ShoppingList}&gt; as a result in an {@link Optional}. If both the
-     * {@link ShoppingList} and the {@link ShoppingListDraft} have the same AnonymousId, then no update action is needed
+     * {@link ShoppingList} and the {@link ShoppingListDraft} have the same anonymousId, then no update action is needed
      * and hence an empty {@link Optional} is returned.
      *
      * @param oldShoppingList the shopping list which should be updated.
-     * @param newShoppingList the shopping list draft which holds the new AnonymousId.
-     * @return A filled optional with the update action or an empty optional if the Ids are identical.
+     * @param newShoppingList the shopping list draft which holds the new anonymousId.
+     * @return A filled optional with the update action or an empty optional if the anonymousIds are identical.
      */
     @Nonnull
     public static Optional<UpdateAction<ShoppingList>> buildSetAnonymousIdUpdateAction(
@@ -141,15 +141,15 @@ public final class ShoppingListUpdateActionUtils {
     }
 
     /**
-     * Compares the Number for Delete Days of {@link ShoppingList} and a {@link ShoppingListDraft} and
+     * Compares the deleteDaysAfterLastModification of {@link ShoppingList} and a {@link ShoppingListDraft} and
      * returns an {@link UpdateAction}&lt;{@link ShoppingList}&gt; as a result in an {@link Optional}. If both the
-     * {@link ShoppingList} and the {@link ShoppingListDraft} have the same number for delete days, then no update
-     * action is needed and hence an empty {@link Optional} is returned.
+     * {@link ShoppingList} and the {@link ShoppingListDraft} have the same deleteDaysAfterLastModification, then no
+     * update action is needed and hence an empty {@link Optional} is returned.
      *
      * @param oldShoppingList the shopping list which should be updated.
-     * @param newShoppingList the shopping list draft which holds the new number of days after which the ShoppingList
-     *                        shall be deleted .
-     * @return A filled optional with the update action or an empty optional if the Ids are identical.
+     * @param newShoppingList the shopping list draft which holds the new deleteDaysAfterLastModification.
+     * @return A filled optional with the update action or an empty optional if the deleteDaysAfterLastModifications
+     *         are identical.
      */
     @Nonnull
     public static Optional<UpdateAction<ShoppingList>> buildSetDeleteDaysAfterLastModificationUpdateAction(
@@ -160,6 +160,4 @@ public final class ShoppingListUpdateActionUtils {
             newShoppingList.getDeleteDaysAfterLastModification(), () -> SetDeleteDaysAfterLastModification.of(
                 newShoppingList.getDeleteDaysAfterLastModification()));
     }
-
-
 }
