@@ -12,9 +12,15 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
+import io.sphere.sdk.shoppinglists.LineItem;
+import io.sphere.sdk.shoppinglists.LineItemDraft;
+import io.sphere.sdk.shoppinglists.LineItemDraftBuilder;
 import io.sphere.sdk.shoppinglists.ShoppingList;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
+import io.sphere.sdk.shoppinglists.TextLineItem;
+import io.sphere.sdk.shoppinglists.TextLineItemDraft;
+import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -351,6 +357,83 @@ public class ShoppingListSyncTest {
         verify(spySyncOptions, never()).applyBeforeCreateCallback(shoppingListDraft);
     }
 
+    @Test
+    void sync_WithUnchangedShoppingListDraftAndUpdatedLineItemDraft_ShouldIncrementUpdated() {
+        // preparation
+        final ShoppingListService mockShoppingListService = mock(ShoppingListService.class);
+        final ShoppingList mockShoppingList = mock(ShoppingList.class);
+        final LineItem mockLineItem = mock(LineItem.class);
+        when(mockShoppingList.getKey()).thenReturn("shoppingListKey");
+        when(mockShoppingList.getName()).thenReturn(LocalizedString.ofEnglish("shoppingListName"));
+        when(mockLineItem.getVariant().getSku()).thenReturn("dummy-sku");
+        when(mockLineItem.getQuantity()).thenReturn(10L);
+        when(mockShoppingListService.fetchMatchingShoppingListsByKeys(anySet()))
+                .thenReturn(completedFuture(singleton(mockShoppingList)));
+
+        final ShoppingListSyncOptions spySyncOptions = spy(syncOptions);
+        final ShoppingListSync shoppingListSync = new ShoppingListSync(spySyncOptions, mockShoppingListService,
+                mock(CustomerService.class), mock(TypeService.class));
+
+        final List<LineItemDraft> lineItemDrafts = singletonList(
+                LineItemDraftBuilder.ofSku("dummy-sku", 5L).build());
+
+        final ShoppingListDraft shoppingListDraft =
+                ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("shoppingListName"))
+                        .key("shoppingListKey")
+                        .lineItems(lineItemDrafts)
+                        .build();
+
+        //test
+        final ShoppingListSyncStatistics shoppingListSyncStatistics = shoppingListSync
+                .sync(singletonList(shoppingListDraft))
+                .toCompletableFuture()
+                .join();
+
+        // assertions
+        AssertionsForStatistics.assertThat(shoppingListSyncStatistics).hasValues(1, 0, 1, 0);
+
+        verify(spySyncOptions).applyBeforeUpdateCallback(any(), any(), any());
+        verify(spySyncOptions, never()).applyBeforeCreateCallback(shoppingListDraft);
+    }
+
+    @Test
+    void sync_WithUnchangedShoppingListDraftAndUpdatedTextLineItemDraft_ShouldIncrementUpdated() {
+        // preparation
+        final ShoppingListService mockShoppingListService = mock(ShoppingListService.class);
+        final ShoppingList mockShoppingList = mock(ShoppingList.class);
+        final TextLineItem mockTextLineItem = mock(TextLineItem.class);
+        when(mockShoppingList.getKey()).thenReturn("shoppingListKey");
+        when(mockShoppingList.getName()).thenReturn(LocalizedString.ofEnglish("shoppingListName"));
+        when(mockTextLineItem.getName()).thenReturn(LocalizedString.ofEnglish("textLineItemName"));
+        when(mockTextLineItem.getQuantity()).thenReturn(10L);
+        when(mockShoppingListService.fetchMatchingShoppingListsByKeys(anySet()))
+                .thenReturn(completedFuture(singleton(mockShoppingList)));
+
+        final ShoppingListSyncOptions spySyncOptions = spy(syncOptions);
+        final ShoppingListSync shoppingListSync = new ShoppingListSync(spySyncOptions, mockShoppingListService,
+                mock(CustomerService.class), mock(TypeService.class));
+
+        final List<TextLineItemDraft> textLineItemDrafts = singletonList(
+                TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("textLineItemName"), 5L).build());
+
+        final ShoppingListDraft shoppingListDraft =
+                ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("shoppingListName"))
+                        .key("shoppingListKey")
+                        .textLineItems(textLineItemDrafts)
+                        .build();
+
+        //test
+        final ShoppingListSyncStatistics shoppingListSyncStatistics = shoppingListSync
+                .sync(singletonList(shoppingListDraft))
+                .toCompletableFuture()
+                .join();
+
+        // assertions
+        AssertionsForStatistics.assertThat(shoppingListSyncStatistics).hasValues(1, 0, 1, 0);
+
+        verify(spySyncOptions).applyBeforeUpdateCallback(any(), any(), any());
+        verify(spySyncOptions, never()).applyBeforeCreateCallback(shoppingListDraft);
+    }
 
     @Test
     void sync_WithoutUpdateActions_ShouldNotIncrementUpdated() {
@@ -539,7 +622,6 @@ public class ShoppingListSyncTest {
                         .of(LocalizedString.ofEnglish("shoppingListName"))
                         .key("shoppingListKey")
                         .build();
-
 
         //test
         final ShoppingListSyncStatistics shoppingListSyncStatistics = shoppingListSync
