@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -33,7 +33,7 @@ import static io.sphere.sdk.http.HttpStatusCode.SERVICE_UNAVAILABLE_503;
 public final class ClientConfigurationUtils {
     private static HttpClient httpClient;
     protected static final long DEFAULT_TIMEOUT = 30000;
-    protected static final long MAX_TIMEOUT = 50000;
+    protected static final long DEFAULT_WAIT_BASE_MILLISECONDS = 200;
     protected static final TimeUnit DEFAULT_TIMEOUT_TIME_UNIT = TimeUnit.MILLISECONDS;
     protected static final int MAX_RETRIES = 5;
     private static final int MAX_PARALLEL_REQUESTS = 20;
@@ -119,25 +119,23 @@ public final class ClientConfigurationUtils {
     }
 
     /**
-     * Computes a exponential backoff time delay in seconds, that grows with failed retry attempts count
-     * with a random interval between {@code DEFAULT_TIMEOUT} and {@code MAX_TIMEOUT}.
+     * Computes a exponential backoff time delay in seconds to be used in retries, the delay grows with failed
+     * retry attempts count with a randomness interval (a.k.a full jitter).
+     * (see: <a href=https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/>)
      *
      * @param retryAttempt the number of attempts already tried by the client.
-     * @return a computed variable delay in seconds, that grows with the number of failed attempts.
+     * @return a duration in seconds, that grows with the number of failed attempts.
      */
-    protected static Duration calculateDurationWithExponentialRandomBackoff(final Long retryAttempt) {
-        final long timeoutInSeconds = TimeUnit.SECONDS.convert(DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_TIME_UNIT);
-        final long maxTimeoutInSeconds = TimeUnit.SECONDS.convert(MAX_TIMEOUT, DEFAULT_TIMEOUT_TIME_UNIT);
-        final long randomNumberInRange = getRandomNumberInRange(timeoutInSeconds, maxTimeoutInSeconds);
+    protected static Duration calculateDurationWithExponentialRandomBackoff(final long retryAttempt) {
+        // Capped exponential backoff means that clients multiply their backoff by a constant after each attempt,
+        // up to some maximum value (see DEFAULT_TIMEOUT). In our case, after each unsuccessful attempt.
+        final long sleep = DEFAULT_WAIT_BASE_MILLISECONDS * ((long) Math.pow(2, retryAttempt - 1));
 
-        final long failedRetryAttempt = retryAttempt - 1; // first call is not a retry.
-        final long timeoutMultipliedByFailedAttempts = timeoutInSeconds * failedRetryAttempt;
+        // We want to spread out the spikes to an approximately constant rate to avoid competing clients,
+        // Adding jitter is a small change to the sleep function.
+        final long sleepWithJitter = ThreadLocalRandom.current().nextLong(0, sleep);
 
-        return Duration.ofSeconds(timeoutMultipliedByFailedAttempts + randomNumberInRange);
-    }
-
-    private static long getRandomNumberInRange(final long min, final long max) {
-        return new Random().longs(min + 1, max + 1).limit(1).findFirst().orElse(min);
+        return Duration.ofMillis(sleepWithJitter);
     }
 
     private static SphereClient withLimitedParallelRequests(final SphereClient delegate) {

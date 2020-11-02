@@ -24,10 +24,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.DEFAULT_TIMEOUT;
-import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.DEFAULT_TIMEOUT_TIME_UNIT;
+import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.DEFAULT_WAIT_BASE_MILLISECONDS;
 import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.MAX_RETRIES;
-import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.MAX_TIMEOUT;
 import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.calculateDurationWithExponentialRandomBackoff;
 import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.decorateSphereClient;
 import static io.sphere.sdk.client.TestDoubleSphereClientFactory.createHttpTestDouble;
@@ -74,6 +72,38 @@ class ClientConfigurationUtilsTest {
     }
 
     @Test
+    void createClient_withDefaultRetryDecorator_ShouldRetryWhen502HttpResponse() {
+        final SphereClient mockSphereUnderlyingClient =
+            spy(createHttpTestDouble(intent -> {
+                try {
+                    Thread.sleep(300);
+                } catch (InterruptedException expected) {
+                }
+
+                return HttpResponse.of(HttpStatusCode.BAD_GATEWAY_502);
+            }));
+
+        final long maxRetryAttempt = 2L;
+        final Function<RetryContext, Duration> durationFunction = retryContext ->
+            calculateDurationWithExponentialRandomBackoff(retryContext.getAttempt());
+
+        final SphereClient decoratedSphereClient =
+            decorateSphereClient(mockSphereUnderlyingClient, maxRetryAttempt, durationFunction);
+
+        final CustomerUpdateCommand customerUpdateCommand = getCustomerUpdateCommand();
+
+        assertThat(decoratedSphereClient.execute(customerUpdateCommand))
+            //fails within : 1500 millisecond -> 600 millisecond max sleep + 900 millisecond (3*300) thread sleep
+            .failsWithin(1500, TimeUnit.MILLISECONDS)
+            .withThrowableOfType(ExecutionException.class)
+            .withCauseExactlyInstanceOf(BadGatewayException.class)
+            .withMessageContaining("502");
+
+        // first request + retries
+        verify(mockSphereUnderlyingClient, times(3)).execute(customerUpdateCommand);
+    }
+
+    @Test
     void createClient_withRetryDecorator_ShouldRetryWhen503HttpResponse() {
         final SphereClient mockSphereUnderlyingClient =
             spy(createHttpTestDouble(intent -> HttpResponse.of(HttpStatusCode.SERVICE_UNAVAILABLE_503)));
@@ -92,7 +122,7 @@ class ClientConfigurationUtilsTest {
             .withCauseExactlyInstanceOf(ServiceUnavailableException.class)
             .withMessageContaining("503");
 
-        // first request + retry.
+        // first request + retries
         verify(mockSphereUnderlyingClient, times(3)).execute(customerUpdateCommand);
     }
 
@@ -144,21 +174,20 @@ class ClientConfigurationUtilsTest {
 
     @Test
     void calculateExponentialRandomBackoff_withRetries_ShouldReturnRandomisedDurations() {
-        final long timeoutInSeconds = TimeUnit.SECONDS.convert(DEFAULT_TIMEOUT, DEFAULT_TIMEOUT_TIME_UNIT);
-        final long maxTimeoutInSeconds = TimeUnit.SECONDS.convert(MAX_TIMEOUT, DEFAULT_TIMEOUT_TIME_UNIT);
-        final long randomMax = maxTimeoutInSeconds - timeoutInSeconds;
-
         assertThat(MAX_RETRIES).isGreaterThan(1);
 
-        for (long failedRetryAttempt = 0; failedRetryAttempt < MAX_RETRIES; failedRetryAttempt++) {
-            final long timeoutMultipliedByTriedAttempts = timeoutInSeconds * failedRetryAttempt;
+        long maxSleep = 0;
+        for (long failedRetryAttempt = 1; failedRetryAttempt <= MAX_RETRIES; failedRetryAttempt++) {
+            maxSleep += DEFAULT_WAIT_BASE_MILLISECONDS * ((long) Math.pow(2, failedRetryAttempt - 1));
 
-            // one example result:
-            // retry 1 -> 14 sec, retry 2 -> 43 sec, retry 3 -> 64 sec, retry 4 -> 102 sec, retry 5 -> 120 sec
+            /* One example of wait times of retries:
+            Retry 1: 61 millisecond
+            Retry 2: 274 millisecond
+            Retry 3: 552 millisecond
+            Retry 4: 472 millisecond
+            Retry 5: 1533 millisecond */
             final Duration duration = calculateDurationWithExponentialRandomBackoff(failedRetryAttempt);
-            assertThat(duration.getSeconds())
-                .isGreaterThanOrEqualTo(timeoutMultipliedByTriedAttempts)
-                .isLessThanOrEqualTo(timeoutMultipliedByTriedAttempts + randomMax);
+            assertThat(duration.toMillis()).isLessThanOrEqualTo(maxSleep);
         }
     }
 
