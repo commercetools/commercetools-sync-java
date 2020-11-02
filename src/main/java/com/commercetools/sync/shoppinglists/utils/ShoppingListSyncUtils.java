@@ -20,7 +20,7 @@ import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActio
 import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActionUtils.buildSetDescriptionUpdateAction;
 import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActionUtils.buildSetSlugUpdateAction;
 
-public class ShoppingListSyncUtils {
+public final class ShoppingListSyncUtils {
 
     private static final ShoppingListCustomActionBuilder shoppingListCustomActionBuilder =
         ShoppingListCustomActionBuilder.of();
@@ -65,7 +65,7 @@ public class ShoppingListSyncUtils {
         return updateActions;
     }
 
-    // todo (ahmetoz), open a request to jvm sdk, ShoppingListDraft needs to extend CustomDraft.
+    // TODO: https://github.com/commercetools/commercetools-jvm-sdk/issues/2073
     private static class CustomShoppingListDraft implements CustomDraft {
         private final ShoppingListDraft shoppingListDraft;
 
@@ -78,5 +78,8 @@ public class ShoppingListSyncUtils {
         public CustomFieldsDraft getCustom() {
             return shoppingListDraft.getCustom();
         }
+    }
+
+    private ShoppingListSyncUtils() {
     }
 }
