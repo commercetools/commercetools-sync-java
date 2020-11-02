@@ -24,7 +24,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.DEFAULT_WAIT_BASE_MILLISECONDS;
+import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.DEFAULT_TIMEOUT;
+import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.INITIAL_RETRY_DELAY;
 import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.MAX_RETRIES;
 import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.calculateDurationWithExponentialRandomBackoff;
 import static com.commercetools.sync.commons.utils.ClientConfigurationUtils.decorateSphereClient;
@@ -93,8 +94,8 @@ class ClientConfigurationUtilsTest {
         final CustomerUpdateCommand customerUpdateCommand = getCustomerUpdateCommand();
 
         assertThat(decoratedSphereClient.execute(customerUpdateCommand))
-            //fails within : 1500 millisecond -> 600 millisecond max sleep + 900 millisecond (3*300) thread sleep
-            .failsWithin(1500, TimeUnit.MILLISECONDS)
+            //fails within : 2100 millisecond -> 1200 millisecond max delay + 900 millisecond (3*300) thread sleep
+            .failsWithin(2100, TimeUnit.MILLISECONDS)
             .withThrowableOfType(ExecutionException.class)
             .withCauseExactlyInstanceOf(BadGatewayException.class)
             .withMessageContaining("502");
@@ -176,18 +177,28 @@ class ClientConfigurationUtilsTest {
     void calculateExponentialRandomBackoff_withRetries_ShouldReturnRandomisedDurations() {
         assertThat(MAX_RETRIES).isGreaterThan(1);
 
-        long maxSleep = 0;
-        for (long failedRetryAttempt = 1; failedRetryAttempt <= MAX_RETRIES; failedRetryAttempt++) {
-            maxSleep += DEFAULT_WAIT_BASE_MILLISECONDS * ((long) Math.pow(2, failedRetryAttempt - 1));
+        long maxDelay = 0;
+        for (long failedRetryAttempt = 1; failedRetryAttempt <= 10; failedRetryAttempt++) {
+
+            maxDelay += INITIAL_RETRY_DELAY * ((long) Math.pow(2, failedRetryAttempt - 1)) * 2;
 
             /* One example of wait times of retries:
-            Retry 1: 61 millisecond
-            Retry 2: 274 millisecond
-            Retry 3: 552 millisecond
-            Retry 4: 472 millisecond
-            Retry 5: 1533 millisecond */
+            Retry 1: 318 millisecond
+            Retry 2: 740 millisecond
+            Retry 3: 1284 millisecond
+            Retry 4: 2002 millisecond
+            Retry 5: 6054 millisecond
+            Retry 6: 8690 millisecond
+            Retry 7: 15567 millisecond
+            Retry 8: 30000 millisecond
+            Retry 9: 30000 millisecond
+            Retry 10: 30000 millisecond
+            */
             final Duration duration = calculateDurationWithExponentialRandomBackoff(failedRetryAttempt);
-            assertThat(duration.toMillis()).isLessThanOrEqualTo(maxSleep);
+
+            assertThat(duration.toMillis())
+                .isLessThanOrEqualTo(maxDelay)
+                .isLessThanOrEqualTo(DEFAULT_TIMEOUT);
         }
     }
 

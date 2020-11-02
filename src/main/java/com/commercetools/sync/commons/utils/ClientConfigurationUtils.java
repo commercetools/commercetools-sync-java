@@ -20,7 +20,6 @@ import javax.annotation.Nonnull;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -31,7 +30,7 @@ import static io.sphere.sdk.http.HttpStatusCode.SERVICE_UNAVAILABLE_503;
 public final class ClientConfigurationUtils {
 
     protected static final long DEFAULT_TIMEOUT = 30000;
-    protected static final long DEFAULT_WAIT_BASE_MILLISECONDS = 200;
+    protected static final long INITIAL_RETRY_DELAY = 200;
     protected static final TimeUnit DEFAULT_TIMEOUT_TIME_UNIT = TimeUnit.MILLISECONDS;
     protected static final int MAX_RETRIES = 5;
     private static final int MAX_PARALLEL_REQUESTS = 20;
@@ -109,17 +108,18 @@ public final class ClientConfigurationUtils {
 
     /**
      * Computes a exponential backoff time delay in milliseconds to be used in retries, the delay grows with failed
-     * retry attempts count with a randomness interval (a.k.a full jitter).
+     * retry attempts count with a randomness interval.
      * (see: <a href=https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/>)
+     * (see: <a href="http://dthain.blogspot.com/2009/02/exponential-backoff-in-distributed.html"/>)
      *
      * @param retryAttempt the number of attempts already tried by the client.
      * @return a duration in milliseconds, that grows with the number of failed attempts.
      */
     protected static Duration calculateDurationWithExponentialRandomBackoff(final long retryAttempt) {
-        final long sleep = DEFAULT_WAIT_BASE_MILLISECONDS * ((long) Math.pow(2, retryAttempt - 1));
-        final long sleepWithJitter = ThreadLocalRandom.current().nextLong(0, sleep);
-
-        return Duration.ofMillis(sleepWithJitter);
+        final double exponentialFactor = Math.pow(2, retryAttempt - 1);
+        final double jitter = 1 + Math.random();
+        final long delay = (long)Math.min(INITIAL_RETRY_DELAY * exponentialFactor * jitter, DEFAULT_TIMEOUT);
+        return Duration.ofMillis(delay);
     }
 
     private static SphereClient withLimitedParallelRequests(final SphereClient delegate) {
