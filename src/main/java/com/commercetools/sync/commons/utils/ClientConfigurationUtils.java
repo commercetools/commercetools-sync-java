@@ -19,9 +19,7 @@ import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 import javax.annotation.Nonnull;
 import java.time.Duration;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -31,14 +29,12 @@ import static io.sphere.sdk.http.HttpStatusCode.GATEWAY_TIMEOUT_504;
 import static io.sphere.sdk.http.HttpStatusCode.SERVICE_UNAVAILABLE_503;
 
 public final class ClientConfigurationUtils {
-    private static HttpClient httpClient;
+
     protected static final long DEFAULT_TIMEOUT = 30000;
     protected static final long DEFAULT_WAIT_BASE_MILLISECONDS = 200;
     protected static final TimeUnit DEFAULT_TIMEOUT_TIME_UNIT = TimeUnit.MILLISECONDS;
     protected static final int MAX_RETRIES = 5;
     private static final int MAX_PARALLEL_REQUESTS = 20;
-
-    private static final Map<SphereClientConfig, SphereClient> delegatesCache = new HashMap<>();
 
     /**
      * Creates a {@link BlockingSphereClient} with a default {@code timeout} value of 30 seconds.
@@ -61,15 +57,12 @@ public final class ClientConfigurationUtils {
     public static synchronized SphereClient createClient(@Nonnull final SphereClientConfig clientConfig,
                                                          final long timeout,
                                                          @Nonnull final TimeUnit timeUnit) {
-        if (!delegatesCache.containsKey(clientConfig)) {
-            final SphereClient underlyingClient = createSphereClient(clientConfig);
-            final SphereClient decoratedClient = decorateSphereClient(underlyingClient,
-                MAX_RETRIES,
-                context -> calculateDurationWithExponentialRandomBackoff(context.getAttempt()));
 
-            delegatesCache.put(clientConfig, decoratedClient);
-        }
-        return BlockingSphereClient.of(delegatesCache.get(clientConfig), timeout, timeUnit);
+        final SphereClient underlyingClient = createSphereClient(clientConfig);
+        final SphereClient decoratedClient = decorateSphereClient(underlyingClient, MAX_RETRIES,
+            context -> calculateDurationWithExponentialRandomBackoff(context.getAttempt()));
+
+        return BlockingSphereClient.of(decoratedClient, timeout, timeUnit);
     }
 
     protected static SphereClient createSphereClient(@Nonnull final SphereClientConfig clientConfig) {
@@ -90,20 +83,16 @@ public final class ClientConfigurationUtils {
 
     /**
      * Gets an asynchronous {@link HttpClient} to be used by the {@link BlockingSphereClient}.
-     * Client is created during first invocation and then cached.
      *
      * @return {@link HttpClient}
      */
     private static synchronized HttpClient getHttpClient() {
-        if (httpClient == null) {
-            final AsyncHttpClient asyncHttpClient =
-                new DefaultAsyncHttpClient(
-                    new DefaultAsyncHttpClientConfig.Builder()
-                                                    .setHandshakeTimeout((int) DEFAULT_TIMEOUT)
-                                                    .build());
-            httpClient = AsyncHttpClientAdapter.of(asyncHttpClient);
-        }
-        return httpClient;
+        final AsyncHttpClient asyncHttpClient =
+            new DefaultAsyncHttpClient(
+                new DefaultAsyncHttpClientConfig.Builder()
+                                                .setHandshakeTimeout((int) DEFAULT_TIMEOUT)
+                                                .build());
+        return AsyncHttpClientAdapter.of(asyncHttpClient);
     }
 
     private static SphereClient withRetry(
@@ -127,12 +116,7 @@ public final class ClientConfigurationUtils {
      * @return a duration in seconds, that grows with the number of failed attempts.
      */
     protected static Duration calculateDurationWithExponentialRandomBackoff(final long retryAttempt) {
-        // Capped exponential backoff means that clients multiply their backoff by a constant after each attempt,
-        // up to some maximum value (see DEFAULT_TIMEOUT). In our case, after each unsuccessful attempt.
         final long sleep = DEFAULT_WAIT_BASE_MILLISECONDS * ((long) Math.pow(2, retryAttempt - 1));
-
-        // We want to spread out the spikes to an approximately constant rate to avoid competing clients,
-        // Adding jitter is a small change to the sleep function.
         final long sleepWithJitter = ThreadLocalRandom.current().nextLong(0, sleep);
 
         return Duration.ofMillis(sleepWithJitter);
