@@ -56,8 +56,6 @@ resolution.
 final CustomerSyncOptions customerSyncOptions = CustomerSyncOptionsBuilder.of(sphereClient).build();
 ````
 
-[More information about Sync Options](SYNC_OPTIONS.md).
-
 #### About SyncOptions
 `SyncOptions` is an object which provides a place for users to add certain configurations to customize the sync process.
 Available configurations:
