@@ -4,6 +4,24 @@ Module used for importing/syncing Shopping Lists into a commercetools project.
 It also provides utilities for generating update actions based on the comparison of a [ShoppingList](https://docs.commercetools.com/api/projects/shoppingLists#shoppinglist) 
 against a [ShoppingListDraft](https://docs.commercetools.com/api/projects/shoppingLists#shoppinglistdraft).
 
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [Usage](#usage)
+  - [Sync list of Shopping List Drafts](#sync-list-of-shopping-list-drafts)
+    - [Prerequisites](#prerequisites)
+    - [About SyncOptions](#about-syncoptions)
+    - [Running the sync](#running-the-sync)
+    - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)
+  - [Build all update actions](#build-all-update-actions)
+  - [Build particular update action(s)](#build-particular-update-actions)
+- [Caveats](#caveats)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+
 ## Usage
 
 ### Sync list of Shopping List Drafts
@@ -147,19 +165,19 @@ __Note__ The statistics object contains the processing time of the last batch on
  1. The sync processing time should not take into account the time between supplying batches to the sync.
  2. It is not known by the sync which batch is going to be the last one supplied.
  
- #### More examples of how to use the sync
+#### More examples of how to use the sync
  
   [Sync from an external source](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/shoppingLists/ShoppingListSyncIT.java).
  
  *Make sure to read the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md) for optimal performance.*
  
- ### Build all update actions
+### Build all update actions
  A utility method provided by the library to compare a `ShoppingList` to a new `ShoppingListDraft`. The results are collected in a list of shopping list update actions.
  ```java
  List<UpdateAction<ShoppingList>> updateActions = ShoppingListSyncUtils.buildActions(shoppingList, shoppingListDraft, shoppingListSyncOptions);
  ```
  
- ### Build particular update action(s)
+### Build particular update action(s)
  The library provides utility methods to compare specific fields of a `ShoppingList` and a new `ShoppingListDraft`, and builds the update action(s) as a result.
  One example is the `buildChangeNameUpdateAction` which compare shopping list names:
  ````java
@@ -169,4 +187,4 @@ __Note__ The statistics object contains the processing time of the last batch on
  More examples for particular update actions can be found in the test scenarios for [ShoppingListUpdateActionUtils](https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/shoppingLists/utils/ShoppingListUpdateActionUtilsTest.java).
  
  
- ## Caveats
+## Caveats
