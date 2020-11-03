@@ -53,7 +53,7 @@ public final class ClientConfigurationUtils {
      * @param timeUnit the timeout time unit.
      * @return the instantiated {@link BlockingSphereClient}.
      */
-    public static synchronized SphereClient createClient(@Nonnull final SphereClientConfig clientConfig,
+    public static SphereClient createClient(@Nonnull final SphereClientConfig clientConfig,
                                                          final long timeout,
                                                          @Nonnull final TimeUnit timeUnit) {
 
@@ -85,7 +85,7 @@ public final class ClientConfigurationUtils {
      *
      * @return {@link HttpClient}
      */
-    private static synchronized HttpClient getHttpClient() {
+    private static HttpClient getHttpClient() {
         final AsyncHttpClient asyncHttpClient =
             new DefaultAsyncHttpClient(
                 new DefaultAsyncHttpClientConfig.Builder()
