@@ -86,7 +86,7 @@ following context about the warning message:
 
 * sync exception
 * customer draft from the source 
-* customer of the target project (only provided if an existing cart discount could be found)
+* customer of the target project (only provided if an existing customer could be found)
 
 ##### Example 
 ````java
