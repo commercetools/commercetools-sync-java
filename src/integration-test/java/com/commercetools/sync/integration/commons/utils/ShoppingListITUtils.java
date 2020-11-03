@@ -32,8 +32,6 @@ public final class ShoppingListITUtils {
     public static void deleteShoppingListTestData(@Nonnull final SphereClient ctpClient) {
         deleteShoppingLists(ctpClient);
         deleteCustomers(ctpClient);
-        deleteAllProducts(ctpClient);
-        deleteProductTypes(ctpClient);
     }
 
     /**
