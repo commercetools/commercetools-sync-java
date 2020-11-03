@@ -122,7 +122,7 @@ final CustomerSyncOptions customerSyncOptions = CustomerSyncOptionsBuilder
 ````
 
 ##### 4. `beforeCreateCallback`
-During the sync process if a cart discount draft should be created, this callback can be used to intercept 
+During the sync process if a customer draft should be created, this callback can be used to intercept 
 the **_create_** request just before it is sent to commercetools platform.  It contains following information : 
 
  * customer draft that should be created
