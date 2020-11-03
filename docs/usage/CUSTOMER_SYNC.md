@@ -39,7 +39,7 @@ resolution.
     method that maps from a `Customer` to `CustomerDraft` to make them ready for reference resolution by the sync:
 
     ````java
-    final List<CustomerDraft> customerDrafts = CustomerReferenceResolutionUtils.mapToCustomertDrafts(customerDrafts);
+    final List<CustomerDraft> customerDrafts = CustomerReferenceResolutionUtils.mapToCustomertDrafts(customers);
     ````
 
 4. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
