@@ -145,7 +145,7 @@ final CustomerSyncOptions customerSyncOptions =
 When all prerequisites are fulfilled, follow those steps to run the sync:
 
 ````java
-// instantiating a cart discount sync
+// instantiating a customer sync
 final CustomerSync customerSync = new CustomerSync(customerSyncOptions);
 
 // execute the sync on your list of customers
@@ -153,7 +153,7 @@ CompletionStage<CustomerSyncStatistics> syncStatisticsStage = customerSync.sync(
 ````
 The result of the completing the `syncStatisticsStage` in the previous code snippet contains a `CustomerSyncStatistics`
 which contains all the stats of the sync process; which includes a report message, the total number of updated, created,
-failed, processed cart discounts, and the processing time of the last sync batch in different time units and in a
+failed, processed customers, and the processing time of the last sync batch in different time units and in a
 human-readable format.
 
 ````java
