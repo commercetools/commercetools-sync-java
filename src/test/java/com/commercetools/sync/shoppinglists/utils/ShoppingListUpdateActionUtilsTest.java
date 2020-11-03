@@ -4,6 +4,7 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.shoppinglists.ShoppingList;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeName;
@@ -183,8 +184,8 @@ class ShoppingListUpdateActionUtilsTest {
         final ShoppingList oldShoppingList = mock(ShoppingList.class);
         when(oldShoppingList.getCustomer()).thenReturn(customerReference);
 
-        final String newCustomerId = UUID.randomUUID().toString();
-        final Reference<Customer> newCustomerReference = Reference.of(Customer.referenceTypeId(), newCustomerId);
+        final String resolvedCustomerId = UUID.randomUUID().toString();
+        final Reference<Customer> newCustomerReference = Reference.of(Customer.referenceTypeId(), resolvedCustomerId);
         final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
         when(newShoppingList.getCustomer()).thenReturn(newCustomerReference);
 
@@ -193,6 +194,8 @@ class ShoppingListUpdateActionUtilsTest {
 
         assertThat(setCustomerUpdateAction).isNotEmpty();
         assertThat(setCustomerUpdateAction).containsInstanceOf(SetCustomer.class);
+        assertThat(((SetCustomer)setCustomerUpdateAction.get()).getCustomer())
+            .isEqualTo(Reference.of(Customer.referenceTypeId(), resolvedCustomerId));
     }
 
     @Test
@@ -203,7 +206,7 @@ class ShoppingListUpdateActionUtilsTest {
         when(oldShoppingList.getCustomer()).thenReturn(customerReference);
 
         final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
-        when(newShoppingList.getCustomer()).thenReturn(customerReference);
+        when(newShoppingList.getCustomer()).thenReturn(ResourceIdentifier.ofId(customerId));
 
         final Optional<UpdateAction<ShoppingList>> setCustomerUpdateAction =
             buildSetCustomerUpdateAction(oldShoppingList, newShoppingList);
@@ -214,17 +217,18 @@ class ShoppingListUpdateActionUtilsTest {
     @Test
     void buildSetCustomerUpdateAction_WithOnlyNewReference_ShouldBuildUpdateAction() {
         final ShoppingList oldShoppingList = mock(ShoppingList.class);
-        final String customerId = UUID.randomUUID().toString();
-        final Reference<Customer> customerReference = Reference.of(Customer.referenceTypeId(), customerId);
 
+        final String newCustomerId = UUID.randomUUID().toString();
         final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
-        when(newShoppingList.getCustomer()).thenReturn(customerReference);
+        when(newShoppingList.getCustomer()).thenReturn(ResourceIdentifier.ofId(newCustomerId));
 
         final Optional<UpdateAction<ShoppingList>> setCustomerUpdateAction =
             buildSetCustomerUpdateAction(oldShoppingList, newShoppingList);
 
         assertThat(setCustomerUpdateAction).isNotEmpty();
         assertThat(setCustomerUpdateAction).containsInstanceOf(SetCustomer.class);
+        assertThat(((SetCustomer)setCustomerUpdateAction.get()).getCustomer())
+            .isEqualTo(Reference.of(Customer.referenceTypeId(), newCustomerId));
     }
 
     @Test
@@ -242,7 +246,8 @@ class ShoppingListUpdateActionUtilsTest {
 
         assertThat(setCustomerUpdateAction).isNotEmpty();
         assertThat(setCustomerUpdateAction).containsInstanceOf(SetCustomer.class);
-
+        //Note: If the old value is set, but the new one is empty - the command will unset the customer.
+        assertThat(((SetCustomer) setCustomerUpdateAction.get()).getCustomer()).isNull();
     }
 
     @Test

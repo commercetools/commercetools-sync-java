@@ -1,7 +1,6 @@
 package com.commercetools.sync.shoppinglists.utils;
 
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
@@ -113,10 +112,12 @@ public final class ShoppingListUpdateActionUtils {
             return null; // unset
         }
 
+        // TODO (JVM-SDK), see: SUPPORT-10261 SetCustomerGroup could be created with a ResourceIdentifier
+        // https://github.com/commercetools/commercetools-jvm-sdk/issues/2072
         return new ResourceImpl<Customer>(null, null, null, null) {
             @Override
             public Reference<Customer> toReference() {
-                return Reference.of(CustomerGroup.referenceTypeId(), resourceIdentifier.getId());
+                return Reference.of(Customer.referenceTypeId(), resourceIdentifier.getId());
             }
         };
     }
