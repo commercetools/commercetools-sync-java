@@ -32,6 +32,8 @@ public final class ShoppingListITUtils {
     public static void deleteShoppingListTestData(@Nonnull final SphereClient ctpClient) {
         deleteShoppingLists(ctpClient);
         deleteCustomers(ctpClient);
+        deleteAllProducts(ctpClient);
+        deleteProductTypes(ctpClient);
     }
 
     /**
@@ -60,8 +62,6 @@ public final class ShoppingListITUtils {
 
         return executeBlocking(ctpClient.execute(ShoppingListCreateCommand.of(shoppingListDraft)));
     }
-
-
 
     /**
      * Creates a {@link ShoppingList} in the CTP project defined by the {@code ctpClient} in a blocking fashion.
