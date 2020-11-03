@@ -65,7 +65,13 @@ public final class ShoppingListSyncUtils {
         return updateActions;
     }
 
-    // TODO: https://github.com/commercetools/commercetools-jvm-sdk/issues/2073
+    /**
+     * The class is needed by `buildPrimaryResourceCustomUpdateActions` generic utility method,
+     * because required generic type `S` is based on the CustomDraft interface (S extends CustomDraft).
+     *
+     * <p>TODO (JVM-SDK): Missing the interface CustomDraft.
+     * See for more details: https://github.com/commercetools/commercetools-jvm-sdk/issues/2073
+     */
     private static class CustomShoppingListDraft implements CustomDraft {
         private final ShoppingListDraft shoppingListDraft;
 
