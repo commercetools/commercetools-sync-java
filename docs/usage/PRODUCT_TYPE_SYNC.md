@@ -28,12 +28,15 @@ against a [ProductTypeDraft](https://docs.commercetools.com/http-api-projects-pr
 <!-- TODO - GITHUB ISSUE#138: Split into explanation of how to "sync from project to project" vs "import from feed"-->
 
 #### Prerequisites
+1. Create a `sphereClient`:
+Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/2.3.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
+If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
-1. The sync expects a list of `ProductTypeDraft`s that have their `key` fields set to be matched with
+2. The sync expects a list of `ProductTypeDraft`s that have their `key` fields set to be matched with
 product types in the target CTP project. Also, the product types in the target project are expected to have the `key`
 fields set, otherwise they won't be matched.
 
-2. Every productType may have `product type` references if it contains attributeDrafts of type `NestedType`. These 
+3. Every productType may have `product type` references if it contains attributeDrafts of type `NestedType`. These 
 referenced are matched by their `key`s. Therefore, in order for the sync to resolve the actual ids of those 
 references, those `key`s have to be supplied in the following way:
     - Provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the
@@ -46,8 +49,6 @@ references, those `key`s have to be supplied in the following way:
          // Puts the keys in the reference id fields to prepare for reference resolution
          final List<ProductTypeDraft> productTypeDrafts = ProductTypeReferenceResolutionUtils.mapToProductTypeDrafts(productTypes);
          ````
-
-3. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
 4. After the `sphereClient` is setup, a `ProductTypeSyncOptions` should be built as follows:
 ````java

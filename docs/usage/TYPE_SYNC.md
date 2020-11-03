@@ -26,11 +26,13 @@ against a [TypeDraft](https://docs.commercetools.com/http-api-projects-types.htm
 ### Sync list of type drafts
 
 #### Prerequisites
-1. The sync expects a list of `TypeDraft`s that have their `key` fields set to be matched with
+1. Create a `sphereClient`:
+Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/2.3.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
+If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
+
+2. The sync expects a list of `TypeDraft`s that have their `key` fields set to be matched with
 types in the target CTP project. Also, the types in the target project are expected to have the `key`
 fields set, otherwise they won't be matched.
-
-2. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
 3. After the `sphereClient` is set up, a `TypeSyncOptions` should be be built as follows:
 ````java
