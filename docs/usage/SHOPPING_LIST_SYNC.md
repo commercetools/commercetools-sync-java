@@ -32,7 +32,7 @@ Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetool
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 2. The sync expects a list of `ShoppingList`s that have their `key` fields set to be matched with shopping lists in the 
-target CTP project. The customers in the target project need to have the `key` fields set, otherwise they won't be 
+target CTP project. The shopping lists in the target project need to have the `key` fields set, otherwise they won't be 
 matched.
 
 3. Every shopping list may have a reference to their [Type](https://docs.commercetools.com/api/projects/shoppingLists#set-custom-type) of their custom fields. 
