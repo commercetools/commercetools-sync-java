@@ -128,7 +128,7 @@ the **_create_** request just before it is sent to commercetools platform.  It c
  Please refer to the [example in the product sync document](https://github.com/commercetools/commercetools-sync-java/blob/master/docs/usage/PRODUCT_SYNC.md#example-set-publish-stage-if-category-references-of-given-product-draft-exists).
 
 ##### 5. `batchSize`
-A number that could be used to set the batch size with which customers are fetched and processed,
+A number that could be used to set the batch size with which shopping lists are fetched and processed,
 as shopping lists are obtained from the target project on commercetools platform in batches for better performance. The 
 algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding shopping lists
 from the target project on commercetools platform in a single request. Playing with this option can slightly improve or 
