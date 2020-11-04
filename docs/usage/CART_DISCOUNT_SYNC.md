@@ -25,11 +25,15 @@ against a [CartDiscountDraft](https://docs.commercetools.com/http-api-projects-c
 ### Sync list of cart discount drafts
 
 #### Prerequisites
-1. The sync expects a list of `CartDiscountDraft`s that have their `key` fields set to be matched with
+1. Create a `sphereClient`:
+Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/2.3.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
+If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
+
+2. The sync expects a list of `CartDiscountDraft`s that have their `key` fields set to be matched with
 cart discounts in the target CTP project. Also, the cart discounts in the target project are expected to have the `key`
 fields set, otherwise they won't be matched.
 
-2. Every cartDiscount may have a reference to the `Type` of its custom fields. 
+3. Every cartDiscount may have a reference to the `Type` of its custom fields. 
 Types are matched by their `key`s. Therefore, in order for the sync to resolve the 
 actual ids of the type reference, the `key` of the `Type` has to be supplied.
 
@@ -39,8 +43,6 @@ actual ids of the type reference, the `key` of the `Type` has to be supplied.
     ````java
     final List<CartDiscountDraft> cartDiscountDrafts = CartDiscountReferenceResolutionUtils.mapToCartDiscountDrafts(cartDiscounts);
     ````
-
-3. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
 4. After the `sphereClient` is set up, a `CartDiscountSyncOptions` should be built as follows:
 ````java
