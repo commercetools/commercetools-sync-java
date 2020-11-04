@@ -28,11 +28,11 @@ against a [ShoppingListDraft](https://docs.commercetools.com/api/projects/shoppi
 
 #### Prerequisites
 1. Create a `sphereClient`:
-Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/2.3.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
+Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java) which apply the best practices for `SphereClient` creation.
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 2. The sync expects a list of `ShoppingList`s that have their `key` fields set to be matched with shopping lists in the 
-target CTP project. The customers in the target project need to have the `key` fields set, otherwise they won't be 
+target CTP project. The shopping lists in the target project need to have the `key` fields set, otherwise they won't be 
 matched.
 
 3. Every shopping list may have a reference to their [Type](https://docs.commercetools.com/api/projects/shoppingLists#set-custom-type) of their custom fields. 
@@ -128,11 +128,11 @@ the **_create_** request just before it is sent to commercetools platform.  It c
  Please refer to the [example in the product sync document](https://github.com/commercetools/commercetools-sync-java/blob/master/docs/usage/PRODUCT_SYNC.md#example-set-publish-stage-if-category-references-of-given-product-draft-exists).
 
 ##### 5. `batchSize`
-A number that could be used to set the batch size with which customers are fetched and processed,
-as customers are obtained from the target project on commercetools platform in batches for better performance. The 
-algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding customers
+A number that could be used to set the batch size with which shopping lists are fetched and processed,
+as shopping lists are obtained from the target project on commercetools platform in batches for better performance. The 
+algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding shopping lists
 from the target project on commercetools platform in a single request. Playing with this option can slightly improve or 
-reduce processing speed. If it is not set, the default batch size is 50 for customer sync.
+reduce processing speed. If it is not set, the default batch size is 50 for shopping list sync.
 ##### Example
 ````java                         
 final ShoppingListSyncOptions shoppingListSyncOptions = 
