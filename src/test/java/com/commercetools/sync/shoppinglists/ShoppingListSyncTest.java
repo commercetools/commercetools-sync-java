@@ -442,6 +442,10 @@ public class ShoppingListSyncTest {
         final ShoppingList mockShoppingList = mock(ShoppingList.class);
         when(mockShoppingList.getKey()).thenReturn("shoppingListKey");
         when(mockShoppingList.getName()).thenReturn(LocalizedString.ofEnglish("shoppingListName"));
+        when(mockShoppingList.getDescription()).thenReturn(LocalizedString.ofEnglish("shoppingListDesc"));
+        when(mockShoppingList.getSlug()).thenReturn(LocalizedString.ofEnglish("shoppingListSlug"));
+        when(mockShoppingList.getAnonymousId()).thenReturn("shoppingListAnonymousId");
+        when(mockShoppingList.getDeleteDaysAfterLastModification()).thenReturn(360);
 
         when(mockShoppingListService.fetchMatchingShoppingListsByKeys(anySet()))
             .thenReturn(completedFuture(singleton(mockShoppingList)));
@@ -451,9 +455,14 @@ public class ShoppingListSyncTest {
                 mock(CustomerService.class), mock(TypeService.class));
 
         final ShoppingListDraft shoppingListDraft =
-                ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("shoppingListName"))
-                                        .key("shoppingListKey")
-                                        .build();
+                ShoppingListDraftBuilder
+                        .of(LocalizedString.ofEnglish("shoppingListName"))
+                        .key("shoppingListKey")
+                        .description(mockShoppingList.getDescription())
+                        .slug(mockShoppingList.getSlug())
+                        .anonymousId(mockShoppingList.getAnonymousId())
+                        .deleteDaysAfterLastModification(mockShoppingList.getDeleteDaysAfterLastModification())
+                        .build();
 
         //test
         final ShoppingListSyncStatistics shoppingListSyncStatistics = shoppingListSync
@@ -516,7 +525,12 @@ public class ShoppingListSyncTest {
         // preparation
         final ShoppingListService mockShoppingListService = mock(ShoppingListService.class);
         final ShoppingList mockShoppingList = mock(ShoppingList.class);
+        when(mockShoppingList.getName()).thenReturn(LocalizedString.ofEnglish("shoppingListName"));
         when(mockShoppingList.getKey()).thenReturn("shoppingListKey");
+        when(mockShoppingList.getDescription()).thenReturn(LocalizedString.ofEnglish("shoppingListDesc"));
+        when(mockShoppingList.getSlug()).thenReturn(LocalizedString.ofEnglish("shoppingListSlug"));
+        when(mockShoppingList.getAnonymousId()).thenReturn("shoppingListAnonymousId");
+        when(mockShoppingList.getDeleteDaysAfterLastModification()).thenReturn(360);
 
         when(mockShoppingListService.fetchMatchingShoppingListsByKeys(anySet()))
             .thenReturn(completedFuture(singleton(mockShoppingList)));
@@ -525,7 +539,7 @@ public class ShoppingListSyncTest {
             .thenReturn(exceptionallyCompletedFuture(new SphereException(new ConcurrentModificationException())))
             .thenReturn(completedFuture(mockShoppingList));
 
-        when(mockShoppingListService.fetchShoppingList("customerKey"))
+        when(mockShoppingListService.fetchShoppingList("shoppingListKey"))
             .thenReturn(completedFuture(Optional.of(mockShoppingList)));
 
         final ShoppingListSyncOptions spySyncOptions = spy(syncOptions);
@@ -536,6 +550,10 @@ public class ShoppingListSyncTest {
                 ShoppingListDraftBuilder
                     .of(LocalizedString.ofEnglish("shoppingListName"))
                     .key("shoppingListKey")
+                    .description(LocalizedString.ofEnglish("newShoppingListDesc"))
+                    .slug(mockShoppingList.getSlug())
+                    .anonymousId(mockShoppingList.getAnonymousId())
+                    .deleteDaysAfterLastModification(mockShoppingList.getDeleteDaysAfterLastModification())
                     .build();
 
         //test
