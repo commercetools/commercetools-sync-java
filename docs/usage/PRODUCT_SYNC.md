@@ -10,11 +10,9 @@ against a [ProductDraft](https://docs.commercetools.com/http-api-projects-produc
 
 - [Usage](#usage)
   - [Sync list of product drafts](#sync-list-of-product-drafts)
-    - [Prerequisites](#about-syncoptions)
+    - [Prerequisites](#prerequisites)
     - [About SyncOptions](#about-syncoptions)
     - [Running the sync](#running-the-sync)
-      - [Persistence of ProductDrafts with Irresolvable References](#persistence-of-productdrafts-with-irresolvable-references)
-      - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)
   - [Build all update actions](#build-all-update-actions)
   - [Build particular update action(s)](#build-particular-update-actions)
 - [Caveats](#caveats)
@@ -28,14 +26,18 @@ against a [ProductDraft](https://docs.commercetools.com/http-api-projects-produc
 <!-- TODO - GITHUB ISSUE#138: Split into explanation of how to "sync from project to project" vs "import from feed"-->
 
 #### Prerequisites
-1. The sync expects a list of `ProductDraft`s that have their `key` fields set to be matched with
+1. Create a `sphereClient`:
+Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/2.3.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
+If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
+
+2. The sync expects a list of `ProductDraft`s that have their `key` fields set to be matched with
 products in the target commercetools project. Also, the products in the target project are expected to have the `key` 
 fields set, otherwise they won't be matched.
 
-2. The sync expects all variants of the supplied list of `ProductDraft`s to have their `sku` fields set. Also,
+3. The sync expects all variants of the supplied list of `ProductDraft`s to have their `sku` fields set. Also,
 all the variants in the target project are expected to have the `sku` fields set.
 
-3. Every product may have several references including `product type`, `categories`, `taxCategory`, etc. Variants
+4. Every product may have several references including `product type`, `categories`, `taxCategory`, etc. Variants
 of the product also have prices, where each price also has some references including a reference to the `Type` of its 
 custom fields and a reference to a `channel`. All these referenced resources are matched by their `key`s. Therefore, in 
 order for the sync to resolve the actual ids of those references, those `key`s have to be supplied in the following way:
@@ -52,8 +54,6 @@ order for the sync to resolve the actual ids of those references, those `key`s h
     The correct format must have a vertical bar `|` character between the values of the container and key.
     For example, if the custom object has a container value `container` and key value `key`, the `id` field should be `container|key"`,  
     also, the key and container value should match the pattern `[-_~.a-zA-Z0-9]+`.
-     
-4. Create a `sphereClient` [as described here](IMPORTANT_USAGE_TIPS.md#sphereclient-creation).
 
 5. After the `sphereClient` is set up, a `ProductSyncOptions` should be built as follows: 
 ````java
