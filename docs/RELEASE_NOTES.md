@@ -35,6 +35,18 @@
     - **Product Sync**: `ProductDraft.getState()` is changed from `Reference<State>` to `ResourceIdentifier<State>`, so as a library user you don't need to provide a key field in the id field of the Reference. (Now API and JVM SDK support `ResourceIdentifiers` and it supports id or key as a field). [#589](https://github.com/commercetools/commercetools-sync-java/pull/589)
 
 -->
+### 2.4.0 - Nov 05, 2020
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/2.3.0...2.4.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.4.0/) |
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.4.0)
+
+- 🎉 **New Features** (4)
+    - **ShoppingList Sync** - Added support for syncing shopping lists between ctp projects. [#594](https://github.com/commercetools/commercetools-sync-java/issues/594)
+    - **ShoppingList Sync** - Introduced `ShoppingListSyncUtils` which calculates all needed update actions after comparing a `ShoppingList` and a `ShoppingListDraft`. [#594](https://github.com/commercetools/commercetools-sync-java/issues/594)
+    - **ShoppingList Sync** - Introduced `ShoppingListUpdateActionUtils` which contains utils for calculating needed update actions after comparing individual fields of a `ShoppingList` and a `ShoppingListDraft`. [#594](https://github.com/commercetools/commercetools-sync-java/issues/594)
+    - **ShoppingList Sync** - Introduced `ShoppingListReferenceResolutionUtils` which resolves Type references from a ShoppingList to a ShoppingListDraft. [#594](https://github.com/commercetools/commercetools-sync-java/issues/594)
+
+
 ### 2.3.0 - Oct 15, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/2.2.1...2.3.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.3.0/) |
