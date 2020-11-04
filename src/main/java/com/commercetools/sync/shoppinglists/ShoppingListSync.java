@@ -12,6 +12,7 @@ import com.commercetools.sync.shoppinglists.helpers.ShoppingListBatchValidator;
 import com.commercetools.sync.shoppinglists.helpers.ShoppingListReferenceResolver;
 import com.commercetools.sync.shoppinglists.helpers.ShoppingListSyncStatistics;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.shoppinglists.ShoppingList;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -25,6 +26,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
+import static com.commercetools.sync.shoppinglists.utils.ShoppingListSyncUtils.buildActions;
 import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
@@ -36,6 +38,8 @@ import static java.util.stream.Collectors.toSet;
  */
 public class ShoppingListSync extends BaseSync<ShoppingListDraft, ShoppingListSyncStatistics, ShoppingListSyncOptions> {
 
+    private static final String CTP_SHOPPING_LIST_UPDATE_FAILED =
+        "Failed to update shopping lists with key: '%s'. Reason: %s";
     private static final String CTP_SHOPPING_LIST_FETCH_FAILED = "Failed to fetch existing shopping lists with keys: "
         + "'%s'.";
     private static final String FAILED_TO_PROCESS = "Failed to process the ShoppingListDraft with key:'%s'. Reason: %s";
@@ -196,8 +200,79 @@ public class ShoppingListSync extends BaseSync<ShoppingListDraft, ShoppingListSy
         @Nonnull final ShoppingList oldShoppingList,
         @Nonnull final ShoppingListDraft newShoppingListDraft) {
 
-        // TODO: no action utils, yet.
+        final List<UpdateAction<ShoppingList>> updateActions =
+                buildActions(oldShoppingList, newShoppingListDraft, syncOptions);
+
+        final List<UpdateAction<ShoppingList>> updateActionsAfterCallback
+                = syncOptions.applyBeforeUpdateCallback(updateActions, newShoppingListDraft, oldShoppingList);
+
+        if (!updateActionsAfterCallback.isEmpty()) {
+            return updateShoppinglist(oldShoppingList, newShoppingListDraft, updateActionsAfterCallback);
+        }
+
+
         return completedFuture(null);
+    }
+
+    @Nonnull
+    private CompletionStage<Void> updateShoppinglist(
+            @Nonnull final ShoppingList oldShoppingList,
+            @Nonnull final ShoppingListDraft newShoppingListDraft,
+            @Nonnull final List<UpdateAction<ShoppingList>> updateActionsAfterCallback) {
+
+        return shoppingListService
+                .updateShoppingList(oldShoppingList, updateActionsAfterCallback)
+                .handle(ImmutablePair::of)
+                .thenCompose(updateResponse -> {
+                    final Throwable exception = updateResponse.getValue();
+                    if (exception != null) {
+                        return executeSupplierIfConcurrentModificationException(exception,
+                            () -> fetchAndUpdate(oldShoppingList, newShoppingListDraft),
+                            () -> {
+                                final String errorMessage =
+                                    format(CTP_SHOPPING_LIST_UPDATE_FAILED,
+                                            newShoppingListDraft.getKey(),
+                                            exception.getMessage());
+
+                                handleError(new SyncException(errorMessage, exception), 1);
+                                return CompletableFuture.completedFuture(null);
+                            });
+                    } else {
+                        statistics.incrementUpdated();
+                        return CompletableFuture.completedFuture(null);
+                    }
+                });
+    }
+
+    @Nonnull
+    private CompletionStage<Void> fetchAndUpdate(
+            @Nonnull final ShoppingList oldShoppingList,
+            @Nonnull final ShoppingListDraft newShoppingListDraft) {
+
+        final String shoppingListKey = oldShoppingList.getKey();
+        return shoppingListService
+            .fetchShoppingList(shoppingListKey)
+            .handle(ImmutablePair::of)
+            .thenCompose(fetchResponse -> {
+                final Optional<ShoppingList> fetchedShoppingListOptional = fetchResponse.getKey();
+                final Throwable exception = fetchResponse.getValue();
+
+                if (exception != null) {
+                    final String errorMessage = format(CTP_SHOPPING_LIST_UPDATE_FAILED, shoppingListKey,
+                            "Failed to fetch from CTP while retrying after concurrency modification.");
+                    handleError(new SyncException(errorMessage, exception), 1);
+                    return CompletableFuture.completedFuture(null);
+                }
+
+                return fetchedShoppingListOptional
+                    .map(fetchedShoppingList -> buildActionsAndUpdate(fetchedShoppingList, newShoppingListDraft))
+                    .orElseGet(() -> {
+                        final String errorMessage = format(CTP_SHOPPING_LIST_UPDATE_FAILED, shoppingListKey,
+                                "Not found when attempting to fetch while retrying after concurrency modification.");
+                        handleError(new SyncException(errorMessage, null), 1);
+                        return CompletableFuture.completedFuture(null);
+                    });
+            });
     }
 
     @Nonnull
