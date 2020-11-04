@@ -3,6 +3,8 @@ package com.commercetools.sync.integration.commons.utils;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 
+import io.sphere.sdk.models.ResourceIdentifier;
+import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.shoppinglists.LineItemDraft;
 import io.sphere.sdk.shoppinglists.ShoppingList;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
@@ -59,6 +61,30 @@ public final class ShoppingListITUtils {
         final ShoppingListDraft shoppingListDraft = ShoppingListDraftBuilder.of(LocalizedString.ofEnglish(name))
                                                                             .key(key)
                                                                             .build();
+
+        return executeBlocking(ctpClient.execute(ShoppingListCreateCommand.of(shoppingListDraft)));
+    }
+
+    /**
+     * Creates a {@link ShoppingList} in the CTP project defined by the {@code ctpClient} in a blocking fashion.
+     *
+     * @param ctpClient defines the CTP project to create the ShoppingList in.
+     * @param name      the name of the ShoppingList to create.
+     * @param key       the key of the ShoppingList to create.
+     * @param customer  the Customer which ShoppingList refers to.
+     * @return the created ShoppingList.
+     */
+    public static ShoppingList createShoppingListWithCustomer(
+            @Nonnull final SphereClient ctpClient,
+            @Nonnull final String name,
+            @Nonnull final String key,
+            @Nonnull final Customer customer) {
+
+        ResourceIdentifier<Customer> customerResourceIdentifier = customer.toResourceIdentifier();
+        final ShoppingListDraft shoppingListDraft = ShoppingListDraftBuilder.of(LocalizedString.ofEnglish(name))
+                .key(key)
+                .customer(customerResourceIdentifier)
+                .build();
 
         return executeBlocking(ctpClient.execute(ShoppingListCreateCommand.of(shoppingListDraft)));
     }
