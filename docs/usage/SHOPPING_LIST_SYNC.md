@@ -132,7 +132,7 @@ A number that could be used to set the batch size with which customers are fetch
 as customers are obtained from the target project on commercetools platform in batches for better performance. The 
 algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding customers
 from the target project on commercetools platform in a single request. Playing with this option can slightly improve or 
-reduce processing speed. If it is not set, the default batch size is 50 for customer sync.
+reduce processing speed. If it is not set, the default batch size is 50 for shopping list sync.
 ##### Example
 ````java                         
 final ShoppingListSyncOptions shoppingListSyncOptions = 
