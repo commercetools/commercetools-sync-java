@@ -198,7 +198,7 @@ so in this document, we will describe the reasons and constraints, mostly relate
     {
       "sku": "SKU-2",
       "quantity": 2,
-      "addedAt": "2020-11-04T09:40:12.341Z"
+      "addedAt": "2020-11-04T09:40:12.341Z",
       "custom": {
         "type": {
           "key": "custom-type-for-shoppinglists"
