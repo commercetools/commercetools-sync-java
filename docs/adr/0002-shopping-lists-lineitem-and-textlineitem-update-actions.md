@@ -302,7 +302,18 @@ so in this document, we will describe the reasons and constraints.
     </tr>
 </table>
 
-## Decision
+### How addedAt will be compared?
+
+In commercetools shopping lists API, there is no [update action](https://docs.commercetools.com/api/projects/shoppingLists#update-actions) 
+to change the `addedAt` field of the `LineItem` and `TextLineItem`, also in API it has a default value described as `Defaults to the current date and time.`, 
+when it's not set in the draft, so how to compare and update this field?
+
+**Proposed solution:**
+
+A sync option for excluding `addedAt` (based on the draft) comparisons, which defaults to `true`. The advantage of this, customers could decide themself sync `addedAt`. 
+The drawback is when the option set to `false` and a difference is found by our utils, to ensure the order we need to remove and add all line items.  
+
+## Decision (not agreed yet with the team)
 
 <!-- The change that we're proposing or have agreed to implement. -->
 
