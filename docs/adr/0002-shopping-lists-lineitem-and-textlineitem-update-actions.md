@@ -20,6 +20,8 @@ so in this document, we will describe the reasons and constraints.
 
 ### How to ensure line item order?
 
+> Note: Orders might be important, if the customer has a front end that sorts the line items with their order could mean sorting by importance.
+
 <table>
     <tr>
         <th>LineItemDrafts</th>
@@ -312,6 +314,8 @@ when it's not set in the draft, so how to compare and update this field?
 
 A sync option for excluding `addedAt` (based on the draft) comparisons, which defaults to `true`. The advantage of this, customers could decide themself sync `addedAt`. 
 The drawback is when the option set to `false` and a difference is found by our utils, to ensure the order we need to remove and add all line items.  
+
+> Note: `addedAt` data might be important if the customer has a front end that sorts the line items with the date.
 
 ## Decision (not agreed yet with the team)
 
