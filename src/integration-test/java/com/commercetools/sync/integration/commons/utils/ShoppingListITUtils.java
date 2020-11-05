@@ -14,6 +14,7 @@ import io.sphere.sdk.shoppinglists.commands.ShoppingListCreateCommand;
 import io.sphere.sdk.shoppinglists.commands.ShoppingListDeleteCommand;
 import io.sphere.sdk.shoppinglists.queries.ShoppingListQuery;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
 
 import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndExecute;
@@ -58,27 +59,33 @@ public final class ShoppingListITUtils {
      */
     public static ShoppingList createShoppingList(@Nonnull final SphereClient ctpClient, @Nonnull final String name,
                                                     @Nonnull final String key) {
-        final ShoppingListDraft shoppingListDraft = ShoppingListDraftBuilder.of(LocalizedString.ofEnglish(name))
-                                                                            .key(key)
-                                                                            .build();
 
-        return executeBlocking(ctpClient.execute(ShoppingListCreateCommand.of(shoppingListDraft)));
+        return createShoppingList(ctpClient, name, key, null, null, null, null);
     }
 
     /**
      * Creates a {@link ShoppingList} in the CTP project defined by the {@code ctpClient} in a blocking fashion.
      *
-     * @param ctpClient defines the CTP project to create the ShoppingList in.
-     * @param name      the name of the ShoppingList to create.
-     * @param key       the key of the ShoppingList to create.
-     * @param desc      the description of the ShoppingList to create.
+     * @param ctpClient     defines the CTP project to create the ShoppingList in.
+     * @param name          the name of the ShoppingList to create.
+     * @param key           the key of the ShoppingList to create.
+     * @param desc          the description of the ShoppingList to create.
+     * @param anonymousId   the anonymous ID of the ShoppingList to create.
+     * @param slug          the slug of the ShoppingList to create.
+     * @param deleteDaysAfterLastModification  the deleteDaysAfterLastModification of the ShoppingList to create.
      * @return the created ShoppingList.
      */
     public static ShoppingList createShoppingList(@Nonnull final SphereClient ctpClient, @Nonnull final String name,
-                                                  @Nonnull final String key, @Nonnull final String desc) {
+                                                  @Nonnull final String key, @Nullable final String desc,
+                                                  @Nullable final String anonymousId, @Nullable final String slug,
+                                                  @Nullable final Integer deleteDaysAfterLastModification) {
+
         final ShoppingListDraft shoppingListDraft = ShoppingListDraftBuilder.of(LocalizedString.ofEnglish(name))
                 .key(key)
-                .description(LocalizedString.ofEnglish(desc))
+                .description(desc==null?null:LocalizedString.ofEnglish(desc))
+                .anonymousId(anonymousId)
+                .slug(slug==null?null:LocalizedString.ofEnglish(slug))
+                .deleteDaysAfterLastModification(deleteDaysAfterLastModification)
                 .build();
 
         return executeBlocking(ctpClient.execute(ShoppingListCreateCommand.of(shoppingListDraft)));

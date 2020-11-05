@@ -101,7 +101,8 @@ class ShoppingListSyncIT {
     @Test
     void sync_WithUpdatedShoppingList_ShouldReturnProperStatistics() {
 
-        createShoppingList(CTP_SOURCE_CLIENT, "name-2", "key-2", "desc-2");
+        createShoppingList(CTP_SOURCE_CLIENT, "name-2", "key-2", "desc-2",
+                "anonymousId-2", "slug-2", 180);
         createShoppingList(CTP_TARGET_CLIENT, "name-2", "key-2");
 
         final List<ShoppingList> shoppingLists = CTP_SOURCE_CLIENT

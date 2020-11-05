@@ -9,6 +9,8 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
 import io.sphere.sdk.customers.CustomerDraftBuilder;
+import io.sphere.sdk.customers.commands.updateactions.ChangeEmail;
+import io.sphere.sdk.customers.commands.updateactions.SetStores;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.ProductDraft;
@@ -26,6 +28,8 @@ import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import io.sphere.sdk.shoppinglists.commands.updateactions.*;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -40,6 +44,7 @@ import static com.commercetools.sync.integration.commons.utils.ShoppingListITUti
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -50,13 +55,13 @@ class ShoppingListSyncIT {
     private List<Throwable> exceptions;
     private List<UpdateAction<ShoppingList>> updateActionList;
 
-    private ShoppingList defaultShoppingList;
+    private ShoppingList existingShoppingList;
     private ShoppingListSync shoppingListSync;
 
     @BeforeEach
     void setup() {
         deleteShoppingListTestData(CTP_TARGET_CLIENT);
-        defaultShoppingList = createShoppingList(CTP_TARGET_CLIENT, "dummy-name-1" , "dummy-key-1");
+        existingShoppingList = createShoppingList(CTP_TARGET_CLIENT, "dummy-name-1" , "dummy-key-1");
         setUpCustomerSync();
     }
 
@@ -91,7 +96,7 @@ class ShoppingListSyncIT {
     void sync_WithSameShoppingList_ShouldNotUpdateCustomer() {
         List<ShoppingListDraft> newShoppingListDrafts =
                 ShoppingListReferenceResolutionUtils
-                    .mapToShoppingListDrafts(singletonList(defaultShoppingList));
+                    .mapToShoppingListDrafts(singletonList(existingShoppingList));
 
         final ShoppingListSyncStatistics shoppingListSyncStatistics = shoppingListSync
             .sync(newShoppingListDrafts)
@@ -132,12 +137,36 @@ class ShoppingListSyncIT {
     }
 
     @Test
-    void sync_WithNewShoppingListPlusReferenceAndLineItemsAndTextLineItems_ShouldCreateShoppingList() {
+    void sync_WithNewShoppingListPlusCustomerReference_ShouldCreateShoppingList() {
 
         final ShoppingListDraft newShoppingListDraft =
                 ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("dummy-name-2"))
                         .key("dummy-key-2")
-                        .customer(prepareCustomerResourceIdentifier())
+                        .customer(prepareCustomer().toResourceIdentifier())
+                        .description(LocalizedString.ofEnglish("new-shoppinglist-description"))
+                        .build();
+
+        final ShoppingListSyncStatistics shoppingListSyncStatistics = shoppingListSync
+                .sync(singletonList(newShoppingListDraft))
+                .toCompletableFuture()
+                .join();
+
+        assertThat(errorMessages).isEmpty();
+        assertThat(warningMessages).isEmpty();
+        assertThat(exceptions).isEmpty();
+        assertThat(updateActionList).isEmpty();
+
+        assertThat(shoppingListSyncStatistics).hasValues(1, 1, 0, 0);
+
+    }
+
+    @Disabled
+    @Test
+    void sync_WithNewShoppingListPlusLineItems_ShouldCreateShoppingList() {
+
+        final ShoppingListDraft newShoppingListDraft =
+                ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("dummy-name-2"))
+                        .key("dummy-key-2")
                         .lineItems(prepareLineItemDrafts())
                         .textLineItems(prepareTextLineItemDrafts())
                         .description(LocalizedString.ofEnglish("new-shoppinglist-description"))
@@ -157,15 +186,14 @@ class ShoppingListSyncIT {
 
     }
 
-    // TODO - enable the test case when UpdateAction is available
     @Disabled
     @Test
-    void sync_WithModifiedShoppingList_ShouldUpdateShoppingList() {
-        final ShoppingListDraft defaultShoppingListDraft =
-                ShoppingListReferenceResolutionUtils
-                        .mapToShoppingListDrafts(singletonList(defaultShoppingList)).get(0);
+    void sync_WithNewShoppingListPlusTextLineItems_ShouldCreateShoppingList() {
 
-        final ShoppingListDraft newShoppingListDraft = ShoppingListDraftBuilder.of(defaultShoppingListDraft)
+        final ShoppingListDraft newShoppingListDraft =
+                ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("dummy-name-2"))
+                        .key("dummy-key-2")
+                        .textLineItems(prepareTextLineItemDrafts())
                         .description(LocalizedString.ofEnglish("new-shoppinglist-description"))
                         .build();
 
@@ -179,46 +207,77 @@ class ShoppingListSyncIT {
         assertThat(exceptions).isEmpty();
         assertThat(updateActionList).isEmpty();
 
-        assertThat(shoppingListSyncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(shoppingListSyncStatistics).hasValues(1, 1, 0, 0);
 
     }
 
-    // TODO - enable the test case when UpdateAction is available
-    @Disabled
     @Test
-    void sync_WithModifiedShoppingListPlusReference_ShouldUpdateShoppingList() {
-
-        final ShoppingListDraft defaultShoppingListDraft =
+    void sync_WithModifiedShoppingList_ShouldUpdateShoppingList() {
+        final ShoppingListDraft existingShoppingListDraft =
                 ShoppingListReferenceResolutionUtils
-                        .mapToShoppingListDrafts(singletonList(defaultShoppingList)).get(0);
+                        .mapToShoppingListDrafts(singletonList(existingShoppingList)).get(0);
 
-        final ShoppingListDraft newShoppingListDraft = ShoppingListDraftBuilder.of(defaultShoppingListDraft)
-                .description(LocalizedString.ofEnglish("new-shoppinglist-description"))
-                .customer(prepareCustomerResourceIdentifier())
-                .lineItems(prepareLineItemDrafts())
-                .textLineItems(prepareTextLineItemDrafts())
-                .build();
+        final ShoppingListDraft updatedShoppingListDraft = ShoppingListDraftBuilder.of(existingShoppingListDraft)
+                        .description(LocalizedString.ofEnglish("new-shoppinglist-description"))
+                        .slug(LocalizedString.ofEnglish("new-shoppinglist-slug"))
+                        .anonymousId("new-shoppinglist-anonymousId")
+                        .deleteDaysAfterLastModification(180)
+                        .name(LocalizedString.ofEnglish("new-shoppinglist-name"))
+                        .build();
 
         final ShoppingListSyncStatistics shoppingListSyncStatistics = shoppingListSync
-                .sync(singletonList(newShoppingListDraft))
+                .sync(singletonList(updatedShoppingListDraft))
                 .toCompletableFuture()
                 .join();
 
         assertThat(errorMessages).isEmpty();
         assertThat(warningMessages).isEmpty();
         assertThat(exceptions).isEmpty();
-        assertThat(updateActionList).isEmpty();
+        assertThat(updateActionList).contains(
+                SetDescription.of(LocalizedString.ofEnglish("new-shoppinglist-description")),
+                SetSlug.of(LocalizedString.ofEnglish("new-shoppinglist-slug")),
+                SetAnonymousId.of("new-shoppinglist-anonymousId"),
+                SetDeleteDaysAfterLastModification.of(180),
+                ChangeName.of(LocalizedString.ofEnglish("new-shoppinglist-name"))
+        );
+        assertThat(shoppingListSyncStatistics).hasValues(1, 0, 1, 0);
+
+    }
+
+    @Test
+    void sync_WithModifieCustomerReferenceInShoppingList_ShouldUpdateShoppingList() {
+
+        final ShoppingListDraft existingShoppingListDraft =
+                ShoppingListReferenceResolutionUtils
+                        .mapToShoppingListDrafts(singletonList(existingShoppingList)).get(0);
+
+        final Customer customer = prepareCustomer();
+        final ResourceIdentifier<Customer> customerResourceIdentifier = customer.toResourceIdentifier();
+        final ShoppingListDraft updatedShoppingListDraft = ShoppingListDraftBuilder.of(existingShoppingListDraft)
+                .customer(customerResourceIdentifier)
+                .build();
+
+        final ShoppingListSyncStatistics shoppingListSyncStatistics = shoppingListSync
+                .sync(singletonList(updatedShoppingListDraft))
+                .toCompletableFuture()
+                .join();
+
+        assertThat(errorMessages).isEmpty();
+        assertThat(warningMessages).isEmpty();
+        assertThat(exceptions).isEmpty();
+        assertThat(updateActionList).containsExactly(
+                SetCustomer.of(customer)
+        );
 
         assertThat(shoppingListSyncStatistics).hasValues(1, 0, 1, 0);
 
     }
 
-    private ResourceIdentifier<Customer> prepareCustomerResourceIdentifier() {
-        final CustomerDraft defaultCustomerDraft =
+    private Customer prepareCustomer() {
+        final CustomerDraft existingCustomerDraft =
                 CustomerDraftBuilder.of("dummy-customer-email", "dummy-customer-password").build();
 
-        final Customer defaultCustomer = createCustomer(CTP_TARGET_CLIENT, defaultCustomerDraft);
-        return defaultCustomer.toResourceIdentifier();
+        return createCustomer(CTP_TARGET_CLIENT, existingCustomerDraft);
 
     }
 
