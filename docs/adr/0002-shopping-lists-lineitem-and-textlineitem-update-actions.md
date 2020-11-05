@@ -322,7 +322,8 @@ The drawback is when the option set to `false` and a difference is found by our 
 <!-- The change that we're proposing or have agreed to implement. -->
 
 - Product variant will be matched by its SKU, if the SKU not set for a LineItemDraft, the draft will not be synced and an error callback will be triggered.
-> Note: In commercetools API, the product variant to be selected in the LineItemDraft can be specified either by its product ID plus variant ID or by its SKU.
+> Note: In commercetools API, the product variant to be selected in the LineItemDraft can be specified either by its product ID plus variant ID or by its SKU. 
+> Check [LineItemDraft Product Variant Selection](https://docs.commercetools.com/api/projects/shoppingLists#lineitemdraft-product-variant-selection) for more details.
 
 - When a [Change LineItems Order](https://docs.commercetools.com/api/projects/shoppingLists#change-lineitems-order">) action is needed, 
 
