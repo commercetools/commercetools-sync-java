@@ -207,7 +207,7 @@ so in this document, we will describe the reasons and constraints, mostly relate
       "variant": {
         "sku": "SKU-1"
       },
-      "quantity": 2,
+      "quantity": 1,
       "custom": {
         "type": {
           "id": "4796e155-f5a4-403a-ae1a-04b10c9dfc54",
