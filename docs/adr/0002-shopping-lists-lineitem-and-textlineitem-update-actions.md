@@ -194,7 +194,20 @@ so in this document, we will describe the reasons and constraints, mostly relate
           "textField": "text-3"
         }
       }
-    }
+    },
+    {
+      "sku": "SKU-2",
+      "quantity": 2,
+      "addedAt": "2020-11-04T09:40:12.341Z"
+      "custom": {
+        "type": {
+          "key": "custom-type-for-shoppinglists"
+        },
+        "fields": {
+          "textField": "text-2"
+        }
+      }
+    }        
   ]
 }
 </pre>
@@ -250,13 +263,12 @@ so in this document, we will describe the reasons and constraints, mostly relate
     </tr>
     <tr>
         <td colspan="2">
-            <p>Draft has line items with <b>SKU-1</b> and <b>SKU-3</b> also in target project line item with
-                <b>SKU-1</b> exists, so <b>SKU-3</b> is a new line item, and <b>SKU-2</b> needs to be removed.</p>
-            <p> So we need to create an <a href="https://docs.commercetools.com/api/projects/shoppingLists#add-lineitem">AddLineItem</a> action
-                , a <a href="https://docs.commercetools.com/api/projects/shoppingLists#remove-lineitem">RemoveLineItem</a> action and
-                a <a href="https://docs.commercetools.com/api/projects/shoppingLists#change-lineitems-order">Change LineItems Order</a> 
-                of the line items <b>SKU-1</b> and <b>SKU-3</b>, because when we add line item with <b>SKU-1</b>
-                the order will be <b>SKU-1</b> and <b>SKU-3</b>.</p>
+            <p>Draft has line items with <b>SKU-1</b>, <b>SKU-3</b> and <b>SKU-2</b> also in target project line item with
+                <b>SKU-1</b> exists in the same order, <b>SKU-3</b> is a new line item, and <b>SKU-2</b> needs to be in last order.</p>
+            <p> So we need to create an <a href="https://docs.commercetools.com/api/projects/shoppingLists#add-lineitem">AddLineItem</a> action and
+                a <a href="https://docs.commercetools.com/api/projects/shoppingLists#change-lineitems-order">Change LineItems Order</a>
+                of the line items <b>SKU-2</b> and <b>SKU-3</b>, because when we add line item with <b>SKU-3</b>
+                the order will be <b>SKU-1</b>, <b>SKU-2</b> and <b>SKU-3</b>.</p>
             <p>The <b>challenge</b> in here is, those actions can not be added in one request because we don't know the
                 line item id of the new line item
                 with <b>SKU-3</b>, so we need to find another way to create a new line item with the right order.</p>
@@ -273,7 +285,7 @@ so in this document, we will describe the reasons and constraints, mostly relate
             <p>
                 The solution idea about the new line item and changed order is still same like in the case-1. Do we
                 need to remove and add line item with <b>SKU-1</b>? No, it is not needed and we could start the removing
-                and adding from the changed order.
+                and adding from the first order change.
             </p>
             <pre lang="json">
 {
@@ -293,7 +305,21 @@ so in this document, we will describe the reasons and constraints, mostly relate
           "key": "custom-type-for-shoppinglists"
         },
         "fields": {
-          "textField": "text-3
+          "textField": "text-3"
+        }
+      }
+    },
+    {
+      "action": "addLineItem",
+      "sku": "SKU-2",
+      "quantity": 2,
+      "addedAt": "2020-11-04T09:40:12.341Z",
+      "custom": {
+        "type": {
+          "key": "custom-type-for-shoppinglists"
+        },
+        "fields": {
+          "textField": "text-2"
         }
       }
     }
