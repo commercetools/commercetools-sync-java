@@ -216,7 +216,7 @@ so in this document, we will describe the reasons and constraints, mostly relate
 {
   "lineItems": [
     {
-      "id": "24de3821-e27d-4ddb-bd0b-ecc99365285f",
+      "id": "1c38d582-2e65-43f8-85db-4d34e6cff57a",
       "variant": {
         "sku": "SKU-1"
       },
