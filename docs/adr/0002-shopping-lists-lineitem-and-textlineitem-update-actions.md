@@ -332,6 +332,8 @@ the line items will be removed and added back with the order provided in the `Sh
 
 <!-- What becomes easier or more difficult to do and any risks introduced by the change that will need to be mitigated. -->
 
-- To ensure the order, we need to remove and add line items, which means a bigger payload, so performance overhead.
+- To ensure the order, we need to remove and add line items, which means a bigger payload, so performance overhead. 
+So as a result, we will not use the [Change LineItems Order](https://docs.commercetools.com/api/projects/shoppingLists#change-lineitems-order) update action.
+
 - [Add TextLineItem](https://docs.commercetools.com/api/projects/shoppingLists#add-textlineitem) is not checking if the data exists. A user could add the
 exact same data multiple times. It's hard to know the order by just checking the object. In this case, if the data is the same, the order will not be changed.
