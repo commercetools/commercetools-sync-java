@@ -80,7 +80,7 @@ public final class ShoppingListITUtils {
             @Nonnull final String key,
             @Nonnull final Customer customer) {
 
-        ResourceIdentifier<Customer> customerResourceIdentifier = customer.toResourceIdentifier();
+        final ResourceIdentifier<Customer> customerResourceIdentifier = customer.toResourceIdentifier();
         final ShoppingListDraft shoppingListDraft = ShoppingListDraftBuilder.of(LocalizedString.ofEnglish(name))
                 .key(key)
                 .customer(customerResourceIdentifier)

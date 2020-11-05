@@ -100,18 +100,18 @@ class ShoppingListSyncIT {
     @Test
     void sync_WithUpdatedCustomerReference_ShouldReturnProperStatistics() {
 
-        // prepare dummy customer in target project.
         final CustomerDraft customerDraft =
-                CustomerDraftBuilder.of("dummy-email", "dummy-password").build();
+                CustomerDraftBuilder.of("dummy-email", "dummy-password")
+                                    .key("dummy-customer-key")
+                                    .build();
 
         final Customer sourceCustomer =
                 createCustomer(CTP_SOURCE_CLIENT, customerDraft);
 
         createCustomer(CTP_TARGET_CLIENT, customerDraft);
-
         createShoppingListWithCustomer(CTP_SOURCE_CLIENT, "name-2", "key-2", sourceCustomer);
-
-        // prepare shoppinglist draft
+        createShoppingList(CTP_TARGET_CLIENT, "name-2", "key-2");
+        
         final List<ShoppingList> shoppingLists = CTP_SOURCE_CLIENT
                 .execute(buildShoppingListQuery())
                 .toCompletableFuture()
@@ -128,11 +128,11 @@ class ShoppingListSyncIT {
         assertThat(errorMessages).isEmpty();
         assertThat(exceptions).isEmpty();
 
-        AssertionsForStatistics.assertThat(shoppingListSyncStatistics).hasValues(2, 0, 2, 0);
+        AssertionsForStatistics.assertThat(shoppingListSyncStatistics).hasValues(2, 1, 1, 0);
         assertThat(shoppingListSyncStatistics
             .getReportMessage())
             .isEqualTo("Summary: 2 shopping lists were processed in total "
-                     + "(0 created, 2 updated and 0 failed to sync).");
+                     + "(1 created, 1 updated and 0 failed to sync).");
     }
 
     @Test
