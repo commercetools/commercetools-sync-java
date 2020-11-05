@@ -4,13 +4,11 @@ import com.commercetools.sync.shoppinglists.ShoppingListSync;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
 import com.commercetools.sync.shoppinglists.helpers.ShoppingListSyncStatistics;
-import com.commercetools.sync.shoppinglists.utils.ShoppingListReferenceResolutionUtils;
+
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
 import io.sphere.sdk.customers.CustomerDraftBuilder;
-import io.sphere.sdk.customers.commands.updateactions.ChangeEmail;
-import io.sphere.sdk.customers.commands.updateactions.SetStores;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.ProductDraft;
@@ -25,11 +23,15 @@ import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
 import io.sphere.sdk.shoppinglists.TextLineItemDraft;
 import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
+import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeName;
+import io.sphere.sdk.shoppinglists.commands.updateactions.SetAnonymousId;
+import io.sphere.sdk.shoppinglists.commands.updateactions.SetCustomer;
+import io.sphere.sdk.shoppinglists.commands.updateactions.SetDeleteDaysAfterLastModification;
+import io.sphere.sdk.shoppinglists.commands.updateactions.SetDescription;
+import io.sphere.sdk.shoppinglists.commands.updateactions.SetSlug;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-
-import io.sphere.sdk.shoppinglists.commands.updateactions.*;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -43,8 +45,8 @@ import static com.commercetools.sync.integration.commons.utils.ShoppingListITUti
 import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.deleteShoppingListTestData;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
+import static com.commercetools.sync.shoppinglists.utils.ShoppingListReferenceResolutionUtils.mapToShoppingListDrafts;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
-import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -94,9 +96,7 @@ class ShoppingListSyncIT {
 
     @Test
     void sync_WithSameShoppingList_ShouldNotUpdateCustomer() {
-        List<ShoppingListDraft> newShoppingListDrafts =
-                ShoppingListReferenceResolutionUtils
-                    .mapToShoppingListDrafts(singletonList(existingShoppingList));
+        List<ShoppingListDraft> newShoppingListDrafts = mapToShoppingListDrafts(singletonList(existingShoppingList));
 
         final ShoppingListSyncStatistics shoppingListSyncStatistics = shoppingListSync
             .sync(newShoppingListDrafts)
@@ -214,8 +214,7 @@ class ShoppingListSyncIT {
     @Test
     void sync_WithModifiedShoppingList_ShouldUpdateShoppingList() {
         final ShoppingListDraft existingShoppingListDraft =
-                ShoppingListReferenceResolutionUtils
-                        .mapToShoppingListDrafts(singletonList(existingShoppingList)).get(0);
+                mapToShoppingListDrafts(singletonList(existingShoppingList)).get(0);
 
         final ShoppingListDraft updatedShoppingListDraft = ShoppingListDraftBuilder.of(existingShoppingListDraft)
                         .description(LocalizedString.ofEnglish("new-shoppinglist-description"))
@@ -248,8 +247,7 @@ class ShoppingListSyncIT {
     void sync_WithModifieCustomerReferenceInShoppingList_ShouldUpdateShoppingList() {
 
         final ShoppingListDraft existingShoppingListDraft =
-                ShoppingListReferenceResolutionUtils
-                        .mapToShoppingListDrafts(singletonList(existingShoppingList)).get(0);
+                mapToShoppingListDrafts(singletonList(existingShoppingList)).get(0);
 
         final Customer customer = prepareCustomer();
         final ResourceIdentifier<Customer> customerResourceIdentifier = customer.toResourceIdentifier();

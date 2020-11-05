@@ -82,9 +82,9 @@ public final class ShoppingListITUtils {
 
         final ShoppingListDraft shoppingListDraft = ShoppingListDraftBuilder.of(LocalizedString.ofEnglish(name))
                 .key(key)
-                .description(desc==null?null:LocalizedString.ofEnglish(desc))
+                .description(desc == null ? null : LocalizedString.ofEnglish(desc))
                 .anonymousId(anonymousId)
-                .slug(slug==null?null:LocalizedString.ofEnglish(slug))
+                .slug(slug == null ? null : LocalizedString.ofEnglish(slug))
                 .deleteDaysAfterLastModification(deleteDaysAfterLastModification)
                 .build();
 
