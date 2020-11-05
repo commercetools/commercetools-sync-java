@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
@@ -98,6 +99,35 @@ class ShoppingListSyncIT {
     }
 
     @Test
+    void sync_WithUpdatedShoppingList_ShouldReturnProperStatistics() {
+
+        createShoppingList(CTP_SOURCE_CLIENT, "name-2", "key-2", "desc-2");
+        createShoppingList(CTP_TARGET_CLIENT, "name-2", "key-2");
+
+        final List<ShoppingList> shoppingLists = CTP_SOURCE_CLIENT
+                .execute(buildShoppingListQuery())
+                .toCompletableFuture()
+                .join()
+                .getResults();
+
+        final List<ShoppingListDraft> shoppingListDrafts = mapToShoppingListDrafts(shoppingLists);
+
+        final ShoppingListSyncStatistics shoppingListSyncStatistics = shoppingListSync
+                .sync(shoppingListDrafts)
+                .toCompletableFuture()
+                .join();
+
+        assertThat(errorMessages).isEmpty();
+        assertThat(exceptions).isEmpty();
+
+        AssertionsForStatistics.assertThat(shoppingListSyncStatistics).hasValues(2, 1, 1, 0);
+        assertThat(shoppingListSyncStatistics
+                .getReportMessage())
+                .isEqualTo("Summary: 2 shopping lists were processed in total "
+                        + "(1 created, 1 updated and 0 failed to sync).");
+    }
+
+    @Test
     void sync_WithUpdatedCustomerReference_ShouldReturnProperStatistics() {
 
         final CustomerDraft customerDraft =
@@ -111,7 +141,7 @@ class ShoppingListSyncIT {
         createCustomer(CTP_TARGET_CLIENT, customerDraft);
         createShoppingListWithCustomer(CTP_SOURCE_CLIENT, "name-2", "key-2", sourceCustomer);
         createShoppingList(CTP_TARGET_CLIENT, "name-2", "key-2");
-        
+
         final List<ShoppingList> shoppingLists = CTP_SOURCE_CLIENT
                 .execute(buildShoppingListQuery())
                 .toCompletableFuture()
@@ -135,6 +165,8 @@ class ShoppingListSyncIT {
                      + "(1 created, 1 updated and 0 failed to sync).");
     }
 
+    // TODO - Enable test case when Textlineitem is available in UpdateActionUtils.
+    @Disabled
     @Test
     void sync_WithUpdatedTextLineItem_ShouldReturnProperStatistics() {
 
@@ -176,6 +208,8 @@ class ShoppingListSyncIT {
                         + "(1 created, 1 updated and 0 failed to sync).");
     }
 
+    // TODO - Enable test case when Lineitem is available in UpdateActionUtils.
+    @Disabled
     @Test
     void sync_WithUpdatedLineItem_ShouldReturnProperStatistics() {
 
