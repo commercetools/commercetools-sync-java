@@ -4,7 +4,7 @@ Date: 2020-11-04
 
 ## Status
 
-[Proposed](add link of the PR.)
+[Proposed](https://github.com/commercetools/commercetools-sync-java/pull/614)
 
 ## Context
 
