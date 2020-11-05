@@ -10,7 +10,7 @@ Date: 2020-11-04
 
 <!-- The issue motivating this decision, and any context that influences or constrains the decision. -->
 
-In a commerce application, a shopping list is a personal wishlist of a customer, (i.e. Ingredients for a recipe, birthday wishes). 
+In a commerce application, a shopping list is a personal wishlist of a customer, (i.e. ingredients for a recipe, birthday wishes). 
 Shopping lists hold line items of products in the platform or any other items that can be described as text line items.
 
 We have challenges to build update actions of the `LineItem` and `TextLineItem` because of the nature of the synchronization, 
