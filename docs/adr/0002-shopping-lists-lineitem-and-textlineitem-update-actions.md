@@ -1,4 +1,4 @@
-# 2. LineItem, and TextLineItem update actions of the ShoppingLists.
+# 2. LineItem and TextLineItem update actions of the ShoppingLists.
 
 Date: 2020-11-04
 
@@ -15,6 +15,8 @@ Shopping lists hold line items of products in the platform or any other items th
 
 We have challenges to build update actions of the `LineItem` and `TextLineItem` because of the nature of the synchronization, 
 so in this document, we will describe the reasons and constraints. 
+
+> Note: The cases below are the same for the `TextLineItem` so here those are no added as a separate case.
 
 ### How to ensure line item order?
 
@@ -91,11 +93,9 @@ so in this document, we will describe the reasons and constraints.
         <td colspan="2">
             <p>Draft has line items with <b>SKU-1</b> and <b>SKU-2</b> also in target project line item with
                 <b>SKU-2</b> exists, so <b>SKU-1</b> is a new line item. </p>
-            <p> So we need to create an <a
-                    href="https://docs.commercetools.com/api/projects/shoppingLists#add-lineitem">AddLineItem</a> action
-                and a <a href="https://docs.commercetools.com/api/projects/shoppingLists#change-lineitems-order">Change
-                    LineItems Order
-                </a> of the line items <b>SKU-1</b> and <b>SKU-2</b>, because when we add line item with <b>SKU-1</b>
+            <p> So we need to create an <a href="https://docs.commercetools.com/api/projects/shoppingLists#add-lineitem">AddLineItem</a> action
+                and a <a href="https://docs.commercetools.com/api/projects/shoppingLists#change-lineitems-order">Change LineItems Order</a> 
+                of the line items <b>SKU-1</b> and <b>SKU-2</b>, because when we add line item with <b>SKU-1</b>
                 the order will be <b>SKU-2</b> and <b>SKU-1</b>.</p>
             <p>The <b>challenge</b> in here is, those actions can not be added in one request because we don't know the
                 line item id of the new line item
@@ -250,14 +250,10 @@ so in this document, we will describe the reasons and constraints.
         <td colspan="2">
             <p>Draft has line items with <b>SKU-1</b> and <b>SKU-3</b> also in target project line item with
                 <b>SKU-1</b> exists, so <b>SKU-3</b> is a new line item, and <b>SKU-2</b> needs to be removed.</p>
-            <p> So we need to create an <a
-                    href="https://docs.commercetools.com/api/projects/shoppingLists#add-lineitem">AddLineItem</a> action
-                , a
-                <a href="https://docs.commercetools.com/api/projects/shoppingLists#remove-lineitem">RemoveLineItem</a>
-                action and
-                a <a href="https://docs.commercetools.com/api/projects/shoppingLists#change-lineitems-order">Change
-                    LineItems Order
-                </a> of the line items <b>SKU-1</b> and <b>SKU-3</b>, because when we add line item with <b>SKU-1</b>
+            <p> So we need to create an <a href="https://docs.commercetools.com/api/projects/shoppingLists#add-lineitem">AddLineItem</a> action
+                , a <a href="https://docs.commercetools.com/api/projects/shoppingLists#remove-lineitem">RemoveLineItem</a> action and
+                a <a href="https://docs.commercetools.com/api/projects/shoppingLists#change-lineitems-order">Change LineItems Order</a> 
+                of the line items <b>SKU-1</b> and <b>SKU-3</b>, because when we add line item with <b>SKU-1</b>
                 the order will be <b>SKU-1</b> and <b>SKU-3</b>.</p>
             <p>The <b>challenge</b> in here is, those actions can not be added in one request because we don't know the
                 line item id of the new line item
@@ -313,8 +309,13 @@ so in this document, we will describe the reasons and constraints.
 - Product variant will be matched by its SKU, if the SKU not set for a LineItemDraft, the draft will not be synced and an error callback will be triggered.
 > Note: In commercetools API, the product variant to be selected in the LineItemDraft can be specified either by its product ID plus variant ID or by its SKU.
 
+- When a [Change LineItems Order](https://docs.commercetools.com/api/projects/shoppingLists#change-lineitems-order">) action is needed 
+the line items will be removed and added back with the order provided in the `ShoppingListDraft`.
+
 ## Consequences
 
 <!-- What becomes easier or more difficult to do and any risks introduced by the change that will need to be mitigated. -->
 
 - To ensure the order, we need to remove and add line items, which means a bigger payload, so performance overhead.
+- [Add TextLineItem](https://docs.commercetools.com/api/projects/shoppingLists#add-textlineitem) is not checking the data is exists, so a user could add the
+exact same data multiple times, so it's hard to know the order by just checking the object, so in this case, if the data is the same, the order will not be changed.
