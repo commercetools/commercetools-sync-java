@@ -93,7 +93,7 @@ so in this document, we will describe the reasons and constraints.
     </tr>
     <tr>
         <td colspan="2">
-            <p>Draft has line items with <b>SKU-1</b> and <b>SKU-2</b> also in target project line item with
+            <p>Draft has line items with <b>SKU-1</b> and <b>SKU-2</b>. In the target project line item with
                 <b>SKU-2</b> exists, so <b>SKU-1</b> is a new line item. </p>
             <p> So we need to create an <a href="https://docs.commercetools.com/api/projects/shoppingLists#add-lineitem">AddLineItem</a> action
                 and a <a href="https://docs.commercetools.com/api/projects/shoppingLists#change-lineitems-order">Change LineItems Order</a> 
@@ -271,8 +271,8 @@ so in this document, we will describe the reasons and constraints.
     <tr>
         <td colspan="2">
             <p>
-                The solution idea about the new line item and changed order is still same with the case-1, but do we
-                need to remove and add line item with <b>SKU-1</b>? Which is not needed and we could start the removing
+                The solution idea about the new line item and changed order is still same like in the case-1. Do we
+                need to remove and add line item with <b>SKU-1</b>? No, it is not needed and we could start the removing
                 and adding from the changed order.
             </p>
             <pre lang="json">
@@ -324,7 +324,8 @@ The drawback is when the option set to `false` and a difference is found by our 
 - Product variant will be matched by its SKU, if the SKU not set for a LineItemDraft, the draft will not be synced and an error callback will be triggered.
 > Note: In commercetools API, the product variant to be selected in the LineItemDraft can be specified either by its product ID plus variant ID or by its SKU.
 
-- When a [Change LineItems Order](https://docs.commercetools.com/api/projects/shoppingLists#change-lineitems-order">) action is needed 
+- When a [Change LineItems Order](https://docs.commercetools.com/api/projects/shoppingLists#change-lineitems-order">) action is needed, 
+
 the line items will be removed and added back with the order provided in the `ShoppingListDraft`.
 
 ## Consequences
@@ -332,5 +333,5 @@ the line items will be removed and added back with the order provided in the `Sh
 <!-- What becomes easier or more difficult to do and any risks introduced by the change that will need to be mitigated. -->
 
 - To ensure the order, we need to remove and add line items, which means a bigger payload, so performance overhead.
-- [Add TextLineItem](https://docs.commercetools.com/api/projects/shoppingLists#add-textlineitem) is not checking the data is exists, so a user could add the
-exact same data multiple times, so it's hard to know the order by just checking the object, so in this case, if the data is the same, the order will not be changed.
+- [Add TextLineItem](https://docs.commercetools.com/api/projects/shoppingLists#add-textlineitem) is not checking if the data exists. A user could add the
+exact same data multiple times. It's hard to know the order by just checking the object. In this case, if the data is the same, the order will not be changed.
