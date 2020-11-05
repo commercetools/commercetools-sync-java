@@ -16,7 +16,7 @@ Shopping lists hold line items of products in the platform or any other items th
 We have challenges to build update actions of the `LineItem` and `TextLineItem` because of the nature of the synchronization, 
 so in this document, we will describe the reasons and constraints. 
 
-> Note: The cases below are the same for the `TextLineItem` so here those are no added as a separate case.
+> Note: The cases below are the same for the `TextLineItem` so here those are not mentioned separately.
 
 ### How to ensure line item order?
 
