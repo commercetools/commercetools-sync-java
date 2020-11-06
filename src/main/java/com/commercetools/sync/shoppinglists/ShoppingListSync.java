@@ -190,7 +190,7 @@ public class ShoppingListSync extends BaseSync<ShoppingListDraft, ShoppingListSy
 
         final ShoppingList oldShoppingList = keyShoppingListMap.get(newShoppingListDraft.getKey());
         return Optional.ofNullable(oldShoppingList)
-                       .map(customer -> buildActionsAndUpdate(oldShoppingList, newShoppingListDraft))
+                       .map(shoppingList -> buildActionsAndUpdate(shoppingList, newShoppingListDraft))
                        .orElseGet(() -> applyCallbackAndCreate(newShoppingListDraft));
     }
 
