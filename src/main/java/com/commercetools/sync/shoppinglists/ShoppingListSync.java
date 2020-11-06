@@ -210,7 +210,6 @@ public class ShoppingListSync extends BaseSync<ShoppingListDraft, ShoppingListSy
             return updateShoppinglist(oldShoppingList, newShoppingListDraft, updateActionsAfterCallback);
         }
 
-
         return completedFuture(null);
     }
 
@@ -233,7 +232,6 @@ public class ShoppingListSync extends BaseSync<ShoppingListDraft, ShoppingListSy
                                     format(CTP_SHOPPING_LIST_UPDATE_FAILED,
                                             newShoppingListDraft.getKey(),
                                             exception.getMessage());
-
                                 handleError(new SyncException(errorMessage, exception), 1);
                                 return CompletableFuture.completedFuture(null);
                             });
