@@ -2,6 +2,7 @@ package com.commercetools.sync.shoppinglists;
 
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.customers.CustomerSyncOptionsBuilder;
 import com.commercetools.sync.services.CustomerService;
 import com.commercetools.sync.services.ShoppingListService;
 import com.commercetools.sync.services.TypeService;
@@ -61,7 +62,7 @@ public class ShoppingListSync extends BaseSync<ShoppingListDraft, ShoppingListSy
 
         this(shoppingListSyncOptions,
             new ShoppingListServiceImpl(shoppingListSyncOptions),
-            new CustomerServiceImpl(shoppingListSyncOptions),
+            new CustomerServiceImpl(CustomerSyncOptionsBuilder.of(shoppingListSyncOptions.getCtpClient()).build()),
             new TypeServiceImpl(shoppingListSyncOptions));
     }
 
