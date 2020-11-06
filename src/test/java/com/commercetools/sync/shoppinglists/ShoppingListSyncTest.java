@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.shoppinglists.helpers.ShoppingListBatchValidator.SHOPPING_LIST_DRAFT_IS_NULL;
@@ -357,6 +358,8 @@ public class ShoppingListSyncTest {
         verify(spySyncOptions, never()).applyBeforeCreateCallback(shoppingListDraft);
     }
 
+    // TODO - Enable the test case when LineItem is available in UpdateActionUtils
+    @Disabled
     @Test
     void sync_WithUnchangedShoppingListDraftAndUpdatedLineItemDraft_ShouldIncrementUpdated() {
         // preparation
@@ -396,6 +399,8 @@ public class ShoppingListSyncTest {
         verify(spySyncOptions, never()).applyBeforeCreateCallback(shoppingListDraft);
     }
 
+    // TODO - Enable the test case when TextLineItem is available in UpdateActionUtils
+    @Disabled
     @Test
     void sync_WithUnchangedShoppingListDraftAndUpdatedTextLineItemDraft_ShouldIncrementUpdated() {
         // preparation
