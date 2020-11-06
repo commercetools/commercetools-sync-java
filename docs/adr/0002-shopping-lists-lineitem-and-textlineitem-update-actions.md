@@ -330,6 +330,126 @@ so in this document, we will describe the reasons and constraints, mostly relate
     </tr>
 </table>
 
+### Do we need to remove and add all line items when no new line item is added or removed, just order is different ?
+
+<table>
+    <tr>
+        <th>LineItemDrafts</th>
+        <th>LineItems</th>
+    </tr>
+    <tr>
+        <td><pre lang="json">
+{
+  "lineItems": [
+    {
+      "sku": "SKU-2",
+      "quantity": 2,
+      "addedAt": "2020-11-05T10:00:10.101Z",
+      "custom": {
+        "type": {
+          "key": "custom-type-for-shoppinglists"
+        },
+        "fields": {
+          "textField": "text-2"
+        }
+      }
+    },
+    {
+      "sku": "SKU-1",
+      "quantity": 1,
+      "addedAt": "2020-11-04T09:38:35.571Z",
+      "custom": {
+        "type": {
+          "key": "custom-type-for-shoppinglists"
+        },
+        "fields": {
+          "textField": "text-1"
+        }
+      }
+    }
+  ]
+}
+</pre>
+        </td>
+        <td><pre lang="json">
+{
+  "lineItems": [
+    {
+      "id": "24de3821-e27d-4ddb-bd0b-ecc99365285f",
+      "variant": {
+        "sku": "SKU-1"
+      },
+      "quantity": 1,
+      "custom": {
+        "type": {
+          "id": "4796e155-f5a4-403a-ae1a-04b10c9dfc54",
+          "obj": {
+            "key": "custom-type-for-shoppinglists"
+          }
+        },
+        "fields": {
+          "textField": "text-1"
+        }
+      },
+     "addedAt": "2020-11-04T09:38:35.571Z"
+    },
+    {
+      "id": "24de3821-e27d-4ddb-bd0b-ecc99365285f",
+      "variant": {
+        "sku": "SKU-2"
+      },
+      "quantity": 2,
+      "custom": {
+        "type": {
+          "id": "4796e155-f5a4-403a-ae1a-04b10c9dfc54",
+          "obj": {
+            "key": "custom-type-for-shoppinglists"
+          }
+        },
+        "fields": {
+          "textField": "text-2"
+        }
+      },
+     "addedAt": "2020-11-04T09:40:12.341Z"
+    }
+  ]
+}
+</pre>
+        </td>
+    </tr>
+    <tr>
+        <th colspan="2">Analysis</th>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p>The Draft has line items with <b>SKU-2</b> and <b>SKU-1</b> also in target project line item
+                with <b>SKU-2</b> and <b>SKU-1</b> exists but in a different order.</p>
+            <p> So we need
+                a <a href="https://docs.commercetools.com/api/projects/shoppingLists#change-lineitems-order">Change
+                    LineItems Order</a>
+                of the line items with order <b>SKU-2</b> and <b>SKU-1</b>.</p>
+            <p>The <b>challenge</b> here is about the line item order and no new line item is added or removed,
+                just order is different, so we need to find a better way to avoid creating unnecessary actions like
+                removing and adding back, is this possible ?
+            </p>
+        </td>
+    </tr>
+    <tr>
+        <th colspan="2">Proposed solution</th>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p>
+                The solution idea for the changing order with removing and adding back looks like an overhead because
+                we know the all line item ids, so change order action could be created, in this case, the challenge is
+                finding an algorithm to compare and find the line item ids, and then prepare an order. Currently we
+                don't know how this algorithm might work, so assuming the order change will be done by removing and adding
+                back when the order changes.
+            </p>
+        </td>
+    </tr>
+</table>
+
 ### How addedAt will be compared?
 
 In commercetools shopping lists API, there is no [update action](https://docs.commercetools.com/api/projects/shoppingLists#update-actions) 
