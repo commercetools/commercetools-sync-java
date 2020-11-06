@@ -34,7 +34,7 @@ import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
 /**
- * This class syncs shopping list drafts with corresponding shopping list resources in CTP project.
+ * This class syncs shopping list drafts with corresponding shopping list resources in the CTP project.
  */
 public class ShoppingListSync extends BaseSync<ShoppingListDraft, ShoppingListSyncStatistics, ShoppingListSyncOptions> {
 

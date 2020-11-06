@@ -157,11 +157,12 @@ public final class ShoppingListReferenceResolver
      * Calls the {@code cacheKeysToIds} service methods to fetch all the referenced keys
      * (i.e custom type, customer) from the CTP to populate caches for the reference resolution.
      *
-     * <p>Note: This method is meant be only used internally by the library to improve performance.
+     * <p>Note: This method is only to be used internally by the library to improve performance.
      *
-     * @param referencedKeys a wrapper for the custom type and customer references to fetch and cache the id's for.
+     * @param referencedKeys a wrapper for the custom type and customer references to fetch the keys, and store the
+     *                       corresponding keys -&gt; ids into cached maps.
      * @return {@link CompletionStage}&lt;{@link Map}&lt;{@link String}&gt;{@link String}&gt;&gt; in which the results
-     *     of it's completions contains a map of requested references keys -&gt; ids of customer references.
+     *     of its completions contains a map of requested references keys -&gt; ids of customer references.
      */
     @Nonnull
     public CompletableFuture<List<Map<String, String>>> populateKeyToIdCachesForReferencedKeys(

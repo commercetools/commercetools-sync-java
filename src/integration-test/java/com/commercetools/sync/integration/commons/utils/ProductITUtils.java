@@ -48,7 +48,7 @@ public final class ProductITUtils {
      * Create a new product in the CTP project defined by the {@code ctpClient}.
      *
      * @param ctpClient defines the CTP project to delete the products from.
-     * @param productDraft define the product draft which is going to be created.
+     * @param productDraft product draft to be created.
      */
     public static Product createProduct(
             @Nonnull final SphereClient ctpClient,
