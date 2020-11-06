@@ -188,9 +188,9 @@ public class ShoppingListSync extends BaseSync<ShoppingListDraft, ShoppingListSy
     private CompletionStage<Void> syncDraft(@Nonnull final Map<String, ShoppingList> keyShoppingListMap,
                                             @Nonnull final ShoppingListDraft newShoppingListDraft) {
 
-        final ShoppingList oldShoppingList = keyShoppingListMap.get(newShoppingListDraft.getKey());
-        return Optional.ofNullable(oldShoppingList)
-                       .map(shoppingList -> buildActionsAndUpdate(shoppingList, newShoppingListDraft))
+        final ShoppingList shoppingListFromMap = keyShoppingListMap.get(newShoppingListDraft.getKey());
+        return Optional.ofNullable(shoppingListFromMap)
+                       .map(oldShoppingList -> buildActionsAndUpdate(oldShoppingList, newShoppingListDraft))
                        .orElseGet(() -> applyCallbackAndCreate(newShoppingListDraft));
     }
 
