@@ -23,10 +23,10 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 public class ShoppingListBatchValidator
     extends BaseBatchValidator<ShoppingListDraft, ShoppingListSyncOptions, ShoppingListSyncStatistics> {
 
-    static final String SHOPPING_LIST_DRAFT_KEY_NOT_SET = "ShoppingListDraft with name: %s doesn't have a key. "
+    public static final String SHOPPING_LIST_DRAFT_KEY_NOT_SET = "ShoppingListDraft with name: %s doesn't have a key. "
         + "Please make sure all shopping list drafts have keys.";
-    static final String SHOPPING_LIST_DRAFT_IS_NULL = "ShoppingListDraft is null.";
-    static final String SHOPPING_LIST_DRAFT_NAME_NOT_SET = "ShoppingListDraft with key: %s doesn't have a name. "
+    public static final String SHOPPING_LIST_DRAFT_IS_NULL = "ShoppingListDraft is null.";
+    public static final String SHOPPING_LIST_DRAFT_NAME_NOT_SET = "ShoppingListDraft with key: %s doesn't have a name. "
         + "Please make sure all shopping list drafts have names.";
     static final String LINE_ITEM_DRAFT_IS_NULL = "LineItemDraft at position '%d' of ShoppingListDraft "
         + "with key '%s' is null.";

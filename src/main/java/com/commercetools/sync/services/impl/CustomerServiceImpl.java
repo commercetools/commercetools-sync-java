@@ -1,7 +1,7 @@
 package com.commercetools.sync.services.impl;
 
-import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.customers.CustomerSyncOptions;
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.services.CustomerService;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customers.Customer;
