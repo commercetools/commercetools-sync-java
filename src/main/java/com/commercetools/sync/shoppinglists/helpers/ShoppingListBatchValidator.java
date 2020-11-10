@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Set;
 
 import static java.lang.String.format;
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -96,7 +95,7 @@ public class ShoppingListBatchValidator
         } else {
             final List<String> draftErrors = getErrorsInAllLineItemsAndTextLineItems(shoppingListDraft);
             if (!draftErrors.isEmpty()) {
-                final String concatenatedErrors = draftErrors.stream().collect(joining(","));
+                final String concatenatedErrors = String.join(",", draftErrors);
                 this.handleError(concatenatedErrors);
             } else {
                 return true;
@@ -160,7 +159,7 @@ public class ShoppingListBatchValidator
         return errorMessages;
     }
 
-    private boolean isNullOrEmptyLocalizedString(@Nonnull final LocalizedString localizedString) {
+    private boolean isNullOrEmptyLocalizedString(@Nullable final LocalizedString localizedString) {
         return localizedString == null || localizedString.getLocales().isEmpty();
     }
 
@@ -186,11 +185,9 @@ public class ShoppingListBatchValidator
 
         shoppingListDraft
             .getLineItems()
-            .stream()
-            .forEach(lineItemDraft -> {
-                collectReferencedKeyFromCustomFieldsDraft(lineItemDraft.getCustom(),
-                    referencedKeys.typeKeys::add);
-            });
+            .forEach(lineItemDraft ->
+                collectReferencedKeyFromCustomFieldsDraft(
+                    lineItemDraft.getCustom(), referencedKeys.typeKeys::add));
     }
 
     private void collectReferencedKeysInTextLineItems(
@@ -203,11 +200,9 @@ public class ShoppingListBatchValidator
 
         shoppingListDraft
             .getTextLineItems()
-            .stream()
-            .forEach(textLineItemDraft -> {
-                collectReferencedKeyFromCustomFieldsDraft(textLineItemDraft.getCustom(),
-                    referencedKeys.typeKeys::add);
-            });
+            .forEach(textLineItemDraft ->
+                collectReferencedKeyFromCustomFieldsDraft(
+                    textLineItemDraft.getCustom(), referencedKeys.typeKeys::add));
     }
 
     public static class ReferencedKeys {
