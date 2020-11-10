@@ -1,12 +1,12 @@
 package com.commercetools.sync.commons.helpers;
 
+import com.commercetools.sync.commons.models.GraphQlQueryEndpoint;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.client.HttpRequestIntent;
 import io.sphere.sdk.client.SphereRequest;
 import io.sphere.sdk.http.HttpMethod;
 import io.sphere.sdk.http.HttpResponse;
 import io.sphere.sdk.json.SphereJsonUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -14,51 +14,43 @@ import java.util.Set;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
-import static org.apache.commons.lang3.StringUtils.isBlank;
 
-/**
- * @param <T> Subclass of {@link BaseGraphQlResult} used to deserialize the graphql query results
- */
-public abstract class BaseGraphQlRequest<U extends BaseGraphQlRequest<U, T>, T extends BaseGraphQlResult>
-    implements SphereRequest<BaseGraphQlResult> {
+public class GraphQlRequest implements SphereRequest<GraphQlResult> {
     protected final Set<String> keysToSearch;
-    protected final String endpoint;
-    protected final Class<T> resultClazz;
+    protected final GraphQlQueryEndpoint endpoint;
     private long limit = 500;
     private String queryPredicate = null;
 
-    protected BaseGraphQlRequest(@Nonnull final Set<String> keysToSearch, @Nonnull final String endpoint,
-                                 @Nonnull final Class<T> resultClazz) {
+    public GraphQlRequest(@Nonnull final Set<String> keysToSearch, @Nonnull final GraphQlQueryEndpoint endpoint) {
 
         this.keysToSearch = keysToSearch;
         this.endpoint = endpoint;
-        this.resultClazz = resultClazz;
     }
 
     @Nonnull
-    public U withPredicate(final String predicate) {
+    public GraphQlRequest withPredicate(final String predicate) {
 
         this.queryPredicate = predicate;
-        return getThis();
+        return this;
     }
 
     @Nonnull
-    public U withLimit(final long limit) {
+    public GraphQlRequest withLimit(final long limit) {
 
         this.limit = limit;
-        return getThis();
+        return this;
     }
 
     @Nullable
     @Override
-    public T deserialize(final HttpResponse httpResponse) {
+    public GraphQlResult deserialize(final HttpResponse httpResponse) {
 
         final JsonNode rootJsonNode = SphereJsonUtils.parse(httpResponse.getResponseBody());
         if (rootJsonNode.isNull()) {
             return null;
         }
-        JsonNode result = rootJsonNode.get("data");
-        return SphereJsonUtils.readObject(result, resultClazz);
+        JsonNode result = rootJsonNode.get("data").get(endpoint.getName());
+        return SphereJsonUtils.readObject(result, GraphQlResult.class);
     }
 
     @Override
@@ -77,12 +69,9 @@ public abstract class BaseGraphQlRequest<U extends BaseGraphQlRequest<U, T>, T e
     @Nonnull
     String buildQueryString() {
 
-        if (isBlank(this.endpoint)) {
-            return StringUtils.EMPTY;
-        }
         return format(
             "%s(limit: %d, where: \\\"%s\\\", sort: [\\\"id asc\\\"]) { results { id key } }",
-            this.endpoint, this.limit, createWhereQuery(keysToSearch));
+            this.endpoint.getName(), this.limit, createWhereQuery(keysToSearch));
     }
 
     @Nonnull
@@ -112,16 +101,6 @@ public abstract class BaseGraphQlRequest<U extends BaseGraphQlRequest<U, T>, T e
 
         return format("key in (%s)", commaSeparatedKeys);
     }
-
-    /**
-     * Returns {@code this} instance of {@code U}, which extends {@link BaseGraphQlRequest}. The purpose of this
-     * method is to make sure that {@code this} is an instance of a class which extends {@link BaseGraphQlRequest}
-     * in order to be used in the generic methods of the class. Otherwise, without this method, the methods above would
-     * need to cast {@code this to U} which could lead to a runtime error of the class was extended in a wrong way.
-     *
-     * @return an instance of the class that overrides this method.
-     */
-    protected abstract U getThis();
 
 }
 

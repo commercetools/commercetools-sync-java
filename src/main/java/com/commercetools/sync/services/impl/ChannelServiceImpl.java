@@ -1,7 +1,8 @@
 package com.commercetools.sync.services.impl;
 
-import com.commercetools.sync.channels.helpers.ChannelGraphQlRequest;
 import com.commercetools.sync.commons.BaseSyncOptions;
+import com.commercetools.sync.commons.helpers.GraphQlRequest;
+import com.commercetools.sync.commons.models.GraphQlQueryEndpoint;
 import com.commercetools.sync.services.ChannelService;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelDraft;
@@ -38,7 +39,7 @@ public final class ChannelServiceImpl extends BaseServiceWithKey<ChannelDraft, C
     public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> channelKeys) {
 
         return cacheKeysToIds(
-            channelKeys, keysNotCached -> new ChannelGraphQlRequest(keysNotCached));
+            channelKeys, keysNotCached -> new GraphQlRequest(keysNotCached, GraphQlQueryEndpoint.CHANNELS));
     }
 
     @Nonnull

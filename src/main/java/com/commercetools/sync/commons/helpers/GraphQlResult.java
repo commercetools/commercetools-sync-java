@@ -6,11 +6,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Set;
 
-public class BaseGraphQlResult {
+public class GraphQlResult {
     private final Set<ResourceKeyId> results;
 
     @JsonCreator
-    protected BaseGraphQlResult(@JsonProperty("results") final Set<ResourceKeyId> results) {
+    protected GraphQlResult(@JsonProperty("results") final Set<ResourceKeyId> results) {
         this.results = results;
     }
 

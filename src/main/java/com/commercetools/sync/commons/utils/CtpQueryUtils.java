@@ -1,7 +1,6 @@
 package com.commercetools.sync.commons.utils;
 
-import com.commercetools.sync.commons.helpers.BaseGraphQlRequest;
-import com.commercetools.sync.commons.helpers.BaseGraphQlResult;
+import com.commercetools.sync.commons.helpers.GraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyId;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.ResourceView;
@@ -134,10 +133,10 @@ public final class CtpQueryUtils {
      * @return a completion stage containing void as a result after the consumer was applied on all pages.
      */
     @Nonnull
-    public static <T extends BaseGraphQlResult, U extends BaseGraphQlRequest<U, T>> CompletionStage<Void>
-        queryAll(@Nonnull final SphereClient client, @Nonnull final BaseGraphQlRequest<U, T> graphQlRequest,
-                 @Nonnull final Consumer<Set<ResourceKeyId>> pageConsumer) {
-        GraphQlQueryAll<U, T> graphQlQueryAll = GraphQlQueryAll.of(client, graphQlRequest, DEFAULT_PAGE_SIZE);
+    public static CompletionStage<Void> queryAll(@Nonnull final SphereClient client,
+                                                 @Nonnull final GraphQlRequest graphQlRequest,
+                                                 @Nonnull final Consumer<Set<ResourceKeyId>> pageConsumer) {
+        GraphQlQueryAll graphQlQueryAll = GraphQlQueryAll.of(client, graphQlRequest, DEFAULT_PAGE_SIZE);
         return graphQlQueryAll.run(pageConsumer);
     }
 

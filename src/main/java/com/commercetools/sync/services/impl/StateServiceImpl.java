@@ -1,8 +1,9 @@
 package com.commercetools.sync.services.impl;
 
+import com.commercetools.sync.commons.helpers.GraphQlRequest;
+import com.commercetools.sync.commons.models.GraphQlQueryEndpoint;
 import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.states.StateSyncOptions;
-import com.commercetools.sync.states.helpers.StateGraphQlRequest;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateDraft;
@@ -40,7 +41,7 @@ public final class StateServiceImpl
 
         return cacheKeysToIds(
             keys,
-            keysNotCached -> new StateGraphQlRequest(keysNotCached));
+            keysNotCached -> new GraphQlRequest(keysNotCached, GraphQlQueryEndpoint.STATES));
     }
 
     @Nonnull

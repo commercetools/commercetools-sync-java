@@ -1,7 +1,7 @@
 package com.commercetools.sync.commons.utils;
 
-import com.commercetools.sync.commons.helpers.BaseGraphQlRequest;
-import com.commercetools.sync.commons.helpers.BaseGraphQlResult;
+import com.commercetools.sync.commons.helpers.GraphQlRequest;
+import com.commercetools.sync.commons.helpers.GraphQlResult;
 import com.commercetools.sync.commons.models.ResourceKeyId;
 import io.sphere.sdk.client.SphereClient;
 
@@ -16,37 +16,34 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.apache.commons.lang3.StringUtils.EMPTY;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-final class GraphQlQueryAll<U extends BaseGraphQlRequest<U,T>, T extends BaseGraphQlResult> {
+final class GraphQlQueryAll {
     private final SphereClient client;
-    private final BaseGraphQlRequest<U, T> baseGraphQlRequest;
+    private final GraphQlRequest graphQlRequest;
     private final long pageSize;
 
     private Consumer<Set<ResourceKeyId>> pageConsumer;
 
     private GraphQlQueryAll(@Nonnull final SphereClient client,
-                            @Nonnull final BaseGraphQlRequest<U, T> baseGraphQlRequest,
+                            @Nonnull final GraphQlRequest graphQlRequest,
                             final long pageSize) {
 
         this.client = client;
-        this.baseGraphQlRequest = withDefaults(baseGraphQlRequest, pageSize);
+        this.graphQlRequest = withDefaults(graphQlRequest, pageSize);
         this.pageSize = pageSize;
     }
 
     @Nonnull
-    private static <T extends BaseGraphQlResult, U extends BaseGraphQlRequest<U, T>> BaseGraphQlRequest<U, T>
-        withDefaults(@Nonnull final BaseGraphQlRequest<U, T> graphQlRequest, final long pageSize) {
+    private static GraphQlRequest withDefaults(@Nonnull final GraphQlRequest graphQlRequest,
+                                               final long pageSize) {
 
-        final U withLimit = graphQlRequest.withLimit(pageSize);
-        return withLimit;
+        return graphQlRequest.withLimit(pageSize);
     }
 
     @Nonnull
-    static <U extends BaseGraphQlRequest<U, T>, T extends BaseGraphQlResult> GraphQlQueryAll<U, T> of(
-        @Nonnull final SphereClient client,
-        @Nonnull final BaseGraphQlRequest<U, T> graphQlRequest,
+    static GraphQlQueryAll of(@Nonnull final SphereClient client, @Nonnull final GraphQlRequest graphQlRequest,
         final int pageSize) {
 
-        return new GraphQlQueryAll<>(client, graphQlRequest, pageSize);
+        return new GraphQlQueryAll(client, graphQlRequest, pageSize);
     }
 
     /**
@@ -61,28 +58,28 @@ final class GraphQlQueryAll<U extends BaseGraphQlRequest<U,T>, T extends BaseGra
     CompletionStage<Void> run(@Nonnull final Consumer<Set<ResourceKeyId>> pageConsumer) {
 
         this.pageConsumer = pageConsumer;
-        final CompletionStage<BaseGraphQlResult> firstPage = client.execute(baseGraphQlRequest);
+        final CompletionStage<GraphQlResult> firstPage = client.execute(graphQlRequest);
         return queryNextPages(firstPage).thenAccept(voidResult -> { });
     }
 
     /**
-     * Given a completion stage {@code currentPageStage} containing a current graphql result {@link BaseGraphQlResult},
+     * Given a completion stage {@code currentPageStage} containing a current graphql result {@link GraphQlResult},
      * this method composes the completion stage by first checking if the result is null or not. If it is not, then it
      * recursivley (by calling itself with the next page's completion stage result) composes to the supplied stage,
      * stages of the all next pages' processing. If there is no next page, then the result of the
      * {@code currentPageStage} would be null and this method would just return a completed future containing null
      * result, which in turn signals the last page of processing.
      *
-     * @param currentPageStage a future containing a graphql result {@link BaseGraphQlResult}.
+     * @param currentPageStage a future containing a graphql result {@link GraphQlResult}.
      */
     @Nonnull
-    private CompletionStage<Void> queryNextPages(@Nonnull final CompletionStage<BaseGraphQlResult> currentPageStage) {
+    private CompletionStage<Void> queryNextPages(@Nonnull final CompletionStage<GraphQlResult> currentPageStage) {
         return currentPageStage.thenCompose(currentPage ->
             currentPage != null ? queryNextPages(processPageAndGetNext(currentPage)) : completedFuture(null));
     }
 
     /**
-     * Given a graphql query result representing a page {@link BaseGraphQlResult}, this method checks if there are
+     * Given a graphql query result representing a page {@link GraphQlResult}, this method checks if there are
      * elements in the result (size > 0), then it consumes the resultant list using this instance's {@code
      * pageConsumer}. Then it attempts to fetch the next page if it exists and returns a completion stage
      * containing the result of the next page. If there is a next page, then a new future of the next page is returned.
@@ -93,7 +90,7 @@ final class GraphQlQueryAll<U extends BaseGraphQlRequest<U,T>, T extends BaseGra
      *         the method returns a completed future containing null.
      */
     @Nonnull
-    private CompletionStage<BaseGraphQlResult> processPageAndGetNext(@Nonnull final BaseGraphQlResult page) {
+    private CompletionStage<GraphQlResult> processPageAndGetNext(@Nonnull final GraphQlResult page) {
         final Set<ResourceKeyId> currentPageElements = page.getResults();
         if (!currentPageElements.isEmpty()) {
             consumePageElements(currentPageElements);
@@ -128,7 +125,7 @@ final class GraphQlQueryAll<U extends BaseGraphQlRequest<U,T>, T extends BaseGra
      *          in the set.
      */
     @Nonnull
-    private CompletionStage<BaseGraphQlResult> getNextPageStage(@Nonnull final Set<ResourceKeyId> pageElements) {
+    private CompletionStage<GraphQlResult> getNextPageStage(@Nonnull final Set<ResourceKeyId> pageElements) {
         if (pageElements.size() == pageSize) {
             String lastElementId = EMPTY;
             Iterator<ResourceKeyId> iterator = pageElements.iterator();
@@ -138,7 +135,7 @@ final class GraphQlQueryAll<U extends BaseGraphQlRequest<U,T>, T extends BaseGra
             final String queryPredicate = isBlank(lastElementId) ? null : format("id > \\\\\\\"%s\\\\\\\"",
                 lastElementId);
 
-            return client.execute(baseGraphQlRequest.withPredicate(queryPredicate));
+            return client.execute(graphQlRequest.withPredicate(queryPredicate));
         }
         return completedFuture(null);
     }

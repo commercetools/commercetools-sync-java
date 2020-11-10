@@ -2,11 +2,10 @@ package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.ResourceKeyId;
-import com.commercetools.sync.commons.helpers.BaseGraphQlResult;
+import com.commercetools.sync.commons.helpers.GraphQlResult;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
-import com.commercetools.sync.products.helpers.ProductGraphQlRequest;
 import com.commercetools.sync.services.ProductService;
 import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.SphereClient;
@@ -289,7 +288,7 @@ class BaseServiceImplTest {
     @Test
     void cacheKeysToIds_WithNoCachedKeys_ShouldMakeRequestAndReturnCachedEntry() {
         //preparation
-        final BaseGraphQlResult graphQlQueryResult = mock(BaseGraphQlResult.class);
+        final GraphQlResult graphQlQueryResult = mock(GraphQlResult.class);
         final ResourceKeyId mockResourceKeyId = mock(ResourceKeyId.class);
         final String key = "testKey";
         final String id = "testId";
@@ -309,7 +308,7 @@ class BaseServiceImplTest {
     @Test
     void cacheKeysToIds_WithBadGateWayException_ShouldCompleteExceptionally() {
         //preparation
-        final BaseGraphQlResult graphQlQueryResult = mock(BaseGraphQlResult.class);
+        final GraphQlResult graphQlQueryResult = mock(GraphQlResult.class);
         final ResourceKeyId mockResourceKeyId = mock(ResourceKeyId.class);
         final String key = "testKey";
         final String id = "testId";

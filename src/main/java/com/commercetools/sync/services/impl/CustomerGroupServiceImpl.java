@@ -1,7 +1,8 @@
 package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
-import com.commercetools.sync.customerGroup.helpers.CustomerGroupGraphQlRequest;
+import com.commercetools.sync.commons.helpers.GraphQlRequest;
+import com.commercetools.sync.commons.models.GraphQlQueryEndpoint;
 import com.commercetools.sync.services.CustomerGroupService;
 import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.customergroups.CustomerGroupDraft;
@@ -30,7 +31,8 @@ public final class CustomerGroupServiceImpl
     public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> customerGroupKeys) {
 
         return cacheKeysToIds(
-            customerGroupKeys, keysNotCached -> new CustomerGroupGraphQlRequest(keysNotCached));
+            customerGroupKeys, keysNotCached -> new GraphQlRequest(keysNotCached,
+                GraphQlQueryEndpoint.CUSTOMER_GROUPS));
     }
 
     @Nonnull
