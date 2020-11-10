@@ -125,13 +125,13 @@ class ProductSyncTest {
         // assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
+            .singleElement().satisfies(message ->
                 assertThat(message).contains("Failed to build a cache of keys to ids.")
             );
 
         assertThat(exceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> {
+            .singleElement().satisfies(throwable -> {
                 assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
                 assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
             });
@@ -148,11 +148,7 @@ class ProductSyncTest {
                 .state(null)
                 .build();
 
-
-
         final SphereClient mockClient = mock(SphereClient.class);
-        when(mockClient.execute(any(ProductQuery.class)))
-                .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
 
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> exceptions = new ArrayList<>();
@@ -166,6 +162,9 @@ class ProductSyncTest {
 
         final ProductService productService = spy(new ProductServiceImpl(syncOptions));
         final Map<String, String> keyToIds = new HashMap<>();
+        when(productService.fetchMatchingProductsByKeys(anySet()))
+            .thenReturn(supplyAsync(() -> { throw new CompletionException(new SphereException()); }));
+
         keyToIds.put(productDraft.getKey(), UUID.randomUUID().toString());
         when(productService.cacheKeysToIds(anySet())).thenReturn(completedFuture(keyToIds));
 
@@ -192,13 +191,13 @@ class ProductSyncTest {
         // assertions
         assertThat(errorMessages)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(message ->
+                .singleElement().satisfies(message ->
                         assertThat(message).contains("Failed to fetch existing products")
             );
 
         assertThat(exceptions)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(throwable -> {
+                .singleElement().satisfies(throwable -> {
                     assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
                     assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
                 });
