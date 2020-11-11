@@ -26,19 +26,14 @@
 
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 
-### 3.0.0 - MMM DD, 2020
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/2.3.0...2.4.0) |
-[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.4.0/) |
-[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.4.0)
+-->
+### 3.0.0 - Nov 05, 2020
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/2.3.0...3.0.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/3.0.0/) |
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/3.0.0)
 
 - 🚧 **Breaking Changes** (1)
     - **Product Sync**: `ProductDraft.getState()` is changed from `Reference<State>` to `ResourceIdentifier<State>`, so as a library user you don't need to provide a key field in the id field of the Reference. (Now API and JVM SDK support `ResourceIdentifiers` and it supports id or key as a field). [#589](https://github.com/commercetools/commercetools-sync-java/pull/589)
-
--->
-### 2.4.0 - Nov 05, 2020
-[Commits](https://github.com/commercetools/commercetools-sync-java/compare/2.3.0...2.4.0) |
-[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/2.4.0/) |
-[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/2.4.0)
 
 - 🎉 **New Features** (4)
     - **ShoppingList Sync** - Added support for syncing shopping lists between ctp projects. [#594](https://github.com/commercetools/commercetools-sync-java/issues/594)
