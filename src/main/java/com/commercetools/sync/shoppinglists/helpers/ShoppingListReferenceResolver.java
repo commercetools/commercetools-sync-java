@@ -11,8 +11,14 @@ import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
@@ -29,6 +35,7 @@ public final class ShoppingListReferenceResolver
         + "ShoppingListDraft with key:'%s'. ";
 
     private final CustomerService customerService;
+    private final TypeService typeService;
     private final LineItemReferenceResolver lineItemReferenceResolver;
     private final TextLineItemReferenceResolver textLineItemReferenceResolver;
 
@@ -50,6 +57,7 @@ public final class ShoppingListReferenceResolver
         this.lineItemReferenceResolver = new LineItemReferenceResolver(shoppingListSyncOptions, typeService);
         this.textLineItemReferenceResolver = new TextLineItemReferenceResolver(shoppingListSyncOptions, typeService);
         this.customerService = customerService;
+        this.typeService = typeService;
     }
 
     /**
@@ -143,5 +151,35 @@ public final class ShoppingListReferenceResolver
         }
 
         return completedFuture(draftBuilder);
+    }
+
+    /**
+     * Calls the {@code cacheKeysToIds} service methods to fetch all the referenced keys
+     * (i.e custom type, customer) from the CTP to populate caches for the reference resolution.
+     *
+     * <p>Note: This method is only to be used internally by the library to improve performance.
+     *
+     * @param referencedKeys a wrapper for the custom type and customer references to fetch the keys, and store the
+     *                       corresponding keys -&gt; ids into cached maps.
+     * @return {@link CompletionStage}&lt;{@link Map}&lt;{@link String}&gt;{@link String}&gt;&gt; in which the results
+     *     of its completions contains a map of requested references keys -&gt; ids of customer references.
+     */
+    @Nonnull
+    public CompletableFuture<List<Map<String, String>>> populateKeyToIdCachesForReferencedKeys(
+        @Nonnull final ShoppingListBatchValidator.ReferencedKeys referencedKeys) {
+
+        final List<CompletionStage<Map<String, String>>> futures = new ArrayList<>();
+
+        final Set<String> typeKeys = referencedKeys.getTypeKeys();
+        if (!typeKeys.isEmpty()) {
+            futures.add(typeService.cacheKeysToIds(typeKeys));
+        }
+
+        final Set<String> customerKeys = referencedKeys.getCustomerKeys();
+        if (!customerKeys.isEmpty()) {
+            futures.add(customerService.cacheKeysToIds(customerKeys));
+        }
+
+        return collectionOfFuturesToFutureOfCollection(futures, toList());
     }
 }
