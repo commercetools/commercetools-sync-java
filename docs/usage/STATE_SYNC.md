@@ -13,10 +13,10 @@ against a [StateDraft](https://docs.commercetools.com/http-api-projects-states#s
     - [Prerequisites](#prerequisites)
     - [About SyncOptions](#about-syncoptions)
     - [Running the sync](#running-the-sync)
-      - [Persistence of StateDrafts with missing references](#persistence-of-statedrafts-with-irresolvable-references)
-    - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)  
+    - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)
   - [Build all update actions](#build-all-update-actions)
   - [Build particular update action(s)](#build-particular-update-actions)
+
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Usage
@@ -27,7 +27,7 @@ against a [StateDraft](https://docs.commercetools.com/http-api-projects-states#s
 
 #### Prerequisites
 1. Create a `sphereClient`:
-Use the `ClientConfigurationUtils#createClient` util which applies the best practices for `SphereClient` creation.
+Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/2.3.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 2. The sync expects a list of `StateDraft`s that have their `key` fields set to be matched with

@@ -6,14 +6,18 @@ against a [CustomerDraft](https://docs.commercetools.com/api/projects/customers#
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+
 - [Usage](#usage)
-  - [Sync list of cart discount drafts](#sync-list-of-customer-drafts)
+  - [Sync list of customer drafts](#sync-list-of-customer-drafts)
     - [Prerequisites](#prerequisites)
+    - [About SyncOptions](#about-syncoptions)
     - [Running the sync](#running-the-sync)
     - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)
   - [Build all update actions](#build-all-update-actions)
   - [Build particular update action(s)](#build-particular-update-actions)
 - [Caveats](#caveats)
+
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Usage
@@ -22,7 +26,7 @@ against a [CustomerDraft](https://docs.commercetools.com/api/projects/customers#
 
 #### Prerequisites
 1. Create a `sphereClient`:
-Use the `ClientConfigurationUtils#createClient` util which applies the best practices for `SphereClient` creation.
+Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/2.3.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
   
 2. The sync expects a list of `CustomerDraft`s that have their `key` fields set to be matched with customers in the 
