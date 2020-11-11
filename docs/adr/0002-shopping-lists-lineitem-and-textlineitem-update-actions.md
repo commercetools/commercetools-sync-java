@@ -458,8 +458,8 @@ when it's not set in the draft, so how to compare and update this field?
 
 **Proposed solution:**
 
-A sync option for excluding `addedAt` (based on the draft) comparisons, which defaults to `true`. The advantage of this, customers could decide themself sync `addedAt`. 
-The drawback is when the option set to `false` and a difference is found by our utils, to ensure the order we need to remove and add all line items.  
+The `addedAt` field will be synced only if the value provided in the line item draft, otherwise, the `addedAt` value will be omitted. 
+To be able to sync it we need to remove and add this line item back with the up to date value. 
 
 ## Decision (not agreed yet with the team)
 
