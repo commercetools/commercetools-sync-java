@@ -2,33 +2,31 @@ package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
+
 import io.sphere.sdk.client.BadRequestException;
+import io.sphere.sdk.client.SphereApiConfig;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.client.SphereRequest;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
-import io.sphere.sdk.products.commands.ProductCreateCommand;
-import io.sphere.sdk.products.commands.ProductUpdateCommand;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.utils.CompletableFutureUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletionStage;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static java.util.Collections.singletonList;
 import static java.util.Locale.ENGLISH;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class ProductServiceTest {
@@ -42,14 +40,8 @@ class ProductServiceTest {
     void setUp() {
         errorMessages = new ArrayList<>();
         errorExceptions = new ArrayList<>();
-        productSyncOptions = ProductSyncOptionsBuilder
-            .of(mock(SphereClient.class))
-            .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                errorMessages.add(exception.getMessage());
-                errorExceptions.add(exception.getCause());
-            })
-            .build();
-        service = new ProductServiceImpl(productSyncOptions);
+        initMockService(mock(SphereClient.class));
+
     }
 
     @Test
@@ -57,16 +49,19 @@ class ProductServiceTest {
         final Product mock = mock(Product.class);
         when(mock.getId()).thenReturn("productId");
         when(mock.getKey()).thenReturn("productKey");
-
-        when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mock));
+        final FakeProductClient createProductClient =
+                new FakeProductClient(mock);
 
         final ProductDraft draft = mock(ProductDraft.class);
         when(draft.getKey()).thenReturn("productKey");
+
+        initMockService(createProductClient);
+
         final Optional<Product> productOptional = service.createProduct(draft).toCompletableFuture().join();
 
         assertThat(productOptional).isNotEmpty();
         assertThat(productOptional).containsSame(mock);
-        verify(productSyncOptions.getCtpClient()).execute(eq(ProductCreateCommand.of(draft)));
+        assertThat(createProductClient.isExecuted()).isTrue();
     }
 
     @Test
@@ -75,11 +70,13 @@ class ProductServiceTest {
         final Product mock = mock(Product.class);
         when(mock.getId()).thenReturn("productId");
 
-        when(productSyncOptions.getCtpClient().execute(any()))
-            .thenReturn(CompletableFutureUtils.failed(new BadRequestException("bad request")));
+        final FakeProductClient createProductClient =
+                new FakeProductClient(new BadRequestException("bad request"));
 
         final ProductDraft draft = mock(ProductDraft.class);
         when(draft.getKey()).thenReturn("productKey");
+
+        initMockService(createProductClient);
 
         // test
         final Optional<Product> productOptional = service.createProduct(draft).toCompletableFuture().join();
@@ -87,16 +84,16 @@ class ProductServiceTest {
         // assertion
         assertThat(productOptional).isEmpty();
         assertThat(errorMessages)
-            .hasSize(1)
-            .hasOnlyOneElementSatisfying(message -> {
-                assertThat(message).contains("Failed to create draft with key: 'productKey'.");
-                assertThat(message).contains("BadRequestException");
-            });
+                .hasSize(1)
+                .singleElement().satisfies(message -> {
+                    assertThat(message).contains("Failed to create draft with key: 'productKey'.");
+                    assertThat(message).contains("BadRequestException");
+                });
 
         assertThat(errorExceptions)
-            .hasSize(1)
-            .hasOnlyOneElementSatisfying(exception ->
-                assertThat(exception).isExactlyInstanceOf(BadRequestException.class));
+                .hasSize(1)
+                .singleElement().satisfies(exception ->
+                        assertThat(exception).isExactlyInstanceOf(BadRequestException.class));
     }
 
     @Test
@@ -114,14 +111,16 @@ class ProductServiceTest {
     @Test
     void updateProduct_WithMockCtpResponse_ShouldReturnMock() {
         final Product mock = mock(Product.class);
-        when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mock));
+        final FakeProductClient updateProductClient = new FakeProductClient(mock);
+
+        initMockService(updateProductClient);
 
         final List<UpdateAction<Product>> updateActions =
-            singletonList(ChangeName.of(LocalizedString.of(ENGLISH, "new name")));
+                singletonList(ChangeName.of(LocalizedString.of(ENGLISH, "new name")));
         final Product product = service.updateProduct(mock, updateActions).toCompletableFuture().join();
 
         assertThat(product).isSameAs(mock);
-        verify(productSyncOptions.getCtpClient()).execute(eq(ProductUpdateCommand.of(mock, updateActions)));
+        assertThat(updateProductClient.isExecuted()).isTrue();
     }
 
     @Test
@@ -148,5 +147,61 @@ class ProductServiceTest {
         productKeys.add(null);
         final QueryPredicate<Product> queryPredicate = service.buildProductKeysQueryPredicate(productKeys);
         assertThat(queryPredicate.toSphereQuery()).isEqualTo("key in (\"key1\", \"key2\")");
+    }
+
+    @Nonnull
+    private void initMockService(
+            @Nonnull final SphereClient mockSphereClient) {
+
+        productSyncOptions = ProductSyncOptionsBuilder
+                .of(mockSphereClient)
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorMessages.add(exception.getMessage());
+                    errorExceptions.add(exception.getCause());
+                })
+                .build();
+
+        service = new ProductServiceImpl(productSyncOptions);
+    }
+
+    private static class FakeProductClient implements SphereClient {
+
+        private boolean isExecuted = false;
+        private Product mockResult;
+        private Throwable mockException;
+
+        FakeProductClient(@Nonnull final Product mockResult) {
+            this.mockResult = mockResult;
+        }
+
+        FakeProductClient(@Nonnull final Throwable mockException) {
+            this.mockException = mockException;
+        }
+
+        @Override
+        public <T> CompletionStage<T> execute(final SphereRequest<T> sphereRequest) {
+            isExecuted = true;
+            if (mockResult != null) {
+                return CompletableFutureUtils.successful((T) mockResult);
+            } else if (mockException != null) {
+                return CompletableFutureUtils.failed(mockException);
+            } else {
+                return CompletableFutureUtils.successful(null);
+            }
+        }
+
+        @Override
+        public void close() {
+
+        }
+
+        @Override
+        public SphereApiConfig getConfig() {
+            return null;
+        }
+
+        public boolean isExecuted() {
+            return isExecuted;
+        }
     }
 }
