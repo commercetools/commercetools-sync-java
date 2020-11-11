@@ -182,7 +182,8 @@ class CtpQueryUtilsTest {
         return CategoryQuery
             .of()
             .plusPredicates(keyPredicate).withSort(sort)
-            .withLimit(500);
+            .withLimit(500)
+            .withFetchTotal(false);
     }
 
     @Nonnull
@@ -199,6 +200,7 @@ class CtpQueryUtilsTest {
             .of()
             .plusPredicates(keyPredicateFunction).withSort(sort)
             .plusPredicates(QueryPredicate.of(format("id > \"%s\"", lastCategoryIdInPage)))
-            .withLimit(500);
+            .withLimit(500)
+            .withFetchTotal(false);
     }
 }
