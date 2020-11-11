@@ -43,7 +43,7 @@
 - 🎉 **New Features** (4)
     - **ShoppingList Sync** - Added support for syncing shopping lists between ctp projects. [#594](https://github.com/commercetools/commercetools-sync-java/issues/594)
     - **ShoppingList Sync** - Introduced `ShoppingListSyncUtils` which calculates all needed update actions after comparing a `ShoppingList` and a `ShoppingListDraft`. [#594](https://github.com/commercetools/commercetools-sync-java/issues/594)
-    - **ShoppingList Sync** - Introduced `ShoppingListUpdateActionUtils` which contains utils for calculating needed update actions after comparing individual fields of a `ShoppingList` and a `ShoppingListDraft`. [#594](https://github.com/commercetools/commercetools-sync-java/issues/594)
+    - **ShoppingList Sync** - Introduced `ShoppingListUpdateActionUtils` which contains utils for calculating necessary update actions after comparing individual fields of a `ShoppingList` and a `ShoppingListDraft`. [#594](https://github.com/commercetools/commercetools-sync-java/issues/594)
     - **ShoppingList Sync** - Introduced `ShoppingListReferenceResolutionUtils` which resolves Type references from a ShoppingList to a ShoppingListDraft. [#594](https://github.com/commercetools/commercetools-sync-java/issues/594)
 
 

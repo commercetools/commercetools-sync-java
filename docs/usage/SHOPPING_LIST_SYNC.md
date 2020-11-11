@@ -35,7 +35,7 @@ If you have custom requirements for the sphere client creation, have a look into
 target CTP project. The shopping lists in the target project need to have the `key` fields set, otherwise they won't be 
 matched.
 
-3. Every shopping list may have a reference to their [Type](https://docs.commercetools.com/api/projects/shoppingLists#set-custom-type) of their custom fields. 
+3. Shopping list can have a reference to their [Type](https://docs.commercetools.com/api/projects/shoppingLists#set-custom-type) of their custom fields. 
 The `Type` references should be expanded with a key.
 Any reference that is not expanded will have its id in place and not replaced by the key will be considered as existing 
 resources on the target commercetools project and the library will issue an update/create an API request without reference
@@ -140,7 +140,7 @@ final ShoppingListSyncOptions shoppingListSyncOptions =
 ````
 
 #### Running the sync
-When all prerequisites are fulfilled, follow those steps to run the sync:
+When all prerequisites are fulfilled, follow these steps to run the sync:
 
 ````java
 // instantiating a shopping list sync
