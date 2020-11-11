@@ -11,6 +11,7 @@ import io.sphere.sdk.shoppinglists.LineItemDraft;
 import io.sphere.sdk.shoppinglists.LineItemDraftBuilder;
 import io.sphere.sdk.shoppinglists.ShoppingList;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
+import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeLineItemQuantity;
 import io.sphere.sdk.shoppinglists.commands.updateactions.SetLineItemCustomField;
 import io.sphere.sdk.shoppinglists.commands.updateactions.SetLineItemCustomType;
 import io.sphere.sdk.types.CustomFields;
@@ -23,9 +24,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
-import static com.commercetools.sync.shoppinglists.utils.LineItemUpdateActionUtils.buildCustomUpdateActions;
+import static com.commercetools.sync.shoppinglists.utils.LineItemUpdateActionUtils.buildChangeLineItemQuantityUpdateAction;
+import static com.commercetools.sync.shoppinglists.utils.LineItemUpdateActionUtils.buildLineItemCustomUpdateActions;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -40,7 +43,7 @@ class LineItemUpdateActionUtilsTest {
     final ShoppingListDraft newShoppingList = mock(ShoppingListDraft.class);
 
     @Test
-    void buildCustomUpdateActions_WithSameValues_ShouldNotBuildUpdateAction() {
+    void buildLineItemCustomUpdateActions_WithSameValues_ShouldNotBuildUpdateAction() {
         final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
         oldCustomFieldsMap.put("field1", JsonNodeFactory.instance.booleanNode(true));
         oldCustomFieldsMap.put("field2", JsonNodeFactory.instance.objectNode().put("de", "val"));
@@ -63,13 +66,13 @@ class LineItemUpdateActionUtilsTest {
                                 .build();
 
         final List<UpdateAction<ShoppingList>> updateActions =
-            buildCustomUpdateActions(oldShoppingList, newShoppingList, oldLineItem, newLineItem, SYNC_OPTIONS);
+            buildLineItemCustomUpdateActions(oldShoppingList, newShoppingList, oldLineItem, newLineItem, SYNC_OPTIONS);
 
         assertThat(updateActions).isEmpty();
     }
 
     @Test
-    void buildCustomUpdateActions_WithDifferentValues_ShouldBuildUpdateAction() {
+    void buildLineItemCustomUpdateActions_WithDifferentValues_ShouldBuildUpdateAction() {
         final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
         oldCustomFieldsMap.put("field1", JsonNodeFactory.instance.booleanNode(true));
         oldCustomFieldsMap.put("field2", JsonNodeFactory.instance.objectNode().put("de", "val1"));
@@ -96,7 +99,7 @@ class LineItemUpdateActionUtilsTest {
                                 .build();
 
         final List<UpdateAction<ShoppingList>> updateActions =
-            buildCustomUpdateActions(oldShoppingList, newShoppingList, oldLineItem, newLineItem, SYNC_OPTIONS);
+            buildLineItemCustomUpdateActions(oldShoppingList, newShoppingList, oldLineItem, newLineItem, SYNC_OPTIONS);
 
         assertThat(updateActions).containsExactly(
             SetLineItemCustomField.ofJson("field1",
@@ -107,7 +110,7 @@ class LineItemUpdateActionUtilsTest {
     }
 
     @Test
-    void buildCustomUpdateActions_WithNullOldValues_ShouldBuildUpdateAction() {
+    void buildLineItemCustomUpdateActions_WithNullOldValues_ShouldBuildUpdateAction() {
         final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
         newCustomFieldsMap.put("field1", JsonNodeFactory.instance.booleanNode(false));
         newCustomFieldsMap.put("field2", JsonNodeFactory.instance.objectNode().put("es", "val"));
@@ -126,7 +129,7 @@ class LineItemUpdateActionUtilsTest {
                                 .build();
 
         final List<UpdateAction<ShoppingList>> updateActions =
-            buildCustomUpdateActions(oldShoppingList, newShoppingList, oldLineItem, newLineItem, SYNC_OPTIONS);
+            buildLineItemCustomUpdateActions(oldShoppingList, newShoppingList, oldLineItem, newLineItem, SYNC_OPTIONS);
 
         assertThat(updateActions).containsExactly(
             SetLineItemCustomType.ofTypeIdAndJson("1", newCustomFieldsMap, "line_item_id")
@@ -134,7 +137,7 @@ class LineItemUpdateActionUtilsTest {
     }
 
     @Test
-    void buildCustomUpdateActions_WithBadCustomFieldData_ShouldNotBuildUpdateActionAndTriggerErrorCallback() {
+    void buildLineItemCustomUpdateActions_WithBadCustomFieldData_ShouldNotBuildUpdateActionAndTriggerErrorCallback() {
         final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
         oldCustomFieldsMap.put("field1", JsonNodeFactory.instance.booleanNode(true));
         oldCustomFieldsMap.put("field2", JsonNodeFactory.instance.objectNode().put("de", "val1"));
@@ -165,12 +168,12 @@ class LineItemUpdateActionUtilsTest {
 
         final ShoppingListSyncOptions syncOptions =
             ShoppingListSyncOptionsBuilder.of(mock(SphereClient.class))
-                                     .errorCallback((exception, oldResource, newResource, updateActions) ->
-                                         errors.add(exception.getMessage()))
-                                     .build();
+                                          .errorCallback((exception, oldResource, newResource, updateActions) ->
+                                              errors.add(exception.getMessage()))
+                                          .build();
 
         final List<UpdateAction<ShoppingList>> updateActions =
-            buildCustomUpdateActions(oldShoppingList, newShoppingList, oldLineItem, newLineItem, syncOptions);
+            buildLineItemCustomUpdateActions(oldShoppingList, newShoppingList, oldLineItem, newLineItem, syncOptions);
 
         assertThat(updateActions).isEmpty();
         assertThat(errors).hasSize(1);
@@ -180,7 +183,7 @@ class LineItemUpdateActionUtilsTest {
     }
 
     @Test
-    void buildCustomUpdateActions_WithNullValue_ShouldCorrectlyBuildAction() {
+    void buildLineItemCustomUpdateActions_WithNullValue_ShouldCorrectlyBuildAction() {
         final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
         oldCustomFieldsMap.put("field1", JsonNodeFactory.instance.booleanNode(true));
         oldCustomFieldsMap.put("field2", JsonNodeFactory
@@ -220,7 +223,7 @@ class LineItemUpdateActionUtilsTest {
                                           .build();
 
         final List<UpdateAction<ShoppingList>> updateActions =
-            buildCustomUpdateActions(oldShoppingList, newShoppingList, oldLineItem, newLineItem, syncOptions);
+            buildLineItemCustomUpdateActions(oldShoppingList, newShoppingList, oldLineItem, newLineItem, syncOptions);
 
         assertThat(errors).isEmpty();
         assertThat(updateActions)
@@ -228,7 +231,7 @@ class LineItemUpdateActionUtilsTest {
     }
 
     @Test
-    void buildCustomUpdateActions_WithNullJsonNodeValue_ShouldCorrectlyBuildAction() {
+    void buildLineItemCustomUpdateActions_WithNullJsonNodeValue_ShouldCorrectlyBuildAction() {
         final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
         oldCustomFieldsMap.put("field", JsonNodeFactory
             .instance
@@ -266,11 +269,85 @@ class LineItemUpdateActionUtilsTest {
                                           .build();
 
         final List<UpdateAction<ShoppingList>> updateActions =
-            buildCustomUpdateActions(oldShoppingList, newShoppingList, oldLineItem, newLineItem, syncOptions);
+            buildLineItemCustomUpdateActions(oldShoppingList, newShoppingList, oldLineItem, newLineItem, syncOptions);
 
         assertThat(errors).isEmpty();
         assertThat(updateActions)
             .containsExactly(SetLineItemCustomField.ofJson("field", null, "line_item_id"));
     }
 
+    @Test
+    void buildChangeLineItemQuantityUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
+        final LineItem oldLineItem = mock(LineItem.class);
+        when(oldLineItem.getId()).thenReturn("line_item_id");
+        when(oldLineItem.getQuantity()).thenReturn(2L);
+
+        final LineItemDraft newLineItem =
+            LineItemDraftBuilder.ofSku("sku", 2L)
+                                .addedAt(ZonedDateTime.now())
+                                .build();
+
+        final Optional<UpdateAction<ShoppingList>> updateAction =
+            buildChangeLineItemQuantityUpdateAction(oldLineItem, newLineItem);
+
+        assertThat(updateAction).isNotNull();
+        assertThat(updateAction).isNotPresent();
+    }
+
+    @Test
+    void buildChangeLineItemQuantityUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
+        final LineItem oldLineItem = mock(LineItem.class);
+        when(oldLineItem.getId()).thenReturn("line_item_id");
+        when(oldLineItem.getQuantity()).thenReturn(2L);
+
+        final LineItemDraft newLineItem =
+            LineItemDraftBuilder.ofSku("sku", 4L)
+                                .addedAt(ZonedDateTime.now())
+                                .build();
+
+        final UpdateAction<ShoppingList> updateAction =
+            buildChangeLineItemQuantityUpdateAction(oldLineItem, newLineItem).orElse(null);
+
+        assertThat(updateAction).isNotNull();
+        assertThat(updateAction.getAction()).isEqualTo("changeLineItemQuantity");
+        assertThat((ChangeLineItemQuantity) updateAction)
+            .isEqualTo(ChangeLineItemQuantity.of("line_item_id", 4L));
+    }
+
+    @Test
+    void buildChangeLineItemQuantityUpdateAction_WithNewNullValue_ShouldBuildUpdateAction() {
+        final LineItem oldLineItem = mock(LineItem.class);
+        when(oldLineItem.getId()).thenReturn("line_item_id");
+        when(oldLineItem.getQuantity()).thenReturn(2L);
+
+        final LineItemDraft newLineItem =
+            LineItemDraftBuilder.ofSku("sku", null)
+                                .addedAt(ZonedDateTime.now())
+                                .build();
+
+        final UpdateAction<ShoppingList> updateAction =
+            buildChangeLineItemQuantityUpdateAction(oldLineItem, newLineItem).orElse(null);
+
+        assertThat(updateAction).isNotNull();
+        assertThat(updateAction.getAction()).isEqualTo("changeLineItemQuantity");
+        assertThat((ChangeLineItemQuantity) updateAction)
+            .isEqualTo(ChangeLineItemQuantity.of("line_item_id", 1L));
+    }
+
+    @Test
+    void buildChangeLineItemQuantityUpdateAction_WithNewNullValueAndOldDefaultValue_ShouldNotBuildAction() {
+        final LineItem oldLineItem = mock(LineItem.class);
+        when(oldLineItem.getId()).thenReturn("line_item_id");
+        when(oldLineItem.getQuantity()).thenReturn(1L);
+
+        final LineItemDraft newLineItem =
+            LineItemDraftBuilder.ofSku("sku", null)
+                                .addedAt(ZonedDateTime.now())
+                                .build();
+
+        final Optional<UpdateAction<ShoppingList>> updateAction =
+            buildChangeLineItemQuantityUpdateAction(oldLineItem, newLineItem);
+
+        assertThat(updateAction).isNotPresent();
+    }
 }
