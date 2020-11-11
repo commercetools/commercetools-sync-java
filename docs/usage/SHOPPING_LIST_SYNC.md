@@ -42,7 +42,7 @@ resources on the target commercetools project and the library will issue an upda
 resolution.
 
      - When syncing from a source commercetools project, you can use [`mapToShoppingListDraft`](https://commercetools.github.io/commercetools-sync-java/v/2.4.0/com/commercetools/sync/shoppinglists/utils/ShoppingListReferenceResolutionUtils.html#mapToShoppingListDrafts-java.util.List-)
-    method that maps from a `ShoppingList` to `ShoppingListDraft` to make them ready for reference resolution by the sync:
+    method that maps from a `ShoppingList` to `ShoppingListDraft` to make them ready for reference resolution by the shopping list sync:
     
     ````java
     final List<ShoppingListDraft> shoppingListDrafts = ShoppingListReferenceResolutionUtils.mapToShoppingListDrafts(shoppingLists);
