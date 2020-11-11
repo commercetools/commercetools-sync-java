@@ -3,6 +3,7 @@ package com.commercetools.sync.commons.helpers;
 import com.commercetools.sync.commons.models.GraphQlQueryEndpoint;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.client.HttpRequestIntent;
+import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereRequest;
 import io.sphere.sdk.http.HttpMethod;
 import io.sphere.sdk.http.HttpResponse;
@@ -13,7 +14,9 @@ import javax.annotation.Nullable;
 import java.util.Set;
 
 import static java.lang.String.format;
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class GraphQlRequest implements SphereRequest<GraphQlResult> {
     protected final Set<String> keysToSearch;
@@ -21,12 +24,26 @@ public class GraphQlRequest implements SphereRequest<GraphQlResult> {
     private long limit = 500;
     private String queryPredicate = null;
 
+    /**
+     * A SphereRequest implementation to allow {@link SphereClient} to execute graphQL queries on CTP. It provides a
+     * POST request to the CTP graphql API containing body to fetch a set of ids matching given keys of a resource
+     * defined in endpoint parameter.
+     *
+     * @param keysToSearch - a set of keys to fetch matching ids for.
+     * @param endpoint - a string representing the name of the resource endpoint.
+     */
     public GraphQlRequest(@Nonnull final Set<String> keysToSearch, @Nonnull final GraphQlQueryEndpoint endpoint) {
 
-        this.keysToSearch = keysToSearch;
+        this.keysToSearch = requireNonNull(keysToSearch);
         this.endpoint = endpoint;
     }
 
+    /**
+     * This method adds a predicate string to the request.
+     *
+     * @param predicate - a string representing a query predicate.
+     * @return - an instance of this class.
+     */
     @Nonnull
     public GraphQlRequest withPredicate(final String predicate) {
 
@@ -34,6 +51,12 @@ public class GraphQlRequest implements SphereRequest<GraphQlResult> {
         return this;
     }
 
+    /**
+     * This method adds a limit to the request.
+     *
+     * @param limit - a number representing the query limit parameter
+     * @return - an instance of this class
+     */
     @Nonnull
     public GraphQlRequest withLimit(final long limit) {
 
@@ -93,7 +116,7 @@ public class GraphQlRequest implements SphereRequest<GraphQlResult> {
                         backslashQuote));
 
         String whereQuery = createWhereQuery(commaSeparatedKeys);
-        return this.queryPredicate == null ? whereQuery : format("%s AND %s", whereQuery, queryPredicate);
+        return isBlank(this.queryPredicate) ? whereQuery : format("%s AND %s", whereQuery, queryPredicate);
     }
 
     @Nonnull

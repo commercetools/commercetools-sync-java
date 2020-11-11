@@ -1,5 +1,9 @@
 package com.commercetools.sync.commons.utils;
 
+import com.commercetools.sync.commons.helpers.GraphQlRequest;
+import com.commercetools.sync.commons.helpers.GraphQlResult;
+import com.commercetools.sync.commons.models.GraphQlQueryEndpoint;
+import com.commercetools.sync.commons.models.ResourceKeyId;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.categories.queries.CategoryQueryModel;
@@ -17,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -37,6 +42,8 @@ import static org.mockito.Mockito.when;
 class CtpQueryUtilsTest {
     @Captor
     private ArgumentCaptor<CategoryQuery> sphereRequestArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<GraphQlRequest> graphQlRequestArgumentCaptor;
 
     @BeforeEach
     void init() {
@@ -102,6 +109,47 @@ class CtpQueryUtilsTest {
             .containsExactly(
                 getFirstPageQuery(keyPredicateFunction, QuerySort.of("id desc")),
                 getSecondPageQuery(keyPredicateFunction, categories, QuerySort.of("id desc")));
+    }
+
+    @Test
+    void queryAll_WithGraphQlRequest_ShouldFetchPagedResult() {
+        // preparation
+        final SphereClient sphereClient = mock(SphereClient.class);
+        final List<ResourceKeyId> resultPage = IntStream
+            .range(0, 500)
+            .mapToObj(i -> mock(ResourceKeyId.class))
+            .collect(Collectors.toList());
+        final ResourceKeyId lastCategory = resultPage.get(resultPage.size() - 1);
+        when(lastCategory.getId()).thenReturn(UUID.randomUUID().toString());
+
+        final Set<ResourceKeyId> mockPage = resultPage.stream().collect(Collectors.toSet());
+
+        final GraphQlResult pagedGraphQlResult = mock(GraphQlResult.class);
+        when(pagedGraphQlResult.getResults())
+            .thenReturn(mockPage)
+            .thenReturn(mockPage.stream().limit(10).collect(Collectors.toSet()));
+
+        when(sphereClient.execute(any())).thenReturn(completedFuture(pagedGraphQlResult));
+
+        final Set<String> keysToQuery = IntStream
+            .range(1, 510)
+            .mapToObj(i -> "key" + i)
+            .collect(Collectors.toSet());
+
+        GraphQlRequest baseGraphQlRequest = new GraphQlRequest(keysToQuery, GraphQlQueryEndpoint.CATEGORIES);
+
+        // test
+        queryAll(sphereClient, baseGraphQlRequest, results -> identity())
+            .toCompletableFuture()
+            .join();
+
+        // assertions
+        verify(sphereClient, times(2)).execute(graphQlRequestArgumentCaptor.capture());
+        assertThat(graphQlRequestArgumentCaptor.getAllValues())
+            .containsExactly(
+                baseGraphQlRequest.withLimit(500),
+                baseGraphQlRequest.withLimit(500).withPredicate(format("id > \\\\\\\"%s\\\\\\\"",
+                    "id")));
     }
 
     @Nonnull

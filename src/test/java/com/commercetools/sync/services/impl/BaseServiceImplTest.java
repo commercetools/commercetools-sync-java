@@ -1,8 +1,9 @@
 package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.models.ResourceKeyId;
+import com.commercetools.sync.commons.helpers.GraphQlRequest;
 import com.commercetools.sync.commons.helpers.GraphQlResult;
+import com.commercetools.sync.commons.models.ResourceKeyId;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -302,7 +303,7 @@ class BaseServiceImplTest {
 
         //assertions
         assertThat(optional).containsExactly(MapEntry.entry(key, id));
-        verify(client, times(1)).execute(any(ProductGraphQlRequest.class));
+        verify(client, times(1)).execute(any(GraphQlRequest.class));
     }
 
     @Test
@@ -315,7 +316,7 @@ class BaseServiceImplTest {
         when(mockResourceKeyId.getKey()).thenReturn(key);
         when(mockResourceKeyId.getId()).thenReturn(id);
         when(graphQlQueryResult.getResults()).thenReturn(singleton(mockResourceKeyId));
-        when(client.execute(any(ProductGraphQlRequest.class)))
+        when(client.execute(any(GraphQlRequest.class)))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
 
         //test
@@ -323,6 +324,6 @@ class BaseServiceImplTest {
 
         //assertions
         assertThat(result).hasFailedWithThrowableThat().isExactlyInstanceOf(BadGatewayException.class);
-        verify(client, times(1)).execute(any(ProductGraphQlRequest.class));
+        verify(client, times(1)).execute(any(GraphQlRequest.class));
     }
 }

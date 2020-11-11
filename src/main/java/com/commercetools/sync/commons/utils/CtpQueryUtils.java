@@ -123,10 +123,8 @@ public final class CtpQueryUtils {
      *
      * <p>The method takes a {@link Consumer} that is applied on every page of the queried elements.
      *
-     * <p>NOTE: This method fetches all paged results sequentially as opposed to fetching the pages in parallel.     *
+     * <p>NOTE: This method fetches all paged results sequentially as opposed to fetching the pages in parallel.
      *
-     * @param <T>               type of the query result element
-     * @param <U>               type of the query request element
      * @param client            commercetools client
      * @param graphQlRequest    graphql query containing predicates and pagination limits
      * @param pageConsumer      consumer applied on every page queried
