@@ -253,7 +253,7 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
      * @return a map of key to ids of the requested keys.
      */
     @Nonnull
-    CompletionStage<Map<String, String>> cacheKeysToIdsUsingGraphQL(
+    CompletionStage<Map<String, String>> cacheKeysToIdsUsingGraphQl(
         @Nonnull final Set<String> keys,
         @Nonnull final Function<ResourceKeyId, Map<String,String>> keyToIdMapper,
         @Nonnull final Function<Set<String>, GraphQlRequest> keysRequestMapper) {

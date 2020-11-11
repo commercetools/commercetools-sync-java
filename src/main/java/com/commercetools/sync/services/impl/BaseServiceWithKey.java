@@ -108,7 +108,7 @@ abstract class BaseServiceWithKey<T extends WithKey, U extends Resource<U> & Wit
         // Why method reference is not used:
         // http://mail.openjdk.java.net/pipermail/compiler-dev/2015-November/009824.html
         return super
-            .cacheKeysToIdsUsingGraphQL(keys, resource -> Collections.singletonMap(resource.getKey(), resource.getId()),
+            .cacheKeysToIdsUsingGraphQl(keys, resource -> Collections.singletonMap(resource.getKey(), resource.getId()),
                 keysRequestMapper);
     }
 
