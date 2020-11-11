@@ -4,8 +4,8 @@ import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics
 import com.commercetools.sync.products.helpers.ProductSyncStatistics;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.ChannelService;
-import com.commercetools.sync.services.CustomObjectService;
 import com.commercetools.sync.services.CustomerGroupService;
+import com.commercetools.sync.services.CustomObjectService;
 import com.commercetools.sync.services.ProductService;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.StateService;
@@ -13,15 +13,18 @@ import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.UnresolvedReferencesService;
 import com.commercetools.sync.services.impl.ProductServiceImpl;
+import io.sphere.sdk.client.BadGatewayException;
+import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
-import io.sphere.sdk.products.queries.ProductQuery;
+import io.sphere.sdk.producttypes.ProductType;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,13 +32,18 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletionException;
+import java.util.stream.Collectors;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_CHANGED_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_WITH_PRICES_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_2_RESOURCE_PATH;
-import static com.commercetools.sync.products.ProductSyncMockUtils.createProductDraftBuilder;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
+import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
@@ -45,6 +53,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -355,7 +364,7 @@ class ProductSyncTest {
         // assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
+            .singleElement().satisfies(message ->
                 assertThat(message).contains("Failed to update Product with key: 'productKey1'. Reason: Failed to"
                     + " fetch a productType for the product to build the products' attributes metadata.")
             );
@@ -363,5 +372,255 @@ class ProductSyncTest {
         AssertionsForStatistics.assertThat(productSyncStatistics).hasValues(1, 0, 0, 1);
     }
 
+    @Test
+    void sync_withChangedProductButConcurrentModificationException_shouldRetryAndUpdateProduct() {
+        // preparation
 
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+        final List<String> warningCallBackMessages = new ArrayList<>();
+
+        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder
+                .of(mock(SphereClient.class))
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorMessages.add(exception.getMessage());
+                    exceptions.add(exception.getCause());
+                })
+                .warningCallback((exception, oldResource, newResource)
+                    -> warningCallBackMessages.add(exception.getMessage()))
+                .build();
+
+        final ProductDraft productDraft =
+                createProductDraftBuilder(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
+                        ResourceIdentifier.ofKey("syncProductType"))
+                        .taxCategory(null)
+                        .state(null)
+                        .build();
+
+        final ProductService mockProductService = buildMockProductServiceWithSuccessfulUpdateOnRetry(productDraft);
+        final ProductTypeService mockProductTypeService = buildMockProductTypeService();
+        final CategoryService mockCategoryService = buildMockCategoryService();
+
+        final ProductSync productSync = new ProductSync(spy(syncOptions), mockProductService,
+                mockProductTypeService, mockCategoryService, mock(TypeService.class),
+                mock(ChannelService.class), mock(CustomerGroupService.class), mock(TaxCategoryService.class),
+                mock(StateService.class),
+                mock(UnresolvedReferencesService.class),
+                mock(CustomObjectService.class));
+
+        final ProductSyncStatistics syncStatistics = productSync
+                .sync(singletonList(productDraft))
+                .toCompletableFuture()
+                .join();
+
+        // assertion
+        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
+        assertThat(exceptions).isEmpty();
+        assertThat(errorMessages).isEmpty();
+        assertThat(warningCallBackMessages).isEmpty();
+    }
+
+    @Test
+    void sync_withChangedProductButConcurrentModificationExceptionAndFailedFetchOnRetry_shouldFailedUpdateProduct() {
+        // preparation
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+        final List<String> warningCallBackMessages = new ArrayList<>();
+
+        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder
+                .of(mock(SphereClient.class))
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorMessages.add(exception.getMessage());
+                    exceptions.add(exception.getCause());
+                })
+                .warningCallback((exception, oldResource, newResource)
+                    -> warningCallBackMessages.add(exception.getMessage()))
+                .build();
+
+        final ProductDraft productDraft =
+                createProductDraftBuilder(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
+                        ResourceIdentifier.ofKey("syncProductType"))
+                        .taxCategory(null)
+                        .state(null)
+                        .build();
+
+        final ProductService mockProductService = buildMockProductServiceWithFailedFetchOnRetry(productDraft);
+        final ProductTypeService mockProductTypeService = buildMockProductTypeService();
+        final CategoryService mockCategoryService = buildMockCategoryService();
+
+        final ProductSync productSync = new ProductSync(spy(syncOptions), mockProductService,
+                mockProductTypeService, mockCategoryService, mock(TypeService.class),
+                mock(ChannelService.class), mock(CustomerGroupService.class), mock(TaxCategoryService.class),
+                mock(StateService.class),
+                mock(UnresolvedReferencesService.class),
+                mock(CustomObjectService.class));
+
+        final ProductSyncStatistics syncStatistics = productSync
+                .sync(singletonList(productDraft))
+                .toCompletableFuture()
+                .join();
+
+        // assertion
+
+        // Test and assertion
+        assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
+        assertThat(errorMessages).hasSize(1);
+        assertThat(exceptions.get(0)).isNotNull();
+        assertThat(exceptions.get(0)).isExactlyInstanceOf(BadGatewayException.class);
+        assertThat(errorMessages.get(0)).contains(
+                format("Failed to update Product with key: '%s'. Reason: Failed to fetch from CTP while retrying "
+                        + "after concurrency modification.", productDraft.getKey()));
+
+    }
+
+    @Test
+    void sync_withChangedProductButConcurrentModificationExceptionAndFetchNothingOnRetry_shouldFailedUpdateProduct() {
+        // preparation
+
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+        final List<String> warningCallBackMessages = new ArrayList<>();
+
+        final ProductSyncOptions syncOptions = ProductSyncOptionsBuilder
+                .of(mock(SphereClient.class))
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorMessages.add(exception.getMessage());
+                    exceptions.add(exception.getCause());
+                })
+                .warningCallback((exception, oldResource, newResource)
+                    -> warningCallBackMessages.add(exception.getMessage()))
+                .build();
+
+        final ProductDraft productDraft =
+                createProductDraftBuilder(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH,
+                        ResourceIdentifier.ofKey("syncProductType"))
+                        .taxCategory(null)
+                        .state(null)
+                        .build();
+
+        final ProductService mockProductService = buildMockProductServiceWithNotFoundFetchOnRetry(productDraft);
+        final ProductTypeService mockProductTypeService = buildMockProductTypeService();
+        final CategoryService mockCategoryService = buildMockCategoryService();
+
+        final ProductSync productSync = new ProductSync(spy(syncOptions), mockProductService,
+                mockProductTypeService, mockCategoryService, mock(TypeService.class),
+                mock(ChannelService.class), mock(CustomerGroupService.class), mock(TaxCategoryService.class),
+                mock(StateService.class),
+                mock(UnresolvedReferencesService.class),
+                mock(CustomObjectService.class));
+
+        final ProductSyncStatistics syncStatistics = productSync
+                .sync(singletonList(productDraft))
+                .toCompletableFuture()
+                .join();
+
+        assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
+        assertThat(errorMessages).hasSize(1);
+        assertThat(exceptions).hasSize(1);
+        assertThat(errorMessages.get(0)).contains(
+                format("Failed to update Product with key: '%s'. Reason: Not found when attempting to fetch while"
+                        + " retrying after concurrency modification.", productDraft.getKey()));
+    }
+
+    @Nonnull
+    private ProductTypeService buildMockProductTypeService() {
+        final ProductTypeService mockProductTypeService = mock(ProductTypeService.class);
+
+        final ProductType mockProductType =
+                readObjectFromResource(PRODUCT_TYPE_RESOURCE_PATH, ProductType.class);
+
+        final  Map<String, AttributeMetaData> attributeMetaDataMap =
+                mockProductType.getAttributes()
+                        .stream()
+                        .map(AttributeMetaData::of)
+                        .collect(Collectors.toMap(AttributeMetaData::getName, attributeMetaData -> attributeMetaData));
+
+        when(mockProductTypeService.fetchCachedProductTypeId(any()))
+                .thenReturn(completedFuture(Optional.of(UUID.randomUUID().toString())));
+        when(mockProductTypeService.fetchCachedProductAttributeMetaDataMap(any()))
+                .thenReturn(completedFuture(Optional.of(attributeMetaDataMap)));
+
+        return mockProductTypeService;
+    }
+
+    @Nonnull
+    private ProductService buildMockProductServiceWithSuccessfulUpdateOnRetry(
+            @Nonnull final ProductDraft productDraft) {
+
+        final ProductService mockProductService = mock(ProductService.class);
+
+        final Product mockProduct =
+                readObjectFromResource(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, Product.class);
+
+        final Map<String, String> keyToIds = new HashMap<>();
+        keyToIds.put(productDraft.getKey(), UUID.randomUUID().toString());
+
+        when(mockProductService.fetchMatchingProductsByKeys(anySet()))
+                .thenReturn(supplyAsync(() -> { throw new CompletionException(new SphereException()); }));
+        when(mockProductService.cacheKeysToIds(anySet())).thenReturn(completedFuture(keyToIds));
+        when(mockProductService.fetchMatchingProductsByKeys(anySet()))
+                .thenReturn(completedFuture(singleton(mockProduct)));
+        when(mockProductService.fetchProduct(any())).thenReturn(completedFuture(Optional.of(mockProduct)));
+        when(mockProductService.updateProduct(any(), anyList()))
+                .thenReturn(exceptionallyCompletedFuture(new SphereException(new ConcurrentModificationException())))
+                .thenReturn(completedFuture(mockProduct));
+        return mockProductService;
+    }
+
+    @Nonnull
+    private ProductService buildMockProductServiceWithFailedFetchOnRetry(
+            @Nonnull final ProductDraft productDraft) {
+
+        final ProductService mockProductService = mock(ProductService.class);
+
+        final Product mockProduct =
+                readObjectFromResource(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, Product.class);
+
+        final Map<String, String> keyToIds = new HashMap<>();
+        keyToIds.put(productDraft.getKey(), UUID.randomUUID().toString());
+
+        when(mockProductService.fetchMatchingProductsByKeys(anySet()))
+                .thenReturn(supplyAsync(() -> { throw new CompletionException(new SphereException()); }));
+        when(mockProductService.cacheKeysToIds(anySet())).thenReturn(completedFuture(keyToIds));
+        when(mockProductService.fetchMatchingProductsByKeys(anySet()))
+                .thenReturn(completedFuture(singleton(mockProduct)));
+        when(mockProductService.fetchProduct(any()))
+                .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()));
+        when(mockProductService.updateProduct(any(), anyList()))
+                .thenReturn(exceptionallyCompletedFuture(new SphereException(new ConcurrentModificationException())))
+                .thenReturn(completedFuture(mockProduct));
+        return mockProductService;
+    }
+
+    @Nonnull
+    private ProductService buildMockProductServiceWithNotFoundFetchOnRetry(
+            @Nonnull final ProductDraft productDraft) {
+
+        final ProductService mockProductService = mock(ProductService.class);
+
+        final Product mockProduct =
+                readObjectFromResource(PRODUCT_KEY_1_CHANGED_RESOURCE_PATH, Product.class);
+
+        final Map<String, String> keyToIds = new HashMap<>();
+        keyToIds.put(productDraft.getKey(), UUID.randomUUID().toString());
+
+        when(mockProductService.fetchMatchingProductsByKeys(anySet()))
+                .thenReturn(supplyAsync(() -> { throw new CompletionException(new SphereException()); }));
+        when(mockProductService.cacheKeysToIds(anySet())).thenReturn(completedFuture(keyToIds));
+        when(mockProductService.fetchMatchingProductsByKeys(anySet()))
+                .thenReturn(completedFuture(singleton(mockProduct)));
+        when(mockProductService.fetchProduct(any())).thenReturn(completedFuture(Optional.empty()));
+        when(mockProductService.updateProduct(any(), anyList()))
+                .thenReturn(exceptionallyCompletedFuture(new SphereException(new ConcurrentModificationException())))
+                .thenReturn(completedFuture(mockProduct));
+        return mockProductService;
+    }
+
+    @Nonnull
+    private CategoryService buildMockCategoryService() {
+        final CategoryService mockCategoryService = mock(CategoryService.class);
+        when(mockCategoryService.fetchMatchingCategoriesByKeys(any())).thenReturn(completedFuture(emptySet()));
+        return mockCategoryService;
+    }
 }
