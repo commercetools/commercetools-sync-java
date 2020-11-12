@@ -1,0 +1,111 @@
+{
+  "key": "shoppinglist-with-lineitems-sku-32",
+  "name": {
+    "en": "name"
+  },
+  "lineItems": [
+    {
+      "id": "line_item_id_3",
+      "productId": "130a7d5c-55ea-4888-abbe-f76d474de351",
+      "name": {
+        "en": "Some Product"
+      },
+      "variantId": 3,
+      "quantity": 3,
+      "custom": {
+        "type": {
+          "typeId": "type",
+          "id": "custom_type_id",
+          "obj": {
+            "id": "custom_type_id",
+            "key": "custom-type-for-shoppinglists",
+            "name": {
+              "en": "custom-type-for-shoppinglists"
+            },
+            "description": {
+              "en": "custom-type-for-shoppinglists"
+            },
+            "resourceTypeIds": [
+              "line-item",
+              "shopping-list",
+              "shopping-list-text-line-item"
+            ],
+            "fieldDefinitions": [
+              {
+                "name": "textField",
+                "label": {
+                  "en": "textField"
+                },
+                "required": false,
+                "type": {
+                  "name": "String"
+                },
+                "inputHint": "SingleLine"
+              }
+            ]
+          }
+        },
+        "fields": {
+          "textField": "text3"
+        }
+      },
+      "addedAt": "2020-11-04T10:00:00.000Z",
+      "variant": {
+        "id": 3,
+        "sku": "SKU-3"
+      }
+    },
+    {
+      "id": "line_item_id_2",
+      "productId": "130a7d5c-55ea-4888-abbe-f76d474de351",
+      "name": {
+        "en": "Some Product"
+      },
+      "variantId": 2,
+      "quantity": 2,
+      "custom": {
+        "type": {
+          "typeId": "type",
+          "id": "custom_type_id",
+          "obj": {
+            "id": "custom_type_id",
+            "key": "custom-type-for-shoppinglists",
+            "name": {
+              "en": "custom-type-for-shoppinglists"
+            },
+            "description": {
+              "en": "custom-type-for-shoppinglists"
+            },
+            "resourceTypeIds": [
+              "line-item",
+              "shopping-list",
+              "shopping-list-text-line-item"
+            ],
+            "fieldDefinitions": [
+              {
+                "name": "textField",
+                "label": {
+                  "en": "textField"
+                },
+                "required": false,
+                "type": {
+                  "name": "String"
+                },
+                "inputHint": "SingleLine"
+              }
+            ]
+          }
+        },
+        "fields": {
+          "textField": "text2"
+        }
+      },
+      "addedAt": "2020-11-03T10:00:00.000Z",
+      "variant": {
+        "id": 2,
+        "sku": "SKU-2"
+      }
+    }
+  ],
+  "textLineItems": []
+}
