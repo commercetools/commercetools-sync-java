@@ -12,11 +12,11 @@ public class SphereClientConfigOptions {
     protected static final int MAX_PARALLEL_REQUESTS = 20;
 
     private SphereClientConfig clientConfig;
-    protected long timeout;
-    protected long initialDelay;
-    protected TimeUnit timeUnit;
-    protected int maxRetries;
-    protected int maxParallelRequests;
+    private long timeout;
+    private long initialDelay;
+    private TimeUnit timeUnit;
+    private int maxRetries;
+    private int maxParallelRequests;
 
     private SphereClientConfigOptions(final SphereClientConfig clientConfig, final long timeout,
                                       final long initialDelay, final TimeUnit timeUnit,
