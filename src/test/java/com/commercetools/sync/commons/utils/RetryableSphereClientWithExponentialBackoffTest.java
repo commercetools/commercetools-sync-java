@@ -220,8 +220,6 @@ class RetryableSphereClientWithExponentialBackoffTest {
 
     @Test
     void calculateExponentialRandomBackoff_withRetries_ShouldReturnRandomisedDurations() {
-        assertThat(MAX_RETRIES).isGreaterThan(1);
-
         long maxDelay = 0;
         for (long failedRetryAttempt = 1; failedRetryAttempt <= 10; failedRetryAttempt++) {
 
