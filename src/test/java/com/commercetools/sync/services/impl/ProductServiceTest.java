@@ -1,20 +1,18 @@
 package com.commercetools.sync.services.impl;
 
+import com.commercetools.sync.commons.FakeClient;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 
 import io.sphere.sdk.client.BadRequestException;
 import io.sphere.sdk.client.BadGatewayException;
-import io.sphere.sdk.client.SphereApiConfig;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.client.SphereRequest;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.commands.updateactions.ChangeName;
 import io.sphere.sdk.queries.QueryPredicate;
-import io.sphere.sdk.utils.CompletableFutureUtils;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -54,8 +52,8 @@ class ProductServiceTest {
         final Product mock = mock(Product.class);
         when(mock.getId()).thenReturn("productId");
         when(mock.getKey()).thenReturn("productKey");
-        final FakeProductClient createProductClient =
-                new FakeProductClient(mock);
+        final FakeClient createProductClient =
+                new FakeClient(mock);
 
         final ProductDraft draft = mock(ProductDraft.class);
         when(draft.getKey()).thenReturn("productKey");
@@ -75,8 +73,8 @@ class ProductServiceTest {
         final Product mock = mock(Product.class);
         when(mock.getId()).thenReturn("productId");
 
-        final FakeProductClient createProductClient =
-                new FakeProductClient(new BadRequestException("bad request"));
+        final FakeClient createProductClient =
+                new FakeClient(new BadRequestException("bad request"));
 
         final ProductDraft draft = mock(ProductDraft.class);
         when(draft.getKey()).thenReturn("productKey");
@@ -91,14 +89,14 @@ class ProductServiceTest {
         assertThat(errorMessages)
                 .hasSize(1)
                 .singleElement().satisfies(message -> {
-                    assertThat(message).contains("Failed to create draft with key: 'productKey'.");
-                    assertThat(message).contains("BadRequestException");
-                });
+            assertThat(message).contains("Failed to create draft with key: 'productKey'.");
+            assertThat(message).contains("BadRequestException");
+        });
 
         assertThat(errorExceptions)
                 .hasSize(1)
                 .singleElement().satisfies(exception ->
-                        assertThat(exception).isExactlyInstanceOf(BadRequestException.class));
+                assertThat(exception).isExactlyInstanceOf(BadRequestException.class));
     }
 
     @Test
@@ -110,13 +108,13 @@ class ProductServiceTest {
         assertThat(errorMessages).hasSize(1);
         assertThat(errorExceptions).hasSize(1);
         assertThat(errorMessages.get(0))
-            .isEqualTo("Failed to create draft with key: 'null'. Reason: Draft key is blank!");
+                .isEqualTo("Failed to create draft with key: 'null'. Reason: Draft key is blank!");
     }
 
     @Test
     void updateProduct_WithMockCtpResponse_ShouldReturnMock() {
         final Product mock = mock(Product.class);
-        final FakeProductClient updateProductClient = new FakeProductClient(mock);
+        final FakeClient updateProductClient = new FakeClient(mock);
 
         initMockService(updateProductClient);
 
@@ -156,7 +154,7 @@ class ProductServiceTest {
 
     @Test
     void fetchMatchingProductsByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
-        final FakeProductClient fakeProductClient = new FakeProductClient(new BadGatewayException());
+        final FakeClient fakeProductClient = new FakeClient(new BadGatewayException());
 
         initMockService(fakeProductClient);
 
@@ -175,7 +173,7 @@ class ProductServiceTest {
 
     @Test
     void fetchProduct_WithBadGatewayException_ShouldFail() {
-        final FakeProductClient fakeProductClient = new FakeProductClient(new BadGatewayException());
+        final FakeClient fakeProductClient = new FakeClient(new BadGatewayException());
 
         initMockService(fakeProductClient);
 
@@ -203,46 +201,5 @@ class ProductServiceTest {
                 .build();
 
         service = new ProductServiceImpl(productSyncOptions);
-    }
-
-    private static class FakeProductClient implements SphereClient {
-
-        private boolean isExecuted = false;
-        private Product mockResult;
-        private Throwable mockException;
-
-        FakeProductClient(@Nonnull final Product mockResult) {
-            this.mockResult = mockResult;
-        }
-
-        FakeProductClient(@Nonnull final Throwable mockException) {
-            this.mockException = mockException;
-        }
-
-        @Override
-        public <T> CompletionStage<T> execute(final SphereRequest<T> sphereRequest) {
-            isExecuted = true;
-            if (mockResult != null) {
-                return CompletableFutureUtils.successful((T) mockResult);
-            } else if (mockException != null) {
-                return CompletableFutureUtils.failed(mockException);
-            } else {
-                return CompletableFutureUtils.successful(null);
-            }
-        }
-
-        @Override
-        public void close() {
-
-        }
-
-        @Override
-        public SphereApiConfig getConfig() {
-            return null;
-        }
-
-        public boolean isExecuted() {
-            return isExecuted;
-        }
     }
 }
