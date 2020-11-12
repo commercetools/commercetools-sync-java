@@ -18,8 +18,9 @@ public class SphereClientConfigOptions {
     protected int maxRetries;
     protected int maxParallelRequests;
 
-    private SphereClientConfigOptions(SphereClientConfig clientConfig, long timeout, long initialDelay,
-                                      TimeUnit timeUnit, int maxRetries, int maxParallelRequests) {
+    private SphereClientConfigOptions(final SphereClientConfig clientConfig, final long timeout,
+                                      final long initialDelay, final TimeUnit timeUnit,
+                                      final int maxRetries, final int maxParallelRequests) {
         this.clientConfig = clientConfig;
         this.timeout = timeout;
         this.initialDelay = initialDelay;
@@ -60,7 +61,11 @@ public class SphereClientConfigOptions {
         protected int maxRetries;
         protected int maxParallelRequests;
 
-        public Builder(SphereClientConfig clientConfig) {
+        /**
+         * Creates a SphereClientConfig Builder with Default values
+         * @param clientConfig the client configuration for the client.
+         */
+        public Builder(final SphereClientConfig clientConfig) {
             this.clientConfig = clientConfig;
             this.timeout = DEFAULT_TIMEOUT;
             this.timeUnit = DEFAULT_TIMEOUT_TIME_UNIT;
@@ -69,31 +74,51 @@ public class SphereClientConfigOptions {
             this.maxParallelRequests = MAX_PARALLEL_REQUESTS;
         }
 
-        public Builder withTimeout(long timeout) {
+        /**
+         * Sets the timeout
+         * @param timeout - build with timeout value.
+         */
+        public Builder withTimeout(final long timeout) {
             this.timeout = timeout;
             return this;
         }
 
-        public Builder withInitialDelay(long initialDelay) {
-            if(initialDelay < timeout) {
+        /**
+         * Sets the timeout
+         * @param initialDelay - build with initialDelay value.
+         */
+        public Builder withInitialDelay(final long initialDelay) {
+            if (initialDelay < timeout) {
                 this.initialDelay = initialDelay;
             }
             return this;
         }
 
-        public Builder withTimeUnit(TimeUnit timeUnit) {
+        /**
+         * Sets the timeUnit
+         * @param timeUnit - build with timeUnit value.
+         */
+        public Builder withTimeUnit(final TimeUnit timeUnit) {
             this.timeUnit = timeUnit;
             return this;
         }
 
-        public Builder withMaxRetries(int maxRetries) {
-            if(maxRetries > 1) {
-              this.maxRetries = maxRetries;
+        /**
+         * Sets the Max Retry
+         * @param maxRetries - build with maxRetries value.
+         */
+        public Builder withMaxRetries(final int maxRetries) {
+            if (maxRetries > 1) {
+                this.maxRetries = maxRetries;
             }
             return this;
         }
 
-        public Builder withMaxParallelRequests(int maxParallelRequests) {
+        /**
+         * Sets the Max Parallel Requests
+         * @param maxParallelRequests - build with maxParallelRequests value.
+         */
+        public Builder withMaxParallelRequests(final int maxParallelRequests) {
             this.maxParallelRequests = maxParallelRequests;
             return this;
         }

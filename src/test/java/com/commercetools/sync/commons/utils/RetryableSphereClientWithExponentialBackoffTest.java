@@ -60,7 +60,8 @@ class RetryableSphereClientWithExponentialBackoffTest {
     void createClient_WithConfig_ReturnsBlockingSphereClient() {
         final SphereClientConfig clientConfig =
             SphereClientConfig.of("project-key", "client-id", "client-secret");
-        final SphereClient sphereClient = RetryableSphereClientWithExponentialBackoff.of(clientConfig, TIMEOUT, TIMEOUT_TIME_UNIT);
+        final SphereClient sphereClient =
+                RetryableSphereClientWithExponentialBackoff.of(clientConfig, TIMEOUT, TIMEOUT_TIME_UNIT);
 
         assertThat(sphereClient instanceof BlockingSphereClient).isTrue();
 
@@ -91,28 +92,27 @@ class RetryableSphereClientWithExponentialBackoffTest {
     }
 
     @Test
-    void createClient_Simulate_Stuck_SDK() {
+    void createClient_Simulate_Stuck_Sdk() {
         final Function<RetryContext, Duration> durationFunction = retryContext -> {
             throw new IllegalArgumentException();
         };
         final CompletionStage<Duration> durationCompletableFuture = CompletableFuture.supplyAsync(
-                () -> durationFunction.apply(null));
+            () -> durationFunction.apply(null));
         final Function<RetryContext, CompletionStage<Duration>> f = retryContext -> durationCompletableFuture;
         final Executor executor = Executors.newSingleThreadExecutor();
         final CompletableFuture<Duration> result = new CompletableFuture<>();
         try {
             final CompletionStage<Duration> initialCompletionStage = f.apply(null);
             initialCompletionStage.whenCompleteAsync((res, firstError) -> {
-                System.out.println(firstError);
                 final boolean isErrorCase = firstError != null;
                 if (isErrorCase) {
+                    // Error Case Exception should be thrown
                 } else {
                     result.complete(res);
                 }
             }, executor);
-        } catch (final Throwable e) {//necessary if f.apply() throws directly an exception
-            System.out.println(e);
-            result.completeExceptionally(e);
+        } catch (final Throwable exception) { //necessary if f.apply() throws directly an exception
+            result.completeExceptionally(exception);
         }
     }
 
@@ -130,7 +130,8 @@ class RetryableSphereClientWithExponentialBackoffTest {
 
         final long maxRetryAttempt = 2L;
         final Function<RetryContext, Duration> durationFunction = retryContext ->
-            calculateDurationWithExponentialRandomBackoff(retryContext.getAttempt(), INITIAL_RETRY_DELAY, DEFAULT_TIMEOUT);
+            calculateDurationWithExponentialRandomBackoff(retryContext.getAttempt(),
+                    INITIAL_RETRY_DELAY, DEFAULT_TIMEOUT);
 
         final SphereClient decoratedSphereClient =
             decorateSphereClient(mockSphereUnderlyingClient, maxRetryAttempt, durationFunction, MAX_PARALLEL_REQUESTS);
@@ -238,7 +239,8 @@ class RetryableSphereClientWithExponentialBackoffTest {
             Retry 9: 30000 millisecond
             Retry 10: 30000 millisecond
             */
-            final Duration duration = calculateDurationWithExponentialRandomBackoff(failedRetryAttempt, INITIAL_RETRY_DELAY, DEFAULT_TIMEOUT);
+            final Duration duration = calculateDurationWithExponentialRandomBackoff(failedRetryAttempt,
+                    INITIAL_RETRY_DELAY, DEFAULT_TIMEOUT);
 
             assertThat(duration.toMillis())
                 .isLessThanOrEqualTo(maxDelay)

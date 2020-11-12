@@ -52,8 +52,9 @@ public class RetryableSphereClientWithExponentialBackoff {
     protected static SphereClient createClient(@Nonnull final SphereClientConfigOptions clientConfigOptions) {
         final SphereClient underlyingClient = createSphereClient(clientConfigOptions.getClientConfig());
         return decorateSphereClient(underlyingClient, clientConfigOptions.getMaxRetries(),
-                context -> calculateDurationWithExponentialRandomBackoff(context.getAttempt(),
-                        clientConfigOptions.getInitialDelay(), clientConfigOptions.getTimeout()), clientConfigOptions.getMaxParallelRequests());
+            context -> calculateDurationWithExponentialRandomBackoff(context.getAttempt(),
+            clientConfigOptions.getInitialDelay(), clientConfigOptions.getTimeout()),
+            clientConfigOptions.getMaxParallelRequests());
     }
 
     /**
@@ -62,14 +63,16 @@ public class RetryableSphereClientWithExponentialBackoff {
      * @param clientConfigOptions the client configuration for the client with custom Timeout and TimeUnit.
      * @return the instantiated {@link BlockingSphereClient}.
      */
-    protected static SphereClient createBlockingSphereClient(@Nonnull final SphereClientConfigOptions clientConfigOptions) {
-
+    protected static SphereClient createBlockingSphereClient(
+            @Nonnull final SphereClientConfigOptions clientConfigOptions) {
         final SphereClient underlyingClient = createSphereClient(clientConfigOptions.getClientConfig());
         final SphereClient decoratedClient = decorateSphereClient(underlyingClient, clientConfigOptions.getMaxRetries(),
-                context -> calculateDurationWithExponentialRandomBackoff(context.getAttempt(),
-                        clientConfigOptions.getInitialDelay(), clientConfigOptions.getTimeout()), clientConfigOptions.getMaxParallelRequests());
+            context -> calculateDurationWithExponentialRandomBackoff(context.getAttempt(),
+            clientConfigOptions.getInitialDelay(), clientConfigOptions.getTimeout()),
+            clientConfigOptions.getMaxParallelRequests());
 
-        return BlockingSphereClient.of(decoratedClient, clientConfigOptions.getTimeout(), clientConfigOptions.getTimeUnit());
+        return BlockingSphereClient.of(
+                decoratedClient, clientConfigOptions.getTimeout(), clientConfigOptions.getTimeUnit());
     }
 
 
@@ -90,11 +93,11 @@ public class RetryableSphereClientWithExponentialBackoff {
         return withLimitedParallelRequests(retryClient, maxParallelRequests);
     }
 
-        /**
-         * Gets an asynchronous {@link HttpClient} to be used by the {@link BlockingSphereClient}.
-         *
-         * @return {@link HttpClient}
-         */
+    /**
+     * Gets an asynchronous {@link HttpClient} to be used by the {@link BlockingSphereClient}.
+     *
+     * @return {@link HttpClient}
+     */
     private static HttpClient getHttpClient() {
         final AsyncHttpClient asyncHttpClient =
                 new DefaultAsyncHttpClient(
@@ -106,9 +109,9 @@ public class RetryableSphereClientWithExponentialBackoff {
             @Nonnull final SphereClient delegate,
             long maxRetryAttempt,
             @Nonnull final Function<RetryContext, Duration> durationFunction) {
-
         final RetryAction scheduledRetry = RetryAction.ofScheduledRetry(maxRetryAttempt, durationFunction);
-        final RetryPredicate http5xxMatcher = RetryPredicate.ofMatchingStatusCodes(errCode -> errCode > 499 && errCode < 600);
+        final RetryPredicate http5xxMatcher =
+                RetryPredicate.ofMatchingStatusCodes(errCode -> errCode > 499 && errCode < 600);
         final List<RetryRule> retryRules = Collections.singletonList(RetryRule.of(http5xxMatcher, scheduledRetry));
         return RetrySphereClientDecorator.of(delegate, retryRules);
     }
@@ -130,7 +133,8 @@ public class RetryableSphereClientWithExponentialBackoff {
         return Duration.ofMillis(delay);
     }
 
-    private static SphereClient withLimitedParallelRequests(final SphereClient delegate, final int maxParallelRequests) {
+    private static SphereClient withLimitedParallelRequests(
+            final SphereClient delegate, final int maxParallelRequests) {
         return QueueSphereClientDecorator.of(delegate, maxParallelRequests);
     }
 
