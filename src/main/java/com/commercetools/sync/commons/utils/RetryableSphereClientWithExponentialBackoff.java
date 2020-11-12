@@ -23,10 +23,10 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-public class RetryableSphereClientWithExponentialBackoff {
+public final class RetryableSphereClientWithExponentialBackoff {
 
     protected static SphereClient of(@Nonnull final SphereClientConfig clientConfig) {
-        SphereClientConfigOptions sphereClientConfigOptions =
+        final SphereClientConfigOptions sphereClientConfigOptions =
                 new SphereClientConfigOptions.Builder(clientConfig)
                         .build();
         return createClient(sphereClientConfigOptions);
@@ -35,7 +35,7 @@ public class RetryableSphereClientWithExponentialBackoff {
     protected static SphereClient of(@Nonnull final SphereClientConfig clientConfig,
                                   final long timeout,
                                   @Nonnull final TimeUnit timeUnit) {
-        SphereClientConfigOptions sphereClientConfigOptions =
+        final SphereClientConfigOptions sphereClientConfigOptions =
                 new SphereClientConfigOptions.Builder(clientConfig)
                         .withTimeout(timeout)
                         .withTimeUnit(timeUnit)
@@ -85,9 +85,9 @@ public class RetryableSphereClientWithExponentialBackoff {
 
     protected static SphereClient decorateSphereClient(
             @Nonnull final SphereClient underlyingClient,
-            @Nonnull final long maxRetryAttempt,
+            final long maxRetryAttempt,
             @Nonnull final Function<RetryContext, Duration> durationFunction,
-            @Nonnull final int maxParallelRequests) {
+            final int maxParallelRequests) {
 
         final SphereClient retryClient = withRetry(underlyingClient, maxRetryAttempt, durationFunction);
         return withLimitedParallelRequests(retryClient, maxParallelRequests);
@@ -138,5 +138,7 @@ public class RetryableSphereClientWithExponentialBackoff {
         return QueueSphereClientDecorator.of(delegate, maxParallelRequests);
     }
 
+    private RetryableSphereClientWithExponentialBackoff() {
+    }
 
 }
