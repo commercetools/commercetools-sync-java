@@ -188,7 +188,6 @@ class ProductServiceTest {
 
     }
 
-    @Nonnull
     private void initMockService(
             @Nonnull final SphereClient mockSphereClient) {
 
