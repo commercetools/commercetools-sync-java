@@ -4,6 +4,7 @@ import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 
 import io.sphere.sdk.client.BadRequestException;
+import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.SphereApiConfig;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereRequest;
@@ -19,7 +20,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -147,6 +152,42 @@ class ProductServiceTest {
         productKeys.add(null);
         final QueryPredicate<Product> queryPredicate = service.buildProductKeysQueryPredicate(productKeys);
         assertThat(queryPredicate.toSphereQuery()).isEqualTo("key in (\"key1\", \"key2\")");
+    }
+
+    @Test
+    void fetchMatchingProductsByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
+        final FakeProductClient fakeProductClient = new FakeProductClient(new BadGatewayException());
+
+        initMockService(fakeProductClient);
+
+        final Set<String> keys =  new HashSet<>();
+        keys.add("productKey1");
+
+        CompletionStage<Set<Product>> future = service.fetchMatchingProductsByKeys(keys);
+
+        assertThat(errorExceptions).isEmpty();
+        assertThat(errorMessages).isEmpty();
+        assertThat(future.toCompletableFuture())
+                .failsWithin(60, TimeUnit.SECONDS)
+                .withThrowableOfType(ExecutionException.class)
+                .withCauseExactlyInstanceOf(BadGatewayException.class);
+    }
+
+    @Test
+    void fetchProduct_WithBadGatewayException_ShouldFail() {
+        final FakeProductClient fakeProductClient = new FakeProductClient(new BadGatewayException());
+
+        initMockService(fakeProductClient);
+
+        CompletionStage<Optional<Product>> future = service.fetchProduct("productKey1");
+
+        assertThat(errorExceptions).isEmpty();
+        assertThat(errorMessages).isEmpty();
+        assertThat(future.toCompletableFuture())
+                .failsWithin(60, TimeUnit.SECONDS)
+                .withThrowableOfType(ExecutionException.class)
+                .withCauseExactlyInstanceOf(BadGatewayException.class);
+
     }
 
     @Nonnull
