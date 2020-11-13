@@ -1,8 +1,15 @@
 {
-  "key": "shoppinglist-with-lineitems-sku-324",
+  "key": "shoppinglist-with-lineitems-sku-132-with-changes",
   "name": {
-    "en": "name"
+    "en": "newName"
   },
+  "slug": {
+    "en": "newSlug"
+  },
+  "description": {
+    "en": "newDescription"
+  },
+  "anonymousId": "newAnonymousId",
   "lineItems": [
     {
       "id": "line_item_id_1",
@@ -158,5 +165,19 @@
       }
     }
   ],
-  "textLineItems": []
+  "textLineItems": [],
+  "customer": {
+    "typeId": "customer",
+    "id": "customer_id_2"
+  },
+  "custom": {
+    "type": {
+      "typeId": "type",
+      "id": "custom_type_id"
+    },
+    "fields": {
+      "textField": "newTextValue"
+    }
+  },
+  "deleteDaysAfterLastModification": 45
 }

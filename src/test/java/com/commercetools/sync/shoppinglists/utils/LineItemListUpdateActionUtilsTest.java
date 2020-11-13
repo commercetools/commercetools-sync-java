@@ -8,15 +8,24 @@ import com.commercetools.sync.shoppinglists.helpers.LineItemReferenceResolver;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.shoppinglists.LineItemDraft;
 import io.sphere.sdk.shoppinglists.LineItemDraftBuilder;
 import io.sphere.sdk.shoppinglists.ShoppingList;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeLineItemQuantity;
+import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeName;
 import io.sphere.sdk.shoppinglists.commands.updateactions.RemoveLineItem;
+import io.sphere.sdk.shoppinglists.commands.updateactions.SetAnonymousId;
+import io.sphere.sdk.shoppinglists.commands.updateactions.SetCustomField;
+import io.sphere.sdk.shoppinglists.commands.updateactions.SetCustomer;
+import io.sphere.sdk.shoppinglists.commands.updateactions.SetDeleteDaysAfterLastModification;
+import io.sphere.sdk.shoppinglists.commands.updateactions.SetDescription;
 import io.sphere.sdk.shoppinglists.commands.updateactions.SetLineItemCustomField;
+import io.sphere.sdk.shoppinglists.commands.updateactions.SetSlug;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import org.junit.jupiter.api.Test;
 
@@ -28,6 +37,7 @@ import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static com.commercetools.sync.shoppinglists.utils.LineItemUpdateActionUtils.buildLineItemsUpdateActions;
+import static com.commercetools.sync.shoppinglists.utils.ShoppingListSyncUtils.buildActions;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -437,6 +447,49 @@ class LineItemListUpdateActionUtilsTest {
             .hasMessage("LineItemDraft at position '1' of the ShoppingListDraft with key "
                 + "'shoppinglist-with-lineitems-not-expanded' has no SKU set. "
                 + "Please make sure all line items have SKUs");
+    }
+
+    @Test
+    void buildActions_WithDifferentValuesWithLineItems_ShouldReturnActions() {
+        final ShoppingList oldShoppingList =
+            readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
+
+        final ShoppingListDraft newShoppingList =
+            mapToShoppingListDraftWithResolvedLineItemReferences(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_132_WITH_CHANGES);
+
+
+        final List<UpdateAction<ShoppingList>> updateActions =
+            buildActions(oldShoppingList, newShoppingList, mock(ShoppingListSyncOptions.class));
+
+        assertThat(updateActions).containsExactly(
+            SetSlug.of(LocalizedString.ofEnglish("newSlug")),
+            ChangeName.of(LocalizedString.ofEnglish("newName")),
+            SetDescription.of(LocalizedString.ofEnglish("newDescription")),
+            SetCustomer.of(Reference.of(Customer.referenceTypeId(), "customer_id_2")),
+            SetAnonymousId.of("newAnonymousId"),
+            SetDeleteDaysAfterLastModification.of(45),
+            SetCustomField.ofJson("textField", JsonNodeFactory.instance.textNode("newTextValue")),
+            ChangeLineItemQuantity.of("line_item_id_1", 2L),
+            SetLineItemCustomField.ofJson("textField",
+                JsonNodeFactory.instance.textNode("newText1"), "line_item_id_1"),
+
+            RemoveLineItem.of("line_item_id_2"),
+            RemoveLineItem.of("line_item_id_3"),
+            AddLineItemWithSku.of(LineItemDraftBuilder
+                .ofSku("SKU-3", 6L)
+                .custom(CustomFieldsDraft.ofTypeIdAndJson("custom_type_id",
+                    singletonMap("textField",
+                        JsonNodeFactory.instance.textNode("newText3"))))
+                .addedAt(ZonedDateTime.parse("2020-11-04T10:00:00.000Z"))
+                .build()),
+            AddLineItemWithSku.of(LineItemDraftBuilder
+                .ofSku("SKU-2", 4L)
+                .custom(CustomFieldsDraft.ofTypeIdAndJson("custom_type_id",
+                    singletonMap("textField",
+                        JsonNodeFactory.instance.textNode("newText2"))))
+                .addedAt(ZonedDateTime.parse("2020-11-03T10:00:00.000Z"))
+                .build())
+        );
     }
 
     @Nonnull

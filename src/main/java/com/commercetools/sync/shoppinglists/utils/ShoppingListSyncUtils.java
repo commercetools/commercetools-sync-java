@@ -10,6 +10,7 @@ import java.util.List;
 
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildPrimaryResourceCustomUpdateActions;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
+import static com.commercetools.sync.shoppinglists.utils.LineItemUpdateActionUtils.buildLineItemsUpdateActions;
 import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActionUtils.buildChangeNameUpdateAction;
 import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActionUtils.buildSetAnonymousIdUpdateAction;
 import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActionUtils.buildSetCustomerUpdateAction;
@@ -51,13 +52,12 @@ public final class ShoppingListSyncUtils {
             buildSetDeleteDaysAfterLastModificationUpdateAction(oldShoppingList, newShoppingList)
         );
 
-        final List<UpdateAction<ShoppingList>> shoppingListCustomUpdateActions =
-            buildPrimaryResourceCustomUpdateActions(oldShoppingList,
-                newShoppingList::getCustom,
-                shoppingListCustomActionBuilder,
-                syncOptions);
+        updateActions.addAll(buildPrimaryResourceCustomUpdateActions(oldShoppingList,
+            newShoppingList::getCustom,
+            shoppingListCustomActionBuilder,
+            syncOptions));
 
-        updateActions.addAll(shoppingListCustomUpdateActions);
+        updateActions.addAll(buildLineItemsUpdateActions(oldShoppingList, newShoppingList, syncOptions));
 
         return updateActions;
     }
