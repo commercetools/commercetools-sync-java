@@ -422,8 +422,6 @@ class ProductSyncTest {
 
     @Test
     void sync_withChangedProductButConcurrentModificationExceptionAndFailedFetchOnRetry_shouldFailedUpdateProduct() {
-        // preparation
-
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> exceptions = new ArrayList<>();
         final List<String> warningCallBackMessages = new ArrayList<>();
@@ -461,9 +459,6 @@ class ProductSyncTest {
                 .toCompletableFuture()
                 .join();
 
-        // assertion
-
-        // Test and assertion
         assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
         assertThat(errorMessages).hasSize(1);
         assertThat(exceptions.get(0)).isNotNull();
