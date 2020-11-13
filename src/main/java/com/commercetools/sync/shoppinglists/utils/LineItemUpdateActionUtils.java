@@ -83,7 +83,8 @@ public final class LineItemUpdateActionUtils {
 
 
     /**
-     * Algorithm is documented on the `docs/adr/0002-shopping-lists-lineitem-and-textlineitem-update-actions.md`
+     * The decisions in the calculating update actions are documented on the
+     * `docs/adr/0002-shopping-lists-lineitem-and-textlineitem-update-actions.md`
      */
     @Nonnull
     private static List<UpdateAction<ShoppingList>> buildUpdateActions(
@@ -116,13 +117,15 @@ public final class LineItemUpdateActionUtils {
 
             }
 
-            if (oldLineItem.getVariant().getSku().equals(newLineItem.getSku())) {
+            if (oldLineItem.getVariant().getSku().equals(newLineItem.getSku())
+                && hasIdenticalAddedAtValues(oldLineItem, newLineItem)) {
                 // same sku, calculate actions.
                 updateActions.addAll(buildLineItemUpdateActions(
-                    oldShoppingList, newShoppingList, oldLineItems.get(i), newlineItems.get(i), syncOptions));
-
+                    oldShoppingList, newShoppingList, oldLineItem, newLineItem, syncOptions));
             } else {
                 // different sku means the order is different.
+                // To be able to ensure the order, we need to remove and add this line item back
+                // with the up to date values.
                 indexOfFirstDifference = i;
                 break;
             }
@@ -142,6 +145,17 @@ public final class LineItemUpdateActionUtils {
         }
 
         return updateActions;
+    }
+
+    private static boolean hasIdenticalAddedAtValues(
+        @Nonnull final LineItem oldLineItem,
+        @Nonnull final LineItemDraft newLineItem) {
+
+        if (newLineItem.getAddedAt() == null) {
+            return true; // omit, if not set in draft.
+        }
+
+        return oldLineItem.getAddedAt().equals(newLineItem.getAddedAt());
     }
 
     /**
@@ -231,7 +245,7 @@ public final class LineItemUpdateActionUtils {
             oldLineItem::getCustom,
             newLineItem::getCustom,
             new LineItemCustomActionBuilder(),
-            -1,
+            -1, // not used by util.
             t -> oldLineItem.getId(),
             lineItem -> LineItem.resourceTypeId(),
             t -> oldLineItem.getId(),

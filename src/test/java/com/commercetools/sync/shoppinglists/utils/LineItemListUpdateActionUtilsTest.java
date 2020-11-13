@@ -77,6 +77,10 @@ class LineItemListUpdateActionUtilsTest {
         RES_ROOT + "shoppinglist-with-lineitems-sku-132-with-changes.json";
     private static final String SHOPPING_LIST_WITH_LINE_ITEMS_NOT_EXPANDED =
         RES_ROOT + "shoppinglist-with-lineitems-not-expanded.json";
+    private static final String SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123_WITH_DIFFERENT_ADDED_AT =
+        RES_ROOT + "shoppinglist-with-lineitems-sku-123-with-different-addedAt.json";
+    private static final String SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123_WITHOUT_ADDED_AT =
+        RES_ROOT + "shoppinglist-with-lineitems-sku-123-without-addedAt.json";
 
     private static final ShoppingListSyncOptions SYNC_OPTIONS =
         ShoppingListSyncOptionsBuilder.of(mock(SphereClient.class)).build();
@@ -447,6 +451,41 @@ class LineItemListUpdateActionUtilsTest {
             .hasMessage("LineItemDraft at position '1' of the ShoppingListDraft with key "
                 + "'shoppinglist-with-lineitems-not-expanded' has no SKU set. "
                 + "Please make sure all line items have SKUs");
+    }
+
+    @Test
+    void buildLineItemsUpdateActions_WithIdenticalLineItemDraftsWithUpdatedAddedAt_ShouldBuildRemoveAndAddActions() {
+        final ShoppingList oldShoppingList =
+            readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
+
+        final ShoppingListDraft newShoppingList = mapToShoppingListDraftWithResolvedLineItemReferences(
+            SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123_WITH_DIFFERENT_ADDED_AT);
+
+        final List<UpdateAction<ShoppingList>> updateActions =
+            buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
+
+        assertThat(updateActions).containsExactly(
+            RemoveLineItem.of("line_item_id_1"),
+            RemoveLineItem.of("line_item_id_2"),
+            RemoveLineItem.of("line_item_id_3"),
+            AddLineItemWithSku.of(newShoppingList.getLineItems().get(0)), // SKU-1
+            AddLineItemWithSku.of(newShoppingList.getLineItems().get(1)), // SKU-2
+            AddLineItemWithSku.of(newShoppingList.getLineItems().get(2))  // SKU-3
+        );
+    }
+
+    @Test
+    void buildLineItemsUpdateActions_WithIdenticalLineItemDraftsWithoutAddedAtValues_ShouldNotBuildActions() {
+        final ShoppingList oldShoppingList =
+            readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
+
+        final ShoppingListDraft newShoppingList = mapToShoppingListDraftWithResolvedLineItemReferences(
+            SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123_WITHOUT_ADDED_AT);
+
+        final List<UpdateAction<ShoppingList>> updateActions =
+            buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
+
+        assertThat(updateActions).isEmpty();
     }
 
     @Test
