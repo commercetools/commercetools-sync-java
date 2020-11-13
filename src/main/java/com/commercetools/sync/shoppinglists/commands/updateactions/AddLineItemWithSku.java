@@ -54,17 +54,5 @@ public final class AddLineItemWithSku extends UpdateActionImpl<ShoppingList> {
     public String getSku() {
         return sku;
     }
-
-    public Long getQuantity() {
-        return quantity;
-    }
-
-    public ZonedDateTime getAddedAt() {
-        return addedAt;
-    }
-
-    public CustomFieldsDraft getCustom() {
-        return custom;
-    }
 }
 
