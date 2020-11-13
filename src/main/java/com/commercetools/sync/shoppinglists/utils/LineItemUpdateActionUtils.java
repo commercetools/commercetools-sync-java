@@ -21,6 +21,7 @@ import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
+import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
@@ -77,17 +78,51 @@ public final class LineItemUpdateActionUtils {
                                                                 .filter(Objects::nonNull)
                                                                 .collect(toList());
 
-        // todo: when size equals it could be only an order change, check separately.
+        return buildUpdateActions(oldShoppingList, newShoppingList, oldLineItems, newlineItems, syncOptions);
+    }
+
+
+    /**
+     * Algorithm is documented on the `docs/adr/0002-shopping-lists-lineitem-and-textlineitem-update-actions.md`
+     */
+    @Nonnull
+    private static List<UpdateAction<ShoppingList>> buildUpdateActions(
+        @Nonnull final ShoppingList oldShoppingList,
+        @Nonnull final ShoppingListDraft newShoppingList,
+        @Nonnull final List<LineItem> oldLineItems,
+        @Nonnull final List<LineItemDraft> newlineItems,
+        @Nonnull final ShoppingListSyncOptions syncOptions) {
 
         final List<UpdateAction<ShoppingList>> updateActions = new ArrayList<>();
+
         final int minSize = Math.min(oldLineItems.size(), newlineItems.size());
         int indexOfFirstDifference = minSize;
         for (int i = 0; i < minSize; i++) {
 
-            if (isMatchingBySku(oldLineItems.get(i), newlineItems.get(i))) {
+            final LineItem oldLineItem = oldLineItems.get(i);
+            final LineItemDraft newLineItem = newlineItems.get(i);
+
+            if (oldLineItem.getVariant() == null || StringUtils.isBlank(oldLineItem.getVariant().getSku())) {
+
+                throw new IllegalArgumentException(
+                    format("LineItem at position '%d' of the ShoppingList with key '%s' has no SKU set. "
+                        + "Please make sure all line items have SKUs", i, oldShoppingList.getKey()));
+
+            } else if (StringUtils.isBlank(newLineItem.getSku())) {
+
+                throw new IllegalArgumentException(
+                    format("LineItemDraft at position '%d' of the ShoppingListDraft with key '%s' has no SKU set. "
+                        + "Please make sure all line items have SKUs", i, newShoppingList.getKey()));
+
+            }
+
+            if (oldLineItem.getVariant().getSku().equals(newLineItem.getSku())) {
+                // same sku, calculate actions.
                 updateActions.addAll(buildLineItemUpdateActions(
                     oldShoppingList, newShoppingList, oldLineItems.get(i), newlineItems.get(i), syncOptions));
-            } else {  // different sku means the order is different.
+
+            } else {
+                // different sku means the order is different.
                 indexOfFirstDifference = i;
                 break;
             }
@@ -97,7 +132,7 @@ public final class LineItemUpdateActionUtils {
         // old: li-1, li-2
         // new: li-1, li-3, li-2
         // indexOfFirstDifference: 1 (li-2 vs li-3)
-        // expected: remove from old li-2, add from draft li-3, li-2 using the first difference.
+        // expected: remove from old li-2, add from draft li-3, li-2 starting from the index.
         for (int i = indexOfFirstDifference; i < oldLineItems.size(); i++) {
             updateActions.add(RemoveLineItem.of(oldLineItems.get(i).getId()));
         }
@@ -107,18 +142,6 @@ public final class LineItemUpdateActionUtils {
         }
 
         return updateActions;
-    }
-
-    private static boolean isMatchingBySku(
-        @Nonnull final LineItem lineItem,
-        @Nonnull final LineItemDraft lineItemDraft) {
-
-        // todo: what to do when sku is not set ? A error ? or skip ?
-        if (lineItem.getVariant() == null || StringUtils.isBlank(lineItem.getVariant().getSku())) {
-            return false;
-        }
-
-        return lineItem.getVariant().getSku().equals(lineItemDraft.getSku());
     }
 
     /**

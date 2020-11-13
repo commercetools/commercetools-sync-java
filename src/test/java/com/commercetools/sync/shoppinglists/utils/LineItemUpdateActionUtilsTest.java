@@ -336,6 +336,27 @@ class LineItemUpdateActionUtilsTest {
     }
 
     @Test
+    void buildChangeLineItemQuantityUpdateAction_WithNewZeroValue_ShouldBuildUpdateAction() {
+        final LineItem oldLineItem = mock(LineItem.class);
+        when(oldLineItem.getId()).thenReturn("line_item_id");
+        when(oldLineItem.getQuantity()).thenReturn(2L);
+
+        final LineItemDraft newLineItem =
+            LineItemDraftBuilder.ofSku("sku", null)
+                                .quantity(0L)
+                                .addedAt(ZonedDateTime.now())
+                                .build();
+
+        final UpdateAction<ShoppingList> updateAction =
+            buildChangeLineItemQuantityUpdateAction(oldLineItem, newLineItem).orElse(null);
+
+        assertThat(updateAction).isNotNull();
+        assertThat(updateAction.getAction()).isEqualTo("changeLineItemQuantity");
+        assertThat((ChangeLineItemQuantity) updateAction)
+            .isEqualTo(ChangeLineItemQuantity.of("line_item_id", 1L));
+    }
+
+    @Test
     void buildChangeLineItemQuantityUpdateAction_WithNewNullValueAndOldDefaultValue_ShouldNotBuildAction() {
         final LineItem oldLineItem = mock(LineItem.class);
         when(oldLineItem.getId()).thenReturn("line_item_id");
