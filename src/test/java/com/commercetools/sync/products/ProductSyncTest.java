@@ -556,8 +556,6 @@ class ProductSyncTest {
         final Map<String, String> keyToIds = new HashMap<>();
         keyToIds.put(productDraft.getKey(), UUID.randomUUID().toString());
 
-        when(mockProductService.fetchMatchingProductsByKeys(anySet()))
-                .thenReturn(supplyAsync(() -> { throw new CompletionException(new SphereException()); }));
         when(mockProductService.cacheKeysToIds(anySet())).thenReturn(completedFuture(keyToIds));
         when(mockProductService.fetchMatchingProductsByKeys(anySet()))
                 .thenReturn(completedFuture(singleton(mockProduct)));
@@ -580,8 +578,6 @@ class ProductSyncTest {
         final Map<String, String> keyToIds = new HashMap<>();
         keyToIds.put(productDraft.getKey(), UUID.randomUUID().toString());
 
-        when(mockProductService.fetchMatchingProductsByKeys(anySet()))
-                .thenReturn(supplyAsync(() -> { throw new CompletionException(new SphereException()); }));
         when(mockProductService.cacheKeysToIds(anySet())).thenReturn(completedFuture(keyToIds));
         when(mockProductService.fetchMatchingProductsByKeys(anySet()))
                 .thenReturn(completedFuture(singleton(mockProduct)));
@@ -605,8 +601,6 @@ class ProductSyncTest {
         final Map<String, String> keyToIds = new HashMap<>();
         keyToIds.put(productDraft.getKey(), UUID.randomUUID().toString());
 
-        when(mockProductService.fetchMatchingProductsByKeys(anySet()))
-                .thenReturn(supplyAsync(() -> { throw new CompletionException(new SphereException()); }));
         when(mockProductService.cacheKeysToIds(anySet())).thenReturn(completedFuture(keyToIds));
         when(mockProductService.fetchMatchingProductsByKeys(anySet()))
                 .thenReturn(completedFuture(singleton(mockProduct)));
