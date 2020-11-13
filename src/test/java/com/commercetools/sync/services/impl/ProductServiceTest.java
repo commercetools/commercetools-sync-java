@@ -166,7 +166,7 @@ class ProductServiceTest {
         assertThat(errorExceptions).isEmpty();
         assertThat(errorMessages).isEmpty();
         assertThat(future.toCompletableFuture())
-                .failsWithin(60, TimeUnit.SECONDS)
+                .failsWithin(1, TimeUnit.SECONDS)
                 .withThrowableOfType(ExecutionException.class)
                 .withCauseExactlyInstanceOf(BadGatewayException.class);
     }
@@ -182,7 +182,7 @@ class ProductServiceTest {
         assertThat(errorExceptions).isEmpty();
         assertThat(errorMessages).isEmpty();
         assertThat(future.toCompletableFuture())
-                .failsWithin(60, TimeUnit.SECONDS)
+                .failsWithin(1, TimeUnit.SECONDS)
                 .withThrowableOfType(ExecutionException.class)
                 .withCauseExactlyInstanceOf(BadGatewayException.class);
 
