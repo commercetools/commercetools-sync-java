@@ -27,11 +27,8 @@ public class FakeClient<T> implements SphereClient {
         isExecuted = true;
         if (mockResult != null) {
             return CompletableFutureUtils.successful((T)mockResult);
-        } else if (mockException != null) {
-            return CompletableFutureUtils.failed(mockException);
         }
-        return CompletableFutureUtils.successful(null);
-
+        return CompletableFutureUtils.failed(mockException);
     }
 
     @Override
