@@ -44,7 +44,6 @@ class ProductServiceTest {
         errorMessages = new ArrayList<>();
         errorExceptions = new ArrayList<>();
         initMockService(mock(SphereClient.class));
-
     }
 
     @Test
