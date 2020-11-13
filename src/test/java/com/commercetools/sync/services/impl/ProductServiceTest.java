@@ -152,7 +152,7 @@ class ProductServiceTest {
     }
 
     @Test
-    void fetchMatchingProductsByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
+    void fetchMatchingProductsByKeys_WithBadGateWayException_ShouldFail() {
         final FakeClient fakeProductClient = new FakeClient(new BadGatewayException());
 
         initMockService(fakeProductClient);
@@ -184,12 +184,9 @@ class ProductServiceTest {
                 .failsWithin(1, TimeUnit.SECONDS)
                 .withThrowableOfType(ExecutionException.class)
                 .withCauseExactlyInstanceOf(BadGatewayException.class);
-
     }
 
-    private void initMockService(
-            @Nonnull final SphereClient mockSphereClient) {
-
+    private void initMockService(@Nonnull final SphereClient mockSphereClient) {
         productSyncOptions = ProductSyncOptionsBuilder
                 .of(mockSphereClient)
                 .errorCallback((exception, oldResource, newResource, updateActions) -> {
