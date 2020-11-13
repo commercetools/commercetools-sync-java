@@ -173,7 +173,7 @@ class ProductServiceTest {
 
     @Test
     void fetchProduct_WithBadGatewayException_ShouldFail() {
-        final FakeClient fakeProductClient = new FakeClient(new BadGatewayException());
+        final FakeClient<Product> fakeProductClient = new FakeClient(new BadGatewayException());
 
         initMockService(fakeProductClient);
 
