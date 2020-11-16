@@ -12,6 +12,7 @@ import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.TextLineItem;
 import io.sphere.sdk.shoppinglists.TextLineItemDraft;
 import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
+import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeTextLineItemQuantity;
 import io.sphere.sdk.shoppinglists.commands.updateactions.SetTextLineItemCustomField;
 import io.sphere.sdk.shoppinglists.commands.updateactions.SetTextLineItemCustomType;
 import io.sphere.sdk.types.CustomFields;
@@ -24,8 +25,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
+import static com.commercetools.sync.shoppinglists.utils.TextLineItemUpdateActionUtils.buildChangeTextLineItemQuantityUpdateAction;
 import static com.commercetools.sync.shoppinglists.utils.TextLineItemUpdateActionUtils.buildTextLineItemCustomUpdateActions;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -181,8 +184,8 @@ class TextLineItemUpdateActionUtilsTest {
         assertThat(errors).hasSize(1);
         assertThat(errors.get(0))
             .isEqualTo(format("Failed to build custom fields update actions on the shopping-list-text-line-item with "
-                + "id '%s'. Reason: Custom type ids are not set for both the old and new shopping-list-text-line-item.",
-                oldTextLineItem.getId()));
+                + "id '%s'. Reason: Custom type ids are not set for both the old "
+                + "and new shopping-list-text-line-item.", oldTextLineItem.getId()));
     }
 
     @Test
@@ -279,5 +282,100 @@ class TextLineItemUpdateActionUtilsTest {
         assertThat(errors).isEmpty();
         assertThat(updateActions)
             .containsExactly(SetTextLineItemCustomField.ofJson("field", null, "text_line_item_id"));
+    }
+
+    @Test
+    void buildChangeTextLineItemQuantityUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
+        final TextLineItem oldLineItem = mock(TextLineItem.class);
+        when(oldLineItem.getId()).thenReturn("text_line_item_id");
+        when(oldLineItem.getQuantity()).thenReturn(2L);
+
+        final TextLineItemDraft newTextLineItem =
+            TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("name"), 2L)
+                                    .addedAt(ZonedDateTime.now())
+                                    .build();
+
+        final Optional<UpdateAction<ShoppingList>> updateAction =
+            buildChangeTextLineItemQuantityUpdateAction(oldLineItem, newTextLineItem);
+
+        assertThat(updateAction).isNotNull();
+        assertThat(updateAction).isNotPresent();
+    }
+
+    @Test
+    void buildChangeTextLineItemQuantityUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
+        final TextLineItem oldLineItem = mock(TextLineItem.class);
+        when(oldLineItem.getId()).thenReturn("text_line_item_id");
+        when(oldLineItem.getQuantity()).thenReturn(2L);
+
+        final TextLineItemDraft newTextLineItem =
+            TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("name"), 4L)
+                                    .addedAt(ZonedDateTime.now())
+                                    .build();
+
+        final UpdateAction<ShoppingList> updateAction =
+            buildChangeTextLineItemQuantityUpdateAction(oldLineItem, newTextLineItem).orElse(null);
+
+        assertThat(updateAction).isNotNull();
+        assertThat(updateAction.getAction()).isEqualTo("changeTextLineItemQuantity");
+        assertThat((ChangeTextLineItemQuantity) updateAction)
+            .isEqualTo(ChangeTextLineItemQuantity.of("text_line_item_id", 4L));
+    }
+
+    @Test
+    void buildChangeTextLineItemQuantityUpdateAction_WithNewNullValue_ShouldBuildUpdateAction() {
+        final TextLineItem oldTextLineItem = mock(TextLineItem.class);
+        when(oldTextLineItem.getId()).thenReturn("text_line_item_id");
+        when(oldTextLineItem.getQuantity()).thenReturn(2L);
+
+        final TextLineItemDraft newTextLineItem =
+            TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("name"), null)
+                                    .addedAt(ZonedDateTime.now())
+                                    .build();
+
+        final UpdateAction<ShoppingList> updateAction =
+            buildChangeTextLineItemQuantityUpdateAction(oldTextLineItem, newTextLineItem).orElse(null);
+
+        assertThat(updateAction).isNotNull();
+        assertThat(updateAction.getAction()).isEqualTo("changeTextLineItemQuantity");
+        assertThat((ChangeTextLineItemQuantity) updateAction)
+            .isEqualTo(ChangeTextLineItemQuantity.of("text_line_item_id", 1L));
+    }
+
+    @Test
+    void buildChangeTextLineItemQuantityUpdateAction_WithNewZeroValue_ShouldBuildUpdateAction() {
+        final TextLineItem oldTextLineItem = mock(TextLineItem.class);
+        when(oldTextLineItem.getId()).thenReturn("text_line_item_id");
+        when(oldTextLineItem.getQuantity()).thenReturn(2L);
+
+        final TextLineItemDraft newTextLineItem =
+            TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("name"), 0L)
+                                    .addedAt(ZonedDateTime.now())
+                                    .build();
+
+        final UpdateAction<ShoppingList> updateAction =
+            buildChangeTextLineItemQuantityUpdateAction(oldTextLineItem, newTextLineItem).orElse(null);
+
+        assertThat(updateAction).isNotNull();
+        assertThat(updateAction.getAction()).isEqualTo("changeTextLineItemQuantity");
+        assertThat((ChangeTextLineItemQuantity) updateAction)
+            .isEqualTo(ChangeTextLineItemQuantity.of("text_line_item_id", 0L));
+    }
+
+    @Test
+    void buildChangeTextLineItemQuantityUpdateAction_WithNewNullValueAndOldDefaultValue_ShouldNotBuildAction() {
+        final TextLineItem oldTextLineItem = mock(TextLineItem.class);
+        when(oldTextLineItem.getId()).thenReturn("text_line_item_id");
+        when(oldTextLineItem.getQuantity()).thenReturn(1L);
+
+        final TextLineItemDraft newTextLineItem =
+            TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("name"), null)
+                                    .addedAt(ZonedDateTime.now())
+                                    .build();
+
+        final Optional<UpdateAction<ShoppingList>> updateAction =
+            buildChangeTextLineItemQuantityUpdateAction(oldTextLineItem, newTextLineItem);
+
+        assertThat(updateAction).isNotPresent();
     }
 }
