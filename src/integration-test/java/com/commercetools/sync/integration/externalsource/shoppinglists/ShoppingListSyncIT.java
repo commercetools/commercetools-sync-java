@@ -128,14 +128,6 @@ class ShoppingListSyncIT {
 
     @Test
     void sync_WithModifiedShoppingList_ShouldUpdateShoppingList() {
-        // Platform is not returning a variant sku, so we need to expand with lineItems[*].variant
-        //Ref: https://docs.commercetools.com/api/projects/shoppingLists#lineitem which desribed as
-        //
-        //I figured out that, when the product is in unpublish status the variant is not expanded, but you could add it into the draft,
-        //Not sure what to do for this case, Should we trigger error callback for this. WDYT ?
-        // Interesting is te grapqhl is returning the variant expanded.
-
-
         // WHEN SKU-5 IS ADDED IT'S INCREMENTING THE SKU-5 INSTEAD OF ADDING NEW.
 
 
