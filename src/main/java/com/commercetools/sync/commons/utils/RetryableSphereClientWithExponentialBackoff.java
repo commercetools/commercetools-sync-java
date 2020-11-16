@@ -191,7 +191,7 @@ public final class RetryableSphereClientWithExponentialBackoff {
     /**
      * Computes a exponential backoff time delay in milliseconds to be used in retries, the delay grows with failed
      * retry attempts count with a randomness interval.
-     * (see: <a href=https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/>)
+     * (see: <a href="https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter"/>)
      * (see: <a href="http://dthain.blogspot.com/2009/02/exponential-backoff-in-distributed.html"/>)
      *
      * @param retryAttempt the number of attempts already tried by the client.
