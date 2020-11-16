@@ -121,11 +121,11 @@ public final class LineItemUpdateActionUtils {
 
             if (oldLineItem.getVariant().getSku().equals(newLineItem.getSku())
                 && hasIdenticalAddedAtValues(oldLineItem, newLineItem)) {
-                // same sku, calculate actions.
+
                 updateActions.addAll(buildLineItemUpdateActions(
                     oldShoppingList, newShoppingList, oldLineItem, newLineItem, syncOptions));
             } else {
-                // different sku means the order is different.
+                // different sku or addedAt means the order is different.
                 // To be able to ensure the order, we need to remove and add this line item back
                 // with the up to date values.
                 indexOfFirstDifference = i;
