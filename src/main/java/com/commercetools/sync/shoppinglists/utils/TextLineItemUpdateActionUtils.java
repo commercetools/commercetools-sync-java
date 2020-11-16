@@ -2,13 +2,13 @@ package com.commercetools.sync.shoppinglists.utils;
 
 import com.commercetools.sync.commons.utils.CustomUpdateActionUtils;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
+import com.commercetools.sync.shoppinglists.commands.updateactions.AddTextLineItemWithAddedAt;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.shoppinglists.ShoppingList;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.TextLineItem;
 import io.sphere.sdk.shoppinglists.TextLineItemDraft;
-import io.sphere.sdk.shoppinglists.commands.updateactions.AddTextLineItem;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeTextLineItemName;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeTextLineItemQuantity;
 import io.sphere.sdk.shoppinglists.commands.updateactions.RemoveTextLineItem;
@@ -16,12 +16,14 @@ import io.sphere.sdk.shoppinglists.commands.updateactions.SetTextLineItemDescrip
 import org.apache.commons.lang3.math.NumberUtils;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
+import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 
@@ -70,11 +72,7 @@ public final class TextLineItemUpdateActionUtils {
             return newShoppingList.getTextLineItems()
                                   .stream()
                                   .filter(Objects::nonNull)
-                                  .map(textLineItemDraft ->
-                                      AddTextLineItem.of(textLineItemDraft.getName())
-                                                     .withDescription(textLineItemDraft.getDescription())
-                                                     .withCustom(textLineItemDraft.getCustom())
-                                                     .withQuantity(textLineItemDraft.getQuantity()))
+                                  .map(AddTextLineItemWithAddedAt::of)
                                   .collect(toList());
         }
 
@@ -84,9 +82,51 @@ public final class TextLineItemUpdateActionUtils {
                                                                         .filter(Objects::nonNull)
                                                                         .collect(toList());
 
-        return emptyList();
+        return buildUpdateActions(oldShoppingList, newShoppingList, oldTextLineItems, newTextLineItems, syncOptions);
     }
 
+    /**
+     * The decisions in the calculating update actions are documented on the
+     * `docs/adr/0002-shopping-lists-lineitem-and-textlineitem-update-actions.md`
+     */
+    @Nonnull
+    private static List<UpdateAction<ShoppingList>> buildUpdateActions(
+        @Nonnull final ShoppingList oldShoppingList,
+        @Nonnull final ShoppingListDraft newShoppingList,
+        @Nonnull final List<TextLineItem> oldTextLineItems,
+        @Nonnull final List<TextLineItemDraft> newTextLineItems,
+        @Nonnull final ShoppingListSyncOptions syncOptions) {
+
+        final List<UpdateAction<ShoppingList>> updateActions = new ArrayList<>();
+
+        final int minSize = Math.min(oldTextLineItems.size(), newTextLineItems.size());
+        for (int i = 0; i < minSize; i++) {
+
+            final TextLineItem oldTextLineItem = oldTextLineItems.get(i);
+            final TextLineItemDraft newTextLineItem = newTextLineItems.get(i);
+
+            if (newTextLineItem.getName() == null || newTextLineItem.getName().getLocales().isEmpty()) {
+
+                throw new IllegalArgumentException(
+                    format("TextLineItemDraft at position '%d' of the ShoppingListDraft with key '%s' has no name set. "
+                        + "Please make sure all text line items have names.", i, newShoppingList.getKey()));
+
+            }
+
+            updateActions.addAll(buildTextLineItemUpdateActions(
+                oldShoppingList, newShoppingList, oldTextLineItem, newTextLineItem, syncOptions));
+        }
+
+        for (int i = minSize; i < oldTextLineItems.size(); i++) {
+            updateActions.add(RemoveTextLineItem.of(oldTextLineItems.get(i).getId()));
+        }
+
+        for (int i = minSize; i < newTextLineItems.size(); i++) {
+            updateActions.add(AddTextLineItemWithAddedAt.of(newTextLineItems.get(i)));
+        }
+
+        return updateActions;
+    }
 
     /**
      * Compares all the fields of a {@link TextLineItem} and a {@link TextLineItemDraft} and returns a list of
@@ -217,7 +257,7 @@ public final class TextLineItemUpdateActionUtils {
             new TextLineItemCustomActionBuilder(),
             null, // not used by util.
             t -> oldTextLineItem.getId(),
-            lineItem -> TextLineItem.resourceTypeId(),
+            textLineItem -> TextLineItem.resourceTypeId(),
             t -> oldTextLineItem.getId(),
             syncOptions);
     }
