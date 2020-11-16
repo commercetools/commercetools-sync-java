@@ -2,6 +2,9 @@ package com.commercetools.sync.commons.helpers;
 
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.sphere.sdk.client.HttpRequestIntent;
 import io.sphere.sdk.http.HttpMethod;
 import io.sphere.sdk.http.HttpResponse;
@@ -128,11 +131,14 @@ class ResourceKeyIdGraphQlRequestTest {
     }
 
     @Test
-    void deserialize_WithEmptyResult_ShouldDeserializeCorrectly() {
+    void deserialize_WithEmptyResult_ShouldDeserializeCorrectly() throws JsonProcessingException {
         //preparation
         String jsonAsString = "{\"data\":{\"categories\":{\"results\":[]}}}";
-        final HttpResponse httpResponse = mock(HttpResponse.class);
-        when(httpResponse.getResponseBody()).thenReturn(jsonAsString.getBytes());
+
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final JsonNode jsonNode = objectMapper.readTree(jsonAsString);
+        final HttpResponse httpResponse = HttpResponse.of(200, jsonNode.toString());
+
         final ResourceKeyIdGraphQlRequest resourceKeyIdGraphQlRequest =
             new ResourceKeyIdGraphQlRequest(singleton("key-1"), GraphQlQueryResources.CATEGORIES);
 
@@ -145,11 +151,14 @@ class ResourceKeyIdGraphQlRequestTest {
     }
 
     @Test
-    void deserialize_WithSingleResult_ShouldReturnSingletonMap() {
+    void deserialize_WithSingleResult_ShouldReturnSingletonMap() throws JsonProcessingException {
         //preparation
-        HttpResponse httpResponse = mock(HttpResponse.class);
         String jsonAsString = "{\"data\":{\"categories\":{\"results\":[{\"id\":\"id-1\",\"key\":\"key-1\"}]}}}";
-        when(httpResponse.getResponseBody()).thenReturn(jsonAsString.getBytes());
+
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final JsonNode jsonNode = objectMapper.readTree(jsonAsString);
+        final HttpResponse httpResponse = HttpResponse.of(200, jsonNode.toString());
+
         final ResourceKeyIdGraphQlRequest resourceKeyIdGraphQlRequest =
             new ResourceKeyIdGraphQlRequest(singleton("key-1"), GraphQlQueryResources.CATEGORIES);
 
@@ -168,12 +177,15 @@ class ResourceKeyIdGraphQlRequestTest {
     }
 
     @Test
-    void deserialize_WithMultipleResults_ShouldReturnCorrectResult() {
+    void deserialize_WithMultipleResults_ShouldReturnCorrectResult() throws JsonProcessingException {
         //preparation
-        HttpResponse httpResponse = mock(HttpResponse.class);
         String jsonAsString = "{\"data\":{\"categories\":{\"results\":[{\"id\":\"id-1\",\"key\":\"key-1\"},"
             + "{\"id\":\"id-2\",\"key\":\"key-2\"},{\"id\":\"id-3\",\"key\":\"key-3\"}]}}}";
-        when(httpResponse.getResponseBody()).thenReturn(jsonAsString.getBytes());
+
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final JsonNode jsonNode = objectMapper.readTree(jsonAsString);
+        final HttpResponse httpResponse = HttpResponse.of(200, jsonNode.toString());
+
         final ResourceKeyIdGraphQlRequest resourceKeyIdGraphQlRequest =
             new ResourceKeyIdGraphQlRequest(singleton("key-1"), GraphQlQueryResources.CATEGORIES);
 
