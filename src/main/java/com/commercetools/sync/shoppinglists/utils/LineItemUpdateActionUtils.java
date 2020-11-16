@@ -121,11 +121,11 @@ public final class LineItemUpdateActionUtils {
 
             if (oldLineItem.getVariant().getSku().equals(newLineItem.getSku())
                 && hasIdenticalAddedAtValues(oldLineItem, newLineItem)) {
-                // same sku, calculate actions.
+
                 updateActions.addAll(buildLineItemUpdateActions(
                     oldShoppingList, newShoppingList, oldLineItem, newLineItem, syncOptions));
             } else {
-                // different sku means the order is different.
+                // different sku or addedAt means the order is different.
                 // To be able to ensure the order, we need to remove and add this line item back
                 // with the up to date values.
                 indexOfFirstDifference = i;
@@ -198,8 +198,9 @@ public final class LineItemUpdateActionUtils {
      * {@link UpdateAction}. If both {@link LineItem} and {@link LineItemDraft} have the same
      * {@code quantity} values, then no update action is needed and empty optional will be returned.
      *
-     * <p>Note: If {@code quantity} from the {@code newLineItem} is {@code null} or {@code 0}, the new {@code quantity}
-     * will be set to default value {@code 1L}.
+     * <p>Note: If {@code quantity} from the {@code newLineItem} is {@code null}, the new {@code quantity}
+     * will be set to default value {@code 1L}.  If {@code quantity} from the {@code newLineItem} is {@code 0}, then it
+     * means removing the line item.
      *
      * @param oldLineItem the line item which should be updated.
      * @param newLineItem the line item draft where we get the new quantity.
@@ -211,7 +212,6 @@ public final class LineItemUpdateActionUtils {
         @Nonnull final LineItemDraft newLineItem) {
 
         final Long newLineItemQuantity = newLineItem.getQuantity() == null
-            || newLineItem.getQuantity().equals(NumberUtils.LONG_ZERO)
             ? NumberUtils.LONG_ONE : newLineItem.getQuantity();
 
         return buildUpdateAction(oldLineItem.getQuantity(), newLineItemQuantity,
@@ -247,7 +247,7 @@ public final class LineItemUpdateActionUtils {
             oldLineItem::getCustom,
             newLineItem::getCustom,
             new LineItemCustomActionBuilder(),
-            -1, // not used by util.
+            null, // not used by util.
             t -> oldLineItem.getId(),
             lineItem -> LineItem.resourceTypeId(),
             t -> oldLineItem.getId(),

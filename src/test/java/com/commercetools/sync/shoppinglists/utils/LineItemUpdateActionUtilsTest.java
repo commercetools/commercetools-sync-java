@@ -353,7 +353,7 @@ class LineItemUpdateActionUtilsTest {
         assertThat(updateAction).isNotNull();
         assertThat(updateAction.getAction()).isEqualTo("changeLineItemQuantity");
         assertThat((ChangeLineItemQuantity) updateAction)
-            .isEqualTo(ChangeLineItemQuantity.of("line_item_id", 1L));
+            .isEqualTo(ChangeLineItemQuantity.of("line_item_id", 0L));
     }
 
     @Test
