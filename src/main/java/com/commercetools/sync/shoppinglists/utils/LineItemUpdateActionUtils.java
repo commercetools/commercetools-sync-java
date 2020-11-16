@@ -48,8 +48,10 @@ public final class LineItemUpdateActionUtils {
         @Nonnull final ShoppingListDraft newShoppingList,
         @Nonnull final ShoppingListSyncOptions syncOptions) {
 
-        boolean hasOldLineItems = oldShoppingList.getLineItems() != null && !oldShoppingList.getLineItems().isEmpty();
-        boolean hasNewLineItems = newShoppingList.getLineItems() != null && !newShoppingList.getLineItems().isEmpty()
+        final boolean hasOldLineItems = oldShoppingList.getLineItems() != null
+            && !oldShoppingList.getLineItems().isEmpty();
+        final boolean hasNewLineItems = newShoppingList.getLineItems() != null
+            && !newShoppingList.getLineItems().isEmpty()
             && newShoppingList.getLineItems().stream().anyMatch(Objects::nonNull);
 
         if (hasOldLineItems && !hasNewLineItems) {
