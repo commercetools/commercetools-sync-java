@@ -89,7 +89,7 @@ class LineItemListUpdateActionUtilsTest {
         new LineItemReferenceResolver(SYNC_OPTIONS, getMockTypeService());
 
     @Test
-    void buildLineItemsUpdateActions_WithEmptyNewAndNullOldLineItems_ShouldNotBuildActions() {
+    void buildLineItemsUpdateActions_WithoutNewAndWithNullOldLineItems_ShouldNotBuildActions() {
         final ShoppingList oldShoppingList = mock(ShoppingList.class);
         when(oldShoppingList.getLineItems()).thenReturn(emptyList());
 
