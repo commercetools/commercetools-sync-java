@@ -67,7 +67,7 @@ public final class RetryableSphereClientWithExponentialBackoff {
     }
 
     /**
-     * Sets the maxDelay value.
+     * Sets the maxDelay value value in milliseconds.
      * @param maxDelay - build with maxDelay value.
      * @return {@link RetryableSphereClientWithExponentialBackoff} with given maxDelay value.
      */
@@ -77,7 +77,7 @@ public final class RetryableSphereClientWithExponentialBackoff {
     }
 
     /**
-     * Sets the initialDelay value.
+     * Sets the initialDelay value in milliseconds.
      * @param initialDelay - build with initialDelay value.
      * @return {@link RetryableSphereClientWithExponentialBackoff} with given initialDelay value.
      */
@@ -89,7 +89,7 @@ public final class RetryableSphereClientWithExponentialBackoff {
     }
 
     /**
-     * Sets the timeUnit.
+     * Sets the timeUnit in milliseconds.
      * @param timeUnit - build with timeUnit value.
      * @return {@link RetryableSphereClientWithExponentialBackoff} with given timeUnit value.
      */
@@ -99,7 +99,7 @@ public final class RetryableSphereClientWithExponentialBackoff {
     }
 
     /**
-     * Sets the Max Retry value.
+     * Sets the Max Retry value, It should be greater than 1 for the Retry attempt.
      * @param maxRetryAttempt - build with maxRetries value.
      * @return {@link RetryableSphereClientWithExponentialBackoff} with given maxRetries value.
      */
@@ -111,7 +111,7 @@ public final class RetryableSphereClientWithExponentialBackoff {
     }
 
     /**
-     * Sets the Max Parallel Requests value.
+     * Sets the Max Parallel Requests value, It should be always positive number.
      * @param maxParallelRequests - build with maxParallelRequests value.
      * @return {@link RetryableSphereClientWithExponentialBackoff} with given maxParallelRequests value.
      */
