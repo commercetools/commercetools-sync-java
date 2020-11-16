@@ -34,6 +34,7 @@ import static com.commercetools.sync.shoppinglists.utils.TextLineItemUpdateActio
 import static com.commercetools.sync.shoppinglists.utils.TextLineItemUpdateActionUtils.buildChangeTextLineItemQuantityUpdateAction;
 import static com.commercetools.sync.shoppinglists.utils.TextLineItemUpdateActionUtils.buildSetTextLineItemDescriptionUpdateAction;
 import static com.commercetools.sync.shoppinglists.utils.TextLineItemUpdateActionUtils.buildTextLineItemCustomUpdateActions;
+import static com.commercetools.sync.shoppinglists.utils.TextLineItemUpdateActionUtils.buildTextLineItemUpdateActions;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -495,5 +496,81 @@ class TextLineItemUpdateActionUtilsTest {
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction).isNotPresent();
+    }
+
+    @Test
+    void buildTextLineItemUpdateActions_WithSameValues_ShouldNotBuildUpdateAction() {
+        final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
+        oldCustomFieldsMap.put("field1", JsonNodeFactory.instance.booleanNode(true));
+        oldCustomFieldsMap.put("field2", JsonNodeFactory.instance.objectNode().put("de", "val"));
+
+        final CustomFields oldCustomFields = mock(CustomFields.class);
+        when(oldCustomFields.getType()).thenReturn(Type.referenceOfId("1"));
+        when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+
+        final CustomFieldsDraft newCustomFieldsDraft =
+            CustomFieldsDraft.ofTypeIdAndJson("1", oldCustomFieldsMap);
+
+        final TextLineItem oldTextLineItem = mock(TextLineItem.class);
+        when(oldTextLineItem.getId()).thenReturn("text_line_item_id");
+        when(oldTextLineItem.getName()).thenReturn(LocalizedString.ofEnglish("name"));
+        when(oldTextLineItem.getDescription()).thenReturn(LocalizedString.ofEnglish("desc"));
+        when(oldTextLineItem.getQuantity()).thenReturn(1L);
+        when(oldTextLineItem.getCustom()).thenReturn(oldCustomFields);
+
+        final TextLineItemDraft newTextLineItem =
+            TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("name"), 1L)
+                                    .description(LocalizedString.ofEnglish("desc"))
+                                    .custom(newCustomFieldsDraft)
+                                    .build();
+
+        final List<UpdateAction<ShoppingList>> updateActions = buildTextLineItemUpdateActions(
+            oldShoppingList, newShoppingList, oldTextLineItem, newTextLineItem, SYNC_OPTIONS);
+
+        assertThat(updateActions).isEmpty();
+    }
+
+    @Test
+    void buildTextLineItemUpdateActions_WithDifferentValues_ShouldBuildUpdateAction() {
+        final Map<String, JsonNode> oldCustomFieldsMap = new HashMap<>();
+        oldCustomFieldsMap.put("field1", JsonNodeFactory.instance.booleanNode(true));
+        oldCustomFieldsMap.put("field2", JsonNodeFactory.instance.objectNode().put("de", "val1"));
+
+        final Map<String, JsonNode> newCustomFieldsMap = new HashMap<>();
+        newCustomFieldsMap.put("field1", JsonNodeFactory.instance.booleanNode(false));
+        newCustomFieldsMap.put("field2", JsonNodeFactory.instance.objectNode().put("es", "val2"));
+
+        final CustomFields oldCustomFields = mock(CustomFields.class);
+        when(oldCustomFields.getType()).thenReturn(Type.referenceOfId("1"));
+        when(oldCustomFields.getFieldsJsonMap()).thenReturn(oldCustomFieldsMap);
+
+        final CustomFieldsDraft newCustomFieldsDraft =
+            CustomFieldsDraft.ofTypeIdAndJson("1", newCustomFieldsMap);
+
+        final TextLineItem oldTextLineItem = mock(TextLineItem.class);
+        when(oldTextLineItem.getId()).thenReturn("text_line_item_id");
+        when(oldTextLineItem.getName()).thenReturn(LocalizedString.ofEnglish("name"));
+        when(oldTextLineItem.getDescription()).thenReturn(LocalizedString.ofEnglish("desc"));
+        when(oldTextLineItem.getQuantity()).thenReturn(1L);
+        when(oldTextLineItem.getCustom()).thenReturn(oldCustomFields);
+
+        final TextLineItemDraft newTextLineItem =
+            TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("newName"), 2L)
+                                    .description(LocalizedString.ofEnglish("newDesc"))
+                                    .custom(newCustomFieldsDraft)
+                                    .build();
+
+        final List<UpdateAction<ShoppingList>> updateActions = buildTextLineItemUpdateActions(
+            oldShoppingList, newShoppingList, oldTextLineItem, newTextLineItem, SYNC_OPTIONS);
+
+        assertThat(updateActions).containsExactly(
+            ChangeTextLineItemName.of("text_line_item_id", LocalizedString.ofEnglish("newName")),
+            SetTextLineItemDescription.of("text_line_item_id").withDescription(LocalizedString.ofEnglish("newDesc")),
+            ChangeTextLineItemQuantity.of("text_line_item_id", 2L),
+            SetTextLineItemCustomField.ofJson("field1",
+                JsonNodeFactory.instance.booleanNode(false), "text_line_item_id"),
+            SetTextLineItemCustomField.ofJson("field2",
+                JsonNodeFactory.instance.objectNode().put("es", "val2"), "text_line_item_id")
+        );
     }
 }
