@@ -17,6 +17,7 @@ import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActio
 import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActionUtils.buildSetDeleteDaysAfterLastModificationUpdateAction;
 import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActionUtils.buildSetDescriptionUpdateAction;
 import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActionUtils.buildSetSlugUpdateAction;
+import static com.commercetools.sync.shoppinglists.utils.TextLineItemUpdateActionUtils.buildTextLineItemsUpdateActions;
 
 public final class ShoppingListSyncUtils {
 
@@ -58,6 +59,8 @@ public final class ShoppingListSyncUtils {
             syncOptions));
 
         updateActions.addAll(buildLineItemsUpdateActions(oldShoppingList, newShoppingList, syncOptions));
+
+        updateActions.addAll(buildTextLineItemsUpdateActions(oldShoppingList, newShoppingList, syncOptions));
 
         return updateActions;
     }

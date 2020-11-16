@@ -8,15 +8,24 @@ import com.commercetools.sync.shoppinglists.helpers.TextLineItemReferenceResolve
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.models.LocalizedString;
+import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.shoppinglists.ShoppingList;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
 import io.sphere.sdk.shoppinglists.TextLineItemDraft;
 import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
+import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeName;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeTextLineItemName;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeTextLineItemQuantity;
 import io.sphere.sdk.shoppinglists.commands.updateactions.RemoveTextLineItem;
+import io.sphere.sdk.shoppinglists.commands.updateactions.SetAnonymousId;
+import io.sphere.sdk.shoppinglists.commands.updateactions.SetCustomField;
+import io.sphere.sdk.shoppinglists.commands.updateactions.SetCustomer;
+import io.sphere.sdk.shoppinglists.commands.updateactions.SetDeleteDaysAfterLastModification;
+import io.sphere.sdk.shoppinglists.commands.updateactions.SetDescription;
+import io.sphere.sdk.shoppinglists.commands.updateactions.SetSlug;
 import io.sphere.sdk.shoppinglists.commands.updateactions.SetTextLineItemCustomField;
 import io.sphere.sdk.shoppinglists.commands.updateactions.SetTextLineItemDescription;
 import io.sphere.sdk.types.CustomFieldsDraft;
@@ -32,6 +41,7 @@ import java.util.Optional;
 
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
 import static com.commercetools.sync.shoppinglists.utils.LineItemUpdateActionUtils.buildLineItemsUpdateActions;
+import static com.commercetools.sync.shoppinglists.utils.ShoppingListSyncUtils.buildActions;
 import static com.commercetools.sync.shoppinglists.utils.TextLineItemUpdateActionUtils.buildTextLineItemsUpdateActions;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static java.util.Arrays.asList;
@@ -340,6 +350,53 @@ class TextLineItemListUpdateActionUtilsTest {
         assertThat(errors.get(0))
             .isEqualTo("TextLineItemDraft at position '0' of the ShoppingListDraft with key "
                 + "'key' has no name set. Please make sure all text line items have names.");
+    }
+
+    @Test
+    void buildActions_WithDifferentValuesWithTextLineItems_ShouldReturnActions() {
+        final ShoppingList oldShoppingList =
+            readObjectFromResource(SHOPPING_LIST_WITH_TEXT_LINE_ITEMS_NAME_123, ShoppingList.class);
+
+        final ShoppingListDraft newShoppingList =
+            mapToShoppingListDraftWithResolvedTextLineItemReferences(
+                SHOPPING_LIST_WITH_TEXT_LINE_ITEMS_NAME_123_WITH_CHANGES);
+
+        final List<UpdateAction<ShoppingList>> updateActions =
+            buildActions(oldShoppingList, newShoppingList, mock(ShoppingListSyncOptions.class));
+
+        assertThat(updateActions).containsExactly(
+            SetSlug.of(LocalizedString.ofEnglish("newSlug")),
+            ChangeName.of(LocalizedString.ofEnglish("newName")),
+            SetDescription.of(LocalizedString.ofEnglish("newDescription")),
+            SetCustomer.of(Reference.of(Customer.referenceTypeId(), "customer_id_2")),
+            SetAnonymousId.of("newAnonymousId"),
+            SetDeleteDaysAfterLastModification.of(45),
+            SetCustomField.ofJson("textField", JsonNodeFactory.instance.textNode("newTextValue")),
+
+            ChangeTextLineItemName.of("text_line_item_id_1",
+                LocalizedString.ofEnglish("newName1-EN").plus(Locale.GERMAN, "newName1-DE")),
+            SetTextLineItemDescription.of("text_line_item_id_1").withDescription(
+                LocalizedString.ofEnglish("newDesc1-EN").plus(Locale.GERMAN, "newDesc1-DE")),
+            ChangeTextLineItemQuantity.of("text_line_item_id_1", 2L),
+            SetTextLineItemCustomField.ofJson("textField",
+                JsonNodeFactory.instance.textNode("newText1"), "text_line_item_id_1"),
+
+            ChangeTextLineItemName.of("text_line_item_id_2",
+                LocalizedString.ofEnglish("newName2-EN").plus(Locale.GERMAN, "newName2-DE")),
+            SetTextLineItemDescription.of("text_line_item_id_2").withDescription(
+                LocalizedString.ofEnglish("newDesc2-EN").plus(Locale.GERMAN, "newDesc2-DE")),
+            ChangeTextLineItemQuantity.of("text_line_item_id_2", 4L),
+            SetTextLineItemCustomField.ofJson("textField",
+                JsonNodeFactory.instance.textNode("newText2"), "text_line_item_id_2"),
+
+            ChangeTextLineItemName.of("text_line_item_id_3",
+                LocalizedString.ofEnglish("newName3-EN").plus(Locale.GERMAN, "newName3-DE")),
+            SetTextLineItemDescription.of("text_line_item_id_3").withDescription(
+                LocalizedString.ofEnglish("newDesc3-EN").plus(Locale.GERMAN, "newDesc3-DE")),
+            ChangeTextLineItemQuantity.of("text_line_item_id_3", 6L),
+            SetTextLineItemCustomField.ofJson("textField",
+                JsonNodeFactory.instance.textNode("newText3"), "text_line_item_id_3")
+        );
     }
 
     @Nonnull
