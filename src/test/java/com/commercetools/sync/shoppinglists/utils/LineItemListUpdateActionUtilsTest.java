@@ -77,10 +77,6 @@ class LineItemListUpdateActionUtilsTest {
         RES_ROOT + "shoppinglist-with-lineitems-sku-132-with-changes.json";
     private static final String SHOPPING_LIST_WITH_LINE_ITEMS_NOT_EXPANDED =
         RES_ROOT + "shoppinglist-with-lineitems-not-expanded.json";
-    private static final String SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123_WITH_DIFFERENT_ADDED_AT =
-        RES_ROOT + "shoppinglist-with-lineitems-sku-123-with-different-addedAt.json";
-    private static final String SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123_WITHOUT_ADDED_AT =
-        RES_ROOT + "shoppinglist-with-lineitems-sku-123-without-addedAt.json";
 
     private static final ShoppingListSyncOptions SYNC_OPTIONS =
         ShoppingListSyncOptionsBuilder.of(mock(SphereClient.class)).build();
@@ -424,7 +420,7 @@ class LineItemListUpdateActionUtilsTest {
     }
 
     @Test
-    void buildLineItemsUpdateAction_WithNotExpandedLineItem_ShouldTriggerErrorCalback() {
+    void buildLineItemsUpdateAction_WithNotExpandedLineItem_ShouldTriggerErrorCallback() {
         final ShoppingList oldShoppingList =
             readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_NOT_EXPANDED, ShoppingList.class);
 
@@ -460,7 +456,7 @@ class LineItemListUpdateActionUtilsTest {
     }
 
     @Test
-    void buildLineItemsUpdateAction_WithLineItemWithoutSku_ShouldTriggerErrorCalback() {
+    void buildLineItemsUpdateAction_WithLineItemWithoutSku_ShouldTriggerErrorCallback() {
         final ShoppingList oldShoppingList =
             readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_132_WITH_CHANGES, ShoppingList.class);
 
@@ -495,48 +491,12 @@ class LineItemListUpdateActionUtilsTest {
     }
 
     @Test
-    void buildLineItemsUpdateActions_WithIdenticalLineItemDraftsWithUpdatedAddedAt_ShouldBuildRemoveAndAddActions() {
-        final ShoppingList oldShoppingList =
-            readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
-
-        final ShoppingListDraft newShoppingList = mapToShoppingListDraftWithResolvedLineItemReferences(
-            SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123_WITH_DIFFERENT_ADDED_AT);
-
-        final List<UpdateAction<ShoppingList>> updateActions =
-            buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
-
-        assertThat(updateActions).containsExactly(
-            RemoveLineItem.of("line_item_id_1"),
-            RemoveLineItem.of("line_item_id_2"),
-            RemoveLineItem.of("line_item_id_3"),
-            AddLineItemWithSku.of(newShoppingList.getLineItems().get(0)), // SKU-1
-            AddLineItemWithSku.of(newShoppingList.getLineItems().get(1)), // SKU-2
-            AddLineItemWithSku.of(newShoppingList.getLineItems().get(2))  // SKU-3
-        );
-    }
-
-    @Test
-    void buildLineItemsUpdateActions_WithIdenticalLineItemDraftsWithoutAddedAtValues_ShouldNotBuildActions() {
-        final ShoppingList oldShoppingList =
-            readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
-
-        final ShoppingListDraft newShoppingList = mapToShoppingListDraftWithResolvedLineItemReferences(
-            SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123_WITHOUT_ADDED_AT);
-
-        final List<UpdateAction<ShoppingList>> updateActions =
-            buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
-
-        assertThat(updateActions).isEmpty();
-    }
-
-    @Test
     void buildActions_WithDifferentValuesWithLineItems_ShouldReturnActions() {
         final ShoppingList oldShoppingList =
             readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
 
         final ShoppingListDraft newShoppingList =
             mapToShoppingListDraftWithResolvedLineItemReferences(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_132_WITH_CHANGES);
-
 
         final List<UpdateAction<ShoppingList>> updateActions =
             buildActions(oldShoppingList, newShoppingList, mock(ShoppingListSyncOptions.class));
