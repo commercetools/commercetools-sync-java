@@ -3,11 +3,13 @@ package com.commercetools.sync.shoppinglists.utils;
 import com.commercetools.sync.commons.utils.CustomUpdateActionUtils;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.shoppinglists.ShoppingList;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.TextLineItem;
 import io.sphere.sdk.shoppinglists.TextLineItemDraft;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeTextLineItemQuantity;
+import io.sphere.sdk.shoppinglists.commands.updateactions.SetTextLineItemDescription;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import javax.annotation.Nonnull;
@@ -17,6 +19,25 @@ import java.util.Optional;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 
 public final class TextLineItemUpdateActionUtils {
+
+    /**
+     * Compares the {@link LocalizedString} descriptions of {@link TextLineItem} and a {@link TextLineItemDraft} and
+     * returns an {@link Optional} of update action, which would contain the {@code "setTextLineItemDescription"}
+     * {@link UpdateAction}. If both the {@link TextLineItem} and the {@link TextLineItemDraft} have the same
+     * {@code description} values, then no update action is needed and hence an empty optional will be returned.
+     *
+     * @param oldTextLineItem the text line item which should be updated.
+     * @param newTextLineItem the text line item draft where we get the new description.
+     * @return A filled optional with the update action or an empty optional if the descriptions are identical.
+     */
+    @Nonnull
+    public static Optional<UpdateAction<ShoppingList>> buildSetTextLineItemDescriptionUpdateAction(
+        @Nonnull final TextLineItem oldTextLineItem,
+        @Nonnull final TextLineItemDraft newTextLineItem) {
+
+        return buildUpdateAction(oldTextLineItem.getDescription(), newTextLineItem.getDescription(), () ->
+            SetTextLineItemDescription.of(oldTextLineItem).withDescription(newTextLineItem.getDescription()));
+    }
 
     /**
      * Compares the {@code quantity} values of a {@link TextLineItem} and a {@link TextLineItemDraft}
