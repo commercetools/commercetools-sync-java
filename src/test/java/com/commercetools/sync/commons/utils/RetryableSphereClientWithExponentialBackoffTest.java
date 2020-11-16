@@ -19,11 +19,7 @@ import org.junit.jupiter.api.Test;
 import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -51,7 +47,7 @@ class RetryableSphereClientWithExponentialBackoffTest {
     }
 
     @Test
-    void createClient_WithAllConfig_ReturnsSphereClient() {
+    void of_WithClientConfigAndOtherConfigValues_ReturnsSphereClient() {
         final SphereClientConfig clientConfig =
                 SphereClientConfig.of("project-key", "client-id", "client-secret");
         final SphereClient sphereClient = RetryableSphereClientWithExponentialBackoff
@@ -67,7 +63,7 @@ class RetryableSphereClientWithExponentialBackoffTest {
     }
 
     @Test
-    void createClient_withRetryDecorator_ShouldRetryWhen502HttpResponse() {
+    void of_withRetryDecorator_ShouldRetryWhen502HttpResponse() {
         final SphereClientConfig clientConfig =
                 SphereClientConfig.of("project-key", "client-id", "client-secret");
         final RetryableSphereClientWithExponentialBackoff retryableSphereClientWithExponentialBackoff =
@@ -94,32 +90,7 @@ class RetryableSphereClientWithExponentialBackoffTest {
     }
 
     @Test
-    void createClient_Simulate_Stuck_Sdk() {
-        final Function<RetryContext, Duration> durationFunction = retryContext -> {
-            throw new IllegalArgumentException();
-        };
-        final CompletionStage<Duration> durationCompletableFuture = CompletableFuture.supplyAsync(
-            () -> durationFunction.apply(null));
-        final Function<RetryContext, CompletionStage<Duration>> f = retryContext -> durationCompletableFuture;
-        final Executor executor = Executors.newSingleThreadExecutor();
-        final CompletableFuture<Duration> result = new CompletableFuture<>();
-        try {
-            final CompletionStage<Duration> initialCompletionStage = f.apply(null);
-            initialCompletionStage.whenCompleteAsync((res, firstError) -> {
-                final boolean isErrorCase = firstError != null;
-                if (isErrorCase) {
-                    // Error Case Exception should be thrown
-                } else {
-                    result.complete(res);
-                }
-            }, executor);
-        } catch (final Throwable exception) { //necessary if f.apply() throws directly an exception
-            result.completeExceptionally(exception);
-        }
-    }
-
-    @Test
-    void createClient_withDefaultRetryDecorator_ShouldRetryWhen502HttpResponse() {
+    void of_withDefaultRetryDecorator_ShouldRetryWhen502HttpResponse() {
         final SphereClientConfig clientConfig =
                 SphereClientConfig.of("project-key", "client-id", "client-secret");
         final RetryableSphereClientWithExponentialBackoff retryableSphereClientWithExponentialBackoff =
@@ -156,7 +127,7 @@ class RetryableSphereClientWithExponentialBackoffTest {
     }
 
     @Test
-    void createClient_withRetryDecorator_ShouldRetryWhen503HttpResponse() {
+    void of_withRetryDecorator_ShouldRetryWhen503HttpResponse() {
         final SphereClientConfig clientConfig =
                 SphereClientConfig.of("project-key", "client-id", "client-secret");
         final RetryableSphereClientWithExponentialBackoff retryableSphereClientWithExponentialBackoff =
@@ -183,7 +154,7 @@ class RetryableSphereClientWithExponentialBackoffTest {
     }
 
     @Test
-    void createClient_withRetryDecorator_ShouldRetryWhen504HttpResponse() {
+    void of_withRetryDecorator_ShouldRetryWhen504HttpResponse() {
         final SphereClientConfig clientConfig =
                 SphereClientConfig.of("project-key", "client-id", "client-secret");
         final RetryableSphereClientWithExponentialBackoff retryableSphereClientWithExponentialBackoff =
@@ -209,7 +180,7 @@ class RetryableSphereClientWithExponentialBackoffTest {
     }
 
     @Test
-    void createClient_withRetryDecorator_ShouldNotRetryWhen400HttpResponse() {
+    void of_withRetryDecorator_ShouldNotRetryWhen400HttpResponse() {
         final SphereClientConfig clientConfig =
                 SphereClientConfig.of("project-key", "client-id", "client-secret");
         final RetryableSphereClientWithExponentialBackoff retryableSphereClientWithExponentialBackoff =
