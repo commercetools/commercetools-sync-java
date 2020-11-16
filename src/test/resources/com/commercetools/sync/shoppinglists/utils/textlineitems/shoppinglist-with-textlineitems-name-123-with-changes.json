@@ -1,74 +1,27 @@
 {
-  "key": "shoppinglist-with-lineitems-sku-123-with-different-addedAt",
+  "key": "shoppinglist-with-textlineitems-name-123-with-changes",
   "name": {
-    "en": "name"
+    "en": "newName"
   },
   "slug": {
-    "en": "slug"
+    "en": "newSlug"
   },
   "description": {
-    "en": "description"
+    "en": "newDescription"
   },
-  "anonymousId": "anonymousId",
-  "lineItems": [
+  "anonymousId": "newAnonymousId",
+  "lineItems": [],
+  "textLineItems": [
     {
-      "id": "line_item_id_1",
-      "productId": "130a7d5c-55ea-4888-abbe-f76d474de351",
+      "id": "text_line_item_id_1",
       "name": {
-        "en": "Some Product"
+        "de": "newName1-DE",
+        "en": "newName1-EN"
       },
-      "variantId": 1,
-      "quantity": 1,
-      "custom": {
-        "type": {
-          "typeId": "type",
-          "id": "custom_type_id",
-          "obj": {
-            "id": "custom_type_id",
-            "key": "custom-type-for-shoppinglists",
-            "name": {
-              "en": "custom-type-for-shoppinglists"
-            },
-            "description": {
-              "en": "custom-type-for-shoppinglists"
-            },
-            "resourceTypeIds": [
-              "line-item",
-              "shopping-list",
-              "shopping-list-text-line-item"
-            ],
-            "fieldDefinitions": [
-              {
-                "name": "textField",
-                "label": {
-                  "en": "textField"
-                },
-                "required": false,
-                "type": {
-                  "name": "String"
-                },
-                "inputHint": "SingleLine"
-              }
-            ]
-          }
-        },
-        "fields": {
-          "textField": "text1"
-        }
+      "description": {
+        "de": "newDesc1-DE",
+        "en": "newDesc1-EN"
       },
-      "addedAt": "2020-12-02T10:00:00.000Z",
-      "variant": {
-        "id": 1,
-        "sku": "SKU-1"
-      }
-    },
-    {
-      "id": "line_item_id_2",
-      "productId": "130a7d5c-55ea-4888-abbe-f76d474de351",
-      "name": {
-        "en": "Some Product"
-      },
-      "variantId": 2,
       "quantity": 2,
       "custom": {
         "type": {
@@ -104,23 +57,22 @@
           }
         },
         "fields": {
-          "textField": "text2"
+          "textField": "newText1"
         }
       },
-      "addedAt": "2020-12-03T10:00:00.000Z",
-      "variant": {
-        "id": 2,
-        "sku": "SKU-2"
-      }
+      "addedAt": "2020-12-03T10:00:00.000Z"
     },
     {
-      "id": "line_item_id_3",
-      "productId": "130a7d5c-55ea-4888-abbe-f76d474de351",
+      "id": "text_line_item_id_2",
       "name": {
-        "en": "Some Product"
+        "de": "newName2-DE",
+        "en": "newName2-EN"
       },
-      "variantId": 3,
-      "quantity": 3,
+      "description": {
+        "de": "newDesc2-DE",
+        "en": "newDesc2-EN"
+      },
+      "quantity": 4,
       "custom": {
         "type": {
           "typeId": "type",
@@ -155,20 +107,65 @@
           }
         },
         "fields": {
-          "textField": "text3"
+          "textField": "newText2"
         }
       },
-      "addedAt": "2020-12-04T10:00:00.000Z",
-      "variant": {
-        "id": 3,
-        "sku": "SKU-3"
-      }
+      "addedAt": "2020-12-04T10:00:00.000Z"
+    },
+    {
+      "id": "text_line_item_id_3",
+      "name": {
+        "de": "newName3-DE",
+        "en": "newName3-EN"
+      },
+      "description": {
+        "de": "newDesc3-DE",
+        "en": "newDesc3-EN"
+      },
+      "quantity": 6,
+      "custom": {
+        "type": {
+          "typeId": "type",
+          "id": "custom_type_id",
+          "obj": {
+            "id": "custom_type_id",
+            "key": "custom-type-for-shoppinglists",
+            "name": {
+              "en": "custom-type-for-shoppinglists"
+            },
+            "description": {
+              "en": "custom-type-for-shoppinglists"
+            },
+            "resourceTypeIds": [
+              "line-item",
+              "shopping-list",
+              "shopping-list-text-line-item"
+            ],
+            "fieldDefinitions": [
+              {
+                "name": "textField",
+                "label": {
+                  "en": "textField"
+                },
+                "required": false,
+                "type": {
+                  "name": "String"
+                },
+                "inputHint": "SingleLine"
+              }
+            ]
+          }
+        },
+        "fields": {
+          "textField": "newText3"
+        }
+      },
+      "addedAt": "2020-12-05T10:00:00.000Z"
     }
   ],
-  "textLineItems": [],
   "customer": {
     "typeId": "customer",
-    "id": "customer_id_1"
+    "id": "customer_id_2"
   },
   "custom": {
     "type": {
@@ -176,8 +173,8 @@
       "id": "custom_type_id"
     },
     "fields": {
-      "textField": "textValue"
+      "textField": "newTextValue"
     }
   },
-  "deleteDaysAfterLastModification": 30
+  "deleteDaysAfterLastModification": 45
 }

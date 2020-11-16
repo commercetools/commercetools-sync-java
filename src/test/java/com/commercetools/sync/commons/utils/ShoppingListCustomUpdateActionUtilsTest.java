@@ -3,16 +3,20 @@ package com.commercetools.sync.commons.utils;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
 import com.commercetools.sync.shoppinglists.utils.LineItemCustomActionBuilder;
 import com.commercetools.sync.shoppinglists.utils.ShoppingListCustomActionBuilder;
+import com.commercetools.sync.shoppinglists.utils.TextLineItemCustomActionBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.shoppinglists.LineItem;
 import io.sphere.sdk.shoppinglists.ShoppingList;
+import io.sphere.sdk.shoppinglists.TextLineItem;
 import io.sphere.sdk.shoppinglists.commands.updateactions.SetCustomField;
 import io.sphere.sdk.shoppinglists.commands.updateactions.SetCustomType;
 import io.sphere.sdk.shoppinglists.commands.updateactions.SetLineItemCustomField;
 import io.sphere.sdk.shoppinglists.commands.updateactions.SetLineItemCustomType;
+import io.sphere.sdk.shoppinglists.commands.updateactions.SetTextLineItemCustomField;
+import io.sphere.sdk.shoppinglists.commands.updateactions.SetTextLineItemCustomType;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
@@ -110,5 +114,53 @@ class ShoppingListCustomUpdateActionUtilsTest {
         assertThat((SetLineItemCustomField) updateAction)
             .hasValues("setLineItemCustomField", customFieldName, customFieldValue);
         assertThat(((SetLineItemCustomField) updateAction).getLineItemId()).isEqualTo("line_item_id");
+    }
+
+    @Test
+    void buildTypedSetTextLineItemCustomTypeUpdateAction_WithTextLineItemRes_ShouldBuildShoppingListUpdateAction() {
+        final TextLineItem textLineItem = mock(TextLineItem.class);
+        when(textLineItem.getId()).thenReturn("text_line_item_id");
+
+        final String newCustomTypeId = UUID.randomUUID().toString();
+
+        final UpdateAction<ShoppingList> updateAction =
+            GenericUpdateActionUtils.buildTypedSetCustomTypeUpdateAction(newCustomTypeId, new HashMap<>(),
+                textLineItem::getCustom,
+                new TextLineItemCustomActionBuilder(), -1, t -> textLineItem.getId(),
+                textLineItemResource -> TextLineItem.resourceTypeId(), t -> textLineItem.getId(),
+                ShoppingListSyncOptionsBuilder.of(mock(SphereClient.class)).build()).orElse(null);
+
+        assertThat(updateAction).isNotNull();
+        assertThat(updateAction).isInstanceOf(SetTextLineItemCustomType.class);
+        assertThat((SetTextLineItemCustomType) updateAction)
+            .hasValues("setTextLineItemCustomType", emptyMap(), ofId(newCustomTypeId));
+        assertThat(((SetTextLineItemCustomType) updateAction).getTextLineItemId()).isEqualTo("text_line_item_id");
+    }
+
+    @Test
+    void buildRemoveTextLineItemCustomTypeAction_WithTextLineItemResource_ShouldBuildShoppingListUpdateAction() {
+        final UpdateAction<ShoppingList> updateAction = new TextLineItemCustomActionBuilder()
+            .buildRemoveCustomTypeAction(-1, "text_line_item_id");
+
+        assertThat(updateAction).isNotNull();
+        assertThat(updateAction).isInstanceOf(SetTextLineItemCustomType.class);
+        assertThat((SetTextLineItemCustomType) updateAction)
+            .hasValues("setTextLineItemCustomType", null, ofId(null));
+        assertThat(((SetTextLineItemCustomType) updateAction).getTextLineItemId()).isEqualTo("text_line_item_id");
+    }
+
+    @Test
+    void buildSetTextLineItemCustomFieldAction_WithTextLineItemResource_ShouldBuildShoppingListUpdateAction() {
+        final JsonNode customFieldValue = JsonNodeFactory.instance.textNode("foo");
+        final String customFieldName = "name";
+
+        final UpdateAction<ShoppingList> updateAction = new TextLineItemCustomActionBuilder()
+            .buildSetCustomFieldAction(-1, "text_line_item_id", customFieldName, customFieldValue);
+
+        assertThat(updateAction).isNotNull();
+        assertThat(updateAction).isInstanceOf(SetTextLineItemCustomField.class);
+        assertThat((SetTextLineItemCustomField) updateAction)
+            .hasValues("setTextLineItemCustomField", customFieldName, customFieldValue);
+        assertThat(((SetTextLineItemCustomField) updateAction).getTextLineItemId()).isEqualTo("text_line_item_id");
     }
 }

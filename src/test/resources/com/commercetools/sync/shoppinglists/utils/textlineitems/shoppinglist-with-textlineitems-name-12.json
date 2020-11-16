@@ -1,0 +1,130 @@
+{
+  "key": "shoppinglist-with-textlineitems-name-12",
+  "name": {
+    "en": "name"
+  },
+  "slug": {
+    "en": "slug"
+  },
+  "description": {
+    "en": "description"
+  },
+  "anonymousId": "anonymousId",
+  "lineItems": [],
+  "textLineItems": [
+    {
+      "id": "text_line_item_id_1",
+      "name": {
+        "de": "name1-DE",
+        "en": "name1-EN"
+      },
+      "description": {
+        "de": "desc1-DE",
+        "en": "desc1-EN"
+      },
+      "quantity": 1,
+      "custom": {
+        "type": {
+          "typeId": "type",
+          "id": "custom_type_id",
+          "obj": {
+            "id": "custom_type_id",
+            "key": "custom-type-for-shoppinglists",
+            "name": {
+              "en": "custom-type-for-shoppinglists"
+            },
+            "description": {
+              "en": "custom-type-for-shoppinglists"
+            },
+            "resourceTypeIds": [
+              "line-item",
+              "shopping-list",
+              "shopping-list-text-line-item"
+            ],
+            "fieldDefinitions": [
+              {
+                "name": "textField",
+                "label": {
+                  "en": "textField"
+                },
+                "required": false,
+                "type": {
+                  "name": "String"
+                },
+                "inputHint": "SingleLine"
+              }
+            ]
+          }
+        },
+        "fields": {
+          "textField": "text1"
+        }
+      },
+      "addedAt": "2020-11-03T10:00:00.000Z"
+    },
+    {
+      "id": "text_line_item_id_2",
+      "name": {
+        "de": "name2-DE",
+        "en": "name2-EN"
+      },
+      "description": {
+        "de": "desc2-DE",
+        "en": "desc2-EN"
+      },
+      "quantity": 2,
+      "custom": {
+        "type": {
+          "typeId": "type",
+          "id": "custom_type_id",
+          "obj": {
+            "id": "custom_type_id",
+            "key": "custom-type-for-shoppinglists",
+            "name": {
+              "en": "custom-type-for-shoppinglists"
+            },
+            "description": {
+              "en": "custom-type-for-shoppinglists"
+            },
+            "resourceTypeIds": [
+              "line-item",
+              "shopping-list",
+              "shopping-list-text-line-item"
+            ],
+            "fieldDefinitions": [
+              {
+                "name": "textField",
+                "label": {
+                  "en": "textField"
+                },
+                "required": false,
+                "type": {
+                  "name": "String"
+                },
+                "inputHint": "SingleLine"
+              }
+            ]
+          }
+        },
+        "fields": {
+          "textField": "text2"
+        }
+      },
+      "addedAt": "2020-11-04T10:00:00.000Z"
+    }
+  ],
+  "customer": {
+    "typeId": "customer",
+    "id": "customer_id_1"
+  },
+  "custom": {
+    "type": {
+      "typeId": "type",
+      "id": "custom_type_id"
+    },
+    "fields": {
+      "textField": "textValue"
+    }
+  },
+  "deleteDaysAfterLastModification": 30
+}
