@@ -170,7 +170,7 @@ public final class RetryableSphereClientWithExponentialBackoff {
      * Gets an asynchronous {@link HttpClient} to be used by the {@link BlockingSphereClient}.
      * @return {@link HttpClient}
      */
-    public HttpClient getHttpClient() {
+    protected HttpClient getHttpClient() {
         final AsyncHttpClient asyncHttpClient =
                 new DefaultAsyncHttpClient(
                         new DefaultAsyncHttpClientConfig.Builder().build());
