@@ -20,7 +20,6 @@ import javax.annotation.Nonnull;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
@@ -35,7 +34,7 @@ public final class RetryableSphereClientWithExponentialBackoff {
     protected static final long DEFAULT_INITIAL_RETRY_DELAY = 200;
     protected static final int DEFAULT_MAX_RETRY_ATTEMPT = 5;
     protected static final int DEFAULT_MAX_PARALLEL_REQUESTS = 20;
-    private static final int[] DEFAULT_STATUS_CODES_TO_RETRY = {500, 502, 503, 504};
+    protected static final int[] DEFAULT_STATUS_CODES_TO_RETRY = {500, 502, 503, 504};
 
     private SphereClientConfig clientConfig;
     private long maxDelay;
@@ -128,7 +127,7 @@ public final class RetryableSphereClientWithExponentialBackoff {
      * @param statusCodesToRetry - build with retryErrorStatusCodes.
      * @return {@link RetryableSphereClientWithExponentialBackoff} with given retryErrorStatusCodes.
      */
-    public RetryableSphereClientWithExponentialBackoff withRetryErrorStatusCodes(
+    public RetryableSphereClientWithExponentialBackoff withStatusCodesToRetry(
             final int[] statusCodesToRetry) {
         this.statusCodesToRetry = statusCodesToRetry.clone();
         return this;
