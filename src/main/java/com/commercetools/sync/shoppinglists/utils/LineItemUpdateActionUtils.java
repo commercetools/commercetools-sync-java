@@ -247,7 +247,7 @@ public final class LineItemUpdateActionUtils {
             oldLineItem::getCustom,
             newLineItem::getCustom,
             new LineItemCustomActionBuilder(),
-            -1, // not used by util.
+            null, // not used by util.
             t -> oldLineItem.getId(),
             lineItem -> LineItem.resourceTypeId(),
             t -> oldLineItem.getId(),
