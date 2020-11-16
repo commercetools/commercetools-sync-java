@@ -18,10 +18,11 @@ import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 
 import javax.annotation.Nonnull;
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.IntStream;
 
 import static java.lang.String.format;
 
@@ -34,14 +35,15 @@ public final class RetryableSphereClientWithExponentialBackoff {
     protected static final long DEFAULT_INITIAL_RETRY_DELAY = 200;
     protected static final int DEFAULT_MAX_RETRY_ATTEMPT = 5;
     protected static final int DEFAULT_MAX_PARALLEL_REQUESTS = 20;
-    protected static final int[] DEFAULT_STATUS_CODES_TO_RETRY = {500, 502, 503, 504};
+    protected static final List<Integer> DEFAULT_STATUS_CODES_TO_RETRY =
+            new ArrayList(Arrays.asList(500, 502, 503, 504));
 
     private SphereClientConfig clientConfig;
     private long maxDelay;
     private long initialRetryDelay;
     private int maxRetryAttempt;
     private int maxParallelRequests;
-    private int[] statusCodesToRetry;
+    private List<Integer> statusCodesToRetry;
 
     private RetryableSphereClientWithExponentialBackoff(@Nonnull final SphereClientConfig clientConfig) {
         this.clientConfig = clientConfig;
@@ -128,8 +130,8 @@ public final class RetryableSphereClientWithExponentialBackoff {
      * @return {@link RetryableSphereClientWithExponentialBackoff} with given retryErrorStatusCodes.
      */
     public RetryableSphereClientWithExponentialBackoff withStatusCodesToRetry(
-            final int[] statusCodesToRetry) {
-        this.statusCodesToRetry = statusCodesToRetry.clone();
+            final List<Integer> statusCodesToRetry) {
+        this.statusCodesToRetry = statusCodesToRetry;
         return this;
     }
 
@@ -177,7 +179,7 @@ public final class RetryableSphereClientWithExponentialBackoff {
             @Nonnull final Function<RetryContext, Duration> durationFunction) {
         final RetryAction scheduledRetry = RetryAction.ofScheduledRetry(maxRetryAttempt, durationFunction);
         final RetryPredicate http5xxMatcher = RetryPredicate.ofMatchingStatusCodes(
-            errCode -> IntStream.of(statusCodesToRetry).anyMatch(i -> i == errCode));
+            errCode -> statusCodesToRetry.stream().anyMatch(i -> i.equals(errCode)));
         final List<RetryRule> retryRules = Collections.singletonList(RetryRule.of(http5xxMatcher, scheduledRetry));
         return RetrySphereClientDecorator.of(delegate, retryRules);
     }
