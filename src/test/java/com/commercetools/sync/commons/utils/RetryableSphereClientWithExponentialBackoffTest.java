@@ -52,7 +52,7 @@ class RetryableSphereClientWithExponentialBackoffTest {
                 SphereClientConfig.of("project-key", "client-id", "client-secret");
         final SphereClient sphereClient = RetryableSphereClientWithExponentialBackoff
                 .of(clientConfig)
-                .withTimeout(DEFAULT_MAX_DELAY)
+                .withMaxDelay(DEFAULT_MAX_DELAY)
                 .withInitialDelay(DEFAULT_INITIAL_RETRY_DELAY)
                 .withTimeUnit(DEFAULT_TIMEOUT_TIME_UNIT)
                 .withMaxRetryAttempt(DEFAULT_MAX_RETRY_ATTEMPT)

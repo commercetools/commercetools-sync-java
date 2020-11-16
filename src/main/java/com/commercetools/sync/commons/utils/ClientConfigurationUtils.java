@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 public final class ClientConfigurationUtils {
 
     /**
-     * Creates a {@link SphereClient} with a default {@code timeout} value of 30 seconds.
+     * Creates a {@link SphereClient} with a default {@code timeout} value of 60 seconds.
      *
      * @param clientConfig the client configuration for the client.
      * @return the instantiated {@link SphereClient}.

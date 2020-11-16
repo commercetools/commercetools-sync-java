@@ -67,11 +67,11 @@ public final class RetryableSphereClientWithExponentialBackoff {
     }
 
     /**
-     * Sets the timeout value.
-     * @param maxDelay - build with timeout value.
-     * @return {@link RetryableSphereClientWithExponentialBackoff} with given timeout value.
+     * Sets the maxDelay value.
+     * @param maxDelay - build with maxDelay value.
+     * @return {@link RetryableSphereClientWithExponentialBackoff} with given maxDelay value.
      */
-    public RetryableSphereClientWithExponentialBackoff withTimeout(final long maxDelay) {
+    public RetryableSphereClientWithExponentialBackoff withMaxDelay(final long maxDelay) {
         this.maxDelay = maxDelay;
         return this;
     }
@@ -196,15 +196,15 @@ public final class RetryableSphereClientWithExponentialBackoff {
      *
      * @param retryAttempt the number of attempts already tried by the client.
      * @param initialRetryDelay the initial Retry delay.
-     * @param timeout the timeout in milliseconds.
+     * @param maxDelay the maxDelay in milliseconds.
      * @return a duration in milliseconds, that grows with the number of failed attempts.
      */
     public Duration calculateDurationWithExponentialRandomBackoff(final long retryAttempt,
                                                                   final long initialRetryDelay,
-                                                                  final long timeout) {
+                                                                  final long maxDelay) {
         final double exponentialFactor = Math.pow(2, retryAttempt - 1);
         final double jitter = 1 + Math.random();
-        final long delay = (long)Math.min(initialRetryDelay * exponentialFactor * jitter, timeout);
+        final long delay = (long)Math.min(initialRetryDelay * exponentialFactor * jitter, maxDelay);
         return Duration.ofMillis(delay);
     }
 
