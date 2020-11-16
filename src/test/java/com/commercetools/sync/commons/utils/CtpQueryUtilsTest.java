@@ -127,12 +127,15 @@ class CtpQueryUtilsTest {
         final ResourceKeyIdGraphQlResult pagedResourceKeyIdGraphQlResult = mock(ResourceKeyIdGraphQlResult.class);
         when(pagedResourceKeyIdGraphQlResult.getResults())
             .thenReturn(mockPage)
+            .thenReturn(mockPage)
+            .thenReturn(mockPage)
+            .thenReturn(mockPage)
             .thenReturn(mockPage.stream().limit(10).collect(Collectors.toSet()));
 
         when(sphereClient.execute(any())).thenReturn(completedFuture(pagedResourceKeyIdGraphQlResult));
 
         final Set<String> keysToQuery = IntStream
-            .range(1, 510)
+            .range(1, 2010)
             .mapToObj(i -> "key" + i)
             .collect(Collectors.toSet());
 
@@ -145,12 +148,14 @@ class CtpQueryUtilsTest {
             .join();
 
         // assertions
-        verify(sphereClient, times(2)).execute(graphQlRequestArgumentCaptor.capture());
+        verify(sphereClient, times(5)).execute(graphQlRequestArgumentCaptor.capture());
         assertThat(graphQlRequestArgumentCaptor.getAllValues())
             .containsExactly(
                 resourceKeyIdGraphQlRequest.withLimit(500),
-                resourceKeyIdGraphQlRequest.withLimit(500).withPredicate(format("id > \\\\\\\"%s\\\\\\\"",
-                    "id")));
+                resourceKeyIdGraphQlRequest.withLimit(500).withPredicate(format("id > \\\\\\\"%s\\\\\\\"", "id")),
+                resourceKeyIdGraphQlRequest.withLimit(500).withPredicate(format("id > \\\\\\\"%s\\\\\\\"", "id")),
+                resourceKeyIdGraphQlRequest.withLimit(500).withPredicate(format("id > \\\\\\\"%s\\\\\\\"", "id")),
+                resourceKeyIdGraphQlRequest.withLimit(500).withPredicate(format("id > \\\\\\\"%s\\\\\\\"", "id")));
     }
 
     @Nonnull
