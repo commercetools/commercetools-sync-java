@@ -8,6 +8,7 @@ import io.sphere.sdk.shoppinglists.ShoppingList;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.TextLineItem;
 import io.sphere.sdk.shoppinglists.TextLineItemDraft;
+import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeTextLineItemName;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeTextLineItemQuantity;
 import io.sphere.sdk.shoppinglists.commands.updateactions.SetTextLineItemDescription;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -19,6 +20,26 @@ import java.util.Optional;
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateAction;
 
 public final class TextLineItemUpdateActionUtils {
+
+
+    /**
+     * Compares the {@link LocalizedString} names of {@link TextLineItem} and a {@link TextLineItemDraft} and
+     * returns an {@link Optional} of update action, which would contain the {@code "changeTextLineItemName"}
+     * {@link UpdateAction}. If both the {@link TextLineItem} and the {@link TextLineItemDraft} have the same
+     * {@code description} values, then no update action is needed and hence an empty optional will be returned.
+     *
+     * @param oldTextLineItem the text line item which should be updated.
+     * @param newTextLineItem the text line item draft where we get the new name.
+     * @return A filled optional with the update action or an empty optional if the names are identical.
+     */
+    @Nonnull
+    public static Optional<UpdateAction<ShoppingList>> buildChangeTextLineItemNameUpdateAction(
+        @Nonnull final TextLineItem oldTextLineItem,
+        @Nonnull final TextLineItemDraft newTextLineItem) {
+
+        return buildUpdateAction(oldTextLineItem.getName(), newTextLineItem.getName(), () ->
+            ChangeTextLineItemName.of(oldTextLineItem.getId(), newTextLineItem.getName()));
+    }
 
     /**
      * Compares the {@link LocalizedString} descriptions of {@link TextLineItem} and a {@link TextLineItemDraft} and

@@ -12,6 +12,7 @@ import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.TextLineItem;
 import io.sphere.sdk.shoppinglists.TextLineItemDraft;
 import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
+import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeTextLineItemName;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeTextLineItemQuantity;
 import io.sphere.sdk.shoppinglists.commands.updateactions.SetTextLineItemCustomField;
 import io.sphere.sdk.shoppinglists.commands.updateactions.SetTextLineItemCustomType;
@@ -29,6 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.commercetools.sync.shoppinglists.utils.TextLineItemUpdateActionUtils.buildChangeTextLineItemNameUpdateAction;
 import static com.commercetools.sync.shoppinglists.utils.TextLineItemUpdateActionUtils.buildChangeTextLineItemQuantityUpdateAction;
 import static com.commercetools.sync.shoppinglists.utils.TextLineItemUpdateActionUtils.buildSetTextLineItemDescriptionUpdateAction;
 import static com.commercetools.sync.shoppinglists.utils.TextLineItemUpdateActionUtils.buildTextLineItemCustomUpdateActions;
@@ -435,6 +437,61 @@ class TextLineItemUpdateActionUtilsTest {
 
         final Optional<UpdateAction<ShoppingList>> updateAction =
             buildSetTextLineItemDescriptionUpdateAction(oldTextLineItem, newTextLineItem);
+
+        assertThat(updateAction).isNotNull();
+        assertThat(updateAction).isNotPresent();
+    }
+
+    @Test
+    void buildChangeTextLineItemNameUpdateAction_WithDifferentValues_ShouldBuildUpdateAction() {
+        final TextLineItem oldTextLineItem = mock(TextLineItem.class);
+        when(oldTextLineItem.getId()).thenReturn("text_line_item_id");
+        when(oldTextLineItem.getName()).thenReturn(LocalizedString.ofEnglish("oldName"));
+
+        final TextLineItemDraft newTextLineItem =
+            TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("newName"), 1L)
+                                    .build();
+
+        final UpdateAction<ShoppingList> updateAction =
+            buildChangeTextLineItemNameUpdateAction(oldTextLineItem, newTextLineItem).orElse(null);
+
+        assertThat(updateAction).isNotNull();
+        assertThat(updateAction.getAction()).isEqualTo("changeTextLineItemName");
+        assertThat(((ChangeTextLineItemName) updateAction)).isEqualTo(
+            ChangeTextLineItemName.of("text_line_item_id", LocalizedString.ofEnglish("newName")));
+    }
+
+    @Test
+    void buildChangeTextLineItemNameUpdateAction_WithNullNewValue_ShouldBuildUpdateAction() {
+        final TextLineItem oldTextLineItem = mock(TextLineItem.class);
+        when(oldTextLineItem.getId()).thenReturn("text_line_item_id");
+        when(oldTextLineItem.getName()).thenReturn(LocalizedString.ofEnglish("oldName"));
+
+        final TextLineItemDraft newTextLineItem =
+            TextLineItemDraftBuilder.of(null, 1L)
+                                    .build();
+
+        final UpdateAction<ShoppingList> updateAction =
+            buildChangeTextLineItemNameUpdateAction(oldTextLineItem, newTextLineItem).orElse(null);
+
+        assertThat(updateAction).isNotNull();
+        assertThat(updateAction.getAction()).isEqualTo("changeTextLineItemName");
+        assertThat(((ChangeTextLineItemName) updateAction))
+            .isEqualTo(ChangeTextLineItemName.of("text_line_item_id", null));
+    }
+
+    @Test
+    void buildChangeTextLineItemNameUpdateAction_WithSameValues_ShouldNotBuildUpdateAction() {
+        final TextLineItem oldTextLineItem = mock(TextLineItem.class);
+        when(oldTextLineItem.getId()).thenReturn("text_line_item_id");
+        when(oldTextLineItem.getName()).thenReturn(LocalizedString.ofEnglish("oldName"));
+
+        final TextLineItemDraft newTextLineItem =
+            TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("oldName"), 1L)
+                                    .build();
+
+        final Optional<UpdateAction<ShoppingList>> updateAction =
+            buildChangeTextLineItemNameUpdateAction(oldTextLineItem, newTextLineItem);
 
         assertThat(updateAction).isNotNull();
         assertThat(updateAction).isNotPresent();
