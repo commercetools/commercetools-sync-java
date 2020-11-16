@@ -5,11 +5,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Set;
 
-public class ResourceKeyIdGraphQLResult {
+public class ResourceKeyIdGraphQlResult {
     private final Set<ResourceKeyId> results;
 
     @JsonCreator
-    protected ResourceKeyIdGraphQLResult(@JsonProperty("results") final Set<ResourceKeyId> results) {
+    protected ResourceKeyIdGraphQlResult(@JsonProperty("results") final Set<ResourceKeyId> results) {
         this.results = results;
     }
 

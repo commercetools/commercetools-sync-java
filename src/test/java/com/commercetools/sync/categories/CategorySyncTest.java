@@ -2,9 +2,9 @@ package com.commercetools.sync.categories;
 
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
-import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQLRequest;
+import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyId;
-import com.commercetools.sync.commons.models.ResourceKeyIdGraphQLResult;
+import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.CategoryServiceImpl;
@@ -414,7 +414,7 @@ class CategorySyncTest {
     void sync_WithFailOnCachingKeysToIds_ShouldTriggerErrorCallbackAndReturnProperStats() {
         // preparation
         final SphereClient mockClient = mock(SphereClient.class);
-        when(mockClient.execute(any(ResourceKeyIdGraphQLRequest.class)))
+        when(mockClient.execute(any(ResourceKeyIdGraphQlRequest.class)))
                 .thenReturn(supplyAsync(() -> {
                     throw new SphereException();
                 }));
@@ -463,13 +463,13 @@ class CategorySyncTest {
         final Category mockCategory = getMockCategory("foo", categoryKey);
         ResourceKeyId resourceKeyId = new ResourceKeyId(categoryKey, "foo");
 
-        @SuppressWarnings("unchecked") final ResourceKeyIdGraphQLResult resourceKeyIdGraphQLResult = mock(
-            ResourceKeyIdGraphQLResult.class);
-        when(resourceKeyIdGraphQLResult.getResults()).thenReturn(singleton(resourceKeyId));
+        @SuppressWarnings("unchecked") final ResourceKeyIdGraphQlResult resourceKeyIdGraphQlResult = mock(
+            ResourceKeyIdGraphQlResult.class);
+        when(resourceKeyIdGraphQlResult.getResults()).thenReturn(singleton(resourceKeyId));
 
         // successful caching
-        when(mockClient.execute(any(ResourceKeyIdGraphQLRequest.class)))
-            .thenReturn(CompletableFuture.completedFuture(resourceKeyIdGraphQLResult));
+        when(mockClient.execute(any(ResourceKeyIdGraphQlRequest.class)))
+            .thenReturn(CompletableFuture.completedFuture(resourceKeyIdGraphQlResult));
 
         // exception on fetch.
         when(mockClient.execute(any(CategoryQuery.class)))

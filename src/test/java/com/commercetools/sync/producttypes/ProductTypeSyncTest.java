@@ -1,7 +1,7 @@
 package com.commercetools.sync.producttypes;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQLRequest;
+import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
 import com.commercetools.sync.producttypes.helpers.ProductTypeSyncStatistics;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
@@ -548,7 +548,7 @@ class ProductTypeSyncTest {
         final ProductTypeService mockProductTypeService = new ProductTypeServiceImpl(syncOptions);
 
 
-        when(sphereClient.execute(any(ResourceKeyIdGraphQLRequest.class)))
+        when(sphereClient.execute(any(ResourceKeyIdGraphQlRequest.class)))
             .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
 
         final ProductTypeSync productTypeSync = new ProductTypeSync(syncOptions, mockProductTypeService);

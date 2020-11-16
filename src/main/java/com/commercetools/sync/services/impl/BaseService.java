@@ -2,7 +2,7 @@ package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQLRequest;
+import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyId;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.github.benmanes.caffeine.cache.Cache;
@@ -256,7 +256,7 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
     CompletionStage<Map<String, String>> cacheKeysToIdsUsingGraphQl(
         @Nonnull final Set<String> keys,
         @Nonnull final Function<ResourceKeyId, Map<String,String>> keyToIdMapper,
-        @Nonnull final Function<Set<String>, ResourceKeyIdGraphQLRequest> keysRequestMapper) {
+        @Nonnull final Function<Set<String>, ResourceKeyIdGraphQlRequest> keysRequestMapper) {
 
         final Set<String> keysNotCached = getKeysNotCached(keys);
 

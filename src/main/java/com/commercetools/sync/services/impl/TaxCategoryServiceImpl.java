@@ -1,7 +1,7 @@
 package com.commercetools.sync.services.impl;
 
-import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQLRequest;
-import com.commercetools.sync.commons.models.GraphQLQueryResources;
+import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
+import com.commercetools.sync.commons.models.GraphQlQueryResources;
 import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.taxcategories.TaxCategorySyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
@@ -37,7 +37,8 @@ public final class TaxCategoryServiceImpl
     public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> taxCategoryKeys) {
 
         return cacheKeysToIds(
-            taxCategoryKeys, keysNotCached -> new ResourceKeyIdGraphQLRequest(keysNotCached, GraphQLQueryResources.TAX_CATEGORIES));
+            taxCategoryKeys,
+            keysNotCached -> new ResourceKeyIdGraphQlRequest(keysNotCached, GraphQlQueryResources.TAX_CATEGORIES));
     }
 
     @Nonnull

@@ -1,6 +1,6 @@
 package com.commercetools.sync.commons.utils;
 
-import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQLRequest;
+import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyId;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.ResourceView;
@@ -126,15 +126,15 @@ public final class CtpQueryUtils {
      * <p>NOTE: This method fetches all paged results sequentially as opposed to fetching the pages in parallel.
      *
      * @param client            commercetools client
-     * @param resourceKeyIdGraphQLRequest    graphql query containing predicates and pagination limits
+     * @param resourceKeyIdGraphQlRequest    graphql query containing predicates and pagination limits
      * @param pageConsumer      consumer applied on every page queried
      * @return a completion stage containing void as a result after the consumer was applied on all pages.
      */
     @Nonnull
     public static CompletionStage<Void> queryAll(@Nonnull final SphereClient client,
-                                                 @Nonnull final ResourceKeyIdGraphQLRequest resourceKeyIdGraphQLRequest,
+                                                 @Nonnull final ResourceKeyIdGraphQlRequest resourceKeyIdGraphQlRequest,
                                                  @Nonnull final Consumer<Set<ResourceKeyId>> pageConsumer) {
-        GraphQlQueryAll graphQlQueryAll = GraphQlQueryAll.of(client, resourceKeyIdGraphQLRequest, DEFAULT_PAGE_SIZE);
+        GraphQlQueryAll graphQlQueryAll = GraphQlQueryAll.of(client, resourceKeyIdGraphQlRequest, DEFAULT_PAGE_SIZE);
         return graphQlQueryAll.run(pageConsumer);
     }
 
