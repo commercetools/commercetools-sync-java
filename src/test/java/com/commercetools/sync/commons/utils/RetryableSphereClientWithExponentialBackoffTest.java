@@ -42,7 +42,7 @@ import static org.mockito.Mockito.verify;
 class RetryableSphereClientWithExponentialBackoffTest {
 
     @Test
-    void createClient_WithConfig_ReturnsSphereClient() {
+    void of_WithClientConfigAndDefaults_ReturnsSphereClient() {
         final SphereClientConfig clientConfig =
                 SphereClientConfig.of("project-key", "client-id", "client-secret");
         final SphereClient sphereClient = RetryableSphereClientWithExponentialBackoff.of(clientConfig).build();
