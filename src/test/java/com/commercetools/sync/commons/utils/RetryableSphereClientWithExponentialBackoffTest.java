@@ -3,6 +3,7 @@ package com.commercetools.sync.commons.utils;
 import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.GatewayTimeoutException;
+import io.sphere.sdk.client.InternalServerErrorException;
 import io.sphere.sdk.client.ServiceUnavailableException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
@@ -23,7 +24,11 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-import static com.commercetools.sync.commons.utils.RetryableSphereClientWithExponentialBackoff.*;
+import static com.commercetools.sync.commons.utils.RetryableSphereClientWithExponentialBackoff.DEFAULT_INITIAL_RETRY_DELAY;
+import static com.commercetools.sync.commons.utils.RetryableSphereClientWithExponentialBackoff.DEFAULT_MAX_DELAY;
+import static com.commercetools.sync.commons.utils.RetryableSphereClientWithExponentialBackoff.DEFAULT_MAX_PARALLEL_REQUESTS;
+import static com.commercetools.sync.commons.utils.RetryableSphereClientWithExponentialBackoff.DEFAULT_MAX_RETRY_ATTEMPT;
+import static com.commercetools.sync.commons.utils.RetryableSphereClientWithExponentialBackoff.DEFAULT_STATUS_CODES_TO_RETRY;
 import static io.sphere.sdk.client.TestDoubleSphereClientFactory.createHttpTestDouble;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -56,6 +61,33 @@ class RetryableSphereClientWithExponentialBackoffTest {
                 .build();
 
         assertThat(sphereClient.getConfig().getProjectKey()).isEqualTo("project-key");
+    }
+
+    @Test
+    void of_withRetryDecorator_ShouldRetryWhen500HttpResponse() {
+        final SphereClientConfig clientConfig =
+                SphereClientConfig.of("project-key", "client-id", "client-secret");
+        final RetryableSphereClientWithExponentialBackoff retryableSphereClientWithExponentialBackoff =
+                RetryableSphereClientWithExponentialBackoff.of(clientConfig);
+        final SphereClient mockSphereUnderlyingClient =
+                spy(createHttpTestDouble(intent -> HttpResponse.of(HttpStatusCode.INTERNAL_SERVER_ERROR_500)));
+
+        final long maxRetryAttempt = 1L;
+        final Function<RetryContext, Duration> durationFunction = retryContext -> Duration.ofSeconds(1);
+
+        final SphereClient decoratedSphereClient = retryableSphereClientWithExponentialBackoff.decorateSphereClient(
+                mockSphereUnderlyingClient, maxRetryAttempt, durationFunction, DEFAULT_MAX_PARALLEL_REQUESTS);
+
+        final CustomerUpdateCommand customerUpdateCommand = getCustomerUpdateCommand();
+
+        assertThat(decoratedSphereClient.execute(customerUpdateCommand))
+                .failsWithin(2, TimeUnit.SECONDS) // first retry will be in 1 second, see: durationFunction.
+                .withThrowableOfType(ExecutionException.class)
+                .withCauseExactlyInstanceOf(InternalServerErrorException.class)
+                .withMessageContaining("500");
+
+        // first request + retry.
+        verify(mockSphereUnderlyingClient, times(2)).execute(customerUpdateCommand);
     }
 
     @Test
