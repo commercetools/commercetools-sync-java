@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import static com.commercetools.sync.commons.utils.RetryableSphereClientWithExponentialBackoff.DEFAULT_MAX_DELAY;
-import static com.commercetools.sync.commons.utils.RetryableSphereClientWithExponentialBackoff.DEFAULT_TIMEOUT_TIME_UNIT;
 import static com.commercetools.sync.commons.utils.RetryableSphereClientWithExponentialBackoff.DEFAULT_INITIAL_RETRY_DELAY;
 import static com.commercetools.sync.commons.utils.RetryableSphereClientWithExponentialBackoff.DEFAULT_MAX_PARALLEL_REQUESTS;
 import static com.commercetools.sync.commons.utils.RetryableSphereClientWithExponentialBackoff.DEFAULT_MAX_RETRY_ATTEMPT;
@@ -54,7 +53,6 @@ class RetryableSphereClientWithExponentialBackoffTest {
                 .of(clientConfig)
                 .withMaxDelay(DEFAULT_MAX_DELAY)
                 .withInitialDelay(DEFAULT_INITIAL_RETRY_DELAY)
-                .withTimeUnit(DEFAULT_TIMEOUT_TIME_UNIT)
                 .withMaxRetryAttempt(DEFAULT_MAX_RETRY_ATTEMPT)
                 .withMaxParallelRequests(DEFAULT_MAX_PARALLEL_REQUESTS)
                 .build();

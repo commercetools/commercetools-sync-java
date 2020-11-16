@@ -33,7 +33,6 @@ import static java.lang.String.format;
 public final class RetryableSphereClientWithExponentialBackoff {
     protected static final long DEFAULT_MAX_DELAY = 60000;
     protected static final long DEFAULT_INITIAL_RETRY_DELAY = 200;
-    protected static final TimeUnit DEFAULT_TIMEOUT_TIME_UNIT = TimeUnit.MILLISECONDS;
     protected static final int DEFAULT_MAX_RETRY_ATTEMPT = 5;
     protected static final int DEFAULT_MAX_PARALLEL_REQUESTS = 20;
     private static final int[] DEFAULT_STATUS_CODES_TO_RETRY = {500, 502, 503, 504};
@@ -41,7 +40,6 @@ public final class RetryableSphereClientWithExponentialBackoff {
     private SphereClientConfig clientConfig;
     private long maxDelay;
     private long initialRetryDelay;
-    private TimeUnit timeUnit;
     private int maxRetryAttempt;
     private int maxParallelRequests;
     private int[] statusCodesToRetry;
@@ -49,7 +47,6 @@ public final class RetryableSphereClientWithExponentialBackoff {
     private RetryableSphereClientWithExponentialBackoff(@Nonnull final SphereClientConfig clientConfig) {
         this.clientConfig = clientConfig;
         this.maxDelay = DEFAULT_MAX_DELAY;
-        this.timeUnit = DEFAULT_TIMEOUT_TIME_UNIT;
         this.initialRetryDelay = DEFAULT_INITIAL_RETRY_DELAY;
         this.maxRetryAttempt = DEFAULT_MAX_RETRY_ATTEMPT;
         this.maxParallelRequests = DEFAULT_MAX_PARALLEL_REQUESTS;
@@ -91,16 +88,6 @@ public final class RetryableSphereClientWithExponentialBackoff {
             throw new IllegalArgumentException(
                     format("InitialDelay %s is less than MaxDelay %s.", initialDelay, maxDelay));
         }
-        return this;
-    }
-
-    /**
-     * Sets the timeUnit in milliseconds.
-     * @param timeUnit - build with timeUnit value.
-     * @return {@link RetryableSphereClientWithExponentialBackoff} with given timeUnit value.
-     */
-    public RetryableSphereClientWithExponentialBackoff withTimeUnit(@Nonnull final TimeUnit timeUnit) {
-        this.timeUnit = timeUnit;
         return this;
     }
 
