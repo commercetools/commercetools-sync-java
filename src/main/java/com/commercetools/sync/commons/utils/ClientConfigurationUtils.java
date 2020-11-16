@@ -16,7 +16,7 @@ public final class ClientConfigurationUtils {
      * @return the instantiated {@link SphereClient}.
      */
     public static SphereClient createClient(@Nonnull final SphereClientConfig clientConfig) {
-        return RetryableSphereClientWithExponentialBackoff.of(clientConfig);
+        return RetryableSphereClientWithExponentialBackoff.of(clientConfig).build();
     }
 
     /**
@@ -30,7 +30,7 @@ public final class ClientConfigurationUtils {
     public static SphereClient createClient(@Nonnull final SphereClientConfig clientConfig,
                                                          final long timeout,
                                                          @Nonnull final TimeUnit timeUnit) {
-        return RetryableSphereClientWithExponentialBackoff.of(clientConfig, timeout, timeUnit);
+        return BlockingSphereClient.of(createClient(clientConfig), timeout, timeUnit);
     }
 
     private ClientConfigurationUtils() {

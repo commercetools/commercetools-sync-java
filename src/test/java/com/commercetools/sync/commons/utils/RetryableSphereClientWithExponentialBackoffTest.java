@@ -1,7 +1,6 @@
 package com.commercetools.sync.commons.utils;
 
 import io.sphere.sdk.client.BadGatewayException;
-import io.sphere.sdk.client.BlockingSphereClient;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.GatewayTimeoutException;
 import io.sphere.sdk.client.ServiceUnavailableException;
@@ -28,12 +27,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-import static com.commercetools.sync.commons.utils.RetryableSphereClientWithExponentialBackoff.calculateDurationWithExponentialRandomBackoff;
-import static com.commercetools.sync.commons.utils.RetryableSphereClientWithExponentialBackoff.decorateSphereClient;
-import static com.commercetools.sync.commons.utils.SphereClientConfigOptions.DEFAULT_TIMEOUT;
-import static com.commercetools.sync.commons.utils.SphereClientConfigOptions.INITIAL_RETRY_DELAY;
-import static com.commercetools.sync.commons.utils.SphereClientConfigOptions.MAX_PARALLEL_REQUESTS;
-import static com.commercetools.sync.commons.utils.SphereClientConfigOptions.MAX_RETRIES;
+import static com.commercetools.sync.commons.utils.RetryableSphereClientWithExponentialBackoff.DEFAULT_TIMEOUT;
+import static com.commercetools.sync.commons.utils.RetryableSphereClientWithExponentialBackoff.DEFAULT_TIMEOUT_TIME_UNIT;
+import static com.commercetools.sync.commons.utils.RetryableSphereClientWithExponentialBackoff.INITIAL_RETRY_DELAY;
+import static com.commercetools.sync.commons.utils.RetryableSphereClientWithExponentialBackoff.MAX_PARALLEL_REQUESTS;
+import static com.commercetools.sync.commons.utils.RetryableSphereClientWithExponentialBackoff.MAX_RETRIES;
 import static io.sphere.sdk.client.TestDoubleSphereClientFactory.createHttpTestDouble;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -42,42 +40,46 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 class RetryableSphereClientWithExponentialBackoffTest {
-    private static final long TIMEOUT = 20000;
-    private static final TimeUnit TIMEOUT_TIME_UNIT = TimeUnit.MILLISECONDS;
 
     @Test
     void createClient_WithConfig_ReturnsSphereClient() {
         final SphereClientConfig clientConfig =
                 SphereClientConfig.of("project-key", "client-id", "client-secret");
-        final SphereClient sphereClient = RetryableSphereClientWithExponentialBackoff.of(clientConfig);
-
-        assertThat(sphereClient instanceof SphereClient).isTrue();
+        final SphereClient sphereClient = RetryableSphereClientWithExponentialBackoff.of(clientConfig).build();
 
         assertThat(sphereClient.getConfig().getProjectKey()).isEqualTo("project-key");
     }
 
     @Test
-    void createClient_WithConfig_ReturnsBlockingSphereClient() {
+    void createClient_WithAllConfig_ReturnsSphereClient() {
         final SphereClientConfig clientConfig =
-            SphereClientConfig.of("project-key", "client-id", "client-secret");
-        final SphereClient sphereClient =
-                RetryableSphereClientWithExponentialBackoff.of(clientConfig, TIMEOUT, TIMEOUT_TIME_UNIT);
-
-        assertThat(sphereClient instanceof BlockingSphereClient).isTrue();
+                SphereClientConfig.of("project-key", "client-id", "client-secret");
+        final SphereClient sphereClient = RetryableSphereClientWithExponentialBackoff
+                .of(clientConfig)
+                .withTimeout(DEFAULT_TIMEOUT)
+                .withInitialDelay(INITIAL_RETRY_DELAY)
+                .withTimeUnit(DEFAULT_TIMEOUT_TIME_UNIT)
+                .withMaxRetries(MAX_RETRIES)
+                .withMaxParallelRequests(MAX_PARALLEL_REQUESTS)
+                .build();
 
         assertThat(sphereClient.getConfig().getProjectKey()).isEqualTo("project-key");
     }
 
     @Test
     void createClient_withRetryDecorator_ShouldRetryWhen502HttpResponse() {
+        final SphereClientConfig clientConfig =
+                SphereClientConfig.of("project-key", "client-id", "client-secret");
+        final RetryableSphereClientWithExponentialBackoff retryableSphereClientWithExponentialBackoff =
+                RetryableSphereClientWithExponentialBackoff.of(clientConfig);
         final SphereClient mockSphereUnderlyingClient =
             spy(createHttpTestDouble(intent -> HttpResponse.of(HttpStatusCode.BAD_GATEWAY_502)));
 
         final long maxRetryAttempt = 1L;
         final Function<RetryContext, Duration> durationFunction = retryContext -> Duration.ofSeconds(1);
 
-        final SphereClient decoratedSphereClient =
-            decorateSphereClient(mockSphereUnderlyingClient, maxRetryAttempt, durationFunction, MAX_PARALLEL_REQUESTS);
+        final SphereClient decoratedSphereClient = retryableSphereClientWithExponentialBackoff.decorateSphereClient(
+                mockSphereUnderlyingClient, maxRetryAttempt, durationFunction, MAX_PARALLEL_REQUESTS);
 
         final CustomerUpdateCommand customerUpdateCommand = getCustomerUpdateCommand();
 
@@ -118,6 +120,10 @@ class RetryableSphereClientWithExponentialBackoffTest {
 
     @Test
     void createClient_withDefaultRetryDecorator_ShouldRetryWhen502HttpResponse() {
+        final SphereClientConfig clientConfig =
+                SphereClientConfig.of("project-key", "client-id", "client-secret");
+        final RetryableSphereClientWithExponentialBackoff retryableSphereClientWithExponentialBackoff =
+                RetryableSphereClientWithExponentialBackoff.of(clientConfig);
         final SphereClient mockSphereUnderlyingClient =
             spy(createHttpTestDouble(intent -> {
                 try {
@@ -130,11 +136,11 @@ class RetryableSphereClientWithExponentialBackoffTest {
 
         final long maxRetryAttempt = 2L;
         final Function<RetryContext, Duration> durationFunction = retryContext ->
-            calculateDurationWithExponentialRandomBackoff(retryContext.getAttempt(),
-                    INITIAL_RETRY_DELAY, DEFAULT_TIMEOUT);
+                retryableSphereClientWithExponentialBackoff.calculateDurationWithExponentialRandomBackoff(
+                        retryContext.getAttempt(), INITIAL_RETRY_DELAY, DEFAULT_TIMEOUT);
 
-        final SphereClient decoratedSphereClient =
-            decorateSphereClient(mockSphereUnderlyingClient, maxRetryAttempt, durationFunction, MAX_PARALLEL_REQUESTS);
+        final SphereClient decoratedSphereClient = retryableSphereClientWithExponentialBackoff.decorateSphereClient(
+                mockSphereUnderlyingClient, maxRetryAttempt, durationFunction, MAX_PARALLEL_REQUESTS);
 
         final CustomerUpdateCommand customerUpdateCommand = getCustomerUpdateCommand();
 
@@ -151,14 +157,18 @@ class RetryableSphereClientWithExponentialBackoffTest {
 
     @Test
     void createClient_withRetryDecorator_ShouldRetryWhen503HttpResponse() {
+        final SphereClientConfig clientConfig =
+                SphereClientConfig.of("project-key", "client-id", "client-secret");
+        final RetryableSphereClientWithExponentialBackoff retryableSphereClientWithExponentialBackoff =
+                RetryableSphereClientWithExponentialBackoff.of(clientConfig);
         final SphereClient mockSphereUnderlyingClient =
             spy(createHttpTestDouble(intent -> HttpResponse.of(HttpStatusCode.SERVICE_UNAVAILABLE_503)));
 
         final long maxRetryAttempt = 2L;
         final Function<RetryContext, Duration> durationFunction = retryContext -> Duration.ofSeconds(2);
 
-        final SphereClient decoratedSphereClient =
-            decorateSphereClient(mockSphereUnderlyingClient, maxRetryAttempt, durationFunction, MAX_PARALLEL_REQUESTS);
+        final SphereClient decoratedSphereClient = retryableSphereClientWithExponentialBackoff.decorateSphereClient(
+                mockSphereUnderlyingClient, maxRetryAttempt, durationFunction, MAX_PARALLEL_REQUESTS);
 
         final CustomerUpdateCommand customerUpdateCommand = getCustomerUpdateCommand();
 
@@ -174,14 +184,18 @@ class RetryableSphereClientWithExponentialBackoffTest {
 
     @Test
     void createClient_withRetryDecorator_ShouldRetryWhen504HttpResponse() {
+        final SphereClientConfig clientConfig =
+                SphereClientConfig.of("project-key", "client-id", "client-secret");
+        final RetryableSphereClientWithExponentialBackoff retryableSphereClientWithExponentialBackoff =
+                RetryableSphereClientWithExponentialBackoff.of(clientConfig);
         final SphereClient mockSphereUnderlyingClient =
             spy(createHttpTestDouble(intent -> HttpResponse.of(HttpStatusCode.GATEWAY_TIMEOUT_504)));
 
         final long maxRetryAttempt = 3L;
         final Function<RetryContext, Duration> durationFunction = retryContext -> Duration.ofSeconds(1);
 
-        final SphereClient decoratedSphereClient =
-            decorateSphereClient(mockSphereUnderlyingClient, maxRetryAttempt, durationFunction, MAX_PARALLEL_REQUESTS);
+        final SphereClient decoratedSphereClient = retryableSphereClientWithExponentialBackoff.decorateSphereClient(
+                mockSphereUnderlyingClient, maxRetryAttempt, durationFunction, MAX_PARALLEL_REQUESTS);
 
         final CustomerUpdateCommand customerUpdateCommand = getCustomerUpdateCommand();
 
@@ -196,6 +210,10 @@ class RetryableSphereClientWithExponentialBackoffTest {
 
     @Test
     void createClient_withRetryDecorator_ShouldNotRetryWhen400HttpResponse() {
+        final SphereClientConfig clientConfig =
+                SphereClientConfig.of("project-key", "client-id", "client-secret");
+        final RetryableSphereClientWithExponentialBackoff retryableSphereClientWithExponentialBackoff =
+                RetryableSphereClientWithExponentialBackoff.of(clientConfig);
         final SphereClient mockSphereUnderlyingClient =
             spy(createHttpTestDouble(intent -> HttpResponse.of(HttpStatusCode.BAD_REQUEST_400,
                 "{\"statusCode\":\"400\"}")));
@@ -203,8 +221,8 @@ class RetryableSphereClientWithExponentialBackoffTest {
         final long maxRetryAttempt = 2L;
         final Function<RetryContext, Duration> durationFunction = retryContext -> Duration.ofSeconds(2);
 
-        final SphereClient decoratedSphereClient =
-            decorateSphereClient(mockSphereUnderlyingClient, maxRetryAttempt, durationFunction, MAX_PARALLEL_REQUESTS);
+        final SphereClient decoratedSphereClient = retryableSphereClientWithExponentialBackoff.decorateSphereClient(
+                mockSphereUnderlyingClient, maxRetryAttempt, durationFunction, MAX_PARALLEL_REQUESTS);
 
         final CustomerUpdateCommand customerUpdateCommand = getCustomerUpdateCommand();
 
@@ -220,6 +238,10 @@ class RetryableSphereClientWithExponentialBackoffTest {
 
     @Test
     void calculateExponentialRandomBackoff_withRetries_ShouldReturnRandomisedDurations() {
+        final SphereClientConfig clientConfig =
+                SphereClientConfig.of("project-key", "client-id", "client-secret");
+        final RetryableSphereClientWithExponentialBackoff retryableSphereClientWithExponentialBackoff =
+                RetryableSphereClientWithExponentialBackoff.of(clientConfig);
         long maxDelay = 0;
         for (long failedRetryAttempt = 1; failedRetryAttempt <= 10; failedRetryAttempt++) {
 
@@ -237,8 +259,9 @@ class RetryableSphereClientWithExponentialBackoffTest {
             Retry 9: 30000 millisecond
             Retry 10: 30000 millisecond
             */
-            final Duration duration = calculateDurationWithExponentialRandomBackoff(failedRetryAttempt,
-                    INITIAL_RETRY_DELAY, DEFAULT_TIMEOUT);
+            final Duration duration =
+                    retryableSphereClientWithExponentialBackoff.calculateDurationWithExponentialRandomBackoff(
+                            failedRetryAttempt, INITIAL_RETRY_DELAY, DEFAULT_TIMEOUT);
 
             assertThat(duration.toMillis())
                 .isLessThanOrEqualTo(maxDelay)
