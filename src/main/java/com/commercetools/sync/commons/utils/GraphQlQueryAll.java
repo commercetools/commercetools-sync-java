@@ -59,13 +59,13 @@ final class GraphQlQueryAll {
 
         this.pageConsumer = pageConsumer;
         final CompletionStage<ResourceKeyIdGraphQLResult> firstPage = client.execute(resourceKeyIdGraphQLRequest);
-        return queryNextPages(firstPage).thenAccept(voidResult -> { });
+        return queryNextPages(firstPage);
     }
 
     /**
      * Given a completion stage {@code currentPageStage} containing a current graphql result {@link ResourceKeyIdGraphQLResult},
      * this method composes the completion stage by first checking if the result is null or not. If it is not, then it
-     * recursivley (by calling itself with the next page's completion stage result) composes to the supplied stage,
+     * recursively (by calling itself with the next page's completion stage result) composes to the supplied stage,
      * stages of the all next pages' processing. If there is no next page, then the result of the
      * {@code currentPageStage} would be null and this method would just return a completed future containing null
      * result, which in turn signals the last page of processing.
@@ -99,13 +99,6 @@ final class GraphQlQueryAll {
         return completedFuture(null);
     }
 
-    /**
-     * Given a list of page elements of type {@code ResourceKeyId}, this method checks if this instance's {@code
-     * pageConsumer} is set (not null) and if it is set it is then applied on the list of page elements.
-     *
-     *
-     * @param pageElements set of page elements of type {@code ResourceKeyId}.
-     */
     private void consumePageElements(@Nonnull final Set<ResourceKeyId> pageElements) {
         if (pageConsumer != null) {
             pageConsumer.accept(pageElements);
@@ -116,7 +109,7 @@ final class GraphQlQueryAll {
      * Given a list of page elements of type {@code ResourceKeyId}, this method checks if this page is the last page or
      * not by checking if the result size is equal to this instance's {@code pageSize}). If it is, then it means
      * there might be still more results. However, if not, then it means for sure there are no more results and this
-     * is the last page. If there is a next page, the id of the last element in the list is fetched and a future is
+     * is the last page. If there is a next page, the id of the last element in the list is used and a future is
      * created containing the fetched results which have an id greater than the id of the last element in the list
      * and this future is returned. If there are no more results, the method returns a completed future containing null.
      *
