@@ -1,5 +1,6 @@
 package com.commercetools.sync.shoppinglists.utils;
 
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.CustomUpdateActionUtils;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import com.commercetools.sync.shoppinglists.commands.updateactions.AddLineItemWithSku;
@@ -107,16 +108,21 @@ public final class LineItemUpdateActionUtils {
 
             if (oldLineItem.getVariant() == null || StringUtils.isBlank(oldLineItem.getVariant().getSku())) {
 
-                throw new IllegalArgumentException(
-                    format("LineItem at position '%d' of the ShoppingList with key '%s' has no SKU set. "
-                        + "Please make sure all line items have SKUs", i, oldShoppingList.getKey()));
+                syncOptions.applyErrorCallback(new SyncException(
+                        format("LineItem at position '%d' of the ShoppingList with key '%s' has no SKU set. "
+                            + "Please make sure all line items have SKUs.", i, oldShoppingList.getKey())),
+                    oldShoppingList, newShoppingList, updateActions);
+
+                return emptyList();
 
             } else if (StringUtils.isBlank(newLineItem.getSku())) {
 
-                throw new IllegalArgumentException(
-                    format("LineItemDraft at position '%d' of the ShoppingListDraft with key '%s' has no SKU set. "
-                        + "Please make sure all line items have SKUs", i, newShoppingList.getKey()));
+                syncOptions.applyErrorCallback(new SyncException(
+                        format("LineItemDraft at position '%d' of the ShoppingListDraft with key '%s' has no SKU set. "
+                            + "Please make sure all line items have SKUs.", i, newShoppingList.getKey())),
+                    oldShoppingList, newShoppingList, updateActions);
 
+                return emptyList();
             }
 
             if (oldLineItem.getVariant().getSku().equals(newLineItem.getSku())

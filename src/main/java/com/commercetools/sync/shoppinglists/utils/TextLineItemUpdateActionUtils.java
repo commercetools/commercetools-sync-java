@@ -1,5 +1,6 @@
 package com.commercetools.sync.shoppinglists.utils;
 
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.CustomUpdateActionUtils;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import com.commercetools.sync.shoppinglists.commands.updateactions.AddTextLineItemWithAddedAt;
@@ -107,10 +108,12 @@ public final class TextLineItemUpdateActionUtils {
 
             if (newTextLineItem.getName() == null || newTextLineItem.getName().getLocales().isEmpty()) {
 
-                throw new IllegalArgumentException(
-                    format("TextLineItemDraft at position '%d' of the ShoppingListDraft with key '%s' has no name set. "
-                        + "Please make sure all text line items have names.", i, newShoppingList.getKey()));
+                syncOptions.applyErrorCallback(new SyncException(
+                        format("TextLineItemDraft at position '%d' of the ShoppingListDraft with key '%s' has no name "
+                            + "set. Please make sure all text line items have names.", i, newShoppingList.getKey())),
+                    oldShoppingList, newShoppingList, updateActions);
 
+                return emptyList();
             }
 
             updateActions.addAll(buildTextLineItemUpdateActions(

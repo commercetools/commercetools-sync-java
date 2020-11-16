@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -45,7 +46,6 @@ import static java.util.Collections.singletonMap;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -424,33 +424,74 @@ class LineItemListUpdateActionUtilsTest {
     }
 
     @Test
-    void buildLineItemsUpdateAction_WithNotExpandedLineItem_ShouldThrowIllegalArgumentException() {
+    void buildLineItemsUpdateAction_WithNotExpandedLineItem_ShouldTriggerErrorCalback() {
         final ShoppingList oldShoppingList =
             readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_NOT_EXPANDED, ShoppingList.class);
 
         final ShoppingListDraft newShoppingList =
             mapToShoppingListDraftWithResolvedLineItemReferences(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_132_WITH_CHANGES);
 
-        assertThatThrownBy(() -> buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS))
-            .isExactlyInstanceOf(IllegalArgumentException.class)
-            .hasMessage("LineItem at position '1' of the ShoppingList with key "
+
+        final List<String> errors = new ArrayList<>();
+        final List<UpdateAction<ShoppingList>> updateActionsBeforeCallback = new ArrayList<>();
+
+        final ShoppingListSyncOptions syncOptions =
+            ShoppingListSyncOptionsBuilder.of(mock(SphereClient.class))
+                                          .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                                              errors.add(exception.getMessage());
+                                              updateActionsBeforeCallback.addAll(updateActions);
+                                          })
+                                          .build();
+
+        final List<UpdateAction<ShoppingList>> updateActions =
+            buildLineItemsUpdateActions(oldShoppingList, newShoppingList, syncOptions);
+
+        assertThat(updateActions).isEmpty();
+        assertThat(updateActionsBeforeCallback).containsExactly(
+            ChangeLineItemQuantity.of("line_item_id_1", 2L),
+            SetLineItemCustomField.ofJson("textField",
+                JsonNodeFactory.instance.textNode("newText1"), "line_item_id_1"));
+
+        assertThat(errors).hasSize(1);
+        assertThat(errors.get(0))
+            .isEqualTo("LineItem at position '1' of the ShoppingList with key "
                 + "'shoppinglist-with-lineitems-not-expanded' has no SKU set. "
-                + "Please make sure all line items have SKUs");
+                + "Please make sure all line items have SKUs.");
     }
 
     @Test
-    void buildLineItemsUpdateAction_WithLineItemWithoutSku_ShouldThrowIllegalArgumentException() {
+    void buildLineItemsUpdateAction_WithLineItemWithoutSku_ShouldTriggerErrorCalback() {
         final ShoppingList oldShoppingList =
             readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_132_WITH_CHANGES, ShoppingList.class);
 
         final ShoppingListDraft newShoppingList =
             mapToShoppingListDraftWithResolvedLineItemReferences(SHOPPING_LIST_WITH_LINE_ITEMS_NOT_EXPANDED);
 
-        assertThatThrownBy(() -> buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS))
-            .isExactlyInstanceOf(IllegalArgumentException.class)
-            .hasMessage("LineItemDraft at position '1' of the ShoppingListDraft with key "
+        final List<String> errors = new ArrayList<>();
+        final List<UpdateAction<ShoppingList>> updateActionsBeforeCallback = new ArrayList<>();
+
+        final ShoppingListSyncOptions syncOptions =
+            ShoppingListSyncOptionsBuilder.of(mock(SphereClient.class))
+                                          .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                                              errors.add(exception.getMessage());
+                                              updateActionsBeforeCallback.addAll(updateActions);
+                                          })
+                                          .build();
+
+        final List<UpdateAction<ShoppingList>> updateActions =
+            buildLineItemsUpdateActions(oldShoppingList, newShoppingList, syncOptions);
+
+        assertThat(updateActions).isEmpty();
+        assertThat(updateActionsBeforeCallback).containsExactly(
+            ChangeLineItemQuantity.of("line_item_id_1", 1L),
+            SetLineItemCustomField.ofJson("textField",
+                JsonNodeFactory.instance.textNode("text1"), "line_item_id_1"));
+
+        assertThat(errors).hasSize(1);
+        assertThat(errors.get(0))
+            .isEqualTo("LineItemDraft at position '1' of the ShoppingListDraft with key "
                 + "'shoppinglist-with-lineitems-not-expanded' has no SKU set. "
-                + "Please make sure all line items have SKUs");
+                + "Please make sure all line items have SKUs.");
     }
 
     @Test

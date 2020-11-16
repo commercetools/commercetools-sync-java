@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -33,13 +34,13 @@ import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapVal
 import static com.commercetools.sync.shoppinglists.utils.LineItemUpdateActionUtils.buildLineItemsUpdateActions;
 import static com.commercetools.sync.shoppinglists.utils.TextLineItemUpdateActionUtils.buildTextLineItemsUpdateActions;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -256,25 +257,58 @@ class TextLineItemListUpdateActionUtilsTest {
     }
 
     @Test
-    void buildTextLineItemsUpdateAction_WithTextLineItemWithNullName_ShouldThrowIllegalArgumentException() {
+    void buildTextLineItemsUpdateAction_WithTextLineItemWithNullName_ShouldTriggerErrorCallback() {
         final ShoppingList oldShoppingList =
             readObjectFromResource(SHOPPING_LIST_WITH_TEXT_LINE_ITEMS_NAME_123, ShoppingList.class);
+
+        final TextLineItemDraft updatedTextLineItemDraft1 = TextLineItemDraftBuilder
+            .of(LocalizedString.ofEnglish("newName1-EN").plus(Locale.GERMAN, "newName1-DE"), 2L)
+            .description(LocalizedString.ofEnglish("newDesc1-EN").plus(Locale.GERMAN, "newDesc1-DE"))
+            .custom(CustomFieldsDraft.ofTypeIdAndJson("custom_type_id",
+                singletonMap("textField",
+                    JsonNodeFactory.instance.textNode("newText1"))))
+            .build();
 
         final ShoppingListDraft newShoppingList =
             ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("shoppinglist"))
                                     .key("key")
-                                    .textLineItems(singletonList(
+                                    .textLineItems(asList(
+                                        updatedTextLineItemDraft1,
                                         TextLineItemDraftBuilder.of(null, 1L).build()))
                                     .build();
 
-        assertThatThrownBy(() -> buildTextLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS))
-            .isExactlyInstanceOf(IllegalArgumentException.class)
-            .hasMessage("TextLineItemDraft at position '0' of the ShoppingListDraft with key "
+        final List<String> errors = new ArrayList<>();
+        final List<UpdateAction<ShoppingList>> updateActionsBeforeCallback = new ArrayList<>();
+
+        final ShoppingListSyncOptions syncOptions =
+            ShoppingListSyncOptionsBuilder.of(mock(SphereClient.class))
+                                          .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                                              errors.add(exception.getMessage());
+                                              updateActionsBeforeCallback.addAll(updateActions);
+                                          })
+                                          .build();
+
+        final List<UpdateAction<ShoppingList>> updateActions =
+            buildTextLineItemsUpdateActions(oldShoppingList, newShoppingList, syncOptions);
+
+        assertThat(updateActions).isEmpty();
+        assertThat(updateActionsBeforeCallback).containsExactly(
+            ChangeTextLineItemName.of("text_line_item_id_1",
+                LocalizedString.ofEnglish("newName1-EN").plus(Locale.GERMAN, "newName1-DE")),
+            SetTextLineItemDescription.of("text_line_item_id_1").withDescription(
+                LocalizedString.ofEnglish("newDesc1-EN").plus(Locale.GERMAN, "newDesc1-DE")),
+            ChangeTextLineItemQuantity.of("text_line_item_id_1", 2L),
+            SetTextLineItemCustomField.ofJson("textField",
+                JsonNodeFactory.instance.textNode("newText1"), "text_line_item_id_1"));
+
+        assertThat(errors).hasSize(1);
+        assertThat(errors.get(0))
+            .isEqualTo("TextLineItemDraft at position '1' of the ShoppingListDraft with key "
                 + "'key' has no name set. Please make sure all text line items have names.");
     }
 
     @Test
-    void buildTextLineItemsUpdateAction_WithTextLineItemWithoutName_ShouldThrowIllegalArgumentException() {
+    void buildTextLineItemsUpdateAction_WithTextLineItemWithoutName_ShouldTriggerErrorCallback() {
         final ShoppingList oldShoppingList =
             readObjectFromResource(SHOPPING_LIST_WITH_TEXT_LINE_ITEMS_NAME_123, ShoppingList.class);
 
@@ -285,9 +319,26 @@ class TextLineItemListUpdateActionUtilsTest {
                                         TextLineItemDraftBuilder.of(LocalizedString.of(), 1L).build()))
                                     .build();
 
-        assertThatThrownBy(() -> buildTextLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS))
-            .isExactlyInstanceOf(IllegalArgumentException.class)
-            .hasMessage("TextLineItemDraft at position '0' of the ShoppingListDraft with key "
+        final List<String> errors = new ArrayList<>();
+        final List<UpdateAction<ShoppingList>> updateActionsBeforeCallback = new ArrayList<>();
+
+        final ShoppingListSyncOptions syncOptions =
+            ShoppingListSyncOptionsBuilder.of(mock(SphereClient.class))
+                                          .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                                              errors.add(exception.getMessage());
+                                              updateActionsBeforeCallback.addAll(updateActions);
+                                          })
+                                          .build();
+
+        final List<UpdateAction<ShoppingList>> updateActions =
+            buildTextLineItemsUpdateActions(oldShoppingList, newShoppingList, syncOptions);
+
+        assertThat(updateActions).isEmpty();
+        assertThat(updateActionsBeforeCallback).isEmpty();
+
+        assertThat(errors).hasSize(1);
+        assertThat(errors.get(0))
+            .isEqualTo("TextLineItemDraft at position '0' of the ShoppingListDraft with key "
                 + "'key' has no name set. Please make sure all text line items have names.");
     }
 
