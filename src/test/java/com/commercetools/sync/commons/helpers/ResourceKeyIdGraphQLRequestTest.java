@@ -1,6 +1,7 @@
 package com.commercetools.sync.commons.helpers;
 
-import com.commercetools.sync.commons.models.GraphQlQueryEndpoint;
+import com.commercetools.sync.commons.models.GraphQLQueryResources;
+import com.commercetools.sync.commons.models.ResourceKeyIdGraphQLResult;
 import io.sphere.sdk.client.HttpRequestIntent;
 import io.sphere.sdk.http.HttpMethod;
 import io.sphere.sdk.http.HttpResponse;
@@ -17,24 +18,24 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class GraphQlRequestTest {
+class ResourceKeyIdGraphQLRequestTest {
 
     @Test
     void newGraphQlRequest_WithNullKeys_ShouldThrowNullPointerException() {
         //test & assertion
         assertThatThrownBy(
-            () -> new GraphQlRequest(null, GraphQlQueryEndpoint.CATEGORIES))
+            () -> new ResourceKeyIdGraphQLRequest(null, GraphQLQueryResources.CATEGORIES))
             .isExactlyInstanceOf(NullPointerException.class);
     }
 
     @Test
     void httpRequestIntent_WithEmptyKeys_ShouldReturnQueryStringWithEmptyKeysClause() {
         //preparation
-        final GraphQlRequest categoryGraphQlRequest =
-            new GraphQlRequest(Collections.emptySet(), GraphQlQueryEndpoint.CATEGORIES);
+        final ResourceKeyIdGraphQLRequest categoriesKeyIdGraphQLRequest =
+            new ResourceKeyIdGraphQLRequest(Collections.emptySet(), GraphQLQueryResources.CATEGORIES);
 
         //test
-        final HttpRequestIntent httpRequestIntent = categoryGraphQlRequest.httpRequestIntent();
+        final HttpRequestIntent httpRequestIntent = categoriesKeyIdGraphQLRequest.httpRequestIntent();
 
         //assertions
         assertThat(httpRequestIntent.getBody()).isExactlyInstanceOf(StringHttpRequestBody.class);
@@ -52,10 +53,11 @@ class GraphQlRequestTest {
         final Set<String> keysToSearch = new HashSet<>();
         keysToSearch.add("key1");
         keysToSearch.add("key2");
-        final GraphQlRequest categoryGraphQlRequest = new GraphQlRequest(keysToSearch, GraphQlQueryEndpoint.CATEGORIES);
+        final ResourceKeyIdGraphQLRequest
+            categoriesKeyIdGraphQLRequest = new ResourceKeyIdGraphQLRequest(keysToSearch, GraphQLQueryResources.CATEGORIES);
 
         //test
-        final HttpRequestIntent httpRequestIntent = categoryGraphQlRequest.httpRequestIntent();
+        final HttpRequestIntent httpRequestIntent = categoriesKeyIdGraphQLRequest.httpRequestIntent();
 
         //assertions
         assertThat(httpRequestIntent.getBody()).isExactlyInstanceOf(StringHttpRequestBody.class);
@@ -71,11 +73,11 @@ class GraphQlRequestTest {
     @Test
     void httpRequestIntent_WithKeyAndExplicitLimit_ShouldReturnCorrectQueryString() {
         //preparation
-        final GraphQlRequest categoryGraphQlRequest =
-            new GraphQlRequest(singleton("key1"), GraphQlQueryEndpoint.CATEGORIES).withLimit(10);
+        final ResourceKeyIdGraphQLRequest categoriesKeyIdGraphQLRequest =
+            new ResourceKeyIdGraphQLRequest(singleton("key1"), GraphQLQueryResources.CATEGORIES).withLimit(10);
 
         //test
-        final HttpRequestIntent httpRequestIntent = categoryGraphQlRequest.httpRequestIntent();
+        final HttpRequestIntent httpRequestIntent = categoriesKeyIdGraphQLRequest.httpRequestIntent();
 
         //assertions
         assertThat(httpRequestIntent.getBody()).isExactlyInstanceOf(StringHttpRequestBody.class);
@@ -91,12 +93,12 @@ class GraphQlRequestTest {
     @Test
     void httpRequestIntent_WithKeyAndPredicate_ShouldReturnCorrectQueryString() {
         //preparation
-        final GraphQlRequest categoryGraphQlRequest =
-            new GraphQlRequest(singleton("key1"), GraphQlQueryEndpoint.CATEGORIES).withPredicate("id > \\\\\\\"id"
+        final ResourceKeyIdGraphQLRequest categoriesKeyIdGraphQLRequest =
+            new ResourceKeyIdGraphQLRequest(singleton("key1"), GraphQLQueryResources.CATEGORIES).withPredicate("id > \\\\\\\"id"
                 + "\\\\\\\"");
 
         //test
-        final HttpRequestIntent httpRequestIntent = categoryGraphQlRequest.httpRequestIntent();
+        final HttpRequestIntent httpRequestIntent = categoriesKeyIdGraphQLRequest.httpRequestIntent();
 
         //assertions
         assertThat(httpRequestIntent.getBody()).isExactlyInstanceOf(StringHttpRequestBody.class);
@@ -114,11 +116,11 @@ class GraphQlRequestTest {
         //preparation
         final HttpResponse httpResponse = mock(HttpResponse.class);
         when(httpResponse.getResponseBody()).thenReturn("null".getBytes());
-        final GraphQlRequest categoryGraphQlRequest =
-            new GraphQlRequest(singleton("key-1"), GraphQlQueryEndpoint.CATEGORIES);
+        final ResourceKeyIdGraphQLRequest categoriesKeyIdGraphQLRequest =
+            new ResourceKeyIdGraphQLRequest(singleton("key-1"), GraphQLQueryResources.CATEGORIES);
 
         //test
-        final GraphQlResult result = categoryGraphQlRequest.deserialize(httpResponse);
+        final ResourceKeyIdGraphQLResult result = categoriesKeyIdGraphQLRequest.deserialize(httpResponse);
 
         //assertions
         assertThat(result).isNull();
@@ -130,11 +132,11 @@ class GraphQlRequestTest {
         String jsonAsString = "{\"data\":{\"categories\":{\"results\":[]}}}";
         final HttpResponse httpResponse = mock(HttpResponse.class);
         when(httpResponse.getResponseBody()).thenReturn(jsonAsString.getBytes());
-        final GraphQlRequest categoriesGraphQlRequest =
-            new GraphQlRequest(singleton("key-1"), GraphQlQueryEndpoint.CATEGORIES);
+        final ResourceKeyIdGraphQLRequest categoriesKeyIdGraphQLRequest =
+            new ResourceKeyIdGraphQLRequest(singleton("key-1"), GraphQLQueryResources.CATEGORIES);
 
         //test
-        final GraphQlResult result = categoriesGraphQlRequest.deserialize(httpResponse);
+        final ResourceKeyIdGraphQLResult result = categoriesKeyIdGraphQLRequest.deserialize(httpResponse);
 
         //assertions
         assertThat(result).isNotNull();
@@ -147,11 +149,11 @@ class GraphQlRequestTest {
         HttpResponse httpResponse = mock(HttpResponse.class);
         String jsonAsString = "{\"data\":{\"categories\":{\"results\":[{\"id\":\"id-1\",\"key\":\"key-1\"}]}}}";
         when(httpResponse.getResponseBody()).thenReturn(jsonAsString.getBytes());
-        final GraphQlRequest categoryGraphQlRequest =
-            new GraphQlRequest(singleton("key-1"), GraphQlQueryEndpoint.CATEGORIES);
+        final ResourceKeyIdGraphQLRequest categoriesKeyIdGraphQLRequest =
+            new ResourceKeyIdGraphQLRequest(singleton("key-1"), GraphQLQueryResources.CATEGORIES);
 
         //test
-        final GraphQlResult result = categoryGraphQlRequest.deserialize(httpResponse);
+        final ResourceKeyIdGraphQLResult result = categoriesKeyIdGraphQLRequest.deserialize(httpResponse);
 
         //assertions
         assertThat(result).isNotNull();
@@ -171,11 +173,11 @@ class GraphQlRequestTest {
         String jsonAsString = "{\"data\":{\"categories\":{\"results\":[{\"id\":\"id-1\",\"key\":\"key-1\"},"
             + "{\"id\":\"id-2\",\"key\":\"key-2\"},{\"id\":\"id-3\",\"key\":\"key-3\"}]}}}";
         when(httpResponse.getResponseBody()).thenReturn(jsonAsString.getBytes());
-        final GraphQlRequest categoryGraphQlRequest =
-            new GraphQlRequest(singleton("key-1"), GraphQlQueryEndpoint.CATEGORIES);
+        final ResourceKeyIdGraphQLRequest categoriesKeyIdGraphQLRequest =
+            new ResourceKeyIdGraphQLRequest(singleton("key-1"), GraphQLQueryResources.CATEGORIES);
 
         //test
-        final GraphQlResult result = categoryGraphQlRequest.deserialize(httpResponse);
+        final ResourceKeyIdGraphQLResult result = categoriesKeyIdGraphQLRequest.deserialize(httpResponse);
 
         //assertions
         assertThat(result).isNotNull();

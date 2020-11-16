@@ -1,7 +1,7 @@
 package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
-import com.commercetools.sync.commons.helpers.GraphQlRequest;
+import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQLRequest;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.DraftBasedCreateCommand;
 import io.sphere.sdk.models.Resource;
@@ -103,7 +103,7 @@ abstract class BaseServiceWithKey<T extends WithKey, U extends Resource<U> & Wit
     @Nonnull
     CompletionStage<Map<String, String>> cacheKeysToIds(
         @Nonnull final Set<String> keys,
-        @Nonnull final Function<Set<String>, GraphQlRequest> keysRequestMapper) {
+        @Nonnull final Function<Set<String>, ResourceKeyIdGraphQLRequest> keysRequestMapper) {
 
         // Why method reference is not used:
         // http://mail.openjdk.java.net/pipermail/compiler-dev/2015-November/009824.html

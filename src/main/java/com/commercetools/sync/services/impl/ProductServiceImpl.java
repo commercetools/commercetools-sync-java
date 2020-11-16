@@ -1,7 +1,7 @@
 package com.commercetools.sync.services.impl;
 
-import com.commercetools.sync.commons.helpers.GraphQlRequest;
-import com.commercetools.sync.commons.models.GraphQlQueryEndpoint;
+import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQLRequest;
+import com.commercetools.sync.commons.models.GraphQLQueryResources;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.ProductService;
 import io.sphere.sdk.commands.UpdateAction;
@@ -50,7 +50,7 @@ public final class ProductServiceImpl extends BaseServiceWithKey<ProductDraft, P
 
         return cacheKeysToIds(
             productKeys,
-            keysNotCached -> new GraphQlRequest(keysNotCached, GraphQlQueryEndpoint.PRODUCTS));
+            keysNotCached -> new ResourceKeyIdGraphQLRequest(keysNotCached, GraphQLQueryResources.PRODUCTS));
     }
 
     QueryPredicate<Product> buildProductKeysQueryPredicate(@Nonnull final Set<String> productKeys) {

@@ -1,8 +1,8 @@
 package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.helpers.GraphQlRequest;
-import com.commercetools.sync.commons.helpers.GraphQlResult;
+import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQLRequest;
+import com.commercetools.sync.commons.models.ResourceKeyIdGraphQLResult;
 import com.commercetools.sync.commons.models.ResourceKeyId;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptions;
@@ -295,34 +295,34 @@ class BaseServiceImplTest {
     @Test
     void cacheKeysToIdsUsingGraphQl_WithNoCachedKeys_ShouldMakeRequestAndReturnCachedEntry() {
         //preparation
-        final GraphQlResult graphQlQueryResult = mock(GraphQlResult.class);
+        final ResourceKeyIdGraphQLResult resourceKeyIdGraphQLResult = mock(ResourceKeyIdGraphQLResult.class);
         final ResourceKeyId mockResourceKeyId = mock(ResourceKeyId.class);
         final String key = "testKey";
         final String id = "testId";
         when(mockResourceKeyId.getKey()).thenReturn(key);
         when(mockResourceKeyId.getId()).thenReturn(id);
-        when(graphQlQueryResult.getResults()).thenReturn(singleton(mockResourceKeyId));
-        when(client.execute(any())).thenReturn(completedFuture(graphQlQueryResult));
+        when(resourceKeyIdGraphQLResult.getResults()).thenReturn(singleton(mockResourceKeyId));
+        when(client.execute(any())).thenReturn(completedFuture(resourceKeyIdGraphQLResult));
 
         //test
         final Map<String, String> optional = service.cacheKeysToIds(singleton("testKey")).toCompletableFuture().join();
 
         //assertions
         assertThat(optional).containsExactly(MapEntry.entry(key, id));
-        verify(client, times(1)).execute(any(GraphQlRequest.class));
+        verify(client, times(1)).execute(any(ResourceKeyIdGraphQLRequest.class));
     }
 
     @Test
     void cacheKeysToIdsUsingGraphQl_WithBadGateWayException_ShouldCompleteExceptionally() {
         //preparation
-        final GraphQlResult graphQlQueryResult = mock(GraphQlResult.class);
+        final ResourceKeyIdGraphQLResult resourceKeyIdGraphQLResult = mock(ResourceKeyIdGraphQLResult.class);
         final ResourceKeyId mockResourceKeyId = mock(ResourceKeyId.class);
         final String key = "testKey";
         final String id = "testId";
         when(mockResourceKeyId.getKey()).thenReturn(key);
         when(mockResourceKeyId.getId()).thenReturn(id);
-        when(graphQlQueryResult.getResults()).thenReturn(singleton(mockResourceKeyId));
-        when(client.execute(any(GraphQlRequest.class)))
+        when(resourceKeyIdGraphQLResult.getResults()).thenReturn(singleton(mockResourceKeyId));
+        when(client.execute(any(ResourceKeyIdGraphQLRequest.class)))
             .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()));
 
         //test
@@ -330,7 +330,7 @@ class BaseServiceImplTest {
 
         //assertions
         assertThat(result).hasFailedWithThrowableThat().isExactlyInstanceOf(BadGatewayException.class);
-        verify(client, times(1)).execute(any(GraphQlRequest.class));
+        verify(client, times(1)).execute(any(ResourceKeyIdGraphQLRequest.class));
     }
 
     @Test

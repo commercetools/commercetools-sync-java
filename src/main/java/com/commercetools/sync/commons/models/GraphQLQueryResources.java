@@ -1,6 +1,6 @@
 package com.commercetools.sync.commons.models;
 
-public enum GraphQlQueryEndpoint {
+public enum GraphQLQueryResources {
     CATEGORIES("categories"),
     CHANNELS("channels"),
     CUSTOMER_GROUPS("customerGroups"),
@@ -9,11 +9,12 @@ public enum GraphQlQueryEndpoint {
     PRODUCT_TYPES("productTypes"),
     STATES("states"),
     TAX_CATEGORIES("taxCategories"),
-    TYPES("types");
+    TYPES("types"),
+    SHOPPING_LISTS("shoppingLists");
 
     private final String name;
 
-    GraphQlQueryEndpoint(final String name) {
+    GraphQLQueryResources(final String name) {
         this.name = name;
     }
 

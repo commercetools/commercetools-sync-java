@@ -1,8 +1,8 @@
 package com.commercetools.sync.commons.utils;
 
 
-import com.commercetools.sync.commons.helpers.GraphQlRequest;
-import com.commercetools.sync.commons.helpers.GraphQlResult;
+import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQLRequest;
+import com.commercetools.sync.commons.models.ResourceKeyIdGraphQLResult;
 import com.commercetools.sync.commons.models.ResourceKeyId;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereRequest;
@@ -25,12 +25,12 @@ import static org.mockito.Mockito.when;
 
 class GraphQlQueryAllTest {
 
-    private static final GraphQlResult pagedGraphQlQueryResult = mock(GraphQlResult.class);
+    private static final ResourceKeyIdGraphQLResult pagedGraphQlQueryResult = mock(ResourceKeyIdGraphQLResult.class);
     private static final SphereClient sphereClient = mock(SphereClient.class);
 
     /**
      * Prepares mock data for unit testing the CTP GraphQlQueryAll utilities; specifically stubs a {@link SphereClient}
-     * to always return a mocked {@link GraphQlResult} on every call of {@link SphereClient#execute(SphereRequest)}.
+     * to always return a mocked {@link ResourceKeyIdGraphQLResult} on every call of {@link SphereClient#execute(SphereRequest)}.
      */
     @BeforeAll
     static void setup() {
@@ -52,7 +52,7 @@ class GraphQlQueryAllTest {
         results.add(resource4);
         when(pagedGraphQlQueryResult.getResults()).thenReturn(results);
 
-        final GraphQlQueryAll query = GraphQlQueryAll.of(sphereClient, mock(GraphQlRequest.class), DEFAULT_PAGE_SIZE);
+        final GraphQlQueryAll query = GraphQlQueryAll.of(sphereClient, mock(ResourceKeyIdGraphQLRequest.class), DEFAULT_PAGE_SIZE);
         final List<String> resourceIds = new ArrayList<>();
 
         final Consumer<Set<ResourceKeyId>> resourceIdCollector = page ->
@@ -71,7 +71,7 @@ class GraphQlQueryAllTest {
         //preparation
         when(pagedGraphQlQueryResult.getResults()).thenReturn(emptySet());
 
-        final GraphQlQueryAll query = GraphQlQueryAll.of(sphereClient, mock(GraphQlRequest.class), DEFAULT_PAGE_SIZE);
+        final GraphQlQueryAll query = GraphQlQueryAll.of(sphereClient, mock(ResourceKeyIdGraphQLRequest.class), DEFAULT_PAGE_SIZE);
         final List<String> resourceIds = new ArrayList<>();
 
         final Consumer<Set<ResourceKeyId>> resourceIdCollector = page ->

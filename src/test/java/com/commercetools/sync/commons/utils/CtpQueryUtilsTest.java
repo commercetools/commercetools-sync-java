@@ -1,8 +1,8 @@
 package com.commercetools.sync.commons.utils;
 
-import com.commercetools.sync.commons.helpers.GraphQlRequest;
-import com.commercetools.sync.commons.helpers.GraphQlResult;
-import com.commercetools.sync.commons.models.GraphQlQueryEndpoint;
+import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQLRequest;
+import com.commercetools.sync.commons.models.ResourceKeyIdGraphQLResult;
+import com.commercetools.sync.commons.models.GraphQLQueryResources;
 import com.commercetools.sync.commons.models.ResourceKeyId;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.queries.CategoryQuery;
@@ -43,7 +43,7 @@ class CtpQueryUtilsTest {
     @Captor
     private ArgumentCaptor<CategoryQuery> sphereRequestArgumentCaptor;
     @Captor
-    private ArgumentCaptor<GraphQlRequest> graphQlRequestArgumentCaptor;
+    private ArgumentCaptor<ResourceKeyIdGraphQLRequest> graphQlRequestArgumentCaptor;
 
     @BeforeEach
     void init() {
@@ -124,22 +124,23 @@ class CtpQueryUtilsTest {
 
         final Set<ResourceKeyId> mockPage = resultPage.stream().collect(Collectors.toSet());
 
-        final GraphQlResult pagedGraphQlResult = mock(GraphQlResult.class);
-        when(pagedGraphQlResult.getResults())
+        final ResourceKeyIdGraphQLResult pagedResourceKeyIdGraphQLResult = mock(ResourceKeyIdGraphQLResult.class);
+        when(pagedResourceKeyIdGraphQLResult.getResults())
             .thenReturn(mockPage)
             .thenReturn(mockPage.stream().limit(10).collect(Collectors.toSet()));
 
-        when(sphereClient.execute(any())).thenReturn(completedFuture(pagedGraphQlResult));
+        when(sphereClient.execute(any())).thenReturn(completedFuture(pagedResourceKeyIdGraphQLResult));
 
         final Set<String> keysToQuery = IntStream
             .range(1, 510)
             .mapToObj(i -> "key" + i)
             .collect(Collectors.toSet());
 
-        GraphQlRequest baseGraphQlRequest = new GraphQlRequest(keysToQuery, GraphQlQueryEndpoint.CATEGORIES);
+        ResourceKeyIdGraphQLRequest
+            resourceKeyIdGraphQLRequest = new ResourceKeyIdGraphQLRequest(keysToQuery, GraphQLQueryResources.CATEGORIES);
 
         // test
-        queryAll(sphereClient, baseGraphQlRequest, results -> identity())
+        queryAll(sphereClient, resourceKeyIdGraphQLRequest, results -> identity())
             .toCompletableFuture()
             .join();
 
@@ -147,8 +148,8 @@ class CtpQueryUtilsTest {
         verify(sphereClient, times(2)).execute(graphQlRequestArgumentCaptor.capture());
         assertThat(graphQlRequestArgumentCaptor.getAllValues())
             .containsExactly(
-                baseGraphQlRequest.withLimit(500),
-                baseGraphQlRequest.withLimit(500).withPredicate(format("id > \\\\\\\"%s\\\\\\\"",
+                resourceKeyIdGraphQLRequest.withLimit(500),
+                resourceKeyIdGraphQLRequest.withLimit(500).withPredicate(format("id > \\\\\\\"%s\\\\\\\"",
                     "id")));
     }
 

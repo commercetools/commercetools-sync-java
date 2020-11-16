@@ -1,6 +1,7 @@
 package com.commercetools.sync.commons.helpers;
 
-import com.commercetools.sync.commons.models.GraphQlQueryEndpoint;
+import com.commercetools.sync.commons.models.GraphQLQueryResources;
+import com.commercetools.sync.commons.models.ResourceKeyIdGraphQLResult;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.client.HttpRequestIntent;
 import io.sphere.sdk.client.SphereClient;
@@ -18,9 +19,9 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-public class GraphQlRequest implements SphereRequest<GraphQlResult> {
+public class ResourceKeyIdGraphQLRequest implements SphereRequest<ResourceKeyIdGraphQLResult> {
     protected final Set<String> keysToSearch;
-    protected final GraphQlQueryEndpoint endpoint;
+    protected final GraphQLQueryResources resource;
     private long limit = 500;
     private String queryPredicate = null;
 
@@ -30,12 +31,12 @@ public class GraphQlRequest implements SphereRequest<GraphQlResult> {
      * defined in endpoint parameter.
      *
      * @param keysToSearch - a set of keys to fetch matching ids for.
-     * @param endpoint - a string representing the name of the resource endpoint.
+     * @param resource - a string representing the name of the resource endpoint.
      */
-    public GraphQlRequest(@Nonnull final Set<String> keysToSearch, @Nonnull final GraphQlQueryEndpoint endpoint) {
+    public ResourceKeyIdGraphQLRequest(@Nonnull final Set<String> keysToSearch, @Nonnull final GraphQLQueryResources resource) {
 
         this.keysToSearch = requireNonNull(keysToSearch);
-        this.endpoint = endpoint;
+        this.resource = resource;
     }
 
     /**
@@ -45,7 +46,7 @@ public class GraphQlRequest implements SphereRequest<GraphQlResult> {
      * @return - an instance of this class.
      */
     @Nonnull
-    public GraphQlRequest withPredicate(final String predicate) {
+    public ResourceKeyIdGraphQLRequest withPredicate(final String predicate) {
 
         this.queryPredicate = predicate;
         return this;
@@ -58,7 +59,7 @@ public class GraphQlRequest implements SphereRequest<GraphQlResult> {
      * @return - an instance of this class
      */
     @Nonnull
-    public GraphQlRequest withLimit(final long limit) {
+    public ResourceKeyIdGraphQLRequest withLimit(final long limit) {
 
         this.limit = limit;
         return this;
@@ -66,14 +67,14 @@ public class GraphQlRequest implements SphereRequest<GraphQlResult> {
 
     @Nullable
     @Override
-    public GraphQlResult deserialize(final HttpResponse httpResponse) {
+    public ResourceKeyIdGraphQLResult deserialize(final HttpResponse httpResponse) {
 
         final JsonNode rootJsonNode = SphereJsonUtils.parse(httpResponse.getResponseBody());
         if (rootJsonNode.isNull()) {
             return null;
         }
-        JsonNode result = rootJsonNode.get("data").get(endpoint.getName());
-        return SphereJsonUtils.readObject(result, GraphQlResult.class);
+        JsonNode result = rootJsonNode.get("data").get(resource.getName());
+        return SphereJsonUtils.readObject(result, ResourceKeyIdGraphQLResult.class);
     }
 
     @Override
@@ -94,7 +95,7 @@ public class GraphQlRequest implements SphereRequest<GraphQlResult> {
 
         return format(
             "%s(limit: %d, where: \\\"%s\\\", sort: [\\\"id asc\\\"]) { results { id key } }",
-            this.endpoint.getName(), this.limit, createWhereQuery(keysToSearch));
+            this.resource.getName(), this.limit, createWhereQuery(keysToSearch));
     }
 
     @Nonnull

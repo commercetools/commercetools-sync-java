@@ -2,8 +2,8 @@ package com.commercetools.sync.services.impl;
 
 
 import com.commercetools.sync.categories.CategorySyncOptions;
-import com.commercetools.sync.commons.helpers.GraphQlRequest;
-import com.commercetools.sync.commons.models.GraphQlQueryEndpoint;
+import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQLRequest;
+import com.commercetools.sync.commons.models.GraphQLQueryResources;
 import com.commercetools.sync.services.CategoryService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -39,7 +39,7 @@ public final class CategoryServiceImpl extends BaseServiceWithKey<CategoryDraft,
     @Override
     public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> categoryKeys) {
         return cacheKeysToIds(
-                categoryKeys, keysNotCached -> new GraphQlRequest(keysNotCached, GraphQlQueryEndpoint.CATEGORIES));
+                categoryKeys, keysNotCached -> new ResourceKeyIdGraphQLRequest(keysNotCached, GraphQLQueryResources.CATEGORIES));
     }
 
     @Nonnull

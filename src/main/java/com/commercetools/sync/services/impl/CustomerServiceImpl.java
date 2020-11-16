@@ -1,8 +1,8 @@
 package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.helpers.GraphQlRequest;
-import com.commercetools.sync.commons.models.GraphQlQueryEndpoint;
+import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQLRequest;
+import com.commercetools.sync.commons.models.GraphQLQueryResources;
 import com.commercetools.sync.customers.CustomerSyncOptions;
 import com.commercetools.sync.services.CustomerService;
 import io.sphere.sdk.commands.UpdateAction;
@@ -39,8 +39,8 @@ public final class CustomerServiceImpl extends BaseServiceWithKey<CustomerDraft,
     @Override
     public CompletionStage<Map<String, String>> cacheKeysToIds(
         @Nonnull final Set<String> keysToCache) {
-        return cacheKeysToIds(keysToCache, keysNotCached -> new GraphQlRequest(keysNotCached,
-            GraphQlQueryEndpoint.CUSTOMERS));
+        return cacheKeysToIds(keysToCache, keysNotCached -> new ResourceKeyIdGraphQLRequest(keysNotCached,
+            GraphQLQueryResources.CUSTOMERS));
     }
 
     @Nonnull

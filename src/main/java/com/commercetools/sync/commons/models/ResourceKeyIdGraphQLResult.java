@@ -1,16 +1,15 @@
-package com.commercetools.sync.commons.helpers;
+package com.commercetools.sync.commons.models;
 
-import com.commercetools.sync.commons.models.ResourceKeyId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Set;
 
-public class GraphQlResult {
+public class ResourceKeyIdGraphQLResult {
     private final Set<ResourceKeyId> results;
 
     @JsonCreator
-    protected GraphQlResult(@JsonProperty("results") final Set<ResourceKeyId> results) {
+    protected ResourceKeyIdGraphQLResult(@JsonProperty("results") final Set<ResourceKeyId> results) {
         this.results = results;
     }
 

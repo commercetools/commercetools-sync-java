@@ -1,8 +1,8 @@
 package com.commercetools.sync.integration.commons;
 
 
-import com.commercetools.sync.commons.helpers.GraphQlRequest;
-import com.commercetools.sync.commons.models.GraphQlQueryEndpoint;
+import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQLRequest;
+import com.commercetools.sync.commons.models.GraphQLQueryResources;
 import com.commercetools.sync.commons.models.ResourceKeyId;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -161,10 +161,10 @@ class CtpQueryUtilsIT {
         final Consumer<Set<ResourceKeyId>> categoryPageConsumer = categoryPageResults ->
             categoryPageResults.forEach(category -> categoryIds.add(category.getId()));
 
-        GraphQlRequest graphQlRequest = new GraphQlRequest(allCategoryKeys,
-            GraphQlQueryEndpoint.CATEGORIES);
+        ResourceKeyIdGraphQLRequest resourceKeyIdGraphQLRequest = new ResourceKeyIdGraphQLRequest(allCategoryKeys,
+            GraphQLQueryResources.CATEGORIES);
 
-        queryAll(CTP_TARGET_CLIENT, graphQlRequest, categoryPageConsumer).toCompletableFuture().join();
+        queryAll(CTP_TARGET_CLIENT, resourceKeyIdGraphQLRequest, categoryPageConsumer).toCompletableFuture().join();
         assertThat(categoryIds).hasSize(numberOfCategories);
     }
 
@@ -183,9 +183,10 @@ class CtpQueryUtilsIT {
         final Consumer<Set<ResourceKeyId>> categoryPageConsumer = categoryPageResults ->
             categoryPageResults.forEach(category -> categoryIds.add(category.getId()));
 
-        GraphQlRequest graphQlRequest = new GraphQlRequest(allCategoryKeys, GraphQlQueryEndpoint.CATEGORIES);
+        ResourceKeyIdGraphQLRequest
+            resourceKeyIdGraphQLRequest = new ResourceKeyIdGraphQLRequest(allCategoryKeys, GraphQLQueryResources.CATEGORIES);
 
-        queryAll(CTP_TARGET_CLIENT, graphQlRequest, categoryPageConsumer).toCompletableFuture().join();
+        queryAll(CTP_TARGET_CLIENT, resourceKeyIdGraphQLRequest, categoryPageConsumer).toCompletableFuture().join();
         assertThat(categoryIds).hasSize(numberOfCategories);
     }
 
@@ -200,10 +201,11 @@ class CtpQueryUtilsIT {
         final Consumer<Set<ResourceKeyId>> categoryPageConsumer = categoryPageResults ->
             categoryPageResults.forEach(category -> categoryIds.add(category.getId()));
 
-        GraphQlRequest graphQlRequest = new GraphQlRequest(singleton(categories.get(0).getKey()),
-            GraphQlQueryEndpoint.CATEGORIES);
+        ResourceKeyIdGraphQLRequest
+            resourceKeyIdGraphQLRequest = new ResourceKeyIdGraphQLRequest(singleton(categories.get(0).getKey()),
+            GraphQLQueryResources.CATEGORIES);
 
-        queryAll(CTP_TARGET_CLIENT, graphQlRequest, categoryPageConsumer).toCompletableFuture().join();
+        queryAll(CTP_TARGET_CLIENT, resourceKeyIdGraphQLRequest, categoryPageConsumer).toCompletableFuture().join();
         assertThat(categoryIds).hasSize(1);
         assertThat(categoryIds).containsExactly(categories.get(0).getId());
     }

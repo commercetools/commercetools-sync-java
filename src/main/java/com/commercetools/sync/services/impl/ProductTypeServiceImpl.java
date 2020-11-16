@@ -1,8 +1,8 @@
 package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
-import com.commercetools.sync.commons.helpers.GraphQlRequest;
-import com.commercetools.sync.commons.models.GraphQlQueryEndpoint;
+import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQLRequest;
+import com.commercetools.sync.commons.models.GraphQLQueryResources;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.products.AttributeMetaData;
 import com.commercetools.sync.services.ProductTypeService;
@@ -45,7 +45,7 @@ public final class ProductTypeServiceImpl extends BaseServiceWithKey<ProductType
 
         return cacheKeysToIds(
             keys,
-            keysNotCached -> new GraphQlRequest(keysNotCached, GraphQlQueryEndpoint.PRODUCT_TYPES));
+            keysNotCached -> new ResourceKeyIdGraphQLRequest(keysNotCached, GraphQLQueryResources.PRODUCT_TYPES));
     }
 
     @Nonnull
