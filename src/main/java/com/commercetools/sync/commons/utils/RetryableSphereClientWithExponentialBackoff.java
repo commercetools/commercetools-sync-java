@@ -29,29 +29,29 @@ import java.util.stream.IntStream;
  * And handle all the configurations for the creation of client.
  */
 public final class RetryableSphereClientWithExponentialBackoff {
-    protected static final long DEFAULT_TIMEOUT = 30000;
-    protected static final long INITIAL_RETRY_DELAY = 200;
+    protected static final long DEFAULT_MAX_DELAY = 60000;
+    protected static final long DEFAULT_INITIAL_RETRY_DELAY = 200;
     protected static final TimeUnit DEFAULT_TIMEOUT_TIME_UNIT = TimeUnit.MILLISECONDS;
-    protected static final int MAX_RETRIES = 5;
-    protected static final int MAX_PARALLEL_REQUESTS = 20;
-    private static final int[] DEFAULT_RETRY_ERROR_STATUS_CODES = {500, 502, 503, 504};
+    protected static final int DEFAULT_MAX_RETRY_ATTEMPT = 5;
+    protected static final int DEFAULT_MAX_PARALLEL_REQUESTS = 20;
+    private static final int[] DEFAULT_STATUS_CODES_TO_RETRY = {500, 502, 503, 504};
 
     private SphereClientConfig clientConfig;
-    private long timeout;
-    private long initialDelay;
+    private long maxDelay;
+    private long initialRetryDelay;
     private TimeUnit timeUnit;
-    private int maxRetries;
+    private int maxRetryAttempt;
     private int maxParallelRequests;
-    private int[] retryErrorStatusCodes;
+    private int[] statusCodesToRetry;
 
     private RetryableSphereClientWithExponentialBackoff(@Nonnull final SphereClientConfig clientConfig) {
         this.clientConfig = clientConfig;
-        this.timeout = DEFAULT_TIMEOUT;
+        this.maxDelay = DEFAULT_MAX_DELAY;
         this.timeUnit = DEFAULT_TIMEOUT_TIME_UNIT;
-        this.initialDelay = INITIAL_RETRY_DELAY;
-        this.maxRetries = MAX_RETRIES;
-        this.maxParallelRequests = MAX_PARALLEL_REQUESTS;
-        this.retryErrorStatusCodes = DEFAULT_RETRY_ERROR_STATUS_CODES;
+        this.initialRetryDelay = DEFAULT_INITIAL_RETRY_DELAY;
+        this.maxRetryAttempt = DEFAULT_MAX_RETRY_ATTEMPT;
+        this.maxParallelRequests = DEFAULT_MAX_PARALLEL_REQUESTS;
+        this.statusCodesToRetry = DEFAULT_STATUS_CODES_TO_RETRY;
     }
 
     /**
@@ -68,11 +68,11 @@ public final class RetryableSphereClientWithExponentialBackoff {
 
     /**
      * Sets the timeout value.
-     * @param timeout - build with timeout value.
+     * @param maxDelay - build with timeout value.
      * @return {@link RetryableSphereClientWithExponentialBackoff} with given timeout value.
      */
-    public RetryableSphereClientWithExponentialBackoff withTimeout(final long timeout) {
-        this.timeout = timeout;
+    public RetryableSphereClientWithExponentialBackoff withTimeout(final long maxDelay) {
+        this.maxDelay = maxDelay;
         return this;
     }
 
@@ -82,8 +82,8 @@ public final class RetryableSphereClientWithExponentialBackoff {
      * @return {@link RetryableSphereClientWithExponentialBackoff} with given initialDelay value.
      */
     public RetryableSphereClientWithExponentialBackoff withInitialDelay(final long initialDelay) {
-        if (initialDelay < timeout) {
-            this.initialDelay = initialDelay;
+        if (initialDelay < maxDelay) {
+            this.initialRetryDelay = initialDelay;
         }
         return this;
     }
@@ -100,12 +100,12 @@ public final class RetryableSphereClientWithExponentialBackoff {
 
     /**
      * Sets the Max Retry value.
-     * @param maxRetries - build with maxRetries value.
+     * @param maxRetryAttempt - build with maxRetries value.
      * @return {@link RetryableSphereClientWithExponentialBackoff} with given maxRetries value.
      */
-    public RetryableSphereClientWithExponentialBackoff withMaxRetries(final int maxRetries) {
-        if (maxRetries > 1) {
-            this.maxRetries = maxRetries;
+    public RetryableSphereClientWithExponentialBackoff withMaxRetryAttempt(final int maxRetryAttempt) {
+        if (maxRetryAttempt > 1) {
+            this.maxRetryAttempt = maxRetryAttempt;
         }
         return this;
     }
@@ -122,12 +122,12 @@ public final class RetryableSphereClientWithExponentialBackoff {
 
     /**
      * Sets the Retry Error Status Codes.
-     * @param retryErrorStatusCodes - build with retryErrorStatusCodes.
+     * @param statusCodesToRetry - build with retryErrorStatusCodes.
      * @return {@link RetryableSphereClientWithExponentialBackoff} with given retryErrorStatusCodes.
      */
     public RetryableSphereClientWithExponentialBackoff withRetryErrorStatusCodes(
-            final int[] retryErrorStatusCodes) {
-        this.retryErrorStatusCodes = retryErrorStatusCodes.clone();
+            final int[] statusCodesToRetry) {
+        this.statusCodesToRetry = statusCodesToRetry.clone();
         return this;
     }
 
@@ -145,9 +145,9 @@ public final class RetryableSphereClientWithExponentialBackoff {
      */
     protected SphereClient createClient() {
         final SphereClient underlyingClient = createSphereClient(clientConfig);
-        return decorateSphereClient(underlyingClient, maxRetries,
+        return decorateSphereClient(underlyingClient, maxRetryAttempt,
             context -> calculateDurationWithExponentialRandomBackoff(context.getAttempt(),
-            initialDelay, timeout), maxParallelRequests);
+                    initialRetryDelay, maxDelay), maxParallelRequests);
     }
 
     protected SphereClient createSphereClient(@Nonnull final SphereClientConfig clientConfig) {
@@ -183,7 +183,7 @@ public final class RetryableSphereClientWithExponentialBackoff {
             @Nonnull final Function<RetryContext, Duration> durationFunction) {
         final RetryAction scheduledRetry = RetryAction.ofScheduledRetry(maxRetryAttempt, durationFunction);
         final RetryPredicate http5xxMatcher = RetryPredicate.ofMatchingStatusCodes(
-            errCode -> IntStream.of(retryErrorStatusCodes).anyMatch(i -> i == errCode));
+            errCode -> IntStream.of(statusCodesToRetry).anyMatch(i -> i == errCode));
         final List<RetryRule> retryRules = Collections.singletonList(RetryRule.of(http5xxMatcher, scheduledRetry));
         return RetrySphereClientDecorator.of(delegate, retryRules);
     }
