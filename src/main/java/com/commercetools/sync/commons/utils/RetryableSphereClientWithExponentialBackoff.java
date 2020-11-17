@@ -142,7 +142,7 @@ public final class RetryableSphereClientWithExponentialBackoff {
                         initialRetryDelay, maxDelay), maxParallelRequests);
     }
 
-    protected SphereClient createSphereClient(@Nonnull final SphereClientConfig clientConfig) {
+    protected SphereClient createUnderlyingSphereClient(@Nonnull final SphereClientConfig clientConfig) {
         final HttpClient httpClient = getHttpClient();
         final SphereAccessTokenSupplier tokenSupplier =
                 SphereAccessTokenSupplier.ofAutoRefresh(clientConfig, httpClient, false);
