@@ -18,7 +18,6 @@ import io.sphere.sdk.shoppinglists.LineItemDraftBuilder;
 import io.sphere.sdk.shoppinglists.ShoppingList;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
-import io.sphere.sdk.shoppinglists.TextLineItemDraft;
 import io.sphere.sdk.shoppinglists.commands.ShoppingListCreateCommand;
 import io.sphere.sdk.shoppinglists.commands.ShoppingListDeleteCommand;
 import io.sphere.sdk.shoppinglists.queries.ShoppingListQuery;
@@ -105,18 +104,14 @@ public final class ShoppingListITUtils {
                                                   @Nullable final String anonymousId, @Nullable final String slug,
                                                   @Nullable final Integer deleteDaysAfterLastModification) {
 
-        final ShoppingListDraft shoppingListDraft = ShoppingListDraftBuilder.of(LocalizedString.ofEnglish(name))
-                                                                            .key(key)
-                                                                            .description(
-                                                                                desc == null ? null : LocalizedString.ofEnglish(
-                                                                                    desc))
-                                                                            .anonymousId(anonymousId)
-                                                                            .slug(
-                                                                                slug == null ? null : LocalizedString.ofEnglish(
-                                                                                    slug))
-                                                                            .deleteDaysAfterLastModification(
-                                                                                deleteDaysAfterLastModification)
-                                                                            .build();
+        final ShoppingListDraft shoppingListDraft = ShoppingListDraftBuilder
+            .of(LocalizedString.ofEnglish(name))
+            .key(key)
+            .description(desc == null ? null : LocalizedString.ofEnglish(desc))
+            .anonymousId(anonymousId)
+            .slug(slug == null ? null : LocalizedString.ofEnglish(slug))
+            .deleteDaysAfterLastModification(deleteDaysAfterLastModification)
+            .build();
 
         return executeBlocking(ctpClient.execute(ShoppingListCreateCommand.of(shoppingListDraft)));
     }
@@ -146,51 +141,12 @@ public final class ShoppingListITUtils {
     }
 
     /**
-     * Creates a {@link ShoppingList} in the CTP project defined by the {@code ctpClient} in a blocking fashion.
-     *
-     * @param ctpClient     defines the CTP project to create the ShoppingList in.
-     * @param name          the name of the ShoppingList to create.
-     * @param key           the key of the ShoppingList to create.
-     * @param textLineItems the list of TextLineItemDraft which ShoppingList contains.
-     * @return the created ShoppingList.
-     */
-    public static ShoppingList createShoppingListWithTextLineItems(
-        @Nonnull final SphereClient ctpClient,
-        @Nonnull final String name,
-        @Nonnull final String key,
-        @Nonnull final List<TextLineItemDraft> textLineItems) {
-
-        final ShoppingListDraft shoppingListDraft = ShoppingListDraftBuilder.of(LocalizedString.ofEnglish(name))
-                                                                            .key(key)
-                                                                            .textLineItems(textLineItems)
-                                                                            .build();
-
-        return executeBlocking(ctpClient.execute(ShoppingListCreateCommand.of(shoppingListDraft)));
-    }
-
-    /**
-     * Creates a {@link ShoppingList} in the CTP project defined by the {@code ctpClient} in a blocking fashion.
+     * Creates a sample {@link ShoppingList} in the CTP project defined by the {@code ctpClient} in a blocking fashion.
      *
      * @param ctpClient defines the CTP project to create the ShoppingList in.
-     * @param name      the name of the ShoppingList to create.
-     * @param key       the key of the ShoppingList to create.
-     * @param lineItems the list of LineItemDraft which ShoppingList contains.
      * @return the created ShoppingList.
      */
-    public static ShoppingList createShoppingListWithLineItems(
-        @Nonnull final SphereClient ctpClient,
-        @Nonnull final String name,
-        @Nonnull final String key,
-        @Nonnull final List<LineItemDraft> lineItems) {
-
-        final ShoppingListDraft shoppingListDraft = ShoppingListDraftBuilder.of(LocalizedString.ofEnglish(name))
-                                                                            .key(key)
-                                                                            .lineItems(lineItems)
-                                                                            .build();
-
-        return executeBlocking(ctpClient.execute(ShoppingListCreateCommand.of(shoppingListDraft)));
-    }
-
+    @Nonnull
     public static ImmutablePair<ShoppingList, ShoppingListDraft> createSampleShoppingListCarrotCake(
         @Nonnull final SphereClient ctpClient) {
 
@@ -208,12 +164,13 @@ public final class ShoppingListITUtils {
                 .lineItems(buildIngredientsLineItemDrafts())
                 .build();
 
-        final ShoppingList shoppingList = createShoppingList(ctpClient, shoppingListDraft);
+        final ShoppingList shoppingList =
+            executeBlocking(ctpClient.execute(ShoppingListCreateCommand.of(shoppingListDraft)));
         return ImmutablePair.of(shoppingList, shoppingListDraft);
     }
 
     @Nonnull
-    private static CustomFieldsDraft createSampleTypes(@Nonnull SphereClient ctpClient) {
+    private static CustomFieldsDraft createSampleTypes(@Nonnull final SphereClient ctpClient) {
         final TypeDraft shoppingListTypeDraft = TypeDraftBuilder
             .of("custom-type-shopping-list", LocalizedString.ofEnglish("name"),
                 ResourceTypeIdsSetBuilder.of()
@@ -253,13 +210,13 @@ public final class ShoppingListITUtils {
     }
 
     @Nonnull
-    private static void createIngredientProducts(@Nonnull SphereClient ctpClient) {
+    private static void createIngredientProducts(@Nonnull final SphereClient ctpClient) {
         final ProductType productType = ctpClient
             .execute(
                 ProductTypeCreateCommand.of(ProductTypeDraft.ofAttributeDefinitionDrafts(
-                "productTypeKey",
-                "productTypeName",
-                "desc", null)))
+                    "productTypeKey",
+                    "productTypeName",
+                    "desc", null)))
             .toCompletableFuture().join();
 
         final ProductDraft productDraft = ProductDraftBuilder
@@ -327,8 +284,17 @@ public final class ShoppingListITUtils {
         return Arrays.asList(item1, item2, item3, item4, item5, item6);
     }
 
+    /**
+     * Creates an instance of {@link CustomFieldsDraft} with the type key 'custom-type-line-items' and
+     * two custom fields 'ingredient' and'amount'.
+     *
+     * @param ingredient the text field.
+     * @param amount     the text field.
+     * @return an instance of {@link CustomFieldsDraft} with the type key 'custom-type-line-items' and
+     *         two custom fields 'ingredient' and'amount'.
+     */
     @Nonnull
-    private static CustomFieldsDraft buildIngredientCustomType(
+    public static CustomFieldsDraft buildIngredientCustomType(
         @Nonnull final String ingredient,
         @Nonnull final String amount) {
 
@@ -338,21 +304,6 @@ public final class ShoppingListITUtils {
 
         return CustomFieldsDraft.ofTypeKeyAndJson("custom-type-line-items", map);
     }
-
-
-    /**
-     * Creates a {@link ShoppingList} in the CTP project defined by the {@code ctpClient} in a blocking fashion.
-     *
-     * @param ctpClient         defines the CTP project to create the ShoppingList in.
-     * @param shoppingListDraft the draft of the shopping list to create.
-     * @return the created ShoppingList.
-     */
-    public static ShoppingList createShoppingList(@Nonnull final SphereClient ctpClient,
-                                                  @Nonnull final ShoppingListDraft shoppingListDraft) {
-
-        return executeBlocking(ctpClient.execute(ShoppingListCreateCommand.of(shoppingListDraft)));
-    }
-
 
     private ShoppingListITUtils() {
     }
