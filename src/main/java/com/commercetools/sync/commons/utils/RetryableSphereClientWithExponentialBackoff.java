@@ -77,7 +77,7 @@ public final class RetryableSphereClientWithExponentialBackoff {
     /**
      * Sets the initialDelay value in milliseconds.
      * @param initialDelay - build with initialDelay value.
-     * If initialDelay is less than maxDelay then, a {@link IllegalArgumentException} will be thrown.
+     * If initialDelay is equal or greater than maxDelay then, a {@link IllegalArgumentException} will be thrown.
      * @return {@link RetryableSphereClientWithExponentialBackoff} with given initialDelay value.
      */
     public RetryableSphereClientWithExponentialBackoff withInitialDelay(final long initialDelay) {
