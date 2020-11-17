@@ -441,9 +441,17 @@ so in this document, we will describe the reasons and constraints, mostly relate
             <p>
                 The solution idea for the changing order with removing and adding back looks like an overhead because
                 we know the all line item ids, so change order action could be created, in this case, the challenge is
-                finding an algorithm to compare and find the line item ids, and then prepare an order. Currently we
-                don't know how this algorithm might work, so assuming the order change will be done by removing and adding
-                back when the order changes.
+                finding an algorithm to compare and find the line item ids, and then prepare an order.                
+            </p>
+            <p>
+                First example seems reasonable but how you would sync a case like: 
+                '[SKU-1, SKU-2, SKU-3]' to '[SKU-3, SKU-1, SKU-4, SKU-2]', so with a new algorithm it might be done with 
+                change order [line-item-id-3, line-item-id-1, line-item-id-2] then removeLineItem SKU-2, add back addLineItem SKU-4, 
+                in total 3 actions.
+            </p>
+            <p>
+                It looks like there are more different cases and that's why we decided to keep the idea of removing and adding back to 
+                not have a more complex algorithm.            
             </p>
         </td>
     </tr>
@@ -480,6 +488,6 @@ to change the `addedAt` field of the `LineItem` and `TextLineItem`, hereby we wi
 <!-- What becomes easier or more difficult to do and any risks introduced by the change that will need to be mitigated. -->
 
 - To ensure the order, we need to remove and add line items, which means a bigger payload, so performance overhead. 
-So as a result, we will not use the [Change LineItems Order](https://docs.commercetools.com/api/projects/shoppingLists#change-lineitems-order) update action.
+So as a result, we will not use the [Change LineItems Order](https://docs.commercetools.com/api/projects/shoppingLists#change-lineitems-order) update action. 
 
 - **Caveat**: `addedAt` values not synced.
