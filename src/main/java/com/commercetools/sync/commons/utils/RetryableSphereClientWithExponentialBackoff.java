@@ -18,7 +18,6 @@ import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 
 import javax.annotation.Nonnull;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -35,18 +34,17 @@ public final class RetryableSphereClientWithExponentialBackoff {
     protected static final long DEFAULT_INITIAL_RETRY_DELAY = 200;
     protected static final int DEFAULT_MAX_RETRY_ATTEMPT = 5;
     protected static final int DEFAULT_MAX_PARALLEL_REQUESTS = 20;
-    protected static final List<Integer> DEFAULT_STATUS_CODES_TO_RETRY =
-            new ArrayList(Arrays.asList(500, 502, 503, 504));
+    protected static final List<Integer> DEFAULT_STATUS_CODES_TO_RETRY = Arrays.asList(500, 502, 503, 504);
 
-    private SphereClientConfig clientConfig;
+    private final SphereClientConfig sphereClientConfig;
     private long maxDelay;
     private long initialRetryDelay;
     private int maxRetryAttempt;
     private int maxParallelRequests;
     private List<Integer> statusCodesToRetry;
 
-    private RetryableSphereClientWithExponentialBackoff(@Nonnull final SphereClientConfig clientConfig) {
-        this.clientConfig = clientConfig;
+    private RetryableSphereClientWithExponentialBackoff(@Nonnull final SphereClientConfig sphereClientConfig) {
+        this.sphereClientConfig = sphereClientConfig;
         this.maxDelay = DEFAULT_MAX_DELAY;
         this.initialRetryDelay = DEFAULT_INITIAL_RETRY_DELAY;
         this.maxRetryAttempt = DEFAULT_MAX_RETRY_ATTEMPT;
@@ -58,12 +56,12 @@ public final class RetryableSphereClientWithExponentialBackoff {
      * Creates a new instance of {@link RetryableSphereClientWithExponentialBackoff} given a {@link SphereClientConfig}
      * responsible for creation of a SphereClient.
      *
-     * @param clientConfig the client configuration for the client.
+     * @param sphereClientConfig the client configuration for the client.
      * @return the instantiated {@link RetryableSphereClientWithExponentialBackoff}.
      */
     public static RetryableSphereClientWithExponentialBackoff of(
-            @Nonnull final SphereClientConfig clientConfig) {
-        return new RetryableSphereClientWithExponentialBackoff(clientConfig);
+            @Nonnull final SphereClientConfig sphereClientConfig) {
+        return new RetryableSphereClientWithExponentialBackoff(sphereClientConfig);
     }
 
     /**
@@ -140,7 +138,7 @@ public final class RetryableSphereClientWithExponentialBackoff {
      * @return the instantiated {@link SphereClient}
      */
     public SphereClient build() {
-        final SphereClient underlyingClient = createSphereClient(clientConfig);
+        final SphereClient underlyingClient = createSphereClient(sphereClientConfig);
         return decorateSphereClient(underlyingClient, maxRetryAttempt,
                 context -> calculateDurationWithExponentialRandomBackoff(context.getAttempt(),
                         initialRetryDelay, maxDelay), maxParallelRequests);
