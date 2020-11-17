@@ -247,16 +247,16 @@ class RetryableSphereClientWithExponentialBackoffTest {
             maxDelay += DEFAULT_INITIAL_RETRY_DELAY * ((long) Math.pow(2, failedRetryAttempt - 1)) * 2;
 
             /* One example of wait times of retries:
-            Retry 1: 318 millisecond
-            Retry 2: 740 millisecond
-            Retry 3: 1284 millisecond
-            Retry 4: 2002 millisecond
-            Retry 5: 6054 millisecond
-            Retry 6: 8690 millisecond
-            Retry 7: 15567 millisecond
-            Retry 8: 30000 millisecond
-            Retry 9: 30000 millisecond
-            Retry 10: 30000 millisecond
+            Retry 1: 226 millisecond
+            Retry 2: 788 millisecond
+            Retry 3: 1214 millisecond
+            Retry 4: 2135 millisecond
+            Retry 5: 3332 millisecond
+            Retry 6: 8662 millisecond
+            Retry 7: 24898 millisecond
+            Retry 8: 28659 millisecond
+            Retry 9: 60000 millisecond
+            Retry 10: 60000 millisecond
             */
             final Duration duration =
                     retryableSphereClientWithExponentialBackoff.calculateDurationWithExponentialRandomBackoff(
