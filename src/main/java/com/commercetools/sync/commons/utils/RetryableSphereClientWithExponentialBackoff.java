@@ -60,7 +60,7 @@ public final class RetryableSphereClientWithExponentialBackoff {
      * @return the instantiated {@link RetryableSphereClientWithExponentialBackoff}.
      */
     public static RetryableSphereClientWithExponentialBackoff of(
-            @Nonnull final SphereClientConfig sphereClientConfig) {
+        @Nonnull final SphereClientConfig sphereClientConfig) {
         return new RetryableSphereClientWithExponentialBackoff(sphereClientConfig);
     }
 
@@ -85,7 +85,7 @@ public final class RetryableSphereClientWithExponentialBackoff {
             this.initialRetryDelay = initialDelay;
         } else {
             throw new IllegalArgumentException(
-                    format("InitialDelay %s is less than MaxDelay %s.", initialDelay, maxDelay));
+                format("InitialDelay %s is less than MaxDelay %s.", initialDelay, maxDelay));
         }
         return this;
     }
@@ -100,8 +100,7 @@ public final class RetryableSphereClientWithExponentialBackoff {
         if (maxRetryAttempt > 1) {
             this.maxRetryAttempt = maxRetryAttempt;
         } else {
-            throw new IllegalArgumentException(
-                    format("MaxRetryAttempt %s cannot be less than 1.", maxRetryAttempt));
+            throw new IllegalArgumentException(format("MaxRetryAttempt %s cannot be less than 1.", maxRetryAttempt));
         }
         return this;
     }
@@ -117,7 +116,7 @@ public final class RetryableSphereClientWithExponentialBackoff {
             this.maxParallelRequests = maxParallelRequests;
         } else {
             throw new IllegalArgumentException(
-                    format("MaxParallelRequests %s cannot be less than 0", maxParallelRequests));
+                format("MaxParallelRequests %s cannot be less than 0", maxParallelRequests));
         }
         return this;
     }
@@ -127,8 +126,7 @@ public final class RetryableSphereClientWithExponentialBackoff {
      * @param statusCodesToRetry - build with retryErrorStatusCodes.
      * @return {@link RetryableSphereClientWithExponentialBackoff} with given retryErrorStatusCodes.
      */
-    public RetryableSphereClientWithExponentialBackoff withStatusCodesToRetry(
-            final List<Integer> statusCodesToRetry) {
+    public RetryableSphereClientWithExponentialBackoff withStatusCodesToRetry(final List<Integer> statusCodesToRetry) {
         this.statusCodesToRetry = statusCodesToRetry;
         return this;
     }
@@ -151,11 +149,10 @@ public final class RetryableSphereClientWithExponentialBackoff {
         return SphereClient.of(clientConfig, httpClient, tokenSupplier);
     }
 
-    protected SphereClient decorateSphereClient(
-            @Nonnull final SphereClient underlyingClient,
-            final long maxRetryAttempt,
-            @Nonnull final Function<RetryContext, Duration> durationFunction,
-            final int maxParallelRequests) {
+    protected SphereClient decorateSphereClient(@Nonnull final SphereClient underlyingClient,
+                                                final long maxRetryAttempt,
+                                                @Nonnull final Function<RetryContext, Duration> durationFunction,
+                                                final int maxParallelRequests) {
         final SphereClient retryClient = withRetry(underlyingClient, maxRetryAttempt, durationFunction);
         return withLimitedParallelRequests(retryClient, maxParallelRequests);
     }
@@ -166,15 +163,12 @@ public final class RetryableSphereClientWithExponentialBackoff {
      */
     protected HttpClient getHttpClient() {
         final AsyncHttpClient asyncHttpClient =
-                new DefaultAsyncHttpClient(
-                        new DefaultAsyncHttpClientConfig.Builder().build());
+            new DefaultAsyncHttpClient(new DefaultAsyncHttpClientConfig.Builder().build());
         return AsyncHttpClientAdapter.of(asyncHttpClient);
     }
 
-    private SphereClient withRetry(
-            @Nonnull final SphereClient delegate,
-            long maxRetryAttempt,
-            @Nonnull final Function<RetryContext, Duration> durationFunction) {
+    private SphereClient withRetry(@Nonnull final SphereClient delegate, long maxRetryAttempt,
+                                   @Nonnull final Function<RetryContext, Duration> durationFunction) {
         final RetryAction scheduledRetry = RetryAction.ofScheduledRetry(maxRetryAttempt, durationFunction);
         final RetryPredicate http5xxMatcher = RetryPredicate.ofMatchingStatusCodes(
             errCode -> statusCodesToRetry.stream().anyMatch(i -> i.equals(errCode)));
