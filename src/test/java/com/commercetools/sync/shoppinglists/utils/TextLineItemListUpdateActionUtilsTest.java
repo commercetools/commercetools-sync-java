@@ -34,6 +34,7 @@ import org.junit.jupiter.api.Test;
 import javax.annotation.Nonnull;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -170,6 +171,27 @@ class TextLineItemListUpdateActionUtilsTest {
             AddTextLineItemWithAddedAt.of(newShoppingList.getTextLineItems().get(1)),
             AddTextLineItemWithAddedAt.of(newShoppingList.getTextLineItems().get(2))
         );
+    }
+
+    @Test
+    void buildTextLineItemsUpdateActions_WithOnlyNewTextLineItemsWithoutValidQuantity_ShouldNotBuildAddActions() {
+        final ShoppingList oldShoppingList = mock(ShoppingList.class);
+        when(oldShoppingList.getTextLineItems()).thenReturn(null);
+
+        final ShoppingListDraft newShoppingList =
+            ShoppingListDraftBuilder
+                .of(LocalizedString.ofEnglish("name"))
+                .textLineItems(asList(
+                    TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("name1"), null).build(),
+                    TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("name2"), 0L).build(),
+                    TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("name3"), -1L).build()
+                ))
+                .build();
+
+        final List<UpdateAction<ShoppingList>> updateActions =
+            buildTextLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
+
+        assertThat(updateActions).isEmpty();
     }
 
     @Test
@@ -350,6 +372,26 @@ class TextLineItemListUpdateActionUtilsTest {
         assertThat(errors.get(0))
             .isEqualTo("TextLineItemDraft at position '0' of the ShoppingListDraft with key "
                 + "'key' has no name set. Please make sure all text line items have names.");
+    }
+
+    @Test
+    void buildTextLineItemsUpdateActions_WithNewTextLineItemsWithoutValidQuantity_ShouldNotBuildAddActions() {
+        final ShoppingList oldShoppingList =
+            readObjectFromResource(SHOPPING_LIST_WITH_TEXT_LINE_ITEMS_NAME_123, ShoppingList.class);
+
+        final ShoppingListDraft newShoppingList =
+            mapToShoppingListDraftWithResolvedTextLineItemReferences(SHOPPING_LIST_WITH_TEXT_LINE_ITEMS_NAME_123);
+
+        Objects.requireNonNull(newShoppingList.getTextLineItems()).addAll(Arrays.asList(
+            TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("name1"), null).build(),
+            TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("name2"), 0L).build(),
+            TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("name3"), -1L).build()
+        ));
+
+        final List<UpdateAction<ShoppingList>> updateActions =
+            buildTextLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
+
+        assertThat(updateActions).isEmpty();
     }
 
     @Test

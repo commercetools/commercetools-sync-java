@@ -73,6 +73,7 @@ public final class TextLineItemUpdateActionUtils {
             return newShoppingList.getTextLineItems()
                                   .stream()
                                   .filter(Objects::nonNull)
+                                  .filter(TextLineItemUpdateActionUtils::hasQuantity)
                                   .map(AddTextLineItemWithAddedAt::of)
                                   .collect(toList());
         }
@@ -84,6 +85,18 @@ public final class TextLineItemUpdateActionUtils {
                                                                         .collect(toList());
 
         return buildUpdateActions(oldShoppingList, newShoppingList, oldTextLineItems, newTextLineItems, syncOptions);
+    }
+
+    private static boolean hasQuantity(@Nonnull final TextLineItemDraft textLineItemDraft) {
+        /*
+
+         with this check, it's avoided bad request case like below:
+
+         "code": "InvalidField",
+         "message": "The value '0' is not valid for field 'quantity'. Quantity 0 is not allowed.",
+
+        */
+        return textLineItemDraft.getQuantity() != null && textLineItemDraft.getQuantity() > 0;
     }
 
     /**
@@ -107,7 +120,12 @@ public final class TextLineItemUpdateActionUtils {
             final TextLineItemDraft newTextLineItem = newTextLineItems.get(i);
 
             if (newTextLineItem.getName() == null || newTextLineItem.getName().getLocales().isEmpty()) {
+                /*
+                checking the name of the oldTextLineItem is not needed, because it's required.
+                with this check below, it's avoided bad request case like:
 
+                "detailedErrorMessage": "actions -> name: Missing required value"
+                */
                 syncOptions.applyErrorCallback(new SyncException(
                         format("TextLineItemDraft at position '%d' of the ShoppingListDraft with key '%s' has no name "
                             + "set. Please make sure all text line items have names.", i, newShoppingList.getKey())),
@@ -125,7 +143,9 @@ public final class TextLineItemUpdateActionUtils {
         }
 
         for (int i = minSize; i < newTextLineItems.size(); i++) {
-            updateActions.add(AddTextLineItemWithAddedAt.of(newTextLineItems.get(i)));
+            if (hasQuantity(newTextLineItems.get(i))) {
+                updateActions.add(AddTextLineItemWithAddedAt.of(newTextLineItems.get(i)));
+            }
         }
 
         return updateActions;

@@ -71,6 +71,7 @@ public final class LineItemUpdateActionUtils {
             return newShoppingList.getLineItems()
                                   .stream()
                                   .filter(Objects::nonNull)
+                                  .filter(LineItemUpdateActionUtils::hasQuantity)
                                   .map(AddLineItemWithSku::of)
                                   .collect(toList());
         }
@@ -84,6 +85,17 @@ public final class LineItemUpdateActionUtils {
         return buildUpdateActions(oldShoppingList, newShoppingList, oldLineItems, newlineItems, syncOptions);
     }
 
+    private static boolean hasQuantity(@Nonnull final LineItemDraft lineItemDraft) {
+        /*
+
+         with this check, it's avoided bad request case like below:
+
+         "code": "InvalidField",
+         "message": "The value '0' is not valid for field 'quantity'. Quantity 0 is not allowed.",
+
+        */
+        return lineItemDraft.getQuantity() != null && lineItemDraft.getQuantity() > 0;
+    }
 
     /**
      * The decisions in the calculating update actions are documented on the
@@ -148,22 +160,15 @@ public final class LineItemUpdateActionUtils {
         }
 
         for (int i = indexOfFirstDifference; i < newlineItems.size(); i++) {
-            updateActions.add(AddLineItemWithSku.of(newlineItems.get(i)));
+            if (hasQuantity(newlineItems.get(i))) {
+                updateActions.add(AddLineItemWithSku.of(newlineItems.get(i)));
+            }
         }
 
         return updateActions;
     }
 
-    private static boolean hasIdenticalAddedAtValues(
-        @Nonnull final LineItem oldLineItem,
-        @Nonnull final LineItemDraft newLineItem) {
 
-        if (newLineItem.getAddedAt() == null) {
-            return true; // omit, if not set in draft.
-        }
-
-        return oldLineItem.getAddedAt().equals(newLineItem.getAddedAt());
-    }
 
     /**
      * Compares all the fields of a {@link LineItem} and a {@link LineItemDraft} and returns a list of

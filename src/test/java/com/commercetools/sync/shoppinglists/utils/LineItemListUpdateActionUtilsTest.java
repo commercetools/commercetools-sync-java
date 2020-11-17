@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Test;
 import javax.annotation.Nonnull;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -40,6 +41,7 @@ import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapVal
 import static com.commercetools.sync.shoppinglists.utils.LineItemUpdateActionUtils.buildLineItemsUpdateActions;
 import static com.commercetools.sync.shoppinglists.utils.ShoppingListSyncUtils.buildActions;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
@@ -188,6 +190,27 @@ class LineItemListUpdateActionUtilsTest {
             AddLineItemWithSku.of(newShoppingList.getLineItems().get(1)),
             AddLineItemWithSku.of(newShoppingList.getLineItems().get(2))
         );
+    }
+
+    @Test
+    void buildLineItemsUpdateActions_WithOnlyNewLineItemsWithoutValidQuantity_ShouldNotBuildAddActions() {
+        final ShoppingList oldShoppingList = mock(ShoppingList.class);
+        when(oldShoppingList.getLineItems()).thenReturn(null);
+
+        final ShoppingListDraft newShoppingList =
+            ShoppingListDraftBuilder
+                .of(LocalizedString.ofEnglish("name"))
+                .lineItems(asList(
+                    LineItemDraftBuilder.ofSku("sku1", null).build(),
+                    LineItemDraftBuilder.ofSku("sku2", 0L).build(),
+                    LineItemDraftBuilder.ofSku("sku3", -1L).build()
+                ))
+                .build();
+
+        final List<UpdateAction<ShoppingList>> updateActions =
+            buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
+
+        assertThat(updateActions).isEmpty();
     }
 
     @Test
@@ -488,6 +511,26 @@ class LineItemListUpdateActionUtilsTest {
             .isEqualTo("LineItemDraft at position '1' of the ShoppingListDraft with key "
                 + "'shoppinglist-with-lineitems-not-expanded' has no SKU set. "
                 + "Please make sure all line items have SKUs.");
+    }
+
+    @Test
+    void buildLineItemsUpdateActions_WithNewLineItemsWithoutValidQuantity_ShouldNotBuildAddActions() {
+        final ShoppingList oldShoppingList =
+            readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
+
+        final ShoppingListDraft newShoppingList =
+            mapToShoppingListDraftWithResolvedLineItemReferences(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123);
+
+        Objects.requireNonNull(newShoppingList.getLineItems()).addAll(Arrays.asList(
+            LineItemDraftBuilder.ofSku("sku1", null).build(),
+            LineItemDraftBuilder.ofSku("sku2", 0L).build(),
+            LineItemDraftBuilder.ofSku("sku3", -1L).build()
+        ));
+
+        final List<UpdateAction<ShoppingList>> updateActions =
+            buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
+
+        assertThat(updateActions).isEmpty();
     }
 
     @Test
