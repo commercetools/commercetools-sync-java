@@ -136,7 +136,7 @@ public final class RetryableSphereClientWithExponentialBackoff {
      * @return the instantiated {@link SphereClient}
      */
     public SphereClient build() {
-        final SphereClient underlyingClient = createSphereClient(sphereClientConfig);
+        final SphereClient underlyingClient = createUnderlyingSphereClient(sphereClientConfig);
         return decorateSphereClient(underlyingClient, maxRetryAttempt,
                 context -> calculateDurationWithExponentialRandomBackoff(context.getAttempt(),
                         initialRetryDelay, maxDelay), maxParallelRequests);
