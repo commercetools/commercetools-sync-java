@@ -656,7 +656,7 @@ when it's not set in the draft, so how to compare and update this field?
 **Proposed solution:**
 
 The `addedAt` field will be synced only if the value provided in the line item draft, otherwise, the `addedAt` value will be omitted. 
-To be able to sync it we need to remove and add this line item back with the up to date value. 
+To be able to sync it we need to remove and add this line item back with the up-to-date value. 
 After some discussions in pull requests, we decided to not change this field.
 
 ## Decision
