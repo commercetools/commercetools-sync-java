@@ -1,5 +1,6 @@
 package com.commercetools.sync.integration.externalsource.states;
 
+import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedTransitions;
 import com.commercetools.sync.services.impl.StateServiceImpl;
 import com.commercetools.sync.services.impl.UnresolvedTransitionsServiceImpl;
@@ -751,8 +752,7 @@ class StateSyncIT {
         final StateDraft stateBDraft = createStateDraft(keyB, stateC);
         final State stateB = createStateInSource(stateBDraft);
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        final StateQuery stateQuery = any(StateQuery.class);
-        when(spyClient.execute(stateQuery))
+        when(spyClient.execute(any()))
             .thenCallRealMethod()
             .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()));
 
@@ -997,7 +997,7 @@ class StateSyncIT {
 
 
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(StateQuery.class)))
+        when(spyClient.execute(any(ResourceKeyIdGraphQlRequest.class)))
             .thenReturn(exceptionallyCompletedFuture(new BadRequestException("a test exception")))
             .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
             .thenCallRealMethod();
