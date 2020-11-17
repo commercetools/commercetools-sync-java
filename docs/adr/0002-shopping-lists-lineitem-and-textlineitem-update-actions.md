@@ -17,7 +17,7 @@ We have challenges to build update actions of the `LineItem` and `TextLineItem` 
 so in this document, we will describe the reasons and constraints, mostly related to order of the items: 
 - LineItem orders might be important, if the customer has a front end that sorts the line items with their order could mean sorting by importance.
 
-> Note: The cases below are the same for the `TextLineItem` so here those are not mentioned separately.
+## LineItems
 
 ### How to ensure line item order?
 
@@ -457,6 +457,196 @@ so in this document, we will describe the reasons and constraints, mostly relate
     </tr>
 </table>
 
+## TextLineItems
+
+### How to ensure text line item order?
+
+<table>
+    <tr>
+        <th>TextLineItemDrafts</th>
+        <th>TextLineItems</th>
+    </tr>
+    <tr>
+        <td><pre lang="json">
+{
+  "textLineItems": [
+    {
+     "name": {
+        "de": "name1-DE",
+        "en": "name1-EN"
+      },
+      "description": {
+        "de": "desc1-DE",
+        "en": "desc1-EN"
+      },
+      "quantity": 1,
+      "addedAt": "2020-11-04T09:38:35.571Z",
+      "custom": {
+        "type": {
+          "key": "custom-type-for-shoppinglists"
+        },
+        "fields": {
+          "textField": "text-1"
+        }
+      }
+    },
+    {
+      "name": {
+        "de": "name2-DE",
+        "en": "name2-EN"
+      },
+      "description": {
+        "de": "desc2-DE",
+        "en": "desc2-EN"
+      },
+      "quantity": 2,
+      "addedAt": "2020-11-04T09:40:12.341Z",
+      "custom": {
+        "type": {
+          "key": "custom-type-for-shoppinglists"
+        },
+        "fields": {
+          "textField": "text-2"
+        }
+      }
+    }
+  ]
+}
+</pre>
+        </td>
+        <td><pre lang="json">
+{
+  "textLineItems": [
+    {
+      "id": "24de3821-e27d-4ddb-bd0b-ecc99365285f",
+      "name": {
+        "de": "name2-DE",
+        "en": "name2-EN"
+      },
+      "description": {
+        "de": "desc2-DE",
+        "en": "desc2-EN"
+      },
+      "quantity": 2,
+      "custom": {
+        "type": {
+          "id": "4796e155-f5a4-403a-ae1a-04b10c9dfc54",
+          "obj": {
+            "key": "custom-type-for-shoppinglists"
+          }
+        },
+        "fields": {
+          "textField": "text-2"
+        }
+      },
+     "addedAt": "2020-11-04T09:38:35.571Z"
+    }
+  ]
+}
+</pre>
+        </td>
+    </tr>
+    <tr>
+        <th colspan="2">Analysis</th>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p>Draft has text line items with <b>name-1</b> and <b>name-2</b>. In the target project text line item with
+                <b>name-2</b> exists, so <b>name-1</b> is a new text line item. </p>
+            <p> So we need to create an <a
+                    href="https://docs.commercetools.com/api/projects/shoppingLists#add-textlineitem">AddTextLineItem</a>
+                action
+                and a <a href="https://docs.commercetools.com/api/projects/shoppingLists#change-textlineitems-order">Change
+                    TextLineItems Order</a>
+                of the text line items <b>name-1</b> and <b>name-2</b>, because when we add text line item with <b>name-1</b>
+                the order will be <b>name-2</b> and <b>name-1</b>.</p>
+            <p>The <b>challenge</b> in here is, those actions can not be added in one request because we don't know the
+                text line item id of the new text line item
+                with <b>name-1</b>, so we need to find another way to create a new text line item with the right order.
+            </p>
+        </td>
+    </tr>
+    <tr>
+        <th colspan="2">Proposed solution</th>
+    </tr>
+    <tr>
+        <td colspan="2">
+            <p>
+                Normally, for a difference, we might do a set intersection and then calculate action for differences,
+                but that does not make sense because we are not aware of the order from the draft.
+            </p>
+            <p>
+                Before that, we need to analyse the <a
+                    href="https://docs.commercetools.com/api/projects/shoppingLists#add-textlineitem">AddTextLineItem</a>
+                action, because the platform are not checking if the data exists. An API user could add the
+                exact same data multiple times. So with that information, we might say, it's hard to know the order by
+                just checking the differences between the resource and draft object. Also, the name of the text line
+                item does not need to be unique which is different than line items, because line items are unique with
+                the same product variant and the same custom fields. Luckily the platform support changing all fields
+                (except addedAt) of the text line items, so when an order change is needed we might just update the
+                fields of the text line items. Which will look like:
+            </p>
+            <pre lang="json">
+{
+  "version": 1,
+  "actions": [
+    {
+      "action" : "changeTextLineItemName",
+      "textLineItemId" : "24de3821-e27d-4ddb-bd0b-ecc99365285f",
+      "name": {
+        "de": "name1-DE",
+        "en": "name1-EN"
+      }
+    },
+    {
+      "action" : "changeTextLineItemQuantity",
+      "textLineItemId" : "24de3821-e27d-4ddb-bd0b-ecc99365285f",
+      "quantity" : 1
+    },
+    {
+      "action" : "setTextLineItemDescription",
+      "textLineItemId" : "24de3821-e27d-4ddb-bd0b-ecc99365285f",
+      "description": {
+        "de": "desc1-DE",
+        "en": "desc1-EN"
+      }
+    },
+    {
+      "action" : "setTextLineItemCustomField",
+      "textLineItemId" : "24de3821-e27d-4ddb-bd0b-ecc99365285f",
+      "name" : "textField",
+      "value" : "text-1"
+    },
+    {
+      "action" : "addTextLineItem",
+      "name": {
+        "de": "name2-DE",
+        "en": "name2-EN"
+      },
+      "description": {
+        "de": "desc2-DE",
+        "en": "desc2-EN"
+      },
+      "quantity": 2,
+      "addedAt": "2020-11-04T09:38:35.571Z",
+      "custom": {
+        "type": {
+          "key": "custom-type-for-shoppinglists"
+        },
+        "fields": {
+          "textField": "text-2"
+        }
+      }
+    }
+  ]
+}
+</pre>
+        </td>
+    </tr>
+</table>
+
+## Common
+
 ### How addedAt will be compared?
 
 In commercetools shopping lists API, there is no [update action](https://docs.commercetools.com/api/projects/shoppingLists#update-actions) 
@@ -480,6 +670,9 @@ Check [LineItemDraft Product Variant Selection](https://docs.commercetools.com/a
 - When a [Change LineItems Order](https://docs.commercetools.com/api/projects/shoppingLists#change-lineitems-order) action is needed, 
 the line items will be removed and added back with the order provided in the `ShoppingListDraft`.
 
+- When a [Change TextLineItems Order](https://docs.commercetools.com/api/projects/shoppingLists#change-textlineitems-order) action is needed, 
+the text line items will be updated with using update actions with the order provided in the `ShoppingListDraft`.
+
 - In commercetools shopping lists API, there is no [update action](https://docs.commercetools.com/api/projects/shoppingLists#update-actions) 
 to change the `addedAt` field of the `LineItem` and `TextLineItem`, hereby we will not update the `addedAt` value.
 
@@ -487,7 +680,8 @@ to change the `addedAt` field of the `LineItem` and `TextLineItem`, hereby we wi
 
 <!-- What becomes easier or more difficult to do and any risks introduced by the change that will need to be mitigated. -->
 
-- To ensure the order, we need to remove and add line items, which means a bigger payload, so performance overhead. 
-So as a result, we will not use the [Change LineItems Order](https://docs.commercetools.com/api/projects/shoppingLists#change-lineitems-order) update action. 
+- To ensure the order of the line items, we need to remove and add line items, which means a bigger payload, so performance overhead. 
+
+- To ensure the order of text line items, we might need to calculate and update more than expected, so means a bigger payload and performance overhead.
 
 - **Caveat**: `addedAt` values not synced.
