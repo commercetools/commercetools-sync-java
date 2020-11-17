@@ -445,13 +445,13 @@ so in this document, we will describe the reasons and constraints, mostly relate
             </p>
             <p>
                 The example above seems reasonable but how you would sync a case like: 
-                '[SKU-1, SKU-2, SKU-3]' to '[SKU-3, SKU-1, SKU-4, SKU-2]', so with a new algorithm it might be done with 
-                change order [line-item-id-3, line-item-id-1, line-item-id-2] then removeLineItem SKU-2, add back addLineItem SKU-4, 
-                in total 3 actions.
+                <b>[SKU-1, SKU-2, SKU-3]</b> to <b>[SKU-3, SKU-1, SKU-4, SKU-2]</b>, so with a different algorithm it might 
+                be done with change order <b>[line-item-id-3, line-item-id-1, line-item-id-2]</b> then <b>removeLineItem 
+                SKU-2</b>, add back <b>addLineItem SKU-4</b>, in total 3 actions. Even for this we need to remove and add back.
             </p>
             <p>
-                It looks like there are more different cases and that's why we decided to keep the idea of removing and adding back to 
-                not have a more complex algorithm.            
+                It looks like there are more different cases, when we dig in. <b>That's why we decided to keep the idea 
+                of removing and adding back to  not have a more complex algorithm.</b>      
             </p>
         </td>
     </tr>
