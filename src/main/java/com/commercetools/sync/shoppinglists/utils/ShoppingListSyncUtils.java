@@ -4,15 +4,13 @@ import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.shoppinglists.ShoppingList;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
-import io.sphere.sdk.types.CustomDraft;
-import io.sphere.sdk.types.CustomFieldsDraft;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
 
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildPrimaryResourceCustomUpdateActions;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
+import static com.commercetools.sync.shoppinglists.utils.LineItemUpdateActionUtils.buildLineItemsUpdateActions;
 import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActionUtils.buildChangeNameUpdateAction;
 import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActionUtils.buildSetAnonymousIdUpdateAction;
 import static com.commercetools.sync.shoppinglists.utils.ShoppingListUpdateActionUtils.buildSetCustomerUpdateAction;
@@ -54,36 +52,14 @@ public final class ShoppingListSyncUtils {
             buildSetDeleteDaysAfterLastModificationUpdateAction(oldShoppingList, newShoppingList)
         );
 
-        final List<UpdateAction<ShoppingList>> shoppingListCustomUpdateActions =
-            buildPrimaryResourceCustomUpdateActions(oldShoppingList,
-                new CustomShoppingListDraft(newShoppingList),
-                shoppingListCustomActionBuilder,
-                syncOptions);
+        updateActions.addAll(buildPrimaryResourceCustomUpdateActions(oldShoppingList,
+            newShoppingList::getCustom,
+            shoppingListCustomActionBuilder,
+            syncOptions));
 
-        updateActions.addAll(shoppingListCustomUpdateActions);
+        updateActions.addAll(buildLineItemsUpdateActions(oldShoppingList, newShoppingList, syncOptions));
 
         return updateActions;
-    }
-
-    /**
-     * The class is needed by `buildPrimaryResourceCustomUpdateActions` generic utility method,
-     * because required generic type `S` is based on the CustomDraft interface (S extends CustomDraft).
-     *
-     * <p>TODO (JVM-SDK): Missing the interface CustomDraft.
-     * See for more details: https://github.com/commercetools/commercetools-jvm-sdk/issues/2073
-     */
-    private static class CustomShoppingListDraft implements CustomDraft {
-        private final ShoppingListDraft shoppingListDraft;
-
-        public CustomShoppingListDraft(@Nonnull final ShoppingListDraft shoppingListDraft) {
-            this.shoppingListDraft = shoppingListDraft;
-        }
-
-        @Nullable
-        @Override
-        public CustomFieldsDraft getCustom() {
-            return shoppingListDraft.getCustom();
-        }
     }
 
     private ShoppingListSyncUtils() {

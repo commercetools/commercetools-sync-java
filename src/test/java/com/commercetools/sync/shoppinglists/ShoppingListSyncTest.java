@@ -12,6 +12,7 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
+import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.shoppinglists.LineItem;
 import io.sphere.sdk.shoppinglists.LineItemDraft;
 import io.sphere.sdk.shoppinglists.LineItemDraftBuilder;
@@ -22,14 +23,15 @@ import io.sphere.sdk.shoppinglists.TextLineItem;
 import io.sphere.sdk.shoppinglists.TextLineItemDraft;
 import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
 import io.sphere.sdk.types.CustomFieldsDraft;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletionException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.shoppinglists.helpers.ShoppingListBatchValidator.SHOPPING_LIST_DRAFT_IS_NULL;
 import static com.commercetools.sync.shoppinglists.helpers.ShoppingListBatchValidator.SHOPPING_LIST_DRAFT_KEY_NOT_SET;
@@ -358,20 +360,26 @@ public class ShoppingListSyncTest {
         verify(spySyncOptions, never()).applyBeforeCreateCallback(shoppingListDraft);
     }
 
-    // TODO - Enable the test case when LineItem is available in UpdateActionUtils
-    @Disabled
     @Test
     void sync_WithUnchangedShoppingListDraftAndUpdatedLineItemDraft_ShouldIncrementUpdated() {
         // preparation
         final ShoppingListService mockShoppingListService = mock(ShoppingListService.class);
         final ShoppingList mockShoppingList = mock(ShoppingList.class);
+
         final LineItem mockLineItem = mock(LineItem.class);
         when(mockShoppingList.getKey()).thenReturn("shoppingListKey");
         when(mockShoppingList.getName()).thenReturn(LocalizedString.ofEnglish("shoppingListName"));
-        when(mockLineItem.getVariant().getSku()).thenReturn("dummy-sku");
+
+        final ProductVariant mockProductVariant = mock(ProductVariant.class);
+        when(mockProductVariant.getSku()).thenReturn("dummy-sku");
+        when(mockLineItem.getVariant()).thenReturn(mockProductVariant);
         when(mockLineItem.getQuantity()).thenReturn(10L);
+
         when(mockShoppingListService.fetchMatchingShoppingListsByKeys(anySet()))
                 .thenReturn(completedFuture(singleton(mockShoppingList)));
+
+        when(mockShoppingListService.updateShoppingList(any(), anyList()))
+            .thenReturn(completedFuture(mockShoppingList));
 
         final ShoppingListSyncOptions spySyncOptions = spy(syncOptions);
         final ShoppingListSync shoppingListSync = new ShoppingListSync(spySyncOptions, mockShoppingListService,
