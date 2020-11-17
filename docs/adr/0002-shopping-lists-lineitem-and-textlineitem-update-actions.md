@@ -439,12 +439,12 @@ so in this document, we will describe the reasons and constraints, mostly relate
     <tr>
         <td colspan="2">
             <p>
-                The solution idea for the changing order with removing and adding back looks like an overhead because
-                we know the all line item ids, so change order action could be created, in this case, the challenge is
+                The solution idea for the changing order with removing and adding back looks like an overhead. We know 
+                all line item ids, so change order action could be created. However, the challenge is
                 finding an algorithm to compare and find the line item ids, and then prepare an order.                
             </p>
             <p>
-                First example seems reasonable but how you would sync a case like: 
+                The example above seems reasonable but how you would sync a case like: 
                 '[SKU-1, SKU-2, SKU-3]' to '[SKU-3, SKU-1, SKU-4, SKU-2]', so with a new algorithm it might be done with 
                 change order [line-item-id-3, line-item-id-1, line-item-id-2] then removeLineItem SKU-2, add back addLineItem SKU-4, 
                 in total 3 actions.
