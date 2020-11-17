@@ -4,7 +4,7 @@ Date: 2020-11-04
 
 ## Status
 
-[Proposed](https://github.com/commercetools/commercetools-sync-java/pull/614)
+[Approved](https://github.com/commercetools/commercetools-sync-java/pull/614)
 
 ## Context
 
@@ -16,7 +16,6 @@ Shopping lists hold line items of products in the platform or any other items th
 We have challenges to build update actions of the `LineItem` and `TextLineItem` because of the nature of the synchronization, 
 so in this document, we will describe the reasons and constraints, mostly related to order of the items: 
 - LineItem orders might be important, if the customer has a front end that sorts the line items with their order could mean sorting by importance.
-- Similarly, `addedAt` data might be important if the customer has a front end that sorts the line items with the date.
 
 > Note: The cases below are the same for the `TextLineItem` so here those are not mentioned separately.
 
@@ -460,8 +459,9 @@ when it's not set in the draft, so how to compare and update this field?
 
 The `addedAt` field will be synced only if the value provided in the line item draft, otherwise, the `addedAt` value will be omitted. 
 To be able to sync it we need to remove and add this line item back with the up to date value. 
+After some discussions in pull requests, we decided to not change this field.
 
-## Decision (not agreed yet with the team)
+## Decision
 
 <!-- The change that we're proposing or have agreed to implement. -->
 
@@ -472,6 +472,9 @@ Check [LineItemDraft Product Variant Selection](https://docs.commercetools.com/a
 - When a [Change LineItems Order](https://docs.commercetools.com/api/projects/shoppingLists#change-lineitems-order) action is needed, 
 the line items will be removed and added back with the order provided in the `ShoppingListDraft`.
 
+- In commercetools shopping lists API, there is no [update action](https://docs.commercetools.com/api/projects/shoppingLists#update-actions) 
+to change the `addedAt` field of the `LineItem` and `TextLineItem`, hereby we will not update the `addedAt` value.
+
 ## Consequences
 
 <!-- What becomes easier or more difficult to do and any risks introduced by the change that will need to be mitigated. -->
@@ -479,5 +482,4 @@ the line items will be removed and added back with the order provided in the `Sh
 - To ensure the order, we need to remove and add line items, which means a bigger payload, so performance overhead. 
 So as a result, we will not use the [Change LineItems Order](https://docs.commercetools.com/api/projects/shoppingLists#change-lineitems-order) update action.
 
-- [Add TextLineItem](https://docs.commercetools.com/api/projects/shoppingLists#add-textlineitem) is not checking if the data exists. A user could add the
-exact same data multiple times. It's hard to know the order by just checking the object. In this case, if the data is the same, the order will not be changed.
+- **Caveat**: `addedAt` values not synced.
