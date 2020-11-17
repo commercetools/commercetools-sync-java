@@ -9,7 +9,7 @@ public enum GraphQlQueryResources {
     PRODUCT_TYPES("productTypes"),
     STATES("states"),
     TAX_CATEGORIES("taxCategories"),
-    TYPES("types"),
+    TYPES("typeDefinitions"),
     SHOPPING_LISTS("shoppingLists");
 
     private final String name;
