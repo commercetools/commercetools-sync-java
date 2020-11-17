@@ -97,7 +97,7 @@ public final class RetryableSphereClientWithExponentialBackoff {
      * @return {@link RetryableSphereClientWithExponentialBackoff} with given maxRetries value.
      */
     public RetryableSphereClientWithExponentialBackoff withMaxRetryAttempt(final int maxRetryAttempt) {
-        if (maxRetryAttempt > 1) {
+        if (maxRetryAttempt > 0) {
             this.maxRetryAttempt = maxRetryAttempt;
         } else {
             throw new IllegalArgumentException(format("MaxRetryAttempt %s cannot be less than 1.", maxRetryAttempt));
@@ -108,7 +108,7 @@ public final class RetryableSphereClientWithExponentialBackoff {
     /**
      * Sets the Max Parallel Requests value, It should be always positive number.
      * @param maxParallelRequests - build with maxParallelRequests value.
-     * If maxParallelRequests is less than 0 then, a {@link IllegalArgumentException} will be thrown.
+     * If maxParallelRequests is less than 1 then, a {@link IllegalArgumentException} will be thrown.
      * @return {@link RetryableSphereClientWithExponentialBackoff} with given maxParallelRequests value.
      */
     public RetryableSphereClientWithExponentialBackoff withMaxParallelRequests(final int maxParallelRequests) {
