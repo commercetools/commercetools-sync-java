@@ -614,9 +614,11 @@ public final class CustomerUpdateActionUtils {
      * then no update actions are needed and hence an empty {@link List} is returned.
      *
      * <p>Notes:
-     * <li>Addresses are matching by their keys. </li>
-     * <li>Null values of the new addresses are filtered out.</li>
-     * <li>Address values without keys are filtered out.</li>
+     * <ul>
+     *  <li>Addresses are matching by their keys. </li>
+     *  <li>Null values of the new addresses are filtered out.</li>
+     *  <li>Address values without keys are filtered out.</li>
+     * </ul>
      *
      * @param oldCustomer the customer which should be updated.
      * @param newCustomer the customer draft where we get the new addresses.
@@ -663,9 +665,11 @@ public final class CustomerUpdateActionUtils {
      * then no update actions are needed and hence an empty {@link List} is returned.
      *
      * <p>Notes:
-     * <li>Addresses are matching by their keys. </li>
-     * <li>Null values of the new addresses are filtered out.</li>
-     * <li>Address values without keys are filtered out.</li>
+     * <ul>
+     *  <li>Addresses are matching by their keys. </li>
+     *  <li>Null values of the new addresses are filtered out.</li>
+     *  <li>Address values without keys are filtered out.</li>
+     * </ul>
      *
      * @param oldCustomer the customer which should be updated.
      * @param newCustomer the customer draft where we get the new addresses.
@@ -710,9 +714,11 @@ public final class CustomerUpdateActionUtils {
      * then no update actions are needed and hence an empty {@link List} is returned.
      *
      * <p>Notes:
-     * <li>Addresses are matching by their keys. </li>
-     * <li>Null values of the new addresses are filtered out.</li>
-     * <li>Address values without keys are filtered out.</li>
+     * <ul>
+     *  <li>Addresses are matching by their keys. </li>
+     *  <li>Null values of the new addresses are filtered out.</li>
+     *  <li>Address values without keys are filtered out.</li>
+     * </ul>
      *
      * @param oldCustomer the customer which should be updated.
      * @param newCustomer the customer draft where we get the new addresses.
@@ -834,15 +840,17 @@ public final class CustomerUpdateActionUtils {
      * shipping addresses, then no update actions are needed and hence an empty {@link List} is returned.
      *
      * <p>Notes:
-     * <li>Addresses are matching by their keys. </li>
-     * <li>Old address values without keys are filtered out.</li>
-     * <li><b>Each address</b> in the new addresses list satisfies the following conditions:
-     * <ol>
-     * <li>It is not null</li>
-     * <li>It has a key which is not blank (null/empty)</li>
-     * </ol>
-     * Otherwise, a {@link IllegalArgumentException} will be thrown.
-     * </li>
+     * <ul>
+     *  <li>Addresses are matching by their keys. </li>
+     *  <li>Old address values without keys are filtered out.</li>
+     *  <li><b>Each address</b> in the new addresses list satisfies the following conditions:
+     *  <ol>
+     *   <li>It is not null</li>
+     *   <li>It has a key which is not blank (null/empty)</li>
+     *  </ol>
+     *  Otherwise, a {@link IllegalArgumentException} will be thrown.
+     *  </li>
+     * </ul>
      *
      * @param oldCustomer the customer which should be updated.
      * @param newCustomer the customer draft where we get the new shipping addresses.
@@ -886,15 +894,17 @@ public final class CustomerUpdateActionUtils {
      *
      *
      * <p>Notes:
-     * <li>Addresses are matching by their keys. </li>
-     * <li>Old shipping addresses without keys will be removed.</li>
-     * <li><b>Each address</b> in the new addresses list satisfies the following conditions:
-     * <ol>
-     * <li>It exists in the given index.</li>
-     * <li>It has a key which is not blank (null/empty)</li>
-     * </ol>
-     * Otherwise, a {@link IllegalArgumentException} will be thrown.
-     * </li>
+     * <ul>
+     *  <li>Addresses are matching by their keys. </li>
+     *  <li>Old shipping addresses without keys will be removed.</li>
+     *  <li><b>Each address</b> in the new addresses list satisfies the following conditions:
+     *  <ol>
+     *   <li>It exists in the given index.</li>
+     *   <li>It has a key which is not blank (null/empty)</li>
+     *  </ol>
+     *  Otherwise, a {@link IllegalArgumentException} will be thrown.
+     *  </li>
+     * </ul>
      *
      * @param oldCustomer the customer which should be updated.
      * @param newCustomer the customer draft where we get the new shipping addresses.
@@ -941,15 +951,17 @@ public final class CustomerUpdateActionUtils {
      * billing addresses, then no update actions are needed and hence an empty {@link List} is returned.
      *
      * <p>Notes:
-     * <li>Addresses are matching by their keys. </li>
-     * <li>Old address values without keys are filtered out.</li>
-     * <li><b>Each address</b> in the new addresses list satisfies the following conditions:
-     * <ol>
-     * <li>It is not null</li>
-     * <li>It has a key which is not blank (null/empty)</li>
-     * </ol>
-     * Otherwise, a {@link IllegalArgumentException} will be thrown.
-     * </li>
+     * <ul>
+     *  <li>Addresses are matching by their keys. </li>
+     *  <li>Old address values without keys are filtered out.</li>
+     *  <li><b>Each address</b> in the new addresses list satisfies the following conditions:
+     *  <ol>
+     *   <li>It is not null</li>
+     *   <li>It has a key which is not blank (null/empty)</li>
+     *  </ol>
+     *  Otherwise, a {@link IllegalArgumentException} will be thrown.
+     *  </li>
+     * </ul>
      *
      * @param oldCustomer the customer which should be updated.
      * @param newCustomer the customer draft where we get the new billing addresses.
@@ -993,16 +1005,18 @@ public final class CustomerUpdateActionUtils {
      * billing addresses, then no update actions are needed and hence an empty {@link List} is returned.
      *
      * <p>Notes:
-     * <li>Addresses are matching by their keys. </li>
-     * <li>Null values of the old addresses are filtered out.</li>
-     * <li>Old shipping address values without keys are filtered out.</li>
-     * <li><b>Each address</b> in the new addresses list satisfies the following conditions:
-     * <ol>
-     * <li>It exists in the given index.</li>
-     * <li>It has a key which is not blank (null/empty)</li>
-     * </ol>
-     * Otherwise, a {@link IllegalArgumentException} will be thrown.
-     * </li>
+     * <ul>
+     *  <li>Addresses are matching by their keys. </li>
+     *  <li>Null values of the old addresses are filtered out.</li>
+     *  <li>Old shipping address values without keys are filtered out.</li>
+     *  <li><b>Each address</b> in the new addresses list satisfies the following conditions:
+     *  <ol>
+     *   <li>It exists in the given index.</li>
+     *   <li>It has a key which is not blank (null/empty)</li>
+     *  </ol>
+     *  Otherwise, a {@link IllegalArgumentException} will be thrown.
+     *  </li>
+     * </ul>
      *
      * @param oldCustomer the customer which should be updated.
      * @param newCustomer the customer draft where we get the new shipping addresses.
