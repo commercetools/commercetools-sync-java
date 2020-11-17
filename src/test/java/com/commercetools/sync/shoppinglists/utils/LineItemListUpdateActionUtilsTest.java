@@ -31,6 +31,8 @@ import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nonnull;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -39,13 +41,13 @@ import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapVal
 import static com.commercetools.sync.shoppinglists.utils.LineItemUpdateActionUtils.buildLineItemsUpdateActions;
 import static com.commercetools.sync.shoppinglists.utils.ShoppingListSyncUtils.buildActions;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -77,10 +79,6 @@ class LineItemListUpdateActionUtilsTest {
         RES_ROOT + "shoppinglist-with-lineitems-sku-132-with-changes.json";
     private static final String SHOPPING_LIST_WITH_LINE_ITEMS_NOT_EXPANDED =
         RES_ROOT + "shoppinglist-with-lineitems-not-expanded.json";
-    private static final String SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123_WITH_DIFFERENT_ADDED_AT =
-        RES_ROOT + "shoppinglist-with-lineitems-sku-123-with-different-addedAt.json";
-    private static final String SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123_WITHOUT_ADDED_AT =
-        RES_ROOT + "shoppinglist-with-lineitems-sku-123-without-addedAt.json";
 
     private static final ShoppingListSyncOptions SYNC_OPTIONS =
         ShoppingListSyncOptionsBuilder.of(mock(SphereClient.class)).build();
@@ -192,6 +190,27 @@ class LineItemListUpdateActionUtilsTest {
             AddLineItemWithSku.of(newShoppingList.getLineItems().get(1)),
             AddLineItemWithSku.of(newShoppingList.getLineItems().get(2))
         );
+    }
+
+    @Test
+    void buildLineItemsUpdateActions_WithOnlyNewLineItemsWithoutValidQuantity_ShouldNotBuildAddActions() {
+        final ShoppingList oldShoppingList = mock(ShoppingList.class);
+        when(oldShoppingList.getLineItems()).thenReturn(null);
+
+        final ShoppingListDraft newShoppingList =
+            ShoppingListDraftBuilder
+                .of(LocalizedString.ofEnglish("name"))
+                .lineItems(asList(
+                    LineItemDraftBuilder.ofSku("sku1", null).build(),
+                    LineItemDraftBuilder.ofSku("sku2", 0L).build(),
+                    LineItemDraftBuilder.ofSku("sku3", -1L).build()
+                ))
+                .build();
+
+        final List<UpdateAction<ShoppingList>> updateActions =
+            buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
+
+        assertThat(updateActions).isEmpty();
     }
 
     @Test
@@ -424,63 +443,89 @@ class LineItemListUpdateActionUtilsTest {
     }
 
     @Test
-    void buildLineItemsUpdateAction_WithNotExpandedLineItem_ShouldThrowIllegalArgumentException() {
+    void buildLineItemsUpdateAction_WithNotExpandedLineItem_ShouldTriggerErrorCallback() {
         final ShoppingList oldShoppingList =
             readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_NOT_EXPANDED, ShoppingList.class);
 
         final ShoppingListDraft newShoppingList =
             mapToShoppingListDraftWithResolvedLineItemReferences(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_132_WITH_CHANGES);
 
-        assertThatThrownBy(() -> buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS))
-            .isExactlyInstanceOf(IllegalArgumentException.class)
-            .hasMessage("LineItem at position '1' of the ShoppingList with key "
+
+        final List<String> errors = new ArrayList<>();
+        final List<UpdateAction<ShoppingList>> updateActionsBeforeCallback = new ArrayList<>();
+
+        final ShoppingListSyncOptions syncOptions =
+            ShoppingListSyncOptionsBuilder.of(mock(SphereClient.class))
+                                          .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                                              errors.add(exception.getMessage());
+                                              updateActionsBeforeCallback.addAll(updateActions);
+                                          })
+                                          .build();
+
+        final List<UpdateAction<ShoppingList>> updateActions =
+            buildLineItemsUpdateActions(oldShoppingList, newShoppingList, syncOptions);
+
+        assertThat(updateActions).isEmpty();
+        assertThat(updateActionsBeforeCallback).containsExactly(
+            ChangeLineItemQuantity.of("line_item_id_1", 2L),
+            SetLineItemCustomField.ofJson("textField",
+                JsonNodeFactory.instance.textNode("newText1"), "line_item_id_1"));
+
+        assertThat(errors).hasSize(1);
+        assertThat(errors.get(0))
+            .isEqualTo("LineItem at position '1' of the ShoppingList with key "
                 + "'shoppinglist-with-lineitems-not-expanded' has no SKU set. "
-                + "Please make sure all line items have SKUs");
+                + "Please make sure all line items have SKUs.");
     }
 
     @Test
-    void buildLineItemsUpdateAction_WithLineItemWithoutSku_ShouldThrowIllegalArgumentException() {
+    void buildLineItemsUpdateAction_WithLineItemWithoutSku_ShouldTriggerErrorCallback() {
         final ShoppingList oldShoppingList =
             readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_132_WITH_CHANGES, ShoppingList.class);
 
         final ShoppingListDraft newShoppingList =
             mapToShoppingListDraftWithResolvedLineItemReferences(SHOPPING_LIST_WITH_LINE_ITEMS_NOT_EXPANDED);
 
-        assertThatThrownBy(() -> buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS))
-            .isExactlyInstanceOf(IllegalArgumentException.class)
-            .hasMessage("LineItemDraft at position '1' of the ShoppingListDraft with key "
-                + "'shoppinglist-with-lineitems-not-expanded' has no SKU set. "
-                + "Please make sure all line items have SKUs");
-    }
+        final List<String> errors = new ArrayList<>();
+        final List<UpdateAction<ShoppingList>> updateActionsBeforeCallback = new ArrayList<>();
 
-    @Test
-    void buildLineItemsUpdateActions_WithIdenticalLineItemDraftsWithUpdatedAddedAt_ShouldBuildRemoveAndAddActions() {
-        final ShoppingList oldShoppingList =
-            readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
-
-        final ShoppingListDraft newShoppingList = mapToShoppingListDraftWithResolvedLineItemReferences(
-            SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123_WITH_DIFFERENT_ADDED_AT);
+        final ShoppingListSyncOptions syncOptions =
+            ShoppingListSyncOptionsBuilder.of(mock(SphereClient.class))
+                                          .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                                              errors.add(exception.getMessage());
+                                              updateActionsBeforeCallback.addAll(updateActions);
+                                          })
+                                          .build();
 
         final List<UpdateAction<ShoppingList>> updateActions =
-            buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
+            buildLineItemsUpdateActions(oldShoppingList, newShoppingList, syncOptions);
 
-        assertThat(updateActions).containsExactly(
-            RemoveLineItem.of("line_item_id_1"),
-            RemoveLineItem.of("line_item_id_2"),
-            RemoveLineItem.of("line_item_id_3"),
-            AddLineItemWithSku.of(newShoppingList.getLineItems().get(0)), // SKU-1
-            AddLineItemWithSku.of(newShoppingList.getLineItems().get(1)), // SKU-2
-            AddLineItemWithSku.of(newShoppingList.getLineItems().get(2))  // SKU-3
-        );
+        assertThat(updateActions).isEmpty();
+        assertThat(updateActionsBeforeCallback).containsExactly(
+            ChangeLineItemQuantity.of("line_item_id_1", 1L),
+            SetLineItemCustomField.ofJson("textField",
+                JsonNodeFactory.instance.textNode("text1"), "line_item_id_1"));
+
+        assertThat(errors).hasSize(1);
+        assertThat(errors.get(0))
+            .isEqualTo("LineItemDraft at position '1' of the ShoppingListDraft with key "
+                + "'shoppinglist-with-lineitems-not-expanded' has no SKU set. "
+                + "Please make sure all line items have SKUs.");
     }
 
     @Test
-    void buildLineItemsUpdateActions_WithIdenticalLineItemDraftsWithoutAddedAtValues_ShouldNotBuildActions() {
+    void buildLineItemsUpdateActions_WithNewLineItemsWithoutValidQuantity_ShouldNotBuildAddActions() {
         final ShoppingList oldShoppingList =
             readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123, ShoppingList.class);
 
-        final ShoppingListDraft newShoppingList = mapToShoppingListDraftWithResolvedLineItemReferences(
-            SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123_WITHOUT_ADDED_AT);
+        final ShoppingListDraft newShoppingList =
+            mapToShoppingListDraftWithResolvedLineItemReferences(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123);
+
+        Objects.requireNonNull(newShoppingList.getLineItems()).addAll(Arrays.asList(
+            LineItemDraftBuilder.ofSku("sku1", null).build(),
+            LineItemDraftBuilder.ofSku("sku2", 0L).build(),
+            LineItemDraftBuilder.ofSku("sku3", -1L).build()
+        ));
 
         final List<UpdateAction<ShoppingList>> updateActions =
             buildLineItemsUpdateActions(oldShoppingList, newShoppingList, SYNC_OPTIONS);
@@ -495,7 +540,6 @@ class LineItemListUpdateActionUtilsTest {
 
         final ShoppingListDraft newShoppingList =
             mapToShoppingListDraftWithResolvedLineItemReferences(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_132_WITH_CHANGES);
-
 
         final List<UpdateAction<ShoppingList>> updateActions =
             buildActions(oldShoppingList, newShoppingList, mock(ShoppingListSyncOptions.class));

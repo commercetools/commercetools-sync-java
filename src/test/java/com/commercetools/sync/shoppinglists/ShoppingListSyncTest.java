@@ -24,7 +24,6 @@ import io.sphere.sdk.shoppinglists.TextLineItemDraft;
 import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -407,20 +406,22 @@ public class ShoppingListSyncTest {
         verify(spySyncOptions, never()).applyBeforeCreateCallback(shoppingListDraft);
     }
 
-    // TODO - Enable the test case when TextLineItem is available in UpdateActionUtils
-    @Disabled
     @Test
     void sync_WithUnchangedShoppingListDraftAndUpdatedTextLineItemDraft_ShouldIncrementUpdated() {
         // preparation
-        final ShoppingListService mockShoppingListService = mock(ShoppingListService.class);
         final ShoppingList mockShoppingList = mock(ShoppingList.class);
-        final TextLineItem mockTextLineItem = mock(TextLineItem.class);
         when(mockShoppingList.getKey()).thenReturn("shoppingListKey");
         when(mockShoppingList.getName()).thenReturn(LocalizedString.ofEnglish("shoppingListName"));
+
+        final TextLineItem mockTextLineItem = mock(TextLineItem.class);
         when(mockTextLineItem.getName()).thenReturn(LocalizedString.ofEnglish("textLineItemName"));
         when(mockTextLineItem.getQuantity()).thenReturn(10L);
+
+        final ShoppingListService mockShoppingListService = mock(ShoppingListService.class);
         when(mockShoppingListService.fetchMatchingShoppingListsByKeys(anySet()))
                 .thenReturn(completedFuture(singleton(mockShoppingList)));
+        when(mockShoppingListService.updateShoppingList(any(), anyList()))
+            .thenReturn(completedFuture(mockShoppingList));
 
         final ShoppingListSyncOptions spySyncOptions = spy(syncOptions);
         final ShoppingListSync shoppingListSync = new ShoppingListSync(spySyncOptions, mockShoppingListService,

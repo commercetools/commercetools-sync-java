@@ -1,5 +1,6 @@
 package com.commercetools.sync.shoppinglists.utils;
 
+import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.CustomUpdateActionUtils;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import com.commercetools.sync.shoppinglists.commands.updateactions.AddLineItemWithSku;
@@ -70,6 +71,7 @@ public final class LineItemUpdateActionUtils {
             return newShoppingList.getLineItems()
                                   .stream()
                                   .filter(Objects::nonNull)
+                                  .filter(LineItemUpdateActionUtils::hasQuantity)
                                   .map(AddLineItemWithSku::of)
                                   .collect(toList());
         }
@@ -83,6 +85,17 @@ public final class LineItemUpdateActionUtils {
         return buildUpdateActions(oldShoppingList, newShoppingList, oldLineItems, newlineItems, syncOptions);
     }
 
+    private static boolean hasQuantity(@Nonnull final LineItemDraft lineItemDraft) {
+        /*
+
+         with this check, it's avoided bad request case like below:
+
+         "code": "InvalidField",
+         "message": "The value '0' is not valid for field 'quantity'. Quantity 0 is not allowed.",
+
+        */
+        return lineItemDraft.getQuantity() != null && lineItemDraft.getQuantity() > 0;
+    }
 
     /**
      * The decisions in the calculating update actions are documented on the
@@ -107,25 +120,29 @@ public final class LineItemUpdateActionUtils {
 
             if (oldLineItem.getVariant() == null || StringUtils.isBlank(oldLineItem.getVariant().getSku())) {
 
-                throw new IllegalArgumentException(
-                    format("LineItem at position '%d' of the ShoppingList with key '%s' has no SKU set. "
-                        + "Please make sure all line items have SKUs", i, oldShoppingList.getKey()));
+                syncOptions.applyErrorCallback(new SyncException(
+                        format("LineItem at position '%d' of the ShoppingList with key '%s' has no SKU set. "
+                            + "Please make sure all line items have SKUs.", i, oldShoppingList.getKey())),
+                    oldShoppingList, newShoppingList, updateActions);
+
+                return emptyList();
 
             } else if (StringUtils.isBlank(newLineItem.getSku())) {
 
-                throw new IllegalArgumentException(
-                    format("LineItemDraft at position '%d' of the ShoppingListDraft with key '%s' has no SKU set. "
-                        + "Please make sure all line items have SKUs", i, newShoppingList.getKey()));
+                syncOptions.applyErrorCallback(new SyncException(
+                        format("LineItemDraft at position '%d' of the ShoppingListDraft with key '%s' has no SKU set. "
+                            + "Please make sure all line items have SKUs.", i, newShoppingList.getKey())),
+                    oldShoppingList, newShoppingList, updateActions);
 
+                return emptyList();
             }
 
-            if (oldLineItem.getVariant().getSku().equals(newLineItem.getSku())
-                && hasIdenticalAddedAtValues(oldLineItem, newLineItem)) {
+            if (oldLineItem.getVariant().getSku().equals(newLineItem.getSku())) {
 
                 updateActions.addAll(buildLineItemUpdateActions(
                     oldShoppingList, newShoppingList, oldLineItem, newLineItem, syncOptions));
             } else {
-                // different sku or addedAt means the order is different.
+                // different sku means the order is different.
                 // To be able to ensure the order, we need to remove and add this line item back
                 // with the up to date values.
                 indexOfFirstDifference = i;
@@ -143,22 +160,15 @@ public final class LineItemUpdateActionUtils {
         }
 
         for (int i = indexOfFirstDifference; i < newlineItems.size(); i++) {
-            updateActions.add(AddLineItemWithSku.of(newlineItems.get(i)));
+            if (hasQuantity(newlineItems.get(i))) {
+                updateActions.add(AddLineItemWithSku.of(newlineItems.get(i)));
+            }
         }
 
         return updateActions;
     }
 
-    private static boolean hasIdenticalAddedAtValues(
-        @Nonnull final LineItem oldLineItem,
-        @Nonnull final LineItemDraft newLineItem) {
 
-        if (newLineItem.getAddedAt() == null) {
-            return true; // omit, if not set in draft.
-        }
-
-        return oldLineItem.getAddedAt().equals(newLineItem.getAddedAt());
-    }
 
     /**
      * Compares all the fields of a {@link LineItem} and a {@link LineItemDraft} and returns a list of
