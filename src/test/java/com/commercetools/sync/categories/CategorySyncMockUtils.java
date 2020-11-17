@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
 public class CategorySyncMockUtils {
 
     public static final String OLD_CATEGORY_CUSTOM_TYPE_KEY = "oldCategoryCustomTypeKey";
-    public static final String OLD_CATEGORY_CUSTOM_TYPE_NAME = "old_type_name";
+    public static final String CATEGORY_KEY_1_RESOURCE_PATH = "category-key-1.json";
 
     /**
      * Given a {@code locale}, {@code name}, {@code slug}, {@code externalId}, {@code description},

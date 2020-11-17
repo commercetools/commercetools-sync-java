@@ -38,9 +38,9 @@ import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.commons.MockUtils.mockCategoryService;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
+import static com.commercetools.sync.categories.CategorySyncMockUtils.CATEGORY_KEY_1_RESOURCE_PATH;
 import static com.commercetools.sync.categories.CategorySyncMockUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.commons.MockUtils.getMockCustomFieldsDraft;
-import static com.commercetools.sync.products.ProductSyncMockUtils.*;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
@@ -52,7 +52,9 @@ import static java.util.Collections.singletonMap;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -582,7 +584,7 @@ class CategorySyncTest {
                         exceptions.add(exception.getCause());
                     })
                     .warningCallback((exception, oldResource, newResource)
-                            -> warningCallBackMessages.add(exception.getMessage()))
+                        -> warningCallBackMessages.add(exception.getMessage()))
                     .build();
 
         final CategoryService categoryService = buildMockCategoryServiceWithSuccessfulUpdateOnRetry(categoryDraft);
@@ -621,7 +623,7 @@ class CategorySyncTest {
                         exceptions.add(exception.getCause());
                     })
                     .warningCallback((exception, oldResource, newResource)
-                            -> warningCallBackMessages.add(exception.getMessage()))
+                        -> warningCallBackMessages.add(exception.getMessage()))
                     .build();
 
         final CategoryDraft categoryDraft = CategoryDraftBuilder
@@ -668,7 +670,7 @@ class CategorySyncTest {
                             exceptions.add(exception.getCause());
                         })
                         .warningCallback((exception, oldResource, newResource)
-                                -> warningCallBackMessages.add(exception.getMessage()))
+                            -> warningCallBackMessages.add(exception.getMessage()))
                         .build();
 
         final CategoryDraft categoryDraft = CategoryDraftBuilder
