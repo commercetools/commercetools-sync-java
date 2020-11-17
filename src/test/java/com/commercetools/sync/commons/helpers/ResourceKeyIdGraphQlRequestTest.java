@@ -70,6 +70,31 @@ class ResourceKeyIdGraphQlRequestTest {
     }
 
     @Test
+    void httpRequestIntent_WithSomeEmptyAndNullKeys_ShouldReturnCorrectQueryString() {
+        //preparation
+        final Set<String> keysToSearch = new HashSet<>();
+        keysToSearch.add("key1");
+        keysToSearch.add("");
+        keysToSearch.add("key2");
+        keysToSearch.add(null);
+        final ResourceKeyIdGraphQlRequest resourceKeyIdGraphQlRequest =
+            new ResourceKeyIdGraphQlRequest(keysToSearch, GraphQlQueryResources.CATEGORIES);
+
+        //test
+        final HttpRequestIntent httpRequestIntent = resourceKeyIdGraphQlRequest.httpRequestIntent();
+
+        //assertions
+        assertThat(httpRequestIntent.getBody()).isExactlyInstanceOf(StringHttpRequestBody.class);
+        assertThat(httpRequestIntent.getHttpMethod()).isEqualByComparingTo(HttpMethod.POST);
+        final StringHttpRequestBody requestBody = (StringHttpRequestBody) httpRequestIntent.getBody();
+        assertThat(requestBody).isNotNull();
+        assertThat(requestBody.getString())
+            .isEqualTo("{\"query\": \"{categories(limit: 500, where: \\\"key"
+                + " in (\\\\\\\"key1\\\\\\\", \\\\\\\"key2\\\\\\\")\\\", sort: [\\\"id asc\\\"]) { results { id key } "
+                + "}}\"}");
+    }
+
+    @Test
     void httpRequestIntent_WithKeyAndExplicitLimit_ShouldReturnCorrectQueryString() {
         //preparation
         final ResourceKeyIdGraphQlRequest resourceKeyIdGraphQlRequest =

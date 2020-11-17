@@ -111,6 +111,7 @@ public class ResourceKeyIdGraphQlRequest implements SphereRequest<ResourceKeyIdG
         final String backslashQuote = "\\\\\\\"";
         final String commaSeparatedKeys =
             keys.stream()
+                .filter(key -> !isBlank(key))
                 .collect(
                     joining(
                         format("%s, %s", backslashQuote, backslashQuote),
