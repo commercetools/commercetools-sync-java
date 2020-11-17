@@ -48,15 +48,16 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
     Q extends MetaModelQueryDsl<U, Q, M, E>, M, E> {
 
     final S syncOptions;
-    protected final Cache<String, String> keyToIdCache = Caffeine.newBuilder()
-                                                                 .maximumSize(100_000)
-                                                                 .build();
+    protected final Cache<String, String> keyToIdCache;
 
     private static final int MAXIMUM_ALLOWED_UPDATE_ACTIONS = 500;
     static final String CREATE_FAILED = "Failed to create draft with key: '%s'. Reason: %s";
 
     BaseService(@Nonnull final S syncOptions) {
         this.syncOptions = syncOptions;
+        this.keyToIdCache  = Caffeine.newBuilder()
+                                     .maximumSize(syncOptions.getCacheSize())
+                                     .build();
     }
 
     /**
@@ -225,7 +226,7 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
 
         return CtpQueryUtils
             .queryAll(syncOptions.getCtpClient(), keysQueryMapper.apply(keysNotCached), pageConsumer)
-            .thenApply(result -> keyToIdCache.asMap());
+            .thenApply(result -> {keyToIdCache.cleanUp(); return keyToIdCache.asMap();});
     }
 
     /**

@@ -29,13 +29,14 @@ public final class InventorySyncOptions extends BaseSyncOptions<InventoryEntry, 
         boolean ensureChannels,
         @Nullable final TriFunction<List<UpdateAction<InventoryEntry>>, InventoryEntryDraft,
             InventoryEntry, List<UpdateAction<InventoryEntry>>> beforeUpdateCallback,
-        @Nullable final Function<InventoryEntryDraft, InventoryEntryDraft> beforeCreateCallback) {
+        @Nullable final Function<InventoryEntryDraft, InventoryEntryDraft> beforeCreateCallback, final long cacheSize) {
         super(ctpClient,
             errorCallback,
             warningCallback,
             batchSize,
             beforeUpdateCallback,
-            beforeCreateCallback);
+            beforeCreateCallback,
+            cacheSize);
         this.ensureChannels = ensureChannels;
 
     }

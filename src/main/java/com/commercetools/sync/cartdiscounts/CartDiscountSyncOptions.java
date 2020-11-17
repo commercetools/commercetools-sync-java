@@ -19,16 +19,23 @@ import java.util.function.Function;
 public final class CartDiscountSyncOptions extends BaseSyncOptions<CartDiscount, CartDiscountDraft> {
 
     CartDiscountSyncOptions(
-            @Nonnull final SphereClient ctpClient,
-            @Nullable final QuadConsumer<SyncException, Optional<CartDiscountDraft>, Optional<CartDiscount>,
-                    List<UpdateAction<CartDiscount>>> errorCallback,
-            @Nullable final TriConsumer<SyncException, Optional<CartDiscountDraft>, Optional<CartDiscount>>
-                    warningCallback,
-            final int batchSize,
-            @Nullable final TriFunction<List<UpdateAction<CartDiscount>>, CartDiscountDraft,
-                    CartDiscount, List<UpdateAction<CartDiscount>>> beforeUpdateCallback,
-            @Nullable final Function<CartDiscountDraft, CartDiscountDraft> beforeCreateCallback) {
+        @Nonnull final SphereClient ctpClient,
+        @Nullable final QuadConsumer<SyncException, Optional<CartDiscountDraft>, Optional<CartDiscount>,
+            List<UpdateAction<CartDiscount>>> errorCallback,
+        @Nullable final TriConsumer<SyncException, Optional<CartDiscountDraft>, Optional<CartDiscount>>
+            warningCallback,
+        final int batchSize,
+        @Nullable final TriFunction<List<UpdateAction<CartDiscount>>, CartDiscountDraft,
+            CartDiscount, List<UpdateAction<CartDiscount>>> beforeUpdateCallback,
+        @Nullable final Function<CartDiscountDraft, CartDiscountDraft> beforeCreateCallback,
+        final long cacheSize) {
 
-        super(ctpClient, errorCallback, warningCallback, batchSize, beforeUpdateCallback, beforeCreateCallback);
+        super(ctpClient,
+            errorCallback,
+            warningCallback,
+            batchSize,
+            beforeUpdateCallback,
+            beforeCreateCallback,
+            cacheSize);
     }
 }

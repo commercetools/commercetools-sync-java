@@ -42,7 +42,8 @@ public final class CategorySyncOptionsBuilder extends BaseSyncOptionsBuilder<Cat
             warningCallback,
             batchSize,
             beforeUpdateCallback,
-            beforeCreateCallback);
+            beforeCreateCallback,
+            cacheSize);
     }
 
     /**

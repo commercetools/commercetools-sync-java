@@ -42,7 +42,8 @@ public final class CustomObjectSyncOptionsBuilder extends BaseSyncOptionsBuilder
             warningCallback,
             batchSize,
             beforeUpdateCallback,
-            beforeCreateCallback
+            beforeCreateCallback,
+            cacheSize
         );
     }
 

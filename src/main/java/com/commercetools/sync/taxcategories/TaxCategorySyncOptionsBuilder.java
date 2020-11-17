@@ -41,7 +41,8 @@ public final class TaxCategorySyncOptionsBuilder extends BaseSyncOptionsBuilder<
             warningCallback,
             batchSize,
             beforeUpdateCallback,
-            beforeCreateCallback
+            beforeCreateCallback,
+            cacheSize
         );
     }
 

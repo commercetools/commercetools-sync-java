@@ -27,14 +27,15 @@ public final class StateSyncOptions extends BaseSyncOptions<State, StateDraft> {
         final int batchSize,
         @Nullable final TriFunction<List<UpdateAction<State>>, StateDraft, State,
             List<UpdateAction<State>>> beforeUpdateCallback,
-        @Nullable final Function<StateDraft, StateDraft> beforeCreateCallback) {
+        @Nullable final Function<StateDraft, StateDraft> beforeCreateCallback, final long cacheSize) {
         super(
             ctpClient,
             errorCallBack,
             warningCallBack,
             batchSize,
             beforeUpdateCallback,
-            beforeCreateCallback);
+            beforeCreateCallback,
+            cacheSize);
     }
 
 }
