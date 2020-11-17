@@ -580,10 +580,10 @@ so in this document, we will describe the reasons and constraints, mostly relate
                     href="https://docs.commercetools.com/api/projects/shoppingLists#add-textlineitem">AddTextLineItem</a>
                 action, because the platform is not checking if the data exist. An API user could add the
                 exact same data multiple times. So it's impossible to know the order by
-                just checking the differences between the resource and draft object. Also, the name of the text line
-                item does not need to be unique which is different than line items. Line items are unique with
-                the same product variant and the same custom fields. Luckily the platform supports changing all fields
-                (except `addedAt`) of the text line items, so when an order change is needed we update the
+                just checking the differences between the resource and draft object. Also, the name of the text line item 
+                does not need to be unique as line item does. Each line item is identified by its product variant and 
+                custom fields. Luckily the platform supports changing all field (except <b>addedAt</b>) of the text line 
+                items, so when an order change is needed we update the
                 fields of the text line items. Which will look like:
             </p>
             <pre lang="json">
