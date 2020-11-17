@@ -1,5 +1,6 @@
 package com.commercetools.sync.services.impl;
 
+import com.commercetools.sync.commons.FakeClient;
 import com.commercetools.sync.customers.CustomerSyncOptions;
 import com.commercetools.sync.customers.CustomerSyncOptionsBuilder;
 import io.sphere.sdk.client.BadGatewayException;
@@ -17,9 +18,12 @@ import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
@@ -42,14 +46,7 @@ class CustomerServiceImplTest {
     void setUp() {
         errorMessages = new ArrayList<>();
         errorExceptions = new ArrayList<>();
-        customerSyncOptions = CustomerSyncOptionsBuilder
-            .of(mock(SphereClient.class))
-            .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                errorMessages.add(exception.getMessage());
-                errorExceptions.add(exception.getCause());
-            })
-            .build();
-        service = new CustomerServiceImpl(customerSyncOptions);
+        initMockService(mock(SphereClient.class));
     }
 
     @Test
@@ -60,15 +57,15 @@ class CustomerServiceImplTest {
         when(customerMock.getKey()).thenReturn("customerKey");
         when(resultMock.getCustomer()).thenReturn(customerMock);
 
-        when(customerSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(resultMock));
-
+        final FakeClient<Customer> fakeClient = new FakeClient(resultMock);
+        initMockService(fakeClient);
         final CustomerDraft draft = mock(CustomerDraft.class);
         when(draft.getKey()).thenReturn("customerKey");
         final Optional<Customer> customerOptional = service.createCustomer(draft).toCompletableFuture().join();
 
         assertThat(customerOptional).isNotEmpty();
         assertThat(customerOptional).containsSame(customerMock);
-        verify(customerSyncOptions.getCtpClient()).execute(eq(CustomerCreateCommand.of(draft)));
+        assertThat(fakeClient.isExecuted()).isTrue();
     }
 
     @Test
@@ -79,8 +76,8 @@ class CustomerServiceImplTest {
         when(customerMock.getKey()).thenReturn("customerKey");
         when(resultMock.getCustomer()).thenReturn(customerMock);
 
-        when(customerSyncOptions.getCtpClient().execute(any())).thenReturn(
-            CompletableFutureUtils.failed(new BadRequestException("bad request")));
+        final FakeClient<Customer> fakeClient = new FakeClient(new BadRequestException("bad request"));
+        initMockService(fakeClient);
 
         final CustomerDraft draft = mock(CustomerDraft.class);
         when(draft.getKey()).thenReturn("customerKey");
@@ -91,26 +88,27 @@ class CustomerServiceImplTest {
         assertThat(errorExceptions.get(0)).isExactlyInstanceOf(BadRequestException.class);
         assertThat(errorMessages).hasSize(1);
         assertThat(errorMessages.get(0)).contains("Failed to create draft with key: 'customerKey'.");
-        verify(customerSyncOptions.getCtpClient()).execute(eq(CustomerCreateCommand.of(draft)));
+        assertThat(fakeClient.isExecuted()).isTrue();
     }
 
     @Test
     void createCustomer_WithDraftWithEmptyKey_ShouldNotCreate() {
         final CustomerDraft draft = mock(CustomerDraft.class);
         final Optional<Customer> customerOptional = service.createCustomer(draft).toCompletableFuture().join();
-
+        final FakeClient<Customer> fakeClient = new FakeClient(mock(SphereClient.class));
+        initMockService(fakeClient);
         assertThat(customerOptional).isEmpty();
         assertThat(errorExceptions).hasSize(1);
         assertThat(errorMessages).hasSize(1);
         assertThat(errorMessages.get(0))
             .contains("Failed to create draft with key: 'null'. Reason: Draft key is blank!");
-        verifyNoInteractions(customerSyncOptions.getCtpClient());
+        assertThat(fakeClient.isExecuted()).isFalse();
     }
 
     @Test
     void createCustomer_WithResponseIsNull_ShouldReturnEmpty() {
-        CustomerSignInResult resultMock = mock(CustomerSignInResult.class);
-        when(customerSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(resultMock));
+        final FakeClient<Customer> fakeClient = new FakeClient(mock(CustomerSignInResult.class));
+        initMockService(fakeClient);
 
         final CustomerDraft draft = mock(CustomerDraft.class);
         when(draft.getKey()).thenReturn("key");
@@ -124,18 +122,21 @@ class CustomerServiceImplTest {
     @Test
     void updateCustomer_WithSuccessfulMockCtpResponse_ShouldReturnMock() {
         Customer customer = mock(Customer.class);
-        when(customerSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(customer));
+        final FakeClient<Customer> fakeClient = new FakeClient(customer);
+        initMockService(fakeClient);
 
         List<UpdateAction<Customer>> updateActions =
             singletonList(ChangeName.of(CustomerName.of("title", "Max", "", "Mustermann")));
         Customer result = service.updateCustomer(customer, updateActions).toCompletableFuture().join();
 
         assertThat(result).isSameAs(customer);
-        verify(customerSyncOptions.getCtpClient()).execute(eq(CustomerUpdateCommand.of(customer, updateActions)));
+        assertThat(fakeClient.isExecuted()).isTrue();
     }
 
     @Test
     void fetchCachedCustomerId_WithBlankKey_ShouldNotFetchCustomerId() {
+        final FakeClient<Customer> fakeClient = new FakeClient(mock(SphereClient.class));
+        initMockService(fakeClient);
         Optional<String> customerId = service.fetchCachedCustomerId("")
                                              .toCompletableFuture()
                                              .join();
@@ -143,11 +144,13 @@ class CustomerServiceImplTest {
         assertThat(customerId).isEmpty();
         assertThat(errorExceptions).isEmpty();
         assertThat(errorMessages).isEmpty();
-        verifyNoInteractions(customerSyncOptions.getCtpClient());
+        assertThat(fakeClient.isExecuted()).isFalse();
     }
 
     @Test
     void fetchCachedCustomerId_WithCachedCustomer_ShouldFetchIdFromCache() {
+        final FakeClient<Customer> fakeClient = new FakeClient(mock(SphereClient.class));
+        initMockService(fakeClient);
         service.keyToIdCache.put("key", "id");
         Optional<String> customerId = service.fetchCachedCustomerId("key")
                                              .toCompletableFuture()
@@ -156,35 +159,37 @@ class CustomerServiceImplTest {
         assertThat(customerId).contains("id");
         assertThat(errorExceptions).isEmpty();
         assertThat(errorMessages).isEmpty();
-        verifyNoInteractions(customerSyncOptions.getCtpClient());
+        assertThat(fakeClient.isExecuted()).isFalse();
     }
 
     @Test
     void fetchCachedCustomerId_WithUnexpectedException_ShouldFail() {
-        when(customerSyncOptions.getCtpClient().execute(any())).thenReturn(
-            CompletableFutureUtils.failed(new BadGatewayException("bad gateway")));
-
+        final FakeClient<Customer> fakeClient = new FakeClient(new BadGatewayException("bad gateway"));
+        initMockService(fakeClient);
         assertThat(service.fetchCachedCustomerId("key"))
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(BadGatewayException.class);
+            .failsWithin(1, TimeUnit.SECONDS)
+            .withThrowableOfType(ExecutionException.class)
+            .withCauseExactlyInstanceOf(BadGatewayException.class);
         assertThat(errorExceptions).isEmpty();
         assertThat(errorMessages).isEmpty();
     }
 
     @Test
     void fetchCustomerByKey_WithUnexpectedException_ShouldFail() {
-        when(customerSyncOptions.getCtpClient().execute(any())).thenReturn(
-            CompletableFutureUtils.failed(new BadGatewayException("bad gateway")));
-
+        final FakeClient<Customer> fakeClient = new FakeClient(new BadGatewayException("bad gateway"));
+        initMockService(fakeClient);
         assertThat(service.fetchCustomerByKey("key"))
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(BadGatewayException.class);
+            .failsWithin(1, TimeUnit.SECONDS)
+            .withThrowableOfType(ExecutionException.class)
+            .withCauseExactlyInstanceOf(BadGatewayException.class);
         assertThat(errorExceptions).isEmpty();
         assertThat(errorMessages).isEmpty();
     }
 
     @Test
     void fetchCustomerByKey_WithBlankKey_ShouldNotFetchCustomer() {
+        final FakeClient<Customer> fakeClient = new FakeClient(new BadGatewayException("bad gateway"));
+        initMockService(fakeClient);
         Optional<Customer> customer = service.fetchCustomerByKey("")
                                              .toCompletableFuture()
                                              .join();
@@ -192,7 +197,18 @@ class CustomerServiceImplTest {
         assertThat(customer).isEmpty();
         assertThat(errorExceptions).isEmpty();
         assertThat(errorMessages).isEmpty();
-        verifyNoInteractions(customerSyncOptions.getCtpClient());
+        assertThat(fakeClient.isExecuted()).isFalse();
+    }
+
+    private void initMockService(@Nonnull final SphereClient client) {
+        customerSyncOptions = CustomerSyncOptionsBuilder
+                .of(client)
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorMessages.add(exception.getMessage());
+                    errorExceptions.add(exception.getCause());
+                })
+                .build();
+        service = new CustomerServiceImpl(customerSyncOptions);
     }
 
 }
