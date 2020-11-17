@@ -18,6 +18,7 @@ import io.sphere.sdk.retry.RetryContext;
 import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -28,7 +29,6 @@ import static com.commercetools.sync.commons.utils.RetryableSphereClientWithExpo
 import static com.commercetools.sync.commons.utils.RetryableSphereClientWithExponentialBackoff.DEFAULT_MAX_DELAY;
 import static com.commercetools.sync.commons.utils.RetryableSphereClientWithExponentialBackoff.DEFAULT_MAX_PARALLEL_REQUESTS;
 import static com.commercetools.sync.commons.utils.RetryableSphereClientWithExponentialBackoff.DEFAULT_MAX_RETRY_ATTEMPT;
-import static com.commercetools.sync.commons.utils.RetryableSphereClientWithExponentialBackoff.DEFAULT_STATUS_CODES_TO_RETRY;
 import static io.sphere.sdk.client.TestDoubleSphereClientFactory.createHttpTestDouble;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -57,7 +57,7 @@ class RetryableSphereClientWithExponentialBackoffTest {
                 .withInitialDelay(DEFAULT_INITIAL_RETRY_DELAY)
                 .withMaxRetryAttempt(DEFAULT_MAX_RETRY_ATTEMPT)
                 .withMaxParallelRequests(DEFAULT_MAX_PARALLEL_REQUESTS)
-                .withStatusCodesToRetry(DEFAULT_STATUS_CODES_TO_RETRY)
+                .withStatusCodesToRetry(Arrays.asList(500, 502, 503, 504))
                 .build();
 
         assertThat(sphereClient.getConfig().getProjectKey()).isEqualTo("project-key");

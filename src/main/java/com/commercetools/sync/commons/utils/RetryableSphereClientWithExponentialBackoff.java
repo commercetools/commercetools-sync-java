@@ -34,7 +34,7 @@ public final class RetryableSphereClientWithExponentialBackoff {
     protected static final long DEFAULT_INITIAL_RETRY_DELAY = 200;
     protected static final int DEFAULT_MAX_RETRY_ATTEMPT = 5;
     protected static final int DEFAULT_MAX_PARALLEL_REQUESTS = 20;
-    protected static final List<Integer> DEFAULT_STATUS_CODES_TO_RETRY = Arrays.asList(500, 502, 503, 504);
+    private static final List<Integer> DEFAULT_STATUS_CODES_TO_RETRY = Arrays.asList(500, 502, 503, 504);
 
     private final SphereClientConfig sphereClientConfig;
     private long maxDelay;
@@ -77,7 +77,7 @@ public final class RetryableSphereClientWithExponentialBackoff {
     /**
      * Sets the initialDelay value in milliseconds.
      * @param initialDelay - build with initialDelay value.
-     * If initialDelay is equal or greater than maxDelay then, a {@link IllegalArgumentException} will be thrown.
+     *        If initialDelay is equal or greater than maxDelay then, a {@link IllegalArgumentException} will be thrown.
      * @return {@link RetryableSphereClientWithExponentialBackoff} with given initialDelay value.
      */
     public RetryableSphereClientWithExponentialBackoff withInitialDelay(final long initialDelay) {
@@ -93,7 +93,7 @@ public final class RetryableSphereClientWithExponentialBackoff {
     /**
      * Sets the Max Retry value, It should be greater than 1 for the Retry attempt.
      * @param maxRetryAttempt - build with maxRetries value.
-     * If maxRetryAttempt is less than 1 then, a {@link IllegalArgumentException} will be thrown.
+     *        If maxRetryAttempt is less than 1 then, a {@link IllegalArgumentException} will be thrown.
      * @return {@link RetryableSphereClientWithExponentialBackoff} with given maxRetries value.
      */
     public RetryableSphereClientWithExponentialBackoff withMaxRetryAttempt(final int maxRetryAttempt) {
@@ -108,7 +108,7 @@ public final class RetryableSphereClientWithExponentialBackoff {
     /**
      * Sets the Max Parallel Requests value, It should be always positive number.
      * @param maxParallelRequests - build with maxParallelRequests value.
-     * If maxParallelRequests is less than 1 then, a {@link IllegalArgumentException} will be thrown.
+     *        If maxParallelRequests is less than 1 then, a {@link IllegalArgumentException} will be thrown.
      * @return {@link RetryableSphereClientWithExponentialBackoff} with given maxParallelRequests value.
      */
     public RetryableSphereClientWithExponentialBackoff withMaxParallelRequests(final int maxParallelRequests) {
@@ -138,7 +138,7 @@ public final class RetryableSphereClientWithExponentialBackoff {
     public SphereClient build() {
         final SphereClient underlyingClient = createUnderlyingSphereClient(sphereClientConfig);
         return decorateSphereClient(underlyingClient, maxRetryAttempt,
-                context -> calculateDurationWithExponentialRandomBackoff(context.getAttempt(),
+            context -> calculateDurationWithExponentialRandomBackoff(context.getAttempt(),
                         initialRetryDelay, maxDelay), maxParallelRequests);
     }
 
