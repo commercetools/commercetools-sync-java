@@ -11,27 +11,15 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraftBuilder;
-import io.sphere.sdk.cartdiscounts.commands.CartDiscountCreateCommand;
-import io.sphere.sdk.cartdiscounts.commands.CartDiscountUpdateCommand;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeCartPredicate;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeTarget;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.ChangeValue;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.SetCustomField;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.SetCustomType;
-import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
-import io.sphere.sdk.client.BadGatewayException;
-import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.ErrorResponseException;
-import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -40,6 +28,9 @@ import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.CartDiscountITUtils.CART_DISCOUNT_CART_PREDICATE_1;
@@ -68,15 +59,10 @@ import static com.commercetools.sync.integration.commons.utils.ITUtils.BOOLEAN_C
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createCustomFieldsJsonMap;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypes;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 
 class CartDiscountSyncIT {
 
@@ -532,197 +518,4 @@ class CartDiscountSyncIT {
         //assertion
         assertThat(cartDiscountSyncStatistics).hasValues(100, 100, 0, 0);
     }
-
-    @Test
-    void sync_WithConcurrentModificationException_ShouldRetryToUpdateNewCartDiscountWithSuccess() {
-        // Preparation
-        final SphereClient spyClient = buildClientWithConcurrentModificationUpdate();
-
-
-        final CartDiscountDraft draft2 = CartDiscountDraftBuilder
-            .of(CART_DISCOUNT_DRAFT_2)
-            .custom(CustomFieldsDraft
-                .ofTypeKeyAndJson(OLD_CART_DISCOUNT_TYPE_KEY, createCustomFieldsJsonMap()))
-            .build();
-        CTP_TARGET_CLIENT.execute(CartDiscountCreateCommand.of(draft2))
-                         .toCompletableFuture()
-                         .join();
-
-        final CartDiscountDraft updatedDraft =
-            CartDiscountDraftBuilder.of(CART_DISCOUNT_DRAFT_2)
-                                    .description(CART_DISCOUNT_DESC_1)
-                                    .build();
-
-        final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
-            .of(spyClient)
-            .build();
-
-        final CartDiscountSync cartDiscountSync = new CartDiscountSync(cartDiscountSyncOptions);
-
-        //test
-        final CartDiscountSyncStatistics statistics = cartDiscountSync.sync(singletonList(updatedDraft))
-                                                                      .toCompletableFuture()
-                                                                      .join();
-
-        // assertion
-        assertThat(statistics).hasValues(1, 0, 1, 0);
-
-        // Assert CTP state.
-        final PagedQueryResult<CartDiscount> queryResult =
-            CTP_TARGET_CLIENT.execute(CartDiscountQuery.of().plusPredicates(queryModel ->
-                queryModel.key().is(CART_DISCOUNT_KEY_1)))
-                             .toCompletableFuture()
-                             .join();
-
-        assertThat(queryResult.head()).hasValueSatisfying(cartDiscount ->
-            assertThat(cartDiscount.getKey()).isEqualTo(CART_DISCOUNT_KEY_1));
-    }
-
-    @Nonnull
-    private SphereClient buildClientWithConcurrentModificationUpdate() {
-
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-
-        final CartDiscountUpdateCommand anyCartDiscountUpdate = any(CartDiscountUpdateCommand.class);
-
-        when(spyClient.execute(anyCartDiscountUpdate))
-                .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
-                .thenCallRealMethod();
-
-        return spyClient;
-    }
-
-    @Test
-    void sync_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
-        //preparation
-        final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
-
-        final CartDiscountDraft draft2 = CartDiscountDraftBuilder
-            .of(CART_DISCOUNT_DRAFT_2)
-            .custom(CustomFieldsDraft
-                .ofTypeKeyAndJson(OLD_CART_DISCOUNT_TYPE_KEY, createCustomFieldsJsonMap()))
-            .build();
-        CTP_TARGET_CLIENT.execute(CartDiscountCreateCommand.of(draft2))
-                         .toCompletableFuture()
-                         .join();
-
-        final CartDiscountDraft updatedDraft =
-            CartDiscountDraftBuilder.of(CART_DISCOUNT_DRAFT_2)
-                                    .description(CART_DISCOUNT_DESC_1)
-                                    .build();
-
-        final List<String> errorMessages = new ArrayList<>();
-        final List<Throwable> exceptions = new ArrayList<>();
-
-        final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
-            .of(spyClient)
-            .errorCallback((exception, oldResource, newResource, actions) -> {
-                errorMessages.add(exception.getMessage());
-                exceptions.add(exception);
-            })
-            .build();
-
-        final CartDiscountSync cartDiscountSync = new CartDiscountSync(cartDiscountSyncOptions);
-
-        //test
-        final CartDiscountSyncStatistics statistics = cartDiscountSync.sync(singletonList(updatedDraft))
-                                                                      .toCompletableFuture()
-                                                                      .join();
-
-        //assertion
-        assertThat(statistics).hasValues(1, 0, 0, 1);
-
-        assertThat(errorMessages).hasSize(1);
-        assertThat(exceptions).hasSize(1);
-
-        assertThat(exceptions.get(0).getCause()).hasCauseExactlyInstanceOf(BadGatewayException.class);
-        assertThat(errorMessages.get(0)).contains(
-            format("Failed to update cart discount with key: '%s'. Reason: Failed to fetch from CTP while retrying "
-                + "after concurrency modification.", CART_DISCOUNT_KEY_2));
-
-    }
-
-    @Nonnull
-    private SphereClient buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry() {
-
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(CartDiscountQuery.class)))
-                .thenCallRealMethod() // Call real fetch on fetching matching cart discounts
-                .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()));
-
-        final CartDiscountUpdateCommand anyCartDiscountUpdate = any(CartDiscountUpdateCommand.class);
-
-        when(spyClient.execute(anyCartDiscountUpdate))
-                .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
-                .thenCallRealMethod();
-
-        return spyClient;
-    }
-
-    @Test
-    void sync_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
-        //preparation
-        final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
-
-        final CartDiscountDraft draft2 = CartDiscountDraftBuilder
-            .of(CART_DISCOUNT_DRAFT_2)
-            .custom(CustomFieldsDraft
-                .ofTypeKeyAndJson(OLD_CART_DISCOUNT_TYPE_KEY, createCustomFieldsJsonMap()))
-            .build();
-        CTP_TARGET_CLIENT.execute(CartDiscountCreateCommand.of(draft2))
-                         .toCompletableFuture()
-                         .join();
-
-        final CartDiscountDraft updatedDraft =
-            CartDiscountDraftBuilder.of(CART_DISCOUNT_DRAFT_2)
-                                    .description(CART_DISCOUNT_DESC_1)
-                                    .build();
-
-        final List<String> errorMessages = new ArrayList<>();
-        final List<Throwable> exceptions = new ArrayList<>();
-
-        final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
-            .of(spyClient)
-            .errorCallback((exception, oldResource, newResource, actions) -> {
-                errorMessages.add(exception.getMessage());
-                exceptions.add(exception);
-            })
-            .build();
-
-        final CartDiscountSync cartDiscountSync = new CartDiscountSync(cartDiscountSyncOptions);
-
-        //test
-        final CartDiscountSyncStatistics statistics = cartDiscountSync.sync(singletonList(updatedDraft))
-                                                                      .toCompletableFuture()
-                                                                      .join();
-
-        // Assertion
-        assertThat(statistics).hasValues(1, 0, 0, 1);
-
-        assertThat(errorMessages).hasSize(1);
-        assertThat(exceptions).hasSize(1);
-        assertThat(errorMessages.get(0)).contains(
-            format("Failed to update cart discount with key: '%s'. Reason: Not found when attempting to fetch while "
-                + "retrying after concurrency modification.", CART_DISCOUNT_KEY_2));
-    }
-
-    @Nonnull
-    private SphereClient buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry() {
-
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        final CartDiscountQuery anyCartDiscountQuery = any(CartDiscountQuery.class);
-
-        when(spyClient.execute(anyCartDiscountQuery))
-                .thenCallRealMethod() // Call real fetch on fetching matching cart discounts
-                .thenReturn(completedFuture(PagedQueryResult.empty()));
-
-        final CartDiscountUpdateCommand anyCartDiscountUpdate = any(CartDiscountUpdateCommand.class);
-
-        when(spyClient.execute(anyCartDiscountUpdate))
-                .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
-                .thenCallRealMethod();
-
-        return spyClient;
-    }
-
 }
