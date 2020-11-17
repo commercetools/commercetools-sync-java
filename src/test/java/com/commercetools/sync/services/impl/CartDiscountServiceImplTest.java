@@ -2,40 +2,41 @@ package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptions;
 import com.commercetools.sync.cartdiscounts.CartDiscountSyncOptionsBuilder;
+import com.commercetools.sync.commons.FakeClient;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.services.CartDiscountService;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
-import io.sphere.sdk.cartdiscounts.commands.CartDiscountUpdateCommand;
 import io.sphere.sdk.cartdiscounts.commands.updateactions.SetDescription;
-import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
+import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.InternalServerErrorException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.queries.PagedQueryResult;
-import io.sphere.sdk.utils.CompletableFutureUtils;
-import org.junit.jupiter.api.Test;
-
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.Test;
 
 import static java.util.Collections.singletonList;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.internal.verification.VerificationModeFactory.only;
 
 class CartDiscountServiceImplTest {
+
+    public static final String CART_DISCOUNT_KEY_1 = "key_1";
 
     @Test
     void fetchCartDiscount_WithEmptyKey_ShouldNotFetchAnyCartDiscount() {
@@ -76,20 +77,16 @@ class CartDiscountServiceImplTest {
     @Test
     void fetchCartDiscount_WithValidKey_ShouldReturnMockCartDiscount() {
         // preparation
-        final SphereClient sphereClient = mock(SphereClient.class);
         final CartDiscount mockCartDiscount = mock(CartDiscount.class);
         when(mockCartDiscount.getId()).thenReturn("testId");
         when(mockCartDiscount.getKey()).thenReturn("any_key");
-        final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
-                .of(sphereClient)
-                .build();
-        final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
-
-        @SuppressWarnings("unchecked")
         final PagedQueryResult<CartDiscount> pagedQueryResult =  mock(PagedQueryResult.class);
         when(pagedQueryResult.head()).thenReturn(Optional.of(mockCartDiscount));
-        when(cartDiscountSyncOptions.getCtpClient().execute(any(CartDiscountQuery.class)))
-                .thenReturn(completedFuture(pagedQueryResult));
+        final FakeClient<CartDiscount> fakeCartDiscountClient = new FakeClient(pagedQueryResult);
+        final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
+                .of(fakeCartDiscountClient)
+                .build();
+        final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
 
         // test
         final CompletionStage<Optional<CartDiscount>> result =
@@ -97,7 +94,7 @@ class CartDiscountServiceImplTest {
 
         // assertions
         assertThat(result).isCompletedWithValue(Optional.of(mockCartDiscount));
-        verify(sphereClient, only()).execute(any());
+        assertThat(fakeCartDiscountClient.isExecuted()).isTrue();
     }
 
     @Test
@@ -107,8 +104,9 @@ class CartDiscountServiceImplTest {
         final Map<String, Throwable> errors = new HashMap<>();
         when(mockCartDiscountDraft.getKey()).thenReturn(null);
 
+        final FakeClient<CartDiscount> fakeCartDiscountClient = new FakeClient(mock(CartDiscount.class));
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
-                .of(mock(SphereClient.class))
+                .of(fakeCartDiscountClient)
                 .errorCallback((exception, oldResource, newResource, actions) ->
                         errors.put(exception.getMessage(), exception))
                 .build();
@@ -122,19 +120,19 @@ class CartDiscountServiceImplTest {
         assertThat(result).isCompletedWithValue(Optional.empty());
         assertThat(errors.keySet())
             .containsExactly("Failed to create draft with key: 'null'. Reason: Draft key is blank!");
-        verify(cartDiscountSyncOptions.getCtpClient(), times(0)).execute(any());
+        assertThat(fakeCartDiscountClient.isExecuted()).isFalse();
     }
 
     @Test
     void createCartDiscount_WithEmptyCartDiscountKey_ShouldHaveEmptyOptionalAsAResult() {
         //preparation
-        final SphereClient sphereClient = mock(SphereClient.class);
+        final FakeClient<CartDiscount> fakeCartDiscountClient = new FakeClient(mock(CartDiscount.class));
         final CartDiscountDraft mockCartDiscountDraft = mock(CartDiscountDraft.class);
         final Map<String, Throwable> errors = new HashMap<>();
         when(mockCartDiscountDraft.getKey()).thenReturn("");
 
         final CartDiscountSyncOptions options = CartDiscountSyncOptionsBuilder
-            .of(sphereClient)
+            .of(fakeCartDiscountClient)
             .errorCallback((exception, oldResource, newResource, actions) ->
                     errors.put(exception.getMessage(), exception))
             .build();
@@ -149,7 +147,7 @@ class CartDiscountServiceImplTest {
         assertThat(result).isCompletedWithValue(Optional.empty());
         assertThat(errors.keySet())
             .containsExactly("Failed to create draft with key: ''. Reason: Draft key is blank!");
-        verify(options.getCtpClient(), times(0)).execute(any());
+        assertThat(fakeCartDiscountClient.isExecuted()).isFalse();
     }
 
     @Test
@@ -159,16 +157,16 @@ class CartDiscountServiceImplTest {
         final Map<String, Throwable> errors = new HashMap<>();
         when(mockCartDiscountDraft.getKey()).thenReturn("cartDiscountKey");
 
+        final FakeClient<CartDiscount> fakeCartDiscountClient = new FakeClient(new InternalServerErrorException());
+
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
-                .of(mock(SphereClient.class))
+                .of(fakeCartDiscountClient)
                 .errorCallback((exception, oldResource, newResource, actions) ->
                         errors.put(exception.getMessage(), exception))
                 .build();
 
         final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
 
-        when(cartDiscountSyncOptions.getCtpClient().execute(any()))
-                .thenReturn(CompletableFutureUtils.failed(new InternalServerErrorException()));
 
         // test
         final CompletionStage<Optional<CartDiscount>> result =
@@ -178,13 +176,13 @@ class CartDiscountServiceImplTest {
         assertThat(result).isCompletedWithValue(Optional.empty());
         assertThat(errors.keySet())
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(message -> {
+                .singleElement().satisfies(message -> {
                     assertThat(message).contains("Failed to create draft with key: 'cartDiscountKey'.");
                 });
 
         assertThat(errors.values())
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(exception -> {
+                .singleElement().satisfies(exception -> {
                     assertThat(exception).isExactlyInstanceOf(SyncException.class);
                     assertThat(exception.getCause()).isExactlyInstanceOf(InternalServerErrorException.class);
                 });
@@ -194,11 +192,11 @@ class CartDiscountServiceImplTest {
     void updateCartDiscount_WithMockSuccessfulCtpResponse_ShouldCallCartDiscountUpdateCommand() {
         // preparation
         final CartDiscount mockCartDiscount = mock(CartDiscount.class);
+        final FakeClient<CartDiscount> fakeCartDiscountClient = new FakeClient(mockCartDiscount);
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
-                .of(mock(SphereClient.class))
+                .of(fakeCartDiscountClient)
                 .build();
 
-        when(cartDiscountSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(mockCartDiscount));
         final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
 
         final List<UpdateAction<CartDiscount>> updateActions =
@@ -209,20 +207,19 @@ class CartDiscountServiceImplTest {
 
         // assertions
         assertThat(result).isCompletedWithValue(mockCartDiscount);
-        verify(cartDiscountSyncOptions.getCtpClient())
-                .execute(eq(CartDiscountUpdateCommand.of(mockCartDiscount, updateActions)));
+        assertThat(fakeCartDiscountClient.isExecuted()).isTrue();
     }
 
     @Test
     void updateCartDiscount_WithMockUnsuccessfulCtpResponse_ShouldCompleteExceptionally() {
         // preparation
         final CartDiscount mockCartDiscount = mock(CartDiscount.class);
-        final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
-                .of(mock(SphereClient.class))
-                .build();
 
-        when(cartDiscountSyncOptions.getCtpClient().execute(any()))
-                .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new InternalServerErrorException()));
+
+        final FakeClient<CartDiscount> fakeCartDiscountClient = new FakeClient(new InternalServerErrorException());
+        final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
+                .of(fakeCartDiscountClient)
+                .build();
 
         final CartDiscountService cartDiscountService = new CartDiscountServiceImpl(cartDiscountSyncOptions);
 
@@ -233,7 +230,41 @@ class CartDiscountServiceImplTest {
                 cartDiscountService.updateCartDiscount(mockCartDiscount, updateActions);
 
         // assertions
-        assertThat(result).hasFailedWithThrowableThat()
-                .isExactlyInstanceOf(InternalServerErrorException.class);
+        assertThat(result)
+                .failsWithin(1, TimeUnit.SECONDS)
+                .withThrowableOfType(ExecutionException.class)
+                .withCauseExactlyInstanceOf(InternalServerErrorException.class);
     }
+
+    @Test
+    void fetchMatchingCartDiscountsByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
+        // Mock sphere client to return BadGatewayException on any request.
+        final List<String> errorCallBackMessages = new ArrayList<>();
+        final List<Throwable> errorCallBackExceptions = new ArrayList<>();
+
+        FakeClient<CartDiscount> fakeClient = new FakeClient<>(new BadGatewayException());
+
+        final CartDiscountSyncOptions spyOptions =
+                CartDiscountSyncOptionsBuilder.of(fakeClient)
+                    .errorCallback((exception, oldResource, newResource, actions) -> {
+                        errorCallBackMessages.add(exception.getMessage());
+                        errorCallBackExceptions.add(exception);
+                    })
+                    .build();
+
+        final CartDiscountService spyCartDiscountService = new CartDiscountServiceImpl(spyOptions);
+
+
+        final Set<String> cartDiscountKeys = new HashSet<>();
+        cartDiscountKeys.add(CART_DISCOUNT_KEY_1);
+
+        // test and assert
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(spyCartDiscountService.fetchMatchingCartDiscountsByKeys(cartDiscountKeys))
+                .failsWithin(1, TimeUnit.SECONDS)
+                .withThrowableOfType(ExecutionException.class)
+                .withCauseExactlyInstanceOf(BadGatewayException.class);
+    }
+
 }
