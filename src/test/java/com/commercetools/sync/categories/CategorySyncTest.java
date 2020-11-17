@@ -461,7 +461,6 @@ class CategorySyncTest {
         final SphereClient mockClient = mock(SphereClient.class);
 
         final String categoryKey = "key";
-        final Category mockCategory = getMockCategory("foo", categoryKey);
 
         final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder
                 .of(mockClient)
