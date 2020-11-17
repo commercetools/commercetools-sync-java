@@ -22,6 +22,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class CategorySyncMockUtils {
+
+    public static final String OLD_CATEGORY_CUSTOM_TYPE_KEY = "oldCategoryCustomTypeKey";
+    public static final String OLD_CATEGORY_CUSTOM_TYPE_NAME = "old_type_name";
+
     /**
      * Given a {@code locale}, {@code name}, {@code slug}, {@code externalId}, {@code description},
      * {@code metaDescription}, {@code metaTitle}, {@code metaKeywords}, {@code orderHint} and

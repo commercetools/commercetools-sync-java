@@ -1,6 +1,5 @@
 package com.commercetools.sync.integration.services.impl;
 
-
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.services.CategoryService;
@@ -12,19 +11,11 @@ import io.sphere.sdk.categories.commands.CategoryCreateCommand;
 import io.sphere.sdk.categories.commands.updateactions.ChangeName;
 import io.sphere.sdk.categories.commands.updateactions.ChangeSlug;
 import io.sphere.sdk.categories.queries.CategoryQuery;
-import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.errors.DuplicateFieldError;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
-import io.sphere.sdk.utils.CompletableFutureUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -34,6 +25,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionException;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
@@ -48,7 +44,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class CategoryServiceImplIT {
     private CategoryService categoryService;
@@ -156,35 +151,6 @@ class CategoryServiceImplIT {
         assertThat(fetchedCategories).hasSize(1);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
-    }
-
-    @Test
-    void fetchMatchingCategoriesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
-        // Mock sphere client to return BadGatewayException on any request.
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(CategoryQuery.class)))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
-            .thenCallRealMethod();
-        final CategorySyncOptions spyOptions =
-            CategorySyncOptionsBuilder.of(spyClient)
-                .errorCallback(
-                    (exception, oldResource, newResource, updateActions) -> {
-                        errorCallBackMessages.add(exception.getMessage());
-                        errorCallBackExceptions.add(exception.getCause());
-                    })
-                .build();
-        final CategoryService spyCategoryService = new CategoryServiceImpl(spyOptions);
-
-
-        final Set<String> keys =  new HashSet<>();
-        keys.add(oldCategoryKey);
-
-        // test and assert
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-        assertThat(spyCategoryService.fetchMatchingCategoriesByKeys(keys))
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(BadGatewayException.class);
     }
 
     @Test
@@ -469,30 +435,5 @@ class CategoryServiceImplIT {
         final Optional<Category> fetchedCategoryOptional =
             executeBlocking(categoryService.fetchCategory(null));
         assertThat(fetchedCategoryOptional).isEmpty();
-    }
-
-    @Test
-    void fetchCategory_WithBadGateWayExceptionAlways_ShouldFail() {
-        // Mock sphere client to return BadGatewayException on any request.
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(CategoryQuery.class)))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
-            .thenCallRealMethod();
-        final CategorySyncOptions spyOptions =
-            CategorySyncOptionsBuilder.of(spyClient)
-                .errorCallback(
-                    (exception, oldResource, newResource, updateActions) -> {
-                        errorCallBackMessages.add(exception.getMessage());
-                        errorCallBackExceptions.add(exception.getCause());
-                    })
-                .build();
-        final CategoryService spyCategoryService = new CategoryServiceImpl(spyOptions);
-
-        // test and assertion
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-        assertThat(spyCategoryService.fetchCategory(oldCategoryKey))
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(BadGatewayException.class);
     }
 }
