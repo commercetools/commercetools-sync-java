@@ -51,9 +51,9 @@ class CategoryServiceImplTest {
     @Test
     void fetchMatchingCategoriesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
 
-        final FakeClient<Category> fakeProductClient = new FakeClient(new BadGatewayException());
+        final FakeClient<Category> fakeCategoryClient = new FakeClient(new BadGatewayException());
 
-        initMockService(fakeProductClient);
+        initMockService(fakeCategoryClient);
 
         final Set<String> keys =  new HashSet<>();
         keys.add(oldCategoryKey);
