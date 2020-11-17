@@ -120,7 +120,12 @@ public final class TextLineItemUpdateActionUtils {
             final TextLineItemDraft newTextLineItem = newTextLineItems.get(i);
 
             if (newTextLineItem.getName() == null || newTextLineItem.getName().getLocales().isEmpty()) {
+                /*
+                checking the name of the oldTextLineItem is not needed, because it's required.
+                with this check below, it's avoided bad request case like:
 
+                "detailedErrorMessage": "actions -> name: Missing required value"
+                */
                 syncOptions.applyErrorCallback(new SyncException(
                         format("TextLineItemDraft at position '%d' of the ShoppingListDraft with key '%s' has no name "
                             + "set. Please make sure all text line items have names.", i, newShoppingList.getKey())),
