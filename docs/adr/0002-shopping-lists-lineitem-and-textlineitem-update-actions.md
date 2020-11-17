@@ -560,9 +560,9 @@ so in this document, we will describe the reasons and constraints, mostly relate
                     TextLineItems Order</a>
                 of the text line items <b>name-1</b> and <b>name-2</b>, because when we add text line item with <b>name-1</b>
                 the order will be <b>name-2</b> and <b>name-1</b>.</p>
-            <p>The <b>challenge</b> in here is, those actions can not be added in one request because we don't know the
+            <p>The <b>challenge</b> in here is, those actions cannot be added in one request because we don't know the
                 text line item id of the new text line item
-                with <b>name-1</b>, so we need to find another way to create a new text line item with the right order.
+                with <b>name-1</b>. We need to find another way to create a new text line item with the right order.
             </p>
         </td>
     </tr>
@@ -572,18 +572,18 @@ so in this document, we will describe the reasons and constraints, mostly relate
     <tr>
         <td colspan="2">
             <p>
-                Normally, for a difference, we might do a set intersection and then calculate action for differences,
+                Normally, for a difference, we do a set intersection and then calculate action for differences,
                 but that does not make sense because we are not aware of the order from the draft.
             </p>
             <p>
                 Before that, we need to analyse the <a
                     href="https://docs.commercetools.com/api/projects/shoppingLists#add-textlineitem">AddTextLineItem</a>
-                action, because the platform are not checking if the data exists. An API user could add the
-                exact same data multiple times. So with that information, we might say, it's hard to know the order by
+                action, because the platform is not checking if the data exist. An API user could add the
+                exact same data multiple times. So it's impossible to know the order by
                 just checking the differences between the resource and draft object. Also, the name of the text line
-                item does not need to be unique which is different than line items, because line items are unique with
-                the same product variant and the same custom fields. Luckily the platform support changing all fields
-                (except addedAt) of the text line items, so when an order change is needed we might just update the
+                item does not need to be unique which is different than line items. Line items are unique with
+                the same product variant and the same custom fields. Luckily the platform supports changing all fields
+                (except `addedAt`) of the text line items, so when an order change is needed we update the
                 fields of the text line items. Which will look like:
             </p>
             <pre lang="json">
@@ -680,8 +680,8 @@ to change the `addedAt` field of the `LineItem` and `TextLineItem`, hereby we wi
 
 <!-- What becomes easier or more difficult to do and any risks introduced by the change that will need to be mitigated. -->
 
-- To ensure the order of the line items, we need to remove and add line items, which means a bigger payload, so performance overhead. 
+- To ensure the order of the line items, we need to remove and add line items. That means a bigger payload and a performance overhead. 
 
-- To ensure the order of text line items, we might need to calculate and update more than expected, so means a bigger payload and performance overhead.
+- To ensure the order of text line items, we need to calculate and update more than expected. That means a bigger payload and a performance overhead.
 
 - **Caveat**: `addedAt` values not synced.
