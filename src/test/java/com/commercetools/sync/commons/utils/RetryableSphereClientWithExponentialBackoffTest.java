@@ -65,10 +65,8 @@ class RetryableSphereClientWithExponentialBackoffTest {
 
     @Test
     void of_withRetryDecorator_ShouldRetryWhen500HttpResponse() {
-        final SphereClientConfig clientConfig =
-                SphereClientConfig.of("project-key", "client-id", "client-secret");
         final RetryableSphereClientWithExponentialBackoff retryableSphereClientWithExponentialBackoff =
-                RetryableSphereClientWithExponentialBackoff.of(clientConfig);
+            of_RetryableSphereClientWithExponentialBackoff();
         final SphereClient mockSphereUnderlyingClient =
                 spy(createHttpTestDouble(intent -> HttpResponse.of(HttpStatusCode.INTERNAL_SERVER_ERROR_500)));
 
@@ -92,10 +90,8 @@ class RetryableSphereClientWithExponentialBackoffTest {
 
     @Test
     void of_withRetryDecorator_ShouldRetryWhen502HttpResponse() {
-        final SphereClientConfig clientConfig =
-                SphereClientConfig.of("project-key", "client-id", "client-secret");
         final RetryableSphereClientWithExponentialBackoff retryableSphereClientWithExponentialBackoff =
-                RetryableSphereClientWithExponentialBackoff.of(clientConfig);
+            of_RetryableSphereClientWithExponentialBackoff();
         final SphereClient mockSphereUnderlyingClient =
             spy(createHttpTestDouble(intent -> HttpResponse.of(HttpStatusCode.BAD_GATEWAY_502)));
 
@@ -119,10 +115,8 @@ class RetryableSphereClientWithExponentialBackoffTest {
 
     @Test
     void of_withDefaultRetryDecorator_ShouldRetryWhen502HttpResponse() {
-        final SphereClientConfig clientConfig =
-                SphereClientConfig.of("project-key", "client-id", "client-secret");
         final RetryableSphereClientWithExponentialBackoff retryableSphereClientWithExponentialBackoff =
-                RetryableSphereClientWithExponentialBackoff.of(clientConfig);
+            of_RetryableSphereClientWithExponentialBackoff();
         final SphereClient mockSphereUnderlyingClient =
             spy(createHttpTestDouble(intent -> {
                 try {
@@ -156,10 +150,8 @@ class RetryableSphereClientWithExponentialBackoffTest {
 
     @Test
     void of_withRetryDecorator_ShouldRetryWhen503HttpResponse() {
-        final SphereClientConfig clientConfig =
-                SphereClientConfig.of("project-key", "client-id", "client-secret");
         final RetryableSphereClientWithExponentialBackoff retryableSphereClientWithExponentialBackoff =
-                RetryableSphereClientWithExponentialBackoff.of(clientConfig);
+            of_RetryableSphereClientWithExponentialBackoff();
         final SphereClient mockSphereUnderlyingClient =
             spy(createHttpTestDouble(intent -> HttpResponse.of(HttpStatusCode.SERVICE_UNAVAILABLE_503)));
 
@@ -183,10 +175,8 @@ class RetryableSphereClientWithExponentialBackoffTest {
 
     @Test
     void of_withRetryDecorator_ShouldRetryWhen504HttpResponse() {
-        final SphereClientConfig clientConfig =
-                SphereClientConfig.of("project-key", "client-id", "client-secret");
         final RetryableSphereClientWithExponentialBackoff retryableSphereClientWithExponentialBackoff =
-                RetryableSphereClientWithExponentialBackoff.of(clientConfig);
+            of_RetryableSphereClientWithExponentialBackoff();
         final SphereClient mockSphereUnderlyingClient =
             spy(createHttpTestDouble(intent -> HttpResponse.of(HttpStatusCode.GATEWAY_TIMEOUT_504)));
 
@@ -209,10 +199,8 @@ class RetryableSphereClientWithExponentialBackoffTest {
 
     @Test
     void of_withRetryDecorator_ShouldNotRetryWhen400HttpResponse() {
-        final SphereClientConfig clientConfig =
-                SphereClientConfig.of("project-key", "client-id", "client-secret");
         final RetryableSphereClientWithExponentialBackoff retryableSphereClientWithExponentialBackoff =
-                RetryableSphereClientWithExponentialBackoff.of(clientConfig);
+            of_RetryableSphereClientWithExponentialBackoff();
         final SphereClient mockSphereUnderlyingClient =
             spy(createHttpTestDouble(intent -> HttpResponse.of(HttpStatusCode.BAD_REQUEST_400,
                 "{\"statusCode\":\"400\"}")));
@@ -237,10 +225,8 @@ class RetryableSphereClientWithExponentialBackoffTest {
 
     @Test
     void calculateExponentialRandomBackoff_withRetries_ShouldReturnRandomisedDurations() {
-        final SphereClientConfig clientConfig =
-                SphereClientConfig.of("project-key", "client-id", "client-secret");
         final RetryableSphereClientWithExponentialBackoff retryableSphereClientWithExponentialBackoff =
-                RetryableSphereClientWithExponentialBackoff.of(clientConfig);
+            of_RetryableSphereClientWithExponentialBackoff();
         long maxDelay = 0;
         for (long failedRetryAttempt = 1; failedRetryAttempt <= 10; failedRetryAttempt++) {
 
@@ -266,6 +252,12 @@ class RetryableSphereClientWithExponentialBackoffTest {
                 .isLessThanOrEqualTo(maxDelay)
                 .isLessThanOrEqualTo(DEFAULT_MAX_DELAY);
         }
+    }
+
+    private RetryableSphereClientWithExponentialBackoff of_RetryableSphereClientWithExponentialBackoff() {
+        final SphereClientConfig clientConfig =
+            SphereClientConfig.of("project-key", "client-id", "client-secret");
+        return RetryableSphereClientWithExponentialBackoff.of(clientConfig);
     }
 
     private CustomerUpdateCommand getCustomerUpdateCommand() {
