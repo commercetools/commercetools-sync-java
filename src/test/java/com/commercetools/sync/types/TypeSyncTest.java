@@ -1,21 +1,31 @@
 package com.commercetools.sync.types;
 
+import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.types.helpers.TypeSyncStatistics;
+import io.sphere.sdk.client.BadGatewayException;
+import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
 import io.sphere.sdk.types.TypeDraftBuilder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletionException;
+import javax.annotation.Nonnull;
 import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
+import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
@@ -24,6 +34,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -139,4 +150,185 @@ class TypeSyncTest {
         verify(spyTypeSyncOptions, never()).applyBeforeCreateCallback(newTypeDraft);
     }
 
+    @Test
+    void syncDrafts_WithConcurrentModificationException_ShouldRetryToUpdateNewProductTypeWithSuccess() {
+        // Preparation
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+        final List<String> warningCallBackMessages = new ArrayList<>();
+
+        final TypeDraft typeDraft = TypeDraftBuilder
+                .of("key_1", LocalizedString.ofEnglish("name_1"), ResourceTypeIdsSetBuilder.of().addChannels())
+                .build();
+
+        final TypeService typeService =
+                buildMockTypeServiceWithSuccessfulUpdateOnRetry(typeDraft);
+
+        final TypeSyncOptions syncOptions =
+                TypeSyncOptionsBuilder.of(mock(SphereClient.class))
+                        .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                            errorMessages.add(exception.getMessage());
+                            exceptions.add(exception.getCause());
+                        })
+                        .warningCallback((exception, oldResource, newResource)
+                            -> warningCallBackMessages.add(exception.getMessage()))
+                        .build();
+
+        final TypeSync typeSync = new TypeSync(syncOptions, typeService);
+
+        // Test
+        final TypeSyncStatistics statistics = typeSync.sync(singletonList(typeDraft))
+                .toCompletableFuture()
+                .join();
+
+        // Assertion
+        AssertionsForStatistics.assertThat(statistics).hasValues(1, 0, 1, 0);
+        assertThat(exceptions).isEmpty();
+        assertThat(errorMessages).isEmpty();
+        assertThat(warningCallBackMessages).isEmpty();
+    }
+
+    @Test
+    void syncDrafts_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
+        // Preparation
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+
+        final TypeDraft typeDraft = TypeDraftBuilder
+                .of("key_1", LocalizedString.ofEnglish("name_1"), ResourceTypeIdsSetBuilder.of().addChannels())
+                .build();
+
+        final TypeService typeService =
+                buildMockTypeServiceWithFailedFetchOnRetry(typeDraft);
+
+        final TypeSyncOptions syncOptions =
+                TypeSyncOptionsBuilder.of(mock(SphereClient.class))
+                        .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                            errorMessages.add(exception.getMessage());
+                            exceptions.add(exception.getCause());
+                        })
+                        .build();
+
+        final TypeSync typeSync = new TypeSync(syncOptions, typeService);
+
+        // Test
+        final TypeSyncStatistics statistics = typeSync.sync(singletonList(typeDraft))
+                .toCompletableFuture()
+                .join();
+
+        // Assertion
+        assertThat(statistics).hasValues(1, 0, 0, 1);
+
+        assertThat(errorMessages).hasSize(1);
+        assertThat(exceptions).hasSize(1);
+        assertThat(exceptions.get(0)).isExactlyInstanceOf(BadGatewayException.class);
+        assertThat(errorMessages.get(0)).contains(
+                format("Failed to update type with key: '%s'. Reason: Failed to fetch from CTP while retrying "
+                        + "after concurrency modification.", typeDraft.getKey()));
+
+    }
+
+    @Test
+    void syncDrafts_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
+        // Preparation
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+
+        final TypeDraft typeDraft = TypeDraftBuilder
+                .of("key_1", LocalizedString.ofEnglish("name_1"), ResourceTypeIdsSetBuilder.of().addChannels())
+                .build();
+
+        final TypeService typeService =
+                buildMockTypeServiceWithNotFoundFetchOnRetry(typeDraft);
+
+        final TypeSyncOptions syncOptions =
+                TypeSyncOptionsBuilder.of(mock(SphereClient.class))
+                        .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                            errorMessages.add(exception.getMessage());
+                            exceptions.add(exception.getCause());
+                        })
+                        .build();
+
+        final TypeSync typeSync = new TypeSync(syncOptions, typeService);
+
+        // Test
+        final TypeSyncStatistics statistics = typeSync.sync(singletonList(typeDraft))
+                .toCompletableFuture()
+                .join();
+
+        // Assertion
+        assertThat(statistics).hasValues(1, 0, 0, 1);
+        assertThat(errorMessages).hasSize(1);
+        assertThat(exceptions).hasSize(1);
+        assertThat(errorMessages.get(0)).contains(
+                format("Failed to update type with key: '%s'. Reason: Not found when attempting to fetch while "
+                        + "retrying after concurrency modification.", typeDraft.getKey()));
+    }
+
+    @Nonnull
+    private TypeService buildMockTypeServiceWithSuccessfulUpdateOnRetry(
+            @Nonnull final TypeDraft typeDraft) {
+
+        final TypeService mockTypeService = mock(TypeService.class);
+
+        final Type mockType = mock(Type.class);
+        when(mockType.getKey()).thenReturn("key_1");
+
+        final Map<String, String> keyToIds = new HashMap<>();
+        keyToIds.put(typeDraft.getKey(), UUID.randomUUID().toString());
+
+        when(mockTypeService.cacheKeysToIds(anySet())).thenReturn(completedFuture(keyToIds));
+        when(mockTypeService.fetchMatchingTypesByKeys(anySet()))
+                .thenReturn(completedFuture(singleton(mockType)));
+        when(mockTypeService.fetchType(any())).thenReturn(completedFuture(Optional.of(mockType)));
+        when(mockTypeService.updateType(any(), anyList()))
+                .thenReturn(exceptionallyCompletedFuture(new SphereException(new ConcurrentModificationException())))
+                .thenReturn(completedFuture(mockType));
+        return mockTypeService;
+    }
+
+    @Nonnull
+    private TypeService buildMockTypeServiceWithFailedFetchOnRetry(
+            @Nonnull final TypeDraft typeDraft) {
+
+        final TypeService mockTypeService = mock(TypeService.class);
+
+        final Type mockType = mock(Type.class);
+        when(mockType.getKey()).thenReturn("key_1");
+
+        final Map<String, String> keyToIds = new HashMap<>();
+        keyToIds.put(typeDraft.getKey(), UUID.randomUUID().toString());
+
+        when(mockTypeService.cacheKeysToIds(anySet())).thenReturn(completedFuture(keyToIds));
+        when(mockTypeService.fetchMatchingTypesByKeys(anySet()))
+                .thenReturn(completedFuture(singleton(mockType)));
+        when(mockTypeService.fetchType(any()))
+                .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()));
+        when(mockTypeService.updateType(any(), anyList()))
+                .thenReturn(exceptionallyCompletedFuture(new SphereException(new ConcurrentModificationException())))
+                .thenReturn(completedFuture(mockType));
+        return mockTypeService;
+    }
+
+    @Nonnull
+    private TypeService buildMockTypeServiceWithNotFoundFetchOnRetry(
+            @Nonnull final TypeDraft typeDraft) {
+
+        final TypeService mockTypeService = mock(TypeService.class);
+
+        final Type mockType = mock(Type.class);
+        when(mockType.getKey()).thenReturn("key_1");
+
+        final Map<String, String> keyToIds = new HashMap<>();
+        keyToIds.put(typeDraft.getKey(), UUID.randomUUID().toString());
+
+        when(mockTypeService.cacheKeysToIds(anySet())).thenReturn(completedFuture(keyToIds));
+        when(mockTypeService.fetchMatchingTypesByKeys(anySet()))
+                .thenReturn(completedFuture(singleton(mockType)));
+        when(mockTypeService.fetchType(any())).thenReturn(completedFuture(Optional.empty()));
+        when(mockTypeService.updateType(any(), anyList()))
+                .thenReturn(exceptionallyCompletedFuture(new SphereException(new ConcurrentModificationException())))
+                .thenReturn(completedFuture(mockType));
+        return mockTypeService;
+    }
 }
