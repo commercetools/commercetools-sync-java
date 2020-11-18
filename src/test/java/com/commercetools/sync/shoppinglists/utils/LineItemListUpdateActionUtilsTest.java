@@ -11,6 +11,8 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.products.ProductVariant;
+import io.sphere.sdk.shoppinglists.LineItem;
 import io.sphere.sdk.shoppinglists.LineItemDraft;
 import io.sphere.sdk.shoppinglists.LineItemDraftBuilder;
 import io.sphere.sdk.shoppinglists.ShoppingList;
@@ -479,7 +481,47 @@ class LineItemListUpdateActionUtilsTest {
     }
 
     @Test
-    void buildLineItemsUpdateAction_WithLineItemWithoutSku_ShouldTriggerErrorCallback() {
+    void buildLineItemsUpdateAction_WithOldLineItemWithoutSku_ShouldTriggerErrorCallback() {
+        final ShoppingList oldShoppingList = mock(ShoppingList.class);
+        when(oldShoppingList.getKey()).thenReturn("shoppinglist-with-lineitems-not-expanded");
+
+        final ProductVariant mockProductVariant = mock(ProductVariant.class);
+        when(mockProductVariant.getSku()).thenReturn(null);
+
+        final LineItem oldLineItem = mock(LineItem.class);
+        when(oldLineItem.getVariant()).thenReturn(mockProductVariant);
+
+        when(oldShoppingList.getLineItems()).thenReturn(singletonList(oldLineItem));
+
+        final ShoppingListDraft newShoppingList =
+            mapToShoppingListDraftWithResolvedLineItemReferences(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_123);
+
+        final List<String> errors = new ArrayList<>();
+        final List<UpdateAction<ShoppingList>> updateActionsBeforeCallback = new ArrayList<>();
+
+        final ShoppingListSyncOptions syncOptions =
+            ShoppingListSyncOptionsBuilder.of(mock(SphereClient.class))
+                                          .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                                              errors.add(exception.getMessage());
+                                              updateActionsBeforeCallback.addAll(updateActions);
+                                          })
+                                          .build();
+
+        final List<UpdateAction<ShoppingList>> updateActions =
+            buildLineItemsUpdateActions(oldShoppingList, newShoppingList, syncOptions);
+
+        assertThat(updateActions).isEmpty();
+        assertThat(updateActionsBeforeCallback).isEmpty();
+
+        assertThat(errors).hasSize(1);
+        assertThat(errors.get(0))
+            .isEqualTo("LineItem at position '0' of the ShoppingList with key "
+                + "'shoppinglist-with-lineitems-not-expanded' has no SKU set. "
+                + "Please make sure all line items have SKUs.");
+    }
+
+    @Test
+    void buildLineItemsUpdateAction_WithNewLineItemWithoutSku_ShouldTriggerErrorCallback() {
         final ShoppingList oldShoppingList =
             readObjectFromResource(SHOPPING_LIST_WITH_LINE_ITEMS_SKU_132_WITH_CHANGES, ShoppingList.class);
 
@@ -510,7 +552,7 @@ class LineItemListUpdateActionUtilsTest {
         assertThat(errors.get(0))
             .isEqualTo("LineItemDraft at position '1' of the ShoppingListDraft with key "
                 + "'shoppinglist-with-lineitems-not-expanded' has no SKU set. "
-                + "Please make sure all line items have SKUs.");
+                + "Please make sure all line item drafts have SKUs.");
     }
 
     @Test
@@ -548,8 +590,8 @@ class LineItemListUpdateActionUtilsTest {
             SetSlug.of(LocalizedString.ofEnglish("newSlug")),
             ChangeName.of(LocalizedString.ofEnglish("newName")),
             SetDescription.of(LocalizedString.ofEnglish("newDescription")),
-            SetCustomer.of(Reference.of(Customer.referenceTypeId(), "customer_id_2")),
             SetAnonymousId.of("newAnonymousId"),
+            SetCustomer.of(Reference.of(Customer.referenceTypeId(), "customer_id_2")),
             SetDeleteDaysAfterLastModification.of(45),
             SetCustomField.ofJson("textField", JsonNodeFactory.instance.textNode("newTextValue")),
             ChangeLineItemQuantity.of("line_item_id_1", 2L),

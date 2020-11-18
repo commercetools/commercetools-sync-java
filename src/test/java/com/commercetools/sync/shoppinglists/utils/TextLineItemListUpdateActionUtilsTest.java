@@ -410,8 +410,8 @@ class TextLineItemListUpdateActionUtilsTest {
             SetSlug.of(LocalizedString.ofEnglish("newSlug")),
             ChangeName.of(LocalizedString.ofEnglish("newName")),
             SetDescription.of(LocalizedString.ofEnglish("newDescription")),
-            SetCustomer.of(Reference.of(Customer.referenceTypeId(), "customer_id_2")),
             SetAnonymousId.of("newAnonymousId"),
+            SetCustomer.of(Reference.of(Customer.referenceTypeId(), "customer_id_2")),
             SetDeleteDaysAfterLastModification.of(45),
             SetCustomField.ofJson("textField", JsonNodeFactory.instance.textNode("newTextValue")),
 

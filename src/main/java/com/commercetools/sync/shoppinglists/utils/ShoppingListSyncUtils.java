@@ -48,8 +48,8 @@ public final class ShoppingListSyncUtils {
             buildSetSlugUpdateAction(oldShoppingList, newShoppingList),
             buildChangeNameUpdateAction(oldShoppingList, newShoppingList),
             buildSetDescriptionUpdateAction(oldShoppingList, newShoppingList),
-            buildSetCustomerUpdateAction(oldShoppingList, newShoppingList),
             buildSetAnonymousIdUpdateAction(oldShoppingList, newShoppingList),
+            buildSetCustomerUpdateAction(oldShoppingList, newShoppingList),
             buildSetDeleteDaysAfterLastModificationUpdateAction(oldShoppingList, newShoppingList)
         );
 

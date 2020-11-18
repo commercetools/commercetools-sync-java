@@ -4,6 +4,7 @@ import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.commands.UpdateActionImpl;
 import io.sphere.sdk.shoppinglists.LineItemDraft;
 import io.sphere.sdk.shoppinglists.ShoppingList;
+import io.sphere.sdk.types.CustomDraft;
 import io.sphere.sdk.types.CustomFieldsDraft;
 
 import javax.annotation.Nonnull;
@@ -15,11 +16,15 @@ import java.time.ZonedDateTime;
  * ShoppingList#AddLineItem action does not support product variant selection by SKU,
  * so we needed to add this custom action as a workaround.
  */
-public final class AddLineItemWithSku extends UpdateActionImpl<ShoppingList> {
+public final class AddLineItemWithSku extends UpdateActionImpl<ShoppingList> implements CustomDraft {
 
+    @Nullable
     private final String sku;
+    @Nullable
     private final Long quantity;
+    @Nullable
     private final ZonedDateTime addedAt;
+    @Nullable
     private final CustomFieldsDraft custom;
 
     private AddLineItemWithSku(
@@ -51,8 +56,25 @@ public final class AddLineItemWithSku extends UpdateActionImpl<ShoppingList> {
             lineItemDraft.getCustom());
     }
 
+    @Nullable
     public String getSku() {
         return sku;
+    }
+
+    @Nullable
+    public Long getQuantity() {
+        return quantity;
+    }
+
+    @Nullable
+    public ZonedDateTime getAddedAt() {
+        return addedAt;
+    }
+
+    @Override
+    @Nullable
+    public CustomFieldsDraft getCustom() {
+        return custom;
     }
 }
 
