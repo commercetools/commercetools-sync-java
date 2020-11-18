@@ -559,7 +559,7 @@ class ProductTypeSyncTest {
         // assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .singleElement().satisfies((message ->
+            .singleElement().satisfies(message ->
                 assertThat(message).isEqualTo("Failed to build a cache of keys to ids.")
             );
 
