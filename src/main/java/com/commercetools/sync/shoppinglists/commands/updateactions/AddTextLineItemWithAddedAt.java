@@ -5,6 +5,7 @@ import io.sphere.sdk.commands.UpdateActionImpl;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.shoppinglists.ShoppingList;
 import io.sphere.sdk.shoppinglists.TextLineItemDraft;
+import io.sphere.sdk.types.CustomDraft;
 import io.sphere.sdk.types.CustomFieldsDraft;
 
 import javax.annotation.Nonnull;
@@ -16,7 +17,7 @@ import java.time.ZonedDateTime;
  * ShoppingList#AddTextLineItem action does not support `addedAt` value,
  * so we needed to add this custom action as a workaround.
  */
-public final class AddTextLineItemWithAddedAt extends UpdateActionImpl<ShoppingList> {
+public final class AddTextLineItemWithAddedAt extends UpdateActionImpl<ShoppingList> implements CustomDraft {
 
     private final LocalizedString name;
     private final LocalizedString description;
@@ -54,5 +55,31 @@ public final class AddTextLineItemWithAddedAt extends UpdateActionImpl<ShoppingL
             textLineItemDraft.getQuantity(),
             textLineItemDraft.getAddedAt(),
             textLineItemDraft.getCustom());
+    }
+
+    @Nonnull
+    public LocalizedString getName() {
+        return name;
+    }
+
+    @Nullable
+    public LocalizedString getDescription() {
+        return description;
+    }
+
+    @Nullable
+    public Long getQuantity() {
+        return quantity;
+    }
+
+    @Nullable
+    public ZonedDateTime getAddedAt() {
+        return addedAt;
+    }
+
+    @Nullable
+    @Override
+    public CustomFieldsDraft getCustom() {
+        return custom;
     }
 }

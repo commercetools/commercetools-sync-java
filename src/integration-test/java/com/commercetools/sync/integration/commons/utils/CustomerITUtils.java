@@ -103,7 +103,8 @@ public final class CustomerITUtils {
         return ImmutablePair.of(customer, customerDraftJohnDoe);
     }
 
-    public static void createSampleCustomerJaneDoe(@Nonnull final SphereClient ctpClient) {
+    @Nonnull
+    public static Customer createSampleCustomerJaneDoe(@Nonnull final SphereClient ctpClient) {
         final CustomerDraft customerDraftJaneDoe = CustomerDraftBuilder
             .of("jane@example.com", "12345")
             .customerNumber("random-1")
@@ -127,7 +128,7 @@ public final class CustomerITUtils {
             .locale(Locale.ENGLISH)
             .build();
 
-        createCustomer(ctpClient, customerDraftJaneDoe);
+        return createCustomer(ctpClient, customerDraftJaneDoe);
     }
 
     /**

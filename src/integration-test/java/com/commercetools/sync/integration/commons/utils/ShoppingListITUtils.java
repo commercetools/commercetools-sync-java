@@ -3,9 +3,7 @@ package com.commercetools.sync.integration.commons.utils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.products.ProductDraftBuilder;
 import io.sphere.sdk.products.ProductVariantDraftBuilder;
@@ -13,11 +11,16 @@ import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
+import io.sphere.sdk.shoppinglists.LineItem;
 import io.sphere.sdk.shoppinglists.LineItemDraft;
 import io.sphere.sdk.shoppinglists.LineItemDraftBuilder;
 import io.sphere.sdk.shoppinglists.ShoppingList;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
+import io.sphere.sdk.shoppinglists.TextLineItem;
+import io.sphere.sdk.shoppinglists.TextLineItemDraft;
+import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
+import io.sphere.sdk.shoppinglists.TextLineItemDraftDsl;
 import io.sphere.sdk.shoppinglists.commands.ShoppingListCreateCommand;
 import io.sphere.sdk.shoppinglists.commands.ShoppingListDeleteCommand;
 import io.sphere.sdk.shoppinglists.queries.ShoppingListQuery;
@@ -33,7 +36,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Arrays;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +49,7 @@ import static com.commercetools.sync.integration.commons.utils.ProductITUtils.de
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypes;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 
 
 public final class ShoppingListITUtils {
@@ -117,30 +121,6 @@ public final class ShoppingListITUtils {
     }
 
     /**
-     * Creates a {@link ShoppingList} in the CTP project defined by the {@code ctpClient} in a blocking fashion.
-     *
-     * @param ctpClient defines the CTP project to create the ShoppingList in.
-     * @param name      the name of the ShoppingList to create.
-     * @param key       the key of the ShoppingList to create.
-     * @param customer  the Customer which ShoppingList refers to.
-     * @return the created ShoppingList.
-     */
-    public static ShoppingList createShoppingListWithCustomer(
-        @Nonnull final SphereClient ctpClient,
-        @Nonnull final String name,
-        @Nonnull final String key,
-        @Nonnull final Customer customer) {
-
-        final ResourceIdentifier<Customer> customerResourceIdentifier = customer.toResourceIdentifier();
-        final ShoppingListDraft shoppingListDraft = ShoppingListDraftBuilder.of(LocalizedString.ofEnglish(name))
-                                                                            .key(key)
-                                                                            .customer(customerResourceIdentifier)
-                                                                            .build();
-
-        return executeBlocking(ctpClient.execute(ShoppingListCreateCommand.of(shoppingListDraft)));
-    }
-
-    /**
      * Creates a sample {@link ShoppingList} in the CTP project defined by the {@code ctpClient} in a blocking fashion.
      *
      * @param ctpClient defines the CTP project to create the ShoppingList in.
@@ -162,6 +142,7 @@ public final class ShoppingListITUtils {
                 .deleteDaysAfterLastModification(30)
                 .custom(createSampleTypes(ctpClient))
                 .lineItems(buildIngredientsLineItemDrafts())
+                .textLineItems(buildRecipeTextLineItemDrafts())
                 .build();
 
         final ShoppingList shoppingList =
@@ -173,9 +154,8 @@ public final class ShoppingListITUtils {
     private static CustomFieldsDraft createSampleTypes(@Nonnull final SphereClient ctpClient) {
         final TypeDraft shoppingListTypeDraft = TypeDraftBuilder
             .of("custom-type-shopping-list", LocalizedString.ofEnglish("name"),
-                ResourceTypeIdsSetBuilder.of()
-                                         .add(ShoppingList.resourceTypeId()))
-            .fieldDefinitions(Arrays.asList(
+                ResourceTypeIdsSetBuilder.of().add(ShoppingList.resourceTypeId()))
+            .fieldDefinitions(asList(
                 FieldDefinition.of(StringFieldType.of(), "nutrition",
                     LocalizedString.ofEnglish("nutrition per serving"), false),
                 FieldDefinition.of(NumberFieldType.of(), "servings",
@@ -184,32 +164,38 @@ public final class ShoppingListITUtils {
 
         final TypeDraft lineItemTypeDraft = TypeDraftBuilder
             .of("custom-type-line-items", LocalizedString.ofEnglish("name"),
-                ResourceTypeIdsSetBuilder.of()
-                                         .addLineItems())
-            .fieldDefinitions(Arrays.asList(
+                ResourceTypeIdsSetBuilder.of().add(LineItem.resourceTypeId()))
+            .fieldDefinitions(asList(
                 FieldDefinition.of(StringFieldType.of(), "ingredient",
                     LocalizedString.ofEnglish("ingredient"), false),
                 FieldDefinition.of(StringFieldType.of(), "amount",
                     LocalizedString.ofEnglish("amount"), false)))
             .build();
 
+        final TypeDraft textLineItemTypeDraft = TypeDraftBuilder
+            .of("custom-type-text-line-items", LocalizedString.ofEnglish("name"),
+                ResourceTypeIdsSetBuilder.of().add(TextLineItem.resourceTypeId()))
+            .fieldDefinitions(singletonList(
+                FieldDefinition.of(StringFieldType.of(), "utensils",
+                    LocalizedString.ofEnglish("utensils"), false)))
+            .build();
+
         CompletableFuture
             .allOf(
                 ctpClient.execute(TypeCreateCommand.of(shoppingListTypeDraft)).toCompletableFuture(),
-                ctpClient.execute(TypeCreateCommand.of(lineItemTypeDraft)).toCompletableFuture())
+                ctpClient.execute(TypeCreateCommand.of(lineItemTypeDraft)).toCompletableFuture(),
+                ctpClient.execute(TypeCreateCommand.of(textLineItemTypeDraft)).toCompletableFuture())
             .join();
 
         final Map<String, JsonNode> servingsFields = new HashMap<>();
         servingsFields.put("nutrition",
             JsonNodeFactory.instance.textNode("Per servings: 475 cal, 11g protein, 28g, fat, 44g carb"));
         servingsFields.put("servings", JsonNodeFactory.instance.numberNode(12));
-        // todo: explain recipe steps with text line items
 
         return CustomFieldsDraft.ofTypeKeyAndJson(shoppingListTypeDraft.getKey(),
             servingsFields);
     }
 
-    @Nonnull
     private static void createIngredientProducts(@Nonnull final SphereClient ctpClient) {
         final ProductType productType = ctpClient
             .execute(
@@ -281,7 +267,7 @@ public final class ShoppingListITUtils {
             .custom(buildIngredientCustomType("cinnamon", "2 tsp"))
             .build();
 
-        return Arrays.asList(item1, item2, item3, item4, item5, item6);
+        return asList(item1, item2, item3, item4, item5, item6);
     }
 
     /**
@@ -303,6 +289,75 @@ public final class ShoppingListITUtils {
         map.put("amount", JsonNodeFactory.instance.textNode(amount));
 
         return CustomFieldsDraft.ofTypeKeyAndJson("custom-type-line-items", map);
+    }
+
+    @Nonnull
+    private static List<TextLineItemDraft> buildRecipeTextLineItemDrafts() {
+
+        final TextLineItemDraftDsl item1 =
+            TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("step 1"), 1L)
+                                    .description(LocalizedString.ofEnglish(
+                                        "Peel carrots and set aside, separate eggs into small balls."))
+                                    .custom(buildUtensilsCustomType("Peeler, 2 small bowls"))
+                                    .build();
+
+        final TextLineItemDraftDsl item2 =
+            TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("step 2"), 1L)
+                                    .description(LocalizedString.ofEnglish(
+                                        "Mix powder and baking powder in a large bowl set aside, "
+                                            + "Blend slowly egg yolks and cinnamon until smooth."))
+                                    .custom(buildUtensilsCustomType("2 large bowls, hand mixer"))
+                                    .build();
+
+        final TextLineItemDraftDsl item3 =
+            TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("step 3"), 1L)
+                                    .description(LocalizedString.ofEnglish(
+                                        "Mix egg whites and sugar until stiff."))
+                                    .custom(buildUtensilsCustomType("1 large bowl"))
+                                    .build();
+
+        final TextLineItemDraftDsl item4 =
+            TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("step 4"), 1L)
+                                    .description(LocalizedString.ofEnglish(
+                                        "Transfer egg whites into other egg mixture, combine with powder, "
+                                            + "add peeled carrots, stir with spatula."))
+                                    .custom(buildUtensilsCustomType("Rubber spatula"))
+                                    .build();
+
+        final TextLineItemDraftDsl item5 =
+            TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("step 5"), 1L)
+                                    .description(LocalizedString.ofEnglish(
+                                        "Put cake mixture into cake pan, bake appr 40 min with 180 C degree"))
+                                    .custom(buildUtensilsCustomType("Cake pan, oven"))
+                                    .build();
+
+        final TextLineItemDraftDsl item6 =
+            TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("step 6"), 1L)
+                                    .description(LocalizedString.ofEnglish(
+                                        "Decorate as you wish and serve, enjoy!"))
+                                    .custom(buildUtensilsCustomType("Knife, cake plate."))
+                                    .addedAt(ZonedDateTime.parse("2020-11-06T10:00:00.000Z"))
+                                    .build();
+
+        return asList(item1, item2, item3, item4, item5, item6);
+    }
+
+    /**
+     * Creates an instance of {@link CustomFieldsDraft} with the type key 'custom-type-text-line-items' and
+     * two custom fields 'utensil'.
+     *
+     * @param utensils the text field.
+     * @return an instance of {@link CustomFieldsDraft} with the type key 'custom-type-text-line-items' and
+     *         two custom fields 'utensils'.
+     */
+    @Nonnull
+    public static CustomFieldsDraft buildUtensilsCustomType(
+        @Nonnull final String utensils) {
+
+        final Map<String, JsonNode> map = new HashMap<>();
+        map.put("utensils", JsonNodeFactory.instance.textNode(utensils));
+
+        return CustomFieldsDraft.ofTypeKeyAndJson("custom-type-text-line-items", map);
     }
 
     private ShoppingListITUtils() {
