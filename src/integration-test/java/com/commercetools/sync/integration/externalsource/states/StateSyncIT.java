@@ -27,11 +27,6 @@ import io.sphere.sdk.states.commands.StateUpdateCommand;
 import io.sphere.sdk.states.expansion.StateExpansionModel;
 import io.sphere.sdk.states.queries.StateQuery;
 import io.sphere.sdk.states.queries.StateQueryBuilder;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,6 +38,10 @@ import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
@@ -138,14 +137,14 @@ class StateSyncIT {
         when(spyClient.execute(command))
             .thenReturn(exceptionallyCompletedFuture(new BadRequestException("test error message")));
 
-        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+        final StateSyncOptions stateSyncOptions = spy(StateSyncOptionsBuilder
             .of(spyClient)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorCallBackMessages.add(exception.getMessage());
                 errorCallBackExceptions.add(exception.getCause());
             })
-            .build();
-
+            .build());
+        when(stateSyncOptions.getCtpClient()).thenReturn(spyClient);
         final StateSync stateSync = new StateSync(stateSyncOptions);
 
         // test
