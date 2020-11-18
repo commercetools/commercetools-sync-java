@@ -110,7 +110,7 @@ class ShoppingListSyncIT {
         assertThat(shoppingListSyncStatistics).hasValues(2, 1, 0, 0);
         assertThat(shoppingListSyncStatistics
             .getReportMessage())
-            .isEqualTo("Summary: w shopping lists were processed in total "
+            .isEqualTo("Summary: 2 shopping lists were processed in total "
                 + "(1 created, 0 updated and 0 failed to sync).");
     }
 
