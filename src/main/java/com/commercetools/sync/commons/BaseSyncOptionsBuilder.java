@@ -74,7 +74,7 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
      * -> ids are cached which are required for resolving references. To keep the cache performant outdated entries are
      * evicted when a certain size is reached.
      *
-     * <p>This cache size is set to 100.000 by default.
+     * <p>This cache size is set to 10.000 by default.
      *
      * @param cacheSize long that indicates cache size of the key to id cache used for reference resolution. Has to be
      *                  positive or else will be ignored and default value of 100.000 would be used.

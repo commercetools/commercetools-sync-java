@@ -272,7 +272,10 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
             keyToIdCache.putAll(keyToIdMapper.apply(resource)));
 
         return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), keysRequestMapper.apply(keysNotCached),
-            resultConsumer).thenApply(result -> keyToIdCache.asMap());
+            resultConsumer).thenApply(result -> {
+                keyToIdCache.cleanUp();
+                return keyToIdCache.asMap();
+        });
     }
 
     /**
