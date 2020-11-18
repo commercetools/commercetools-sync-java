@@ -5,7 +5,6 @@ import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
 import com.commercetools.sync.services.ProductTypeService;
 import com.commercetools.sync.services.impl.ProductTypeServiceImpl;
-import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.errors.DuplicateFieldError;
@@ -14,7 +13,6 @@ import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeName;
 import io.sphere.sdk.producttypes.commands.updateactions.SetKey;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
-import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,7 +41,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class ProductTypeServiceImplIT {
     private ProductTypeService productTypeService;
@@ -168,35 +165,6 @@ class ProductTypeServiceImplIT {
         assertThat(matchingProductTypes).hasSize(1);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
-    }
-
-    @Test
-    void fetchMatchingProductTypesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
-        // Mock sphere client to return BadGatewayException on any request.
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(ProductTypeQuery.class)))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
-            .thenCallRealMethod();
-        final ProductTypeSyncOptions spyOptions =
-            ProductTypeSyncOptionsBuilder.of(spyClient)
-                                         .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                                             errorCallBackMessages.add(exception.getMessage());
-                                             errorCallBackExceptions.add(exception.getCause());
-                                         })
-                                         .build();
-
-        final ProductTypeService spyProductTypeService = new ProductTypeServiceImpl(spyOptions);
-
-
-        final Set<String> keys = new HashSet<>();
-        keys.add(OLD_PRODUCT_TYPE_KEY);
-
-        // test and assert
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-        assertThat(spyProductTypeService.fetchMatchingProductTypesByKeys(keys))
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(BadGatewayException.class);
     }
 
     @Test

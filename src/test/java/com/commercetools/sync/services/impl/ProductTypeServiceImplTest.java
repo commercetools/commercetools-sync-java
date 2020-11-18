@@ -6,7 +6,11 @@ import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
 import com.commercetools.sync.services.ProductTypeService;
 import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.producttypes.ProductType;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -66,6 +70,36 @@ class ProductTypeServiceImplTest {
 
         // assertions
         assertThat(result)
+                .failsWithin(1, TimeUnit.SECONDS)
+                .withThrowableOfType(ExecutionException.class)
+                .withCauseExactlyInstanceOf(BadGatewayException.class);
+    }
+
+    @Test
+    void fetchMatchingProductTypesByKeys_WithBadGateWayException_ShouldFail() {
+        final List<String> errorCallBackMessages = new ArrayList<>();
+        final List<Throwable> errorCallBackExceptions = new ArrayList<>();
+
+        // Mock sphere client to return BadGatewayException on any request.
+        final FakeClient<ProductType> fakeProductTypeClient = new FakeClient<>(new BadGatewayException());
+
+        final ProductTypeSyncOptions spyOptions =
+                ProductTypeSyncOptionsBuilder.of(fakeProductTypeClient)
+                        .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                            errorCallBackMessages.add(exception.getMessage());
+                            errorCallBackExceptions.add(exception.getCause());
+                        })
+                        .build();
+
+        final ProductTypeService spyProductTypeService = new ProductTypeServiceImpl(spyOptions);
+
+        final Set<String> keys = new HashSet<>();
+        keys.add("old_product_type_key");
+
+        // test and assert
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(spyProductTypeService.fetchMatchingProductTypesByKeys(keys))
                 .failsWithin(1, TimeUnit.SECONDS)
                 .withThrowableOfType(ExecutionException.class)
                 .withCauseExactlyInstanceOf(BadGatewayException.class);
