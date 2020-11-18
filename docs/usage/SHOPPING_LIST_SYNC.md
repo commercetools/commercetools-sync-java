@@ -1,13 +1,13 @@
 # Shopping List Sync
 
-Module used for importing/syncing Shopping Lists into a commercetools project. 
+The module used for importing/syncing Shopping Lists into a commercetools project. 
 It also provides utilities for generating update actions based on the comparison of a [ShoppingList](https://docs.commercetools.com/api/projects/shoppingLists#shoppinglist) 
 against a [ShoppingListDraft](https://docs.commercetools.com/api/projects/shoppingLists#shoppinglistdraft).
 
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+**Table of Contents**  
 
 - [Usage](#usage)
   - [Sync list of Shopping List Drafts](#sync-list-of-shopping-list-drafts)
@@ -35,20 +35,23 @@ If you have custom requirements for the sphere client creation, have a look into
 target CTP project. The shopping lists in the target project need to have the `key` fields set, otherwise they won't be 
 matched.
 
-3. Shopping list can have a reference to their [Type](https://docs.commercetools.com/api/projects/shoppingLists#set-custom-type) of their custom fields. 
-The `Type` references should be expanded with a key.
+3. The sync expects all variants of the supplied list of `LineItemDraft`s to have their `sku` fields set. Also,
+all the variants in the target project are expected to have the `sku` fields set.
+
+4. Every shopping list may have several references including `customer` and their shopping list `type`, line item `type` and text line item `type` with custom fields etc.
+All these referenced resources are matched by their `key`s. 
 Any reference that is not expanded will have its id in place and not replaced by the key will be considered as existing 
 resources on the target commercetools project and the library will issue an update/create an API request without reference
-resolution.
+resolution. Therefore, in order for the sync to resolve the actual ids of those references, those `key`s have to be supplied in the following way:
 
-     - When syncing from a source commercetools project, you can use [`mapToShoppingListDraft`](https://commercetools.github.io/commercetools-sync-java/v/2.4.0/com/commercetools/sync/shoppinglists/utils/ShoppingListReferenceResolutionUtils.html#mapToShoppingListDrafts-java.util.List-)
+     - When syncing from a source commercetools project, you can use [`mapToShoppingListDraft`](https://commercetools.github.io/commercetools-sync-java/v/3.0.0/com/commercetools/sync/shoppinglists/utils/ShoppingListReferenceResolutionUtils.html#mapToShoppingListDrafts-java.util.List-)
     method that maps from a `ShoppingList` to `ShoppingListDraft` to make them ready for reference resolution by the shopping list sync:
     
     ````java
     final List<ShoppingListDraft> shoppingListDrafts = ShoppingListReferenceResolutionUtils.mapToShoppingListDrafts(shoppingLists);
     ````
 
-4. After the `sphereClient` is set up, a `ShoppingListSyncOptions` should be built as follows:
+5. After the `sphereClient` is set up, a `ShoppingListSyncOptions` should be built as follows:
 ````java
 // instantiating a ShoppingListSyncOptions
 final ShoppingListSyncOptions shoppingListSyncOptions = ShoppingListSyncOptionsBuilder.of(sphereClient).build();
@@ -149,7 +152,7 @@ final ShoppingListSync shoppingListSync = new ShoppingListSync(shoppingListSyncO
 // execute the sync on your list of shopping lists
 CompletionStage<ShoppingListSyncStatistics> syncStatisticsStage = shoppingListSync.sync(shoppingListDrafts);
 ````
-The result of the completing the `syncStatisticsStage` in the previous code snippet contains a `ShoppingListSyncStatistics`
+The result of completing the `syncStatisticsStage` in the previous code snippet contains a `ShoppingListSyncStatistics`
 which contains all the stats of the sync process; which includes a report message, the total number of updated, created,
 failed, processed shopping lists, and the processing time of the last sync batch in different time units and in a
 human-readable format.
@@ -181,10 +184,14 @@ __Note__ The statistics object contains the processing time of the last batch on
  The library provides utility methods to compare specific fields of a `ShoppingList` and a new `ShoppingListDraft`, and builds the update action(s) as a result.
  One example is the `buildChangeNameUpdateAction` which compare shopping list names:
  ````java
- Optional<UpdateAction<ShoppingList>> updateAction = ShoppingListUpdateActionUtils.buildChangeNameAction(oldShoppingList, shoppingListDraft);
+ Optional<UpdateAction<ShoppingList>> updateAction = ShoppingListUpdateActionUtils.buildChangeNameAction(shoppingList, shoppingListDraft);
  ````
  
  More examples for particular update actions can be found in the test scenarios for [ShoppingListUpdateActionUtils](https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/shoppingLists/utils/ShoppingListUpdateActionUtilsTest.java).
  
  
 ## Caveats
+
+In commercetools shopping lists API, there is no update action to change the `addedAt` field of the `LineItem` and `TextLineItem`, 
+hereby commercetools-java-sync library will not update the `addedAt` value. 
+> For the new LineItem and TextLineItem the `addedAt` values will be added, if the draft has the value set.
