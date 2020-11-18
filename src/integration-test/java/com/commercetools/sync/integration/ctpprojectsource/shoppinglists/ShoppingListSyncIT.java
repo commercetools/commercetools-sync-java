@@ -7,11 +7,13 @@ import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
 import com.commercetools.sync.shoppinglists.helpers.ShoppingListSyncStatistics;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customers.Customer;
+import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.shoppinglists.ShoppingList;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
+import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeName;
 import io.sphere.sdk.shoppinglists.commands.updateactions.SetAnonymousId;
 import io.sphere.sdk.shoppinglists.commands.updateactions.SetCustomer;
 import org.junit.jupiter.api.AfterAll;
@@ -131,6 +133,7 @@ class ShoppingListSyncIT {
                 .map(shoppingListDraft ->
                     ShoppingListDraftBuilder
                         .of(shoppingListDraft)
+                        .name(LocalizedString.ofEnglish("second-shopping-list"))
                         .anonymousId(null)
                         .customer(ResourceIdentifier.ofKey(sampleCustomerJaneDoe.getKey()))
                         .build())
@@ -151,6 +154,7 @@ class ShoppingListSyncIT {
         //  "action" : "setAnonymousId"
         //}
         assertThat(updateActionList).containsExactly(
+            ChangeName.of(LocalizedString.ofEnglish("second-shopping-list")),
             SetAnonymousId.of(null),
             SetCustomer.of(Reference.of(Customer.referenceTypeId(), sampleCustomerJaneDoe.getId()))
         );
