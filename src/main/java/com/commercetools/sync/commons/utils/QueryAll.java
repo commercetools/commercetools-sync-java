@@ -42,7 +42,7 @@ final class QueryAll<T extends ResourceView, C extends QueryDsl<T, C>, S> {
     private static <T extends ResourceView, C extends QueryDsl<T, C>> QueryDsl<T, C> withDefaults(
         @Nonnull final QueryDsl<T, C> query, final long pageSize) {
 
-        final C withLimit = query.withLimit(pageSize);
+        final C withLimit = query.withLimit(pageSize).withFetchTotal(false);
         return !withLimit.sort().isEmpty() ? withLimit : withLimit.withSort(QuerySort.of("id asc"));
     }
 

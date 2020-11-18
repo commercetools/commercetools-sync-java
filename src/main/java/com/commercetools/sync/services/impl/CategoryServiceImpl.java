@@ -2,6 +2,8 @@ package com.commercetools.sync.services.impl;
 
 
 import com.commercetools.sync.categories.CategorySyncOptions;
+import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
+import com.commercetools.sync.commons.models.GraphQlQueryResources;
 import com.commercetools.sync.services.CategoryService;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -12,8 +14,6 @@ import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.categories.queries.CategoryQueryBuilder;
 import io.sphere.sdk.categories.queries.CategoryQueryModel;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.queries.QueryPredicate;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -22,14 +22,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
-import java.util.stream.Collectors;
 
-import static java.lang.String.format;
 import static java.util.Collections.singleton;
 
 /**
  * Implementation of CategoryService interface.
- * TODO: USE graphQL to get only keys. GITHUB ISSUE#84
  */
 public final class CategoryServiceImpl extends BaseServiceWithKey<CategoryDraft, Category, CategorySyncOptions,
     CategoryQuery, CategoryQueryModel, CategoryExpansionModel<Category>> implements CategoryService {
@@ -42,17 +39,8 @@ public final class CategoryServiceImpl extends BaseServiceWithKey<CategoryDraft,
     @Override
     public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> categoryKeys) {
         return cacheKeysToIds(
-                categoryKeys, keysNotCached -> CategoryQuery
-                    .of()
-                    .withPredicates(buildCategoryKeysQueryPredicate(keysNotCached)));
-    }
-
-    QueryPredicate<Category> buildCategoryKeysQueryPredicate(@Nonnull final Set<String> categoryKeys) {
-        final String keysQueryString = categoryKeys.stream()
-                                                   .filter(StringUtils::isNotBlank)
-                                                   .map(productKey -> format("\"%s\"", productKey))
-                                                   .collect(Collectors.joining(","));
-        return QueryPredicate.of(format("key in (%s)", keysQueryString));
+            categoryKeys,
+            keysNotCached -> new ResourceKeyIdGraphQlRequest(keysNotCached, GraphQlQueryResources.CATEGORIES));
     }
 
     @Nonnull

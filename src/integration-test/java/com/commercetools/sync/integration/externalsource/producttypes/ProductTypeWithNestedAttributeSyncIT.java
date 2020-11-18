@@ -1,6 +1,7 @@
 package com.commercetools.sync.integration.externalsource.producttypes;
 
 
+import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
 import com.commercetools.sync.producttypes.ProductTypeSync;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptions;
 import com.commercetools.sync.producttypes.ProductTypeSyncOptionsBuilder;
@@ -282,8 +283,8 @@ class ProductTypeWithNestedAttributeSyncIT {
 
         final SphereClient ctpClient = spy(CTP_TARGET_CLIENT);
         final BadGatewayException badGatewayException = new BadGatewayException();
+        when(ctpClient.execute(any(ResourceKeyIdGraphQlRequest.class))).thenCallRealMethod(); // should work on caching
         when(ctpClient.execute(any(ProductTypeQuery.class)))
-            .thenCallRealMethod() // should work on caching
             .thenCallRealMethod() // should work when fetching matching product types
             .thenCallRealMethod() // should work when second fetching matching product types
             .thenReturn(exceptionallyCompletedFuture(badGatewayException)) // fail on fetching during resolution
