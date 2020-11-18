@@ -275,7 +275,7 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
             resultConsumer).thenApply(result -> {
                 keyToIdCache.cleanUp();
                 return keyToIdCache.asMap();
-        });
+            });
     }
 
     /**
