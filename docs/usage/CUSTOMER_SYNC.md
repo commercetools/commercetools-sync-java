@@ -47,7 +47,7 @@ resolution.
     method that maps from a `Customer` to `CustomerDraft` to make them ready for reference resolution by the sync:
 
     ````java
-    final List<CustomerDraft> customerDrafts = CustomerReferenceResolutionUtils.mapToCustomertDrafts(customerDrafts);
+    final List<CustomerDraft> customerDrafts = CustomerReferenceResolutionUtils.mapToCustomertDrafts(customers);
     ````
 
 5. After the `sphereClient` is set up, a `CustomerSyncOptions` should be built as follows:
@@ -55,8 +55,6 @@ resolution.
 // instantiating a CustomerSyncOptions
 final CustomerSyncOptions customerSyncOptions = CustomerSyncOptionsBuilder.of(sphereClient).build();
 ````
-
-[More information about Sync Options](SYNC_OPTIONS.md).
 
 #### About SyncOptions
 `SyncOptions` is an object which provides a place for users to add certain configurations to customize the sync process.
@@ -88,7 +86,7 @@ following context about the warning message:
 
 * sync exception
 * customer draft from the source 
-* customer of the target project (only provided if an existing cart discount could be found)
+* customer of the target project (only provided if an existing customer could be found)
 
 ##### Example 
 ````java
@@ -124,7 +122,7 @@ final CustomerSyncOptions customerSyncOptions = CustomerSyncOptionsBuilder
 ````
 
 ##### 4. `beforeCreateCallback`
-During the sync process if a cart discount draft should be created, this callback can be used to intercept 
+During the sync process if a customer draft should be created, this callback can be used to intercept 
 the **_create_** request just before it is sent to commercetools platform.  It contains following information : 
 
  * customer draft that should be created
@@ -147,7 +145,7 @@ final CustomerSyncOptions customerSyncOptions =
 When all prerequisites are fulfilled, follow those steps to run the sync:
 
 ````java
-// instantiating a cart discount sync
+// instantiating a customer sync
 final CustomerSync customerSync = new CustomerSync(customerSyncOptions);
 
 // execute the sync on your list of customers
@@ -155,7 +153,7 @@ CompletionStage<CustomerSyncStatistics> syncStatisticsStage = customerSync.sync(
 ````
 The result of the completing the `syncStatisticsStage` in the previous code snippet contains a `CustomerSyncStatistics`
 which contains all the stats of the sync process; which includes a report message, the total number of updated, created,
-failed, processed cart discounts, and the processing time of the last sync batch in different time units and in a
+failed, processed customers, and the processing time of the last sync batch in different time units and in a
 human-readable format.
 
 ````java

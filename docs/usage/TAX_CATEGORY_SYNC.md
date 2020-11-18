@@ -102,7 +102,7 @@ final TaxCategorySyncOptions taxCategorySyncOptions =
 ````
 
 ##### 4. `beforeCreateCallback`
-During the sync process if a type draft should be created, this callback can be used to intercept 
+During the sync process if a tax category draft should be created, this callback can be used to intercept 
 the **_create_** request just before it is sent to commercetools platform.  It contains following information : 
 
  * tax category draft that should be created
@@ -117,8 +117,8 @@ from the target project on commecetools platform in a single request. Playing wi
 reduce processing speed. If it is not set, the default batch size is 50 for tax category sync.
 ##### Example
 ````java                         
-final TypeSyncOptions typeSyncOptions = 
-         TypeSyncOptionsBuilder.of(sphereClient).batchSize(30).build();
+final TaxCategorySyncOptions taxCategorySyncOptions = 
+         TaxCategorySyncOptionsBuilder.of(sphereClient).batchSize(30).build();
 ````
 
 #### Running the sync
