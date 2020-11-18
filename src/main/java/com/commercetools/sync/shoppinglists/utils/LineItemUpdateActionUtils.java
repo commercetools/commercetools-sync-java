@@ -131,7 +131,7 @@ public final class LineItemUpdateActionUtils {
 
                 syncOptions.applyErrorCallback(new SyncException(
                         format("LineItemDraft at position '%d' of the ShoppingListDraft with key '%s' has no SKU set. "
-                            + "Please make sure all line items have SKUs.", i, newShoppingList.getKey())),
+                            + "Please make sure all line item drafts have SKUs.", i, newShoppingList.getKey())),
                     oldShoppingList, newShoppingList, updateActions);
 
                 return emptyList();
