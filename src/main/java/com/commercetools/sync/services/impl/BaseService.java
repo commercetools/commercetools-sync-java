@@ -2,6 +2,8 @@ package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
+import com.commercetools.sync.commons.models.ResourceKeyId;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
@@ -210,11 +212,7 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
         @Nonnull final Function<U, String> keyMapper,
         @Nonnull final Function<Set<String>, Q> keysQueryMapper) {
 
-        final Set<String> keysNotCached = keys
-            .stream()
-            .filter(StringUtils::isNotBlank)
-            .filter(key -> !keyToIdCache.asMap().containsKey(key))
-            .collect(Collectors.toSet());
+        final Set<String> keysNotCached = getKeysNotCached(keys);
 
         if (keysNotCached.isEmpty()) {
             return CompletableFuture.completedFuture(keyToIdCache.asMap());
@@ -226,6 +224,51 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
         return CtpQueryUtils
             .queryAll(syncOptions.getCtpClient(), keysQueryMapper.apply(keysNotCached), pageConsumer)
             .thenApply(result -> keyToIdCache.asMap());
+    }
+
+    /**
+     * Given a set of keys this method collects all keys which aren't already contained in the cache
+     * {@code keyToIdCache}
+     *
+     * @param keys      {@link Set} of keys
+     * @return a {@link Set} of keys which aren't already contained in the cache or empty 
+     */
+    @Nonnull
+    private Set<String> getKeysNotCached(@Nonnull final Set<String> keys) {
+        return keys
+            .stream()
+            .filter(StringUtils::isNotBlank)
+            .filter(key -> !keyToIdCache.asMap().containsKey(key))
+            .collect(Collectors.toSet());
+    }
+
+    /**
+     * Given a set of keys this method caches a mapping of the keys to ids of such keys only for the keys which are
+     * not already in the cache.
+     *
+     * @param keys            keys to cache.
+     * @param keyToIdMapper       a function to get the key from the resource.
+     * @param keysRequestMapper function that accepts a set of keys which are not cached and maps it to a graphQL
+     *                          request object representing the graphQL query to CTP on such keys.
+     * @return a map of key to ids of the requested keys.
+     */
+    @Nonnull
+    CompletionStage<Map<String, String>> cacheKeysToIdsUsingGraphQl(
+        @Nonnull final Set<String> keys,
+        @Nonnull final Function<ResourceKeyId, Map<String,String>> keyToIdMapper,
+        @Nonnull final Function<Set<String>, ResourceKeyIdGraphQlRequest> keysRequestMapper) {
+
+        final Set<String> keysNotCached = getKeysNotCached(keys);
+
+        if (keysNotCached.isEmpty()) {
+            return CompletableFuture.completedFuture(keyToIdCache.asMap());
+        }
+
+        final Consumer<Set<ResourceKeyId>> resultConsumer = results -> results.forEach(resource ->
+            keyToIdCache.putAll(keyToIdMapper.apply(resource)));
+
+        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), keysRequestMapper.apply(keysNotCached),
+            resultConsumer).thenApply(result -> keyToIdCache.asMap());
     }
 
     /**

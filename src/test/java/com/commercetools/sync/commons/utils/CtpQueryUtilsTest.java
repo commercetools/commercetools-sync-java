@@ -1,5 +1,9 @@
 package com.commercetools.sync.commons.utils;
 
+import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
+import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
+import com.commercetools.sync.commons.models.GraphQlQueryResources;
+import com.commercetools.sync.commons.models.ResourceKeyId;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.categories.queries.CategoryQueryModel;
@@ -17,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -37,6 +42,8 @@ import static org.mockito.Mockito.when;
 class CtpQueryUtilsTest {
     @Captor
     private ArgumentCaptor<CategoryQuery> sphereRequestArgumentCaptor;
+    @Captor
+    private ArgumentCaptor<ResourceKeyIdGraphQlRequest> graphQlRequestArgumentCaptor;
 
     @BeforeEach
     void init() {
@@ -104,6 +111,53 @@ class CtpQueryUtilsTest {
                 getSecondPageQuery(keyPredicateFunction, categories, QuerySort.of("id desc")));
     }
 
+    @Test
+    void queryAll_WithGraphQlRequest_ShouldFetchPagedResult() {
+        // preparation
+        final SphereClient sphereClient = mock(SphereClient.class);
+        final List<ResourceKeyId> resultPage = IntStream
+            .range(0, 500)
+            .mapToObj(i -> mock(ResourceKeyId.class))
+            .collect(Collectors.toList());
+        final ResourceKeyId lastCategory = resultPage.get(resultPage.size() - 1);
+        when(lastCategory.getId()).thenReturn(UUID.randomUUID().toString());
+
+        final Set<ResourceKeyId> mockPage = resultPage.stream().collect(Collectors.toSet());
+
+        final ResourceKeyIdGraphQlResult pagedResourceKeyIdGraphQlResult = mock(ResourceKeyIdGraphQlResult.class);
+        when(pagedResourceKeyIdGraphQlResult.getResults())
+            .thenReturn(mockPage)
+            .thenReturn(mockPage)
+            .thenReturn(mockPage)
+            .thenReturn(mockPage)
+            .thenReturn(mockPage.stream().limit(10).collect(Collectors.toSet()));
+
+        when(sphereClient.execute(any())).thenReturn(completedFuture(pagedResourceKeyIdGraphQlResult));
+
+        final Set<String> keysToQuery = IntStream
+            .range(1, 2010)
+            .mapToObj(i -> "key" + i)
+            .collect(Collectors.toSet());
+
+        ResourceKeyIdGraphQlRequest resourceKeyIdGraphQlRequest =
+            new ResourceKeyIdGraphQlRequest(keysToQuery, GraphQlQueryResources.CATEGORIES);
+
+        // test
+        queryAll(sphereClient, resourceKeyIdGraphQlRequest, results -> identity())
+            .toCompletableFuture()
+            .join();
+
+        // assertions
+        verify(sphereClient, times(5)).execute(graphQlRequestArgumentCaptor.capture());
+        assertThat(graphQlRequestArgumentCaptor.getAllValues())
+            .containsExactly(
+                resourceKeyIdGraphQlRequest.withLimit(500),
+                resourceKeyIdGraphQlRequest.withLimit(500).withPredicate(format("id > \\\\\\\"%s\\\\\\\"", "id")),
+                resourceKeyIdGraphQlRequest.withLimit(500).withPredicate(format("id > \\\\\\\"%s\\\\\\\"", "id")),
+                resourceKeyIdGraphQlRequest.withLimit(500).withPredicate(format("id > \\\\\\\"%s\\\\\\\"", "id")),
+                resourceKeyIdGraphQlRequest.withLimit(500).withPredicate(format("id > \\\\\\\"%s\\\\\\\"", "id")));
+    }
+
     @Nonnull
     private List<Category> getMockCategoryPage() {
         final List<Category> categories = IntStream
@@ -134,7 +188,8 @@ class CtpQueryUtilsTest {
         return CategoryQuery
             .of()
             .plusPredicates(keyPredicate).withSort(sort)
-            .withLimit(500);
+            .withLimit(500)
+            .withFetchTotal(false);
     }
 
     @Nonnull
@@ -151,6 +206,7 @@ class CtpQueryUtilsTest {
             .of()
             .plusPredicates(keyPredicateFunction).withSort(sort)
             .plusPredicates(QueryPredicate.of(format("id > \"%s\"", lastCategoryIdInPage)))
-            .withLimit(500);
+            .withLimit(500)
+            .withFetchTotal(false);
     }
 }

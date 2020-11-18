@@ -1,11 +1,14 @@
 package com.commercetools.sync.commons.utils;
 
+import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
+import com.commercetools.sync.commons.models.ResourceKeyId;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.ResourceView;
 import io.sphere.sdk.queries.QueryDsl;
 
 import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -112,6 +115,27 @@ public final class CtpQueryUtils {
                  @Nonnull final Consumer<List<T>> pageConsumer, final int pageSize) {
         final QueryAll<T, C, Void> queryAll = QueryAll.of(client, query, pageSize);
         return queryAll.run(pageConsumer);
+    }
+
+    /**
+     * Creates a graphQL query to fetch all elements where keys matching given set of keys with pagination using a
+     * combination of limit and id sorting.
+     *
+     * <p>The method takes a {@link Consumer} that is applied on every page of the queried elements.
+     *
+     * <p>NOTE: This method fetches all paged results sequentially as opposed to fetching the pages in parallel.
+     *
+     * @param client            commercetools client
+     * @param resourceKeyIdGraphQlRequest    graphql query containing predicates and pagination limits
+     * @param pageConsumer      consumer applied on every page queried
+     * @return a completion stage containing void as a result after the consumer was applied on all pages.
+     */
+    @Nonnull
+    public static CompletionStage<Void> queryAll(@Nonnull final SphereClient client,
+                                                 @Nonnull final ResourceKeyIdGraphQlRequest resourceKeyIdGraphQlRequest,
+                                                 @Nonnull final Consumer<Set<ResourceKeyId>> pageConsumer) {
+        GraphQlQueryAll graphQlQueryAll = GraphQlQueryAll.of(client, resourceKeyIdGraphQlRequest, DEFAULT_PAGE_SIZE);
+        return graphQlQueryAll.run(pageConsumer);
     }
 
     private CtpQueryUtils() {
