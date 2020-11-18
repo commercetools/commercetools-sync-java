@@ -23,6 +23,7 @@ import io.sphere.sdk.shoppinglists.TextLineItem;
 import io.sphere.sdk.shoppinglists.TextLineItemDraft;
 import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
 import io.sphere.sdk.types.CustomFieldsDraft;
+import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -50,6 +51,7 @@ import static org.assertj.core.api.InstanceOfAssertFactories.THROWABLE;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -674,5 +676,48 @@ public class ShoppingListSyncTest {
             .singleElement(as(THROWABLE))
             .isExactlyInstanceOf(SyncException.class)
             .hasNoCause();
+    }
+
+    @Test
+    void sync_WithExceptionOnReferenceResolution_ShouldFailToUpdateAndIncreaseFailedCounter() {
+        // preparation
+        final ShoppingListService mockShoppingListService = mock(ShoppingListService.class);
+        final ShoppingList mockShoppingList = mock(ShoppingList.class);
+        when(mockShoppingList.getKey()).thenReturn("shoppingListKey");
+
+        when(mockShoppingListService.fetchMatchingShoppingListsByKeys(anySet()))
+            .thenReturn(completedFuture(singleton(mockShoppingList)));
+
+        final ShoppingListSyncOptions spySyncOptions = spy(syncOptions);
+        final TypeService typeService = mock(TypeService.class);
+        when(typeService.fetchCachedTypeId(anyString()))
+            .thenReturn(CompletableFutureUtils.failed(new SphereException("CTP error on fetch")));
+
+        final ShoppingListSync shoppingListSync = new ShoppingListSync(spySyncOptions, mockShoppingListService,
+            mock(CustomerService.class), typeService);
+
+        final ShoppingListDraft shoppingListDraft =
+            ShoppingListDraftBuilder.of(LocalizedString.ofEnglish("shoppingListName"))
+                                    .key("shoppingListKey")
+                                    .build();
+
+        //test
+        final ShoppingListSyncStatistics shoppingListSyncStatistics = shoppingListSync
+            .sync(singletonList(shoppingListDraft))
+            .toCompletableFuture()
+            .join();
+
+        // assertions
+        AssertionsForStatistics.assertThat(shoppingListSyncStatistics).hasValues(1, 0, 0, 1);
+
+        assertThat(errorMessages)
+            .hasSize(1)
+            .singleElement(as(STRING))
+            .contains("Failed to process the ShoppingListDraft with key:'shoppingListKey'");
+
+        assertThat(exceptions)
+            .hasSize(1)
+            .singleElement(as(THROWABLE))
+            .isExactlyInstanceOf(SyncException.class);
     }
 }
