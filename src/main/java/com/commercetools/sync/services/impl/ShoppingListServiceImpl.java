@@ -3,6 +3,7 @@ package com.commercetools.sync.services.impl;
 import com.commercetools.sync.services.ShoppingListService;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.expansion.ExpansionPath;
 import io.sphere.sdk.shoppinglists.ShoppingList;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.commands.ShoppingListCreateCommand;
@@ -47,10 +48,10 @@ public final class ShoppingListServiceImpl extends BaseService<ShoppingListDraft
     public CompletionStage<Set<ShoppingList>> fetchMatchingShoppingListsByKeys(@Nonnull final Set<String> keys) {
 
         return fetchMatchingResources(keys, ShoppingList::getKey,
-            () -> ShoppingListQueryBuilder
+            () -> ShoppingListQuery
                 .of()
                 .plusPredicates(queryModel -> queryModel.key().isIn(keys))
-                .build());
+                .plusExpansionPaths(ExpansionPath.of("lineItems[*].variant")));
     }
 
     @Nonnull
@@ -58,7 +59,9 @@ public final class ShoppingListServiceImpl extends BaseService<ShoppingListDraft
     public CompletionStage<Optional<ShoppingList>> fetchShoppingList(@Nullable final String key) {
 
         return fetchResource(key,
-            () -> ShoppingListQueryBuilder.of().plusPredicates(queryModel -> queryModel.key().is(key)).build());
+            () -> ShoppingListQuery.of()
+                                   .plusPredicates(queryModel -> queryModel.key().is(key))
+                                   .plusExpansionPaths(ExpansionPath.of("lineItems[*].variant")));
     }
 
     @Nonnull

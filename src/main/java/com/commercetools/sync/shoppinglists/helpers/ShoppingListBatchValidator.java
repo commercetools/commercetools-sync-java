@@ -16,17 +16,16 @@ import java.util.List;
 import java.util.Set;
 
 import static java.lang.String.format;
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 public class ShoppingListBatchValidator
     extends BaseBatchValidator<ShoppingListDraft, ShoppingListSyncOptions, ShoppingListSyncStatistics> {
 
-    static final String SHOPPING_LIST_DRAFT_KEY_NOT_SET = "ShoppingListDraft with name: %s doesn't have a key. "
+    public static final String SHOPPING_LIST_DRAFT_KEY_NOT_SET = "ShoppingListDraft with name: %s doesn't have a key. "
         + "Please make sure all shopping list drafts have keys.";
-    static final String SHOPPING_LIST_DRAFT_IS_NULL = "ShoppingListDraft is null.";
-    static final String SHOPPING_LIST_DRAFT_NAME_NOT_SET = "ShoppingListDraft with key: %s doesn't have a name. "
+    public static final String SHOPPING_LIST_DRAFT_IS_NULL = "ShoppingListDraft is null.";
+    public static final String SHOPPING_LIST_DRAFT_NAME_NOT_SET = "ShoppingListDraft with key: %s doesn't have a name. "
         + "Please make sure all shopping list drafts have names.";
     static final String LINE_ITEM_DRAFT_IS_NULL = "LineItemDraft at position '%d' of ShoppingListDraft "
         + "with key '%s' is null.";
@@ -96,7 +95,7 @@ public class ShoppingListBatchValidator
         } else {
             final List<String> draftErrors = getErrorsInAllLineItemsAndTextLineItems(shoppingListDraft);
             if (!draftErrors.isEmpty()) {
-                final String concatenatedErrors = draftErrors.stream().collect(joining(","));
+                final String concatenatedErrors = String.join(",", draftErrors);
                 this.handleError(concatenatedErrors);
             } else {
                 return true;
@@ -160,7 +159,7 @@ public class ShoppingListBatchValidator
         return errorMessages;
     }
 
-    private boolean isNullOrEmptyLocalizedString(@Nonnull final LocalizedString localizedString) {
+    private boolean isNullOrEmptyLocalizedString(@Nullable final LocalizedString localizedString) {
         return localizedString == null || localizedString.getLocales().isEmpty();
     }
 
@@ -186,11 +185,9 @@ public class ShoppingListBatchValidator
 
         shoppingListDraft
             .getLineItems()
-            .stream()
-            .forEach(lineItemDraft -> {
-                collectReferencedKeyFromCustomFieldsDraft(lineItemDraft.getCustom(),
-                    referencedKeys.typeKeys::add);
-            });
+            .forEach(lineItemDraft ->
+                collectReferencedKeyFromCustomFieldsDraft(
+                    lineItemDraft.getCustom(), referencedKeys.typeKeys::add));
     }
 
     private void collectReferencedKeysInTextLineItems(
@@ -203,11 +200,9 @@ public class ShoppingListBatchValidator
 
         shoppingListDraft
             .getTextLineItems()
-            .stream()
-            .forEach(textLineItemDraft -> {
-                collectReferencedKeyFromCustomFieldsDraft(textLineItemDraft.getCustom(),
-                    referencedKeys.typeKeys::add);
-            });
+            .forEach(textLineItemDraft ->
+                collectReferencedKeyFromCustomFieldsDraft(
+                    textLineItemDraft.getCustom(), referencedKeys.typeKeys::add));
     }
 
     public static class ReferencedKeys {

@@ -34,7 +34,7 @@ import static java.util.stream.Collectors.toList;
 public final class ShoppingListReferenceResolutionUtils {
 
     /**
-     * Returns an {@link List}&lt;{@link ShoppingListDraft}&gt; consisting of the results of applying the
+     * Returns a {@link List}&lt;{@link ShoppingListDraft}&gt; consisting of the results of applying the
      * mapping from {@link ShoppingList} to {@link ShoppingListDraft} with considering reference resolution.
      *
      * <table summary="Mapping of Reference fields for the reference resolution">
@@ -88,8 +88,52 @@ public final class ShoppingListReferenceResolutionUtils {
             .collect(toList());
     }
 
+    /**
+     * Returns a @link ShoppingListDraft} consisting of the result of applying the
+     * mapping from {@link ShoppingList} to {@link ShoppingListDraft} with considering reference resolution.
+     *
+     * <table summary="Mapping of Reference fields for the reference resolution">
+     *   <thead>
+     *     <tr>
+     *       <th>Reference field</th>
+     *       <th>from</th>
+     *       <th>to</th>
+     *     </tr>
+     *   </thead>
+     *   <tbody>
+     *     <tr>
+     *        <td>customer</td>
+     *        <td>{@link Reference}&lt;{@link Customer}&gt;</td>
+     *        <td>{@link ResourceIdentifier}&lt;{@link Customer}&gt;</td>
+     *     </tr>
+     *     <tr>
+     *        <td>custom.type</td>
+     *        <td>{@link Reference}&lt;{@link Type}&gt;</td>
+     *        <td>{@link ResourceIdentifier}&lt;{@link Type}&gt;</td>
+     *     </tr>
+     *     <tr>
+     *        <td>lineItems.custom.type</td>
+     *        <td>{@link Set}&lt;{@link Reference}&lt;{@link Type}&gt;&gt;</td>
+     *        <td>{@link Set}&lt;{@link ResourceIdentifier}&lt;{@link Type}&gt;&gt;</td>
+     *     </tr>
+     *     <tr>
+     *        <td>textLineItems.custom.type</td>
+     *        <td>{@link Set}&lt;{@link Reference}&lt;{@link Type}&gt;&gt;</td>
+     *        <td>{@link Set}&lt;{@link ResourceIdentifier}&lt;{@link Type}&gt;&gt;</td>
+     *     </tr>
+     *   </tbody>
+     * </table>
+     *
+     * <p><b>Note:</b> The aforementioned references should be expanded with a key.
+     * Any reference that is not expanded will have its id in place and not replaced by the key will be
+     * considered as existing resources on the target commercetools project and
+     * the library will issues an update/create API request without reference resolution.
+     *
+     * @param shoppingList the shopping list with expanded references.
+     * @return a {@link ShoppingListDraft} built from the supplied {@link ShoppingList}.
+     */
     @Nonnull
-    private static ShoppingListDraft mapToShoppingListDraft(@Nonnull final ShoppingList shoppingList) {
+    public static ShoppingListDraft mapToShoppingListDraft(@Nonnull final ShoppingList shoppingList) {
 
         return ShoppingListDraftBuilder
             .of(shoppingList.getName())

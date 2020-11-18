@@ -61,7 +61,7 @@ class ShoppingListSyncUtilsTest {
     }
 
     @Test
-    void buildActions_WithDifferentValues_ShouldReturnActions() {
+    void buildActions_WithDifferentValuesExceptLineItems_ShouldReturnActions() {
         final ShoppingList oldShoppingList = mock(ShoppingList.class);
         when(oldShoppingList.getSlug()).thenReturn(LocalizedString.of(LOCALE, "oldSlug"));
         when(oldShoppingList.getName()).thenReturn(LocalizedString.of(LOCALE, "oldName"));
