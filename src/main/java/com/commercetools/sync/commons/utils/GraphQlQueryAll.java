@@ -106,9 +106,7 @@ final class GraphQlQueryAll {
     }
 
     private void consumePageElements(@Nonnull final Set<ResourceKeyId> pageElements) {
-        if (pageConsumer != null) {
-            pageConsumer.accept(pageElements);
-        }
+        pageConsumer.accept(pageElements);
     }
 
     /**

@@ -17,7 +17,6 @@ import java.util.function.Consumer;
 
 import static io.sphere.sdk.queries.QueryExecutionUtils.DEFAULT_PAGE_SIZE;
 import static java.util.Collections.emptySet;
-import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -82,20 +81,4 @@ class GraphQlQueryAllTest {
         assertThat(resourceIds).isEmpty();
     }
 
-    @Test
-    void run_WithoutConsumer_ShouldSkipConsumer() {
-        //preparation
-        ResourceKeyId resourceKeyId = new ResourceKeyId("key", "id");
-        when(pagedGraphQlQueryResult.getResults()).thenReturn(singleton(resourceKeyId));
-
-        final GraphQlQueryAll query =
-            GraphQlQueryAll.of(sphereClient, mock(ResourceKeyIdGraphQlRequest.class), DEFAULT_PAGE_SIZE);
-        final List<String> resourceIds = new ArrayList<>();
-
-        //test
-        query.run(null).toCompletableFuture().join();
-
-        //assertions
-        assertThat(resourceIds).isEmpty();
-    }
 }
