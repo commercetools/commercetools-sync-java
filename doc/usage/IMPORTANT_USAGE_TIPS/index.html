@@ -391,18 +391,30 @@
           
           
 
+
+  <li class="md-nav__item">
+    <a href="../SHOPPING_LIST_SYNC/" title="ShoppingList Sync" class="md-nav__link">
+      ShoppingList Sync
+    </a>
+  </li>
+
+        
+          
+          
+          
+
   
 
 
   <li class="md-nav__item md-nav__item--active md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-12" type="checkbox" id="nav-2-12" checked>
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-13" type="checkbox" id="nav-2-13" checked>
     
-    <label class="md-nav__link" for="nav-2-12">
+    <label class="md-nav__link" for="nav-2-13">
       Advanced
     </label>
     <nav class="md-nav" data-md-component="collapsible" data-md-level="2">
-      <label class="md-nav__title" for="nav-2-12">
+      <label class="md-nav__title" for="nav-2-13">
         Advanced
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
@@ -453,8 +465,8 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#sphereclient-creation" class="md-nav__link">
-    SphereClient Creation
+  <a href="#customized-sphereclient-creation" class="md-nav__link">
+    Customized SphereClient Creation
   </a>
   
 </li>
@@ -493,7 +505,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/2.3.0/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/3.0.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -568,8 +580,8 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#sphereclient-creation" class="md-nav__link">
-    SphereClient Creation
+  <a href="#customized-sphereclient-creation" class="md-nav__link">
+    Customized SphereClient Creation
   </a>
   
 </li>
@@ -601,14 +613,14 @@
                 
                 
                 <h1 id="important-usage-tips">Important Usage Tips<a class="headerlink" href="#important-usage-tips" title="Permanent link">&para;</a></h1>
-<h4 id="sphereclient-creation"><code>SphereClient</code> Creation<a class="headerlink" href="#sphereclient-creation" title="Permanent link">&para;</a></h4>
-<p>It is an important responsibility of the user of the library to instantiate a <code>sphereClient</code> that does the following:</p>
+<h4 id="customized-sphereclient-creation">Customized <code>SphereClient</code> Creation<a class="headerlink" href="#customized-sphereclient-creation" title="Permanent link">&para;</a></h4>
+<p>When creating a customized <code>SphereClient</code> the following remarks should be considered:</p>
 <ul>
 <li>
-<p>Limits the number of concurrent requests done to CTP. This can be done by decorating the <code>sphereClient</code> with <a href="http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/QueueSphereClientDecorator.html">QueueSphereClientDecorator</a></p>
+<p>Limit the number of concurrent requests done to CTP. This can be done by decorating the <code>sphereClient</code> with <a href="http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/QueueSphereClientDecorator.html">QueueSphereClientDecorator</a></p>
 </li>
 <li>
-<p>Retries on 5xx errors with a retry strategy. This can be achieved by decorating the <code>sphereClient</code> with the <a href="http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html">RetrySphereClientDecorator</a></p>
+<p>Retry on 5xx errors with a retry strategy. This can be achieved by decorating the <code>sphereClient</code> with the <a href="http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/client/RetrySphereClientDecorator.html">RetrySphereClientDecorator</a></p>
 </li>
 </ul>
 <p>If you have no special requirements on the sphere client creation, then you can use the <code>ClientConfigurationUtils#createClient</code> 
@@ -631,7 +643,7 @@ used in a sequential fashion:
 By design, scaling the sync process should <strong>not</strong> be done by executing the batches themselves in parallel. However, it can be done either by:</p>
 <ul>
 <li>Changing the number of <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L116">max parallel requests</a> within the <code>sphereClient</code> configuration. It defines how many requests the client can execute in parallel.</li>
-<li>or changing the draft <a href="https://commercetools.github.io/commercetools-sync-java/v/2.3.0/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-">batch size</a>. It defines how many drafts can one batch contain.</li>
+<li>or changing the draft <a href="https://commercetools.github.io/commercetools-sync-java/v/3.0.0/com/commercetools/sync/commons/BaseSyncOptionsBuilder.html#batchSize-int-">batch size</a>. It defines how many drafts can one batch contain.</li>
 </ul>
 <p>The current overridable default <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45">configuration</a> of the <code>sphereClient</code> 
 is the recommended good balance for stability and performance for the sync process.</p>

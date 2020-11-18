@@ -390,15 +390,27 @@
           
 
 
+  <li class="md-nav__item">
+    <a href="../usage/SHOPPING_LIST_SYNC/" title="ShoppingList Sync" class="md-nav__link">
+      ShoppingList Sync
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
   <li class="md-nav__item md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-12" type="checkbox" id="nav-2-12">
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-13" type="checkbox" id="nav-2-13">
     
-    <label class="md-nav__link" for="nav-2-12">
+    <label class="md-nav__link" for="nav-2-13">
       Advanced
     </label>
     <nav class="md-nav" data-md-component="collapsible" data-md-level="2">
-      <label class="md-nav__title" for="nav-2-12">
+      <label class="md-nav__title" for="nav-2-13">
         Advanced
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
@@ -444,7 +456,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/2.3.0/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/3.0.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -481,6 +493,13 @@
   
     <label class="md-nav__title" for="__toc">Table of contents</label>
     <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#300-nov-18-2020" class="md-nav__link">
+    3.0.0 - Nov 18, 2020
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#230-oct-15-2020" class="md-nav__link">
@@ -822,6 +841,13 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#300-nov-18-2020" class="md-nav__link">
+    3.0.0 - Nov 18, 2020
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#230-oct-15-2020" class="md-nav__link">
     2.3.0 - Oct 15, 2020
   </a>
@@ -1141,12 +1167,47 @@
 
 -->
 
+<h3 id="300-nov-18-2020">3.0.0 - Nov 18, 2020<a class="headerlink" href="#300-nov-18-2020" title="Permanent link">&para;</a></h3>
+<p><a href="https://github.com/commercetools/commercetools-sync-java/compare/2.3.0...3.0.0">Commits</a> |
+<a href="https://commercetools.github.io/commercetools-sync-java/v/3.0.0/">Javadoc</a> |
+<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/3.0.0">Jar</a></p>
+<ul>
+<li>
+<p>🚧 <strong>Breaking Changes</strong> (1)</p>
+<ul>
+<li><strong>Product Sync</strong>: <code>ProductDraft.getState()</code> is changed from <code>Reference&lt;State&gt;</code> to <code>ResourceIdentifier&lt;State&gt;</code>, so as a library user you don't need to provide a key field in the id field of the Reference. (Now API and JVM SDK support <code>ResourceIdentifiers</code> and it supports id or key as a field). <a href="https://github.com/commercetools/commercetools-sync-java/pull/589">#589</a></li>
+</ul>
+</li>
+<li>
+<p>🐞 <strong>Bug Fixes</strong> (1)</p>
+<ul>
+<li><strong>Commons</strong> - Fixed a bug in the duration calculation of decorated retry sphere client <code>RetrySphereClientDecorator</code> created by <code>ClientConfigurationUtils</code>. <a href="https://github.com/commercetools/commercetools-sync-java/issues/610">#610</a></li>
+</ul>
+</li>
+<li>
+<p>🎉 <strong>New Features</strong> (4)</p>
+<ul>
+<li><strong>ShoppingList Sync</strong> - Added support for syncing shopping lists between ctp projects. <a href="https://github.com/commercetools/commercetools-sync-java/issues/594">#594</a></li>
+<li><strong>ShoppingList Sync</strong> - Introduced <code>ShoppingListSyncUtils</code> which calculates all needed update actions after comparing a <code>ShoppingList</code> and a <code>ShoppingListDraft</code>. <a href="https://github.com/commercetools/commercetools-sync-java/issues/594">#594</a></li>
+<li><strong>ShoppingList Sync</strong> - Introduced <code>ShoppingListUpdateActionUtils</code> which contains utils for calculating necessary update actions after comparing individual fields of a <code>ShoppingList</code> and a <code>ShoppingListDraft</code>. <a href="https://github.com/commercetools/commercetools-sync-java/issues/594">#594</a></li>
+<li><strong>ShoppingList Sync</strong> - Introduced <code>ShoppingListReferenceResolutionUtils</code> which resolves Type references from a ShoppingList to a ShoppingListDraft. <a href="https://github.com/commercetools/commercetools-sync-java/issues/594">#594</a></li>
+</ul>
+</li>
+<li>
+<p>🛠️ <strong>Dependency Updates</strong> (1)</p>
+<ul>
+<li><code>commercetools-jvm-sdk</code> <code>1.53.0</code> -&gt; <a href="http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_54_0"><code>1.54.0</code></a></li>
+<li><code>mockito-junit-jupiter</code> <code>3.5.13</code> -&gt;  <a href="https://github.com/mockito/mockito/releases/tag/v3.6.0"><code>3.6.0</code></a> </li>
+<li><code>org.assertj.assertj-core</code> <code>3.17.2</code> -&gt;  <a href="https://assertj.github.io/doc/#assertj-core-3-18-1-release-notes"><code>3.18.1</code></a></li>
+</ul>
+</li>
+</ul>
 <h3 id="230-oct-15-2020">2.3.0 - Oct 15, 2020<a class="headerlink" href="#230-oct-15-2020" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/2.2.1...2.3.0">Commits</a> |
 <a href="https://commercetools.github.io/commercetools-sync-java/v/2.3.0/">Javadoc</a> |
 <a href="https://bintray.com/commercetools/maven/commercetools-sync-java/2.3.0">Jar</a></p>
 <ul>
-<li>🎉 <strong>New Features</strong> (1)<ul>
+<li>🎉 <strong>New Features</strong> (4)<ul>
 <li><strong>Customer Sync</strong> - Added support for syncing customers between ctp projects. <a href="https://github.com/commercetools/commercetools-sync-java/issues/579">#579</a></li>
 <li><strong>Customer Sync</strong> - Introduced <code>CustomerSyncUtils</code> which calculates all needed update actions after comparing a <code>Customer</code> and a <code>CustomerDraft</code>. <a href="https://github.com/commercetools/commercetools-sync-java/issues/579">#579</a></li>
 <li><strong>Customer Sync</strong> - Introduced <code>CustomerUpdateActionUtils</code> which contains utils for calculating needed update actions after comparing individual fields of a <code>Customer</code> and a <code>CustomerDraft</code>. <a href="https://github.com/commercetools/commercetools-sync-java/issues/579">#579</a></li>

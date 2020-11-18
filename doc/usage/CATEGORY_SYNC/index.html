@@ -573,15 +573,27 @@
           
 
 
+  <li class="md-nav__item">
+    <a href="../SHOPPING_LIST_SYNC/" title="ShoppingList Sync" class="md-nav__link">
+      ShoppingList Sync
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
   <li class="md-nav__item md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-12" type="checkbox" id="nav-2-12">
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-13" type="checkbox" id="nav-2-13">
     
-    <label class="md-nav__link" for="nav-2-12">
+    <label class="md-nav__link" for="nav-2-13">
       Advanced
     </label>
     <nav class="md-nav" data-md-component="collapsible" data-md-level="2">
-      <label class="md-nav__title" for="nav-2-12">
+      <label class="md-nav__title" for="nav-2-13">
         Advanced
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
@@ -627,7 +639,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/2.3.0/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/3.0.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -899,6 +911,11 @@ against a <a href="https://docs.commercetools.com/http-api-projects-categories.h
 <h4 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h4>
 <ol>
 <li>
+<p>Create a <code>sphereClient</code>:
+Use the <a href="https://github.com/commercetools/commercetools-sync-java/blob/3.0.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45">ClientConfigurationUtils</a> which apply the best practices for <code>SphereClient</code> creation.
+If you have custom requirements for the sphere client creation, have a look into the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a>.</p>
+</li>
+<li>
 <p>The sync expects a list of <code>CategoryDraft</code>s that have their <code>key</code> fields set to be matched with
 categories in the target CTP project. Also, the categories in the target project are expected to have the <code>key</code> fields set,
 otherwise they won't be matched.</p>
@@ -909,13 +926,10 @@ These references are matched by their <code>key</code>s. Therefore, in order for
 actual ids of the references, their <code>key</code>s has to be supplied.</p>
 </li>
 <li>
-<p>When syncing from a source commercetools project, you can use <a href="https://commercetools.github.io/commercetools-sync-java/v/2.3.0/com/commercetools/sync/categories/utils/CategoryReferenceResolutionUtils.html#mapToCategoryDrafts-java.util.List-"><code>mapToCategoryDrafts</code></a>
+<p>When syncing from a source commercetools project, you can use <a href="https://commercetools.github.io/commercetools-sync-java/v/3.0.0/com/commercetools/sync/categories/utils/CategoryReferenceResolutionUtils.html#mapToCategoryDrafts-java.util.List-"><code>mapToCategoryDrafts</code></a>
      method that maps from a <code>Category</code> to <code>CategoryDraft</code> in order to make them ready for reference resolution by the sync:
      <div class="codehilite"><pre><span></span><code><span class="kd">final</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">CategoryDraft</span><span class="o">&gt;</span> <span class="n">categoryDrafts</span> <span class="o">=</span> <span class="n">CategoryReferenceResolutionUtils</span><span class="p">.</span><span class="na">mapToCategoryDrafts</span><span class="p">(</span><span class="n">categories</span><span class="p">);</span>
 </code></pre></div></p>
-</li>
-<li>
-<p>Create a <code>sphereClient</code> <a href="../IMPORTANT_USAGE_TIPS/#sphereclient-creation">as described here</a>.</p>
 </li>
 <li>
 <p>After the <code>sphereClient</code> is set up, a <code>CategorySyncOptions</code> should be built as follows: 

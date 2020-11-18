@@ -574,15 +574,27 @@
           
 
 
+  <li class="md-nav__item">
+    <a href="../SHOPPING_LIST_SYNC/" title="ShoppingList Sync" class="md-nav__link">
+      ShoppingList Sync
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
   <li class="md-nav__item md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-12" type="checkbox" id="nav-2-12">
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-13" type="checkbox" id="nav-2-13">
     
-    <label class="md-nav__link" for="nav-2-12">
+    <label class="md-nav__link" for="nav-2-13">
       Advanced
     </label>
     <nav class="md-nav" data-md-component="collapsible" data-md-level="2">
-      <label class="md-nav__title" for="nav-2-12">
+      <label class="md-nav__title" for="nav-2-13">
         Advanced
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
@@ -628,7 +640,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/2.3.0/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/3.0.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -903,6 +915,11 @@ against a <a href="https://docs.commercetools.com/http-api-projects-productTypes
 <h4 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h4>
 <ol>
 <li>
+<p>Create a <code>sphereClient</code>:
+Use the <a href="https://github.com/commercetools/commercetools-sync-java/blob/3.0.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45">ClientConfigurationUtils</a> which apply the best practices for <code>SphereClient</code> creation.
+If you have custom requirements for the sphere client creation, have a look into the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a>.</p>
+</li>
+<li>
 <p>The sync expects a list of <code>ProductTypeDraft</code>s that have their <code>key</code> fields set to be matched with
 product types in the target CTP project. Also, the product types in the target project are expected to have the <code>key</code>
 fields set, otherwise they won't be matched.</p>
@@ -915,16 +932,13 @@ references, those <code>key</code>s have to be supplied in the following way:</p
 <li>
 <p>Provide the <code>key</code> value on the <code>id</code> field of the reference. This means that calling <code>getId()</code> on the
 reference would return its <code>key</code>. </p>
-<p><strong>Note</strong>: When syncing from a source commercetools project, you can use <a href="https://commercetools.github.io/commercetools-sync-java/v/2.3.0/com/commercetools/sync/producttypes/utils/ProductTypeReferenceResolutionUtils.html#mapToProductTypeDrafts-java.util.List-"><code>mapToProductTypeDrafts</code></a></p>
+<p><strong>Note</strong>: When syncing from a source commercetools project, you can use <a href="https://commercetools.github.io/commercetools-sync-java/v/3.0.0 /com/commercetools/sync/producttypes/utils/ProductTypeReferenceResolutionUtils.html#mapToProductTypeDrafts-java.util.List-"><code>mapToProductTypeDrafts</code></a></p>
 <p>that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
  <div class="codehilite"><pre><span></span><code><span class="c1">// Puts the keys in the reference id fields to prepare for reference resolution</span>
 <span class="kd">final</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">ProductTypeDraft</span><span class="o">&gt;</span> <span class="n">productTypeDrafts</span> <span class="o">=</span> <span class="n">ProductTypeReferenceResolutionUtils</span><span class="p">.</span><span class="na">mapToProductTypeDrafts</span><span class="p">(</span><span class="n">productTypes</span><span class="p">);</span>
 </code></pre></div></p>
 </li>
 </ul>
-</li>
-<li>
-<p>Create a <code>sphereClient</code> <a href="../IMPORTANT_USAGE_TIPS/#sphereclient-creation">as described here</a>.</p>
 </li>
 <li>
 <p>After the <code>sphereClient</code> is setup, a <code>ProductTypeSyncOptions</code> should be built as follows:

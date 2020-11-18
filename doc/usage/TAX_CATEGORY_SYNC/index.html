@@ -560,15 +560,27 @@
           
 
 
+  <li class="md-nav__item">
+    <a href="../SHOPPING_LIST_SYNC/" title="ShoppingList Sync" class="md-nav__link">
+      ShoppingList Sync
+    </a>
+  </li>
+
+        
+          
+          
+          
+
+
   <li class="md-nav__item md-nav__item--nested">
     
-      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-12" type="checkbox" id="nav-2-12">
+      <input class="md-toggle md-nav__toggle" data-md-toggle="nav-2-13" type="checkbox" id="nav-2-13">
     
-    <label class="md-nav__link" for="nav-2-12">
+    <label class="md-nav__link" for="nav-2-13">
       Advanced
     </label>
     <nav class="md-nav" data-md-component="collapsible" data-md-level="2">
-      <label class="md-nav__title" for="nav-2-12">
+      <label class="md-nav__title" for="nav-2-13">
         Advanced
       </label>
       <ul class="md-nav__list" data-md-scrollfix>
@@ -614,7 +626,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/2.3.0/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/3.0.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -871,12 +883,14 @@ against a <a href="https://docs.commercetools.com/http-api-projects-taxCategorie
 <h4 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h4>
 <ol>
 <li>
+<p>Create a <code>sphereClient</code>:
+Use the <a href="https://github.com/commercetools/commercetools-sync-java/blob/3.0.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45">ClientConfigurationUtils</a> which apply the best practices for <code>SphereClient</code> creation.
+If you have custom requirements for the sphere client creation, have a look into the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a>.</p>
+</li>
+<li>
 <p>The sync expects a list of <code>TaxCategoryDraft</code>s that have their <code>key</code> fields set to be matched with
 tax categories in the target CTP project. Also, the tax categories in the target project are expected to have the <code>key</code>
 fields set, otherwise they won't be matched.</p>
-</li>
-<li>
-<p>Create a <code>sphereClient</code> <a href="../IMPORTANT_USAGE_TIPS/#sphereclient-creation">as described here</a>.</p>
 </li>
 <li>
 <p>After the <code>sphereClient</code> is set up, a <code>TaxCategorySyncOptions</code> should be be built as follows:
@@ -945,7 +959,7 @@ update actions array with custom actions or discard unwanted actions. The callba
 </code></pre></div>
 
 <h5 id="4-beforecreatecallback">4. <code>beforeCreateCallback</code><a class="headerlink" href="#4-beforecreatecallback" title="Permanent link">&para;</a></h5>
-<p>During the sync process if a type draft should be created, this callback can be used to intercept 
+<p>During the sync process if a tax category draft should be created, this callback can be used to intercept 
 the <strong><em>create</em></strong> request just before it is sent to commercetools platform.  It contains following information : </p>
 <ul>
 <li>tax category draft that should be created</li>
@@ -958,8 +972,8 @@ algorithm accumulates up to <code>batchSize</code> resources from the input list
 from the target project on commecetools platform in a single request. Playing with this option can slightly improve or 
 reduce processing speed. If it is not set, the default batch size is 50 for tax category sync.</p>
 <h5 id="example_3">Example<a class="headerlink" href="#example_3" title="Permanent link">&para;</a></h5>
-<div class="codehilite"><pre><span></span><code><span class="kd">final</span> <span class="n">TypeSyncOptions</span> <span class="n">typeSyncOptions</span> <span class="o">=</span> 
-         <span class="n">TypeSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">batchSize</span><span class="p">(</span><span class="mi">30</span><span class="p">).</span><span class="na">build</span><span class="p">();</span>
+<div class="codehilite"><pre><span></span><code><span class="kd">final</span> <span class="n">TaxCategorySyncOptions</span> <span class="n">taxCategorySyncOptions</span> <span class="o">=</span> 
+         <span class="n">TaxCategorySyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">batchSize</span><span class="p">(</span><span class="mi">30</span><span class="p">).</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
 
 <h4 id="running-the-sync">Running the sync<a class="headerlink" href="#running-the-sync" title="Permanent link">&para;</a></h4>
