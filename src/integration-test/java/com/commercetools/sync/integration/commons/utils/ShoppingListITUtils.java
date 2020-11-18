@@ -209,10 +209,11 @@ public final class ShoppingListITUtils {
             .of(productType,
                 LocalizedString.ofEnglish("product1"),
                 LocalizedString.ofEnglish("product1"),
-                ProductVariantDraftBuilder.of().sku("SKU-1").build())
+                ProductVariantDraftBuilder.of().sku("SKU-1").key("variant1").build())
+            .key("product-1-sample-carrot-cake")
             .variants(asList(
-                ProductVariantDraftBuilder.of().sku("SKU-2").build(),
-                ProductVariantDraftBuilder.of().sku("SKU-3").build()))
+                ProductVariantDraftBuilder.of().sku("SKU-2").key("variant2").build(),
+                ProductVariantDraftBuilder.of().sku("SKU-3").key("variant3").build()))
             .publish(true)
             .build();
 
@@ -220,10 +221,11 @@ public final class ShoppingListITUtils {
             .of(productType,
                 LocalizedString.ofEnglish("product2"),
                 LocalizedString.ofEnglish("product2"),
-                ProductVariantDraftBuilder.of().sku("SKU-4").build())
+                ProductVariantDraftBuilder.of().sku("SKU-4").key("variant4").build())
+            .key("product-2-sample-carrot-cake")
             .variants(asList(
-                ProductVariantDraftBuilder.of().sku("SKU-5").build(),
-                ProductVariantDraftBuilder.of().sku("SKU-6").build()))
+                ProductVariantDraftBuilder.of().sku("SKU-5").key("variant5").build(),
+                ProductVariantDraftBuilder.of().sku("SKU-6").key("variant6").build()))
             .publish(true)
             .build();
 
