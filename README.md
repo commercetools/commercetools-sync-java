@@ -103,7 +103,3 @@ libraryDependencies += "com.commercetools" % "commercetools-sync-java" % "3.0.0"
 ````xml
 <dependency org="com.commercetools" name="commercetools-sync-java" rev="3.0.0"/>
 ````
-
-
-## Roadmap
-https://github.com/commercetools/commercetools-sync-java/milestones
