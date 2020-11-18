@@ -10,9 +10,6 @@ import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateDraft;
 import io.sphere.sdk.states.StateDraftBuilder;
 import io.sphere.sdk.states.StateType;
-import io.sphere.sdk.states.queries.StateQuery;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletionException;
+import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static java.util.Arrays.asList;
@@ -111,13 +109,13 @@ class StateSyncTest {
         // assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
+            .singleElement().satisfies(message ->
                 assertThat(message).contains("Failed to build a cache of keys to ids.")
             );
 
         assertThat(exceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> {
+            .singleElement().satisfies(throwable -> {
                 assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
                 assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
             });
@@ -136,9 +134,6 @@ class StateSyncTest {
         final List<Throwable> exceptions = new ArrayList<>();
 
         final SphereClient mockClient = mock(SphereClient.class);
-        when(mockClient.execute(any(StateQuery.class)))
-                .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
-
         final StateSyncOptions syncOptions = StateSyncOptionsBuilder
             .of(mockClient)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
@@ -147,11 +142,12 @@ class StateSyncTest {
             })
             .build();
 
-        final StateService stateService = spy(new StateServiceImpl(syncOptions));
+        final StateService stateService = mock(StateService.class);
         final Map<String, String> keyToIds = new HashMap<>();
         keyToIds.put(stateDraft.getKey(), UUID.randomUUID().toString());
         when(stateService.cacheKeysToIds(anySet())).thenReturn(completedFuture(keyToIds));
-
+        when(stateService.fetchMatchingStatesByKeysWithTransitions(anySet()))
+                .thenReturn(supplyAsync(() -> { throw new CompletionException(new SphereException()); }));
         final StateSync stateSync = new StateSync(syncOptions, stateService);
 
         // test
@@ -162,13 +158,13 @@ class StateSyncTest {
         // assertions
         assertThat(errorMessages)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(message ->
+                .singleElement().satisfies(message ->
                         assertThat(message).contains("Failed to fetch existing states")
             );
 
         assertThat(exceptions)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(throwable -> {
+                .singleElement().satisfies(throwable -> {
                     assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
                     assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
                 });
