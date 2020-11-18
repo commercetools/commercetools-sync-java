@@ -1,7 +1,6 @@
 package com.commercetools.sync.integration.ctpprojectsource.shoppinglists;
 
 import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
-import com.commercetools.sync.integration.commons.utils.CategoryITUtils;
 import com.commercetools.sync.shoppinglists.ShoppingListSync;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
@@ -44,9 +43,6 @@ class ShoppingListSyncIT {
 
     @BeforeEach
     void setup() {
-        CategoryITUtils.deleteAllCategories(CTP_SOURCE_CLIENT);
-        CategoryITUtils.deleteAllCategories(CTP_TARGET_CLIENT);
-
         deleteShoppingListSyncTestDataFromProjects();
 
         createSampleShoppingListCarrotCake(CTP_SOURCE_CLIENT);
