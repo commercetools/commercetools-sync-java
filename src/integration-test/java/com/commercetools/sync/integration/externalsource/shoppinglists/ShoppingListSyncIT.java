@@ -140,6 +140,11 @@ class ShoppingListSyncIT {
         assertThat(shoppingListSyncStatistics).hasValues(1, 0, 1, 0);
     }
 
+
+    /**
+     * To understand the reasoning behind the ordering changes, it would be useful to check
+     * `docs/adr/0002-shopping-lists-lineitem-and-textlineitem-update-actions.md`
+     */
     @Nonnull
     private ShoppingListDraft prepareUpdatedDraft() {
         final List<LineItemDraft> newLineItemDrafts = new ArrayList<>();
