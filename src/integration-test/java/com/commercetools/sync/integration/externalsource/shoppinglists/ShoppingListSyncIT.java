@@ -6,6 +6,7 @@ import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
 import com.commercetools.sync.shoppinglists.commands.updateactions.AddLineItemWithSku;
 import com.commercetools.sync.shoppinglists.commands.updateactions.AddTextLineItemWithAddedAt;
 import com.commercetools.sync.shoppinglists.helpers.ShoppingListSyncStatistics;
+import com.commercetools.sync.shoppinglists.utils.ShoppingListReferenceResolutionUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.commands.UpdateAction;
@@ -51,7 +52,9 @@ import static com.commercetools.sync.integration.commons.utils.ShoppingListITUti
 import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.createSampleShoppingListCarrotCake;
 import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.deleteShoppingListTestData;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.shoppinglists.utils.ShoppingListReferenceResolutionUtils.buildShoppingListQuery;
 import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ShoppingListSyncIT {
@@ -138,8 +141,13 @@ class ShoppingListSyncIT {
         assertUpdateActions();
 
         assertThat(shoppingListSyncStatistics).hasValues(1, 0, 1, 0);
-    }
+        assertThat(shoppingListSyncStatistics
+            .getReportMessage())
+            .isEqualTo("Summary: 1 shopping lists were processed in total "
+                + "(0 created, 1 updated and 0 failed to sync).");
 
+        assertShoppingListUpdatedCorrectly(modifiedShoppingListDraft);
+    }
 
     /**
      * To understand the reasoning behind the ordering changes, it would be useful to check
@@ -292,5 +300,55 @@ class ShoppingListSyncIT {
                 .addedAt(ZonedDateTime.parse("2020-11-06T10:00:00.000Z"))
                 .build())
         );
+    }
+
+    private void assertShoppingListUpdatedCorrectly(@Nonnull final ShoppingListDraft expectedShoppingListDraft) {
+
+        final List<ShoppingList> shoppingLists = CTP_TARGET_CLIENT
+            .execute(buildShoppingListQuery())
+            .toCompletableFuture()
+            .join()
+            .getResults();
+
+        final List<ShoppingListDraft> shoppingListDrafts =
+            ShoppingListReferenceResolutionUtils.mapToShoppingListDrafts(shoppingLists);
+
+        assertThat(
+            ShoppingListDraftBuilder
+                .of(shoppingListDrafts.get(0))
+                .lineItems(setNullToAddedAtValuesForLineItems(shoppingListDrafts.get(0).getLineItems()))
+                .textLineItems(setNullToAddedAtValuesForTextLineItems(shoppingListDrafts.get(0).getTextLineItems()))
+                .build())
+            .isEqualTo(
+                ShoppingListDraftBuilder
+                    .of(expectedShoppingListDraft)
+                    .lineItems(setNullToAddedAtValuesForLineItems(expectedShoppingListDraft.getLineItems()))
+                    .textLineItems(setNullToAddedAtValuesForTextLineItems(expectedShoppingListDraft.getTextLineItems()))
+                    .build()
+            );
+    }
+
+    @Nonnull
+    private List<TextLineItemDraft> setNullToAddedAtValuesForTextLineItems(
+        @Nonnull final List<TextLineItemDraft> textLineItemDrafts) {
+
+        return textLineItemDrafts.stream()
+                                 .map(textLineItemDraft -> TextLineItemDraftBuilder
+                                     .of(textLineItemDraft)
+                                     .addedAt(null)
+                                     .build())
+                                 .collect(toList());
+    }
+
+    @Nonnull
+    private List<LineItemDraft> setNullToAddedAtValuesForLineItems(
+        @Nonnull final List<LineItemDraft> lineItemDrafts) {
+
+        return lineItemDrafts.stream()
+                             .map(lineItemDraft -> LineItemDraftBuilder
+                                 .of(lineItemDraft)
+                                 .addedAt(null)
+                                 .build())
+                             .collect(toList());
     }
 }
