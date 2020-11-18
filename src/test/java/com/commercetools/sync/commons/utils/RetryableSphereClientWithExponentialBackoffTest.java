@@ -32,6 +32,7 @@ import static com.commercetools.sync.commons.utils.RetryableSphereClientWithExpo
 import static io.sphere.sdk.client.TestDoubleSphereClientFactory.createHttpTestDouble;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -61,6 +62,40 @@ class RetryableSphereClientWithExponentialBackoffTest {
                 .build();
 
         assertThat(sphereClient.getConfig().getProjectKey()).isEqualTo("project-key");
+    }
+
+    @Test
+    void of_WithInitialDelayGreaterThanMaxDelay_ThrowsIllegalArgumentException() {
+        final SphereClientConfig clientConfig =
+            SphereClientConfig.of("project-key", "client-id", "client-secret");
+
+        assertThatThrownBy(() -> RetryableSphereClientWithExponentialBackoff
+            .of(clientConfig)
+            .withMaxDelay(1)
+            .withInitialDelay(2).build())
+            .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void of_WithMaxRetryAttemptLessThanZero_ThrowsIllegalArgumentException() {
+        final SphereClientConfig clientConfig =
+            SphereClientConfig.of("project-key", "client-id", "client-secret");
+
+        assertThatThrownBy(() -> RetryableSphereClientWithExponentialBackoff
+            .of(clientConfig)
+            .withMaxRetryAttempt(-1).build())
+            .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void of_WithMaxParallelRequestsLessThanOne_ThrowsIllegalArgumentException() {
+        final SphereClientConfig clientConfig =
+            SphereClientConfig.of("project-key", "client-id", "client-secret");
+
+        assertThatThrownBy(() -> RetryableSphereClientWithExponentialBackoff
+            .of(clientConfig)
+            .withMaxParallelRequests(0).build())
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
