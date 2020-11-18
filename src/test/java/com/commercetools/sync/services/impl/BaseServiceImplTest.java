@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
@@ -303,7 +304,7 @@ class BaseServiceImplTest {
         when(client.execute(any()))
             .thenReturn(completedFuture(pagedQueryResult1))
             .thenReturn(completedFuture(pagedQueryResult2));
-        service.fetchMatchingProductsByKeys(singleton("key-1"));
+        service.fetchMatchingProductsByKeys(Arrays.asList("key-1", "key-2").stream().collect(Collectors.toSet()));
         service.getIdFromCacheOrFetch("key-1"); //access the first added cache entry
 
         //test

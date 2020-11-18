@@ -70,9 +70,9 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
     }
 
     /**
-     * Set option that indicates cache size for sync process. To increase performance during the sync some resource keys / ids
-     * are cached which are required for resolving references. To keep the cache performant old entries are evicted
-     * when a certain size is reached.
+     * Set option that indicates cache size for sync process. To increase performance during the sync some resource keys
+     * -> ids are cached which are required for resolving references. To keep the cache performant outdated entries are
+     * evicted when a certain size is reached.
      *
      * <p>This cache size is set to 100.000 by default.
      *

@@ -44,6 +44,7 @@ class CustomObjectSyncOptionsBuilderTest {
         assertThat(customObjectSyncOptions.getWarningCallback()).isNull();
         assertThat(customObjectSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
         assertThat(customObjectSyncOptions.getBatchSize()).isEqualTo(CustomObjectSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
+        assertThat(customObjectSyncOptions.getCacheSize()).isEqualTo(10_000);
     }
 
     @Test
@@ -184,6 +185,29 @@ class CustomObjectSyncOptionsBuilderTest {
         final Optional<CustomObjectDraft<JsonNode>> filteredDraft =
             customObjectSyncOptions.applyBeforeCreateCallback(resourceDraft);
         assertThat(filteredDraft).isEmpty();
+    }
+
+    @Test
+    void cacheSize_WithPositiveValue_ShouldSetCacheSize() {
+        final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder.of(CTP_CLIENT)
+                                                                                              .cacheSize(10)
+                                                                                              .build();
+        assertThat(customObjectSyncOptions.getCacheSize()).isEqualTo(10);
+    }
+
+    @Test
+    void cacheSize_WithZeroOrNegativeValue_ShouldFallBackToDefaultValue() {
+        final CustomObjectSyncOptions customObjectSyncOptionsWithZeroCacheSize =
+            CustomObjectSyncOptionsBuilder.of(CTP_CLIENT)
+                                          .cacheSize(0)
+                                          .build();
+        assertThat(customObjectSyncOptionsWithZeroCacheSize.getCacheSize()).isEqualTo(10_000);
+
+        final CustomObjectSyncOptions customObjectSyncOptionsWithNegativeCacheSize = CustomObjectSyncOptionsBuilder
+            .of(CTP_CLIENT)
+            .cacheSize(-100)
+            .build();
+        assertThat(customObjectSyncOptionsWithNegativeCacheSize.getCacheSize()).isEqualTo(10_000);
     }
 
 }

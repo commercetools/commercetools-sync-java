@@ -226,7 +226,10 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
 
         return CtpQueryUtils
             .queryAll(syncOptions.getCtpClient(), keysQueryMapper.apply(keysNotCached), pageConsumer)
-            .thenApply(result -> {keyToIdCache.cleanUp(); return keyToIdCache.asMap();});
+            .thenApply(result -> {
+                keyToIdCache.cleanUp();
+                return keyToIdCache.asMap();
+            });
     }
 
     /**
@@ -255,7 +258,10 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
             .thenApply(fetchedResources -> fetchedResources
                 .stream()
                 .flatMap(List::stream)
-                .peek(resource -> keyToIdCache.put(keyMapper.apply(resource), resource.getId()))
+                .peek(resource -> {
+                    keyToIdCache.put(keyMapper.apply(resource), resource.getId());
+                    keyToIdCache.cleanUp();
+                })
                 .collect(Collectors.toSet()));
     }
 
@@ -286,6 +292,7 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
                 .head()
                 .map(resource -> {
                     keyToIdCache.put(key, resource.getId());
+                    keyToIdCache.cleanUp();
                     return resource;
                 }));
     }
@@ -304,6 +311,7 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
             .handle(((resource, exception) -> {
                 if (exception == null) {
                     keyToIdCache.put(draftKey, resource.getId());
+                    keyToIdCache.cleanUp();
                     return Optional.of(resource);
                 } else {
                     syncOptions.applyErrorCallback(

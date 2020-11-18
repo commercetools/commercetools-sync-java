@@ -50,6 +50,7 @@ class ProductSyncOptionsBuilderTest {
         assertThat(productSyncOptions.getWarningCallback()).isNull();
         assertThat(productSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
         assertThat(productSyncOptions.getBatchSize()).isEqualTo(ProductSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
+        assertThat(productSyncOptions.getCacheSize()).isEqualTo(10_000);
     }
 
     @Test
@@ -263,5 +264,27 @@ class ProductSyncOptionsBuilderTest {
         final Optional<ProductDraft> filteredDraft = productSyncOptions.applyBeforeCreateCallback(resourceDraft);
 
         assertThat(filteredDraft).isEmpty();
+    }
+
+    @Test
+    void cacheSize_WithPositiveValue_ShouldSetCacheSize() {
+        final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(CTP_CLIENT)
+                                                                               .cacheSize(10)
+                                                                               .build();
+        assertThat(productSyncOptions.getCacheSize()).isEqualTo(10);
+    }
+
+    @Test
+    void cacheSize_WithZeroOrNegativeValue_ShouldFallBackToDefaultValue() {
+        final ProductSyncOptions productSyncOptionsWithZeroCacheSize = ProductSyncOptionsBuilder.of(CTP_CLIENT)
+                                                                                                .cacheSize(0)
+                                                                                                .build();
+        assertThat(productSyncOptionsWithZeroCacheSize.getCacheSize()).isEqualTo(10_000);
+
+        final ProductSyncOptions productSyncOptionsWithNegativeCacheSize = ProductSyncOptionsBuilder
+            .of(CTP_CLIENT)
+            .cacheSize(-100)
+            .build();
+        assertThat(productSyncOptionsWithNegativeCacheSize.getCacheSize()).isEqualTo(10_000);
     }
 }
