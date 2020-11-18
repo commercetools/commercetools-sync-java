@@ -3,7 +3,7 @@ plugins {
     id 'org.ajoberstar.git-publish' version '3.0.0'
     id 'com.adarshr.test-logger' version '2.1.1'
     id 'org.ajoberstar.grgit' version '4.1.0'
-    id "com.github.ben-manes.versions" version '0.34.0'
+    id "com.github.ben-manes.versions" version '0.36.0'
     id 'ru.vyarus.mkdocs' version '2.0.1'
 }
 
@@ -11,7 +11,7 @@ ext{
     commercetoolsJvmSdkVersion = '1.54.0'
     mockitoJunitJupiterVersion = '3.6.0'
     jupiterApiVersion = '5.7.0'
-    assertjVersion = '3.18.0'
+    assertjVersion = '3.18.1'
     checkstyleVersion = '8.2'
     pmdVersion = '6.14.0'
     jacocoVersion = '0.8.4'

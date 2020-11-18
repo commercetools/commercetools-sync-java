@@ -34,7 +34,6 @@ import io.sphere.sdk.taxcategories.TaxCategory;
 import io.sphere.sdk.types.CustomFields;
 import io.sphere.sdk.types.Type;
 
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.text.DecimalFormat;

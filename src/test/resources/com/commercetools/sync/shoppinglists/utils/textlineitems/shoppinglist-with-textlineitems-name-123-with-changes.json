@@ -1,0 +1,180 @@
+{
+  "key": "shoppinglist-with-textlineitems-name-123-with-changes",
+  "name": {
+    "en": "newName"
+  },
+  "slug": {
+    "en": "newSlug"
+  },
+  "description": {
+    "en": "newDescription"
+  },
+  "anonymousId": "newAnonymousId",
+  "lineItems": [],
+  "textLineItems": [
+    {
+      "id": "text_line_item_id_1",
+      "name": {
+        "de": "newName1-DE",
+        "en": "newName1-EN"
+      },
+      "description": {
+        "de": "newDesc1-DE",
+        "en": "newDesc1-EN"
+      },
+      "quantity": 2,
+      "custom": {
+        "type": {
+          "typeId": "type",
+          "id": "custom_type_id",
+          "obj": {
+            "id": "custom_type_id",
+            "key": "custom-type-for-shoppinglists",
+            "name": {
+              "en": "custom-type-for-shoppinglists"
+            },
+            "description": {
+              "en": "custom-type-for-shoppinglists"
+            },
+            "resourceTypeIds": [
+              "line-item",
+              "shopping-list",
+              "shopping-list-text-line-item"
+            ],
+            "fieldDefinitions": [
+              {
+                "name": "textField",
+                "label": {
+                  "en": "textField"
+                },
+                "required": false,
+                "type": {
+                  "name": "String"
+                },
+                "inputHint": "SingleLine"
+              }
+            ]
+          }
+        },
+        "fields": {
+          "textField": "newText1"
+        }
+      },
+      "addedAt": "2020-12-03T10:00:00.000Z"
+    },
+    {
+      "id": "text_line_item_id_2",
+      "name": {
+        "de": "newName2-DE",
+        "en": "newName2-EN"
+      },
+      "description": {
+        "de": "newDesc2-DE",
+        "en": "newDesc2-EN"
+      },
+      "quantity": 4,
+      "custom": {
+        "type": {
+          "typeId": "type",
+          "id": "custom_type_id",
+          "obj": {
+            "id": "custom_type_id",
+            "key": "custom-type-for-shoppinglists",
+            "name": {
+              "en": "custom-type-for-shoppinglists"
+            },
+            "description": {
+              "en": "custom-type-for-shoppinglists"
+            },
+            "resourceTypeIds": [
+              "line-item",
+              "shopping-list",
+              "shopping-list-text-line-item"
+            ],
+            "fieldDefinitions": [
+              {
+                "name": "textField",
+                "label": {
+                  "en": "textField"
+                },
+                "required": false,
+                "type": {
+                  "name": "String"
+                },
+                "inputHint": "SingleLine"
+              }
+            ]
+          }
+        },
+        "fields": {
+          "textField": "newText2"
+        }
+      },
+      "addedAt": "2020-12-04T10:00:00.000Z"
+    },
+    {
+      "id": "text_line_item_id_3",
+      "name": {
+        "de": "newName3-DE",
+        "en": "newName3-EN"
+      },
+      "description": {
+        "de": "newDesc3-DE",
+        "en": "newDesc3-EN"
+      },
+      "quantity": 6,
+      "custom": {
+        "type": {
+          "typeId": "type",
+          "id": "custom_type_id",
+          "obj": {
+            "id": "custom_type_id",
+            "key": "custom-type-for-shoppinglists",
+            "name": {
+              "en": "custom-type-for-shoppinglists"
+            },
+            "description": {
+              "en": "custom-type-for-shoppinglists"
+            },
+            "resourceTypeIds": [
+              "line-item",
+              "shopping-list",
+              "shopping-list-text-line-item"
+            ],
+            "fieldDefinitions": [
+              {
+                "name": "textField",
+                "label": {
+                  "en": "textField"
+                },
+                "required": false,
+                "type": {
+                  "name": "String"
+                },
+                "inputHint": "SingleLine"
+              }
+            ]
+          }
+        },
+        "fields": {
+          "textField": "newText3"
+        }
+      },
+      "addedAt": "2020-12-05T10:00:00.000Z"
+    }
+  ],
+  "customer": {
+    "typeId": "customer",
+    "id": "customer_id_2"
+  },
+  "custom": {
+    "type": {
+      "typeId": "type",
+      "id": "custom_type_id"
+    },
+    "fields": {
+      "textField": "newTextValue"
+    }
+  },
+  "deleteDaysAfterLastModification": 45
+}
