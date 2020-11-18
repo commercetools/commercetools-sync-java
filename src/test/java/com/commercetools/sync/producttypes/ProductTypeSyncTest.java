@@ -14,18 +14,21 @@ import io.sphere.sdk.products.attributes.NestedAttributeType;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
+import io.sphere.sdk.producttypes.commands.ProductTypeCreateCommand;
+import io.sphere.sdk.producttypes.commands.ProductTypeUpdateCommand;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeDescription;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeName;
+import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
+import io.sphere.sdk.queries.PagedQueryResult;
+import org.junit.jupiter.api.Test;
+
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
@@ -308,14 +311,14 @@ class ProductTypeSyncTest {
         // assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .singleElement().satisfies(message ->
+            .hasOnlyOneElementSatisfying(message ->
                 assertThat(message).contains("Failed to process the productTypeDraft with key:'foo'."
                     + " Reason: java.lang.NullPointerException")
             );
 
         assertThat(exceptions)
             .hasSize(1)
-            .singleElement().satisfies(throwable -> {
+            .hasOnlyOneElementSatisfying(throwable -> {
                 assertThat(throwable).isExactlyInstanceOf(SyncException.class);
                 assertThat(throwable).hasCauseExactlyInstanceOf(CompletionException.class);
                 assertThat(throwable.getCause()).hasCauseExactlyInstanceOf(NullPointerException.class);
@@ -327,6 +330,7 @@ class ProductTypeSyncTest {
     @Test
     void sync_WithErrorCachingKeysButNoKeysToCache_ShouldExecuteCallbackOnErrorAndIncreaseFailedCounter() {
         // preparation
+
         final ProductTypeDraft newProductTypeDraft = ProductTypeDraft.ofAttributeDefinitionDrafts(
             "foo",
             "name",
@@ -346,11 +350,12 @@ class ProductTypeSyncTest {
             })
             .build();
 
-        final ProductTypeService mockProductTypeService = mock(ProductTypeService.class);
-        when(mockProductTypeService.cacheKeysToIds(anySet()))
-                .thenReturn(completedFuture(emptyMap()));
-        when(mockProductTypeService.fetchMatchingProductTypesByKeys(anySet()))
-                .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
+
+        final ProductTypeService mockProductTypeService = new ProductTypeServiceImpl(syncOptions);
+
+
+        when(sphereClient.execute(any(ProductTypeQuery.class)))
+            .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
 
         final ProductTypeSync productTypeSync = new ProductTypeSync(syncOptions, mockProductTypeService);
 
@@ -362,13 +367,13 @@ class ProductTypeSyncTest {
         // assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .singleElement().satisfies(message ->
+            .hasOnlyOneElementSatisfying(message ->
                 assertThat(message).isEqualTo("Failed to fetch existing product types with keys: '[foo]'.")
             );
 
         assertThat(exceptions)
             .hasSize(1)
-            .singleElement().satisfies(throwable -> {
+            .hasOnlyOneElementSatisfying(throwable -> {
                 assertThat(throwable).isExactlyInstanceOf(SyncException.class);
                 assertThat(throwable).hasCauseExactlyInstanceOf(CompletionException.class);
                 assertThat(throwable.getCause()).hasCauseExactlyInstanceOf(SphereException.class);
@@ -538,8 +543,11 @@ class ProductTypeSyncTest {
             })
             .build();
 
-        final ProductTypeService mockProductTypeService = mock(ProductTypeServiceImpl.class);
-        when(mockProductTypeService.cacheKeysToIds(anySet()))
+
+        final ProductTypeService mockProductTypeService = new ProductTypeServiceImpl(syncOptions);
+
+
+        when(sphereClient.execute(any(ProductTypeQuery.class)))
             .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
 
         final ProductTypeSync productTypeSync = new ProductTypeSync(syncOptions, mockProductTypeService);
@@ -579,22 +587,17 @@ class ProductTypeSyncTest {
             .of(sphereClient)
             .build();
 
-        final ProductTypeService mockProductTypeService = mock(ProductTypeServiceImpl.class);
-        when(mockProductTypeService.cacheKeysToIds(anySet()))
-                .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
-        when(mockProductTypeService.cacheKeysToIds(anySet())).thenReturn(completedFuture(emptyMap()));
-        when(mockProductTypeService.fetchMatchingProductTypesByKeys(anySet())).thenReturn(completedFuture(emptySet()));
-
+        final ProductTypeService productTypeService = new ProductTypeServiceImpl(productTypeSyncOptions);
+        when(sphereClient.execute(any(ProductTypeQuery.class))).thenReturn(completedFuture(PagedQueryResult.empty()));
         final ProductType createdProductType = mock(ProductType.class);
         when(createdProductType.getKey()).thenReturn(newProductTypeDraft.getKey());
         when(createdProductType.getId()).thenReturn(UUID.randomUUID().toString());
-        when(mockProductTypeService.createProductType(any()))
-                .thenReturn(completedFuture(Optional.of(createdProductType)));
+        when(sphereClient.execute(any(ProductTypeCreateCommand.class))).thenReturn(completedFuture(createdProductType));
 
         final ProductTypeSyncOptions spyProductTypeSyncOptions = spy(productTypeSyncOptions);
 
         // test
-        new ProductTypeSync(spyProductTypeSyncOptions, mockProductTypeService)
+        new ProductTypeSync(spyProductTypeSyncOptions, productTypeService)
             .sync(singletonList(newProductTypeDraft)).toCompletableFuture().join();
 
         // assertion
@@ -618,13 +621,13 @@ class ProductTypeSyncTest {
         when(mockedExistingProductType.getKey()).thenReturn(newProductTypeDraft.getKey());
         when(mockedExistingProductType.getId()).thenReturn(UUID.randomUUID().toString());
 
-        final ProductTypeService productTypeService = mock(ProductTypeService.class);
-        final Map<String, String> keyToIds = new HashMap<>();
-        keyToIds.put(newProductTypeDraft.getKey(), UUID.randomUUID().toString());
-        when(productTypeService.cacheKeysToIds(anySet())).thenReturn(completedFuture(keyToIds));
-        when(productTypeService.fetchMatchingProductTypesByKeys(anySet()))
-                .thenReturn(completedFuture(singleton(mockedExistingProductType)));
-        when(productTypeService.updateProductType(any(), any())).thenReturn(completedFuture(mockedExistingProductType));
+        final ProductTypeService productTypeService = new ProductTypeServiceImpl(productTypeSyncOptions);
+        final PagedQueryResult<ProductType> productTypePagedQueryResult = spy(PagedQueryResult.empty());
+        when(productTypePagedQueryResult.getResults()).thenReturn(singletonList(mockedExistingProductType));
+        when(sphereClient.execute(any(ProductTypeQuery.class)))
+            .thenReturn(completedFuture(productTypePagedQueryResult));
+        when(sphereClient.execute(any(ProductTypeUpdateCommand.class)))
+            .thenReturn(completedFuture(mockedExistingProductType));
 
         final ProductTypeSyncOptions spyProductTypeSyncOptions = spy(productTypeSyncOptions);
 
