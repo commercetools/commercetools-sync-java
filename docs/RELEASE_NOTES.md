@@ -37,7 +37,7 @@
     - **Product Sync**: `ProductDraft.getState()` is changed from `Reference<State>` to `ResourceIdentifier<State>`, so as a library user you don't need to provide a key field in the id field of the Reference. (Now API and JVM SDK support `ResourceIdentifiers` and it supports id or key as a field). [#589](https://github.com/commercetools/commercetools-sync-java/pull/589)
 
 - 🐞 **Bug Fixes** (1)
-    - **Commons** - Fixed a bug in retry duration calculation of the ClientConfigurationUtils. [#610](https://github.com/commercetools/commercetools-sync-java/issues/610)
+    - **Commons** - Fixed a bug in the duration calculation of decorated retry sphere client `RetrySphereClientDecorator` created by `ClientConfigurationUtils`. [#610](https://github.com/commercetools/commercetools-sync-java/issues/610)
 
 - 🎉 **New Features** (4)
     - **ShoppingList Sync** - Added support for syncing shopping lists between ctp projects. [#594](https://github.com/commercetools/commercetools-sync-java/issues/594)
