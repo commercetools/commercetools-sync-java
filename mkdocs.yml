@@ -57,6 +57,7 @@ nav:
       - State Sync: usage/STATE_SYNC.md
       - CustomObject Sync: usage/CUSTOM_OBJECT_SYNC.md
       - Customer Sync: usage/CUSTOMER_SYNC.md
+      - ShoppingList Sync: usage/SHOPPING_LIST_SYNC.md
       - Advanced:
         - Sync Options: usage/SYNC_OPTIONS.md
         - Usage Tips: usage/IMPORTANT_USAGE_TIPS.md
