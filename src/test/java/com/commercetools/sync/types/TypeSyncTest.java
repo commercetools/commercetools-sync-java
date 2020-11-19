@@ -151,7 +151,7 @@ class TypeSyncTest {
     }
 
     @Test
-    void syncDrafts_WithConcurrentModificationException_ShouldRetryToUpdateNewProductTypeWithSuccess() {
+    void syncDrafts_WithConcurrentModificationException_ShouldRetryToUpdateNewTypeWithSuccess() {
         // Preparation
         final List<String> errorMessages = new ArrayList<>();
         final List<Throwable> exceptions = new ArrayList<>();
