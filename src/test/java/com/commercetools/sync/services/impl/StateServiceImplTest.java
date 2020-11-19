@@ -1,5 +1,7 @@
 package com.commercetools.sync.services.impl;
 
+import com.commercetools.sync.commons.FakeClient;
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.states.StateSyncOptions;
 import com.commercetools.sync.states.StateSyncOptionsBuilder;
 import io.sphere.sdk.client.BadRequestException;
@@ -10,17 +12,9 @@ import io.sphere.sdk.queries.QueryPredicate;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateDraft;
 import io.sphere.sdk.states.StateType;
-import io.sphere.sdk.states.commands.StateCreateCommand;
-import io.sphere.sdk.states.commands.StateUpdateCommand;
 import io.sphere.sdk.states.commands.updateactions.ChangeInitial;
 import io.sphere.sdk.states.queries.StateQuery;
-import io.sphere.sdk.utils.CompletableFutureUtils;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,16 +22,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class StateServiceImplTest {
@@ -86,7 +80,8 @@ class StateServiceImplTest {
         StatePagedQueryResult result = mock(StatePagedQueryResult.class);
         when(result.getResults()).thenReturn(Collections.singletonList(mock));
 
-        when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
+        final FakeClient<StatePagedQueryResult> fakeStateClient = new FakeClient(result);
+        initMockService(fakeStateClient);
 
         Optional<String> fetchedId = service.fetchCachedStateId(key).toCompletableFuture().join();
 
@@ -123,7 +118,8 @@ class StateServiceImplTest {
         StatePagedQueryResult result = mock(StatePagedQueryResult.class);
         when(result.getResults()).thenReturn(Arrays.asList(mock1, mock2));
 
-        when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
+        final FakeClient<StatePagedQueryResult> fakeStateClient = new FakeClient<>(result);
+        initMockService(fakeStateClient);
 
         Set<State> states = service.fetchMatchingStatesByKeys(stateKeys).toCompletableFuture().join();
 
@@ -132,9 +128,8 @@ class StateServiceImplTest {
             () -> assertThat(states).contains(mock1, mock2),
             () -> assertThat(service.keyToIdCache).containsKeys(key1, key2)
         );
-        ArgumentCaptor<StateQuery> captor = ArgumentCaptor.forClass(StateQuery.class);
-        verify(client).execute(captor.capture());
-        assertThat(captor.getValue().expansionPaths()).isEmpty();
+
+        assertThat(fakeStateClient.isExecuted()).isTrue();
     }
 
     @Test
@@ -157,7 +152,8 @@ class StateServiceImplTest {
         StatePagedQueryResult result = mock(StatePagedQueryResult.class);
         when(result.getResults()).thenReturn(Arrays.asList(mock1, mock2));
 
-        when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
+        final FakeClient<StatePagedQueryResult> fakeStateClient = new FakeClient<>(result);
+        initMockService(fakeStateClient);
 
         Set<State> states = service.fetchMatchingStatesByKeysWithTransitions(stateKeys).toCompletableFuture().join();
 
@@ -167,12 +163,7 @@ class StateServiceImplTest {
             () -> assertThat(service.keyToIdCache).containsKeys(key1, key2)
         );
 
-        ArgumentCaptor<StateQuery> captor = ArgumentCaptor.forClass(StateQuery.class);
-        verify(client).execute(captor.capture());
-        assertAll(
-            () -> assertThat(captor.getValue().expansionPaths()).hasSize(1),
-            () -> assertThat(captor.getValue().expansionPaths().get(0).toSphereExpand()).contains("transitions[*]")
-        );
+        assertThat(fakeStateClient.isExecuted()).isTrue();
     }
 
     @Test
@@ -183,7 +174,8 @@ class StateServiceImplTest {
         StatePagedQueryResult result = mock(StatePagedQueryResult.class);
         when(result.head()).thenReturn(Optional.of(mock));
 
-        when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(result));
+        final FakeClient<StatePagedQueryResult> fakeStateClient = new FakeClient<>(result);
+        initMockService(fakeStateClient);
 
         Optional<State> stateOptional = service.fetchState(stateKey).toCompletableFuture().join();
 
@@ -191,7 +183,7 @@ class StateServiceImplTest {
             () -> assertThat(stateOptional).containsSame(mock),
             () -> assertThat(service.keyToIdCache.get(stateKey)).isEqualTo(stateId)
         );
-        verify(client).execute(any(StateQuery.class));
+        assertThat(fakeStateClient.isExecuted()).isTrue();
     }
 
     @Test
@@ -200,13 +192,14 @@ class StateServiceImplTest {
         when(mock.getId()).thenReturn(stateId);
         when(mock.getKey()).thenReturn(stateKey);
 
-        when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(mock));
+        final FakeClient<State> fakeStateClient = new FakeClient<>(mock);
+        initMockService(fakeStateClient);
 
         StateDraft draft = StateDraft.of(stateKey, StateType.LINE_ITEM_STATE);
         Optional<State> stateOptional = service.createState(draft).toCompletableFuture().join();
 
         assertThat(stateOptional).containsSame(mock);
-        verify(client).execute(eq(StateCreateCommand.of(draft)));
+        assertThat(fakeStateClient.isExecuted()).isTrue();
     }
 
     @Test
@@ -214,7 +207,8 @@ class StateServiceImplTest {
         State mock = mock(State.class);
         when(mock.getId()).thenReturn(stateId);
 
-        when(client.execute(any())).thenReturn(CompletableFutureUtils.failed(new BadRequestException("bad request")));
+        final FakeClient<State> fakeStateClient = new FakeClient<>(new BadRequestException("bad request"));
+        initMockService(fakeStateClient);
 
         StateDraft draft = mock(StateDraft.class);
         when(draft.getKey()).thenReturn(stateKey);
@@ -224,12 +218,12 @@ class StateServiceImplTest {
         assertAll(
             () -> assertThat(stateOptional).isEmpty(),
             () -> assertThat(errorMessages).hasSize(1),
-            () -> assertThat(errorMessages).hasOnlyOneElementSatisfying(message -> {
+            () -> assertThat(errorMessages).singleElement().satisfies(message -> {
                 assertThat(message).contains("Failed to create draft with key: '" + stateKey + "'.");
                 assertThat(message).contains("BadRequestException");
             }),
             () -> assertThat(errorExceptions).hasSize(1),
-            () -> assertThat(errorExceptions).hasOnlyOneElementSatisfying(exception ->
+            () -> assertThat(errorExceptions).singleElement().satisfies(exception ->
                 assertThat(exception).isExactlyInstanceOf(BadRequestException.class))
         );
     }
@@ -252,13 +246,28 @@ class StateServiceImplTest {
     @Test
     void updateState_WithNoError_ShouldUpdateState() {
         State mock = mock(State.class);
-        when(client.execute(any())).thenReturn(CompletableFuture.completedFuture(mock));
+        final FakeClient<State> fakeStateClient = new FakeClient<>(mock);
+        initMockService(fakeStateClient);
+
         List<UpdateAction<State>> updateActions = Collections.singletonList(ChangeInitial.of(false));
 
         State state = service.updateState(mock, updateActions).toCompletableFuture().join();
 
         assertThat(state).isSameAs(mock);
-        verify(client).execute(eq(StateUpdateCommand.of(mock, updateActions)));
+        assertThat(fakeStateClient.isExecuted()).isTrue();
+    }
+
+    private void initMockService(@Nonnull final FakeClient fakeStateClient) {
+        errorMessages = new ArrayList<>();
+        errorExceptions = new ArrayList<>();
+        StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder.of(fakeStateClient)
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorMessages.add(exception.getMessage());
+                    errorExceptions.add(exception.getCause());
+                })
+                .build();
+        service = new StateServiceImpl(stateSyncOptions);
+
     }
 
 }
