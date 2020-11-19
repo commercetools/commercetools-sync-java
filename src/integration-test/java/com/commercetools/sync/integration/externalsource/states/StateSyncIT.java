@@ -275,14 +275,16 @@ class StateSyncIT {
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         final StateCreateCommand command = any(StateCreateCommand.class);
         when(spyClient.execute(command))
-            .thenReturn(completedFuture(any(State.class)));
-        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
-            .of(spyClient)
-            .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                errorCallBackMessages.add(exception.getMessage());
-                errorCallBackExceptions.add(exception.getCause());
-            })
-            .build();
+                .thenReturn(completedFuture(null));
+
+        final StateSyncOptions stateSyncOptions = spy(StateSyncOptionsBuilder
+                .of(spyClient)
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorCallBackMessages.add(exception.getMessage());
+                    errorCallBackExceptions.add(exception.getCause());
+                })
+                .build());
+        when(stateSyncOptions.getCtpClient()).thenReturn(spyClient);
 
         final StateSync stateSync = new StateSync(stateSyncOptions);
 
