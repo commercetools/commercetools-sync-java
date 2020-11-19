@@ -15,7 +15,6 @@ import io.sphere.sdk.states.StateDraft;
 import io.sphere.sdk.states.StateDraftBuilder;
 import io.sphere.sdk.states.StateRole;
 import io.sphere.sdk.states.StateType;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,7 +26,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletionException;
 import javax.annotation.Nonnull;
-
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,7 +33,6 @@ import org.junit.jupiter.api.Test;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.states.utils.StateReferenceResolutionUtils.mapToStateDrafts;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
-import static io.sphere.sdk.states.State.referenceOfId;
 import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -413,6 +410,52 @@ class StateSyncTest {
                         + "retrying after concurrency modification.", stateDraft.getKey()));
     }
 
+    @Test
+    void sync_WithExceptionOnResolvingTransition_ShouldUpdateTransitions() {
+        final StateDraft stateCDraft = createStateDraft(keyC);
+        final State stateC = mock(State.class);
+        when(stateC.getKey()).thenReturn(stateCDraft.getKey());
+
+        final StateDraft stateBDraft = createStateDraft(keyB, stateC);
+        final State stateB = mock(State.class);
+        when(stateB.getKey()).thenReturn(stateBDraft.getKey());
+
+        final StateService mockStateService = mock(StateService.class);
+        final Map<String, String> keyToIds = new HashMap<>();
+        keyToIds.put(stateCDraft.getKey(), UUID.randomUUID().toString());
+        keyToIds.put(stateBDraft.getKey(), UUID.randomUUID().toString());
+
+        when(mockStateService.cacheKeysToIds(anySet())).thenReturn(completedFuture(keyToIds));
+        when(mockStateService.fetchMatchingStatesByKeysWithTransitions(anySet()))
+                .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()));
+
+        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+                .of(mock(SphereClient.class))
+                .batchSize(3)
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorMessages.add(exception.getMessage());
+                    exceptions.add(exception.getCause());
+                })
+                .warningCallback((exception, newResource, oldResource) ->
+                        warningCallBackMessages.add(exception.getMessage()))
+                .build();
+
+        final StateSync stateSync = new StateSync(stateSyncOptions, mockStateService);
+        final List<StateDraft> stateDrafts = mapToStateDrafts(Arrays.asList(stateB, stateC));
+        // test
+        final StateSyncStatistics stateSyncStatistics = stateSync
+                .sync(stateDrafts)
+                .toCompletableFuture()
+                .join();
+
+        assertThat(stateSyncStatistics).hasValues(2, 0, 0, 2, 0);
+        Assertions.assertThat(exceptions).isNotEmpty();
+        Assertions.assertThat(errorMessages).isNotEmpty();
+        Assertions.assertThat(errorMessages.get(0))
+                .contains("Failed to fetch existing states with keys");
+        Assertions.assertThat(warningCallBackMessages).isEmpty();
+    }
+
     @Nonnull
     private StateService buildMockStateServiceWithSuccessfulUpdateOnRetry(
             @Nonnull final StateDraft stateDraft) {
@@ -480,62 +523,24 @@ class StateSyncTest {
         return mockStateService;
     }
 
-    @Test
-    void sync_WithExceptionOnResolvingTransition_ShouldUpdateTransitions() {
-
-        final StateDraft stateCDraft = createStateDraft(keyC);
-        final State stateC = mock(State.class);
-        when(stateC.getKey()).thenReturn(stateCDraft.getKey());
-        final StateDraft stateBDraft = createStateDraft(keyB, stateC);
-        final State stateB = mock(State.class);
-        when(stateB.getKey()).thenReturn(stateBDraft.getKey());
-
-        final StateService mockStateService = mock(StateService.class);
-        final Map<String, String> keyToIds = new HashMap<>();
-        keyToIds.put(stateCDraft.getKey(), UUID.randomUUID().toString());
-        keyToIds.put(stateBDraft.getKey(), UUID.randomUUID().toString());
-
-        when(mockStateService.cacheKeysToIds(anySet())).thenReturn(completedFuture(keyToIds));
-        when(mockStateService.fetchMatchingStatesByKeysWithTransitions(anySet()))
-                .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()));
-
-        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
-                .of(mock(SphereClient.class))
-                .batchSize(3)
-                .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                    errorMessages.add(exception.getMessage());
-                    exceptions.add(exception.getCause());
-                })
-                .warningCallback((exception, newResource, oldResource) ->
-                        warningCallBackMessages.add(exception.getMessage()))
-                .build();
-
-        final StateSync stateSync = new StateSync(stateSyncOptions, mockStateService);
-        final List<StateDraft> stateDrafts = mapToStateDrafts(Arrays.asList(stateB, stateC));
-        // test
-        final StateSyncStatistics stateSyncStatistics = stateSync
-                .sync(stateDrafts)
-                .toCompletableFuture()
-                .join();
-
-        assertThat(stateSyncStatistics).hasValues(2, 0, 0, 2, 0);
-        Assertions.assertThat(exceptions).isNotEmpty();
-        Assertions.assertThat(errorMessages).isNotEmpty();
-        Assertions.assertThat(errorMessages.get(0))
-                .contains("Failed to fetch existing states with keys");
-        Assertions.assertThat(warningCallBackMessages).isEmpty();
-    }
-
-    private StateDraft createStateDraft(final String key, final State... transitionStates) {
+    @Nonnull
+    private List<Reference<State>> buildReferences(@Nonnull final State... transitionStates) {
         List<Reference<State>> references = new ArrayList<>();
         if (transitionStates.length > 0) {
             for (State transitionState : transitionStates) {
-                references.add(referenceOfId(transitionState.getId()));
+                references.add(Reference.of("state", transitionState.getId(), transitionState));
             }
         }
+        return references;
+    }
+
+    @Nonnull
+    private StateDraft createStateDraft(final String key, final State... transitionStates) {
+        List<Reference<State>> references = buildReferences();
         return createStateDraftWithReference(key, references);
     }
 
+    @Nonnull
     private StateDraft createStateDraftWithReference(final String key, final List<Reference<State>> references) {
         return StateDraftBuilder
                 .of(key, StateType.REVIEW_STATE)
