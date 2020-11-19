@@ -8,7 +8,6 @@ import com.commercetools.sync.states.StateSyncOptions;
 import com.commercetools.sync.states.StateSyncOptionsBuilder;
 import com.commercetools.sync.states.helpers.StateReferenceResolver;
 import com.commercetools.sync.states.helpers.StateSyncStatistics;
-import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.BadRequestException;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.SphereClient;
@@ -487,7 +486,7 @@ class StateSyncIT {
             .thenCallRealMethod();
 
 
-        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+        final StateSyncOptions stateSyncOptions = spy(StateSyncOptionsBuilder
             .of(spyClient)
             .batchSize(3)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
@@ -496,7 +495,8 @@ class StateSyncIT {
             })
             .warningCallback((exception, newResource, oldResource) ->
                 warningCallBackMessages.add(exception.getMessage()))
-            .build();
+            .build());
+        when(stateSyncOptions.getCtpClient()).thenReturn(spyClient);
 
         final StateSync stateSync = new StateSync(stateSyncOptions);
         final List<StateDraft> stateDrafts = mapToStateDrafts(Arrays.asList(stateA, stateB, stateC));
@@ -582,6 +582,8 @@ class StateSyncIT {
                 Assertions.assertThat(resultStates.get(0).getTransitions().size()).isEqualTo(2);
             }).toCompletableFuture().join();
     }
+
+
 
     @Test
     void sync_WithDeletedTransition_ShouldRemoveTransitions() {
@@ -723,7 +725,6 @@ class StateSyncIT {
         Assertions.assertThat(targetStateB.getTransitions().size()).isEqualTo(1);
         Assertions.assertThat(targetStateA.getTransitions().size()).isEqualTo(1);
 
-
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
 
         final StateUpdateCommand updateCommand = any(StateUpdateCommand.class);
@@ -733,8 +734,7 @@ class StateSyncIT {
             .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
             .thenCallRealMethod();
 
-
-        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+        final StateSyncOptions stateSyncOptions = spy(StateSyncOptionsBuilder
             .of(spyClient)
             .batchSize(3)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
@@ -743,7 +743,10 @@ class StateSyncIT {
             })
             .warningCallback((exception, newResource, oldResource) ->
                 warningCallBackMessages.add(exception.getMessage()))
-            .build();
+            .build());
+
+        when(stateSyncOptions.getCtpClient()).thenReturn(spyClient);
+
         final StateSync stateSync = new StateSync(stateSyncOptions);
         final List<StateDraft> stateDrafts = mapToStateDrafts(Arrays.asList(stateA, stateB, stateC));
         // test
@@ -803,7 +806,7 @@ class StateSyncIT {
             .thenCallRealMethod();
 
 
-        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+        final StateSyncOptions stateSyncOptions = spy(StateSyncOptionsBuilder
             .of(spyClient)
             .batchSize(3)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
@@ -812,8 +815,8 @@ class StateSyncIT {
             })
             .warningCallback((exception, newResource, oldResource) ->
                 warningCallBackMessages.add(exception.getMessage()))
-            .build();
-
+            .build());
+        when(stateSyncOptions.getCtpClient()).thenReturn(spyClient);
         final List<StateDraft> stateDrafts = mapToStateDrafts(Arrays.asList(stateA, stateB, stateC));
         // test
         final StateSyncStatistics stateSyncStatistics = new StateSync(stateSyncOptions)
