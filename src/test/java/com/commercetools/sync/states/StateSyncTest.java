@@ -59,8 +59,6 @@ class StateSyncTest {
     private List<String> errorMessages;
     private List<Throwable> exceptions;
     private List<String> warningCallBackMessages;
-
-    private String keyA;
     private String keyB;
     private String keyC;
 
@@ -69,7 +67,6 @@ class StateSyncTest {
         errorMessages = new ArrayList<>();
         exceptions = new ArrayList<>();
         warningCallBackMessages = new ArrayList<>();
-        keyA = "state-A-" + current().nextInt();
         keyB = "state-B-" + current().nextInt();
         keyC = "state-C-" + current().nextInt();
     }
@@ -299,7 +296,7 @@ class StateSyncTest {
                             exceptions.add(exception.getCause());
                         })
                         .warningCallback((exception, oldResource, newResource)
-                                -> warningCallBackMessages.add(exception.getMessage()))
+                            -> warningCallBackMessages.add(exception.getMessage()))
                         .build();
 
         final StateSync stateSync = new StateSync(syncOptions, stateService);
@@ -342,7 +339,7 @@ class StateSyncTest {
                             exceptions.add(exception.getCause());
                         })
                         .warningCallback((exception, oldResource, newResource)
-                                -> warningCallBackMessages.add(exception.getMessage()))
+                            -> warningCallBackMessages.add(exception.getMessage()))
                         .build();
 
         final StateSync stateSync = new StateSync(syncOptions, stateService);
@@ -389,7 +386,7 @@ class StateSyncTest {
                             exceptions.add(exception.getCause());
                         })
                         .warningCallback((exception, oldResource, newResource)
-                                -> warningCallBackMessages.add(exception.getMessage()))
+                            -> warningCallBackMessages.add(exception.getMessage()))
                         .build();
 
         final StateSync stateSync = new StateSync(syncOptions, stateService);
