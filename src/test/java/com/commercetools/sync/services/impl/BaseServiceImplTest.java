@@ -1,5 +1,6 @@
 package com.commercetools.sync.services.impl;
 
+import com.commercetools.sync.commons.BaseSyncOptionsBuilder;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
@@ -297,8 +298,7 @@ class BaseServiceImplTest {
     }
 
     @Test
-    void cacheKeysToIds_WithCachedKeysExceedingCacheSize_ShouldEvictOldEntriesAndReturnLatestUsed()
-        throws InterruptedException {
+    void cacheKeysToIds_WithCachedKeysExceedingCacheSize_ShouldEvictOldEntriesAndReturnLatestUsed() {
         //preparation
         final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
         final Product product1 = mock(Product.class);
@@ -316,15 +316,12 @@ class BaseServiceImplTest {
         when(client.execute(any()))
             .thenReturn(completedFuture(pagedQueryResult))
             .thenReturn(completedFuture(resourceKeyIdGraphQlResult));
-
         service.fetchMatchingProductsByKeys(Arrays.asList("key-1", "key-2").stream().collect(Collectors.toSet()));
-
-        Thread.sleep(500);
         service.getIdFromCacheOrFetch("key-1"); //access the first added cache entry
 
         //test
         final Map<String, String> optional = service.cacheKeysToIds(singleton("testKey")).toCompletableFuture().join();
-        Thread.sleep(500);
+
         //assertions
         assertThat(optional).containsExactly(MapEntry.entry("key-1", "id-1"), MapEntry.entry("testKey", "testId"));
         verify(client, times(1)).execute(any(ProductQuery.class));
