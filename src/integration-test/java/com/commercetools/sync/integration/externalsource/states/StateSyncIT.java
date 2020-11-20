@@ -58,6 +58,7 @@ import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.ThreadLocalRandom.current;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -272,7 +273,7 @@ class StateSyncIT {
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         final StateCreateCommand command = any(StateCreateCommand.class);
         when(spyClient.execute(command))
-                .thenReturn(completedFuture(null));
+                .thenReturn(completedFuture(mock(State.class)));
 
         final StateSyncOptions stateSyncOptions = spy(StateSyncOptionsBuilder
                 .of(spyClient)

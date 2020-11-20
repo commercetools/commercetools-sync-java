@@ -1,7 +1,6 @@
 package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.FakeClient;
-import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import com.commercetools.sync.states.StateSyncOptions;
 import com.commercetools.sync.states.StateSyncOptionsBuilder;
 import io.sphere.sdk.client.BadRequestException;
