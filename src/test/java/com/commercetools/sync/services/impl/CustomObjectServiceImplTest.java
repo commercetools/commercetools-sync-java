@@ -7,6 +7,7 @@ import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentif
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.BadRequestException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customobjects.CustomObject;
@@ -208,6 +209,39 @@ class CustomObjectServiceImplTest {
                     .withThrowableOfType(ExecutionException.class)
                     .withCauseExactlyInstanceOf(BadRequestException.class)
         );
+    }
+
+    @Test
+    void fetchMatchingCustomObjectsByCompositeIdentifiers_WithBadGateWayExceptionAlways_ShouldFail() {
+        // Mock sphere client to return BadGatewayException on any request.
+        final FakeClient<CustomObject<JsonNode>> fakeCustomObjectClient =
+                new FakeClient<>(new BadGatewayException());
+
+        final List<String> errorCallBackMessages = new ArrayList<>();
+        final List<Throwable> errorCallBackExceptions = new ArrayList<>();
+
+        customObjectSyncOptions =
+                CustomObjectSyncOptionsBuilder.of(fakeCustomObjectClient)
+                        .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                            errorCallBackMessages.add(exception.getMessage());
+                            errorCallBackExceptions.add(exception.getCause());
+                        })
+                        .build();
+
+        service = new CustomObjectServiceImpl(customObjectSyncOptions);
+
+        final Set<CustomObjectCompositeIdentifier> customObjectCompositeIdentifiers = new HashSet<>();
+        customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(
+                "old_custom_object_key", "old_custom_object_container"));
+
+        // test and assert
+        assertThat(errorCallBackExceptions).isEmpty();
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(service
+                .fetchMatchingCustomObjects(customObjectCompositeIdentifiers))
+                .failsWithin(1, TimeUnit.SECONDS)
+                .withThrowableOfType(ExecutionException.class)
+                .withCauseExactlyInstanceOf(BadGatewayException.class);
     }
 
     private void initMockService(@Nonnull final SphereClient mockSphereClient) {

@@ -9,12 +9,10 @@ import com.commercetools.sync.services.impl.CustomObjectServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
 import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
-import io.sphere.sdk.utils.CompletableFutureUtils;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -33,7 +31,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class CustomObjectServiceImplIT {
     private CustomObjectService customObjectService;
@@ -167,36 +164,7 @@ class CustomObjectServiceImplIT {
                 OLD_CUSTOM_OBJECT_KEY + "_2", OLD_CUSTOM_OBJECT_CONTAINER + "_2");
     }
 
-    @Test
-    void fetchMatchingCustomObjectsByCompositeIdentifiers_WithBadGateWayExceptionAlways_ShouldFail() {
-        // Mock sphere client to return BadGatewayException on any request.
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(CustomObjectQuery.class)))
-                .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
-                .thenCallRealMethod();
 
-        final CustomObjectSyncOptions spyOptions =
-                CustomObjectSyncOptionsBuilder.of(spyClient)
-                                      .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                                          errorCallBackMessages.add(exception.getMessage());
-                                          errorCallBackExceptions.add(exception.getCause());
-                                      })
-                                      .build();
-
-        final CustomObjectService spyCustomObjectService = new CustomObjectServiceImpl(spyOptions);
-
-        final Set<CustomObjectCompositeIdentifier> customObjectCompositeIdentifiers = new HashSet<>();
-        customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(
-                OLD_CUSTOM_OBJECT_KEY, OLD_CUSTOM_OBJECT_CONTAINER));
-
-        // test and assert
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-        assertThat(spyCustomObjectService
-                .fetchMatchingCustomObjects(customObjectCompositeIdentifiers))
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(BadGatewayException.class);
-    }
 
     @Test
     void fetchCustomObject_WithNonExistingCustomObjectKeyAndContainer_ShouldReturnEmptyCustomObject() {
