@@ -3,6 +3,7 @@ package com.commercetools.sync.services.impl;
 import com.commercetools.sync.commons.FakeClient;
 import com.commercetools.sync.states.StateSyncOptions;
 import com.commercetools.sync.states.StateSyncOptionsBuilder;
+import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.BadRequestException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
@@ -21,6 +22,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -254,6 +257,24 @@ class StateServiceImplTest {
 
         assertThat(state).isSameAs(mock);
         assertThat(fakeStateClient.isExecuted()).isTrue();
+    }
+
+    @Test
+    void fetchMatchingStatesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
+        // Mock sphere client to return BadGatewayException on any request.
+        final FakeClient<State> fakeStateClient = new FakeClient(new BadGatewayException());
+        initMockService(fakeStateClient);
+
+        final Set<String> keys = new HashSet<>();
+        keys.add("old_state_key");
+
+        // test and assert
+        assertThat(errorExceptions).isEmpty();
+        assertThat(errorMessages).isEmpty();
+        assertThat(service.fetchMatchingStatesByKeys(keys))
+                .failsWithin(1, TimeUnit.SECONDS)
+                .withThrowableOfType(ExecutionException.class)
+                .withCauseExactlyInstanceOf(BadGatewayException.class);
     }
 
     private void initMockService(@Nonnull final FakeClient fakeStateClient) {
