@@ -1,5 +1,6 @@
 package com.commercetools.sync.services.impl;
 
+import com.commercetools.sync.commons.BaseSyncOptionsBuilder;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
@@ -35,6 +36,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptySet;
@@ -362,7 +365,9 @@ class BaseServiceImplTest {
         final CompletionStage<Map<String, String>> result = service.cacheKeysToIds(singleton("testKey"));
 
         //assertions
-        assertThat(result).hasFailedWithThrowableThat().isExactlyInstanceOf(BadGatewayException.class);
+        assertThat(result).failsWithin(1, TimeUnit.SECONDS)
+                .withThrowableOfType(ExecutionException.class)
+                .withCauseExactlyInstanceOf(BadGatewayException.class);
         verify(client, times(1)).execute(any(ResourceKeyIdGraphQlRequest.class));
     }
 
