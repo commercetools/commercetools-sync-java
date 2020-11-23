@@ -4,7 +4,6 @@ import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.impl.TaxCategoryServiceImpl;
 import com.commercetools.sync.taxcategories.TaxCategorySyncOptions;
 import com.commercetools.sync.taxcategories.TaxCategorySyncOptionsBuilder;
-import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.errors.DuplicateFieldError;
@@ -14,7 +13,6 @@ import io.sphere.sdk.taxcategories.TaxCategoryDraftBuilder;
 import io.sphere.sdk.taxcategories.commands.updateactions.ChangeName;
 import io.sphere.sdk.taxcategories.commands.updateactions.SetKey;
 import io.sphere.sdk.taxcategories.queries.TaxCategoryQuery;
-import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,7 +42,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class TaxCategoryServiceImplIT {
     private TaxCategoryService taxCategoryService;
@@ -159,36 +156,6 @@ class TaxCategoryServiceImplIT {
         assertThat(matchingTaxCategories).hasSize(1);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
-    }
-
-    @Test
-    void fetchMatchingTaxCategoriesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
-        // Mock sphere client to return BadGatewayException on any request.
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(TaxCategoryQuery.class)))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
-            .thenCallRealMethod();
-
-        final TaxCategorySyncOptions spyOptions =
-            TaxCategorySyncOptionsBuilder.of(spyClient)
-                .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                    errorCallBackMessages.add(exception.getMessage());
-                    errorCallBackExceptions.add(exception.getCause());
-                })
-                                         .build();
-
-        final TaxCategoryService spyTaxCategoryService = new TaxCategoryServiceImpl(spyOptions);
-
-
-        final Set<String> keys = new HashSet<>();
-        keys.add(TAXCATEGORY_KEY);
-
-        // test and assert
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-        assertThat(spyTaxCategoryService.fetchMatchingTaxCategoriesByKeys(keys))
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(BadGatewayException.class);
     }
 
     @Test

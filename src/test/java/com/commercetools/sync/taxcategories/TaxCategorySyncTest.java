@@ -1,8 +1,10 @@
 package com.commercetools.sync.taxcategories;
 
+import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
 import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.taxcategories.helpers.TaxCategorySyncStatistics;
 import com.neovisionaries.i18n.CountryCode;
+import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.SphereException;
@@ -10,6 +12,7 @@ import io.sphere.sdk.taxcategories.TaxCategory;
 import io.sphere.sdk.taxcategories.TaxCategoryDraft;
 import io.sphere.sdk.taxcategories.TaxCategoryDraftBuilder;
 import io.sphere.sdk.taxcategories.TaxRateDraftBuilder;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -187,15 +190,7 @@ class TaxCategorySyncTest {
         final TaxCategorySync sync = new TaxCategorySync(options, taxCategoryService);
         final TaxCategoryDraft draft = TaxCategoryDraftBuilder.of("someName", emptyList(), "changed")
             .key("someKey").build();
-        final TaxCategory taxCategory = mock(TaxCategory.class);
-
-        when(taxCategory.getKey()).thenReturn("someKey");
-
-        when(taxCategoryService.fetchMatchingTaxCategoriesByKeys(any()))
-            .thenReturn(completedFuture(new HashSet<>(singletonList(taxCategory))));
-        when(taxCategoryService.updateTaxCategory(any(), any())).thenReturn(supplyAsync(() -> {
-            throw new io.sphere.sdk.client.ConcurrentModificationException();
-        }));
+        buildTaxCategoryWithConcurrentModificationUpdate();
         when(taxCategoryService.fetchTaxCategory(any())).thenReturn(supplyAsync(() -> {
             throw new SphereException();
         }));
@@ -225,15 +220,7 @@ class TaxCategorySyncTest {
         final TaxCategorySync sync = new TaxCategorySync(options, taxCategoryService);
         final TaxCategoryDraft draft = TaxCategoryDraftBuilder.of("someName", emptyList(), "changed")
             .key("someKey").build();
-        final TaxCategory taxCategory = mock(TaxCategory.class);
-
-        when(taxCategory.getKey()).thenReturn("someKey");
-
-        when(taxCategoryService.fetchMatchingTaxCategoriesByKeys(any()))
-            .thenReturn(completedFuture(new HashSet<>(singletonList(taxCategory))));
-        when(taxCategoryService.updateTaxCategory(any(), any())).thenReturn(supplyAsync(() -> {
-            throw new ConcurrentModificationException();
-        }));
+        buildTaxCategoryWithConcurrentModificationUpdate();
         when(taxCategoryService.fetchTaxCategory(any())).thenReturn(completedFuture(Optional.empty()));
 
         final TaxCategorySyncStatistics result = sync.sync(singletonList(draft)).toCompletableFuture().join();
@@ -393,5 +380,88 @@ class TaxCategorySyncTest {
                             + "expected to be unique inside their tax category.", CountryCode.FR))
         );
 
+    }
+
+    @Test
+    void sync_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
+        List<String> errorCallBackMessages = new ArrayList<>();
+        List<Throwable> errorCallBackExceptions = new ArrayList<>();
+        final TaxCategorySyncOptions spyOptions = TaxCategorySyncOptionsBuilder
+            .of(mock(SphereClient.class))
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
+            })
+            .build();
+        final TaxCategoryDraft taxCategoryDraft = TaxCategoryDraftBuilder.of("someName", emptyList(), "changed")
+                                                              .key("someKey").build();
+        buildTaxCategoryWithConcurrentModificationUpdate();
+        when(taxCategoryService.fetchTaxCategory(any())).thenReturn(completedFuture(Optional.empty()));
+
+        final TaxCategorySync taxCategorySync = new TaxCategorySync(spyOptions, taxCategoryService);
+
+        // Test
+        final TaxCategorySyncStatistics taxCategorySyncStatistics = taxCategorySync
+            .sync(singletonList(taxCategoryDraft))
+            .toCompletableFuture()
+            .join();
+
+        // Assertion
+        AssertionsForStatistics.assertThat(taxCategorySyncStatistics).hasValues(1, 0, 0, 1);
+        Assertions.assertThat(errorCallBackMessages).hasSize(1);
+        Assertions.assertThat(errorCallBackExceptions).hasSize(1);
+
+        Assertions.assertThat(errorCallBackMessages.get(0)).contains(
+            format("Failed to update tax category with key: '%s'. Reason: Not found when attempting to fetch while"
+                + " retrying after concurrency modification.", taxCategoryDraft.getKey()));
+    }
+
+    @Test
+    void sync_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
+        // preparation
+        List<String> errorCallBackMessages = new ArrayList<>();
+        List<Throwable> errorCallBackExceptions = new ArrayList<>();
+        final TaxCategorySyncOptions spyOptions = TaxCategorySyncOptionsBuilder
+            .of(mock(SphereClient.class))
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
+            })
+            .build();
+        final TaxCategoryDraft taxCategoryDraft = TaxCategoryDraftBuilder.of("someName", emptyList(), "changed")
+                                                                         .key("someKey").build();
+        buildTaxCategoryWithConcurrentModificationUpdate();
+        when(taxCategoryService.fetchTaxCategory(any())).thenReturn(supplyAsync(() -> {
+            throw new BadGatewayException();
+        }));
+
+        final TaxCategorySync taxCategorySync = new TaxCategorySync(spyOptions, taxCategoryService);
+
+        // test
+        final TaxCategorySyncStatistics taxCategorySyncStatistics = taxCategorySync
+            .sync(singletonList(taxCategoryDraft))
+            .toCompletableFuture()
+            .join();
+
+        // assertion
+        AssertionsForStatistics.assertThat(taxCategorySyncStatistics).hasValues(1, 0, 0, 1);
+        Assertions.assertThat(errorCallBackMessages).hasSize(1);
+        Assertions.assertThat(errorCallBackExceptions).hasSize(1);
+
+        Assertions.assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);
+        Assertions.assertThat(errorCallBackMessages.get(0)).contains(
+            format("Failed to update tax category with key: '%s'. Reason: Failed to fetch from CTP while retrying "
+                + "after concurrency modification.", taxCategoryDraft.getKey()));
+    }
+
+    private void buildTaxCategoryWithConcurrentModificationUpdate() {
+        final TaxCategory taxCategory = mock(TaxCategory.class);
+
+        when(taxCategory.getKey()).thenReturn("someKey");
+        when(taxCategoryService.fetchMatchingTaxCategoriesByKeys(any()))
+            .thenReturn(completedFuture(new HashSet<>(singletonList(taxCategory))));
+        when(taxCategoryService.updateTaxCategory(any(), any())).thenReturn(supplyAsync(() -> {
+            throw new ConcurrentModificationException();
+        }));
     }
 }

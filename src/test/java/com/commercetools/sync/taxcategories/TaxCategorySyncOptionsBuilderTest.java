@@ -4,6 +4,7 @@ import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.taxcategories.TaxCategory;
@@ -49,7 +50,8 @@ class TaxCategorySyncOptionsBuilderTest {
             () -> assertThat(taxCategorySyncOptions.getBeforeCreateCallback()).isNull(),
             () -> assertThat(taxCategorySyncOptions.getErrorCallback()).isNull(),
             () -> assertThat(taxCategorySyncOptions.getWarningCallback()).isNull(),
-            () -> assertThat(taxCategorySyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT),
+            () -> assertThat(taxCategorySyncOptions.getCtpClient()).isEqualTo(
+                CustomHeaderSphereClientDecorator.of(CTP_CLIENT)),
             () -> assertThat(taxCategorySyncOptions.getBatchSize())
                 .isEqualTo(TaxCategorySyncOptionsBuilder.BATCH_SIZE_DEFAULT)
         );
