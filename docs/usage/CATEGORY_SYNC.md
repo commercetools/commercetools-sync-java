@@ -27,7 +27,7 @@ against a [CategoryDraft](https://docs.commercetools.com/http-api-projects-categ
 
 #### Prerequisites
 1. Create a `sphereClient`:
-Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/2.3.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
+Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/3.0.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 2. The sync expects a list of `CategoryDraft`s that have their `key` fields set to be matched with
@@ -38,7 +38,7 @@ otherwise they won't be matched.
 These references are matched by their `key`s. Therefore, in order for the sync to resolve the 
 actual ids of the references, their `key`s has to be supplied.
  
-   - When syncing from a source commercetools project, you can use [`mapToCategoryDrafts`](https://commercetools.github.io/commercetools-sync-java/v/2.3.0/com/commercetools/sync/categories/utils/CategoryReferenceResolutionUtils.html#mapToCategoryDrafts-java.util.List-)
+   - When syncing from a source commercetools project, you can use [`mapToCategoryDrafts`](https://commercetools.github.io/commercetools-sync-java/v/3.0.0/com/commercetools/sync/categories/utils/CategoryReferenceResolutionUtils.html#mapToCategoryDrafts-java.util.List-)
      method that maps from a `Category` to `CategoryDraft` in order to make them ready for reference resolution by the sync:
      ````java     
      final List<CategoryDraft> categoryDrafts = CategoryReferenceResolutionUtils.mapToCategoryDrafts(categories);
