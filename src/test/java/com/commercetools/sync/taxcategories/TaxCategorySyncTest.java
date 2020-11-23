@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -396,14 +397,50 @@ class TaxCategorySyncTest {
                 + "after concurrency modification.", taxCategoryDraft.getKey()));
     }
 
+    @Test
+    void sync_withChangedTaxCategoryButConcurrentModificationException_shouldRetryAndUpdateTaxCategory() {
+        // preparation
+        List<String> errorCallBackMessages = new ArrayList<>();
+        List<String> warningCallBackMessages = new ArrayList<>();
+        List<Throwable> errorCallBackExceptions = new ArrayList<>();
+        final TaxCategorySyncOptions spyOptions = TaxCategorySyncOptionsBuilder
+            .of(mock(SphereClient.class))
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
+            })
+            .build();
+        final TaxCategoryDraft taxCategoryDraft = TaxCategoryDraftBuilder.of("someName", emptyList(), "changed")
+                                                                         .key("someKey").build();
+        final TaxCategorySync taxCategorySync = new TaxCategorySync(spyOptions, taxCategoryService);
+
+        buildTaxCategoryWithConcurrentModificationUpdate();
+        final TaxCategory taxCategory = mock(TaxCategory.class);
+        when(taxCategory.getKey()).thenReturn("someKey");
+        when(taxCategoryService.fetchTaxCategory("someKey"))
+            .thenReturn(completedFuture(Optional.of(taxCategory)));
+
+        // test
+        final TaxCategorySyncStatistics taxCategorySyncStatistics = taxCategorySync
+            .sync(singletonList(taxCategoryDraft))
+            .toCompletableFuture()
+            .join();
+
+        // assertion
+        AssertionsForStatistics.assertThat(taxCategorySyncStatistics).hasValues(1, 0, 1, 0);
+        Assertions.assertThat(errorCallBackExceptions).isEmpty();
+        Assertions.assertThat(errorCallBackMessages).isEmpty();
+        Assertions.assertThat(warningCallBackMessages).isEmpty();
+    }
+
     private void buildTaxCategoryWithConcurrentModificationUpdate() {
         final TaxCategory taxCategory = mock(TaxCategory.class);
 
         when(taxCategory.getKey()).thenReturn("someKey");
         when(taxCategoryService.fetchMatchingTaxCategoriesByKeys(any()))
             .thenReturn(completedFuture(new HashSet<>(singletonList(taxCategory))));
-        when(taxCategoryService.updateTaxCategory(any(), any())).thenReturn(supplyAsync(() -> {
-            throw new ConcurrentModificationException();
-        }));
+        when(taxCategoryService.updateTaxCategory(any(), any()))
+            .thenReturn(exceptionallyCompletedFuture(new SphereException(new ConcurrentModificationException())))
+            .thenReturn(completedFuture(taxCategory));
     }
 }

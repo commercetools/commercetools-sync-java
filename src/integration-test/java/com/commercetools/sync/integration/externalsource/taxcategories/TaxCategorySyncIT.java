@@ -5,8 +5,6 @@ import com.commercetools.sync.taxcategories.TaxCategorySyncOptions;
 import com.commercetools.sync.taxcategories.TaxCategorySyncOptionsBuilder;
 import com.commercetools.sync.taxcategories.helpers.TaxCategorySyncStatistics;
 import com.neovisionaries.i18n.CountryCode;
-import io.sphere.sdk.client.ConcurrentModificationException;
-import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.taxcategories.SubRate;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import io.sphere.sdk.taxcategories.TaxCategoryDraft;
@@ -15,16 +13,11 @@ import io.sphere.sdk.taxcategories.TaxRate;
 import io.sphere.sdk.taxcategories.TaxRateDraft;
 import io.sphere.sdk.taxcategories.TaxRateDraftBuilder;
 import io.sphere.sdk.taxcategories.commands.TaxCategoryCreateCommand;
-import io.sphere.sdk.taxcategories.commands.TaxCategoryUpdateCommand;
-import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.annotation.Nonnull;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
@@ -34,9 +27,6 @@ import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtil
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 
 class TaxCategorySyncIT {
 
@@ -168,52 +158,5 @@ class TaxCategorySyncIT {
             .join();
 
         assertThat(taxCategorySyncStatistics).hasValues(1, 0, 0, 0);
-    }
-
-    @Test
-    void sync_withChangedTaxCategoryButConcurrentModificationException_shouldRetryAndUpdateTaxCategory() {
-        // preparation
-        final SphereClient spyClient = buildClientWithConcurrentModificationUpdate();
-
-        List<String> errorCallBackMessages = new ArrayList<>();
-        List<String> warningCallBackMessages = new ArrayList<>();
-        List<Throwable> errorCallBackExceptions = new ArrayList<>();
-        final TaxCategorySyncOptions spyOptions = TaxCategorySyncOptionsBuilder
-            .of(spyClient)
-            .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                errorCallBackMessages.add(exception.getMessage());
-                errorCallBackExceptions.add(exception.getCause());
-            })
-            .build();
-
-        final TaxCategorySync taxCategorySync = new TaxCategorySync(spyOptions);
-
-        final TaxCategoryDraft taxCategoryDraft = TaxCategoryDraftBuilder
-            .of("tax-category-name-updated", null, "tax-category-description-updated")
-            .key("tax-category-key")
-            .build();
-
-        // test
-        final TaxCategorySyncStatistics taxCategorySyncStatistics = taxCategorySync
-            .sync(singletonList(taxCategoryDraft))
-            .toCompletableFuture()
-            .join();
-
-        assertThat(taxCategorySyncStatistics).hasValues(1, 0, 1, 0);
-        Assertions.assertThat(errorCallBackExceptions).isEmpty();
-        Assertions.assertThat(errorCallBackMessages).isEmpty();
-        Assertions.assertThat(warningCallBackMessages).isEmpty();
-    }
-
-    @Nonnull
-    private SphereClient buildClientWithConcurrentModificationUpdate() {
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-
-        final TaxCategoryUpdateCommand updateCommand = any(TaxCategoryUpdateCommand.class);
-        when(spyClient.execute(updateCommand))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new ConcurrentModificationException()))
-            .thenCallRealMethod();
-
-        return spyClient;
     }
 }
