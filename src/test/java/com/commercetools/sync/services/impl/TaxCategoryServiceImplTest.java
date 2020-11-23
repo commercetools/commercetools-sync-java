@@ -147,7 +147,7 @@ class TaxCategoryServiceImplTest {
         when(mock.getId()).thenReturn(taxCategoryId);
         when(mock.getKey()).thenReturn(taxCategoryKey);
 
-        final FakeClient<TaxCategoryPagedQueryResult> fakeTaxCategoryClient = new FakeClient(mock);
+        final FakeClient<TaxCategory> fakeTaxCategoryClient = new FakeClient(mock);
         initMockService(fakeTaxCategoryClient);
 
         final TaxCategoryDraft draft = TaxCategoryDraftBuilder
