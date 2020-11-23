@@ -88,14 +88,14 @@ class ProductServiceTest {
         assertThat(errorMessages)
                 .hasSize(1)
                 .singleElement().satisfies(message -> {
-            assertThat(message).contains("Failed to create draft with key: 'productKey'.");
-            assertThat(message).contains("BadRequestException");
-        });
+                    assertThat(message).contains("Failed to create draft with key: 'productKey'.");
+                    assertThat(message).contains("BadRequestException");
+                });
 
         assertThat(errorExceptions)
                 .hasSize(1)
                 .singleElement().satisfies(exception ->
-                assertThat(exception).isExactlyInstanceOf(BadRequestException.class));
+                    assertThat(exception).isExactlyInstanceOf(BadRequestException.class));
     }
 
     @Test
