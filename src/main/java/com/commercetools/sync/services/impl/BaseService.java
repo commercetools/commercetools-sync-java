@@ -59,6 +59,7 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
         this.syncOptions = syncOptions;
         this.keyToIdCache  = Caffeine.newBuilder()
                                      .maximumSize(syncOptions.getCacheSize())
+                                     .executor(Runnable::run)
                                      .build();
     }
 
@@ -224,10 +225,7 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
 
         return CtpQueryUtils
             .queryAll(syncOptions.getCtpClient(), keysQueryMapper.apply(keysNotCached), pageConsumer)
-            .thenApply(result -> {
-                keyToIdCache.cleanUp();
-                return keyToIdCache.asMap();
-            });
+            .thenApply(result ->  keyToIdCache.asMap());
     }
 
     /**
@@ -272,10 +270,7 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
             keyToIdCache.putAll(keyToIdMapper.apply(resource)));
 
         return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), keysRequestMapper.apply(keysNotCached),
-            resultConsumer).thenApply(result -> {
-                keyToIdCache.cleanUp();
-                return keyToIdCache.asMap();
-            });
+            resultConsumer).thenApply(result ->  keyToIdCache.asMap());
     }
 
     /**
@@ -304,10 +299,7 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
             .thenApply(fetchedResources -> fetchedResources
                 .stream()
                 .flatMap(List::stream)
-                .peek(resource -> {
-                    keyToIdCache.put(keyMapper.apply(resource), resource.getId());
-                    keyToIdCache.cleanUp();
-                })
+                .peek(resource -> keyToIdCache.put(keyMapper.apply(resource), resource.getId()))
                 .collect(Collectors.toSet()));
     }
 
@@ -338,7 +330,6 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
                 .head()
                 .map(resource -> {
                     keyToIdCache.put(key, resource.getId());
-                    keyToIdCache.cleanUp();
                     return resource;
                 }));
     }
@@ -357,7 +348,6 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
             .handle(((resource, exception) -> {
                 if (exception == null) {
                     keyToIdCache.put(draftKey, resource.getId());
-                    keyToIdCache.cleanUp();
                     return Optional.of(resource);
                 } else {
                     syncOptions.applyErrorCallback(

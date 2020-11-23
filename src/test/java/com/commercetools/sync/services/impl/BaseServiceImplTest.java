@@ -1,10 +1,9 @@
 package com.commercetools.sync.services.impl;
 
-import com.commercetools.sync.commons.BaseSyncOptionsBuilder;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
-import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
 import com.commercetools.sync.commons.models.ResourceKeyId;
+import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptions;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptionsBuilder;
