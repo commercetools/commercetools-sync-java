@@ -203,7 +203,7 @@ class TaxCategoryServiceImplTest {
     @Test
     void updateTaxCategory_WithNoError_ShouldUpdateTaxCategory() {
         final TaxCategory mock = mock(TaxCategory.class);
-        final FakeClient<TaxCategoryPagedQueryResult> fakeTaxCategoryClient = new FakeClient(mock);
+        final FakeClient<TaxCategory> fakeTaxCategoryClient = new FakeClient(mock);
         initMockService(fakeTaxCategoryClient);
         final List<UpdateAction<TaxCategory>> updateActions = Collections.singletonList(ChangeName.of("name"));
 
