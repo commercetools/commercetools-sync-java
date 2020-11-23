@@ -182,64 +182,6 @@ class TaxCategorySyncTest {
     }
 
     @Test
-    void sync_WithErrorUpdatingAndTryingToRecoverWithFetchException_ShouldApplyErrorCallbackAndIncrementFailed() {
-        final List<String> errors = new ArrayList<>();
-        final TaxCategorySyncOptions options = TaxCategorySyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallback((exception, draft, entry, actions) -> errors.add(exception.getMessage()))
-            .build();
-        final TaxCategorySync sync = new TaxCategorySync(options, taxCategoryService);
-        final TaxCategoryDraft draft = TaxCategoryDraftBuilder.of("someName", emptyList(), "changed")
-            .key("someKey").build();
-        buildTaxCategoryWithConcurrentModificationUpdate();
-        when(taxCategoryService.fetchTaxCategory(any())).thenReturn(supplyAsync(() -> {
-            throw new SphereException();
-        }));
-
-        final TaxCategorySyncStatistics result = sync.sync(singletonList(draft)).toCompletableFuture().join();
-
-        assertAll(
-            () -> assertThat(result.getProcessed().get()).isEqualTo(1),
-            () -> assertThat(result.getUpdated().get()).isEqualTo(0),
-            () -> assertThat(result.getFailed().get()).isEqualTo(1),
-            () -> assertThat(errors).hasSize(1),
-            () -> assertThat(errors).hasOnlyOneElementSatisfying(msg -> assertThat(msg)
-                .contains("Failed to fetch from CTP while retrying after concurrency modification."))
-        );
-        verify(taxCategoryService, times(1)).fetchMatchingTaxCategoriesByKeys(any());
-        verify(taxCategoryService, times(1)).updateTaxCategory(any(), any());
-        verify(taxCategoryService, times(1)).fetchTaxCategory(any());
-        verifyNoMoreInteractions(taxCategoryService);
-    }
-
-    @Test
-    void sync_WithErrorUpdatingAndTryingToRecoverWithEmptyResponse_ShouldApplyErrorCallbackAndIncrementFailed() {
-        final List<String> errors = new ArrayList<>();
-        final TaxCategorySyncOptions options = TaxCategorySyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallback((exception, draft, entry, actions) -> errors.add(exception.getMessage()))
-            .build();
-        final TaxCategorySync sync = new TaxCategorySync(options, taxCategoryService);
-        final TaxCategoryDraft draft = TaxCategoryDraftBuilder.of("someName", emptyList(), "changed")
-            .key("someKey").build();
-        buildTaxCategoryWithConcurrentModificationUpdate();
-        when(taxCategoryService.fetchTaxCategory(any())).thenReturn(completedFuture(Optional.empty()));
-
-        final TaxCategorySyncStatistics result = sync.sync(singletonList(draft)).toCompletableFuture().join();
-
-        assertAll(
-            () -> assertThat(result.getProcessed().get()).isEqualTo(1),
-            () -> assertThat(result.getUpdated().get()).isEqualTo(0),
-            () -> assertThat(result.getFailed().get()).isEqualTo(1),
-            () -> assertThat(errors).hasSize(1),
-            () -> assertThat(errors).hasOnlyOneElementSatisfying(msg -> assertThat(msg)
-                .contains("Not found when attempting to fetch while retrying after concurrency modification."))
-        );
-        verify(taxCategoryService, times(1)).fetchMatchingTaxCategoriesByKeys(any());
-        verify(taxCategoryService, times(1)).updateTaxCategory(any(), any());
-        verify(taxCategoryService, times(1)).fetchTaxCategory(any());
-        verifyNoMoreInteractions(taxCategoryService);
-    }
-
-    @Test
     void sync_WithNoError_ShouldApplyBeforeUpdateCallbackAndIncrementUpdated() {
         final AtomicBoolean callbackApplied = new AtomicBoolean(false);
         final TaxCategorySyncOptions options = TaxCategorySyncOptionsBuilder.of(mock(SphereClient.class))
