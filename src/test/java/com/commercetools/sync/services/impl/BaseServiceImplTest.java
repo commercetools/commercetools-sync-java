@@ -297,7 +297,7 @@ class BaseServiceImplTest {
     }
 
     @Test
-    void cacheKeysToIds_WithCachedKeysExceedingCacheSize_ShouldEvictOldEntriesAndReturnLatestUsed() {
+    void cacheKeysToIds_WithCachedKeysExceedingCacheSize_ShouldNotReturnLeastUsedKeys() {
         //preparation
         final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
         final Product product1 = mock(Product.class);
