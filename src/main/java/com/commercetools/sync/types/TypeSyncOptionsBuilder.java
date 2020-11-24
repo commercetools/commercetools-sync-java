@@ -40,7 +40,8 @@ public final class TypeSyncOptionsBuilder
             warningCallback,
             batchSize,
             beforeUpdateCallback,
-            beforeCreateCallback
+            beforeCreateCallback,
+            cacheSize
         );
     }
 

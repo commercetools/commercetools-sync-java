@@ -2,8 +2,8 @@ package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
-import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
 import com.commercetools.sync.commons.models.ResourceKeyId;
+import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptions;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptionsBuilder;
@@ -35,6 +35,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
@@ -65,6 +68,7 @@ class BaseServiceImplTest {
                 .of(client)
                 .warningCallback(warningCallback)
                 .batchSize(20)
+                .cacheSize(2)
                 .build();
         service = new ProductServiceImpl(syncOptions);
     }
@@ -293,6 +297,37 @@ class BaseServiceImplTest {
     }
 
     @Test
+    void cacheKeysToIds_WithCachedKeysExceedingCacheSize_ShouldNotReturnLeastUsedKeys() {
+        //preparation
+        final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
+        final Product product1 = mock(Product.class);
+        when(product1.getKey()).thenReturn("key-1");
+        when(product1.getId()).thenReturn("id-1");
+        final Product product2 = mock(Product.class);
+        when(product2.getKey()).thenReturn("key-2");
+        when(product2.getId()).thenReturn("id-2");
+        when(pagedQueryResult.getResults()).thenReturn(Arrays.asList(product1, product2));
+        final ResourceKeyIdGraphQlResult resourceKeyIdGraphQlResult = mock(ResourceKeyIdGraphQlResult.class);
+        final ResourceKeyId resourceKeyId = mock(ResourceKeyId.class);
+        when(resourceKeyId.getKey()).thenReturn("testKey");
+        when(resourceKeyId.getId()).thenReturn("testId");
+        when(resourceKeyIdGraphQlResult.getResults()).thenReturn(singleton(resourceKeyId));
+        when(client.execute(any()))
+            .thenReturn(completedFuture(pagedQueryResult))
+            .thenReturn(completedFuture(resourceKeyIdGraphQlResult));
+        service.fetchMatchingProductsByKeys(Arrays.asList("key-1", "key-2").stream().collect(Collectors.toSet()));
+        service.getIdFromCacheOrFetch("key-1"); //access the first added cache entry
+
+        //test
+        final Map<String, String> optional = service.cacheKeysToIds(singleton("testKey")).toCompletableFuture().join();
+
+        //assertions
+        assertThat(optional).containsExactly(MapEntry.entry("key-1", "id-1"), MapEntry.entry("testKey", "testId"));
+        verify(client, times(1)).execute(any(ProductQuery.class));
+        verify(client, times(1)).execute(any(ResourceKeyIdGraphQlRequest.class));
+    }
+
+    @Test
     void cacheKeysToIdsUsingGraphQl_WithNoCachedKeys_ShouldMakeRequestAndReturnCachedEntry() {
         //preparation
         final ResourceKeyIdGraphQlResult resourceKeyIdGraphQlResult = mock(ResourceKeyIdGraphQlResult.class);
@@ -329,7 +364,9 @@ class BaseServiceImplTest {
         final CompletionStage<Map<String, String>> result = service.cacheKeysToIds(singleton("testKey"));
 
         //assertions
-        assertThat(result).hasFailedWithThrowableThat().isExactlyInstanceOf(BadGatewayException.class);
+        assertThat(result).failsWithin(1, TimeUnit.SECONDS)
+                .withThrowableOfType(ExecutionException.class)
+                .withCauseExactlyInstanceOf(BadGatewayException.class);
         verify(client, times(1)).execute(any(ResourceKeyIdGraphQlRequest.class));
     }
 

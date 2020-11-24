@@ -42,7 +42,8 @@ public final class StateSyncOptionsBuilder extends BaseSyncOptionsBuilder<StateS
             warningCallback,
             batchSize,
             beforeUpdateCallback,
-            beforeCreateCallback
+            beforeCreateCallback,
+            cacheSize
         );
     }
 

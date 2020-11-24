@@ -27,7 +27,18 @@
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 
 -->
+<!--
+### 3.0.1 - MM DD, 2020
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/3.0.0...3.0.1) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/3.0.1/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/3.0.1)
 
+- ✨ **Enhancements** (1)
+    -  To improve performance of the library, the services are using graphQL API to fetch resource ids only; also the 
+    `keyToId` caches evict entries which haven't been used for the longest amount of time beyond a maximum size. The cache 
+    size is configurable in the sync options. [#582](https://github.com/commercetools/commercetools-sync-java/issues/582)
+-->
+    
 ### 3.0.0 - Nov 18, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/2.3.0...3.0.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/3.0.0/) |
