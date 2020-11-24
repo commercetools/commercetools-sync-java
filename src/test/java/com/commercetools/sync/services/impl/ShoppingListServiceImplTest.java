@@ -198,15 +198,15 @@ class ShoppingListServiceImplTest {
         assertThat(errors.keySet())
                 .hasSize(1)
                 .singleElement().satisfies(message -> {
-            assertThat(message).contains("Failed to create draft with key: 'key'.");
-        });
+                    assertThat(message).contains("Failed to create draft with key: 'key'.");
+                });
 
         assertThat(errors.values())
                 .hasSize(1)
                 .singleElement().satisfies(exception -> {
-            assertThat(exception).isExactlyInstanceOf(SyncException.class);
-            assertThat(exception.getCause()).isExactlyInstanceOf(InternalServerErrorException.class);
-        });
+                    assertThat(exception).isExactlyInstanceOf(SyncException.class);
+                    assertThat(exception.getCause()).isExactlyInstanceOf(InternalServerErrorException.class);
+                });
     }
 
     @Test
