@@ -95,7 +95,7 @@ class ProductServiceTest {
         assertThat(errorExceptions)
                 .hasSize(1)
                 .singleElement().satisfies(exception ->
-                assertThat(exception).isExactlyInstanceOf(BadRequestException.class));
+                    assertThat(exception).isExactlyInstanceOf(BadRequestException.class));
     }
 
     @Test
