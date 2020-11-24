@@ -27,7 +27,7 @@ public final class TypeSyncOptions extends BaseSyncOptions<Type, TypeDraft> {
         final int batchSize,
         @Nullable final TriFunction<List<UpdateAction<Type>>, TypeDraft,
                 Type, List<UpdateAction<Type>>> beforeUpdateCallback,
-        @Nullable final Function<TypeDraft, TypeDraft> beforeCreateCallback
+        @Nullable final Function<TypeDraft, TypeDraft> beforeCreateCallback, final long cacheSize
     ) {
         super(
             ctpClient,
@@ -35,7 +35,8 @@ public final class TypeSyncOptions extends BaseSyncOptions<Type, TypeDraft> {
             warningCallback,
             batchSize,
             beforeUpdateCallback,
-            beforeCreateCallback
+            beforeCreateCallback,
+            cacheSize
         );
     }
 

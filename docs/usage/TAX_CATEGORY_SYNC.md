@@ -25,7 +25,7 @@ against a [TaxCategoryDraft](https://docs.commercetools.com/http-api-projects-ta
 
 #### Prerequisites
 1. Create a `sphereClient`:
-Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/3.0.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
+Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/3.0.1/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 2. The sync expects a list of `TaxCategoryDraft`s that have their `key` fields set to be matched with

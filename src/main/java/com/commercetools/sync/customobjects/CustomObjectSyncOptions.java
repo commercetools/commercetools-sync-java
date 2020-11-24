@@ -31,13 +31,15 @@ public final class CustomObjectSyncOptions extends BaseSyncOptions<CustomObject<
         @Nullable final TriFunction<List<UpdateAction<CustomObject<JsonNode>>>, CustomObjectDraft<JsonNode>,
             CustomObject<JsonNode>,
             List<UpdateAction<CustomObject<JsonNode>>>> beforeUpdateCallback,
-        @Nullable final Function<CustomObjectDraft<JsonNode>, CustomObjectDraft<JsonNode>> beforeCreateCallback) {
+        @Nullable final Function<CustomObjectDraft<JsonNode>, CustomObjectDraft<JsonNode>> beforeCreateCallback,
+        final long cacheSize) {
         super(
             ctpClient,
             errorCallBack,
             warningCallBack,
             batchSize,
             beforeUpdateCallback,
-            beforeCreateCallback);
+            beforeCreateCallback,
+            cacheSize);
     }
 }

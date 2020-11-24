@@ -47,6 +47,7 @@ class CategorySyncOptionsBuilderTest {
         assertThat(categorySyncOptions.getWarningCallback()).isNull();
         assertThat(categorySyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
         assertThat(categorySyncOptions.getBatchSize()).isEqualTo(CategorySyncOptionsBuilder.BATCH_SIZE_DEFAULT);
+        assertThat(categorySyncOptions.getCacheSize()).isEqualTo(10_000);
     }
 
     @Test
@@ -250,4 +251,27 @@ class CategorySyncOptionsBuilderTest {
 
         assertThat(filteredDraft).isEmpty();
     }
+
+    @Test
+    void cacheSize_WithPositiveValue_ShouldSetCacheSize() {
+        final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_CLIENT)
+                                                                                  .cacheSize(10)
+                                                                                  .build();
+        assertThat(categorySyncOptions.getCacheSize()).isEqualTo(10);
+    }
+
+    @Test
+    void cacheSize_WithZeroOrNegativeValue_ShouldFallBackToDefaultValue() {
+        final CategorySyncOptions categorySyncOptionsWithZeroCacheSize = CategorySyncOptionsBuilder.of(CTP_CLIENT)
+                                                                                                   .cacheSize(0)
+                                                                                                   .build();
+        assertThat(categorySyncOptionsWithZeroCacheSize.getCacheSize()).isEqualTo(10_000);
+
+        final CategorySyncOptions categorySyncOptionsWithNegativeCacheSize  = CategorySyncOptionsBuilder
+            .of(CTP_CLIENT)
+            .cacheSize(-100)
+            .build();
+        assertThat(categorySyncOptionsWithNegativeCacheSize.getCacheSize()).isEqualTo(10_000);
+    }
+
 }

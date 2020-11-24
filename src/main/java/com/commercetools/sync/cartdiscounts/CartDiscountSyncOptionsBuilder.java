@@ -41,7 +41,8 @@ public final class CartDiscountSyncOptionsBuilder extends BaseSyncOptionsBuilder
             warningCallback,
             batchSize,
             beforeUpdateCallback,
-            beforeCreateCallback
+            beforeCreateCallback,
+            cacheSize
         );
     }
 

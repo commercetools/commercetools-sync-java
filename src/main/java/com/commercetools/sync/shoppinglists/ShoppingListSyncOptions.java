@@ -27,7 +27,8 @@ public final class ShoppingListSyncOptions extends BaseSyncOptions<ShoppingList,
         final int batchSize,
         @Nullable final TriFunction<List<UpdateAction<ShoppingList>>, ShoppingListDraft,
             ShoppingList, List<UpdateAction<ShoppingList>>> beforeUpdateCallback,
-        @Nullable final Function<ShoppingListDraft, ShoppingListDraft> beforeCreateCallback
+        @Nullable final Function<ShoppingListDraft, ShoppingListDraft> beforeCreateCallback,
+        final long cacheSize
     ) {
         super(
             ctpClient,
@@ -35,7 +36,8 @@ public final class ShoppingListSyncOptions extends BaseSyncOptions<ShoppingList,
             warningCallback,
             batchSize,
             beforeUpdateCallback,
-            beforeCreateCallback
+            beforeCreateCallback,
+            cacheSize
         );
     }
 

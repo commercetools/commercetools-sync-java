@@ -282,4 +282,32 @@ class ShoppingListSyncOptionsBuilderTest {
 
         assertThat(filteredDraft).isEmpty();
     }
+
+    @Test
+    void cacheSize_WithPositiveValue_ShouldSetCacheSize() {
+        final ShoppingListSyncOptions shoppingListSyncOptions =
+            ShoppingListSyncOptionsBuilder
+                .of(CTP_CLIENT)
+                .cacheSize(10)
+                .build();
+
+        assertThat(shoppingListSyncOptions.getCacheSize()).isEqualTo(10);
+    }
+
+    @Test
+    void cacheSize_WithZeroOrNegativeValue_ShouldFallBackToDefaultValue() {
+        final ShoppingListSyncOptions shoppingListSyncOptionsWithZeroCacheSize =
+            ShoppingListSyncOptionsBuilder.of(CTP_CLIENT)
+                                          .cacheSize(0)
+                                          .build();
+
+        assertThat(shoppingListSyncOptionsWithZeroCacheSize.getCacheSize()).isEqualTo(10_000);
+
+        final ShoppingListSyncOptions shoppingListSyncOptionsWithNegativeCacheSize =
+            ShoppingListSyncOptionsBuilder.of(CTP_CLIENT)
+                                          .cacheSize(-100)
+                                          .build();
+
+        assertThat(shoppingListSyncOptionsWithNegativeCacheSize.getCacheSize()).isEqualTo(10_000);
+    }
 }

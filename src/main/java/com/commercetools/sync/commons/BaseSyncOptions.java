@@ -29,6 +29,7 @@ public class BaseSyncOptions<U, V> {
     private int batchSize;
     private final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>> beforeUpdateCallback;
     private final Function<V, V> beforeCreateCallback;
+    private long cacheSize;
 
     protected BaseSyncOptions(
         @Nonnull final SphereClient ctpClient,
@@ -38,13 +39,14 @@ public class BaseSyncOptions<U, V> {
         final int batchSize,
         @Nullable final TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>>
             beforeUpdateCallback,
-        @Nullable final Function<V, V> beforeCreateCallback) {
+        @Nullable final Function<V, V> beforeCreateCallback, final long cacheSize) {
         this.ctpClient = ctpClient;
         this.errorCallback = errorCallback;
         this.batchSize = batchSize;
         this.warningCallback = warningCallback;
         this.beforeUpdateCallback = beforeUpdateCallback;
         this.beforeCreateCallback = beforeCreateCallback;
+        this.cacheSize = cacheSize;
     }
 
     /**
@@ -156,6 +158,19 @@ public class BaseSyncOptions<U, V> {
      */
     public int getBatchSize() {
         return batchSize;
+    }
+
+    /**
+     * Gets the cache size used in the sync process. To increase performance during the sync some resource keys / ids
+     * are cached which are required for resolving references. To keep the cache performant old entries are evicted
+     * when a certain size is reached.
+     *
+     * <p>This cache size is set to 100.000 by default.
+     *
+     * @return option that indicates capacity of cache of resource keys
+     */
+    public long getCacheSize() {
+        return cacheSize;
     }
 
     /**

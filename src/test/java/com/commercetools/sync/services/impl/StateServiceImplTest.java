@@ -130,7 +130,7 @@ class StateServiceImplTest {
         assertAll(
             () -> assertThat(states).isNotEmpty(),
             () -> assertThat(states).contains(mock1, mock2),
-            () -> assertThat(service.keyToIdCache).containsKeys(key1, key2)
+            () -> assertThat(service.keyToIdCache.asMap()).containsKeys(key1, key2)
         );
         ArgumentCaptor<StateQuery> captor = ArgumentCaptor.forClass(StateQuery.class);
         verify(client).execute(captor.capture());
@@ -164,7 +164,7 @@ class StateServiceImplTest {
         assertAll(
             () -> assertThat(states).isNotEmpty(),
             () -> assertThat(states).contains(mock1, mock2),
-            () -> assertThat(service.keyToIdCache).containsKeys(key1, key2)
+            () -> assertThat(service.keyToIdCache.asMap()).containsKeys(key1, key2)
         );
 
         ArgumentCaptor<StateQuery> captor = ArgumentCaptor.forClass(StateQuery.class);
@@ -189,7 +189,7 @@ class StateServiceImplTest {
 
         assertAll(
             () -> assertThat(stateOptional).containsSame(mock),
-            () -> assertThat(service.keyToIdCache.get(stateKey)).isEqualTo(stateId)
+            () -> assertThat(service.keyToIdCache.getIfPresent(stateKey)).isEqualTo(stateId)
         );
         verify(client).execute(any(StateQuery.class));
     }

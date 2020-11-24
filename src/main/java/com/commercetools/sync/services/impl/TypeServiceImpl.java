@@ -1,6 +1,8 @@
 package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
+import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
+import com.commercetools.sync.commons.models.GraphQlQueryResources;
 import com.commercetools.sync.services.TypeService;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.types.Type;
@@ -36,10 +38,7 @@ public final class TypeServiceImpl extends BaseServiceWithKey<TypeDraft, Type, B
     public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> typeKeys) {
 
         return cacheKeysToIds(
-            typeKeys, keysNotCached -> TypeQueryBuilder
-                .of()
-                .plusPredicates(typeQueryModel -> typeQueryModel.key().isIn(keysNotCached))
-                .build());
+            typeKeys, keysNotCached -> new ResourceKeyIdGraphQlRequest(keysNotCached, GraphQlQueryResources.TYPES));
     }
 
     @Nonnull

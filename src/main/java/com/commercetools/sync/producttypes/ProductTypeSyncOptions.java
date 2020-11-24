@@ -26,7 +26,7 @@ public final class ProductTypeSyncOptions extends BaseSyncOptions<ProductType, P
         final int batchSize,
         @Nullable final TriFunction<List<UpdateAction<ProductType>>, ProductTypeDraft, ProductType,
                 List<UpdateAction<ProductType>>> beforeUpdateCallback,
-        @Nullable final Function<ProductTypeDraft, ProductTypeDraft> beforeCreateCallback
+        @Nullable final Function<ProductTypeDraft, ProductTypeDraft> beforeCreateCallback, final long cacheSize
     ) {
 
         super(
@@ -35,7 +35,8 @@ public final class ProductTypeSyncOptions extends BaseSyncOptions<ProductType, P
             warningCallback,
             batchSize,
             beforeUpdateCallback,
-            beforeCreateCallback
+            beforeCreateCallback,
+            cacheSize
         );
     }
 
