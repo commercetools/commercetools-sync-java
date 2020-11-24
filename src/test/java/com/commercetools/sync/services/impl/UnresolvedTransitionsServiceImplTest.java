@@ -54,7 +54,7 @@ class UnresolvedTransitionsServiceImplTest {
         final Set<String> keys = new HashSet<>();
 
         initMockService(mock(SphereClient.class));
-        
+
         // test
         final Set<WaitingToBeResolvedTransitions> result = service
             .fetch(keys)
