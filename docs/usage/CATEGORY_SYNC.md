@@ -183,7 +183,7 @@ Utility methods provided by the library to compare the specific fields of a Cate
 ````java
 Optional<UpdateAction<Category>> updateAction = buildChangeNameUpdateAction(oldCategory, categoryDraft);
 ````
-More examples of those utils for different fields can be found [here](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/categories/updateactionutils).
+More examples of those utils for different fields can be found [here](https://github.com/commercetools/commercetools-sync-java/blob/master/src/test/java/com/commercetools/sync/categories/utils/CategoryUpdateActionUtilsTest.java).
 
 
 ## Caveats   
