@@ -148,7 +148,6 @@ public class MockUtils {
     }
 
     /**
-<<<<<<< HEAD
      * Builds a {@link Map} for the custom fields to their {@link JsonNode} values that looks as follows in JSON
      * format:
      *
@@ -162,7 +161,9 @@ public class MockUtils {
         customFieldsJsons.put(LOCALISED_STRING_CUSTOM_FIELD_NAME,
                 JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
         return customFieldsJsons;
-=======
+    }
+
+    /**
      * Creates a mock {@link CustomerService} that returns a dummy customer id of value "customerId" instance
      * whenever the following method is called on the service:
      * <ul>
@@ -192,6 +193,5 @@ public class MockUtils {
         when(customer.getId()).thenReturn(id);
         when(customer.getKey()).thenReturn(key);
         return customer;
->>>>>>> master
     }
 }
