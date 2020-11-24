@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.models.Builder;
 import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.types.CustomDraft;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
 
@@ -35,7 +34,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
  *            specified by the user, on reference resolution.
  */
 public abstract class CustomReferenceResolver
-    <D extends CustomDraft, B extends Builder<? extends D>, S extends BaseSyncOptions>
+    <D, B extends Builder<? extends D>, S extends BaseSyncOptions>
     extends BaseReferenceResolver<D, S> {
 
     public static final String TYPE_DOES_NOT_EXIST = "Type with key '%s' doesn't exist.";

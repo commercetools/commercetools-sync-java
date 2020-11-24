@@ -28,6 +28,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
+import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.FIELD_DEFINITION_1;
 import static com.commercetools.sync.integration.commons.utils.TypeITUtils.TYPE_DESCRIPTION_1;
@@ -62,6 +63,7 @@ class TypeServiceImplIT {
         errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
 
+        deleteAllCategories(CTP_TARGET_CLIENT);
         deleteTypes(CTP_TARGET_CLIENT);
         createCategoriesCustomType(OLD_TYPE_KEY, OLD_TYPE_LOCALE, OLD_TYPE_NAME, CTP_TARGET_CLIENT);
 
