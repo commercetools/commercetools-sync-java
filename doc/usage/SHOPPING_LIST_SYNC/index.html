@@ -633,7 +633,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/3.0.0/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/3.0.1/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -919,7 +919,7 @@ Any reference that is not expanded will have its id in place and not replaced by
 resources on the target commercetools project and the library will issue an update/create an API request without reference
 resolution. Therefore, in order for the sync to resolve the actual ids of those references, those <code>key</code>s have to be supplied in the following way:</p>
 <ul>
-<li>When syncing from a source commercetools project, you can use <a href="https://commercetools.github.io/commercetools-sync-java/v/3.0.0/com/commercetools/sync/shoppinglists/utils/ShoppingListReferenceResolutionUtils.html#mapToShoppingListDrafts-java.util.List-"><code>mapToShoppingListDraft</code></a>
+<li>When syncing from a source commercetools project, you can use <a href="https://commercetools.github.io/commercetools-sync-java/v/3.0.1/com/commercetools/sync/shoppinglists/utils/ShoppingListReferenceResolutionUtils.html#mapToShoppingListDrafts-java.util.List-"><code>mapToShoppingListDraft</code></a>
 method that maps from a <code>ShoppingList</code> to <code>ShoppingListDraft</code> to make them ready for reference resolution by the shopping list sync:</li>
 </ul>
 <div class="codehilite"><pre><span></span><code><span class="kd">final</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">ShoppingListDraft</span><span class="o">&gt;</span> <span class="n">shoppingListDrafts</span> <span class="o">=</span> <span class="n">ShoppingListReferenceResolutionUtils</span><span class="p">.</span><span class="na">mapToShoppingListDrafts</span><span class="p">(</span><span class="n">shoppingLists</span><span class="p">);</span>
