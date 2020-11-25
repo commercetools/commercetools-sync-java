@@ -5,12 +5,8 @@ import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
-import com.commercetools.sync.services.impl.CategoryServiceImpl;
-import com.commercetools.sync.services.impl.TypeServiceImpl;
-import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
-import io.sphere.sdk.categories.queries.CategoryQuery;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.AssetDraft;
 import io.sphere.sdk.models.AssetDraftBuilder;
@@ -20,16 +16,18 @@ import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.Type;
-import io.sphere.sdk.types.queries.TypeQuery;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
+import io.sphere.sdk.utils.CompletableFutureUtils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraftBuilder;
 import static com.commercetools.sync.categories.helpers.CategoryReferenceResolver.FAILED_TO_RESOLVE_CUSTOM_TYPE;
@@ -53,11 +51,8 @@ class CategoryReferenceResolverTest {
 
     private TypeService typeService;
     private CategoryService categoryService;
-
     private static final String CACHED_CATEGORY_ID = UUID.randomUUID().toString();
     private static final String CACHED_CATEGORY_KEY = "someKey";
-
-
     private CategoryReferenceResolver referenceResolver;
 
     /**
@@ -146,11 +141,10 @@ class CategoryReferenceResolverTest {
         final SphereClient ctpClient = mock(SphereClient.class);
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(ctpClient)
                                                                                   .build();
-        final CategoryService categoryService = new CategoryServiceImpl(categorySyncOptions);
+        final CategoryService categoryService = mock(CategoryService.class);
 
-        final CompletableFuture<PagedQueryResult<Category>> futureThrowingSphereException = new CompletableFuture<>();
-        futureThrowingSphereException.completeExceptionally(new SphereException("CTP error on fetch"));
-        when(ctpClient.execute(any(CategoryQuery.class))).thenReturn(futureThrowingSphereException);
+        when(categoryService.fetchCachedCategoryId(any()))
+            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new SphereException("CTP error on fetch")));
 
         final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
             "nonExistingCategoryKey", "customTypeKey", new HashMap<>());
@@ -160,9 +154,10 @@ class CategoryReferenceResolverTest {
 
         // Test and assertion
         assertThat(categoryReferenceResolver.resolveParentReference(categoryDraft))
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(SphereException.class)
-            .hasMessageContaining("CTP error on fetch");
+            .failsWithin(1, TimeUnit.SECONDS)
+            .withThrowableOfType(ExecutionException.class)
+            .withCauseExactlyInstanceOf(SphereException.class)
+            .withMessageContaining("CTP error on fetch");
     }
 
     @Test
@@ -178,9 +173,10 @@ class CategoryReferenceResolverTest {
             format(PARENT_CATEGORY_DOES_NOT_EXIST, CACHED_CATEGORY_KEY));
 
         assertThat(referenceResolver.resolveParentReference(categoryDraft))
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(expectedMessageWithCause);
+            .failsWithin(1, TimeUnit.SECONDS)
+            .withThrowableOfType(ExecutionException.class)
+            .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+            .withMessageContaining(expectedMessageWithCause);
     }
 
     @Test
@@ -190,9 +186,11 @@ class CategoryReferenceResolverTest {
                                                                        .parent(ResourceIdentifier.ofKey(""));
 
         assertThat(referenceResolver.resolveParentReference(categoryDraft))
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format("Failed to resolve parent reference on CategoryDraft with key:'key'. Reason: %s",
+            .failsWithin(1, TimeUnit.SECONDS)
+            .withThrowableOfType(ExecutionException.class)
+            .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+            .withMessageContaining(
+                format("Failed to resolve parent reference on CategoryDraft with key:'key'. Reason: %s",
                 BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
@@ -204,9 +202,11 @@ class CategoryReferenceResolverTest {
                                                                        .parent(ResourceIdentifier.ofKey(null));
 
         assertThat(referenceResolver.resolveParentReference(categoryDraft))
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format("Failed to resolve parent reference on CategoryDraft with key:'key'. Reason: %s",
+            .failsWithin(1, TimeUnit.SECONDS)
+            .withThrowableOfType(ExecutionException.class)
+            .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+            .withMessageContaining(
+                format("Failed to resolve parent reference on CategoryDraft with key:'key'. Reason: %s",
                 BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
@@ -255,23 +255,26 @@ class CategoryReferenceResolverTest {
         final SphereClient ctpClient = mock(SphereClient.class);
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(ctpClient)
                                                                                   .build();
-        final TypeService typeService = new TypeServiceImpl(categorySyncOptions);
+        final TypeService typeService = mock(TypeService.class);
 
         final CompletableFuture<PagedQueryResult<Type>> futureThrowingSphereException = new CompletableFuture<>();
         futureThrowingSphereException.completeExceptionally(new SphereException("CTP error on fetch"));
-        when(ctpClient.execute(any(TypeQuery.class))).thenReturn(futureThrowingSphereException);
+        when(typeService.fetchCachedTypeId(any()))
+            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new SphereException("CTP error on fetch")));
 
         final CategoryDraftBuilder categoryDraft = getMockCategoryDraftBuilder(Locale.ENGLISH, "myDraft", "key",
             null, "customTypeId", new HashMap<>());
+
 
         final CategoryReferenceResolver categoryReferenceResolver = new CategoryReferenceResolver(categorySyncOptions,
             typeService, categoryService);
 
         // Test and assertion
         assertThat(categoryReferenceResolver.resolveCustomTypeReference(categoryDraft))
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(SphereException.class)
-            .hasMessageContaining("CTP error on fetch");
+            .failsWithin(1, TimeUnit.SECONDS)
+            .withThrowableOfType(ExecutionException.class)
+            .withCauseExactlyInstanceOf(SphereException.class)
+            .withMessageContaining("CTP error on fetch");
     }
 
     @Test
@@ -290,9 +293,10 @@ class CategoryReferenceResolverTest {
             format("%s Reason: %s", expectedExceptionMessage, format(TYPE_DOES_NOT_EXIST, "customTypeKey"));
 
         assertThat(referenceResolver.resolveCustomTypeReference(categoryDraft))
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(expectedMessageWithCause);
+            .failsWithin(1, TimeUnit.SECONDS)
+            .withThrowableOfType(ExecutionException.class)
+            .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+            .withMessageContaining(expectedMessageWithCause);
     }
 
     @Test
@@ -301,9 +305,11 @@ class CategoryReferenceResolverTest {
             null, "", emptyMap());
 
         assertThat(referenceResolver.resolveCustomTypeReference(categoryDraft))
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format("Failed to resolve custom type reference on CategoryDraft with key:'key'. Reason: %s",
+            .failsWithin(1, TimeUnit.SECONDS)
+            .withThrowableOfType(ExecutionException.class)
+            .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+            .withMessageContaining(
+                format("Failed to resolve custom type reference on CategoryDraft with key:'key'. Reason: %s",
                 BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
