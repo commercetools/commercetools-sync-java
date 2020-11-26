@@ -355,11 +355,11 @@ class ProductSyncWithPricesIT {
         assertThat(errorCallBackExceptions).hasSize(1)
                                            .extracting(Throwable::getMessage)
                                            .extracting(String::toLowerCase)
-                                           .hasOnlyOneElementSatisfying(msg ->
+                                           .singleElement().satisfies(msg ->
                                                assertThat(msg).contains("duplicate price scope"));
         assertThat(errorCallBackMessages).hasSize(1)
                                          .extracting(String::toLowerCase)
-                                         .hasOnlyOneElementSatisfying(msg ->
+                                            .singleElement().satisfies(msg ->
                                              assertThat(msg).contains("duplicate price scope"));
         assertThat(warningCallBackMessages).isEmpty();
 

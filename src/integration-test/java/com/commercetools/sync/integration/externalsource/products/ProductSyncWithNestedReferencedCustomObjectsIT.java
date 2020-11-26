@@ -450,7 +450,7 @@ class ProductSyncWithNestedReferencedCustomObjectsIT {
         assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
         assertThat(errorCallBackExceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(error -> {
+            .singleElement().satisfies(error -> {
                 assertThat(error).hasCauseExactlyInstanceOf(ErrorResponseException.class);
                 final ErrorResponseException errorResponseException = (ErrorResponseException) error.getCause();
                 assertThat(errorResponseException.getStatusCode()).isEqualTo(400);
@@ -461,7 +461,7 @@ class ProductSyncWithNestedReferencedCustomObjectsIT {
             });
         assertThat(errorCallBackMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
+            .singleElement().satisfies(message ->
                 assertThat(message)
                     .contains("The value '{\"typeId\":\"key-value-document\","
                         + "\"id\":\"non-existing-container|non-existing-key\"}' "
@@ -584,7 +584,7 @@ class ProductSyncWithNestedReferencedCustomObjectsIT {
         assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
         assertThat(errorCallBackExceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(error -> {
+            .singleElement().satisfies(error -> {
                 assertThat(error).hasCauseExactlyInstanceOf(ErrorResponseException.class);
                 final ErrorResponseException errorResponseException = (ErrorResponseException) error.getCause();
                 assertThat(errorResponseException.getStatusCode()).isEqualTo(400);
@@ -595,7 +595,7 @@ class ProductSyncWithNestedReferencedCustomObjectsIT {
             });
         assertThat(errorCallBackMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
+            .singleElement().satisfies(message ->
                 assertThat(message)
                     .contains("The value '{\"typeId\":\"key-value-document\","
                         + "\"id\":\"non-existing-container|non-existing-key\"}' "

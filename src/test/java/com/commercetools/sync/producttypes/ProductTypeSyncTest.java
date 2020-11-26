@@ -253,13 +253,13 @@ class ProductTypeSyncTest {
         // assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
+            .singleElement().satisfies(message ->
                 assertThat(message).isEqualTo("Failed to fetch existing product types with keys: '[foo]'.")
             );
 
         assertThat(exceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> {
+            .singleElement().satisfies(throwable -> {
                 assertThat(throwable).isExactlyInstanceOf(SyncException.class);
                 assertThat(throwable).hasCauseExactlyInstanceOf(CompletionException.class);
                 assertThat(throwable.getCause()).hasCauseExactlyInstanceOf(SphereException.class);

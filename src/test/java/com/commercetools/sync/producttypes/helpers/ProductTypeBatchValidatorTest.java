@@ -157,7 +157,7 @@ class ProductTypeBatchValidatorTest {
             format(PRODUCT_TYPE_HAS_INVALID_REFERENCES, productTypeDraft.getKey(), "[invalidNested]");
         assertThat(errorCallBackMessages).containsExactly(expectedExceptionMessage);
         assertThat(errorCallBackExceptions)
-            .hasOnlyOneElementSatisfying(throwable -> {
+            .singleElement().satisfies(throwable -> {
                 assertThat(throwable).isInstanceOf(SyncException.class);
                 assertThat(throwable.getMessage()).isEqualTo(expectedExceptionMessage);
                 assertThat(throwable.getCause()).isInstanceOf(InvalidReferenceException.class);
@@ -212,7 +212,7 @@ class ProductTypeBatchValidatorTest {
             productTypeDraft.getKey(), "[invalidNested, setOfInvalidNested]");
         assertThat(errorCallBackMessages).containsExactly(expectedExceptionMessage);
         assertThat(errorCallBackExceptions)
-            .hasOnlyOneElementSatisfying(throwable -> {
+            .singleElement().satisfies(throwable -> {
                 assertThat(throwable).isInstanceOf(SyncException.class);
                 assertThat(throwable.getMessage()).isEqualTo(expectedExceptionMessage);
                 assertThat(throwable.getCause()).isInstanceOf(InvalidReferenceException.class);

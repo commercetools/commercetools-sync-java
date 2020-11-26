@@ -447,7 +447,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
         assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
         assertThat(errorCallBackExceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(error -> {
+            .singleElement().satisfies(error -> {
                 assertThat(error).hasCauseExactlyInstanceOf(ErrorResponseException.class);
                 final ErrorResponseException errorResponseException = (ErrorResponseException) error.getCause();
                 assertThat(errorResponseException.getStatusCode()).isEqualTo(400);
@@ -457,7 +457,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
             });
         assertThat(errorCallBackMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
+            .singleElement().satisfies(message ->
                 assertThat(message)
                     .contains("The value '{\"typeId\":\"category\",\"id\":\"nonExistingKey\"}' "
                         + "is not valid for field 'nestedAttribute.category-reference'"));
@@ -574,7 +574,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
         assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
         assertThat(errorCallBackExceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(error -> {
+            .singleElement().satisfies(error -> {
                 assertThat(error).hasCauseExactlyInstanceOf(ErrorResponseException.class);
                 final ErrorResponseException errorResponseException = (ErrorResponseException) error.getCause();
                 assertThat(errorResponseException.getStatusCode()).isEqualTo(400);
@@ -584,7 +584,7 @@ class ProductSyncWithNestedReferencedCategoriesIT {
             });
         assertThat(errorCallBackMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
+            .singleElement().satisfies(message ->
                 assertThat(message)
                     .contains("The value '{\"typeId\":\"category\",\"id\":\"nonExistingKey\"}' "
                         + "is not valid for field 'nestedAttribute.category-reference-set'"));

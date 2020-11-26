@@ -284,11 +284,11 @@ class TypeServiceImplIT {
         assertThat(result).isEmpty();
         assertThat(errorCallBackMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(msg -> assertThat(msg).contains("A duplicate value"));
+            .singleElement().satisfies(msg -> assertThat(msg).contains("A duplicate value"));
 
         assertThat(errorCallBackExceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(exception -> {
+            .singleElement().satisfies(exception -> {
                 assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class);
                 final ErrorResponseException errorResponseException = (ErrorResponseException) exception;
 

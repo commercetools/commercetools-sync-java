@@ -333,7 +333,7 @@ class ProductSyncWithReferencedProductTypesIT {
         assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
         assertThat(errorCallBackExceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(error -> {
+            .singleElement().satisfies(error -> {
                 assertThat(error).hasCauseExactlyInstanceOf(ErrorResponseException.class);
                 final ErrorResponseException errorResponseException = (ErrorResponseException) error.getCause();
                 assertThat(errorResponseException.getStatusCode()).isEqualTo(400);
@@ -343,7 +343,7 @@ class ProductSyncWithReferencedProductTypesIT {
             });
         assertThat(errorCallBackMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
+            .singleElement().satisfies(message ->
                 assertThat(message)
                     .contains("The value '{\"typeId\":\"product-type\",\"id\":\"nonExistingKey\"}' "
                         + "is not valid for field 'productType-reference'"));
@@ -473,7 +473,7 @@ class ProductSyncWithReferencedProductTypesIT {
         assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
         assertThat(errorCallBackExceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(error -> {
+            .singleElement().satisfies(error -> {
                 assertThat(error).hasCauseExactlyInstanceOf(ErrorResponseException.class);
                 final ErrorResponseException errorResponseException = (ErrorResponseException) error.getCause();
                 assertThat(errorResponseException.getStatusCode()).isEqualTo(400);
@@ -483,7 +483,7 @@ class ProductSyncWithReferencedProductTypesIT {
             });
         assertThat(errorCallBackMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
+            .singleElement().satisfies(message ->
                 assertThat(message)
                     .contains("The value '{\"typeId\":\"product-type\",\"id\":\"nonExistingKey\"}' "
                         + "is not valid for field 'productType-reference-set'"));

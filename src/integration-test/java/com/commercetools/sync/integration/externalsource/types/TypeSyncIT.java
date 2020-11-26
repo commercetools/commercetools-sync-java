@@ -317,14 +317,14 @@ class TypeSyncIT {
         // assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
+            .singleElement().satisfies(message ->
                 assertThat(message).isEqualTo("TypeDraft with name: LocalizedString(en -> name_1) doesn't have a key. "
                     + "Please make sure all type drafts have keys.")
             );
 
         assertThat(exceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable).isNull());
+            .singleElement().satisfies(throwable -> assertThat(throwable).isNull());
 
         assertThat(typeSyncStatistics).hasValues(1, 0, 0, 1);
     }
@@ -355,13 +355,13 @@ class TypeSyncIT {
         //assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
+            .singleElement().satisfies(message ->
                 assertThat(message).isEqualTo("TypeDraft is null.")
             );
 
         assertThat(exceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable).isNull());
+            .singleElement().satisfies(throwable -> assertThat(throwable).isNull());
 
         assertThat(typeSyncStatistics).hasValues(1, 0, 0, 1);
     }
@@ -400,13 +400,13 @@ class TypeSyncIT {
         // assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
+            .singleElement().satisfies(message ->
                 assertThat(message).contains("Failed to update type with key: 'key_1'.")
             );
 
         assertThat(exceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> {
+            .singleElement().satisfies(throwable -> {
                 assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
                 assertThat(throwable).hasCauseExactlyInstanceOf(ErrorResponseException.class);
                 assertThat(throwable).hasMessageContaining("Missing required value");
@@ -455,13 +455,13 @@ class TypeSyncIT {
         // assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
+            .singleElement().satisfies(message ->
                 assertThat(message).contains("Failed to update type with key: 'key_1'.")
             );
 
         assertThat(exceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> {
+            .singleElement().satisfies(throwable -> {
                 assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
                 assertThat(throwable).hasCauseExactlyInstanceOf(ErrorResponseException.class);
                 assertThat(throwable).hasMessageContaining("Missing required value");

@@ -221,7 +221,7 @@ class CartDiscountServiceImplIT {
         assertThat(result).isEmpty();
         assertThat(errorCallBackMessages)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(msg -> assertThat(msg)
+                .singleElement().satisfies(msg -> assertThat(msg)
                         .contains(format("A duplicate value '\"%s\"' exists for field 'key'.", CART_DISCOUNT_KEY_1)));
 
         ensureErrorCallbackIsDuplicateFieldError();
@@ -230,7 +230,7 @@ class CartDiscountServiceImplIT {
     private void ensureErrorCallbackIsDuplicateFieldError() {
         assertThat(errorCallBackExceptions)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(exception -> {
+                .singleElement().satisfies(exception -> {
                     assertThat(exception).hasCauseExactlyInstanceOf(ErrorResponseException.class);
                     final ErrorResponseException errorResponseException = (ErrorResponseException) exception.getCause();
 
@@ -280,7 +280,7 @@ class CartDiscountServiceImplIT {
         assertThat(result).isEmpty();
         assertThat(errorCallBackMessages)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(msg -> assertThat(msg)
+                .singleElement().satisfies(msg -> assertThat(msg)
                     .contains(format("A duplicate value '\"%s\"' exists for field 'sortOrder'.", SORT_ORDER_1)));
 
         ensureErrorCallbackIsDuplicateFieldError();
