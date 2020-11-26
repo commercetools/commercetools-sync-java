@@ -87,8 +87,8 @@ class ProductTypeWithNestedAttributeSyncTest {
                         .of("nestedattr", ofEnglish("nestedattr"),
                                 NestedAttributeType.of(ProductType.referenceOfId(PRODUCT_TYPE_KEY_4)))
                         .build())
-                // isSearchable=true is not supported for attribute type 'nested' and AttributeDefinitionBuilder sets it to
-                // true by default
+                // isSearchable=true is not supported for attribute type 'nested' and AttributeDefinitionBuilder sets
+                // it to true by default
                 .searchable(false)
                 .build();
 
@@ -136,8 +136,8 @@ class ProductTypeWithNestedAttributeSyncTest {
         assertThat(productTypeSyncStatistics
                 .getReportMessage())
                 .isEqualTo("Summary: 2 product types were processed in total"
-                        + " (1 created, 0 updated, 0 failed to sync and 1 product types with at least one NestedType or a Set"
-                        + " of NestedType attribute definition(s) referencing a missing product type).");
+                        + " (1 created, 0 updated, 0 failed to sync and 1 product types with at least one NestedType or"
+                        + " a Set of NestedType attribute definition(s) referencing a missing product type).");
 
         assertThat(productTypeSyncStatistics.getProductTypeKeysWithMissingParents()).hasSize(1);
         final ConcurrentHashMap<String, ConcurrentHashMap.KeySetView<AttributeDefinitionDraft, Boolean>>
