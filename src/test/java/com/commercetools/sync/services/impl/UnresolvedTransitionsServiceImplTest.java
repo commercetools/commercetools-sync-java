@@ -4,6 +4,7 @@ import com.commercetools.sync.commons.FakeClient;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedTransitions;
 import com.commercetools.sync.states.StateSyncOptions;
 import com.commercetools.sync.states.StateSyncOptionsBuilder;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.client.BadRequestException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customobjects.CustomObject;
@@ -78,7 +79,7 @@ class UnresolvedTransitionsServiceImplTest {
         when(customObjectMock.getValue()).thenReturn(waitingToBeResolved);
 
         final PagedQueryResult result = getMockPagedQueryResult(singletonList(customObjectMock));
-        final FakeClient<PagedQueryResult> fakeClient = new FakeClient(result);
+        final FakeClient<PagedQueryResult> fakeClient = new FakeClient<>(result);
         initMockService(fakeClient);
 
         // test
@@ -212,8 +213,8 @@ class UnresolvedTransitionsServiceImplTest {
         final WaitingToBeResolvedTransitions waitingToBeResolved =
             new WaitingToBeResolvedTransitions(stateDraftMock, singleton("test-ref"));
 
-        final FakeClient<WaitingToBeResolvedTransitions> fakeClient =
-                new FakeClient(new BadRequestException("bad request"));
+        final FakeClient<Throwable> fakeClient =
+                new FakeClient<>(new BadRequestException("bad request"));
         initMockService(fakeClient);
 
         // test
@@ -242,8 +243,8 @@ class UnresolvedTransitionsServiceImplTest {
         final StateDraft stateDraftMock = mock(StateDraft.class);
         final String key = "state-draft-key";
         when(stateDraftMock.getKey()).thenReturn(key);
-        final FakeClient<WaitingToBeResolvedTransitions> fakeClient =
-                new FakeClient(new BadRequestException("bad request"));
+        final FakeClient<Throwable> fakeClient =
+                new FakeClient<>(new BadRequestException("bad request"));
         initMockService(fakeClient);
 
         // test

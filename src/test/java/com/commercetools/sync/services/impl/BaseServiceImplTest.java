@@ -187,7 +187,7 @@ class BaseServiceImplTest {
         final HashSet<String> resourceKeys = new HashSet<>();
         resourceKeys.add(key1);
         resourceKeys.add(key2);
-        final FakeClient fakeClient = new FakeClient(new BadGatewayException());
+        final FakeClient<Throwable> fakeClient = new FakeClient<>(new BadGatewayException());
         initMockService(fakeClient);
 
         //test
@@ -241,7 +241,7 @@ class BaseServiceImplTest {
     @Test
     void fetchResource_WithBadGateWayException_ShouldCompleteExceptionally() {
         //preparation
-        final FakeClient fakeClient = new FakeClient(new BadGatewayException());
+        final FakeClient<Throwable> fakeClient = new FakeClient<>(new BadGatewayException());
         initMockService(fakeClient);
 
         //test
@@ -268,7 +268,7 @@ class BaseServiceImplTest {
     @Test
     void cacheKeysToIds_WithAllCachedKeys_ShouldMakeNoRequestAndReturnCachedEntry() {
         //preparation
-        final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
+        final PagedQueryResult<Product> pagedQueryResult = mock(PagedQueryResult.class);
         final Product mockProductResult = mock(Product.class);
         final String key = "testKey";
         final String id = "testId";
@@ -290,7 +290,7 @@ class BaseServiceImplTest {
     @Test
     void cacheKeysToIds_WithNoCachedKeys_ShouldMakeRequestAndReturnCachedEntry() {
         //preparation
-        final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
+        final PagedQueryResult<Product> pagedQueryResult = mock(PagedQueryResult.class);
         final Product mockProductResult = mock(Product.class);
         final String key = "testKey";
         final String id = "testId";
@@ -311,14 +311,14 @@ class BaseServiceImplTest {
     @Test
     void cacheKeysToIds_WithBadGateWayException_ShouldCompleteExceptionally() {
         //preparation
-        final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
+        final PagedQueryResult<Product> pagedQueryResult = mock(PagedQueryResult.class);
         final Product mockProductResult = mock(Product.class);
         final String key = "testKey";
         final String id = "testId";
         when(mockProductResult.getKey()).thenReturn(key);
         when(mockProductResult.getId()).thenReturn(id);
         when(pagedQueryResult.getResults()).thenReturn(singletonList(mockProductResult));
-        final FakeClient fakeClient = new FakeClient<>(new BadGatewayException());
+        final FakeClient<Throwable> fakeClient = new FakeClient<>(new BadGatewayException());
         initMockService(fakeClient);
 
         //test

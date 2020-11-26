@@ -82,7 +82,7 @@ class StateServiceImplTest {
         StatePagedQueryResult result = mock(StatePagedQueryResult.class);
         when(result.getResults()).thenReturn(Collections.singletonList(mock));
 
-        final FakeClient<StatePagedQueryResult> fakeStateClient = new FakeClient(result);
+        final FakeClient<StatePagedQueryResult> fakeStateClient = new FakeClient<>(result);
         initMockService(fakeStateClient);
 
         Optional<String> fetchedId = service.fetchCachedStateId(key).toCompletableFuture().join();
@@ -262,7 +262,7 @@ class StateServiceImplTest {
     @Test
     void fetchMatchingStatesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
         // Mock sphere client to return BadGatewayException on any request.
-        final FakeClient<State> fakeStateClient = new FakeClient(new BadGatewayException());
+        final FakeClient<Throwable> fakeStateClient = new FakeClient<>(new BadGatewayException());
         initMockService(fakeStateClient);
 
         final Set<String> keys = new HashSet<>();

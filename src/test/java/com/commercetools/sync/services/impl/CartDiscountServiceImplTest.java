@@ -80,9 +80,9 @@ class CartDiscountServiceImplTest {
         final CartDiscount mockCartDiscount = mock(CartDiscount.class);
         when(mockCartDiscount.getId()).thenReturn("testId");
         when(mockCartDiscount.getKey()).thenReturn("any_key");
-        final PagedQueryResult<CartDiscount> pagedQueryResult =  mock(PagedQueryResult.class);
+        final PagedQueryResult<CartDiscount> pagedQueryResult = mock(PagedQueryResult.class);
         when(pagedQueryResult.head()).thenReturn(Optional.of(mockCartDiscount));
-        final FakeClient<CartDiscount> fakeCartDiscountClient = new FakeClient(pagedQueryResult);
+        final FakeClient<PagedQueryResult<CartDiscount>> fakeCartDiscountClient = new FakeClient<>(pagedQueryResult);
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
                 .of(fakeCartDiscountClient)
                 .build();
@@ -104,7 +104,7 @@ class CartDiscountServiceImplTest {
         final Map<String, Throwable> errors = new HashMap<>();
         when(mockCartDiscountDraft.getKey()).thenReturn(null);
 
-        final FakeClient<CartDiscount> fakeCartDiscountClient = new FakeClient(mock(CartDiscount.class));
+        final FakeClient<CartDiscount> fakeCartDiscountClient = new FakeClient<>(mock(CartDiscount.class));
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
                 .of(fakeCartDiscountClient)
                 .errorCallback((exception, oldResource, newResource, actions) ->
@@ -126,7 +126,7 @@ class CartDiscountServiceImplTest {
     @Test
     void createCartDiscount_WithEmptyCartDiscountKey_ShouldHaveEmptyOptionalAsAResult() {
         //preparation
-        final FakeClient<CartDiscount> fakeCartDiscountClient = new FakeClient(mock(CartDiscount.class));
+        final FakeClient<CartDiscount> fakeCartDiscountClient = new FakeClient<>(mock(CartDiscount.class));
         final CartDiscountDraft mockCartDiscountDraft = mock(CartDiscountDraft.class);
         final Map<String, Throwable> errors = new HashMap<>();
         when(mockCartDiscountDraft.getKey()).thenReturn("");
@@ -157,7 +157,7 @@ class CartDiscountServiceImplTest {
         final Map<String, Throwable> errors = new HashMap<>();
         when(mockCartDiscountDraft.getKey()).thenReturn("cartDiscountKey");
 
-        final FakeClient<CartDiscount> fakeCartDiscountClient = new FakeClient(new InternalServerErrorException());
+        final FakeClient<Throwable> fakeCartDiscountClient = new FakeClient<>(new InternalServerErrorException());
 
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
                 .of(fakeCartDiscountClient)
@@ -192,7 +192,7 @@ class CartDiscountServiceImplTest {
     void updateCartDiscount_WithMockSuccessfulCtpResponse_ShouldCallCartDiscountUpdateCommand() {
         // preparation
         final CartDiscount mockCartDiscount = mock(CartDiscount.class);
-        final FakeClient<CartDiscount> fakeCartDiscountClient = new FakeClient(mockCartDiscount);
+        final FakeClient<CartDiscount> fakeCartDiscountClient = new FakeClient<>(mockCartDiscount);
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
                 .of(fakeCartDiscountClient)
                 .build();
@@ -216,7 +216,7 @@ class CartDiscountServiceImplTest {
         final CartDiscount mockCartDiscount = mock(CartDiscount.class);
 
 
-        final FakeClient<CartDiscount> fakeCartDiscountClient = new FakeClient(new InternalServerErrorException());
+        final FakeClient<Throwable> fakeCartDiscountClient = new FakeClient<>(new InternalServerErrorException());
         final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
                 .of(fakeCartDiscountClient)
                 .build();

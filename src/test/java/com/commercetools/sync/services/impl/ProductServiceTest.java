@@ -51,8 +51,8 @@ class ProductServiceTest {
         final Product mock = mock(Product.class);
         when(mock.getId()).thenReturn("productId");
         when(mock.getKey()).thenReturn("productKey");
-        final FakeClient createProductClient =
-                new FakeClient(mock);
+        final FakeClient<Product> createProductClient =
+                new FakeClient<>(mock);
 
         final ProductDraft draft = mock(ProductDraft.class);
         when(draft.getKey()).thenReturn("productKey");
@@ -72,8 +72,8 @@ class ProductServiceTest {
         final Product mock = mock(Product.class);
         when(mock.getId()).thenReturn("productId");
 
-        final FakeClient createProductClient =
-                new FakeClient(new BadRequestException("bad request"));
+        final FakeClient<Product> createProductClient =
+                new FakeClient<>(new BadRequestException("bad request"));
 
         final ProductDraft draft = mock(ProductDraft.class);
         when(draft.getKey()).thenReturn("productKey");
@@ -113,7 +113,7 @@ class ProductServiceTest {
     @Test
     void updateProduct_WithMockCtpResponse_ShouldReturnMock() {
         final Product mock = mock(Product.class);
-        final FakeClient updateProductClient = new FakeClient(mock);
+        final FakeClient<Product> updateProductClient = new FakeClient<>(mock);
 
         initMockService(updateProductClient);
 
@@ -153,7 +153,7 @@ class ProductServiceTest {
 
     @Test
     void fetchMatchingProductsByKeys_WithBadGateWayException_ShouldFail() {
-        final FakeClient fakeProductClient = new FakeClient(new BadGatewayException());
+        final FakeClient<Throwable> fakeProductClient = new FakeClient<>(new BadGatewayException());
 
         initMockService(fakeProductClient);
 
@@ -172,7 +172,7 @@ class ProductServiceTest {
 
     @Test
     void fetchProduct_WithBadGatewayException_ShouldFail() {
-        final FakeClient<Product> fakeProductClient = new FakeClient(new BadGatewayException());
+        final FakeClient<Throwable> fakeProductClient = new FakeClient<>(new BadGatewayException());
 
         initMockService(fakeProductClient);
 

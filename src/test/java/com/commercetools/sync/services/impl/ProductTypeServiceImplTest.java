@@ -24,7 +24,7 @@ class ProductTypeServiceImplTest {
     @Test
     void fetchProductType_WithEmptyKey_ShouldNotFetchProductType() {
         // preparation
-        final FakeClient<ProductType> fakeProductTypeClient = new FakeClient(mock(ProductType.class));
+        final FakeClient<ProductType> fakeProductTypeClient = new FakeClient<>(mock(ProductType.class));
         final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
             .of(fakeProductTypeClient)
             .build();
@@ -41,7 +41,7 @@ class ProductTypeServiceImplTest {
     @Test
     void fetchProductType_WithNullKey_ShouldNotFetchProductType() {
         // preparation
-        final FakeClient<ProductType> fakeProductTypeClient = new FakeClient(mock(ProductType.class));
+        final FakeClient<ProductType> fakeProductTypeClient = new FakeClient<>(mock(ProductType.class));
         final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
             .of(fakeProductTypeClient)
             .build();
@@ -58,7 +58,7 @@ class ProductTypeServiceImplTest {
     @Test
     void fetchProductType_WithBadGateWayException_ShouldCompleteExceptionally() {
         // preparation
-        final FakeClient<ProductType> fakeProductTypeClient = new FakeClient(new BadGatewayException());
+        final FakeClient<ProductType> fakeProductTypeClient = new FakeClient<>(new BadGatewayException());
 
         final ProductTypeSyncOptions syncOptions = ProductTypeSyncOptionsBuilder
             .of(fakeProductTypeClient)

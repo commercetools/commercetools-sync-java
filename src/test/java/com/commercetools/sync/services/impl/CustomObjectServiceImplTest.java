@@ -73,7 +73,7 @@ class CustomObjectServiceImplTest {
         final String container = RandomStringUtils.random(15, true, true);
         final String id = RandomStringUtils.random(15, true, true);
 
-        final CustomObject mock = mock(CustomObject.class);
+        final CustomObject<JsonNode> mock = mock(CustomObject.class);
         when(mock.getId()).thenReturn(id);
         when(mock.getContainer()).thenReturn(container);
         when(mock.getKey()).thenReturn(key);
@@ -81,7 +81,7 @@ class CustomObjectServiceImplTest {
         final CustomObjectPagedQueryResult result = mock(CustomObjectPagedQueryResult.class);
         when(result.getResults()).thenReturn(Collections.singletonList(mock));
 
-        final FakeClient<CustomObject<JsonNode>> fakeCustomObjectClient = new FakeClient(result);
+        final FakeClient<CustomObjectPagedQueryResult> fakeCustomObjectClient = new FakeClient<>(result);
         initMockService(fakeCustomObjectClient);
 
         final Optional<String> fetchedId = service
@@ -103,12 +103,12 @@ class CustomObjectServiceImplTest {
         customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(key1, container1));
         customObjectCompositeIdentifiers.add(CustomObjectCompositeIdentifier.of(key2, container2));
 
-        final CustomObject mock1 = mock(CustomObject.class);
+        final CustomObject<JsonNode> mock1 = mock(CustomObject.class);
         when(mock1.getId()).thenReturn(RandomStringUtils.random(15));
         when(mock1.getKey()).thenReturn(key1);
         when(mock1.getContainer()).thenReturn(container1);
 
-        final CustomObject mock2 = mock(CustomObject.class);
+        final CustomObject<JsonNode> mock2 = mock(CustomObject.class);
         when(mock2.getId()).thenReturn(RandomStringUtils.random(15));
         when(mock2.getKey()).thenReturn(key2);
         when(mock2.getContainer()).thenReturn(container2);
@@ -116,7 +116,7 @@ class CustomObjectServiceImplTest {
         final CustomObjectPagedQueryResult result = mock(CustomObjectPagedQueryResult.class);
         when(result.getResults()).thenReturn(Arrays.asList(mock1, mock2));
 
-        final FakeClient<CustomObject<JsonNode>> fakeCustomObjectClient = new FakeClient(result);
+        final FakeClient<CustomObjectPagedQueryResult> fakeCustomObjectClient = new FakeClient<>(result);
         initMockService(fakeCustomObjectClient);
 
         final Set<CustomObject<JsonNode>> customObjects = service
@@ -144,7 +144,7 @@ class CustomObjectServiceImplTest {
         final CustomObjectPagedQueryResult result = mock(CustomObjectPagedQueryResult.class);
         when(result.head()).thenReturn(Optional.of(mock));
 
-        final FakeClient<CustomObject<JsonNode>> fakeCustomObjectClient = new FakeClient(result);
+        final FakeClient<CustomObjectPagedQueryResult> fakeCustomObjectClient = new FakeClient<>(result);
         initMockService(fakeCustomObjectClient);
 
         final Optional<CustomObject<JsonNode>> customObjectOptional = service
@@ -163,7 +163,7 @@ class CustomObjectServiceImplTest {
 
     @Test
     void createCustomObject_WithDraft_ShouldCreateCustomObject() {
-        final CustomObject mock = mock(CustomObject.class);
+        final CustomObject<JsonNode> mock = mock(CustomObject.class);
         when(mock.getId()).thenReturn(customObjectId);
         when(mock.getKey()).thenReturn(customObjectKey);
         when(mock.getContainer()).thenReturn(customObjectContainer);
@@ -189,10 +189,10 @@ class CustomObjectServiceImplTest {
 
     @Test
     void createCustomObject_WithRequestException_ShouldNotCreateCustomObject() {
-        final CustomObject mock = mock(CustomObject.class);
+        final CustomObject<JsonNode> mock = mock(CustomObject.class);
         when(mock.getId()).thenReturn(customObjectId);
 
-        final FakeClient<CustomObject<JsonNode>> fakeCustomObjectClient =
+        final FakeClient<Throwable> fakeCustomObjectClient =
                 new FakeClient<>(new BadRequestException("bad request"));
         initMockService(fakeCustomObjectClient);
 
@@ -201,7 +201,8 @@ class CustomObjectServiceImplTest {
         when(draftMock.getContainer()).thenReturn(customObjectContainer);
         when(draftMock.getJavaType()).thenReturn(getCustomObjectJavaTypeForValue(convertToJavaType(JsonNode.class)));
 
-        CompletableFuture future = service.upsertCustomObject(draftMock).toCompletableFuture();
+        CompletableFuture<Optional<CustomObject<JsonNode>>> future =
+                service.upsertCustomObject(draftMock).toCompletableFuture();
 
         assertAll(
             () -> assertThat(future.isCompletedExceptionally()).isTrue(),

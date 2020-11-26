@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+
+import net.bytebuddy.implementation.bytecode.Throw;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -48,7 +50,7 @@ class CustomerServiceImplTest {
         when(customerMock.getKey()).thenReturn("customerKey");
         when(resultMock.getCustomer()).thenReturn(customerMock);
 
-        final FakeClient<Customer> fakeClient = new FakeClient(resultMock);
+        final FakeClient<CustomerSignInResult> fakeClient = new FakeClient<>(resultMock);
         initMockService(fakeClient);
         final CustomerDraft draft = mock(CustomerDraft.class);
         when(draft.getKey()).thenReturn("customerKey");
@@ -67,7 +69,7 @@ class CustomerServiceImplTest {
         when(customerMock.getKey()).thenReturn("customerKey");
         when(resultMock.getCustomer()).thenReturn(customerMock);
 
-        final FakeClient<Customer> fakeClient = new FakeClient(new BadRequestException("bad request"));
+        final FakeClient<Throwable> fakeClient = new FakeClient<>(new BadRequestException("bad request"));
         initMockService(fakeClient);
 
         final CustomerDraft draft = mock(CustomerDraft.class);
@@ -86,7 +88,7 @@ class CustomerServiceImplTest {
     void createCustomer_WithDraftWithEmptyKey_ShouldNotCreate() {
         final CustomerDraft draft = mock(CustomerDraft.class);
         final Optional<Customer> customerOptional = service.createCustomer(draft).toCompletableFuture().join();
-        final FakeClient<Customer> fakeClient = new FakeClient(mock(SphereClient.class));
+        final FakeClient<Customer> fakeClient = new FakeClient<>(mock(Customer.class));
         initMockService(fakeClient);
         assertThat(customerOptional).isEmpty();
         assertThat(errorExceptions).hasSize(1);
@@ -98,7 +100,7 @@ class CustomerServiceImplTest {
 
     @Test
     void createCustomer_WithResponseIsNull_ShouldReturnEmpty() {
-        final FakeClient<Customer> fakeClient = new FakeClient(mock(CustomerSignInResult.class));
+        final FakeClient<CustomerSignInResult> fakeClient = new FakeClient<>(mock(CustomerSignInResult.class));
         initMockService(fakeClient);
 
         final CustomerDraft draft = mock(CustomerDraft.class);
@@ -113,7 +115,7 @@ class CustomerServiceImplTest {
     @Test
     void updateCustomer_WithSuccessfulMockCtpResponse_ShouldReturnMock() {
         Customer customer = mock(Customer.class);
-        final FakeClient<Customer> fakeClient = new FakeClient(customer);
+        final FakeClient<Customer> fakeClient = new FakeClient<>(customer);
         initMockService(fakeClient);
 
         List<UpdateAction<Customer>> updateActions =
@@ -126,7 +128,7 @@ class CustomerServiceImplTest {
 
     @Test
     void fetchCachedCustomerId_WithBlankKey_ShouldNotFetchCustomerId() {
-        final FakeClient<Customer> fakeClient = new FakeClient(mock(SphereClient.class));
+        final FakeClient<Customer> fakeClient = new FakeClient<>(mock(Customer.class));
         initMockService(fakeClient);
         Optional<String> customerId = service.fetchCachedCustomerId("")
                                              .toCompletableFuture()
@@ -140,7 +142,7 @@ class CustomerServiceImplTest {
 
     @Test
     void fetchCachedCustomerId_WithCachedCustomer_ShouldFetchIdFromCache() {
-        final FakeClient<Customer> fakeClient = new FakeClient(mock(SphereClient.class));
+        final FakeClient<Customer> fakeClient = new FakeClient<>(mock(Customer.class));
         initMockService(fakeClient);
         service.keyToIdCache.put("key", "id");
         Optional<String> customerId = service.fetchCachedCustomerId("key")
@@ -155,7 +157,7 @@ class CustomerServiceImplTest {
 
     @Test
     void fetchCachedCustomerId_WithUnexpectedException_ShouldFail() {
-        final FakeClient<Customer> fakeClient = new FakeClient(new BadGatewayException("bad gateway"));
+        final FakeClient<Throwable> fakeClient = new FakeClient<>(new BadGatewayException("bad gateway"));
         initMockService(fakeClient);
         assertThat(service.fetchCachedCustomerId("key"))
             .failsWithin(1, TimeUnit.SECONDS)
@@ -167,7 +169,7 @@ class CustomerServiceImplTest {
 
     @Test
     void fetchCustomerByKey_WithUnexpectedException_ShouldFail() {
-        final FakeClient<Customer> fakeClient = new FakeClient(new BadGatewayException("bad gateway"));
+        final FakeClient<Throwable> fakeClient = new FakeClient<>(new BadGatewayException("bad gateway"));
         initMockService(fakeClient);
         assertThat(service.fetchCustomerByKey("key"))
             .failsWithin(1, TimeUnit.SECONDS)
@@ -179,7 +181,7 @@ class CustomerServiceImplTest {
 
     @Test
     void fetchCustomerByKey_WithBlankKey_ShouldNotFetchCustomer() {
-        final FakeClient<Customer> fakeClient = new FakeClient(new BadGatewayException("bad gateway"));
+        final FakeClient<Throwable> fakeClient = new FakeClient<>(new BadGatewayException("bad gateway"));
         initMockService(fakeClient);
         Optional<Customer> customer = service.fetchCustomerByKey("")
                                              .toCompletableFuture()

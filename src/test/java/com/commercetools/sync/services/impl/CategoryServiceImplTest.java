@@ -36,7 +36,7 @@ class CategoryServiceImplTest {
 
     @Test
     void fetchCategory_WithBadGateWayExceptionAlways_ShouldFail() {
-        final FakeClient<Category> fakeProductClient = new FakeClient(new BadGatewayException());
+        final FakeClient<Throwable> fakeProductClient = new FakeClient<>(new BadGatewayException());
 
         initMockService(fakeProductClient);
 
@@ -51,7 +51,7 @@ class CategoryServiceImplTest {
     @Test
     void fetchMatchingCategoriesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
 
-        final FakeClient<Category> fakeCategoryClient = new FakeClient(new BadGatewayException());
+        final FakeClient<Throwable> fakeCategoryClient = new FakeClient<>(new BadGatewayException());
 
         initMockService(fakeCategoryClient);
 
