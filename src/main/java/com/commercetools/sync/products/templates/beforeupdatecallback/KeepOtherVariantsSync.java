@@ -9,7 +9,7 @@ import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class KeepOtherVariantsSync {
+public final class KeepOtherVariantsSync {
     /**
      * Takes product update actions, a new {@link ProductDraft}, an old existing {@link Product}.
      * This method filters out the update action if it is a {@link RemoveVariant} update action.
