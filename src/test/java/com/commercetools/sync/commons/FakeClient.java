@@ -27,6 +27,7 @@ public class FakeClient<T> implements SphereClient {
     public <T> CompletionStage<T> execute(final SphereRequest<T> sphereRequest) {
         isExecuted = true;
         ++occurrence;
+
         if (mockResult != null) {
             return CompletableFutureUtils.successful((T)mockResult);
         }
