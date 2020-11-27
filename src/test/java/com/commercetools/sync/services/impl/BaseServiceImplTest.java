@@ -113,7 +113,7 @@ class BaseServiceImplTest {
         assertThat(result).contains(id);
         // only 1 request of the first fetch, but no more since second time it gets it from cache.
         assertThat(fakeClient.isExecuted()).isTrue();
-        assertThat(fakeClient.getOccurance()).isEqualTo(1);
+        assertThat(fakeClient.getOccurrence()).isEqualTo(1);
     }
 
     @Test
@@ -160,7 +160,7 @@ class BaseServiceImplTest {
 
         //assertions
         assertThat(resources).containsExactlyInAnyOrder(mock1, mock2);
-        assertThat(fakeClient.getOccurance()).isEqualTo(1);
+        assertThat(fakeClient.getOccurrence()).isEqualTo(1);
 
         //test caching
         final Optional<String> cachedKey1 = service
@@ -175,7 +175,7 @@ class BaseServiceImplTest {
         assertThat(cachedKey1).contains(mock1.getId());
         assertThat(cachedKey2).contains(mock2.getId());
         // still 1 request from the first #fetchMatchingProductsByKeys call
-        assertThat(fakeClient.getOccurance()).isEqualTo(1);
+        assertThat(fakeClient.getOccurrence()).isEqualTo(1);
     }
 
     @Test
@@ -252,7 +252,7 @@ class BaseServiceImplTest {
                 .withThrowableOfType(ExecutionException.class)
                 .withCauseExactlyInstanceOf(BadGatewayException.class);
 
-        assertThat(fakeClient.getOccurance()).isEqualTo(1);
+        assertThat(fakeClient.getOccurrence()).isEqualTo(1);
     }
 
     @Test
@@ -284,7 +284,7 @@ class BaseServiceImplTest {
 
         //assertions
         assertThat(optional).containsExactly(MapEntry.entry(key, id));
-        assertThat(fakeClient.getOccurance()).isEqualTo(1);
+        assertThat(fakeClient.getOccurrence()).isEqualTo(1);
     }
 
     @Test
@@ -305,7 +305,7 @@ class BaseServiceImplTest {
 
         //assertions
         assertThat(optional).containsExactly(MapEntry.entry(key, id));
-        assertThat(fakeClient.getOccurance()).isEqualTo(1);
+        assertThat(fakeClient.getOccurrence()).isEqualTo(1);
     }
 
     @Test
@@ -329,7 +329,7 @@ class BaseServiceImplTest {
                 .withThrowableOfType(ExecutionException.class)
                 .withCauseExactlyInstanceOf(BadGatewayException.class);
 
-        assertThat(fakeClient.getOccurance()).isEqualTo(1);
+        assertThat(fakeClient.getOccurrence()).isEqualTo(1);
     }
 
     private void initMockService(@Nonnull final SphereClient fakeClient) {
