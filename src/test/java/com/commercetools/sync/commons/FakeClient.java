@@ -13,7 +13,7 @@ public class FakeClient<T> implements SphereClient {
     private boolean isExecuted = false;
     private T mockResult;
     private Throwable mockException;
-    private int occurance = 0;
+    private int occurrence = 0;
 
     public FakeClient(@Nonnull final T mockResult) {
         this.mockResult = mockResult;
@@ -26,7 +26,7 @@ public class FakeClient<T> implements SphereClient {
     @Override
     public <T> CompletionStage<T> execute(final SphereRequest<T> sphereRequest) {
         isExecuted = true;
-        ++occurance;
+        ++occurrence;
         if (mockResult != null) {
             return CompletableFutureUtils.successful((T)mockResult);
         }
@@ -47,7 +47,7 @@ public class FakeClient<T> implements SphereClient {
         return isExecuted;
     }
 
-    public int getOccurance() {
-        return occurance;
+    public int getOccurrence() {
+        return occurrence;
     }
 }
