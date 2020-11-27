@@ -409,6 +409,9 @@ class TaxCategorySyncTest {
                 errorCallBackMessages.add(exception.getMessage());
                 errorCallBackExceptions.add(exception.getCause());
             })
+            .warningCallback((exception, newResource, oldResource) -> {
+                warningCallBackMessages.add(exception.getMessage());
+            })
             .build();
         final TaxCategoryDraft taxCategoryDraft = TaxCategoryDraftBuilder.of("someName", emptyList(), "changed")
                                                                          .key("someKey").build();

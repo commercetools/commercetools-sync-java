@@ -77,7 +77,7 @@ class TaxCategoryServiceImplTest {
         final TaxCategoryPagedQueryResult result = mock(TaxCategoryPagedQueryResult.class);
         when(result.getResults()).thenReturn(Collections.singletonList(mock));
 
-        final FakeClient<TaxCategoryPagedQueryResult> fakeTaxCategoryClient = new FakeClient(result);
+        final FakeClient<TaxCategoryPagedQueryResult> fakeTaxCategoryClient = new FakeClient<>(result);
         initMockService(fakeTaxCategoryClient);
 
         final Optional<String> fetchedId = service.fetchCachedTaxCategoryId(key).toCompletableFuture().join();
@@ -106,7 +106,7 @@ class TaxCategoryServiceImplTest {
         final TaxCategoryPagedQueryResult result = mock(TaxCategoryPagedQueryResult.class);
         when(result.getResults()).thenReturn(Arrays.asList(mock1, mock2));
 
-        final FakeClient<TaxCategoryPagedQueryResult> fakeTaxCategoryClient = new FakeClient(result);
+        final FakeClient<TaxCategoryPagedQueryResult> fakeTaxCategoryClient = new FakeClient<>(result);
         initMockService(fakeTaxCategoryClient);
 
         final Set<TaxCategory> taxCategories = service.fetchMatchingTaxCategoriesByKeys(taxCategoryKeys)
@@ -128,7 +128,7 @@ class TaxCategoryServiceImplTest {
         final TaxCategoryPagedQueryResult result = mock(TaxCategoryPagedQueryResult.class);
         when(result.head()).thenReturn(Optional.of(mock));
 
-        final FakeClient<TaxCategoryPagedQueryResult> fakeTaxCategoryClient = new FakeClient(result);
+        final FakeClient<TaxCategoryPagedQueryResult> fakeTaxCategoryClient = new FakeClient<>(result);
         initMockService(fakeTaxCategoryClient);
 
         final Optional<TaxCategory> taxCategoryOptional = service.fetchTaxCategory(taxCategoryKey)
@@ -147,7 +147,7 @@ class TaxCategoryServiceImplTest {
         when(mock.getId()).thenReturn(taxCategoryId);
         when(mock.getKey()).thenReturn(taxCategoryKey);
 
-        final FakeClient<TaxCategory> fakeTaxCategoryClient = new FakeClient(mock);
+        final FakeClient<TaxCategory> fakeTaxCategoryClient = new FakeClient<>(mock);
         initMockService(fakeTaxCategoryClient);
 
         final TaxCategoryDraft draft = TaxCategoryDraftBuilder
@@ -165,7 +165,7 @@ class TaxCategoryServiceImplTest {
         final TaxCategory mock = mock(TaxCategory.class);
         when(mock.getId()).thenReturn(taxCategoryId);
 
-        final FakeClient<TaxCategory> fakeStateClient = new FakeClient<>(new BadRequestException("bad request"));
+        final FakeClient<Throwable> fakeStateClient = new FakeClient<>(new BadRequestException("bad request"));
         initMockService(fakeStateClient);
 
         final TaxCategoryDraft draft = mock(TaxCategoryDraft.class);
@@ -203,7 +203,7 @@ class TaxCategoryServiceImplTest {
     @Test
     void updateTaxCategory_WithNoError_ShouldUpdateTaxCategory() {
         final TaxCategory mock = mock(TaxCategory.class);
-        final FakeClient<TaxCategory> fakeTaxCategoryClient = new FakeClient(mock);
+        final FakeClient<TaxCategory> fakeTaxCategoryClient = new FakeClient<>(mock);
         initMockService(fakeTaxCategoryClient);
         final List<UpdateAction<TaxCategory>> updateActions = Collections.singletonList(ChangeName.of("name"));
 
@@ -216,7 +216,7 @@ class TaxCategoryServiceImplTest {
     @Test
     void fetchMatchingTaxCategoriesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
         // Mock sphere client to return BadGatewayException on any request.
-        final FakeClient<TaxCategory> fakeCustomObjectClient = new FakeClient<>(new BadGatewayException());
+        final FakeClient<Throwable> fakeCustomObjectClient = new FakeClient<>(new BadGatewayException());
         final List<String> errorCallBackMessages = new ArrayList<>();
         final List<Throwable> errorCallBackExceptions = new ArrayList<>();
 
