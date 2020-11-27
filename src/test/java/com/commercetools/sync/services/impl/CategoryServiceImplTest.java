@@ -3,7 +3,6 @@ package com.commercetools.sync.services.impl;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.FakeClient;
-import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.SphereClient;
 import java.util.ArrayList;
