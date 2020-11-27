@@ -72,7 +72,7 @@ class ProductServiceTest {
         final Product mock = mock(Product.class);
         when(mock.getId()).thenReturn("productId");
 
-        final FakeClient<Product> createProductClient =
+        final FakeClient<Throwable> createProductClient =
                 new FakeClient<>(new BadRequestException("bad request"));
 
         final ProductDraft draft = mock(ProductDraft.class);

@@ -216,7 +216,7 @@ class TaxCategoryServiceImplTest {
     @Test
     void fetchMatchingTaxCategoriesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
         // Mock sphere client to return BadGatewayException on any request.
-        final FakeClient<TaxCategory> fakeCustomObjectClient = new FakeClient<>(new BadGatewayException());
+        final FakeClient<Throwable> fakeCustomObjectClient = new FakeClient<>(new BadGatewayException());
         final List<String> errorCallBackMessages = new ArrayList<>();
         final List<Throwable> errorCallBackExceptions = new ArrayList<>();
 
