@@ -4,11 +4,11 @@ import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics
 import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.customobjects.helpers.CustomObjectSyncStatistics;
 import com.commercetools.sync.services.CustomObjectService;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.sphere.sdk.client.BadGatewayException;
+import io.sphere.sdk.client.BadRequestException;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customobjects.CustomObject;
@@ -16,6 +16,7 @@ import io.sphere.sdk.customobjects.CustomObjectDraft;
 import io.sphere.sdk.models.SphereException;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -647,6 +648,48 @@ public class CustomObjectSyncTest {
         return mockCustomObjectService;
     }
 
+    @Test
+    void sync_withNewCustomObjectAndBadRequest_shouldNotCreateButHandleError() {
+
+        List<String> errorCallBackMessages = new ArrayList<>();
+        List<Throwable> errorCallBackExceptions = new ArrayList<>();
+        final List<String> warningCallBackMessages = new ArrayList<>();
+        final CustomObjectSyncOptions spyOptions = CustomObjectSyncOptionsBuilder
+                .of(mock(SphereClient.class))
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorCallBackMessages.add(exception.getMessage());
+                    errorCallBackExceptions.add(exception.getCause());
+                })
+                .warningCallback((exception, oldResource, newResource)
+                    -> warningCallBackMessages.add(exception.getMessage()))
+                .build();
+
+        final ObjectNode newCustomObjectValue = JsonNodeFactory.instance.objectNode().put("name", "value2");
+        final CustomObjectDraft<JsonNode> customObjectDraft = CustomObjectDraft.ofUnversionedUpsert("container1",
+                "key1", newCustomObjectValue);
+        final CustomObjectDraft<JsonNode> newCustomObjectDraft = CustomObjectDraft.ofUnversionedUpsert("container2",
+                "key2", newCustomObjectValue);
+
+
+        final CustomObjectService customObjectService =
+                buildMockCustomObjectServiceWithBadRequestOnCreation(customObjectDraft);
+
+        final CustomObjectSync customObjectSync = new CustomObjectSync(spyOptions, customObjectService);
+
+        final CustomObjectSyncStatistics customObjectSyncStatistics = customObjectSync
+                .sync(Collections.singletonList(newCustomObjectDraft))
+                .toCompletableFuture().join();
+
+        assertThat(customObjectSyncStatistics).hasValues(1, 0, 0, 1);
+        Assertions.assertThat(errorCallBackMessages).hasSize(1);
+        Assertions.assertThat(errorCallBackExceptions).hasSize(1);
+        Assertions.assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
+        Assertions.assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(BadRequestException.class);
+        Assertions.assertThat(errorCallBackMessages.get(0)).contains(
+                format("Failed to create custom object with key: '%s'.",
+                        CustomObjectCompositeIdentifier.of(newCustomObjectDraft)));
+    }
+
     @Nonnull
     private CustomObjectService buildMockCustomObjectServiceWithFailedFetchOnRetry(
             @Nonnull final CustomObjectDraft customObjectDraft) {
@@ -675,7 +718,7 @@ public class CustomObjectSyncTest {
 
     @Nonnull
     private CustomObjectService buildMockCustomObjectServiceWithNotFoundFetchOnRetry(
-            @Nonnull final CustomObjectDraft customObjectDraft) {
+            @Nonnull final CustomObjectDraft<JsonNode> customObjectDraft) {
 
         final CustomObjectService mockCustomObjectService = mock(CustomObjectService.class);
 
@@ -695,6 +738,33 @@ public class CustomObjectSyncTest {
                 .thenReturn(completedFuture(Optional.empty()));
         when(mockCustomObjectService.upsertCustomObject(any()))
                 .thenReturn(exceptionallyCompletedFuture(new SphereException(new ConcurrentModificationException())))
+                .thenReturn(completedFuture(Optional.of(mockCustomObject)));
+        return mockCustomObjectService;
+    }
+
+    @Nonnull
+    private CustomObjectService buildMockCustomObjectServiceWithBadRequestOnCreation(
+            @Nonnull final CustomObjectDraft<JsonNode> customObjectDraft) {
+
+        final CustomObjectService mockCustomObjectService = mock(CustomObjectService.class);
+
+        final CustomObject<JsonNode> mockCustomObject = mock(CustomObject.class);
+        when(mockCustomObject.getKey()).thenReturn("key1");
+        when(mockCustomObject.getContainer()).thenReturn("container1");
+        when(mockCustomObject.getValue())
+                .thenReturn(JsonNodeFactory.instance.objectNode().put("type", "object"));
+
+        final Map<String, String> keyToIds = new HashMap<>();
+        keyToIds.put(customObjectDraft.getKey(), UUID.randomUUID().toString());
+
+        when(mockCustomObjectService.cacheKeysToIds(anySet())).thenReturn(completedFuture(keyToIds));
+        when(mockCustomObjectService.fetchMatchingCustomObjects(anySet()))
+                .thenReturn(completedFuture(emptySet()));
+        when(mockCustomObjectService.fetchCustomObject(any()))
+                .thenReturn(completedFuture(Optional.empty()));
+        when(mockCustomObjectService.upsertCustomObject(any()))
+                .thenReturn(exceptionallyCompletedFuture(
+                        new CompletionException(new BadRequestException("bad request"))))
                 .thenReturn(completedFuture(Optional.of(mockCustomObject)));
         return mockCustomObjectService;
     }

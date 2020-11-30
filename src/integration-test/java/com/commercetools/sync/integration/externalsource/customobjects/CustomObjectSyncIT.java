@@ -3,21 +3,12 @@ package com.commercetools.sync.integration.externalsource.customobjects;
 import com.commercetools.sync.customobjects.CustomObjectSync;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptions;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptionsBuilder;
-import com.commercetools.sync.customobjects.helpers.CustomObjectCompositeIdentifier;
 import com.commercetools.sync.customobjects.helpers.CustomObjectSyncStatistics;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.sphere.sdk.client.BadRequestException;
-import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
-import io.sphere.sdk.customobjects.commands.CustomObjectUpsertCommand;
-import io.sphere.sdk.utils.CompletableFutureUtils;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CompletionException;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,10 +17,6 @@ import static com.commercetools.sync.commons.asserts.statistics.AssertionsForSta
 import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.createCustomObject;
 import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.deleteCustomObject;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static java.lang.String.format;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.when;
 
 public class CustomObjectSyncIT {
     private ObjectNode customObject1Value;
@@ -106,47 +93,5 @@ public class CustomObjectSyncIT {
             .toCompletableFuture().join();
 
         assertThat(customObjectSyncStatistics).hasValues(1, 0, 0, 0);
-    }
-
-    @Test
-    void sync_withNewCustomObjectAndBadRequest_shouldNotCreateButHandleError() {
-
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-
-        final CustomObjectUpsertCommand upsertCommand = any(CustomObjectUpsertCommand.class);
-        when(spyClient.execute(upsertCommand))
-                .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadRequestException("bad request")))
-                .thenCallRealMethod();
-
-        final ObjectNode newCustomObjectValue = JsonNodeFactory.instance.objectNode().put("name", "value2");
-        final CustomObjectDraft<JsonNode> newCustomObjectDraft = CustomObjectDraft.ofUnversionedUpsert("container2",
-                "key2", newCustomObjectValue);
-
-        List<String> errorCallBackMessages = new ArrayList<>();
-        List<Throwable> errorCallBackExceptions = new ArrayList<>();
-
-        final CustomObjectSyncOptions spyOptions = spy(CustomObjectSyncOptionsBuilder
-                .of(spyClient)
-                .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                    errorCallBackMessages.add(exception.getMessage());
-                    errorCallBackExceptions.add(exception.getCause());
-                })
-                .build());
-
-        when(spyOptions.getCtpClient()).thenReturn(spyClient);
-        final CustomObjectSync customObjectSync = new CustomObjectSync(spyOptions);
-
-        final CustomObjectSyncStatistics customObjectSyncStatistics = customObjectSync
-                .sync(Collections.singletonList(newCustomObjectDraft))
-                .toCompletableFuture().join();
-
-        assertThat(customObjectSyncStatistics).hasValues(1, 0, 0, 1);
-        Assertions.assertThat(errorCallBackMessages).hasSize(1);
-        Assertions.assertThat(errorCallBackExceptions).hasSize(1);
-        Assertions.assertThat(errorCallBackExceptions.get(0)).isExactlyInstanceOf(CompletionException.class);
-        Assertions.assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(BadRequestException.class);
-        Assertions.assertThat(errorCallBackMessages.get(0)).contains(
-                format("Failed to create custom object with key: '%s'.",
-                        CustomObjectCompositeIdentifier.of(newCustomObjectDraft)));
     }
 }
