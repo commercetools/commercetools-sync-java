@@ -1,6 +1,5 @@
 package com.commercetools.sync.internals.helpers;
 
-import com.commercetools.sync.commons.utils.SyncSolutionInfo;
 import io.sphere.sdk.client.HttpRequestIntent;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereRequest;
