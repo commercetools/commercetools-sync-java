@@ -7,16 +7,15 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.taxcategories.TaxCategoryDraft;
 import io.sphere.sdk.taxcategories.TaxCategoryDraftBuilder;
 import io.sphere.sdk.taxcategories.TaxRateDraftBuilder;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.taxcategories.helpers.TaxCategoryBatchValidator.TAX_CATEGORY_DRAFT_IS_NULL;
 import static com.commercetools.sync.taxcategories.helpers.TaxCategoryBatchValidator.TAX_CATEGORY_DRAFT_KEY_NOT_SET;
@@ -87,6 +86,28 @@ class TaxCategoryBatchValidatorTest {
         assertThat(errorCallBackMessages.get(0))
             .isEqualTo(format(TAX_CATEGORY_DRAFT_KEY_NOT_SET, taxCategoryDraft.getName()));
         assertThat(validDrafts).isEmpty();
+    }
+
+    @Test
+    void validateAndCollectReferencedKeys_WithTaxCategoryDraftWithNullTaxRates_ShouldValidateCorrectly() {
+        final TaxCategoryDraft taxCategoryDraft = TaxCategoryDraftBuilder
+                .of("foo", null, "desc")
+                .key("foo").build();
+        final Set<TaxCategoryDraft> validDrafts = getValidDrafts(Collections.singletonList(taxCategoryDraft));
+
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(validDrafts).hasSize(1);
+    }
+
+    @Test
+    void validateAndCollectReferencedKeys_WithTaxCategoryDraftWithEmptyTaxRates_ShouldValidateCorrectly() {
+        final TaxCategoryDraft taxCategoryDraft = TaxCategoryDraftBuilder
+                .of("foo", emptyList(), "desc")
+                .key("foo").build();
+        final Set<TaxCategoryDraft> validDrafts = getValidDrafts(Collections.singletonList(taxCategoryDraft));
+
+        assertThat(errorCallBackMessages).isEmpty();
+        assertThat(validDrafts).hasSize(1);
     }
 
     @Test
