@@ -1,5 +1,6 @@
 package com.commercetools.sync.internals.helpers;
 
+import com.commercetools.sync.commons.utils.SyncSolutionInfo;
 import io.sphere.sdk.client.HttpRequestIntent;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereRequest;
@@ -7,20 +8,18 @@ import io.sphere.sdk.http.HttpHeaders;
 import io.sphere.sdk.models.Versioned;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.commands.ProductTypeUpdateCommand;
-import java.util.Collections;
-
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeName;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.commons.utils.SyncSolutionInfo.LIB_VERSION;
+import static com.commercetools.sync.commons.utils.SyncSolutionInfo.LIB_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 
-public class CustomHeaderSphereClientDecoratorTest {
+class CustomHeaderSphereClientDecoratorTest {
 
-    private static final String LIB_NAME = "commercetools-sync-java";
-    
     @Test
     void executeRequest_shouldHaveLibVersionInRequestHeader() {
 
