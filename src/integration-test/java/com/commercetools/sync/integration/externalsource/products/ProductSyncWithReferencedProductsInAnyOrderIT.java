@@ -57,7 +57,6 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 class ProductSyncWithReferencedProductsInAnyOrderIT {
     private static ProductType productType;
     private ProductSyncOptions syncOptions;
@@ -674,7 +673,6 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
             assertThat(attribute.getValueAsJsonNode().get(REFERENCE_ID_FIELD).asText())
                 .isEqualTo(syncedParent.getId());
         });
-
         assertNoWaitingDrafts(CTP_TARGET_CLIENT);
     }
 
@@ -744,7 +742,6 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
         assertThat(actions).isEmpty();
-
 
         final UnresolvedReferencesService unresolvedReferencesService =
             new UnresolvedReferencesServiceImpl(syncOptions);
