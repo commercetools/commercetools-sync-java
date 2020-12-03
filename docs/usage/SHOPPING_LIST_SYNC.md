@@ -170,7 +170,7 @@ __Note__ The statistics object contains the processing time of the last batch on
  
 #### More examples of how to use the sync
  
-  [Sync from an external source](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/shoppingLists/ShoppingListSyncIT.java).
+  [Sync from an external source](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/shoppinglists/ShoppingListSyncIT.java).
  
  *Make sure to read the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md) for optimal performance.*
  
@@ -187,7 +187,7 @@ __Note__ The statistics object contains the processing time of the last batch on
  Optional<UpdateAction<ShoppingList>> updateAction = ShoppingListUpdateActionUtils.buildChangeNameAction(shoppingList, shoppingListDraft);
  ````
  
- More examples for particular update actions can be found in the test scenarios for [ShoppingListUpdateActionUtils](https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/shoppingLists/utils/ShoppingListUpdateActionUtilsTest.java).
+ More examples for particular update actions can be found in the test scenarios for [ShoppingListUpdateActionUtils](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/shoppinglists/utils/ShoppingListUpdateActionUtils.java).
  
  
 ## Caveats

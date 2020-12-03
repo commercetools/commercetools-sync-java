@@ -38,8 +38,9 @@
     `keyToId` caches evict entries which haven't been used for the longest amount of time beyond a maximum size. The cache 
     size is configurable in the sync options. [#582](https://github.com/commercetools/commercetools-sync-java/issues/582)
     
-- 🛠️ **Dependency Updates** (1)
+- 🛠️ **Dependency Updates** (2)
     - `commercetools-jvm-sdk` `1.54.0` -> [`1.55.0`](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_55_0)
+    - (new) `com.github.ben-manes.caffeine` [`2.8.5`](https://github.com/ben-manes/caffeine/releases/tag/v2.8.5)
 
 ### 3.0.0 - Nov 18, 2020
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/2.3.0...3.0.0) |
