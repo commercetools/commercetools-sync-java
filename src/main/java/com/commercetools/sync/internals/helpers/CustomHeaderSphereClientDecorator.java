@@ -6,7 +6,6 @@ import io.sphere.sdk.client.SphereClientDecorator;
 import io.sphere.sdk.client.SphereRequest;
 import io.sphere.sdk.client.SphereRequestDecorator;
 import io.sphere.sdk.http.HttpHeaders;
-
 import javax.annotation.Nonnull;
 import java.util.concurrent.CompletionStage;
 
