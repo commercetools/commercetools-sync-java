@@ -2,7 +2,11 @@ package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.SyncException;
+import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
+import com.commercetools.sync.commons.models.ResourceKeyId;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.DraftBasedCreateCommand;
 import io.sphere.sdk.commands.UpdateAction;
@@ -20,7 +24,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -47,13 +50,17 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
     Q extends MetaModelQueryDsl<U, Q, M, E>, M, E> {
 
     final S syncOptions;
-    final Map<String, String> keyToIdCache = new ConcurrentHashMap<>();
+    protected final Cache<String, String> keyToIdCache;
 
     private static final int MAXIMUM_ALLOWED_UPDATE_ACTIONS = 500;
     static final String CREATE_FAILED = "Failed to create draft with key: '%s'. Reason: %s";
 
     BaseService(@Nonnull final S syncOptions) {
         this.syncOptions = syncOptions;
+        this.keyToIdCache  = Caffeine.newBuilder()
+                                     .maximumSize(syncOptions.getCacheSize())
+                                     .executor(Runnable::run)
+                                     .build();
     }
 
     /**
@@ -170,8 +177,10 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
         if (isBlank(key)) {
             return CompletableFuture.completedFuture(Optional.empty());
         }
-        if (keyToIdCache.containsKey(key)) {
-            return CompletableFuture.completedFuture(Optional.ofNullable(keyToIdCache.get(key)));
+
+        final String id = keyToIdCache.getIfPresent(key);
+        if (id != null) {
+            return CompletableFuture.completedFuture(Optional.of(id));
         }
         return fetchAndCache(key, keyMapper, querySupplier);
     }
@@ -186,7 +195,7 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
 
         return CtpQueryUtils
             .queryAll(syncOptions.getCtpClient(), querySupplier.get(), pageConsumer)
-            .thenApply(result -> Optional.ofNullable(keyToIdCache.get(key)));
+            .thenApply(result -> Optional.ofNullable(keyToIdCache.getIfPresent(key)));
     }
 
     /**
@@ -205,14 +214,10 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
         @Nonnull final Function<U, String> keyMapper,
         @Nonnull final Function<Set<String>, Q> keysQueryMapper) {
 
-        final Set<String> keysNotCached = keys
-            .stream()
-            .filter(StringUtils::isNotBlank)
-            .filter(key -> !keyToIdCache.containsKey(key))
-            .collect(Collectors.toSet());
+        final Set<String> keysNotCached = getKeysNotCached(keys);
 
         if (keysNotCached.isEmpty()) {
-            return CompletableFuture.completedFuture(keyToIdCache);
+            return CompletableFuture.completedFuture(keyToIdCache.asMap());
         }
 
         final Consumer<List<U>> pageConsumer = page -> page.forEach(resource ->
@@ -220,7 +225,52 @@ abstract class BaseService<T, U extends ResourceView<U, U>, S extends BaseSyncOp
 
         return CtpQueryUtils
             .queryAll(syncOptions.getCtpClient(), keysQueryMapper.apply(keysNotCached), pageConsumer)
-            .thenApply(result -> keyToIdCache);
+            .thenApply(result -> keyToIdCache.asMap());
+    }
+
+    /**
+     * Given a set of keys this method collects all keys which aren't already contained in the cache
+     * {@code keyToIdCache}
+     *
+     * @param keys      {@link Set} of keys
+     * @return a {@link Set} of keys which aren't already contained in the cache or empty 
+     */
+    @Nonnull
+    private Set<String> getKeysNotCached(@Nonnull final Set<String> keys) {
+        return keys
+            .stream()
+            .filter(StringUtils::isNotBlank)
+            .filter(key -> !keyToIdCache.asMap().containsKey(key))
+            .collect(Collectors.toSet());
+    }
+
+    /**
+     * Given a set of keys this method caches a mapping of the keys to ids of such keys only for the keys which are
+     * not already in the cache.
+     *
+     * @param keys            keys to cache.
+     * @param keyToIdMapper       a function to get the key from the resource.
+     * @param keysRequestMapper function that accepts a set of keys which are not cached and maps it to a graphQL
+     *                          request object representing the graphQL query to CTP on such keys.
+     * @return a map of key to ids of the requested keys.
+     */
+    @Nonnull
+    CompletionStage<Map<String, String>> cacheKeysToIdsUsingGraphQl(
+        @Nonnull final Set<String> keys,
+        @Nonnull final Function<ResourceKeyId, Map<String,String>> keyToIdMapper,
+        @Nonnull final Function<Set<String>, ResourceKeyIdGraphQlRequest> keysRequestMapper) {
+
+        final Set<String> keysNotCached = getKeysNotCached(keys);
+
+        if (keysNotCached.isEmpty()) {
+            return CompletableFuture.completedFuture(keyToIdCache.asMap());
+        }
+
+        final Consumer<Set<ResourceKeyId>> resultConsumer = results -> results.forEach(resource ->
+            keyToIdCache.putAll(keyToIdMapper.apply(resource)));
+
+        return CtpQueryUtils.queryAll(syncOptions.getCtpClient(), keysRequestMapper.apply(keysNotCached),
+            resultConsumer).thenApply(result -> keyToIdCache.asMap());
     }
 
     /**

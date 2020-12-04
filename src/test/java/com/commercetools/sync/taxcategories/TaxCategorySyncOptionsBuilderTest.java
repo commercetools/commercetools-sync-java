@@ -53,7 +53,8 @@ class TaxCategorySyncOptionsBuilderTest {
             () -> assertThat(taxCategorySyncOptions.getCtpClient()).isEqualTo(
                 CustomHeaderSphereClientDecorator.of(CTP_CLIENT)),
             () -> assertThat(taxCategorySyncOptions.getBatchSize())
-                .isEqualTo(TaxCategorySyncOptionsBuilder.BATCH_SIZE_DEFAULT)
+                .isEqualTo(TaxCategorySyncOptionsBuilder.BATCH_SIZE_DEFAULT),
+            () -> assertThat(taxCategorySyncOptions.getCacheSize()).isEqualTo(10_000)
         );
     }
 
@@ -128,6 +129,34 @@ class TaxCategorySyncOptionsBuilderTest {
 
         assertThat(taxCategorySyncOptionsWithNegativeBatchSize.getBatchSize())
             .isEqualTo(TaxCategorySyncOptionsBuilder.BATCH_SIZE_DEFAULT);
+    }
+
+
+    @Test
+    void build_WithCacheSize_ShouldSetCacheSize() {
+        final TaxCategorySyncOptions taxCategorySyncOptions = TaxCategorySyncOptionsBuilder.of(CTP_CLIENT)
+                                                                                           .cacheSize(10)
+                                                                                           .build();
+
+        assertThat(taxCategorySyncOptions.getCacheSize()).isEqualTo(10);
+    }
+
+
+    @Test
+    void build_WithZeroOrNegativeCacheSize_ShouldBuildSyncOptions() {
+        final TaxCategorySyncOptions taxCategorySyncOptionsWithZeroCacheSize = TaxCategorySyncOptionsBuilder
+            .of(CTP_CLIENT)
+            .cacheSize(0)
+            .build();
+
+        assertThat(taxCategorySyncOptionsWithZeroCacheSize.getCacheSize()).isEqualTo(10_000);
+
+        final TaxCategorySyncOptions taxCategorySyncOptionsWithNegativeCacheSize = TaxCategorySyncOptionsBuilder
+            .of(CTP_CLIENT)
+            .cacheSize(-100)
+            .build();
+
+        assertThat(taxCategorySyncOptionsWithNegativeCacheSize.getCacheSize()).isEqualTo(10_000);
     }
 
 }

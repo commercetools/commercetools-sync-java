@@ -49,6 +49,7 @@ class CartDiscountSyncOptionsBuilderTest {
         assertThat(cartDiscountSyncOptions.getWarningCallback()).isNull();
         assertThat(cartDiscountSyncOptions.getCtpClient()).isEqualTo(CustomHeaderSphereClientDecorator.of(CTP_CLIENT));
         assertThat(cartDiscountSyncOptions.getBatchSize()).isEqualTo(CartDiscountSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
+        assertThat(cartDiscountSyncOptions.getCacheSize()).isEqualTo(10_000);
     }
 
     @Test
@@ -273,5 +274,30 @@ class CartDiscountSyncOptionsBuilderTest {
             cartDiscountSyncOptions.applyBeforeCreateCallback(resourceDraft);
 
         assertThat(filteredDraft).isEmpty();
+    }
+
+    @Test
+    void cacheSize_WithPositiveValue_ShouldSetCacheSize() {
+        final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder.of(CTP_CLIENT)
+                                                                                              .cacheSize(10)
+                                                                                              .build();
+        assertThat(cartDiscountSyncOptions.getCacheSize()).isEqualTo(10);
+    }
+
+    @Test
+    void cacheSize_WithZeroOrNegativeValue_ShouldFallBackToDefaultValue() {
+        final CartDiscountSyncOptions cartDiscountSyncOptionsWithZeroCacheSize = CartDiscountSyncOptionsBuilder
+            .of(CTP_CLIENT)
+            .cacheSize(0)
+            .build();
+
+        assertThat(cartDiscountSyncOptionsWithZeroCacheSize.getCacheSize()).isEqualTo(10_000);
+
+        final CartDiscountSyncOptions cartDiscountSyncOptionsWithNegativeCacheSize = CartDiscountSyncOptionsBuilder
+            .of(CTP_CLIENT)
+            .cacheSize(-100)
+            .build();
+
+        assertThat(cartDiscountSyncOptionsWithNegativeCacheSize.getCacheSize()).isEqualTo(10_000);
     }
 }

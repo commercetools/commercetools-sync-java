@@ -128,7 +128,7 @@ class StateServiceImplTest {
         assertAll(
             () -> assertThat(states).isNotEmpty(),
             () -> assertThat(states).contains(mock1, mock2),
-            () -> assertThat(service.keyToIdCache).containsKeys(key1, key2)
+            () -> assertThat(service.keyToIdCache.asMap()).containsKeys(key1, key2)
         );
 
         assertThat(fakeStateClient.isExecuted()).isTrue();
@@ -162,7 +162,7 @@ class StateServiceImplTest {
         assertAll(
             () -> assertThat(states).isNotEmpty(),
             () -> assertThat(states).contains(mock1, mock2),
-            () -> assertThat(service.keyToIdCache).containsKeys(key1, key2)
+            () -> assertThat(service.keyToIdCache.asMap()).containsKeys(key1, key2)
         );
 
         assertThat(fakeStateClient.isExecuted()).isTrue();
@@ -183,7 +183,7 @@ class StateServiceImplTest {
 
         assertAll(
             () -> assertThat(stateOptional).containsSame(mock),
-            () -> assertThat(service.keyToIdCache.get(stateKey)).isEqualTo(stateId)
+            () -> assertThat(service.keyToIdCache.getIfPresent(stateKey)).isEqualTo(stateId)
         );
         assertThat(fakeStateClient.isExecuted()).isTrue();
     }

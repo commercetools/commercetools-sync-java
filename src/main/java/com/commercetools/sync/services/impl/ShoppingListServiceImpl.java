@@ -1,5 +1,7 @@
 package com.commercetools.sync.services.impl;
 
+import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
+import com.commercetools.sync.commons.models.GraphQlQueryResources;
 import com.commercetools.sync.services.ShoppingListService;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import io.sphere.sdk.commands.UpdateAction;
@@ -10,11 +12,11 @@ import io.sphere.sdk.shoppinglists.commands.ShoppingListCreateCommand;
 import io.sphere.sdk.shoppinglists.commands.ShoppingListUpdateCommand;
 import io.sphere.sdk.shoppinglists.expansion.ShoppingListExpansionModel;
 import io.sphere.sdk.shoppinglists.queries.ShoppingListQuery;
-import io.sphere.sdk.shoppinglists.queries.ShoppingListQueryBuilder;
 import io.sphere.sdk.shoppinglists.queries.ShoppingListQueryModel;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -36,11 +38,9 @@ public final class ShoppingListServiceImpl extends BaseService<ShoppingListDraft
     @Override
     public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> shoppingListKeys) {
 
-        return cacheKeysToIds(
-            shoppingListKeys, ShoppingList::getKey, keysNotCached -> ShoppingListQueryBuilder
-                .of()
-                .plusPredicates(shoppingListQueryModel -> shoppingListQueryModel.key().isIn(keysNotCached))
-                .build());
+        return cacheKeysToIdsUsingGraphQl(
+            shoppingListKeys, resource -> Collections.singletonMap(resource.getKey(), resource.getId()),
+            keysNotCached -> new ResourceKeyIdGraphQlRequest(keysNotCached, GraphQlQueryResources.SHOPPING_LISTS));
     }
 
     @Nonnull

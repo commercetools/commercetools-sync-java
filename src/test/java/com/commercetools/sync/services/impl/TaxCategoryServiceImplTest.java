@@ -114,7 +114,7 @@ class TaxCategoryServiceImplTest {
 
         assertAll(
             () -> assertThat(taxCategories).contains(mock1, mock2),
-            () -> assertThat(service.keyToIdCache).containsKeys(key1, key2)
+            () -> assertThat(service.keyToIdCache.asMap()).containsKeys(key1, key2)
         );
         assertThat(fakeTaxCategoryClient.isExecuted()).isTrue();
     }
@@ -136,7 +136,7 @@ class TaxCategoryServiceImplTest {
 
         assertAll(
             () -> assertThat(taxCategoryOptional).containsSame(mock),
-            () -> assertThat(service.keyToIdCache.get(taxCategoryKey)).isEqualTo(taxCategoryId)
+            () -> assertThat(service.keyToIdCache.asMap().get(taxCategoryKey)).isEqualTo(taxCategoryId)
         );
         assertThat(fakeTaxCategoryClient.isExecuted()).isTrue();
     }

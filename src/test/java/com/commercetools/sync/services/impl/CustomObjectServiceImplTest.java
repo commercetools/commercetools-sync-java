@@ -128,7 +128,7 @@ class CustomObjectServiceImplTest {
 
         assertAll(
             () -> assertThat(customObjects).contains(mock1, mock2),
-            () -> assertThat(service.keyToIdCache).containsKeys(
+            () -> assertThat(service.keyToIdCache.asMap()).containsKeys(
                 String.valueOf(customObjectCompositeIdlist.get(0)),
                 String.valueOf(customObjectCompositeIdlist.get(1)))
         );
@@ -154,7 +154,7 @@ class CustomObjectServiceImplTest {
         assertAll(
             () -> assertThat(customObjectOptional).containsSame(mock),
             () -> assertThat(
-                service.keyToIdCache.get(
+                service.keyToIdCache.asMap().get(
                     CustomObjectCompositeIdentifier.of(customObjectKey, customObjectContainer).toString())
             ).isEqualTo(customObjectId)
         );

@@ -1,6 +1,7 @@
 package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
+import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.DraftBasedCreateCommand;
 import io.sphere.sdk.models.Resource;
@@ -9,6 +10,7 @@ import io.sphere.sdk.queries.MetaModelQueryDsl;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -27,6 +29,7 @@ import java.util.function.Supplier;
  *            {@link io.sphere.sdk.categories.queries.CategoryQueryModel}, etc..
  * @param <E> Expansion Model (e.g. {@link io.sphere.sdk.products.expansion.ProductExpansionModel},
  *            {@link io.sphere.sdk.categories.expansion.CategoryExpansionModel}, etc..
+ *
  */
 abstract class BaseServiceWithKey<T extends WithKey, U extends Resource<U> & WithKey, S extends BaseSyncOptions,
     Q extends MetaModelQueryDsl<U, Q, M, E>, M, E> extends BaseService<T, U, S, Q, M, E> {
@@ -93,18 +96,20 @@ abstract class BaseServiceWithKey<T extends WithKey, U extends Resource<U> & Wit
      * not already in the cache.
      *
      * @param keys            keys to cache.
-     * @param keysQueryMapper function that accepts a set of keys which are not cached and maps it to a query object
-     *                        representing the query to CTP on such keys.
+     * @param keysRequestMapper function that accepts a set of keys which are not cached and maps it to a graphQL
+     *                          request object representing the graphql query to CTP on such keys.
      * @return a map of key to ids of the requested keys.
      */
     @Nonnull
     CompletionStage<Map<String, String>> cacheKeysToIds(
         @Nonnull final Set<String> keys,
-        @Nonnull final Function<Set<String>, Q> keysQueryMapper) {
+        @Nonnull final Function<Set<String>, ResourceKeyIdGraphQlRequest> keysRequestMapper) {
 
         // Why method reference is not used:
         // http://mail.openjdk.java.net/pipermail/compiler-dev/2015-November/009824.html
-        return super.cacheKeysToIds(keys, resource -> resource.getKey(), keysQueryMapper);
+        return super
+            .cacheKeysToIdsUsingGraphQl(keys, resource -> Collections.singletonMap(resource.getKey(), resource.getId()),
+                keysRequestMapper);
     }
 
     /**
