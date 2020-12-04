@@ -49,7 +49,8 @@ class StateSyncOptionsBuilderTest {
             () -> assertThat(stateSyncOptions.getErrorCallback()).isNull(),
             () -> assertThat(stateSyncOptions.getWarningCallback()).isNull(),
             () -> assertThat(stateSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT),
-            () -> assertThat(stateSyncOptions.getBatchSize()).isEqualTo(StateSyncOptionsBuilder.BATCH_SIZE_DEFAULT)
+            () -> assertThat(stateSyncOptions.getBatchSize()).isEqualTo(StateSyncOptionsBuilder.BATCH_SIZE_DEFAULT),
+            () -> assertThat(stateSyncOptions.getCacheSize()).isEqualTo(10_000)
         );
     }
 
@@ -95,7 +96,6 @@ class StateSyncOptionsBuilderTest {
         assertThat(stateSyncOptions.getWarningCallback()).isNotNull();
     }
 
-
     @Test
     void build_WithBatchSize_ShouldSetBatchSize() {
         StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder.of(CTP_CLIENT)
@@ -121,6 +121,31 @@ class StateSyncOptionsBuilderTest {
 
         assertThat(stateSyncOptionsWithNegativeBatchSize.getBatchSize())
             .isEqualTo(StateSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
+    }
+
+    @Test
+    void build_WithCacheSize_ShouldSetCacheSize() {
+        StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder.of(CTP_CLIENT)
+            .cacheSize(10)
+            .build();
+
+        assertThat(stateSyncOptions.getCacheSize()).isEqualTo(10);
+    }
+
+    @Test
+    void build_WithZeroOrNegativeCacheSize_ShouldBuildSyncOptions() {
+        StateSyncOptions stateSyncOptionsWithZeroCacheSize = StateSyncOptionsBuilder.of(CTP_CLIENT)
+            .cacheSize(0)
+            .build();
+
+        assertThat(stateSyncOptionsWithZeroCacheSize.getCacheSize()).isEqualTo(10_000);
+
+        StateSyncOptions stateSyncOptionsWithNegativeCacheSize = StateSyncOptionsBuilder
+            .of(CTP_CLIENT)
+            .cacheSize(-100)
+            .build();
+
+        assertThat(stateSyncOptionsWithNegativeCacheSize.getCacheSize()).isEqualTo(10_000);
     }
 
 }

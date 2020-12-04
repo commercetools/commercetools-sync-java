@@ -27,14 +27,15 @@ public final class TaxCategorySyncOptions extends BaseSyncOptions<TaxCategory, T
         final int batchSize,
         @Nullable final TriFunction<List<UpdateAction<TaxCategory>>, TaxCategoryDraft, TaxCategory,
             List<UpdateAction<TaxCategory>>> beforeUpdateCallback,
-        @Nullable final Function<TaxCategoryDraft, TaxCategoryDraft> beforeCreateCallback) {
+        @Nullable final Function<TaxCategoryDraft, TaxCategoryDraft> beforeCreateCallback, final long cacheSize) {
         super(
             ctpClient,
             errorCallBack,
             warningCallBack,
             batchSize,
             beforeUpdateCallback,
-            beforeCreateCallback);
+            beforeCreateCallback,
+            cacheSize);
     }
 
 }

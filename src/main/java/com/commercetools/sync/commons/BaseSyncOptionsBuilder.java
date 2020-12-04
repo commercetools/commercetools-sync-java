@@ -21,6 +21,7 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
     protected int batchSize = 30;
     protected TriFunction<List<UpdateAction<U>>, V, U, List<UpdateAction<U>>> beforeUpdateCallback;
     protected Function<V, V> beforeCreateCallback;
+    protected long cacheSize = 10_000;
 
     /**
      * Sets the {@code errorCallback} function of the sync module. This callback will be called whenever an event occurs
@@ -64,6 +65,25 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
     public T batchSize(final int batchSize) {
         if (batchSize > 0) {
             this.batchSize = batchSize;
+        }
+        return getThis();
+    }
+
+    /**
+     * Sets the cache size that indicates the key to id cache size of the sync process. To increase performance
+     * during the sync some resource keys -> ids are cached which are required for resolving references. To keep the
+     * cache performant outdated entries are evicted when a certain size is reached.
+     *
+     * <p>Note: This cache size is set to 10.000 by default.
+     *
+     * @param cacheSize a long number value that indicates cache size of the key to id cache used for reference
+     *                  resolution. Has to be positive or else will be ignored and default value of 100.000 would be
+     *                  used.
+     * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
+     */
+    public T cacheSize(final long cacheSize) {
+        if (cacheSize > 0) {
+            this.cacheSize = cacheSize;
         }
         return getThis();
     }

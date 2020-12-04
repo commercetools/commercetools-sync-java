@@ -41,7 +41,8 @@ public final class ShoppingListSyncOptionsBuilder
             warningCallback,
             batchSize,
             beforeUpdateCallback,
-            beforeCreateCallback
+            beforeCreateCallback,
+            cacheSize
         );
     }
 

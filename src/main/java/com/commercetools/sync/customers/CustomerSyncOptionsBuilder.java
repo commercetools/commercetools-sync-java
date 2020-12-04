@@ -42,7 +42,8 @@ public final class CustomerSyncOptionsBuilder extends BaseSyncOptionsBuilder<Cus
             warningCallback,
             batchSize,
             beforeUpdateCallback,
-            beforeCreateCallback);
+            beforeCreateCallback,
+            cacheSize);
     }
 
     /**

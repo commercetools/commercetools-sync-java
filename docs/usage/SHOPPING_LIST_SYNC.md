@@ -44,7 +44,7 @@ Any reference that is not expanded will have its id in place and not replaced by
 resources on the target commercetools project and the library will issue an update/create an API request without reference
 resolution. Therefore, in order for the sync to resolve the actual ids of those references, those `key`s have to be supplied in the following way:
 
-     - When syncing from a source commercetools project, you can use [`mapToShoppingListDraft`](https://commercetools.github.io/commercetools-sync-java/v/3.0.0/com/commercetools/sync/shoppinglists/utils/ShoppingListReferenceResolutionUtils.html#mapToShoppingListDrafts-java.util.List-)
+     - When syncing from a source commercetools project, you can use [`mapToShoppingListDraft`](https://commercetools.github.io/commercetools-sync-java/v/3.0.1/com/commercetools/sync/shoppinglists/utils/ShoppingListReferenceResolutionUtils.html#mapToShoppingListDrafts-java.util.List-)
     method that maps from a `ShoppingList` to `ShoppingListDraft` to make them ready for reference resolution by the shopping list sync:
     
     ````java
@@ -170,7 +170,7 @@ __Note__ The statistics object contains the processing time of the last batch on
  
 #### More examples of how to use the sync
  
-  [Sync from an external source](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/shoppingLists/ShoppingListSyncIT.java).
+  [Sync from an external source](https://github.com/commercetools/commercetools-sync-java/blob/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/shoppinglists/ShoppingListSyncIT.java).
  
  *Make sure to read the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md) for optimal performance.*
  
@@ -187,7 +187,7 @@ __Note__ The statistics object contains the processing time of the last batch on
  Optional<UpdateAction<ShoppingList>> updateAction = ShoppingListUpdateActionUtils.buildChangeNameAction(shoppingList, shoppingListDraft);
  ````
  
- More examples for particular update actions can be found in the test scenarios for [ShoppingListUpdateActionUtils](https://github.com/commercetools/commercetools-sync-java/tree/master/src/test/java/com/commercetools/sync/shoppingLists/utils/ShoppingListUpdateActionUtilsTest.java).
+ More examples for particular update actions can be found in the test scenarios for [ShoppingListUpdateActionUtils](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/shoppinglists/utils/ShoppingListUpdateActionUtils.java).
  
  
 ## Caveats

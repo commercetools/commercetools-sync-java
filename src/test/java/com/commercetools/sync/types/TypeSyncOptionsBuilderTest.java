@@ -47,6 +47,7 @@ class TypeSyncOptionsBuilderTest {
         assertThat(typeSyncOptions.getWarningCallback()).isNull();
         assertThat(typeSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
         assertThat(typeSyncOptions.getBatchSize()).isEqualTo(TypeSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
+        assertThat(typeSyncOptions.getCacheSize()).isEqualTo(10_000);
     }
 
     @Test
@@ -250,5 +251,28 @@ class TypeSyncOptionsBuilderTest {
 
         assertThat(filteredDraft).isEmpty();
     }
+
+    @Test
+    void cacheSize_WithPositiveValue_ShouldSetCacheSize() {
+        final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(CTP_CLIENT)
+                                                                      .cacheSize(10)
+                                                                      .build();
+        assertThat(typeSyncOptions.getCacheSize()).isEqualTo(10);
+    }
+
+    @Test
+    void cacheSize_WithZeroOrNegativeValue_ShouldFallBackToDefaultValue() {
+        final TypeSyncOptions typeSyncOptionsWithZeroCacheSize = TypeSyncOptionsBuilder.of(CTP_CLIENT)
+                                                                                       .cacheSize(0)
+                                                                                       .build();
+        assertThat(typeSyncOptionsWithZeroCacheSize.getCacheSize()).isEqualTo(10_000);
+
+        final TypeSyncOptions typeSyncOptionsWithNegativeCacheSize = TypeSyncOptionsBuilder
+            .of(CTP_CLIENT)
+            .cacheSize(-100)
+            .build();
+        assertThat(typeSyncOptionsWithNegativeCacheSize.getCacheSize()).isEqualTo(10_000);
+    }
+
 
 }

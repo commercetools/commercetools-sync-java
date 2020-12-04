@@ -27,12 +27,12 @@ public final class CustomerSyncOptions extends BaseSyncOptions<Customer, Custome
         final int batchSize,
         @Nullable final TriFunction<List<UpdateAction<Customer>>, CustomerDraft, Customer,
             List<UpdateAction<Customer>>> beforeUpdateCallback,
-        @Nullable final Function<CustomerDraft, CustomerDraft> beforeCreateCallback) {
+        @Nullable final Function<CustomerDraft, CustomerDraft> beforeCreateCallback, final long cacheSize) {
         super(ctpClient,
             errorCallback,
             warningCallback,
             batchSize,
             beforeUpdateCallback,
-            beforeCreateCallback);
+            beforeCreateCallback, cacheSize);
     }
 }

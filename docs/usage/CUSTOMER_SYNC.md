@@ -26,7 +26,7 @@ against a [CustomerDraft](https://docs.commercetools.com/api/projects/customers#
 
 #### Prerequisites
 1. Create a `sphereClient`:
-Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/3.0.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
+Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/3.0.1/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
   
 2. The sync expects a list of `CustomerDraft`s that have their `key` fields set to be matched with customers in the 
@@ -43,7 +43,7 @@ Any reference that is not expanded will have its id in place and not replaced by
 resources on the target commercetools project and the library will issue an update/create an API request without reference
 resolution.
 
-     - When syncing from a source commercetools project, you can use [`mapToCustomerDrafts`](https://commercetools.github.io/commercetools-sync-java/v/3.0.0/com/commercetools/sync/customers/utils/CustomerReferenceResolutionUtils.html#mapToCustomerDrafts-java.util.List-)
+     - When syncing from a source commercetools project, you can use [`mapToCustomerDrafts`](https://commercetools.github.io/commercetools-sync-java/v/3.0.1/com/commercetools/sync/customers/utils/CustomerReferenceResolutionUtils.html#mapToCustomerDrafts-java.util.List-)
     method that maps from a `Customer` to `CustomerDraft` to make them ready for reference resolution by the sync:
 
     ````java

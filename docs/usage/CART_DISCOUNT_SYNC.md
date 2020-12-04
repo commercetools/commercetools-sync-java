@@ -26,7 +26,7 @@ against a [CartDiscountDraft](https://docs.commercetools.com/http-api-projects-c
 
 #### Prerequisites
 1. Create a `sphereClient`:
-Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/3.0.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
+Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/3.0.1/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 2. The sync expects a list of `CartDiscountDraft`s that have their `key` fields set to be matched with
@@ -37,7 +37,7 @@ fields set, otherwise they won't be matched.
 Types are matched by their `key`s. Therefore, in order for the sync to resolve the 
 actual ids of the type reference, the `key` of the `Type` has to be supplied.
 
-   - When syncing from a source commercetools project, you can use [`mapToCartDiscountDrafts`](https://commercetools.github.io/commercetools-sync-java/v/3.0.0/com/commercetools/sync/cartdiscounts/utils/CartDiscountReferenceResolutionUtils.html#mapToCartDiscountDrafts-java.util.List-)
+   - When syncing from a source commercetools project, you can use [`mapToCartDiscountDrafts`](https://commercetools.github.io/commercetools-sync-java/v/3.0.1/com/commercetools/sync/cartdiscounts/utils/CartDiscountReferenceResolutionUtils.html#mapToCartDiscountDrafts-java.util.List-)
     method that maps from a `CartDiscount` to `CartDiscountDraft` in order to make them ready for reference resolution by the sync:
 
     ````java

@@ -2,6 +2,9 @@ package com.commercetools.sync.categories;
 
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
+import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
+import com.commercetools.sync.commons.models.ResourceKeyId;
+import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.CategoryServiceImpl;
@@ -14,7 +17,6 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
-import io.sphere.sdk.queries.PagedQueryResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -412,7 +414,7 @@ class CategorySyncTest {
     void sync_WithFailOnCachingKeysToIds_ShouldTriggerErrorCallbackAndReturnProperStats() {
         // preparation
         final SphereClient mockClient = mock(SphereClient.class);
-        when(mockClient.execute(any(CategoryQuery.class)))
+        when(mockClient.execute(any(ResourceKeyIdGraphQlRequest.class)))
                 .thenReturn(supplyAsync(() -> {
                     throw new SphereException();
                 }));
@@ -459,18 +461,21 @@ class CategorySyncTest {
 
         final String categoryKey = "key";
         final Category mockCategory = getMockCategory("foo", categoryKey);
+        ResourceKeyId resourceKeyId = new ResourceKeyId(categoryKey, "foo");
 
-        // It is safe here to cast PagedQueryResult to PagedQueryResult<Category> since we are sure
-        // it can be safely casted but the compiler doesn't see the generic type because of erasure.
-        @SuppressWarnings("unchecked") final PagedQueryResult<Category> pagedQueryResult = mock(PagedQueryResult.class);
-        when(pagedQueryResult.getResults()).thenReturn(singletonList(mockCategory));
+        @SuppressWarnings("unchecked") final ResourceKeyIdGraphQlResult resourceKeyIdGraphQlResult = mock(
+            ResourceKeyIdGraphQlResult.class);
+        when(resourceKeyIdGraphQlResult.getResults()).thenReturn(singleton(resourceKeyId));
 
-        // successful caching but exception on fetch.
+        // successful caching
+        when(mockClient.execute(any(ResourceKeyIdGraphQlRequest.class)))
+            .thenReturn(CompletableFuture.completedFuture(resourceKeyIdGraphQlResult));
+
+        // exception on fetch.
         when(mockClient.execute(any(CategoryQuery.class)))
-                .thenReturn(CompletableFuture.completedFuture(pagedQueryResult))
-                .thenReturn(supplyAsync(() -> {
-                    throw new SphereException();
-                }));
+            .thenReturn(supplyAsync(() -> {
+                throw new SphereException();
+            }));
 
         when(mockClient.execute(any(CategoryCreateCommand.class)))
                 .thenReturn(CompletableFuture.completedFuture(mockCategory));
