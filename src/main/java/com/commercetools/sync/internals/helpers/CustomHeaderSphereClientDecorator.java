@@ -5,7 +5,7 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientDecorator;
 import io.sphere.sdk.client.SphereRequest;
 import io.sphere.sdk.client.SphereRequestDecorator;
-import io.sphere.sdk.http.HttpHeaders;
+
 import javax.annotation.Nonnull;
 import java.util.concurrent.CompletionStage;
 
@@ -28,7 +28,7 @@ public final class CustomHeaderSphereClientDecorator extends SphereClientDecorat
     @Override
     public <T> CompletionStage<T> execute(@Nonnull final SphereRequest<T> sphereRequest) {
         delegatedSphereRequestDecorator = new CustomHeaderSphereRequestDecorator<>(sphereRequest);
-        return super.execute(delegatedSphereRequestDecorator);
+        return super.execute(new CustomHeaderSphereRequestDecorator<>(sphereRequest));
     }
 
     protected HttpRequestIntent getHttpRequestIntent() {
@@ -42,9 +42,7 @@ public final class CustomHeaderSphereClientDecorator extends SphereClientDecorat
 
         @Override
         public HttpRequestIntent httpRequestIntent() {
-            final HttpHeaders headers =
-                    HttpHeaders.of(HttpHeaders.USER_AGENT, LIB_NAME + "( ver : " + LIB_VERSION + ")");
-            return super.httpRequestIntent().withHeaders(headers);
+            return super.httpRequestIntent().plusHeader(LIB_NAME, LIB_VERSION);
         }
     }
 }
