@@ -30,8 +30,8 @@ class CustomHeaderSphereClientDecoratorTest {
         sphereClient.execute(productTypeUpdateSphereRequest);
         HttpRequestIntent requestIntent = ((CustomHeaderSphereClientDecorator)sphereClient).getHttpRequestIntent();
         HttpHeaders headers = requestIntent.getHeaders();
-        assertThat(headers.getHeader(HttpHeaders.USER_AGENT).size()).isGreaterThan(0);
-        assertThat(headers.getHeader(HttpHeaders.USER_AGENT).get(0))
-                .isEqualTo(LIB_NAME + "( ver : " + LIB_VERSION + ")");
+        assertThat(headers.getHeader(LIB_NAME).size()).isGreaterThan(0);
+        assertThat(headers.getHeader(LIB_NAME).get(0)).isEqualTo(LIB_VERSION);
+
     }
 }
