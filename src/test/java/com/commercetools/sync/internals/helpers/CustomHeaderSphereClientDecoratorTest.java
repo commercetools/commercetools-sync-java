@@ -32,6 +32,6 @@ class CustomHeaderSphereClientDecoratorTest {
         HttpHeaders headers = requestIntent.getHeaders();
         assertThat(headers.getHeader(HttpHeaders.USER_AGENT).size()).isGreaterThan(0);
         assertThat(headers.getHeader(HttpHeaders.USER_AGENT).get(0))
-                .isEqualTo(LIB_NAME + "( ver : " + LIB_VERSION + ")");
+                .isEqualTo(LIB_NAME + " (ver : " + LIB_VERSION + ")");
     }
 }

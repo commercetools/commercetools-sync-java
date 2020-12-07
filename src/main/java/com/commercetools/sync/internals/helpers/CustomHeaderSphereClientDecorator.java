@@ -43,7 +43,7 @@ public final class CustomHeaderSphereClientDecorator extends SphereClientDecorat
         @Override
         public HttpRequestIntent httpRequestIntent() {
             final HttpHeaders headers =
-                    HttpHeaders.of(HttpHeaders.USER_AGENT, LIB_NAME + "( ver : " + LIB_VERSION + ")");
+                    HttpHeaders.of(HttpHeaders.USER_AGENT, LIB_NAME + " (ver : " + LIB_VERSION + ")");
             return super.httpRequestIntent().withHeaders(headers);
         }
     }
