@@ -341,8 +341,8 @@ class BaseServiceImplTest {
                 .toCompletableFuture().join();
 
         assertAll(
-                () -> assertThat(result).hasSize(1),
-                () -> assertThat(result.get(
+            () -> assertThat(result).hasSize(1),
+            () -> assertThat(result.get(
                         CustomObjectCompositeIdentifier.of(customObjectKey, customObjectContainer).toString())
                 ).isEqualTo(customObjectId)
         );
