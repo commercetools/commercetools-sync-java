@@ -24,7 +24,6 @@ import io.sphere.sdk.states.StateType;
 import io.sphere.sdk.states.commands.StateCreateCommand;
 import io.sphere.sdk.states.commands.StateUpdateCommand;
 import io.sphere.sdk.states.expansion.StateExpansionModel;
-import io.sphere.sdk.states.queries.StateQuery;
 import io.sphere.sdk.states.queries.StateQueryBuilder;
 import java.util.ArrayList;
 import java.util.Arrays;
