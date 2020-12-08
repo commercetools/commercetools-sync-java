@@ -33,9 +33,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class MockUtils {
+    public static final String LOCALISED_STRING_CUSTOM_FIELD_NAME = "backgroundColor";
+    public static final String BOOLEAN_CUSTOM_FIELD_NAME = "invisibleInShop";
+
     /**
      * Creates a mock instance of {@link CustomFieldsDraft} with the key 'StepCategoryTypeKey' and two custom fields
-     * 'invisibleInShop' and'backgroundColor'.
+     * 'invisibleInShop' and'backgroundColor' created by the method {@code createCustomFieldsJsonMap}.
      *
      * <p>The 'invisibleInShop' field is of type {@code boolean} and has value {@code false} and the
      * the 'backgroundColor' field is of type {@code localisedString} and has the values {"de": "rot", "en": "red"}
@@ -43,11 +46,7 @@ public class MockUtils {
      * @return a mock instance of {@link CustomFieldsDraft} with some hardcoded custom fields and key.
      */
     public static CustomFieldsDraft getMockCustomFieldsDraft() {
-        final Map<String, JsonNode> customFieldsJsons = new HashMap<>();
-        customFieldsJsons.put("invisibleInShop", JsonNodeFactory.instance.booleanNode(false));
-        customFieldsJsons
-            .put("backgroundColor", JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
-        return CustomFieldsDraft.ofTypeIdAndJson("StepCategoryTypeId", customFieldsJsons);
+        return CustomFieldsDraft.ofTypeIdAndJson("StepCategoryTypeId", createCustomFieldsJsonMap());
     }
 
     /**
@@ -146,6 +145,22 @@ public class MockUtils {
         final Asset asset = mock(Asset.class);
         when(asset.getCustom()).thenReturn(mockCustomFields);
         return asset;
+    }
+
+    /**
+     * Builds a {@link Map} for the custom fields to their {@link JsonNode} values that looks as follows in JSON
+     * format:
+     *
+     * <p>"fields": {"invisibleInShop": false, "backgroundColor": { "en": "red", "de": "rot"}}
+     *
+     * @return a Map of the custom fields to their JSON values with dummy data.
+     */
+    public static Map<String, JsonNode> createCustomFieldsJsonMap() {
+        final Map<String, JsonNode> customFieldsJsons = new HashMap<>();
+        customFieldsJsons.put(BOOLEAN_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.booleanNode(false));
+        customFieldsJsons.put(LOCALISED_STRING_CUSTOM_FIELD_NAME,
+                JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red"));
+        return customFieldsJsons;
     }
 
     /**

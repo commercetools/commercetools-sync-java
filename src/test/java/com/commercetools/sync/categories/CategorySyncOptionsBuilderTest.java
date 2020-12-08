@@ -4,6 +4,7 @@ import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
@@ -45,7 +46,7 @@ class CategorySyncOptionsBuilderTest {
         assertThat(categorySyncOptions.getBeforeCreateCallback()).isNull();
         assertThat(categorySyncOptions.getErrorCallback()).isNull();
         assertThat(categorySyncOptions.getWarningCallback()).isNull();
-        assertThat(categorySyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
+        assertThat(categorySyncOptions.getCtpClient()).isEqualTo(CustomHeaderSphereClientDecorator.of(CTP_CLIENT));
         assertThat(categorySyncOptions.getBatchSize()).isEqualTo(CategorySyncOptionsBuilder.BATCH_SIZE_DEFAULT);
         assertThat(categorySyncOptions.getCacheSize()).isEqualTo(10_000);
     }

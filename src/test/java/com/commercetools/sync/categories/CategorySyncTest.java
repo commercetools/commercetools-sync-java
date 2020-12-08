@@ -1,36 +1,36 @@
 package com.commercetools.sync.categories;
 
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
+import com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
-import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
-import com.commercetools.sync.commons.models.ResourceKeyId;
-import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.CategoryServiceImpl;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
-import io.sphere.sdk.categories.commands.CategoryCreateCommand;
-import io.sphere.sdk.categories.queries.CategoryQuery;
+import io.sphere.sdk.client.BadGatewayException;
+import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
+import io.sphere.sdk.types.CustomFieldsDraft;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategory;
 import static com.commercetools.sync.categories.CategorySyncMockUtils.getMockCategoryDraft;
@@ -38,8 +38,11 @@ import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.commons.MockUtils.mockCategoryService;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
-import static com.commercetools.sync.products.ProductSyncMockUtils.CATEGORY_KEY_1_RESOURCE_PATH;
+import static com.commercetools.sync.categories.CategorySyncMockUtils.CATEGORY_KEY_1_RESOURCE_PATH;
+import static com.commercetools.sync.categories.CategorySyncMockUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
+import static com.commercetools.sync.commons.MockUtils.getMockCustomFieldsDraft;
 import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
+import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
@@ -50,6 +53,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -414,11 +418,6 @@ class CategorySyncTest {
     void sync_WithFailOnCachingKeysToIds_ShouldTriggerErrorCallbackAndReturnProperStats() {
         // preparation
         final SphereClient mockClient = mock(SphereClient.class);
-        when(mockClient.execute(any(ResourceKeyIdGraphQlRequest.class)))
-                .thenReturn(supplyAsync(() -> {
-                    throw new SphereException();
-                }));
-
         final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder
                 .of(mockClient)
                 .errorCallback((exception, oldResource, newResource, updateActions) -> {
@@ -428,6 +427,8 @@ class CategorySyncTest {
                 .build();
 
         final CategoryService categoryServiceSpy = spy(new CategoryServiceImpl(syncOptions));
+        when(categoryServiceSpy.cacheKeysToIds(anySet()))
+                .thenReturn(supplyAsync(() -> { throw new SphereException(); }));
 
         final CategorySync mockCategorySync = new CategorySync(syncOptions, getMockTypeService(), categoryServiceSpy);
 
@@ -443,12 +444,12 @@ class CategorySyncTest {
 
         assertThat(errorCallBackMessages)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(message ->
+                .singleElement().satisfies(message ->
                         assertThat(message).contains("Failed to build a cache of keys to ids."));
 
         assertThat(errorCallBackExceptions)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(throwable -> {
+                .singleElement().satisfies(throwable -> {
                     assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
                     assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
                 });
@@ -460,25 +461,6 @@ class CategorySyncTest {
         final SphereClient mockClient = mock(SphereClient.class);
 
         final String categoryKey = "key";
-        final Category mockCategory = getMockCategory("foo", categoryKey);
-        ResourceKeyId resourceKeyId = new ResourceKeyId(categoryKey, "foo");
-
-        @SuppressWarnings("unchecked") final ResourceKeyIdGraphQlResult resourceKeyIdGraphQlResult = mock(
-            ResourceKeyIdGraphQlResult.class);
-        when(resourceKeyIdGraphQlResult.getResults()).thenReturn(singleton(resourceKeyId));
-
-        // successful caching
-        when(mockClient.execute(any(ResourceKeyIdGraphQlRequest.class)))
-            .thenReturn(CompletableFuture.completedFuture(resourceKeyIdGraphQlResult));
-
-        // exception on fetch.
-        when(mockClient.execute(any(CategoryQuery.class)))
-            .thenReturn(supplyAsync(() -> {
-                throw new SphereException();
-            }));
-
-        when(mockClient.execute(any(CategoryCreateCommand.class)))
-                .thenReturn(CompletableFuture.completedFuture(mockCategory));
 
         final CategorySyncOptions syncOptions = CategorySyncOptionsBuilder
                 .of(mockClient)
@@ -489,11 +471,17 @@ class CategorySyncTest {
                 .build();
 
         final CategoryService categoryServiceSpy = spy(new CategoryServiceImpl(syncOptions));
-
         final CategorySync mockCategorySync = new CategorySync(syncOptions, getMockTypeService(), categoryServiceSpy);
 
         final CategoryDraft categoryDraft =
                 getMockCategoryDraft(Locale.ENGLISH, "name", categoryKey, "parentKey", "customTypeId", new HashMap<>());
+
+        final Map<String, String> keyToIds = new HashMap<>();
+        when(categoryServiceSpy.fetchMatchingCategoriesByKeys(anySet()))
+                .thenReturn(supplyAsync(() -> { throw new CompletionException(new SphereException()); }));
+
+        keyToIds.put(categoryDraft.getKey(), UUID.randomUUID().toString());
+        when(categoryServiceSpy.cacheKeysToIds(anySet())).thenReturn(completedFuture(keyToIds));
 
         // test
         final CategorySyncStatistics syncStatistics = mockCategorySync.sync(singletonList(categoryDraft))
@@ -504,12 +492,12 @@ class CategorySyncTest {
 
         assertThat(errorCallBackMessages)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(message ->
+                .singleElement().satisfies(message ->
                         assertThat(message).contains("Failed to fetch existing categories"));
 
         assertThat(errorCallBackExceptions)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(throwable -> {
+                .singleElement().satisfies(throwable -> {
                     assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
                     assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
                 });
@@ -569,5 +557,213 @@ class CategorySyncTest {
         // assertion
         verify(spyCategorySyncOptions).applyBeforeUpdateCallback(any(), any(), any());
         verify(spyCategorySyncOptions, never()).applyBeforeCreateCallback(any());
+    }
+
+    @Test
+    void syncDrafts_WithConcurrentModificationException_ShouldRetryToUpdateNewCategoryWithSuccess() {
+        // Preparation
+        final String oldCategoryKey = "oldCategoryKey";
+        final LocalizedString newCategoryName = LocalizedString.of(Locale.ENGLISH, "Modern Furniture");
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+        final List<String> warningCallBackMessages = new ArrayList<>();
+
+        final CategoryDraft categoryDraft = CategoryDraftBuilder
+                .of(newCategoryName, LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
+                .key(oldCategoryKey)
+                .custom(CustomFieldsDraft.ofTypeKeyAndJson(
+                        OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsDraft().getFields()))
+                .build();
+
+        final CategorySyncOptions categorySyncOptions =
+                CategorySyncOptionsBuilder
+                    .of(mock(SphereClient.class))
+                    .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                        errorMessages.add(exception.getMessage());
+                        exceptions.add(exception.getCause());
+                    })
+                    .warningCallback((exception, oldResource, newResource)
+                        -> warningCallBackMessages.add(exception.getMessage()))
+                    .build();
+
+        final CategoryService categoryService = buildMockCategoryServiceWithSuccessfulUpdateOnRetry(categoryDraft);
+        final TypeService typeService = mock(TypeService.class);
+        when(typeService.fetchCachedTypeId(any()))
+                .thenReturn(completedFuture(Optional.of(UUID.randomUUID().toString())));
+
+        final CategorySync categorySync =
+                new CategorySync(categorySyncOptions, typeService, categoryService);
+
+        // Test
+        final CategorySyncStatistics statistics = categorySync.sync(Collections.singletonList(categoryDraft))
+                .toCompletableFuture()
+                .join();
+
+        // Assertion
+        assertThat(statistics).hasValues(1, 0, 1, 0);
+        assertThat(exceptions).isEmpty();
+        assertThat(errorMessages).isEmpty();
+        assertThat(warningCallBackMessages).isEmpty();
+    }
+
+    @Test
+    void syncDrafts_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
+        final String oldCategoryKey = "oldCategoryKey";
+        final LocalizedString newCategoryName = LocalizedString.of(Locale.ENGLISH, "Modern Furniture");
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+        final List<String> warningCallBackMessages = new ArrayList<>();
+
+        final CategorySyncOptions categorySyncOptions =
+                CategorySyncOptionsBuilder
+                    .of(mock(SphereClient.class))
+                    .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                        errorMessages.add(exception.getMessage());
+                        exceptions.add(exception.getCause());
+                    })
+                    .warningCallback((exception, oldResource, newResource)
+                        -> warningCallBackMessages.add(exception.getMessage()))
+                    .build();
+
+        final CategoryDraft categoryDraft = CategoryDraftBuilder
+                .of(newCategoryName, LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
+                .key(oldCategoryKey)
+                .custom(CustomFieldsDraft.ofTypeKeyAndJson(
+                        OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsDraft().getFields()))
+                .build();
+
+        final CategoryService categoryService = buildMockCategoryServiceWithFailedFetchOnRetry(categoryDraft);
+        final TypeService typeService = mock(TypeService.class);
+        when(typeService.fetchCachedTypeId(any()))
+                .thenReturn(completedFuture(Optional.of(UUID.randomUUID().toString())));
+
+        final CategorySync categorySync =
+                new CategorySync(categorySyncOptions, typeService, categoryService);
+
+        final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
+                .toCompletableFuture()
+                .join();
+
+        AssertionsForStatistics.assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
+        assertThat(errorMessages).hasSize(1);
+        assertThat(exceptions.get(0)).isNotNull();
+        assertThat(exceptions.get(0)).isExactlyInstanceOf(BadGatewayException.class);
+        assertThat(errorMessages.get(0)).contains(
+                format("Failed to update Category with key: '%s'. Reason: Failed to fetch from CTP while retrying "
+                        + "after concurrency modification.", categoryDraft.getKey()));
+    }
+
+    @Test
+    void syncDrafts_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
+        final String oldCategoryKey = "oldCategoryKey";
+        final LocalizedString newCategoryName = LocalizedString.of(Locale.ENGLISH, "Modern Furniture");
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+        final List<String> warningCallBackMessages = new ArrayList<>();
+
+        final CategorySyncOptions categorySyncOptions =
+                CategorySyncOptionsBuilder
+                        .of(mock(SphereClient.class))
+                        .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                            errorMessages.add(exception.getMessage());
+                            exceptions.add(exception.getCause());
+                        })
+                        .warningCallback((exception, oldResource, newResource)
+                            -> warningCallBackMessages.add(exception.getMessage()))
+                        .build();
+
+        final CategoryDraft categoryDraft = CategoryDraftBuilder
+                .of(newCategoryName, LocalizedString.of(Locale.ENGLISH, "modern-furniture"))
+                .key(oldCategoryKey)
+                .custom(CustomFieldsDraft.ofTypeKeyAndJson(
+                        OLD_CATEGORY_CUSTOM_TYPE_KEY, getMockCustomFieldsDraft().getFields()))
+                .build();
+
+        final CategoryService categoryService = buildMockCategoryServiceWithNotFoundFetchOnRetry(categoryDraft);
+        final TypeService typeService = mock(TypeService.class);
+        when(typeService.fetchCachedTypeId(any()))
+                .thenReturn(completedFuture(Optional.of(UUID.randomUUID().toString())));
+
+        final CategorySync categorySync =
+                new CategorySync(categorySyncOptions, typeService, categoryService);
+
+        final CategorySyncStatistics syncStatistics = categorySync.sync(Collections.singletonList(categoryDraft))
+                .toCompletableFuture()
+                .join();
+
+        AssertionsForStatistics.assertThat(syncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(errorMessages).hasSize(1);
+        assertThat(exceptions).hasSize(1);
+        assertThat(errorMessages.get(0)).contains(
+                format("Failed to update Category with key: '%s'. Reason: Not found when attempting to fetch while"
+                        + " retrying after concurrency modification.", categoryDraft.getKey()));
+    }
+
+    @Nonnull
+    private CategoryService buildMockCategoryServiceWithSuccessfulUpdateOnRetry(
+            @Nonnull final CategoryDraft categoryDraft) {
+
+        final CategoryService mockCategoryService = mock(CategoryService.class);
+
+        final Category mockCategory = mock(Category.class);
+        when(mockCategory.getKey()).thenReturn("oldCategoryKey");
+
+        final Map<String, String> keyToIds = new HashMap<>();
+        keyToIds.put(categoryDraft.getKey(), UUID.randomUUID().toString());
+
+        when(mockCategoryService.cacheKeysToIds(anySet())).thenReturn(completedFuture(keyToIds));
+        when(mockCategoryService.fetchMatchingCategoriesByKeys(anySet()))
+                .thenReturn(completedFuture(singleton(mockCategory)));
+        when(mockCategoryService.fetchCategory(any())).thenReturn(completedFuture(Optional.of(mockCategory)));
+        when(mockCategoryService.updateCategory(any(), anyList()))
+                .thenReturn(exceptionallyCompletedFuture(new SphereException(new ConcurrentModificationException())))
+                .thenReturn(completedFuture(mockCategory));
+        return mockCategoryService;
+    }
+
+    @Nonnull
+    private CategoryService buildMockCategoryServiceWithFailedFetchOnRetry(
+            @Nonnull final CategoryDraft categoryDraft) {
+
+        final CategoryService mockCategoryService = mock(CategoryService.class);
+
+        final Category mockCategory = mock(Category.class);
+        when(mockCategory.getKey()).thenReturn("oldCategoryKey");
+
+        final Map<String, String> keyToIds = new HashMap<>();
+        keyToIds.put(categoryDraft.getKey(), UUID.randomUUID().toString());
+
+        when(mockCategoryService.cacheKeysToIds(anySet())).thenReturn(completedFuture(keyToIds));
+        when(mockCategoryService.fetchMatchingCategoriesByKeys(anySet()))
+                .thenReturn(completedFuture(singleton(mockCategory)));
+        when(mockCategoryService.fetchCategory(any()))
+                .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()));
+        when(mockCategoryService.updateCategory(any(), anyList()))
+                .thenReturn(exceptionallyCompletedFuture(new SphereException(new ConcurrentModificationException())))
+                .thenReturn(completedFuture(mockCategory));
+        return mockCategoryService;
+    }
+
+    @Nonnull
+    private CategoryService buildMockCategoryServiceWithNotFoundFetchOnRetry(
+            @Nonnull final CategoryDraft categoryDraft) {
+
+        final CategoryService mockCategoryService = mock(CategoryService.class);
+
+        final Category mockCategory = mock(Category.class);
+        when(mockCategory.getKey()).thenReturn("oldCategoryKey");
+
+        final Map<String, String> keyToIds = new HashMap<>();
+        keyToIds.put(categoryDraft.getKey(), UUID.randomUUID().toString());
+
+        when(mockCategoryService.cacheKeysToIds(anySet())).thenReturn(completedFuture(keyToIds));
+        when(mockCategoryService.fetchMatchingCategoriesByKeys(anySet()))
+                .thenReturn(completedFuture(singleton(mockCategory)));
+        when(mockCategoryService.fetchCategory(any()))
+                .thenReturn(completedFuture(Optional.empty()));
+        when(mockCategoryService.updateCategory(any(), anyList()))
+                .thenReturn(exceptionallyCompletedFuture(new SphereException(new ConcurrentModificationException())))
+                .thenReturn(completedFuture(mockCategory));
+        return mockCategoryService;
     }
 }

@@ -1,5 +1,6 @@
 package com.commercetools.sync.services.impl;
 
+import com.commercetools.sync.commons.FakeClient;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.products.ProductSyncOptions;
@@ -12,17 +13,15 @@ import io.sphere.sdk.customobjects.commands.CustomObjectUpsertCommand;
 import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.queries.PagedQueryResult;
-import io.sphere.sdk.utils.CompletableFutureUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.lang.String.format;
@@ -33,6 +32,7 @@ import static org.apache.commons.codec.digest.DigestUtils.sha1Hex;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -47,21 +47,14 @@ class UnresolvedReferencesServiceImplTest {
     void setUp() {
         errorMessages = new ArrayList<>();
         errorExceptions = new ArrayList<>();
-        productSyncOptions = ProductSyncOptionsBuilder
-            .of(mock(SphereClient.class))
-            .errorCallback((exception, oldResource, newResource, actions) -> {
-                errorMessages.add(exception.getMessage());
-                errorExceptions.add(exception);
-            })
-            .build();
-        service = new UnresolvedReferencesServiceImpl(productSyncOptions);
+
     }
 
     @Test
     void fetch_WithEmptyKeySet_ShouldReturnEmptySet() {
         // preparation
         final Set<String> keys = new HashSet<>();
-
+        initMockService(mock(SphereClient.class));
         // test
         final Set<WaitingToBeResolved> result = service
             .fetch(keys)
@@ -85,8 +78,8 @@ class UnresolvedReferencesServiceImplTest {
         when(customObjectMock.getValue()).thenReturn(waitingToBeResolved);
 
         final PagedQueryResult result = getMockPagedQueryResult(singletonList(customObjectMock));
-        when(productSyncOptions.getCtpClient().execute(any(CustomObjectQuery.class)))
-            .thenReturn(completedFuture(result));
+        final FakeClient<PagedQueryResult> fakeClient = new FakeClient<PagedQueryResult>(result);
+        initMockService(fakeClient);
 
         // test
         final Set<WaitingToBeResolved> toBeResolvedOptional = service
@@ -111,6 +104,16 @@ class UnresolvedReferencesServiceImplTest {
         when(customObjectMock.getValue()).thenReturn(waitingToBeResolved);
 
         final PagedQueryResult result = getMockPagedQueryResult(singletonList(customObjectMock));
+        final SphereClient client = mock(SphereClient.class);
+        productSyncOptions = spy(ProductSyncOptionsBuilder
+                .of(client)
+                .errorCallback((exception, oldResource, newResource, actions) -> {
+                    errorMessages.add(exception.getMessage());
+                    errorExceptions.add(exception);
+                })
+                .build());
+        service = new UnresolvedReferencesServiceImpl(productSyncOptions);
+        when(productSyncOptions.getCtpClient()).thenReturn(client);
         when(productSyncOptions.getCtpClient().execute(any(CustomObjectQuery.class)))
             .thenReturn(completedFuture(result));
         final ArgumentCaptor<CustomObjectQuery<WaitingToBeResolved>> requestArgumentCaptor =
@@ -144,8 +147,8 @@ class UnresolvedReferencesServiceImplTest {
         final WaitingToBeResolved waitingToBeResolved =
             new WaitingToBeResolved(productDraftMock, singleton("test-ref"));
         when(customObjectMock.getValue()).thenReturn(waitingToBeResolved);
-
-        when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(customObjectMock));
+        final FakeClient<CustomObject> fakeClient = new FakeClient<CustomObject>(customObjectMock);
+        initMockService(fakeClient);
 
         // test
         final Optional<WaitingToBeResolved> result = service
@@ -168,7 +171,16 @@ class UnresolvedReferencesServiceImplTest {
         final WaitingToBeResolved waitingToBeResolved =
             new WaitingToBeResolved(productDraftMock, singleton("test-ref"));
         when(customObjectMock.getValue()).thenReturn(waitingToBeResolved);
-
+        final SphereClient client = mock(SphereClient.class);
+        productSyncOptions = spy(ProductSyncOptionsBuilder
+                .of(client)
+                .errorCallback((exception, oldResource, newResource, actions) -> {
+                    errorMessages.add(exception.getMessage());
+                    errorExceptions.add(exception);
+                })
+                .build());
+        service = new UnresolvedReferencesServiceImpl(productSyncOptions);
+        when(productSyncOptions.getCtpClient()).thenReturn(client);
         when(productSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(customObjectMock));
         final ArgumentCaptor<CustomObjectUpsertCommand<WaitingToBeResolved>> requestArgumentCaptor =
             ArgumentCaptor.forClass(CustomObjectUpsertCommand.class);
@@ -195,8 +207,9 @@ class UnresolvedReferencesServiceImplTest {
         final WaitingToBeResolved waitingToBeResolved =
             new WaitingToBeResolved(productDraftMock, singleton("test-ref"));
 
-        when(productSyncOptions.getCtpClient().execute(any()))
-                .thenReturn(CompletableFutureUtils.failed(new BadRequestException("bad request")));
+        final FakeClient<WaitingToBeResolved> fakeClient =
+                new FakeClient<>(new BadRequestException("bad request"));
+        initMockService(fakeClient);
 
         // test
         final Optional<WaitingToBeResolved> result = service
@@ -208,13 +221,13 @@ class UnresolvedReferencesServiceImplTest {
         assertThat(result).isEmpty();
         assertThat(errorMessages)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(message -> assertThat(message).contains(
+                .singleElement().satisfies(message -> assertThat(message).contains(
                     format("Failed to save CustomObject with key: '%s' (hash of product key: '%s').",
                         sha1Hex(productKey), productKey)));
 
         assertThat(errorExceptions)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(exception -> {
+                .singleElement().satisfies(exception -> {
                     assertThat(exception).isExactlyInstanceOf(SyncException.class);
                     assertThat(exception).hasCauseExactlyInstanceOf(BadRequestException.class);
                 });
@@ -226,8 +239,10 @@ class UnresolvedReferencesServiceImplTest {
         final ProductDraft productDraftMock = mock(ProductDraft.class);
         final String key = "product-draft-key";
         when(productDraftMock.getKey()).thenReturn(key);
-        when(productSyncOptions.getCtpClient().execute(any()))
-                .thenReturn(CompletableFutureUtils.failed(new BadRequestException("bad request")));
+
+        final FakeClient<WaitingToBeResolved> fakeClient =
+                new FakeClient<>(new BadRequestException("bad request"));
+        initMockService(fakeClient);
 
         // test
         final Optional<WaitingToBeResolved> toBeResolvedOptional = service
@@ -239,12 +254,12 @@ class UnresolvedReferencesServiceImplTest {
         assertThat(errorExceptions).hasSize(1);
         assertThat(errorMessages)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(message -> assertThat(message)
+                .singleElement().satisfies(message -> assertThat(message)
                         .contains(format("Failed to delete CustomObject with key: '%s' (hash of product key: '%s')",
                             sha1Hex(key), key)));
         assertThat(errorExceptions)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(exception -> {
+                .singleElement().satisfies(exception -> {
                     assertThat(exception).isExactlyInstanceOf(SyncException.class);
                     assertThat(exception).hasCauseExactlyInstanceOf(BadRequestException.class);
                 });
@@ -261,8 +276,10 @@ class UnresolvedReferencesServiceImplTest {
         final WaitingToBeResolved waitingDraft = new WaitingToBeResolved(productDraftMock, singleton("test-ref"));
         when(customObjectMock.getValue()).thenReturn(waitingDraft);
 
-        when(productSyncOptions.getCtpClient().execute(any(CustomObjectDeleteCommand.class)))
-            .thenReturn(completedFuture(customObjectMock));
+
+        final FakeClient<CustomObject> fakeClient =
+                new FakeClient<CustomObject>(customObjectMock);
+        initMockService(fakeClient);
 
         // test
         final Optional<WaitingToBeResolved> toBeResolvedOptional = service
@@ -283,6 +300,16 @@ class UnresolvedReferencesServiceImplTest {
         final WaitingToBeResolved waitingDraft = new WaitingToBeResolved(productDraftMock, singleton("test-ref"));
         when(customObjectMock.getValue()).thenReturn(waitingDraft);
 
+        final SphereClient client = mock(SphereClient.class);
+        productSyncOptions = spy(ProductSyncOptionsBuilder
+                .of(client)
+                .errorCallback((exception, oldResource, newResource, actions) -> {
+                    errorMessages.add(exception.getMessage());
+                    errorExceptions.add(exception);
+                })
+                .build());
+        service = new UnresolvedReferencesServiceImpl(productSyncOptions);
+        when(productSyncOptions.getCtpClient()).thenReturn(client);
         when(productSyncOptions.getCtpClient().execute(any(CustomObjectDeleteCommand.class)))
             .thenReturn(completedFuture(customObjectMock));
         final ArgumentCaptor<CustomObjectDeleteCommand<WaitingToBeResolved>> requestArgumentCaptor =
@@ -305,5 +332,16 @@ class UnresolvedReferencesServiceImplTest {
         final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
         when(pagedQueryResult.getResults()).thenReturn(results);
         return pagedQueryResult;
+    }
+
+    private void initMockService(@Nonnull final SphereClient client) {
+        productSyncOptions = ProductSyncOptionsBuilder
+                .of(client)
+                .errorCallback((exception, oldResource, newResource, actions) -> {
+                    errorMessages.add(exception.getMessage());
+                    errorExceptions.add(exception);
+                })
+                .build();
+        service = new UnresolvedReferencesServiceImpl(productSyncOptions);
     }
 }

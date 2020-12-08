@@ -1,5 +1,6 @@
 package com.commercetools.sync.services.impl;
 
+import com.commercetools.sync.commons.FakeClient;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedTransitions;
 import com.commercetools.sync.states.StateSyncOptions;
 import com.commercetools.sync.states.StateSyncOptionsBuilder;
@@ -11,17 +12,15 @@ import io.sphere.sdk.customobjects.commands.CustomObjectUpsertCommand;
 import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.states.StateDraft;
-import io.sphere.sdk.utils.CompletableFutureUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.lang.String.format;
@@ -32,6 +31,7 @@ import static org.apache.commons.codec.digest.DigestUtils.sha1Hex;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -46,20 +46,14 @@ class UnresolvedTransitionsServiceImplTest {
     void setUp() {
         errorMessages = new ArrayList<>();
         errorExceptions = new ArrayList<>();
-        stateSyncOptions = StateSyncOptionsBuilder
-            .of(mock(SphereClient.class))
-            .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                errorMessages.add(exception.getMessage());
-                errorExceptions.add(exception.getCause());
-            })
-            .build();
-        service = new UnresolvedTransitionsServiceImpl(stateSyncOptions);
     }
 
     @Test
     void fetch_WithEmptyKeySet_ShouldReturnEmptySet() {
         // preparation
         final Set<String> keys = new HashSet<>();
+
+        initMockService(mock(SphereClient.class));
 
         // test
         final Set<WaitingToBeResolvedTransitions> result = service
@@ -84,8 +78,8 @@ class UnresolvedTransitionsServiceImplTest {
         when(customObjectMock.getValue()).thenReturn(waitingToBeResolved);
 
         final PagedQueryResult result = getMockPagedQueryResult(singletonList(customObjectMock));
-        when(stateSyncOptions.getCtpClient().execute(any(CustomObjectQuery.class)))
-            .thenReturn(completedFuture(result));
+        final FakeClient<PagedQueryResult> fakeClient = new FakeClient<>(result);
+        initMockService(fakeClient);
 
         // test
         final Set<WaitingToBeResolvedTransitions> toBeResolvedOptional = service
@@ -110,8 +104,20 @@ class UnresolvedTransitionsServiceImplTest {
         when(customObjectMock.getValue()).thenReturn(waitingToBeResolved);
 
         final PagedQueryResult result = getMockPagedQueryResult(singletonList(customObjectMock));
+        final SphereClient sphereClient = mock(SphereClient.class);
+        stateSyncOptions = spy(StateSyncOptionsBuilder
+                .of(sphereClient)
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorMessages.add(exception.getMessage());
+                    errorExceptions.add(exception.getCause());
+                })
+                .build());
+        service = new UnresolvedTransitionsServiceImpl(stateSyncOptions);
+
+        when(stateSyncOptions.getCtpClient()).thenReturn(sphereClient);
         when(stateSyncOptions.getCtpClient().execute(any(CustomObjectQuery.class)))
             .thenReturn(completedFuture(result));
+
         final ArgumentCaptor<CustomObjectQuery<WaitingToBeResolvedTransitions>> requestArgumentCaptor =
             ArgumentCaptor.forClass(CustomObjectQuery.class);
 
@@ -144,7 +150,8 @@ class UnresolvedTransitionsServiceImplTest {
             new WaitingToBeResolvedTransitions(stateDraftMock, singleton("test-ref"));
         when(customObjectMock.getValue()).thenReturn(waitingToBeResolved);
 
-        when(stateSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(customObjectMock));
+        final FakeClient<CustomObject> fakeClient = new FakeClient<>(customObjectMock);
+        initMockService(fakeClient);
 
         // test
         final Optional<WaitingToBeResolvedTransitions> result = service
@@ -168,6 +175,17 @@ class UnresolvedTransitionsServiceImplTest {
             new WaitingToBeResolvedTransitions(stateDraftMock, singleton("test-ref"));
         when(customObjectMock.getValue()).thenReturn(waitingToBeResolved);
 
+        final SphereClient client = mock(SphereClient.class);
+        stateSyncOptions = spy(StateSyncOptionsBuilder
+                .of(client)
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorMessages.add(exception.getMessage());
+                    errorExceptions.add(exception.getCause());
+                })
+                .build());
+        service = new UnresolvedTransitionsServiceImpl(stateSyncOptions);
+
+        when(stateSyncOptions.getCtpClient()).thenReturn(client);
         when(stateSyncOptions.getCtpClient().execute(any())).thenReturn(completedFuture(customObjectMock));
         final ArgumentCaptor<CustomObjectUpsertCommand<WaitingToBeResolvedTransitions>> requestArgumentCaptor =
             ArgumentCaptor.forClass(CustomObjectUpsertCommand.class);
@@ -194,8 +212,9 @@ class UnresolvedTransitionsServiceImplTest {
         final WaitingToBeResolvedTransitions waitingToBeResolved =
             new WaitingToBeResolvedTransitions(stateDraftMock, singleton("test-ref"));
 
-        when(stateSyncOptions.getCtpClient().execute(any()))
-                .thenReturn(CompletableFutureUtils.failed(new BadRequestException("bad request")));
+        final FakeClient<Throwable> fakeClient =
+                new FakeClient<>(new BadRequestException("bad request"));
+        initMockService(fakeClient);
 
         // test
         final Optional<WaitingToBeResolvedTransitions> result = service
@@ -207,13 +226,13 @@ class UnresolvedTransitionsServiceImplTest {
         assertThat(result).isEmpty();
         assertThat(errorMessages)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(message -> assertThat(message).contains(
+                .singleElement().satisfies(message -> assertThat(message).contains(
                     format("Failed to save CustomObject with key: '%s' (hash of state key: '%s').",
                         sha1Hex(stateKey), stateKey)));
 
         assertThat(errorExceptions)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(exception ->
+                .singleElement().satisfies(exception ->
                         assertThat(exception).isExactlyInstanceOf(BadRequestException.class));
     }
 
@@ -223,8 +242,9 @@ class UnresolvedTransitionsServiceImplTest {
         final StateDraft stateDraftMock = mock(StateDraft.class);
         final String key = "state-draft-key";
         when(stateDraftMock.getKey()).thenReturn(key);
-        when(stateSyncOptions.getCtpClient().execute(any()))
-                .thenReturn(CompletableFutureUtils.failed(new BadRequestException("bad request")));
+        final FakeClient<Throwable> fakeClient =
+                new FakeClient<>(new BadRequestException("bad request"));
+        initMockService(fakeClient);
 
         // test
         final Optional<WaitingToBeResolvedTransitions> toBeResolvedOptional = service
@@ -236,12 +256,12 @@ class UnresolvedTransitionsServiceImplTest {
         assertThat(errorExceptions).hasSize(1);
         assertThat(errorMessages)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(message -> assertThat(message)
+                .singleElement().satisfies(message -> assertThat(message)
                         .contains(format("Failed to delete CustomObject with key: '%s' (hash of state key: '%s')",
                             sha1Hex(key), key)));
         assertThat(errorExceptions)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(exception ->
+                .singleElement().satisfies(exception ->
                         assertThat(exception).isExactlyInstanceOf(BadRequestException.class));
     }
 
@@ -257,8 +277,8 @@ class UnresolvedTransitionsServiceImplTest {
             new WaitingToBeResolvedTransitions(stateDraftMock, singleton("test-ref"));
         when(customObjectMock.getValue()).thenReturn(waitingDraft);
 
-        when(stateSyncOptions.getCtpClient().execute(any(CustomObjectDeleteCommand.class)))
-            .thenReturn(completedFuture(customObjectMock));
+        final FakeClient<CustomObject> fakeClient = new FakeClient<>(customObjectMock);
+        initMockService(fakeClient);
 
         // test
         final Optional<WaitingToBeResolvedTransitions> toBeResolvedOptional = service
@@ -280,6 +300,17 @@ class UnresolvedTransitionsServiceImplTest {
             new WaitingToBeResolvedTransitions(stateDraftMock, singleton("test-ref"));
         when(customObjectMock.getValue()).thenReturn(waitingDraft);
 
+        final SphereClient client = mock(SphereClient.class);
+        stateSyncOptions = spy(StateSyncOptionsBuilder
+                .of(client)
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorMessages.add(exception.getMessage());
+                    errorExceptions.add(exception.getCause());
+                })
+                .build());
+        service = new UnresolvedTransitionsServiceImpl(stateSyncOptions);
+
+        when(stateSyncOptions.getCtpClient()).thenReturn(client);
         when(stateSyncOptions.getCtpClient().execute(any(CustomObjectDeleteCommand.class)))
             .thenReturn(completedFuture(customObjectMock));
         final ArgumentCaptor<CustomObjectDeleteCommand<WaitingToBeResolvedTransitions>> requestArgumentCaptor =
@@ -302,5 +333,17 @@ class UnresolvedTransitionsServiceImplTest {
         final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
         when(pagedQueryResult.getResults()).thenReturn(results);
         return pagedQueryResult;
+    }
+
+
+    private void initMockService(@Nonnull final SphereClient client) {
+        stateSyncOptions = StateSyncOptionsBuilder
+                .of(client)
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorMessages.add(exception.getMessage());
+                    errorExceptions.add(exception.getCause());
+                })
+                .build();
+        service = new UnresolvedTransitionsServiceImpl(stateSyncOptions);
     }
 }

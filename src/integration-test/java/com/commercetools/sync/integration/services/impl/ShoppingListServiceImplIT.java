@@ -22,16 +22,15 @@ import io.sphere.sdk.shoppinglists.TextLineItemDraft;
 import io.sphere.sdk.shoppinglists.TextLineItemDraftBuilder;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeName;
 import io.sphere.sdk.shoppinglists.queries.ShoppingListQuery;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
 import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.createShoppingList;
@@ -160,7 +159,6 @@ class ShoppingListServiceImplIT {
                                           })
                                           .build();
         final ShoppingListService shoppingListService = new ShoppingListServiceImpl(shoppingListSyncOptions);
-
 
         Map<String, String> cache = shoppingListService.cacheKeysToIds(singleton(shoppingList.getKey()))
                                                        .toCompletableFuture().join();

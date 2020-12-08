@@ -349,7 +349,7 @@ class ProductUpdateActionUtilsTest {
         final List<UpdateAction<Product>> result = buildAddVariantUpdateActionFromDraft(draft);
 
         // assertion
-        assertThat(result).hasOnlyOneElementSatisfying(action -> {
+        assertThat(result).singleElement().satisfies(action -> {
             assertThat(action).isInstanceOf(AddVariant.class);
             final AddVariant addVariant = (AddVariant) action;
             assertThat(addVariant.getAttributes()).isSameAs(attributeList);

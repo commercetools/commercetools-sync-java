@@ -4,7 +4,6 @@ import com.commercetools.sync.services.StateService;
 import com.commercetools.sync.services.impl.StateServiceImpl;
 import com.commercetools.sync.states.StateSyncOptions;
 import com.commercetools.sync.states.StateSyncOptionsBuilder;
-import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.Reference;
@@ -17,18 +16,17 @@ import io.sphere.sdk.states.commands.updateactions.ChangeKey;
 import io.sphere.sdk.states.commands.updateactions.ChangeType;
 import io.sphere.sdk.states.commands.updateactions.SetName;
 import io.sphere.sdk.states.queries.StateQuery;
-import io.sphere.sdk.utils.CompletableFutureUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.integration.commons.utils.StateITUtils.STATE_DESCRIPTION_1;
@@ -47,7 +45,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class StateServiceImplIT {
     private static final StateType STATE_TYPE = StateType.PRODUCT_STATE;
@@ -171,36 +168,6 @@ class StateServiceImplIT {
 
         clearTransitions(CTP_TARGET_CLIENT, fetchState);
         deleteStates(CTP_TARGET_CLIENT, TRANSITION_STATE_TYPE);
-    }
-
-    @Test
-    void fetchMatchingStatesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
-        // Mock sphere client to return BadGatewayException on any request.
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(StateQuery.class)))
-            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
-            .thenCallRealMethod();
-
-        final StateSyncOptions spyOptions =
-            StateSyncOptionsBuilder.of(spyClient)
-                .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                    errorCallBackMessages.add(exception.getMessage());
-                    errorCallBackExceptions.add(exception.getCause());
-                })
-                .build();
-
-        final StateService spyStateService = new StateServiceImpl(spyOptions);
-
-
-        final Set<String> keys = new HashSet<>();
-        keys.add(OLD_STATE_KEY);
-
-        // test and assert
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-        assertThat(spyStateService.fetchMatchingStatesByKeys(keys))
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(BadGatewayException.class);
     }
 
     @Test
@@ -367,11 +334,11 @@ class StateServiceImplIT {
         assertThat(result).isEmpty();
         assertThat(errorCallBackMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(msg -> assertThat(msg).contains("A duplicate value"));
+            .singleElement().satisfies(msg -> assertThat(msg).contains("A duplicate value"));
 
         assertThat(errorCallBackExceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(exception -> {
+            .singleElement().satisfies(exception -> {
                 assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class);
                 final ErrorResponseException errorResponseException = (ErrorResponseException) exception;
 

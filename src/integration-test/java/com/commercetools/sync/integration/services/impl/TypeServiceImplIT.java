@@ -5,7 +5,6 @@ import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import com.commercetools.sync.types.TypeSyncOptions;
 import com.commercetools.sync.types.TypeSyncOptionsBuilder;
-import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.ErrorResponseException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.errors.DuplicateFieldError;
@@ -16,12 +15,6 @@ import io.sphere.sdk.types.TypeDraftBuilder;
 import io.sphere.sdk.types.commands.updateactions.ChangeKey;
 import io.sphere.sdk.types.commands.updateactions.ChangeName;
 import io.sphere.sdk.types.queries.TypeQuery;
-import io.sphere.sdk.utils.CompletableFutureUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -29,6 +22,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.deleteAllCategories;
@@ -48,7 +45,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class TypeServiceImplIT {
     private TypeService typeService;
@@ -148,36 +144,6 @@ class TypeServiceImplIT {
         assertThat(matchingTypes).hasSize(1);
         assertThat(errorCallBackExceptions).isEmpty();
         assertThat(errorCallBackMessages).isEmpty();
-    }
-
-    @Test
-    void fetchMatchingTypesByKeys_WithBadGateWayExceptionAlways_ShouldFail() {
-        // Mock sphere client to return BadGatewayException on any request.
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any(TypeQuery.class)))
-                .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new BadGatewayException()))
-                .thenCallRealMethod();
-
-        final TypeSyncOptions spyOptions =
-                TypeSyncOptionsBuilder.of(spyClient)
-                                      .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                                          errorCallBackMessages.add(exception.getMessage());
-                                          errorCallBackExceptions.add(exception.getCause());
-                                      })
-                                      .build();
-
-        final TypeService spyTypeService = new TypeServiceImpl(spyOptions);
-
-
-        final Set<String> keys = new HashSet<>();
-        keys.add(OLD_TYPE_KEY);
-
-        // test and assert
-        assertThat(errorCallBackExceptions).isEmpty();
-        assertThat(errorCallBackMessages).isEmpty();
-        assertThat(spyTypeService.fetchMatchingTypesByKeys(keys))
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(BadGatewayException.class);
     }
 
     @Test
@@ -318,11 +284,11 @@ class TypeServiceImplIT {
         assertThat(result).isEmpty();
         assertThat(errorCallBackMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(msg -> assertThat(msg).contains("A duplicate value"));
+            .singleElement().satisfies(msg -> assertThat(msg).contains("A duplicate value"));
 
         assertThat(errorCallBackExceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(exception -> {
+            .singleElement().satisfies(exception -> {
                 assertThat(exception).isExactlyInstanceOf(ErrorResponseException.class);
                 final ErrorResponseException errorResponseException = (ErrorResponseException) exception;
 

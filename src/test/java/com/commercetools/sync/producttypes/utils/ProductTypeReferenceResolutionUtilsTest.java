@@ -13,9 +13,8 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import io.sphere.sdk.producttypes.queries.ProductTypeQuery;
-import org.junit.jupiter.api.Test;
-
 import java.util.List;
+import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.producttypes.utils.ProductTypeReferenceResolutionUtils.buildProductTypeQuery;
 import static com.commercetools.sync.producttypes.utils.ProductTypeReferenceResolutionUtils.mapToProductTypeDrafts;
@@ -124,7 +123,7 @@ class ProductTypeReferenceResolutionUtilsTest {
 
         // assertion
         assertThat(productTypeDrafts)
-            .hasOnlyOneElementSatisfying(productTypeDraft -> {
+            .singleElement().satisfies(productTypeDraft -> {
                 final NestedAttributeType nestedAttributeType = (NestedAttributeType)
                     productTypeDraft.getAttributes().get(0).getAttributeType();
                 assertThat(nestedAttributeType.getTypeReference().getId()).isEqualTo(referencedProductType.getKey());
@@ -180,7 +179,7 @@ class ProductTypeReferenceResolutionUtilsTest {
 
         // assertion
         assertThat(productTypeDrafts)
-            .hasOnlyOneElementSatisfying(productTypeDraft -> {
+            .singleElement().satisfies(productTypeDraft -> {
                 final SetAttributeType setAttributeType = (SetAttributeType)
                     productTypeDraft.getAttributes().get(0).getAttributeType();
                 final NestedAttributeType nestedAttributeType = (NestedAttributeType) setAttributeType.getElementType();
@@ -241,7 +240,7 @@ class ProductTypeReferenceResolutionUtilsTest {
 
         // assertion
         assertThat(productTypeDrafts)
-            .hasOnlyOneElementSatisfying(productTypeDraft -> {
+            .singleElement().satisfies(productTypeDraft -> {
                 final SetAttributeType setAttributeType = (SetAttributeType)
                     productTypeDraft.getAttributes().get(0).getAttributeType();
                 final SetAttributeType setOfSet = (SetAttributeType) setAttributeType.getElementType();
@@ -303,7 +302,7 @@ class ProductTypeReferenceResolutionUtilsTest {
 
         // assertion
         assertThat(productTypeDrafts)
-            .hasOnlyOneElementSatisfying(productTypeDraft -> {
+            .singleElement().satisfies(productTypeDraft -> {
                 final SetAttributeType setAttributeType = (SetAttributeType)
                     productTypeDraft.getAttributes().get(0).getAttributeType();
                 final SetAttributeType setOfSet = (SetAttributeType) setAttributeType.getElementType();

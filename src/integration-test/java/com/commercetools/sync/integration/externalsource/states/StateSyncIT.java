@@ -9,14 +9,12 @@ import com.commercetools.sync.states.StateSyncOptions;
 import com.commercetools.sync.states.StateSyncOptionsBuilder;
 import com.commercetools.sync.states.helpers.StateReferenceResolver;
 import com.commercetools.sync.states.helpers.StateSyncStatistics;
-import io.sphere.sdk.client.BadGatewayException;
 import io.sphere.sdk.client.BadRequestException;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateDraft;
@@ -26,14 +24,7 @@ import io.sphere.sdk.states.StateType;
 import io.sphere.sdk.states.commands.StateCreateCommand;
 import io.sphere.sdk.states.commands.StateUpdateCommand;
 import io.sphere.sdk.states.expansion.StateExpansionModel;
-import io.sphere.sdk.states.queries.StateQuery;
 import io.sphere.sdk.states.queries.StateQueryBuilder;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -44,6 +35,10 @@ import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
@@ -63,6 +58,7 @@ import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.ThreadLocalRandom.current;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
@@ -139,14 +135,14 @@ class StateSyncIT {
         when(spyClient.execute(command))
             .thenReturn(exceptionallyCompletedFuture(new BadRequestException("test error message")));
 
-        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+        final StateSyncOptions stateSyncOptions = spy(StateSyncOptionsBuilder
             .of(spyClient)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
                 errorCallBackMessages.add(exception.getMessage());
                 errorCallBackExceptions.add(exception.getCause());
             })
-            .build();
-
+            .build());
+        when(stateSyncOptions.getCtpClient()).thenReturn(spyClient);
         final StateSync stateSync = new StateSync(stateSyncOptions);
 
         // test
@@ -277,14 +273,16 @@ class StateSyncIT {
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
         final StateCreateCommand command = any(StateCreateCommand.class);
         when(spyClient.execute(command))
-            .thenReturn(completedFuture(any(State.class)));
-        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
-            .of(spyClient)
-            .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                errorCallBackMessages.add(exception.getMessage());
-                errorCallBackExceptions.add(exception.getCause());
-            })
-            .build();
+                .thenReturn(completedFuture(mock(State.class)));
+
+        final StateSyncOptions stateSyncOptions = spy(StateSyncOptionsBuilder
+                .of(spyClient)
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorCallBackMessages.add(exception.getMessage());
+                    errorCallBackExceptions.add(exception.getCause());
+                })
+                .build());
+        when(stateSyncOptions.getCtpClient()).thenReturn(spyClient);
 
         final StateSync stateSync = new StateSync(stateSyncOptions);
 
@@ -365,165 +363,6 @@ class StateSyncIT {
             .join();
 
         assertThat(stateSyncStatistics).hasValues(1, 0, 0, 0, 0);
-    }
-
-    @Test
-    void sync_withChangedStateButConcurrentModificationException_shouldRetryAndUpdateState() {
-        // preparation
-        final SphereClient spyClient = buildClientWithConcurrentModificationUpdate();
-
-        List<String> errorCallBackMessages = new ArrayList<>();
-        List<String> warningCallBackMessages = new ArrayList<>();
-        List<Throwable> errorCallBackExceptions = new ArrayList<>();
-        final StateSyncOptions spyOptions = StateSyncOptionsBuilder
-            .of(spyClient)
-            .build();
-
-        final StateSync stateSync = new StateSync(spyOptions);
-
-        final StateDraft stateDraft = StateDraftBuilder
-            .of(key, StateType.REVIEW_STATE)
-            .name(ofEnglish("state-name-updated"))
-            .description(ofEnglish("state-desc-updated"))
-            .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
-            .initial(true)
-            .build();
-
-        final StateSyncStatistics syncStatistics =
-            executeBlocking(stateSync.sync(singletonList(stateDraft)));
-
-        assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
-        Assertions.assertThat(errorCallBackExceptions).isEmpty();
-        Assertions.assertThat(errorCallBackMessages).isEmpty();
-        Assertions.assertThat(warningCallBackMessages).isEmpty();
-    }
-
-    @Nonnull
-    private SphereClient buildClientWithConcurrentModificationUpdate() {
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-
-        final StateUpdateCommand updateCommand = any(StateUpdateCommand.class);
-        when(spyClient.execute(updateCommand))
-            .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
-            .thenCallRealMethod();
-
-        return spyClient;
-    }
-
-    @Test
-    void sync_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
-        // preparation
-        final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry();
-
-
-        final StateSyncOptions spyOptions = StateSyncOptionsBuilder
-            .of(spyClient)
-            .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                errorCallBackMessages.add(exception.getMessage());
-                errorCallBackExceptions.add(exception.getCause());
-            })
-            .warningCallback((exception, newResource, oldResource) ->
-                warningCallBackMessages.add(exception.getMessage()))
-            .build();
-
-        final StateSync stateSync = new StateSync(spyOptions);
-
-        final StateDraft stateDraft = StateDraftBuilder
-            .of(key, StateType.REVIEW_STATE)
-            .name(ofEnglish("state-name-updated"))
-            .description(ofEnglish("state-desc-updated"))
-            .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
-            .initial(true)
-            .build();
-
-        final StateSyncStatistics syncStatistics =
-            executeBlocking(stateSync.sync(singletonList(stateDraft)));
-
-        // Test and assertion
-        assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
-        Assertions.assertThat(errorCallBackMessages).hasSize(1);
-        Assertions.assertThat(errorCallBackExceptions).hasSize(1);
-
-        Assertions.assertThat(errorCallBackExceptions.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);
-        Assertions.assertThat(errorCallBackMessages.get(0)).contains(
-            format("Failed to update state with key: '%s'. Reason: Failed to fetch from CTP while retrying "
-                + "after concurrency modification.", stateDraft.getKey()));
-    }
-
-    @Nonnull
-    private SphereClient buildClientWithConcurrentModificationUpdateAndFailedFetchOnRetry() {
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-
-        final StateUpdateCommand updateCommand = any(StateUpdateCommand.class);
-        when(spyClient.execute(updateCommand))
-            .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
-            .thenCallRealMethod();
-
-        final StateQuery stateQuery = any(StateQuery.class);
-        when(spyClient.execute(stateQuery))
-            .thenCallRealMethod() // Call real fetch on fetching matching states
-            .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()));
-
-        return spyClient;
-    }
-
-    @Test
-    void sync_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
-        // preparation
-        final SphereClient spyClient = buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry();
-
-        List<String> errorCallBackMessages = new ArrayList<>();
-        List<String> warningCallBackMessages = new ArrayList<>();
-        List<Throwable> errorCallBackExceptions = new ArrayList<>();
-        final StateSyncOptions spyOptions = StateSyncOptionsBuilder
-            .of(spyClient)
-            .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                errorCallBackMessages.add(exception.getMessage());
-                errorCallBackExceptions.add(exception.getCause());
-            })
-            .warningCallback((exception, newResource, oldResource) ->
-                warningCallBackMessages.add(exception.getMessage()))
-            .build();
-
-        final StateSync stateSync = new StateSync(spyOptions);
-
-        final StateDraft stateDraft = StateDraftBuilder
-            .of(key, StateType.REVIEW_STATE)
-            .name(ofEnglish("state-name-updated"))
-            .description(ofEnglish("state-desc-updated"))
-            .roles(Collections.singleton(StateRole.REVIEW_INCLUDED_IN_STATISTICS))
-            .initial(true)
-            .build();
-
-        final StateSyncStatistics syncStatistics =
-            executeBlocking(stateSync.sync(singletonList(stateDraft)));
-
-        // Test and assertion
-        assertThat(syncStatistics).hasValues(1, 0, 0, 1, 0);
-        Assertions.assertThat(errorCallBackMessages).hasSize(1);
-        Assertions.assertThat(errorCallBackExceptions).hasSize(1);
-
-        Assertions.assertThat(errorCallBackMessages.get(0)).contains(
-            format("Failed to update state with key: '%s'. Reason: Not found when attempting to fetch while"
-                + " retrying after concurrency modification.", stateDraft.getKey()));
-    }
-
-    @Nonnull
-    private SphereClient buildClientWithConcurrentModificationUpdateAndNotFoundFetchOnRetry() {
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-
-        final StateUpdateCommand stateUpdateCommand = any(StateUpdateCommand.class);
-        when(spyClient.execute(stateUpdateCommand))
-            .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
-            .thenCallRealMethod();
-
-        final StateQuery stateQuery = any(StateQuery.class);
-
-        when(spyClient.execute(stateQuery))
-            .thenCallRealMethod() // Call real fetch on fetching matching states
-            .thenReturn(completedFuture(PagedQueryResult.empty()));
-
-        return spyClient;
     }
 
     @Test
@@ -648,7 +487,7 @@ class StateSyncIT {
             .thenCallRealMethod();
 
 
-        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+        final StateSyncOptions stateSyncOptions = spy(StateSyncOptionsBuilder
             .of(spyClient)
             .batchSize(3)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
@@ -657,7 +496,8 @@ class StateSyncIT {
             })
             .warningCallback((exception, newResource, oldResource) ->
                 warningCallBackMessages.add(exception.getMessage()))
-            .build();
+            .build());
+        when(stateSyncOptions.getCtpClient()).thenReturn(spyClient);
 
         final StateSync stateSync = new StateSync(stateSyncOptions);
         final List<StateDraft> stateDrafts = mapToStateDrafts(Arrays.asList(stateA, stateB, stateC));
@@ -742,45 +582,6 @@ class StateSyncIT {
                 Assertions.assertThat(resultStates.size()).isEqualTo(1);
                 Assertions.assertThat(resultStates.get(0).getTransitions().size()).isEqualTo(2);
             }).toCompletableFuture().join();
-    }
-
-    @Test
-    void sync_WithExceptionOnResolvingTransition_ShouldUpdateTransitions() {
-
-        final StateDraft stateCDraft = createStateDraft(keyC);
-        final State stateC = createStateInSource(stateCDraft);
-        final StateDraft stateBDraft = createStateDraft(keyB, stateC);
-        final State stateB = createStateInSource(stateBDraft);
-        final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
-        when(spyClient.execute(any()))
-            .thenCallRealMethod()
-            .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()));
-
-        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
-            .of(spyClient)
-            .batchSize(3)
-            .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                errorCallBackMessages.add(exception.getMessage());
-                errorCallBackExceptions.add(exception.getCause());
-            })
-            .warningCallback((exception, newResource, oldResource) ->
-                warningCallBackMessages.add(exception.getMessage()))
-            .build();
-
-        final StateSync stateSync = new StateSync(stateSyncOptions);
-        final List<StateDraft> stateDrafts = mapToStateDrafts(Arrays.asList(stateB, stateC));
-        // test
-        final StateSyncStatistics stateSyncStatistics = stateSync
-            .sync(stateDrafts)
-            .toCompletableFuture()
-            .join();
-
-        assertThat(stateSyncStatistics).hasValues(2, 0, 0, 2, 0);
-        Assertions.assertThat(errorCallBackExceptions).isNotEmpty();
-        Assertions.assertThat(errorCallBackMessages).isNotEmpty();
-        Assertions.assertThat(errorCallBackMessages.get(0))
-            .contains("Failed to fetch existing states with keys");
-        Assertions.assertThat(warningCallBackMessages).isEmpty();
     }
 
     @Test
@@ -923,7 +724,6 @@ class StateSyncIT {
         Assertions.assertThat(targetStateB.getTransitions().size()).isEqualTo(1);
         Assertions.assertThat(targetStateA.getTransitions().size()).isEqualTo(1);
 
-
         final SphereClient spyClient = spy(CTP_TARGET_CLIENT);
 
         final StateUpdateCommand updateCommand = any(StateUpdateCommand.class);
@@ -933,8 +733,7 @@ class StateSyncIT {
             .thenReturn(exceptionallyCompletedFuture(new ConcurrentModificationException()))
             .thenCallRealMethod();
 
-
-        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+        final StateSyncOptions stateSyncOptions = spy(StateSyncOptionsBuilder
             .of(spyClient)
             .batchSize(3)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
@@ -943,7 +742,10 @@ class StateSyncIT {
             })
             .warningCallback((exception, newResource, oldResource) ->
                 warningCallBackMessages.add(exception.getMessage()))
-            .build();
+            .build());
+
+        when(stateSyncOptions.getCtpClient()).thenReturn(spyClient);
+
         final StateSync stateSync = new StateSync(stateSyncOptions);
         final List<StateDraft> stateDrafts = mapToStateDrafts(Arrays.asList(stateA, stateB, stateC));
         // test
@@ -1003,7 +805,7 @@ class StateSyncIT {
             .thenCallRealMethod();
 
 
-        final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
+        final StateSyncOptions stateSyncOptions = spy(StateSyncOptionsBuilder
             .of(spyClient)
             .batchSize(3)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
@@ -1012,8 +814,8 @@ class StateSyncIT {
             })
             .warningCallback((exception, newResource, oldResource) ->
                 warningCallBackMessages.add(exception.getMessage()))
-            .build();
-
+            .build());
+        when(stateSyncOptions.getCtpClient()).thenReturn(spyClient);
         final List<StateDraft> stateDrafts = mapToStateDrafts(Arrays.asList(stateA, stateB, stateC));
         // test
         final StateSyncStatistics stateSyncStatistics = new StateSync(stateSyncOptions)

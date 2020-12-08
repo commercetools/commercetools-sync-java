@@ -7,20 +7,17 @@ import io.sphere.sdk.http.HttpHeaders;
 import io.sphere.sdk.models.Versioned;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.commands.ProductTypeUpdateCommand;
-import java.util.Collections;
-
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeName;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.commons.utils.SyncSolutionInfo.LIB_VERSION;
+import static com.commercetools.sync.commons.utils.SyncSolutionInfo.LIB_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+class CustomHeaderSphereClientDecoratorTest {
 
-public class CustomHeaderSphereClientDecoratorTest {
-
-    private static final String LIB_NAME = "commercetools-sync-java";
-    
     @Test
     void executeRequest_shouldHaveLibVersionInRequestHeader() {
 
@@ -33,8 +30,8 @@ public class CustomHeaderSphereClientDecoratorTest {
         sphereClient.execute(productTypeUpdateSphereRequest);
         HttpRequestIntent requestIntent = ((CustomHeaderSphereClientDecorator)sphereClient).getHttpRequestIntent();
         HttpHeaders headers = requestIntent.getHeaders();
-        assertThat(headers.getHeader(LIB_NAME).size()).isGreaterThan(0);
-        assertThat(headers.getHeader(LIB_NAME).get(0)).isEqualTo(LIB_VERSION);
-
+        assertThat(headers.getHeader(HttpHeaders.USER_AGENT).size()).isGreaterThan(0);
+        assertThat(headers.getHeader(HttpHeaders.USER_AGENT).get(0))
+                .isEqualTo(LIB_NAME + " (ver : " + LIB_VERSION + ")");
     }
 }

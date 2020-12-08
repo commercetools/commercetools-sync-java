@@ -37,3 +37,25 @@ The current overridable default [configuration](https://github.com/commercetools
 is the recommended good balance for stability and performance for the sync process.
 
 In order to exploit the number of `max parallel requests`, the `batch size` should have a value set which is equal or higher.
+
+#### Custom header decoration
+By design, sphere client is decorated in `BaseSyncOptions`. The decoration is mandatory. The purpose is to support custom header in CTP request.
+````java
+    public SphereClient getCtpClient() {
+        return CustomHeaderSphereClientDecorator.of(ctpClient);
+    }
+````
+
+````java
+    private static final class CustomHeaderSphereRequestDecorator<T> extends SphereRequestDecorator<T> {
+        CustomHeaderSphereRequestDecorator(@Nonnull final SphereRequest<T> delegate) {
+            super(delegate);
+        }
+
+        @Override
+        public HttpRequestIntent httpRequestIntent() {
+            return super.httpRequestIntent().plusHeader(LIB_NAME, LIB_VERSION);
+        }
+    }
+````
+The above implementation enables the library version to be injected into CTP request header, so tha we can trace it in log.

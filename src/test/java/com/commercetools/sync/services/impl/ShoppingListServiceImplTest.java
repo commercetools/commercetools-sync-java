@@ -1,5 +1,6 @@
 package com.commercetools.sync.services.impl;
 
+import com.commercetools.sync.commons.FakeClient;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.services.ShoppingListService;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
@@ -12,13 +13,7 @@ import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.shoppinglists.ShoppingList;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
-import io.sphere.sdk.shoppinglists.commands.ShoppingListUpdateCommand;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeName;
-import io.sphere.sdk.shoppinglists.queries.ShoppingListQuery;
-import io.sphere.sdk.utils.CompletableFutureUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,21 +21,18 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import javax.annotation.Nonnull;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
-import static org.mockito.internal.verification.VerificationModeFactory.only;
 
 class ShoppingListServiceImplTest {
 
@@ -53,39 +45,34 @@ class ShoppingListServiceImplTest {
     void setUp() {
         errorMessages = new ArrayList<>();
         errorExceptions = new ArrayList<>();
-        shoppingListSyncOptions = ShoppingListSyncOptionsBuilder
-            .of(mock(SphereClient.class))
-            .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                errorMessages.add(exception.getMessage());
-                errorExceptions.add(exception.getCause());
-            })
-            .build();
-        service = new ShoppingListServiceImpl(shoppingListSyncOptions);
     }
 
     @Test
     void fetchShoppingList_WithEmptyKey_ShouldNotFetchAnyShoppingList() {
         // test
+        final FakeClient<ShoppingList> fakeShoppingListClient = new FakeClient<>(mock(ShoppingList.class));
+        initMockService(fakeShoppingListClient);
         final Optional<ShoppingList> result = service.fetchShoppingList("").toCompletableFuture().join();
-
 
         // assertions
         assertThat(result).isEmpty();
         assertThat(errorExceptions).isEmpty();
         assertThat(errorMessages).isEmpty();
-        verify(shoppingListSyncOptions.getCtpClient(), never()).execute(any());
+        assertThat(fakeShoppingListClient.isExecuted()).isFalse();
     }
 
     @Test
     void fetchShoppingList_WithNullKey_ShouldNotFetchAnyShoppingList() {
         // test
+        final FakeClient<ShoppingList> fakeShoppingListClient = new FakeClient<>(mock(ShoppingList.class));
+        initMockService(fakeShoppingListClient);
         final Optional<ShoppingList> result = service.fetchShoppingList(null).toCompletableFuture().join();
 
         // assertions
         assertThat(result).isEmpty();
         assertThat(errorExceptions).isEmpty();
         assertThat(errorMessages).isEmpty();
-        verify(shoppingListSyncOptions.getCtpClient(), never()).execute(any());
+        assertThat(fakeShoppingListClient.isExecuted()).isFalse();
     }
 
     @Test
@@ -98,8 +85,8 @@ class ShoppingListServiceImplTest {
         @SuppressWarnings("unchecked")
         final PagedQueryResult<ShoppingList> pagedQueryResult =  mock(PagedQueryResult.class);
         when(pagedQueryResult.head()).thenReturn(Optional.of(mockShoppingList));
-        when(shoppingListSyncOptions.getCtpClient().execute(any(ShoppingListQuery.class)))
-                .thenReturn(completedFuture(pagedQueryResult));
+        final FakeClient<PagedQueryResult<ShoppingList>> fakeShoppingListClient = new FakeClient<>(pagedQueryResult);
+        initMockService(fakeShoppingListClient);
 
         // test
         final Optional<ShoppingList> result =
@@ -109,29 +96,35 @@ class ShoppingListServiceImplTest {
         assertThat(result).containsSame(mockShoppingList);
         assertThat(errorExceptions).isEmpty();
         assertThat(errorMessages).isEmpty();
-        verify(shoppingListSyncOptions.getCtpClient(), only()).execute(any());
+        assertThat(fakeShoppingListClient.isExecuted()).isTrue();
     }
 
     @Test
     void fetchMatchingShoppingListsByKeys_WithUnexpectedException_ShouldFail() {
-        when(shoppingListSyncOptions.getCtpClient().execute(any())).thenReturn(
-            CompletableFutureUtils.failed(new BadGatewayException("bad gateway")));
+        final FakeClient<ShoppingList> fakeShoppingListClient =
+                new FakeClient<>(new BadGatewayException("bad gateway"));
+        initMockService(fakeShoppingListClient);
 
         assertThat(service.fetchMatchingShoppingListsByKeys(singleton("key")))
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(BadGatewayException.class);
+                .failsWithin(1, TimeUnit.SECONDS)
+                .withThrowableOfType(ExecutionException.class)
+                .withCauseExactlyInstanceOf(BadGatewayException.class);
+
         assertThat(errorExceptions).isEmpty();
         assertThat(errorMessages).isEmpty();
     }
 
     @Test
     void fetchMatchingShoppingListsByKeys_WithEmptyKeys_ShouldReturnEmptyOptional() {
+        final FakeClient<ShoppingList> fakeShoppingListClient =
+                new FakeClient<>(mock(ShoppingList.class));
+        initMockService(fakeShoppingListClient);
         Set<ShoppingList> customer = service.fetchMatchingShoppingListsByKeys(emptySet()).toCompletableFuture().join();
 
         assertThat(customer).isEmpty();
         assertThat(errorExceptions).isEmpty();
         assertThat(errorMessages).isEmpty();
-        verifyNoInteractions(shoppingListSyncOptions.getCtpClient());
+        assertThat(fakeShoppingListClient.isExecuted()).isFalse();
     }
 
 
@@ -141,9 +134,11 @@ class ShoppingListServiceImplTest {
         final ShoppingListDraft mockShoppingListDraft = mock(ShoppingListDraft.class);
         final Map<String, Throwable> errors = new HashMap<>();
         when(mockShoppingListDraft.getKey()).thenReturn(null);
-
+        final FakeClient<ShoppingList> fakeShoppingListClient =
+                new FakeClient<>(mock(ShoppingList.class));
+        initMockService(fakeShoppingListClient);
         final ShoppingListSyncOptions shoppingListSyncOptions = ShoppingListSyncOptionsBuilder
-                .of(mock(SphereClient.class))
+                .of(fakeShoppingListClient)
                 .errorCallback((exception, oldResource, newResource, actions) ->
                         errors.put(exception.getMessage(), exception))
                 .build();
@@ -151,40 +146,36 @@ class ShoppingListServiceImplTest {
 
         // test
         final CompletionStage<Optional<ShoppingList>> result = shoppingListService
-            .createShoppingList(mockShoppingListDraft);
+                .createShoppingList(mockShoppingListDraft);
 
         // assertions
         assertThat(result).isCompletedWithValue(Optional.empty());
         assertThat(errors.keySet())
-            .containsExactly("Failed to create draft with key: 'null'. Reason: Draft key is blank!");
-        verify(shoppingListSyncOptions.getCtpClient(), times(0)).execute(any());
+                .containsExactly("Failed to create draft with key: 'null'. Reason: Draft key is blank!");
+        assertThat(fakeShoppingListClient.isExecuted()).isFalse();
     }
 
     @Test
     void createShoppingList_WithEmptyShoppingListKey_ShouldHaveEmptyOptionalAsAResult() {
         //preparation
-        final SphereClient sphereClient = mock(SphereClient.class);
+
         final ShoppingListDraft shoppingListDraft = mock(ShoppingListDraft.class);
         final Map<String, Throwable> errors = new HashMap<>();
         when(shoppingListDraft.getKey()).thenReturn("");
 
-        final ShoppingListSyncOptions options = ShoppingListSyncOptionsBuilder
-            .of(sphereClient)
-            .errorCallback((exception, oldResource, newResource, actions) ->
-                    errors.put(exception.getMessage(), exception))
-            .build();
-
-        final ShoppingListService shoppingListService = new ShoppingListServiceImpl(options);
+        final FakeClient<ShoppingList> fakeShoppingListClient =
+                new FakeClient<>(mock(ShoppingList.class));
+        initMockService(fakeShoppingListClient, errors);
 
         // test
-        final CompletionStage<Optional<ShoppingList>> result = shoppingListService
-            .createShoppingList(shoppingListDraft);
+        final CompletionStage<Optional<ShoppingList>> result = service
+                .createShoppingList(shoppingListDraft);
 
         // assertion
         assertThat(result).isCompletedWithValue(Optional.empty());
         assertThat(errors.keySet())
-            .containsExactly("Failed to create draft with key: ''. Reason: Draft key is blank!");
-        verify(options.getCtpClient(), times(0)).execute(any());
+                .containsExactly("Failed to create draft with key: ''. Reason: Draft key is blank!");
+        assertThat(fakeShoppingListClient.isExecuted()).isFalse();
     }
 
     @Test
@@ -194,26 +185,19 @@ class ShoppingListServiceImplTest {
         final Map<String, Throwable> errors = new HashMap<>();
         when(shoppingListDraft.getKey()).thenReturn("key");
 
-        final ShoppingListSyncOptions options = ShoppingListSyncOptionsBuilder
-                .of(mock(SphereClient.class))
-                .errorCallback((exception, oldResource, newResource, actions) ->
-                        errors.put(exception.getMessage(), exception))
-                .build();
-
-        final ShoppingListService shoppingListService = new ShoppingListServiceImpl(options);
-
-        when(options.getCtpClient().execute(any()))
-                .thenReturn(CompletableFutureUtils.failed(new InternalServerErrorException()));
+        final FakeClient<ShoppingList> fakeShoppingListClient =
+                new FakeClient<>(new InternalServerErrorException());
+        initMockService(fakeShoppingListClient, errors);
 
         // test
         final CompletionStage<Optional<ShoppingList>> result =
-                shoppingListService.createShoppingList(shoppingListDraft);
+                service.createShoppingList(shoppingListDraft);
 
         // assertions
         assertThat(result).isCompletedWithValue(Optional.empty());
         assertThat(errors.keySet())
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(message -> {
+                .singleElement().satisfies(message -> {
                     assertThat(message).contains("Failed to create draft with key: 'key'.");
                 });
 
@@ -229,46 +213,60 @@ class ShoppingListServiceImplTest {
     void updateShoppingList_WithMockSuccessfulCtpResponse_ShouldCallShoppingListUpdateCommand() {
         // preparation
         final ShoppingList shoppingList = mock(ShoppingList.class);
-        final ShoppingListSyncOptions options = ShoppingListSyncOptionsBuilder
-                .of(mock(SphereClient.class))
-                .build();
 
-        when(options.getCtpClient().execute(any())).thenReturn(completedFuture(shoppingList));
-        final ShoppingListService shoppingListService = new ShoppingListServiceImpl(options);
+        final FakeClient<ShoppingList> fakeShoppingListClient = new FakeClient<>(shoppingList);
+        initMockService(fakeShoppingListClient);
 
         final List<UpdateAction<ShoppingList>> updateActions =
-            singletonList(ChangeName.of(LocalizedString.ofEnglish("new_name")));
+                singletonList(ChangeName.of(LocalizedString.ofEnglish("new_name")));
         // test
         final CompletionStage<ShoppingList> result =
-                shoppingListService.updateShoppingList(shoppingList, updateActions);
+                service.updateShoppingList(shoppingList, updateActions);
 
         // assertions
         assertThat(result).isCompletedWithValue(shoppingList);
-        verify(options.getCtpClient())
-                .execute(eq(ShoppingListUpdateCommand.of(shoppingList, updateActions)));
+        assertThat(fakeShoppingListClient.isExecuted()).isTrue();
     }
 
     @Test
     void updateShoppingList_WithMockUnsuccessfulCtpResponse_ShouldCompleteExceptionally() {
         // preparation
         final ShoppingList shoppingList = mock(ShoppingList.class);
-        final ShoppingListSyncOptions shoppingListSyncOptions = ShoppingListSyncOptionsBuilder
-                .of(mock(SphereClient.class))
-                .build();
-
-        when(shoppingListSyncOptions.getCtpClient().execute(any()))
-                .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new InternalServerErrorException()));
-
-        final ShoppingListService shoppingListService = new ShoppingListServiceImpl(shoppingListSyncOptions);
+        final FakeClient<ShoppingList> fakeShoppingListClient = new FakeClient<>(new InternalServerErrorException());
+        initMockService(fakeShoppingListClient);
 
         final List<UpdateAction<ShoppingList>> updateActions =
                 singletonList(ChangeName.of(LocalizedString.ofEnglish("new_name")));
         // test
         final CompletionStage<ShoppingList> result =
-                shoppingListService.updateShoppingList(shoppingList, updateActions);
+                service.updateShoppingList(shoppingList, updateActions);
 
         // assertions
-        assertThat(result).hasFailedWithThrowableThat()
-                .isExactlyInstanceOf(InternalServerErrorException.class);
+        assertThat(result).failsWithin(1, TimeUnit.SECONDS)
+                .withThrowableOfType(ExecutionException.class)
+                .withCauseExactlyInstanceOf(InternalServerErrorException.class);
+    }
+
+
+    private void initMockService(@Nonnull final SphereClient sphereClient,
+                                 @Nonnull final Map<String, Throwable> errors) {
+        shoppingListSyncOptions = ShoppingListSyncOptionsBuilder
+                .of(sphereClient)
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errors.put(exception.getMessage(), exception);
+                })
+                .build();
+        service = new ShoppingListServiceImpl(shoppingListSyncOptions);
+    }
+
+    private void initMockService(@Nonnull final SphereClient sphereClient) {
+        shoppingListSyncOptions = ShoppingListSyncOptionsBuilder
+                .of(sphereClient)
+                .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                    errorMessages.add(exception.getMessage());
+                    errorExceptions.add(exception.getCause());
+                })
+                .build();
+        service = new ShoppingListServiceImpl(shoppingListSyncOptions);
     }
 }

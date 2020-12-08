@@ -12,22 +12,35 @@ import io.sphere.sdk.cartdiscounts.CartDiscountDraftBuilder;
 import io.sphere.sdk.cartdiscounts.CartDiscountValue;
 import io.sphere.sdk.cartdiscounts.CartPredicate;
 import io.sphere.sdk.cartdiscounts.ShippingCostTarget;
+
+import io.sphere.sdk.client.BadGatewayException;
+import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.types.CustomFieldsDraft;
+import javax.annotation.Nonnull;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.CompletionException;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.concurrent.CompletionException;
+import static com.commercetools.sync.cartdiscounts.CartDiscountSyncMockUtils.CART_DISCOUNT_DRAFT_2;
+import static com.commercetools.sync.cartdiscounts.CartDiscountSyncMockUtils.CART_DISCOUNT_KEY_2;
+import static com.commercetools.sync.cartdiscounts.CartDiscountSyncMockUtils.OLD_CART_DISCOUNT_TYPE_KEY;
 
+import static com.commercetools.sync.commons.MockUtils.createCustomFieldsJsonMap;
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static io.sphere.sdk.utils.CompletableFutureUtils.exceptionallyCompletedFuture;
 import static java.lang.String.format;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
@@ -37,6 +50,7 @@ import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anySet;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -101,14 +115,14 @@ class CartDiscountSyncTest {
         // assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
+            .singleElement().satisfies(message ->
                 assertThat(message).isEqualTo(
                         format("Failed to fetch existing cart discounts with keys: '[%s]'.", KEY))
             );
 
         assertThat(exceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> {
+            .singleElement().satisfies(throwable -> {
                 assertThat(throwable).isExactlyInstanceOf(SyncException.class);
                 assertThat(throwable).hasCauseExactlyInstanceOf(CompletionException.class);
                 assertThat(throwable.getCause()).hasCauseExactlyInstanceOf(SphereException.class);
@@ -195,13 +209,13 @@ class CartDiscountSyncTest {
         //assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
+            .singleElement().satisfies(message ->
                 assertThat(message).isEqualTo("CartDiscountDraft is null.")
             );
 
         assertThat(exceptions)
                 .hasSize(1)
-                .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable.getCause()).isNull());
+                .singleElement().satisfies(throwable -> assertThat(throwable.getCause()).isNull());
 
         assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
     }
@@ -235,14 +249,14 @@ class CartDiscountSyncTest {
         //assertions
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
+            .singleElement().satisfies(message ->
                 assertThat(message).isEqualTo("CartDiscountDraft with name: null doesn't have a key. "
                     + "Please make sure all cart discount drafts have keys.")
             );
 
         assertThat(exceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> assertThat(throwable.getCause()).isNull());
+            .singleElement().satisfies(throwable -> assertThat(throwable.getCause()).isNull());
 
         assertThat(cartDiscountSyncStatistics).hasValues(1, 0, 0, 1);
     }
@@ -285,15 +299,208 @@ class CartDiscountSyncTest {
 
         assertThat(errorMessages)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(message ->
+            .singleElement().satisfies(message ->
                 assertThat(message).contains("Failed to build a cache of keys to ids."));
 
         assertThat(exceptions)
             .hasSize(1)
-            .hasOnlyOneElementSatisfying(throwable -> {
+            .singleElement().satisfies(throwable -> {
                 assertThat(throwable).isExactlyInstanceOf(CompletionException.class);
                 assertThat(throwable).hasCauseExactlyInstanceOf(SphereException.class);
             });
+    }
+
+    @Test
+    void sync_WithConcurrentModificationException_ShouldRetryToUpdateNewCartDiscountWithSuccess() {
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+        final List<String> warningCallBackMessages = new ArrayList<>();
+
+        final CartDiscountSyncOptions cartDiscountSyncOptions =
+                CartDiscountSyncOptionsBuilder
+                        .of(mock(SphereClient.class))
+                        .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                            errorMessages.add(exception.getMessage());
+                            exceptions.add(exception.getCause());
+                        })
+                        .warningCallback((exception, oldResource, newResource)
+                            -> warningCallBackMessages.add(exception.getMessage()))
+                        .build();
+
+        final CartDiscountDraft cartDiscountDraft = CartDiscountDraftBuilder
+                .of(CART_DISCOUNT_DRAFT_2)
+                .custom(CustomFieldsDraft
+                        .ofTypeKeyAndJson(OLD_CART_DISCOUNT_TYPE_KEY, createCustomFieldsJsonMap()))
+                .build();
+
+        final CartDiscountService cartDiscountService =
+                buildMockCartDiscountServiceWithSuccessfulUpdateOnRetry();
+        final TypeService typeService = buildMockTypeServiceWithFailedFetchOnRetry(cartDiscountDraft);
+
+        final CartDiscountSync cartDiscountSync =
+                new CartDiscountSync(cartDiscountSyncOptions, typeService, cartDiscountService);
+
+        final CartDiscountSyncStatistics syncStatistics =
+                cartDiscountSync.sync(Collections.singletonList(cartDiscountDraft))
+                                .toCompletableFuture()
+                                .join();
+
+        AssertionsForStatistics.assertThat(syncStatistics).hasValues(1, 0, 1, 0);
+        assertThat(exceptions).isEmpty();
+        assertThat(errorMessages).isEmpty();
+        assertThat(warningCallBackMessages).isEmpty();
+    }
+
+    @Test
+    void syncDrafts_WithConcurrentModificationExceptionAndFailedFetch_ShouldFailToReFetchAndUpdate() {
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+        final List<String> warningCallBackMessages = new ArrayList<>();
+
+        final CartDiscountSyncOptions cartDiscountSyncOptions =
+                CartDiscountSyncOptionsBuilder
+                        .of(mock(SphereClient.class))
+                        .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                            errorMessages.add(exception.getMessage());
+                            exceptions.add(exception.getCause());
+                        })
+                        .warningCallback((exception, oldResource, newResource)
+                            -> warningCallBackMessages.add(exception.getMessage()))
+                        .build();
+
+        final CartDiscountDraft cartDiscountDraft = CartDiscountDraftBuilder
+                .of(CART_DISCOUNT_DRAFT_2)
+                .custom(CustomFieldsDraft
+                        .ofTypeKeyAndJson(OLD_CART_DISCOUNT_TYPE_KEY, createCustomFieldsJsonMap()))
+                .build();
+
+        final CartDiscountService cartDiscountService =
+                buildMockCartDiscountServiceWithFailedFetchOnRetry();
+        final TypeService typeService = buildMockTypeServiceWithFailedFetchOnRetry(cartDiscountDraft);
+
+        final CartDiscountSync cartDiscountSync =
+                new CartDiscountSync(cartDiscountSyncOptions, typeService, cartDiscountService);
+
+        final CartDiscountSyncStatistics syncStatistics =
+                cartDiscountSync.sync(Collections.singletonList(cartDiscountDraft))
+                                .toCompletableFuture()
+                                .join();
+
+        AssertionsForStatistics.assertThat(syncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(errorMessages).hasSize(1);
+        assertThat(exceptions.get(0)).isNotNull();
+        assertThat(exceptions.get(0)).isExactlyInstanceOf(BadGatewayException.class);
+        assertThat(errorMessages.get(0)).contains(
+                format("Failed to update cart discount with key: '%s'. Reason: Failed to fetch from CTP while retrying "
+                        + "after concurrency modification.", cartDiscountDraft.getKey()));
+    }
+
+    @Test
+    void syncDrafts_WithConcurrentModificationExceptionAndUnexpectedDelete_ShouldFailToReFetchAndUpdate() {
+        final List<String> errorMessages = new ArrayList<>();
+        final List<Throwable> exceptions = new ArrayList<>();
+        final List<String> warningCallBackMessages = new ArrayList<>();
+
+        final CartDiscountSyncOptions cartDiscountSyncOptions =
+                CartDiscountSyncOptionsBuilder
+                        .of(mock(SphereClient.class))
+                        .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                            errorMessages.add(exception.getMessage());
+                            exceptions.add(exception.getCause());
+                        })
+                        .warningCallback((exception, oldResource, newResource)
+                            -> warningCallBackMessages.add(exception.getMessage()))
+                        .build();
+
+        final CartDiscountDraft cartDiscountDraft = CartDiscountDraftBuilder
+                .of(CART_DISCOUNT_DRAFT_2)
+                .custom(CustomFieldsDraft.ofTypeKeyAndJson(OLD_CART_DISCOUNT_TYPE_KEY, createCustomFieldsJsonMap()))
+                .build();
+
+        final CartDiscountService cartDiscountService =
+                buildMockCartDiscountServiceWithNotFoundFetchOnRetry();
+        final TypeService typeService = buildMockTypeServiceWithFailedFetchOnRetry(cartDiscountDraft);
+
+        final CartDiscountSync cartDiscountSync =
+                new CartDiscountSync(cartDiscountSyncOptions, typeService, cartDiscountService);
+
+        final CartDiscountSyncStatistics syncStatistics =
+                cartDiscountSync.sync(Collections.singletonList(cartDiscountDraft))
+                                .toCompletableFuture()
+                                .join();
+
+        AssertionsForStatistics.assertThat(syncStatistics).hasValues(1, 0, 0, 1);
+        assertThat(errorMessages).hasSize(1);
+        assertThat(exceptions).hasSize(1);
+        assertThat(errorMessages.get(0)).contains(
+                format("Failed to update cart discount with key: '%s'. Reason: Not found when attempting to fetch while"
+                        + " retrying after concurrency modification.", cartDiscountDraft.getKey()));
+    }
+
+    @Nonnull
+    private CartDiscountService buildMockCartDiscountServiceWithSuccessfulUpdateOnRetry() {
+
+        final CartDiscountService mockCartDiscountService = mock(CartDiscountService.class);
+
+        final CartDiscount mockCartDiscount = mock(CartDiscount.class);
+        when(mockCartDiscount.getKey()).thenReturn(CART_DISCOUNT_KEY_2);
+        when(mockCartDiscountService.fetchMatchingCartDiscountsByKeys(anySet()))
+                .thenReturn(completedFuture(singleton(mockCartDiscount)));
+        when(mockCartDiscountService.fetchCartDiscount(any()))
+                .thenReturn(completedFuture(Optional.of(mockCartDiscount)));
+        when(mockCartDiscountService.updateCartDiscount(any(), anyList()))
+                .thenReturn(exceptionallyCompletedFuture(new SphereException(new ConcurrentModificationException())))
+                .thenReturn(completedFuture(mockCartDiscount));
+        return mockCartDiscountService;
+    }
+
+    @Nonnull
+    private CartDiscountService buildMockCartDiscountServiceWithFailedFetchOnRetry() {
+
+        final CartDiscountService mockCartDiscountService = mock(CartDiscountService.class);
+
+        final CartDiscount mockCartDiscount = mock(CartDiscount.class);
+        when(mockCartDiscount.getKey()).thenReturn(CART_DISCOUNT_KEY_2);
+        when(mockCartDiscountService.fetchMatchingCartDiscountsByKeys(anySet()))
+                .thenReturn(completedFuture(singleton(mockCartDiscount)));
+        when(mockCartDiscountService.fetchCartDiscount(any()))
+                .thenReturn(exceptionallyCompletedFuture(new BadGatewayException()));
+        when(mockCartDiscountService.updateCartDiscount(any(), anyList()))
+                .thenReturn(exceptionallyCompletedFuture(new SphereException(new ConcurrentModificationException())))
+                .thenReturn(completedFuture(mockCartDiscount));
+        return mockCartDiscountService;
+    }
+
+    @Nonnull
+    private CartDiscountService buildMockCartDiscountServiceWithNotFoundFetchOnRetry() {
+
+        final CartDiscountService mockCartDiscountService = mock(CartDiscountService.class);
+
+        final CartDiscount mockCartDiscount = mock(CartDiscount.class);
+        when(mockCartDiscount.getKey()).thenReturn(CART_DISCOUNT_KEY_2);
+        when(mockCartDiscountService.fetchMatchingCartDiscountsByKeys(anySet()))
+                .thenReturn(completedFuture(singleton(mockCartDiscount)));
+        when(mockCartDiscountService.fetchCartDiscount(any()))
+                .thenReturn(completedFuture(Optional.empty()));
+        when(mockCartDiscountService.updateCartDiscount(any(), anyList()))
+                .thenReturn(exceptionallyCompletedFuture(new SphereException(new ConcurrentModificationException())))
+                .thenReturn(completedFuture(mockCartDiscount));
+        return mockCartDiscountService;
+    }
+
+    @Nonnull
+    private TypeService buildMockTypeServiceWithFailedFetchOnRetry(
+            @Nonnull final CartDiscountDraft cartDiscountDraft) {
+
+        final Map<String, String> keyToIds = new HashMap<>();
+        keyToIds.put(cartDiscountDraft.getCustom().getType().getKey(), UUID.randomUUID().toString());
+
+        final TypeService mockTypeService = mock(TypeService.class);
+        when(mockTypeService.cacheKeysToIds(anySet())).thenReturn(completedFuture(keyToIds));
+        when(mockTypeService.fetchCachedTypeId(any()))
+                .thenReturn(completedFuture(Optional.of(UUID.randomUUID().toString())));
+
+        return mockTypeService;
     }
 
 }

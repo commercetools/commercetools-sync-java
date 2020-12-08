@@ -4,18 +4,18 @@ import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.commons.utils.TriFunction;
+import com.commercetools.sync.internals.helpers.CustomHeaderSphereClientDecorator;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.ProductTypeDraftBuilder;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeName;
-import org.junit.jupiter.api.Test;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import org.junit.jupiter.api.Test;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -44,7 +44,7 @@ class ProductTypeSyncOptionsBuilderTest {
         assertThat(productTypeSyncOptions.getBeforeCreateCallback()).isNull();
         assertThat(productTypeSyncOptions.getErrorCallback()).isNull();
         assertThat(productTypeSyncOptions.getWarningCallback()).isNull();
-        assertThat(productTypeSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT);
+        assertThat(productTypeSyncOptions.getCtpClient()).isEqualTo(CustomHeaderSphereClientDecorator.of(CTP_CLIENT));
         assertThat(productTypeSyncOptions.getBatchSize()).isEqualTo(ProductTypeSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
         assertThat(productTypeSyncOptions.getCacheSize()).isEqualTo(10_000);
     }

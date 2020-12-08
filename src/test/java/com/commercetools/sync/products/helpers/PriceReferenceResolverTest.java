@@ -6,7 +6,6 @@ import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.ChannelService;
 import com.commercetools.sync.services.CustomerGroupService;
 import com.commercetools.sync.services.TypeService;
-import com.commercetools.sync.services.impl.TypeServiceImpl;
 import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.client.SphereClient;
@@ -15,19 +14,19 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.products.PriceDraft;
 import io.sphere.sdk.products.PriceDraftBuilder;
-import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.types.Type;
-import io.sphere.sdk.types.queries.TypeQuery;
+import io.sphere.sdk.utils.CompletableFutureUtils;
 import io.sphere.sdk.utils.MoneyImpl;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static com.commercetools.sync.commons.MockUtils.getMockTypeService;
 import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER;
@@ -76,26 +75,25 @@ class PriceReferenceResolverTest {
         final SphereClient ctpClient = mock(SphereClient.class);
         final ProductSyncOptions productSyncOptions = ProductSyncOptionsBuilder.of(ctpClient).build();
 
-        final TypeService typeService = new TypeServiceImpl(productSyncOptions);
-
-        final CompletableFuture<PagedQueryResult<Type>> futureThrowingSphereException = new CompletableFuture<>();
-        futureThrowingSphereException.completeExceptionally(new SphereException("CTP error on fetch"));
-        when(ctpClient.execute(any(TypeQuery.class))).thenReturn(futureThrowingSphereException);
+        final TypeService typeService = mock(TypeService.class);
 
         final String customTypeKey = "customTypeKey";
-        final PriceDraftBuilder priceBuilder = PriceDraftBuilder
+        final PriceDraftBuilder priceDraftBuilder = PriceDraftBuilder
             .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .country(CountryCode.DE)
             .custom(CustomFieldsDraft.ofTypeKeyAndJson(customTypeKey, new HashMap<>()));
 
         final PriceReferenceResolver priceReferenceResolver =
             new PriceReferenceResolver(productSyncOptions, typeService, channelService, customerGroupService);
+        when(typeService.fetchCachedTypeId(any()))
+            .thenReturn(CompletableFutureUtils.exceptionallyCompletedFuture(new SphereException("CTP error on fetch")));
 
         // Test and assertion
-        assertThat(priceReferenceResolver.resolveCustomTypeReference(priceBuilder))
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(SphereException.class)
-            .hasMessageContaining("CTP error on fetch");
+        assertThat(priceReferenceResolver.resolveCustomTypeReference(priceDraftBuilder))
+            .failsWithin(1, TimeUnit.SECONDS)
+            .withThrowableOfType(ExecutionException.class)
+            .withCauseExactlyInstanceOf(SphereException.class)
+            .withMessageContaining("CTP error on fetch");
     }
 
     @Test
@@ -119,9 +117,11 @@ class PriceReferenceResolverTest {
         final String expectedMessageWithCause =
             format("%s Reason: %s", expectedExceptionMessage, format(TYPE_DOES_NOT_EXIST, customTypeKey));;
         assertThat(priceReferenceResolver.resolveCustomTypeReference(priceBuilder))
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(expectedMessageWithCause);
+            .failsWithin(1, TimeUnit.SECONDS)
+            .withThrowableOfType(ExecutionException.class)
+            .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+            .withMessageContaining(expectedMessageWithCause);
+
     }
 
     @Test
@@ -135,9 +135,10 @@ class PriceReferenceResolverTest {
             new PriceReferenceResolver(syncOptions, typeService, channelService, customerGroupService);
 
         assertThat(priceReferenceResolver.resolveCustomTypeReference(priceBuilder))
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format("Failed to resolve custom type reference on PriceDraft"
+            .failsWithin(1, TimeUnit.SECONDS)
+            .withThrowableOfType(ExecutionException.class)
+            .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+            .withMessageContaining(format("Failed to resolve custom type reference on PriceDraft"
                 + " with country:'DE' and value: 'EUR 10'. Reason: %s", BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
@@ -197,10 +198,12 @@ class PriceReferenceResolverTest {
 
         // Test and assertion
         assertThat(priceReferenceResolver.resolveChannelReference(priceBuilder))
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format(FAILED_TO_RESOLVE_REFERENCE, Channel.resourceTypeId(), priceBuilder.getCountry(),
-                priceBuilder.getValue(), format(CHANNEL_DOES_NOT_EXIST, "channelKey")));
+            .failsWithin(1, TimeUnit.SECONDS)
+            .withThrowableOfType(ExecutionException.class)
+            .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+            .withMessageContaining(
+                format(FAILED_TO_RESOLVE_REFERENCE, Channel.resourceTypeId(), priceBuilder.getCountry(),
+                    priceBuilder.getValue(), format(CHANNEL_DOES_NOT_EXIST, "channelKey")));
     }
 
     @Test
@@ -267,10 +270,12 @@ class PriceReferenceResolverTest {
 
         // Test and assertion
         assertThat(priceReferenceResolver.resolveChannelReference(priceBuilder))
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format(FAILED_TO_RESOLVE_REFERENCE, Channel.resourceTypeId(), priceBuilder.getCountry(),
-                priceBuilder.getValue(), BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+            .failsWithin(1, TimeUnit.SECONDS)
+            .withThrowableOfType(ExecutionException.class)
+            .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+            .withMessageContaining(
+                format(FAILED_TO_RESOLVE_REFERENCE, Channel.resourceTypeId(), priceBuilder.getCountry(),
+                    priceBuilder.getValue(), BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
     }
 
     @Test
