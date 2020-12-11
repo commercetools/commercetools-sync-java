@@ -9,10 +9,19 @@ against a [ProductTypeDraft](https://docs.commercetools.com/http-api-projects-pr
 
 
 - [Usage](#usage)
-  - [Sync list of product type drafts](#sync-list-of-product-type-drafts)
-    - [Prerequisites](#prerequisites)
-    - [About SyncOptions](#about-syncoptions)
-    - [Running the sync](#running-the-sync)
+  - [Prerequisites](#prerequisites)
+    - [SphereClient](#sphereclient)
+    - [Required Fields](#required-fields)
+    - [Reference Resolution](#reference-resolution)
+      - [Syncing from a commercetools project](#syncing-from-a-commercetools-project)
+      - [Syncing from an external resource](#syncing-from-an-external-resource)
+    - [SyncOptions](#syncoptions)
+      - [errorCallback](#errorcallback)
+      - [warningCallback](#warningcallback)
+      - [beforeUpdateCallback](#beforeupdatecallback)
+      - [beforeCreateCallback](#beforecreatecallback)
+      - [batchSize](#batchsize)
+  - [Running the sync](#running-the-sync)
     - [Important to Note](#important-to-note)
     - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)
   - [Build all update actions](#build-all-update-actions)
@@ -23,44 +32,101 @@ against a [ProductTypeDraft](https://docs.commercetools.com/http-api-projects-pr
 
 ## Usage
 
-### Sync list of product type drafts
+### Prerequisites
+#### SphereClient
 
-<!-- TODO - GITHUB ISSUE#138: Split into explanation of how to "sync from project to project" vs "import from feed"-->
-
-#### Prerequisites
-1. Create a `sphereClient`:
 Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/3.0.1/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
-2. The sync expects a list of `ProductTypeDraft`s that have their `key` fields set to be matched with
-product types in the target CTP project. Also, the product types in the target project are expected to have the `key`
-fields set, otherwise they won't be matched.
+````java
+final SphereClientConfig clientConfig = SphereClientConfig.of("project-key", "client-id", "client-secret");
 
-3. Every productType may have `product type` references if it contains attributeDrafts of type `NestedType`. These 
-referenced are matched by their `key`s. Therefore, in order for the sync to resolve the actual ids of those 
-references, those `key`s have to be supplied in the following way:
-    - Provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the
-    reference would return its `key`. 
-     
-        **Note**: When syncing from a source commercetools project, you can use [`mapToProductTypeDrafts`](https://commercetools.github.io/commercetools-sync-java/v/3.0.1/com/commercetools/sync/producttypes/utils/ProductTypeReferenceResolutionUtils.html#mapToProductTypeDrafts-java.util.List-)
+final SphereClient sphereClient = ClientConfigurationUtils.createClient(clientConfig);
+````
+#### Required Fields
 
-         that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
-         ````java
-         // Puts the keys in the reference id fields to prepare for reference resolution
-         final List<ProductTypeDraft> productTypeDrafts = ProductTypeReferenceResolutionUtils.mapToProductTypeDrafts(productTypes);
-         ````
+The following fields are **required** to be set in, otherwise they won't be matched by sync:
 
-4. After the `sphereClient` is setup, a `ProductTypeSyncOptions` should be built as follows:
+|Draft|Required Fields|Note|
+|---|---|---|
+| [ProductTypeDraft](https://docs.commercetools.com/http-api-projects-productTypes.html#producttypedraft) | `key` |  Also, the product types in the target project are expected to have the `key` fields set. | 
+
+#### Reference Resolution 
+
+In commercetools, a reference can be created by providing the key instead of the ID with the type [ResourceIdentifier](https://docs.commercetools.com/api/types#resourceidentifier).
+When the reference key is provided with a `ResourceIdentifier`, the sync will resolve the resource with the given key and use the ID of the found resource to create or update a reference.
+Therefore, in order to resolve the actual ids of those references in sync process, `ResourceIdentifier`s with their `key`s have to be supplied. 
+
+|Reference Field|Type|
+|:---|:---|
+| `attributes` | Only the attributes with type [NestedType](https://docs.commercetools.com/api/projects/productTypes#nestedtype) and [SetType](https://docs.commercetools.com/api/projects/productTypes#settype) with `elementType` as [NestedType](https://docs.commercetools.com/api/projects/productTypes#nestedtype) requires `key` on the `id` field of the `ReferenceType`. | 
+
+> Note that a reference without the key field will be considered as existing resource on the target commercetools project and the library will issue an update/create an API request without reference resolution.
+
+##### Syncing from a commercetools project
+
+When syncing from a source commercetools project, you can use [`mapToProductTypeDrafts`](https://commercetools.github.io/commercetools-sync-java/v/3.0.1/com/commercetools/sync/producttypes/utils/ProductTypeReferenceResolutionUtils.html#mapToProductTypeDrafts-java.util.List-) 
+that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync, for example: 
+
+````java
+// Build a ProductTypeQuery for fetching product types from a source CTP project with all the needed references expanded for the sync
+final ProductTypeQuery productTypeQueryWithReferenceExpanded = ProductTypeReferenceResolutionUtils.buildProductTypeQuery(1);
+
+// Query all productTypes (NOTE this is just for example, please adjust your logic)
+final List<ProductType> productTypes =
+    CtpQueryUtils
+        .queryAll(sphereClient, productTypeQueryWithReferenceExpanded, Function.identity())
+        .thenApply(fetchedResources -> fetchedResources
+            .stream()
+            .flatMap(List::stream)
+            .collect(Collectors.toList()))
+        .toCompletableFuture()
+        .join();
+
+// Mapping from ProductType to ProductType with considering reference resolution.
+final List<ProductTypeDraft> productTypeDrafts = ProductTypeReferenceResolutionUtils.mapToProductTypeDrafts(productTypes);
+````
+
+##### Syncing from an external resource
+
+-  Variant attributes with type `NestedType` do not support the `ResourceIdentifier` yet, 
+for those references you have to provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the 
+reference should return its `key`. 
+
+````java
+final AttributeDefinitionDraft nestedTypeAttr = AttributeDefinitionDraftBuilder
+    .of(AttributeDefinitionBuilder
+        .of("nestedattr", ofEnglish("nestedattr"),
+            NestedAttributeType.of(ProductType.referenceOfId("product-type-key"))) // note that key is provided in the id field of reference
+        .build())
+    .build();
+
+final AttributeDefinitionDraft setOfNestedTypeAttr = AttributeDefinitionDraftBuilder
+    .of(AttributeDefinitionBuilder
+        .of("setofNestedAttr", ofEnglish("setofNestedAttr"),
+            SetAttributeType.of(NestedAttributeType.of(ProductType.referenceOfId("product-type-key"))))
+        .build())
+    .searchable(false)
+    .build();
+
+final ProductTypeDraft productTypeDraft =
+    ProductTypeDraftBuilder.of("key", "foo", "description",
+        Arrays.asList(nestedTypeAttr, setOfNestedTypeAttr))
+                           .build();
+````
+
+#### SyncOptions
+
+After the `sphereClient` is setup, a `ProductTypeSyncOptions` should be built as follows:
 ````java
 // instantiating a ProductTypeSyncOptions
 final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder.of(sphereClient).build();
 ````
 
-#### About SyncOptions
 `SyncOptions` is an object which provides a place for users to add certain configurations to customize the sync process.
 Available configurations:
 
-##### 1. `errorCallback`
+##### errorCallback
 A callback that is called whenever an error event occurs during the sync process. Each resource executes its own 
 error-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
 following context about the error-event:
@@ -70,7 +136,6 @@ following context about the error-event:
 * product type of the target project (only provided if an existing product type could be found)
 * the update-actions, which failed (only provided if an existing product type could be found)
 
-##### Example 
 ````java
  final Logger logger = LoggerFactory.getLogger(ProductTypeSync.class);
  final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
@@ -79,7 +144,7 @@ following context about the error-event:
             logger.error(new SyncException("My customized message"), syncException)).build();
 ````
     
-##### 2. `warningCallback`
+##### warningCallback
 A callback that is called whenever a warning event occurs during the sync process. Each resource executes its own 
 warning-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
 following context about the warning message:
@@ -88,7 +153,6 @@ following context about the warning message:
 * product type draft from the source 
 * product type of the target project (only provided if an existing product type could be found)
 
-##### Example 
 ````java
  final Logger logger = LoggerFactory.getLogger(ProductTypeSync.class);
  final ProductTypeSyncOptions productTypeSyncOptions = ProductTypeSyncOptionsBuilder
@@ -97,7 +161,7 @@ following context about the warning message:
             logger.warn(new SyncException("My customized message"), syncException)).build();
 ````
 
-##### 3. `beforeUpdateCallback`
+##### beforeUpdateCallback
 During the sync process if a target product type and a product type draft are matched, this callback can be used to 
 intercept the **_update_** request just before it is sent to commercetools platform. This allows the user to modify 
 update actions array with custom actions or discard unwanted actions. The callback provides the following information :
@@ -106,7 +170,6 @@ update actions array with custom actions or discard unwanted actions. The callba
  * product type from the target project
  * update actions that were calculated after comparing both
 
-##### Example
 ````java
 final TriFunction<
         List<UpdateAction<ProductType>>, ProductTypeDraft, ProductType, List<UpdateAction<ProductType>>> 
@@ -119,7 +182,7 @@ final ProductTypeSyncOptions productTypeSyncOptions =
         ProductTypeSyncOptionsBuilder.of(sphereClient).beforeUpdateCallback(beforeUpdateProductTypeCallback).build();
 ````
 
-##### 4. `beforeCreateCallback`
+##### beforeCreateCallback
 During the sync process if a product type draft should be created, this callback can be used to intercept 
 the **_create_** request just before it is sent to commercetools platform.  It contains following information : 
 
@@ -127,19 +190,19 @@ the **_create_** request just before it is sent to commercetools platform.  It c
  
 Please refer to [example in product sync document](PRODUCT_SYNC.md#example-set-publish-stage-if-category-references-of-given-product-draft-exists).
  
-##### 5. `batchSize`
+##### batchSize
 A number that could be used to set the batch size with which product types are fetched and processed,
 as product types are obtained from the target project on commercetools platform in batches for better performance. The 
 algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding product types 
 from the target project on commecetools platform in a single request. Playing with this option can slightly improve or 
 reduce processing speed. If it is not set, the default batch size is 50 for product type sync.
-##### Example
+
 ````java                         
 final ProductTypeSyncOptions productTypeSyncOptions = 
          ProductTypeSyncOptionsBuilder.of(sphereClient).batchSize(30).build();
 ````
 
-#### Running the sync
+### Running the sync
 After all the aforementioned points in the previous section have been fulfilled, to run the sync:
 ````java
 // instantiating a product type sync
