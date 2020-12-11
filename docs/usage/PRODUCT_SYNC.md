@@ -62,7 +62,7 @@ In commercetools, a reference can be created by providing the key instead of the
 When the reference key is provided with a `ResourceIdentifier`, the sync will resolve the resource with the given key and use the ID of the found resource to create or update a reference.
 Therefore, in order for the sync to resolve the actual ids of those references, `ResourceIdentifier`s with their `key`s have to be supplied. 
 
-| Field|Type|
+|Reference Field|Type|
 |:---|:---|
 | `productType` - **Required** | ResourceIdentifier to a ProductType | 
 | `categories` | Set of ResourceIdentifier for a Category |
@@ -72,7 +72,10 @@ Therefore, in order for the sync to resolve the actual ids of those references, 
 | `variants.prices.customerGroup` | Reference to a CustomerGroup | 
 | `variants.prices.custom.type` | ResourceIdentifier to a Type | 
 | `variants.assets.custom.type` | ResourceIdentifier to a Type | 
-| `variants.attributes` * | only for `ReferenceType` attributes the Reference object (i.e ProductType, Category) | 
+| `variants.attributes` * | for `ReferenceType` attributes the Reference object (i.e ProductType, Category) | 
+
+> Note that, a reference without the key field will be considered as existing 
+resource on the target commercetools project and the library will issue an update/create an API request without reference resolution.
 
 ##### Syncing from a commercetools project
 
@@ -107,7 +110,7 @@ final ProductDraft productDraft =
         .of(ResourceIdentifier.ofKey("product-type-key"), ofEnglish("name"), ofEnglish("slug"),
             singletonList(masterVariant))
         .key("product-key")
-        .categories(asSet(ResourceIdentifier.ofKey("category1-key"), ResourceIdentifier.ofKey("category2-key"))) // 2
+        .categories(asSet(ResourceIdentifier.ofKey("category1-key"), ResourceIdentifier.ofKey("category2-key")))
         .taxCategory(ResourceIdentifier.ofKey("tax-category-key")) 
         .state(ResourceIdentifier.ofKey("tax-category-key"))
         .build();
