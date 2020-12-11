@@ -60,7 +60,7 @@ The following fields are **required** to be set in, otherwise they won't be matc
 
 In commercetools, a reference can be created by providing the key instead of the ID with the type [ResourceIdentifier](https://docs.commercetools.com/api/types#resourceidentifier).
 When the reference key is provided with a `ResourceIdentifier`, the sync will resolve the resource with the given key and use the ID of the found resource to create or update a reference.
-Therefore, in order for the sync to resolve the actual ids of those references, `ResourceIdentifier`s with their `key`s have to be supplied. 
+Therefore, in order to resolve the actual ids of those references in sync process, `ResourceIdentifier`s with their `key`s have to be supplied. 
 
 |Reference Field|Type|
 |:---|:---|
