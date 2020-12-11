@@ -9,10 +9,19 @@ against a [CartDiscountDraft](https://docs.commercetools.com/http-api-projects-c
 
 
 - [Usage](#usage)
-  - [Sync list of cart discount drafts](#sync-list-of-cart-discount-drafts)
-    - [Prerequisites](#prerequisites)
-    - [About SyncOptions](#about-syncoptions)
-    - [Running the sync](#running-the-sync)
+  - [Prerequisites](#prerequisites)
+    - [SphereClient](#sphereclient)
+    - [Required Fields](#required-fields)
+    - [Reference Resolution](#reference-resolution)
+      - [Syncing from a commercetools project](#syncing-from-a-commercetools-project)
+      - [Syncing from an external resource](#syncing-from-an-external-resource)
+    - [SyncOptions](#syncoptions)
+      - [errorCallback](#errorcallback)
+      - [warningCallback](#warningcallback)
+      - [beforeUpdateCallback](#beforeupdatecallback)
+      - [beforeCreateCallback](#beforecreatecallback)
+      - [batchSize](#batchsize)
+  - [Running the sync](#running-the-sync)
     - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)
   - [Build all update actions](#build-all-update-actions)
   - [Build particular update action(s)](#build-particular-update-actions)
@@ -22,39 +31,93 @@ against a [CartDiscountDraft](https://docs.commercetools.com/http-api-projects-c
 
 ## Usage
         
-### Sync list of cart discount drafts
+### Prerequisites
 
-#### Prerequisites
-1. Create a `sphereClient`:
+#### SphereClient
+
 Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/3.0.1/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
-2. The sync expects a list of `CartDiscountDraft`s that have their `key` fields set to be matched with
-cart discounts in the target CTP project. Also, the cart discounts in the target project are expected to have the `key`
-fields set, otherwise they won't be matched.
+````java
+final SphereClientConfig clientConfig = SphereClientConfig.of("project-key", "client-id", "client-secret");
 
-3. Every cartDiscount may have a reference to the `Type` of its custom fields. 
-Types are matched by their `key`s. Therefore, in order for the sync to resolve the 
-actual ids of the type reference, the `key` of the `Type` has to be supplied.
+final SphereClient sphereClient = ClientConfigurationUtils.createClient(clientConfig);
+````
 
-   - When syncing from a source commercetools project, you can use [`mapToCartDiscountDrafts`](https://commercetools.github.io/commercetools-sync-java/v/3.0.1/com/commercetools/sync/cartdiscounts/utils/CartDiscountReferenceResolutionUtils.html#mapToCartDiscountDrafts-java.util.List-)
-    method that maps from a `CartDiscount` to `CartDiscountDraft` in order to make them ready for reference resolution by the sync:
+#### Required Fields
 
-    ````java
-    final List<CartDiscountDraft> cartDiscountDrafts = CartDiscountReferenceResolutionUtils.mapToCartDiscountDrafts(cartDiscounts);
-    ````
+The following fields are **required** to be set in, otherwise they won't be matched by sync:
 
-4. After the `sphereClient` is set up, a `CartDiscountSyncOptions` should be built as follows:
+|Draft|Required Fields|Note|
+|---|---|---|
+| [CartDiscountDraft](https://docs.commercetools.com/http-api-projects-cartDiscounts#cartdiscountdraft). | `key` |  Also, the cart discounts in the target project are expected to have the `key` fields set. | 
+
+#### Reference Resolution 
+
+In commercetools, a reference can be created by providing the key instead of the ID with the type [ResourceIdentifier](https://docs.commercetools.com/api/types#resourceidentifier).
+When the reference key is provided with a `ResourceIdentifier`, the sync will resolve the resource with the given key and use the ID of the found resource to create or update a reference.
+Therefore, in order to resolve the actual ids of those references in sync process, `ResourceIdentifier`s with their `key`s have to be supplied. 
+
+|Reference Field|Type|
+|:---|:---|
+| `custom.type` | ResourceIdentifier to a Type |  
+
+> Note that a reference without the key field will be considered as existing resource on the target commercetools project and the library will issue an update/create an API request without reference resolution.
+
+##### Syncing from a commercetools project
+
+When syncing from a source commercetools project, you can use [`mapToCartDiscountDrafts`](https://commercetools.github.io/commercetools-sync-java/v/3.0.1/com/commercetools/sync/cartdiscounts/utils/CartDiscountReferenceResolutionUtils.html#mapToCartDiscountDrafts-java.util.List-)
+method that maps from a `CartDiscount` to `CartDiscountDraft` in order to make them ready for reference resolution by the sync, for example: 
+
+````java
+// Build a CartDiscountQuery for fetching cart discounts from a source CTP project with all the needed references expanded for the sync
+final CartDiscountQuery cartDiscountQueryWithReferenceExpanded = CartDiscountReferenceResolutionUtils.buildCartDiscountQuery();
+
+// Query all cart discounts (NOTE this is just for example, please adjust your logic)
+final List<CartDiscount> cartDiscounts =
+    CtpQueryUtils
+        .queryAll(sphereClient, cartDiscountQueryWithReferenceExpanded, Function.identity())
+        .thenApply(fetchedResources -> fetchedResources
+            .stream()
+            .flatMap(List::stream)
+            .collect(Collectors.toList()))
+        .toCompletableFuture()
+        .join();
+
+// Mapping from CartDiscount to CartDiscountDraft with considering reference resolution.
+final List<CartDiscountDraft> cartDiscountDrafts = CartDiscountReferenceResolutionUtils.mapToCartDiscountDrafts(cartDiscounts);
+````
+
+##### Syncing from an external resource
+
+- When syncing from an external resource, `ResourceIdentifier`s with their `key`s have to be supplied as following example:
+
+```` java
+final CartDiscountDraft cartDiscountDraft = CartDiscountDraftBuilder
+    .of("cartPredicate",
+        LocalizedString.ofEnglish("foo"),
+        true,
+        "0.1",
+        ShippingCostTarget.of(),
+        CartDiscountValue.ofAbsolute(MoneyImpl.of(10, DefaultCurrencyUnits.EUR)))
+    .key("cart-discount-key")
+    .custom(CustomFieldsDraft.ofTypeKeyAndJson("type-key", emptyMap())) // note that custom type provided with key 
+    .build(); 
+````
+
+#### SyncOptions
+
+After the `sphereClient` is set up, a `CartDiscountSyncOptions` should be built as follows:
+
 ````java
 // instantiating a CartDiscountSyncOptions
 final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder.of(sphereClient).build();
 ````
 
-#### About SyncOptions
 `SyncOptions` is an object which provides a place for users to add certain configurations to customize the sync process.
 Available configurations:
 
-##### 1. `errorCallback`
+##### errorCallback
 A callback that is called whenever an error event occurs during the sync process. Each resource executes its own 
 error-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
 following context about the error-event:
@@ -64,7 +127,6 @@ following context about the error-event:
 * cart discount of the target project (only provided if an existing cart discount could be found)
 * the update-actions, which failed (only provided if an existing cart discount could be found)
 
-##### Example 
 ````java
  final Logger logger = LoggerFactory.getLogger(CartDiscountSync.class);
  final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
@@ -73,7 +135,7 @@ following context about the error-event:
             logger.error(new SyncException("My customized message"), syncException)).build();
 ````
     
-##### 2. `warningCallback`
+##### warningCallback
 A callback that is called whenever a warning event occurs during the sync process. Each resource executes its own 
 warning-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
 following context about the warning message:
@@ -82,7 +144,6 @@ following context about the warning message:
 * cart discount draft from the source 
 * cart discount of the target project (only provided if an existing cart discount could be found)
 
-##### Example 
 ````java
  final Logger logger = LoggerFactory.getLogger(CartDiscountSync.class);
  final CartDiscountSyncOptions cartDiscountSyncOptions = CartDiscountSyncOptionsBuilder
@@ -91,7 +152,7 @@ following context about the warning message:
             logger.warn(new SyncException("My customized message"), syncException)).build();
 ````
 
-##### 3. `beforeUpdateCallback`
+##### beforeUpdateCallback
 During the sync process if a target cart discount and a cart discount draft are matched, this callback can be used to 
 intercept the **_update_** request just before it is sent to commercetools platform. This allows the user to modify 
 update actions array with custom actions or discard unwanted actions. The callback provides the following information :
@@ -100,7 +161,6 @@ update actions array with custom actions or discard unwanted actions. The callba
  * cart discount from the target project
  * update actions that were calculated after comparing both
 
-##### Example
 ````java
 final TriFunction<
         List<UpdateAction<CartDiscount>>, CartDiscountDraft, CartDiscount, List<UpdateAction<CartDiscount>>> 
@@ -113,7 +173,7 @@ final CartDiscountSyncOptions cartDiscountSyncOptions =
         CartDiscountSyncOptionsBuilder.of(sphereClient).beforeUpdateCallback(beforeUpdateCartDiscountCallback).build();
 ````
 
-##### 4. `beforeCreateCallback`
+##### beforeCreateCallback
 During the sync process if a cart discount draft should be created, this callback can be used to intercept 
 the **_create_** request just before it is sent to commercetools platform.  It contains following information : 
 
@@ -121,19 +181,19 @@ the **_create_** request just before it is sent to commercetools platform.  It c
  
 Please refer to [example in product sync document](PRODUCT_SYNC.md#example-set-publish-stage-if-category-references-of-given-product-draft-exists).
 
-##### 5. `batchSize`
+##### batchSize
 A number that could be used to set the batch size with which cart discounts are fetched and processed,
 as cart discounts are obtained from the target project on commercetools platform in batches for better performance. The 
 algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding cart discounts 
 from the target project on commecetools platform in a single request. Playing with this option can slightly improve or 
 reduce processing speed. If it is not set, the default batch size is 50 for cart discount sync.
-##### Example
+
 ````java                         
 final CartDiscountSyncOptions cartDiscountSyncOptions = 
          CartDiscountSyncOptionsBuilder.of(sphereClient).batchSize(30).build();
 ````
 
-#### Running the sync
+### Running the sync
 After all the aforementioned points in the previous section have been fulfilled, to run the sync:
 ````java
 // instantiating a cart discount sync
