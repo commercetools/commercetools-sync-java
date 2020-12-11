@@ -72,7 +72,7 @@ Therefore, in order to resolve the actual ids of those references in sync proces
 | `variants.prices.customerGroup` | Reference to a CustomerGroup | 
 | `variants.prices.custom.type` | ResourceIdentifier to a Type | 
 | `variants.assets.custom.type` | ResourceIdentifier to a Type | 
-| `variants.attributes` * | Only for the attributes with type [ReferenceType](https://docs.commercetools.com/api/projects/productTypes#referencetype), [SetType](https://docs.commercetools.com/api/projects/productTypes#settype) with `elementType` as [ReferenceType](https://docs.commercetools.com/api/projects/productTypes#referencetype) and [NestedType](https://docs.commercetools.com/api/projects/productTypes#nestedtype) are requires `key` on the `id` field of the `ReferenceType`. | 
+| `variants.attributes` * | Only the attributes with type [ReferenceType](https://docs.commercetools.com/api/projects/productTypes#referencetype), [SetType](https://docs.commercetools.com/api/projects/productTypes#settype) with `elementType` as [ReferenceType](https://docs.commercetools.com/api/projects/productTypes#referencetype) and [NestedType](https://docs.commercetools.com/api/projects/productTypes#nestedtype) requires `key` on the `id` field of the `ReferenceType`. | 
 
 > Note that, a reference without the key field will be considered as existing 
 resource on the target commercetools project and the library will issue an update/create an API request without reference resolution.
