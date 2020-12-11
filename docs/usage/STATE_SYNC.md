@@ -21,18 +21,40 @@ against a [StateDraft](https://docs.commercetools.com/http-api-projects-states#s
 
 ## Usage
 
-### Sync list of State drafts
-
-<!-- TODO - GITHUB ISSUE#138: Split into explanation of how to "sync from project to project" vs "import from feed"-->
-
 #### Prerequisites
-1. Create a `sphereClient`:
+#### SphereClient
+
 Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/3.0.1/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
-2. The sync expects a list of `StateDraft`s that have their `key` fields set to be matched with
-states in the target commercetools project. Also, the states in the target project are expected to have the `key` fields set,
-otherwise they won't be matched.
+````java
+final SphereClientConfig clientConfig = SphereClientConfig.of("project-key", "client-id", "client-secret");
+
+final SphereClient sphereClient = ClientConfigurationUtils.createClient(clientConfig);
+````
+
+#### Required Fields
+
+The following fields are **required** to be set in, otherwise they won't be matched by sync:
+
+|Draft|Required Fields|Note|
+|---|---|---|
+| [StateDraft](https://docs.commercetools.com/http-api-projects-states#statedraft)| `key` |  Also, the states in the target project are expected to have the `key` fields set. | 
+
+#### Reference Resolution 
+
+In commercetools, a reference can be created by providing the key instead of the ID with the type [ResourceIdentifier](https://docs.commercetools.com/api/types#resourceidentifier).
+When the reference key is provided with a `ResourceIdentifier`, the sync will resolve the resource with the given key and use the ID of the found resource to create or update a reference.
+Currently commercetools API does not support the `ResourceIdentifier` for the `transitions`.  
+Therefore, in order to resolve the actual ids of those references in sync process, `Reference`s with their `key`s have to be supplied. 
+
+Some references in the product like `customerGroup` of a price and variant attributes with type `ReferenceType` do not support the `ResourceIdentifier` yet, 
+for those references you have to provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the 
+reference should return its `key`.
+
+|Reference Field|Type|
+|:---|:---|
+| `productType` - **Required** | ResourceIdentifier to a ProductType | 
 
 3. Every state may have several `transitions` to other states. Therefore, in order for the sync to resolve the actual ids of those transitions,
  those `key`s have to be supplied in the following way:
