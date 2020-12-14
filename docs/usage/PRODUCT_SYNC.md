@@ -253,8 +253,7 @@ final ProductSyncOptions productSyncOptions =
 ````
 
 ##### cacheSize
-In the service classes of the commercetools-sync-java library, we have implemented an in-memory [LRU]([LRU cache](https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU))) cache to store 
-a map for commercetools reference key to reference ids.  This is used for the reference resolution of the library to reduce reference resolution based calls to the 
+In the service classes of the commercetools-sync-java library, we have implemented an in-memory [LRU cache](https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)) to store a map for commercetools reference key to reference ids.  This is used for the reference resolution of the library to reduce reference resolution based calls to the 
 commercetools API, so the library will go only one time to fetch an id of resource, so the other references that are referencing the same resource might use the id in the cache instead of going to the commercetools API, 
 which will improve the overall performance of the sync and commercetools API.
 
