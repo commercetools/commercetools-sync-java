@@ -9,10 +9,20 @@ against a [StateDraft](https://docs.commercetools.com/http-api-projects-states#s
 
 
 - [Usage](#usage)
-  - [Sync list of State drafts](#sync-list-of-state-drafts)
     - [Prerequisites](#prerequisites)
-    - [About SyncOptions](#about-syncoptions)
-    - [Running the sync](#running-the-sync)
+    - [SphereClient](#sphereclient)
+    - [Required Fields](#required-fields)
+    - [Reference Resolution](#reference-resolution)
+      - [Syncing from a commercetools project](#syncing-from-a-commercetools-project)
+      - [Syncing from an external resource](#syncing-from-an-external-resource)
+    - [SyncOptions](#syncoptions)
+      - [errorCallback](#errorcallback)
+      - [warningCallback](#warningcallback)
+      - [beforeUpdateCallback](#beforeupdatecallback)
+      - [beforeCreateCallback](#beforecreatecallback)
+      - [batchSize](#batchsize)
+  - [Running the sync](#running-the-sync)
+      - [Persistence of StateDrafts with missing references](#persistence-of-statedrafts-with-missing-references)
     - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)
   - [Build all update actions](#build-all-update-actions)
   - [Build particular update action(s)](#build-particular-update-actions)
@@ -43,43 +53,62 @@ The following fields are **required** to be set in, otherwise they won't be matc
 
 #### Reference Resolution 
 
-In commercetools, a reference can be created by providing the key instead of the ID with the type [ResourceIdentifier](https://docs.commercetools.com/api/types#resourceidentifier).
-When the reference key is provided with a `ResourceIdentifier`, the sync will resolve the resource with the given key and use the ID of the found resource to create or update a reference.
-Currently commercetools API does not support the `ResourceIdentifier` for the `transitions`.  
-Therefore, in order to resolve the actual ids of those references in sync process, `Reference`s with their `key`s have to be supplied. 
-
-Some references in the product like `customerGroup` of a price and variant attributes with type `ReferenceType` do not support the `ResourceIdentifier` yet, 
-for those references you have to provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the 
+`Transitions` are a way to describe possible transformations of the current state to other states of the same type (for example: Initial -> Shipped). When performing a [SetTransitions](https://docs.commercetools.com/api/projects/states#set-transitions), an array of [Reference](https://docs.commercetools.com/api/types#reference) to State is needed.
+In commercetools, a reference can be created by providing the key instead of the ID with the type [ResourceIdentifier](https://docs.commercetools.com/api/types#resourceidentifier). 
+When the reference key is provided with a `ResourceIdentifier`, the sync will resolve the resource with the given key and use the ID of the found resource to create or update a reference. 
+Currently commercetools API does not support the [ResourceIdentifier](https://docs.commercetools.com/api/types#resourceidentifier) for the `transitions`,  for those `transition` references you have to provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the 
 reference should return its `key`.
 
 |Reference Field|Type|
 |:---|:---|
-| `productType` - **Required** | ResourceIdentifier to a ProductType | 
+| `transitions` | Array of Reference to State | 
 
-3. Every state may have several `transitions` to other states. Therefore, in order for the sync to resolve the actual ids of those transitions,
- those `key`s have to be supplied in the following way:
-    - Provide the `key` value on the `id` field of the transition. This means that calling `getId()` on the
-      transition would return its `key`. 
-     
-        **Note**: When syncing from a source commercetools project, you can use this util which this library provides: 
-         [`mapToStateDrafts`](https://commercetools.github.io/commercetools-sync-java/v/3.0.1/com/commercetools/sync/states/utils/StateReferenceResolutionUtils.html#mapToStateDrafts-java.util.List-)
-         that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
-         ````java
-         // Puts the keys in the reference id fields to prepare for reference resolution
-         final List<StateDraft> stateDrafts = StateReferenceResolutionUtils.mapToStateDrafts(states);
-         ````
+##### Syncing from a commercetools project
 
-4. After the `sphereClient` is set up, a `StateSyncOptions` should be built as follows: 
+When syncing from a source commercetools project, you can use this util which this library provides:  [`mapToStateDrafts`](https://commercetools.github.io/commercetools-sync-java/v/3.0.1/com/commercetools/sync/states/utils/StateReferenceResolutionUtils.html#mapToStateDrafts-java.util.List-)
+that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
+
+````java
+// Build a StateQuery for fetching states from a source CTP project with all the needed references expanded for the sync
+final StateQuery stateQueryWithReferenceExpanded = StateReferenceResolutionUtils.buildStateQuery();
+
+// Query all states (NOTE this is just for example, please adjust your logic)
+final List<State> states =
+    CtpQueryUtils
+        .queryAll(sphereClient, stateQueryWithReferenceExpanded, Function.identity())
+        .thenApply(fetchedResources -> fetchedResources
+            .stream()
+            .flatMap(List::stream)
+            .collect(Collectors.toList()))
+        .toCompletableFuture()
+        .join();
+
+// Mapping from State to StateDraft with considering reference resolution.
+final List<StateDraft> stateDrafts = StateReferenceResolutionUtils.mapToStateDrafts(states);
+````
+##### Syncing from an external resource
+
+````java
+final StateDraft stateDraft = StateDraftBuilder
+    .of("state-key", StateType.LINE_ITEM_STATE)
+    .transitions(asSet(State.referenceOfId("another-state-key"))) // note that state transition key is provided in the id field of reference.
+    .build();
+````
+
+
+#### SyncOptions
+
+After the `sphereClient` is set up, a `StateSyncOptions` should be built as follows: 
+
 ````java
 // instantiating a StateSyncOptions
    final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder.of(sphereClient).build();
 ````
 
-#### About SyncOptions
 `SyncOptions` is an object which provides a place for users to add certain configurations to customize the sync process.
 Available configurations:
 
-##### 1. `errorCallback`
+##### errorCallback
 A callback that is called whenever an error event occurs during the sync process. Each resource executes its own 
 error-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
 following context about the error-event:
@@ -89,7 +118,6 @@ following context about the error-event:
 * state of the target project (only provided if an existing state could be found)
 * the update-actions, which failed (only provided if an existing state could be found)
 
-##### Example 
 ````java
  final Logger logger = LoggerFactory.getLogger(StateSync.class);
  final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
@@ -98,7 +126,8 @@ following context about the error-event:
             logger.error(new SyncException("My customized message"), syncException)).build();
 ````
     
-##### 2. `warningCallback`
+##### warningCallback
+
 A callback that is called whenever a warning event occurs during the sync process. Each resource executes its own 
 warning-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
 following context about the warning message:
@@ -107,7 +136,6 @@ following context about the warning message:
 * state draft from the source 
 * state of the target project (only provided if an existing state could be found)
 
-##### Example 
 ````java
  final Logger logger = LoggerFactory.getLogger(StateSync.class);
  final StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder
@@ -116,7 +144,7 @@ following context about the warning message:
             logger.warn(new SyncException("My customized message"), syncException)).build();
 ````
 
-##### 3. `beforeUpdateCallback`
+##### beforeUpdateCallback
 During the sync process if a target state and a state draft are matched, this callback can be used to 
 intercept the **_update_** request just before it is sent to commercetools platform. This allows the user to modify 
 update actions array with custom actions or discard unwanted actions. The callback provides the following information :
@@ -125,7 +153,6 @@ update actions array with custom actions or discard unwanted actions. The callba
  * state from the target project
  * update actions that were calculated after comparing both
 
-##### Example
 ````java
 final TriFunction<
         List<UpdateAction<State>>, StateDraft, State, List<UpdateAction<State>>> 
@@ -138,7 +165,7 @@ final StateSyncOptions stateSyncOptions =
         StateSyncOptionsBuilder.of(sphereClient).beforeUpdateCallback(beforeUpdateStateCallback).build();
 ````
 
-##### 4. `beforeCreateCallback`
+##### beforeCreateCallback
 During the sync process if a state draft should be created, this callback can be used to intercept 
 the **_create_** request just before it is sent to commercetools platform.  It contains following information : 
 
@@ -146,19 +173,19 @@ the **_create_** request just before it is sent to commercetools platform.  It c
 
 Please refer to [example in product sync document](PRODUCT_SYNC.md#example-set-publish-stage-if-category-references-of-given-product-draft-exists).
 
-##### 5. `batchSize`
+##### batchSize
 A number that could be used to set the batch size with which states are fetched and processed,
 as states are obtained from the target project on commercetools platform in batches for better performance. The 
 algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding states
 from the target project on commecetools platform in a single request. Playing with this option can slightly improve or 
 reduce processing speed. If it is not set, the default batch size is 50 for state sync.
-##### Example
+
 ````java                         
 final StateSyncOptions stateSyncOptions = 
          StateSyncOptionsBuilder.of(sphereClient).batchSize(30).build();
 ````
 
-#### Running the sync
+### Running the sync
 After all the aforementioned points in the previous section have been fulfilled, run the sync as follows:
 ````java
 // instantiating a State sync
