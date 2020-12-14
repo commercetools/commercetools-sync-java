@@ -66,7 +66,7 @@ Therefore, in order to resolve the actual ids of those references in sync proces
 ##### Syncing from a commercetools project
 
 When syncing from a source commercetools project, you can use [`mapToProductTypeDrafts`](https://commercetools.github.io/commercetools-sync-java/v/3.0.1/com/commercetools/sync/producttypes/utils/ProductTypeReferenceResolutionUtils.html#mapToProductTypeDrafts-java.util.List-) 
-that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync, for example: 
+method that maps from a `ProductType` to `ProductTypeDraft` to make them ready for reference resolution by the sync, for example:
 
 ````java
 // Build a ProductTypeQuery for fetching product types from a source CTP project with all the needed references expanded for the sync
