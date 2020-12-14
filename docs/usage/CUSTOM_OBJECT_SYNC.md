@@ -18,7 +18,8 @@ against a [CustomObjectDraft](https://docs.commercetools.com/http-api-projects-c
       - [warningCallback](#warningcallback)
       - [beforeUpdateCallback](#beforeupdatecallback)
       - [beforeCreateCallback](#beforecreatecallback)
-      - [batchSize`](#batchsize)
+      - [batchSize](#batchsize)
+      - [cacheSize](#cachesize)
   - [Running the sync](#running-the-sync)
     - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)
 
@@ -121,6 +122,18 @@ reduce processing speed. If it is not set, the default batch size is 50 for cust
 ````java                         
 final CustomObjectSyncOptions customObjectSyncOptions = 
          CustomObjectSyncOptionsBuilder.of(sphereClient).batchSize(30).build();
+````
+
+##### cacheSize
+In the service classes of the commercetools-sync-java library, we have implemented an in-memory [LRU cache](https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)) to store a map for commercetools reference key to reference ids.  This is used for the reference resolution of the library to reduce reference resolution based calls to the 
+commercetools API, so the library will go only one time to fetch an id of resource, so the other references that are referencing the same resource might use the id in the cache instead of going to the commercetools API, 
+which will improve the overall performance of the sync and commercetools API.
+
+Playing with this option can change the memory usage of the library. If it is not set, the default cache size is `10.000` for custom object sync.
+
+````java
+final CustomObjectSyncOptions customObjectSyncOptions = 
+         CustomObjectSyncOptionsBuilder.of(sphereClient).cacheSize(5000).build();
 ````
 
 ### Running the sync
