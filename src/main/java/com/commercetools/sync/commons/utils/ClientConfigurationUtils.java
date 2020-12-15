@@ -23,9 +23,7 @@ public final class ClientConfigurationUtils {
      * @return the instantiated {@link SphereClient}.
      */
     public static SphereClient createClient(@Nonnull final SphereClientConfig clientConfig) {
-        return RetryableSphereClientBuilder.of(clientConfig, getHttpClient())
-                                           .withStatusCodesToRetry(Arrays.asList(400))
-                                           .build();
+        return RetryableSphereClientBuilder.of(clientConfig, getHttpClient()).build();
     }
 
     /**
