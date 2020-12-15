@@ -2,15 +2,13 @@ package com.commercetools.sync.customers.utils;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.customers.CustomerSyncOptions;
-import com.commercetools.sync.customers.commands.updateactions.AddBillingAddressIdWithKey;
-import com.commercetools.sync.customers.commands.updateactions.AddShippingAddressIdWithKey;
-import com.commercetools.sync.customers.commands.updateactions.SetDefaultBillingAddressWithKey;
-import com.commercetools.sync.customers.commands.updateactions.SetDefaultShippingAddressWithKey;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customergroups.CustomerGroup;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
 import io.sphere.sdk.customers.commands.updateactions.AddAddress;
+import io.sphere.sdk.customers.commands.updateactions.AddBillingAddressId;
+import io.sphere.sdk.customers.commands.updateactions.AddShippingAddressId;
 import io.sphere.sdk.customers.commands.updateactions.AddStore;
 import io.sphere.sdk.customers.commands.updateactions.ChangeAddress;
 import io.sphere.sdk.customers.commands.updateactions.ChangeEmail;
@@ -22,6 +20,8 @@ import io.sphere.sdk.customers.commands.updateactions.SetCompanyName;
 import io.sphere.sdk.customers.commands.updateactions.SetCustomerGroup;
 import io.sphere.sdk.customers.commands.updateactions.SetCustomerNumber;
 import io.sphere.sdk.customers.commands.updateactions.SetDateOfBirth;
+import io.sphere.sdk.customers.commands.updateactions.SetDefaultBillingAddress;
+import io.sphere.sdk.customers.commands.updateactions.SetDefaultShippingAddress;
 import io.sphere.sdk.customers.commands.updateactions.SetExternalId;
 import io.sphere.sdk.customers.commands.updateactions.SetFirstName;
 import io.sphere.sdk.customers.commands.updateactions.SetLastName;
@@ -749,12 +749,12 @@ public final class CustomerUpdateActionUtils {
 
     /**
      * Compares the {@link Customer#getDefaultShippingAddress()} and {@link CustomerDraft#getDefaultShippingAddress()}.
-     * If they are different - return {@link SetDefaultShippingAddressWithKey} update action. If the old shipping
+     * If they are different - return {@link SetDefaultShippingAddress} update action. If the old shipping
      * address is set, but the new one is empty - the command will unset the default shipping address.
      *
      * @param oldCustomer the customer that should be updated.
      * @param newCustomer the customer draft with new default shipping address.
-     * @return An optional with {@link SetDefaultShippingAddressWithKey} update action.
+     * @return An optional with {@link SetDefaultShippingAddress} update action.
      */
     @Nonnull
     public static Optional<UpdateAction<Customer>> buildSetDefaultShippingAddressUpdateAction(
@@ -767,10 +767,10 @@ public final class CustomerUpdateActionUtils {
 
         if (newAddressKey != null) {
             if (oldAddress == null || !Objects.equals(oldAddress.getKey(), newAddressKey)) {
-                return Optional.of(SetDefaultShippingAddressWithKey.of(newAddressKey));
+                return Optional.of(SetDefaultShippingAddress.ofKey(newAddressKey));
             }
         } else if (oldAddress != null) { // unset
-            return Optional.of(SetDefaultShippingAddressWithKey.of(null));
+            return Optional.of(SetDefaultShippingAddress.ofKey(null));
         }
 
         return Optional.empty();
@@ -778,12 +778,12 @@ public final class CustomerUpdateActionUtils {
 
     /**
      * Compares the {@link Customer#getDefaultBillingAddress()} and {@link CustomerDraft#getDefaultBillingAddress()}.
-     * If they are different - return {@link SetDefaultShippingAddressWithKey} update action. If the old billing address
+     * If they are different - return {@link SetDefaultBillingAddress} update action. If the old billing address
      * id value is set, but the new one is empty - the command will unset the default billing address.
      *
      * @param oldCustomer the customer that should be updated.
      * @param newCustomer the customer draft with new default billing address.
-     * @return An optional with {@link SetDefaultShippingAddressWithKey} update action.
+     * @return An optional with {@link SetDefaultBillingAddress} update action.
      */
     @Nonnull
     public static Optional<UpdateAction<Customer>> buildSetDefaultBillingAddressUpdateAction(
@@ -796,10 +796,10 @@ public final class CustomerUpdateActionUtils {
 
         if (newAddressKey != null) {
             if (oldAddress == null || !Objects.equals(oldAddress.getKey(), newAddressKey)) {
-                return Optional.of(SetDefaultBillingAddressWithKey.of(newAddressKey));
+                return Optional.of(SetDefaultBillingAddress.ofKey(newAddressKey));
             }
         } else if (oldAddress != null) { // unset
-            return Optional.of(SetDefaultBillingAddressWithKey.of(null));
+            return Optional.of(SetDefaultBillingAddress.ofKey(null));
         }
 
         return Optional.empty();
@@ -833,7 +833,7 @@ public final class CustomerUpdateActionUtils {
 
     /**
      * Compares the {@link List} of a {@link Customer#getShippingAddresses()} and a
-     * {@link CustomerDraft#getShippingAddresses()}. It returns a {@link List} of {@link AddShippingAddressIdWithKey}
+     * {@link CustomerDraft#getShippingAddresses()}. It returns a {@link List} of {@link AddShippingAddressId}
      * update actions as a result, if the new shipping address needs to be added to have the same set of addresses as
      * the {@code newCustomer}. If both the {@link Customer} and the {@link CustomerDraft} have the same set of
      * shipping addresses, then no update actions are needed and hence an empty {@link List} is returned.
@@ -880,7 +880,7 @@ public final class CustomerUpdateActionUtils {
         return newAddressKeys
             .stream()
             .filter(newAddressKey -> !oldAddressKeyToAddressMap.containsKey(newAddressKey))
-            .map(AddShippingAddressIdWithKey::of)
+            .map(AddShippingAddressId::ofKey)
             .collect(toList());
     }
 
@@ -944,7 +944,7 @@ public final class CustomerUpdateActionUtils {
 
     /**
      * Compares the {@link List} of a {@link Customer#getBillingAddresses()} and a
-     * {@link CustomerDraft#getBillingAddresses()}. It returns a {@link List} of {@link AddBillingAddressIdWithKey}
+     * {@link CustomerDraft#getBillingAddresses()}. It returns a {@link List} of {@link AddBillingAddressId}
      * update actions as a result, if the new billing address needs to be added to have the same set of addresses as
      * the {@code newCustomer}. If both the {@link Customer} and the {@link CustomerDraft} have the same set of
      * billing addresses, then no update actions are needed and hence an empty {@link List} is returned.
@@ -992,7 +992,7 @@ public final class CustomerUpdateActionUtils {
         return newAddressKeys
             .stream()
             .filter(newAddressKey -> !oldAddressKeyToAddressMap.containsKey(newAddressKey))
-            .map(AddBillingAddressIdWithKey::of)
+            .map(AddBillingAddressId::ofKey)
             .collect(toList());
     }
 
