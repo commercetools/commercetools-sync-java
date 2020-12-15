@@ -1,6 +1,6 @@
 # InventoryEntry Sync
 
-Module used for importing/syncing InventoryEntries into a commercetools project. 
+The module used for importing/syncing InventoryEntries into a commercetools project. 
 It also provides utilities for generating update actions based on the comparison of a [InventoryEntry](https://docs.commercetools.com/http-api-projects-inventory.html#inventoryentry) 
 against a [InventoryEntryDraft](https://docs.commercetools.com/http-api-projects-inventory.html#inventoryentrydraft).
 
@@ -9,10 +9,21 @@ against a [InventoryEntryDraft](https://docs.commercetools.com/http-api-projects
 
 
 - [Usage](#usage)
-  - [Sync list of inventory entry drafts](#sync-list-of-inventory-entry-drafts)
-    - [Prerequisites](#prerequisites)
-    - [About SyncOptions](#about-syncoptions)
-    - [Running the sync](#running-the-sync)
+  - [Prerequisites](#prerequisites)
+    - [SphereClient](#sphereclient)
+    - [Required Fields](#required-fields)
+    - [Reference Resolution](#reference-resolution)
+      - [Syncing from a commercetools project](#syncing-from-a-commercetools-project)
+      - [Syncing from an external resource](#syncing-from-an-external-resource)
+    - [SyncOptions](#syncoptions)
+      - [errorCallback](#errorcallback)
+      - [warningCallback](#warningcallback)
+      - [beforeUpdateCallback](#beforeupdatecallback)
+      - [beforeCreateCallback](#beforecreatecallback)
+      - [batchSize](#batchsize)
+      - [cacheSize](#cachesize)
+      - [ensureChannels](#ensurechannels)
+  - [Running the sync](#running-the-sync)
   - [Build all update actions](#build-all-update-actions)
   - [Build particular update action(s)](#build-particular-update-actions)
 - [Caveats](#caveats)
@@ -21,41 +32,89 @@ against a [InventoryEntryDraft](https://docs.commercetools.com/http-api-projects
 
 ## Usage
 
-### Sync list of inventory entry drafts
+### Prerequisites
 
-<!-- TODO - GITHUB ISSUE#138: Split into explanation of how to "sync from project to project" vs "import from feed"-->
+#### SphereClient
 
-#### Prerequisites
-1. Create a `sphereClient`:
 Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/3.0.1/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
-2. The sync expects a list of `InventoryEntryDraft`s that have their `sku` fields set,
-   otherwise the sync will trigger an `errorCallback` function set by the user (more on it can be found down below in the options explanations).
+````java
+final SphereClientConfig clientConfig = SphereClientConfig.of("project-key", "client-id", "client-secret");
 
-3. Every inventory entry may have a reference to a supply `Channel` and a reference to the `Type` of its custom fields. These
-   references are matched by their `key`s. Therefore, in order for the sync to resolve the actual ids of those references,
-   their `key`s has to be supplied.
-   
-   - When syncing from a source commercetools project, you can use [`mapToInventoryEntryDrafts`](https://commercetools.github.io/commercetools-sync-java/v/3.0.1/com/commercetools/sync/inventories/utils/InventoryReferenceResolutionUtils.html#mapToInventoryEntryDrafts-java.util.List-)
-     method that that maps from a `InventoryEntry` to `InventoryEntryDraft` in order to make them ready for reference resolution by the sync:
-     ````java
-     final List<InventoryEntryDraft> inventoryEntryDrafts = InventoryReferenceResolutionUtils.mapToInventoryEntryDrafts(inventoryEntries);
-     ````
+final SphereClient sphereClient = ClientConfigurationUtils.createClient(clientConfig);
+````
 
-4. After the `sphereClient` is set up, an `InventorySyncOptions` should be built as follows: 
+#### Required Fields
+
+The following fields are **required** to be set in, otherwise, they won't be matched by sync:
+
+|Draft|Required Fields|Note|
+|---|---|---|
+| [InventoryEntryDraft](https://docs.commercetools.com/http-api-projects-inventory.html#inventoryentrydraft) | `sku` |  Also, the inventory entries in the target project are expected to have the `sku` fields set. | 
+
+#### Reference Resolution 
+
+In commercetools, a reference can be created by providing the key instead of the ID with the type [ResourceIdentifier](https://docs.commercetools.com/api/types#resourceidentifier).
+When the reference key is provided with a `ResourceIdentifier`, the sync will resolve the resource with the given key and use the ID of the found resource to create or update a reference.
+Therefore, in order to resolve the actual ids of those references in the sync process, `ResourceIdentifier`s with their `key`s have to be supplied. 
+
+|Reference Field|Type|
+|:---|:---|
+| `supplyChannel` | ResourceIdentifier to a Channel | 
+| `custom.type` | ResourceIdentifier to a Type |  
+
+> Note that a reference without the key field will be considered as an existing resource on the target commercetools project and the library will issue an update/create an API request without reference resolution.
+
+##### Syncing from a commercetools project
+
+When syncing from a source commercetools project, you can use [`mapToInventoryEntryDrafts`](https://commercetools.github.io/commercetools-sync-java/v/3.0.1/com/commercetools/sync/inventories/utils/InventoryReferenceResolutionUtils.html#mapToInventoryEntryDrafts-java.util.List-)
+the method that maps from an `InventoryEntry` to `InventoryEntryDraft` in order to make them ready for reference resolution by the sync, for example: 
+
+````java
+// Build an InventoryEntryQuery for fetching inventories from a source CTP project with all the needed references expanded for the sync
+final InventoryEntryQuery inventoryEntryQueryWithReferenceExpanded = InventoryReferenceResolutionUtils.buildInventoryQuery();
+
+// Query all inventories (NOTE this is just for example, please adjust your logic)
+final List<InventoryEntry> inventoryEntries =
+    CtpQueryUtils
+        .queryAll(sphereClient, inventoryEntryQueryWithReferenceExpanded, Function.identity())
+        .thenApply(fetchedResources -> fetchedResources
+            .stream()
+            .flatMap(List::stream)
+            .collect(Collectors.toList()))
+        .toCompletableFuture()
+        .join();
+
+// Mapping from InventoryEntry to InventoryEntryDraft with considering reference resolution.
+final List<InventoryEntryDraft> inventoryEntryDrafts = InventoryReferenceResolutionUtils.mapToInventoryEntryDrafts(inventoryEntries);
+````
+
+##### Syncing from an external resource
+
+- When syncing from an external resource, `ResourceIdentifier`s with their `key`s have to be supplied as following example:
+
+````java
+final InventoryEntryDraft inventoryEntryDraft = InventoryEntryDraftBuilder
+        .of("sku-1", 2L)
+        .custom(CustomFieldsDraft.ofTypeKeyAndJson("type-key", emptyMap())) // note that custom type provided with key
+        .supplyChannel(ResourceIdentifier.ofKey("channel-key")) // note that channel reference provided with key
+        .build();
+````
+
+#### SyncOptions
+After the `sphereClient` is set up, an `InventorySyncOptions` should be built as follows: 
 ````java
 // instantiating a InventorySyncOptions
 final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder.of(sphereClient).build();
 ````
 
-#### About SyncOptions
 `SyncOptions` is an object which provides a place for users to add certain configurations to customize the sync process.
 Available configurations:
 
-##### 1. `errorCallback`
+##### errorCallback
 A callback that is called whenever an error event occurs during the sync process. Each resource executes its own 
-error-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+error-callback. When the sync process of a particular resource runs successfully, it is not triggered. It contains the 
 following context about the error-event:
 
 * sync exception
@@ -63,7 +122,6 @@ following context about the error-event:
 * inventory entry of the target project (only provided if an existing inventory entry could be found)
 * the update-actions, which failed (only provided if an existing inventory entry could be found)
 
-##### Example 
 ````java
  final Logger logger = LoggerFactory.getLogger(InventorySync.class);
  final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder
@@ -72,16 +130,15 @@ following context about the error-event:
             logger.error(new SyncException("My customized message"), syncException)).build();
 ````
     
-##### 2. `warningCallback`
-A callback that is called whenever a warning event occurs during the sync process. Each resource executes its own 
-warning-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+##### warningCallback
+A callback is called whenever a warning event occurs during the sync process. Each resource executes its own 
+warning-callback. When the sync process of a particular resource runs successfully, it is not triggered. It contains the 
 following context about the warning message:
 
 * sync exception
 * inventory entry draft from the source 
 * inventory entry of the target project (only provided if an existing inventory entry could be found)
 
-##### Example 
 ````java
  final Logger logger = LoggerFactory.getLogger(InventorySync.class);
  final InventorySyncOptions inventorySyncOptions = InventorySyncOptionsBuilder
@@ -90,16 +147,15 @@ following context about the warning message:
             logger.warn(new SyncException("My customized message"), syncException)).build();
 ````
 
-##### 3. `beforeUpdateCallback`
-During the sync process if a target inventory entry and a inventory entry draft are matched, this callback can be used 
-to intercept the **_update_** request just before it is sent to commercetools platform. This allows the user to modify 
+##### beforeUpdateCallback
+During the sync process, if a target inventory entry and an inventory entry draft are matched, this callback can be used 
+to intercept the **_update_** request just before it is sent to the commercetools platform. This allows the user to modify 
 update actions array with custom actions or discard unwanted actions. The callback provides the following information :
  
  * inventory entry draft from the source
  * inventory from the target project
  * update actions that were calculated after comparing both
 
-##### Example
 ````java
 final TriFunction<
         List<UpdateAction<InventoryEntry>>, 
@@ -114,42 +170,49 @@ final InventorySyncOptions inventorySyncOptions =
         InventorySyncOptionsBuilder.of(sphereClient).beforeUpdateCallback(beforeUpdateInventoryCallback).build();
 ````
 
-##### 4. `beforeCreateCallback`
-During the sync process if a inventory entry draft should be created, this callback can be used to intercept 
-the **_create_** request just before it is sent to commercetools platform.  It contains following information : 
+##### beforeCreateCallback
+During the sync process, if an inventory entry draft should be created, this callback can be used to intercept the **_create_** request just before it is sent to the commercetools platform.  It contains the following information : 
 
  * inventory entry draft that should be created
  
 Please refer to [example in product sync document](PRODUCT_SYNC.md#example-set-publish-stage-if-category-references-of-given-product-draft-exists).
                          
-##### 5. `batchSize`
+##### batchSize
 A number that could be used to set the batch size with which inventories are fetched and processed,
-as inventories are obtained from the target project on commercetools platform in batches for better performance. The 
-algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding inventories from 
-the target project on commecetools platform in a single request. Playing with this option can slightly improve or 
-reduce processing speed. If it is not set, the default batch size is 150 for inventory sync.
+as inventories are obtained from the target project on the commercetools platform in batches for better performance. The algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding inventories from the target project on the commecetools platform in a single request. Playing with this option can slightly improve or reduce processing speed. If it is not set, the default batch size is 150 for inventory sync.
 
-##### Example
 ````java                         
 final InventorySyncOptions inventorySyncOptions = 
          InventorySyncOptionsBuilder.of(sphereClient).batchSize(100).build();
 ````
 
-##### 6. `ensureChannels` 
-A flag to indicate whether the sync process should create supply channel of the given key when it doesn't exist in a 
+##### cacheSize
+In the service classes of the commercetools-sync-java library, we have implemented an in-memory [LRU cache](https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)) to store a map used for the reference resolution of the library.
+The cache reduces the reference resolution based calls to the commercetools API as the required fields of a resource will be fetched only one time. These cached fields then might be used by another resource referencing the already resolved resource instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
+which will improve the overall performance of the sync and commercetools API.
+
+Playing with this option can change the memory usage of the library. If it is not set, the default cache size is `10.000` for inventory sync.
+
+````java
+final InventorySyncOptions inventorySyncOptions = 
+         InventorySyncOptionsBuilder.of(sphereClient).cacheSize(5000).build();
+````
+
+
+##### ensureChannels
+A flag to indicate whether the sync process should create a supply channel of the given key when it doesn't exist in a 
 target project yet.
 - If `ensureChannels` is set to `false` this inventory won't be synced and the `errorCallback` will be triggered.
 - If `ensureChannels` is set to `true` the sync will attempt to create the missing supply channel with the given key. 
 If it fails to create the supply channel, the inventory won't sync and `errorCallback` will be triggered.
 - If not provided, it is set to `false` by default.
 
-##### Example
 ````java                         
 final InventorySyncOptions inventorySyncOptions = 
          InventorySyncOptionsBuilder.of(sphereClient).ensureChannels(true).build();
 ````
 
-#### Running the sync
+### Running the sync
 After all the aforementioned points in the previous section have been fulfilled, to run the sync:
 ````java
 // instantiating an inventory sync
@@ -158,10 +221,10 @@ final InventorySync inventorySync = new InventorySync(inventorySyncOptions);
 // execute the sync on your list of inventories
 CompletionStage<InventorySyncStatistics> syncStatisticsStage = inventorySync.sync(inventoryEntryDrafts);
 ````
-The result of the completing the `syncStatisticsStage` in the previous code snippet contains a `InventorySyncStatistics`
+The result of completing the `syncStatisticsStage` in the previous code snippet contains a `InventorySyncStatistics`
 which contains all the stats of the sync process; which includes a report message, the total number of updated, created, 
 failed, processed inventories and the processing time of the sync in different time units and in a
-human readable format.
+human-readable format.
 ````java
 final InventorySyncStatistics stats = syncStatisticsStage.toCompletebleFuture().join();
 stats.getReportMessage(); 
