@@ -11,7 +11,6 @@ import org.asynchttpclient.DefaultAsyncHttpClient;
 import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 
 import javax.annotation.Nonnull;
-import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 public final class ClientConfigurationUtils {
