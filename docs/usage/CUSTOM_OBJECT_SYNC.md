@@ -42,7 +42,7 @@ final SphereClient sphereClient = ClientConfigurationUtils.createClient(clientCo
 
 #### Required Fields
 
-The following fields are **required** to be set in, otherwise they won't be matched by sync:
+The following fields are **required** to be set in, otherwise, they won't be matched by sync:
 
 |Draft|Required Fields|Note|
 |---|---|---|
@@ -51,7 +51,7 @@ The following fields are **required** to be set in, otherwise they won't be matc
 
 ####  SyncOptions
 
-After the `sphereClient` is set up, a `CustomObjectSyncOptions` should be be built as follows:
+After the `sphereClient` is set up, a `CustomObjectSyncOptions` should be built as follows:
 ````java
 // instantiating a CustomObjectSyncOptions
 final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder.of(sphereClient).build();
@@ -62,7 +62,7 @@ Available configurations:
 
 ##### errorCallback
 A callback that is called whenever an error event occurs during the sync process. Each resource executes its own 
-error-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+error-callback. When the sync process of a particular resource runs successfully, it is not triggered. It contains the 
 following context about the error-event:
 
 * sync exception
@@ -79,8 +79,8 @@ following context about the error-event:
 ````
     
 ##### warningCallback
-A callback that is called whenever a warning event occurs during the sync process. Each resource executes its own 
-warning-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+A callback is called whenever a warning event occurs during the sync process. Each resource executes its own 
+warning-callback. When the sync process of a particular resource runs successfully, it is not triggered. It contains the 
 following context about the warning message:
 
 * sync exception
@@ -96,17 +96,15 @@ following context about the warning message:
 ````
 
 ##### beforeUpdateCallback
-In theory, `CustomObjectSyncOptions` provides callback before update operation. User can customize own callback and inject
-into sync options. However, in actual case, `beforeUpdateCallback`is not triggered in custom object sync process. When
-new custom object draft has the same key and container as existing custom object but different in custom object values, 
-sync process automatically perform update operation. The value of corresponding custom object in target project is 
-overwritten. This approach is different from other resources and no update action is involved.
+In theory, `CustomObjectSyncOptions` provides callback before update operation. User can customize their own callback and inject
+into sync options. However, in the actual case, `beforeUpdateCallback`is not triggered in the custom object sync process. When
+the new custom object draft has the same key and container as an existing custom object but different in custom object values, 
+the sync process automatically performs the update operation. The value of a corresponding custom object in the target project is overwritten. This approach is different from other resources and no update action is involved.
 
 No example is applicable.
 
 ##### beforeCreateCallback
-During the sync process if a custom object draft should be created, this callback can be used to intercept 
-the **_create_** request just before it is sent to commercetools platform.  It contains following information : 
+During the sync process, if a custom object draft should be created, this callback can be used to intercept the **_create_** request just before it is sent to the commercetools platform.  It contains the following information : 
 
  * custom object draft that should be created
  
@@ -114,10 +112,7 @@ Please refer to [example in product sync document](PRODUCT_SYNC.md#example-set-p
 
 ##### batchSize
 A number that could be used to set the batch size with which custom objects are fetched and processed,
-as custom objects are obtained from the target project on commercetools platform in batches for better performance. The 
-algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding custom objects 
-from the target project on commecetools platform in a single request. Playing with this option can slightly improve or 
-reduce processing speed. If it is not set, the default batch size is 50 for custom object sync.
+as custom objects are obtained from the target project on the commercetools platform in batches for better performance. The algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding custom objects from the target project on the commecetools platform in a single request. Playing with this option can slightly improve or reduce processing speed. If it is not set, the default batch size is 50 for custom object sync.
 
 ````java                         
 final CustomObjectSyncOptions customObjectSyncOptions = 
@@ -126,7 +121,7 @@ final CustomObjectSyncOptions customObjectSyncOptions =
 
 ##### cacheSize
 In the service classes of the commercetools-sync-java library, we have implemented an in-memory [LRU cache](https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)) to store a map used for the reference resolution of the library.
-The cache reduces the reference resolution based calls to the commercetools API as the required fields of a resource will be fetched only one time. This cached fields then might be used by another resource referencing the already resolved resource instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve overall performance of the sync library and commercetools API.
+The cache reduces the reference resolution based calls to the commercetools API as the required fields of a resource will be fetched only one time. These cached fields then might be used by another resource referencing the already resolved resource instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
 which will improve the overall performance of the sync and commercetools API.
 
 Playing with this option can change the memory usage of the library. If it is not set, the default cache size is `10.000` for custom object sync.
@@ -145,7 +140,7 @@ final CustomObjectSync customObjectSync = new CustomObjectSync(customObjectSyncO
 // execute the sync on your list of custom object drafts
 CompletionStage<CustomObjectSyncStatistics> syncStatisticsStage = customObjectSync.sync(customObjectDrafts);
 ````
-The result of the completing the `syncStatisticsStage` in the previous code snippet contains a `CustomObjectSyncStatistics`
+The result of completing the `syncStatisticsStage` in the previous code snippet contains a `CustomObjectSyncStatistics`
 which contains all the stats of the sync process; which includes a report message, the total number of updated, created,
 failed, processed custom objects and the processing time of the last sync batch in different time units and in a
 human-readable format.

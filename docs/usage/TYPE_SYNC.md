@@ -1,6 +1,6 @@
 # Type Sync
 
-Module used for importing/syncing Types into a commercetools project. 
+The module used for importing/syncing Types into a commercetools project. 
 It also provides utilities for generating update actions based on the comparison of a [Type](https://docs.commercetools.com/http-api-projects-types.html#type) 
 against a [TypeDraft](https://docs.commercetools.com/http-api-projects-types.html#typedraft).
 
@@ -44,7 +44,7 @@ final SphereClient sphereClient = ClientConfigurationUtils.createClient(clientCo
 
 #### Required Fields
 
-The following fields are **required** to be set in, otherwise they won't be matched by sync:
+The following fields are **required** to be set in, otherwise, they won't be matched by sync:
 
 |Draft|Required Fields|Note|
 |---|---|---|
@@ -63,7 +63,7 @@ Available configurations:
 
 ##### errorCallback
 A callback that is called whenever an error event occurs during the sync process. Each resource executes its own 
-error-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+error-callback. When the sync process of a particular resource runs successfully, it is not triggered. It contains the 
 following context about the error-event:
 
 * sync exception
@@ -80,8 +80,8 @@ following context about the error-event:
 ````
     
 ##### warningCallback
-A callback that is called whenever a warning event occurs during the sync process. Each resource executes its own 
-warning-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+A callback is called whenever a warning event occurs during the sync process. Each resource executes its own 
+warning-callback. When the sync process of a particular resource runs successfully, it is not triggered. It contains the 
 following context about the warning message:
 
 * sync exception
@@ -97,8 +97,8 @@ following context about the warning message:
 ````
 
 ##### beforeUpdateCallback
-During the sync process if a target type and a type draft are matched, this callback can be used to 
-intercept the **_update_** request just before it is sent to commercetools platform. This allows the user to modify 
+During the sync process, if a target type and a type draft are matched, this callback can be used to 
+intercept the **_update_** request just before it is sent to the commercetools platform. This allows the user to modify 
 update actions array with custom actions or discard unwanted actions. The callback provides the following information :
  
  * type draft from the source
@@ -118,8 +118,7 @@ final TypeSyncOptions typeSyncOptions =
 ````
 
 ##### beforeCreateCallback
-During the sync process if a type draft should be created, this callback can be used to intercept 
-the **_create_** request just before it is sent to commercetools platform.  It contains following information : 
+During the sync process, if a type draft should be created, this callback can be used to intercept the **_create_** request just before it is sent to the commercetools platform.  It contains the following information : 
 
  * type draft that should be created
  
@@ -127,10 +126,7 @@ Please refer to [example in product sync document](PRODUCT_SYNC.md#example-set-p
 
 ##### batchSize
 A number that could be used to set the batch size with which types are fetched and processed,
-as types are obtained from the target project on commercetools platform in batches for better performance. The 
-algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding types 
-from the target project on commecetools platform in a single request. Playing with this option can slightly improve or 
-reduce processing speed. If it is not set, the default batch size is 50 for type sync.
+as types are obtained from the target project on commercetools platform in batches for better performance. The algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding types from the target project on the commecetools platform in a single request. Playing with this option can slightly improve or reduce processing speed. If it is not set, the default batch size is 50 for type sync.
 
 ````java                         
 final TypeSyncOptions typeSyncOptions = 
@@ -139,7 +135,7 @@ final TypeSyncOptions typeSyncOptions =
 
 ##### cacheSize
 In the service classes of the commercetools-sync-java library, we have implemented an in-memory [LRU cache](https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)) to store a map used for the reference resolution of the library.
-The cache reduces the reference resolution based calls to the commercetools API as the required fields of a resource will be fetched only one time. This cached fields then might be used by another resource referencing the already resolved resource instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve overall performance of the sync library and commercetools API.
+The cache reduces the reference resolution based calls to the commercetools API as the required fields of a resource will be fetched only one time. These cached fields then might be used by another resource referencing the already resolved resource instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
 which will improve the overall performance of the sync and commercetools API.
 
 Playing with this option can change the memory usage of the library. If it is not set, the default cache size is `10.000` for type sync.
@@ -159,7 +155,7 @@ final TypeSync typeSync = new TypeSync(typeSyncOptions);
 // execute the sync on your list of types
 CompletionStage<TypeSyncStatistics> syncStatisticsStage = typeSync.sync(typeDrafts);
 ````
-The result of the completing the `syncStatisticsStage` in the previous code snippet contains a `TypeSyncStatistics`
+The result of completing the `syncStatisticsStage` in the previous code snippet contains a `TypeSyncStatistics`
 which contains all the stats of the sync process; which includes a report message, the total number of updated, created,
 failed, processed types and the processing time of the last sync batch in different time units and in a
 human-readable format.
@@ -206,6 +202,6 @@ More examples of those utils for different types can be found [here](https://git
 
 ## Caveats
 
-1. Updating the label of enum values and localized enum values of field definition is not supported yet. [#339](https://github.com/commercetools/commercetools-sync-java/issues/339)
-2. Removing the enum values and localized enum values from the field definition is not supported yet. [#339](https://github.com/commercetools/commercetools-sync-java/issues/339)
+1. Updating the label of enum values and localized enum values of field definition are not supported yet. [#339](https://github.com/commercetools/commercetools-sync-java/issues/339)
+2. Removing the enum values and localized enum values from the field definition are not supported yet. [#339](https://github.com/commercetools/commercetools-sync-java/issues/339)
 3. Updating the input hint of a field definition is not supported yet. [#339](https://github.com/commercetools/commercetools-sync-java/issues/339)

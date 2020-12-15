@@ -1,6 +1,6 @@
 # State Sync
 
-Module used for importing/syncing States into a commercetools project. 
+The module used for importing/syncing States into a commercetools project. 
 It also provides utilities for generating update actions based on the comparison a [State](https://docs.commercetools.com/http-api-projects-states#states) (which basically represents what commercetools already has)
 against a [StateDraft](https://docs.commercetools.com/http-api-projects-states#statedraft) (which represents a new version of the state supplied by the user).
 
@@ -46,7 +46,7 @@ final SphereClient sphereClient = ClientConfigurationUtils.createClient(clientCo
 
 #### Required Fields
 
-The following fields are **required** to be set in, otherwise they won't be matched by sync:
+The following fields are **required** to be set in, otherwise, they won't be matched by sync:
 
 |Draft|Required Fields|Note|
 |---|---|---|
@@ -54,10 +54,10 @@ The following fields are **required** to be set in, otherwise they won't be matc
 
 #### Reference Resolution 
 
-`Transitions` are a way to describe possible transformations of the current state to other states of the same type (for example: Initial -> Shipped). When performing a [SetTransitions](https://docs.commercetools.com/api/projects/states#set-transitions), an array of [Reference](https://docs.commercetools.com/api/types#reference) to State is needed.
+`Transitions` are a way to describe possible transformations of the current state to other states of the same type (for example Initial -> Shipped). When performing a [SetTransitions](https://docs.commercetools.com/api/projects/states#set-transitions), an array of [Reference](https://docs.commercetools.com/api/types#reference) to State is needed.
 In commercetools, a reference can be created by providing the key instead of the ID with the type [ResourceIdentifier](https://docs.commercetools.com/api/types#resourceidentifier). 
 When the reference key is provided with a `ResourceIdentifier`, the sync will resolve the resource with the given key and use the ID of the found resource to create or update a reference. 
-Currently commercetools API does not support the [ResourceIdentifier](https://docs.commercetools.com/api/types#resourceidentifier) for the `transitions`,  for those `transition` references you have to provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the 
+Currently, commercetools API does not support the [ResourceIdentifier](https://docs.commercetools.com/api/types#resourceidentifier) for the `transitions`,  for those `transition` references you have to provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the 
 reference should return its `key`.
 
 |Reference Field|Type|
@@ -66,7 +66,7 @@ reference should return its `key`.
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use this util which this library provides:  [`mapToStateDrafts`](https://commercetools.github.io/commercetools-sync-java/v/3.0.1/com/commercetools/sync/states/utils/StateReferenceResolutionUtils.html#mapToStateDrafts-java.util.List-)
+When syncing from a source commercetools project, you can use this utility which this library provides:  [`mapToStateDrafts`](https://commercetools.github.io/commercetools-sync-java/v/3.0.1/com/commercetools/sync/states/utils/StateReferenceResolutionUtils.html#mapToStateDrafts-java.util.List-)
 that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
 
 ````java
@@ -111,7 +111,7 @@ Available configurations:
 
 ##### errorCallback
 A callback that is called whenever an error event occurs during the sync process. Each resource executes its own 
-error-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+error-callback. When the sync process of a particular resource runs successfully, it is not triggered. It contains the 
 following context about the error-event:
 
 * sync exception
@@ -129,8 +129,8 @@ following context about the error-event:
     
 ##### warningCallback
 
-A callback that is called whenever a warning event occurs during the sync process. Each resource executes its own 
-warning-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+A callback is called whenever a warning event occurs during the sync process. Each resource executes its own 
+warning-callback. When the sync process of a particular resource runs successfully, it is not triggered. It contains the 
 following context about the warning message:
 
 * sync exception
@@ -146,8 +146,8 @@ following context about the warning message:
 ````
 
 ##### beforeUpdateCallback
-During the sync process if a target state and a state draft are matched, this callback can be used to 
-intercept the **_update_** request just before it is sent to commercetools platform. This allows the user to modify 
+During the sync process, if a target state and a state draft are matched, this callback can be used to 
+intercept the **_update_** request just before it is sent to the commercetools platform. This allows the user to modify 
 update actions array with custom actions or discard unwanted actions. The callback provides the following information :
  
  * state draft from the source
@@ -167,8 +167,7 @@ final StateSyncOptions stateSyncOptions =
 ````
 
 ##### beforeCreateCallback
-During the sync process if a state draft should be created, this callback can be used to intercept 
-the **_create_** request just before it is sent to commercetools platform.  It contains following information : 
+During the sync process, if a state draft should be created, this callback can be used to intercept the **_create_** request just before it is sent to the commercetools platform.  It contains the following information : 
 
  * state draft that should be created
 
@@ -176,10 +175,8 @@ Please refer to [example in product sync document](PRODUCT_SYNC.md#example-set-p
 
 ##### batchSize
 A number that could be used to set the batch size with which states are fetched and processed,
-as states are obtained from the target project on commercetools platform in batches for better performance. The 
-algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding states
-from the target project on commecetools platform in a single request. Playing with this option can slightly improve or 
-reduce processing speed. If it is not set, the default batch size is 50 for state sync.
+as states are obtained from the target project on commercetools platform in batches for better performance. The algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding states
+from the target project on the commecetools platform in a single request. Playing with this option can slightly improve or reduce processing speed. If it is not set, the default batch size is 50 for state sync.
 
 ````java                         
 final StateSyncOptions stateSyncOptions = 
@@ -188,7 +185,7 @@ final StateSyncOptions stateSyncOptions =
 
 ##### cacheSize
 In the service classes of the commercetools-sync-java library, we have implemented an in-memory [LRU cache](https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)) to store a map used for the reference resolution of the library.
-The cache reduces the reference resolution based calls to the commercetools API as the required fields of a resource will be fetched only one time. This cached fields then might be used by another resource referencing the already resolved resource instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve overall performance of the sync library and commercetools API.
+The cache reduces the reference resolution based calls to the commercetools API as the required fields of a resource will be fetched only one time. These cached fields then might be used by another resource referencing the already resolved resource instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
 which will improve the overall performance of the sync and commercetools API.
 
 Playing with this option can change the memory usage of the library. If it is not set, the default cache size is `10.000` for state sync.
@@ -225,11 +222,11 @@ __Note__ The statistics object contains the processing time of the last batch on
 
 ##### Persistence of StateDrafts with missing references
 
-A StateDraft (state-A) could be supplied in with a transition referencing StateDraft (state-B). 
-It could be that (state-B) is not supplied before (state-A), which means the sync could fail creating/updating (state-A). 
+A StateDraft (state-A) could be supplied with a transition referencing StateDraft (state-B). 
+It could be that (state-B) is not supplied before (state-A), which means the sync could fail to create/update (state-A). 
 It could also be that (state-B) is not supplied at all in this batch but at a later batch.
  
-The library keep tracks of such "referencing" states like (state-A) and persists them in storage 
+The library keeps tracks of such "referencing" states like (state-A) and persists them in storage 
 (**commercetools `customObjects` in the target project** , in this case) 
 to keep them and create/update them accordingly whenever the referenced state has been provided at some point.
 

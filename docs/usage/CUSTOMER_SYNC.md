@@ -1,6 +1,6 @@
 # Customer Sync
 
-Module used for importing/syncing Customers into a commercetools project. 
+The module used for importing/syncing Customers into a commercetools project. 
 It also provides utilities for generating update actions based on the comparison of a [Customer](https://docs.commercetools.com/api/projects/customers#customer) 
 against a [CustomerDraft](https://docs.commercetools.com/api/projects/customers#customerdraft).
 
@@ -46,7 +46,7 @@ final SphereClient sphereClient = ClientConfigurationUtils.createClient(clientCo
 
 #### Required Fields
 
-The following fields are **required** to be set in, otherwise they won't be matched by sync:
+The following fields are **required** to be set in, otherwise, they won't be matched by sync:
 
 |Draft|Required Fields|Note|
 |---|---|---|
@@ -57,7 +57,7 @@ The following fields are **required** to be set in, otherwise they won't be matc
 
 In commercetools, a reference can be created by providing the key instead of the ID with the type [ResourceIdentifier](https://docs.commercetools.com/api/types#resourceidentifier).
 When the reference key is provided with a `ResourceIdentifier`, the sync will resolve the resource with the given key and use the ID of the found resource to create or update a reference.
-Therefore, in order to resolve the actual ids of those references in sync process, `ResourceIdentifier`s with their `key`s have to be supplied. 
+Therefore, in order to resolve the actual ids of those references in the sync process, `ResourceIdentifier`s with their `key`s have to be supplied. 
 
 |Reference Field|Type|
 |:---|:---|
@@ -65,12 +65,12 @@ Therefore, in order to resolve the actual ids of those references in sync proces
 | `stores` | Set of ResourceIdentifier to a Store | 
 | `custom.type` | ResourceIdentifier to a Type |  
 
-> Note that a reference without the key field will be considered as existing resource on the target commercetools project and the library will issue an update/create an API request without reference resolution.
+> Note that a reference without the key field will be considered as an existing resource on the target commercetools project and the library will issue an update/create an API request without reference resolution.
 
 ##### Syncing from a commercetools project
 
 When syncing from a source commercetools project, you can use [`mapToCustomerDrafts`](https://commercetools.github.io/commercetools-sync-java/v/3.0.1/com/commercetools/sync/customers/utils/CustomerReferenceResolutionUtils.html#mapToCustomerDrafts-java.util.List-)
-method that maps from a `Customer` to `CustomerDraft` to make them ready for reference resolution by the sync, for example:
+a method that maps from a `Customer` to `CustomerDraft` to make them ready for reference resolution by the sync, for example:
 
 ````java
 // Build a CustomerQuery for fetching customers from a source CTP project with all the needed references expanded for the sync
@@ -119,7 +119,7 @@ Available configurations:
 
 ##### errorCallback
 A callback that is called whenever an error event occurs during the sync process. Each resource executes its own 
-error-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+error-callback. When the sync process of a particular resource runs successfully, it is not triggered. It contains the 
 following context about the error-event:
 
 * sync exception
@@ -136,8 +136,8 @@ following context about the error-event:
 ````
     
 ##### warningCallback
-A callback that is called whenever a warning event occurs during the sync process. Each resource executes its own 
-warning-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+A callback is called whenever a warning event occurs during the sync process. Each resource executes its own 
+warning-callback. When the sync process of a particular resource runs successfully, it is not triggered. It contains the 
 following context about the warning message:
 
 * sync exception
@@ -153,8 +153,8 @@ following context about the warning message:
 ````
 
 ##### beforeUpdateCallback
-During the sync process if a target customer and a customer draft are matched, this callback can be used to 
-intercept the **_update_** request just before it is sent to commercetools platform. This allows the user to modify 
+During the sync process, if a target customer and a customer draft are matched, this callback can be used to 
+intercept the **_update_** request just before it is sent to the commercetools platform. This allows the user to modify 
 update actions array with custom actions or discard unwanted actions. The callback provides the following information :
  
  * customer draft from the source
@@ -176,8 +176,7 @@ final CustomerSyncOptions customerSyncOptions = CustomerSyncOptionsBuilder
 ````
 
 ##### beforeCreateCallback
-During the sync process if a customer draft should be created, this callback can be used to intercept 
-the **_create_** request just before it is sent to commercetools platform.  It contains following information : 
+During the sync process, if a customer draft should be created, this callback can be used to intercept the **_create_** request just before it is sent to the commercetools platform.  It contains the following information : 
 
  * customer draft that should be created
 
@@ -185,10 +184,8 @@ the **_create_** request just before it is sent to commercetools platform.  It c
 
 ##### batchSize
 A number that could be used to set the batch size with which customers are fetched and processed,
-as customers are obtained from the target project on commercetools platform in batches for better performance. The 
-algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding customers
-from the target project on commercetools platform in a single request. Playing with this option can slightly improve or 
-reduce processing speed. If it is not set, the default batch size is 50 for customer sync.
+as customers are obtained from the target project on the commercetools platform in batches for better performance. The algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding customers
+from the target project on the commercetools platform in a single request. Playing with this option can slightly improve or reduce processing speed. If it is not set, the default batch size is 50 for customer sync.
 
 ````java                         
 final CustomerSyncOptions customerSyncOptions = 
@@ -197,7 +194,7 @@ final CustomerSyncOptions customerSyncOptions =
 
 ##### cacheSize
 In the service classes of the commercetools-sync-java library, we have implemented an in-memory [LRU cache](https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)) to store a map used for the reference resolution of the library.
-The cache reduces the reference resolution based calls to the commercetools API as the required fields of a resource will be fetched only one time. This cached fields then might be used by another resource referencing the already resolved resource instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve overall performance of the sync library and commercetools API.
+The cache reduces the reference resolution based calls to the commercetools API as the required fields of a resource will be fetched only one time. These cached fields then might be used by another resource referencing the already resolved resource instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
 which will improve the overall performance of the sync and commercetools API.
 
 Playing with this option can change the memory usage of the library. If it is not set, the default cache size is `10.000` for customer sync.
@@ -217,7 +214,7 @@ final CustomerSync customerSync = new CustomerSync(customerSyncOptions);
 // execute the sync on your list of customers
 CompletionStage<CustomerSyncStatistics> syncStatisticsStage = customerSync.sync(customerDrafts);
 ````
-The result of the completing the `syncStatisticsStage` in the previous code snippet contains a `CustomerSyncStatistics`
+The result of completing the `syncStatisticsStage` in the previous code snippet contains a `CustomerSyncStatistics`
 which contains all the stats of the sync process; which includes a report message, the total number of updated, created,
 failed, processed customers, and the processing time of the last sync batch in different time units and in a
 human-readable format.
