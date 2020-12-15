@@ -30,6 +30,4 @@ public class KeepOtherVariantsSync {
                             .filter(updateAction -> !(updateAction instanceof RemoveVariant))
                             .collect(Collectors.toList());
     }
-
-    private KeepOtherVariantsSync() {}
 }
