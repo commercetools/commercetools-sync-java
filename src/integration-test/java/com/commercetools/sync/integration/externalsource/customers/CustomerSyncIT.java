@@ -3,9 +3,6 @@ package com.commercetools.sync.integration.externalsource.customers;
 import com.commercetools.sync.customers.CustomerSync;
 import com.commercetools.sync.customers.CustomerSyncOptions;
 import com.commercetools.sync.customers.CustomerSyncOptionsBuilder;
-import com.commercetools.sync.customers.commands.updateactions.AddBillingAddressIdWithKey;
-import com.commercetools.sync.customers.commands.updateactions.AddShippingAddressIdWithKey;
-import com.commercetools.sync.customers.commands.updateactions.SetDefaultBillingAddressWithKey;
 import com.commercetools.sync.customers.helpers.CustomerSyncStatistics;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.neovisionaries.i18n.CountryCode;
@@ -15,6 +12,8 @@ import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
 import io.sphere.sdk.customers.CustomerDraftBuilder;
 import io.sphere.sdk.customers.commands.updateactions.AddAddress;
+import io.sphere.sdk.customers.commands.updateactions.AddBillingAddressId;
+import io.sphere.sdk.customers.commands.updateactions.AddShippingAddressId;
 import io.sphere.sdk.customers.commands.updateactions.AddStore;
 import io.sphere.sdk.customers.commands.updateactions.ChangeEmail;
 import io.sphere.sdk.customers.commands.updateactions.RemoveAddress;
@@ -23,6 +22,7 @@ import io.sphere.sdk.customers.commands.updateactions.SetCompanyName;
 import io.sphere.sdk.customers.commands.updateactions.SetCustomField;
 import io.sphere.sdk.customers.commands.updateactions.SetCustomerGroup;
 import io.sphere.sdk.customers.commands.updateactions.SetDateOfBirth;
+import io.sphere.sdk.customers.commands.updateactions.SetDefaultBillingAddress;
 import io.sphere.sdk.customers.commands.updateactions.SetFirstName;
 import io.sphere.sdk.customers.commands.updateactions.SetLocale;
 import io.sphere.sdk.customers.commands.updateactions.SetMiddleName;
@@ -261,9 +261,9 @@ class CustomerSyncIT {
             RemoveAddress.of(addressKeyToIdMap.get("address2")),
             AddAddress.of(Address.of(CountryCode.DE).withCity("cologne").withKey("address4")),
             RemoveBillingAddressId.of(addressKeyToIdMap.get("address1")),
-            SetDefaultBillingAddressWithKey.of("address4"),
-            AddShippingAddressIdWithKey.of("address1"),
-            AddBillingAddressIdWithKey.of("address4"),
+            SetDefaultBillingAddress.ofKey("address4"),
+            AddShippingAddressId.ofKey("address1"),
+            AddBillingAddressId.ofKey("address4"),
             SetCustomField.ofJson(LOCALISED_STRING_CUSTOM_FIELD_NAME,
                 JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red")),
             SetCustomField.ofJson(BOOLEAN_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.booleanNode(false)),
