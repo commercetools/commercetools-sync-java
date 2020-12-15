@@ -360,4 +360,35 @@ class PriceReferenceResolverTest {
         assertThat(resolvedDraftBuilder.getChannel()).isNotNull();
         assertThat(resolvedDraftBuilder.getChannel().getId()).isEqualTo("existing-id");
     }
+
+    @Test
+    void resolveChannelReference_WithNonExistingChannelAndCreateChannelFailed_ShouldNotResolveReference() {
+        // Preparation
+        final ProductSyncOptions optionsWithEnsureChannels = ProductSyncOptionsBuilder.of(mock(SphereClient.class))
+                .ensurePriceChannels(true)
+                .build();
+        when(channelService.fetchCachedChannelId(anyString()))
+                .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+        when(channelService.createAndCacheChannel(anyString()))
+                .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+
+        final PriceDraftBuilder priceBuilder = PriceDraftBuilder
+                .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+                .country(CountryCode.DE)
+                .channel(ResourceIdentifier.ofKey("channelKey"));
+
+        final PriceReferenceResolver priceReferenceResolver =
+                new PriceReferenceResolver(optionsWithEnsureChannels, typeService, channelService,
+                        customerGroupService);
+
+        assertThat(priceReferenceResolver.resolveChannelReference(priceBuilder))
+                .failsWithin(1, TimeUnit.SECONDS)
+                .withThrowableOfType(ExecutionException.class)
+                .withCauseExactlyInstanceOf(ReferenceResolutionException.class)
+                .withMessageContaining(
+                    format(FAILED_TO_RESOLVE_REFERENCE, Channel.resourceTypeId(), priceBuilder.getCountry(),
+                        priceBuilder.getValue(), format(
+                            ReferenceResolutionException.class.getName() + ": " + CHANNEL_DOES_NOT_EXIST,
+                            "channelKey")));
+    }
 }
