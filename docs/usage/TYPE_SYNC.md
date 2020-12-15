@@ -52,7 +52,7 @@ The following fields are **required** to be set in, otherwise they won't be matc
 
 #### SyncOptions
 
-After the `sphereClient` is set up, a `TypeSyncOptions` should be be built as follows:
+After the `sphereClient` is set up, a `TypeSyncOptions` should be built as follows:
 ````java
 // instantiating a TypeSyncOptions
 final TypeSyncOptions typeSyncOptions = TypeSyncOptionsBuilder.of(sphereClient).build();
