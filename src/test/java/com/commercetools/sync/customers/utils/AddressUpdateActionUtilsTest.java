@@ -1,19 +1,19 @@
 package com.commercetools.sync.customers.utils;
 
-import com.commercetools.sync.customers.commands.updateactions.AddBillingAddressIdWithKey;
-import com.commercetools.sync.customers.commands.updateactions.AddShippingAddressIdWithKey;
-import com.commercetools.sync.customers.commands.updateactions.SetDefaultBillingAddressWithKey;
-import com.commercetools.sync.customers.commands.updateactions.SetDefaultShippingAddressWithKey;
 import com.neovisionaries.i18n.CountryCode;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
 import io.sphere.sdk.customers.CustomerDraftBuilder;
 import io.sphere.sdk.customers.commands.updateactions.AddAddress;
+import io.sphere.sdk.customers.commands.updateactions.AddBillingAddressId;
+import io.sphere.sdk.customers.commands.updateactions.AddShippingAddressId;
 import io.sphere.sdk.customers.commands.updateactions.ChangeAddress;
 import io.sphere.sdk.customers.commands.updateactions.RemoveAddress;
 import io.sphere.sdk.customers.commands.updateactions.RemoveBillingAddressId;
 import io.sphere.sdk.customers.commands.updateactions.RemoveShippingAddressId;
+import io.sphere.sdk.customers.commands.updateactions.SetDefaultBillingAddress;
+import io.sphere.sdk.customers.commands.updateactions.SetDefaultShippingAddress;
 import io.sphere.sdk.models.Address;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -85,8 +85,8 @@ class AddressUpdateActionUtilsTest {
             RemoveAddress.of("address-id-1"),
             ChangeAddress.of("address-id-2", address2),
             AddAddress.of(address3),
-            SetDefaultShippingAddressWithKey.of("address-key-3"),
-            SetDefaultBillingAddressWithKey.of("address-key-2"));
+            SetDefaultShippingAddress.ofKey("address-key-3"),
+            SetDefaultBillingAddress.ofKey("address-key-2"));
     }
 
     @Test
@@ -591,7 +591,7 @@ class AddressUpdateActionUtilsTest {
 
         assertThat(customerUpdateAction)
             .isPresent()
-            .contains(SetDefaultShippingAddressWithKey.of("address-key-2"));
+            .contains(SetDefaultShippingAddress.ofKey("address-key-2"));
     }
 
     @Test
@@ -614,7 +614,7 @@ class AddressUpdateActionUtilsTest {
         // assertions
         assertThat(customerUpdateAction)
             .isPresent()
-            .contains(SetDefaultShippingAddressWithKey.of("address-key-2"));
+            .contains(SetDefaultShippingAddress.ofKey("address-key-2"));
     }
 
     @Test
@@ -642,7 +642,7 @@ class AddressUpdateActionUtilsTest {
 
         assertThat(customerUpdateAction)
             .isPresent()
-            .contains(SetDefaultShippingAddressWithKey.of(null));
+            .contains(SetDefaultShippingAddress.ofKey(null));
     }
 
     @Test
@@ -694,7 +694,7 @@ class AddressUpdateActionUtilsTest {
 
         assertThat(customerUpdateAction)
             .isPresent()
-            .contains(SetDefaultBillingAddressWithKey.of("address-key-2"));
+            .contains(SetDefaultBillingAddress.ofKey("address-key-2"));
     }
 
     @Test
@@ -722,7 +722,7 @@ class AddressUpdateActionUtilsTest {
 
         assertThat(customerUpdateAction)
             .isPresent()
-            .contains(SetDefaultBillingAddressWithKey.of(null));
+            .contains(SetDefaultBillingAddress.ofKey(null));
     }
 
     @Test
@@ -745,7 +745,7 @@ class AddressUpdateActionUtilsTest {
         // assertions
         assertThat(customerUpdateAction)
             .isPresent()
-            .contains(SetDefaultBillingAddressWithKey.of("address-key-2"));
+            .contains(SetDefaultBillingAddress.ofKey("address-key-2"));
     }
 
     @Test
@@ -844,7 +844,7 @@ class AddressUpdateActionUtilsTest {
             buildAddShippingAddressUpdateActions(oldCustomer, newCustomer);
 
         // assertions
-        assertThat(updateActions).containsExactly(AddShippingAddressIdWithKey.of("address-key-2"));
+        assertThat(updateActions).containsExactly(AddShippingAddressId.ofKey("address-key-2"));
     }
 
     @Test
@@ -876,7 +876,7 @@ class AddressUpdateActionUtilsTest {
         final List<UpdateAction<Customer>> updateActions =
             buildAddShippingAddressUpdateActions(oldCustomer, newCustomer);
 
-        assertThat(updateActions).containsExactly(AddShippingAddressIdWithKey.of("address-key-2"));
+        assertThat(updateActions).containsExactly(AddShippingAddressId.ofKey("address-key-2"));
     }
 
     @Test
@@ -1297,7 +1297,7 @@ class AddressUpdateActionUtilsTest {
         final List<UpdateAction<Customer>> updateActions =
             buildAddBillingAddressUpdateActions(oldCustomer, newCustomer);
 
-        assertThat(updateActions).containsExactly(AddBillingAddressIdWithKey.of("address-key-2"));
+        assertThat(updateActions).containsExactly(AddBillingAddressId.ofKey("address-key-2"));
     }
 
     @Test
@@ -1330,7 +1330,7 @@ class AddressUpdateActionUtilsTest {
             buildAddBillingAddressUpdateActions(oldCustomer, newCustomer);
 
         // assertions
-        assertThat(updateActions).containsExactly(AddBillingAddressIdWithKey.of("address-key-2"));
+        assertThat(updateActions).containsExactly(AddBillingAddressId.ofKey("address-key-2"));
     }
 
     @Test
