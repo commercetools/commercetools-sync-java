@@ -31,5 +31,5 @@ public class KeepOtherVariantsSync {
                             .collect(Collectors.toList());
     }
 
-    KeepOtherVariantsSync() {}
+    private KeepOtherVariantsSync() {}
 }
