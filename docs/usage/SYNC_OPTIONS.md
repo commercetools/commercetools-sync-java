@@ -33,6 +33,14 @@ as resources are obtained from the target CTP project in batches for better perf
 `batchSize` resources from the input list, then fetches the corresponding resources from the target CTP project
 in a single request. Playing with this option can slightly improve or reduce processing speed.
 
+#### `cacheSize`
+In the service classes of the commercetools-sync-java library, we have implemented an in-memory [LRU cache](https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)) to store a map used for the reference resolution of the library.
+The cache reduces the reference resolution based calls to the commercetools API as the required fields of a resource will be fetched only one time. This cached fields then might be used by another resource referencing the already resolved resource instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve overall performance of the sync library and commercetools API.
+which will improve the overall performance of the sync and commercetools API.
+
+Playing with this option can change the memory usage of the library. If it is not set, the default cache size is `10.000` for the sync.
+
+
 #### `syncFilter` (Only for Product Sync Options)
 represents either a blacklist or a whitelist for filtering certain update action groups. 
   
