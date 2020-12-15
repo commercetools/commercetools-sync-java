@@ -64,7 +64,7 @@ Therefore, in order to resolve the actual ids of those references in sync proces
 
 |Reference Field|Type|
 |:---|:---|
-| `customer` | ResourceIdentifier to a CustomerGroup | 
+| `customer` | ResourceIdentifier to a Customer | 
 | `custom.type` | ResourceIdentifier to a Type |  
 | `lineItems.custom.type` |  ResourceIdentifier to a Type | 
 | `textLineItems.custom.type ` | ResourceIdentifier to a Type | 
