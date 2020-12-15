@@ -77,7 +77,7 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
      * <p>Note: This cache size is set to 10.000 by default.
      *
      * @param cacheSize a long number value that indicates cache size of the key to id cache used for reference
-     *                  resolution. Has to be positive or else will be ignored and default value of 100.000 would be
+     *                  resolution. Has to be positive or else will be ignored and default value of 10.000 would be
      *                  used.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */

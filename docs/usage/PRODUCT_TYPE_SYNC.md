@@ -21,6 +21,7 @@ against a [ProductTypeDraft](https://docs.commercetools.com/http-api-projects-pr
       - [beforeUpdateCallback](#beforeupdatecallback)
       - [beforeCreateCallback](#beforecreatecallback)
       - [batchSize](#batchsize)
+      - [cacheSize](#cachesize)
   - [Running the sync](#running-the-sync)
     - [Important to Note](#important-to-note)
     - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)
@@ -66,7 +67,7 @@ Therefore, in order to resolve the actual ids of those references in sync proces
 ##### Syncing from a commercetools project
 
 When syncing from a source commercetools project, you can use [`mapToProductTypeDrafts`](https://commercetools.github.io/commercetools-sync-java/v/3.0.1/com/commercetools/sync/producttypes/utils/ProductTypeReferenceResolutionUtils.html#mapToProductTypeDrafts-java.util.List-) 
-that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync, for example: 
+method that maps from a `ProductType` to `ProductTypeDraft` to make them ready for reference resolution by the sync, for example:
 
 ````java
 // Build a ProductTypeQuery for fetching product types from a source CTP project with all the needed references expanded for the sync
@@ -200,6 +201,18 @@ reduce processing speed. If it is not set, the default batch size is 50 for prod
 ````java                         
 final ProductTypeSyncOptions productTypeSyncOptions = 
          ProductTypeSyncOptionsBuilder.of(sphereClient).batchSize(30).build();
+````
+
+##### cacheSize
+In the service classes of the commercetools-sync-java library, we have implemented an in-memory [LRU cache](https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)) to store a map used for the reference resolution of the library.
+The cache reduces the reference resolution based calls to the commercetools API as the required fields of a resource will be fetched only one time. This cached fields then might be used by another resource referencing the already resolved resource instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve overall performance of the sync library and commercetools API.
+which will improve the overall performance of the sync and commercetools API.
+
+Playing with this option can change the memory usage of the library. If it is not set, the default cache size is `10.000` for product type sync.
+
+````java
+final ProductTypeSyncOptions productTypeSyncOptions = 
+         ProductTypeSyncOptionsBuilder.of(sphereClient).cacheSize(5000).build();
 ````
 
 ### Running the sync

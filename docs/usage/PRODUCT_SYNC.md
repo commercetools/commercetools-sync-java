@@ -21,6 +21,7 @@ against a [ProductDraft](https://docs.commercetools.com/http-api-projects-produc
       - [beforeUpdateCallback](#beforeupdatecallback)
       - [beforeCreateCallback](#beforecreatecallback)
       - [batchSize](#batchsize)
+      - [cacheSize](#cachesize)
       - [syncFilter](#syncfilter)
       - [ensureChannels](#ensurechannels)
   - [Running the sync](#running-the-sync)
@@ -251,6 +252,18 @@ final ProductSyncOptions productSyncOptions =
          ProductSyncOptionsBuilder.of(sphereClient).batchSize(50).build();
 ````
 
+##### cacheSize
+In the service classes of the commercetools-sync-java library, we have implemented an in-memory [LRU cache](https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)) to store a map used for the reference resolution of the library.
+The cache reduces the reference resolution based calls to the commercetools API as the required fields of a resource will be fetched only one time. This cached fields then might be used by another resource referencing the already resolved resource instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve overall performance of the sync library and commercetools API.
+which will improve the overall performance of the sync and commercetools API.
+
+Playing with this option can change the memory usage of the library. If it is not set, the default cache size is `10.000` for product sync.
+
+````java
+final ProductSyncOptions productSyncOptions =
+    ProductSyncOptionsBuilder.of(sphereClient).cacheSize(5000).build(); 
+````
+     
 ##### syncFilter
 It represents either a blacklist or a whitelist for filtering certain update action groups. 
   
@@ -444,5 +457,4 @@ attributes.
 a product `a` which references a product `b` and at the same time product `b` references product `a`. Cycles can contain 
 more than 2 products. For example: `a` -> `b` -> `c` -> `a`. If there are such cycles, the sync will consider all the 
 products in the cycle as products with missing parents. They will be persisted as custom objects in the target project.
-
 
