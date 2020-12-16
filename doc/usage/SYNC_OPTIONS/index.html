@@ -488,6 +488,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#cachesize" class="md-nav__link">
+    cacheSize
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#syncfilter-only-for-product-sync-options" class="md-nav__link">
     syncFilter (Only for Product Sync Options)
   </a>
@@ -588,7 +595,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/3.0.1/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/3.0.2/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -698,6 +705,13 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#cachesize" class="md-nav__link">
+    cacheSize
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#syncfilter-only-for-product-sync-options" class="md-nav__link">
     syncFilter (Only for Product Sync Options)
   </a>
@@ -780,7 +794,7 @@
                 
                 <h1 id="sync-options">Sync Options<a class="headerlink" href="#sync-options" title="Permanent link">&para;</a></h1>
 <h4 id="errorcallback"><code>errorCallback</code><a class="headerlink" href="#errorcallback" title="Permanent link">&para;</a></h4>
-<p>a callback that is called whenever an error event occurs during the sync process. It contains the follow information 
+<p>a callback that is called whenever an error event occurs during the sync process. It contains the following information 
 about the error-event:</p>
 <ul>
 <li>sync exception</li>
@@ -789,7 +803,7 @@ about the error-event:</p>
 <li>the update-actions, which failed</li>
 </ul>
 <h4 id="warningcallback"><code>warningCallback</code><a class="headerlink" href="#warningcallback" title="Permanent link">&para;</a></h4>
-<p>a callback that is called whenever a warning event occurs during the sync process. It contains the follow information 
+<p>a callback that is called whenever a warning event occurs during the sync process. It contains the following information 
 about the warning message:</p>
 <ul>
 <li>sync exception</li>
@@ -797,29 +811,30 @@ about the warning message:</p>
 <li>the resource of the target project</li>
 </ul>
 <h4 id="beforeupdatecallback"><code>beforeUpdateCallback</code><a class="headerlink" href="#beforeupdatecallback" title="Permanent link">&para;</a></h4>
-<p>during the sync process if a target resource and a resource draft are matched, this callback can be used to intercept 
-the <strong><em>update</em></strong> request just before it is sent to CTP. It contains information about the resource draft, the target
-resource and the update actions that were calculated after comparing both.  </p>
+<p>during the sync process, if a target resource and a resource draft are matched, this callback can be used to intercept the <strong><em>update</em></strong> request just before it is sent to CTP. It contains information about the resource draft, the target
+resource, and the update actions that were calculated after comparing both.  </p>
 <h4 id="beforecreatecallback"><code>beforeCreateCallback</code><a class="headerlink" href="#beforecreatecallback" title="Permanent link">&para;</a></h4>
-<p>during the sync process if a resource draft should be created, this callback can be used to intercept 
-the <strong><em>create</em></strong> request just before it sent to CTP.  It contains information about the resource draft that should be
+<p>during the sync process, if a resource draft should be created, this callback can be used to intercept the <strong><em>create</em></strong> request just before it sent to CTP.  It contains information about the resource draft that should be
 created.</p>
 <h4 id="batchsize"><code>batchSize</code><a class="headerlink" href="#batchsize" title="Permanent link">&para;</a></h4>
 <p>a number that could be used to set the batch size with which resources are fetched and processed,
 as resources are obtained from the target CTP project in batches for better performance. The algorithm accumulates up to
-<code>batchSize</code> resources from the input list, then fetches the corresponding resources from the target CTP project
+<code>batchSize</code> resources from the input list, then fetch the corresponding resources from the target CTP project
 in a single request. Playing with this option can slightly improve or reduce processing speed.</p>
+<h4 id="cachesize"><code>cacheSize</code><a class="headerlink" href="#cachesize" title="Permanent link">&para;</a></h4>
+<p>In the service classes of the commercetools-sync-java library, we have implemented an in-memory <a href="https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)">LRU cache</a> to store a map used for the reference resolution of the library.
+The cache reduces the reference resolution based calls to the commercetools API as the required fields of a resource will be fetched only one time. These cached fields then might be used by another resource referencing the already resolved resource instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
+which will improve the overall performance of the sync and commercetools API.</p>
+<p>Playing with this option can change the memory usage of the library. If it is not set, the default cache size is <code>10.000</code> for the sync.</p>
 <h4 id="syncfilter-only-for-product-sync-options"><code>syncFilter</code> (Only for Product Sync Options)<a class="headerlink" href="#syncfilter-only-for-product-sync-options" title="Permanent link">&para;</a></h4>
 <p>represents either a blacklist or a whitelist for filtering certain update action groups. </p>
 <ul>
 <li>
-<p><strong>Blacklisting</strong> an update action group means that everything in products will be synced except for any group 
-  in the blacklist. A typical use case is to blacklist prices when syncing products. In other words, syncing everything 
-  in products except prices. </p>
+<p><strong>Blacklisting</strong> an update action group means that everything in products will be synced except for any group in the blacklist. A typical use case is to blacklist prices when syncing products. In other words, syncing everything 
+  in products except for prices. </p>
 </li>
 <li>
-<p><strong>Whitelisting</strong> an update action group means that the groups in this whitelist will be the <em>only</em> group synced in 
-  products. One use case could be to whitelist prices when syncing products. In other words, syncing prices only in 
+<p><strong>Whitelisting</strong> an update action group means that the groups in this whitelist will be the <em>only</em> group synced in products. One use case could be to whitelist prices when syncing products. In other words, syncing prices only in 
   products and nothing else.</p>
 </li>
 <li>
@@ -827,7 +842,7 @@ in a single request. Playing with this option can slightly improve or reduce pro
 </li>
 </ul>
 <h4 id="ensurechannels-only-for-product-and-inventory-sync-options"><code>ensureChannels</code> (Only for Product and Inventory Sync Options)<a class="headerlink" href="#ensurechannels-only-for-product-and-inventory-sync-options" title="Permanent link">&para;</a></h4>
-<p>a flag which represents a strategy to handle syncing inventory entries with missing channels.
+<p>a flag that represents a strategy to handle syncing inventory entries with missing channels.
 Having an inventory entry or a product, with a missing channel reference, could be processed in either of the following ways:
 - If <code>ensureChannels</code> is set to <code>false</code> this inventory entry/product won't be synced and the <code>errorCallback</code> will be triggered.
 - If <code>ensureChannels</code> is set to <code>true</code> the sync will attempt to create the missing channel with the given key. 
