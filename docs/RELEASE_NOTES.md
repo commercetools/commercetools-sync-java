@@ -35,7 +35,7 @@
 
 - ✨ **Documentation** (2)
     -  Documentation for the [cacheSize](https://github.com/commercetools/commercetools-sync-java/blob/master/docs/usage/PRODUCT_SYNC.md#cachesize) sync option is added.
-    -  (Prerequisites)[https://github.com/commercetools/commercetools-sync-java/blob/master/docs/usage/PRODUCT_SYNC.md#prerequisites] section of the documentations are clarified and added more code snippets as usage examples.
+    -  [Prerequisites](https://github.com/commercetools/commercetools-sync-java/blob/master/docs/usage/PRODUCT_SYNC.md#prerequisites) section of the documentations are clarified and added more code snippets as usage examples.
   
 - 🛠️ **Dependency Updates** (2)
     - `commercetools-jvm-sdk` `1.55.0` -> [`1.56.0`](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_56_0)
