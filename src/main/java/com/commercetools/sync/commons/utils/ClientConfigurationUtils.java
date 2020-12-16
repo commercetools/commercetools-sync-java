@@ -3,6 +3,12 @@ package com.commercetools.sync.commons.utils;
 import io.sphere.sdk.client.BlockingSphereClient;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereClientConfig;
+import io.sphere.sdk.client.retry.RetryableSphereClientBuilder;
+import io.sphere.sdk.http.AsyncHttpClientAdapter;
+import io.sphere.sdk.http.HttpClient;
+import org.asynchttpclient.AsyncHttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClient;
+import org.asynchttpclient.DefaultAsyncHttpClientConfig;
 
 import javax.annotation.Nonnull;
 import java.util.concurrent.TimeUnit;
@@ -10,13 +16,13 @@ import java.util.concurrent.TimeUnit;
 public final class ClientConfigurationUtils {
 
     /**
-     * Creates a {@link SphereClient} with a default {@code timeout} value of 60 seconds.
+     * Creates a {@link SphereClient} with retry logic which computes a exponential backoff time delay in milliseconds.
      *
      * @param clientConfig the client configuration for the client.
      * @return the instantiated {@link SphereClient}.
      */
     public static SphereClient createClient(@Nonnull final SphereClientConfig clientConfig) {
-        return RetryableSphereClientWithExponentialBackoff.of(clientConfig).build();
+        return RetryableSphereClientBuilder.of(clientConfig, getHttpClient()).build();
     }
 
     /**
@@ -31,6 +37,18 @@ public final class ClientConfigurationUtils {
                                                          final long timeout,
                                                          @Nonnull final TimeUnit timeUnit) {
         return BlockingSphereClient.of(createClient(clientConfig), timeout, timeUnit);
+    }
+
+    /**
+     * Gets an asynchronous {@link HttpClient} of `asynchttpclient` library,
+     * to be used by as an underlying http client for the {@link SphereClient}.
+     *
+     * @return an asynchronous {@link HttpClient}
+     */
+    private static HttpClient getHttpClient() {
+        final AsyncHttpClient asyncHttpClient =
+            new DefaultAsyncHttpClient(new DefaultAsyncHttpClientConfig.Builder().build());
+        return AsyncHttpClientAdapter.of(asyncHttpClient);
     }
 
     private ClientConfigurationUtils() {
