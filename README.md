@@ -3,7 +3,8 @@
 [![Build Status](https://travis-ci.com/commercetools/commercetools-sync-java.svg?branch=master)](https://travis-ci.com/commercetools/commercetools-sync-java)
 [![codecov](https://codecov.io/gh/commercetools/commercetools-sync-java/branch/master/graph/badge.svg)](https://codecov.io/gh/commercetools/commercetools-sync-java)
 [![Benchmarks 3.0.2](https://img.shields.io/badge/Benchmarks-3.0.2-orange.svg)](https://commercetools.github.io/commercetools-sync-java/benchmarks/)
-[![Download](https://api.bintray.com/packages/commercetools/maven/commercetools-sync-java/images/download.svg) ](https://bintray.com/commercetools/maven/commercetools-sync-java/_latestVersion)
+[![Download from JCenter](https://img.shields.io/badge/Bintray_JCenter-3.0.2-green.svg) ](https://bintray.com/commercetools/maven/commercetools-sync-java/_latestVersion)
+[![Download from Maven Central](https://img.shields.io/badge/Maven_Central-3.0.2-blue.svg)](https://search.maven.org/artifact/com.commercetools/commercetools-sync-java/3.0.2/jar) 
 [![Javadoc](http://javadoc-badge.appspot.com/com.commercetools/commercetools-sync-java.svg?label=Javadoc)](https://commercetools.github.io/commercetools-sync-java/v/3.0.2/)
 [![Known Vulnerabilities](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646/badge.svg)](https://snyk.io/test/github/commercetools/commercetools-sync-java/4b2e26113d591bda158217c5dc1cf80a88665646)
 
