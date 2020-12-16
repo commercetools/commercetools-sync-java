@@ -10,10 +10,20 @@ against a [ShoppingListDraft](https://docs.commercetools.com/api/projects/shoppi
 **Table of Contents**  
 
 - [Usage](#usage)
-  - [Sync list of Shopping List Drafts](#sync-list-of-shopping-list-drafts)
-    - [Prerequisites](#prerequisites)
-    - [About SyncOptions](#about-syncoptions)
-    - [Running the sync](#running-the-sync)
+  - [Prerequisites](#prerequisites)
+    - [SphereClient](#sphereclient)
+    - [Required Fields](#required-fields)
+    - [Reference Resolution](#reference-resolution)
+      - [Syncing from a commercetools project](#syncing-from-a-commercetools-project)
+      - [Syncing from an external resource](#syncing-from-an-external-resource)
+    - [SyncOptions](#syncoptions)
+      - [errorCallback](#errorcallback)
+      - [warningCallback](#warningcallback)
+      - [beforeUpdateCallback](#beforeupdatecallback)
+      - [beforeCreateCallback](#beforecreatecallback)
+      - [batchSize](#batchsize)
+      - [cacheSize](#cachesize)
+  - [Running the sync](#running-the-sync)
     - [More examples of how to use the sync](#more-examples-of-how-to-use-the-sync)
   - [Build all update actions](#build-all-update-actions)
   - [Build particular update action(s)](#build-particular-update-actions)
@@ -24,46 +34,103 @@ against a [ShoppingListDraft](https://docs.commercetools.com/api/projects/shoppi
 
 ## Usage
 
-### Sync list of Shopping List Drafts
+### Prerequisites
+#### SphereClient
 
-#### Prerequisites
-1. Create a `sphereClient`:
-Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/master/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java) which apply the best practices for `SphereClient` creation.
+Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/3.0.1/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
-2. The sync expects a list of `ShoppingList`s that have their `key` fields set to be matched with shopping lists in the 
-target CTP project. The shopping lists in the target project need to have the `key` fields set, otherwise they won't be 
-matched.
+````java
+final SphereClientConfig clientConfig = SphereClientConfig.of("project-key", "client-id", "client-secret");
 
-3. The sync expects all variants of the supplied list of `LineItemDraft`s to have their `sku` fields set. Also,
-all the variants in the target project are expected to have the `sku` fields set.
+final SphereClient sphereClient = ClientConfigurationUtils.createClient(clientConfig);
+````
 
-4. Every shopping list may have several references including `customer` and their shopping list `type`, line item `type` and text line item `type` with custom fields etc.
-All these referenced resources are matched by their `key`s. 
-Any reference that is not expanded will have its id in place and not replaced by the key will be considered as existing 
-resources on the target commercetools project and the library will issue an update/create an API request without reference
-resolution. Therefore, in order for the sync to resolve the actual ids of those references, those `key`s have to be supplied in the following way:
+#### Required Fields
 
-     - When syncing from a source commercetools project, you can use [`mapToShoppingListDraft`](https://commercetools.github.io/commercetools-sync-java/v/3.0.1/com/commercetools/sync/shoppinglists/utils/ShoppingListReferenceResolutionUtils.html#mapToShoppingListDrafts-java.util.List-)
-    method that maps from a `ShoppingList` to `ShoppingListDraft` to make them ready for reference resolution by the shopping list sync:
-    
-    ````java
-    final List<ShoppingListDraft> shoppingListDrafts = ShoppingListReferenceResolutionUtils.mapToShoppingListDrafts(shoppingLists);
-    ````
+The following fields are **required** to be set in, otherwise, they won't be matched by sync:
 
-5. After the `sphereClient` is set up, a `ShoppingListSyncOptions` should be built as follows:
+|Draft|Required Fields|Note|
+|---|---|---|
+| [ShoppingListDraft](https://docs.commercetools.com/api/projects/shoppingLists#shoppinglistdraft) | `key` |  Also, the shopping lists in the target project are expected to have the `key` fields set. | 
+| [LineItemDraft](https://docs.commercetools.com/api/projects/shoppingLists#lineitemdraft) | `sku` |  Also, all the line items in the target project are expected to have the `sku` fields set. | 
+| [TextLineItemDraft](https://docs.commercetools.com/api/projects/shoppingLists#textlineitem) | `name` |   | 
+
+#### Reference Resolution 
+
+In commercetools, a reference can be created by providing the key instead of the ID with the type [ResourceIdentifier](https://docs.commercetools.com/api/types#resourceidentifier).
+When the reference key is provided with a `ResourceIdentifier`, the sync will resolve the resource with the given key and use the ID of the found resource to create or update a reference.
+Therefore, in order to resolve the actual ids of those references in the sync process, `ResourceIdentifier`s with their `key`s have to be supplied. 
+
+|Reference Field|Type|
+|:---|:---|
+| `customer` | ResourceIdentifier to a Customer | 
+| `custom.type` | ResourceIdentifier to a Type |  
+| `lineItems.custom.type` |  ResourceIdentifier to a Type | 
+| `textLineItems.custom.type ` | ResourceIdentifier to a Type | 
+
+> Note that a reference without the key field will be considered as an existing resource on the target commercetools project and the library will issue an update/create an API request without reference resolution.
+
+##### Syncing from a commercetools project
+
+When syncing from a source commercetools project, you can use [`mapToShoppingListDraft`](https://commercetools.github.io/commercetools-sync-java/v/3.0.1/com/commercetools/sync/shoppinglists/utils/ShoppingListReferenceResolutionUtils.html#mapToShoppingListDrafts-java.util.List-)
+the method that maps from a `ShoppingList` to `ShoppingListDraft` to make them ready for reference resolution by the shopping list sync, for example: 
+
+````java
+// Build a ShoppingListQuery for fetching shopping lists from a source CTP project with all the needed references expanded for the sync
+final ShoppingListQuery shoppingListQueryWithReferenceExpanded = ShoppingListReferenceResolutionUtils.buildShoppingListQuery();
+
+// Query all shopping lists (NOTE this is just for example, please adjust your logic)
+final List<ShoppingList> shoppingLists =
+    CtpQueryUtils
+        .queryAll(sphereClient, shoppingListQueryWithReferenceExpanded, Function.identity())
+        .thenApply(fetchedResources -> fetchedResources
+            .stream()
+            .flatMap(List::stream)
+            .collect(Collectors.toList()))
+        .toCompletableFuture()
+        .join();
+
+// Mapping from ShoppingList to ShoppingListDraft with considering reference resolution.
+final List<ShoppingListDraft> shoppingListDrafts = ShoppingListReferenceResolutionUtils.mapToShoppingListDrafts(shoppingLists);
+````
+
+##### Syncing from an external resource
+
+- When syncing from an external resource, `ResourceIdentifier`s with their `key`s have to be supplied as following example:
+
+````java
+final ShoppingListDraft shoppingListDraft =
+    ShoppingListDraftBuilder
+        .of(LocalizedString.ofEnglish("name"))
+        .key("shopping-list-key")
+        .customer(ResourceIdentifier.ofKey("customer-key")) // note that customer provided with key
+        .custom(CustomFieldsDraft.ofTypeKeyAndJson("type-key", emptyMap())) // note that custom type provided with key
+        .lineItems(singletonList(LineItemDraftBuilder
+            .ofSku("SKU-1", 1L) // note that sku field is set.
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson("type-key", emptyMap())) // note that custom type provided with key
+            .build()))
+        .textLineItems(singletonList(
+            TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("name"), 1L) // note that name field is set for text line item.
+              .custom(CustomFieldsDraft.ofTypeKeyAndJson("type-key", emptyMap())) // note that custom type provided with key
+              .build()))
+        .build();
+````
+
+#### SyncOptions
+
+After the `sphereClient` is set up, a `ShoppingListSyncOptions` should be built as follows:
 ````java
 // instantiating a ShoppingListSyncOptions
 final ShoppingListSyncOptions shoppingListSyncOptions = ShoppingListSyncOptionsBuilder.of(sphereClient).build();
 ````
 
-#### About SyncOptions
 `SyncOptions` is an object which provides a place for users to add certain configurations to customize the sync process.
 Available configurations:
 
-##### 1. `errorCallback`
+##### errorCallback
 A callback that is called whenever an error event occurs during the sync process. Each resource executes its own 
-error-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+error-callback. When the sync process of a particular resource runs successfully, it is not triggered. It contains the 
 following context about the error-event:
 
 * sync exception
@@ -71,7 +138,6 @@ following context about the error-event:
 * shopping list of the target project (only provided if an existing shopping list could be found)
 * the update-actions, which failed (only provided if an existing shopping list could be found)
 
-##### Example 
 ````java
  final Logger logger = LoggerFactory.getLogger(ShoppingListSync.class);
  final ShoppingListSyncOptions shoppingListSyncOptions = ShoppingListSyncOptionsBuilder
@@ -80,16 +146,15 @@ following context about the error-event:
             logger.error(new SyncException("My customized message"), syncException)).build();
 ````
     
-##### 2. `warningCallback`
-A callback that is called whenever a warning event occurs during the sync process. Each resource executes its own 
-warning-callback. When sync process of particular resource runs successfully, it is not triggered. It contains the 
+##### warningCallback
+A callback is called whenever a warning event occurs during the sync process. Each resource executes its own 
+warning-callback. When the sync process of a particular resource runs successfully, it is not triggered. It contains the 
 following context about the warning message:
 
 * sync exception
 * shopping list draft from the source 
 * shopping list of the target project (only provided if an existing shopping list could be found)
 
-##### Example 
 ````java
  final Logger logger = LoggerFactory.getLogger(ShoppingListSync.class);
  final ShoppingListSyncOptions shoppingListSyncOptions = ShoppingListSyncOptionsBuilder
@@ -98,16 +163,15 @@ following context about the warning message:
             logger.warn(new SyncException("My customized message"), syncException)).build();
 ````
 
-##### 3. `beforeUpdateCallback`
-During the sync process if a target customer and a customer draft are matched, this callback can be used to 
-intercept the **_update_** request just before it is sent to commercetools platform. This allows the user to modify 
+##### beforeUpdateCallback
+During the sync process, if a target customer and a customer draft are matched, this callback can be used to 
+intercept the **_update_** request just before it is sent to the commercetools platform. This allows the user to modify 
 update actions array with custom actions or discard unwanted actions. The callback provides the following information :
  
  * shopping list draft from the source
  * shopping list from the target project
  * update actions that were calculated after comparing both
 
-##### Example
 ````java
 final TriFunction<List<UpdateAction<ShoppingList>>, ShoppingListDraft, ShoppingList,
             List<UpdateAction<ShoppingList>>> beforeUpdateCallback =
@@ -122,27 +186,36 @@ final ShoppingListSyncOptions shoppingListSyncOptions = ShoppingListSyncOptionsB
                     .build();
 ````
 
-##### 4. `beforeCreateCallback`
-During the sync process if a shopping list draft should be created, this callback can be used to intercept 
-the **_create_** request just before it is sent to commercetools platform.  It contains following information : 
+##### beforeCreateCallback
+During the sync process, if a shopping list draft should be created, this callback can be used to intercept the **_create_** request just before it is sent to the commercetools platform.  It contains the following information : 
 
  * shopping list that should be created
- ##### Example
+
  Please refer to the [example in the product sync document](https://github.com/commercetools/commercetools-sync-java/blob/master/docs/usage/PRODUCT_SYNC.md#example-set-publish-stage-if-category-references-of-given-product-draft-exists).
 
-##### 5. `batchSize`
+##### batchSize
 A number that could be used to set the batch size with which shopping lists are fetched and processed,
-as shopping lists are obtained from the target project on commercetools platform in batches for better performance. The 
-algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding shopping lists
-from the target project on commercetools platform in a single request. Playing with this option can slightly improve or 
-reduce processing speed. If it is not set, the default batch size is 50 for shopping list sync.
-##### Example
+as shopping lists are obtained from the target project on the commercetools platform in batches for better performance. The algorithm accumulates up to `batchSize` resources from the input list, then fetches the corresponding shopping lists
+from the target project on the commercetools platform in a single request. Playing with this option can slightly improve or reduce processing speed. If it is not set, the default batch size is 50 for shopping list sync.
+
 ````java                         
 final ShoppingListSyncOptions shoppingListSyncOptions = 
          ShoppingListSyncOptionsBuilder.of(sphereClient).batchSize(30).build();
 ````
 
-#### Running the sync
+##### cacheSize
+In the service classes of the commercetools-sync-java library, we have implemented an in-memory [LRU cache](https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)) to store a map used for the reference resolution of the library.
+The cache reduces the reference resolution based calls to the commercetools API as the required fields of a resource will be fetched only one time. These cached fields then might be used by another resource referencing the already resolved resource instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
+which will improve the overall performance of the sync and commercetools API.
+
+Playing with this option can change the memory usage of the library. If it is not set, the default cache size is `10.000` for shopping list sync.
+
+````java
+final ShoppingListSyncOptions shoppingListSyncOptions = 
+         ShoppingListSyncOptionsBuilder.of(sphereClient).cacheSize(5000).build();
+````
+
+### Running the sync
 When all prerequisites are fulfilled, follow these steps to run the sync:
 
 ````java
