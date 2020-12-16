@@ -1,6 +1,7 @@
 package com.commercetools.sync.services.impl;
 
 import com.commercetools.sync.commons.FakeClient;
+import com.commercetools.sync.commons.FakeClientWithDoubleRequest;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.ResourceKeyId;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
@@ -26,8 +27,10 @@ import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 
+import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.data.MapEntry;
 import org.junit.jupiter.api.AfterEach;
@@ -53,7 +56,7 @@ class BaseServiceImplTest {
 
     @SuppressWarnings("unchecked")
     private TriConsumer<SyncException, Optional<ProductDraft>, Optional<Product>> warningCallback
-        = mock(TriConsumer.class);
+            = mock(TriConsumer.class);
     private SphereClient client = mock(SphereClient.class);
     private ProductService service;
 
@@ -127,9 +130,9 @@ class BaseServiceImplTest {
     void fetchMatchingResources_WithEmptyKeySet_ShouldFetchAndCacheNothing() {
         //test
         final Set<Product> resources = service
-            .fetchMatchingProductsByKeys(new HashSet<>())
-            .toCompletableFuture()
-            .join();
+                .fetchMatchingProductsByKeys(new HashSet<>())
+                .toCompletableFuture()
+                .join();
 
         //assertions
         assertThat(resources).isEmpty();
@@ -162,26 +165,28 @@ class BaseServiceImplTest {
 
         //test fetch
         final Set<Product> resources = service
-            .fetchMatchingProductsByKeys(resourceKeys)
-            .toCompletableFuture().join();
+                .fetchMatchingProductsByKeys(resourceKeys)
+                .toCompletableFuture().join();
 
         //assertions
         assertThat(resources).containsExactlyInAnyOrder(mock1, mock2);
+        assertThat(fakeClient.isExecuted()).isTrue();
         assertThat(fakeClient.getOccurrence()).isEqualTo(1);
 
         //test caching
         final Optional<String> cachedKey1 = service
-            .getIdFromCacheOrFetch(mock1.getKey())
-            .toCompletableFuture().join();
+                .getIdFromCacheOrFetch(mock1.getKey())
+                .toCompletableFuture().join();
 
         final Optional<String> cachedKey2 = service
-            .getIdFromCacheOrFetch(mock2.getKey())
-            .toCompletableFuture().join();
+                .getIdFromCacheOrFetch(mock2.getKey())
+                .toCompletableFuture().join();
 
         //assertions
         assertThat(cachedKey1).contains(mock1.getId());
         assertThat(cachedKey2).contains(mock2.getId());
         // still 1 request from the first #fetchMatchingProductsByKeys call
+        assertThat(fakeClient.isExecuted()).isTrue();
         assertThat(fakeClient.getOccurrence()).isEqualTo(1);
     }
 
@@ -201,8 +206,7 @@ class BaseServiceImplTest {
         final CompletionStage<Set<Product>> result = service.fetchMatchingProductsByKeys(resourceKeys);
 
         //assertions
-        assertThat(result)
-                .failsWithin(1, TimeUnit.SECONDS)
+        assertThat(result).failsWithin(1, TimeUnit.SECONDS)
                 .withThrowableOfType(ExecutionException.class)
                 .withCauseExactlyInstanceOf(BadGatewayException.class);
         assertThat(fakeClient.isExecuted()).isTrue();
@@ -255,15 +259,16 @@ class BaseServiceImplTest {
         final CompletionStage<Optional<Product>> result = service.fetchProduct("foo");
 
         //assertions
-        assertThat(result).failsWithin(1, TimeUnit.SECONDS)
+        assertThat(result)
+                .failsWithin(1, TimeUnit.SECONDS)
                 .withThrowableOfType(ExecutionException.class)
                 .withCauseExactlyInstanceOf(BadGatewayException.class);
-
+        assertThat(fakeClient.isExecuted()).isTrue();
         assertThat(fakeClient.getOccurrence()).isEqualTo(1);
     }
 
     @Test
-    void cacheKeysToIds_WithEmptySetOfKeys_ShouldMakeNoRequestAndReturnEmptyOptional() {
+    void cacheKeysToIdsUsingGraphQl_WithEmptySetOfKeys_ShouldMakeNoRequestAndReturnEmptyOptional() {
         //test
         final Map<String, String> optional = service.cacheKeysToIds(emptySet()).toCompletableFuture().join();
 
@@ -273,16 +278,16 @@ class BaseServiceImplTest {
     }
 
     @Test
-    void cacheKeysToIds_WithAllCachedKeys_ShouldMakeNoRequestAndReturnCachedEntry() {
+    void cacheKeysToIdsUsingGraphQl_WithAllCachedKeys_ShouldMakeNoRequestAndReturnCachedEntry() {
         //preparation
-        final PagedQueryResult<Product> pagedQueryResult = mock(PagedQueryResult.class);
+        final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
         final Product mockProductResult = mock(Product.class);
         final String key = "testKey";
         final String id = "testId";
         when(mockProductResult.getKey()).thenReturn(key);
         when(mockProductResult.getId()).thenReturn(id);
         when(pagedQueryResult.getResults()).thenReturn(singletonList(mockProductResult));
-        final FakeClient<PagedQueryResult<Product>> fakeClient = new FakeClient<>(pagedQueryResult);
+        final FakeClient<PagedQueryResult> fakeClient = new FakeClient<>(pagedQueryResult);
         initMockService(fakeClient);
         service.getIdFromCacheOrFetch(key).toCompletableFuture().join();
 
@@ -291,19 +296,76 @@ class BaseServiceImplTest {
 
         //assertions
         assertThat(optional).containsExactly(MapEntry.entry(key, id));
+        assertThat(fakeClient.isExecuted()).isTrue();
         assertThat(fakeClient.getOccurrence()).isEqualTo(1);
     }
 
     @Test
-    void cacheKeysToIds_WithBadGateWayException_ShouldCompleteExceptionally() {
+    void cacheKeysToIds_WithCachedKeysExceedingCacheSize_ShouldNotReturnLeastUsedKeys() {
         //preparation
-        final PagedQueryResult<Product> pagedQueryResult = mock(PagedQueryResult.class);
-        final Product mockProductResult = mock(Product.class);
+        final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
+        final Product product1 = mock(Product.class);
+        when(product1.getKey()).thenReturn("key-1");
+        when(product1.getId()).thenReturn("id-1");
+        final Product product2 = mock(Product.class);
+        when(product2.getKey()).thenReturn("key-2");
+        when(product2.getId()).thenReturn("id-2");
+        when(pagedQueryResult.getResults()).thenReturn(Arrays.asList(product1, product2));
+        final ResourceKeyIdGraphQlResult resourceKeyIdGraphQlResult = mock(ResourceKeyIdGraphQlResult.class);
+        final ResourceKeyId resourceKeyId = mock(ResourceKeyId.class);
+        when(resourceKeyId.getKey()).thenReturn("testKey");
+        when(resourceKeyId.getId()).thenReturn("testId");
+        when(resourceKeyIdGraphQlResult.getResults()).thenReturn(singleton(resourceKeyId));
+
+        final FakeClientWithDoubleRequest<PagedQueryResult, ResourceKeyIdGraphQlResult> fakeClient =
+                new FakeClientWithDoubleRequest<>(pagedQueryResult, resourceKeyIdGraphQlResult);
+        initMockService(fakeClient);
+
+        service.fetchMatchingProductsByKeys(Arrays.asList("key-1", "key-2").stream().collect(Collectors.toSet()));
+        service.getIdFromCacheOrFetch("key-1"); //access the first added cache entry
+
+        //test
+        final Map<String, String> optional = service.cacheKeysToIds(singleton("testKey")).toCompletableFuture().join();
+
+        //assertions
+        assertThat(optional).containsExactly(MapEntry.entry("key-1", "id-1"), MapEntry.entry("testKey", "testId"));
+        assertThat(fakeClient.isExecuted()).isTrue();
+        assertThat(fakeClient.getOccurrence()).isEqualTo(2);
+
+    }
+
+    @Test
+    void cacheKeysToIdsUsingGraphQl_WithNoCachedKeys_ShouldMakeRequestAndReturnCachedEntry() {
+        //preparation
+        final ResourceKeyIdGraphQlResult resourceKeyIdGraphQlResult = mock(ResourceKeyIdGraphQlResult.class);
+        final ResourceKeyId mockResourceKeyId = mock(ResourceKeyId.class);
         final String key = "testKey";
         final String id = "testId";
-        when(mockProductResult.getKey()).thenReturn(key);
-        when(mockProductResult.getId()).thenReturn(id);
-        when(pagedQueryResult.getResults()).thenReturn(singletonList(mockProductResult));
+        when(mockResourceKeyId.getKey()).thenReturn(key);
+        when(mockResourceKeyId.getId()).thenReturn(id);
+        when(resourceKeyIdGraphQlResult.getResults()).thenReturn(singleton(mockResourceKeyId));
+        final FakeClient<ResourceKeyIdGraphQlResult> fakeClient = new FakeClient<>(resourceKeyIdGraphQlResult);
+        initMockService(fakeClient);
+
+        //test
+        final Map<String, String> optional = service.cacheKeysToIds(singleton("testKey")).toCompletableFuture().join();
+
+        //assertions
+        assertThat(optional).containsExactly(MapEntry.entry(key, id));
+        assertThat(fakeClient.isExecuted()).isTrue();
+        assertThat(fakeClient.getOccurrence()).isEqualTo(1);
+    }
+
+    @Test
+    void cacheKeysToIdsUsingGraphQl_WithBadGateWayException_ShouldCompleteExceptionally() {
+        //preparation
+        final ResourceKeyIdGraphQlResult resourceKeyIdGraphQlResult = mock(ResourceKeyIdGraphQlResult.class);
+        final ResourceKeyId mockResourceKeyId = mock(ResourceKeyId.class);
+        final String key = "testKey";
+        final String id = "testId";
+        when(mockResourceKeyId.getKey()).thenReturn(key);
+        when(mockResourceKeyId.getId()).thenReturn(id);
+        when(resourceKeyIdGraphQlResult.getResults()).thenReturn(singleton(mockResourceKeyId));
         final FakeClient<Throwable> fakeClient = new FakeClient<>(new BadGatewayException());
         initMockService(fakeClient);
 
@@ -314,8 +376,22 @@ class BaseServiceImplTest {
         assertThat(result).failsWithin(1, TimeUnit.SECONDS)
                 .withThrowableOfType(ExecutionException.class)
                 .withCauseExactlyInstanceOf(BadGatewayException.class);
-
+        assertThat(fakeClient.isExecuted()).isTrue();
         assertThat(fakeClient.getOccurrence()).isEqualTo(1);
+    }
+
+    @Test
+    void cacheKeysToIds_WithEmptySetOfKeys_ShouldNotMakeRequestAndReturnEmpty() {
+        //preparation
+        CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder.of(client).build();
+        CustomObjectServiceImpl serviceImpl = new CustomObjectServiceImpl(customObjectSyncOptions);
+
+        //test
+        final Map<String, String> optional = serviceImpl.cacheKeysToIds(emptySet()).toCompletableFuture().join();
+
+        //assertions
+        assertThat(optional).isEmpty();
+        verify(client, never()).execute(any());
     }
 
     @Test
@@ -331,7 +407,6 @@ class BaseServiceImplTest {
         when(customObject.getKey()).thenReturn(customObjectKey);
         when(customObject.getContainer()).thenReturn(customObjectContainer);
         when(pagedQueryResult.getResults()).thenReturn(singletonList(customObject));
-
         final FakeClient<PagedQueryResult> fakeClient = new FakeClient<>(pagedQueryResult);
         final CustomObjectSyncOptions customObjectSyncOptions = CustomObjectSyncOptionsBuilder.of(fakeClient).build();
         final CustomObjectServiceImpl serviceImpl = new CustomObjectServiceImpl(customObjectSyncOptions);
@@ -341,35 +416,11 @@ class BaseServiceImplTest {
                 .toCompletableFuture().join();
 
         assertAll(
-            () -> assertThat(result).hasSize(1),
-            () -> assertThat(result.get(
-                        CustomObjectCompositeIdentifier.of(customObjectKey, customObjectContainer).toString())
-                ).isEqualTo(customObjectId)
-        );
+                () -> assertThat(result).hasSize(1),
+                () -> assertThat(result.get(
+                        CustomObjectCompositeIdentifier.of(customObjectKey, customObjectContainer).toString()))
+                        .isEqualTo(customObjectId));
         assertThat(fakeClient.isExecuted()).isTrue();
-    }
-
-    @Test
-    void cacheKeysToIdsUsingGraphQl_WithNoCachedKeys_ShouldMakeRequestAndReturnCachedEntry() {
-        //preparation
-        final ResourceKeyIdGraphQlResult resourceKeyIdGraphQlResult = mock(ResourceKeyIdGraphQlResult.class);
-        final ResourceKeyId mockResourceKeyId = mock(ResourceKeyId.class);
-        final String key = "testKey";
-        final String id = "testId";
-        when(mockResourceKeyId.getKey()).thenReturn(key);
-        when(mockResourceKeyId.getId()).thenReturn(id);
-        when(resourceKeyIdGraphQlResult.getResults()).thenReturn(singleton(mockResourceKeyId));
-
-        final FakeClient<ResourceKeyIdGraphQlResult> fakeClient =
-                new FakeClient<>(resourceKeyIdGraphQlResult);
-        initMockService(fakeClient);
-
-        //test
-        final Map<String, String> optional = service.cacheKeysToIds(singleton("testKey")).toCompletableFuture().join();
-
-        //assertions
-        assertThat(optional).containsExactly(MapEntry.entry(key, id));
-        assertThat(fakeClient.getOccurrence()).isEqualTo(1);
     }
 
     private void initMockService(@Nonnull final SphereClient fakeClient) {
@@ -378,7 +429,10 @@ class BaseServiceImplTest {
                         .of(fakeClient)
                         .warningCallback(warningCallback)
                         .batchSize(20)
+                        .cacheSize(2)
                         .build();
         service = new ProductServiceImpl(syncOptions);
     }
+
+
 }
