@@ -43,10 +43,10 @@ uploadArchives {
                 }
                 developers {
                     developer {
-                        id 'heshamMassoud'
-                        name 'Hesham Massoud'
-                        url 'https://github.com/heshamMassoud'
-                        email 'hesham.massoud@commercetools.com'
+                        id 'commercetools'
+                        name 'commercetools Professional Services'
+                        url 'https://github.com/commercetools'
+                        email 'ps-dev@commercetools.com'
                     }
                 }
             }
