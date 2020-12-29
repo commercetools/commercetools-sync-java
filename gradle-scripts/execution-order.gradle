@@ -9,10 +9,6 @@
 compileTestJava.mustRunAfter compileJava
 compileIntegrationTestJava.mustRunAfter compileTestJava
 
-//Checkstyle sub-tasks execution order
-checkstyleTest.mustRunAfter checkstyleMain
-checkstyleIntegrationTest.mustRunAfter checkstyleTest
-
 //PMD sub-tasks execution order
 pmdTest.mustRunAfter pmdMain
 pmdIntegrationTest.mustRunAfter pmdTest
@@ -28,10 +24,10 @@ jacocoTestReport.mustRunAfter jacocoTestCoverageVerification
  * Global execution order
  */
 
-// Ensure CheckStyle runs after Compile
-checkstyleMain.mustRunAfter compileIntegrationTestJava
-// Ensure PMD runs after Checkstyle
-pmdMain.mustRunAfter checkstyleIntegrationTest
+// Ensure spotlessApply runs after Compile
+spotlessCheck.mustRunAfter compileIntegrationTestJava
+// Ensure PMD runs after spotlessApply
+pmdMain.mustRunAfter spotlessCheck
 // Ensure spotbugs runs after PMD
 spotbugsMain.mustRunAfter pmdIntegrationTest
 // Ensure unit tests are run after spotbugs

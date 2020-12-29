@@ -18,6 +18,8 @@ Thanks for taking the time to contribute :+1::tada: All contributions are welcom
       - [Install to local maven repo](#install-to-local-maven-repo)
       - [Publish JavaDoc](#publish-javadoc)
       - [Build and publish to Bintray](#build-and-publish-to-bintray)
+      - [Run Spotless Style Check](#run-spotless-style-check)
+      - [Fix Spotless style violations](#fix-spotless-style-violations)
   - [Integration Tests](#integration-tests)
     - [Running](#running)
 
@@ -84,6 +86,16 @@ are omitted because `javadoc` is previously created in `build` task, we just sho
 ````
 
 For more detailed information on the build and the release process, see [Build and Release](BUILD.md) documentation.
+
+##### Run Spotless Style Check
+````bash
+./gradlew spotlessCheck
+````
+
+##### Fix Spotless style violations
+````bash
+./gradlew spotlessApply
+````
 
 ### Integration Tests
 
