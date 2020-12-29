@@ -3,7 +3,6 @@ package com.commercetools.sync.commons.utils;
 import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
 import com.commercetools.sync.commons.models.ResourceKeyId;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.client.SphereClient;
 
 import javax.annotation.Nonnull;
@@ -94,7 +93,6 @@ final class GraphQlQueryAll {
      *         the method returns a completed future containing null.
      */
     @Nonnull
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // `https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<ResourceKeyIdGraphQlResult> processPageAndGetNext(
         @Nonnull final ResourceKeyIdGraphQlResult page) {
         final Set<ResourceKeyId> currentPageElements = page.getResults();
@@ -122,7 +120,6 @@ final class GraphQlQueryAll {
      *          in the set.
      */
     @Nonnull
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // `https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<ResourceKeyIdGraphQlResult> getNextPageStage(
         @Nonnull final Set<ResourceKeyId> pageElements) {
         if (pageElements.size() == pageSize) {

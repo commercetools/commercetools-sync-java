@@ -6,7 +6,6 @@ import com.commercetools.sync.services.TaxCategoryService;
 import com.commercetools.sync.services.impl.TaxCategoryServiceImpl;
 import com.commercetools.sync.taxcategories.helpers.TaxCategoryBatchValidator;
 import com.commercetools.sync.taxcategories.helpers.TaxCategorySyncStatistics;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.taxcategories.TaxCategory;
 import io.sphere.sdk.taxcategories.TaxCategoryDraft;
@@ -196,7 +195,6 @@ public class TaxCategorySync extends BaseSync<TaxCategoryDraft, TaxCategorySyncS
             .orElse(completedFuture(Optional.empty()));
     }
 
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
     private CompletionStage<Optional<TaxCategory>> buildActionsAndUpdate(
         @Nonnull final TaxCategory oldTaxCategory,

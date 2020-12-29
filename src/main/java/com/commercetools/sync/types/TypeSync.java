@@ -6,7 +6,6 @@ import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
 import com.commercetools.sync.types.helpers.TypeBatchValidator;
 import com.commercetools.sync.types.helpers.TypeSyncStatistics;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.types.Type;
 import io.sphere.sdk.types.TypeDraft;
@@ -221,7 +220,6 @@ public class TypeSync extends BaseSync<TypeDraft, TypeSyncStatistics, TypeSyncOp
             .orElse(CompletableFuture.completedFuture(Optional.empty()));
     }
 
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
     private CompletionStage<Optional<Type>> buildActionsAndUpdate(
         @Nonnull final Type oldType,

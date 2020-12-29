@@ -11,7 +11,6 @@ import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.CustomerGroupServiceImpl;
 import com.commercetools.sync.services.impl.CustomerServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.customers.CustomerDraft;
@@ -187,7 +186,6 @@ public class CustomerSync extends BaseSync<CustomerDraft, CustomerSyncStatistics
                        .orElseGet(() -> applyCallbackAndCreate(newCustomerDraft));
     }
 
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
     private CompletionStage<Void> buildActionsAndUpdate(
         @Nonnull final Customer oldCustomer,

@@ -10,7 +10,6 @@ import com.commercetools.sync.services.impl.UnresolvedTransitionsServiceImpl;
 import com.commercetools.sync.states.helpers.StateBatchValidator;
 import com.commercetools.sync.states.helpers.StateReferenceResolver;
 import com.commercetools.sync.states.helpers.StateSyncStatistics;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.states.State;
@@ -138,7 +137,6 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
     }
 
     @Nonnull
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION")
     private CompletionStage<Void> syncBatch(@Nonnull final Set<StateDraft> stateDrafts,
                                             @Nonnull final Map<String, String> keyToIdCache) {
 
@@ -261,7 +259,6 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
      * @param stateDraft the state draft to create the state from.
      * @return a {@link CompletionStage} which contains an empty result after execution of the create.
      */
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
     private CompletionStage<Void> applyCallbackAndCreate(@Nonnull final StateDraft stateDraft) {
         return syncOptions
@@ -281,7 +278,6 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
     }
 
     @Nonnull
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION")
     private CompletionStage<Void> buildActionsAndUpdate(
         @Nonnull final State oldState,
         @Nonnull final StateDraft newState) {
@@ -376,7 +372,6 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
             });
     }
 
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
     private CompletionStage<Void> resolveNowReadyReferences(@Nonnull final Map<String, String> keyToIdCache) {
 

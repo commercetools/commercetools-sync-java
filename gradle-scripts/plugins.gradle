@@ -3,7 +3,6 @@ apply plugin: 'maven'
 apply plugin: 'checkstyle'
 apply plugin: 'pmd'
 apply plugin: 'jacoco'
-apply plugin: 'findbugs'
 
 /**
  * Plugins needed for publishing the library to bintray.

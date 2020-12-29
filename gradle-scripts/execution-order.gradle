@@ -17,9 +17,9 @@ checkstyleIntegrationTest.mustRunAfter checkstyleTest
 pmdTest.mustRunAfter pmdMain
 pmdIntegrationTest.mustRunAfter pmdTest
 
-//FindBugs sub-tasks execution order
-findbugsTest.mustRunAfter findbugsMain
-findbugsIntegrationTest.mustRunAfter findbugsTest
+//spotbugs sub-tasks execution order
+spotbugsTest.mustRunAfter spotbugsMain
+spotbugsIntegrationTest.mustRunAfter spotbugsTest
 
 //Jacoco sub-tasks execution order
 jacocoTestReport.mustRunAfter jacocoTestCoverageVerification
@@ -32,10 +32,10 @@ jacocoTestReport.mustRunAfter jacocoTestCoverageVerification
 checkstyleMain.mustRunAfter compileIntegrationTestJava
 // Ensure PMD runs after Checkstyle
 pmdMain.mustRunAfter checkstyleIntegrationTest
-// Ensure FindBugs runs after PMD
-findbugsMain.mustRunAfter pmdIntegrationTest
-// Ensure unit tests are run after FindBugs
-test.mustRunAfter findbugsIntegrationTest
+// Ensure spotbugs runs after PMD
+spotbugsMain.mustRunAfter pmdIntegrationTest
+// Ensure unit tests are run after spotbugs
+test.mustRunAfter spotbugsIntegrationTest
 // Ensure integration tests are run after unit tests and are part of check
 check.dependsOn integrationTest
 integrationTest.mustRunAfter test

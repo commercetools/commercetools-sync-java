@@ -4,7 +4,6 @@ import com.commercetools.sync.categories.CategorySync;
 import com.commercetools.sync.categories.CategorySyncOptions;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
@@ -139,7 +138,6 @@ class CategorySyncIT {
     }
 
     @Test
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     void syncDrafts_withNewShuffledBatchOfCategories_ShouldCreateCategories() {
         //-----------------Test Setup------------------------------------
         // Delete all categories in target project
@@ -179,7 +177,6 @@ class CategorySyncIT {
     }
 
     @Test
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     void syncDrafts_withExistingShuffledCategoriesWithChangingCategoryHierarchy_ShouldUpdateCategories() {
         //-----------------Test Setup------------------------------------
         // Delete all categories in target project
@@ -231,7 +228,6 @@ class CategorySyncIT {
     }
 
     @Test
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     void syncDrafts_withExistingCategoriesThatChangeParents_ShouldUpdateCategories() {
         //-----------------Test Setup------------------------------------
         // Delete all categories in target project
@@ -274,7 +270,6 @@ class CategorySyncIT {
     }
 
     @Test
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     void syncDrafts_withANonExistingNewParent_ShouldUpdateCategories() {
         //-----------------Test Setup------------------------------------
         // Delete all categories in target project
