@@ -12,7 +12,6 @@ import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.ChannelServiceImpl;
 import com.commercetools.sync.services.impl.InventoryServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.commands.UpdateAction;
@@ -224,7 +223,6 @@ public final class InventorySync extends BaseSync<InventoryEntryDraft, Inventory
      *              <strong>Sku isn't compared</strong>
      * @return a future which contains an empty result after execution of the update.
      */
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     private CompletionStage<Optional<InventoryEntry>> buildActionsAndUpdate(
         @Nonnull final InventoryEntry entry,
         @Nonnull final InventoryEntryDraft draft) {

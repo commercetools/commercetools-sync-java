@@ -30,7 +30,6 @@ import com.commercetools.sync.services.impl.TypeServiceImpl;
 import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
 import com.commercetools.sync.taxcategories.TaxCategorySyncOptionsBuilder;
 import com.commercetools.sync.states.StateSyncOptionsBuilder;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
@@ -157,7 +156,6 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             });
     }
 
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
     private CompletionStage<Void> syncBatch(
         @Nonnull final Set<ProductDraft> productDrafts,
@@ -244,7 +242,6 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         return unresolvedReferencesService.save(new WaitingToBeResolved(newProduct, missingReferencedProductKeys));
     }
 
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
     private CompletionStage<Void> resolveNowReadyReferences(final Map<String, String> keyToIdCache) {
 
@@ -450,7 +447,6 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             });
     }
 
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
     private CompletionStage<Void> applyCallbackAndCreate(@Nonnull final ProductDraft productDraft) {
         return syncOptions

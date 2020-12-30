@@ -12,7 +12,6 @@ import com.commercetools.sync.services.impl.TypeServiceImpl;
 import com.commercetools.sync.shoppinglists.helpers.ShoppingListBatchValidator;
 import com.commercetools.sync.shoppinglists.helpers.ShoppingListReferenceResolver;
 import com.commercetools.sync.shoppinglists.helpers.ShoppingListSyncStatistics;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.shoppinglists.ShoppingList;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
@@ -195,7 +194,6 @@ public class ShoppingListSync extends BaseSync<ShoppingListDraft, ShoppingListSy
                        .orElseGet(() -> applyCallbackAndCreate(newShoppingListDraft));
     }
 
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
     private CompletionStage<Void> buildActionsAndUpdate(
         @Nonnull final ShoppingList oldShoppingList,

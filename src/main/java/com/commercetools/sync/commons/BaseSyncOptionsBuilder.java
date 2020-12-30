@@ -71,8 +71,8 @@ public abstract class BaseSyncOptionsBuilder<T extends BaseSyncOptionsBuilder<T,
 
     /**
      * Sets the cache size that indicates the key to id cache size of the sync process. To increase performance
-     * during the sync some resource keys -> ids are cached which are required for resolving references. To keep the
-     * cache performant outdated entries are evicted when a certain size is reached.
+     * during the sync some resource keys mapped to ids are cached which are required for resolving references. To keep 
+     * the cache performant outdated entries are evicted when a certain size is reached.
      *
      * <p>Note: This cache size is set to 10.000 by default.
      *

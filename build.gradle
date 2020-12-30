@@ -5,6 +5,7 @@ plugins {
     id 'org.ajoberstar.grgit' version '4.1.0'
     id "com.github.ben-manes.versions" version '0.36.0'
     id 'ru.vyarus.mkdocs' version '2.0.1'
+    id "com.github.spotbugs" version "4.6.0"
 }
 
 ext{
@@ -15,7 +16,6 @@ ext{
     checkstyleVersion = '8.2'
     pmdVersion = '6.14.0'
     jacocoVersion = '0.8.4'
-    findbugsVersion = '3.0.1'
     caffeineVersion = '2.8.5'
 }
 
@@ -32,7 +32,7 @@ apply from: "$rootDir/gradle-scripts/test-logger.gradle"
 apply from: "$rootDir/gradle-scripts/checkstyle.gradle"
 apply from: "$rootDir/gradle-scripts/pmd.gradle"
 apply from: "$rootDir/gradle-scripts/jacoco.gradle"
-apply from: "$rootDir/gradle-scripts/findbugs.gradle"
+apply from: "$rootDir/gradle-scripts/spotbugs.gradle"
 apply from: "$rootDir/gradle-scripts/maven-publish.gradle"
 apply from: "$rootDir/gradle-scripts/bintray-publish.gradle"
 apply from: "$rootDir/gradle-scripts/oss-publish.gradle"
@@ -41,12 +41,10 @@ apply from: "$rootDir/gradle-scripts/set-library-version.gradle"
 apply from: "$rootDir/gradle-scripts/execution-order.gradle"
 apply from: "$rootDir/gradle-scripts/mkdocs.gradle"
 
-
 dependencies {
     implementation "com.commercetools.sdk.jvm.core:commercetools-models:${commercetoolsJvmSdkVersion}"
     implementation "com.commercetools.sdk.jvm.core:commercetools-java-client:${commercetoolsJvmSdkVersion}"
     implementation "com.commercetools.sdk.jvm.core:commercetools-convenience:${commercetoolsJvmSdkVersion}"
-    implementation "com.google.code.findbugs:annotations:${findbugsVersion}"
     implementation "com.github.ben-manes.caffeine:caffeine:${caffeineVersion}"
     testImplementation "org.mockito:mockito-junit-jupiter:${mockitoJunitJupiterVersion}"
     testImplementation "org.junit.jupiter:junit-jupiter-api:${jupiterApiVersion}"

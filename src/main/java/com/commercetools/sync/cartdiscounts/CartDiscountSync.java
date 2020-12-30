@@ -9,7 +9,6 @@ import com.commercetools.sync.services.CartDiscountService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.impl.CartDiscountServiceImpl;
 import com.commercetools.sync.services.impl.TypeServiceImpl;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.sphere.sdk.cartdiscounts.CartDiscount;
 import io.sphere.sdk.cartdiscounts.CartDiscountDraft;
 import io.sphere.sdk.commands.UpdateAction;
@@ -214,7 +213,6 @@ public class CartDiscountSync extends BaseSync<CartDiscountDraft, CartDiscountSy
                 .orElseGet(() -> applyCallbackAndCreate(newCartDiscount));
     }
 
-    @SuppressFBWarnings("NP_NONNULL_PARAM_VIOLATION") // https://github.com/findbugsproject/findbugs/issues/79
     @Nonnull
     private CompletionStage<Void> buildActionsAndUpdate(
             @Nonnull final CartDiscount oldCartDiscount,
