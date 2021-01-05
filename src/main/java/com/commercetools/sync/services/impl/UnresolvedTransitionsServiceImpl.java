@@ -33,7 +33,7 @@ public class UnresolvedTransitionsServiceImpl implements UnresolvedTransitionsSe
         "Failed to save CustomObject with key: '%s' (hash of state key: '%s').";
     private static final String DELETE_FAILED =
         "Failed to delete CustomObject with key: '%s' (hash of state key: '%s').";
-    private static final String CUSTOM_OBJECT_CONTAINER_KEY =
+    public static final String CUSTOM_OBJECT_CONTAINER_KEY =
         "commercetools-sync-java.UnresolvedTransitionsService.stateDrafts";
 
 
