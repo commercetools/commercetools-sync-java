@@ -10,7 +10,8 @@ public enum GraphQlQueryResources {
     STATES("states"),
     TAX_CATEGORIES("taxCategories"),
     TYPES("typeDefinitions"),
-    SHOPPING_LISTS("shoppingLists");
+    SHOPPING_LISTS("shoppingLists"),
+    CUSTOM_OBJECTS("customObjects");
 
     private final String name;
 

@@ -2,13 +2,8 @@ package com.commercetools.sync.commons.helpers;
 
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
-import com.fasterxml.jackson.databind.JsonNode;
-import io.sphere.sdk.client.HttpRequestIntent;
 import io.sphere.sdk.client.SphereClient;
-import io.sphere.sdk.client.SphereRequest;
-import io.sphere.sdk.http.HttpMethod;
 import io.sphere.sdk.http.HttpResponse;
-import io.sphere.sdk.json.SphereJsonUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -19,11 +14,9 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-public class ResourceKeyIdGraphQlRequest implements SphereRequest<ResourceKeyIdGraphQlResult> {
+public class ResourceKeyIdGraphQlRequest extends CommonGraphQlRequestImpl<ResourceKeyIdGraphQlResult> {
     protected final Set<String> keysToSearch;
     protected final GraphQlQueryResources resource;
-    private long limit = 500;
-    private String queryPredicate = null;
 
     /**
      * A SphereRequest implementation to allow {@link SphereClient} to execute graphQL queries on CTP. It provides a
@@ -40,49 +33,10 @@ public class ResourceKeyIdGraphQlRequest implements SphereRequest<ResourceKeyIdG
         this.resource = resource;
     }
 
-    /**
-     * This method adds a predicate string to the request.
-     *
-     * @param predicate - a string representing a query predicate.
-     * @return - an instance of this class.
-     */
-    @Nonnull
-    public ResourceKeyIdGraphQlRequest withPredicate(final String predicate) {
-
-        this.queryPredicate = predicate;
-        return this;
-    }
-
-    /**
-     * This method adds a limit to the request.
-     *
-     * @param limit - a number representing the query limit parameter
-     * @return - an instance of this class
-     */
-    @Nonnull
-    public ResourceKeyIdGraphQlRequest withLimit(final long limit) {
-
-        this.limit = limit;
-        return this;
-    }
-
     @Nullable
     @Override
     public ResourceKeyIdGraphQlResult deserialize(final HttpResponse httpResponse) {
-
-        final JsonNode rootJsonNode = SphereJsonUtils.parse(httpResponse.getResponseBody());
-        if (rootJsonNode.isNull()) {
-            return null;
-        }
-        JsonNode result = rootJsonNode.get("data").get(resource.getName());
-        return SphereJsonUtils.readObject(result, ResourceKeyIdGraphQlResult.class);
-    }
-
-    @Override
-    public HttpRequestIntent httpRequestIntent() {
-
-        final String body = format("{\"query\": \"{%s}\"}", buildQueryString());
-        return HttpRequestIntent.of(HttpMethod.POST, "/graphql", body);
+        return deserializeWithResourceName(httpResponse, resource.getName(), ResourceKeyIdGraphQlResult.class);
     }
 
     /**
@@ -92,7 +46,8 @@ public class ResourceKeyIdGraphQlRequest implements SphereRequest<ResourceKeyIdG
      * @return a string representing a graphql query
      */
     @Nonnull
-    String buildQueryString() {
+    @Override
+    protected String buildQueryString() {
 
         return format(
             "%s(limit: %d, where: \\\"%s\\\", sort: [\\\"id asc\\\"]) { results { id key } }",

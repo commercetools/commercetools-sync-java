@@ -47,7 +47,7 @@ class GraphQlQueryAllTest {
         results.add(resource4);
         when(pagedGraphQlQueryResult.getResults()).thenReturn(results);
 
-        final GraphQlQueryAll query =
+        final GraphQlQueryAll<ResourceKeyIdGraphQlResult, ResourceKeyId> query =
             GraphQlQueryAll.of(sphereClient, mock(ResourceKeyIdGraphQlRequest.class), DEFAULT_PAGE_SIZE);
         final List<String> resourceIds = new ArrayList<>();
 
@@ -67,7 +67,7 @@ class GraphQlQueryAllTest {
         //preparation
         when(pagedGraphQlQueryResult.getResults()).thenReturn(emptySet());
 
-        final GraphQlQueryAll query =
+        final GraphQlQueryAll<ResourceKeyIdGraphQlResult, ResourceKeyId> query =
             GraphQlQueryAll.of(sphereClient, mock(ResourceKeyIdGraphQlRequest.class), DEFAULT_PAGE_SIZE);
         final List<String> resourceIds = new ArrayList<>();
 

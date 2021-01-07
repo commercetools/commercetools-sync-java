@@ -1,6 +1,7 @@
 package com.commercetools.sync.commons.utils;
 
 import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
+import com.commercetools.sync.commons.models.GraphQlBaseRequest;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
 import com.commercetools.sync.commons.models.ResourceKeyId;
@@ -43,7 +44,7 @@ class CtpQueryUtilsTest {
     @Captor
     private ArgumentCaptor<CategoryQuery> sphereRequestArgumentCaptor;
     @Captor
-    private ArgumentCaptor<ResourceKeyIdGraphQlRequest> graphQlRequestArgumentCaptor;
+    private ArgumentCaptor<GraphQlBaseRequest<ResourceKeyIdGraphQlResult>> graphQlRequestArgumentCaptor;
 
     @BeforeEach
     void init() {
