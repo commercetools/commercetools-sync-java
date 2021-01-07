@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.annotation.Nonnull;
 
-public final class ResourceKeyId {
+public final class ResourceKeyId implements GraphQlBaseResource {
     private final String key;
     private final String id;
 
@@ -19,6 +19,7 @@ public final class ResourceKeyId {
         return key;
     }
 
+    @Override
     public String getId() {
         return id;
     }

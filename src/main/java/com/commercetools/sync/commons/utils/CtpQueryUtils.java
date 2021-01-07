@@ -1,7 +1,8 @@
 package com.commercetools.sync.commons.utils;
 
-import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
-import com.commercetools.sync.commons.models.ResourceKeyId;
+import com.commercetools.sync.commons.models.GraphQlBaseRequest;
+import com.commercetools.sync.commons.models.GraphQlBaseResource;
+import com.commercetools.sync.commons.models.GraphQlBaseResult;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.ResourceView;
 import io.sphere.sdk.queries.QueryDsl;
@@ -126,15 +127,17 @@ public final class CtpQueryUtils {
      * <p>NOTE: This method fetches all paged results sequentially as opposed to fetching the pages in parallel.
      *
      * @param client            commercetools client
-     * @param resourceKeyIdGraphQlRequest    graphql query containing predicates and pagination limits
+     * @param graphQlRequest    graphql query containing predicates and pagination limits
      * @param pageConsumer      consumer applied on every page queried
      * @return a completion stage containing void as a result after the consumer was applied on all pages.
      */
     @Nonnull
-    public static CompletionStage<Void> queryAll(@Nonnull final SphereClient client,
-                                                 @Nonnull final ResourceKeyIdGraphQlRequest resourceKeyIdGraphQlRequest,
-                                                 @Nonnull final Consumer<Set<ResourceKeyId>> pageConsumer) {
-        GraphQlQueryAll graphQlQueryAll = GraphQlQueryAll.of(client, resourceKeyIdGraphQlRequest, DEFAULT_PAGE_SIZE);
+    public static <T extends GraphQlBaseResult<U>, U extends GraphQlBaseResource> CompletionStage<Void>
+        queryAll(@Nonnull final SphereClient client,
+             @Nonnull final GraphQlBaseRequest<T> graphQlRequest,
+             @Nonnull final Consumer<Set<U>> pageConsumer) {
+
+        GraphQlQueryAll<T, U> graphQlQueryAll = GraphQlQueryAll.of(client, graphQlRequest, DEFAULT_PAGE_SIZE);
         return graphQlQueryAll.run(pageConsumer);
     }
 
