@@ -50,7 +50,7 @@ class FetchCustomObjectsGraphQlRequestTest {
         assertThat(requestBody).isNotNull();
         assertThat(requestBody.getString())
             .isEqualTo("{\"query\": \"{customObjects(container: \\\"container\\\", limit: 500, "
-                + "where: \\\"lastModifiedAt < \\\\\\\"2021-01-07T00:00:00Z\\\\\\\"\\\""
+                + "where: \\\"lastModifiedAt < \\\\\\\"2021-01-07T00:00:00Z\\\\\\\""
                 + " AND id > \\\\\\\"id\\\\\\\"\\\", sort: [\\\"id asc\\\"])"
                 + " { results { id key } }}\"}");
     }

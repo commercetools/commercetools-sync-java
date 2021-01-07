@@ -51,7 +51,7 @@ public class FetchCustomObjectsGraphQlRequest extends CommonGraphQlRequestImpl<R
 
     @Nonnull
     private String createWhereQuery() {
-        final String whereQuery = format("lastModifiedAt < \\\\\\\"%s\\\\\\\"\\\"", lastModifiedAt);
+        final String whereQuery = format("lastModifiedAt < \\\\\\\"%s\\\\\\\"", lastModifiedAt);
         return isBlank(this.queryPredicate) ? whereQuery : format("%s AND %s", whereQuery, queryPredicate);
     }
 }
