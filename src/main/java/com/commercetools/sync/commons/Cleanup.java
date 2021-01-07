@@ -1,13 +1,14 @@
 package com.commercetools.sync.commons;
 
+import com.commercetools.sync.commons.models.FetchCustomObjectsGraphQlRequest;
+import com.commercetools.sync.commons.models.ResourceKeyId;
 import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
 import com.commercetools.sync.services.impl.UnresolvedTransitionsServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.sphere.sdk.client.NotFoundException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.commands.CustomObjectDeleteCommand;
-import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
-import io.sphere.sdk.queries.QueryPredicate;
 
 import javax.annotation.Nonnull;
 import java.time.Clock;
@@ -15,9 +16,11 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 import static com.commercetools.sync.commons.utils.CtpQueryUtils.queryAll;
 import static java.lang.String.format;
@@ -47,7 +50,7 @@ public class Cleanup {
     /**
      * Deletes the unresolved reference custom objects persisted by commercetools-sync-java library to
      * handle reference resolution. The custom objects will be deleted if it hasn't been modified for the specified
-     * amount of days as given {@param deleteDaysAfterLastModification}.
+     * amount of days as given {@code deleteDaysAfterLastModification}.
      *
      * <p>Note: Keeping the unresolved references forever can negatively influence the performance of your project,
      * so deleting unused data ensures the best performance for your project.
@@ -55,8 +58,8 @@ public class Cleanup {
      * @param deleteDaysAfterLastModification Days to query. The custom objects will be deleted if it hasn't been
      *                                        modified for the specified amount of days.
      * @return an instance of {@link CompletableFuture}&lt;{@link Cleanup.Statistics}&gt; which contains the processing
-     * time, the total number of custom objects that were deleted and failed to delete, and a proper summary message
-     * of the statistics.
+     *     time, the total number of custom objects that were deleted and failed to delete, and a proper summary
+     *     message of the statistics.
      */
     public CompletableFuture<Statistics> deleteUnresolvedReferences(final int deleteDaysAfterLastModification) {
 
@@ -72,67 +75,77 @@ public class Cleanup {
                 });
     }
 
+    private CompletableFuture<Void> deleteUnresolvedReferences(@Nonnull final String containerName,
+                                                               final int deleteDaysAfterLastModification) {
+        final Consumer<Set<ResourceKeyId>> pageConsumer = resourceKeyIds ->
+            deleteCustomObjects(containerName, resourceKeyIds);
+
+        return queryAll(sphereClient, getRequest(containerName, deleteDaysAfterLastModification),
+            pageConsumer).toCompletableFuture();
+    }
+
     private CompletableFuture<Void> deleteUnresolvedProductReferences(final int deleteDaysAfterLastModification) {
-        return queryAll(sphereClient,
-            getQuery(UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_CONTAINER_KEY, deleteDaysAfterLastModification),
-            this::deleteCustomObjects).toCompletableFuture();
+        return deleteUnresolvedReferences(UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_CONTAINER_KEY,
+            deleteDaysAfterLastModification);
     }
 
     private CompletableFuture<Void> deleteUnresolvedStateReferences(final int deleteDaysAfterLastModification) {
-        return queryAll(sphereClient,
-            getQuery(UnresolvedTransitionsServiceImpl.CUSTOM_OBJECT_CONTAINER_KEY, deleteDaysAfterLastModification),
-            this::deleteCustomObjects).toCompletableFuture();
+        return deleteUnresolvedReferences(UnresolvedTransitionsServiceImpl.CUSTOM_OBJECT_CONTAINER_KEY,
+            deleteDaysAfterLastModification);
     }
 
     /**
-     * Prepares a query to fetch the custom objects, that is used to persist unresolved references, based on the given
-     * {@code containerName} and {@code deleteDaysAfterLastModification}.
+     * Prepares a graphql request to fetch the custom objects, that is used to persist unresolved references,
+     * based on the given {@code containerName} and {@code deleteDaysAfterLastModification}.
      *
      * @param containerName                   container name of the custom object
      *                                        (i.e "commercetools-sync-java.UnresolvedReferencesService.productDrafts")
      * @param deleteDaysAfterLastModification Days to query. The custom objects will be deleted if it hasn't been
      *                                        modified for the specified amount of days.
      */
-    private CustomObjectQuery<JsonNode> getQuery(@Nonnull final String containerName,
-                                                 int deleteDaysAfterLastModification) {
+    private FetchCustomObjectsGraphQlRequest getRequest(@Nonnull final String containerName,
+                                                        final int deleteDaysAfterLastModification) {
 
         final Instant lastModifiedAt = Instant.now().minus(deleteDaysAfterLastModification, ChronoUnit.DAYS);
-
-        return CustomObjectQuery
-            .ofJsonNode()
-            .byContainer(containerName)
-            .plusPredicates(QueryPredicate.of(format("lastModifiedAt < \"%s\"", lastModifiedAt)));
+        return new FetchCustomObjectsGraphQlRequest(containerName, lastModifiedAt);
     }
 
     /**
-     * Deletes all custom objects in the given {@link List} representing a page of custom object.
+     * Deletes all custom objects in the given {@link List} representing a page of custom object's key and ids.
      *
      * <p>Note: The deletion is blocked in page to avoid race conditions like fetching and removing same custom objects
      * concurrently.</p>
      *
-     * @param customObjects fetched custom objects.
+     * @param resourceKeyIdSet a page of custom object's key and ids.
      */
     private void deleteCustomObjects(
-        @Nonnull final List<CustomObject<JsonNode>> customObjects) {
+        @Nonnull final String containerName,
+        @Nonnull final Set<ResourceKeyId> resourceKeyIdSet) {
 
         CompletableFuture.allOf(
-            customObjects
+            resourceKeyIdSet
                 .stream()
-                .map(this::executeDeletion)
+                .map(resourceKeyId -> executeDeletion(containerName, resourceKeyId))
                 .map(CompletionStage::toCompletableFuture)
-                .toArray(CompletableFuture[]::new)).join(); // todo: not sure.
+                .toArray(CompletableFuture[]::new)).join();
     }
 
     private CompletionStage<Optional<CustomObject<JsonNode>>> executeDeletion(
-        @Nonnull final CustomObject<JsonNode> customObject) {
+        @Nonnull final String containerName,
+        @Nonnull final ResourceKeyId resourceKeyId) {
 
-        return sphereClient.execute(CustomObjectDeleteCommand.of(customObject, JsonNode.class))
-                           .handle((resource, exception) -> {
-                               if (exception == null) {
+        return sphereClient.execute(
+            CustomObjectDeleteCommand.of(containerName, resourceKeyId.getKey(), JsonNode.class))
+                           .handle((resource, sphereException) -> {
+                               if (sphereException == null) {
                                    statistics.totalDeleted.incrementAndGet();
                                    return Optional.of(resource);
                                } else {
-                                   // todo: check 404.
+                                   final Throwable completionExceptionCause = sphereException.getCause();
+                                   if (completionExceptionCause instanceof NotFoundException) {
+                                       return Optional.empty();
+                                   }
+
                                    statistics.totalFailed.incrementAndGet();
                                    return Optional.empty();
                                }

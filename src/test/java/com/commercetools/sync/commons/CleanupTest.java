@@ -1,59 +1,79 @@
 package com.commercetools.sync.commons;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.commercetools.sync.commons.models.FetchCustomObjectsGraphQlRequest;
+import com.commercetools.sync.commons.models.ResourceKeyId;
+import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
+import io.sphere.sdk.client.NotFoundException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.commands.CustomObjectDeleteCommand;
-import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
-import io.sphere.sdk.queries.PagedQueryResult;
+import io.sphere.sdk.models.SphereException;
+import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
-import java.util.concurrent.CompletionStage;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.concurrent.CompletableFuture;
 
-import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 class CleanupTest {
-    final SphereClient sphereClient = mock(SphereClient.class);
+    private final SphereClient mockClient = mock(SphereClient.class);
+    private static final int deleteDaysAfterLastModification = 30;
 
     @Test
     void of_WithSphereClient_ReturnsCleanupObject() {
-        assertThat(Cleanup.of(sphereClient)).isNotNull();
+        assertThat(Cleanup.of(mockClient)).isNotNull();
     }
 
     @Test
     void deleteUnresolvedReferences_withDeleteDaysAfterLastModification_ShouldDeleteAndReturnCleanupResults() {
-        final int deleteDaysAfterLastModification = 30;
+        final ResourceKeyIdGraphQlResult resourceKeyIdGraphQlResult = mock(ResourceKeyIdGraphQlResult.class);
+        when(resourceKeyIdGraphQlResult.getResults()).thenReturn(new HashSet<>(Arrays.asList(
+            new ResourceKeyId("coKey1", "coId1"),
+            new ResourceKeyId("coKey2", "coId2"))));
 
-        final String customFieldName = "name";
-        final JsonNode customFieldValue =
-            JsonNodeFactory.instance.objectNode()
-                                    .put("key", "productKey1")
-                                    .putArray("dependantProductKeys")
-                                    .add("productKey2")
-                                    .add("productKey3");
+        when(mockClient.execute(any(FetchCustomObjectsGraphQlRequest.class)))
+            .thenReturn(CompletableFuture.completedFuture(resourceKeyIdGraphQlResult));
 
-        final CustomObject customObjectMock = mock(CustomObject.class);
-        when(customObjectMock.getValue()).thenReturn(customFieldValue);
+        when(mockClient.execute(any(CustomObjectDeleteCommand.class)))
+            .thenReturn(CompletableFuture.completedFuture(mock(CustomObject.class)));
 
-        final PagedQueryResult pagedQueryResult = mock(PagedQueryResult.class);
-        when(pagedQueryResult.getResults()).thenReturn(Arrays.asList(customObjectMock));
+        final Cleanup.Statistics statistics =
+            Cleanup.of(mockClient).deleteUnresolvedReferences(deleteDaysAfterLastModification)
+                   .join();
 
-        when(sphereClient.execute(any(CustomObjectQuery.class)))
-            .thenReturn(completedFuture(pagedQueryResult));
+        assertThat(statistics.getTotalDeleted()).isEqualTo(4);
+        assertThat(statistics.getTotalFailed()).isEqualTo(0);
+        assertThat(statistics.getReportMessage())
+            .isEqualTo("Summary: 4 custom objects were deleted in total (0 failed to delete).");
+    }
 
-        when(sphereClient.execute(any(CustomObjectDeleteCommand.class)))
-            .thenReturn(completedFuture(customObjectMock));
+    @Test
+    void deleteUnresolvedReferences_withNotFound404Exception_ShouldNotIncrementFailedCounter() {
+        final ResourceKeyIdGraphQlResult resourceKeyIdGraphQlResult = mock(ResourceKeyIdGraphQlResult.class);
+        when(resourceKeyIdGraphQlResult.getResults())
+            .thenReturn(Collections.singleton(new ResourceKeyId("coKey1", "coId1")));
 
-        final CompletionStage<Cleanup.Statistics> statisticsCompletionStage =
-            Cleanup.of(sphereClient).deleteUnresolvedReferences(deleteDaysAfterLastModification);
+        when(mockClient.execute(any(FetchCustomObjectsGraphQlRequest.class)))
+            .thenReturn(CompletableFuture.completedFuture(resourceKeyIdGraphQlResult));
 
+        when(mockClient.execute(any(CustomObjectDeleteCommand.class)))
+            .thenReturn(CompletableFuture.completedFuture(mock(CustomObject.class)))
+            .thenReturn(CompletableFutureUtils.failed(new SphereException(new NotFoundException())));
 
+        final Cleanup.Statistics statistics =
+            Cleanup.of(mockClient).deleteUnresolvedReferences(deleteDaysAfterLastModification)
+                   .join();
+
+        assertThat(statistics.getTotalDeleted()).isEqualTo(1);
+        assertThat(statistics.getTotalFailed()).isEqualTo(0);
+        assertThat(statistics.getReportMessage())
+            .isEqualTo("Summary: 1 custom objects were deleted in total (0 failed to delete).");
     }
 
 }
