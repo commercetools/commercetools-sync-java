@@ -112,7 +112,6 @@ public class Cleanup {
             .thenApply(
                 ignoredResult -> {
                     statistics.timeElapsedInMilliseconds = clock.millis() - timeBeforeSync;
-                    sphereClient.close();
                     return statistics;
                 });
     }
