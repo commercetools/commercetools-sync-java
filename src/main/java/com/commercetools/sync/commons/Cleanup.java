@@ -139,13 +139,12 @@ public class Cleanup {
     }
 
     /**
-     * Prepares a graphql request to fetch the custom objects, that is used to persist unresolved references,
-     * based on the given {@code containerName} and {@code deleteDaysAfterLastModification}.
+     * Prepares a graphql request to fetch the unresolved reference custom objects based on the given
+     * {@code containerName} and {@code deleteDaysAfterLastModification}.
      *
-     * @param containerName                   container name of the custom object
-     *                                        (i.e "commercetools-sync-java.UnresolvedReferencesService.productDrafts")
-     * @param deleteDaysAfterLastModification Days to query. The custom objects will be deleted if it hasn't been
-     *                                        modified for the specified amount of days.
+     * @param containerName  container name (i.e "commercetools-sync-java.UnresolvedReferencesService.productDrafts")
+     * @param deleteDaysAfterLastModification Days to query lastModifiedAt. The custom objects will be deleted if
+     *        it hasn't been modified for the specified amount of days.
      */
     private FetchCustomObjectsGraphQlRequest getRequest(
         @Nonnull final String containerName,
@@ -158,8 +157,8 @@ public class Cleanup {
     /**
      * Deletes all custom objects in the given {@link List} representing a page of custom object's key and ids.
      *
-     * <p>Note: The deletion is blocked in page to avoid race conditions like fetching and removing same custom objects
-     * concurrently.</p>
+     * <p>Note: The deletion is done concurrently but it's blocked by page consumer to avoid race conditions like
+     * fetching and removing same custom objects in same time.</p>
      *
      * @param resourceKeyIdSet a page of custom object's key and ids.
      */
