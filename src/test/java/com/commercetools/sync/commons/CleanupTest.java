@@ -3,6 +3,7 @@ package com.commercetools.sync.commons;
 import com.commercetools.sync.commons.models.FetchCustomObjectsGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyId;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
+import io.sphere.sdk.client.BadRequestException;
 import io.sphere.sdk.client.NotFoundException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customobjects.CustomObject;
@@ -11,9 +12,11 @@ import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -74,6 +77,34 @@ class CleanupTest {
         assertThat(statistics.getTotalFailed()).isEqualTo(0);
         assertThat(statistics.getReportMessage())
             .isEqualTo("Summary: 1 custom objects were deleted in total (0 failed to delete).");
+    }
+
+    @Test
+    void deleteUnresolvedReferences_withBadRequest400Exception_ShouldIncrementFailedCounterAndTriggerErrorCallback() {
+        final ResourceKeyIdGraphQlResult resourceKeyIdGraphQlResult = mock(ResourceKeyIdGraphQlResult.class);
+        when(resourceKeyIdGraphQlResult.getResults())
+            .thenReturn(Collections.singleton(new ResourceKeyId("coKey1", "coId1")));
+
+        when(mockClient.execute(any(FetchCustomObjectsGraphQlRequest.class)))
+            .thenReturn(CompletableFuture.completedFuture(resourceKeyIdGraphQlResult));
+
+        final Throwable badRequestException = new SphereException(new BadRequestException("key is not valid"));
+        when(mockClient.execute(any(CustomObjectDeleteCommand.class)))
+            .thenReturn(CompletableFuture.completedFuture(mock(CustomObject.class)))
+            .thenReturn(CompletableFutureUtils.failed(badRequestException));
+
+        final List<Throwable> exceptions = new ArrayList<>();
+        final Cleanup.Statistics statistics =
+            Cleanup.of(mockClient)
+                   .errorCallback(exceptions::add)
+                   .deleteUnresolvedReferences(deleteDaysAfterLastModification)
+                   .join();
+
+        assertThat(statistics.getTotalDeleted()).isEqualTo(1);
+        assertThat(statistics.getTotalFailed()).isEqualTo(1);
+        assertThat(exceptions).contains(badRequestException);
+        assertThat(statistics.getReportMessage())
+            .isEqualTo("Summary: 1 custom objects were deleted in total (1 failed to delete).");
     }
 
 }

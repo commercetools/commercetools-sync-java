@@ -30,6 +30,7 @@ public class Cleanup {
     private final SphereClient sphereClient;
     private final Statistics statistics;
     private final Clock clock;
+    private Consumer<Throwable> errorCallback;
 
     private Cleanup(@Nonnull final SphereClient sphereClient) {
         this.sphereClient = sphereClient;
@@ -45,6 +46,31 @@ public class Cleanup {
      */
     public static Cleanup of(@Nonnull final SphereClient sphereClient) {
         return new Cleanup(sphereClient);
+    }
+
+    /**
+     * Sets the {@code errorCallback} function of the cleanup. This callback will be called whenever an event occurs
+     * that leads to an error alert from the cleanup process.
+     *
+     * @param errorCallback the new value to set to the error callback.
+     * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
+     */
+    public Cleanup errorCallback(@Nonnull final Consumer<Throwable> errorCallback) {
+        this.errorCallback = errorCallback;
+        return this;
+    }
+
+    /**
+     * Given an {@code exception}, this method calls the {@code errorCallback} function.
+     * If there {@code errorCallback} is null, this method does nothing.
+     *
+     * @param exception {@link Throwable} instance to supply as first param to the {@code errorCallback}
+     *                  function.
+     */
+    private void applyErrorCallback(@Nonnull final Throwable exception) {
+        if (this.errorCallback != null) {
+            this.errorCallback.accept(exception);
+        }
     }
 
     /**
@@ -136,15 +162,17 @@ public class Cleanup {
 
         return sphereClient.execute(
             CustomObjectDeleteCommand.of(containerName, resourceKeyId.getKey(), JsonNode.class))
-                           .handle((resource, sphereException) -> {
-                               if (sphereException == null) {
+                           .handle((resource, throwable) -> {
+                               if (throwable == null) {
                                    statistics.totalDeleted.incrementAndGet();
                                    return Optional.of(resource);
                                } else {
-                                   final Throwable completionExceptionCause = sphereException.getCause();
+                                   final Throwable completionExceptionCause = throwable.getCause();
                                    if (completionExceptionCause instanceof NotFoundException) {
                                        return Optional.empty();
                                    }
+
+                                   applyErrorCallback(throwable);
 
                                    statistics.totalFailed.incrementAndGet();
                                    return Optional.empty();
