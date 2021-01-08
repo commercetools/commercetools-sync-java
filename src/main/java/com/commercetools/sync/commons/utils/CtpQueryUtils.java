@@ -129,6 +129,31 @@ public final class CtpQueryUtils {
      * @param client            commercetools client
      * @param graphQlRequest    graphql query containing predicates and pagination limits
      * @param pageConsumer      consumer applied on every page queried
+     * @param pageSize   the page size.
+     * @return a completion stage containing void as a result after the consumer was applied on all pages.
+     */
+    @Nonnull
+    public static <T extends GraphQlBaseResult<U>, U extends GraphQlBaseResource> CompletionStage<Void>
+        queryAll(@Nonnull final SphereClient client,
+             @Nonnull final GraphQlBaseRequest<T> graphQlRequest,
+             @Nonnull final Consumer<Set<U>> pageConsumer,
+             final int pageSize) {
+
+        GraphQlQueryAll<T, U> graphQlQueryAll = GraphQlQueryAll.of(client, graphQlRequest, pageSize);
+        return graphQlQueryAll.run(pageConsumer);
+    }
+
+    /**
+     * Creates a graphQL query to fetch all elements where keys matching given set of keys with pagination using a
+     * combination of limit and id sorting.
+     *
+     * <p>The method takes a {@link Consumer} that is applied on every page of the queried elements.
+     *
+     * <p>NOTE: This method fetches all paged results sequentially as opposed to fetching the pages in parallel.
+     *
+     * @param client            commercetools client
+     * @param graphQlRequest    graphql query containing predicates and pagination limits
+     * @param pageConsumer      consumer applied on every page queried
      * @return a completion stage containing void as a result after the consumer was applied on all pages.
      */
     @Nonnull
@@ -137,8 +162,7 @@ public final class CtpQueryUtils {
              @Nonnull final GraphQlBaseRequest<T> graphQlRequest,
              @Nonnull final Consumer<Set<U>> pageConsumer) {
 
-        GraphQlQueryAll<T, U> graphQlQueryAll = GraphQlQueryAll.of(client, graphQlRequest, DEFAULT_PAGE_SIZE);
-        return graphQlQueryAll.run(pageConsumer);
+        return queryAll(client, graphQlRequest, pageConsumer, DEFAULT_PAGE_SIZE);
     }
 
     private CtpQueryUtils() {

@@ -29,6 +29,7 @@ public class Cleanup {
 
     private final SphereClient sphereClient;
     private final Statistics statistics;
+    private int pageSize = 500;
     private final Clock clock;
     private Consumer<Throwable> errorCallback;
 
@@ -74,6 +75,20 @@ public class Cleanup {
     }
 
     /**
+     * Configures the pageSize (limit), the maximum number of results to return from the grapqhl query,
+     * which can be set using the limit query parameter. The default page size is 500.
+     *
+     * <p>NOTE: This option is mainly to be used for testing purposes.
+     *
+     * @param pageSize int that indicates batch size of resources to process.
+     * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
+     */
+    public Cleanup pageSize(final int pageSize) {
+        this.pageSize = pageSize;
+        return this;
+    }
+
+    /**
      * Deletes the unresolved reference custom objects persisted by commercetools-sync-java library to
      * handle reference resolution. The custom objects will be deleted if it hasn't been modified for the specified
      * amount of days as given {@code deleteDaysAfterLastModification}.
@@ -87,7 +102,8 @@ public class Cleanup {
      *     time, the total number of custom objects that were deleted and failed to delete, and a proper summary
      *     message of the statistics.
      */
-    public CompletableFuture<Statistics> deleteUnresolvedReferences(final int deleteDaysAfterLastModification) {
+    public CompletableFuture<Statistics> deleteUnresolvedReferenceCustomObjects(
+        final int deleteDaysAfterLastModification) {
 
         final long timeBeforeSync = clock.millis();
         return CompletableFuture
@@ -101,22 +117,24 @@ public class Cleanup {
                 });
     }
 
-    private CompletableFuture<Void> deleteUnresolvedReferences(@Nonnull final String containerName,
-                                                               final int deleteDaysAfterLastModification) {
+    private CompletableFuture<Void> deleteUnresolvedReferenceCustomObjects(
+        @Nonnull final String containerName,
+        final int deleteDaysAfterLastModification) {
         final Consumer<Set<ResourceKeyId>> pageConsumer = resourceKeyIds ->
             deleteCustomObjects(containerName, resourceKeyIds);
 
-        return queryAll(sphereClient, getRequest(containerName, deleteDaysAfterLastModification),
-            pageConsumer).toCompletableFuture();
+        return queryAll(sphereClient,
+            getRequest(containerName, deleteDaysAfterLastModification), pageConsumer, pageSize)
+            .toCompletableFuture();
     }
 
     private CompletableFuture<Void> deleteUnresolvedProductReferences(final int deleteDaysAfterLastModification) {
-        return deleteUnresolvedReferences(UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_CONTAINER_KEY,
+        return deleteUnresolvedReferenceCustomObjects(UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_CONTAINER_KEY,
             deleteDaysAfterLastModification);
     }
 
     private CompletableFuture<Void> deleteUnresolvedStateReferences(final int deleteDaysAfterLastModification) {
-        return deleteUnresolvedReferences(UnresolvedTransitionsServiceImpl.CUSTOM_OBJECT_CONTAINER_KEY,
+        return deleteUnresolvedReferenceCustomObjects(UnresolvedTransitionsServiceImpl.CUSTOM_OBJECT_CONTAINER_KEY,
             deleteDaysAfterLastModification);
     }
 
@@ -129,8 +147,9 @@ public class Cleanup {
      * @param deleteDaysAfterLastModification Days to query. The custom objects will be deleted if it hasn't been
      *                                        modified for the specified amount of days.
      */
-    private FetchCustomObjectsGraphQlRequest getRequest(@Nonnull final String containerName,
-                                                        final int deleteDaysAfterLastModification) {
+    private FetchCustomObjectsGraphQlRequest getRequest(
+        @Nonnull final String containerName,
+        final int deleteDaysAfterLastModification) {
 
         final Instant lastModifiedAt = Instant.now().minus(deleteDaysAfterLastModification, ChronoUnit.DAYS);
         return new FetchCustomObjectsGraphQlRequest(containerName, lastModifiedAt);
@@ -161,14 +180,13 @@ public class Cleanup {
         @Nonnull final ResourceKeyId resourceKeyId) {
 
         return sphereClient.execute(
-            CustomObjectDeleteCommand.of(containerName, resourceKeyId.getKey(), JsonNode.class))
+            CustomObjectDeleteCommand.of(containerName, resourceKeyId.getKey() + "1", JsonNode.class))
                            .handle((resource, throwable) -> {
                                if (throwable == null) {
                                    statistics.totalDeleted.incrementAndGet();
                                    return Optional.of(resource);
                                } else {
-                                   final Throwable completionExceptionCause = throwable.getCause();
-                                   if (completionExceptionCause instanceof NotFoundException) {
+                                   if (throwable instanceof NotFoundException) {
                                        return Optional.empty();
                                    }
 

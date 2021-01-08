@@ -22,6 +22,7 @@ import static com.commercetools.sync.integration.commons.utils.CustomObjectITUti
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_SPECIAL_CHARS_RESOURCE_PATH;
+import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_CONTAINER_KEY;
 import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.util.Collections.singleton;
 import static org.apache.commons.codec.digest.DigestUtils.sha1Hex;
@@ -29,8 +30,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class UnresolvedReferencesServiceImplIT {
 
-    private static final String CUSTOM_OBJECT_CONTAINER_KEY =
-        "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
     private UnresolvedReferencesService unresolvedReferencesService;
     private List<String> errorCallBackMessages;
     private List<String> warningCallBackMessages;

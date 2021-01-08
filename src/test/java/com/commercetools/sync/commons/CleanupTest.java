@@ -8,7 +8,6 @@ import io.sphere.sdk.client.NotFoundException;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.commands.CustomObjectDeleteCommand;
-import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.utils.CompletableFutureUtils;
 import org.junit.jupiter.api.Test;
 
@@ -29,12 +28,7 @@ class CleanupTest {
     private static final int deleteDaysAfterLastModification = 30;
 
     @Test
-    void of_WithSphereClient_ReturnsCleanupObject() {
-        assertThat(Cleanup.of(mockClient)).isNotNull();
-    }
-
-    @Test
-    void deleteUnresolvedReferences_withDeleteDaysAfterLastModification_ShouldDeleteAndReturnCleanupResults() {
+    void deleteUnresolvedReferences_withDeleteDaysAfterLastModification_ShouldDeleteAndReturnCleanupStatistics() {
         final ResourceKeyIdGraphQlResult resourceKeyIdGraphQlResult = mock(ResourceKeyIdGraphQlResult.class);
         when(resourceKeyIdGraphQlResult.getResults()).thenReturn(new HashSet<>(Arrays.asList(
             new ResourceKeyId("coKey1", "coId1"),
@@ -47,13 +41,14 @@ class CleanupTest {
             .thenReturn(CompletableFuture.completedFuture(mock(CustomObject.class)));
 
         final Cleanup.Statistics statistics =
-            Cleanup.of(mockClient).deleteUnresolvedReferences(deleteDaysAfterLastModification)
+            Cleanup.of(mockClient).deleteUnresolvedReferenceCustomObjects(deleteDaysAfterLastModification)
                    .join();
 
         assertThat(statistics.getTotalDeleted()).isEqualTo(4);
         assertThat(statistics.getTotalFailed()).isEqualTo(0);
         assertThat(statistics.getReportMessage())
             .isEqualTo("Summary: 4 custom objects were deleted in total (0 failed to delete).");
+        assertThat(statistics.getTimeElapsedInMilliseconds()).isLessThan(1000);
     }
 
     @Test
@@ -67,10 +62,10 @@ class CleanupTest {
 
         when(mockClient.execute(any(CustomObjectDeleteCommand.class)))
             .thenReturn(CompletableFuture.completedFuture(mock(CustomObject.class)))
-            .thenReturn(CompletableFutureUtils.failed(new SphereException(new NotFoundException())));
+            .thenReturn(CompletableFutureUtils.failed(new NotFoundException()));
 
         final Cleanup.Statistics statistics =
-            Cleanup.of(mockClient).deleteUnresolvedReferences(deleteDaysAfterLastModification)
+            Cleanup.of(mockClient).deleteUnresolvedReferenceCustomObjects(deleteDaysAfterLastModification)
                    .join();
 
         assertThat(statistics.getTotalDeleted()).isEqualTo(1);
@@ -88,7 +83,7 @@ class CleanupTest {
         when(mockClient.execute(any(FetchCustomObjectsGraphQlRequest.class)))
             .thenReturn(CompletableFuture.completedFuture(resourceKeyIdGraphQlResult));
 
-        final Throwable badRequestException = new SphereException(new BadRequestException("key is not valid"));
+        final Throwable badRequestException = new BadRequestException("key is not valid");
         when(mockClient.execute(any(CustomObjectDeleteCommand.class)))
             .thenReturn(CompletableFuture.completedFuture(mock(CustomObject.class)))
             .thenReturn(CompletableFutureUtils.failed(badRequestException));
@@ -97,7 +92,7 @@ class CleanupTest {
         final Cleanup.Statistics statistics =
             Cleanup.of(mockClient)
                    .errorCallback(exceptions::add)
-                   .deleteUnresolvedReferences(deleteDaysAfterLastModification)
+                   .deleteUnresolvedReferenceCustomObjects(deleteDaysAfterLastModification)
                    .join();
 
         assertThat(statistics.getTotalDeleted()).isEqualTo(1);
