@@ -178,7 +178,7 @@ public class Cleanup {
         @Nonnull final ResourceKeyId resourceKeyId) {
 
         return sphereClient.execute(
-            CustomObjectDeleteCommand.of(containerName, resourceKeyId.getKey() + "1", JsonNode.class))
+            CustomObjectDeleteCommand.of(containerName, resourceKeyId.getKey(), JsonNode.class))
                            .handle((resource, throwable) -> {
                                if (throwable == null) {
                                    statistics.totalDeleted.incrementAndGet();
