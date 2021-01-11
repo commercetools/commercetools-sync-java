@@ -1,13 +1,12 @@
 package com.commercetools.sync.commons.models;
 
-import io.sphere.sdk.models.WithKey;
 import io.sphere.sdk.products.ProductDraft;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.Set;
 
-public final class WaitingProductsToBeResolved<T extends ProductDraft> implements WaitingToBeResolved {
+public final class WaitingProductsToBeResolved<T extends ProductDraft> implements WaitingToBeResolved<T> {
     private T waitingDraft;
     private Set<String> missingReferencedKeys;
     public WaitingProductsToBeResolved(){};
@@ -33,12 +32,12 @@ public final class WaitingProductsToBeResolved<T extends ProductDraft> implement
     }
 
     @Override
-    public void setWaitingDraft(@Nonnull final WithKey draft) {
+    public void setWaitingDraft(@Nonnull final T draft) {
         waitingDraft = (T) draft;
     }
 
     @Override
-    public WithKey getWaitingDraft() {
+    public T getWaitingDraft() {
         return waitingDraft;
     }
 
