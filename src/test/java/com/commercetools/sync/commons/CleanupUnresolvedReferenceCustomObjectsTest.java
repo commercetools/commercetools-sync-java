@@ -48,7 +48,6 @@ class CleanupUnresolvedReferenceCustomObjectsTest {
         assertThat(statistics.getTotalFailed()).isEqualTo(0);
         assertThat(statistics.getReportMessage())
             .isEqualTo("Summary: 4 custom objects were deleted in total (0 failed to delete).");
-        assertThat(statistics.getTimeElapsedInMilliseconds()).isLessThan(1000);
     }
 
     @Test

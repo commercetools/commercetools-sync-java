@@ -30,12 +30,10 @@ public class CleanupUnresolvedReferenceCustomObjects {
     private final SphereClient sphereClient;
     private final Statistics statistics;
     private int pageSize = 500;
-    private final Clock clock;
     private Consumer<Throwable> errorCallback;
 
     private CleanupUnresolvedReferenceCustomObjects(@Nonnull final SphereClient sphereClient) {
         this.sphereClient = sphereClient;
-        this.clock = Clock.systemDefaultZone();
         this.statistics = new Statistics();
     }
 
@@ -105,15 +103,10 @@ public class CleanupUnresolvedReferenceCustomObjects {
      */
     public CompletableFuture<Statistics> cleanup(final int deleteDaysAfterLastModification) {
 
-        final long timeBeforeSync = clock.millis();
         return CompletableFuture
             .allOf(cleanupUnresolvedProductReferences(deleteDaysAfterLastModification),
                 cleanupUnresolvedStateReferences(deleteDaysAfterLastModification))
-            .thenApply(
-                ignoredResult -> {
-                    statistics.timeElapsedInMilliseconds = clock.millis() - timeBeforeSync;
-                    return statistics;
-                });
+            .thenApply(ignoredResult -> statistics);
     }
 
     private CompletableFuture<Void> cleanup(
@@ -212,10 +205,6 @@ public class CleanupUnresolvedReferenceCustomObjects {
 
         public int getTotalFailed() {
             return totalFailed.get();
-        }
-
-        public long getTimeElapsedInMilliseconds() {
-            return timeElapsedInMilliseconds;
         }
 
         public String getReportMessage() {
