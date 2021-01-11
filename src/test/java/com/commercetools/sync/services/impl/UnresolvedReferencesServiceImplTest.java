@@ -66,7 +66,7 @@ class UnresolvedReferencesServiceImplTest {
 
         // test
         final Set<WaitingToBeResolved> result = service
-            .fetch(keys, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY )
+            .fetch(keys, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingProductsToBeResolved.class )
             .toCompletableFuture()
             .join();
 
@@ -92,7 +92,7 @@ class UnresolvedReferencesServiceImplTest {
 
         // test
         final Set<WaitingToBeResolved> toBeResolvedOptional = service
-            .fetch(singleton("product-draft-key"), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY)
+            .fetch(singleton("product-draft-key"), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingProductsToBeResolved.class)
             .toCompletableFuture()
             .join();
 
@@ -125,7 +125,7 @@ class UnresolvedReferencesServiceImplTest {
             "Visa®",
             "Visa©");
         final Set<WaitingToBeResolved> toBeResolvedOptional = service
-            .fetch(setOfSpecialCharKeys, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY)
+            .fetch(setOfSpecialCharKeys, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,  WaitingProductsToBeResolved.class)
             .toCompletableFuture()
             .join();
 

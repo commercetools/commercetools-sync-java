@@ -49,7 +49,8 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
     @Nonnull
     @Override
     public CompletionStage<Set<WaitingToBeResolved>> fetch(@Nonnull final Set<String> keys,
-                                                           @Nonnull final  String containerKey) {
+                                                           @Nonnull final String containerKey,
+                                                           @Nonnull final Class<? extends WaitingToBeResolved> clazz) {
 
         if (keys.isEmpty()) {
             return CompletableFuture.completedFuture(Collections.emptySet());
@@ -58,9 +59,9 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
         Set<String> hashedKeys = keys.stream()
             .map(this::hash).collect(Collectors.toSet());
 
-        final CustomObjectQuery<WaitingToBeResolved> customObjectQuery =
+        final CustomObjectQuery<? extends WaitingToBeResolved> customObjectQuery =
             CustomObjectQuery
-                .of(WaitingToBeResolved.class)
+                .of(clazz)
                 .byContainer(containerKey)
                 .plusPredicates(p -> p.key().isIn(hashedKeys));
 

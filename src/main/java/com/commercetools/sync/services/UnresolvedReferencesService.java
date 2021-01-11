@@ -16,12 +16,14 @@ public interface UnresolvedReferencesService {
      *
      * @param keys the keys of the persisted  drafts, waiting to be resolved, to fetch.
      * @param containerKey the key of the container, which contains the persisted draft
+     * @param clazz
      * @return {@link CompletionStage}&lt;{@link Set}&gt; in which the result of its completion contains a
      *         {@link Set} that contains the matching drafts if any exist, otherwise empty.
      */
     @Nonnull
     CompletionStage<Set<WaitingToBeResolved>> fetch(@Nonnull final Set<String> keys,
-                                                    @Nonnull final  String containerKey);
+                                                    @Nonnull final String containerKey,
+                                                    @Nonnull Class<? extends  WaitingToBeResolved> clazz);
 
     /**
      * Persists a product draft that is not ready to be resolved yet.

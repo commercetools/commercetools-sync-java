@@ -267,10 +267,10 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         final Set<WaitingToBeResolved> waitingDraftsToBeUpdated = new HashSet<>();
 
         return unresolvedReferencesService
-            .fetch(referencingDraftKeys, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY)
+            .fetch(referencingDraftKeys, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingProductsToBeResolved.class )
             .handle(ImmutablePair::new)
             .thenCompose(fetchResponse -> {
-                final Set<WaitingToBeResolved> waitingDrafts = fetchResponse.getKey();
+                final Set<? extends WaitingToBeResolved> waitingDrafts = fetchResponse.getKey();
                 final Throwable fetchException = fetchResponse.getValue();
 
                 if (fetchException != null) {

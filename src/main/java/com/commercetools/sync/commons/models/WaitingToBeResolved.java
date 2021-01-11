@@ -4,26 +4,42 @@ package com.commercetools.sync.commons.models;
 import io.sphere.sdk.models.WithKey;
 
 import javax.annotation.Nonnull;
+import java.util.Objects;
 import java.util.Set;
 
-public interface WaitingToBeResolved<T extends WithKey> {
+public abstract class WaitingToBeResolved<T extends WithKey> {
+    private Set<String> missingReferencedKeys;
+    public WaitingToBeResolved(){};
 
-    // Needed for the 'com.fasterxml.jackson' deserialization, for example, when fetching
-    // from CTP custom objects.
+    public Set<String> getMissingReferencedKeys() {
+        return missingReferencedKeys;
+    }
 
-    public Set<String> getMissingReferencedKeys();
+    public abstract void setWaitingDraft(@Nonnull final T draft) ;
 
-    public void setWaitingDraft(@Nonnull final T draft);
+    public abstract  T getWaitingDraft();
 
-    public void setMissingReferencedKeys(@Nonnull final Set<String> missingReferencedKeys);
-
-    public T getWaitingDraft();
-
-    public Set<String> getMissingReferencedProductKeys();
-
-    @Override
-    public boolean equals(final Object other);
+    public void setMissingReferencedKeys(@Nonnull Set keys) {
+        missingReferencedKeys = keys;
+    }
 
     @Override
-    public int hashCode();
+    public boolean equals(final Object other) {
+        if (this == other) {
+            return true;
+        }
+        if (!(other instanceof WaitingToBeResolved)) {
+            return false;
+        }
+        final WaitingToBeResolved that = (WaitingToBeResolved) other;
+        return Objects.equals(getWaitingDraft().getKey(), that.getWaitingDraft().getKey())
+            && getMissingReferencedKeys().equals(that.getMissingReferencedKeys());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getWaitingDraft().getKey(), getMissingReferencedKeys());
+    }
+
+
 }

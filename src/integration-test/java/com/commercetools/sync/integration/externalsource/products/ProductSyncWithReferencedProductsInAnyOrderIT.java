@@ -760,7 +760,8 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
             new UnresolvedReferencesServiceImpl(syncOptions);
 
         final Set<WaitingToBeResolved> waitingDrafts = unresolvedReferencesService
-            .fetch(asSet(childDraft1.getKey(), childDraft2.getKey()), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY)
+            .fetch(asSet(childDraft1.getKey(), childDraft2.getKey()), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                WaitingProductsToBeResolved.class)
             .toCompletableFuture()
             .join();
 
@@ -839,7 +840,7 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
             new UnresolvedReferencesServiceImpl(syncOptions);
 
         final Set<WaitingToBeResolved> waitingDrafts = unresolvedReferencesService
-            .fetch(asSet(childDraft1.getKey()), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY)
+            .fetch(asSet(childDraft1.getKey()), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingProductsToBeResolved.class )
             .toCompletableFuture()
             .join();
 

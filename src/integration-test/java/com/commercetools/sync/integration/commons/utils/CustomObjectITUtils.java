@@ -116,7 +116,7 @@ public final class CustomObjectITUtils<T extends WaitingToBeResolved> {
             customObjects
                 .stream()
                 .map(customObject -> ctpClient
-                    .execute(CustomObjectDeleteCommand.of(customObject, clazz)))
+                    .execute(CustomObjectDeleteCommand.of(customObject, WaitingToBeResolved.class)))
                 .map(CompletionStage::toCompletableFuture)
                 .toArray(CompletableFuture[]::new));
     }

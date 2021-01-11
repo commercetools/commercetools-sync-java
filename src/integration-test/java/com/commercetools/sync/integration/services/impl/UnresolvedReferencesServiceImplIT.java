@@ -84,7 +84,7 @@ class UnresolvedReferencesServiceImplIT {
 
         // test
         final Set<WaitingToBeResolved> waitingDrafts = unresolvedReferencesService
-            .fetch(singleton(productDraft.getKey()), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY)
+            .fetch(singleton(productDraft.getKey()), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingProductsToBeResolved.class )
             .toCompletableFuture()
             .join();
 
@@ -128,9 +128,9 @@ class UnresolvedReferencesServiceImplIT {
             assertThat(waitingToBeResolved.getWaitingDraft()).isEqualTo(productDraft));
 
         // test
-        final CustomObjectByKeyGet<WaitingToBeResolved> customObjectByKeyGet = CustomObjectByKeyGet
-            .of(CUSTOM_OBJECT_CONTAINER_KEY, sha1Hex(productDraft.getKey()), WaitingToBeResolved.class);
-        final CustomObject<WaitingToBeResolved> createdCustomObject = CTP_TARGET_CLIENT
+        final CustomObjectByKeyGet<WaitingProductsToBeResolved> customObjectByKeyGet = CustomObjectByKeyGet
+            .of(CUSTOM_OBJECT_CONTAINER_KEY, sha1Hex(productDraft.getKey()), WaitingProductsToBeResolved.class);
+        final CustomObject<WaitingProductsToBeResolved> createdCustomObject = CTP_TARGET_CLIENT
             .execute(customObjectByKeyGet)
             .toCompletableFuture()
             .join();
@@ -139,7 +139,7 @@ class UnresolvedReferencesServiceImplIT {
 
         // test
         final Set<WaitingToBeResolved> waitingDrafts = unresolvedReferencesService
-            .fetch(singleton(productDraft.getKey()), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY)
+            .fetch(singleton(productDraft.getKey()), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingProductsToBeResolved.class )
             .toCompletableFuture()
             .join();
 
