@@ -61,7 +61,7 @@ public class CleanupUnresolvedReferenceCustomObjects {
 
     /**
      * Given an {@code exception}, this method calls the {@code errorCallback} function.
-     * If there {@code errorCallback} is null, this method does nothing.
+     * If {@code errorCallback} is null, this method does nothing.
      *
      * @param exception {@link Throwable} instance to supply as first param to the {@code errorCallback}
      *                  function.
