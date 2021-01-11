@@ -1,6 +1,8 @@
 package com.commercetools.sync.commons.helpers;
 
 import com.commercetools.sync.commons.models.GraphQlBaseRequest;
+import com.commercetools.sync.commons.models.GraphQlBaseResource;
+import com.commercetools.sync.commons.models.GraphQlBaseResult;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.client.HttpRequestIntent;
 import io.sphere.sdk.http.HttpMethod;
@@ -12,7 +14,8 @@ import javax.annotation.Nullable;
 
 import static java.lang.String.format;
 
-public abstract class CommonGraphQlRequestImpl<T> implements GraphQlBaseRequest<T> {
+public abstract class GraphQlBaseRequestImpl<T extends GraphQlBaseResult<? extends GraphQlBaseResource>>
+    implements GraphQlBaseRequest<T> {
 
     protected String queryPredicate = null;
     protected long limit = 500;
@@ -79,5 +82,5 @@ public abstract class CommonGraphQlRequestImpl<T> implements GraphQlBaseRequest<
      *
      * @return a string representing a graphql query
      */
-    protected abstract Object buildQueryString();
+    protected abstract String buildQueryString();
 }

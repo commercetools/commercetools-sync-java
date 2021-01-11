@@ -1,7 +1,9 @@
 package com.commercetools.sync.commons.models;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.sphere.sdk.client.HttpRequestIntent;
 import io.sphere.sdk.http.HttpMethod;
+import io.sphere.sdk.http.HttpResponse;
 import io.sphere.sdk.http.StringHttpRequestBody;
 import org.junit.jupiter.api.Test;
 
@@ -53,5 +55,30 @@ class FetchCustomObjectsGraphQlRequestTest {
                 + "where: \\\"lastModifiedAt < \\\\\\\"2021-01-07T00:00:00Z\\\\\\\""
                 + " AND id > \\\\\\\"id\\\\\\\"\\\", sort: [\\\"id asc\\\"])"
                 + " { results { id key } }}\"}");
+    }
+
+    @Test
+    void deserialize_WithMultipleResults_ShouldReturnCorrectResult() throws JsonProcessingException {
+        //preparation
+        String jsonAsString = "{\"data\":{\"customObjects\":{\"results\":[{\"id\":\"id-1\",\"key\":\"key-1\"},"
+            + "{\"id\":\"id-2\",\"key\":\"key-2\"},{\"id\":\"id-3\",\"key\":\"key-3\"}]}}}";
+
+        final HttpResponse httpResponse = HttpResponse.of(200, jsonAsString);
+
+        final FetchCustomObjectsGraphQlRequest request =
+            new FetchCustomObjectsGraphQlRequest("containerName", Instant.now());
+
+        //test
+        final ResourceKeyIdGraphQlResult result = request.deserialize(httpResponse);
+
+        //assertions
+        assertThat(result).isNotNull();
+        assertThat(result.getResults()).hasSize(3);
+        assertThat(result.getResults())
+            .extracting("key")
+            .containsExactlyInAnyOrder("key-1", "key-2", "key-3");
+        assertThat(result.getResults())
+            .extracting("id")
+            .containsExactlyInAnyOrder("id-1", "id-2", "id-3");
     }
 }

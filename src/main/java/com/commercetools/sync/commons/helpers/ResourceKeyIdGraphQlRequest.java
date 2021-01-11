@@ -3,6 +3,7 @@ package com.commercetools.sync.commons.helpers;
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.client.SphereRequest;
 import io.sphere.sdk.http.HttpResponse;
 
 import javax.annotation.Nonnull;
@@ -14,14 +15,18 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-public class ResourceKeyIdGraphQlRequest extends CommonGraphQlRequestImpl<ResourceKeyIdGraphQlResult> {
+/**
+ * A SphereRequest implementation to allow {@link SphereClient} to execute graphQL queries on CTP. It provides a
+ * POST request to the CTP graphql API containing body to fetch a set of ids matching given keys of a resource
+ * defined in endpoint parameter.
+ */
+public class ResourceKeyIdGraphQlRequest extends GraphQlBaseRequestImpl<ResourceKeyIdGraphQlResult> {
     protected final Set<String> keysToSearch;
     protected final GraphQlQueryResources resource;
 
     /**
-     * A SphereRequest implementation to allow {@link SphereClient} to execute graphQL queries on CTP. It provides a
-     * POST request to the CTP graphql API containing body to fetch a set of ids matching given keys of a resource
-     * defined in endpoint parameter.
+     * Takes {@code keysToSearch} and query resource name {@link GraphQlQueryResources} to instantiate a new
+     * {@link ResourceKeyIdGraphQlRequest} instance, which is an implementation of the {@link SphereRequest}.
      *
      * @param keysToSearch - a set of keys to fetch matching ids for.
      * @param resource - a string representing the name of the resource endpoint.

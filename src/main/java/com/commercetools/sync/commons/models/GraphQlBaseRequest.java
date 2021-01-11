@@ -2,7 +2,7 @@ package com.commercetools.sync.commons.models;
 
 import io.sphere.sdk.client.SphereRequest;
 
-public interface GraphQlBaseRequest<T> extends SphereRequest<T>
+public interface GraphQlBaseRequest<T extends GraphQlBaseResult<? extends GraphQlBaseResource>> extends SphereRequest<T>
 {
     /**
      * This method adds a predicate string to the request.
