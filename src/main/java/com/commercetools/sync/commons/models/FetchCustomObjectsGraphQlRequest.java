@@ -11,6 +11,11 @@ import java.time.Instant;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
+/**
+ * A SphereRequest implementation to allow {@link SphereClient} to execute graphQL queries on CTP. It provides a
+ * POST request to the CTP graphql API containing body to fetch custom object resource with the given container name
+ * defined in endpoint parameter.
+ */
 public class FetchCustomObjectsGraphQlRequest extends GraphQlBaseRequestImpl<ResourceKeyIdGraphQlResult> {
 
     private final String container;
@@ -18,9 +23,8 @@ public class FetchCustomObjectsGraphQlRequest extends GraphQlBaseRequestImpl<Res
     private final String resourceName = GraphQlQueryResources.CUSTOM_OBJECTS.getName();
 
     /**
-     * A SphereRequest implementation to allow {@link SphereClient} to execute graphQL queries on CTP. It provides a
-     * POST request to the CTP graphql API containing body to fetch a set of keys matching given container of a resource
-     * defined in endpoint parameter.
+     * Takes {@code container} and {@code lastModifiedAt} to instantiate a new {@link FetchCustomObjectsGraphQlRequest}
+     * instance, which is an implementation of the {@link SphereClient}.
      *
      * @param container - A namespace to group custom objects.
      * @param lastModifiedAt - lastModifiedAt will be used in where param.
