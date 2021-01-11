@@ -79,7 +79,7 @@ public class CleanupUnresolvedReferenceCustomObjects {
      * Configures the pageSize (limit), the maximum number of results to return from the grapqhl query,
      * which can be set using the limit query parameter. The default page size is 500.
      *
-     * <p>NOTE: This option is mainly to be used for testing purposes.
+     * <p>NOTE: Changing this value might negatively impact the performance of the cleanup and must be tested properly.
      *
      * @param pageSize int that indicates batch size of resources to process.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
