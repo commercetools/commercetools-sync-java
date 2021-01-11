@@ -77,14 +77,14 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
     @Nonnull
     @Override
     public CompletionStage<Optional<WaitingToBeResolved>> save(@Nonnull final WaitingToBeResolved draft,
-                                                               @Nonnull final String containerKey) {
-         Class clazz=draft.getClass();
+                                                               @Nonnull final String containerKey,
+                                                               @Nonnull final Class clazz) {
         final CustomObjectDraft<WaitingToBeResolved> customObjectDraft = CustomObjectDraft
             .ofUnversionedUpsert(
                 containerKey,
                 hash(draft.getWaitingDraft().getKey()),
                 draft,
-               clazz);
+                clazz);
 
         return syncOptions
             .getCtpClient()
@@ -104,12 +104,13 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
     @Nonnull
     @Override
     public CompletionStage<Optional<WaitingToBeResolved>> delete(@Nonnull final String key,
-                                                                 @Nonnull final  String containerKey) {
+                                                                 @Nonnull final String containerKey,
+                                                                 @Nonnull final Class<? extends WaitingToBeResolved> clazz) {
 
         return syncOptions
             .getCtpClient()
             .execute(CustomObjectDeleteCommand
-                .of(containerKey, hash(key), WaitingToBeResolved.class))
+                .of(containerKey, hash(key), clazz))
             .handle((resource, exception) -> {
                 if (exception == null) {
                     return Optional.of(resource.getValue());

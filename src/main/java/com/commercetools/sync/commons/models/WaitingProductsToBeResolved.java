@@ -9,19 +9,22 @@ public final class WaitingProductsToBeResolved<T extends ProductDraft> extends W
     private T waitingDraft;
 
 
+    // Needed for the 'com.fasterxml.jackson' deserialization, for example, when fetching
+    // from CTP custom objects.
     public WaitingProductsToBeResolved() {
     }
 
-     public WaitingProductsToBeResolved(
-        @Nonnull final T draft,
-        @Nonnull final Set<String> missingReferencedKeys) {
+    public WaitingProductsToBeResolved(@Nonnull final T draft, @Nonnull final Set<String> missingReferencedKeys) {
         this.waitingDraft = draft;
         this.setMissingReferencedKeys(missingReferencedKeys);
     }
 
+    public void setMissingReferencedKeys(@Nonnull Set keys) {
+        super.setMissingReferencedKeys(keys);
+    }
 
     @Override
-    public void setWaitingDraft(@Nonnull final T draft) {
+    public void setWaitingDraft(@Nonnull final ProductDraft draft) {
         waitingDraft = (T) draft;
     }
 

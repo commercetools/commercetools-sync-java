@@ -242,7 +242,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         missingReferencedProductKeys.forEach(missingParentKey ->
             statistics.addMissingDependency(missingParentKey, newProduct.getKey()));
         return unresolvedReferencesService.save(new WaitingProductsToBeResolved(newProduct, missingReferencedProductKeys),
-            CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY);
+            CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingProductsToBeResolved.class);
     }
 
     @Nonnull
@@ -304,7 +304,8 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
         return allOf(waitingDraftsToBeUpdated
             .stream()
-            .map(draft -> unresolvedReferencesService.save(draft, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY))
+            .map(draft -> unresolvedReferencesService.save(draft, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                WaitingProductsToBeResolved.class))
             .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
     }
@@ -315,7 +316,8 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         return allOf(drafts
             .stream()
             .map(ProductDraft::getKey)
-            .map(key -> unresolvedReferencesService.delete(key, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY))
+            .map(key -> unresolvedReferencesService.delete(key, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                WaitingToBeResolved.class))
             .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
     }

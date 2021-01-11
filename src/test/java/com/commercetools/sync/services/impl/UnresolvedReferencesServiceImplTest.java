@@ -151,7 +151,7 @@ class UnresolvedReferencesServiceImplTest {
 
         // test
         final Optional<WaitingToBeResolved> result = service
-            .save(waitingToBeResolved, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY)
+            .save(waitingToBeResolved, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingProductsToBeResolved.class)
             .toCompletableFuture()
             .join();
 
@@ -177,7 +177,7 @@ class UnresolvedReferencesServiceImplTest {
 
         // test
         final Optional<WaitingToBeResolved> result = service
-            .save(waitingToBeResolved, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY)
+            .save(waitingToBeResolved, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingProductsToBeResolved.class)
             .toCompletableFuture()
             .join();
 
@@ -202,7 +202,7 @@ class UnresolvedReferencesServiceImplTest {
 
         // test
         final Optional<WaitingToBeResolved> result = service
-            .save(waitingToBeResolved, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY)
+            .save(waitingToBeResolved, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingProductsToBeResolved.class)
             .toCompletableFuture()
             .join();
 
@@ -233,7 +233,7 @@ class UnresolvedReferencesServiceImplTest {
 
         // test
         final Optional<WaitingToBeResolved> toBeResolvedOptional = service
-            .delete("product-draft-key", CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY).toCompletableFuture().join();
+            .delete("product-draft-key", CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingToBeResolved.class).toCompletableFuture().join();
 
         // assertions
         assertThat(toBeResolvedOptional).isEmpty();
@@ -268,7 +268,7 @@ class UnresolvedReferencesServiceImplTest {
 
         // test
         final Optional<WaitingToBeResolved> toBeResolvedOptional = service
-            .delete("product-draft-key", CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY).toCompletableFuture().join();
+            .delete("product-draft-key", CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingToBeResolved.class).toCompletableFuture().join();
 
         // assertions
         assertThat(toBeResolvedOptional).contains(waitingDraft);
@@ -292,7 +292,7 @@ class UnresolvedReferencesServiceImplTest {
 
         // test
         final Optional<WaitingToBeResolved> toBeResolvedOptional = service
-            .delete("product-draft-key", CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY).toCompletableFuture().join();
+            .delete("product-draft-key", CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingToBeResolved.class).toCompletableFuture().join();
 
         // assertions
         verify(productSyncOptions.getCtpClient()).execute(requestArgumentCaptor.capture());

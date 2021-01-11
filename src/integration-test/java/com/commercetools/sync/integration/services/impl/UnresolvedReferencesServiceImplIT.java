@@ -74,7 +74,8 @@ class UnresolvedReferencesServiceImplIT {
 
         // test
         final Optional<WaitingToBeResolved> result = unresolvedReferencesService
-            .save(productDraftWithUnresolvedRefs, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY)
+            .save(productDraftWithUnresolvedRefs, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                WaitingProductsToBeResolved.class)
             .toCompletableFuture()
             .join();
 
@@ -93,7 +94,7 @@ class UnresolvedReferencesServiceImplIT {
 
         // test
         final Optional<WaitingToBeResolved> deletionResult = unresolvedReferencesService
-            .delete(productDraft.getKey(), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY)
+            .delete(productDraft.getKey(), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingProductsToBeResolved.class )
             .toCompletableFuture()
             .join();
 
@@ -119,7 +120,8 @@ class UnresolvedReferencesServiceImplIT {
 
         // test
         final Optional<WaitingToBeResolved> result = unresolvedReferencesService
-            .save(productDraftWithUnresolvedRefs, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY)
+            .save(productDraftWithUnresolvedRefs, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                WaitingProductsToBeResolved.class)
             .toCompletableFuture()
             .join();
 
@@ -148,7 +150,7 @@ class UnresolvedReferencesServiceImplIT {
 
         // test
         final Optional<WaitingToBeResolved> deletionResult = unresolvedReferencesService
-            .delete(productDraft.getKey(), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY)
+            .delete(productDraft.getKey(), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingProductsToBeResolved.class)
             .toCompletableFuture()
             .join();
 
@@ -173,7 +175,8 @@ class UnresolvedReferencesServiceImplIT {
             new WaitingProductsToBeResolved(productDraft, asSet("foo", "bar"));
 
         unresolvedReferencesService
-            .save(productDraftWithUnresolvedRefs, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY)
+            .save(productDraftWithUnresolvedRefs, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                WaitingProductsToBeResolved.class)
             .toCompletableFuture()
             .join();
 
@@ -182,7 +185,8 @@ class UnresolvedReferencesServiceImplIT {
 
         // test
         final Optional<WaitingToBeResolved> latestResult = unresolvedReferencesService
-            .save(productDraftWithUnresolvedNewRefs, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY)
+            .save(productDraftWithUnresolvedNewRefs, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                WaitingProductsToBeResolved.class)
             .toCompletableFuture()
             .join();
 
@@ -195,9 +199,9 @@ class UnresolvedReferencesServiceImplIT {
                 .isEqualTo(productDraftWithUnresolvedNewRefs.getMissingReferencedKeys());
         });
 
-        final CustomObjectByKeyGet<WaitingToBeResolved> customObjectByKeyGet = CustomObjectByKeyGet
-            .of(CUSTOM_OBJECT_CONTAINER_KEY, sha1Hex(productDraft.getKey()), WaitingToBeResolved.class);
-        final CustomObject<WaitingToBeResolved> createdCustomObject = CTP_TARGET_CLIENT
+        final CustomObjectByKeyGet<WaitingProductsToBeResolved> customObjectByKeyGet = CustomObjectByKeyGet
+            .of(CUSTOM_OBJECT_CONTAINER_KEY, sha1Hex(productDraft.getKey()), WaitingProductsToBeResolved.class );
+        final CustomObject<WaitingProductsToBeResolved> createdCustomObject = CTP_TARGET_CLIENT
             .execute(customObjectByKeyGet)
             .toCompletableFuture()
             .join();

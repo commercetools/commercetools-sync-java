@@ -9,15 +9,17 @@ import java.util.Set;
 
 public abstract class WaitingToBeResolved<T extends WithKey> {
     private Set<String> missingReferencedKeys;
-    public WaitingToBeResolved(){};
+
+    public WaitingToBeResolved() {
+    }
 
     public Set<String> getMissingReferencedKeys() {
         return missingReferencedKeys;
     }
 
-    public abstract void setWaitingDraft(@Nonnull final T draft) ;
+    public abstract void setWaitingDraft(@Nonnull final T draft);
 
-    public abstract  T getWaitingDraft();
+    public abstract T getWaitingDraft();
 
     public void setMissingReferencedKeys(@Nonnull Set keys) {
         missingReferencedKeys = keys;
@@ -40,6 +42,4 @@ public abstract class WaitingToBeResolved<T extends WithKey> {
     public int hashCode() {
         return Objects.hash(getWaitingDraft().getKey(), getMissingReferencedKeys());
     }
-
-
 }
