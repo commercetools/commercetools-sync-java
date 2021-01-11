@@ -33,9 +33,9 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
         "Failed to save CustomObject with key: '%s' (hash of product key: '%s').";
     private static final String DELETE_FAILED =
         "Failed to delete CustomObject with key: '%s' (hash of product key: '%s').";
-    private static final String CUSTOM_OBJECT_CONTAINER_KEY =
+    public static final String CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY =
         "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
-
+;
 
     public UnresolvedReferencesServiceImpl(@Nonnull final ProductSyncOptions baseSyncOptions) {
         this.syncOptions = baseSyncOptions;
@@ -48,7 +48,8 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
 
     @Nonnull
     @Override
-    public CompletionStage<Set<WaitingToBeResolved>> fetch(@Nonnull final Set<String> keys) {
+    public CompletionStage<Set<WaitingToBeResolved>> fetch(@Nonnull final Set<String> keys,
+                                                           @Nonnull final  String containerKey) {
 
         if (keys.isEmpty()) {
             return CompletableFuture.completedFuture(Collections.emptySet());
@@ -60,7 +61,7 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
         final CustomObjectQuery<WaitingToBeResolved> customObjectQuery =
             CustomObjectQuery
                 .of(WaitingToBeResolved.class)
-                .byContainer(CUSTOM_OBJECT_CONTAINER_KEY)
+                .byContainer(containerKey)
                 .plusPredicates(p -> p.key().isIn(hashedKeys));
 
         return QueryExecutionUtils
@@ -74,14 +75,15 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<WaitingToBeResolved>> save(@Nonnull final WaitingToBeResolved draft) {
-
+    public CompletionStage<Optional<WaitingToBeResolved>> save(@Nonnull final WaitingToBeResolved draft,
+                                                               @Nonnull final String containerKey) {
+         Class clazz=draft.getClass();
         final CustomObjectDraft<WaitingToBeResolved> customObjectDraft = CustomObjectDraft
             .ofUnversionedUpsert(
-                CUSTOM_OBJECT_CONTAINER_KEY,
-                hash(draft.getProductDraft().getKey()),
+                containerKey,
+                hash(draft.getWaitingDraft().getKey()),
                 draft,
-                WaitingToBeResolved.class);
+               clazz);
 
         return syncOptions
             .getCtpClient()
@@ -92,7 +94,7 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
                 } else {
                     syncOptions.applyErrorCallback(
                         new SyncException(format(SAVE_FAILED, customObjectDraft.getKey(),
-                                draft.getProductDraft().getKey()), exception));
+                                draft.getWaitingDraft().getKey()), exception));
                     return Optional.empty();
                 }
             });
@@ -100,12 +102,13 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
 
     @Nonnull
     @Override
-    public CompletionStage<Optional<WaitingToBeResolved>> delete(@Nonnull final String key) {
+    public CompletionStage<Optional<WaitingToBeResolved>> delete(@Nonnull final String key,
+                                                                 @Nonnull final  String containerKey) {
 
         return syncOptions
             .getCtpClient()
             .execute(CustomObjectDeleteCommand
-                .of(CUSTOM_OBJECT_CONTAINER_KEY, hash(key), WaitingToBeResolved.class))
+                .of(containerKey, hash(key), WaitingToBeResolved.class))
             .handle((resource, exception) -> {
                 if (exception == null) {
                     return Optional.of(resource.getValue());

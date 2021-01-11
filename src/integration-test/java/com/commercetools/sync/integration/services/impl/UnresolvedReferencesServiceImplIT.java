@@ -1,5 +1,6 @@
 package com.commercetools.sync.integration.services.impl;
 
+import com.commercetools.sync.commons.models.WaitingProductsToBeResolved;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -22,6 +23,7 @@ import static com.commercetools.sync.integration.commons.utils.CustomObjectITUti
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_SPECIAL_CHARS_RESOURCE_PATH;
+import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY;
 import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.util.Collections.singleton;
 import static org.apache.commons.codec.digest.DigestUtils.sha1Hex;
@@ -38,12 +40,12 @@ class UnresolvedReferencesServiceImplIT {
 
     @AfterEach
     void tearDown() {
-        deleteWaitingToBeResolvedCustomObjects(CTP_TARGET_CLIENT);
+        deleteWaitingToBeResolvedCustomObjects(CTP_TARGET_CLIENT, WaitingProductsToBeResolved.class);
     }
 
     @BeforeEach
     void setupTest() {
-        deleteWaitingToBeResolvedCustomObjects(CTP_TARGET_CLIENT);
+        deleteWaitingToBeResolvedCustomObjects(CTP_TARGET_CLIENT, WaitingProductsToBeResolved.class);
         errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
         warningCallBackMessages = new ArrayList<>();
@@ -67,22 +69,22 @@ class UnresolvedReferencesServiceImplIT {
         final ProductDraft productDraft =
             SphereJsonUtils.readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, ProductDraft.class);
 
-        final WaitingToBeResolved productDraftWithUnresolvedRefs =
-            new WaitingToBeResolved(productDraft, asSet("foo", "bar"));
+        final WaitingProductsToBeResolved productDraftWithUnresolvedRefs =
+            new WaitingProductsToBeResolved(productDraft, asSet("foo", "bar"));
 
         // test
         final Optional<WaitingToBeResolved> result = unresolvedReferencesService
-            .save(productDraftWithUnresolvedRefs)
+            .save(productDraftWithUnresolvedRefs, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY)
             .toCompletableFuture()
             .join();
 
         // assertions
         assertThat(result).hasValueSatisfying(waitingToBeResolved ->
-            assertThat(waitingToBeResolved.getProductDraft()).isEqualTo(productDraft));
+            assertThat(waitingToBeResolved.getWaitingDraft()).isEqualTo(productDraft));
 
         // test
         final Set<WaitingToBeResolved> waitingDrafts = unresolvedReferencesService
-            .fetch(singleton(productDraft.getKey()))
+            .fetch(singleton(productDraft.getKey()), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY)
             .toCompletableFuture()
             .join();
 
@@ -91,13 +93,13 @@ class UnresolvedReferencesServiceImplIT {
 
         // test
         final Optional<WaitingToBeResolved> deletionResult = unresolvedReferencesService
-            .delete(productDraft.getKey())
+            .delete(productDraft.getKey(), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY)
             .toCompletableFuture()
             .join();
 
         // assertions
         assertThat(deletionResult).hasValueSatisfying(waitingToBeResolved ->
-            assertThat(waitingToBeResolved.getProductDraft()).isEqualTo(productDraft));
+            assertThat(waitingToBeResolved.getWaitingDraft()).isEqualTo(productDraft));
 
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -112,18 +114,18 @@ class UnresolvedReferencesServiceImplIT {
         final ProductDraft productDraft =
             SphereJsonUtils.readObjectFromResource(PRODUCT_KEY_SPECIAL_CHARS_RESOURCE_PATH, ProductDraft.class);
 
-        final WaitingToBeResolved productDraftWithUnresolvedRefs =
-            new WaitingToBeResolved(productDraft, asSet("foo", "bar"));
+        final WaitingProductsToBeResolved productDraftWithUnresolvedRefs =
+            new WaitingProductsToBeResolved(productDraft, asSet("foo", "bar"));
 
         // test
         final Optional<WaitingToBeResolved> result = unresolvedReferencesService
-            .save(productDraftWithUnresolvedRefs)
+            .save(productDraftWithUnresolvedRefs, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY)
             .toCompletableFuture()
             .join();
 
         // assertions
         assertThat(result).hasValueSatisfying(waitingToBeResolved ->
-            assertThat(waitingToBeResolved.getProductDraft()).isEqualTo(productDraft));
+            assertThat(waitingToBeResolved.getWaitingDraft()).isEqualTo(productDraft));
 
         // test
         final CustomObjectByKeyGet<WaitingToBeResolved> customObjectByKeyGet = CustomObjectByKeyGet
@@ -137,7 +139,7 @@ class UnresolvedReferencesServiceImplIT {
 
         // test
         final Set<WaitingToBeResolved> waitingDrafts = unresolvedReferencesService
-            .fetch(singleton(productDraft.getKey()))
+            .fetch(singleton(productDraft.getKey()), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY)
             .toCompletableFuture()
             .join();
 
@@ -146,13 +148,13 @@ class UnresolvedReferencesServiceImplIT {
 
         // test
         final Optional<WaitingToBeResolved> deletionResult = unresolvedReferencesService
-            .delete(productDraft.getKey())
+            .delete(productDraft.getKey(), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY)
             .toCompletableFuture()
             .join();
 
         // assertions
         assertThat(deletionResult).hasValueSatisfying(waitingToBeResolved ->
-            assertThat(waitingToBeResolved.getProductDraft()).isEqualTo(productDraft));
+            assertThat(waitingToBeResolved.getWaitingDraft()).isEqualTo(productDraft));
 
         assertThat(errorCallBackMessages).isEmpty();
         assertThat(warningCallBackMessages).isEmpty();
@@ -167,30 +169,30 @@ class UnresolvedReferencesServiceImplIT {
         final ProductDraft productDraft =
             SphereJsonUtils.readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, ProductDraft.class);
 
-        final WaitingToBeResolved productDraftWithUnresolvedRefs =
-            new WaitingToBeResolved(productDraft, asSet("foo", "bar"));
+        final WaitingProductsToBeResolved productDraftWithUnresolvedRefs =
+            new WaitingProductsToBeResolved(productDraft, asSet("foo", "bar"));
 
         unresolvedReferencesService
-            .save(productDraftWithUnresolvedRefs)
+            .save(productDraftWithUnresolvedRefs, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY)
             .toCompletableFuture()
             .join();
 
         final WaitingToBeResolved productDraftWithUnresolvedNewRefs =
-            new WaitingToBeResolved(productDraft, asSet("foo123", "bar123"));
+            new WaitingProductsToBeResolved(productDraft, asSet("foo123", "bar123"));
 
         // test
         final Optional<WaitingToBeResolved> latestResult = unresolvedReferencesService
-            .save(productDraftWithUnresolvedNewRefs)
+            .save(productDraftWithUnresolvedNewRefs, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY)
             .toCompletableFuture()
             .join();
 
 
         // assertions
         assertThat(latestResult).hasValueSatisfying(waitingToBeResolved -> {
-            assertThat(waitingToBeResolved.getProductDraft())
+            assertThat(waitingToBeResolved.getWaitingDraft())
                 .isEqualTo(productDraft);
-            assertThat(waitingToBeResolved.getMissingReferencedProductKeys())
-                .isEqualTo(productDraftWithUnresolvedNewRefs.getMissingReferencedProductKeys());
+            assertThat(waitingToBeResolved.getMissingReferencedKeys())
+                .isEqualTo(productDraftWithUnresolvedNewRefs.getMissingReferencedKeys());
         });
 
         final CustomObjectByKeyGet<WaitingToBeResolved> customObjectByKeyGet = CustomObjectByKeyGet

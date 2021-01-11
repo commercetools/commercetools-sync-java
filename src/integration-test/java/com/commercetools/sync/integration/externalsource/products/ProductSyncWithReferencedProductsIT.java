@@ -43,6 +43,7 @@ import static com.commercetools.sync.integration.commons.utils.ProductITUtils.de
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
+import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
@@ -348,15 +349,15 @@ class ProductSyncWithReferencedProductsIT {
         final UnresolvedReferencesServiceImpl unresolvedReferencesService =
             new UnresolvedReferencesServiceImpl(syncOptions);
         final Set<WaitingToBeResolved> waitingToBeResolvedDrafts = unresolvedReferencesService
-            .fetch(asSet(productDraftWithProductReference.getKey()))
+            .fetch(asSet(productDraftWithProductReference.getKey()), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY)
             .toCompletableFuture()
             .join();
 
         assertThat(waitingToBeResolvedDrafts)
             .hasOnlyOneElementSatisfying(waitingToBeResolvedDraft -> {
-                assertThat(waitingToBeResolvedDraft.getProductDraft().getKey())
+                assertThat(waitingToBeResolvedDraft.getWaitingDraft().getKey())
                     .isEqualTo(productDraftWithProductReference.getKey());
-                assertThat(waitingToBeResolvedDraft.getMissingReferencedProductKeys())
+                assertThat(waitingToBeResolvedDraft.getMissingReferencedKeys())
                     .containsExactly("nonExistingKey");
             });
     }
@@ -484,15 +485,15 @@ class ProductSyncWithReferencedProductsIT {
         final UnresolvedReferencesServiceImpl unresolvedReferencesService =
             new UnresolvedReferencesServiceImpl(syncOptions);
         final Set<WaitingToBeResolved> waitingToBeResolvedDrafts = unresolvedReferencesService
-            .fetch(asSet(productDraftWithProductReference.getKey()))
+            .fetch(asSet(productDraftWithProductReference.getKey()), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY)
             .toCompletableFuture()
             .join();
 
         assertThat(waitingToBeResolvedDrafts)
             .hasOnlyOneElementSatisfying(waitingToBeResolvedDraft -> {
-                assertThat(waitingToBeResolvedDraft.getProductDraft().getKey())
+                assertThat(waitingToBeResolvedDraft.getWaitingDraft().getKey())
                     .isEqualTo(productDraftWithProductReference.getKey());
-                assertThat(waitingToBeResolvedDraft.getMissingReferencedProductKeys())
+                assertThat(waitingToBeResolvedDraft.getMissingReferencedKeys())
                     .containsExactly("nonExistingKey");
             });
     }
