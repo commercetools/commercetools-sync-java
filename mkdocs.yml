@@ -61,6 +61,7 @@ nav:
       - Advanced:
         - Sync Options: usage/SYNC_OPTIONS.md
         - Usage Tips: usage/IMPORTANT_USAGE_TIPS.md
+        - Cleanup: usage/CLEANUP_GUIDE.md
   - Javadoc: https://commercetools.github.io/commercetools-sync-java/v/3.0.2/
   - Release notes: RELEASE_NOTES.md
   - Roadmap: https://github.com/commercetools/commercetools-sync-java/milestones

@@ -266,6 +266,8 @@ It being persisted as `CustomObject` means that the referenced StateDrafts with 
 As soon, as the referenced StateDrafts are supplied to the sync, the draft will be created/updated and the 
 `CustomObject` will be removed from the target project.
 
+Keeping the old custom objects around forever can negatively influence the performance of your project and the time it takes to restore it from a backup.  Deleting unused data ensures the best performance for your project. Please have a look into the [Cleanup guide](CLEANUP_GUIDE.md) to cleanup old unresolved custom objects.
+
 #### More examples of how to use the sync
  
  1. [Sync usages](https://github.com/commercetools/commercetools-sync-java/tree/master/src/integration-test/java/com/commercetools/sync/integration/externalsource/states/StateSyncIT.java).

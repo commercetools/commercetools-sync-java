@@ -26,6 +26,17 @@
 
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 
+### 3.1.0 - Jan XX, 2021
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/3.0.2...3.1.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/3.1.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/3.1.0)
+
+- 🎉 **New Features** (1)
+    - Added clean up implementation for the outdated pending reference resolution custom objects. [#650](https://github.com/commercetools/commercetools-sync-java/issues/650)
+
+- ✨ **Documentation** (1)
+    -  Documentation added for the cleaning up of the unresolved references, check the [cleanup guide](https://github.com/commercetools/commercetools-sync-java/blob/master/docs/usage/CLEANUP_GUIDE.md) for more details.
+
 -->
 
 ### 3.0.2 - Dec 16, 2020
