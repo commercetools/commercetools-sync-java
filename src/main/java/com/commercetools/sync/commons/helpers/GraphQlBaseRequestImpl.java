@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 
 import static java.lang.String.format;
 
-public abstract class CommonGraphQlRequestImpl<T> implements GraphQlBaseRequest<T> {
+public abstract class GraphQlBaseRequestImpl<T> implements GraphQlBaseRequest<T> {
 
     protected String queryPredicate = null;
     protected long limit = 500;

@@ -14,7 +14,7 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-public class ResourceKeyIdGraphQlRequest extends CommonGraphQlRequestImpl<ResourceKeyIdGraphQlResult> {
+public class ResourceKeyIdGraphQlRequest extends GraphQlBaseRequestImpl<ResourceKeyIdGraphQlResult> {
     protected final Set<String> keysToSearch;
     protected final GraphQlQueryResources resource;
 

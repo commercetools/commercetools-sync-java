@@ -1,6 +1,6 @@
 package com.commercetools.sync.commons.models;
 
-import com.commercetools.sync.commons.helpers.CommonGraphQlRequestImpl;
+import com.commercetools.sync.commons.helpers.GraphQlBaseRequestImpl;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.http.HttpResponse;
 
@@ -11,7 +11,7 @@ import java.time.Instant;
 import static java.lang.String.format;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
-public class FetchCustomObjectsGraphQlRequest extends CommonGraphQlRequestImpl<ResourceKeyIdGraphQlResult> {
+public class FetchCustomObjectsGraphQlRequest extends GraphQlBaseRequestImpl<ResourceKeyIdGraphQlResult> {
 
     private final String container;
     private final Instant lastModifiedAt;
