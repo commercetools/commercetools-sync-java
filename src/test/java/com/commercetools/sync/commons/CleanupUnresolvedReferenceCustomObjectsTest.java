@@ -23,12 +23,12 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class CleanupTest {
+class CleanupUnresolvedReferenceCustomObjectsTest {
     private final SphereClient mockClient = mock(SphereClient.class);
     private static final int deleteDaysAfterLastModification = 30;
 
     @Test
-    void deleteUnresolvedReferences_withDeleteDaysAfterLastModification_ShouldDeleteAndReturnCleanupStatistics() {
+    void cleanup_withDeleteDaysAfterLastModification_ShouldDeleteAndReturnCleanupStatistics() {
         final ResourceKeyIdGraphQlResult resourceKeyIdGraphQlResult = mock(ResourceKeyIdGraphQlResult.class);
         when(resourceKeyIdGraphQlResult.getResults()).thenReturn(new HashSet<>(Arrays.asList(
             new ResourceKeyId("coKey1", "coId1"),
@@ -40,9 +40,9 @@ class CleanupTest {
         when(mockClient.execute(any(CustomObjectDeleteCommand.class)))
             .thenReturn(CompletableFuture.completedFuture(mock(CustomObject.class)));
 
-        final Cleanup.Statistics statistics =
-            Cleanup.of(mockClient).deleteUnresolvedReferenceCustomObjects(deleteDaysAfterLastModification)
-                   .join();
+        final CleanupUnresolvedReferenceCustomObjects.Statistics statistics =
+            CleanupUnresolvedReferenceCustomObjects.of(mockClient).cleanup(deleteDaysAfterLastModification)
+                                                   .join();
 
         assertThat(statistics.getTotalDeleted()).isEqualTo(4);
         assertThat(statistics.getTotalFailed()).isEqualTo(0);
@@ -52,7 +52,7 @@ class CleanupTest {
     }
 
     @Test
-    void deleteUnresolvedReferences_withNotFound404Exception_ShouldNotIncrementFailedCounter() {
+    void cleanup_withNotFound404Exception_ShouldNotIncrementFailedCounter() {
         final ResourceKeyIdGraphQlResult resourceKeyIdGraphQlResult = mock(ResourceKeyIdGraphQlResult.class);
         when(resourceKeyIdGraphQlResult.getResults())
             .thenReturn(Collections.singleton(new ResourceKeyId("coKey1", "coId1")));
@@ -64,9 +64,9 @@ class CleanupTest {
             .thenReturn(CompletableFuture.completedFuture(mock(CustomObject.class)))
             .thenReturn(CompletableFutureUtils.failed(new NotFoundException()));
 
-        final Cleanup.Statistics statistics =
-            Cleanup.of(mockClient).deleteUnresolvedReferenceCustomObjects(deleteDaysAfterLastModification)
-                   .join();
+        final CleanupUnresolvedReferenceCustomObjects.Statistics statistics =
+            CleanupUnresolvedReferenceCustomObjects.of(mockClient).cleanup(deleteDaysAfterLastModification)
+                                                   .join();
 
         assertThat(statistics.getTotalDeleted()).isEqualTo(1);
         assertThat(statistics.getTotalFailed()).isEqualTo(0);
@@ -75,7 +75,7 @@ class CleanupTest {
     }
 
     @Test
-    void deleteUnresolvedReferences_withBadRequest400Exception_ShouldIncrementFailedCounterAndTriggerErrorCallback() {
+    void cleanup_withBadRequest400Exception_ShouldIncrementFailedCounterAndTriggerErrorCallback() {
         final ResourceKeyIdGraphQlResult resourceKeyIdGraphQlResult = mock(ResourceKeyIdGraphQlResult.class);
         when(resourceKeyIdGraphQlResult.getResults())
             .thenReturn(Collections.singleton(new ResourceKeyId("coKey1", "coId1")));
@@ -89,11 +89,11 @@ class CleanupTest {
             .thenReturn(CompletableFutureUtils.failed(badRequestException));
 
         final List<Throwable> exceptions = new ArrayList<>();
-        final Cleanup.Statistics statistics =
-            Cleanup.of(mockClient)
-                   .errorCallback(exceptions::add)
-                   .deleteUnresolvedReferenceCustomObjects(deleteDaysAfterLastModification)
-                   .join();
+        final CleanupUnresolvedReferenceCustomObjects.Statistics statistics =
+            CleanupUnresolvedReferenceCustomObjects.of(mockClient)
+                                                   .errorCallback(exceptions::add)
+                                                   .cleanup(deleteDaysAfterLastModification)
+                                                   .join();
 
         assertThat(statistics.getTotalDeleted()).isEqualTo(1);
         assertThat(statistics.getTotalFailed()).isEqualTo(1);

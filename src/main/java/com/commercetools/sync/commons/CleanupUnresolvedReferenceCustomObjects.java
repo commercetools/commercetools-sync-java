@@ -25,7 +25,7 @@ import java.util.function.Consumer;
 import static com.commercetools.sync.commons.utils.CtpQueryUtils.queryAll;
 import static java.lang.String.format;
 
-public class Cleanup {
+public class CleanupUnresolvedReferenceCustomObjects {
 
     private final SphereClient sphereClient;
     private final Statistics statistics;
@@ -33,20 +33,21 @@ public class Cleanup {
     private final Clock clock;
     private Consumer<Throwable> errorCallback;
 
-    private Cleanup(@Nonnull final SphereClient sphereClient) {
+    private CleanupUnresolvedReferenceCustomObjects(@Nonnull final SphereClient sphereClient) {
         this.sphereClient = sphereClient;
         this.clock = Clock.systemDefaultZone();
         this.statistics = new Statistics();
     }
 
     /**
-     * Creates new instance of {@link Cleanup} which has the functionality to run cleanup helpers.
+     * Creates new instance of {@link CleanupUnresolvedReferenceCustomObjects} which has the functionality to run
+     * cleanup helpers.
      *
      * @param sphereClient the client object.
-     * @return new instance of {@link Cleanup}
+     * @return new instance of {@link CleanupUnresolvedReferenceCustomObjects}
      */
-    public static Cleanup of(@Nonnull final SphereClient sphereClient) {
-        return new Cleanup(sphereClient);
+    public static CleanupUnresolvedReferenceCustomObjects of(@Nonnull final SphereClient sphereClient) {
+        return new CleanupUnresolvedReferenceCustomObjects(sphereClient);
     }
 
     /**
@@ -56,7 +57,7 @@ public class Cleanup {
      * @param errorCallback the new value to set to the error callback.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public Cleanup errorCallback(@Nonnull final Consumer<Throwable> errorCallback) {
+    public CleanupUnresolvedReferenceCustomObjects errorCallback(@Nonnull final Consumer<Throwable> errorCallback) {
         this.errorCallback = errorCallback;
         return this;
     }
@@ -83,7 +84,7 @@ public class Cleanup {
      * @param pageSize int that indicates batch size of resources to process.
      * @return {@code this} instance of {@link BaseSyncOptionsBuilder}
      */
-    public Cleanup pageSize(final int pageSize) {
+    public CleanupUnresolvedReferenceCustomObjects pageSize(final int pageSize) {
         this.pageSize = pageSize;
         return this;
     }
@@ -98,17 +99,16 @@ public class Cleanup {
      *
      * @param deleteDaysAfterLastModification Days to query. The custom objects will be deleted if it hasn't been
      *                                        modified for the specified amount of days.
-     * @return an instance of {@link CompletableFuture}&lt;{@link Cleanup.Statistics}&gt; which contains the processing
-     *     time, the total number of custom objects that were deleted and failed to delete, and a proper summary
-     *     message of the statistics.
+     * @return an instance of {@link CompletableFuture}&lt;{@link CleanupUnresolvedReferenceCustomObjects.Statistics}
+     *     &gt; which contains the processing time, the total number of custom objects that were deleted and failed
+     *     to delete, and a proper summary message of the statistics.
      */
-    public CompletableFuture<Statistics> deleteUnresolvedReferenceCustomObjects(
-        final int deleteDaysAfterLastModification) {
+    public CompletableFuture<Statistics> cleanup(final int deleteDaysAfterLastModification) {
 
         final long timeBeforeSync = clock.millis();
         return CompletableFuture
-            .allOf(deleteUnresolvedProductReferences(deleteDaysAfterLastModification),
-                deleteUnresolvedStateReferences(deleteDaysAfterLastModification))
+            .allOf(cleanupUnresolvedProductReferences(deleteDaysAfterLastModification),
+                cleanupUnresolvedStateReferences(deleteDaysAfterLastModification))
             .thenApply(
                 ignoredResult -> {
                     statistics.timeElapsedInMilliseconds = clock.millis() - timeBeforeSync;
@@ -116,7 +116,7 @@ public class Cleanup {
                 });
     }
 
-    private CompletableFuture<Void> deleteUnresolvedReferenceCustomObjects(
+    private CompletableFuture<Void> cleanup(
         @Nonnull final String containerName,
         final int deleteDaysAfterLastModification) {
         final Consumer<Set<ResourceKeyId>> pageConsumer = resourceKeyIds ->
@@ -127,13 +127,13 @@ public class Cleanup {
             .toCompletableFuture();
     }
 
-    private CompletableFuture<Void> deleteUnresolvedProductReferences(final int deleteDaysAfterLastModification) {
-        return deleteUnresolvedReferenceCustomObjects(UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_CONTAINER_KEY,
+    private CompletableFuture<Void> cleanupUnresolvedProductReferences(final int deleteDaysAfterLastModification) {
+        return cleanup(UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_CONTAINER_KEY,
             deleteDaysAfterLastModification);
     }
 
-    private CompletableFuture<Void> deleteUnresolvedStateReferences(final int deleteDaysAfterLastModification) {
-        return deleteUnresolvedReferenceCustomObjects(UnresolvedTransitionsServiceImpl.CUSTOM_OBJECT_CONTAINER_KEY,
+    private CompletableFuture<Void> cleanupUnresolvedStateReferences(final int deleteDaysAfterLastModification) {
+        return cleanup(UnresolvedTransitionsServiceImpl.CUSTOM_OBJECT_CONTAINER_KEY,
             deleteDaysAfterLastModification);
     }
 

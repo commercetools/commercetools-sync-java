@@ -1,6 +1,6 @@
 package com.commercetools.sync.integration.commons;
 
-import com.commercetools.sync.commons.Cleanup;
+import com.commercetools.sync.commons.CleanupUnresolvedReferenceCustomObjects;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedTransitions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -36,7 +36,7 @@ import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
-class CleanupIT {
+class CleanupUnresolvedReferenceCustomObjectsIT {
     private UnresolvedTransitionsService unresolvedTransitionsService;
     private UnresolvedReferencesService unresolvedReferencesService;
 
@@ -53,14 +53,14 @@ class CleanupIT {
     }
 
     @Test
-    void deleteUnresolvedReferences_withDeleteDaysAfterLastModification_ShouldDeleteAndReturnCleanupStatistics() {
+    void cleanup_withDeleteDaysAfterLastModification_ShouldDeleteAndReturnCleanupStatistics() {
         createSampleUnresolvedReferences();
 
-        final Cleanup.Statistics statistics =
-            Cleanup.of(CTP_TARGET_CLIENT)
-                   .pageSize(3) // for testing purpose, ensures the pagination works.
-                   .deleteUnresolvedReferenceCustomObjects(-1) // to be able to test it.
-                   .join();
+        final CleanupUnresolvedReferenceCustomObjects.Statistics statistics =
+            CleanupUnresolvedReferenceCustomObjects.of(CTP_TARGET_CLIENT)
+                                                   .pageSize(3) // for testing purpose, ensures the pagination works.
+                                                   .cleanup(-1) // to be able to test it.
+                                                   .join();
 
         assertThat(statistics.getTotalDeleted()).isEqualTo(10);
         assertThat(statistics.getTotalFailed()).isEqualTo(0);
