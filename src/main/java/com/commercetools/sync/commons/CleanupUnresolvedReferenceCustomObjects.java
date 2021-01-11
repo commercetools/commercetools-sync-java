@@ -11,7 +11,6 @@ import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.commands.CustomObjectDeleteCommand;
 
 import javax.annotation.Nonnull;
-import java.time.Clock;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -192,7 +191,6 @@ public class CleanupUnresolvedReferenceCustomObjects {
     public static class Statistics {
         final AtomicInteger totalDeleted;
         final AtomicInteger totalFailed;
-        long timeElapsedInMilliseconds;
 
         private Statistics() {
             this.totalDeleted = new AtomicInteger();
