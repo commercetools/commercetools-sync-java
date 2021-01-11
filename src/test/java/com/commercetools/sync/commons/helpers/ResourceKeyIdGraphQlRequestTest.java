@@ -1,5 +1,6 @@
 package com.commercetools.sync.commons.helpers;
 
+import com.commercetools.sync.commons.models.GraphQlBaseRequest;
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -97,7 +98,7 @@ class ResourceKeyIdGraphQlRequestTest {
     @Test
     void httpRequestIntent_WithKeyAndExplicitLimit_ShouldReturnCorrectQueryString() {
         //preparation
-        final ResourceKeyIdGraphQlRequest resourceKeyIdGraphQlRequest =
+        final GraphQlBaseRequest<ResourceKeyIdGraphQlResult> resourceKeyIdGraphQlRequest =
             new ResourceKeyIdGraphQlRequest(singleton("key1"), GraphQlQueryResources.CATEGORIES).withLimit(10);
 
         //test
@@ -117,7 +118,7 @@ class ResourceKeyIdGraphQlRequestTest {
     @Test
     void httpRequestIntent_WithKeyAndPredicate_ShouldReturnCorrectQueryString() {
         //preparation
-        final ResourceKeyIdGraphQlRequest resourceKeyIdGraphQlRequest =
+        final GraphQlBaseRequest<ResourceKeyIdGraphQlResult> resourceKeyIdGraphQlRequest =
             new ResourceKeyIdGraphQlRequest(singleton("key1"), GraphQlQueryResources.CATEGORIES)
                 .withPredicate("id > \\\\\\\"id"
                     + "\\\\\\\"");
