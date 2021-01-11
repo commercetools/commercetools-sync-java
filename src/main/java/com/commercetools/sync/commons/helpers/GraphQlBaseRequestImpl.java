@@ -79,5 +79,5 @@ public abstract class GraphQlBaseRequestImpl<T> implements GraphQlBaseRequest<T>
      *
      * @return a string representing a graphql query
      */
-    protected abstract Object buildQueryString();
+    protected abstract String buildQueryString();
 }
