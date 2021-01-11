@@ -37,17 +37,19 @@ class CleanupUnresolvedReferenceCustomObjectsTest {
         when(mockClient.execute(any(FetchCustomObjectsGraphQlRequest.class)))
             .thenReturn(CompletableFuture.completedFuture(resourceKeyIdGraphQlResult));
 
+        final Throwable badRequestException = new BadRequestException("key is not valid");
         when(mockClient.execute(any(CustomObjectDeleteCommand.class)))
+            .thenReturn(CompletableFutureUtils.failed(badRequestException))
             .thenReturn(CompletableFuture.completedFuture(mock(CustomObject.class)));
 
         final CleanupUnresolvedReferenceCustomObjects.Statistics statistics =
             CleanupUnresolvedReferenceCustomObjects.of(mockClient).cleanup(deleteDaysAfterLastModification)
                                                    .join();
 
-        assertThat(statistics.getTotalDeleted()).isEqualTo(4);
-        assertThat(statistics.getTotalFailed()).isEqualTo(0);
+        assertThat(statistics.getTotalDeleted()).isEqualTo(3);
+        assertThat(statistics.getTotalFailed()).isEqualTo(1);
         assertThat(statistics.getReportMessage())
-            .isEqualTo("Summary: 4 custom objects were deleted in total (0 failed to delete).");
+            .isEqualTo("Summary: 3 custom objects were deleted in total (1 failed to delete).");
     }
 
     @Test

@@ -11,6 +11,7 @@ import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.commands.CustomObjectDeleteCommand;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -171,21 +172,23 @@ public class CleanupUnresolvedReferenceCustomObjects {
 
         return sphereClient.execute(
             CustomObjectDeleteCommand.of(containerName, resourceKeyId.getKey(), JsonNode.class))
-                           .handle((resource, throwable) -> {
-                               if (throwable == null) {
-                                   statistics.totalDeleted.incrementAndGet();
-                                   return Optional.of(resource);
-                               } else {
-                                   if (throwable instanceof NotFoundException) {
-                                       return Optional.empty();
-                                   }
+                           .handle(this::handleDeleteCallback);
+    }
 
-                                   applyErrorCallback(throwable);
+    private Optional<CustomObject<JsonNode>> handleDeleteCallback(
+        @Nonnull final CustomObject<JsonNode> resource,
+        @Nullable final Throwable throwable) {
 
-                                   statistics.totalFailed.incrementAndGet();
-                                   return Optional.empty();
-                               }
-                           });
+        if (throwable == null) {
+            statistics.totalDeleted.incrementAndGet();
+            return Optional.of(resource);
+        } else if (throwable instanceof NotFoundException) {
+            return Optional.empty();
+        }
+
+        applyErrorCallback(throwable);
+        statistics.totalFailed.incrementAndGet();
+        return Optional.empty();
     }
 
     public static class Statistics {
