@@ -22,7 +22,7 @@ public final class StateReferenceResolver
     extends BaseReferenceResolver<StateDraft, StateSyncOptions> {
   private final StateService stateService;
   private static final String FAILED_TO_RESOLVE_REFERENCE =
-      "Failed to resolve 'transition' reference on " + "StateDraft with key:'%s'. Reason: %s";
+      "Failed to resolve 'transition' reference on StateDraft with key:'%s'. Reason: %s";
 
   /**
    * Takes a {@link StateSyncOptions} instance, a {@link StateService} to instantiate a {@link

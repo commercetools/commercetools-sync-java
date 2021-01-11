@@ -14,7 +14,6 @@ import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
-import com.commercetools.sync.commons.models.WaitingToBeResolvedProducts;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereRequest;
@@ -57,7 +56,7 @@ public final class ProductITUtils {
     deleteStates(ctpClient);
     deleteTaxCategories(ctpClient);
     deleteCustomerGroups(ctpClient);
-    deleteWaitingToBeResolvedCustomObjects(ctpClient, WaitingToBeResolvedProducts.class);
+    deleteWaitingToBeResolvedCustomObjects(ctpClient);
   }
 
   /**

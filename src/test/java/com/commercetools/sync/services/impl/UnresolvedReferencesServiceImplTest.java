@@ -1,6 +1,5 @@
 package com.commercetools.sync.services.impl;
 
-import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY;
 import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.lang.String.format;
 import static java.util.Collections.singleton;
@@ -15,7 +14,6 @@ import static org.mockito.Mockito.when;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
-import com.commercetools.sync.commons.models.WaitingToBeResolvedProducts;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import io.sphere.sdk.client.BadRequestException;
@@ -65,11 +63,7 @@ class UnresolvedReferencesServiceImplTest {
     final Set<String> keys = new HashSet<>();
 
     // test
-    final Set<WaitingToBeResolved> result =
-        service
-            .fetch(keys, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingToBeResolvedProducts.class)
-            .toCompletableFuture()
-            .join();
+    final Set<WaitingToBeResolved> result = service.fetch(keys).toCompletableFuture().join();
 
     // assertions
     assertThat(result).isEmpty();
@@ -84,7 +78,7 @@ class UnresolvedReferencesServiceImplTest {
     when(productDraftMock.getKey()).thenReturn("product-draft-key");
 
     final WaitingToBeResolved waitingToBeResolved =
-        new WaitingToBeResolvedProducts(productDraftMock, singleton("test-ref"));
+        new WaitingToBeResolved(productDraftMock, singleton("test-ref"));
     when(customObjectMock.getValue()).thenReturn(waitingToBeResolved);
 
     final PagedQueryResult result = getMockPagedQueryResult(singletonList(customObjectMock));
@@ -93,13 +87,7 @@ class UnresolvedReferencesServiceImplTest {
 
     // test
     final Set<WaitingToBeResolved> toBeResolvedOptional =
-        service
-            .fetch(
-                singleton("product-draft-key"),
-                CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
-                WaitingToBeResolvedProducts.class)
-            .toCompletableFuture()
-            .join();
+        service.fetch(singleton("product-draft-key")).toCompletableFuture().join();
 
     // assertions
     assertThat(toBeResolvedOptional).containsOnly(waitingToBeResolved);
@@ -114,7 +102,7 @@ class UnresolvedReferencesServiceImplTest {
     when(productDraftMock.getKey()).thenReturn("product-draft-key");
 
     final WaitingToBeResolved waitingToBeResolved =
-        new WaitingToBeResolvedProducts(productDraftMock, singleton("test-ref"));
+        new WaitingToBeResolved(productDraftMock, singleton("test-ref"));
     when(customObjectMock.getValue()).thenReturn(waitingToBeResolved);
 
     final PagedQueryResult result = getMockPagedQueryResult(singletonList(customObjectMock));
@@ -131,13 +119,7 @@ class UnresolvedReferencesServiceImplTest {
             "Visa®",
             "Visa©");
     final Set<WaitingToBeResolved> toBeResolvedOptional =
-        service
-            .fetch(
-                setOfSpecialCharKeys,
-                CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
-                WaitingToBeResolvedProducts.class)
-            .toCompletableFuture()
-            .join();
+        service.fetch(setOfSpecialCharKeys).toCompletableFuture().join();
 
     // assertions
     verify(productSyncOptions.getCtpClient()).execute(requestArgumentCaptor.capture());
@@ -156,7 +138,7 @@ class UnresolvedReferencesServiceImplTest {
     when(productDraftMock.getKey()).thenReturn("product-draft-key");
 
     final WaitingToBeResolved waitingToBeResolved =
-        new WaitingToBeResolvedProducts(productDraftMock, singleton("test-ref"));
+        new WaitingToBeResolved(productDraftMock, singleton("test-ref"));
     when(customObjectMock.getValue()).thenReturn(waitingToBeResolved);
 
     when(productSyncOptions.getCtpClient().execute(any()))
@@ -164,13 +146,7 @@ class UnresolvedReferencesServiceImplTest {
 
     // test
     final Optional<WaitingToBeResolved> result =
-        service
-            .save(
-                waitingToBeResolved,
-                CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
-                WaitingToBeResolvedProducts.class)
-            .toCompletableFuture()
-            .join();
+        service.save(waitingToBeResolved).toCompletableFuture().join();
 
     // assertions
     assertThat(result).contains(waitingToBeResolved);
@@ -185,7 +161,7 @@ class UnresolvedReferencesServiceImplTest {
     when(productDraftMock.getKey()).thenReturn("product-draft-key");
 
     final WaitingToBeResolved waitingToBeResolved =
-        new WaitingToBeResolvedProducts(productDraftMock, singleton("test-ref"));
+        new WaitingToBeResolved(productDraftMock, singleton("test-ref"));
     when(customObjectMock.getValue()).thenReturn(waitingToBeResolved);
 
     when(productSyncOptions.getCtpClient().execute(any()))
@@ -195,13 +171,7 @@ class UnresolvedReferencesServiceImplTest {
 
     // test
     final Optional<WaitingToBeResolved> result =
-        service
-            .save(
-                waitingToBeResolved,
-                CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
-                WaitingToBeResolvedProducts.class)
-            .toCompletableFuture()
-            .join();
+        service.save(waitingToBeResolved).toCompletableFuture().join();
 
     // assertions
     verify(productSyncOptions.getCtpClient()).execute(requestArgumentCaptor.capture());
@@ -217,20 +187,14 @@ class UnresolvedReferencesServiceImplTest {
     final ProductDraft productDraftMock = mock(ProductDraft.class);
     when(productDraftMock.getKey()).thenReturn(productKey);
     final WaitingToBeResolved waitingToBeResolved =
-        new WaitingToBeResolvedProducts(productDraftMock, singleton("test-ref"));
+        new WaitingToBeResolved(productDraftMock, singleton("test-ref"));
 
     when(productSyncOptions.getCtpClient().execute(any()))
         .thenReturn(CompletableFutureUtils.failed(new BadRequestException("bad request")));
 
     // test
     final Optional<WaitingToBeResolved> result =
-        service
-            .save(
-                waitingToBeResolved,
-                CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
-                WaitingToBeResolvedProducts.class)
-            .toCompletableFuture()
-            .join();
+        service.save(waitingToBeResolved).toCompletableFuture().join();
 
     // assertions
     assertThat(result).isEmpty();
@@ -264,11 +228,7 @@ class UnresolvedReferencesServiceImplTest {
 
     // test
     final Optional<WaitingToBeResolved> toBeResolvedOptional =
-        service
-            .delete(
-                "product-draft-key", CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingToBeResolved.class)
-            .toCompletableFuture()
-            .join();
+        service.delete("product-draft-key").toCompletableFuture().join();
 
     // assertions
     assertThat(toBeResolvedOptional).isEmpty();
@@ -301,7 +261,7 @@ class UnresolvedReferencesServiceImplTest {
     final ProductDraft productDraftMock = mock(ProductDraft.class);
     when(productDraftMock.getKey()).thenReturn("product-draft-key");
     final WaitingToBeResolved waitingDraft =
-        new WaitingToBeResolvedProducts(productDraftMock, singleton("test-ref"));
+        new WaitingToBeResolved(productDraftMock, singleton("test-ref"));
     when(customObjectMock.getValue()).thenReturn(waitingDraft);
 
     when(productSyncOptions.getCtpClient().execute(any(CustomObjectDeleteCommand.class)))
@@ -309,11 +269,7 @@ class UnresolvedReferencesServiceImplTest {
 
     // test
     final Optional<WaitingToBeResolved> toBeResolvedOptional =
-        service
-            .delete(
-                "product-draft-key", CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingToBeResolved.class)
-            .toCompletableFuture()
-            .join();
+        service.delete("product-draft-key").toCompletableFuture().join();
 
     // assertions
     assertThat(toBeResolvedOptional).contains(waitingDraft);
@@ -328,7 +284,7 @@ class UnresolvedReferencesServiceImplTest {
     final ProductDraft productDraftMock = mock(ProductDraft.class);
     when(productDraftMock.getKey()).thenReturn("product-draft-key");
     final WaitingToBeResolved waitingDraft =
-        new WaitingToBeResolvedProducts(productDraftMock, singleton("test-ref"));
+        new WaitingToBeResolved(productDraftMock, singleton("test-ref"));
     when(customObjectMock.getValue()).thenReturn(waitingDraft);
 
     when(productSyncOptions.getCtpClient().execute(any(CustomObjectDeleteCommand.class)))
@@ -338,11 +294,7 @@ class UnresolvedReferencesServiceImplTest {
 
     // test
     final Optional<WaitingToBeResolved> toBeResolvedOptional =
-        service
-            .delete(
-                "product-draft-key", CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingToBeResolved.class)
-            .toCompletableFuture()
-            .join();
+        service.delete("product-draft-key").toCompletableFuture().join();
 
     // assertions
     verify(productSyncOptions.getCtpClient()).execute(requestArgumentCaptor.capture());

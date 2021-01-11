@@ -16,7 +16,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
 
-public final class CustomObjectITUtils<T extends WaitingToBeResolved> {
+public final class CustomObjectITUtils {
 
   private static final String PRODUCT_CUSTOM_OBJECT_CONTAINER_KEY =
       "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
@@ -89,22 +89,34 @@ public final class CustomObjectITUtils<T extends WaitingToBeResolved> {
    *
    * @param ctpClient the client to delete the custom objects from.
    */
-  public static void deleteWaitingToBeResolvedCustomObjects(
-      @Nonnull final SphereClient ctpClient, @Nonnull final Class clazz) {
+  public static void deleteWaitingToBeResolvedCustomObjects(@Nonnull final SphereClient ctpClient) {
 
-    final CustomObjectQuery<? extends WaitingToBeResolved> customObjectQuery =
-        CustomObjectQuery.of(clazz).byContainer(PRODUCT_CUSTOM_OBJECT_CONTAINER_KEY);
+    final CustomObjectQuery<WaitingToBeResolved> customObjectQuery =
+        CustomObjectQuery.of(WaitingToBeResolved.class)
+            .byContainer(PRODUCT_CUSTOM_OBJECT_CONTAINER_KEY);
 
-    PagedQueryResult<? extends CustomObject<? extends WaitingToBeResolved>> result =
-        ctpClient.execute(customObjectQuery).toCompletableFuture().join();
-    result
-        .getResults()
-        .forEach(
-            customObject ->
-                ctpClient
-                    .execute(CustomObjectDeleteCommand.of(customObject, clazz))
-                    .toCompletableFuture()
-                    .join());
+    ctpClient
+        .execute(customObjectQuery)
+        .thenApply(PagedQueryResult::getResults)
+        .thenCompose(
+            customObjects -> deleteWaitingToBeResolvedCustomObjects(ctpClient, customObjects))
+        .toCompletableFuture()
+        .join();
+  }
+
+  @Nonnull
+  private static CompletableFuture<Void> deleteWaitingToBeResolvedCustomObjects(
+      @Nonnull final SphereClient ctpClient,
+      @Nonnull final List<CustomObject<WaitingToBeResolved>> customObjects) {
+
+    return CompletableFuture.allOf(
+        customObjects.stream()
+            .map(
+                customObject ->
+                    ctpClient.execute(
+                        CustomObjectDeleteCommand.of(customObject, WaitingToBeResolved.class)))
+            .map(CompletionStage::toCompletableFuture)
+            .toArray(CompletableFuture[]::new));
   }
 
   public static void deleteWaitingToBeResolvedTransitionsCustomObjects(

@@ -16,7 +16,7 @@ public final class CartDiscountReferenceResolver
         CartDiscountDraft, CartDiscountDraftBuilder, CartDiscountSyncOptions> {
 
   static final String FAILED_TO_RESOLVE_CUSTOM_TYPE =
-      "Failed to resolve custom type reference on " + "CartDiscountDraft with key:'%s'.";
+      "Failed to resolve custom type reference on CartDiscountDraft with key:'%s'.";
 
   /**
    * Takes a {@link CartDiscountSyncOptions} instance, a {@link TypeService} to instantiate a {@link

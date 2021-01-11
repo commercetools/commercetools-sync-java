@@ -12,8 +12,7 @@ import javax.annotation.Nonnull;
 public final class AssetReferenceResolver
     extends CustomReferenceResolver<AssetDraft, AssetDraftBuilder, BaseSyncOptions> {
 
-  static final String FAILED_TO_RESOLVE_CUSTOM_TYPE =
-      "Failed to resolve custom type reference on " + "AssetDraft with key:'%s'.";
+  static final String FAILED_TO_RESOLVE_CUSTOM_TYPE = "Failed to resolve custom type reference on AssetDraft with key:'%s'.";
 
   /**
    * Takes a {@link BaseSyncOptions} instance and a {@link TypeService} to instantiate a {@link

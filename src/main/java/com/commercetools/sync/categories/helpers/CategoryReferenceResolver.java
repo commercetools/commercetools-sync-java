@@ -35,9 +35,9 @@ public final class CategoryReferenceResolver
   private final TypeService typeService;
 
   static final String FAILED_TO_RESOLVE_PARENT =
-      "Failed to resolve parent reference on " + "CategoryDraft with key:'%s'. Reason: %s";
+      "Failed to resolve parent reference on CategoryDraft with key:'%s'. Reason: %s";
   static final String FAILED_TO_RESOLVE_CUSTOM_TYPE =
-      "Failed to resolve custom type reference on " + "CategoryDraft with key:'%s'.";
+      "Failed to resolve custom type reference on CategoryDraft with key:'%s'.";
   static final String PARENT_CATEGORY_DOES_NOT_EXIST =
       "Parent category with key '%s' doesn't exist.";
 

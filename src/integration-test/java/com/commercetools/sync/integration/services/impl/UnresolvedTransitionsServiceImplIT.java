@@ -2,6 +2,7 @@ package com.commercetools.sync.integration.services.impl;
 
 import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.deleteWaitingToBeResolvedTransitionsCustomObjects;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.services.impl.UnresolvedTransitionsServiceImpl.CUSTOM_OBJECT_CONTAINER_KEY;
 import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.util.Collections.singleton;
 import static org.apache.commons.codec.digest.DigestUtils.sha1Hex;
@@ -31,8 +32,6 @@ import org.junit.jupiter.api.Test;
 
 class UnresolvedTransitionsServiceImplIT {
 
-  private static final String CUSTOM_OBJECT_CONTAINER_KEY =
-      "commercetools-sync-java.UnresolvedTransitionsService.stateDrafts";
   private UnresolvedTransitionsService unresolvedTransitionsService;
   private List<String> errorCallBackMessages;
   private List<String> warningCallBackMessages;
