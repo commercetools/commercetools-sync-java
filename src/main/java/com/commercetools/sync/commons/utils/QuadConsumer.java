@@ -4,11 +4,11 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 
 /**
- * Represents an operation that accepts four arguments and returns no result. This is the
- * quad-arity specialization of {@link Consumer}.
+ * Represents an operation that accepts four arguments and returns no result. This is the quad-arity
+ * specialization of {@link Consumer}.
  *
- * <p>This is a <a href="package-summary.html">functional interface</a>
- * whose functional method is {@link #accept(Object, Object, Object, Object)}.
+ * <p>This is a <a href="package-summary.html">functional interface</a> whose functional method is
+ * {@link #accept(Object, Object, Object, Object)}.
  *
  * @param <T> the type of the first argument to the function
  * @param <U> the type of the second argument to the function
@@ -19,15 +19,17 @@ import javax.annotation.Nullable;
 @FunctionalInterface
 public interface QuadConsumer<T, U, S, V> {
 
-    /**
-     * Performs operation on the given arguments.
-     *
-     * @param firstParam the first argument.
-     * @param secondParam the second argument.
-     * @param thirdParam the third argument.
-     * @param fourthParam the fourth argument.
-     */
-    void accept(@Nullable final T firstParam, @Nullable final U secondParam,
-        @Nullable final S thirdParam, @Nullable final V fourthParam);
-
+  /**
+   * Performs operation on the given arguments.
+   *
+   * @param firstParam the first argument.
+   * @param secondParam the second argument.
+   * @param thirdParam the third argument.
+   * @param fourthParam the fourth argument.
+   */
+  void accept(
+      @Nullable final T firstParam,
+      @Nullable final U secondParam,
+      @Nullable final S thirdParam,
+      @Nullable final V fourthParam);
 }

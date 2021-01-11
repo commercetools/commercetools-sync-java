@@ -1,5 +1,8 @@
 package com.commercetools.sync.services.impl;
 
+import static java.lang.String.format;
+import static java.util.Collections.singleton;
+
 import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
 import com.commercetools.sync.commons.models.GraphQlQueryResources;
 import com.commercetools.sync.products.ProductSyncOptions;
@@ -13,84 +16,92 @@ import io.sphere.sdk.products.expansion.ProductExpansionModel;
 import io.sphere.sdk.products.queries.ProductQuery;
 import io.sphere.sdk.products.queries.ProductQueryModel;
 import io.sphere.sdk.queries.QueryPredicate;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.apache.commons.lang3.StringUtils;
 
-import static java.lang.String.format;
-import static java.util.Collections.singleton;
+public final class ProductServiceImpl
+    extends BaseServiceWithKey<
+        ProductDraft,
+        Product,
+        ProductSyncOptions,
+        ProductQuery,
+        ProductQueryModel,
+        ProductExpansionModel<Product>>
+    implements ProductService {
 
+  public ProductServiceImpl(@Nonnull final ProductSyncOptions syncOptions) {
+    super(syncOptions);
+  }
 
-public final class ProductServiceImpl extends BaseServiceWithKey<ProductDraft, Product, ProductSyncOptions,
-    ProductQuery, ProductQueryModel, ProductExpansionModel<Product>> implements ProductService {
+  @Nonnull
+  @Override
+  public CompletionStage<Optional<String>> getIdFromCacheOrFetch(@Nullable final String key) {
 
-    public ProductServiceImpl(@Nonnull final ProductSyncOptions syncOptions) {
-        super(syncOptions);
-    }
+    return fetchCachedResourceId(
+        key,
+        () -> ProductQuery.of().withPredicates(buildProductKeysQueryPredicate(singleton(key))));
+  }
 
-    @Nonnull
-    @Override
-    public CompletionStage<Optional<String>> getIdFromCacheOrFetch(@Nullable final String key) {
+  @Nonnull
+  @Override
+  public CompletionStage<Map<String, String>> cacheKeysToIds(
+      @Nonnull final Set<String> productKeys) {
 
-        return fetchCachedResourceId(key,
-            () -> ProductQuery.of()
-                              .withPredicates(buildProductKeysQueryPredicate(singleton(key))));
-    }
+    return cacheKeysToIds(
+        productKeys,
+        keysNotCached ->
+            new ResourceKeyIdGraphQlRequest(keysNotCached, GraphQlQueryResources.PRODUCTS));
+  }
 
-    @Nonnull
-    @Override
-    public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> productKeys) {
+  QueryPredicate<Product> buildProductKeysQueryPredicate(@Nonnull final Set<String> productKeys) {
+    final List<String> keysSurroundedWithDoubleQuotes =
+        productKeys.stream()
+            .filter(StringUtils::isNotBlank)
+            .map(productKey -> format("\"%s\"", productKey))
+            .collect(Collectors.toList());
+    String keysQueryString = keysSurroundedWithDoubleQuotes.toString();
+    // Strip square brackets from list string. For example: ["key1", "key2"] -> "key1", "key2"
+    keysQueryString = keysQueryString.substring(1, keysQueryString.length() - 1);
+    return QueryPredicate.of(format("key in (%s)", keysQueryString));
+  }
 
-        return cacheKeysToIds(
-            productKeys,
-            keysNotCached -> new ResourceKeyIdGraphQlRequest(keysNotCached, GraphQlQueryResources.PRODUCTS));
-    }
+  @Nonnull
+  @Override
+  public CompletionStage<Set<Product>> fetchMatchingProductsByKeys(
+      @Nonnull final Set<String> productKeys) {
 
-    QueryPredicate<Product> buildProductKeysQueryPredicate(@Nonnull final Set<String> productKeys) {
-        final List<String> keysSurroundedWithDoubleQuotes = productKeys.stream()
-                                                                       .filter(StringUtils::isNotBlank)
-                                                                       .map(productKey -> format("\"%s\"", productKey))
-                                                                       .collect(Collectors.toList());
-        String keysQueryString = keysSurroundedWithDoubleQuotes.toString();
-        // Strip square brackets from list string. For example: ["key1", "key2"] -> "key1", "key2"
-        keysQueryString = keysQueryString.substring(1, keysQueryString.length() - 1);
-        return QueryPredicate.of(format("key in (%s)", keysQueryString));
-    }
+    return fetchMatchingResources(
+        productKeys,
+        () -> ProductQuery.of().withPredicates(buildProductKeysQueryPredicate(productKeys)));
+  }
 
-    @Nonnull
-    @Override
-    public CompletionStage<Set<Product>> fetchMatchingProductsByKeys(@Nonnull final Set<String> productKeys) {
+  @Nonnull
+  @Override
+  public CompletionStage<Optional<Product>> fetchProduct(@Nullable final String key) {
 
-        return fetchMatchingResources(productKeys,
-            () -> ProductQuery.of().withPredicates(buildProductKeysQueryPredicate(productKeys)));
-    }
+    return fetchResource(
+        key,
+        () -> ProductQuery.of().withPredicates(buildProductKeysQueryPredicate(singleton(key))));
+  }
 
-    @Nonnull
-    @Override
-    public CompletionStage<Optional<Product>> fetchProduct(@Nullable final String key) {
+  @Nonnull
+  @Override
+  public CompletionStage<Optional<Product>> createProduct(
+      @Nonnull final ProductDraft productDraft) {
+    return createResource(productDraft, ProductCreateCommand::of);
+  }
 
-        return fetchResource(key,
-            () -> ProductQuery
-                .of().withPredicates(buildProductKeysQueryPredicate(singleton(key))));
-    }
-
-    @Nonnull
-    @Override
-    public CompletionStage<Optional<Product>> createProduct(@Nonnull final ProductDraft productDraft) {
-        return createResource(productDraft, ProductCreateCommand::of);
-    }
-
-    @Nonnull
-    @Override
-    public CompletionStage<Product> updateProduct(@Nonnull final Product product,
-                                                  @Nonnull final List<UpdateAction<Product>> updateActions) {
-        return updateResource(product, ProductUpdateCommand::of, updateActions);
-    }
+  @Nonnull
+  @Override
+  public CompletionStage<Product> updateProduct(
+      @Nonnull final Product product, @Nonnull final List<UpdateAction<Product>> updateActions) {
+    return updateResource(product, ProductUpdateCommand::of, updateActions);
+  }
 }
