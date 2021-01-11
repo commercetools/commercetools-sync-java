@@ -2,6 +2,7 @@ package com.commercetools.sync.commons.models;
 
 import com.commercetools.sync.commons.helpers.GraphQlBaseRequestImpl;
 import io.sphere.sdk.client.SphereClient;
+import io.sphere.sdk.client.SphereRequest;
 import io.sphere.sdk.http.HttpResponse;
 
 import javax.annotation.Nonnull;
@@ -24,7 +25,7 @@ public class FetchCustomObjectsGraphQlRequest extends GraphQlBaseRequestImpl<Res
 
     /**
      * Takes {@code container} and {@code lastModifiedAt} to instantiate a new {@link FetchCustomObjectsGraphQlRequest}
-     * instance, which is an implementation of the {@link SphereClient}.
+     * instance, which is an implementation of the {@link SphereRequest}.
      *
      * @param container - A namespace to group custom objects.
      * @param lastModifiedAt - lastModifiedAt will be used in where param.
