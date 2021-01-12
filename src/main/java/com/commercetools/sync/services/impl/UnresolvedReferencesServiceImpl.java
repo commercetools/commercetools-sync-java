@@ -35,7 +35,6 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
         "Failed to delete CustomObject with key: '%s' (hash of product key: '%s').";
     public static final String CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY =
         "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
-;
 
     public UnresolvedReferencesServiceImpl(@Nonnull final ProductSyncOptions baseSyncOptions) {
         this.syncOptions = baseSyncOptions;
@@ -105,7 +104,8 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
     @Override
     public CompletionStage<Optional<WaitingToBeResolved>> delete(@Nonnull final String key,
                                                                  @Nonnull final String containerKey,
-                                                                 @Nonnull final Class<? extends WaitingToBeResolved> clazz) {
+                                                                 @Nonnull final Class<? extends WaitingToBeResolved>
+                                                                     clazz) {
 
         return syncOptions
             .getCtpClient()

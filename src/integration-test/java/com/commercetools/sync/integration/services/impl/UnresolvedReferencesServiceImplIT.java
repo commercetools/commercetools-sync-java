@@ -85,7 +85,8 @@ class UnresolvedReferencesServiceImplIT {
 
         // test
         final Set<WaitingToBeResolved> waitingDrafts = unresolvedReferencesService
-            .fetch(singleton(productDraft.getKey()), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingProductsToBeResolved.class )
+            .fetch(singleton(productDraft.getKey()), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                WaitingProductsToBeResolved.class )
             .toCompletableFuture()
             .join();
 
@@ -141,7 +142,8 @@ class UnresolvedReferencesServiceImplIT {
 
         // test
         final Set<WaitingToBeResolved> waitingDrafts = unresolvedReferencesService
-            .fetch(singleton(productDraft.getKey()), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingProductsToBeResolved.class )
+            .fetch(singleton(productDraft.getKey()), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                WaitingProductsToBeResolved.class )
             .toCompletableFuture()
             .join();
 

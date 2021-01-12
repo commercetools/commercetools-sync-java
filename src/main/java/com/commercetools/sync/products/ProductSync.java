@@ -241,8 +241,10 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
         missingReferencedProductKeys.forEach(missingParentKey ->
             statistics.addMissingDependency(missingParentKey, newProduct.getKey()));
-        return unresolvedReferencesService.save(new WaitingProductsToBeResolved(newProduct, missingReferencedProductKeys),
-            CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingProductsToBeResolved.class);
+        return unresolvedReferencesService.save(new WaitingProductsToBeResolved(
+             newProduct, missingReferencedProductKeys),
+            CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+            WaitingProductsToBeResolved.class);
     }
 
     @Nonnull

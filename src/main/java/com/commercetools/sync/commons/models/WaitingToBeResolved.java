@@ -21,7 +21,7 @@ public abstract class WaitingToBeResolved<T extends WithKey> {
 
     public abstract T getWaitingDraft();
 
-    public void setMissingReferencedKeys(@Nonnull Set keys) {
+    public void setMissingReferencedKeys(@Nonnull final Set keys) {
         missingReferencedKeys = keys;
     }
 

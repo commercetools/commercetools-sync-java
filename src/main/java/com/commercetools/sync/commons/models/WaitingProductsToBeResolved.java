@@ -19,7 +19,7 @@ public final class WaitingProductsToBeResolved<T extends ProductDraft> extends W
         this.setMissingReferencedKeys(missingReferencedKeys);
     }
 
-    public void setMissingReferencedKeys(@Nonnull Set keys) {
+    public void setMissingReferencedKeys(@Nonnull final Set keys) {
         super.setMissingReferencedKeys(keys);
     }
 
