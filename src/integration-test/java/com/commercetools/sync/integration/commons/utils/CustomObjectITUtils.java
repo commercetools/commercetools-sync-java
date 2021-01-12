@@ -1,6 +1,5 @@
 package com.commercetools.sync.integration.commons.utils;
 
-import com.commercetools.sync.commons.models.WaitingProductsToBeResolved;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedTransitions;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -12,7 +11,6 @@ import io.sphere.sdk.customobjects.commands.CustomObjectUpsertCommand;
 import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
 import io.sphere.sdk.customobjects.queries.CustomObjectQueryBuilder;
 import io.sphere.sdk.queries.PagedQueryResult;
-
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -100,9 +98,8 @@ public final class CustomObjectITUtils<T extends WaitingToBeResolved> {
 
         PagedQueryResult<? extends CustomObject<? extends WaitingToBeResolved>> result = ctpClient
             .execute(customObjectQuery).toCompletableFuture().join();
-   result.getResults().forEach(customObject -> ctpClient
-            .execute(CustomObjectDeleteCommand.of(customObject,
-                clazz)).toCompletableFuture().join());
+        result.getResults().forEach(customObject -> ctpClient
+            .execute(CustomObjectDeleteCommand.of(customObject, clazz)).toCompletableFuture().join());
 
     }
 
