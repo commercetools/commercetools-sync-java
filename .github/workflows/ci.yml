@@ -17,7 +17,7 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew clean dependencyUpdates setLibraryVersion build
         env:
           SOURCE_PROJECT_KEY: java-sync-source
           SOURCE_CLIENT_ID:  ${{ secrets.SOURCE_CLIENT_ID }}
@@ -25,4 +25,6 @@ jobs:
           TARGET_PROJECT_KEY: java-sync-target
           TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID }}
           TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET }}
+      - name: Codecov
+        uses: codecov/codecov-action@v1
 
