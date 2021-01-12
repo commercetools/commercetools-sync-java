@@ -3,27 +3,48 @@ name: CI
 on: [push]
 
 jobs:
-  build:
+  checks:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      run: ./gradlew clean dependencyUpdates
+      run: ./gradlew spotlessCheck
+      run: ./gradlew pmdBenchmark pmdIntegrationTest pmdMain pmdTest
+      run: ./gradlew spotbugsBenchmark spotbugsIntegrationTest spotbugsMain spotbugsTest
 
+  unit_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+        run: ./gradlew test
+
+  integration_tests:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: serializing workflow runs with turnstyle action
         uses: softprops/turnstyle@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Set up JDK 1.8
-        uses: actions/setup-java@v1
+      - uses: actions/setup-java@v1
         with:
           java-version: 1.8
-      - name: Cache Gradle packages
-        uses: actions/cache@v2
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
-          restore-keys: ${{ runner.os }}-gradle
       - name: Build with Gradle
-        run: ./gradlew clean dependencyUpdates setLibraryVersion build
+        run: ./gradlew clean setLibraryVersion integrationTest test jacocoTestCoverageVerification jacocoTestReport
         env:
           SOURCE_PROJECT_KEY: java-sync-source
           SOURCE_CLIENT_ID:  ${{ secrets.SOURCE_CLIENT_ID }}
@@ -33,4 +54,3 @@ jobs:
           TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET }}
       - name: Codecov
         uses: codecov/codecov-action@v1
-
