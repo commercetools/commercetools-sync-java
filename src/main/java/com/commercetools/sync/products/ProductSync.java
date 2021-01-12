@@ -3,7 +3,7 @@ package com.commercetools.sync.products;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.models.WaitingProductsToBeResolved;
+import com.commercetools.sync.commons.models.WaitingToBeResolvedProducts;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductBatchValidator;
@@ -241,10 +241,10 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
         missingReferencedProductKeys.forEach(missingParentKey ->
             statistics.addMissingDependency(missingParentKey, newProduct.getKey()));
-        return unresolvedReferencesService.save(new WaitingProductsToBeResolved(
+        return unresolvedReferencesService.save(new WaitingToBeResolvedProducts(
              newProduct, missingReferencedProductKeys),
             CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
-            WaitingProductsToBeResolved.class);
+            WaitingToBeResolvedProducts.class);
     }
 
     @Nonnull
@@ -269,7 +269,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         final Set<WaitingToBeResolved> waitingDraftsToBeUpdated = new HashSet<>();
 
         return unresolvedReferencesService
-            .fetch(referencingDraftKeys, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingProductsToBeResolved.class )
+            .fetch(referencingDraftKeys, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingToBeResolvedProducts.class )
             .handle(ImmutablePair::new)
             .thenCompose(fetchResponse -> {
                 final Set<? extends WaitingToBeResolved> waitingDrafts = fetchResponse.getKey();
@@ -307,7 +307,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         return allOf(waitingDraftsToBeUpdated
             .stream()
             .map(draft -> unresolvedReferencesService.save(draft, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
-                WaitingProductsToBeResolved.class))
+                WaitingToBeResolvedProducts.class))
             .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
     }

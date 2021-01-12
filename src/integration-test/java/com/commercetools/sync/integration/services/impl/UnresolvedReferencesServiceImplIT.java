@@ -1,6 +1,6 @@
 package com.commercetools.sync.integration.services.impl;
 
-import com.commercetools.sync.commons.models.WaitingProductsToBeResolved;
+import com.commercetools.sync.commons.models.WaitingToBeResolvedProducts;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -40,12 +40,12 @@ class UnresolvedReferencesServiceImplIT {
 
     @AfterEach
     void tearDown() {
-        deleteWaitingToBeResolvedCustomObjects(CTP_TARGET_CLIENT, WaitingProductsToBeResolved.class);
+        deleteWaitingToBeResolvedCustomObjects(CTP_TARGET_CLIENT, WaitingToBeResolvedProducts.class);
     }
 
     @BeforeEach
     void setupTest() {
-        deleteWaitingToBeResolvedCustomObjects(CTP_TARGET_CLIENT, WaitingProductsToBeResolved.class);
+        deleteWaitingToBeResolvedCustomObjects(CTP_TARGET_CLIENT, WaitingToBeResolvedProducts.class);
         errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
         warningCallBackMessages = new ArrayList<>();
@@ -69,13 +69,13 @@ class UnresolvedReferencesServiceImplIT {
         final ProductDraft productDraft =
             SphereJsonUtils.readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, ProductDraft.class);
 
-        final WaitingProductsToBeResolved productDraftWithUnresolvedRefs =
-            new WaitingProductsToBeResolved(productDraft, asSet("foo", "bar"));
+        final WaitingToBeResolvedProducts productDraftWithUnresolvedRefs =
+            new WaitingToBeResolvedProducts(productDraft, asSet("foo", "bar"));
 
         // test
         final Optional<WaitingToBeResolved> result = unresolvedReferencesService
             .save(productDraftWithUnresolvedRefs, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
-                WaitingProductsToBeResolved.class)
+                WaitingToBeResolvedProducts.class)
             .toCompletableFuture()
             .join();
 
@@ -86,7 +86,7 @@ class UnresolvedReferencesServiceImplIT {
         // test
         final Set<WaitingToBeResolved> waitingDrafts = unresolvedReferencesService
             .fetch(singleton(productDraft.getKey()), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
-                WaitingProductsToBeResolved.class )
+                WaitingToBeResolvedProducts.class )
             .toCompletableFuture()
             .join();
 
@@ -95,7 +95,7 @@ class UnresolvedReferencesServiceImplIT {
 
         // test
         final Optional<WaitingToBeResolved> deletionResult = unresolvedReferencesService
-            .delete(productDraft.getKey(), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingProductsToBeResolved.class )
+            .delete(productDraft.getKey(), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingToBeResolvedProducts.class )
             .toCompletableFuture()
             .join();
 
@@ -116,13 +116,13 @@ class UnresolvedReferencesServiceImplIT {
         final ProductDraft productDraft =
             SphereJsonUtils.readObjectFromResource(PRODUCT_KEY_SPECIAL_CHARS_RESOURCE_PATH, ProductDraft.class);
 
-        final WaitingProductsToBeResolved productDraftWithUnresolvedRefs =
-            new WaitingProductsToBeResolved(productDraft, asSet("foo", "bar"));
+        final WaitingToBeResolvedProducts productDraftWithUnresolvedRefs =
+            new WaitingToBeResolvedProducts(productDraft, asSet("foo", "bar"));
 
         // test
         final Optional<WaitingToBeResolved> result = unresolvedReferencesService
             .save(productDraftWithUnresolvedRefs, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
-                WaitingProductsToBeResolved.class)
+                WaitingToBeResolvedProducts.class)
             .toCompletableFuture()
             .join();
 
@@ -131,9 +131,9 @@ class UnresolvedReferencesServiceImplIT {
             assertThat(waitingToBeResolved.getWaitingDraft()).isEqualTo(productDraft));
 
         // test
-        final CustomObjectByKeyGet<WaitingProductsToBeResolved> customObjectByKeyGet = CustomObjectByKeyGet
-            .of(CUSTOM_OBJECT_CONTAINER_KEY, sha1Hex(productDraft.getKey()), WaitingProductsToBeResolved.class);
-        final CustomObject<WaitingProductsToBeResolved> createdCustomObject = CTP_TARGET_CLIENT
+        final CustomObjectByKeyGet<WaitingToBeResolvedProducts> customObjectByKeyGet = CustomObjectByKeyGet
+            .of(CUSTOM_OBJECT_CONTAINER_KEY, sha1Hex(productDraft.getKey()), WaitingToBeResolvedProducts.class);
+        final CustomObject<WaitingToBeResolvedProducts> createdCustomObject = CTP_TARGET_CLIENT
             .execute(customObjectByKeyGet)
             .toCompletableFuture()
             .join();
@@ -143,7 +143,7 @@ class UnresolvedReferencesServiceImplIT {
         // test
         final Set<WaitingToBeResolved> waitingDrafts = unresolvedReferencesService
             .fetch(singleton(productDraft.getKey()), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
-                WaitingProductsToBeResolved.class )
+                WaitingToBeResolvedProducts.class )
             .toCompletableFuture()
             .join();
 
@@ -152,7 +152,7 @@ class UnresolvedReferencesServiceImplIT {
 
         // test
         final Optional<WaitingToBeResolved> deletionResult = unresolvedReferencesService
-            .delete(productDraft.getKey(), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingProductsToBeResolved.class)
+            .delete(productDraft.getKey(), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingToBeResolvedProducts.class)
             .toCompletableFuture()
             .join();
 
@@ -173,22 +173,22 @@ class UnresolvedReferencesServiceImplIT {
         final ProductDraft productDraft =
             SphereJsonUtils.readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, ProductDraft.class);
 
-        final WaitingProductsToBeResolved productDraftWithUnresolvedRefs =
-            new WaitingProductsToBeResolved(productDraft, asSet("foo", "bar"));
+        final WaitingToBeResolvedProducts productDraftWithUnresolvedRefs =
+            new WaitingToBeResolvedProducts(productDraft, asSet("foo", "bar"));
 
         unresolvedReferencesService
             .save(productDraftWithUnresolvedRefs, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
-                WaitingProductsToBeResolved.class)
+                WaitingToBeResolvedProducts.class)
             .toCompletableFuture()
             .join();
 
         final WaitingToBeResolved productDraftWithUnresolvedNewRefs =
-            new WaitingProductsToBeResolved(productDraft, asSet("foo123", "bar123"));
+            new WaitingToBeResolvedProducts(productDraft, asSet("foo123", "bar123"));
 
         // test
         final Optional<WaitingToBeResolved> latestResult = unresolvedReferencesService
             .save(productDraftWithUnresolvedNewRefs, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
-                WaitingProductsToBeResolved.class)
+                WaitingToBeResolvedProducts.class)
             .toCompletableFuture()
             .join();
 
@@ -201,9 +201,9 @@ class UnresolvedReferencesServiceImplIT {
                 .isEqualTo(productDraftWithUnresolvedNewRefs.getMissingReferencedKeys());
         });
 
-        final CustomObjectByKeyGet<WaitingProductsToBeResolved> customObjectByKeyGet = CustomObjectByKeyGet
-            .of(CUSTOM_OBJECT_CONTAINER_KEY, sha1Hex(productDraft.getKey()), WaitingProductsToBeResolved.class );
-        final CustomObject<WaitingProductsToBeResolved> createdCustomObject = CTP_TARGET_CLIENT
+        final CustomObjectByKeyGet<WaitingToBeResolvedProducts> customObjectByKeyGet = CustomObjectByKeyGet
+            .of(CUSTOM_OBJECT_CONTAINER_KEY, sha1Hex(productDraft.getKey()), WaitingToBeResolvedProducts.class );
+        final CustomObject<WaitingToBeResolvedProducts> createdCustomObject = CTP_TARGET_CLIENT
             .execute(customObjectByKeyGet)
             .toCompletableFuture()
             .join();

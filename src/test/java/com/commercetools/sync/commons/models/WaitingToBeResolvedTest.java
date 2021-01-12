@@ -22,7 +22,7 @@ class WaitingToBeResolvedTest {
     void setProductDraft_WithNonNullProductDraft_ShouldSetProductDraft() {
         // preparation
         final ProductDraft productDraft = mock(ProductDraft.class);
-        final WaitingToBeResolved waitingToBeResolved = new WaitingProductsToBeResolved();
+        final WaitingToBeResolved waitingToBeResolved = new WaitingToBeResolvedProducts();
 
         // test
         waitingToBeResolved.setWaitingDraft(productDraft);
@@ -34,7 +34,7 @@ class WaitingToBeResolvedTest {
     @Test
     void setMissingReferencedProductKeys_WithNonNullSet_ShouldSetTheSet() {
         // preparation
-        final WaitingToBeResolved waitingToBeResolved = new WaitingProductsToBeResolved();
+        final WaitingToBeResolved waitingToBeResolved = new WaitingToBeResolvedProducts();
 
         // test
         waitingToBeResolved.setMissingReferencedKeys(emptySet());
@@ -47,7 +47,7 @@ class WaitingToBeResolvedTest {
     void equals_WithSameRef_ShouldReturnTrue() {
         // preparation
         final WaitingToBeResolved waitingToBeResolved =
-            new WaitingProductsToBeResolved(mock(ProductDraft.class), new HashSet<>());
+            new WaitingToBeResolvedProducts(mock(ProductDraft.class), new HashSet<>());
         final WaitingToBeResolved other = waitingToBeResolved;
 
         // test
@@ -61,7 +61,7 @@ class WaitingToBeResolvedTest {
     void equals_WithDiffType_ShouldReturnFalse() {
         // preparation
         final WaitingToBeResolved waitingToBeResolved =
-            new WaitingProductsToBeResolved(mock(ProductDraft.class), new HashSet<>());
+            new WaitingToBeResolvedProducts(mock(ProductDraft.class), new HashSet<>());
         final Object other = new Object();
 
         // test
@@ -76,9 +76,9 @@ class WaitingToBeResolvedTest {
     void equals_WithEqualObjects_ShouldReturnTrue() {
         // preparation
         final WaitingToBeResolved waitingToBeResolved =
-            new WaitingProductsToBeResolved(mock(ProductDraft.class), new HashSet<>());
+            new WaitingToBeResolvedProducts(mock(ProductDraft.class), new HashSet<>());
         final WaitingToBeResolved other =
-            new WaitingProductsToBeResolved(mock(ProductDraft.class), new HashSet<>());
+            new WaitingToBeResolvedProducts(mock(ProductDraft.class), new HashSet<>());
 
         // test
         boolean result = waitingToBeResolved.equals(other);
@@ -91,9 +91,9 @@ class WaitingToBeResolvedTest {
     void equals_WithDifferentMissingRefKeys_ShouldReturnFalse() {
         // preparation
         final WaitingToBeResolved waitingToBeResolved =
-            new WaitingProductsToBeResolved(mock(ProductDraft.class), new HashSet<>());
+            new WaitingToBeResolvedProducts(mock(ProductDraft.class), new HashSet<>());
         final WaitingToBeResolved other =
-            new WaitingProductsToBeResolved(mock(ProductDraft.class), singleton("foo"));
+            new WaitingToBeResolvedProducts(mock(ProductDraft.class), singleton("foo"));
 
         // test
         boolean result = waitingToBeResolved.equals(other);
@@ -110,9 +110,9 @@ class WaitingToBeResolvedTest {
         when(productDraft1.getKey()).thenReturn("foo");
 
         final WaitingToBeResolved waitingToBeResolved =
-            new WaitingProductsToBeResolved(productDraft, new HashSet<>());
+            new WaitingToBeResolvedProducts(productDraft, new HashSet<>());
         final WaitingToBeResolved other =
-            new WaitingProductsToBeResolved(productDraft1, new HashSet<>());
+            new WaitingToBeResolvedProducts(productDraft1, new HashSet<>());
 
         // test
         boolean result = waitingToBeResolved.equals(other);
@@ -129,9 +129,9 @@ class WaitingToBeResolvedTest {
         when(productDraft1.getKey()).thenReturn("foo");
 
         final WaitingToBeResolved waitingToBeResolved =
-            new WaitingProductsToBeResolved(productDraft, singleton("foo"));
+            new WaitingToBeResolvedProducts(productDraft, singleton("foo"));
         final WaitingToBeResolved other =
-            new WaitingProductsToBeResolved(productDraft1, singleton("bar"));
+            new WaitingToBeResolvedProducts(productDraft1, singleton("bar"));
 
         // test
         boolean result = waitingToBeResolved.equals(other);
@@ -144,7 +144,7 @@ class WaitingToBeResolvedTest {
     void hashCode_withSameInstances_ShouldBeEquals() {
         // preparation
         final WaitingToBeResolved waitingToBeResolved =
-            new WaitingProductsToBeResolved(mock(ProductDraft.class), new HashSet<>());
+            new WaitingToBeResolvedProducts(mock(ProductDraft.class), new HashSet<>());
         final WaitingToBeResolved other = waitingToBeResolved;
 
         // test
@@ -159,9 +159,9 @@ class WaitingToBeResolvedTest {
     void hashCode_withSameProductKeyAndSameRefSet_ShouldBeEquals() {
         // preparation
         final WaitingToBeResolved waitingToBeResolved =
-            new WaitingProductsToBeResolved(mock(ProductDraft.class), new HashSet<>());
+            new WaitingToBeResolvedProducts(mock(ProductDraft.class), new HashSet<>());
         final WaitingToBeResolved other =
-            new WaitingProductsToBeResolved(mock(ProductDraft.class), new HashSet<>());
+            new WaitingToBeResolvedProducts(mock(ProductDraft.class), new HashSet<>());
 
         // test
         final int hash1 = waitingToBeResolved.hashCode();
@@ -179,9 +179,9 @@ class WaitingToBeResolvedTest {
         when(productDraft1.getKey()).thenReturn("foo");
 
         final WaitingToBeResolved waitingToBeResolved =
-            new WaitingProductsToBeResolved(productDraft, new HashSet<>());
+            new WaitingToBeResolvedProducts(productDraft, new HashSet<>());
         final WaitingToBeResolved other =
-            new WaitingProductsToBeResolved(productDraft1, new HashSet<>());
+            new WaitingToBeResolvedProducts(productDraft1, new HashSet<>());
 
         // test
         final int hash1 = waitingToBeResolved.hashCode();
@@ -195,9 +195,9 @@ class WaitingToBeResolvedTest {
     void hashCode_withSameProductKeyAndDiffRefSet_ShouldNotBeEquals() {
         // preparation
         final WaitingToBeResolved waitingToBeResolved =
-            new WaitingProductsToBeResolved(mock(ProductDraft.class), new HashSet<>());
+            new WaitingToBeResolvedProducts(mock(ProductDraft.class), new HashSet<>());
         final WaitingToBeResolved other =
-            new WaitingProductsToBeResolved(mock(ProductDraft.class), singleton("foo"));
+            new WaitingToBeResolvedProducts(mock(ProductDraft.class), singleton("foo"));
 
         // test
         final int hash1 = waitingToBeResolved.hashCode();
@@ -215,9 +215,9 @@ class WaitingToBeResolvedTest {
         when(productDraft1.getKey()).thenReturn("foo");
 
         final WaitingToBeResolved waitingToBeResolved =
-            new WaitingProductsToBeResolved(productDraft, singleton("foo"));
+            new WaitingToBeResolvedProducts(productDraft, singleton("foo"));
         final WaitingToBeResolved other =
-            new WaitingProductsToBeResolved(productDraft1, singleton("bar"));
+            new WaitingToBeResolvedProducts(productDraft1, singleton("bar"));
 
         // test
         final int hash1 = waitingToBeResolved.hashCode();

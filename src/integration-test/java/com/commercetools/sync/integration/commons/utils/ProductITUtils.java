@@ -1,6 +1,6 @@
 package com.commercetools.sync.integration.commons.utils;
 
-import com.commercetools.sync.commons.models.WaitingProductsToBeResolved;
+import com.commercetools.sync.commons.models.WaitingToBeResolvedProducts;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereRequest;
@@ -57,7 +57,7 @@ public final class ProductITUtils {
         deleteStates(ctpClient);
         deleteTaxCategories(ctpClient);
         deleteCustomerGroups(ctpClient);
-        deleteWaitingToBeResolvedCustomObjects(ctpClient, WaitingProductsToBeResolved.class);
+        deleteWaitingToBeResolvedCustomObjects(ctpClient, WaitingToBeResolvedProducts.class);
     }
 
     /**

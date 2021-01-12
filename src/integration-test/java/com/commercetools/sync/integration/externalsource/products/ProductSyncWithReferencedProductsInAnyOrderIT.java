@@ -1,7 +1,7 @@
 package com.commercetools.sync.integration.externalsource.products;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.models.WaitingProductsToBeResolved;
+import com.commercetools.sync.commons.models.WaitingToBeResolvedProducts;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.products.ProductSync;
@@ -87,7 +87,7 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
     void setupTest() {
         clearSyncTestCollections();
         deleteAllProducts(CTP_TARGET_CLIENT);
-        deleteWaitingToBeResolvedCustomObjects(CTP_TARGET_CLIENT, WaitingProductsToBeResolved.class);
+        deleteWaitingToBeResolvedCustomObjects(CTP_TARGET_CLIENT, WaitingToBeResolvedProducts.class);
         syncOptions = buildSyncOptions();
 
         final ProductDraft productDraft = ProductDraftBuilder
@@ -761,13 +761,13 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
 
         final Set<WaitingToBeResolved> waitingDrafts = unresolvedReferencesService
             .fetch(asSet(childDraft1.getKey(), childDraft2.getKey()), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
-                WaitingProductsToBeResolved.class)
+                WaitingToBeResolvedProducts.class)
             .toCompletableFuture()
             .join();
 
         assertThat(waitingDrafts).containsExactlyInAnyOrder(
-            new WaitingProductsToBeResolved(childDraft1, singleton(parentProductKey)),
-            new WaitingProductsToBeResolved(childDraft2, singleton(parentProductKey))
+            new WaitingToBeResolvedProducts(childDraft1, singleton(parentProductKey)),
+            new WaitingToBeResolvedProducts(childDraft2, singleton(parentProductKey))
         );
     }
 
@@ -840,12 +840,12 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
             new UnresolvedReferencesServiceImpl(syncOptions);
 
         final Set<WaitingToBeResolved> waitingDrafts = unresolvedReferencesService
-            .fetch(asSet(childDraft1.getKey()), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingProductsToBeResolved.class )
+            .fetch(asSet(childDraft1.getKey()), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingToBeResolvedProducts.class )
             .toCompletableFuture()
             .join();
 
         assertThat(waitingDrafts).containsExactly(
-            new WaitingProductsToBeResolved(childDraft1, singleton(parentProductKey))
+            new WaitingToBeResolvedProducts(childDraft1, singleton(parentProductKey))
         );
     }
 }

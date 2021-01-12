@@ -1,7 +1,7 @@
 package com.commercetools.sync.integration.externalsource.products;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.models.WaitingProductsToBeResolved;
+import com.commercetools.sync.commons.models.WaitingToBeResolvedProducts;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.products.ProductSync;
@@ -351,7 +351,7 @@ class ProductSyncWithReferencedProductsIT {
             new UnresolvedReferencesServiceImpl(syncOptions);
         final Set<WaitingToBeResolved> waitingToBeResolvedDrafts = unresolvedReferencesService
             .fetch(asSet(productDraftWithProductReference.getKey()), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
-                WaitingProductsToBeResolved.class )
+                WaitingToBeResolvedProducts.class )
             .toCompletableFuture()
             .join();
 
@@ -488,7 +488,7 @@ class ProductSyncWithReferencedProductsIT {
             new UnresolvedReferencesServiceImpl(syncOptions);
         final Set<WaitingToBeResolved> waitingToBeResolvedDrafts = unresolvedReferencesService
             .fetch(asSet(productDraftWithProductReference.getKey()), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
-                WaitingProductsToBeResolved.class)
+                WaitingToBeResolvedProducts.class)
             .toCompletableFuture()
             .join();
 

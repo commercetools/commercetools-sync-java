@@ -5,16 +5,15 @@ import io.sphere.sdk.products.ProductDraft;
 import javax.annotation.Nonnull;
 import java.util.Set;
 
-public final class WaitingProductsToBeResolved<T extends ProductDraft> extends WaitingToBeResolved<T> {
+public final class WaitingToBeResolvedProducts<T extends ProductDraft> extends WaitingToBeResolved<T> {
     private T waitingDraft;
-
 
     // Needed for the 'com.fasterxml.jackson' deserialization, for example, when fetching
     // from CTP custom objects.
-    public WaitingProductsToBeResolved() {
+    public WaitingToBeResolvedProducts() {
     }
 
-    public WaitingProductsToBeResolved(@Nonnull final T draft, @Nonnull final Set<String> missingReferencedKeys) {
+    public WaitingToBeResolvedProducts(@Nonnull final T draft, @Nonnull final Set<String> missingReferencedKeys) {
         this.waitingDraft = draft;
         this.setMissingReferencedKeys(missingReferencedKeys);
     }
