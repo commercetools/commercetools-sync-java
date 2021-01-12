@@ -56,7 +56,7 @@ public abstract class GraphQlBaseRequestImpl<
   }
 
   /**
-   * Deserialize the body of {@param httpResponse}.
+   * Deserialize the body of {@code httpResponse}.
    *
    * @param httpResponse httpResponse of the request.
    * @param resourceName resource type in the query (i.e "customers", "products", "customObjects")

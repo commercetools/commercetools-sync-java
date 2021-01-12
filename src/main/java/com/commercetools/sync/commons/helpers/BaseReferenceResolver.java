@@ -55,6 +55,7 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
    * ReferenceResolutionException} is thrown.
    *
    * @param reference the reference from which the key value is validated and returned.
+   * @param <T> the type of the reference.
    * @return the Id value on the {@link ResourceIdentifier}
    * @throws ReferenceResolutionException if any of the validation checks fail.
    */
@@ -82,6 +83,7 @@ public abstract class BaseReferenceResolver<T, S extends BaseSyncOptions> {
    *
    * @param resourceIdentifier the resource identifier from which the key value is validated and
    *     returned.
+   * @param <T> the type of the reference.
    * @return the key value on the {@link ResourceIdentifier}
    * @throws ReferenceResolutionException if any of the validation checks fail.
    */

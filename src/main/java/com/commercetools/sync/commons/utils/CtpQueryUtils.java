@@ -145,6 +145,8 @@ public final class CtpQueryUtils {
    * <p>NOTE: This method fetches all paged results sequentially as opposed to fetching the pages in
    * parallel.
    *
+   * @param <T> the result type which extends {@link GraphQlBaseResult}
+   * @param <U> the resource type which extends {@link GraphQlBaseResource}
    * @param client commercetools client
    * @param graphQlRequest graphql query containing predicates and pagination limits
    * @param pageConsumer consumer applied on every page queried
@@ -173,6 +175,8 @@ public final class CtpQueryUtils {
    * <p>NOTE: This method fetches all paged results sequentially as opposed to fetching the pages in
    * parallel.
    *
+   * @param <T> the result type which extends {@link GraphQlBaseResult}
+   * @param <U> the resource type which extends {@link GraphQlBaseResource}
    * @param client commercetools client
    * @param graphQlRequest graphql query containing predicates and pagination limits
    * @param pageConsumer consumer applied on every page queried
