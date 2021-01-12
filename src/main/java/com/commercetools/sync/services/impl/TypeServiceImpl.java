@@ -13,75 +13,74 @@ import io.sphere.sdk.types.expansion.TypeExpansionModel;
 import io.sphere.sdk.types.queries.TypeQuery;
 import io.sphere.sdk.types.queries.TypeQueryBuilder;
 import io.sphere.sdk.types.queries.TypeQueryModel;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-/**
- * Implementation of TypeService interface.
- * TODO: USE graphQL to get only keys. GITHUB ISSUE#84
- */
-public final class TypeServiceImpl extends BaseServiceWithKey<TypeDraft, Type, BaseSyncOptions, TypeQuery,
-    TypeQueryModel, TypeExpansionModel<Type>> implements TypeService {
+/** Implementation of TypeService interface. TODO: USE graphQL to get only keys. GITHUB ISSUE#84 */
+public final class TypeServiceImpl
+    extends BaseServiceWithKey<
+        TypeDraft, Type, BaseSyncOptions, TypeQuery, TypeQueryModel, TypeExpansionModel<Type>>
+    implements TypeService {
 
-    public TypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
-        super(syncOptions);
-    }
+  public TypeServiceImpl(@Nonnull final BaseSyncOptions syncOptions) {
+    super(syncOptions);
+  }
 
-    @Nonnull
-    @Override
-    public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> typeKeys) {
+  @Nonnull
+  @Override
+  public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> typeKeys) {
 
-        return cacheKeysToIds(
-            typeKeys, keysNotCached -> new ResourceKeyIdGraphQlRequest(keysNotCached, GraphQlQueryResources.TYPES));
-    }
+    return cacheKeysToIds(
+        typeKeys,
+        keysNotCached ->
+            new ResourceKeyIdGraphQlRequest(keysNotCached, GraphQlQueryResources.TYPES));
+  }
 
-    @Nonnull
-    @Override
-    public CompletionStage<Optional<String>> fetchCachedTypeId(@Nonnull final String key) {
+  @Nonnull
+  @Override
+  public CompletionStage<Optional<String>> fetchCachedTypeId(@Nonnull final String key) {
 
-        return fetchCachedResourceId(
-            key,
-            () -> TypeQueryBuilder.of()
-                                  .plusPredicates(queryModel -> queryModel.key().is(key))
-                                  .build());
-    }
+    return fetchCachedResourceId(
+        key,
+        () -> TypeQueryBuilder.of().plusPredicates(queryModel -> queryModel.key().is(key)).build());
+  }
 
-    @Nonnull
-    @Override
-    public CompletionStage<Set<Type>> fetchMatchingTypesByKeys(@Nonnull final Set<String> keys) {
+  @Nonnull
+  @Override
+  public CompletionStage<Set<Type>> fetchMatchingTypesByKeys(@Nonnull final Set<String> keys) {
 
-        return fetchMatchingResources(keys,
-            () -> TypeQueryBuilder
-                .of()
+    return fetchMatchingResources(
+        keys,
+        () ->
+            TypeQueryBuilder.of()
                 .plusPredicates(queryModel -> queryModel.key().isIn(keys))
                 .build());
-    }
+  }
 
-    @Nonnull
-    @Override
-    public CompletionStage<Optional<Type>> fetchType(@Nullable final String key) {
+  @Nonnull
+  @Override
+  public CompletionStage<Optional<Type>> fetchType(@Nullable final String key) {
 
-        return fetchResource(key,
-            () -> TypeQueryBuilder.of().plusPredicates(queryModel -> queryModel.key().is(key)).build());
-    }
+    return fetchResource(
+        key,
+        () -> TypeQueryBuilder.of().plusPredicates(queryModel -> queryModel.key().is(key)).build());
+  }
 
-    @Nonnull
-    @Override
-    public CompletionStage<Optional<Type>> createType(@Nonnull final TypeDraft typeDraft) {
-        return createResource(typeDraft, TypeCreateCommand::of);
-    }
+  @Nonnull
+  @Override
+  public CompletionStage<Optional<Type>> createType(@Nonnull final TypeDraft typeDraft) {
+    return createResource(typeDraft, TypeCreateCommand::of);
+  }
 
-    @Nonnull
-    @Override
-    public CompletionStage<Type> updateType(
-        @Nonnull final Type type,
-        @Nonnull final List<UpdateAction<Type>> updateActions) {
-        return updateResource(type, TypeUpdateCommand::of, updateActions);
-    }
+  @Nonnull
+  @Override
+  public CompletionStage<Type> updateType(
+      @Nonnull final Type type, @Nonnull final List<UpdateAction<Type>> updateActions) {
+    return updateResource(type, TypeUpdateCommand::of, updateActions);
+  }
 }

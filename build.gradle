@@ -6,6 +6,7 @@ plugins {
     id "com.github.ben-manes.versions" version '0.36.0'
     id 'ru.vyarus.mkdocs' version '2.0.1'
     id "com.github.spotbugs" version "4.6.0"
+    id 'com.diffplug.spotless' version '5.8.2'
 }
 
 ext{
@@ -13,7 +14,6 @@ ext{
     mockitoJunitJupiterVersion = '3.7.0'
     jupiterApiVersion = '5.7.0'
     assertjVersion = '3.18.1'
-    checkstyleVersion = '8.2'
     pmdVersion = '6.14.0'
     jacocoVersion = '0.8.4'
     caffeineVersion = '2.8.5'
@@ -29,7 +29,6 @@ apply from: "$rootDir/gradle-scripts/integration-tests.gradle"
 apply from: "$rootDir/gradle-scripts/test.gradle"
 apply from: "$rootDir/gradle-scripts/benchmark.gradle"
 apply from: "$rootDir/gradle-scripts/test-logger.gradle"
-apply from: "$rootDir/gradle-scripts/checkstyle.gradle"
 apply from: "$rootDir/gradle-scripts/pmd.gradle"
 apply from: "$rootDir/gradle-scripts/jacoco.gradle"
 apply from: "$rootDir/gradle-scripts/spotbugs.gradle"
@@ -40,6 +39,7 @@ apply from: "$rootDir/gradle-scripts/javadocs-publish.gradle"
 apply from: "$rootDir/gradle-scripts/set-library-version.gradle"
 apply from: "$rootDir/gradle-scripts/execution-order.gradle"
 apply from: "$rootDir/gradle-scripts/mkdocs.gradle"
+apply from: "$rootDir/gradle-scripts/spotless.gradle"
 
 dependencies {
     implementation "com.commercetools.sdk.jvm.core:commercetools-models:${commercetoolsJvmSdkVersion}"

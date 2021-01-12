@@ -1,5 +1,21 @@
 package com.commercetools.sync.integration.externalsource.customers;
 
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.CUSTOMER_NUMBER_EXISTS_WARNING;
+import static com.commercetools.sync.integration.commons.utils.CustomerGroupITUtils.createCustomerGroup;
+import static com.commercetools.sync.integration.commons.utils.CustomerITUtils.createSampleCustomerJohnDoe;
+import static com.commercetools.sync.integration.commons.utils.CustomerITUtils.deleteCustomerSyncTestData;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.BOOLEAN_CUSTOM_FIELD_NAME;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.LOCALISED_STRING_CUSTOM_FIELD_NAME;
+import static com.commercetools.sync.integration.commons.utils.ITUtils.createCustomFieldsJsonMap;
+import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.integration.commons.utils.StoreITUtils.createStore;
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toMap;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.commercetools.sync.customers.CustomerSync;
 import com.commercetools.sync.customers.CustomerSyncOptions;
 import com.commercetools.sync.customers.CustomerSyncOptionsBuilder;
@@ -35,225 +51,209 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.stores.Store;
 import io.sphere.sdk.types.CustomFieldsDraft;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-
-import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.CUSTOMER_NUMBER_EXISTS_WARNING;
-import static com.commercetools.sync.integration.commons.utils.CustomerGroupITUtils.createCustomerGroup;
-import static com.commercetools.sync.integration.commons.utils.CustomerITUtils.createSampleCustomerJohnDoe;
-import static com.commercetools.sync.integration.commons.utils.CustomerITUtils.deleteCustomerSyncTestData;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.BOOLEAN_CUSTOM_FIELD_NAME;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.LOCALISED_STRING_CUSTOM_FIELD_NAME;
-import static com.commercetools.sync.integration.commons.utils.ITUtils.createCustomFieldsJsonMap;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.integration.commons.utils.StoreITUtils.createStore;
-import static java.lang.String.format;
-import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
-import static java.util.stream.Collectors.toMap;
-import static org.assertj.core.api.Assertions.assertThat;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class CustomerSyncIT {
-    private CustomerDraft customerDraftJohnDoe;
-    private Customer customerJohnDoe;
+  private CustomerDraft customerDraftJohnDoe;
+  private Customer customerJohnDoe;
 
-    private List<String> errorMessages;
-    private List<String> warningMessages;
-    private List<Throwable> exceptions;
-    private List<UpdateAction<Customer>> updateActionList;
-    private CustomerSync customerSync;
+  private List<String> errorMessages;
+  private List<String> warningMessages;
+  private List<Throwable> exceptions;
+  private List<UpdateAction<Customer>> updateActionList;
+  private CustomerSync customerSync;
 
-    @BeforeEach
-    void setup() {
-        deleteCustomerSyncTestData(CTP_TARGET_CLIENT);
-        final ImmutablePair<Customer, CustomerDraft> sampleCustomerJohnDoe =
-            createSampleCustomerJohnDoe(CTP_TARGET_CLIENT);
-        customerJohnDoe = sampleCustomerJohnDoe.getLeft();
-        customerDraftJohnDoe = sampleCustomerJohnDoe.getRight();
-        setUpCustomerSync();
-    }
+  @BeforeEach
+  void setup() {
+    deleteCustomerSyncTestData(CTP_TARGET_CLIENT);
+    final ImmutablePair<Customer, CustomerDraft> sampleCustomerJohnDoe =
+        createSampleCustomerJohnDoe(CTP_TARGET_CLIENT);
+    customerJohnDoe = sampleCustomerJohnDoe.getLeft();
+    customerDraftJohnDoe = sampleCustomerJohnDoe.getRight();
+    setUpCustomerSync();
+  }
 
-    private void setUpCustomerSync() {
-        errorMessages = new ArrayList<>();
-        exceptions = new ArrayList<>();
-        warningMessages = new ArrayList<>();
-        updateActionList = new ArrayList<>();
+  private void setUpCustomerSync() {
+    errorMessages = new ArrayList<>();
+    exceptions = new ArrayList<>();
+    warningMessages = new ArrayList<>();
+    updateActionList = new ArrayList<>();
 
-        CustomerSyncOptions customerSyncOptions = CustomerSyncOptionsBuilder
-            .of(CTP_TARGET_CLIENT)
-            .errorCallback((exception, oldResource, newResource, actions) -> {
-                errorMessages.add(exception.getMessage());
-                exceptions.add(exception);
-            })
-            .warningCallback((exception, oldResource, newResource)
-                -> warningMessages.add(exception.getMessage()))
-            .beforeUpdateCallback((updateActions, customerDraft, customer) -> {
-                updateActionList.addAll(Objects.requireNonNull(updateActions));
-                return updateActions;
-            })
+    CustomerSyncOptions customerSyncOptions =
+        CustomerSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+            .errorCallback(
+                (exception, oldResource, newResource, actions) -> {
+                  errorMessages.add(exception.getMessage());
+                  exceptions.add(exception);
+                })
+            .warningCallback(
+                (exception, oldResource, newResource) ->
+                    warningMessages.add(exception.getMessage()))
+            .beforeUpdateCallback(
+                (updateActions, customerDraft, customer) -> {
+                  updateActionList.addAll(Objects.requireNonNull(updateActions));
+                  return updateActions;
+                })
             .build();
-        customerSync = new CustomerSync(customerSyncOptions);
-    }
+    customerSync = new CustomerSync(customerSyncOptions);
+  }
 
-    @AfterAll
-    static void tearDown() {
-        deleteCustomerSyncTestData(CTP_TARGET_CLIENT);
-    }
+  @AfterAll
+  static void tearDown() {
+    deleteCustomerSyncTestData(CTP_TARGET_CLIENT);
+  }
 
-    @Test
-    void sync_WithSameCustomer_ShouldNotUpdateCustomer() {
-        final CustomerDraft sameCustomerDraft = CustomerDraftBuilder.of(customerDraftJohnDoe).build();
+  @Test
+  void sync_WithSameCustomer_ShouldNotUpdateCustomer() {
+    final CustomerDraft sameCustomerDraft = CustomerDraftBuilder.of(customerDraftJohnDoe).build();
 
-        final CustomerSyncStatistics customerSyncStatistics = customerSync
-            .sync(singletonList(sameCustomerDraft))
-            .toCompletableFuture()
-            .join();
+    final CustomerSyncStatistics customerSyncStatistics =
+        customerSync.sync(singletonList(sameCustomerDraft)).toCompletableFuture().join();
 
-        assertThat(errorMessages).isEmpty();
-        assertThat(warningMessages).isEmpty();
-        assertThat(exceptions).isEmpty();
-        assertThat(customerSyncStatistics).hasValues(1, 0, 0, 0);
-        assertThat(customerSyncStatistics
-            .getReportMessage())
-            .isEqualTo("Summary: 1 customers were processed in total (0 created, 0 updated and 0 failed to sync).");
-    }
+    assertThat(errorMessages).isEmpty();
+    assertThat(warningMessages).isEmpty();
+    assertThat(exceptions).isEmpty();
+    assertThat(customerSyncStatistics).hasValues(1, 0, 0, 0);
+    assertThat(customerSyncStatistics.getReportMessage())
+        .isEqualTo(
+            "Summary: 1 customers were processed in total (0 created, 0 updated and 0 failed to sync).");
+  }
 
-    @Test
-    void sync_WithNewCustomer_ShouldCreateCustomer() {
-        final CustomerDraft newCustomerDraft =
-            CustomerDraftBuilder.of(customerDraftJohnDoe)
-                                .emailVerified(false)
-                                .email("john-2@example.com")
-                                .customerNumber("gold-2")
-                                .key("customer-key-john-doe-2")
-                                .build();
-
-        final CustomerSyncOptions customerSyncOptions = CustomerSyncOptionsBuilder
-            .of(CTP_TARGET_CLIENT)
+  @Test
+  void sync_WithNewCustomer_ShouldCreateCustomer() {
+    final CustomerDraft newCustomerDraft =
+        CustomerDraftBuilder.of(customerDraftJohnDoe)
+            .emailVerified(false)
+            .email("john-2@example.com")
+            .customerNumber("gold-2")
+            .key("customer-key-john-doe-2")
             .build();
 
-        final CustomerSync customerSync = new CustomerSync(customerSyncOptions);
+    final CustomerSyncOptions customerSyncOptions =
+        CustomerSyncOptionsBuilder.of(CTP_TARGET_CLIENT).build();
 
-        final CustomerSyncStatistics customerSyncStatistics = customerSync
-            .sync(singletonList(newCustomerDraft))
-            .toCompletableFuture()
-            .join();
+    final CustomerSync customerSync = new CustomerSync(customerSyncOptions);
 
-        assertThat(errorMessages).isEmpty();
-        assertThat(warningMessages).isEmpty();
-        assertThat(exceptions).isEmpty();
-        assertThat(updateActionList).isEmpty();
+    final CustomerSyncStatistics customerSyncStatistics =
+        customerSync.sync(singletonList(newCustomerDraft)).toCompletableFuture().join();
 
-        assertThat(customerSyncStatistics).hasValues(1, 1, 0, 0);
-        assertThat(customerSyncStatistics
-            .getReportMessage())
-            .isEqualTo("Summary: 1 customers were processed in total (1 created, 0 updated and 0 failed to sync).");
-    }
+    assertThat(errorMessages).isEmpty();
+    assertThat(warningMessages).isEmpty();
+    assertThat(exceptions).isEmpty();
+    assertThat(updateActionList).isEmpty();
 
-    @Test
-    void sync_WithUpdatedCustomer_ShouldUpdateCustomer() {
-        final Store storeCologne = createStore(CTP_TARGET_CLIENT, "store-cologne");
-        final CustomerDraft updatedCustomerDraft =
-            CustomerDraftBuilder.of(customerDraftJohnDoe)
-                                .customerNumber("gold-new") // from gold-1, but can not be changed.
-                                .email("john-new@example.com") //from john@example.com
-                                .stores(asList( // store-cologne is added, store-munich is removed
-                                    ResourceIdentifier.ofKey(storeCologne.getKey()),
-                                    ResourceIdentifier.ofKey("store-hamburg"),
-                                    ResourceIdentifier.ofKey("store-berlin")))
-                                .build();
+    assertThat(customerSyncStatistics).hasValues(1, 1, 0, 0);
+    assertThat(customerSyncStatistics.getReportMessage())
+        .isEqualTo(
+            "Summary: 1 customers were processed in total (1 created, 0 updated and 0 failed to sync).");
+  }
 
-        final CustomerSyncStatistics customerSyncStatistics = customerSync
-            .sync(singletonList(updatedCustomerDraft))
-            .toCompletableFuture()
-            .join();
+  @Test
+  void sync_WithUpdatedCustomer_ShouldUpdateCustomer() {
+    final Store storeCologne = createStore(CTP_TARGET_CLIENT, "store-cologne");
+    final CustomerDraft updatedCustomerDraft =
+        CustomerDraftBuilder.of(customerDraftJohnDoe)
+            .customerNumber("gold-new") // from gold-1, but can not be changed.
+            .email("john-new@example.com") // from john@example.com
+            .stores(
+                asList( // store-cologne is added, store-munich is removed
+                    ResourceIdentifier.ofKey(storeCologne.getKey()),
+                    ResourceIdentifier.ofKey("store-hamburg"),
+                    ResourceIdentifier.ofKey("store-berlin")))
+            .build();
 
-        assertThat(errorMessages).isEmpty();
-        assertThat(warningMessages)
-            .containsExactly(format(CUSTOMER_NUMBER_EXISTS_WARNING, updatedCustomerDraft.getKey(), "gold-1"));
-        assertThat(exceptions).isEmpty();
-        assertThat(updateActionList).containsExactly(
+    final CustomerSyncStatistics customerSyncStatistics =
+        customerSync.sync(singletonList(updatedCustomerDraft)).toCompletableFuture().join();
+
+    assertThat(errorMessages).isEmpty();
+    assertThat(warningMessages)
+        .containsExactly(
+            format(CUSTOMER_NUMBER_EXISTS_WARNING, updatedCustomerDraft.getKey(), "gold-1"));
+    assertThat(exceptions).isEmpty();
+    assertThat(updateActionList)
+        .containsExactly(
             ChangeEmail.of("john-new@example.com"),
-            SetStores.of(asList(
-                ResourceIdentifier.ofKey("store-cologne"),
-                ResourceIdentifier.ofKey("store-hamburg"),
-                ResourceIdentifier.ofKey("store-berlin")))
-        );
+            SetStores.of(
+                asList(
+                    ResourceIdentifier.ofKey("store-cologne"),
+                    ResourceIdentifier.ofKey("store-hamburg"),
+                    ResourceIdentifier.ofKey("store-berlin"))));
 
-        assertThat(customerSyncStatistics).hasValues(1, 0, 1, 0);
-        assertThat(customerSyncStatistics
-            .getReportMessage())
-            .isEqualTo("Summary: 1 customers were processed in total (0 created, 1 updated and 0 failed to sync).");
-    }
+    assertThat(customerSyncStatistics).hasValues(1, 0, 1, 0);
+    assertThat(customerSyncStatistics.getReportMessage())
+        .isEqualTo(
+            "Summary: 1 customers were processed in total (0 created, 1 updated and 0 failed to sync).");
+  }
 
-    @Test
-    void sync_WithUpdatedAllFieldsOfCustomer_ShouldUpdateCustomerWithAllExpectedActions() {
-        final Store storeCologne = createStore(CTP_TARGET_CLIENT, "store-cologne");
-        final CustomerGroup customerGroupSilverMember =
-            createCustomerGroup(CTP_TARGET_CLIENT, "silver members", "silver");
+  @Test
+  void sync_WithUpdatedAllFieldsOfCustomer_ShouldUpdateCustomerWithAllExpectedActions() {
+    final Store storeCologne = createStore(CTP_TARGET_CLIENT, "store-cologne");
+    final CustomerGroup customerGroupSilverMember =
+        createCustomerGroup(CTP_TARGET_CLIENT, "silver members", "silver");
 
-        final CustomerDraft updatedCustomerDraft =
-            CustomerDraftBuilder
-                .of("jane@example.com", "54321")
-                .customerNumber("gold-1") // can not be changed after it set.
-                .key("customer-key-john-doe")
-                .stores(asList(
+    final CustomerDraft updatedCustomerDraft =
+        CustomerDraftBuilder.of("jane@example.com", "54321")
+            .customerNumber("gold-1") // can not be changed after it set.
+            .key("customer-key-john-doe")
+            .stores(
+                asList(
                     ResourceIdentifier.ofKey(storeCologne.getKey()), // new store
                     ResourceIdentifier.ofKey("store-munich"),
                     ResourceIdentifier.ofKey("store-hamburg"),
                     ResourceIdentifier.ofKey("store-berlin")))
-                .firstName("Jane")
-                .lastName("Doe")
-                .middleName("")
-                .title("Miss")
-                .salutation("")
-                .dateOfBirth(LocalDate.now().minusYears(26))
-                .companyName("Acme Corporation 2")
-                .vatId("DE000000000")
-                .emailVerified(true)
-                .customerGroup(ResourceIdentifier.ofKey(customerGroupSilverMember.getKey()))
-                .addresses(asList( // address2 is removed, address4 is added
+            .firstName("Jane")
+            .lastName("Doe")
+            .middleName("")
+            .title("Miss")
+            .salutation("")
+            .dateOfBirth(LocalDate.now().minusYears(26))
+            .companyName("Acme Corporation 2")
+            .vatId("DE000000000")
+            .emailVerified(true)
+            .customerGroup(ResourceIdentifier.ofKey(customerGroupSilverMember.getKey()))
+            .addresses(
+                asList( // address2 is removed, address4 is added
                     Address.of(CountryCode.DE).withCity("berlin").withKey("address1"),
                     Address.of(CountryCode.DE).withCity("munich").withKey("address3"),
                     Address.of(CountryCode.DE).withCity("cologne").withKey("address4")))
-                .defaultBillingAddress(2) // 0 becomes 2 -> berlin to cologne.
-                .billingAddresses(singletonList(2)) // 0, 1 becomes 2 -> berlin, hamburg to cologne.
-                .defaultShippingAddress(1) // 2 becomes 1 -> munich to munich.
-                .shippingAddresses(asList(0, 1)) // 2 become 0, 1 -> munich to berlin, munich.
-                .custom(CustomFieldsDraft.ofTypeKeyAndJson("customer-type-gold",
-                    createCustomFieldsJsonMap()))
-                .locale(Locale.FRENCH)
-                .build();
+            .defaultBillingAddress(2) // 0 becomes 2 -> berlin to cologne.
+            .billingAddresses(singletonList(2)) // 0, 1 becomes 2 -> berlin, hamburg to cologne.
+            .defaultShippingAddress(1) // 2 becomes 1 -> munich to munich.
+            .shippingAddresses(asList(0, 1)) // 2 become 0, 1 -> munich to berlin, munich.
+            .custom(
+                CustomFieldsDraft.ofTypeKeyAndJson(
+                    "customer-type-gold", createCustomFieldsJsonMap()))
+            .locale(Locale.FRENCH)
+            .build();
 
-        final CustomerSyncStatistics customerSyncStatistics = customerSync
-            .sync(singletonList(updatedCustomerDraft))
-            .toCompletableFuture()
-            .join();
+    final CustomerSyncStatistics customerSyncStatistics =
+        customerSync.sync(singletonList(updatedCustomerDraft)).toCompletableFuture().join();
 
-        assertThat(errorMessages).isEmpty();
-        assertThat(warningMessages).isEmpty();
-        assertThat(exceptions).isEmpty();
+    assertThat(errorMessages).isEmpty();
+    assertThat(warningMessages).isEmpty();
+    assertThat(exceptions).isEmpty();
 
-        final Map<String, String> addressKeyToIdMap =
-            customerJohnDoe.getAddresses().stream().collect(toMap(Address::getKey, Address::getId));
+    final Map<String, String> addressKeyToIdMap =
+        customerJohnDoe.getAddresses().stream().collect(toMap(Address::getKey, Address::getId));
 
-        assertThat(updateActionList).containsExactly(
+    assertThat(updateActionList)
+        .containsExactly(
             ChangeEmail.of("jane@example.com"),
             SetFirstName.of("Jane"),
             SetMiddleName.of(""),
             SetTitle.of("Miss"),
             SetSalutation.of(""),
-            SetCustomerGroup.of(Reference.of(CustomerGroup.referenceTypeId(), customerGroupSilverMember.getId())),
+            SetCustomerGroup.of(
+                Reference.of(CustomerGroup.referenceTypeId(), customerGroupSilverMember.getId())),
             SetCompanyName.of("Acme Corporation 2"),
             SetDateOfBirth.of(LocalDate.now().minusYears(26)),
             SetVatId.of("DE000000000"),
@@ -264,15 +264,16 @@ class CustomerSyncIT {
             SetDefaultBillingAddress.ofKey("address4"),
             AddShippingAddressId.ofKey("address1"),
             AddBillingAddressId.ofKey("address4"),
-            SetCustomField.ofJson(LOCALISED_STRING_CUSTOM_FIELD_NAME,
+            SetCustomField.ofJson(
+                LOCALISED_STRING_CUSTOM_FIELD_NAME,
                 JsonNodeFactory.instance.objectNode().put("de", "rot").put("en", "red")),
-            SetCustomField.ofJson(BOOLEAN_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.booleanNode(false)),
-            AddStore.of(ResourceIdentifier.ofKey(storeCologne.getKey()))
-        );
+            SetCustomField.ofJson(
+                BOOLEAN_CUSTOM_FIELD_NAME, JsonNodeFactory.instance.booleanNode(false)),
+            AddStore.of(ResourceIdentifier.ofKey(storeCologne.getKey())));
 
-        assertThat(customerSyncStatistics).hasValues(1, 0, 1, 0);
-        assertThat(customerSyncStatistics
-            .getReportMessage())
-            .isEqualTo("Summary: 1 customers were processed in total (0 created, 1 updated and 0 failed to sync).");
-    }
+    assertThat(customerSyncStatistics).hasValues(1, 0, 1, 0);
+    assertThat(customerSyncStatistics.getReportMessage())
+        .isEqualTo(
+            "Summary: 1 customers were processed in total (0 created, 1 updated and 0 failed to sync).");
+  }
 }
