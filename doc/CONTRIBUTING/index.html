@@ -440,6 +440,18 @@
   </li>
 
         
+          
+          
+          
+
+
+  <li class="md-nav__item">
+    <a href="../usage/CLEANUP_GUIDE/" title="Cleanup Unresolved References" class="md-nav__link">
+      Cleanup Unresolved References
+    </a>
+  </li>
+
+        
       </ul>
     </nav>
   </li>
@@ -456,7 +468,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/3.0.2/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/3.1.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -652,6 +664,67 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#using-the-google-java-style-and-code-formatter" class="md-nav__link">
+    Using the google java style and code formatter
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#intellij-android-studio-and-other-jetbrains-ides" class="md-nav__link">
+    IntelliJ, Android Studio, and other JetBrains IDEs
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#eclipse" class="md-nav__link">
+    Eclipse
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#spotless-commands" class="md-nav__link">
+    Spotless commands
+  </a>
+  
+    <nav class="md-nav">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#run-spotless-style-check" class="md-nav__link">
+    Run Spotless Style Check
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fix-spotless-style-violations" class="md-nav__link">
+    Fix Spotless style violations
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ignoring-mass-reformatting-commits-with-git-blame" class="md-nav__link">
+    Ignoring mass reformatting commits with git blame
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
       
       
       
@@ -695,6 +768,15 @@
 <li><a href="#running">Running</a></li>
 </ul>
 </li>
+<li><a href="#using-the-google-java-style-and-code-formatter">Using the google java style and code formatter</a></li>
+<li><a href="#intellij-android-studio-and-other-jetbrains-ides">IntelliJ, Android Studio, and other JetBrains IDEs</a></li>
+<li><a href="#eclipse">Eclipse</a></li>
+<li><a href="#spotless-commands">Spotless commands</a><ul>
+<li><a href="#run-spotless-style-check">Run Spotless Style Check</a></li>
+<li><a href="#fix-spotless-style-violations">Fix Spotless style violations</a></li>
+</ul>
+</li>
+<li><a href="#ignoring-mass-reformatting-commits-with-git-blame">Ignoring mass reformatting commits with git blame</a></li>
 </ul>
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -703,16 +785,11 @@
 <p>If you have push access to the repository you can fix them directly otherwise just make a pull request.</p>
 <h3 id="features-or-bug-fixes">Features or Bug Fixes<a class="headerlink" href="#features-or-bug-fixes" title="Permanent link">&para;</a></h3>
 <ul>
-<li>Every PR should address an issue on the repository. If the issue doesn't exist, please create it first.</li>
-<li>Pull requests should always follow the following naming convention: 
-<code>[issue-number]-[pr-name]</code>. For example,
-to address issue #65 which refers to a style bug, the PR addressing it should have a name that looks something like
- <code>65-fix-style-bug</code>.</li>
-<li>Commit messages should always be prefixed with the number of the issue that they address. 
-For example, <code>#65: Remove redundant space.</code></li>
-<li>After your PR is merged to master:<ul>
-<li>Delete the branch.</li>
-<li>Mark the issue it addresses with the <code>merged-to-master</code> label.</li>
+<li>Every PR should address an issue on the repository. If the issue doesn't exist, please create it first and link PR with the issue. </li>
+<li>After your PR is approved by all reviewers and the build is green:<ul>
+<li>Use <code>Squash and merge</code> option on a pull request on GitHub, with that the pull request's commits should be squashed into a single commit. 
+    &gt; Instead of seeing all of a contributor's individual commit messages, the commits should be combined into one commit message with a clear commit description. </li>
+<li>Delete the branch when the PR is closed.</li>
 <li>Close the issue <strong>only</strong> if the change was released.</li>
 </ul>
 </li>
@@ -754,12 +831,12 @@ are omitted because <code>javadoc</code> is previously created in <code>build</c
 <ol>
 <li>
 <p>The integration tests of the library require to have two CTP projects (a source project and a target project) where the 
-data will be tested to be synced on from the source to the target project. </p>
+data will be tested to be synced from the source to the target project. </p>
 </li>
 <li>
 <p>Running the tests does the following:</p>
 <ul>
-<li>Clean all the data in both projects.</li>
+<li>Clean all the data on both projects.</li>
 <li>Create test data in either/both projects depending on the test.</li>
 <li>Execute the tests.</li>
 <li>Clean all the data in both projects, leaving them empty.</li>
@@ -767,8 +844,8 @@ data will be tested to be synced on from the source to the target project. </p>
 </li>
 </ol>
 <h4 id="running">Running<a class="headerlink" href="#running" title="Permanent link">&para;</a></h4>
-<p>To run the integration tests, CTP credentials are required. Credential can be obtained once you create a CTP project.
-For details, please refer to following link:
+<p>To run the integration tests, CTP credentials are required. The credential can be obtained once you create a CTP project.
+For details, please refer to the following link:
 <a href="https://docs.commercetools.com/merchant-center/projects.html#creating-a-project">https://docs.commercetools.com/merchant-center/projects.html#creating-a-project</a> </p>
 <ol>
 <li>Use credentials Java properties file <code>/src/integration-test/resources/it.properties</code>:</li>
@@ -797,10 +874,36 @@ For details, please refer to following link:
 </ol>
 <p><strong>Note</strong>: <code>it.properties</code> file has precedence over environment variables. If the file exists - 
   the environment variables are ignored. If the existing <code>it.properties</code> file is empty or one of the properties 
-  is missing - exception will be thrown on the tests execution</p>
-<p>If one of two options above is set - run the integration tests:
+  is missing - exception will be thrown on the execution of the tests</p>
+<p>If one of the two options above is set - run the integration tests:
 <div class="codehilite"><pre><span></span><code>./gradlew integrationTest
 </code></pre></div></p>
+<h2 id="using-the-google-java-style-and-code-formatter">Using the google java style and code formatter<a class="headerlink" href="#using-the-google-java-style-and-code-formatter" title="Permanent link">&para;</a></h2>
+<p>We are using <code>google-java-format</code> to format Java source code to comply with <a href="https://google.github.io/styleguide/javaguide.html">Google Java Style</a>.</p>
+<h3 id="intellij-android-studio-and-other-jetbrains-ides">IntelliJ, Android Studio, and other JetBrains IDEs<a class="headerlink" href="#intellij-android-studio-and-other-jetbrains-ides" title="Permanent link">&para;</a></h3>
+<p>A <a href="https://plugins.jetbrains.com/plugin/8527">google-java-format IntelliJ plugin</a> is available from the plugin repository. To install it, go to your IDE's settings and select the <code>Plugins</code> category. Click the <code>Marketplace</code> tab, search for the <code>google-java-format</code> plugin, and click the <code>Install</code> button.</p>
+<p>The plugin will be disabled by default. To enable it in the current project, go to <code>File→Settings...→google-java-format Settings</code> (or <code>IntelliJIDEA→Preferences...→Other Settings→google-java-format Settings</code> on macOS) and check the <code>Enable google-java-format</code> checkbox. (A notification will be presented when you first open a project offering to do this for you.)</p>
+<p>To enable it by default in new projects, use <code>File→Other Settings→Default Settings...</code>.
+When enabled, it will replace the normal <code>Reformat Code</code> action, which can be triggered by the <code>Code</code> menu or with the Ctrl-Alt (by default) keyboard shortcut.</p>
+<h3 id="eclipse">Eclipse<a class="headerlink" href="#eclipse" title="Permanent link">&para;</a></h3>
+<p><a href="https://github.com/google/google-java-format/releases/download/google-java-format-1.6/google-java-format-eclipse-plugin_1.6.0.jar">google-java-format Eclipse plugin</a> can be downloaded from the releases page. Drop it into the Eclipse<a href="http://help.eclipse.org/neon/index.jsp?topic=%2Forg.eclipse.platform.doc.isv%2Freference%2Fmisc%2Fp2_dropins_format.html">drop-ins folder</a>to activate the plugin.</p>
+<p>The plugin adds a <code>google-java-format</code> formatter implementation that can be configured in <code>Window &gt; Preferences &gt; Java &gt; Code Style &gt; Formatter &gt; Formatter Implementation</code>.</p>
+<h3 id="spotless-commands">Spotless commands<a class="headerlink" href="#spotless-commands" title="Permanent link">&para;</a></h3>
+<h5 id="run-spotless-style-check">Run Spotless Style Check<a class="headerlink" href="#run-spotless-style-check" title="Permanent link">&para;</a></h5>
+<div class="codehilite"><pre><span></span><code>./gradlew spotlessCheck
+</code></pre></div>
+
+<h5 id="fix-spotless-style-violations">Fix Spotless style violations<a class="headerlink" href="#fix-spotless-style-violations" title="Permanent link">&para;</a></h5>
+<div class="codehilite"><pre><span></span><code>./gradlew spotlessApply
+</code></pre></div>
+
+<h3 id="ignoring-mass-reformatting-commits-with-git-blame">Ignoring mass reformatting commits with git blame<a class="headerlink" href="#ignoring-mass-reformatting-commits-with-git-blame" title="Permanent link">&para;</a></h3>
+<p>To exclude the formatting commits git blame supports writing the commit hashes into a file and then referencing the file with <code>--ignore-revs-file</code>.                   <br />
+To be able to archive that <code>git blame ./file.java --ignore-revs-file .git-blame-ignore-revs</code> command to ignore this revision to find a better git history.      </p>
+<p>Also <code>git config blame.ignoreRevsFile .git-blame-ignore-revs</code> could be configured to ignore this revision always.</p>
+<blockquote>
+<p>We create <code>.git-blame-ignore-revs</code> that could be found in the repository.   </p>
+</blockquote>
                 
                   
                 
