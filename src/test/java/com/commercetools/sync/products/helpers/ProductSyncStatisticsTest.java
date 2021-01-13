@@ -82,7 +82,7 @@ class ProductSyncStatisticsTest {
     @Test
     void removeAndGetReferencingKeys_WithEmptyMap_ShouldGetNull() {
         // test
-        final Set<String> result = productSyncStatistics.removeAndGetReferencingKeys("foo");
+        final Set<String> result = productSyncStatistics.removeAndGetChildrenKeys("foo");
 
         // assert
         assertThat(result).isNull();
@@ -95,7 +95,7 @@ class ProductSyncStatisticsTest {
         productSyncStatistics.addMissingDependency("foo", "b");
 
         // test
-        final Set<String> result = productSyncStatistics.removeAndGetReferencingKeys("x");
+        final Set<String> result = productSyncStatistics.removeAndGetChildrenKeys("x");
 
         // assert
         assertThat(result).isNull();
@@ -109,7 +109,7 @@ class ProductSyncStatisticsTest {
         productSyncStatistics.addMissingDependency("foo", "b");
 
         // test
-        final Set<String> result = productSyncStatistics.removeAndGetReferencingKeys("foo");
+        final Set<String> result = productSyncStatistics.removeAndGetChildrenKeys("foo");
 
         // assert
         assertThat(result).containsExactly("b");
@@ -124,7 +124,7 @@ class ProductSyncStatisticsTest {
         productSyncStatistics.addMissingDependency("foo", "c");
 
         // test
-        final Set<String> result = productSyncStatistics.removeAndGetReferencingKeys("foo");
+        final Set<String> result = productSyncStatistics.removeAndGetChildrenKeys("foo");
 
         // assert
         assertThat(result).containsExactly("b", "c");

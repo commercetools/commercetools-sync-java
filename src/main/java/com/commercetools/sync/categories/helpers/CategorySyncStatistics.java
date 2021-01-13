@@ -6,6 +6,7 @@ import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -125,5 +126,10 @@ public class CategorySyncStatistics extends BaseSyncStatistics {
      */
     public void removeChildCategoryKeyFromMissingParentsMap(@Nonnull final String childCategoryKey) {
         categoryKeysWithMissingParents.forEach((key, value) -> value.remove(childCategoryKey));
+    }
+
+    @Nullable
+    public Set<String> removeAndGetChildrenKeys(@Nonnull final String key) {
+        return categoryKeysWithMissingParents.remove(key);
     }
 }

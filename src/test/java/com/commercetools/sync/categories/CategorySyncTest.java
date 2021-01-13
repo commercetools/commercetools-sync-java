@@ -7,6 +7,7 @@ import com.commercetools.sync.commons.models.ResourceKeyId;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
+import com.commercetools.sync.services.UnresolvedReferencesService;
 import com.commercetools.sync.services.impl.CategoryServiceImpl;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -62,14 +63,15 @@ class CategorySyncTest {
     private CategorySyncOptions categorySyncOptions;
     private List<String> errorCallBackMessages;
     private List<Throwable> errorCallBackExceptions;
-
+    private UnresolvedReferencesService mockUnresolvedReferencesService;
     // protected method access helper
     private static class CategorySyncMock extends CategorySync {
 
         CategorySyncMock(@Nonnull final CategorySyncOptions syncOptions,
                          @Nonnull final TypeService typeService,
-                         @Nonnull final CategoryService categoryService) {
-            super(syncOptions, typeService, categoryService);
+                         @Nonnull final CategoryService categoryService,
+                         @Nonnull final UnresolvedReferencesService unresolvedReferencesService) {
+            super(syncOptions, typeService, categoryService, unresolvedReferencesService);
         }
 
         @Override
@@ -88,6 +90,7 @@ class CategorySyncTest {
     void setup() {
         errorCallBackMessages = new ArrayList<>();
         errorCallBackExceptions = new ArrayList<>();
+        mockUnresolvedReferencesService= mock(UnresolvedReferencesService.class);
         final SphereClient ctpClient = mock(SphereClient.class);
         categorySyncOptions = CategorySyncOptionsBuilder.of(ctpClient)
                 .errorCallback((exception, oldResource, newResource, updateActions) -> {
@@ -100,7 +103,8 @@ class CategorySyncTest {
     void sync_WithEmptyListOfDrafts_ShouldNotProcessAnyCategories() {
         final CategoryService mockCategoryService = mockCategoryService(emptySet(), null);
         final CategorySync mockCategorySync =
-                new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService);
+                new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService,
+                    mockUnresolvedReferencesService);
 
         final CategorySyncStatistics syncStatistics = mockCategorySync.sync(emptyList())
                 .toCompletableFuture().join();
@@ -114,7 +118,8 @@ class CategorySyncTest {
     void sync_WithANullDraft_ShouldBeCountedAsFailed() {
         final CategoryService mockCategoryService = mockCategoryService(emptySet(), null);
         final CategorySync mockCategorySync =
-                new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService);
+                new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService,
+                    mockUnresolvedReferencesService);
 
         final CategorySyncStatistics syncStatistics = mockCategorySync.sync(singletonList(null))
                 .toCompletableFuture().join();
@@ -130,7 +135,8 @@ class CategorySyncTest {
     void sync_WithADraftWithNoSetKey_ShouldFailSync() {
         final CategoryService mockCategoryService = mockCategoryService(emptySet(), null);
         final CategorySync mockCategorySync =
-                new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService);
+                new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService,
+                    mockUnresolvedReferencesService);
         final List<CategoryDraft> categoryDrafts = singletonList(
                 getMockCategoryDraft(Locale.ENGLISH, "noKeyDraft", "no-key-id-draft", null));
 
@@ -151,7 +157,8 @@ class CategorySyncTest {
         final Category mockCategory = getMockCategory(UUID.randomUUID().toString(), "key");
         final CategoryService mockCategoryService = mockCategoryService(emptySet(), mockCategory);
         final CategorySync mockCategorySync =
-                new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService);
+                new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService, 
+                    mockUnresolvedReferencesService);         
         final List<CategoryDraft> categoryDrafts = singletonList(
                 getMockCategoryDraft(Locale.ENGLISH, "name", "newKey", "parentKey", "customTypeId", new HashMap<>()));
 
@@ -169,7 +176,7 @@ class CategorySyncTest {
         final CategoryService mockCategoryService =
                 mockCategoryService(singleton(mockCategory), null, mockCategory);
         final CategorySync mockCategorySync =
-                new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService);
+                new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService, mockUnresolvedReferencesService);         
         final List<CategoryDraft> categoryDrafts = singletonList(
                 getMockCategoryDraft(Locale.ENGLISH, "name", "key", "parentKey", "customTypeId", new HashMap<>()));
 
@@ -188,7 +195,7 @@ class CategorySyncTest {
         final CategoryService mockCategoryService =
                 mockCategoryService(singleton(mockCategory), null, mockCategory);
         final CategorySync mockCategorySync =
-                new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService);
+                new CategorySync(categorySyncOptions, getMockTypeService(), mockCategoryService, mockUnresolvedReferencesService);         
         final List<CategoryDraft> categoryDrafts = singletonList(identicalCategoryDraft);
 
         final CategorySyncStatistics syncStatistics = mockCategorySync.sync(categoryDrafts)
@@ -205,7 +212,7 @@ class CategorySyncTest {
         final CategoryService mockCategoryService =
                 mockCategoryService(singleton(mockCategory), null, mockCategory);
         final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
-                mockCategoryService);
+                 mockCategoryService, mockUnresolvedReferencesService);         
         final List<CategoryDraft> categoryDrafts = singletonList(
                 getMockCategoryDraft(Locale.ENGLISH, "name", "key", null, "customTypeId", new HashMap<>()));
 
@@ -227,7 +234,7 @@ class CategorySyncTest {
         final CategoryService mockCategoryService =
                 mockCategoryService(singleton(mockCategory), null, mockCategory);
         final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
-                mockCategoryService);
+                 mockCategoryService, mockUnresolvedReferencesService);         
 
         final CategoryDraft categoryDraft = mock(CategoryDraft.class);
         when(categoryDraft.getName()).thenReturn(LocalizedString.of(Locale.ENGLISH, "name"));
@@ -249,7 +256,7 @@ class CategorySyncTest {
         final CategoryService mockCategoryService =
                 mockCategoryService(singleton(mockCategory), null, mockCategory);
         final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
-                mockCategoryService);
+                 mockCategoryService, mockUnresolvedReferencesService);         
         final List<CategoryDraft> categoryDrafts = singletonList(
                 getMockCategoryDraft(Locale.ENGLISH, "name", "key", "",
                         "customTypeId", new HashMap<>()));
@@ -272,7 +279,7 @@ class CategorySyncTest {
         final CategoryService mockCategoryService =
                 mockCategoryService(singleton(mockCategory), null, mockCategory);
         final CategorySync categorySync = new CategorySync(categorySyncOptions, getMockTypeService(),
-                mockCategoryService);
+                 mockCategoryService, mockUnresolvedReferencesService);         
         final List<CategoryDraft> categoryDrafts = singletonList(
                 getMockCategoryDraft(Locale.ENGLISH, "name", "key", "parentKey",
                         "", new HashMap<>()));
@@ -362,7 +369,7 @@ class CategorySyncTest {
         final CategoryService mockCategoryService = mockCategoryService(emptySet(), createdCategory);
 
         final CategorySyncMock categorySync = new CategorySyncMock(categorySyncOptions, getMockTypeService(),
-                mockCategoryService);
+                 mockCategoryService, mockUnresolvedReferencesService);         
         final CategorySyncMock syncSpy = spy(categorySync);
 
         // test
@@ -395,7 +402,7 @@ class CategorySyncTest {
         final CategoryService mockCategoryService = mockCategoryService(emptySet(), createdCategory);
 
         final CategorySyncMock categorySync = new CategorySyncMock(categorySyncOptions, getMockTypeService(),
-                mockCategoryService);
+                 mockCategoryService, mockUnresolvedReferencesService);         
 
         final CategorySyncMock syncSpy = spy(categorySync);
 
@@ -429,7 +436,8 @@ class CategorySyncTest {
 
         final CategoryService categoryServiceSpy = spy(new CategoryServiceImpl(syncOptions));
 
-        final CategorySync mockCategorySync = new CategorySync(syncOptions, getMockTypeService(), categoryServiceSpy);
+        final CategorySync mockCategorySync = new CategorySync(syncOptions, getMockTypeService(), categoryServiceSpy,
+            mockUnresolvedReferencesService);
 
         CategoryDraft categoryDraft =
                 getMockCategoryDraft(Locale.ENGLISH, "name", "newKey", "parentKey", "customTypeId", new HashMap<>());
@@ -490,7 +498,8 @@ class CategorySyncTest {
 
         final CategoryService categoryServiceSpy = spy(new CategoryServiceImpl(syncOptions));
 
-        final CategorySync mockCategorySync = new CategorySync(syncOptions, getMockTypeService(), categoryServiceSpy);
+        final CategorySync mockCategorySync = new CategorySync(syncOptions, getMockTypeService(), categoryServiceSpy,
+            mockUnresolvedReferencesService);
 
         final CategoryDraft categoryDraft =
                 getMockCategoryDraft(Locale.ENGLISH, "name", categoryKey, "parentKey", "customTypeId", new HashMap<>());
@@ -533,7 +542,7 @@ class CategorySyncTest {
         final CategorySyncOptions spyCategorySyncOptions = spy(categorySyncOptions);
 
         // test
-        new CategorySync(spyCategorySyncOptions, getMockTypeService(), categoryService)
+        new CategorySync(spyCategorySyncOptions, getMockTypeService(), categoryService, mockUnresolvedReferencesService)
                 .sync(singletonList(categoryDraft)).toCompletableFuture().join();
 
         // assertion
@@ -563,7 +572,7 @@ class CategorySyncTest {
         final CategorySyncOptions spyCategorySyncOptions = spy(categorySyncOptions);
 
         // test
-        new CategorySync(spyCategorySyncOptions, getMockTypeService(), categoryService)
+        new CategorySync(spyCategorySyncOptions, getMockTypeService(), categoryService, mockUnresolvedReferencesService)
                 .sync(singletonList(categoryDraft)).toCompletableFuture().join();
 
         // assertion

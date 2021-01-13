@@ -78,7 +78,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     private final UnresolvedReferencesService unresolvedReferencesService;
     private final ProductBatchValidator batchValidator;
 
-    private ConcurrentHashMap.KeySetView<String, Boolean> readyToResolve;
+    private ConcurrentHashMap.KeySetView<String, Boolean> resolvedProductKeys;
 
     /**
      * Takes a {@link ProductSyncOptions} instance to instantiate a new {@link ProductSync} instance that could be
@@ -127,7 +127,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     @Override
     protected CompletionStage<ProductSyncStatistics> processBatch(@Nonnull final List<ProductDraft> batch) {
 
-        readyToResolve = ConcurrentHashMap.newKeySet();
+        resolvedProductKeys = ConcurrentHashMap.newKeySet();
 
         final ImmutablePair<Set<ProductDraft>, ProductBatchValidator.ReferencedKeys> result
             = batchValidator.validateAndCollectReferencedKeys(batch);
@@ -210,7 +210,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                     getMissingReferencedProductKeys(newDraft, keyToIdCache);
 
                 if (!missingReferencedProductKeys.isEmpty()) {
-                    return keepTrackOfMissingReferences(newDraft, missingReferencedProductKeys);
+                    return  keepTrackOfMissingReferences(newDraft, missingReferencedProductKeys);
                 } else {
                     return syncDraft(oldProducts, newDraft);
                 }
@@ -253,9 +253,9 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         // We delete anyways the keys from the statistics before we attempt resolution, because even if resolution fails
         // the products that failed to be synced would be counted as failed.
 
-        final Set<String> referencingDraftKeys = readyToResolve
+        final Set<String> referencingDraftKeys = resolvedProductKeys
             .stream()
-            .map(statistics::removeAndGetReferencingKeys)
+            .map(statistics::removeAndGetChildrenKeys)
             .filter(Objects::nonNull)
             .flatMap(Set::stream)
             .collect(Collectors.toSet());
@@ -284,7 +284,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                 waitingDrafts
                     .forEach(waitingDraft -> {
                         final Set<String> missingReferencedProductKeys = waitingDraft.getMissingReferencedKeys();
-                        missingReferencedProductKeys.removeAll(readyToResolve);
+                        missingReferencedProductKeys.removeAll(resolvedProductKeys);
 
                         if (missingReferencedProductKeys.isEmpty()) {
                             readyToSync.add((ProductDraft) waitingDraft.getWaitingDraft());
@@ -462,7 +462,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                 .createProduct(draft)
                 .thenAccept(productOptional -> {
                     if (productOptional.isPresent()) {
-                        readyToResolve.add(productDraft.getKey());
+                        resolvedProductKeys.add(productDraft.getKey());
                         statistics.incrementCreated();
                     } else {
                         statistics.incrementFailed();

@@ -1,5 +1,6 @@
 package com.commercetools.sync.services.impl;
 
+import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.products.ProductSyncOptions;
@@ -27,7 +28,7 @@ import static org.apache.commons.codec.digest.DigestUtils.sha1Hex;
 
 public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesService {
 
-    private final ProductSyncOptions syncOptions;
+    private final BaseSyncOptions syncOptions;
 
     private static final String SAVE_FAILED =
         "Failed to save CustomObject with key: '%s' (hash of product key: '%s').";
@@ -35,8 +36,10 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
         "Failed to delete CustomObject with key: '%s' (hash of product key: '%s').";
     public static final String CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY =
         "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
+    public static final String CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY =
+        "commercetools-sync-java.UnresolvedReferencesService.categoryDrafts";
 
-    public UnresolvedReferencesServiceImpl(@Nonnull final ProductSyncOptions baseSyncOptions) {
+    public UnresolvedReferencesServiceImpl(@Nonnull final BaseSyncOptions baseSyncOptions) {
         this.syncOptions = baseSyncOptions;
     }
 
