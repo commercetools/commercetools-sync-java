@@ -1,5 +1,12 @@
 package com.commercetools.sync.producttypes.utils;
 
+import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateActionUtils.buildChangeDescriptionAction;
+import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateActionUtils.buildChangeNameAction;
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.products.attributes.AttributeDefinition;
@@ -11,88 +18,72 @@ import io.sphere.sdk.producttypes.ProductType;
 import io.sphere.sdk.producttypes.ProductTypeDraft;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeDescription;
 import io.sphere.sdk.producttypes.commands.updateactions.ChangeName;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-
-import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateActionUtils.buildChangeDescriptionAction;
-import static com.commercetools.sync.producttypes.utils.ProductTypeUpdateActionUtils.buildChangeNameAction;
-import static java.util.Collections.singletonList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 class ProductTypeUpdateActionUtilsTest {
-    private static ProductType old;
-    private static ProductTypeDraft newSame;
-    private static ProductTypeDraft newDifferent;
+  private static ProductType old;
+  private static ProductTypeDraft newSame;
+  private static ProductTypeDraft newDifferent;
 
-    /**
-     * Initialises test data.
-     */
-    @BeforeAll
-    static void setup() {
-        final LocalizedString label = LocalizedString.of(Locale.ENGLISH, "label1");
-        final AttributeDefinition attributeDefinition = AttributeDefinitionBuilder
-            .of("attributeName1", label, StringAttributeType.of())
-            .build();
+  /** Initialises test data. */
+  @BeforeAll
+  static void setup() {
+    final LocalizedString label = LocalizedString.of(Locale.ENGLISH, "label1");
+    final AttributeDefinition attributeDefinition =
+        AttributeDefinitionBuilder.of("attributeName1", label, StringAttributeType.of()).build();
 
-        final List<AttributeDefinition> oldAttributeDefinitions = singletonList(attributeDefinition);
+    final List<AttributeDefinition> oldAttributeDefinitions = singletonList(attributeDefinition);
 
-        final List<AttributeDefinitionDraft> sameAttributeDefinitionDrafts = singletonList(
-            AttributeDefinitionDraftBuilder.of(attributeDefinition).build());
+    final List<AttributeDefinitionDraft> sameAttributeDefinitionDrafts =
+        singletonList(AttributeDefinitionDraftBuilder.of(attributeDefinition).build());
 
-        old = mock(ProductType.class);
-        when(old.getKey()).thenReturn("key1");
-        when(old.getName()).thenReturn("name1");
-        when(old.getDescription()).thenReturn("description 1");
-        when(old.getAttributes()).thenReturn(oldAttributeDefinitions);
+    old = mock(ProductType.class);
+    when(old.getKey()).thenReturn("key1");
+    when(old.getName()).thenReturn("name1");
+    when(old.getDescription()).thenReturn("description 1");
+    when(old.getAttributes()).thenReturn(oldAttributeDefinitions);
 
-        newSame = ProductTypeDraft.ofAttributeDefinitionDrafts(
-            "key1",
-            "name1",
-            "description 1",
-            sameAttributeDefinitionDrafts
-        );
+    newSame =
+        ProductTypeDraft.ofAttributeDefinitionDrafts(
+            "key1", "name1", "description 1", sameAttributeDefinitionDrafts);
 
-        newDifferent = ProductTypeDraft.ofAttributeDefinitionDrafts(
-            "key2",
-            "name2",
-            "description 2",
-            sameAttributeDefinitionDrafts
-        );
-    }
+    newDifferent =
+        ProductTypeDraft.ofAttributeDefinitionDrafts(
+            "key2", "name2", "description 2", sameAttributeDefinitionDrafts);
+  }
 
-    @Test
-    void buildChangeNameAction_WithDifferentValues_ShouldReturnAction() {
-        final Optional<UpdateAction<ProductType>> result = buildChangeNameAction(old, newDifferent);
+  @Test
+  void buildChangeNameAction_WithDifferentValues_ShouldReturnAction() {
+    final Optional<UpdateAction<ProductType>> result = buildChangeNameAction(old, newDifferent);
 
-        assertThat(result).containsInstanceOf(ChangeName.class);
-        assertThat(result).contains(ChangeName.of(newDifferent.getName()));
-    }
+    assertThat(result).containsInstanceOf(ChangeName.class);
+    assertThat(result).contains(ChangeName.of(newDifferent.getName()));
+  }
 
-    @Test
-    void buildChangeNameAction_WithSameValues_ShouldReturnEmptyOptional() {
-        final Optional<UpdateAction<ProductType>> result = buildChangeNameAction(old, newSame);
+  @Test
+  void buildChangeNameAction_WithSameValues_ShouldReturnEmptyOptional() {
+    final Optional<UpdateAction<ProductType>> result = buildChangeNameAction(old, newSame);
 
-        assertThat(result).isEmpty();
-    }
+    assertThat(result).isEmpty();
+  }
 
-    @Test
-    void buildChangeDescriptionAction_WithDifferentValues_ShouldReturnAction() {
-        final Optional<UpdateAction<ProductType>> result = buildChangeDescriptionAction(old, newDifferent);
+  @Test
+  void buildChangeDescriptionAction_WithDifferentValues_ShouldReturnAction() {
+    final Optional<UpdateAction<ProductType>> result =
+        buildChangeDescriptionAction(old, newDifferent);
 
-        assertThat(result).containsInstanceOf(ChangeDescription.class);
-        assertThat(result).contains(ChangeDescription.of(newDifferent.getDescription()));
-    }
+    assertThat(result).containsInstanceOf(ChangeDescription.class);
+    assertThat(result).contains(ChangeDescription.of(newDifferent.getDescription()));
+  }
 
-    @Test
-    void buildChangeDescriptionAction_WithSameValues_ShouldReturnEmptyOptional() {
-        final Optional<UpdateAction<ProductType>> result = buildChangeDescriptionAction(old, newSame);
+  @Test
+  void buildChangeDescriptionAction_WithSameValues_ShouldReturnEmptyOptional() {
+    final Optional<UpdateAction<ProductType>> result = buildChangeDescriptionAction(old, newSame);
 
-        assertThat(result).isEmpty();
-    }
+    assertThat(result).isEmpty();
+  }
 }

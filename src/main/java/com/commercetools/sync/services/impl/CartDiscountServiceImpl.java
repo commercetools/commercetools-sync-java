@@ -11,55 +11,65 @@ import io.sphere.sdk.cartdiscounts.queries.CartDiscountQuery;
 import io.sphere.sdk.cartdiscounts.queries.CartDiscountQueryBuilder;
 import io.sphere.sdk.cartdiscounts.queries.CartDiscountQueryModel;
 import io.sphere.sdk.commands.UpdateAction;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-public class CartDiscountServiceImpl extends BaseServiceWithKey<CartDiscountDraft, CartDiscount,
-    CartDiscountSyncOptions, CartDiscountQuery, CartDiscountQueryModel, CartDiscountExpansionModel<CartDiscount>>
+public class CartDiscountServiceImpl
+    extends BaseServiceWithKey<
+        CartDiscountDraft,
+        CartDiscount,
+        CartDiscountSyncOptions,
+        CartDiscountQuery,
+        CartDiscountQueryModel,
+        CartDiscountExpansionModel<CartDiscount>>
     implements CartDiscountService {
 
-    public CartDiscountServiceImpl(@Nonnull final CartDiscountSyncOptions syncOptions) {
-        super(syncOptions);
-    }
+  public CartDiscountServiceImpl(@Nonnull final CartDiscountSyncOptions syncOptions) {
+    super(syncOptions);
+  }
 
-    @Nonnull
-    @Override
-    public CompletionStage<Set<CartDiscount>> fetchMatchingCartDiscountsByKeys(@Nonnull final Set<String> keys) {
+  @Nonnull
+  @Override
+  public CompletionStage<Set<CartDiscount>> fetchMatchingCartDiscountsByKeys(
+      @Nonnull final Set<String> keys) {
 
-        return fetchMatchingResources(keys,
-            () -> CartDiscountQueryBuilder
-                .of()
+    return fetchMatchingResources(
+        keys,
+        () ->
+            CartDiscountQueryBuilder.of()
                 .plusPredicates(queryModel -> queryModel.key().isIn(keys))
                 .build());
-    }
+  }
 
-    @Nonnull
-    @Override
-    public CompletionStage<Optional<CartDiscount>> fetchCartDiscount(@Nullable final String key) {
+  @Nonnull
+  @Override
+  public CompletionStage<Optional<CartDiscount>> fetchCartDiscount(@Nullable final String key) {
 
-        return fetchResource(key, () -> CartDiscountQuery
-            .of().plusPredicates(cartDiscountQueryModel -> cartDiscountQueryModel.key().is(key)));
-    }
+    return fetchResource(
+        key,
+        () ->
+            CartDiscountQuery.of()
+                .plusPredicates(cartDiscountQueryModel -> cartDiscountQueryModel.key().is(key)));
+  }
 
-    @Nonnull
-    @Override
-    public CompletionStage<Optional<CartDiscount>> createCartDiscount(
-        @Nonnull final CartDiscountDraft cartDiscountDraft) {
+  @Nonnull
+  @Override
+  public CompletionStage<Optional<CartDiscount>> createCartDiscount(
+      @Nonnull final CartDiscountDraft cartDiscountDraft) {
 
-        return createResource(cartDiscountDraft, CartDiscountCreateCommand::of);
-    }
+    return createResource(cartDiscountDraft, CartDiscountCreateCommand::of);
+  }
 
-    @Nonnull
-    @Override
-    public CompletionStage<CartDiscount> updateCartDiscount(
-        @Nonnull final CartDiscount cartDiscount,
-        @Nonnull final List<UpdateAction<CartDiscount>> updateActions) {
+  @Nonnull
+  @Override
+  public CompletionStage<CartDiscount> updateCartDiscount(
+      @Nonnull final CartDiscount cartDiscount,
+      @Nonnull final List<UpdateAction<CartDiscount>> updateActions) {
 
-        return updateResource(cartDiscount, CartDiscountUpdateCommand::of, updateActions);
-    }
+    return updateResource(cartDiscount, CartDiscountUpdateCommand::of, updateActions);
+  }
 }

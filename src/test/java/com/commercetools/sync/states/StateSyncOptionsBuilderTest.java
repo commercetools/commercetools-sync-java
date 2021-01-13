@@ -1,5 +1,10 @@
 package com.commercetools.sync.states;
 
+import static java.util.Collections.emptyList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.Mockito.mock;
+
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.utils.QuadConsumer;
 import com.commercetools.sync.commons.utils.TriConsumer;
@@ -8,144 +13,131 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateDraft;
-import org.junit.jupiter.api.Test;
-
 import java.util.List;
 import java.util.Optional;
-
-import static java.util.Collections.emptyList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.mockito.Mockito.mock;
+import org.junit.jupiter.api.Test;
 
 class StateSyncOptionsBuilderTest {
 
-    private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
-    private StateSyncOptionsBuilder stateSyncOptionsBuilder = StateSyncOptionsBuilder.of(CTP_CLIENT);
+  private static final SphereClient CTP_CLIENT = mock(SphereClient.class);
+  private StateSyncOptionsBuilder stateSyncOptionsBuilder = StateSyncOptionsBuilder.of(CTP_CLIENT);
 
-    @Test
-    void of_WithClient_ShouldCreateStateSyncOptionsBuilder() {
-        StateSyncOptionsBuilder builder = StateSyncOptionsBuilder.of(CTP_CLIENT);
+  @Test
+  void of_WithClient_ShouldCreateStateSyncOptionsBuilder() {
+    StateSyncOptionsBuilder builder = StateSyncOptionsBuilder.of(CTP_CLIENT);
 
-        assertThat(builder).isNotNull();
-    }
+    assertThat(builder).isNotNull();
+  }
 
-    @Test
-    void getThis_ShouldReturnBuilderInstance() {
-        StateSyncOptionsBuilder instance = stateSyncOptionsBuilder.getThis();
+  @Test
+  void getThis_ShouldReturnBuilderInstance() {
+    StateSyncOptionsBuilder instance = stateSyncOptionsBuilder.getThis();
 
-        assertThat(instance).isNotNull();
-        assertThat(instance).isInstanceOf(StateSyncOptionsBuilder.class);
-    }
+    assertThat(instance).isNotNull();
+    assertThat(instance).isInstanceOf(StateSyncOptionsBuilder.class);
+  }
 
-    @Test
-    void build_WithClient_ShouldBuildSyncOptions() {
-        StateSyncOptions stateSyncOptions = stateSyncOptionsBuilder.build();
+  @Test
+  void build_WithClient_ShouldBuildSyncOptions() {
+    StateSyncOptions stateSyncOptions = stateSyncOptionsBuilder.build();
 
-        assertThat(stateSyncOptions).isNotNull();
-        assertAll(
-            () -> assertThat(stateSyncOptions.getBeforeUpdateCallback()).isNull(),
-            () -> assertThat(stateSyncOptions.getBeforeCreateCallback()).isNull(),
-            () -> assertThat(stateSyncOptions.getErrorCallback()).isNull(),
-            () -> assertThat(stateSyncOptions.getWarningCallback()).isNull(),
-            () -> assertThat(stateSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT),
-            () -> assertThat(stateSyncOptions.getBatchSize()).isEqualTo(StateSyncOptionsBuilder.BATCH_SIZE_DEFAULT),
-            () -> assertThat(stateSyncOptions.getCacheSize()).isEqualTo(10_000)
-        );
-    }
+    assertThat(stateSyncOptions).isNotNull();
+    assertAll(
+        () -> assertThat(stateSyncOptions.getBeforeUpdateCallback()).isNull(),
+        () -> assertThat(stateSyncOptions.getBeforeCreateCallback()).isNull(),
+        () -> assertThat(stateSyncOptions.getErrorCallback()).isNull(),
+        () -> assertThat(stateSyncOptions.getWarningCallback()).isNull(),
+        () -> assertThat(stateSyncOptions.getCtpClient()).isEqualTo(CTP_CLIENT),
+        () ->
+            assertThat(stateSyncOptions.getBatchSize())
+                .isEqualTo(StateSyncOptionsBuilder.BATCH_SIZE_DEFAULT),
+        () -> assertThat(stateSyncOptions.getCacheSize()).isEqualTo(10_000));
+  }
 
-    @Test
-    void build_WithBeforeUpdateCallback_ShouldSetBeforeUpdateCallback() {
-        final TriFunction<List<UpdateAction<State>>, StateDraft, State, List<UpdateAction<State>>>
-            beforeUpdateCallback = (updateActions, newState, oldState) -> emptyList();
-        stateSyncOptionsBuilder.beforeUpdateCallback(beforeUpdateCallback);
+  @Test
+  void build_WithBeforeUpdateCallback_ShouldSetBeforeUpdateCallback() {
+    final TriFunction<List<UpdateAction<State>>, StateDraft, State, List<UpdateAction<State>>>
+        beforeUpdateCallback = (updateActions, newState, oldState) -> emptyList();
+    stateSyncOptionsBuilder.beforeUpdateCallback(beforeUpdateCallback);
 
-        StateSyncOptions stateSyncOptions = stateSyncOptionsBuilder.build();
+    StateSyncOptions stateSyncOptions = stateSyncOptionsBuilder.build();
 
-        assertThat(stateSyncOptions.getBeforeUpdateCallback()).isNotNull();
-    }
+    assertThat(stateSyncOptions.getBeforeUpdateCallback()).isNotNull();
+  }
 
-    @Test
-    void build_WithBeforeCreateCallback_ShouldSetBeforeCreateCallback() {
-        stateSyncOptionsBuilder.beforeCreateCallback((newState) -> null);
+  @Test
+  void build_WithBeforeCreateCallback_ShouldSetBeforeCreateCallback() {
+    stateSyncOptionsBuilder.beforeCreateCallback((newState) -> null);
 
-        StateSyncOptions stateSyncOptions = stateSyncOptionsBuilder.build();
+    StateSyncOptions stateSyncOptions = stateSyncOptionsBuilder.build();
 
-        assertThat(stateSyncOptions.getBeforeCreateCallback()).isNotNull();
-    }
+    assertThat(stateSyncOptions.getBeforeCreateCallback()).isNotNull();
+  }
 
-    @Test
-    void build_WithErrorCallback_ShouldSetErrorCallback() {
-        final QuadConsumer<SyncException, Optional<StateDraft>, Optional<State>,
-            List<UpdateAction<State>>> mockErrorCallback = (exception, newDraft, old, actions) -> { };
-        stateSyncOptionsBuilder.errorCallback(mockErrorCallback);
+  @Test
+  void build_WithErrorCallback_ShouldSetErrorCallback() {
+    final QuadConsumer<
+            SyncException, Optional<StateDraft>, Optional<State>, List<UpdateAction<State>>>
+        mockErrorCallback = (exception, newDraft, old, actions) -> {};
+    stateSyncOptionsBuilder.errorCallback(mockErrorCallback);
 
-        StateSyncOptions stateSyncOptions = stateSyncOptionsBuilder.build();
+    StateSyncOptions stateSyncOptions = stateSyncOptionsBuilder.build();
 
-        assertThat(stateSyncOptions.getErrorCallback()).isNotNull();
-    }
+    assertThat(stateSyncOptions.getErrorCallback()).isNotNull();
+  }
 
-    @Test
-    void build_WithWarningCallback_ShouldSetWarningCallback() {
-        final TriConsumer<SyncException, Optional<StateDraft>, Optional<State>> mockWarningCallback =
-            (exception, newDraft, old) -> { };
-        stateSyncOptionsBuilder.warningCallback(mockWarningCallback);
+  @Test
+  void build_WithWarningCallback_ShouldSetWarningCallback() {
+    final TriConsumer<SyncException, Optional<StateDraft>, Optional<State>> mockWarningCallback =
+        (exception, newDraft, old) -> {};
+    stateSyncOptionsBuilder.warningCallback(mockWarningCallback);
 
-        StateSyncOptions stateSyncOptions = stateSyncOptionsBuilder.build();
+    StateSyncOptions stateSyncOptions = stateSyncOptionsBuilder.build();
 
-        assertThat(stateSyncOptions.getWarningCallback()).isNotNull();
-    }
+    assertThat(stateSyncOptions.getWarningCallback()).isNotNull();
+  }
 
-    @Test
-    void build_WithBatchSize_ShouldSetBatchSize() {
-        StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder.of(CTP_CLIENT)
-            .batchSize(10)
-            .build();
+  @Test
+  void build_WithBatchSize_ShouldSetBatchSize() {
+    StateSyncOptions stateSyncOptions =
+        StateSyncOptionsBuilder.of(CTP_CLIENT).batchSize(10).build();
 
-        assertThat(stateSyncOptions.getBatchSize()).isEqualTo(10);
-    }
+    assertThat(stateSyncOptions.getBatchSize()).isEqualTo(10);
+  }
 
-    @Test
-    void build_WithInvalidBatchSize_ShouldBuildSyncOptions() {
-        StateSyncOptions stateSyncOptionsWithZeroBatchSize = StateSyncOptionsBuilder.of(CTP_CLIENT)
-            .batchSize(0)
-            .build();
+  @Test
+  void build_WithInvalidBatchSize_ShouldBuildSyncOptions() {
+    StateSyncOptions stateSyncOptionsWithZeroBatchSize =
+        StateSyncOptionsBuilder.of(CTP_CLIENT).batchSize(0).build();
 
-        assertThat(stateSyncOptionsWithZeroBatchSize.getBatchSize())
-            .isEqualTo(StateSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
+    assertThat(stateSyncOptionsWithZeroBatchSize.getBatchSize())
+        .isEqualTo(StateSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
 
-        StateSyncOptions stateSyncOptionsWithNegativeBatchSize = StateSyncOptionsBuilder
-            .of(CTP_CLIENT)
-            .batchSize(-100)
-            .build();
+    StateSyncOptions stateSyncOptionsWithNegativeBatchSize =
+        StateSyncOptionsBuilder.of(CTP_CLIENT).batchSize(-100).build();
 
-        assertThat(stateSyncOptionsWithNegativeBatchSize.getBatchSize())
-            .isEqualTo(StateSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
-    }
+    assertThat(stateSyncOptionsWithNegativeBatchSize.getBatchSize())
+        .isEqualTo(StateSyncOptionsBuilder.BATCH_SIZE_DEFAULT);
+  }
 
-    @Test
-    void build_WithCacheSize_ShouldSetCacheSize() {
-        StateSyncOptions stateSyncOptions = StateSyncOptionsBuilder.of(CTP_CLIENT)
-            .cacheSize(10)
-            .build();
+  @Test
+  void build_WithCacheSize_ShouldSetCacheSize() {
+    StateSyncOptions stateSyncOptions =
+        StateSyncOptionsBuilder.of(CTP_CLIENT).cacheSize(10).build();
 
-        assertThat(stateSyncOptions.getCacheSize()).isEqualTo(10);
-    }
+    assertThat(stateSyncOptions.getCacheSize()).isEqualTo(10);
+  }
 
-    @Test
-    void build_WithZeroOrNegativeCacheSize_ShouldBuildSyncOptions() {
-        StateSyncOptions stateSyncOptionsWithZeroCacheSize = StateSyncOptionsBuilder.of(CTP_CLIENT)
-            .cacheSize(0)
-            .build();
+  @Test
+  void build_WithZeroOrNegativeCacheSize_ShouldBuildSyncOptions() {
+    StateSyncOptions stateSyncOptionsWithZeroCacheSize =
+        StateSyncOptionsBuilder.of(CTP_CLIENT).cacheSize(0).build();
 
-        assertThat(stateSyncOptionsWithZeroCacheSize.getCacheSize()).isEqualTo(10_000);
+    assertThat(stateSyncOptionsWithZeroCacheSize.getCacheSize()).isEqualTo(10_000);
 
-        StateSyncOptions stateSyncOptionsWithNegativeCacheSize = StateSyncOptionsBuilder
-            .of(CTP_CLIENT)
-            .cacheSize(-100)
-            .build();
+    StateSyncOptions stateSyncOptionsWithNegativeCacheSize =
+        StateSyncOptionsBuilder.of(CTP_CLIENT).cacheSize(-100).build();
 
-        assertThat(stateSyncOptionsWithNegativeCacheSize.getCacheSize()).isEqualTo(10_000);
-    }
-
+    assertThat(stateSyncOptionsWithNegativeCacheSize.getCacheSize()).isEqualTo(10_000);
+  }
 }

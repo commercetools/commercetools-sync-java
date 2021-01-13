@@ -1,5 +1,17 @@
 package com.commercetools.sync.products.helpers;
 
+import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_REFERENCE;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerGroup;
+import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerGroupService;
+import static com.commercetools.sync.products.helpers.PriceReferenceResolver.CUSTOMER_GROUP_DOES_NOT_EXIST;
+import static com.commercetools.sync.products.helpers.PriceReferenceResolver.FAILED_TO_RESOLVE_REFERENCE;
+import static java.lang.String.format;
+import static java.util.Objects.isNull;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
@@ -13,127 +25,126 @@ import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.products.PriceDraftBuilder;
 import io.sphere.sdk.utils.MoneyImpl;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-
-import static com.commercetools.sync.commons.helpers.BaseReferenceResolver.BLANK_ID_VALUE_ON_REFERENCE;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerGroup;
-import static com.commercetools.sync.products.ProductSyncMockUtils.getMockCustomerGroupService;
-import static com.commercetools.sync.products.helpers.PriceReferenceResolver.CUSTOMER_GROUP_DOES_NOT_EXIST;
-import static com.commercetools.sync.products.helpers.PriceReferenceResolver.FAILED_TO_RESOLVE_REFERENCE;
-import static java.lang.String.format;
-import static java.util.Objects.isNull;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class PriceCustomerGroupReferenceResolverTest {
-    private static final String CUSTOMER_GROUP_KEY = "customer-group-key_1";
-    private static final String CUSTOMER_GROUP_ID = "1";
+  private static final String CUSTOMER_GROUP_KEY = "customer-group-key_1";
+  private static final String CUSTOMER_GROUP_ID = "1";
 
-    private CustomerGroupService customerGroupService;
-    private PriceReferenceResolver referenceResolver;
+  private CustomerGroupService customerGroupService;
+  private PriceReferenceResolver referenceResolver;
 
-    /**
-     * Sets up the services and the options needed for reference resolution.
-     */
-    @BeforeEach
-    void setup() {
-        customerGroupService = getMockCustomerGroupService(getMockCustomerGroup(CUSTOMER_GROUP_ID, CUSTOMER_GROUP_KEY));
-        ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
-        referenceResolver = new PriceReferenceResolver(syncOptions, mock(TypeService.class), mock(ChannelService.class),
-            customerGroupService);
-    }
+  /** Sets up the services and the options needed for reference resolution. */
+  @BeforeEach
+  void setup() {
+    customerGroupService =
+        getMockCustomerGroupService(getMockCustomerGroup(CUSTOMER_GROUP_ID, CUSTOMER_GROUP_KEY));
+    ProductSyncOptions syncOptions = ProductSyncOptionsBuilder.of(mock(SphereClient.class)).build();
+    referenceResolver =
+        new PriceReferenceResolver(
+            syncOptions, mock(TypeService.class), mock(ChannelService.class), customerGroupService);
+  }
 
-    @Test
-    void resolveCustomerGroupReference_WithKeys_ShouldResolveReference() {
-        final PriceDraftBuilder priceBuilder = PriceDraftBuilder
-            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+  @Test
+  void resolveCustomerGroupReference_WithKeys_ShouldResolveReference() {
+    final PriceDraftBuilder priceBuilder =
+        PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .customerGroup(CustomerGroup.referenceOfId("anyKey"));
 
-        final PriceDraftBuilder resolvedDraft = referenceResolver.resolveCustomerGroupReference(priceBuilder)
-                                                                 .toCompletableFuture().join();
+    final PriceDraftBuilder resolvedDraft =
+        referenceResolver.resolveCustomerGroupReference(priceBuilder).toCompletableFuture().join();
 
-        assertThat(resolvedDraft.getCustomerGroup()).isNotNull();
-        assertThat(resolvedDraft.getCustomerGroup().getId()).isEqualTo(CUSTOMER_GROUP_ID);
-    }
+    assertThat(resolvedDraft.getCustomerGroup()).isNotNull();
+    assertThat(resolvedDraft.getCustomerGroup().getId()).isEqualTo(CUSTOMER_GROUP_ID);
+  }
 
-    @Test
-    void resolveCustomerGroupReference_WithNullCustomerGroup_ShouldNotResolveReference() {
-        final PriceDraftBuilder priceBuilder = PriceDraftBuilder
-            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR));
+  @Test
+  void resolveCustomerGroupReference_WithNullCustomerGroup_ShouldNotResolveReference() {
+    final PriceDraftBuilder priceBuilder =
+        PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR));
 
-        assertThat(referenceResolver.resolveCustomerGroupReference(priceBuilder).toCompletableFuture())
-            .hasNotFailed()
-            .isCompletedWithValueMatching(resolvedDraft -> isNull(resolvedDraft.getCustomerGroup()));
-    }
+    assertThat(referenceResolver.resolveCustomerGroupReference(priceBuilder).toCompletableFuture())
+        .hasNotFailed()
+        .isCompletedWithValueMatching(resolvedDraft -> isNull(resolvedDraft.getCustomerGroup()));
+  }
 
-    @Test
-    void resolveCustomerGroupReference_WithNonExistentCustomerGroup_ShouldNotResolveReference() {
-        final PriceDraftBuilder priceBuilder = PriceDraftBuilder
-            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+  @Test
+  void resolveCustomerGroupReference_WithNonExistentCustomerGroup_ShouldNotResolveReference() {
+    final PriceDraftBuilder priceBuilder =
+        PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .customerGroup(CustomerGroup.referenceOfId("nonExistentKey"));
 
-        when(customerGroupService.fetchCachedCustomerGroupId(anyString()))
-            .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+    when(customerGroupService.fetchCachedCustomerGroupId(anyString()))
+        .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
+    assertThat(referenceResolver.resolveCustomerGroupReference(priceBuilder))
+        .hasFailedWithThrowableThat()
+        .isExactlyInstanceOf(ReferenceResolutionException.class)
+        .hasMessage(
+            format(
+                FAILED_TO_RESOLVE_REFERENCE,
+                CustomerGroup.referenceTypeId(),
+                priceBuilder.getCountry(),
+                priceBuilder.getValue(),
+                format(CUSTOMER_GROUP_DOES_NOT_EXIST, "nonExistentKey")));
+  }
 
-        assertThat(referenceResolver.resolveCustomerGroupReference(priceBuilder))
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format(FAILED_TO_RESOLVE_REFERENCE, CustomerGroup.referenceTypeId(), priceBuilder.getCountry(),
-                priceBuilder.getValue(), format(CUSTOMER_GROUP_DOES_NOT_EXIST, "nonExistentKey")));
-    }
+  @Test
+  void
+      resolveCustomerGroupReference_WithNullIdOnCustomerGroupReference_ShouldNotResolveReference() {
+    final PriceDraftBuilder priceBuilder =
+        PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+            .customerGroup(Reference.of(CustomerGroup.referenceTypeId(), (String) null));
 
-    @Test
-    void resolveCustomerGroupReference_WithNullIdOnCustomerGroupReference_ShouldNotResolveReference() {
-        final PriceDraftBuilder priceBuilder = PriceDraftBuilder
-            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
-            .customerGroup(Reference.of(CustomerGroup.referenceTypeId(), (String)null));
+    assertThat(referenceResolver.resolveCustomerGroupReference(priceBuilder).toCompletableFuture())
+        .hasFailed()
+        .hasFailedWithThrowableThat()
+        .isExactlyInstanceOf(ReferenceResolutionException.class)
+        .hasMessage(
+            format(
+                "Failed to resolve 'customer-group' reference on PriceDraft with country:'%s' and"
+                    + " value: '%s'. Reason: %s",
+                priceBuilder.getCountry(), priceBuilder.getValue(), BLANK_ID_VALUE_ON_REFERENCE));
+  }
 
-        assertThat(referenceResolver.resolveCustomerGroupReference(priceBuilder).toCompletableFuture())
-            .hasFailed()
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format("Failed to resolve 'customer-group' reference on PriceDraft with country:'%s' and"
-                + " value: '%s'. Reason: %s", priceBuilder.getCountry(), priceBuilder.getValue(),
-                BLANK_ID_VALUE_ON_REFERENCE));
-    }
-
-    @Test
-    void resolveCustomerGroupReference_WithEmptyIdOnCustomerGroupReference_ShouldNotResolveReference() {
-        final PriceDraftBuilder priceBuilder = PriceDraftBuilder
-            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+  @Test
+  void
+      resolveCustomerGroupReference_WithEmptyIdOnCustomerGroupReference_ShouldNotResolveReference() {
+    final PriceDraftBuilder priceBuilder =
+        PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .customerGroup(CustomerGroup.referenceOfId(""));
 
-        assertThat(referenceResolver.resolveCustomerGroupReference(priceBuilder).toCompletableFuture())
-            .hasFailed()
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(ReferenceResolutionException.class)
-            .hasMessage(format("Failed to resolve 'customer-group' reference on PriceDraft with country:'%s' and"
-                    + " value: '%s'. Reason: %s", priceBuilder.getCountry(), priceBuilder.getValue(),
-                BLANK_ID_VALUE_ON_REFERENCE));
-    }
+    assertThat(referenceResolver.resolveCustomerGroupReference(priceBuilder).toCompletableFuture())
+        .hasFailed()
+        .hasFailedWithThrowableThat()
+        .isExactlyInstanceOf(ReferenceResolutionException.class)
+        .hasMessage(
+            format(
+                "Failed to resolve 'customer-group' reference on PriceDraft with country:'%s' and"
+                    + " value: '%s'. Reason: %s",
+                priceBuilder.getCountry(), priceBuilder.getValue(), BLANK_ID_VALUE_ON_REFERENCE));
+  }
 
-    @Test
-    void resolveCustomerGroupReference_WithExceptionOnFetch_ShouldNotResolveReference() {
-        final PriceDraftBuilder priceBuilder = PriceDraftBuilder
-            .of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
+  @Test
+  void resolveCustomerGroupReference_WithExceptionOnFetch_ShouldNotResolveReference() {
+    final PriceDraftBuilder priceBuilder =
+        PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .customerGroup(CustomerGroup.referenceOfId("CustomerGroupKey"));
 
-        final CompletableFuture<Optional<String>> futureThrowingSphereException = new CompletableFuture<>();
-        futureThrowingSphereException.completeExceptionally(new SphereException("CTP error on fetch"));
-        when(customerGroupService.fetchCachedCustomerGroupId(anyString())).thenReturn(futureThrowingSphereException);
+    final CompletableFuture<Optional<String>> futureThrowingSphereException =
+        new CompletableFuture<>();
+    futureThrowingSphereException.completeExceptionally(new SphereException("CTP error on fetch"));
+    when(customerGroupService.fetchCachedCustomerGroupId(anyString()))
+        .thenReturn(futureThrowingSphereException);
 
-        assertThat(referenceResolver.resolveCustomerGroupReference(priceBuilder).toCompletableFuture())
-            .hasFailed()
-            .hasFailedWithThrowableThat()
-            .isExactlyInstanceOf(SphereException.class)
-            .hasMessageContaining("CTP error on fetch");
-    }
+    assertThat(referenceResolver.resolveCustomerGroupReference(priceBuilder).toCompletableFuture())
+        .hasFailed()
+        .hasFailedWithThrowableThat()
+        .isExactlyInstanceOf(SphereException.class)
+        .hasMessageContaining("CTP error on fetch");
+  }
 }

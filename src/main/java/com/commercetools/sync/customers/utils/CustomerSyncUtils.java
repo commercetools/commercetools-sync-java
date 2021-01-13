@@ -1,13 +1,5 @@
 package com.commercetools.sync.customers.utils;
 
-import com.commercetools.sync.customers.CustomerSyncOptions;
-import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.customers.Customer;
-import io.sphere.sdk.customers.CustomerDraft;
-
-import javax.annotation.Nonnull;
-import java.util.List;
-
 import static com.commercetools.sync.commons.utils.CustomUpdateActionUtils.buildPrimaryResourceCustomUpdateActions;
 import static com.commercetools.sync.commons.utils.OptionalUtils.filterEmptyOptionals;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildAllAddressUpdateActions;
@@ -26,31 +18,40 @@ import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.b
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildSetVatIdUpdateAction;
 import static com.commercetools.sync.customers.utils.CustomerUpdateActionUtils.buildStoreUpdateActions;
 
+import com.commercetools.sync.customers.CustomerSyncOptions;
+import io.sphere.sdk.commands.UpdateAction;
+import io.sphere.sdk.customers.Customer;
+import io.sphere.sdk.customers.CustomerDraft;
+import java.util.List;
+import javax.annotation.Nonnull;
+
 public final class CustomerSyncUtils {
 
-    private static final CustomerCustomActionBuilder customerCustomActionBuilder = CustomerCustomActionBuilder.of();
+  private static final CustomerCustomActionBuilder customerCustomActionBuilder =
+      CustomerCustomActionBuilder.of();
 
-    /**
-     * Compares all the fields of a {@link Customer} and a {@link CustomerDraft}. It returns a {@link List} of
-     * {@link UpdateAction}&lt;{@link Customer}&gt; as a result. If no update action is needed, for example in
-     * case where both the {@link CustomerDraft} and the {@link CustomerDraft} have the same fields, an empty
-     * {@link List} is returned.
-     *
-     * @param oldCustomer the customer which should be updated.
-     * @param newCustomer the customer draft where we get the new data.
-     * @param syncOptions the sync options wrapper which contains options related to the sync process supplied
-     *                    by the user. For example, custom callbacks to call in case of warnings or errors occurring
-     *                    on the build update action process. And other options (See {@link CustomerSyncOptions}
-     *                    for more info.
-     * @return A list of customer specific update actions.
-     */
-    @Nonnull
-    public static List<UpdateAction<Customer>> buildActions(
-        @Nonnull final Customer oldCustomer,
-        @Nonnull final CustomerDraft newCustomer,
-        @Nonnull final CustomerSyncOptions syncOptions) {
+  /**
+   * Compares all the fields of a {@link Customer} and a {@link CustomerDraft}. It returns a {@link
+   * List} of {@link UpdateAction}&lt;{@link Customer}&gt; as a result. If no update action is
+   * needed, for example in case where both the {@link CustomerDraft} and the {@link CustomerDraft}
+   * have the same fields, an empty {@link List} is returned.
+   *
+   * @param oldCustomer the customer which should be updated.
+   * @param newCustomer the customer draft where we get the new data.
+   * @param syncOptions the sync options wrapper which contains options related to the sync process
+   *     supplied by the user. For example, custom callbacks to call in case of warnings or errors
+   *     occurring on the build update action process. And other options (See {@link
+   *     CustomerSyncOptions} for more info.
+   * @return A list of customer specific update actions.
+   */
+  @Nonnull
+  public static List<UpdateAction<Customer>> buildActions(
+      @Nonnull final Customer oldCustomer,
+      @Nonnull final CustomerDraft newCustomer,
+      @Nonnull final CustomerSyncOptions syncOptions) {
 
-        final List<UpdateAction<Customer>> updateActions = filterEmptyOptionals(
+    final List<UpdateAction<Customer>> updateActions =
+        filterEmptyOptionals(
             buildChangeEmailUpdateAction(oldCustomer, newCustomer),
             buildSetFirstNameUpdateAction(oldCustomer, newCustomer),
             buildSetLastNameUpdateAction(oldCustomer, newCustomer),
@@ -63,30 +64,26 @@ public final class CustomerSyncUtils {
             buildSetCompanyNameUpdateAction(oldCustomer, newCustomer),
             buildSetDateOfBirthUpdateAction(oldCustomer, newCustomer),
             buildSetVatIdUpdateAction(oldCustomer, newCustomer),
-            buildSetLocaleUpdateAction(oldCustomer, newCustomer)
-        );
+            buildSetLocaleUpdateAction(oldCustomer, newCustomer));
 
-        final List<UpdateAction<Customer>> addressUpdateActions =
-            buildAllAddressUpdateActions(oldCustomer, newCustomer);
+    final List<UpdateAction<Customer>> addressUpdateActions =
+        buildAllAddressUpdateActions(oldCustomer, newCustomer);
 
-        updateActions.addAll(addressUpdateActions);
+    updateActions.addAll(addressUpdateActions);
 
-        final List<UpdateAction<Customer>> customerCustomUpdateActions =
-            buildPrimaryResourceCustomUpdateActions(oldCustomer,
-                newCustomer,
-                customerCustomActionBuilder,
-                syncOptions);
+    final List<UpdateAction<Customer>> customerCustomUpdateActions =
+        buildPrimaryResourceCustomUpdateActions(
+            oldCustomer, newCustomer, customerCustomActionBuilder, syncOptions);
 
-        updateActions.addAll(customerCustomUpdateActions);
+    updateActions.addAll(customerCustomUpdateActions);
 
-        final List<UpdateAction<Customer>> buildStoreUpdateActions =
-            buildStoreUpdateActions(oldCustomer, newCustomer);
+    final List<UpdateAction<Customer>> buildStoreUpdateActions =
+        buildStoreUpdateActions(oldCustomer, newCustomer);
 
-        updateActions.addAll(buildStoreUpdateActions);
+    updateActions.addAll(buildStoreUpdateActions);
 
-        return updateActions;
-    }
+    return updateActions;
+  }
 
-    private CustomerSyncUtils() {
-    }
+  private CustomerSyncUtils() {}
 }

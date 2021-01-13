@@ -20,6 +20,13 @@ Thanks for taking the time to contribute :+1::tada: All contributions are welcom
       - [Build and publish to Bintray](#build-and-publish-to-bintray)
   - [Integration Tests](#integration-tests)
     - [Running](#running)
+- [Using the google java style and code formatter](#using-the-google-java-style-and-code-formatter)
+  - [IntelliJ, Android Studio, and other JetBrains IDEs](#intellij-android-studio-and-other-jetbrains-ides)
+  - [Eclipse](#eclipse)
+  - [Spotless commands](#spotless-commands)
+      - [Run Spotless Style Check](#run-spotless-style-check)
+      - [Fix Spotless style violations](#fix-spotless-style-violations)
+  - [Ignoring mass reformatting commits with git blame](#ignoring-mass-reformatting-commits-with-git-blame)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -31,16 +38,11 @@ If you have push access to the repository you can fix them directly otherwise ju
 
 ### Features or Bug Fixes
 
-- Every PR should address an issue on the repository. If the issue doesn't exist, please create it first.
-- Pull requests should always follow the following naming convention: 
-`[issue-number]-[pr-name]`. For example,
-to address issue #65 which refers to a style bug, the PR addressing it should have a name that looks something like
- `65-fix-style-bug`.
-- Commit messages should always be prefixed with the number of the issue that they address. 
-For example, `#65: Remove redundant space.`
-- After your PR is merged to master:
-    - Delete the branch.
-    - Mark the issue it addresses with the `merged-to-master` label.
+- Every PR should address an issue on the repository. If the issue doesn't exist, please create it first and link PR with the issue. 
+- After your PR is approved by all reviewers and the build is green:
+    - Use `Squash and merge` option on a pull request on GitHub, with that the pull request's commits should be squashed into a single commit. 
+        > Instead of seeing all of a contributor's individual commit messages, the commits should be combined into one commit message with a clear commit description. 
+    - Delete the branch when the PR is closed.
     - Close the issue **only** if the change was released.
     
 ## Development
@@ -88,18 +90,18 @@ For more detailed information on the build and the release process, see [Build a
 ### Integration Tests
 
 1. The integration tests of the library require to have two CTP projects (a source project and a target project) where the 
-data will be tested to be synced on from the source to the target project. 
+data will be tested to be synced from the source to the target project. 
 
 2. Running the tests does the following:
-    - Clean all the data in both projects.
+    - Clean all the data on both projects.
     - Create test data in either/both projects depending on the test.
     - Execute the tests.
     - Clean all the data in both projects, leaving them empty.
 
 #### Running
 
-To run the integration tests, CTP credentials are required. Credential can be obtained once you create a CTP project.
-For details, please refer to following link:
+To run the integration tests, CTP credentials are required. The credential can be obtained once you create a CTP project.
+For details, please refer to the following link:
 https://docs.commercetools.com/merchant-center/projects.html#creating-a-project 
 
   1. Use credentials Java properties file `/src/integration-test/resources/it.properties`:
@@ -131,9 +133,48 @@ https://docs.commercetools.com/merchant-center/projects.html#creating-a-project
 
   **Note**: `it.properties` file has precedence over environment variables. If the file exists - 
   the environment variables are ignored. If the existing `it.properties` file is empty or one of the properties 
-  is missing - exception will be thrown on the tests execution
+  is missing - exception will be thrown on the execution of the tests
 
-If one of two options above is set - run the integration tests:
+If one of the two options above is set - run the integration tests:
 ```bash
 ./gradlew integrationTest
 ```
+
+## Using the google java style and code formatter
+ 
+We are using `google-java-format` to format Java source code to comply with [Google Java Style](https://google.github.io/styleguide/javaguide.html).
+
+### IntelliJ, Android Studio, and other JetBrains IDEs
+
+A [google-java-format IntelliJ plugin](https://plugins.jetbrains.com/plugin/8527) is available from the plugin repository. To install it, go to your IDE's settings and select the `Plugins` category. Click the `Marketplace` tab, search for the `google-java-format` plugin, and click the `Install` button.
+
+The plugin will be disabled by default. To enable it in the current project, go to `File→Settings...→google-java-format Settings` (or `IntelliJIDEA→Preferences...→Other Settings→google-java-format Settings` on macOS) and check the `Enable google-java-format` checkbox. (A notification will be presented when you first open a project offering to do this for you.)
+
+To enable it by default in new projects, use `File→Other Settings→Default Settings...`.
+When enabled, it will replace the normal `Reformat Code` action, which can be triggered by the `Code` menu or with the Ctrl-Alt (by default) keyboard shortcut.
+
+### Eclipse
+
+[google-java-format Eclipse plugin](https://github.com/google/google-java-format/releases/download/google-java-format-1.6/google-java-format-eclipse-plugin_1.6.0.jar) can be downloaded from the releases page. Drop it into the Eclipse[drop-ins folder](http://help.eclipse.org/neon/index.jsp?topic=%2Forg.eclipse.platform.doc.isv%2Freference%2Fmisc%2Fp2_dropins_format.html)to activate the plugin.
+
+The plugin adds a `google-java-format` formatter implementation that can be configured in `Window > Preferences > Java > Code Style > Formatter > Formatter Implementation`.
+
+### Spotless commands
+##### Run Spotless Style Check
+````bash
+./gradlew spotlessCheck
+````
+
+##### Fix Spotless style violations
+````bash
+./gradlew spotlessApply
+````
+
+### Ignoring mass reformatting commits with git blame
+
+To exclude the formatting commits git blame supports writing the commit hashes into a file and then referencing the file with `--ignore-revs-file`.                     
+To be able to archive that `git blame ./file.java --ignore-revs-file .git-blame-ignore-revs` command to ignore this revision to find a better git history.      
+                         
+Also `git config blame.ignoreRevsFile .git-blame-ignore-revs` could be configured to ignore this revision always.
+                                                          
+> We create `.git-blame-ignore-revs` that could be found in the repository.   
