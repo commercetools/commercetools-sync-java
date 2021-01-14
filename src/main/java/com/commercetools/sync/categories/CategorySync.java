@@ -48,7 +48,7 @@ import static java.util.concurrent.CompletableFuture.allOf;
 
 public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics, CategorySyncOptions> {
 
-    private static final String FAILED_TO_PROCESS  = "Failed to process the CategoryDraft with key:'%s'. Reason: %s";
+    private static final String FAILED_TO_PROCESS = "Failed to process the CategoryDraft with key:'%s'. Reason: %s";
     private static final String UPDATE_FAILED = "Failed to update Category with key: '%s'. Reason: %s";
     private static final String UNRESOLVED_PARENT_REFERENCES_STORE_FETCH_FAILED = "Failed to fetch categoryDraft " +
         "waiting to be resolved with parentkeys '%s'.";
@@ -118,7 +118,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     CategorySync(@Nonnull final CategorySyncOptions syncOptions,
                  @Nonnull final TypeService typeService,
                  @Nonnull final CategoryService categoryService,
-                 @Nonnull final UnresolvedReferencesService unresolvedReferencesService ) {
+                 @Nonnull final UnresolvedReferencesService unresolvedReferencesService) {
         super(new CategorySyncStatistics(), syncOptions);
         this.categoryService = categoryService;
         this.unresolvedReferencesService = unresolvedReferencesService;
@@ -139,8 +139,8 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      *
      * @param categoryDrafts the list of new category drafts to sync to the CTP project.
      * @return an instance of {@link CompletionStage}&lt;{@link CategorySyncStatistics}&gt; which contains as a result
-     *         an instance of {@link CategorySyncStatistics} representing the {@code statistics} instance attribute of
-     *         {@code this} {@link CategorySync}.
+     * an instance of {@link CategorySyncStatistics} representing the {@code statistics} instance attribute of
+     * {@code this} {@link CategorySync}.
      */
     @Override
     protected CompletionStage<CategorySyncStatistics> process(@Nonnull final List<CategoryDraft> categoryDrafts) {
@@ -167,8 +167,8 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      *
      * @param categoryDrafts the list of new category drafts to sync to the CTP project.
      * @return an instance of {@link CompletionStage}&lt;{@link CategorySyncStatistics}&gt; which contains as a result
-     *         an instance of {@link CategorySyncStatistics} representing the {@code statistics} instance attribute of
-     *         {@code this} {@link CategorySync}.
+     * an instance of {@link CategorySyncStatistics} representing the {@code statistics} instance attribute of
+     * {@code this} {@link CategorySync}.
      */
     @Override
     protected CompletionStage<CategorySyncStatistics> processBatch(@Nonnull final List<CategoryDraft> categoryDrafts) {
@@ -207,15 +207,16 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                     .map(CategoryDraft::getKey)
                     .collect(Collectors.toSet());
 
-                createAndUpdate(newCategoryDrafts, categoryKeyToIdCache);
+                return createAndUpdate(newCategoryDrafts, categoryKeyToIdCache);
+            })
+            .thenApply(ignoredResult -> {
+
                 return statistics;
             });
-
-
     }
 
     private CompletionStage<Void> fetchAndUpdate(@Nonnull final Map<String, String> keyToIdCache) {
-""        return categoryService
+        return categoryService
             .fetchMatchingCategoriesByKeys(categoryKeysToFetch)
             .handle(ImmutablePair::new)
             .thenCompose(fetchResponse -> {
@@ -258,7 +259,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      *          <li>If the draft doesn't exist, then it adds it to the {@code newCategoryDrafts} array.</li>
      *      </ol>
      *      </li>
-     *</ol>
+     * </ol>
      * If reference resolution failed either during getting the parent category key or during actual reference
      * resolution, the error callback is triggered and the category is skipped.
      *
@@ -290,7 +291,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                 }
             } catch (Exception exception) {
                 final String errorMessage = format(FAILED_TO_PROCESS, categoryKey,
-                        exception);
+                    exception);
                 handleError(errorMessage, exception);
             }
         }
@@ -300,12 +301,13 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private CompletionStage<Void> createAndUpdate(@Nonnull final Set<CategoryDraft> categoryDrafts,
                                                   @Nonnull final Map<String, String> keyToIdCache) {
         statistics.incrementProcessed(categoryDrafts.size());
-        return createCategories(categoryDrafts)
-            .thenAccept(createdCategories -> {
+        CompletionStage<Void> future = createCategories(categoryDrafts)
+            .thenApply(createdCategories -> {
                 processCreatedCategories(createdCategories, keyToIdCache);
-
+                return createdCategories;
             })
             .thenCompose(ignoredResult -> fetchAndUpdate(keyToIdCache));
+        return future;
     }
 
     @Nonnull
@@ -392,10 +394,9 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * </ol>
      *
      * @param createdCategories the set of created categories that needs to be processed.
-     * @return
      */
     private void processCreatedCategories(@Nonnull final Set<Category> createdCategories,
-                                                           @Nonnull final Map<String, String> keyToIdCache) {
+                                          @Nonnull final Map<String, String> keyToIdCache) {
         final Set<String> resolvedParent = createdCategories.stream().map(c -> c.getKey()).collect(Collectors.toSet());
 
         final Set<String> resolvableCategoryKeys = resolvedParent
@@ -408,7 +409,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         statistics.incrementFailed(numberOfFailedCategories);
         statistics.incrementCreated(createdCategories.size());
 
-       unresolvedReferencesService.fetch(resolvableCategoryKeys,
+        unresolvedReferencesService.fetch(resolvableCategoryKeys,
             CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY,
             WaitingToBeResolvedCategories.class)
             .handle(ImmutablePair::new)
@@ -488,18 +489,18 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                 draftByKeyIfExists.map(categoryDraft -> {
                     if (categoryDraft.getParent() == null) {
                         return CategoryDraftBuilder.of(categoryDraft)
-                                                   .parent(toResourceIdentifierIfNotNull(fetchedCategory.getParent()));
+                            .parent(toResourceIdentifierIfNotNull(fetchedCategory.getParent()));
                     }
                     return CategoryDraftBuilder.of(categoryDraft);
                 })
-                                  .orElseGet(() -> CategoryDraftBuilder.of(fetchedCategory));
+                    .orElseGet(() -> CategoryDraftBuilder.of(fetchedCategory));
             if (categoryKeysWithResolvedParents.contains(fetchedCategoryKey)) {
                 statistics.getMissingParentKey(fetchedCategoryKey)
-                          .ifPresent(missingParentKey -> {
-                              final String parentId = keyToIdCache.get(missingParentKey);
-                              categoryDraftBuilder
-                                  .parent(Category.referenceOfId(parentId).toResourceIdentifier());
-                          });
+                    .ifPresent(missingParentKey -> {
+                        final String parentId = keyToIdCache.get(missingParentKey);
+                        categoryDraftBuilder
+                            .parent(Category.referenceOfId(parentId).toResourceIdentifier());
+                    });
             }
             categoryDraftsToUpdate.put(categoryDraftBuilder.build(), fetchedCategory);
         });
@@ -517,8 +518,8 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private static Optional<Category> getCategoryByKeyIfExists(@Nonnull final Set<Category> categories,
                                                                @Nonnull final String key) {
         return categories.stream()
-                         .filter(category -> Objects.equals(category.getKey(), key))
-                         .findFirst();
+            .filter(category -> Objects.equals(category.getKey(), key))
+            .findFirst();
     }
 
     /**
@@ -532,8 +533,8 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private static Optional<CategoryDraft> getDraftByKeyIfExists(@Nonnull final Set<CategoryDraft> categoryDrafts,
                                                                  @Nonnull final String key) {
         return categoryDrafts.stream()
-                             .filter(categoryDraft -> Objects.equals(categoryDraft.getKey(), key))
-                             .findFirst();
+            .filter(categoryDraft -> Objects.equals(categoryDraft.getKey(), key))
+            .findFirst();
     }
 
     /**
@@ -546,10 +547,10 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      */
     private void updateCategoriesSequentially(@Nonnull final Map<CategoryDraft, Category> matchingCategories) {
         matchingCategories.entrySet().stream()
-                          .filter(entry -> requiresChangeParentUpdateAction(entry.getValue(), entry.getKey()))
-                          .map(entry -> buildUpdateActionsAndUpdate(entry.getValue(), entry.getKey()))
-                          .map(CompletionStage::toCompletableFuture)
-                          .forEach(CompletableFuture::join);
+            .filter(entry -> requiresChangeParentUpdateAction(entry.getValue(), entry.getKey()))
+            .map(entry -> buildUpdateActionsAndUpdate(entry.getValue(), entry.getKey()))
+            .map(CompletionStage::toCompletableFuture)
+            .forEach(CompletableFuture::join);
     }
 
     /**
@@ -560,7 +561,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @param category      the old category to sync to.
      * @param categoryDraft the new category draft to sync.
      * @return true or false whether a {@link io.sphere.sdk.categories.commands.updateactions.ChangeParent} is needed to
-     *          sync the draft to the category.
+     * sync the draft to the category.
      */
     static boolean requiresChangeParentUpdateAction(@Nonnull final Category category,
                                                     @Nonnull final CategoryDraft categoryDraft) {
@@ -579,10 +580,10 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
 
         final List<CompletableFuture<Void>> futures =
             matchingCategories.entrySet().stream()
-                              .filter(entry -> !requiresChangeParentUpdateAction(entry.getValue(), entry.getKey()))
-                              .map(entry -> buildUpdateActionsAndUpdate(entry.getValue(), entry.getKey()))
-                              .map(CompletionStage::toCompletableFuture)
-                              .collect(Collectors.toList());
+                .filter(entry -> !requiresChangeParentUpdateAction(entry.getValue(), entry.getKey()))
+                .map(entry -> buildUpdateActionsAndUpdate(entry.getValue(), entry.getKey()))
+                .map(CompletionStage::toCompletableFuture)
+                .collect(Collectors.toList());
         return CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()]));
     }
 
@@ -625,8 +626,8 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * out successfully or not. If an exception was thrown on executing the request to CTP,
      * the optional error callback specified in the {@code syncOptions} is called.
      *
-     * @param oldCategory the category to update.
-     * @param newCategory the category draft where we get the new data.
+     * @param oldCategory   the category to update.
+     * @param newCategory   the category draft where we get the new data.
      * @param updateActions the list of update actions to update the category with.
      * @return a future which contains an empty result after execution of the update.
      */
@@ -635,31 +636,31 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                                                  @Nonnull final List<UpdateAction<Category>> updateActions) {
         final String categoryKey = oldCategory.getKey();
         return categoryService.updateCategory(oldCategory, updateActions)
-                              .handle((updatedCategory, sphereException) -> sphereException)
-                              .thenCompose(sphereException -> {
-                                  if (sphereException != null) {
-                                      return executeSupplierIfConcurrentModificationException(
-                                          sphereException,
-                                          () -> refetchAndUpdate(oldCategory, newCategory),
-                                          () -> {
-                                              if (!processedCategoryKeys.contains(categoryKey)) {
-                                                  handleError(format(UPDATE_FAILED, categoryKey, sphereException),
-                                                      sphereException, oldCategory, newCategory, updateActions);
-                                                  processedCategoryKeys.add(categoryKey);
-                                              }
-                                              return CompletableFuture.completedFuture(null);
-                                          });
-                                  } else {
-                                      if (!processedCategoryKeys.contains(categoryKey)) {
-                                          statistics.incrementUpdated();
-                                          processedCategoryKeys.add(categoryKey);
-                                      }
-                                      if (categoryKeysWithResolvedParents.contains(categoryKey)) {
-                                          statistics.removeChildCategoryKeyFromMissingParentsMap(categoryKey);
-                                      }
-                                      return CompletableFuture.completedFuture(null);
-                                  }
-                              });
+            .handle((updatedCategory, sphereException) -> sphereException)
+            .thenCompose(sphereException -> {
+                if (sphereException != null) {
+                    return executeSupplierIfConcurrentModificationException(
+                        sphereException,
+                        () -> refetchAndUpdate(oldCategory, newCategory),
+                        () -> {
+                            if (!processedCategoryKeys.contains(categoryKey)) {
+                                handleError(format(UPDATE_FAILED, categoryKey, sphereException),
+                                    sphereException, oldCategory, newCategory, updateActions);
+                                processedCategoryKeys.add(categoryKey);
+                            }
+                            return CompletableFuture.completedFuture(null);
+                        });
+                } else {
+                    if (!processedCategoryKeys.contains(categoryKey)) {
+                        statistics.incrementUpdated();
+                        processedCategoryKeys.add(categoryKey);
+                    }
+                    if (categoryKeysWithResolvedParents.contains(categoryKey)) {
+                        statistics.removeChildCategoryKeyFromMissingParentsMap(categoryKey);
+                    }
+                    return CompletableFuture.completedFuture(null);
+                }
+            });
     }
 
     private CompletionStage<Void> refetchAndUpdate(@Nonnull final Category oldCategory,
@@ -667,29 +668,29 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
 
         final String key = oldCategory.getKey();
         return categoryService
-                .fetchCategory(key)
-                .handle(ImmutablePair::new)
-                .thenCompose(fetchResponse -> {
-                    final Optional<Category> fetchedCategoryOptional = fetchResponse.getKey();
-                    final Throwable exception = fetchResponse.getValue();
+            .fetchCategory(key)
+            .handle(ImmutablePair::new)
+            .thenCompose(fetchResponse -> {
+                final Optional<Category> fetchedCategoryOptional = fetchResponse.getKey();
+                final Throwable exception = fetchResponse.getValue();
 
-                    if (exception != null) {
-                        final String errorMessage = format(UPDATE_FAILED, key, "Failed to fetch from CTP while "
-                                + "retrying after concurrency modification.");
-                        handleError(errorMessage, exception, oldCategory, newCategory, null);
+                if (exception != null) {
+                    final String errorMessage = format(UPDATE_FAILED, key, "Failed to fetch from CTP while "
+                        + "retrying after concurrency modification.");
+                    handleError(errorMessage, exception, oldCategory, newCategory, null);
+                    return CompletableFuture.completedFuture(null);
+                }
+
+                return fetchedCategoryOptional
+                    .map(fetchedCategory -> buildUpdateActionsAndUpdate(fetchedCategory, newCategory))
+                    .orElseGet(() -> {
+                        final String errorMessage =
+                            format(UPDATE_FAILED, key, "Not found when attempting to fetch while retrying "
+                                + "after concurrency modification.");
+                        handleError(errorMessage, null, oldCategory, newCategory, null);
                         return CompletableFuture.completedFuture(null);
-                    }
-
-                    return fetchedCategoryOptional
-                        .map(fetchedCategory -> buildUpdateActionsAndUpdate(fetchedCategory, newCategory))
-                        .orElseGet(() -> {
-                            final String errorMessage =
-                                format(UPDATE_FAILED, key, "Not found when attempting to fetch while retrying "
-                                    + "after concurrency modification.");
-                            handleError(errorMessage, null, oldCategory, newCategory, null);
-                            return CompletableFuture.completedFuture(null);
-                        });
-                });
+                    });
+            });
     }
 
     /**
@@ -709,16 +710,16 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * optional error callback specified in the {@code syncOptions} and updates the {@code statistics} instance by
      * incrementing the total number of failed categories to sync.
      *
-     * @param errorMessage The error message describing the reason(s) of failure.
-     * @param exception    The exception that called caused the failure, if any.
-     * @param oldCategory the category to update.
-     * @param newCategory the category draft where we get the new data.
+     * @param errorMessage  The error message describing the reason(s) of failure.
+     * @param exception     The exception that called caused the failure, if any.
+     * @param oldCategory   the category to update.
+     * @param newCategory   the category draft where we get the new data.
      * @param updateActions the list of update actions to update the category with.
      */
     private void handleError(@Nonnull final String errorMessage, @Nullable final Throwable exception,
-        @Nullable final Category oldCategory,
-        @Nullable final CategoryDraft newCategory,
-        @Nullable final List<UpdateAction<Category>> updateActions) {
+                             @Nullable final Category oldCategory,
+                             @Nullable final CategoryDraft newCategory,
+                             @Nullable final List<UpdateAction<Category>> updateActions) {
         SyncException syncException = exception != null ? new SyncException(errorMessage, exception)
             : new SyncException(errorMessage);
         syncOptions.applyErrorCallback(syncException, oldCategory, newCategory, updateActions);
@@ -731,7 +732,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * incrementing the total number of failed category to sync with the supplied {@code failedTimes}.
      *
      * @param syncException The exception that  caused the failure.
-     * @param failedTimes  The number of times that the failed category counter is incremented.
+     * @param failedTimes   The number of times that the failed category counter is incremented.
      */
     private void handleError(@Nonnull final SyncException syncException,
                              final int failedTimes) {

@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
 import static com.commercetools.sync.commons.helpers.CustomReferenceResolver.TYPE_DOES_NOT_EXIST;
@@ -555,7 +556,7 @@ class CategorySyncIT {
     }
 
     @Test
-    void syncDrafts_WithSameSlugDraft_ShouldNotSyncIt() {
+    void syncDrafts_WithSameSlugDraft_ShouldNotSyncIt() throws ExecutionException, InterruptedException {
         final List<CategoryDraft> newCategoryDrafts = new ArrayList<>();
 
         // Category draft coming from external source.
@@ -612,7 +613,7 @@ class CategorySyncIT {
         newCategoryDrafts.add(categoryDraft5);
         newCategoryDrafts.add(categoryDraft6);
 
-        final CategorySyncStatistics syncStatistics = categorySync.sync(newCategoryDrafts).toCompletableFuture().join();
+        final CategorySyncStatistics syncStatistics = categorySync.sync(newCategoryDrafts).toCompletableFuture().get();
 
         assertThat(syncStatistics).hasValues(6, 5, 0, 1, 0);
     }
