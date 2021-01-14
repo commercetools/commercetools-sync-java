@@ -191,12 +191,12 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         return referenceResolver
             .populateKeyToIdCachesForReferencedKeys(result.getRight())
             .handle(ImmutablePair::new)
-            .thenCompose(cachingResponse -> {
+            .thenApply(cachingResponse -> {
                 final Throwable cachingException = cachingResponse.getValue();
                 if (cachingException != null) {
                     handleError(new SyncException("Failed to build a cache of keys to ids.", cachingException),
                         validDrafts.size());
-                    return CompletableFuture.completedFuture(null);
+                    return statistics;
                 }
 
                 final Map<String, String> categoryKeyToIdCache = cachingResponse.getKey();
@@ -207,16 +207,15 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                     .map(CategoryDraft::getKey)
                     .collect(Collectors.toSet());
 
-                return createAndUpdate(newCategoryDrafts, categoryKeyToIdCache);
-            })
-            .thenApply(ignoredResult -> {
-                statistics.incrementProcessed(newCategoryDrafts.size());
+                createAndUpdate(newCategoryDrafts, categoryKeyToIdCache);
                 return statistics;
             });
+
+
     }
 
     private CompletionStage<Void> fetchAndUpdate(@Nonnull final Map<String, String> keyToIdCache) {
-        return categoryService
+""        return categoryService
             .fetchMatchingCategoriesByKeys(categoryKeysToFetch)
             .handle(ImmutablePair::new)
             .thenCompose(fetchResponse -> {
@@ -300,9 +299,13 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     @Nonnull
     private CompletionStage<Void> createAndUpdate(@Nonnull final Set<CategoryDraft> categoryDrafts,
                                                   @Nonnull final Map<String, String> keyToIdCache) {
+        statistics.incrementProcessed(categoryDrafts.size());
         return createCategories(categoryDrafts)
-            .thenCompose(createdCategories -> processCreatedCategories(createdCategories, keyToIdCache))
-            .thenAccept(ignoredResult -> fetchAndUpdate(keyToIdCache));
+            .thenAccept(createdCategories -> {
+                processCreatedCategories(createdCategories, keyToIdCache);
+
+            })
+            .thenCompose(ignoredResult -> fetchAndUpdate(keyToIdCache));
     }
 
     @Nonnull
@@ -391,7 +394,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @param createdCategories the set of created categories that needs to be processed.
      * @return
      */
-    private CompletionStage<Void> processCreatedCategories(@Nonnull final Set<Category> createdCategories,
+    private void processCreatedCategories(@Nonnull final Set<Category> createdCategories,
                                                            @Nonnull final Map<String, String> keyToIdCache) {
         final Set<String> resolvedParent = createdCategories.stream().map(c -> c.getKey()).collect(Collectors.toSet());
 
@@ -405,7 +408,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         statistics.incrementFailed(numberOfFailedCategories);
         statistics.incrementCreated(createdCategories.size());
 
-       return unresolvedReferencesService.fetch(resolvableCategoryKeys,
+       unresolvedReferencesService.fetch(resolvableCategoryKeys,
             CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY,
             WaitingToBeResolvedCategories.class)
             .handle(ImmutablePair::new)
@@ -434,7 +437,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                     // remove the customobjects of the waiting draft
                     removeFromWaiting(readyToSync);
                 }
-            });
+            }).toCompletableFuture().join();
 
     }
 
