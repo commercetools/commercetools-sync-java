@@ -51,8 +51,8 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
 
     private static final String FAILED_TO_PROCESS = "Failed to process the CategoryDraft with key:'%s'. Reason: %s";
     private static final String UPDATE_FAILED = "Failed to update Category with key: '%s'. Reason: %s";
-    private static final String UNRESOLVED_PARENT_REFERENCES_STORE_FETCH_FAILED = "Failed to fetch categoryDraft " +
-        "waiting to be resolved with parentkeys '%s'.";
+    private static final String UNRESOLVED_PARENT_REFERENCES_STORE_FETCH_FAILED = "Failed to fetch categoryDraft "
+        + "waiting to be resolved with parentkeys '%s'.";
     private final CategoryService categoryService;
     private final UnresolvedReferencesService unresolvedReferencesService;
     private final CategoryReferenceResolver referenceResolver;
@@ -140,7 +140,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      *
      * @param categoryDrafts the list of new category drafts to sync to the CTP project.
      * @return an instance of {@link CompletionStage}&lt;{@link CategorySyncStatistics}&gt; which contains as a result
-     * an instance of {@link CategorySyncStatistics} representing the {@code statistics} instance attribute of
+     *         an instance of {@link CategorySyncStatistics} representing the {@code statistics} instance attribute of
      * {@code this} {@link CategorySync}.
      */
     @Override
@@ -168,7 +168,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      *
      * @param categoryDrafts the list of new category drafts to sync to the CTP project.
      * @return an instance of {@link CompletionStage}&lt;{@link CategorySyncStatistics}&gt; which contains as a result
-     * an instance of {@link CategorySyncStatistics} representing the {@code statistics} instance attribute of
+     *         an instance of {@link CategorySyncStatistics} representing the {@code statistics} instance attribute of
      * {@code this} {@link CategorySync}.
      */
     @Override
@@ -301,7 +301,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private CompletionStage<Void> createAndUpdate(@Nonnull final Set<CategoryDraft> categoryDrafts,
                                                   @Nonnull final Map<String, String> keyToIdCache) {
         return createCategories(categoryDrafts)
-            .thenAccept(createdCategories -> processCreatedCategories(newCategoryDrafts,createdCategories, keyToIdCache))
+            .thenAccept(createdCategories -> processCreatedCategories(createdCategories, keyToIdCache))
             .thenCompose(ignoredResult -> fetchAndUpdate(keyToIdCache));
     }
 
@@ -350,14 +350,15 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         statistics.putMissingParentCategoryChildKey(parentCategoryKey, categoryDraft.getKey());
         return null;
     }
-     /**
+
+    /**
      * Checks if the category with the given {@code categoryKey} exists or not, by checking if its key
      * exists in the {@code keyToIdCache} map.
      *
      * @param categoryKey  the key of the category to check for existence.
      * @param keyToIdCache the cache of existing category keys to ids.
      * @return true or false, whether the category exists or not.
-     */
+    */
     private boolean isMissingCategory(@Nonnull final String categoryKey,
                                       @Nonnull final Map<String, String> keyToIdCache) {
         return !keyToIdCache.containsKey(categoryKey);
@@ -388,8 +389,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      *
      * @param createdCategories the set of created categories that needs to be processed.
      */
-    private void processCreatedCategories( final Set<CategoryDraft> processedCategories,
-                                          @Nonnull final Set<Category> createdCategories,
+    private void processCreatedCategories( @Nonnull final Set<Category> createdCategories,
                                           @Nonnull final Map<String, String> keyToIdCache) {
         final Set<String> resolvedParent = createdCategories.stream().map(c -> c.getKey()).collect(Collectors.toSet());
         final Set<String> resolvableCategoryKeys = resolvedParent
@@ -500,22 +500,6 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         });
     }
 
-
-    /**
-     * Given a {@link Set} of categories and a {@code key}, this method tries to find a category with this key in this
-     * set and returns an optional containing it or an empty optional if no category exists with such key.
-     *
-     * @param categories set of categories to look for a category with such key.
-     * @param key        the key to look for a category for in the supplied set of categories.
-     * @return an optional containing the category or an empty optional if no category exists with such key.
-     */
-    private static Optional<Category> getCategoryByKeyIfExists(@Nonnull final Set<Category> categories,
-                                                               @Nonnull final String key) {
-        return categories.stream()
-            .filter(category -> Objects.equals(category.getKey(), key))
-            .findFirst();
-    }
-
     /**
      * Given a {@link Set} of categoryDrafts and a {@code key}. This method tries to find a categoryDraft with this key
      * in this set and returns an optional containing it or an empty optional if no categoryDraft exists with such key.
@@ -555,7 +539,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @param category      the old category to sync to.
      * @param categoryDraft the new category draft to sync.
      * @return true or false whether a {@link io.sphere.sdk.categories.commands.updateactions.ChangeParent} is needed to
-     * sync the draft to the category.
+     *         sync the draft to the category.
      */
     static boolean requiresChangeParentUpdateAction(@Nonnull final Category category,
                                                     @Nonnull final CategoryDraft categoryDraft) {
