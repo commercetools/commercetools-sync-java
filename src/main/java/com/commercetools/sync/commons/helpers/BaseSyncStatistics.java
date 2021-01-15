@@ -148,6 +148,13 @@ public abstract class BaseSyncStatistics {
     }
 
     /**
+     * decrements the total number of resources that failed to sync.
+     */
+    public void decrementFailed() {
+        failed.decrementAndGet();
+    }
+
+    /**
      * Calculates the processing time taken by the subtracting the time, when the
      * {@link BaseSyncStatistics#startTimer()} method of this instance was called, from the current time in
      * Milliseconds. It also sets the processing time in all the units {@code latestBatchProcessingTimeInDays},
