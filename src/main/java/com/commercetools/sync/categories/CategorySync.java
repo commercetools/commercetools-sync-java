@@ -392,14 +392,12 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                                           @Nonnull final Set<Category> createdCategories,
                                           @Nonnull final Map<String, String> keyToIdCache) {
         final Set<String> resolvedParent = createdCategories.stream().map(c -> c.getKey()).collect(Collectors.toSet());
-
         final Set<String> resolvableCategoryKeys = resolvedParent
             .stream()
             .map(statistics::removeAndGetChildrenKeys)
             .filter(Objects::nonNull)
             .flatMap(Set::stream)
             .collect(Collectors.toSet());
-
         statistics.incrementCreated(createdCategories.size());
 
         unresolvedReferencesService.fetch(resolvableCategoryKeys,
@@ -433,7 +431,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                     // remove the customobjects of the waiting draft
                     removeFromWaiting(readyToSync);
                 }
-            }).toCompletableFuture().join();
+            });
 
     }
 
