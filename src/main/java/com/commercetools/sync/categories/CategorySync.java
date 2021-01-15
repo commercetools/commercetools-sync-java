@@ -191,12 +191,12 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         return referenceResolver
             .populateKeyToIdCachesForReferencedKeys(result.getRight())
             .handle(ImmutablePair::new)
-            .thenApply(cachingResponse -> {
+            .thenCompose(cachingResponse -> {
                 final Throwable cachingException = cachingResponse.getValue();
                 if (cachingException != null) {
                     handleError(new SyncException("Failed to build a cache of keys to ids.", cachingException),
                         validDrafts.size());
-                    return statistics;
+                    return CompletableFuture.completedFuture(null);
                 }
 
                 final Map<String, String> categoryKeyToIdCache = cachingResponse.getKey();
@@ -206,11 +206,9 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                     .stream()
                     .map(CategoryDraft::getKey)
                     .collect(Collectors.toSet());
-
                 return createAndUpdate(newCategoryDrafts, categoryKeyToIdCache);
             })
             .thenApply(ignoredResult -> {
-
                 return statistics;
             });
     }
@@ -268,6 +266,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      */
     private void prepareDraftsForProcessing(@Nonnull final List<CategoryDraft> categoryDrafts,
                                             @Nonnull final Map<String, String> keyToIdCache) {
+        statistics.incrementProcessed(categoryDrafts.size());
         for (CategoryDraft categoryDraft : categoryDrafts) {
             final String categoryKey = categoryDraft.getKey();
             try {
@@ -300,14 +299,9 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     @Nonnull
     private CompletionStage<Void> createAndUpdate(@Nonnull final Set<CategoryDraft> categoryDrafts,
                                                   @Nonnull final Map<String, String> keyToIdCache) {
-        statistics.incrementProcessed(categoryDrafts.size());
-        CompletionStage<Void> future = createCategories(categoryDrafts)
-            .thenApply(createdCategories -> {
-                processCreatedCategories(createdCategories, keyToIdCache);
-                return createdCategories;
-            })
+        return createCategories(categoryDrafts)
+            .thenAccept(createdCategories -> processCreatedCategories(createdCategories, keyToIdCache))
             .thenCompose(ignoredResult -> fetchAndUpdate(keyToIdCache));
-        return future;
     }
 
     @Nonnull
