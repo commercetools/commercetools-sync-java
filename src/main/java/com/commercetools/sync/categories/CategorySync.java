@@ -85,7 +85,6 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private Set<CategoryDraft> existingCategoryDrafts = new HashSet<>();
     private Set<CategoryDraft> newCategoryDrafts = new HashSet<>();
     private Set<CategoryDraft> referencesResolvedDrafts = new HashSet<>();
-    private Set<String> categoryKeysToFetch = new HashSet<>();
 
 
     /**
@@ -203,18 +202,22 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                 final Map<String, String> categoryKeyToIdCache = cachingResponse.getKey();
                 prepareDraftsForProcessing(new ArrayList<>(validDrafts), categoryKeyToIdCache);
 
-                categoryKeysToFetch = existingCategoryDrafts
-                    .stream()
-                    .map(CategoryDraft::getKey)
-                    .collect(Collectors.toSet());
-                return createAndUpdate(newCategoryDrafts, categoryKeyToIdCache);
+
+                return createAndUpdate(newCategoryDrafts, existingCategoryDrafts ,categoryKeyToIdCache);
             })
             .thenApply(ignoredResult -> {
                 return statistics;
             });
     }
 
-    private CompletionStage<Void> fetchAndUpdate(@Nonnull final Map<String, String> keyToIdCache) {
+    private CompletionStage<Void> fetchAndUpdate(
+        @Nonnull Set<CategoryDraft> existingCategories,
+        @Nonnull final Map<String, String> keyToIdCache) {
+
+        Set<String> categoryKeysToFetch = existingCategories
+            .stream()
+            .map(CategoryDraft::getKey)
+            .collect(Collectors.toSet());
         return categoryService
             .fetchMatchingCategoriesByKeys(categoryKeysToFetch)
             .handle(ImmutablePair::new)
@@ -302,10 +305,11 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
 
     @Nonnull
     private CompletionStage<Void> createAndUpdate(@Nonnull final Set<CategoryDraft> categoryDrafts,
+                                                  @Nonnull Set<CategoryDraft> existingCategories,
                                                   @Nonnull final Map<String, String> keyToIdCache) {
         return createCategories(categoryDrafts)
             .thenAccept(createdCategories -> processCreatedCategories(createdCategories, keyToIdCache))
-            .thenCompose(ignoredResult -> fetchAndUpdate(keyToIdCache));
+            .thenCompose(ignoredResult -> fetchAndUpdate(existingCategories, keyToIdCache));
     }
 
     @Nonnull
@@ -394,7 +398,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      *
      * @param createdCategories the set of created categories that needs to be processed.
      */
-    private void processCreatedCategories( @Nonnull final Set<Category> createdCategories,
+    private void processCreatedCategories(@Nonnull final Set<Category> createdCategories,
                                           @Nonnull final Map<String, String> keyToIdCache) {
         final Set<String> resolvedParent = createdCategories.stream().map(c -> c.getKey()).collect(Collectors.toSet());
         final Set<String> resolvableCategoryKeys = resolvedParent
@@ -404,13 +408,13 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
             .flatMap(Set::stream)
             .collect(Collectors.toSet());
         statistics.incrementCreated(createdCategories.size());
-        System.out.println("############resolvableCategoryKeys "+resolvableCategoryKeys);
+        System.out.println("############resolvableCategoryKeys " + resolvableCategoryKeys);
         unresolvedReferencesService.fetch(resolvableCategoryKeys,
             CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY,
             WaitingToBeResolvedCategories.class)
             .handle(ImmutablePair::new)
             .thenApply(fetchResponse -> {
-                final Set<CategoryDraft> readyToSync = new HashSet<>();
+                final List<CategoryDraft> readyToSync = new ArrayList<>();
                 final Set<? extends WaitingToBeResolved> waitingDrafts = fetchResponse.getKey();
                 final Throwable fetchException = fetchResponse.getValue();
                 if (fetchException != null) {
@@ -430,7 +434,19 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
             .thenAccept(readyToSync -> {
                 if (!readyToSync.isEmpty()) {
                     // process ready drafts
-                    createAndUpdate(readyToSync, keyToIdCache);
+                    final Set<CategoryDraft> readyToCreate =
+                        readyToSync
+                            .stream()
+                            .filter(c -> !keyToIdCache.containsKey(c.getKey()))
+                            .collect(Collectors.toSet());
+                    final Set<CategoryDraft> readyToUpate =
+                        readyToSync
+                            .stream()
+                            .filter(c -> keyToIdCache.containsKey(c.getKey()))
+                            .collect(Collectors.toSet());
+
+                    createAndUpdate(readyToCreate, readyToUpate, keyToIdCache).toCompletableFuture().join();
+
                     //Update Statistic
                     readyToSync.forEach(d -> statistics.decrementFailed());
                     // remove the customobjects of the waiting draft
@@ -443,7 +459,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
 
     @Nonnull
     private CompletableFuture<Void> removeFromWaiting(
-        @Nonnull final Set<CategoryDraft> drafts) {
+        @Nonnull final List<CategoryDraft> drafts) {
 
         return allOf(drafts
             .stream()
