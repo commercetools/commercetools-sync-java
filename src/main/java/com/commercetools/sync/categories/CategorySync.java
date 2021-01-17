@@ -446,7 +446,6 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                             .collect(Collectors.toSet());
 
                     createAndUpdate(readyToCreate, readyToUpate, keyToIdCache).toCompletableFuture().join();
-
                     //Update Statistic
                     readyToSync.forEach(d -> statistics.decrementFailed());
                     // remove the customobjects of the waiting draft
