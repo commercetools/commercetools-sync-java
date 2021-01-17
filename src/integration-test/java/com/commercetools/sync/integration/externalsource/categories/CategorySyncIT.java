@@ -83,6 +83,7 @@ class CategorySyncIT {
 
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
+       exception.printStackTrace();
                 errorCallBackMessages.add(exception.getMessage());
                 errorCallBackExceptions.add(exception.getCause());
             }).build();
@@ -613,7 +614,7 @@ class CategorySyncIT {
         newCategoryDrafts.add(categoryDraft6);
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(newCategoryDrafts).toCompletableFuture().join();
-
+        System.out.println("############assert");
         assertThat(syncStatistics).hasValues(6, 5, 0, 1, 0);
     }
 

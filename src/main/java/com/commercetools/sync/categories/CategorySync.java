@@ -268,27 +268,30 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     private void prepareDraftsForProcessing(@Nonnull final List<CategoryDraft> categoryDrafts,
                                             @Nonnull final Map<String, String> keyToIdCache) {
         statistics.incrementProcessed(categoryDrafts.size());
-        for (CategoryDraft categoryDraft : categoryDrafts) {
-            final String categoryKey = categoryDraft.getKey();
+        for (CategoryDraft draft : categoryDrafts) {
+            final String categoryKey = draft.getKey();
             try {
-                categoryDraft = updateCategoriesOrKeepTrack(categoryDraft, keyToIdCache);
-                if (categoryDraft != null) {
-                    referenceResolver.resolveReferences(categoryDraft)
-                        .thenAccept(referencesResolvedDraft -> {
-                            referencesResolvedDrafts.add(referencesResolvedDraft);
-                            if (keyToIdCache.containsKey(categoryKey)) {
-                                existingCategoryDrafts.add(referencesResolvedDraft);
-                            } else {
-                                newCategoryDrafts.add(referencesResolvedDraft);
-                            }
-                        })
-                        .exceptionally(completionException -> {
-                            final String errorMessage = format(FAILED_TO_PROCESS, categoryKey,
-                                completionException.getMessage());
-                            handleError(errorMessage, completionException);
-                            return null;
-                        }).toCompletableFuture().join();
-                }
+                updateCategoriesOrKeepTrack(draft, keyToIdCache).
+                    thenAccept(categoryDraft -> {
+                        if (categoryDraft.isPresent()) {
+                            referenceResolver.resolveReferences(categoryDraft.get())
+                                .thenAccept(referencesResolvedDraft -> {
+                                    referencesResolvedDrafts.add(referencesResolvedDraft);
+                                    if (keyToIdCache.containsKey(categoryKey)) {
+                                        existingCategoryDrafts.add(referencesResolvedDraft);
+                                    } else {
+                                        newCategoryDrafts.add(referencesResolvedDraft);
+                                    }
+                                })
+                                .exceptionally(completionException -> {
+                                    final String errorMessage = format(FAILED_TO_PROCESS, categoryKey,
+                                        completionException.getMessage());
+                                    handleError(errorMessage, completionException);
+                                    return null;
+                                }).toCompletableFuture().join();
+                        } ;
+                    }).toCompletableFuture().join();
+
             } catch (Exception exception) {
                 final String errorMessage = format(FAILED_TO_PROCESS, categoryKey,
                     exception);
@@ -334,21 +337,23 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
      * @throws ReferenceResolutionException thrown if the parent key is not valid.
      */
     @Nullable
-    private CategoryDraft updateCategoriesOrKeepTrack(@Nonnull final CategoryDraft categoryDraft,
-                                                      @Nonnull final Map<String, String> keyToIdCache)
+    private CompletionStage<Optional<CategoryDraft>> updateCategoriesOrKeepTrack(
+        @Nonnull final CategoryDraft categoryDraft,
+        @Nonnull final Map<String, String> keyToIdCache)
         throws ReferenceResolutionException {
+
         String parentCategoryKey = getParentCategoryKey(categoryDraft).orElse("");
         if (StringUtils.isBlank(parentCategoryKey) || !isMissingCategory(parentCategoryKey, keyToIdCache)) {
-            return categoryDraft;
+            return   CompletableFuture.completedFuture(Optional.of(categoryDraft));
         }
         WaitingToBeResolvedCategories waitingToBeResolved = new WaitingToBeResolvedCategories(categoryDraft,
             new HashSet<String>(asList(parentCategoryKey)));
         unresolvedReferencesService.save(waitingToBeResolved,
             CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY,
-            WaitingToBeResolvedCategories.class);
+            WaitingToBeResolvedCategories.class).toCompletableFuture().join();
         statistics.incrementFailed();
         statistics.putMissingParentCategoryChildKey(parentCategoryKey, categoryDraft.getKey());
-        return null;
+        return  CompletableFuture.completedFuture(Optional.empty());
     }
 
     /**
@@ -399,7 +404,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
             .flatMap(Set::stream)
             .collect(Collectors.toSet());
         statistics.incrementCreated(createdCategories.size());
-
+        System.out.println("############resolvableCategoryKeys "+resolvableCategoryKeys);
         unresolvedReferencesService.fetch(resolvableCategoryKeys,
             CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY,
             WaitingToBeResolvedCategories.class)
@@ -431,7 +436,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                     // remove the customobjects of the waiting draft
                     removeFromWaiting(readyToSync);
                 }
-            });
+            }).toCompletableFuture().join();
 
     }
 
