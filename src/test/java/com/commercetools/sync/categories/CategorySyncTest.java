@@ -18,6 +18,7 @@ import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
+import io.sphere.sdk.types.CustomFieldsDraft;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -28,6 +29,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -50,7 +52,6 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
-import static java.util.Collections.singletonMap;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -243,7 +244,7 @@ class CategorySyncTest {
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to process the CategoryDraft with"
-                + " key:'key'. Reason: %s: Failed to resolve parent reference on CategoryDraft"
+                + " key: 'key'. Reason: %s: Failed to resolve parent reference on CategoryDraft"
                 + " with key:'key'. Reason: %s",
             ReferenceResolutionException.class.getCanonicalName(), BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
         assertThat(errorCallBackExceptions).hasSize(1);
@@ -288,7 +289,7 @@ class CategorySyncTest {
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to process the CategoryDraft with"
-                + " key:'key'. Reason: %s: Failed to resolve parent reference on CategoryDraft with key:'key'. "
+                + " key: 'key'. Reason: %s: Failed to resolve parent reference on CategoryDraft with key:'key'. "
                 + "Reason: %s", ReferenceResolutionException.class.getCanonicalName(),
             BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
         assertThat(errorCallBackExceptions).hasSize(1);
@@ -317,7 +318,7 @@ class CategorySyncTest {
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
         assertThat(errorCallBackMessages).hasSize(1);
         assertThat(errorCallBackMessages.get(0)).isEqualTo(format("Failed to process the CategoryDraft with"
-                + " key:'key'. Reason: %s: Failed to resolve custom type reference on CategoryDraft "
+                + " key: 'key'. Reason: %s: Failed to resolve custom type reference on CategoryDraft "
                 + "with key:'key'. Reason: %s", ReferenceResolutionException.class.getCanonicalName(),
             BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
         assertThat(errorCallBackExceptions).hasSize(1);
@@ -526,15 +527,17 @@ class CategorySyncTest {
 
         final CategoryService categoryServiceSpy = spy(new CategoryServiceImpl(syncOptions));
 
+
         final CategorySync mockCategorySync = new CategorySync(syncOptions, getMockTypeService(), categoryServiceSpy,
             mockUnresolvedReferencesService);
 
-        final CategoryDraft categoryDraft =
-            getMockCategoryDraft(Locale.ENGLISH, "name", categoryKey, "parentKey", "customTypeId", new HashMap<>());
-
+        final CategoryDraft categoryDraft = CategoryDraftBuilder
+            .of(LocalizedString.of(Locale.ENGLISH, "name"), LocalizedString.of(Locale.ENGLISH, "name"))
+            .key(categoryKey)
+            .custom(CustomFieldsDraft.ofTypeKeyAndJson("customTypeId", new HashMap<>())).build();
         // test
         final CategorySyncStatistics syncStatistics = mockCategorySync.sync(singletonList(categoryDraft))
-                                                                      .toCompletableFuture().join();
+            .toCompletableFuture().join();
 
         // assertions
         assertThat(syncStatistics).hasValues(1, 0, 0, 1);
@@ -557,7 +560,6 @@ class CategorySyncTest {
         // preparation
         final CategoryDraft categoryDraft =
             getMockCategoryDraft(Locale.ENGLISH, "name", "foo", "parentKey", "customTypeId", new HashMap<>());
-
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder
             .of(mock(SphereClient.class))
             .build();
@@ -569,6 +571,12 @@ class CategorySyncTest {
         when(categoryService.fetchCachedCategoryId(Mockito.eq("parentKey")))
             .thenReturn(CompletableFuture.completedFuture(Optional.of("parentId")));
 
+        Map<String, String> cache = new HashMap<>();
+        cache.put("1", UUID.randomUUID().toString());
+        cache.put("parentKey", UUID.randomUUID().toString());
+
+        when(categoryService.cacheKeysToIds(anySet()))
+            .thenReturn(completedFuture(cache));
         final CategorySyncOptions spyCategorySyncOptions = spy(categorySyncOptions);
 
         // test
@@ -596,8 +604,11 @@ class CategorySyncTest {
         final CategoryService categoryService = mockCategoryService(singleton(mockedExistingCategory),
             mockedExistingCategory, mockedExistingCategory);
 
+        Map<String, String> cache = new HashMap<>();
+        cache.put("1", UUID.randomUUID().toString());
+        cache.put("parentKey", UUID.randomUUID().toString());
         when(categoryService.cacheKeysToIds(anySet()))
-            .thenReturn(completedFuture(singletonMap("1", UUID.randomUUID().toString())));
+            .thenReturn(completedFuture(cache));
 
         final CategorySyncOptions spyCategorySyncOptions = spy(categorySyncOptions);
 

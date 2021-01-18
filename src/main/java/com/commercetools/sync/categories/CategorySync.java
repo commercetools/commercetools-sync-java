@@ -49,7 +49,7 @@ import static java.util.concurrent.CompletableFuture.allOf;
 
 public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics, CategorySyncOptions> {
 
-    private static final String FAILED_TO_PROCESS = "Failed to process the CategoryDraft with key:'%s'. Reason: %s";
+    private static final String FAILED_TO_PROCESS = "Failed to process the CategoryDraft with key: '%s'. Reason: %s";
     private static final String UPDATE_FAILED = "Failed to update Category with key: '%s'. Reason: %s";
     private static final String UNRESOLVED_PARENT_REFERENCES_STORE_FETCH_FAILED = "Failed to fetch categoryDraft "
         + "waiting to be resolved with parentkeys '%s'.";
@@ -201,9 +201,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
 
                 final Map<String, String> categoryKeyToIdCache = cachingResponse.getKey();
                 prepareDraftsForProcessing(new ArrayList<>(validDrafts), categoryKeyToIdCache);
-
-
-                return createAndUpdate(newCategoryDrafts, existingCategoryDrafts ,categoryKeyToIdCache);
+               return createAndUpdate(newCategoryDrafts, existingCategoryDrafts ,categoryKeyToIdCache);
             })
             .thenApply(ignoredResult -> {
                 statistics.incrementProcessed(numberOfNewDraftsToProcess);
@@ -330,7 +328,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
 
     @Nonnull
     private CompletionStage<Void> createAndUpdate(@Nonnull final Set<CategoryDraft> newCategoryDrafts,
-                                                  @Nonnull final  Set<CategoryDraft> existingCategories,
+                                                  @Nonnull final Set<CategoryDraft> existingCategories,
                                                   @Nonnull final Map<String, String> keyToIdCache) {
         return createCategories(newCategoryDrafts)
             .thenAccept(createdCategories -> processCreatedCategories(newCategoryDrafts,
@@ -369,11 +367,10 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
     @Nullable
     private CompletionStage<Optional<CategoryDraft>> updateCategoriesOrKeepTrack(
         @Nonnull final CategoryDraft categoryDraft,
-        @Nonnull final Map<String, String> keyToIdCache)
-        throws ReferenceResolutionException {
+        @Nonnull final Map<String, String> keyToIdCache) throws ReferenceResolutionException {
         String parentCategoryKey = getParentCategoryKey(categoryDraft).orElse("");
         if (StringUtils.isBlank(parentCategoryKey) || !isMissingCategory(parentCategoryKey, keyToIdCache)) {
-            return   CompletableFuture.completedFuture(Optional.of(categoryDraft));
+            return CompletableFuture.completedFuture(Optional.of(categoryDraft));
         }
         WaitingToBeResolvedCategories waitingToBeResolved = new WaitingToBeResolvedCategories(categoryDraft,
             new HashSet<String>(asList(parentCategoryKey)));
@@ -382,7 +379,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
             WaitingToBeResolvedCategories.class).toCompletableFuture().join();
         statistics.incrementFailed();
         statistics.putMissingParentCategoryChildKey(parentCategoryKey, categoryDraft.getKey());
-        return  CompletableFuture.completedFuture(Optional.empty());
+        return CompletableFuture.completedFuture(Optional.empty());
     }
 
     /**
