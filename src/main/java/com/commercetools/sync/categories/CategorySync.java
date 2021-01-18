@@ -234,9 +234,9 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
 
         return (int) (numberOfCategoryDraftsNotProcessedBefore + numberOfNullCategoryDrafts);
     }
-    private CompletionStage<Void> fetchAndUpdate(
-        @Nonnull Set<CategoryDraft> existingCategories,
-        @Nonnull final Map<String, String> keyToIdCache) {
+
+    private CompletionStage<Void> fetchAndUpdate(@Nonnull final Set<CategoryDraft> existingCategories,
+                                                 @Nonnull final Map<String, String> keyToIdCache) {
 
         Set<String> categoryKeysToFetch = existingCategories
             .stream()
@@ -299,8 +299,8 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
         for (CategoryDraft draft : categoryDrafts) {
             final String categoryKey = draft.getKey();
             try {
-                updateCategoriesOrKeepTrack(draft, keyToIdCache).
-                    thenAccept(categoryDraft -> {
+                updateCategoriesOrKeepTrack(draft, keyToIdCache)
+                    .thenAccept(categoryDraft -> {
                         if (categoryDraft.isPresent()) {
                             referenceResolver.resolveReferences(categoryDraft.get())
                                 .thenAccept(referencesResolvedDraft -> {
@@ -317,7 +317,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                                     handleError(errorMessage, completionException);
                                     return null;
                                 }).toCompletableFuture().join();
-                        } ;
+                        }
                     }).toCompletableFuture().join();
 
             } catch (Exception exception) {
@@ -330,10 +330,11 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
 
     @Nonnull
     private CompletionStage<Void> createAndUpdate(@Nonnull final Set<CategoryDraft> newCategoryDrafts,
-                                                  @Nonnull Set<CategoryDraft> existingCategories,
+                                                  @Nonnull final  Set<CategoryDraft> existingCategories,
                                                   @Nonnull final Map<String, String> keyToIdCache) {
         return createCategories(newCategoryDrafts)
-            .thenAccept(createdCategories -> processCreatedCategories(newCategoryDrafts, createdCategories, keyToIdCache))
+            .thenAccept(createdCategories -> processCreatedCategories(newCategoryDrafts,
+                createdCategories, keyToIdCache))
             .thenCompose(ignoredResult -> fetchAndUpdate(existingCategories, keyToIdCache));
     }
 
@@ -462,18 +463,17 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
                     // process ready drafts
                     final Set<CategoryDraft> readyToCreate = new HashSet<>();
                     final Set<CategoryDraft> readyToUpate = new HashSet<>();
-
                     readyToSync.stream().forEach(categoryDraft -> {
-                            referenceResolver.resolveReferences(categoryDraft)
-                                .thenAccept(referencesResolvedDraft -> {
-                                    referencesResolvedDrafts.add(referencesResolvedDraft);
-                                    if (keyToIdCache.containsKey(referencesResolvedDraft.getKey())) {
-                                        readyToUpate.add(referencesResolvedDraft);
-                                    } else {
-                                        readyToCreate.add(referencesResolvedDraft);
-                                    }
-                                }).toCompletableFuture().join();
-                        });
+                        referenceResolver.resolveReferences(categoryDraft)
+                            .thenAccept(referencesResolvedDraft -> {
+                                referencesResolvedDrafts.add(referencesResolvedDraft);
+                                if (keyToIdCache.containsKey(referencesResolvedDraft.getKey())) {
+                                    readyToUpate.add(referencesResolvedDraft);
+                                } else {
+                                    readyToCreate.add(referencesResolvedDraft);
+                                }
+                            }).toCompletableFuture().join();
+                    });
                     createAndUpdate(readyToCreate, readyToUpate, keyToIdCache).toCompletableFuture().join();
                     //Update Statistic
                     readyToSync.forEach(d -> statistics.decrementFailed());

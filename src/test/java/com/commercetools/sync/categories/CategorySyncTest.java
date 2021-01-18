@@ -71,7 +71,6 @@ class CategorySyncTest {
 
     // protected method access helper
     private static class CategorySyncMock extends CategorySync {
-
         CategorySyncMock(@Nonnull final CategorySyncOptions syncOptions,
                          @Nonnull final TypeService typeService,
                          @Nonnull final CategoryService categoryService,
@@ -98,11 +97,10 @@ class CategorySyncTest {
         mockUnresolvedReferencesService = mock(UnresolvedReferencesService.class);
         final SphereClient ctpClient = mock(SphereClient.class);
         categorySyncOptions = CategorySyncOptionsBuilder.of(ctpClient)
-                                                        .errorCallback(
-                                                            (exception, oldResource, newResource, updateActions) -> {
-                                                                errorCallBackMessages.add(exception.getMessage());
-                                                                errorCallBackExceptions.add(exception.getCause());
-                                                            }).build();
+            .errorCallback((exception, oldResource, newResource, updateActions) -> {
+                errorCallBackMessages.add(exception.getMessage());
+                errorCallBackExceptions.add(exception.getCause());
+            }).build();
 
         when(mockUnresolvedReferencesService.save(any(), any(), any()))
             .thenReturn(CompletableFuture.completedFuture(Optional.empty()));

@@ -3,7 +3,6 @@ package com.commercetools.sync.services.impl;
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
-import com.commercetools.sync.products.ProductSyncOptions;
 import com.commercetools.sync.services.UnresolvedReferencesService;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.CustomObjectDraft;

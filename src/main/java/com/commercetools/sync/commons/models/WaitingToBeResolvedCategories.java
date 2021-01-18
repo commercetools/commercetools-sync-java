@@ -1,7 +1,6 @@
 package com.commercetools.sync.commons.models;
 
 import io.sphere.sdk.categories.CategoryDraft;
-import io.sphere.sdk.products.ProductDraft;
 
 import javax.annotation.Nonnull;
 import java.util.Set;

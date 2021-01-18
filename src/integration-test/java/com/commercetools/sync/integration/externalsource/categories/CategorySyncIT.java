@@ -83,7 +83,6 @@ class CategorySyncIT {
 
         final CategorySyncOptions categorySyncOptions = CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
             .errorCallback((exception, oldResource, newResource, updateActions) -> {
-       exception.printStackTrace();
                 errorCallBackMessages.add(exception.getMessage());
                 errorCallBackExceptions.add(exception.getCause());
             }).build();
