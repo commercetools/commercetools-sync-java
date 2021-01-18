@@ -614,7 +614,6 @@ class CategorySyncIT {
         newCategoryDrafts.add(categoryDraft6);
 
         final CategorySyncStatistics syncStatistics = categorySync.sync(newCategoryDrafts).toCompletableFuture().join();
-        System.out.println("############assert");
         assertThat(syncStatistics).hasValues(6, 5, 0, 1, 0);
     }
 

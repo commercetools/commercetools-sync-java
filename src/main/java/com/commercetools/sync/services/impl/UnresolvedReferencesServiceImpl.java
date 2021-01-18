@@ -81,7 +81,6 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
     public CompletionStage<Optional<WaitingToBeResolved>> save(@Nonnull final WaitingToBeResolved draft,
                                                                @Nonnull final String containerKey,
                                                                @Nonnull final Class clazz) {
-        System.out.println("############save");
         final CustomObjectDraft<WaitingToBeResolved> customObjectDraft = CustomObjectDraft
             .ofUnversionedUpsert(
                 containerKey,
