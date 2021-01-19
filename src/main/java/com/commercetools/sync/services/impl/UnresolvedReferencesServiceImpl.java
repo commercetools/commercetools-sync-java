@@ -27,100 +27,99 @@ import static org.apache.commons.codec.digest.DigestUtils.sha1Hex;
 
 public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesService {
 
-    private final BaseSyncOptions syncOptions;
+  private final BaseSyncOptions syncOptions;
 
-    private static final String SAVE_FAILED =
-        "Failed to save CustomObject with key: '%s' (hash of product key: '%s').";
-    private static final String DELETE_FAILED =
-        "Failed to delete CustomObject with key: '%s' (hash of product key: '%s').";
-    public static final String CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY =
-        "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
-    public static final String CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY =
-        "commercetools-sync-java.UnresolvedReferencesService.categoryDrafts";
+  private static final String SAVE_FAILED =
+      "Failed to save CustomObject with key: '%s' (hash of product key: '%s').";
+  private static final String DELETE_FAILED =
+      "Failed to delete CustomObject with key: '%s' (hash of product key: '%s').";
+  public static final String CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY =
+      "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
+  public static final String CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY =
+      "commercetools-sync-java.UnresolvedReferencesService.categoryDrafts";
 
-    public UnresolvedReferencesServiceImpl(@Nonnull final BaseSyncOptions baseSyncOptions) {
-        this.syncOptions = baseSyncOptions;
+  public UnresolvedReferencesServiceImpl(@Nonnull final BaseSyncOptions baseSyncOptions) {
+    this.syncOptions = baseSyncOptions;
+  }
+
+  @Nonnull
+  private String hash(@Nullable final String customObjectKey) {
+    return sha1Hex(customObjectKey);
+  }
+
+  @Nonnull
+  @Override
+  public CompletionStage<Set<WaitingToBeResolved>> fetch(
+      @Nonnull final Set<String> keys,
+      @Nonnull final String containerKey,
+      @Nonnull final Class<? extends WaitingToBeResolved> clazz) {
+
+    if (keys.isEmpty()) {
+      return CompletableFuture.completedFuture(Collections.emptySet());
     }
 
-    @Nonnull
-    private String hash(@Nullable final String customObjectKey) {
-        return sha1Hex(customObjectKey);
-    }
+    Set<String> hashedKeys = keys.stream().map(this::hash).collect(Collectors.toSet());
 
-    @Nonnull
-    @Override
-    public CompletionStage<Set<WaitingToBeResolved>> fetch(@Nonnull final Set<String> keys,
-                                                           @Nonnull final String containerKey,
-                                                           @Nonnull final Class<? extends WaitingToBeResolved> clazz) {
+    final CustomObjectQuery<? extends WaitingToBeResolved> customObjectQuery =
+        CustomObjectQuery.of(clazz)
+            .byContainer(containerKey)
+            .plusPredicates(p -> p.key().isIn(hashedKeys));
 
-        if (keys.isEmpty()) {
-            return CompletableFuture.completedFuture(Collections.emptySet());
-        }
+    return QueryExecutionUtils.queryAll(syncOptions.getCtpClient(), customObjectQuery)
+        .thenApply(
+            customObjects -> customObjects.stream().map(CustomObject::getValue).collect(toList()))
+        .thenApply(HashSet::new);
+  }
 
-        Set<String> hashedKeys = keys.stream()
-            .map(this::hash).collect(Collectors.toSet());
+  @Nonnull
+  @Override
+  public CompletionStage<Optional<WaitingToBeResolved>> save(
+      @Nonnull final WaitingToBeResolved draft,
+      @Nonnull final String containerKey,
+      @Nonnull final Class clazz) {
+    final CustomObjectDraft<WaitingToBeResolved> customObjectDraft =
+        CustomObjectDraft.ofUnversionedUpsert(
+            containerKey, hash(draft.getWaitingDraft().getKey()), draft, clazz);
 
-        final CustomObjectQuery<? extends WaitingToBeResolved> customObjectQuery =
-            CustomObjectQuery
-                .of(clazz)
-                .byContainer(containerKey)
-                .plusPredicates(p -> p.key().isIn(hashedKeys));
-
-        return QueryExecutionUtils
-            .queryAll(syncOptions.getCtpClient(), customObjectQuery)
-            .thenApply(customObjects -> customObjects
-                .stream()
-                .map(CustomObject::getValue)
-                .collect(toList()))
-            .thenApply(HashSet::new);
-    }
-
-    @Nonnull
-    @Override
-    public CompletionStage<Optional<WaitingToBeResolved>> save(@Nonnull final WaitingToBeResolved draft,
-                                                               @Nonnull final String containerKey,
-                                                               @Nonnull final Class clazz) {
-        final CustomObjectDraft<WaitingToBeResolved> customObjectDraft = CustomObjectDraft
-            .ofUnversionedUpsert(
-                containerKey,
-                hash(draft.getWaitingDraft().getKey()),
-                draft,
-                clazz);
-
-        return syncOptions
-            .getCtpClient()
-            .execute(CustomObjectUpsertCommand.of(customObjectDraft))
-            .handle((resource, exception) -> {
-                if (exception == null) {
-                    return Optional.of(resource.getValue());
-                } else {
-                    syncOptions.applyErrorCallback(
-                        new SyncException(format(SAVE_FAILED, customObjectDraft.getKey(),
-                                draft.getWaitingDraft().getKey()), exception));
-                    return Optional.empty();
-                }
+    return syncOptions
+        .getCtpClient()
+        .execute(CustomObjectUpsertCommand.of(customObjectDraft))
+        .handle(
+            (resource, exception) -> {
+              if (exception == null) {
+                return Optional.of(resource.getValue());
+              } else {
+                syncOptions.applyErrorCallback(
+                    new SyncException(
+                        format(
+                            SAVE_FAILED,
+                            customObjectDraft.getKey(),
+                            draft.getWaitingDraft().getKey()),
+                        exception));
+                return Optional.empty();
+              }
             });
-    }
+  }
 
-    @Nonnull
-    @Override
-    public CompletionStage<Optional<WaitingToBeResolved>> delete(@Nonnull final String key,
-                                                                 @Nonnull final String containerKey,
-                                                                 @Nonnull final Class<? extends WaitingToBeResolved>
-                                                                     clazz) {
+  @Nonnull
+  @Override
+  public CompletionStage<Optional<WaitingToBeResolved>> delete(
+      @Nonnull final String key,
+      @Nonnull final String containerKey,
+      @Nonnull final Class<? extends WaitingToBeResolved> clazz) {
 
-        return syncOptions
-            .getCtpClient()
-            .execute(CustomObjectDeleteCommand
-                .of(containerKey, hash(key), clazz))
-            .handle((resource, exception) -> {
-                if (exception == null) {
-                    return Optional.of(resource.getValue());
-                } else {
-                    syncOptions.applyErrorCallback(
-                        new SyncException(format(DELETE_FAILED, hash(key), key), exception));
-                    return Optional.empty();
-                }
+    return syncOptions
+        .getCtpClient()
+        .execute(CustomObjectDeleteCommand.of(containerKey, hash(key), clazz))
+        .handle(
+            (resource, exception) -> {
+              if (exception == null) {
+                return Optional.of(resource.getValue());
+              } else {
+                syncOptions.applyErrorCallback(
+                    new SyncException(format(DELETE_FAILED, hash(key), key), exception));
+                return Optional.empty();
+              }
             });
-    }
+  }
 }

@@ -17,123 +17,128 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
-
 public final class CustomObjectITUtils<T extends WaitingToBeResolved> {
 
-    private static final String PRODUCT_CUSTOM_OBJECT_CONTAINER_KEY =
-        "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
+  private static final String PRODUCT_CUSTOM_OBJECT_CONTAINER_KEY =
+      "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
 
+  /**
+   * Deletes customObjects from CTP project which have key/container used in integration test,
+   * represented by provided {@code ctpClient}.
+   *
+   * @param ctpClient represents the CTP project the custom objects will be deleted from.
+   */
+  public static void deleteCustomObject(
+      @Nonnull final SphereClient ctpClient,
+      @Nonnull final String key,
+      @Nonnull final String container) {
 
+    final CustomObjectQuery<JsonNode> customObjectQuery =
+        CustomObjectQueryBuilder.ofJsonNode()
+            .plusPredicates(queryModel -> queryModel.container().is(container))
+            .plusPredicates(queryModel -> queryModel.key().is(key))
+            .build();
 
-    /**
-     * Deletes customObjects from CTP project which have key/container used in integration test,
-     * represented by provided {@code ctpClient}.
-     *
-     * @param ctpClient represents the CTP project the custom objects will be deleted from.
-     */
-    public static void deleteCustomObject(
-        @Nonnull final SphereClient ctpClient,
-        @Nonnull final String key,
-        @Nonnull final String container) {
+    ctpClient
+        .execute(customObjectQuery)
+        .thenApply(PagedQueryResult::getResults)
+        .thenCompose(customObjects -> deleteCustomObject(ctpClient, customObjects))
+        .toCompletableFuture()
+        .join();
+  }
 
-        final CustomObjectQuery<JsonNode> customObjectQuery =
-                CustomObjectQueryBuilder.ofJsonNode()
-                        .plusPredicates(queryModel -> queryModel.container().is(container))
-                        .plusPredicates(queryModel -> queryModel.key().is(key))
-                        .build();
+  @Nonnull
+  private static CompletableFuture<Void> deleteCustomObject(
+      @Nonnull final SphereClient ctpClient,
+      @Nonnull final List<CustomObject<JsonNode>> customObjects) {
 
-        ctpClient
-                .execute(customObjectQuery)
-                .thenApply(PagedQueryResult::getResults)
-                .thenCompose(customObjects -> deleteCustomObject(ctpClient, customObjects))
-                .toCompletableFuture()
-                .join();
-    }
+    return CompletableFuture.allOf(
+        customObjects.stream()
+            .map(
+                customObject ->
+                    ctpClient.execute(CustomObjectDeleteCommand.of(customObject, JsonNode.class)))
+            .map(CompletionStage::toCompletableFuture)
+            .toArray(CompletableFuture[]::new));
+  }
 
-    @Nonnull
-    private static CompletableFuture<Void> deleteCustomObject(
-            @Nonnull final SphereClient ctpClient,
-            @Nonnull final List<CustomObject<JsonNode>> customObjects) {
+  /**
+   * Create a custom object in target CTP project, represented by provided {@code ctpClient}.
+   *
+   * @param ctpClient represents the CTP project the custom object will be created.
+   * @param key represents the key field required in custom object.
+   * @param container represents the container field required in custom object.
+   * @param value represents the value field required in custom object.
+   */
+  public static CustomObject<JsonNode> createCustomObject(
+      @Nonnull final SphereClient ctpClient,
+      @Nonnull final String key,
+      @Nonnull final String container,
+      @Nonnull final JsonNode value) {
 
-        return CompletableFuture.allOf(
-                customObjects
-                        .stream()
-                        .map(customObject -> ctpClient
-                                .execute(CustomObjectDeleteCommand.of(customObject, JsonNode.class)))
-                        .map(CompletionStage::toCompletableFuture)
-                        .toArray(CompletableFuture[]::new));
-    }
+    CustomObjectDraft<JsonNode> customObjectDraft =
+        CustomObjectDraft.ofUnversionedUpsert(container, key, value);
+    return ctpClient
+        .execute(CustomObjectUpsertCommand.of(customObjectDraft))
+        .toCompletableFuture()
+        .join();
+  }
 
-    /**
-     * Create a custom object in target CTP project, represented by provided {@code ctpClient}.
-     *
-     * @param ctpClient represents the CTP project the custom object will be created.
-     * @param key represents the key field required in custom object.
-     * @param container represents the container field required in custom object.
-     * @param value represents the value field required in custom object.
-     */
-    public static CustomObject<JsonNode> createCustomObject(
-            @Nonnull final SphereClient ctpClient,
-            @Nonnull final String key,
-            @Nonnull final String container,
-            @Nonnull final JsonNode value) {
+  /**
+   * This method is expected to be used only by tests, it only works on projects with less than or
+   * equal to 20 custom objects. Otherwise, it won't delete all the custom objects in the project of
+   * the client.
+   *
+   * @param ctpClient the client to delete the custom objects from.
+   */
+  public static void deleteWaitingToBeResolvedCustomObjects(
+      @Nonnull final SphereClient ctpClient, @Nonnull final Class clazz) {
 
-        CustomObjectDraft<JsonNode> customObjectDraft = CustomObjectDraft.ofUnversionedUpsert(container,key, value);
-        return ctpClient.execute(CustomObjectUpsertCommand.of(customObjectDraft)).toCompletableFuture().join();
-    }
+    final CustomObjectQuery<? extends WaitingToBeResolved> customObjectQuery =
+        CustomObjectQuery.of(clazz).byContainer(PRODUCT_CUSTOM_OBJECT_CONTAINER_KEY);
 
-    /**
-     * This method is expected to be used only by tests, it only works on projects with less than or equal to 20 custom
-     * objects. Otherwise, it won't delete all the custom objects in the project of the client.
-     *
-     * @param ctpClient the client to delete the custom objects from.
-     */
-    public static void deleteWaitingToBeResolvedCustomObjects(@Nonnull final SphereClient ctpClient,
-                                                              @Nonnull final Class clazz) {
+    PagedQueryResult<? extends CustomObject<? extends WaitingToBeResolved>> result =
+        ctpClient.execute(customObjectQuery).toCompletableFuture().join();
+    result
+        .getResults()
+        .forEach(
+            customObject ->
+                ctpClient
+                    .execute(CustomObjectDeleteCommand.of(customObject, clazz))
+                    .toCompletableFuture()
+                    .join());
+  }
 
-        final CustomObjectQuery<? extends WaitingToBeResolved> customObjectQuery =
-            CustomObjectQuery
-                .of(clazz)
-                .byContainer(PRODUCT_CUSTOM_OBJECT_CONTAINER_KEY);
+  public static void deleteWaitingToBeResolvedTransitionsCustomObjects(
+      @Nonnull final SphereClient ctpClient, @Nonnull final String customObjectKey) {
 
-        PagedQueryResult<? extends CustomObject<? extends WaitingToBeResolved>> result = ctpClient
-            .execute(customObjectQuery).toCompletableFuture().join();
-        result.getResults().forEach(customObject -> ctpClient
-            .execute(CustomObjectDeleteCommand.of(customObject, clazz)).toCompletableFuture().join());
+    final CustomObjectQuery<WaitingToBeResolvedTransitions> customObjectQuery =
+        CustomObjectQuery.of(WaitingToBeResolvedTransitions.class).byContainer(customObjectKey);
 
-    }
+    ctpClient
+        .execute(customObjectQuery)
+        .thenApply(PagedQueryResult::getResults)
+        .thenCompose(
+            customObjects ->
+                deleteWaitingToBeResolvedTransitionsCustomObjects(ctpClient, customObjects))
+        .toCompletableFuture()
+        .join();
+  }
 
-    public static void deleteWaitingToBeResolvedTransitionsCustomObjects(
-        @Nonnull final SphereClient ctpClient,
-        @Nonnull final String customObjectKey) {
+  @Nonnull
+  private static CompletableFuture<Void> deleteWaitingToBeResolvedTransitionsCustomObjects(
+      @Nonnull final SphereClient ctpClient,
+      @Nonnull final List<CustomObject<WaitingToBeResolvedTransitions>> customObjects) {
 
-        final CustomObjectQuery<WaitingToBeResolvedTransitions> customObjectQuery =
-            CustomObjectQuery
-                .of(WaitingToBeResolvedTransitions.class)
-                .byContainer(customObjectKey);
+    return CompletableFuture.allOf(
+        customObjects.stream()
+            .map(
+                customObject ->
+                    ctpClient.execute(
+                        CustomObjectDeleteCommand.of(
+                            customObject, WaitingToBeResolvedTransitions.class)))
+            .map(CompletionStage::toCompletableFuture)
+            .toArray(CompletableFuture[]::new));
+  }
 
-        ctpClient
-            .execute(customObjectQuery)
-            .thenApply(PagedQueryResult::getResults)
-            .thenCompose(customObjects -> deleteWaitingToBeResolvedTransitionsCustomObjects(ctpClient, customObjects))
-            .toCompletableFuture()
-            .join();
-    }
-
-    @Nonnull
-    private static CompletableFuture<Void> deleteWaitingToBeResolvedTransitionsCustomObjects(
-        @Nonnull final SphereClient ctpClient,
-        @Nonnull final List<CustomObject<WaitingToBeResolvedTransitions>> customObjects) {
-
-        return CompletableFuture.allOf(
-            customObjects
-                .stream()
-                .map(customObject -> ctpClient
-                    .execute(CustomObjectDeleteCommand.of(customObject, WaitingToBeResolvedTransitions.class)))
-                .map(CompletionStage::toCompletableFuture)
-                .toArray(CompletableFuture[]::new));
-    }
-
-    private CustomObjectITUtils() {
-    }
+  private CustomObjectITUtils() {}
 }
