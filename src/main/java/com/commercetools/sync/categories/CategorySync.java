@@ -201,7 +201,7 @@ public class CategorySync extends BaseSync<CategoryDraft, CategorySyncStatistics
 
                 final Map<String, String> categoryKeyToIdCache = cachingResponse.getKey();
                 prepareDraftsForProcessing(new ArrayList<>(validDrafts), categoryKeyToIdCache);
-               return createAndUpdate(newCategoryDrafts, existingCategoryDrafts ,categoryKeyToIdCache);
+                return createAndUpdate(newCategoryDrafts, existingCategoryDrafts ,categoryKeyToIdCache);
             })
             .thenApply(ignoredResult -> {
                 statistics.incrementProcessed(numberOfNewDraftsToProcess);
