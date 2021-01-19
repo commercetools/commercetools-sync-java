@@ -1,10 +1,9 @@
 package com.commercetools.sync.commons.models;
 
 import io.sphere.sdk.models.WithKey;
-
-import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.Set;
+import javax.annotation.Nonnull;
 
 public abstract class WaitingToBeResolved<T extends WithKey> {
   private Set<String> missingReferencedKeys;

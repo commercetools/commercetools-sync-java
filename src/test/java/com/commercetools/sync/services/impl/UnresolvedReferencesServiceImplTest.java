@@ -1,5 +1,18 @@
 package com.commercetools.sync.services.impl;
 
+import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY;
+import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
+import static java.lang.String.format;
+import static java.util.Collections.singleton;
+import static java.util.Collections.singletonList;
+import static java.util.concurrent.CompletableFuture.completedFuture;
+import static org.apache.commons.codec.digest.DigestUtils.sha1Hex;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedProducts;
@@ -14,29 +27,15 @@ import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
 import io.sphere.sdk.products.ProductDraft;
 import io.sphere.sdk.queries.PagedQueryResult;
 import io.sphere.sdk.utils.CompletableFutureUtils;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
-import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY;
-import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
-import static java.lang.String.format;
-import static java.util.Collections.singleton;
-import static java.util.Collections.singletonList;
-import static java.util.concurrent.CompletableFuture.completedFuture;
-import static org.apache.commons.codec.digest.DigestUtils.sha1Hex;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import javax.annotation.Nonnull;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 class UnresolvedReferencesServiceImplTest {
 

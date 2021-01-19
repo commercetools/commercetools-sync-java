@@ -1,5 +1,9 @@
 package com.commercetools.sync.services.impl;
 
+import static java.lang.String.format;
+import static java.util.stream.Collectors.toList;
+import static org.apache.commons.codec.digest.DigestUtils.sha1Hex;
+
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
@@ -10,9 +14,6 @@ import io.sphere.sdk.customobjects.commands.CustomObjectDeleteCommand;
 import io.sphere.sdk.customobjects.commands.CustomObjectUpsertCommand;
 import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
 import io.sphere.sdk.queries.QueryExecutionUtils;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
@@ -20,10 +21,8 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.stream.Collectors;
-
-import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
-import static org.apache.commons.codec.digest.DigestUtils.sha1Hex;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesService {
 

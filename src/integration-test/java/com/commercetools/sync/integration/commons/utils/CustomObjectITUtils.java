@@ -11,11 +11,10 @@ import io.sphere.sdk.customobjects.commands.CustomObjectUpsertCommand;
 import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
 import io.sphere.sdk.customobjects.queries.CustomObjectQueryBuilder;
 import io.sphere.sdk.queries.PagedQueryResult;
-
-import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import javax.annotation.Nonnull;
 
 public final class CustomObjectITUtils<T extends WaitingToBeResolved> {
 

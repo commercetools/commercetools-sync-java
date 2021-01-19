@@ -1,5 +1,21 @@
 package com.commercetools.sync.integration.externalsource.products;
 
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
+import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
+import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
+import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
+import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
+import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY;
+import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
+import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedProducts;
@@ -23,34 +39,17 @@ import io.sphere.sdk.products.commands.ProductCreateCommand;
 import io.sphere.sdk.products.commands.updateactions.SetAttributeInAllVariants;
 import io.sphere.sdk.products.queries.ProductByKeyGet;
 import io.sphere.sdk.producttypes.ProductType;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
-import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_ID_FIELD;
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.REFERENCE_TYPE_ID_FIELD;
-import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteAllProducts;
-import static com.commercetools.sync.integration.commons.utils.ProductITUtils.deleteProductSyncTestData;
-import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.createProductType;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
-import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY;
-import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
-import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
-import static org.assertj.core.api.Assertions.assertThat;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class ProductSyncWithReferencedProductsIT {
   private static ProductType productType;

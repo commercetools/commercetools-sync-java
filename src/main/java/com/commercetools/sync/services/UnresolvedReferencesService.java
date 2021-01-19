@@ -1,11 +1,10 @@
 package com.commercetools.sync.services;
 
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
-
-import javax.annotation.Nonnull;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
+import javax.annotation.Nonnull;
 
 public interface UnresolvedReferencesService {
 

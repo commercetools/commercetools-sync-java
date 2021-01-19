@@ -1,5 +1,15 @@
 package com.commercetools.sync.integration.services.impl;
 
+import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.deleteWaitingToBeResolvedCustomObjects;
+import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
+import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_SPECIAL_CHARS_RESOURCE_PATH;
+import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY;
+import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
+import static java.util.Collections.singleton;
+import static org.apache.commons.codec.digest.DigestUtils.sha1Hex;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedProducts;
 import com.commercetools.sync.products.ProductSyncOptions;
@@ -10,24 +20,13 @@ import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.queries.CustomObjectByKeyGet;
 import io.sphere.sdk.json.SphereJsonUtils;
 import io.sphere.sdk.products.ProductDraft;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-
-import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.deleteWaitingToBeResolvedCustomObjects;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
-import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_SPECIAL_CHARS_RESOURCE_PATH;
-import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY;
-import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
-import static java.util.Collections.singleton;
-import static org.apache.commons.codec.digest.DigestUtils.sha1Hex;
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class UnresolvedReferencesServiceImplIT {
 

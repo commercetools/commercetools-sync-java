@@ -1,5 +1,15 @@
 package com.commercetools.sync.products;
 
+import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
+import static com.commercetools.sync.products.utils.ProductSyncUtils.buildActions;
+import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.getAllVariants;
+import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY;
+import static java.lang.String.format;
+import static java.util.Optional.ofNullable;
+import static java.util.concurrent.CompletableFuture.allOf;
+import static java.util.function.Function.identity;
+import static java.util.stream.Collectors.toMap;
+
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.commons.exceptions.SyncException;
@@ -35,10 +45,6 @@ import io.sphere.sdk.channels.ChannelRole;
 import io.sphere.sdk.commands.UpdateAction;
 import io.sphere.sdk.products.Product;
 import io.sphere.sdk.products.ProductDraft;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -51,16 +57,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-
-import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
-import static com.commercetools.sync.products.utils.ProductSyncUtils.buildActions;
-import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.getAllVariants;
-import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY;
-import static java.lang.String.format;
-import static java.util.Optional.ofNullable;
-import static java.util.concurrent.CompletableFuture.allOf;
-import static java.util.function.Function.identity;
-import static java.util.stream.Collectors.toMap;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, ProductSyncOptions> {
   private static final String CTP_PRODUCT_FETCH_FAILED =

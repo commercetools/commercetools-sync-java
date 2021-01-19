@@ -1,35 +1,34 @@
 package com.commercetools.sync.commons.models;
 
 import io.sphere.sdk.categories.CategoryDraft;
-
-import javax.annotation.Nonnull;
 import java.util.Set;
+import javax.annotation.Nonnull;
 
-public final class WaitingToBeResolvedCategories<T extends CategoryDraft> extends WaitingToBeResolved<T> {
-    private T waitingDraft;
+public final class WaitingToBeResolvedCategories<T extends CategoryDraft>
+    extends WaitingToBeResolved<T> {
+  private T waitingDraft;
 
-    // Needed for the 'com.fasterxml.jackson' deserialization, for example, when fetching
-    // from CTP custom objects.
-    public WaitingToBeResolvedCategories() {
-    }
+  // Needed for the 'com.fasterxml.jackson' deserialization, for example, when fetching
+  // from CTP custom objects.
+  public WaitingToBeResolvedCategories() {}
 
-    public WaitingToBeResolvedCategories(@Nonnull final T draft, @Nonnull final Set<String> missingReferencedKeys) {
-        this.waitingDraft = draft;
-        this.setMissingReferencedKeys(missingReferencedKeys);
-    }
+  public WaitingToBeResolvedCategories(
+      @Nonnull final T draft, @Nonnull final Set<String> missingReferencedKeys) {
+    this.waitingDraft = draft;
+    this.setMissingReferencedKeys(missingReferencedKeys);
+  }
 
-    public void setMissingReferencedKeys(@Nonnull final Set keys) {
-        super.setMissingReferencedKeys(keys);
-    }
+  public void setMissingReferencedKeys(@Nonnull final Set keys) {
+    super.setMissingReferencedKeys(keys);
+  }
 
-    @Override
-    public void setWaitingDraft(@Nonnull final CategoryDraft draft) {
-        waitingDraft = (T) draft;
-    }
+  @Override
+  public void setWaitingDraft(@Nonnull final CategoryDraft draft) {
+    waitingDraft = (T) draft;
+  }
 
-    @Override
-    public T getWaitingDraft() {
-        return waitingDraft;
-    }
-
+  @Override
+  public T getWaitingDraft() {
+    return waitingDraft;
+  }
 }
