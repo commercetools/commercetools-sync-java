@@ -319,7 +319,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
             .stream()
             .map(ProductDraft::getKey)
             .map(key -> unresolvedReferencesService.delete(key, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
-                WaitingToBeResolved.class))
+                WaitingToBeResolvedProducts.class))
             .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
     }
