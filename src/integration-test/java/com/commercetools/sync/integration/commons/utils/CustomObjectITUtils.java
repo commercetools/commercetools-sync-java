@@ -92,10 +92,10 @@ public final class CustomObjectITUtils {
   public static void deleteWaitingToBeResolvedCustomObjects(
       @Nonnull final SphereClient ctpClient, @Nonnull final Class clazz) {
 
-    final CustomObjectQuery<? extends WaitingToBeResolved> customObjectQuery =
+    final CustomObjectQuery<WaitingToBeResolved> customObjectQuery =
         CustomObjectQuery.of(clazz).byContainer(PRODUCT_CUSTOM_OBJECT_CONTAINER_KEY);
 
-    PagedQueryResult<? extends CustomObject<? extends WaitingToBeResolved>> result =
+    PagedQueryResult<? extends CustomObject<WaitingToBeResolved>> result =
         ctpClient.execute(customObjectQuery).toCompletableFuture().join();
     result
         .getResults()
