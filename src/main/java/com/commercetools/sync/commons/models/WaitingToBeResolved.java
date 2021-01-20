@@ -20,5 +20,4 @@ public abstract class WaitingToBeResolved<T extends WithKey> {
   public void setMissingReferencedKeys(@Nonnull final Set keys) {
     missingReferencedKeys = keys;
   }
-
 }

@@ -539,9 +539,12 @@ class ProductSyncWithNestedReferencedProductsIT {
 
     final UnresolvedReferencesServiceImpl unresolvedReferencesService =
         new UnresolvedReferencesServiceImpl(syncOptions);
-        final Set<WaitingToBeResolved> waitingToBeResolvedDrafts = unresolvedReferencesService
-            .fetch(asSet(productDraftWithProductReference.getKey()), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
-                WaitingToBeResolvedProducts.class )
+    final Set<WaitingToBeResolved> waitingToBeResolvedDrafts =
+        unresolvedReferencesService
+            .fetch(
+                asSet(productDraftWithProductReference.getKey()),
+                CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                WaitingToBeResolvedProducts.class)
             .toCompletableFuture()
             .join();
 
@@ -682,17 +685,21 @@ class ProductSyncWithNestedReferencedProductsIT {
 
     final UnresolvedReferencesServiceImpl unresolvedReferencesService =
         new UnresolvedReferencesServiceImpl(syncOptions);
-        final Set<WaitingToBeResolved> waitingToBeResolvedDrafts = unresolvedReferencesService
-            .fetch(asSet(productDraftWithProductReference.getKey()), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
-                WaitingToBeResolvedProducts.class )
+    final Set<WaitingToBeResolved> waitingToBeResolvedDrafts =
+        unresolvedReferencesService
+            .fetch(
+                asSet(productDraftWithProductReference.getKey()),
+                CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                WaitingToBeResolvedProducts.class)
             .toCompletableFuture()
             .join();
 
     assertThat(waitingToBeResolvedDrafts)
-            .hasOnlyOneElementSatisfying(waitingToBeResolvedDraft -> {
-                assertThat(waitingToBeResolvedDraft.getWaitingDraft().getKey())
+        .hasOnlyOneElementSatisfying(
+            waitingToBeResolvedDraft -> {
+              assertThat(waitingToBeResolvedDraft.getWaitingDraft().getKey())
                   .isEqualTo(productDraftWithProductReference.getKey());
-                assertThat(waitingToBeResolvedDraft.getMissingReferencedKeys())
+              assertThat(waitingToBeResolvedDraft.getMissingReferencedKeys())
                   .containsExactly("nonExistingKey");
             });
   }

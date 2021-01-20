@@ -862,16 +862,19 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
     final UnresolvedReferencesService unresolvedReferencesService =
         new UnresolvedReferencesServiceImpl(syncOptions);
 
-        final Set<WaitingToBeResolved> waitingDrafts = unresolvedReferencesService
-            .fetch(asSet(childDraft1.getKey(), childDraft2.getKey()), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+    final Set<WaitingToBeResolved> waitingDrafts =
+        unresolvedReferencesService
+            .fetch(
+                asSet(childDraft1.getKey(), childDraft2.getKey()),
+                CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
                 WaitingToBeResolvedProducts.class)
             .toCompletableFuture()
             .join();
 
-        assertThat(waitingDrafts).containsExactlyInAnyOrder(
+    assertThat(waitingDrafts)
+        .containsExactlyInAnyOrder(
             new WaitingToBeResolvedProducts(childDraft1, singleton(parentProductKey)),
-            new WaitingToBeResolvedProducts(childDraft2, singleton(parentProductKey))
-        );
+            new WaitingToBeResolvedProducts(childDraft2, singleton(parentProductKey)));
   }
 
   @SuppressWarnings("unchecked")
@@ -948,13 +951,16 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
     final UnresolvedReferencesService unresolvedReferencesService =
         new UnresolvedReferencesServiceImpl(syncOptions);
 
-        final Set<WaitingToBeResolved> waitingDrafts = unresolvedReferencesService
-            .fetch(asSet(childDraft1.getKey()), CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingToBeResolvedProducts.class )
+    final Set<WaitingToBeResolved> waitingDrafts =
+        unresolvedReferencesService
+            .fetch(
+                asSet(childDraft1.getKey()),
+                CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                WaitingToBeResolvedProducts.class)
             .toCompletableFuture()
             .join();
 
-        assertThat(waitingDrafts).containsExactly(
-            new WaitingToBeResolvedProducts(childDraft1, singleton(parentProductKey))
-        );
+    assertThat(waitingDrafts)
+        .containsExactly(new WaitingToBeResolvedProducts(childDraft1, singleton(parentProductKey)));
   }
 }

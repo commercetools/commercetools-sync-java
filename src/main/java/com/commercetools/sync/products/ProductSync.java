@@ -266,12 +266,12 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
       @Nonnull final ProductDraft newProduct,
       @Nonnull final Set<String> missingReferencedProductKeys) {
 
-        missingReferencedProductKeys.forEach(missingParentKey ->
-            statistics.addMissingDependency(missingParentKey, newProduct.getKey()));
-        return unresolvedReferencesService.save(new WaitingToBeResolvedProducts(
-             newProduct, missingReferencedProductKeys),
-            CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
-            WaitingToBeResolvedProducts.class);
+    missingReferencedProductKeys.forEach(
+        missingParentKey -> statistics.addMissingDependency(missingParentKey, newProduct.getKey()));
+    return unresolvedReferencesService.save(
+        new WaitingToBeResolvedProducts(newProduct, missingReferencedProductKeys),
+        CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+        WaitingToBeResolvedProducts.class);
   }
 
   @Nonnull
@@ -296,7 +296,10 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     final Set<WaitingToBeResolved> waitingDraftsToBeUpdated = new HashSet<>();
 
     return unresolvedReferencesService
-            .fetch(referencingDraftKeys, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingToBeResolvedProducts.class )
+        .fetch(
+            referencingDraftKeys,
+            CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+            WaitingToBeResolvedProducts.class)
         .handle(ImmutablePair::new)
         .thenCompose(
             fetchResponse -> {
@@ -311,13 +314,14 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                 return CompletableFuture.completedFuture(null);
               }
 
-                waitingDrafts
-                    .forEach(waitingDraft -> {
-                        final Set<String> missingReferencedProductKeys = waitingDraft.getMissingReferencedKeys();
-                        missingReferencedProductKeys.removeAll(readyToResolve);
+              waitingDrafts.forEach(
+                  waitingDraft -> {
+                    final Set<String> missingReferencedProductKeys =
+                        waitingDraft.getMissingReferencedKeys();
+                    missingReferencedProductKeys.removeAll(readyToResolve);
 
                     if (missingReferencedProductKeys.isEmpty()) {
-                            readyToSync.add((ProductDraft) waitingDraft.getWaitingDraft());
+                      readyToSync.add((ProductDraft) waitingDraft.getWaitingDraft());
                     } else {
                       waitingDraftsToBeUpdated.add(waitingDraft);
                     }
@@ -333,10 +337,14 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
   private CompletableFuture<Void> updateWaitingDrafts(
       @Nonnull final Set<WaitingToBeResolved> waitingDraftsToBeUpdated) {
 
-        return allOf(waitingDraftsToBeUpdated
-            .stream()
-            .map(draft -> unresolvedReferencesService.save(draft, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
-                WaitingToBeResolvedProducts.class))
+    return allOf(
+        waitingDraftsToBeUpdated.stream()
+            .map(
+                draft ->
+                    unresolvedReferencesService.save(
+                        draft,
+                        CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                        WaitingToBeResolvedProducts.class))
             .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
   }
@@ -346,8 +354,12 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     return allOf(
         drafts.stream()
             .map(ProductDraft::getKey)
-            .map(key -> unresolvedReferencesService.delete(key, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
-                WaitingToBeResolvedProducts.class))
+            .map(
+                key ->
+                    unresolvedReferencesService.delete(
+                        key,
+                        CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                        WaitingToBeResolvedProducts.class))
             .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
   }

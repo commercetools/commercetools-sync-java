@@ -98,8 +98,12 @@ class CleanupUnresolvedReferenceCustomObjectsIT {
     CompletableFuture.allOf(
             CompletableFuture.allOf(
                 productUnresolvedReferences.stream()
-                    .map(draft-> unresolvedReferencesService.save(draft,CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
-                            WaitingToBeResolvedProducts.class))
+                    .map(
+                        draft ->
+                            unresolvedReferencesService.save(
+                                draft,
+                                CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                                WaitingToBeResolvedProducts.class))
                     .map(CompletionStage::toCompletableFuture)
                     .toArray(CompletableFuture[]::new)),
             CompletableFuture.allOf(

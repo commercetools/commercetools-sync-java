@@ -57,7 +57,7 @@ public final class ProductITUtils {
     deleteStates(ctpClient);
     deleteTaxCategories(ctpClient);
     deleteCustomerGroups(ctpClient);
-        deleteWaitingToBeResolvedCustomObjects(ctpClient, WaitingToBeResolvedProducts.class);
+    deleteWaitingToBeResolvedCustomObjects(ctpClient, WaitingToBeResolvedProducts.class);
   }
 
   /**
