@@ -551,7 +551,7 @@ class ProductSyncWithNestedReferencedProductsIT {
     assertThat(waitingToBeResolvedDrafts)
         .hasOnlyOneElementSatisfying(
             waitingToBeResolvedDraft -> {
-              assertThat(waitingToBeResolvedDraft.getWaitingDraft().getKey())
+              assertThat(waitingToBeResolvedDraft.fetchWaitingDraft().getKey())
                   .isEqualTo(productDraftWithProductReference.getKey());
               assertThat(waitingToBeResolvedDraft.getMissingReferencedKeys())
                   .containsExactly("nonExistingKey");
@@ -697,7 +697,7 @@ class ProductSyncWithNestedReferencedProductsIT {
     assertThat(waitingToBeResolvedDrafts)
         .hasOnlyOneElementSatisfying(
             waitingToBeResolvedDraft -> {
-              assertThat(waitingToBeResolvedDraft.getWaitingDraft().getKey())
+              assertThat(waitingToBeResolvedDraft.fetchWaitingDraft().getKey())
                   .isEqualTo(productDraftWithProductReference.getKey());
               assertThat(waitingToBeResolvedDraft.getMissingReferencedKeys())
                   .containsExactly("nonExistingKey");

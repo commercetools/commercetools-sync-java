@@ -321,7 +321,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                     missingReferencedProductKeys.removeAll(readyToResolve);
 
                     if (missingReferencedProductKeys.isEmpty()) {
-                      readyToSync.add((ProductDraft) waitingDraft.getWaitingDraft());
+                      readyToSync.add((ProductDraft) waitingDraft.fetchWaitingDraft());
                     } else {
                       waitingDraftsToBeUpdated.add(waitingDraft);
                     }

@@ -28,7 +28,7 @@ public final class WaitingToBeResolvedCategories<T extends CategoryDraft>
   }
 
   @Override
-  public T getWaitingDraft() {
+  public T fetchWaitingDraft() {
     return waitingDraft;
   }
 }

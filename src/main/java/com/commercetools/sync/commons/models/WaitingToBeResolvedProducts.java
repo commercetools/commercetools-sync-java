@@ -28,7 +28,7 @@ public final class WaitingToBeResolvedProducts<T extends ProductDraft>
   }
 
   @Override
-  public T getWaitingDraft() {
+  public T fetchWaitingDraft() {
     return waitingDraft;
   }
 }

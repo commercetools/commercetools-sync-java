@@ -26,7 +26,7 @@ class WaitingToBeResolvedTest {
     waitingToBeResolved.setWaitingDraft(productDraft);
 
     // assertions
-    assertThat(waitingToBeResolved.getWaitingDraft()).isEqualTo(productDraft);
+    assertThat(waitingToBeResolved.fetchWaitingDraft()).isEqualTo(productDraft);
   }
 
   @Test

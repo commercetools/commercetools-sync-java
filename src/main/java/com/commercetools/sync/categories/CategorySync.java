@@ -508,7 +508,7 @@ public class CategorySync
               // waitingdraft with resolved categories was fetched
               waitingDrafts.forEach(
                   draft -> {
-                    final CategoryDraft categoryDraft = (CategoryDraft) draft.getWaitingDraft();
+                    final CategoryDraft categoryDraft = (CategoryDraft) draft.fetchWaitingDraft();
                     readyToSync.add(categoryDraft);
                   });
               return readyToSync;

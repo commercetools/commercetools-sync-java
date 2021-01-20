@@ -87,7 +87,7 @@ class UnresolvedReferencesServiceImplIT {
     assertThat(result)
         .hasValueSatisfying(
             waitingToBeResolved ->
-                assertThat(waitingToBeResolved.getWaitingDraft()).isEqualTo(productDraft));
+                assertThat(waitingToBeResolved.fetchWaitingDraft()).isEqualTo(productDraft));
 
     // test
     final Set<WaitingToBeResolved> waitingDrafts =
@@ -116,7 +116,7 @@ class UnresolvedReferencesServiceImplIT {
     assertThat(deletionResult)
         .hasValueSatisfying(
             waitingToBeResolved ->
-                assertThat(waitingToBeResolved.getWaitingDraft()).isEqualTo(productDraft));
+                assertThat(waitingToBeResolved.fetchWaitingDraft()).isEqualTo(productDraft));
 
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
@@ -147,7 +147,7 @@ class UnresolvedReferencesServiceImplIT {
     assertThat(result)
         .hasValueSatisfying(
             waitingToBeResolved ->
-                assertThat(waitingToBeResolved.getWaitingDraft()).isEqualTo(productDraft));
+                assertThat(waitingToBeResolved.fetchWaitingDraft()).isEqualTo(productDraft));
 
     // test
     final CustomObjectByKeyGet<WaitingToBeResolvedProducts> customObjectByKeyGet =
@@ -187,7 +187,7 @@ class UnresolvedReferencesServiceImplIT {
     assertThat(deletionResult)
         .hasValueSatisfying(
             waitingToBeResolved ->
-                assertThat(waitingToBeResolved.getWaitingDraft()).isEqualTo(productDraft));
+                assertThat(waitingToBeResolved.fetchWaitingDraft()).isEqualTo(productDraft));
 
     assertThat(errorCallBackMessages).isEmpty();
     assertThat(warningCallBackMessages).isEmpty();
@@ -228,7 +228,7 @@ class UnresolvedReferencesServiceImplIT {
     assertThat(latestResult)
         .hasValueSatisfying(
             waitingToBeResolved -> {
-              assertThat(waitingToBeResolved.getWaitingDraft()).isEqualTo(productDraft);
+              assertThat(waitingToBeResolved.fetchWaitingDraft()).isEqualTo(productDraft);
               assertThat(waitingToBeResolved.getMissingReferencedKeys())
                   .isEqualTo(productDraftWithUnresolvedNewRefs.getMissingReferencedKeys());
             });
