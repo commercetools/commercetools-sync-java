@@ -53,7 +53,7 @@ public class CategorySync
       "Failed to process the CategoryDraft with key: '%s'. Reason: %s";
   private static final String UPDATE_FAILED =
       "Failed to update Category with key: '%s'. Reason: %s";
-  private static final String FAILED_TO_FETCH_WAITING_DRAFTS=
+  private static final String FAILED_TO_FETCH_WAITING_DRAFTS =
       "Failed to fetch categoryDraft waiting to be resolved with parentkeys '%s'.";
   private final CategoryService categoryService;
   private final UnresolvedReferencesService unresolvedReferencesService;
@@ -323,31 +323,33 @@ public class CategorySync
     for (CategoryDraft draft : categoryDrafts) {
       final String categoryKey = draft.getKey();
       try {
-        checkParentCategoriesAndKeepTrack(draft, keyToIdCache).ifPresent(
-                categoryDraft -> {referenceResolver
-                        .resolveReferences(categoryDraft)
-                        .thenAccept(
-                            referencesResolvedDraft -> {
-                              referencesResolvedDrafts.add(referencesResolvedDraft);
-                              if (keyToIdCache.containsKey(categoryKey)) {
-                                existingCategoryDrafts.add(referencesResolvedDraft);
-                              } else {
-                                newCategoryDrafts.add(referencesResolvedDraft);
-                              }
-                            })
-                        .exceptionally(
-                            completionException -> {
-                              final String errorMessage =
-                                  format(
-                                      FAILED_TO_PROCESS,
-                                      categoryKey,
-                                      completionException.getMessage());
-                              handleError(errorMessage, completionException);
-                              return null;
-                            })
-                        .toCompletableFuture()
-                        .join();
-                  });
+        checkParentCategoriesAndKeepTrack(draft, keyToIdCache)
+            .ifPresent(
+                categoryDraft -> {
+                  referenceResolver
+                      .resolveReferences(categoryDraft)
+                      .thenAccept(
+                          referencesResolvedDraft -> {
+                            referencesResolvedDrafts.add(referencesResolvedDraft);
+                            if (keyToIdCache.containsKey(categoryKey)) {
+                              existingCategoryDrafts.add(referencesResolvedDraft);
+                            } else {
+                              newCategoryDrafts.add(referencesResolvedDraft);
+                            }
+                          })
+                      .exceptionally(
+                          completionException -> {
+                            final String errorMessage =
+                                format(
+                                    FAILED_TO_PROCESS,
+                                    categoryKey,
+                                    completionException.getMessage());
+                            handleError(errorMessage, completionException);
+                            return null;
+                          })
+                      .toCompletableFuture()
+                      .join();
+                });
       } catch (Exception exception) {
         final String errorMessage = format(FAILED_TO_PROCESS, categoryKey, exception);
         handleError(errorMessage, exception);
@@ -491,7 +493,7 @@ public class CategorySync
               if (fetchException != null) {
                 final String errorMessage =
                     format(
-                            FAILED_TO_FETCH_WAITING_DRAFTS,
+                        FAILED_TO_FETCH_WAITING_DRAFTS,
                         String.join(",", resolvableCategoryKeys.toString()));
                 handleError(errorMessage, new SyncException(errorMessage, fetchException));
                 return readyToSync;
