@@ -83,14 +83,11 @@ public class CategorySync
       new ConcurrentHashMap<>();
 
   /**
-   * The following sets ({@code existingCategoryDrafts}, {@code newCategoryDrafts}, {@code
-   * referencesResolvedDrafts} and {@code categoryKeysToFetch}) are not thread-safe because they are
+   * The following set {@code referencesResolvedDrafts} is not thread-safe because they are
    * accessed/modified in a non-concurrent/sequential context. They have a local scope within every
    * batch execution, which means that they are re-initialized on every {@link #processBatch(List)}
    * call.
    */
-  private Set<CategoryDraft> newCategoryDrafts = new HashSet<>();
-
   private Set<CategoryDraft> referencesResolvedDrafts = new HashSet<>();
 
   /**
