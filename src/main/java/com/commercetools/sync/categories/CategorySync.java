@@ -54,7 +54,7 @@ public class CategorySync
   private static final String UPDATE_FAILED =
       "Failed to update Category with key: '%s'. Reason: %s";
   private static final String FAILED_TO_FETCH_WAITING_DRAFTS =
-      "Failed to fetch categoryDraft waiting to be resolved with parentkeys '%s'.";
+      "Failed to fetch CategoryDraft waiting to be resolved with parent keys: '%s'.";
   private final CategoryService categoryService;
   private final UnresolvedReferencesService unresolvedReferencesService;
   private final CategoryReferenceResolver referenceResolver;
