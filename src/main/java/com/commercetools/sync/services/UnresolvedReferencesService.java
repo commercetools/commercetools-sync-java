@@ -19,7 +19,6 @@ public interface UnresolvedReferencesService {
    *     contains a {@link Set} that contains the matching drafts if any exist, otherwise empty.
    */
   @Nonnull
-
   CompletionStage<Set<WaitingToBeResolved>> fetch(
       @Nonnull final Set<String> keys,
       @Nonnull final String containerKey,
@@ -46,7 +45,7 @@ public interface UnresolvedReferencesService {
    * @param key the key of the product draft to delete from persistence.
    * @param containerKey the key of the container, which contains the persisted draft
    * @param clazz Class of the object contained by custom object
-  * @return a {@link CompletionStage} containing an optional with the deleted resource if
+   * @return a {@link CompletionStage} containing an optional with the deleted resource if
    *     successful otherwise an empty optional.
    */
   @Nonnull

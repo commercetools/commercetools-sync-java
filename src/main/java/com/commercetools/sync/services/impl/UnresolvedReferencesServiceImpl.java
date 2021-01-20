@@ -3,6 +3,7 @@ package com.commercetools.sync.services.impl;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.codec.digest.DigestUtils.sha1Hex;
+
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
@@ -25,7 +26,6 @@ import javax.annotation.Nullable;
 
 public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesService {
 
-
   private final BaseSyncOptions syncOptions;
 
   private static final String SAVE_FAILED =
@@ -38,7 +38,8 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
   public static final String CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY =
       "commercetools-sync-java.UnresolvedReferencesService.categoryDrafts";
 
-  public UnresolvedReferencesServiceImpl(@Nonnull final BaseSyncOptions baseSyncOptions) { this.syncOptions = baseSyncOptions;
+  public UnresolvedReferencesServiceImpl(@Nonnull final BaseSyncOptions baseSyncOptions) {
+    this.syncOptions = baseSyncOptions;
   }
 
   @Nonnull
@@ -78,9 +79,7 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
       @Nonnull final Class clazz) {
     final CustomObjectDraft<WaitingToBeResolved> customObjectDraft =
         CustomObjectDraft.ofUnversionedUpsert(
-            containerKey, hash(draft.getWaitingDraft().getKey()),
-            draft,
-            WaitingToBeResolved.class);
+            containerKey, hash(draft.getWaitingDraft().getKey()), draft, WaitingToBeResolved.class);
 
     return syncOptions
         .getCtpClient()

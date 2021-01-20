@@ -13,8 +13,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nonnull;
-
 import javax.annotation.Nullable;
+
 public class CategorySyncStatistics extends BaseSyncStatistics {
 
   /**
@@ -133,10 +133,8 @@ public class CategorySyncStatistics extends BaseSyncStatistics {
     categoryKeysWithMissingParents.forEach((key, value) -> value.remove(childCategoryKey));
   }
 
-
   @Nullable
   public Set<String> removeAndGetChildrenKeys(@Nonnull final String key) {
     return categoryKeysWithMissingParents.remove(key);
   }
-
 }

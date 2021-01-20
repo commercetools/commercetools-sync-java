@@ -831,7 +831,6 @@ class CategorySyncIT {
 
     assertThat(syncStatistics).hasValues(2, 1, 0, 1);
 
-
     final Map<String, Set<String>> categoryKeysWithMissingParents =
         syncStatistics.getCategoryKeysWithMissingParents();
     assertThat(categoryKeysWithMissingParents).hasSize(1);
