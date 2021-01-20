@@ -652,8 +652,7 @@ class CategorySyncIT {
   }
 
   @Test
-  void syncDrafts_WithSameSlugDraft_ShouldNotSyncIt()
-      throws ExecutionException, InterruptedException {
+  void syncDrafts_WithSameSlugDraft_ShouldNotSyncIt() {
     final List<CategoryDraft> newCategoryDrafts = new ArrayList<>();
 
     // Category draft coming from external source.
