@@ -13,69 +13,71 @@ import io.sphere.sdk.channels.expansion.ChannelExpansionModel;
 import io.sphere.sdk.channels.queries.ChannelQuery;
 import io.sphere.sdk.channels.queries.ChannelQueryBuilder;
 import io.sphere.sdk.channels.queries.ChannelQueryModel;
-
-import javax.annotation.Nonnull;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
+import javax.annotation.Nonnull;
 
+public final class ChannelServiceImpl
+    extends BaseServiceWithKey<
+        ChannelDraft,
+        Channel,
+        BaseSyncOptions,
+        ChannelQuery,
+        ChannelQueryModel,
+        ChannelExpansionModel<Channel>>
+    implements ChannelService {
 
-public final class ChannelServiceImpl extends BaseServiceWithKey<ChannelDraft, Channel, BaseSyncOptions, ChannelQuery,
-    ChannelQueryModel, ChannelExpansionModel<Channel>> implements ChannelService {
+  private final Set<ChannelRole> channelRoles;
 
-    private final Set<ChannelRole> channelRoles;
+  public ChannelServiceImpl(
+      @Nonnull final BaseSyncOptions syncOptions, @Nonnull final Set<ChannelRole> channelRoles) {
+    super(syncOptions);
+    this.channelRoles = channelRoles;
+  }
 
+  @Nonnull
+  @Override
+  public CompletionStage<Map<String, String>> cacheKeysToIds(
+      @Nonnull final Set<String> channelKeys) {
 
-    public ChannelServiceImpl(
-        @Nonnull final BaseSyncOptions syncOptions,
-        @Nonnull final Set<ChannelRole> channelRoles) {
-        super(syncOptions);
-        this.channelRoles = channelRoles;
-    }
+    return cacheKeysToIds(
+        channelKeys,
+        keysNotCached ->
+            new ResourceKeyIdGraphQlRequest(keysNotCached, GraphQlQueryResources.CHANNELS));
+  }
 
-    @Nonnull
-    @Override
-    public CompletionStage<Map<String, String>> cacheKeysToIds(@Nonnull final Set<String> channelKeys) {
+  @Nonnull
+  @Override
+  public CompletionStage<Optional<String>> fetchCachedChannelId(@Nonnull final String key) {
 
-        return cacheKeysToIds(
-            channelKeys,
-            keysNotCached -> new ResourceKeyIdGraphQlRequest(keysNotCached, GraphQlQueryResources.CHANNELS));
-    }
-
-    @Nonnull
-    @Override
-    public CompletionStage<Optional<String>> fetchCachedChannelId(@Nonnull final String key) {
-
-        return fetchCachedResourceId(
-            key,
-            () -> ChannelQueryBuilder
-                .of()
+    return fetchCachedResourceId(
+        key,
+        () ->
+            ChannelQueryBuilder.of()
                 .plusPredicates(queryModel -> queryModel.key().is(key))
                 .build());
+  }
 
-    }
+  @Nonnull
+  @Override
+  public CompletionStage<Optional<Channel>> createChannel(@Nonnull final String key) {
 
-    @Nonnull
-    @Override
-    public CompletionStage<Optional<Channel>> createChannel(@Nonnull final String key) {
+    final ChannelDraft draft = ChannelDraftBuilder.of(key).roles(channelRoles).build();
 
-        final ChannelDraft draft = ChannelDraftBuilder
-            .of(key)
-            .roles(channelRoles)
-            .build();
+    return createResource(draft, ChannelCreateCommand::of);
+  }
 
-        return createResource(draft, ChannelCreateCommand::of);
-    }
+  @Nonnull
+  @Override
+  public CompletionStage<Optional<Channel>> createAndCacheChannel(@Nonnull final String key) {
 
-    @Nonnull
-    @Override
-    public CompletionStage<Optional<Channel>> createAndCacheChannel(@Nonnull final String key) {
-
-        return createChannel(key)
-            .thenApply(channelOptional -> {
-                channelOptional.ifPresent(channel -> keyToIdCache.put(key, channel.getId()));
-                return channelOptional;
+    return createChannel(key)
+        .thenApply(
+            channelOptional -> {
+              channelOptional.ifPresent(channel -> keyToIdCache.put(key, channel.getId()));
+              return channelOptional;
             });
-    }
+  }
 }

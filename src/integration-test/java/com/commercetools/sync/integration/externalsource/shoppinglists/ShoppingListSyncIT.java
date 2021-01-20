@@ -1,5 +1,16 @@
 package com.commercetools.sync.integration.externalsource.shoppinglists;
 
+import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
+import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.buildIngredientCustomType;
+import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.buildUtensilsCustomType;
+import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.createSampleShoppingListCarrotCake;
+import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.deleteShoppingListTestData;
+import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
+import static com.commercetools.sync.shoppinglists.utils.ShoppingListReferenceResolutionUtils.buildShoppingListQuery;
+import static java.util.Collections.singletonList;
+import static java.util.stream.Collectors.toList;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.commercetools.sync.shoppinglists.ShoppingListSync;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptions;
 import com.commercetools.sync.shoppinglists.ShoppingListSyncOptionsBuilder;
@@ -33,322 +44,340 @@ import io.sphere.sdk.shoppinglists.commands.updateactions.SetSlug;
 import io.sphere.sdk.shoppinglists.commands.updateactions.SetTextLineItemCustomField;
 import io.sphere.sdk.shoppinglists.commands.updateactions.SetTextLineItemDescription;
 import io.sphere.sdk.types.CustomFieldsDraft;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import javax.annotation.Nonnull;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.buildIngredientCustomType;
-import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.buildUtensilsCustomType;
-import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.createSampleShoppingListCarrotCake;
-import static com.commercetools.sync.integration.commons.utils.ShoppingListITUtils.deleteShoppingListTestData;
-import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
-import static com.commercetools.sync.shoppinglists.utils.ShoppingListReferenceResolutionUtils.buildShoppingListQuery;
-import static java.util.Collections.singletonList;
-import static java.util.stream.Collectors.toList;
-import static org.assertj.core.api.Assertions.assertThat;
+import javax.annotation.Nonnull;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 class ShoppingListSyncIT {
 
-    private List<String> errorMessages;
-    private List<String> warningMessages;
-    private List<Throwable> exceptions;
-    private List<UpdateAction<ShoppingList>> updateActionList;
+  private List<String> errorMessages;
+  private List<String> warningMessages;
+  private List<Throwable> exceptions;
+  private List<UpdateAction<ShoppingList>> updateActionList;
 
-    private ShoppingList shoppingListSampleCarrotCake;
-    private ShoppingListDraft shoppingListDraftSampleCarrotCake;
-    private ShoppingListSync shoppingListSync;
+  private ShoppingList shoppingListSampleCarrotCake;
+  private ShoppingListDraft shoppingListDraftSampleCarrotCake;
+  private ShoppingListSync shoppingListSync;
 
-    @BeforeEach
-    void setup() {
-        deleteShoppingListTestData(CTP_TARGET_CLIENT);
-        setUpShoppingListSync();
+  @BeforeEach
+  void setup() {
+    deleteShoppingListTestData(CTP_TARGET_CLIENT);
+    setUpShoppingListSync();
 
-        final ImmutablePair<ShoppingList, ShoppingListDraft> sampleShoppingListCarrotCake
-            = createSampleShoppingListCarrotCake(CTP_TARGET_CLIENT);
+    final ImmutablePair<ShoppingList, ShoppingListDraft> sampleShoppingListCarrotCake =
+        createSampleShoppingListCarrotCake(CTP_TARGET_CLIENT);
 
-        shoppingListSampleCarrotCake = sampleShoppingListCarrotCake.getLeft();
-        shoppingListDraftSampleCarrotCake = sampleShoppingListCarrotCake.getRight();
-    }
+    shoppingListSampleCarrotCake = sampleShoppingListCarrotCake.getLeft();
+    shoppingListDraftSampleCarrotCake = sampleShoppingListCarrotCake.getRight();
+  }
 
-    private void setUpShoppingListSync() {
-        errorMessages = new ArrayList<>();
-        warningMessages = new ArrayList<>();
-        exceptions = new ArrayList<>();
-        updateActionList = new ArrayList<>();
+  private void setUpShoppingListSync() {
+    errorMessages = new ArrayList<>();
+    warningMessages = new ArrayList<>();
+    exceptions = new ArrayList<>();
+    updateActionList = new ArrayList<>();
 
-        final ShoppingListSyncOptions shoppingListSyncOptions = ShoppingListSyncOptionsBuilder
-            .of(CTP_TARGET_CLIENT)
-            .errorCallback((exception, oldResource, newResource, actions) -> {
-                errorMessages.add(exception.getMessage());
-                exceptions.add(exception);
-            })
-            .warningCallback((exception, oldResource, newResource)
-                -> warningMessages.add(exception.getMessage()))
-            .beforeUpdateCallback((updateActions, customerDraft, customer) -> {
-                updateActionList.addAll(Objects.requireNonNull(updateActions));
-                return updateActions;
-            })
+    final ShoppingListSyncOptions shoppingListSyncOptions =
+        ShoppingListSyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+            .errorCallback(
+                (exception, oldResource, newResource, actions) -> {
+                  errorMessages.add(exception.getMessage());
+                  exceptions.add(exception);
+                })
+            .warningCallback(
+                (exception, oldResource, newResource) ->
+                    warningMessages.add(exception.getMessage()))
+            .beforeUpdateCallback(
+                (updateActions, customerDraft, customer) -> {
+                  updateActionList.addAll(Objects.requireNonNull(updateActions));
+                  return updateActions;
+                })
             .build();
 
-        shoppingListSync = new ShoppingListSync(shoppingListSyncOptions);
-    }
+    shoppingListSync = new ShoppingListSync(shoppingListSyncOptions);
+  }
 
-    @AfterAll
-    static void tearDown() {
-        deleteShoppingListTestData(CTP_TARGET_CLIENT);
-    }
+  @AfterAll
+  static void tearDown() {
+    deleteShoppingListTestData(CTP_TARGET_CLIENT);
+  }
 
-    @Test
-    void sync_WithSameShoppingList_ShouldNotUpdateShoppingList() {
-        final ShoppingListSyncStatistics shoppingListSyncStatistics = shoppingListSync
+  @Test
+  void sync_WithSameShoppingList_ShouldNotUpdateShoppingList() {
+    final ShoppingListSyncStatistics shoppingListSyncStatistics =
+        shoppingListSync
             .sync(singletonList(shoppingListDraftSampleCarrotCake))
             .toCompletableFuture()
             .join();
 
-        assertThat(errorMessages).isEmpty();
-        assertThat(warningMessages).isEmpty();
-        assertThat(exceptions).isEmpty();
-        assertThat(shoppingListSyncStatistics).hasValues(1, 0, 0, 0);
-        assertThat(shoppingListSyncStatistics
-            .getReportMessage())
-            .isEqualTo("Summary: 1 shopping lists were processed in total "
+    assertThat(errorMessages).isEmpty();
+    assertThat(warningMessages).isEmpty();
+    assertThat(exceptions).isEmpty();
+    assertThat(shoppingListSyncStatistics).hasValues(1, 0, 0, 0);
+    assertThat(shoppingListSyncStatistics.getReportMessage())
+        .isEqualTo(
+            "Summary: 1 shopping lists were processed in total "
                 + "(0 created, 0 updated and 0 failed to sync).");
-    }
+  }
 
-    @Test
-    void sync_WithModifiedShoppingList_ShouldUpdateShoppingList() {
-        final ShoppingListDraft modifiedShoppingListDraft = prepareUpdatedDraft();
+  @Test
+  void sync_WithModifiedShoppingList_ShouldUpdateShoppingList() {
+    final ShoppingListDraft modifiedShoppingListDraft = prepareUpdatedDraft();
 
-        final ShoppingListSyncStatistics shoppingListSyncStatistics = shoppingListSync
+    final ShoppingListSyncStatistics shoppingListSyncStatistics =
+        shoppingListSync
             .sync(singletonList(modifiedShoppingListDraft))
             .toCompletableFuture()
             .join();
 
-        assertThat(errorMessages).isEmpty();
-        assertThat(warningMessages).isEmpty();
-        assertThat(exceptions).isEmpty();
+    assertThat(errorMessages).isEmpty();
+    assertThat(warningMessages).isEmpty();
+    assertThat(exceptions).isEmpty();
 
-        assertUpdateActions();
+    assertUpdateActions();
 
-        assertThat(shoppingListSyncStatistics).hasValues(1, 0, 1, 0);
-        assertThat(shoppingListSyncStatistics
-            .getReportMessage())
-            .isEqualTo("Summary: 1 shopping lists were processed in total "
+    assertThat(shoppingListSyncStatistics).hasValues(1, 0, 1, 0);
+    assertThat(shoppingListSyncStatistics.getReportMessage())
+        .isEqualTo(
+            "Summary: 1 shopping lists were processed in total "
                 + "(0 created, 1 updated and 0 failed to sync).");
 
-        assertShoppingListUpdatedCorrectly(modifiedShoppingListDraft);
-    }
+    assertShoppingListUpdatedCorrectly(modifiedShoppingListDraft);
+  }
 
-    /**
-     * To understand the reasoning behind the ordering changes, it would be useful to check
-     * `docs/adr/0002-shopping-lists-lineitem-and-textlineitem-update-actions.md`
-     */
-    @Nonnull
-    private ShoppingListDraft prepareUpdatedDraft() {
-        final List<LineItemDraft> newLineItemDrafts = new ArrayList<>();
-        final LineItemDraft updatedLineItemDraft = LineItemDraftBuilder
-            .ofSku("SKU-3", 2L) // was 1
+  /**
+   * To understand the reasoning behind the ordering changes, it would be useful to check
+   * `docs/adr/0002-shopping-lists-lineitem-and-textlineitem-update-actions.md`
+   */
+  @Nonnull
+  private ShoppingListDraft prepareUpdatedDraft() {
+    final List<LineItemDraft> newLineItemDrafts = new ArrayList<>();
+    final LineItemDraft updatedLineItemDraft =
+        LineItemDraftBuilder.ofSku("SKU-3", 2L) // was 1
             .custom(buildIngredientCustomType("sugar", "150g")) // was 100g
             .addedAt(ZonedDateTime.now())
             .build();
 
-        final LineItemDraft newLineItemDraft = LineItemDraftBuilder
-            .ofSku("SKU-5", 1L)
+    final LineItemDraft newLineItemDraft =
+        LineItemDraftBuilder.ofSku("SKU-5", 1L)
             .custom(buildIngredientCustomType("nuts", "100g"))
             .addedAt(ZonedDateTime.parse("2020-11-05T10:00:00.000Z"))
             .build();
 
-        for (int i = 0; i < Objects.requireNonNull(shoppingListDraftSampleCarrotCake.getLineItems()).size(); i++) {
-            if (i == 2) {
-                newLineItemDrafts.add(updatedLineItemDraft);
-                continue;
-            }
+    for (int i = 0;
+        i < Objects.requireNonNull(shoppingListDraftSampleCarrotCake.getLineItems()).size();
+        i++) {
+      if (i == 2) {
+        newLineItemDrafts.add(updatedLineItemDraft);
+        continue;
+      }
 
-            if (i == 4) {
-                newLineItemDrafts.add(newLineItemDraft);
-            }
+      if (i == 4) {
+        newLineItemDrafts.add(newLineItemDraft);
+      }
 
-            newLineItemDrafts.add(shoppingListDraftSampleCarrotCake.getLineItems().get(i));
-        }
-
-        final TextLineItemDraftDsl updatedTextLineItemDraft =
-            TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("step 1 - updated"), 2L)
-                                    .description(LocalizedString.ofEnglish(
-                                        "Peel carrots and set aside, crack the nuts, separate eggs into small balls."))
-                                    .custom(buildUtensilsCustomType("Peeler, nuts cracker, 2 small bowls"))
-                                    .build();
-
-        final TextLineItemDraftDsl newTextLineItemDraft =
-            TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("before step 5"), 1L)
-                                    .description(LocalizedString.ofEnglish(
-                                        "Pre-heat oven to 180 C degree."))
-                                    .custom(buildUtensilsCustomType("Oven"))
-                                    .addedAt(ZonedDateTime.parse("2020-11-05T10:00:00.000Z"))
-                                    .build();
-
-        final List<TextLineItemDraft> newTextLineItemDrafts = new ArrayList<>();
-        for (int i = 0; i < Objects.requireNonNull(shoppingListDraftSampleCarrotCake.getTextLineItems()).size(); i++) {
-            if (i == 0) {
-                newTextLineItemDrafts.add(updatedTextLineItemDraft);
-                continue;
-            }
-
-            if (i == 4) {
-                newTextLineItemDrafts.add(newTextLineItemDraft);
-            }
-
-            newTextLineItemDrafts.add(shoppingListDraftSampleCarrotCake.getTextLineItems().get(i));
-        }
-
-        final Map<String, JsonNode> servingsFields = new HashMap<>();
-        servingsFields.put("nutrition",
-            JsonNodeFactory.instance.textNode("Per servings: 600 cal, 11g protein, 30g fat, 56g carb"));
-        servingsFields.put("servings", JsonNodeFactory.instance.numberNode(14));
-
-        return ShoppingListDraftBuilder
-            .of(shoppingListDraftSampleCarrotCake)
-            .name(LocalizedString.ofEnglish("Carrot Cake - (for xmas)"))
-            .slug(LocalizedString.ofEnglish("carrot-cake-for-xmas"))
-            .description(LocalizedString.ofEnglish("Carrot cake recipe - ingredients (for xmas)"))
-            .anonymousId("public-carrot-cake-shopping-list-xmas")
-            .deleteDaysAfterLastModification(15)
-            .custom(
-                CustomFieldsDraft.ofTypeKeyAndJson("custom-type-shopping-list", servingsFields))
-            .lineItems(newLineItemDrafts)
-            .textLineItems(newTextLineItemDrafts)
-            .build();
+      newLineItemDrafts.add(shoppingListDraftSampleCarrotCake.getLineItems().get(i));
     }
 
-    private void assertUpdateActions() {
-        // copy references / manual ref resolution for testing purpose
-        final String lineItemId_Sku3Sugar = shoppingListSampleCarrotCake.getLineItems().get(2).getId();
-        final String lineItemId_Sku5BakingPowder = shoppingListSampleCarrotCake.getLineItems().get(4).getId();
-        final String lineItemId_Sku6Cinnamon = shoppingListSampleCarrotCake.getLineItems().get(5).getId();
-        final String lineItemTypeId = shoppingListSampleCarrotCake.getLineItems().get(2).getCustom().getType().getId();
-        final String textLineItemId_Step1 = shoppingListSampleCarrotCake.getTextLineItems().get(0).getId();
-        final String textLineItemId_Step5 = shoppingListSampleCarrotCake.getTextLineItems().get(4).getId();
-        final String textLineItemId_Step6 = shoppingListSampleCarrotCake.getTextLineItems().get(5).getId();
-        final String textLineItemId = shoppingListSampleCarrotCake.getTextLineItems().get(0)
-                                                                  .getCustom().getType().getId();
+    final TextLineItemDraftDsl updatedTextLineItemDraft =
+        TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("step 1 - updated"), 2L)
+            .description(
+                LocalizedString.ofEnglish(
+                    "Peel carrots and set aside, crack the nuts, separate eggs into small balls."))
+            .custom(buildUtensilsCustomType("Peeler, nuts cracker, 2 small bowls"))
+            .build();
 
-        assertThat(updateActionList).contains(
+    final TextLineItemDraftDsl newTextLineItemDraft =
+        TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("before step 5"), 1L)
+            .description(LocalizedString.ofEnglish("Pre-heat oven to 180 C degree."))
+            .custom(buildUtensilsCustomType("Oven"))
+            .addedAt(ZonedDateTime.parse("2020-11-05T10:00:00.000Z"))
+            .build();
+
+    final List<TextLineItemDraft> newTextLineItemDrafts = new ArrayList<>();
+    for (int i = 0;
+        i < Objects.requireNonNull(shoppingListDraftSampleCarrotCake.getTextLineItems()).size();
+        i++) {
+      if (i == 0) {
+        newTextLineItemDrafts.add(updatedTextLineItemDraft);
+        continue;
+      }
+
+      if (i == 4) {
+        newTextLineItemDrafts.add(newTextLineItemDraft);
+      }
+
+      newTextLineItemDrafts.add(shoppingListDraftSampleCarrotCake.getTextLineItems().get(i));
+    }
+
+    final Map<String, JsonNode> servingsFields = new HashMap<>();
+    servingsFields.put(
+        "nutrition",
+        JsonNodeFactory.instance.textNode("Per servings: 600 cal, 11g protein, 30g fat, 56g carb"));
+    servingsFields.put("servings", JsonNodeFactory.instance.numberNode(14));
+
+    return ShoppingListDraftBuilder.of(shoppingListDraftSampleCarrotCake)
+        .name(LocalizedString.ofEnglish("Carrot Cake - (for xmas)"))
+        .slug(LocalizedString.ofEnglish("carrot-cake-for-xmas"))
+        .description(LocalizedString.ofEnglish("Carrot cake recipe - ingredients (for xmas)"))
+        .anonymousId("public-carrot-cake-shopping-list-xmas")
+        .deleteDaysAfterLastModification(15)
+        .custom(CustomFieldsDraft.ofTypeKeyAndJson("custom-type-shopping-list", servingsFields))
+        .lineItems(newLineItemDrafts)
+        .textLineItems(newTextLineItemDrafts)
+        .build();
+  }
+
+  private void assertUpdateActions() {
+    // copy references / manual ref resolution for testing purpose
+    final String lineItemId_Sku3Sugar = shoppingListSampleCarrotCake.getLineItems().get(2).getId();
+    final String lineItemId_Sku5BakingPowder =
+        shoppingListSampleCarrotCake.getLineItems().get(4).getId();
+    final String lineItemId_Sku6Cinnamon =
+        shoppingListSampleCarrotCake.getLineItems().get(5).getId();
+    final String lineItemTypeId =
+        shoppingListSampleCarrotCake.getLineItems().get(2).getCustom().getType().getId();
+    final String textLineItemId_Step1 =
+        shoppingListSampleCarrotCake.getTextLineItems().get(0).getId();
+    final String textLineItemId_Step5 =
+        shoppingListSampleCarrotCake.getTextLineItems().get(4).getId();
+    final String textLineItemId_Step6 =
+        shoppingListSampleCarrotCake.getTextLineItems().get(5).getId();
+    final String textLineItemId =
+        shoppingListSampleCarrotCake.getTextLineItems().get(0).getCustom().getType().getId();
+
+    assertThat(updateActionList)
+        .contains(
             SetSlug.of(LocalizedString.ofEnglish("carrot-cake-for-xmas")),
             ChangeName.of(LocalizedString.ofEnglish("Carrot Cake - (for xmas)")),
-            SetDescription.of(LocalizedString.ofEnglish("Carrot cake recipe - ingredients (for xmas)")),
+            SetDescription.of(
+                LocalizedString.ofEnglish("Carrot cake recipe - ingredients (for xmas)")),
             SetAnonymousId.of("public-carrot-cake-shopping-list-xmas"),
             SetDeleteDaysAfterLastModification.of(15),
-            SetCustomField.ofJson("nutrition",
-                JsonNodeFactory.instance.textNode("Per servings: 600 cal, 11g protein, 30g fat, 56g carb")),
+            SetCustomField.ofJson(
+                "nutrition",
+                JsonNodeFactory.instance.textNode(
+                    "Per servings: 600 cal, 11g protein, 30g fat, 56g carb")),
             SetCustomField.ofJson("servings", JsonNodeFactory.instance.numberNode(14)),
-
             ChangeLineItemQuantity.of(lineItemId_Sku3Sugar, 2L),
-            SetLineItemCustomField.ofJson("amount",
-                JsonNodeFactory.instance.textNode("150g"), lineItemId_Sku3Sugar),
-
-            SetLineItemCustomField.ofJson("amount",
-                JsonNodeFactory.instance.textNode("100g"), lineItemId_Sku5BakingPowder),
-            SetLineItemCustomField.ofJson("ingredient",
-                JsonNodeFactory.instance.textNode("nuts"), lineItemId_Sku5BakingPowder),
-
+            SetLineItemCustomField.ofJson(
+                "amount", JsonNodeFactory.instance.textNode("150g"), lineItemId_Sku3Sugar),
+            SetLineItemCustomField.ofJson(
+                "amount", JsonNodeFactory.instance.textNode("100g"), lineItemId_Sku5BakingPowder),
+            SetLineItemCustomField.ofJson(
+                "ingredient",
+                JsonNodeFactory.instance.textNode("nuts"),
+                lineItemId_Sku5BakingPowder),
             RemoveLineItem.of(lineItemId_Sku6Cinnamon),
-            AddLineItemWithSku.of(LineItemDraftBuilder
-                .ofSku("SKU-5", 1L)
-                .custom(CustomFieldsDraft.ofTypeIdAndJson(lineItemTypeId,
-                    buildIngredientCustomType("baking powder", "1 tsp").getFields()))
-                .build()),
-            AddLineItemWithSku.of(LineItemDraftBuilder
-                .ofSku("SKU-6", 1L)
-                .custom(CustomFieldsDraft.ofTypeIdAndJson(lineItemTypeId,
-                    buildIngredientCustomType("cinnamon", "2 tsp").getFields()))
-                .build()),
-
-            ChangeTextLineItemName.of(textLineItemId_Step1, LocalizedString.ofEnglish("step 1 - updated")),
-            SetTextLineItemDescription.of(textLineItemId_Step1).withDescription(
-                LocalizedString.ofEnglish("Peel carrots and set aside, crack the nuts, "
-                    + "separate eggs into small balls.")),
+            AddLineItemWithSku.of(
+                LineItemDraftBuilder.ofSku("SKU-5", 1L)
+                    .custom(
+                        CustomFieldsDraft.ofTypeIdAndJson(
+                            lineItemTypeId,
+                            buildIngredientCustomType("baking powder", "1 tsp").getFields()))
+                    .build()),
+            AddLineItemWithSku.of(
+                LineItemDraftBuilder.ofSku("SKU-6", 1L)
+                    .custom(
+                        CustomFieldsDraft.ofTypeIdAndJson(
+                            lineItemTypeId,
+                            buildIngredientCustomType("cinnamon", "2 tsp").getFields()))
+                    .build()),
+            ChangeTextLineItemName.of(
+                textLineItemId_Step1, LocalizedString.ofEnglish("step 1 - updated")),
+            SetTextLineItemDescription.of(textLineItemId_Step1)
+                .withDescription(
+                    LocalizedString.ofEnglish(
+                        "Peel carrots and set aside, crack the nuts, "
+                            + "separate eggs into small balls.")),
             ChangeTextLineItemQuantity.of(textLineItemId_Step1, 2L),
-            SetTextLineItemCustomField.ofJson("utensils",
-                JsonNodeFactory.instance.textNode("Peeler, nuts cracker, 2 small bowls"), textLineItemId_Step1),
-
-            ChangeTextLineItemName.of(textLineItemId_Step5, LocalizedString.ofEnglish("before step 5")),
-            SetTextLineItemDescription.of(textLineItemId_Step5).withDescription(
-                LocalizedString.ofEnglish("Pre-heat oven to 180 C degree.")),
-            SetTextLineItemCustomField.ofJson("utensils",
-                JsonNodeFactory.instance.textNode("Oven"), textLineItemId_Step5),
-
+            SetTextLineItemCustomField.ofJson(
+                "utensils",
+                JsonNodeFactory.instance.textNode("Peeler, nuts cracker, 2 small bowls"),
+                textLineItemId_Step1),
+            ChangeTextLineItemName.of(
+                textLineItemId_Step5, LocalizedString.ofEnglish("before step 5")),
+            SetTextLineItemDescription.of(textLineItemId_Step5)
+                .withDescription(LocalizedString.ofEnglish("Pre-heat oven to 180 C degree.")),
+            SetTextLineItemCustomField.ofJson(
+                "utensils", JsonNodeFactory.instance.textNode("Oven"), textLineItemId_Step5),
             ChangeTextLineItemName.of(textLineItemId_Step6, LocalizedString.ofEnglish("step 5")),
-            SetTextLineItemDescription.of(textLineItemId_Step6).withDescription(
-                LocalizedString.ofEnglish("Put cake mixture into cake pan, bake appr 40 min with 180 C degree")),
-            SetTextLineItemCustomField.ofJson("utensils",
-                JsonNodeFactory.instance.textNode("Cake pan, oven"), textLineItemId_Step6),
+            SetTextLineItemDescription.of(textLineItemId_Step6)
+                .withDescription(
+                    LocalizedString.ofEnglish(
+                        "Put cake mixture into cake pan, bake appr 40 min with 180 C degree")),
+            SetTextLineItemCustomField.ofJson(
+                "utensils",
+                JsonNodeFactory.instance.textNode("Cake pan, oven"),
+                textLineItemId_Step6),
+            AddTextLineItemWithAddedAt.of(
+                TextLineItemDraftBuilder.of(LocalizedString.ofEnglish("step 6"), 1L)
+                    .description(
+                        LocalizedString.ofEnglish("Decorate as you wish and serve, enjoy!"))
+                    .custom(
+                        CustomFieldsDraft.ofTypeIdAndJson(
+                            textLineItemId,
+                            buildUtensilsCustomType("Knife, cake plate.").getFields()))
+                    .addedAt(ZonedDateTime.parse("2020-11-06T10:00:00.000Z"))
+                    .build()));
+  }
 
-            AddTextLineItemWithAddedAt.of(TextLineItemDraftBuilder
-                .of(LocalizedString.ofEnglish("step 6"), 1L)
-                .description(LocalizedString.ofEnglish("Decorate as you wish and serve, enjoy!"))
-                .custom(CustomFieldsDraft.ofTypeIdAndJson(textLineItemId,
-                    buildUtensilsCustomType("Knife, cake plate.").getFields()))
-                .addedAt(ZonedDateTime.parse("2020-11-06T10:00:00.000Z"))
-                .build())
-        );
-    }
+  private void assertShoppingListUpdatedCorrectly(
+      @Nonnull final ShoppingListDraft expectedShoppingListDraft) {
 
-    private void assertShoppingListUpdatedCorrectly(@Nonnull final ShoppingListDraft expectedShoppingListDraft) {
-
-        final List<ShoppingList> shoppingLists = CTP_TARGET_CLIENT
+    final List<ShoppingList> shoppingLists =
+        CTP_TARGET_CLIENT
             .execute(buildShoppingListQuery())
             .toCompletableFuture()
             .join()
             .getResults();
 
-        final List<ShoppingListDraft> shoppingListDrafts =
-            ShoppingListReferenceResolutionUtils.mapToShoppingListDrafts(shoppingLists);
+    final List<ShoppingListDraft> shoppingListDrafts =
+        ShoppingListReferenceResolutionUtils.mapToShoppingListDrafts(shoppingLists);
 
-        assertThat(
-            ShoppingListDraftBuilder
-                .of(shoppingListDrafts.get(0))
-                .lineItems(setNullToAddedAtValuesForLineItems(shoppingListDrafts.get(0).getLineItems()))
-                .textLineItems(setNullToAddedAtValuesForTextLineItems(shoppingListDrafts.get(0).getTextLineItems()))
+    assertThat(
+            ShoppingListDraftBuilder.of(shoppingListDrafts.get(0))
+                .lineItems(
+                    setNullToAddedAtValuesForLineItems(shoppingListDrafts.get(0).getLineItems()))
+                .textLineItems(
+                    setNullToAddedAtValuesForTextLineItems(
+                        shoppingListDrafts.get(0).getTextLineItems()))
                 .build())
-            .isEqualTo(
-                ShoppingListDraftBuilder
-                    .of(expectedShoppingListDraft)
-                    .lineItems(setNullToAddedAtValuesForLineItems(expectedShoppingListDraft.getLineItems()))
-                    .textLineItems(setNullToAddedAtValuesForTextLineItems(expectedShoppingListDraft.getTextLineItems()))
-                    .build()
-            );
-    }
+        .isEqualTo(
+            ShoppingListDraftBuilder.of(expectedShoppingListDraft)
+                .lineItems(
+                    setNullToAddedAtValuesForLineItems(expectedShoppingListDraft.getLineItems()))
+                .textLineItems(
+                    setNullToAddedAtValuesForTextLineItems(
+                        expectedShoppingListDraft.getTextLineItems()))
+                .build());
+  }
 
-    @Nonnull
-    private List<TextLineItemDraft> setNullToAddedAtValuesForTextLineItems(
-        @Nonnull final List<TextLineItemDraft> textLineItemDrafts) {
+  @Nonnull
+  private List<TextLineItemDraft> setNullToAddedAtValuesForTextLineItems(
+      @Nonnull final List<TextLineItemDraft> textLineItemDrafts) {
 
-        return textLineItemDrafts.stream()
-                                 .map(textLineItemDraft -> TextLineItemDraftBuilder
-                                     .of(textLineItemDraft)
-                                     .addedAt(null)
-                                     .build())
-                                 .collect(toList());
-    }
+    return textLineItemDrafts.stream()
+        .map(
+            textLineItemDraft ->
+                TextLineItemDraftBuilder.of(textLineItemDraft).addedAt(null).build())
+        .collect(toList());
+  }
 
-    @Nonnull
-    private List<LineItemDraft> setNullToAddedAtValuesForLineItems(
-        @Nonnull final List<LineItemDraft> lineItemDrafts) {
+  @Nonnull
+  private List<LineItemDraft> setNullToAddedAtValuesForLineItems(
+      @Nonnull final List<LineItemDraft> lineItemDrafts) {
 
-        return lineItemDrafts.stream()
-                             .map(lineItemDraft -> LineItemDraftBuilder
-                                 .of(lineItemDraft)
-                                 .addedAt(null)
-                                 .build())
-                             .collect(toList());
-    }
+    return lineItemDrafts.stream()
+        .map(lineItemDraft -> LineItemDraftBuilder.of(lineItemDraft).addedAt(null).build())
+        .collect(toList());
+  }
 }

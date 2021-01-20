@@ -1,0 +1,6 @@
+spotless {
+    java {
+        removeUnusedImports()
+        googleJavaFormat('1.7')
+    }
+}

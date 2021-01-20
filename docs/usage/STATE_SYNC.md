@@ -35,7 +35,7 @@ against a [StateDraft](https://docs.commercetools.com/http-api-projects-states#s
 #### Prerequisites
 #### SphereClient
 
-Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/3.0.2/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
+Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/3.1.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 ````java
@@ -66,7 +66,7 @@ reference should return its `key`.
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use this utility which this library provides:  [`mapToStateDrafts`](https://commercetools.github.io/commercetools-sync-java/v/3.0.2/com/commercetools/sync/states/utils/StateReferenceResolutionUtils.html#mapToStateDrafts-java.util.List-)
+When syncing from a source commercetools project, you can use this utility which this library provides:  [`mapToStateDrafts`](https://commercetools.github.io/commercetools-sync-java/v/3.1.0/com/commercetools/sync/states/utils/StateReferenceResolutionUtils.html#mapToStateDrafts-java.util.List-)
 that replaces the references id fields with keys, in order to make them ready for reference resolution by the sync:
 
 ````java
@@ -265,6 +265,8 @@ It being persisted as `CustomObject` means that the referenced StateDrafts with 
 
 As soon, as the referenced StateDrafts are supplied to the sync, the draft will be created/updated and the 
 `CustomObject` will be removed from the target project.
+
+Keeping the old custom objects around forever can negatively influence the performance of your project and the time it takes to restore it from a backup.  Deleting unused data ensures the best performance for your project. Please have a look into the [Cleanup guide](CLEANUP_GUIDE.md) to cleanup old unresolved custom objects.
 
 #### More examples of how to use the sync
  

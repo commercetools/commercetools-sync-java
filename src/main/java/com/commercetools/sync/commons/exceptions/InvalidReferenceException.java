@@ -4,7 +4,7 @@ import javax.annotation.Nonnull;
 
 public class InvalidReferenceException extends Exception {
 
-    public InvalidReferenceException(@Nonnull final String message) {
-        super(message);
-    }
+  public InvalidReferenceException(@Nonnull final String message) {
+    super(message);
+  }
 }

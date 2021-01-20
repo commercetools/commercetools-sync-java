@@ -1,5 +1,17 @@
 package com.commercetools.sync.types.utils;
 
+import static com.commercetools.sync.types.utils.FieldDefinitionFixtures.*;
+import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildFieldDefinitionsUpdateActions;
+import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
+import static io.sphere.sdk.models.LocalizedString.ofEnglish;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.commercetools.sync.commons.exceptions.BuildUpdateActionException;
 import com.commercetools.sync.commons.exceptions.DuplicateNameException;
 import com.commercetools.sync.types.TypeSyncOptions;
@@ -27,707 +39,624 @@ import io.sphere.sdk.types.commands.updateactions.ChangeFieldDefinitionLabel;
 import io.sphere.sdk.types.commands.updateactions.ChangeFieldDefinitionOrder;
 import io.sphere.sdk.types.commands.updateactions.ChangeLocalizedEnumValueOrder;
 import io.sphere.sdk.types.commands.updateactions.RemoveFieldDefinition;
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.List;
-
-import static com.commercetools.sync.types.utils.FieldDefinitionFixtures.*;
-import static com.commercetools.sync.types.utils.TypeUpdateActionUtils.buildFieldDefinitionsUpdateActions;
-import static io.sphere.sdk.json.SphereJsonUtils.readObjectFromResource;
-import static io.sphere.sdk.models.LocalizedString.ofEnglish;
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.singletonList;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.Test;
 
 class BuildFieldDefinitionUpdateActionsTest {
-    private static final String TYPE_KEY = "key";
-    private static final LocalizedString TYPE_NAME = ofEnglish("name");
-    private static final LocalizedString TYPE_DESCRIPTION = ofEnglish("description");
+  private static final String TYPE_KEY = "key";
+  private static final LocalizedString TYPE_NAME = ofEnglish("name");
+  private static final LocalizedString TYPE_DESCRIPTION = ofEnglish("description");
 
-    private static final TypeDraft TYPE_DRAFT = TypeDraftBuilder.of(
-            TYPE_KEY,
-            TYPE_NAME,
-            ResourceTypeIdsSetBuilder.of().addCategories().build())
-            .description(TYPE_DESCRIPTION)
-            .build();
+  private static final TypeDraft TYPE_DRAFT =
+      TypeDraftBuilder.of(
+              TYPE_KEY, TYPE_NAME, ResourceTypeIdsSetBuilder.of().addCategories().build())
+          .description(TYPE_DESCRIPTION)
+          .build();
 
-    private static final TypeSyncOptions SYNC_OPTIONS = TypeSyncOptionsBuilder
-        .of(mock(SphereClient.class))
-        .build();
+  private static final TypeSyncOptions SYNC_OPTIONS =
+      TypeSyncOptionsBuilder.of(mock(SphereClient.class)).build();
 
-    @Test
-    void buildFieldDefinitionsUpdateActions_WithNullNewFieldDefAndExistingFieldDefs_ShouldBuild3RemoveActions() {
-        final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
+  @Test
+  void
+      buildFieldDefinitionsUpdateActions_WithNullNewFieldDefAndExistingFieldDefs_ShouldBuild3RemoveActions() {
+    final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
-            oldType,
-            TYPE_DRAFT,
-            SYNC_OPTIONS
-        );
+    final List<UpdateAction<Type>> updateActions =
+        buildFieldDefinitionsUpdateActions(oldType, TYPE_DRAFT, SYNC_OPTIONS);
 
-        assertThat(updateActions).containsExactly(
+    assertThat(updateActions)
+        .containsExactly(
             RemoveFieldDefinition.of(FIELD_A),
             RemoveFieldDefinition.of(FIELD_B),
-            RemoveFieldDefinition.of(FIELD_C)
-        );
-    }
+            RemoveFieldDefinition.of(FIELD_C));
+  }
 
-    @Test
-    void buildFieldDefinitionsUpdateActions_WithNullNewFieldDefsAndNoOldFieldDefs_ShouldNotBuildActions() {
-        final Type oldType = mock(Type.class);
-        when(oldType.getFieldDefinitions()).thenReturn(emptyList());
-        when(oldType.getKey()).thenReturn("type_key_1");
+  @Test
+  void
+      buildFieldDefinitionsUpdateActions_WithNullNewFieldDefsAndNoOldFieldDefs_ShouldNotBuildActions() {
+    final Type oldType = mock(Type.class);
+    when(oldType.getFieldDefinitions()).thenReturn(emptyList());
+    when(oldType.getKey()).thenReturn("type_key_1");
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
-            oldType,
-            TYPE_DRAFT,
-            SYNC_OPTIONS
-        );
+    final List<UpdateAction<Type>> updateActions =
+        buildFieldDefinitionsUpdateActions(oldType, TYPE_DRAFT, SYNC_OPTIONS);
 
-        assertThat(updateActions).isEmpty();
-    }
+    assertThat(updateActions).isEmpty();
+  }
 
-    @Test
-    void buildFieldDefinitionsUpdateActions_WithNewFieldDefsAndNoOldFieldDefinitions_ShouldBuild3AddActions() {
-        final Type oldType = mock(Type.class);
-        when(oldType.getFieldDefinitions()).thenReturn(emptyList());
-        when(oldType.getKey()).thenReturn("type_key_1");
+  @Test
+  void
+      buildFieldDefinitionsUpdateActions_WithNewFieldDefsAndNoOldFieldDefinitions_ShouldBuild3AddActions() {
+    final Type oldType = mock(Type.class);
+    when(oldType.getFieldDefinitions()).thenReturn(emptyList());
+    when(oldType.getKey()).thenReturn("type_key_1");
 
-        final TypeDraft newTypeDraft = readObjectFromResource(
-            TYPE_WITH_FIELDS_ABC,
-            TypeDraft.class
-        );
+    final TypeDraft newTypeDraft = readObjectFromResource(TYPE_WITH_FIELDS_ABC, TypeDraft.class);
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
-            oldType,
-            newTypeDraft,
-            SYNC_OPTIONS
-        );
+    final List<UpdateAction<Type>> updateActions =
+        buildFieldDefinitionsUpdateActions(oldType, newTypeDraft, SYNC_OPTIONS);
 
-        assertThat(updateActions).containsExactly(
+    assertThat(updateActions)
+        .containsExactly(
             AddFieldDefinition.of(FIELD_DEFINITION_A),
             AddFieldDefinition.of(FIELD_DEFINITION_B),
-            AddFieldDefinition.of(FIELD_DEFINITION_C)
-        );
-    }
+            AddFieldDefinition.of(FIELD_DEFINITION_C));
+  }
 
-    @Test
-    void buildFieldDefinitionsUpdateActions_WithIdenticalFieldDefinitions_ShouldNotBuildUpdateActions() {
-        final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
+  @Test
+  void
+      buildFieldDefinitionsUpdateActions_WithIdenticalFieldDefinitions_ShouldNotBuildUpdateActions() {
+    final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
 
-        final TypeDraft newTypeDraft = readObjectFromResource(
-                TYPE_WITH_FIELDS_ABC,
-                TypeDraft.class
-        );
+    final TypeDraft newTypeDraft = readObjectFromResource(TYPE_WITH_FIELDS_ABC, TypeDraft.class);
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
-                oldType,
-                newTypeDraft,
-                SYNC_OPTIONS
-        );
+    final List<UpdateAction<Type>> updateActions =
+        buildFieldDefinitionsUpdateActions(oldType, newTypeDraft, SYNC_OPTIONS);
 
-        assertThat(updateActions).isEmpty();
-    }
+    assertThat(updateActions).isEmpty();
+  }
 
-    @Test
-    void buildFieldDefinitionsUpdateActions_WithDuplicateFieldDefNames_ShouldNotBuildActionsAndTriggerErrorCb() {
-        final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
+  @Test
+  void
+      buildFieldDefinitionsUpdateActions_WithDuplicateFieldDefNames_ShouldNotBuildActionsAndTriggerErrorCb() {
+    final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
 
-        final TypeDraft newTypeDraft = readObjectFromResource(
-                TYPE_WITH_FIELDS_ABB,
-                TypeDraft.class
-        );
+    final TypeDraft newTypeDraft = readObjectFromResource(TYPE_WITH_FIELDS_ABB, TypeDraft.class);
 
-        final List<String> errorMessages = new ArrayList<>();
-        final List<Throwable> exceptions = new ArrayList<>();
-        final TypeSyncOptions syncOptions = TypeSyncOptionsBuilder.of(mock(SphereClient.class))
-            .errorCallback((exception, oldResource, newResource, updateActions) -> {
-                errorMessages.add(exception.getMessage());
-                exceptions.add(exception.getCause());
-            })
+    final List<String> errorMessages = new ArrayList<>();
+    final List<Throwable> exceptions = new ArrayList<>();
+    final TypeSyncOptions syncOptions =
+        TypeSyncOptionsBuilder.of(mock(SphereClient.class))
+            .errorCallback(
+                (exception, oldResource, newResource, updateActions) -> {
+                  errorMessages.add(exception.getMessage());
+                  exceptions.add(exception.getCause());
+                })
             .build();
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
-            oldType,
-            newTypeDraft,
-            syncOptions
-        );
+    final List<UpdateAction<Type>> updateActions =
+        buildFieldDefinitionsUpdateActions(oldType, newTypeDraft, syncOptions);
 
-        assertThat(updateActions).isEmpty();
-        assertThat(errorMessages).hasSize(1);
-        assertThat(errorMessages.get(0)).matches("Failed to build update actions for the field definitions of the "
-            + "type with the key 'key'. Reason: .*DuplicateNameException: Field definitions "
-            + "have duplicated names. Duplicated field definition name: 'b'. Field definitions names are "
-            + "expected to be unique inside their type.");
-        assertThat(exceptions).hasSize(1);
-        assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
-        assertThat(exceptions.get(0).getMessage()).contains("Field definitions have duplicated names. "
+    assertThat(updateActions).isEmpty();
+    assertThat(errorMessages).hasSize(1);
+    assertThat(errorMessages.get(0))
+        .matches(
+            "Failed to build update actions for the field definitions of the "
+                + "type with the key 'key'. Reason: .*DuplicateNameException: Field definitions "
+                + "have duplicated names. Duplicated field definition name: 'b'. Field definitions names are "
+                + "expected to be unique inside their type.");
+    assertThat(exceptions).hasSize(1);
+    assertThat(exceptions.get(0)).isExactlyInstanceOf(BuildUpdateActionException.class);
+    assertThat(exceptions.get(0).getMessage())
+        .contains(
+            "Field definitions have duplicated names. "
                 + "Duplicated field definition name: 'b'. Field definitions names are expected to be unique "
                 + "inside their type.");
-        assertThat(exceptions.get(0).getCause()).isExactlyInstanceOf(DuplicateNameException.class);
-    }
+    assertThat(exceptions.get(0).getCause()).isExactlyInstanceOf(DuplicateNameException.class);
+  }
 
-    @Test
-    void buildFieldDefinitionsUpdateActions_WithOneMissingFieldDefinition_ShouldBuildRemoveFieldDefAction() {
-        final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
+  @Test
+  void
+      buildFieldDefinitionsUpdateActions_WithOneMissingFieldDefinition_ShouldBuildRemoveFieldDefAction() {
+    final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
 
-        final TypeDraft newTypeDraft = readObjectFromResource(
-                TYPE_WITH_FIELDS_AB,
-                TypeDraft.class
-        );
+    final TypeDraft newTypeDraft = readObjectFromResource(TYPE_WITH_FIELDS_AB, TypeDraft.class);
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
-                oldType,
-                newTypeDraft,
-                SYNC_OPTIONS
-        );
+    final List<UpdateAction<Type>> updateActions =
+        buildFieldDefinitionsUpdateActions(oldType, newTypeDraft, SYNC_OPTIONS);
 
-        assertThat(updateActions).containsExactly(RemoveFieldDefinition.of("c"));
-    }
+    assertThat(updateActions).containsExactly(RemoveFieldDefinition.of("c"));
+  }
 
-    @Test
-    void buildFieldDefinitionsUpdateActions_WithOneExtraFieldDef_ShouldBuildAddFieldDefinitionAction() {
-        final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
+  @Test
+  void
+      buildFieldDefinitionsUpdateActions_WithOneExtraFieldDef_ShouldBuildAddFieldDefinitionAction() {
+    final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
 
-        final TypeDraft newTypeDraft = readObjectFromResource(
-                TYPE_WITH_FIELDS_ABCD,
-                TypeDraft.class
-        );
+    final TypeDraft newTypeDraft = readObjectFromResource(TYPE_WITH_FIELDS_ABCD, TypeDraft.class);
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
-                oldType,
-                newTypeDraft,
-                SYNC_OPTIONS
-        );
+    final List<UpdateAction<Type>> updateActions =
+        buildFieldDefinitionsUpdateActions(oldType, newTypeDraft, SYNC_OPTIONS);
 
-        assertThat(updateActions).containsExactly(
-            AddFieldDefinition.of(FIELD_DEFINITION_D)
-        );
-    }
+    assertThat(updateActions).containsExactly(AddFieldDefinition.of(FIELD_DEFINITION_D));
+  }
 
-    @Test
-    void buildFieldDefinitionsUpdateActions_WithOneFieldDefSwitch_ShouldBuildRemoveAndAddFieldDefActions() {
-        final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
+  @Test
+  void
+      buildFieldDefinitionsUpdateActions_WithOneFieldDefSwitch_ShouldBuildRemoveAndAddFieldDefActions() {
+    final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
 
-        final TypeDraft newTypeDraft = readObjectFromResource(
-                TYPE_WITH_FIELDS_ABD,
-                TypeDraft.class
-        );
+    final TypeDraft newTypeDraft = readObjectFromResource(TYPE_WITH_FIELDS_ABD, TypeDraft.class);
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
-                oldType,
-                newTypeDraft,
-                SYNC_OPTIONS
-        );
+    final List<UpdateAction<Type>> updateActions =
+        buildFieldDefinitionsUpdateActions(oldType, newTypeDraft, SYNC_OPTIONS);
 
-        assertThat(updateActions).containsExactly(
-            RemoveFieldDefinition.of(FIELD_C),
-            AddFieldDefinition.of(FIELD_DEFINITION_D)
-        );
-    }
+    assertThat(updateActions)
+        .containsExactly(
+            RemoveFieldDefinition.of(FIELD_C), AddFieldDefinition.of(FIELD_DEFINITION_D));
+  }
 
-    @Test
-    void buildFieldDefinitionsUpdateActions_WithDifferent_ShouldBuildChangeFieldDefinitionOrderAction() {
-        final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
+  @Test
+  void
+      buildFieldDefinitionsUpdateActions_WithDifferent_ShouldBuildChangeFieldDefinitionOrderAction() {
+    final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
 
-        final TypeDraft newTypeDraft = readObjectFromResource(
-                TYPE_WITH_FIELDS_CAB,
-                TypeDraft.class
-        );
+    final TypeDraft newTypeDraft = readObjectFromResource(TYPE_WITH_FIELDS_CAB, TypeDraft.class);
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
-                oldType,
-                newTypeDraft,
-                SYNC_OPTIONS
-        );
+    final List<UpdateAction<Type>> updateActions =
+        buildFieldDefinitionsUpdateActions(oldType, newTypeDraft, SYNC_OPTIONS);
 
+    assertThat(updateActions)
+        .containsExactly(
+            ChangeFieldDefinitionOrder.of(
+                asList(
+                    FIELD_DEFINITION_C.getName(),
+                    FIELD_DEFINITION_A.getName(),
+                    FIELD_DEFINITION_B.getName())));
+  }
 
-        assertThat(updateActions).containsExactly(
-            ChangeFieldDefinitionOrder
-                .of(asList(
-                        FIELD_DEFINITION_C.getName(),
-                        FIELD_DEFINITION_A.getName(),
-                        FIELD_DEFINITION_B.getName()
-                ))
-        );
-    }
+  @Test
+  void
+      buildFieldDefinitionsUpdateActions_WithRemovedAndDiffOrder_ShouldBuildChangeOrderAndRemoveActions() {
+    final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
 
-    @Test
-    void buildFieldDefinitionsUpdateActions_WithRemovedAndDiffOrder_ShouldBuildChangeOrderAndRemoveActions() {
-        final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
+    final TypeDraft newTypeDraft = readObjectFromResource(TYPE_WITH_FIELDS_CB, TypeDraft.class);
 
-        final TypeDraft newTypeDraft = readObjectFromResource(
-                TYPE_WITH_FIELDS_CB,
-                TypeDraft.class
-        );
+    final List<UpdateAction<Type>> updateActions =
+        buildFieldDefinitionsUpdateActions(oldType, newTypeDraft, SYNC_OPTIONS);
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
-                oldType,
-                newTypeDraft,
-                SYNC_OPTIONS
-        );
-
-        assertThat(updateActions).containsExactly(
+    assertThat(updateActions)
+        .containsExactly(
             RemoveFieldDefinition.of(FIELD_A),
-            ChangeFieldDefinitionOrder
-                .of(asList(
-                        FIELD_DEFINITION_C.getName(),
-                        FIELD_DEFINITION_B.getName()
-                    )
-                )
-        );
-    }
+            ChangeFieldDefinitionOrder.of(
+                asList(FIELD_DEFINITION_C.getName(), FIELD_DEFINITION_B.getName())));
+  }
 
-    @Test
-    void buildFieldDefinitionsUpdateActions_WithAddedAndDifferentOrder_ShouldBuildChangeOrderAndAddActions() {
-        final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
+  @Test
+  void
+      buildFieldDefinitionsUpdateActions_WithAddedAndDifferentOrder_ShouldBuildChangeOrderAndAddActions() {
+    final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
 
-        final TypeDraft newTypeDraft = readObjectFromResource(
-                TYPE_WITH_FIELDS_ACBD,
-                TypeDraft.class
-        );
+    final TypeDraft newTypeDraft = readObjectFromResource(TYPE_WITH_FIELDS_ACBD, TypeDraft.class);
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
-                oldType,
-                newTypeDraft,
-                SYNC_OPTIONS
-        );
+    final List<UpdateAction<Type>> updateActions =
+        buildFieldDefinitionsUpdateActions(oldType, newTypeDraft, SYNC_OPTIONS);
 
-        assertThat(updateActions).containsExactly(
+    assertThat(updateActions)
+        .containsExactly(
             AddFieldDefinition.of(FIELD_DEFINITION_D),
-            ChangeFieldDefinitionOrder
-                .of(asList(
-                        FIELD_DEFINITION_A.getName(),
-                        FIELD_DEFINITION_C.getName(),
-                        FIELD_DEFINITION_B.getName(),
-                        FIELD_DEFINITION_D.getName()
-                    )
-                )
-        );
-    }
+            ChangeFieldDefinitionOrder.of(
+                asList(
+                    FIELD_DEFINITION_A.getName(),
+                    FIELD_DEFINITION_C.getName(),
+                    FIELD_DEFINITION_B.getName(),
+                    FIELD_DEFINITION_D.getName())));
+  }
 
-    @Test
-    void buildFieldDefinitionsUpdateActions_WithAddedFieldDefInBetween_ShouldBuildChangeOrderAndAddActions() {
-        final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
+  @Test
+  void
+      buildFieldDefinitionsUpdateActions_WithAddedFieldDefInBetween_ShouldBuildChangeOrderAndAddActions() {
+    final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
 
-        final TypeDraft newTypeDraft = readObjectFromResource(
-                TYPE_WITH_FIELDS_ADBC,
-                TypeDraft.class
-        );
+    final TypeDraft newTypeDraft = readObjectFromResource(TYPE_WITH_FIELDS_ADBC, TypeDraft.class);
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
-                oldType,
-                newTypeDraft,
-                SYNC_OPTIONS
-        );
+    final List<UpdateAction<Type>> updateActions =
+        buildFieldDefinitionsUpdateActions(oldType, newTypeDraft, SYNC_OPTIONS);
 
-        assertThat(updateActions).containsExactly(
+    assertThat(updateActions)
+        .containsExactly(
             AddFieldDefinition.of(FIELD_DEFINITION_D),
-            ChangeFieldDefinitionOrder
-                .of(asList(
-                        FIELD_DEFINITION_A.getName(),
-                        FIELD_DEFINITION_D.getName(),
-                        FIELD_DEFINITION_B.getName(),
-                        FIELD_DEFINITION_C.getName()
-                    )
-                )
-        );
-    }
+            ChangeFieldDefinitionOrder.of(
+                asList(
+                    FIELD_DEFINITION_A.getName(),
+                    FIELD_DEFINITION_D.getName(),
+                    FIELD_DEFINITION_B.getName(),
+                    FIELD_DEFINITION_C.getName())));
+  }
 
-    @Test
-    void buildFieldDefinitionsUpdateActions_WithMixedFields_ShouldBuildAllThreeMoveFieldDefActions() {
-        final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
+  @Test
+  void buildFieldDefinitionsUpdateActions_WithMixedFields_ShouldBuildAllThreeMoveFieldDefActions() {
+    final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
 
-        final TypeDraft newTypeDraft = readObjectFromResource(
-                TYPE_WITH_FIELDS_CBD,
-                TypeDraft.class
-        );
+    final TypeDraft newTypeDraft = readObjectFromResource(TYPE_WITH_FIELDS_CBD, TypeDraft.class);
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
-                oldType,
-                newTypeDraft,
-                SYNC_OPTIONS
-        );
-        assertThat(updateActions).containsExactly(
+    final List<UpdateAction<Type>> updateActions =
+        buildFieldDefinitionsUpdateActions(oldType, newTypeDraft, SYNC_OPTIONS);
+    assertThat(updateActions)
+        .containsExactly(
             RemoveFieldDefinition.of(FIELD_A),
             AddFieldDefinition.of(FIELD_DEFINITION_D),
-            ChangeFieldDefinitionOrder
-                .of(asList(
-                        FIELD_DEFINITION_C.getName(),
-                        FIELD_DEFINITION_B.getName(),
-                        FIELD_DEFINITION_D.getName()
-                    )
-                )
-        );
-    }
+            ChangeFieldDefinitionOrder.of(
+                asList(
+                    FIELD_DEFINITION_C.getName(),
+                    FIELD_DEFINITION_B.getName(),
+                    FIELD_DEFINITION_D.getName())));
+  }
 
-    @Test
-    void buildFieldDefinitionsUpdateActions_WithDifferentType_ShouldRemoveOldFieldDefAndAddNewFieldDef() {
-        final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
+  @Test
+  void
+      buildFieldDefinitionsUpdateActions_WithDifferentType_ShouldRemoveOldFieldDefAndAddNewFieldDef() {
+    final Type oldType = readObjectFromResource(TYPE_WITH_FIELDS_ABC, Type.class);
 
-        final TypeDraft newTypeDraft = readObjectFromResource(
-                TYPE_WITH_FIELDS_ABC_WITH_DIFFERENT_TYPE,
-                TypeDraft.class
-        );
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
-                oldType,
-                newTypeDraft,
-                SYNC_OPTIONS
-        );
+    final TypeDraft newTypeDraft =
+        readObjectFromResource(TYPE_WITH_FIELDS_ABC_WITH_DIFFERENT_TYPE, TypeDraft.class);
+    final List<UpdateAction<Type>> updateActions =
+        buildFieldDefinitionsUpdateActions(oldType, newTypeDraft, SYNC_OPTIONS);
 
-        assertThat(updateActions).containsExactly(
+    assertThat(updateActions)
+        .containsExactly(
             RemoveFieldDefinition.of(FIELD_A),
-            AddFieldDefinition.of(FIELD_DEFINITION_A_LOCALIZED_TYPE)
-        );
-    }
+            AddFieldDefinition.of(FIELD_DEFINITION_A_LOCALIZED_TYPE));
+  }
 
-    @Test
-    void buildFieldDefinitionsUpdateActions_WithNullNewFieldDef_ShouldSkipNullFieldDefs() {
-        // preparation
-        final Type oldType = mock(Type.class);
-        final FieldDefinition oldFieldDefinition = FieldDefinition.of(
+  @Test
+  void buildFieldDefinitionsUpdateActions_WithNullNewFieldDef_ShouldSkipNullFieldDefs() {
+    // preparation
+    final Type oldType = mock(Type.class);
+    final FieldDefinition oldFieldDefinition =
+        FieldDefinition.of(
             LocalizedEnumFieldType.of(emptyList()),
             "field_1",
             ofEnglish("label1"),
             false,
             TextInputHint.SINGLE_LINE);
 
+    when(oldType.getFieldDefinitions()).thenReturn(singletonList(oldFieldDefinition));
 
-        when(oldType.getFieldDefinitions()).thenReturn(singletonList(oldFieldDefinition));
-
-        final FieldDefinition newFieldDefinition = FieldDefinition.of(
+    final FieldDefinition newFieldDefinition =
+        FieldDefinition.of(
             LocalizedEnumFieldType.of(emptyList()),
             "field_1",
             ofEnglish("label2"),
             false,
             TextInputHint.SINGLE_LINE);
 
-        final TypeDraft typeDraft = TypeDraftBuilder
-            .of("key", ofEnglish("label"), emptySet())
+    final TypeDraft typeDraft =
+        TypeDraftBuilder.of("key", ofEnglish("label"), emptySet())
             .fieldDefinitions(asList(null, newFieldDefinition))
             .build();
 
-        // test
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
-            oldType,
-            typeDraft,
-            SYNC_OPTIONS
-        );
+    // test
+    final List<UpdateAction<Type>> updateActions =
+        buildFieldDefinitionsUpdateActions(oldType, typeDraft, SYNC_OPTIONS);
 
-        // assertion
-        assertThat(updateActions).containsExactly(
-            ChangeFieldDefinitionLabel.of(newFieldDefinition.getName(), newFieldDefinition.getLabel()));
-    }
+    // assertion
+    assertThat(updateActions)
+        .containsExactly(
+            ChangeFieldDefinitionLabel.of(
+                newFieldDefinition.getName(), newFieldDefinition.getLabel()));
+  }
 
-    @Test
-    void buildFieldDefinitionsUpdateActions_WithDefWithNullName_ShouldBuildChangeFieldDefOrderAction() {
-        // preparation
-        final Type oldType = mock(Type.class);
-        final FieldDefinition oldFieldDefinition = FieldDefinition.of(
+  @Test
+  void
+      buildFieldDefinitionsUpdateActions_WithDefWithNullName_ShouldBuildChangeFieldDefOrderAction() {
+    // preparation
+    final Type oldType = mock(Type.class);
+    final FieldDefinition oldFieldDefinition =
+        FieldDefinition.of(
             LocalizedEnumFieldType.of(emptyList()),
             "field_1",
             ofEnglish("label1"),
             false,
             TextInputHint.SINGLE_LINE);
 
+    when(oldType.getFieldDefinitions()).thenReturn(singletonList(oldFieldDefinition));
 
-        when(oldType.getFieldDefinitions()).thenReturn(singletonList(oldFieldDefinition));
-
-        final FieldDefinition newFieldDefinition = FieldDefinition.of(
+    final FieldDefinition newFieldDefinition =
+        FieldDefinition.of(
             LocalizedEnumFieldType.of(emptyList()),
             null,
             ofEnglish("label2"),
             false,
             TextInputHint.SINGLE_LINE);
 
-        final TypeDraft typeDraft = TypeDraftBuilder
-            .of("key", ofEnglish("label"), emptySet())
+    final TypeDraft typeDraft =
+        TypeDraftBuilder.of("key", ofEnglish("label"), emptySet())
             .fieldDefinitions(asList(null, newFieldDefinition))
             .build();
 
-        // test
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
-            oldType,
-            typeDraft,
-            SYNC_OPTIONS
-        );
+    // test
+    final List<UpdateAction<Type>> updateActions =
+        buildFieldDefinitionsUpdateActions(oldType, typeDraft, SYNC_OPTIONS);
 
-        // assertion
-        assertThat(updateActions).containsExactly(
+    // assertion
+    assertThat(updateActions)
+        .containsExactly(
             RemoveFieldDefinition.of(oldFieldDefinition.getName()),
             AddFieldDefinition.of(newFieldDefinition));
-    }
+  }
 
-    @Test
-    void buildFieldDefinitionsUpdateActions_WithDefWithNullType_ShouldBuildChangeFieldDefOrderAction() {
-        // preparation
-        final Type oldType = mock(Type.class);
-        final FieldDefinition oldFieldDefinition = FieldDefinition.of(
+  @Test
+  void
+      buildFieldDefinitionsUpdateActions_WithDefWithNullType_ShouldBuildChangeFieldDefOrderAction() {
+    // preparation
+    final Type oldType = mock(Type.class);
+    final FieldDefinition oldFieldDefinition =
+        FieldDefinition.of(
             LocalizedEnumFieldType.of(emptyList()),
             "field_1",
             ofEnglish("label1"),
             false,
             TextInputHint.SINGLE_LINE);
 
+    when(oldType.getFieldDefinitions()).thenReturn(singletonList(oldFieldDefinition));
 
-        when(oldType.getFieldDefinitions()).thenReturn(singletonList(oldFieldDefinition));
+    final FieldDefinition newFieldDefinition =
+        FieldDefinition.of(null, "field_1", ofEnglish("label2"), false, TextInputHint.SINGLE_LINE);
 
-        final FieldDefinition newFieldDefinition = FieldDefinition.of(
-            null,
-            "field_1",
-            ofEnglish("label2"),
-            false,
-            TextInputHint.SINGLE_LINE);
-
-        final TypeDraft typeDraft = TypeDraftBuilder
-            .of("key", ofEnglish("label"), emptySet())
+    final TypeDraft typeDraft =
+        TypeDraftBuilder.of("key", ofEnglish("label"), emptySet())
             .fieldDefinitions(asList(null, newFieldDefinition))
             .build();
 
-        // test
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(
-            oldType,
-            typeDraft,
-            SYNC_OPTIONS
-        );
+    // test
+    final List<UpdateAction<Type>> updateActions =
+        buildFieldDefinitionsUpdateActions(oldType, typeDraft, SYNC_OPTIONS);
 
-        // assertion
-        assertThat(updateActions).isEmpty();
-    }
+    // assertion
+    assertThat(updateActions).isEmpty();
+  }
 
-    @Test
-    void buildFieldsUpdateActions_WithSetOfText_ShouldBuildActions() {
-        final FieldDefinition newDefinition = FieldDefinition
-            .of(SetFieldType.of(StringFieldType.of()), "a", ofEnglish("new_label"), true);
+  @Test
+  void buildFieldsUpdateActions_WithSetOfText_ShouldBuildActions() {
+    final FieldDefinition newDefinition =
+        FieldDefinition.of(
+            SetFieldType.of(StringFieldType.of()), "a", ofEnglish("new_label"), true);
 
-        final TypeDraft typeDraft = TypeDraftBuilder
-            .of("foo", ofEnglish("name"), emptySet())
+    final TypeDraft typeDraft =
+        TypeDraftBuilder.of("foo", ofEnglish("name"), emptySet())
             .fieldDefinitions(singletonList(newDefinition))
             .build();
 
-        final FieldDefinition oldDefinition = FieldDefinition
-            .of(SetFieldType.of(StringFieldType.of()), "a", ofEnglish("old_label"), true);
+    final FieldDefinition oldDefinition =
+        FieldDefinition.of(
+            SetFieldType.of(StringFieldType.of()), "a", ofEnglish("old_label"), true);
 
-        final Type type = mock(Type.class);
-        when(type.getFieldDefinitions()).thenReturn(singletonList(oldDefinition));
+    final Type type = mock(Type.class);
+    when(type.getFieldDefinitions()).thenReturn(singletonList(oldDefinition));
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(type,
-            typeDraft, SYNC_OPTIONS);
+    final List<UpdateAction<Type>> updateActions =
+        buildFieldDefinitionsUpdateActions(type, typeDraft, SYNC_OPTIONS);
 
-        assertThat(updateActions)
-            .containsExactly(ChangeFieldDefinitionLabel.of(newDefinition.getName(), newDefinition.getLabel()));
-    }
+    assertThat(updateActions)
+        .containsExactly(
+            ChangeFieldDefinitionLabel.of(newDefinition.getName(), newDefinition.getLabel()));
+  }
 
-    @Test
-    void buildFieldsUpdateActions_WithSetOfSetOfText_ShouldBuildActions() {
+  @Test
+  void buildFieldsUpdateActions_WithSetOfSetOfText_ShouldBuildActions() {
 
-        final FieldDefinition newDefinition = FieldDefinition
-            .of(SetFieldType.of(SetFieldType.of(StringFieldType.of())), "a", ofEnglish("new_label"), true);
+    final FieldDefinition newDefinition =
+        FieldDefinition.of(
+            SetFieldType.of(SetFieldType.of(StringFieldType.of())),
+            "a",
+            ofEnglish("new_label"),
+            true);
 
-        final TypeDraft typeDraft = TypeDraftBuilder
-            .of("foo", ofEnglish("name"), emptySet())
+    final TypeDraft typeDraft =
+        TypeDraftBuilder.of("foo", ofEnglish("name"), emptySet())
             .fieldDefinitions(singletonList(newDefinition))
             .build();
 
-        final FieldDefinition oldDefinition = FieldDefinition
-            .of(SetFieldType.of(SetFieldType.of(StringFieldType.of())), "a", ofEnglish("old_label"), true);
+    final FieldDefinition oldDefinition =
+        FieldDefinition.of(
+            SetFieldType.of(SetFieldType.of(StringFieldType.of())),
+            "a",
+            ofEnglish("old_label"),
+            true);
 
-        final Type type = mock(Type.class);
-        when(type.getFieldDefinitions()).thenReturn(singletonList(oldDefinition));
+    final Type type = mock(Type.class);
+    when(type.getFieldDefinitions()).thenReturn(singletonList(oldDefinition));
 
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(type,
-            typeDraft, SYNC_OPTIONS);
+    final List<UpdateAction<Type>> updateActions =
+        buildFieldDefinitionsUpdateActions(type, typeDraft, SYNC_OPTIONS);
 
-        assertThat(updateActions)
-            .containsExactly(ChangeFieldDefinitionLabel.of(newDefinition.getName(), newDefinition.getLabel()));
+    assertThat(updateActions)
+        .containsExactly(
+            ChangeFieldDefinitionLabel.of(newDefinition.getName(), newDefinition.getLabel()));
+  }
 
-    }
-
-    @Test
-    void buildFieldsUpdateActions_WithSetOfEnumsChanges_ShouldBuildCorrectActions() {
-        // preparation
-        final FieldDefinition newDefinition = FieldDefinition
-            .of(SetFieldType.of(
+  @Test
+  void buildFieldsUpdateActions_WithSetOfEnumsChanges_ShouldBuildCorrectActions() {
+    // preparation
+    final FieldDefinition newDefinition =
+        FieldDefinition.of(
+            SetFieldType.of(
                 EnumFieldType.of(
                     asList(
-                        EnumValue.of("a", "a"),
-                        EnumValue.of("b", "b"),
-                        EnumValue.of("c", "c")
-                    )
-                )), "a", ofEnglish("new_label"), true);
+                        EnumValue.of("a", "a"), EnumValue.of("b", "b"), EnumValue.of("c", "c")))),
+            "a",
+            ofEnglish("new_label"),
+            true);
 
-        final TypeDraft typeDraft = TypeDraftBuilder
-            .of("foo", ofEnglish("name"), emptySet())
+    final TypeDraft typeDraft =
+        TypeDraftBuilder.of("foo", ofEnglish("name"), emptySet())
             .fieldDefinitions(singletonList(newDefinition))
             .build();
 
-        final FieldDefinition oldDefinition = FieldDefinition
-            .of(SetFieldType.of(
-                EnumFieldType.of(asList(
-                    EnumValue.of("b", "b"),
-                    EnumValue.of("a", "a")
-                ))), "a", ofEnglish("new_label"), true);
+    final FieldDefinition oldDefinition =
+        FieldDefinition.of(
+            SetFieldType.of(
+                EnumFieldType.of(asList(EnumValue.of("b", "b"), EnumValue.of("a", "a")))),
+            "a",
+            ofEnglish("new_label"),
+            true);
 
-        final Type type = mock(Type.class);
-        when(type.getFieldDefinitions()).thenReturn(singletonList(oldDefinition));
+    final Type type = mock(Type.class);
+    when(type.getFieldDefinitions()).thenReturn(singletonList(oldDefinition));
 
-        // test
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(type,
-            typeDraft, SYNC_OPTIONS);
+    // test
+    final List<UpdateAction<Type>> updateActions =
+        buildFieldDefinitionsUpdateActions(type, typeDraft, SYNC_OPTIONS);
 
-        // assertion
-        assertThat(updateActions).containsExactly(
+    // assertion
+    assertThat(updateActions)
+        .containsExactly(
             AddEnumValue.of("a", EnumValue.of("c", "c")),
-            ChangeEnumValueOrder.of("a", asList("a", "b", "c"))
-        );
+            ChangeEnumValueOrder.of("a", asList("a", "b", "c")));
+  }
 
-    }
+  @Test
+  void buildFieldsUpdateActions_WithSetOfIdenticalEnums_ShouldNotBuildActions() {
+    // preparation
+    final FieldDefinition newDefinition =
+        FieldDefinition.of(
+            SetFieldType.of(EnumFieldType.of(emptyList())), "a", ofEnglish("new_label"), true);
 
-    @Test
-    void buildFieldsUpdateActions_WithSetOfIdenticalEnums_ShouldNotBuildActions() {
-        // preparation
-        final FieldDefinition newDefinition = FieldDefinition
-            .of(SetFieldType.of(EnumFieldType.of(emptyList())), "a", ofEnglish("new_label"), true);
-
-        final TypeDraft typeDraft = TypeDraftBuilder
-            .of("foo", ofEnglish("name"), emptySet())
+    final TypeDraft typeDraft =
+        TypeDraftBuilder.of("foo", ofEnglish("name"), emptySet())
             .fieldDefinitions(singletonList(newDefinition))
             .build();
 
-        final FieldDefinition oldDefinition = FieldDefinition
-            .of(SetFieldType.of(
-                EnumFieldType.of(emptyList())), "a", ofEnglish("new_label"), true);
+    final FieldDefinition oldDefinition =
+        FieldDefinition.of(
+            SetFieldType.of(EnumFieldType.of(emptyList())), "a", ofEnglish("new_label"), true);
 
-        final Type type = mock(Type.class);
-        when(type.getFieldDefinitions()).thenReturn(singletonList(oldDefinition));
+    final Type type = mock(Type.class);
+    when(type.getFieldDefinitions()).thenReturn(singletonList(oldDefinition));
 
-        // test
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(type,
-            typeDraft, SYNC_OPTIONS);
+    // test
+    final List<UpdateAction<Type>> updateActions =
+        buildFieldDefinitionsUpdateActions(type, typeDraft, SYNC_OPTIONS);
 
-        // assertion
-        assertThat(updateActions).isEmpty();
-    }
+    // assertion
+    assertThat(updateActions).isEmpty();
+  }
 
-    @Test
-    void buildFieldsUpdateActions_WithSetOfLEnumsChanges_ShouldBuildCorrectActions() {
-        // preparation
-        final SetFieldType newSetFieldType = SetFieldType.of(
+  @Test
+  void buildFieldsUpdateActions_WithSetOfLEnumsChanges_ShouldBuildCorrectActions() {
+    // preparation
+    final SetFieldType newSetFieldType =
+        SetFieldType.of(
             LocalizedEnumFieldType.of(
                 asList(
                     LocalizedEnumValue.of("a", ofEnglish("a")),
                     LocalizedEnumValue.of("b", ofEnglish("b")),
-                    LocalizedEnumValue.of("c", ofEnglish("c"))
-                )
-            )
-        );
+                    LocalizedEnumValue.of("c", ofEnglish("c")))));
 
-        final FieldDefinition newDefinition = FieldDefinition
-            .of(newSetFieldType, "a", ofEnglish("new_label"), true);
+    final FieldDefinition newDefinition =
+        FieldDefinition.of(newSetFieldType, "a", ofEnglish("new_label"), true);
 
-        final TypeDraft typeDraft = TypeDraftBuilder
-            .of("foo", ofEnglish("name"), emptySet())
+    final TypeDraft typeDraft =
+        TypeDraftBuilder.of("foo", ofEnglish("name"), emptySet())
             .fieldDefinitions(singletonList(newDefinition))
             .build();
 
-        final SetFieldType oldSetFieldType = SetFieldType.of(
+    final SetFieldType oldSetFieldType =
+        SetFieldType.of(
             LocalizedEnumFieldType.of(
                 asList(
                     LocalizedEnumValue.of("b", ofEnglish("b")),
-                    LocalizedEnumValue.of("a", ofEnglish("a"))
-                )));
-        final FieldDefinition oldDefinition = FieldDefinition
-            .of(oldSetFieldType, "a", ofEnglish("new_label"), true);
+                    LocalizedEnumValue.of("a", ofEnglish("a")))));
+    final FieldDefinition oldDefinition =
+        FieldDefinition.of(oldSetFieldType, "a", ofEnglish("new_label"), true);
 
-        final Type type = mock(Type.class);
-        when(type.getFieldDefinitions()).thenReturn(singletonList(oldDefinition));
+    final Type type = mock(Type.class);
+    when(type.getFieldDefinitions()).thenReturn(singletonList(oldDefinition));
 
-        // test
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(type,
-            typeDraft, SYNC_OPTIONS);
+    // test
+    final List<UpdateAction<Type>> updateActions =
+        buildFieldDefinitionsUpdateActions(type, typeDraft, SYNC_OPTIONS);
 
-        // assertion
-        assertThat(updateActions)
-            .containsExactly(
-                AddLocalizedEnumValue.of("a", LocalizedEnumValue.of("c", ofEnglish("c"))),
-                ChangeLocalizedEnumValueOrder.of("a", asList("a", "b", "c")));
-    }
+    // assertion
+    assertThat(updateActions)
+        .containsExactly(
+            AddLocalizedEnumValue.of("a", LocalizedEnumValue.of("c", ofEnglish("c"))),
+            ChangeLocalizedEnumValueOrder.of("a", asList("a", "b", "c")));
+  }
 
-    @Test
-    void buildFieldsUpdateActions_WithSetOfIdenticalLEnums_ShouldNotBuildActions() {
-        // preparation
-        final SetFieldType newSetFieldType = SetFieldType.of(SetFieldType.of(LocalizedEnumFieldType.of(emptyList())));
+  @Test
+  void buildFieldsUpdateActions_WithSetOfIdenticalLEnums_ShouldNotBuildActions() {
+    // preparation
+    final SetFieldType newSetFieldType =
+        SetFieldType.of(SetFieldType.of(LocalizedEnumFieldType.of(emptyList())));
 
-        final FieldDefinition newDefinition = FieldDefinition
-            .of(newSetFieldType, "a", ofEnglish("new_label"), true);
+    final FieldDefinition newDefinition =
+        FieldDefinition.of(newSetFieldType, "a", ofEnglish("new_label"), true);
 
-        final TypeDraft typeDraft = TypeDraftBuilder
-            .of("foo", ofEnglish("name"), emptySet())
+    final TypeDraft typeDraft =
+        TypeDraftBuilder.of("foo", ofEnglish("name"), emptySet())
             .fieldDefinitions(singletonList(newDefinition))
             .build();
 
-        final SetFieldType oldSetFieldType = SetFieldType.of(SetFieldType.of(LocalizedEnumFieldType.of(emptyList())));
-        final FieldDefinition oldDefinition = FieldDefinition
-            .of(oldSetFieldType, "a", ofEnglish("new_label"), true);
+    final SetFieldType oldSetFieldType =
+        SetFieldType.of(SetFieldType.of(LocalizedEnumFieldType.of(emptyList())));
+    final FieldDefinition oldDefinition =
+        FieldDefinition.of(oldSetFieldType, "a", ofEnglish("new_label"), true);
 
-        final Type type = mock(Type.class);
-        when(type.getFieldDefinitions()).thenReturn(singletonList(oldDefinition));
+    final Type type = mock(Type.class);
+    when(type.getFieldDefinitions()).thenReturn(singletonList(oldDefinition));
 
-        // test
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(type,
-            typeDraft, SYNC_OPTIONS);
+    // test
+    final List<UpdateAction<Type>> updateActions =
+        buildFieldDefinitionsUpdateActions(type, typeDraft, SYNC_OPTIONS);
 
-        // assertion
-        assertThat(updateActions).isEmpty();
-    }
+    // assertion
+    assertThat(updateActions).isEmpty();
+  }
 
-    @Test
-    void buildFieldsUpdateActions_WithSetOfLEnumsChangesAndDefinitionLabelChange_ShouldBuildCorrectActions() {
-        // preparation
-        final SetFieldType newSetFieldType = SetFieldType.of(
+  @Test
+  void
+      buildFieldsUpdateActions_WithSetOfLEnumsChangesAndDefinitionLabelChange_ShouldBuildCorrectActions() {
+    // preparation
+    final SetFieldType newSetFieldType =
+        SetFieldType.of(
             LocalizedEnumFieldType.of(
                 asList(
                     LocalizedEnumValue.of("a", ofEnglish("a")),
                     LocalizedEnumValue.of("b", ofEnglish("newB")),
-                    LocalizedEnumValue.of("c", ofEnglish("c"))
-                )));
+                    LocalizedEnumValue.of("c", ofEnglish("c")))));
 
-        final FieldDefinition newDefinition = FieldDefinition
-            .of(newSetFieldType, "a", ofEnglish("new_label"), true);
+    final FieldDefinition newDefinition =
+        FieldDefinition.of(newSetFieldType, "a", ofEnglish("new_label"), true);
 
-        final TypeDraft typeDraft = TypeDraftBuilder
-            .of("foo", ofEnglish("name"), emptySet())
+    final TypeDraft typeDraft =
+        TypeDraftBuilder.of("foo", ofEnglish("name"), emptySet())
             .fieldDefinitions(singletonList(newDefinition))
             .build();
 
-        final SetFieldType oldSetFieldType = SetFieldType.of(
+    final SetFieldType oldSetFieldType =
+        SetFieldType.of(
             LocalizedEnumFieldType.of(
                 asList(
                     LocalizedEnumValue.of("b", ofEnglish("b")),
-                    LocalizedEnumValue.of("a", ofEnglish("a"))
-                )
-            ));
-        final FieldDefinition oldDefinition = FieldDefinition
-            .of(oldSetFieldType, "a", ofEnglish("old_label"), true);
+                    LocalizedEnumValue.of("a", ofEnglish("a")))));
+    final FieldDefinition oldDefinition =
+        FieldDefinition.of(oldSetFieldType, "a", ofEnglish("old_label"), true);
 
-        final Type type = mock(Type.class);
-        when(type.getFieldDefinitions()).thenReturn(singletonList(oldDefinition));
+    final Type type = mock(Type.class);
+    when(type.getFieldDefinitions()).thenReturn(singletonList(oldDefinition));
 
-        // test
-        final List<UpdateAction<Type>> updateActions = buildFieldDefinitionsUpdateActions(type,
-            typeDraft, SYNC_OPTIONS);
+    // test
+    final List<UpdateAction<Type>> updateActions =
+        buildFieldDefinitionsUpdateActions(type, typeDraft, SYNC_OPTIONS);
 
-        // assertion
-        assertThat(updateActions)
-            .containsExactlyInAnyOrder(
-                AddLocalizedEnumValue.of("a", LocalizedEnumValue.of("c", ofEnglish("c"))),
-                ChangeLocalizedEnumValueOrder.of("a", asList("a", "b", "c")),
-                ChangeFieldDefinitionLabel.of("a", ofEnglish("new_label"))
-            );
-    }
+    // assertion
+    assertThat(updateActions)
+        .containsExactlyInAnyOrder(
+            AddLocalizedEnumValue.of("a", LocalizedEnumValue.of("c", ofEnglish("c"))),
+            ChangeLocalizedEnumValueOrder.of("a", asList("a", "b", "c")),
+            ChangeFieldDefinitionLabel.of("a", ofEnglish("new_label")));
+  }
 }

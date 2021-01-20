@@ -1,30 +1,5 @@
 package com.commercetools.sync.products.utils;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.sphere.sdk.channels.Channel;
-import io.sphere.sdk.customergroups.CustomerGroup;
-import io.sphere.sdk.models.Asset;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.products.Price;
-import io.sphere.sdk.products.PriceDraft;
-import io.sphere.sdk.products.Product;
-import io.sphere.sdk.products.ProductVariant;
-import io.sphere.sdk.products.ProductVariantDraft;
-import io.sphere.sdk.products.attributes.Attribute;
-import io.sphere.sdk.products.attributes.AttributeAccess;
-import io.sphere.sdk.products.attributes.AttributeDraft;
-import io.sphere.sdk.types.CustomFieldsDraft;
-import io.sphere.sdk.types.Type;
-import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-
 import static com.commercetools.sync.commons.MockUtils.getAssetMockWithCustomFields;
 import static com.commercetools.sync.commons.MockUtils.getTypeMock;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
@@ -61,419 +36,483 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import io.sphere.sdk.channels.Channel;
+import io.sphere.sdk.customergroups.CustomerGroup;
+import io.sphere.sdk.models.Asset;
+import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
+import io.sphere.sdk.products.Price;
+import io.sphere.sdk.products.PriceDraft;
+import io.sphere.sdk.products.Product;
+import io.sphere.sdk.products.ProductVariant;
+import io.sphere.sdk.products.ProductVariantDraft;
+import io.sphere.sdk.products.attributes.Attribute;
+import io.sphere.sdk.products.attributes.AttributeAccess;
+import io.sphere.sdk.products.attributes.AttributeDraft;
+import io.sphere.sdk.types.CustomFieldsDraft;
+import io.sphere.sdk.types.Type;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import org.junit.jupiter.api.Test;
+
 class VariantReferenceResolutionUtilsTest {
 
-    @Test
-    void mapToProductVariantDrafts_WithExpandedReferences_ShouldReturnVariantDraftsWithReplacedKeys() {
-        final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
-
-        final String channelKey = "channelKey";
-        final Channel channel = getChannelMock(channelKey);
-
-        final Reference<Channel> channelReference = Reference
-            .ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel.getId(), channel);
-
-        final Reference<Type> priceCustomTypeReference =
-            Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), customType);
-
-        final CustomerGroup customerGroup = getMockCustomerGroup("customer-group-id", "customer-group-key");
-        final Reference<CustomerGroup> customerGroupReference =
-            Reference.ofResourceTypeIdAndObj(CustomerGroup.referenceTypeId(), customerGroup);
-
-        final Price price = getPriceMockWithReferences(channelReference, priceCustomTypeReference,
-            customerGroupReference);
-
-        final Asset asset =
-            getAssetMockWithCustomFields(Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), customType));
-
-        final ProductVariant productVariant = getProductVariantMock(singletonList(price), singletonList(asset));
-
-        final List<ProductVariantDraft> variantDrafts = mapToProductVariantDrafts(
-            singletonList(productVariant));
-
-        assertThat(variantDrafts).hasSize(1);
-        assertThat(variantDrafts.get(0).getPrices()).hasSize(1);
-        final ResourceIdentifier<Channel> channelReferenceAfterReplacement =
-            variantDrafts.get(0).getPrices().get(0).getChannel();
-        assertThat(channelReferenceAfterReplacement).isNotNull();
-        assertThat(channelReferenceAfterReplacement.getKey()).isEqualTo(channelKey);
-
-        final CustomFieldsDraft priceCustomAfterReplacement = variantDrafts.get(0).getPrices().get(0).getCustom();
-        assertThat(priceCustomAfterReplacement).isNotNull();
-        final ResourceIdentifier<Type> priceCustomTypeAfterReplacement = priceCustomAfterReplacement.getType();
-        assertThat(priceCustomTypeAfterReplacement).isNotNull();
-        assertThat(priceCustomTypeAfterReplacement.getKey()).isEqualTo(customType.getKey());
-
-        assertThat(variantDrafts.get(0).getAssets()).hasSize(1);
-        final ResourceIdentifier<Type> referenceReplacedType =
-            variantDrafts.get(0).getAssets().get(0).getCustom().getType();
-        assertThat(referenceReplacedType).isNotNull();
-        assertThat(referenceReplacedType.getKey()).isEqualTo(customType.getKey());
-    }
-
-    @Test
-    void mapToProductVariantDrafts_WithSomeExpandedReferences_ShouldReplaceSomeKeys() {
-        final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
-
-        final Reference<Type> priceCustomTypeReference1 =
-            Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), customType);
-        final Reference<Type> priceCustomTypeReference2 = Type.referenceOfId(UUID.randomUUID().toString());
-
-        final String channelKey1 = "channelKey1";
-        final Channel channel1 = getChannelMock(channelKey1);
-
-        final Reference<Channel> channelReference1 = Reference
-            .ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel1.getId(), channel1);
-        final Reference<Channel> channelReference2 = Channel.referenceOfId(UUID.randomUUID().toString());
-
-        final Price price1 = getPriceMockWithReferences(channelReference1, priceCustomTypeReference1, null);
-        final Price price2 = getPriceMockWithReferences(channelReference2, priceCustomTypeReference2, null);
-
-        final Asset asset1 = getAssetMockWithCustomFields(Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(),
-            customType));
-        final Asset asset2 = getAssetMockWithCustomFields(Reference.ofResourceTypeIdAndId(Type.referenceTypeId(),
-                UUID.randomUUID().toString()));
-
-        final ProductVariant productVariant1 = getProductVariantMock(singletonList(price1), singletonList(asset1));
-        final ProductVariant productVariant2 = getProductVariantMock(singletonList(price2), singletonList(asset2));
-
-        final Product product = readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
-        final String uuid = UUID.randomUUID().toString();
-        final Reference<Product> expandedReference =
-            Reference.ofResourceTypeIdAndIdAndObj(Product.referenceTypeId(), uuid, product);
-        final Attribute expandedProductRefAttribute =
-            Attribute.of("attrName", AttributeAccess.ofProductReference(), expandedReference);
-
-        when(productVariant2.getAttributes()).thenReturn(singletonList(expandedProductRefAttribute));
-
-        final Reference<Product> nonExpandedReference = Product.referenceOfId(uuid);
-        final Attribute nonExpandedProductRefAttribute =
-            Attribute.of("attrName", AttributeAccess.ofProductReference(), nonExpandedReference);
-        when(productVariant1.getAttributes()).thenReturn(singletonList(nonExpandedProductRefAttribute));
-
-
-        final List<ProductVariantDraft> variantDrafts = mapToProductVariantDrafts(
-            asList(productVariant1, productVariant2));
-
-        assertThat(variantDrafts).hasSize(2);
-        assertThat(variantDrafts.get(0).getPrices()).hasSize(1);
-
-        final ResourceIdentifier<Channel> channel1ReferenceAfterReplacement =
-            variantDrafts.get(0).getPrices().get(0).getChannel();
-        assertThat(channel1ReferenceAfterReplacement).isNotNull();
-        assertThat(channel1ReferenceAfterReplacement.getKey()).isEqualTo(channelKey1);
-
-        final CustomFieldsDraft price1CustomFieldsAfterReplacement =
-            variantDrafts.get(0).getPrices().get(0).getCustom();
-        assertThat(price1CustomFieldsAfterReplacement).isNotNull();
-        final ResourceIdentifier<Type> priceCustomType1ReferenceAfterReplacement =
-            price1CustomFieldsAfterReplacement.getType();
-        assertThat(priceCustomType1ReferenceAfterReplacement).isNotNull();
-        assertThat(priceCustomType1ReferenceAfterReplacement.getKey()).isEqualTo(customType.getKey());
-
-        assertThat(variantDrafts.get(0).getAssets()).hasSize(1);
-        final ResourceIdentifier<Type> asset1CustomType = variantDrafts.get(0).getAssets().get(0).getCustom().getType();
-        assertThat(asset1CustomType).isNotNull();
-        assertThat(asset1CustomType.getKey()).isEqualTo(customType.getKey());
-
-        assertThat(variantDrafts.get(1).getPrices()).hasSize(1);
-
-        final ResourceIdentifier<Channel> channel2ReferenceAfterReplacement =
-            variantDrafts.get(1).getPrices().get(0).getChannel();
-        assertThat(channel2ReferenceAfterReplacement).isNotNull();
-        // Asset price channel reference id is not replaced.
-        assertThat(channel2ReferenceAfterReplacement.getId()).isEqualTo(channelReference2.getId());
-
-        final CustomFieldsDraft price2CustomFieldsAfterReplacement =
-            variantDrafts.get(1).getPrices().get(0).getCustom();
-        assertThat(price2CustomFieldsAfterReplacement).isNotNull();
-        final ResourceIdentifier<Type> priceCustomType2ReferenceAfterReplacement =
-            price2CustomFieldsAfterReplacement.getType();
-        assertThat(priceCustomType2ReferenceAfterReplacement).isNotNull();
-        // Asset price custom type reference id is not replaced.
-        assertThat(priceCustomType2ReferenceAfterReplacement.getId()).isEqualTo(priceCustomTypeReference2.getId());
-
-        assertThat(variantDrafts.get(1).getAssets()).hasSize(1);
-        final ResourceIdentifier<Type> asset2CustomType = variantDrafts.get(1).getAssets().get(0).getCustom().getType();
-        assertThat(asset2CustomType).isNotNull();
-        // Asset price asset custom type reference id is not replaced.
-        assertThat(asset2CustomType.getId()).isEqualTo(asset2.getCustom().getType().getId());
-
-        final JsonNode productReference1Value = variantDrafts.get(0).getAttributes().get(0).getValue();
-        assertThat(productReference1Value).isNotNull();
-        assertThat(productReference1Value.get("id")).isNotNull();
-        assertThat(productReference1Value.get("id").asText()).isEqualTo(uuid);
-
-
-        final JsonNode productReference2Value = variantDrafts.get(1).getAttributes().get(0).getValue();
-        assertThat(productReference2Value).isNotNull();
-        assertThat(productReference2Value.get("id")).isNotNull();
-        assertThat(productReference2Value.get("id").asText()).isEqualTo("productKey1");
-    }
-
-    @Test
-    void mapToProductVariantDrafts_WithNoExpandedReferences_ShouldNotReplaceIds() {
-        final Reference<Channel> channelReference = Channel.referenceOfId(UUID.randomUUID().toString());
-        final Reference<Type> customTypeReference = Type.referenceOfId(UUID.randomUUID().toString());
-
-        final Asset asset2 = getAssetMockWithCustomFields(Reference.ofResourceTypeIdAndId(Type.referenceTypeId(),
-            UUID.randomUUID().toString()));
-
-        final Price price = getPriceMockWithReferences(channelReference, customTypeReference, null);
-        final ProductVariant productVariant = getProductVariantMock(singletonList(price), singletonList(asset2));
-
-        final List<ProductVariantDraft> variantDrafts =
-            mapToProductVariantDrafts(singletonList(productVariant));
-
-        assertThat(variantDrafts).hasSize(1);
-        assertThat(variantDrafts.get(0).getPrices()).hasSize(1);
-
-        final ResourceIdentifier<Channel> channelReferenceAfterReplacement =
-            variantDrafts.get(0).getPrices().get(0).getChannel();
-        assertThat(channelReferenceAfterReplacement).isNotNull();
-        // Assert price channel reference id is not replaced.
-        assertThat(channelReferenceAfterReplacement.getId()).isEqualTo(channelReference.getId());
-
-
-        final CustomFieldsDraft priceCustomFields = variantDrafts.get(0).getPrices().get(0).getCustom();
-        assertThat(priceCustomFields).isNotNull();
-        final ResourceIdentifier<Type> priceCustomTypeAfterReplacement = priceCustomFields.getType();
-        // Assert price custom type reference id is not replaced.
-        assertThat(priceCustomTypeAfterReplacement.getId()).isEqualTo(customTypeReference.getId());
-
-        assertThat(variantDrafts.get(0).getAssets()).hasSize(1);
-        final ResourceIdentifier<Type> assetCustomTypeReference = variantDrafts.get(0).getAssets().get(0)
-                                                                               .getCustom().getType();
-        assertThat(assetCustomTypeReference).isNotNull();
-        // Assert asset custom type reference id is not replaced.
-        assertThat(assetCustomTypeReference.getId()).isEqualTo(variantDrafts.get(0).getAssets().get(0)
-                                                                            .getCustom().getType().getId());
-    }
-
-    @Test
-    void mapToPriceDraft_WithNoExpandedReferences_ShouldNotReplaceIds() {
-        final Reference<Channel> channelReference = Channel.referenceOfId(UUID.randomUUID().toString());
-        final Reference<Type> typeReference = Type.referenceOfId(UUID.randomUUID().toString());
-
-        final Price price = getPriceMockWithReferences(channelReference, typeReference, null);
-        final ProductVariant productVariant = getProductVariantMock(singletonList(price));
-
-        final List<PriceDraft> priceDrafts = mapToPriceDrafts(productVariant);
-
-        assertThat(priceDrafts).hasSize(1);
-        final PriceDraft priceDraftAfterReplacement = priceDrafts.get(0);
-
-        final ResourceIdentifier<Channel> channelReferenceAfterReplacement = priceDraftAfterReplacement.getChannel();
-        assertThat(channelReferenceAfterReplacement).isNotNull();
-        // Assert Id is not replaced with key.
-        assertThat(channelReferenceAfterReplacement.getId()).isEqualTo(channelReference.getId());
-
-        final CustomFieldsDraft customAfterReplacement = priceDraftAfterReplacement.getCustom();
-        assertThat(customAfterReplacement).isNotNull();
-        final ResourceIdentifier<Type> customTypeAfterReplacement = customAfterReplacement.getType();
-
-        assertThat(customTypeAfterReplacement).isNotNull();
-        // Assert Id is not replaced with key.
-        assertThat(customTypeAfterReplacement.getId()).isEqualTo(typeReference.getId());
-    }
-
-    @Test
-    void mapToPriceDraft_WithAllExpandedReferences_ShouldReplaceIds() {
-        final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
-
-        final String channelKey1 = "channelKey1";
-        final String channelKey2 = "channelKey2";
-
-        final Channel channel1 = getChannelMock(channelKey1);
-        final Channel channel2 = getChannelMock(channelKey2);
-
-        final Reference<Channel> channelReference1 =
-            Reference.ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel1.getId(), channel1);
-        final Reference<Channel> channelReference2 =
-            Reference.ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel2.getId(), channel2);
-        final Reference<Type> customTypeReference =
-            Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), customType);
-
-        final Price price1 = getPriceMockWithReferences(channelReference1, customTypeReference, null);
-        final Price price2 = getPriceMockWithReferences(channelReference2, customTypeReference, null);
-
-        final ProductVariant productVariant = getProductVariantMock(asList(price1, price2));
-
-        final List<PriceDraft> priceDrafts = mapToPriceDrafts(productVariant);
-
-        assertThat(priceDrafts).hasSize(2);
-
-        final PriceDraft priceDraft1AfterReplacement = priceDrafts.get(0);
-        final ResourceIdentifier<Channel> channelReference1AfterReplacement = priceDraft1AfterReplacement.getChannel();
-        assertThat(channelReference1AfterReplacement).isNotNull();
-        assertThat(channelReference1AfterReplacement.getKey()).isEqualTo(channelKey1);
-
-        final CustomFieldsDraft custom1AfterReplacement = priceDraft1AfterReplacement.getCustom();
-        assertThat(custom1AfterReplacement).isNotNull();
-        final ResourceIdentifier<Type> customType1AfterReplacement = custom1AfterReplacement.getType();
-        assertThat(customType1AfterReplacement).isNotNull();
-        assertThat(customType1AfterReplacement.getKey()).isEqualTo(customType.getKey());
-
-
-        final PriceDraft priceDraft2AfterReplacement = priceDrafts.get(1);
-        final ResourceIdentifier<Channel> channelReference2AfterReplacement = priceDraft2AfterReplacement.getChannel();
-        assertThat(channelReference2AfterReplacement).isNotNull();
-        assertThat(channelReference2AfterReplacement.getKey()).isEqualTo(channelKey2);
-
-        final CustomFieldsDraft custom2AfterReplacement = priceDraft2AfterReplacement.getCustom();
-        assertThat(custom2AfterReplacement).isNotNull();
-        final ResourceIdentifier<Type> customType2AfterReplacement = custom2AfterReplacement.getType();
-        assertThat(customType2AfterReplacement).isNotNull();
-        assertThat(customType2AfterReplacement.getKey()).isEqualTo(customType.getKey());
-    }
-
-    @Test
-    void mapToPriceDraft_WithSomeExpandedReferences_ShouldReplaceOnlyExpandedIds() {
-        final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
-        final String channelKey1 = "channelKey1";
-
-        final Channel channel1 = getChannelMock(channelKey1);
-
-        final Reference<Channel> channelReference1 =
-            Reference.ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel1.getId(), channel1);
-        final Reference<Channel> channelReference2 = Channel.referenceOfId(UUID.randomUUID().toString());
-
-        final Reference<Type> typeReference1 = Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), customType);
-        final Reference<Type> typeReference2 = Type.referenceOfId(UUID.randomUUID().toString());
-
-        final Price price1 = getPriceMockWithReferences(channelReference1, typeReference1, null);
-        final Price price2 = getPriceMockWithReferences(channelReference2, typeReference2, null);
-
-        final ProductVariant productVariant = getProductVariantMock(asList(price1, price2));
-
-        final List<PriceDraft> priceDrafts = mapToPriceDrafts(productVariant);
-
-        assertThat(priceDrafts).hasSize(2);
-
-        final ResourceIdentifier<Channel> channelReference1AfterReplacement = priceDrafts.get(0).getChannel();
-        assertThat(channelReference1AfterReplacement).isNotNull();
-        assertThat(channelReference1AfterReplacement.getKey()).isEqualTo(channelKey1);
-
-        final ResourceIdentifier<Channel> channelReference2AfterReplacement = priceDrafts.get(1).getChannel();
-        assertThat(channelReference2AfterReplacement).isNotNull();
-        // Assert non expanded reference has id not replaced.
-        assertThat(channelReference2AfterReplacement.getId()).isEqualTo(channelReference2.getId());
-
-        final CustomFieldsDraft customType1AfterReplacement = priceDrafts.get(0).getCustom();
-        assertThat(customType1AfterReplacement).isNotNull();
-        assertThat(customType1AfterReplacement.getType()).isNotNull();
-        assertThat(customType1AfterReplacement.getType().getKey()).isEqualTo(customType.getKey());
-
-        final CustomFieldsDraft customType2AfterReplacement = priceDrafts.get(1).getCustom();
-        assertThat(customType2AfterReplacement).isNotNull();
-        assertThat(customType2AfterReplacement.getType()).isNotNull();
-        // Assert expanded reference has id not replaced.
-        assertThat(customType2AfterReplacement.getType().getId()).isEqualTo(typeReference2.getId());
-    }
-
-    @Test
-    void replaceAttributeReferenceIdWithKey_WithTextAttribute_ShouldReturnEmptyOptional() {
-        final Attribute attribute = Attribute.of("attrName", AttributeAccess.ofText(), "value");
-        final Optional<Reference<Product>> attributeReferenceIdWithKey = replaceAttributeReferenceIdWithKey(attribute);
-
-        assertThat(attributeReferenceIdWithKey).isEmpty();
-    }
-
-    @Test
-    void replaceAttributeReferenceIdWithKey_WithProductReferenceSetAttribute_ShouldReturnEmptyOptional() {
-        final Attribute attribute =
-            Attribute.of("attrName", AttributeAccess.ofProductReferenceSet(), new HashSet<>());
-        final Optional<Reference<Product>> attributeReferenceIdWithKey = replaceAttributeReferenceIdWithKey(attribute);
-
-        assertThat(attributeReferenceIdWithKey).isEmpty();
-    }
-
-    @Test
-    void replaceAttributeReferenceIdWithKey_WithNonExpandedProductReferenceAttribute_ShouldNotReplaceId() {
-        final Reference<Product> nonExpandedReference = Product.referenceOfId(UUID.randomUUID().toString());
-        final Attribute attribute =
-            Attribute.of("attrName", AttributeAccess.ofProductReference(), nonExpandedReference);
-        final Optional<Reference<Product>> attributeReferenceIdWithKey = replaceAttributeReferenceIdWithKey(attribute);
-
-        assertThat(attributeReferenceIdWithKey).contains(nonExpandedReference);
-    }
-
-    @Test
-    void replaceAttributeReferenceIdWithKey_WithExpandedProductReferenceAttribute_ShouldReplaceId() {
-        final Product product = readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
-        final Reference<Product> expandedReference =
-            Reference.ofResourceTypeIdAndIdAndObj(Product.referenceTypeId(), UUID.randomUUID().toString(), product);
-        final Attribute attribute =
-            Attribute.of("attrName", AttributeAccess.ofProductReference(), expandedReference);
-        final Optional<Reference<Product>> attributeReferenceIdWithKey = replaceAttributeReferenceIdWithKey(attribute);
-        assertThat(attributeReferenceIdWithKey).contains(Product.referenceOfId("productKey1"));
-    }
-
-    @Test
-    void replaceAttributeReferenceSetIdsWithKeys_WithTextAttribute_ShouldReturnEmptyOptional() {
-        final Attribute attribute = Attribute.of("attrName", AttributeAccess.ofText(), "value");
-        final Optional<Set<Reference<Product>>> attributeReferenceSetIdsWithKeys =
-            replaceAttributeReferenceSetIdsWithKeys(attribute);
-
-        assertThat(attributeReferenceSetIdsWithKeys).isEmpty();
-    }
-
-    @Test
-    void replaceAttributesReferencesIdsWithKeys_WithNoAttributes_ShouldNotReplaceIds() {
-        final ProductVariant variant = mock(ProductVariant.class);
-        when(variant.getAttributes()).thenReturn(new ArrayList<>());
-        final List<AttributeDraft> replacedDrafts = replaceAttributesReferencesIdsWithKeys(variant);
-        assertThat(replacedDrafts).isEmpty();
-    }
-
-    @Test
-    void replaceAttributesReferencesIdsWithKeys_WithAttributesWithNoReferences_ShouldNotChangeAttributes() {
-        final Product product = readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
-        final ProductVariant masterVariant = product.getMasterData().getStaged().getMasterVariant();
-        final List<AttributeDraft> replacedDrafts = replaceAttributesReferencesIdsWithKeys(masterVariant);
-        replacedDrafts.forEach(attributeDraft -> {
-            final String name = attributeDraft.getName();
-            final Attribute originalAttribute = masterVariant.getAttribute(name);
-            assertThat(originalAttribute).isNotNull();
-            assertThat(originalAttribute.getValueAsJsonNode()).isEqualTo(attributeDraft.getValue());
+  @Test
+  void
+      mapToProductVariantDrafts_WithExpandedReferences_ShouldReturnVariantDraftsWithReplacedKeys() {
+    final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
+
+    final String channelKey = "channelKey";
+    final Channel channel = getChannelMock(channelKey);
+
+    final Reference<Channel> channelReference =
+        Reference.ofResourceTypeIdAndIdAndObj(Channel.referenceTypeId(), channel.getId(), channel);
+
+    final Reference<Type> priceCustomTypeReference =
+        Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), customType);
+
+    final CustomerGroup customerGroup =
+        getMockCustomerGroup("customer-group-id", "customer-group-key");
+    final Reference<CustomerGroup> customerGroupReference =
+        Reference.ofResourceTypeIdAndObj(CustomerGroup.referenceTypeId(), customerGroup);
+
+    final Price price =
+        getPriceMockWithReferences(
+            channelReference, priceCustomTypeReference, customerGroupReference);
+
+    final Asset asset =
+        getAssetMockWithCustomFields(
+            Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), customType));
+
+    final ProductVariant productVariant =
+        getProductVariantMock(singletonList(price), singletonList(asset));
+
+    final List<ProductVariantDraft> variantDrafts =
+        mapToProductVariantDrafts(singletonList(productVariant));
+
+    assertThat(variantDrafts).hasSize(1);
+    assertThat(variantDrafts.get(0).getPrices()).hasSize(1);
+    final ResourceIdentifier<Channel> channelReferenceAfterReplacement =
+        variantDrafts.get(0).getPrices().get(0).getChannel();
+    assertThat(channelReferenceAfterReplacement).isNotNull();
+    assertThat(channelReferenceAfterReplacement.getKey()).isEqualTo(channelKey);
+
+    final CustomFieldsDraft priceCustomAfterReplacement =
+        variantDrafts.get(0).getPrices().get(0).getCustom();
+    assertThat(priceCustomAfterReplacement).isNotNull();
+    final ResourceIdentifier<Type> priceCustomTypeAfterReplacement =
+        priceCustomAfterReplacement.getType();
+    assertThat(priceCustomTypeAfterReplacement).isNotNull();
+    assertThat(priceCustomTypeAfterReplacement.getKey()).isEqualTo(customType.getKey());
+
+    assertThat(variantDrafts.get(0).getAssets()).hasSize(1);
+    final ResourceIdentifier<Type> referenceReplacedType =
+        variantDrafts.get(0).getAssets().get(0).getCustom().getType();
+    assertThat(referenceReplacedType).isNotNull();
+    assertThat(referenceReplacedType.getKey()).isEqualTo(customType.getKey());
+  }
+
+  @Test
+  void mapToProductVariantDrafts_WithSomeExpandedReferences_ShouldReplaceSomeKeys() {
+    final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
+
+    final Reference<Type> priceCustomTypeReference1 =
+        Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), customType);
+    final Reference<Type> priceCustomTypeReference2 =
+        Type.referenceOfId(UUID.randomUUID().toString());
+
+    final String channelKey1 = "channelKey1";
+    final Channel channel1 = getChannelMock(channelKey1);
+
+    final Reference<Channel> channelReference1 =
+        Reference.ofResourceTypeIdAndIdAndObj(
+            Channel.referenceTypeId(), channel1.getId(), channel1);
+    final Reference<Channel> channelReference2 =
+        Channel.referenceOfId(UUID.randomUUID().toString());
+
+    final Price price1 =
+        getPriceMockWithReferences(channelReference1, priceCustomTypeReference1, null);
+    final Price price2 =
+        getPriceMockWithReferences(channelReference2, priceCustomTypeReference2, null);
+
+    final Asset asset1 =
+        getAssetMockWithCustomFields(
+            Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), customType));
+    final Asset asset2 =
+        getAssetMockWithCustomFields(
+            Reference.ofResourceTypeIdAndId(Type.referenceTypeId(), UUID.randomUUID().toString()));
+
+    final ProductVariant productVariant1 =
+        getProductVariantMock(singletonList(price1), singletonList(asset1));
+    final ProductVariant productVariant2 =
+        getProductVariantMock(singletonList(price2), singletonList(asset2));
+
+    final Product product = readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
+    final String uuid = UUID.randomUUID().toString();
+    final Reference<Product> expandedReference =
+        Reference.ofResourceTypeIdAndIdAndObj(Product.referenceTypeId(), uuid, product);
+    final Attribute expandedProductRefAttribute =
+        Attribute.of("attrName", AttributeAccess.ofProductReference(), expandedReference);
+
+    when(productVariant2.getAttributes()).thenReturn(singletonList(expandedProductRefAttribute));
+
+    final Reference<Product> nonExpandedReference = Product.referenceOfId(uuid);
+    final Attribute nonExpandedProductRefAttribute =
+        Attribute.of("attrName", AttributeAccess.ofProductReference(), nonExpandedReference);
+    when(productVariant1.getAttributes()).thenReturn(singletonList(nonExpandedProductRefAttribute));
+
+    final List<ProductVariantDraft> variantDrafts =
+        mapToProductVariantDrafts(asList(productVariant1, productVariant2));
+
+    assertThat(variantDrafts).hasSize(2);
+    assertThat(variantDrafts.get(0).getPrices()).hasSize(1);
+
+    final ResourceIdentifier<Channel> channel1ReferenceAfterReplacement =
+        variantDrafts.get(0).getPrices().get(0).getChannel();
+    assertThat(channel1ReferenceAfterReplacement).isNotNull();
+    assertThat(channel1ReferenceAfterReplacement.getKey()).isEqualTo(channelKey1);
+
+    final CustomFieldsDraft price1CustomFieldsAfterReplacement =
+        variantDrafts.get(0).getPrices().get(0).getCustom();
+    assertThat(price1CustomFieldsAfterReplacement).isNotNull();
+    final ResourceIdentifier<Type> priceCustomType1ReferenceAfterReplacement =
+        price1CustomFieldsAfterReplacement.getType();
+    assertThat(priceCustomType1ReferenceAfterReplacement).isNotNull();
+    assertThat(priceCustomType1ReferenceAfterReplacement.getKey()).isEqualTo(customType.getKey());
+
+    assertThat(variantDrafts.get(0).getAssets()).hasSize(1);
+    final ResourceIdentifier<Type> asset1CustomType =
+        variantDrafts.get(0).getAssets().get(0).getCustom().getType();
+    assertThat(asset1CustomType).isNotNull();
+    assertThat(asset1CustomType.getKey()).isEqualTo(customType.getKey());
+
+    assertThat(variantDrafts.get(1).getPrices()).hasSize(1);
+
+    final ResourceIdentifier<Channel> channel2ReferenceAfterReplacement =
+        variantDrafts.get(1).getPrices().get(0).getChannel();
+    assertThat(channel2ReferenceAfterReplacement).isNotNull();
+    // Asset price channel reference id is not replaced.
+    assertThat(channel2ReferenceAfterReplacement.getId()).isEqualTo(channelReference2.getId());
+
+    final CustomFieldsDraft price2CustomFieldsAfterReplacement =
+        variantDrafts.get(1).getPrices().get(0).getCustom();
+    assertThat(price2CustomFieldsAfterReplacement).isNotNull();
+    final ResourceIdentifier<Type> priceCustomType2ReferenceAfterReplacement =
+        price2CustomFieldsAfterReplacement.getType();
+    assertThat(priceCustomType2ReferenceAfterReplacement).isNotNull();
+    // Asset price custom type reference id is not replaced.
+    assertThat(priceCustomType2ReferenceAfterReplacement.getId())
+        .isEqualTo(priceCustomTypeReference2.getId());
+
+    assertThat(variantDrafts.get(1).getAssets()).hasSize(1);
+    final ResourceIdentifier<Type> asset2CustomType =
+        variantDrafts.get(1).getAssets().get(0).getCustom().getType();
+    assertThat(asset2CustomType).isNotNull();
+    // Asset price asset custom type reference id is not replaced.
+    assertThat(asset2CustomType.getId()).isEqualTo(asset2.getCustom().getType().getId());
+
+    final JsonNode productReference1Value = variantDrafts.get(0).getAttributes().get(0).getValue();
+    assertThat(productReference1Value).isNotNull();
+    assertThat(productReference1Value.get("id")).isNotNull();
+    assertThat(productReference1Value.get("id").asText()).isEqualTo(uuid);
+
+    final JsonNode productReference2Value = variantDrafts.get(1).getAttributes().get(0).getValue();
+    assertThat(productReference2Value).isNotNull();
+    assertThat(productReference2Value.get("id")).isNotNull();
+    assertThat(productReference2Value.get("id").asText()).isEqualTo("productKey1");
+  }
+
+  @Test
+  void mapToProductVariantDrafts_WithNoExpandedReferences_ShouldNotReplaceIds() {
+    final Reference<Channel> channelReference = Channel.referenceOfId(UUID.randomUUID().toString());
+    final Reference<Type> customTypeReference = Type.referenceOfId(UUID.randomUUID().toString());
+
+    final Asset asset2 =
+        getAssetMockWithCustomFields(
+            Reference.ofResourceTypeIdAndId(Type.referenceTypeId(), UUID.randomUUID().toString()));
+
+    final Price price = getPriceMockWithReferences(channelReference, customTypeReference, null);
+    final ProductVariant productVariant =
+        getProductVariantMock(singletonList(price), singletonList(asset2));
+
+    final List<ProductVariantDraft> variantDrafts =
+        mapToProductVariantDrafts(singletonList(productVariant));
+
+    assertThat(variantDrafts).hasSize(1);
+    assertThat(variantDrafts.get(0).getPrices()).hasSize(1);
+
+    final ResourceIdentifier<Channel> channelReferenceAfterReplacement =
+        variantDrafts.get(0).getPrices().get(0).getChannel();
+    assertThat(channelReferenceAfterReplacement).isNotNull();
+    // Assert price channel reference id is not replaced.
+    assertThat(channelReferenceAfterReplacement.getId()).isEqualTo(channelReference.getId());
+
+    final CustomFieldsDraft priceCustomFields = variantDrafts.get(0).getPrices().get(0).getCustom();
+    assertThat(priceCustomFields).isNotNull();
+    final ResourceIdentifier<Type> priceCustomTypeAfterReplacement = priceCustomFields.getType();
+    // Assert price custom type reference id is not replaced.
+    assertThat(priceCustomTypeAfterReplacement.getId()).isEqualTo(customTypeReference.getId());
+
+    assertThat(variantDrafts.get(0).getAssets()).hasSize(1);
+    final ResourceIdentifier<Type> assetCustomTypeReference =
+        variantDrafts.get(0).getAssets().get(0).getCustom().getType();
+    assertThat(assetCustomTypeReference).isNotNull();
+    // Assert asset custom type reference id is not replaced.
+    assertThat(assetCustomTypeReference.getId())
+        .isEqualTo(variantDrafts.get(0).getAssets().get(0).getCustom().getType().getId());
+  }
+
+  @Test
+  void mapToPriceDraft_WithNoExpandedReferences_ShouldNotReplaceIds() {
+    final Reference<Channel> channelReference = Channel.referenceOfId(UUID.randomUUID().toString());
+    final Reference<Type> typeReference = Type.referenceOfId(UUID.randomUUID().toString());
+
+    final Price price = getPriceMockWithReferences(channelReference, typeReference, null);
+    final ProductVariant productVariant = getProductVariantMock(singletonList(price));
+
+    final List<PriceDraft> priceDrafts = mapToPriceDrafts(productVariant);
+
+    assertThat(priceDrafts).hasSize(1);
+    final PriceDraft priceDraftAfterReplacement = priceDrafts.get(0);
+
+    final ResourceIdentifier<Channel> channelReferenceAfterReplacement =
+        priceDraftAfterReplacement.getChannel();
+    assertThat(channelReferenceAfterReplacement).isNotNull();
+    // Assert Id is not replaced with key.
+    assertThat(channelReferenceAfterReplacement.getId()).isEqualTo(channelReference.getId());
+
+    final CustomFieldsDraft customAfterReplacement = priceDraftAfterReplacement.getCustom();
+    assertThat(customAfterReplacement).isNotNull();
+    final ResourceIdentifier<Type> customTypeAfterReplacement = customAfterReplacement.getType();
+
+    assertThat(customTypeAfterReplacement).isNotNull();
+    // Assert Id is not replaced with key.
+    assertThat(customTypeAfterReplacement.getId()).isEqualTo(typeReference.getId());
+  }
+
+  @Test
+  void mapToPriceDraft_WithAllExpandedReferences_ShouldReplaceIds() {
+    final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
+
+    final String channelKey1 = "channelKey1";
+    final String channelKey2 = "channelKey2";
+
+    final Channel channel1 = getChannelMock(channelKey1);
+    final Channel channel2 = getChannelMock(channelKey2);
+
+    final Reference<Channel> channelReference1 =
+        Reference.ofResourceTypeIdAndIdAndObj(
+            Channel.referenceTypeId(), channel1.getId(), channel1);
+    final Reference<Channel> channelReference2 =
+        Reference.ofResourceTypeIdAndIdAndObj(
+            Channel.referenceTypeId(), channel2.getId(), channel2);
+    final Reference<Type> customTypeReference =
+        Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), customType);
+
+    final Price price1 = getPriceMockWithReferences(channelReference1, customTypeReference, null);
+    final Price price2 = getPriceMockWithReferences(channelReference2, customTypeReference, null);
+
+    final ProductVariant productVariant = getProductVariantMock(asList(price1, price2));
+
+    final List<PriceDraft> priceDrafts = mapToPriceDrafts(productVariant);
+
+    assertThat(priceDrafts).hasSize(2);
+
+    final PriceDraft priceDraft1AfterReplacement = priceDrafts.get(0);
+    final ResourceIdentifier<Channel> channelReference1AfterReplacement =
+        priceDraft1AfterReplacement.getChannel();
+    assertThat(channelReference1AfterReplacement).isNotNull();
+    assertThat(channelReference1AfterReplacement.getKey()).isEqualTo(channelKey1);
+
+    final CustomFieldsDraft custom1AfterReplacement = priceDraft1AfterReplacement.getCustom();
+    assertThat(custom1AfterReplacement).isNotNull();
+    final ResourceIdentifier<Type> customType1AfterReplacement = custom1AfterReplacement.getType();
+    assertThat(customType1AfterReplacement).isNotNull();
+    assertThat(customType1AfterReplacement.getKey()).isEqualTo(customType.getKey());
+
+    final PriceDraft priceDraft2AfterReplacement = priceDrafts.get(1);
+    final ResourceIdentifier<Channel> channelReference2AfterReplacement =
+        priceDraft2AfterReplacement.getChannel();
+    assertThat(channelReference2AfterReplacement).isNotNull();
+    assertThat(channelReference2AfterReplacement.getKey()).isEqualTo(channelKey2);
+
+    final CustomFieldsDraft custom2AfterReplacement = priceDraft2AfterReplacement.getCustom();
+    assertThat(custom2AfterReplacement).isNotNull();
+    final ResourceIdentifier<Type> customType2AfterReplacement = custom2AfterReplacement.getType();
+    assertThat(customType2AfterReplacement).isNotNull();
+    assertThat(customType2AfterReplacement.getKey()).isEqualTo(customType.getKey());
+  }
+
+  @Test
+  void mapToPriceDraft_WithSomeExpandedReferences_ShouldReplaceOnlyExpandedIds() {
+    final Type customType = getTypeMock(UUID.randomUUID().toString(), "customTypeKey");
+    final String channelKey1 = "channelKey1";
+
+    final Channel channel1 = getChannelMock(channelKey1);
+
+    final Reference<Channel> channelReference1 =
+        Reference.ofResourceTypeIdAndIdAndObj(
+            Channel.referenceTypeId(), channel1.getId(), channel1);
+    final Reference<Channel> channelReference2 =
+        Channel.referenceOfId(UUID.randomUUID().toString());
+
+    final Reference<Type> typeReference1 =
+        Reference.ofResourceTypeIdAndObj(Type.referenceTypeId(), customType);
+    final Reference<Type> typeReference2 = Type.referenceOfId(UUID.randomUUID().toString());
+
+    final Price price1 = getPriceMockWithReferences(channelReference1, typeReference1, null);
+    final Price price2 = getPriceMockWithReferences(channelReference2, typeReference2, null);
+
+    final ProductVariant productVariant = getProductVariantMock(asList(price1, price2));
+
+    final List<PriceDraft> priceDrafts = mapToPriceDrafts(productVariant);
+
+    assertThat(priceDrafts).hasSize(2);
+
+    final ResourceIdentifier<Channel> channelReference1AfterReplacement =
+        priceDrafts.get(0).getChannel();
+    assertThat(channelReference1AfterReplacement).isNotNull();
+    assertThat(channelReference1AfterReplacement.getKey()).isEqualTo(channelKey1);
+
+    final ResourceIdentifier<Channel> channelReference2AfterReplacement =
+        priceDrafts.get(1).getChannel();
+    assertThat(channelReference2AfterReplacement).isNotNull();
+    // Assert non expanded reference has id not replaced.
+    assertThat(channelReference2AfterReplacement.getId()).isEqualTo(channelReference2.getId());
+
+    final CustomFieldsDraft customType1AfterReplacement = priceDrafts.get(0).getCustom();
+    assertThat(customType1AfterReplacement).isNotNull();
+    assertThat(customType1AfterReplacement.getType()).isNotNull();
+    assertThat(customType1AfterReplacement.getType().getKey()).isEqualTo(customType.getKey());
+
+    final CustomFieldsDraft customType2AfterReplacement = priceDrafts.get(1).getCustom();
+    assertThat(customType2AfterReplacement).isNotNull();
+    assertThat(customType2AfterReplacement.getType()).isNotNull();
+    // Assert expanded reference has id not replaced.
+    assertThat(customType2AfterReplacement.getType().getId()).isEqualTo(typeReference2.getId());
+  }
+
+  @Test
+  void replaceAttributeReferenceIdWithKey_WithTextAttribute_ShouldReturnEmptyOptional() {
+    final Attribute attribute = Attribute.of("attrName", AttributeAccess.ofText(), "value");
+    final Optional<Reference<Product>> attributeReferenceIdWithKey =
+        replaceAttributeReferenceIdWithKey(attribute);
+
+    assertThat(attributeReferenceIdWithKey).isEmpty();
+  }
+
+  @Test
+  void
+      replaceAttributeReferenceIdWithKey_WithProductReferenceSetAttribute_ShouldReturnEmptyOptional() {
+    final Attribute attribute =
+        Attribute.of("attrName", AttributeAccess.ofProductReferenceSet(), new HashSet<>());
+    final Optional<Reference<Product>> attributeReferenceIdWithKey =
+        replaceAttributeReferenceIdWithKey(attribute);
+
+    assertThat(attributeReferenceIdWithKey).isEmpty();
+  }
+
+  @Test
+  void
+      replaceAttributeReferenceIdWithKey_WithNonExpandedProductReferenceAttribute_ShouldNotReplaceId() {
+    final Reference<Product> nonExpandedReference =
+        Product.referenceOfId(UUID.randomUUID().toString());
+    final Attribute attribute =
+        Attribute.of("attrName", AttributeAccess.ofProductReference(), nonExpandedReference);
+    final Optional<Reference<Product>> attributeReferenceIdWithKey =
+        replaceAttributeReferenceIdWithKey(attribute);
+
+    assertThat(attributeReferenceIdWithKey).contains(nonExpandedReference);
+  }
+
+  @Test
+  void replaceAttributeReferenceIdWithKey_WithExpandedProductReferenceAttribute_ShouldReplaceId() {
+    final Product product = readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
+    final Reference<Product> expandedReference =
+        Reference.ofResourceTypeIdAndIdAndObj(
+            Product.referenceTypeId(), UUID.randomUUID().toString(), product);
+    final Attribute attribute =
+        Attribute.of("attrName", AttributeAccess.ofProductReference(), expandedReference);
+    final Optional<Reference<Product>> attributeReferenceIdWithKey =
+        replaceAttributeReferenceIdWithKey(attribute);
+    assertThat(attributeReferenceIdWithKey).contains(Product.referenceOfId("productKey1"));
+  }
+
+  @Test
+  void replaceAttributeReferenceSetIdsWithKeys_WithTextAttribute_ShouldReturnEmptyOptional() {
+    final Attribute attribute = Attribute.of("attrName", AttributeAccess.ofText(), "value");
+    final Optional<Set<Reference<Product>>> attributeReferenceSetIdsWithKeys =
+        replaceAttributeReferenceSetIdsWithKeys(attribute);
+
+    assertThat(attributeReferenceSetIdsWithKeys).isEmpty();
+  }
+
+  @Test
+  void replaceAttributesReferencesIdsWithKeys_WithNoAttributes_ShouldNotReplaceIds() {
+    final ProductVariant variant = mock(ProductVariant.class);
+    when(variant.getAttributes()).thenReturn(new ArrayList<>());
+    final List<AttributeDraft> replacedDrafts = replaceAttributesReferencesIdsWithKeys(variant);
+    assertThat(replacedDrafts).isEmpty();
+  }
+
+  @Test
+  void
+      replaceAttributesReferencesIdsWithKeys_WithAttributesWithNoReferences_ShouldNotChangeAttributes() {
+    final Product product = readObjectFromResource(PRODUCT_KEY_1_RESOURCE_PATH, Product.class);
+    final ProductVariant masterVariant = product.getMasterData().getStaged().getMasterVariant();
+    final List<AttributeDraft> replacedDrafts =
+        replaceAttributesReferencesIdsWithKeys(masterVariant);
+    replacedDrafts.forEach(
+        attributeDraft -> {
+          final String name = attributeDraft.getName();
+          final Attribute originalAttribute = masterVariant.getAttribute(name);
+          assertThat(originalAttribute).isNotNull();
+          assertThat(originalAttribute.getValueAsJsonNode()).isEqualTo(attributeDraft.getValue());
         });
-    }
+  }
 
-    @Test
-    void isProductReference_WithDifferentAttributeTypes_ShouldBeTrueForProductReferenceAttributeOnly() {
-        assertThat(isProductReference(BOOLEAN_ATTRIBUTE_TRUE)).isFalse();
-        assertThat(isProductReference(TEXT_ATTRIBUTE_BAR)).isFalse();
-        assertThat(isProductReference(LTEXT_ATTRIBUTE_EN_BAR)).isFalse();
-        assertThat(isProductReference(ENUM_ATTRIBUTE_BARLABEL_BARKEY)).isFalse();
-        assertThat(isProductReference(LENUM_ATTRIBUTE_EN_BAR)).isFalse();
-        assertThat(isProductReference(NUMBER_ATTRIBUTE_10)).isFalse();
-        assertThat(isProductReference(MONEY_ATTRIBUTE_EUR_2300)).isFalse();
-        assertThat(isProductReference(DATE_ATTRIBUTE_2017_11_09)).isFalse();
-        assertThat(isProductReference(TIME_ATTRIBUTE_10_08_46)).isFalse();
-        assertThat(isProductReference(DATE_TIME_ATTRIBUTE_2016_05_20T01_02_46)).isFalse();
-        assertThat(isProductReference(PRODUCT_REFERENCE_SET_ATTRIBUTE)).isFalse();
-        assertThat(isProductReference(CATEGORY_REFERENCE_ATTRIBUTE)).isFalse();
-        assertThat(isProductReference(LTEXT_SET_ATTRIBUTE)).isFalse();
-        assertThat(isProductReference(EMPTY_SET_ATTRIBUTE)).isFalse();
-        assertThat(isProductReference(PRODUCT_REFERENCE_ATTRIBUTE)).isTrue();
-    }
+  @Test
+  void
+      isProductReference_WithDifferentAttributeTypes_ShouldBeTrueForProductReferenceAttributeOnly() {
+    assertThat(isProductReference(BOOLEAN_ATTRIBUTE_TRUE)).isFalse();
+    assertThat(isProductReference(TEXT_ATTRIBUTE_BAR)).isFalse();
+    assertThat(isProductReference(LTEXT_ATTRIBUTE_EN_BAR)).isFalse();
+    assertThat(isProductReference(ENUM_ATTRIBUTE_BARLABEL_BARKEY)).isFalse();
+    assertThat(isProductReference(LENUM_ATTRIBUTE_EN_BAR)).isFalse();
+    assertThat(isProductReference(NUMBER_ATTRIBUTE_10)).isFalse();
+    assertThat(isProductReference(MONEY_ATTRIBUTE_EUR_2300)).isFalse();
+    assertThat(isProductReference(DATE_ATTRIBUTE_2017_11_09)).isFalse();
+    assertThat(isProductReference(TIME_ATTRIBUTE_10_08_46)).isFalse();
+    assertThat(isProductReference(DATE_TIME_ATTRIBUTE_2016_05_20T01_02_46)).isFalse();
+    assertThat(isProductReference(PRODUCT_REFERENCE_SET_ATTRIBUTE)).isFalse();
+    assertThat(isProductReference(CATEGORY_REFERENCE_ATTRIBUTE)).isFalse();
+    assertThat(isProductReference(LTEXT_SET_ATTRIBUTE)).isFalse();
+    assertThat(isProductReference(EMPTY_SET_ATTRIBUTE)).isFalse();
+    assertThat(isProductReference(PRODUCT_REFERENCE_ATTRIBUTE)).isTrue();
+  }
 
-    @Test
-    void isProductReferenceSet_WithDifferentAttributeTypes_ShouldBeTrueForProductReferenceSetAttributeOnly() {
-        assertThat(isProductReferenceSet(BOOLEAN_ATTRIBUTE_TRUE)).isFalse();
-        assertThat(isProductReferenceSet(TEXT_ATTRIBUTE_BAR)).isFalse();
-        assertThat(isProductReferenceSet(LTEXT_ATTRIBUTE_EN_BAR)).isFalse();
-        assertThat(isProductReferenceSet(ENUM_ATTRIBUTE_BARLABEL_BARKEY)).isFalse();
-        assertThat(isProductReferenceSet(LENUM_ATTRIBUTE_EN_BAR)).isFalse();
-        assertThat(isProductReferenceSet(NUMBER_ATTRIBUTE_10)).isFalse();
-        assertThat(isProductReferenceSet(MONEY_ATTRIBUTE_EUR_2300)).isFalse();
-        assertThat(isProductReferenceSet(DATE_ATTRIBUTE_2017_11_09)).isFalse();
-        assertThat(isProductReferenceSet(TIME_ATTRIBUTE_10_08_46)).isFalse();
-        assertThat(isProductReferenceSet(DATE_TIME_ATTRIBUTE_2016_05_20T01_02_46)).isFalse();
-        assertThat(isProductReferenceSet(PRODUCT_REFERENCE_ATTRIBUTE)).isFalse();
-        assertThat(isProductReferenceSet(CATEGORY_REFERENCE_ATTRIBUTE)).isFalse();
-        assertThat(isProductReferenceSet(LTEXT_SET_ATTRIBUTE)).isFalse();
-        assertThat(isProductReferenceSet(EMPTY_SET_ATTRIBUTE)).isFalse();
-        assertThat(isProductReferenceSet(PRODUCT_REFERENCE_SET_ATTRIBUTE)).isTrue();
-    }
+  @Test
+  void
+      isProductReferenceSet_WithDifferentAttributeTypes_ShouldBeTrueForProductReferenceSetAttributeOnly() {
+    assertThat(isProductReferenceSet(BOOLEAN_ATTRIBUTE_TRUE)).isFalse();
+    assertThat(isProductReferenceSet(TEXT_ATTRIBUTE_BAR)).isFalse();
+    assertThat(isProductReferenceSet(LTEXT_ATTRIBUTE_EN_BAR)).isFalse();
+    assertThat(isProductReferenceSet(ENUM_ATTRIBUTE_BARLABEL_BARKEY)).isFalse();
+    assertThat(isProductReferenceSet(LENUM_ATTRIBUTE_EN_BAR)).isFalse();
+    assertThat(isProductReferenceSet(NUMBER_ATTRIBUTE_10)).isFalse();
+    assertThat(isProductReferenceSet(MONEY_ATTRIBUTE_EUR_2300)).isFalse();
+    assertThat(isProductReferenceSet(DATE_ATTRIBUTE_2017_11_09)).isFalse();
+    assertThat(isProductReferenceSet(TIME_ATTRIBUTE_10_08_46)).isFalse();
+    assertThat(isProductReferenceSet(DATE_TIME_ATTRIBUTE_2016_05_20T01_02_46)).isFalse();
+    assertThat(isProductReferenceSet(PRODUCT_REFERENCE_ATTRIBUTE)).isFalse();
+    assertThat(isProductReferenceSet(CATEGORY_REFERENCE_ATTRIBUTE)).isFalse();
+    assertThat(isProductReferenceSet(LTEXT_SET_ATTRIBUTE)).isFalse();
+    assertThat(isProductReferenceSet(EMPTY_SET_ATTRIBUTE)).isFalse();
+    assertThat(isProductReferenceSet(PRODUCT_REFERENCE_SET_ATTRIBUTE)).isTrue();
+  }
 }
