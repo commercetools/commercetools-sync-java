@@ -1,16 +1,5 @@
 package com.commercetools.sync.categories;
 
-import static com.commercetools.sync.categories.helpers.CategoryReferenceResolver.getParentCategoryKey;
-import static com.commercetools.sync.categories.utils.CategorySyncUtils.buildActions;
-import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.areResourceIdentifiersEqual;
-import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.toResourceIdentifierIfNotNull;
-import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
-import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY;
-import static java.lang.String.format;
-import static java.util.Arrays.asList;
-import static java.util.concurrent.CompletableFuture.allOf;
-
 import com.commercetools.sync.categories.helpers.CategoryBatchValidator;
 import com.commercetools.sync.categories.helpers.CategoryReferenceResolver;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
@@ -30,6 +19,11 @@ import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.commands.UpdateAction;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -41,10 +35,17 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
+
+import static com.commercetools.sync.categories.helpers.CategoryReferenceResolver.getParentCategoryKey;
+import static com.commercetools.sync.categories.utils.CategorySyncUtils.buildActions;
+import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.areResourceIdentifiersEqual;
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.toResourceIdentifierIfNotNull;
+import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
+import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY;
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static java.util.concurrent.CompletableFuture.allOf;
 
 public class CategorySync
     extends BaseSync<CategoryDraft, CategorySyncStatistics, CategorySyncOptions> {
@@ -89,9 +90,8 @@ public class CategorySync
    * batch execution, which means that they are re-initialized on every {@link #processBatch(List)}
    * call.
    */
-  private Set<CategoryDraft> existingCategoryDrafts = new HashSet<>();
-
   private Set<CategoryDraft> newCategoryDrafts = new HashSet<>();
+
   private Set<CategoryDraft> referencesResolvedDrafts = new HashSet<>();
 
   /**
@@ -188,9 +188,6 @@ public class CategorySync
   @Override
   protected CompletionStage<CategorySyncStatistics> processBatch(
       @Nonnull final List<CategoryDraft> categoryDrafts) {
-    referencesResolvedDrafts = new HashSet<>();
-    existingCategoryDrafts = new HashSet<>();
-    newCategoryDrafts = new HashSet<>();
 
     categoryKeysWithResolvedParents = ConcurrentHashMap.newKeySet();
     categoryDraftsToUpdate = new ConcurrentHashMap<>();
@@ -218,9 +215,9 @@ public class CategorySync
               }
 
               final Map<String, String> categoryKeyToIdCache = cachingResponse.getKey();
-              prepareDraftsForProcessing(new ArrayList<>(validDrafts), categoryKeyToIdCache);
               return createAndUpdate(
-                  newCategoryDrafts, existingCategoryDrafts, categoryKeyToIdCache);
+                  prepareDraftsForProcessing(new ArrayList<>(validDrafts), categoryKeyToIdCache),
+                  categoryKeyToIdCache);
             })
         .thenApply(
             ignoredResult -> {
@@ -316,10 +313,12 @@ public class CategorySync
    * @param categoryDrafts the input list of category drafts in the sync batch.
    * @param keyToIdCache the cache containing the mapping of all existing category keys to ids.
    */
-  private void prepareDraftsForProcessing(
+  private ImmutablePair<Set<CategoryDraft>, Set<CategoryDraft>> prepareDraftsForProcessing(
       @Nonnull final List<CategoryDraft> categoryDrafts,
       @Nonnull final Map<String, String> keyToIdCache) {
 
+    Set existingCategoryDrafts = new HashSet<>();
+    Set newCategoryDrafts = new HashSet<>();
     for (CategoryDraft draft : categoryDrafts) {
       final String categoryKey = draft.getKey();
       try {
@@ -355,16 +354,17 @@ public class CategorySync
         handleError(errorMessage, exception);
       }
     }
+    return ImmutablePair.of(newCategoryDrafts, existingCategoryDrafts);
   }
 
   @Nonnull
   private CompletionStage<Void> createAndUpdate(
-      @Nonnull final Set<CategoryDraft> newCategoryDrafts,
-      @Nonnull final Set<CategoryDraft> existingCategories,
+      ImmutablePair<Set<CategoryDraft>, Set<CategoryDraft>> preparedDraftsForProcessing,
       @Nonnull final Map<String, String> keyToIdCache) {
-    return createCategories(newCategoryDrafts)
+    return createCategories(preparedDraftsForProcessing.getLeft())
         .thenAccept(createdCategories -> processCreatedCategories(createdCategories, keyToIdCache))
-        .thenCompose(ignoredResult -> fetchAndUpdate(existingCategories, keyToIdCache));
+        .thenCompose(
+            ignoredResult -> fetchAndUpdate(preparedDraftsForProcessing.getRight(), keyToIdCache));
   }
 
   @Nonnull
@@ -514,27 +514,7 @@ public class CategorySync
             readyToSync -> {
               if (!readyToSync.isEmpty()) {
                 // process ready drafts
-                final Set<CategoryDraft> readyToCreate = new HashSet<>();
-                final Set<CategoryDraft> readyToUpate = new HashSet<>();
-                readyToSync.stream()
-                    .forEach(
-                        categoryDraft -> {
-                          referenceResolver
-                              .resolveReferences(categoryDraft)
-                              .thenAccept(
-                                  referencesResolvedDraft -> {
-                                    referencesResolvedDrafts.add(referencesResolvedDraft);
-                                    if (keyToIdCache.containsKey(
-                                        referencesResolvedDraft.getKey())) {
-                                      readyToUpate.add(referencesResolvedDraft);
-                                    } else {
-                                      readyToCreate.add(referencesResolvedDraft);
-                                    }
-                                  })
-                              .toCompletableFuture()
-                              .join();
-                        });
-                createAndUpdate(readyToCreate, readyToUpate, keyToIdCache)
+                 createAndUpdate(prepareDraftsForProcessing(readyToSync, keyToIdCache), keyToIdCache)
                     .toCompletableFuture()
                     .join();
                 // Update Statistic
