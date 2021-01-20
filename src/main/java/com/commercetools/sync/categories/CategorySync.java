@@ -377,6 +377,7 @@ public class CategorySync
               Set<Category> createdCategories = result.collect(Collectors.toSet());
               final int numberOfFailedCategories = categoryDrafts.size() - createdCategories.size();
               statistics.incrementFailed(numberOfFailedCategories);
+              statistics.incrementCreated(createdCategories.size());
               return createdCategories;
             });
   }
@@ -480,7 +481,6 @@ public class CategorySync
             .filter(Objects::nonNull)
             .flatMap(Set::stream)
             .collect(Collectors.toSet());
-    statistics.incrementCreated(createdCategories.size());
     unresolvedReferencesService
         .fetch(
             resolvableCategoryKeys,
