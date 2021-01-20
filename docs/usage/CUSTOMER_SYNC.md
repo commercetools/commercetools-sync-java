@@ -72,7 +72,7 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 A categorydraft X could  have a parentcategory  Y. But It could be that the parentcategory Y is not supplied before X, 
 which means the sync could fail to create/updating X. It could also be that Y is not supplied at all in this batch but at a later batch.
  
-The library keeps tracks of such "referencing" categorydrafts like X and persists them in storage 
+The library keeps track of such "referencing" CategoryDrafts like X and persists them in storage 
 (**Commercetools platform `customObjects` in the target project** , in this case) 
 to keep them and create/update them accordingly whenever the referenced drafts exist in the target project.
 
