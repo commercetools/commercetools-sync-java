@@ -323,12 +323,9 @@ public class CategorySync
     for (CategoryDraft draft : categoryDrafts) {
       final String categoryKey = draft.getKey();
       try {
-        updateCategoriesOrKeepTrack(draft, keyToIdCache)
-            .thenAccept(
-                categoryDraft -> {
-                  if (categoryDraft.isPresent()) {
-                    referenceResolver
-                        .resolveReferences(categoryDraft.get())
+        checkParentCategoriesAndKeepTrack(draft, keyToIdCache).ifPresent(
+                categoryDraft -> {referenceResolver
+                        .resolveReferences(categoryDraft)
                         .thenAccept(
                             referencesResolvedDraft -> {
                               referencesResolvedDrafts.add(referencesResolvedDraft);
@@ -350,11 +347,7 @@ public class CategorySync
                             })
                         .toCompletableFuture()
                         .join();
-                  }
-                })
-            .toCompletableFuture()
-            .join();
-
+                  });
       } catch (Exception exception) {
         final String errorMessage = format(FAILED_TO_PROCESS, categoryKey, exception);
         handleError(errorMessage, exception);
@@ -406,13 +399,13 @@ public class CategorySync
    * @throws ReferenceResolutionException thrown if the parent key is not valid.
    */
   @Nullable
-  private CompletionStage<Optional<CategoryDraft>> updateCategoriesOrKeepTrack(
+  private Optional<CategoryDraft> checkParentCategoriesAndKeepTrack(
       @Nonnull final CategoryDraft categoryDraft, @Nonnull final Map<String, String> keyToIdCache)
       throws ReferenceResolutionException {
     String parentCategoryKey = getParentCategoryKey(categoryDraft).orElse("");
     if (StringUtils.isBlank(parentCategoryKey)
         || !isMissingCategory(parentCategoryKey, keyToIdCache)) {
-      return CompletableFuture.completedFuture(Optional.of(categoryDraft));
+      return Optional.of(categoryDraft);
     }
     WaitingToBeResolvedCategories waitingToBeResolved =
         new WaitingToBeResolvedCategories(
@@ -426,7 +419,7 @@ public class CategorySync
         .join();
     statistics.incrementFailed();
     statistics.putMissingParentCategoryChildKey(parentCategoryKey, categoryDraft.getKey());
-    return CompletableFuture.completedFuture(Optional.empty());
+    return Optional.empty();
   }
 
   /**
