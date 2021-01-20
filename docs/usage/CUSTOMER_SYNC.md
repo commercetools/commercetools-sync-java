@@ -69,7 +69,7 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 
 ##### Persistence of categorydraft with Irresolvable Parent
 
-A categorydraft X could  have a parentcategory  Y. But It could be that the parentcategory Y is not supplied before X, 
+A categorydraft X could have a parent ategory Y. But It could be that the parentcategory Y is not supplied before X, 
 which means the sync could fail to create/updating X. It could also be that Y is not supplied at all in this batch but at a later batch.
  
 The library keeps track of such "referencing" CategoryDrafts like X and persists them in storage 
