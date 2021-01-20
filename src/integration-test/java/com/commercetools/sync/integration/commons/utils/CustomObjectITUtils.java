@@ -95,7 +95,7 @@ public final class CustomObjectITUtils {
     final CustomObjectQuery<WaitingToBeResolved> customObjectQuery =
         CustomObjectQuery.of(clazz).byContainer(PRODUCT_CUSTOM_OBJECT_CONTAINER_KEY);
 
-    PagedQueryResult<? extends CustomObject<WaitingToBeResolved>> result =
+    PagedQueryResult<CustomObject<WaitingToBeResolved>> result =
         ctpClient.execute(customObjectQuery).toCompletableFuture().join();
     result
         .getResults()
