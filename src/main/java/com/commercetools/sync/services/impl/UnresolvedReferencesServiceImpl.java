@@ -79,7 +79,7 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
       @Nonnull final Class clazz) {
     final CustomObjectDraft<WaitingToBeResolved> customObjectDraft =
         CustomObjectDraft.ofUnversionedUpsert(
-            containerKey, hash(draft.fetchWaitingDraft().getKey()), draft, WaitingToBeResolved.class);
+            containerKey, hash(draft.getWaitingDraft().getKey()), draft, clazz);
 
     return syncOptions
         .getCtpClient()
@@ -94,7 +94,7 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
                         format(
                             SAVE_FAILED,
                             customObjectDraft.getKey(),
-                            draft.fetchWaitingDraft().getKey()),
+                            draft.getWaitingDraft().getKey()),
                         exception));
                 return Optional.empty();
               }
