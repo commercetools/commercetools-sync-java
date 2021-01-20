@@ -53,8 +53,8 @@ public class CategorySync
       "Failed to process the CategoryDraft with key: '%s'. Reason: %s";
   private static final String UPDATE_FAILED =
       "Failed to update Category with key: '%s'. Reason: %s";
-  private static final String UNRESOLVED_PARENT_REFERENCES_STORE_FETCH_FAILED =
-      "Failed to fetch categoryDraft " + "waiting to be resolved with parentkeys '%s'.";
+  private static final String FAILED_TO_FETCH_WAITING_DRAFTS=
+      "Failed to fetch categoryDraft waiting to be resolved with parentkeys '%s'.";
   private final CategoryService categoryService;
   private final UnresolvedReferencesService unresolvedReferencesService;
   private final CategoryReferenceResolver referenceResolver;
@@ -498,7 +498,7 @@ public class CategorySync
               if (fetchException != null) {
                 final String errorMessage =
                     format(
-                        UNRESOLVED_PARENT_REFERENCES_STORE_FETCH_FAILED,
+                            FAILED_TO_FETCH_WAITING_DRAFTS,
                         String.join(",", resolvableCategoryKeys.toString()));
                 handleError(errorMessage, new SyncException(errorMessage, fetchException));
                 return readyToSync;
