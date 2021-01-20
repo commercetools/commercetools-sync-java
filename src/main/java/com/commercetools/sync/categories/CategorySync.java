@@ -363,9 +363,7 @@ public class CategorySync
       @Nonnull final Set<CategoryDraft> existingCategories,
       @Nonnull final Map<String, String> keyToIdCache) {
     return createCategories(newCategoryDrafts)
-        .thenAccept(
-            createdCategories ->
-                processCreatedCategories(newCategoryDrafts, createdCategories, keyToIdCache))
+        .thenAccept(createdCategories -> processCreatedCategories(createdCategories, keyToIdCache))
         .thenCompose(ignoredResult -> fetchAndUpdate(existingCategories, keyToIdCache));
   }
 
@@ -374,7 +372,13 @@ public class CategorySync
       @Nonnull final Set<CategoryDraft> categoryDrafts) {
     return mapValuesToFutureOfCompletedValues(categoryDrafts, this::applyCallbackAndCreate)
         .thenApply(results -> results.filter(Optional::isPresent).map(Optional::get))
-        .thenApply(createdCategories -> createdCategories.collect(Collectors.toSet()));
+        .thenApply(
+            result -> {
+              Set<Category> createdCategories = result.collect(Collectors.toSet());
+              final int numberOfFailedCategories = categoryDrafts.size() - createdCategories.size();
+              statistics.incrementFailed(numberOfFailedCategories);
+              return createdCategories;
+            });
   }
 
   @Nonnull
@@ -465,11 +469,9 @@ public class CategorySync
    * @param createdCategories the set of created categories that needs to be processed.
    */
   private void processCreatedCategories(
-      @Nonnull final Set<CategoryDraft> newCategories,
       @Nonnull final Set<Category> createdCategories,
       @Nonnull final Map<String, String> keyToIdCache) {
-    final int numberOfFailedCategories = newCategories.size() - createdCategories.size();
-    statistics.incrementFailed(numberOfFailedCategories);
+
     final Set<String> resolvedParent =
         createdCategories.stream().map(c -> c.getKey()).collect(Collectors.toSet());
     final Set<String> resolvableCategoryKeys =
