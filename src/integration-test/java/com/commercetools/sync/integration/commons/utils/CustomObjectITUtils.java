@@ -89,48 +89,34 @@ public final class CustomObjectITUtils {
    *
    * @param ctpClient the client to delete the custom objects from.
    */
-  public static void deleteWaitingToBeResolvedCustomObjects(@Nonnull final SphereClient ctpClient) {
+    public static void deleteWaitingToBeResolvedCustomObjects(@Nonnull final SphereClient ctpClient,
+                                                              @Nonnull final Class clazz) {
 
-    final CustomObjectQuery<WaitingToBeResolved> customObjectQuery =
-        CustomObjectQuery.of(WaitingToBeResolved.class)
+        final CustomObjectQuery<? extends WaitingToBeResolved> customObjectQuery =
+            CustomObjectQuery
+                .of(clazz)
             .byContainer(PRODUCT_CUSTOM_OBJECT_CONTAINER_KEY);
 
-    ctpClient
-        .execute(customObjectQuery)
-        .thenApply(PagedQueryResult::getResults)
-        .thenCompose(
-            customObjects -> deleteWaitingToBeResolvedCustomObjects(ctpClient, customObjects))
-        .toCompletableFuture()
-        .join();
-  }
+        PagedQueryResult<? extends CustomObject<? extends WaitingToBeResolved>> result = ctpClient
+            .execute(customObjectQuery).toCompletableFuture().join();
+        result.getResults().forEach(customObject -> ctpClient
+            .execute(CustomObjectDeleteCommand.of(customObject, clazz)).toCompletableFuture().join());
 
-  @Nonnull
-  private static CompletableFuture<Void> deleteWaitingToBeResolvedCustomObjects(
-      @Nonnull final SphereClient ctpClient,
-      @Nonnull final List<CustomObject<WaitingToBeResolved>> customObjects) {
-
-    return CompletableFuture.allOf(
-        customObjects.stream()
-            .map(
-                customObject ->
-                    ctpClient.execute(
-                        CustomObjectDeleteCommand.of(customObject, WaitingToBeResolved.class)))
-            .map(CompletionStage::toCompletableFuture)
-            .toArray(CompletableFuture[]::new));
   }
 
   public static void deleteWaitingToBeResolvedTransitionsCustomObjects(
-      @Nonnull final SphereClient ctpClient, @Nonnull final String customObjectKey) {
+        @Nonnull final SphereClient ctpClient,
+        @Nonnull final String customObjectKey) {
 
     final CustomObjectQuery<WaitingToBeResolvedTransitions> customObjectQuery =
-        CustomObjectQuery.of(WaitingToBeResolvedTransitions.class).byContainer(customObjectKey);
+            CustomObjectQuery
+                .of(WaitingToBeResolvedTransitions.class)
+                .byContainer(customObjectKey);
 
     ctpClient
         .execute(customObjectQuery)
         .thenApply(PagedQueryResult::getResults)
-        .thenCompose(
-            customObjects ->
-                deleteWaitingToBeResolvedTransitionsCustomObjects(ctpClient, customObjects))
+            .thenCompose(customObjects -> deleteWaitingToBeResolvedTransitionsCustomObjects(ctpClient, customObjects))
         .toCompletableFuture()
         .join();
   }
@@ -141,15 +127,14 @@ public final class CustomObjectITUtils {
       @Nonnull final List<CustomObject<WaitingToBeResolvedTransitions>> customObjects) {
 
     return CompletableFuture.allOf(
-        customObjects.stream()
-            .map(
-                customObject ->
-                    ctpClient.execute(
-                        CustomObjectDeleteCommand.of(
-                            customObject, WaitingToBeResolvedTransitions.class)))
+            customObjects
+                .stream()
+                .map(customObject -> ctpClient
+                    .execute(CustomObjectDeleteCommand.of(customObject, WaitingToBeResolvedTransitions.class)))
             .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
   }
 
-  private CustomObjectITUtils() {}
+    private CustomObjectITUtils() {
+    }
 }

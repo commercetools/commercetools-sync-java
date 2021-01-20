@@ -4,6 +4,7 @@ import static com.commercetools.sync.integration.commons.utils.CustomObjectITUti
 import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.deleteWaitingToBeResolvedTransitionsCustomObjects;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
+import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY;
 import static com.commercetools.sync.services.impl.UnresolvedTransitionsServiceImpl.CUSTOM_OBJECT_CONTAINER_KEY;
 import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.lang.String.format;
@@ -11,6 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.sync.commons.CleanupUnresolvedReferenceCustomObjects;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
+import com.commercetools.sync.commons.models.WaitingToBeResolvedProducts;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedTransitions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.UnresolvedReferencesService;
@@ -43,7 +45,7 @@ class CleanupUnresolvedReferenceCustomObjectsIT {
   void setupTest() {
     deleteWaitingToBeResolvedTransitionsCustomObjects(
         CTP_TARGET_CLIENT, CUSTOM_OBJECT_CONTAINER_KEY);
-    deleteWaitingToBeResolvedCustomObjects(CTP_TARGET_CLIENT);
+    deleteWaitingToBeResolvedCustomObjects(CTP_TARGET_CLIENT, WaitingToBeResolvedProducts.class);
 
     unresolvedReferencesService =
         new UnresolvedReferencesServiceImpl(
@@ -81,7 +83,7 @@ class CleanupUnresolvedReferenceCustomObjectsIT {
 
     for (int i = 1; i <= 5; i++) {
       productUnresolvedReferences.add(
-          new WaitingToBeResolved(
+          new WaitingToBeResolvedProducts(
               ProductDraftBuilder.of(sampleProductDraft).key(format("productKey%s", i)).build(),
               asSet("foo", "bar")));
 
@@ -96,7 +98,8 @@ class CleanupUnresolvedReferenceCustomObjectsIT {
     CompletableFuture.allOf(
             CompletableFuture.allOf(
                 productUnresolvedReferences.stream()
-                    .map(unresolvedReferencesService::save)
+                    .map(draft-> unresolvedReferencesService.save(draft,CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                            WaitingToBeResolvedProducts.class))
                     .map(CompletionStage::toCompletableFuture)
                     .toArray(CompletableFuture[]::new)),
             CompletableFuture.allOf(

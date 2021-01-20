@@ -81,7 +81,7 @@ public class ProductSyncStatistics extends BaseSyncStatistics {
   }
 
   @Nullable
-  public Set<String> removeAndGetChildrenKeys(@Nonnull final String key) {
+  public Set<String> removeAndGetReferencingKeys(@Nonnull final String key) {
     return productKeysWithMissingParents.remove(key);
   }
 }
