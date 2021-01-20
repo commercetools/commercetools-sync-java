@@ -69,7 +69,7 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 
 ##### Persistence of categorydraft with Irresolvable Parent
 
-A categorydraft X could have a parent ategory Y. But It could be that the parentcategory Y is not supplied before X, 
+A categorydraft X could have a parent Category Y. But It could be that the parent Category Y is not supplied before X, 
 which means the sync could fail to create/updating X. It could also be that Y is not supplied at all in this batch but at a later batch.
  
 The library keeps track of such "referencing" CategoryDrafts like X and persists them in storage 
@@ -80,7 +80,7 @@ The `customObject` will have a `container:` **`"commercetools-sync-java.Unresolv
 and a `key` representing the key of the categorydraft that is waiting to be created/updated.
 
 Here is an example of a `CustomObject` in the target project that represents a categoryDraft with the key `categoryKey1`.  
-Being persisted as `CustomObject` means that the referenced parentcategory with the key `nonExistingParent` does not exist yet.
+Being persisted as `CustomObject` means that the referenced parent Category with the key `nonExistingParent` does not exist yet.
 
 ```json
 {
@@ -130,7 +130,7 @@ Being persisted as `CustomObject` means that the referenced parentcategory with 
     }
  
 ```
-As soon, as the referenced parent category draft is supplied to the sync, the draft will be created/updated and the 
+As soon, as the referenced parent Category draft is supplied to the sync, the draft will be created/updated and the 
 `CustomObject` will be removed from the target project.
 
 ##### Syncing from a commercetools project
