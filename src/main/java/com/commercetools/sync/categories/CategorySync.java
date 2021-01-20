@@ -1,5 +1,16 @@
 package com.commercetools.sync.categories;
 
+import static com.commercetools.sync.categories.helpers.CategoryReferenceResolver.getParentCategoryKey;
+import static com.commercetools.sync.categories.utils.CategorySyncUtils.buildActions;
+import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.areResourceIdentifiersEqual;
+import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
+import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.toResourceIdentifierIfNotNull;
+import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
+import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY;
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
+import static java.util.concurrent.CompletableFuture.allOf;
+
 import com.commercetools.sync.categories.helpers.CategoryBatchValidator;
 import com.commercetools.sync.categories.helpers.CategoryReferenceResolver;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
@@ -19,11 +30,6 @@ import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.commands.UpdateAction;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -35,17 +41,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-
-import static com.commercetools.sync.categories.helpers.CategoryReferenceResolver.getParentCategoryKey;
-import static com.commercetools.sync.categories.utils.CategorySyncUtils.buildActions;
-import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.areResourceIdentifiersEqual;
-import static com.commercetools.sync.commons.utils.CompletableFutureUtils.mapValuesToFutureOfCompletedValues;
-import static com.commercetools.sync.commons.utils.ResourceIdentifierUtils.toResourceIdentifierIfNotNull;
-import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
-import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY;
-import static java.lang.String.format;
-import static java.util.Arrays.asList;
-import static java.util.concurrent.CompletableFuture.allOf;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 public class CategorySync
     extends BaseSync<CategoryDraft, CategorySyncStatistics, CategorySyncOptions> {
@@ -514,7 +513,7 @@ public class CategorySync
             readyToSync -> {
               if (!readyToSync.isEmpty()) {
                 // process ready drafts
-                 createAndUpdate(prepareDraftsForProcessing(readyToSync, keyToIdCache), keyToIdCache)
+                createAndUpdate(prepareDraftsForProcessing(readyToSync, keyToIdCache), keyToIdCache)
                     .toCompletableFuture()
                     .join();
                 // Update Statistic
