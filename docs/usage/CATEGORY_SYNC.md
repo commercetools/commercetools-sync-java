@@ -7,12 +7,12 @@ against a [CategoryDraft](https://docs.commercetools.com/http-api-projects-categ
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-
 - [Usage](#usage)
   - [Prerequisites](#prerequisites)
     - [SphereClient](#sphereclient)
     - [Required Fields](#required-fields)
     - [Reference Resolution](#reference-resolution)
+      - [Persistence of category Drafts with irresolvable parent](#persistence-of-category-drafts-with-irresolvable-parent)
       - [Syncing from a commercetools project](#syncing-from-a-commercetools-project)
       - [Syncing from an external resource](#syncing-from-an-external-resource)
     - [SyncOptions](#syncoptions)
@@ -66,6 +66,72 @@ Therefore, in order to resolve the actual ids of those references in sync proces
 | `assets.custom.type` | ResourceIdentifier to a Type | 
 
 > Note that a reference without the key field will be considered as existing resource on the target commercetools project and the library will issue an update/create an API request without reference resolution.
+
+##### Persistence of category Drafts with irresolvable parent
+
+A categorydraft X could have a parent Category Y. But It could be that the parent Category Y is not supplied before X, 
+which means the sync could fail to create/updating X. It could also be that Y is not supplied at all in this batch but at a later batch.
+ 
+The library keeps track of such "referencing" category Drafts like X and persists them in storage 
+(**Commercetools platform `customObjects` in the target project** , in this case) 
+to keep them and create/update them accordingly whenever the referenced drafts exist in the target project.
+
+The `customObject` will have a `container:` **`"commercetools-sync-java.UnresolvedReferencesService.categoryDrafts"`**
+and a `key` representing the key of the  category Drafts that is waiting to be created/updated.
+
+Here is an example of a `CustomObject` in the target project that represents a category Draft with the key `categoryKey1`.  
+Being persisted as `CustomObject` means that the referenced parent Category with the key `nonExistingParent` does not exist yet.
+
+```json
+{
+      "id": "81dcb42f-1959-4412-a4bb-8ad420d0d11f",
+      "version": 1,
+      "createdAt": "2021-01-13T12:19:45.937Z",
+      "lastModifiedAt": "2021-01-13T12:19:45.937Z",
+      "lastModifiedBy": {
+        "clientId": "7OSAGVPscneW_KS4nqskFkrd",
+        "isPlatformClient": false
+      },
+      "createdBy": {
+        "clientId": "7OSAGVPscneW_KS4nqskFkrd",
+        "isPlatformClient": false
+      },
+      "container": "commercetools-sync-java.UnresolvedReferencesService.categoryDrafts",
+      "key": "8732a63fa8ca457e86f4075340d65154e7e2476a",
+      "value": {
+        "missingReferencedKeys": [
+          "nonExistingParent"
+        ],
+        "waitingDraft": {
+          "custom": {
+            "type": {
+              "key": "oldCategoryCustomTypeKey"
+            },
+            "fields": {
+              "backgroundColor": {
+                "de": "rot",
+                "en": "red"
+              },
+              "invisibleInShop": false
+            }
+          },
+          "key": "categoryKey1",
+          "name": {
+            "en": "furniture"
+          },
+          "parent": {
+            "key": "nonExistingParent"
+          },
+          "slug": {
+            "en": "new-furniture1"
+          }
+        }
+      }
+    }
+ 
+```
+As soon, as the referenced parent Category draft is supplied to the sync, the draft will be created/updated and the 
+`CustomObject` will be removed from the target project.
 
 ##### Syncing from a commercetools project
 
