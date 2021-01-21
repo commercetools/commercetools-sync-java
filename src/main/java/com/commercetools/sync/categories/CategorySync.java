@@ -10,6 +10,7 @@ import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceIm
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.CompletableFuture.allOf;
+import static java.util.stream.Collectors.toSet;
 
 import com.commercetools.sync.categories.helpers.CategoryBatchValidator;
 import com.commercetools.sync.categories.helpers.CategoryReferenceResolver;
@@ -251,7 +252,7 @@ public class CategorySync
       @Nonnull final Map<String, String> keyToIdCache) {
 
     Set<String> categoryKeysToFetch =
-        existingCategories.stream().map(CategoryDraft::getKey).collect(Collectors.toSet());
+        existingCategories.stream().map(CategoryDraft::getKey).collect(toSet());
     return categoryService
         .fetchMatchingCategoriesByKeys(categoryKeysToFetch)
         .handle(ImmutablePair::new)
@@ -370,7 +371,7 @@ public class CategorySync
         .thenApply(results -> results.filter(Optional::isPresent).map(Optional::get))
         .thenApply(
             result -> {
-              Set<Category> createdCategories = result.collect(Collectors.toSet());
+              Set<Category> createdCategories = result.collect(toSet());
               final int numberOfFailedCategories = categoryDrafts.size() - createdCategories.size();
               statistics.incrementFailed(numberOfFailedCategories);
               statistics.incrementCreated(createdCategories.size());
@@ -469,15 +470,34 @@ public class CategorySync
       @Nonnull final Set<Category> createdCategories,
       @Nonnull final Map<String, String> keyToIdCache) {
 
-    final Set<String> resolvedParent =
-        createdCategories.stream().map(c -> c.getKey()).collect(Collectors.toSet());
+    final Set<String> resolvedParentKeys =
+        createdCategories.stream().map(c -> c.getKey()).collect(toSet());
+    fetchResolvableCatogories(resolvedParentKeys)
+        .thenAccept(
+            readyToSync -> {
+              if (!readyToSync.isEmpty()) {
+                // process ready drafts
+                ImmutablePair<Set<CategoryDraft>, Set<CategoryDraft>> preparedDraft =
+                    prepareDraftsForProcessing(readyToSync, keyToIdCache);
+                createAndUpdate(preparedDraft, keyToIdCache).toCompletableFuture().join();
+                removeFromWaiting(readyToSync);
+              }
+            })
+        .toCompletableFuture()
+        .join();
+  }
+
+  @Nonnull
+  private CompletionStage<List<CategoryDraft>> fetchResolvableCatogories(
+      Set<String> resolvedParent) {
+    final List<CategoryDraft> readyToSync = new ArrayList<>();
     final Set<String> resolvableCategoryKeys =
         resolvedParent.stream()
             .map(statistics::removeAndGetChildrenKeys)
             .filter(Objects::nonNull)
             .flatMap(Set::stream)
-            .collect(Collectors.toSet());
-    unresolvedReferencesService
+            .collect(toSet());
+    return unresolvedReferencesService
         .fetch(
             resolvableCategoryKeys,
             CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY,
@@ -485,8 +505,6 @@ public class CategorySync
         .handle(ImmutablePair::new)
         .thenApply(
             fetchResponse -> {
-              final List<CategoryDraft> readyToSync = new ArrayList<>();
-              final Set<? extends WaitingToBeResolved> waitingDrafts = fetchResponse.getKey();
               final Throwable fetchException = fetchResponse.getValue();
               if (fetchException != null) {
                 final String errorMessage =
@@ -499,33 +517,19 @@ public class CategorySync
               // Each waitingdraft have only one parents, so we can sync the waitingdraft right
               // away, because only
               // waitingdraft with resolved categories was fetched
+              final Set<? extends WaitingToBeResolved> waitingDrafts = fetchResponse.getKey();
               waitingDrafts.forEach(
                   draft -> {
                     final CategoryDraft categoryDraft = (CategoryDraft) draft.getWaitingDraft();
                     readyToSync.add(categoryDraft);
                   });
               return readyToSync;
-            })
-        .thenAccept(
-            readyToSync -> {
-              if (!readyToSync.isEmpty()) {
-                // process ready drafts
-                createAndUpdate(prepareDraftsForProcessing(readyToSync, keyToIdCache), keyToIdCache)
-                    .toCompletableFuture()
-                    .join();
-                // Update Statistic
-                readyToSync.forEach(d -> statistics.decrementFailed());
-                // remove the customobjects of the waiting draft
-                removeFromWaiting(readyToSync);
-              }
-            })
-        .toCompletableFuture()
-        .join();
+            });
   }
 
   @Nonnull
   private void removeFromWaiting(@Nonnull final List<CategoryDraft> drafts) {
-
+    drafts.forEach(d -> statistics.decrementFailed());
     allOf(
             drafts.stream()
                 .map(CategoryDraft::getKey)
