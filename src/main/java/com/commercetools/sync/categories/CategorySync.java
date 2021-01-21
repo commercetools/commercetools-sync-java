@@ -524,19 +524,21 @@ public class CategorySync
   }
 
   @Nonnull
-  private CompletableFuture<Void> removeFromWaiting(@Nonnull final List<CategoryDraft> drafts) {
+  private void removeFromWaiting(@Nonnull final List<CategoryDraft> drafts) {
 
-    return allOf(
-        drafts.stream()
-            .map(CategoryDraft::getKey)
-            .map(
-                key ->
-                    unresolvedReferencesService.delete(
-                        key,
-                        CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY,
-                        WaitingToBeResolvedCategories.class))
-            .map(CompletionStage::toCompletableFuture)
-            .toArray(CompletableFuture[]::new));
+    allOf(
+            drafts.stream()
+                .map(CategoryDraft::getKey)
+                .map(
+                    key ->
+                        unresolvedReferencesService.delete(
+                            key,
+                            CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY,
+                            WaitingToBeResolvedCategories.class))
+                .map(CompletionStage::toCompletableFuture)
+                .toArray(CompletableFuture[]::new))
+        .toCompletableFuture()
+        .join();
   }
 
   /**
