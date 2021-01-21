@@ -9,8 +9,8 @@ import javax.annotation.Nonnull;
 public interface UnresolvedReferencesService {
 
   /**
-   * Given product draft keys, this method fetches the persisted drafts waiting to be resolved. If
-   * there is no matching draft, an empty {@link Set} will be returned in the returned future.
+   * Given draft keys, this method fetches the persisted drafts waiting to be resolved. If there is
+   * no matching draft, an empty {@link Set} will be returned in the returned future.
    *
    * @param keys the keys of the persisted drafts, waiting to be resolved, to fetch.
    * @param containerKey the key of the container, which contains the persisted draft
@@ -25,7 +25,7 @@ public interface UnresolvedReferencesService {
       @Nonnull Class<? extends WaitingToBeResolved> clazz);
 
   /**
-   * Persists a product draft that is not ready to be resolved yet.
+   * Persists a draft that is not ready to be resolved yet.
    *
    * @param draft the draft that should be persisted.
    * @param containerKey the key of the container, which contains the persisted draft
@@ -40,9 +40,9 @@ public interface UnresolvedReferencesService {
       @Nonnull final Class clazz);
 
   /**
-   * Given a product draft key, this methods deletes the matching product draft from persistence.
+   * Given a draft key, this methods deletes the matching draft from persistence.
    *
-   * @param key the key of the product draft to delete from persistence.
+   * @param key the key of the draft to delete from persistence.
    * @param containerKey the key of the container, which contains the persisted draft
    * @param clazz Class of the object contained by custom object
    * @return a {@link CompletionStage} containing an optional with the deleted resource if
