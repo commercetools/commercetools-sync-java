@@ -1,6 +1,7 @@
 package com.commercetools.sync.commons.models;
 
 import io.sphere.sdk.models.WithKey;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 
@@ -19,5 +20,23 @@ public abstract class WaitingToBeResolved<T extends WithKey> {
 
   public void setMissingReferencedKeys(@Nonnull final Set keys) {
     missingReferencedKeys = keys;
+  }
+
+  @Override
+  public boolean equals(final Object other) {
+    if (this == other) {
+      return true;
+    }
+    if (!(other instanceof WaitingToBeResolved)) {
+      return false;
+    }
+    final WaitingToBeResolved that = (WaitingToBeResolved) other;
+    return Objects.equals(getWaitingDraft().getKey(), that.getWaitingDraft().getKey())
+        && getMissingReferencedKeys().equals(that.getMissingReferencedKeys());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(getWaitingDraft().getKey(), getMissingReferencedKeys());
   }
 }
