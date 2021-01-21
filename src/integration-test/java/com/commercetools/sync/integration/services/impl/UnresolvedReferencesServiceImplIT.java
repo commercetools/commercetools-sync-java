@@ -39,12 +39,14 @@ class UnresolvedReferencesServiceImplIT {
 
   @AfterEach
   void tearDown() {
-    deleteWaitingToBeResolvedCustomObjects(CTP_TARGET_CLIENT, WaitingToBeResolvedProducts.class);
+    deleteWaitingToBeResolvedCustomObjects(
+        CTP_TARGET_CLIENT, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingToBeResolvedProducts.class);
   }
 
   @BeforeEach
   void setupTest() {
-    deleteWaitingToBeResolvedCustomObjects(CTP_TARGET_CLIENT, WaitingToBeResolvedProducts.class);
+    deleteWaitingToBeResolvedCustomObjects(
+        CTP_TARGET_CLIENT, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingToBeResolvedProducts.class);
     errorCallBackMessages = new ArrayList<>();
     errorCallBackExceptions = new ArrayList<>();
     warningCallBackMessages = new ArrayList<>();

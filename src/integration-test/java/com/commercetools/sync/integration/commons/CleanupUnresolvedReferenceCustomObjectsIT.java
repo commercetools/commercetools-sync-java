@@ -5,6 +5,7 @@ import static com.commercetools.sync.integration.commons.utils.CustomObjectITUti
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ProductSyncMockUtils.CATEGORY_KEY_1_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
+import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY;
 import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY;
 import static com.commercetools.sync.services.impl.UnresolvedTransitionsServiceImpl.CUSTOM_OBJECT_CONTAINER_KEY;
 import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
@@ -49,8 +50,10 @@ class CleanupUnresolvedReferenceCustomObjectsIT {
   void setupTest() {
     deleteWaitingToBeResolvedTransitionsCustomObjects(
         CTP_TARGET_CLIENT, CUSTOM_OBJECT_CONTAINER_KEY);
-    deleteWaitingToBeResolvedCustomObjects(CTP_TARGET_CLIENT, WaitingToBeResolvedProducts.class);
-
+    deleteWaitingToBeResolvedCustomObjects(
+        CTP_TARGET_CLIENT, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingToBeResolvedProducts.class);
+    deleteWaitingToBeResolvedCustomObjects(
+        CTP_TARGET_CLIENT, CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY, WaitingToBeResolvedProducts.class);
     unresolvedReferencesService =
         new UnresolvedReferencesServiceImpl(
             ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT).build());

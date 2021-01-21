@@ -18,9 +18,6 @@ import javax.annotation.Nonnull;
 
 public final class CustomObjectITUtils {
 
-  private static final String PRODUCT_CUSTOM_OBJECT_CONTAINER_KEY =
-      "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
-
   /**
    * Deletes customObjects from CTP project which have key/container used in integration test,
    * represented by provided {@code ctpClient}.
@@ -90,10 +87,12 @@ public final class CustomObjectITUtils {
    * @param ctpClient the client to delete the custom objects from.
    */
   public static void deleteWaitingToBeResolvedCustomObjects(
-      @Nonnull final SphereClient ctpClient, @Nonnull final Class clazz) {
+      @Nonnull final SphereClient ctpClient,
+      @Nonnull final String container,
+      @Nonnull final Class clazz) {
 
     final CustomObjectQuery<WaitingToBeResolved> customObjectQuery =
-        CustomObjectQuery.of(clazz).byContainer(PRODUCT_CUSTOM_OBJECT_CONTAINER_KEY);
+        CustomObjectQuery.of(clazz).byContainer(container);
 
     PagedQueryResult<CustomObject<WaitingToBeResolved>> result =
         ctpClient.execute(customObjectQuery).toCompletableFuture().join();

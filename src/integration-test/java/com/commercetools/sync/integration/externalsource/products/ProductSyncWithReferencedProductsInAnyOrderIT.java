@@ -85,7 +85,8 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
   void setupTest() {
     clearSyncTestCollections();
     deleteAllProducts(CTP_TARGET_CLIENT);
-    deleteWaitingToBeResolvedCustomObjects(CTP_TARGET_CLIENT, WaitingToBeResolvedProducts.class);
+    deleteWaitingToBeResolvedCustomObjects(
+        CTP_TARGET_CLIENT, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingToBeResolvedProducts.class);
     syncOptions = buildSyncOptions();
 
     final ProductDraft productDraft =
