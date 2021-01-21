@@ -17,7 +17,6 @@ import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedProducts;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.products.ProductSync;
@@ -376,9 +375,9 @@ class ProductSyncWithReferencedProductsIT {
     assertThat(warningCallBackMessages).isEmpty();
     assertThat(actions).isEmpty();
 
-    final UnresolvedReferencesServiceImpl unresolvedReferencesService =
+    final UnresolvedReferencesServiceImpl<WaitingToBeResolvedProducts> unresolvedReferencesService =
         new UnresolvedReferencesServiceImpl(syncOptions);
-    final Set<WaitingToBeResolved> waitingToBeResolvedDrafts =
+    final Set<WaitingToBeResolvedProducts> waitingToBeResolvedDrafts =
         unresolvedReferencesService
             .fetch(
                 asSet(productDraftWithProductReference.getKey()),
@@ -390,9 +389,9 @@ class ProductSyncWithReferencedProductsIT {
     assertThat(waitingToBeResolvedDrafts)
         .hasOnlyOneElementSatisfying(
             waitingToBeResolvedDraft -> {
-              assertThat(waitingToBeResolvedDraft.getWaitingDraft().getKey())
+              assertThat(waitingToBeResolvedDraft.getProductDraft().getKey())
                   .isEqualTo(productDraftWithProductReference.getKey());
-              assertThat(waitingToBeResolvedDraft.getMissingReferencedKeys())
+              assertThat(waitingToBeResolvedDraft.getMissingReferencedProductKeys())
                   .containsExactly("nonExistingKey");
             });
   }
@@ -534,9 +533,9 @@ class ProductSyncWithReferencedProductsIT {
     assertThat(warningCallBackMessages).isEmpty();
     assertThat(actions).isEmpty();
 
-    final UnresolvedReferencesServiceImpl unresolvedReferencesService =
+    final UnresolvedReferencesServiceImpl<WaitingToBeResolvedProducts> unresolvedReferencesService =
         new UnresolvedReferencesServiceImpl(syncOptions);
-    final Set<WaitingToBeResolved> waitingToBeResolvedDrafts =
+    final Set<WaitingToBeResolvedProducts> waitingToBeResolvedDrafts =
         unresolvedReferencesService
             .fetch(
                 asSet(productDraftWithProductReference.getKey()),
@@ -548,9 +547,9 @@ class ProductSyncWithReferencedProductsIT {
     assertThat(waitingToBeResolvedDrafts)
         .hasOnlyOneElementSatisfying(
             waitingToBeResolvedDraft -> {
-              assertThat(waitingToBeResolvedDraft.getWaitingDraft().getKey())
+              assertThat(waitingToBeResolvedDraft.getProductDraft().getKey())
                   .isEqualTo(productDraftWithProductReference.getKey());
-              assertThat(waitingToBeResolvedDraft.getMissingReferencedKeys())
+              assertThat(waitingToBeResolvedDraft.getMissingReferencedProductKeys())
                   .containsExactly("nonExistingKey");
             });
   }

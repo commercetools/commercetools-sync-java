@@ -18,7 +18,6 @@ import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedCategories;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
@@ -57,7 +56,8 @@ public class CategorySync
   private static final String FAILED_TO_FETCH_WAITING_DRAFTS =
       "Failed to fetch CategoryDraft waiting to be resolved with parent keys: '%s'.";
   private final CategoryService categoryService;
-  private final UnresolvedReferencesService unresolvedReferencesService;
+  private final UnresolvedReferencesService<WaitingToBeResolvedCategories>
+      unresolvedReferencesService;
   private final CategoryReferenceResolver referenceResolver;
   private final CategoryBatchValidator batchValidator;
 
@@ -517,7 +517,8 @@ public class CategorySync
               // Each waitingdraft have only one parents, so we can sync the waitingdraft right
               // away, because only
               // waitingdraft with resolved categories was fetched
-              final Set<? extends WaitingToBeResolved> waitingDrafts = fetchResponse.getKey();
+              final Set<? extends WaitingToBeResolvedCategories> waitingDrafts =
+                  fetchResponse.getKey();
               waitingDrafts.forEach(
                   draft -> {
                     final CategoryDraft categoryDraft = (CategoryDraft) draft.getWaitingDraft();

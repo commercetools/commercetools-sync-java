@@ -860,10 +860,10 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
     assertThat(warningCallBackMessages).isEmpty();
     assertThat(actions).isEmpty();
 
-    final UnresolvedReferencesService unresolvedReferencesService =
+    final UnresolvedReferencesService<WaitingToBeResolvedProducts> unresolvedReferencesService =
         new UnresolvedReferencesServiceImpl(syncOptions);
 
-    final Set<WaitingToBeResolved> waitingDrafts =
+    final Set<WaitingToBeResolvedProducts> waitingDrafts =
         unresolvedReferencesService
             .fetch(
                 asSet(childDraft1.getKey(), childDraft2.getKey()),
@@ -949,10 +949,10 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
     assertThat(warningCallBackMessages).isEmpty();
     assertThat(actions).isEmpty();
 
-    final UnresolvedReferencesService unresolvedReferencesService =
+    final UnresolvedReferencesService<WaitingToBeResolvedProducts> unresolvedReferencesService =
         new UnresolvedReferencesServiceImpl(syncOptions);
 
-    final Set<WaitingToBeResolved> waitingDrafts =
+    final Set<WaitingToBeResolvedProducts> waitingDrafts =
         unresolvedReferencesService
             .fetch(
                 asSet(childDraft1.getKey()),

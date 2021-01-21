@@ -6,7 +6,7 @@ import java.util.Set;
 import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
 
-public interface UnresolvedReferencesService {
+public interface UnresolvedReferencesService<T extends WaitingToBeResolved> {
 
   /**
    * Given draft keys, this method fetches the persisted drafts waiting to be resolved. If there is
@@ -19,7 +19,7 @@ public interface UnresolvedReferencesService {
    *     contains a {@link Set} that contains the matching drafts if any exist, otherwise empty.
    */
   @Nonnull
-  CompletionStage<Set<WaitingToBeResolved>> fetch(
+  CompletionStage<Set<T>> fetch(
       @Nonnull final Set<String> keys,
       @Nonnull final String containerKey,
       @Nonnull Class<? extends WaitingToBeResolved> clazz);
@@ -34,10 +34,8 @@ public interface UnresolvedReferencesService {
    *     successful otherwise an empty optional.
    */
   @Nonnull
-  CompletionStage<Optional<WaitingToBeResolved>> save(
-      @Nonnull final WaitingToBeResolved draft,
-      @Nonnull final String containerKey,
-      @Nonnull final Class clazz);
+  CompletionStage<Optional<T>> save(
+      @Nonnull final T draft, @Nonnull final String containerKey, @Nonnull final Class clazz);
 
   /**
    * Given a draft key, this methods deletes the matching draft from persistence.
@@ -49,8 +47,6 @@ public interface UnresolvedReferencesService {
    *     successful otherwise an empty optional.
    */
   @Nonnull
-  CompletionStage<Optional<WaitingToBeResolved>> delete(
-      @Nonnull final String key,
-      @Nonnull final String containerKey,
-      @Nonnull final Class<? extends WaitingToBeResolved> clazz);
+  CompletionStage<Optional<T>> delete(
+      @Nonnull final String key, @Nonnull final String containerKey, @Nonnull final Class<T> clazz);
 }

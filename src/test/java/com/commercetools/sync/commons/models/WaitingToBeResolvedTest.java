@@ -20,25 +20,25 @@ class WaitingToBeResolvedTest {
   void setProductDraft_WithNonNullProductDraft_ShouldSetProductDraft() {
     // preparation
     final ProductDraft productDraft = mock(ProductDraft.class);
-    final WaitingToBeResolved waitingToBeResolved = new WaitingToBeResolvedProducts();
+    final WaitingToBeResolvedProducts waitingToBeResolved = new WaitingToBeResolvedProducts();
 
     // test
-    waitingToBeResolved.setWaitingDraft(productDraft);
+    waitingToBeResolved.setProductDraft(productDraft);
 
     // assertions
-    assertThat(waitingToBeResolved.getWaitingDraft()).isEqualTo(productDraft);
+    assertThat(waitingToBeResolved.getProductDraft()).isEqualTo(productDraft);
   }
 
   @Test
   void setMissingReferencedProductKeys_WithNonNullSet_ShouldSetTheSet() {
     // preparation
-    final WaitingToBeResolved waitingToBeResolved = new WaitingToBeResolvedProducts();
+    final WaitingToBeResolvedProducts waitingToBeResolved = new WaitingToBeResolvedProducts();
 
     // test
-    waitingToBeResolved.setMissingReferencedKeys(emptySet());
+    waitingToBeResolved.setMissingReferencedProductKeys(emptySet());
 
     // assertions
-    assertThat(waitingToBeResolved.getMissingReferencedKeys()).isEqualTo(emptySet());
+    assertThat(waitingToBeResolved.getMissingReferencedProductKeys()).isEqualTo(emptySet());
   }
 
   @Test

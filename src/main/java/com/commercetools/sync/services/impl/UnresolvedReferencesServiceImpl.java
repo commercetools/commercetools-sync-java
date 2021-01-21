@@ -24,7 +24,8 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesService {
+public class UnresolvedReferencesServiceImpl<T extends WaitingToBeResolved>
+    implements UnresolvedReferencesService<T> {
 
   private final BaseSyncOptions syncOptions;
 
@@ -49,7 +50,7 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
 
   @Nonnull
   @Override
-  public CompletionStage<Set<WaitingToBeResolved>> fetch(
+  public CompletionStage<Set<T>> fetch(
       @Nonnull final Set<String> keys,
       @Nonnull final String containerKey,
       @Nonnull final Class<? extends WaitingToBeResolved> clazz) {
@@ -68,18 +69,15 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
     return QueryExecutionUtils.queryAll(syncOptions.getCtpClient(), customObjectQuery)
         .thenApply(
             customObjects -> customObjects.stream().map(CustomObject::getValue).collect(toList()))
-        .thenApply(HashSet::new);
+        .thenApply(l -> new HashSet(l));
   }
 
   @Nonnull
   @Override
-  public CompletionStage<Optional<WaitingToBeResolved>> save(
-      @Nonnull final WaitingToBeResolved draft,
-      @Nonnull final String containerKey,
-      @Nonnull final Class clazz) {
+  public CompletionStage<Optional<T>> save(
+      @Nonnull final T draft, @Nonnull final String containerKey, @Nonnull final Class clazz) {
     final CustomObjectDraft<WaitingToBeResolved> customObjectDraft =
-        CustomObjectDraft.ofUnversionedUpsert(
-            containerKey, hash(draft.getWaitingDraft().getKey()), draft, clazz);
+        CustomObjectDraft.ofUnversionedUpsert(containerKey, hash(draft.getKey()), draft, clazz);
 
     return syncOptions
         .getCtpClient()
@@ -87,14 +85,11 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
         .handle(
             (resource, exception) -> {
               if (exception == null) {
-                return Optional.of(resource.getValue());
+                return Optional.of((T) resource.getValue());
               } else {
                 syncOptions.applyErrorCallback(
                     new SyncException(
-                        format(
-                            SAVE_FAILED,
-                            customObjectDraft.getKey(),
-                            draft.getWaitingDraft().getKey()),
+                        format(SAVE_FAILED, customObjectDraft.getKey(), draft.getKey()),
                         exception));
                 return Optional.empty();
               }
@@ -103,10 +98,10 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
 
   @Nonnull
   @Override
-  public CompletionStage<Optional<WaitingToBeResolved>> delete(
+  public CompletionStage<Optional<T>> delete(
       @Nonnull final String key,
       @Nonnull final String containerKey,
-      @Nonnull final Class<? extends WaitingToBeResolved> clazz) {
+      @Nonnull final Class<T> clazz) {
 
     return syncOptions
         .getCtpClient()
@@ -114,7 +109,7 @@ public class UnresolvedReferencesServiceImpl implements UnresolvedReferencesServ
         .handle(
             (resource, exception) -> {
               if (exception == null) {
-                return Optional.of(resource.getValue());
+                return Optional.of((T) resource.getValue());
               } else {
                 syncOptions.applyErrorCallback(
                     new SyncException(format(DELETE_FAILED, hash(key), key), exception));
