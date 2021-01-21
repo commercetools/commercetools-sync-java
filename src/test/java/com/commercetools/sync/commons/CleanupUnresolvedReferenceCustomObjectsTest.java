@@ -49,10 +49,10 @@ class CleanupUnresolvedReferenceCustomObjectsTest {
             .cleanup(deleteDaysAfterLastModification)
             .join();
 
-    assertThat(statistics.getTotalDeleted()).isEqualTo(3);
+    assertThat(statistics.getTotalDeleted()).isEqualTo(5);
     assertThat(statistics.getTotalFailed()).isEqualTo(1);
     assertThat(statistics.getReportMessage())
-        .isEqualTo("Summary: 3 custom objects were deleted in total (1 failed to delete).");
+        .isEqualTo("Summary: 5 custom objects were deleted in total (1 failed to delete).");
   }
 
   @Test
@@ -103,9 +103,9 @@ class CleanupUnresolvedReferenceCustomObjectsTest {
             .join();
 
     assertThat(statistics.getTotalDeleted()).isEqualTo(1);
-    assertThat(statistics.getTotalFailed()).isEqualTo(1);
+    assertThat(statistics.getTotalFailed()).isEqualTo(2);
     assertThat(exceptions).contains(badRequestException);
     assertThat(statistics.getReportMessage())
-        .isEqualTo("Summary: 1 custom objects were deleted in total (1 failed to delete).");
+        .isEqualTo("Summary: 1 custom objects were deleted in total (2 failed to delete).");
   }
 }
