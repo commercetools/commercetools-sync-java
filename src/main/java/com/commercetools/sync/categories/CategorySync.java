@@ -389,14 +389,13 @@ public class CategorySync
    * This method first gets the parent key either from the expanded category object or from the id
    * field on the reference and validates it. If it is valid, then it checks if the parent category
    * is missing, this is done by checking if the key exists in the {@code keyToIdCache} map. If it
-   * is missing, then it adds the key to the map {@code statistics#categoryKeysWithMissingParents},
-   * then it returns a category draft identical to the supplied one but with a {@code null} parent.
-   * If it is not missing, then the same identical category draft is returned with the same parent.
+   * is missing, the category is added to a customobject,its key is added to the map {@code
+   * statistics#categoryKeysWithMissingParents} and it is skipped for the futher
+   * processing.Otherwise an optinal of the given category draft is returned,
    *
    * @param categoryDraft the category draft to check whether it's parent is missing or not.
    * @param keyToIdCache the cache containing the mapping of all existing category keys to ids.
-   * @return the same identical supplied category draft. However, with a null parent field, if the
-   *     parent is missing.
+   * @return Optional of the categorydraft, if its parent exists, otherwise an Optional.empty
    * @throws ReferenceResolutionException thrown if the parent key is not valid.
    */
   @Nullable
@@ -441,25 +440,14 @@ public class CategorySync
    * categories:
    *
    * <ol>
-   *   <li>Adds its keys to {@code processedCategoryKeys} in order to not increment updated and
-   *       processed counters of statistics more than needed. For example, when updating the parent
-   *       later on of this created category.
-   *   <li>Check if it exists in {@code statistics#categoryKeysWithMissingParents} as a missing
-   *       parent, if it does then its children are now ready to update their parent field
-   *       references with the created parent category. For each of these child categories do the
-   *       following:
-   *       <ol>
-   *         <li>Add its key to the list {@code categoryKeysWithResolvedParents}.
-   *         <li>If the key was in the {@code newCategoryDrafts} list, then it means it should have
-   *             just been created. Then it adds the category created to the {@code
-   *             categoryDraftsToUpdate}. The draft is created from the created Category response
-   *             from CTP but parent is taken from the {@code
-   *             statistics#categoryKeysWithMissingParents}
-   *         <li>Otherwise, if it wasn't in the {@code newCategoryDrafts} list, then it means it
-   *             needs to be fetched. Therefore, its key is added it to the {@code
-   *             categoryKeysToFetch}
-   *       </ol>
+   *   <li>It fetches all unresolvable categories, whose parent is one of the created categories,
+   *       from the custom objects.
+   *   <li>Then it prepares the fetched categories for syncing by resolving references.
+   *   <li>Then it updates/creates the fetched categories and deletes the corresponding
+   *       customobjects.
    * </ol>
+   *
+   * * @param keyToIdCache the cache containing mapping of all existing category keys to ids.
    *
    * @param createdCategories the set of created categories that needs to be processed.
    */
