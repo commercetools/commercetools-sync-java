@@ -288,15 +288,12 @@ public class CategorySync
    * This method does the following on each category draft input in the sync batch:
    *
    * <ol>
-   *   <li>First checks if the key is set on the draft, if not then the error callback is triggered
-   *       and the draft is skipped.
-   *   <li>Checks if the draft is {@code null}, then the error callback is triggered and the draft
-   *       is skipped.
-   *   <li>Then for each draft adds each with a non-existing parent in keyToId cached map to a map
-   *       {@code statistics#categoryKeysWithMissingParents} (mapping from parent key to list of
-   *       subcategory keys)
+   *   <li>First it checks if the category, have a resolvable parent category. If not, the category
+   *       is saved in a customobject and its key is added to the map {@code
+   *       statistics#categoryKeysWithMissingParents} (mapping from parent key to list of
+   *       subcategory keys) and it is skipped in the further process.
    *   <li>Then it resolves the references (parent category reference and custom type reference) on
-   *       each draft. For each draft with resolved references:
+   *       each remaining draft. For each draft with resolved references:
    *       <ol>
    *         <li>Checks if the draft exists, then it adds it to the {@code existingCategoryDrafts}
    *             array.
