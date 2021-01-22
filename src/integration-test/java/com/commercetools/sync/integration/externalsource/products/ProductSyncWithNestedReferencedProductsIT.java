@@ -642,7 +642,8 @@ class ProductSyncWithNestedReferencedProductsIT {
   }
 
   @Test
-  void sync_withNestedProductReferenceSetContainingANonExistingReference_shouldFailCreatingTheProduct() {
+  void
+      sync_withNestedProductReferenceSetContainingANonExistingReference_shouldFailCreatingTheProduct() {
     // preparation
     final ObjectNode nestedAttributeValue =
         createNestedAttributeValueSetOfReferences(
