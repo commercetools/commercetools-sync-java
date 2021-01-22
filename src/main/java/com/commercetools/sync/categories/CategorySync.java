@@ -473,7 +473,7 @@ public class CategorySync
   }
 
   @Nonnull
-  private CompletionStage<List<CategoryDraft>> fetchResolvableCatogories(
+  private CompletionStage<List<CategoryDraft>> fetchResolvableCategories(
       Set<String> resolvedParent) {
     final List<CategoryDraft> readyToSync = new ArrayList<>();
     final Set<String> resolvableCategoryKeys =
