@@ -457,7 +457,7 @@ public class CategorySync
 
     final Set<String> resolvedParentKeys =
         createdCategories.stream().map(c -> c.getKey()).collect(toSet());
-    fetchResolvableCatogories(resolvedParentKeys)
+    fetchResolvableCategories(resolvedParentKeys)
         .thenAccept(
             readyToSync -> {
               if (!readyToSync.isEmpty()) {
