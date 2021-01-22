@@ -45,7 +45,7 @@ public final class WaitingToBeResolvedCategories extends WaitingToBeResolved<Cat
     if (this == other) {
       return true;
     }
-    if (!(other instanceof WaitingToBeResolvedProducts)) {
+    if (!(other instanceof WaitingToBeResolvedCategories)) {
       return false;
     }
     final WaitingToBeResolvedCategories that = (WaitingToBeResolvedCategories) other;
