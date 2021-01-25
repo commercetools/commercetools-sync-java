@@ -30,6 +30,7 @@ import com.commercetools.sync.commons.exceptions.ReferenceResolutionException;
 import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyId;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
+import com.commercetools.sync.commons.models.WaitingToBeResolvedCategories;
 import com.commercetools.sync.services.CategoryService;
 import com.commercetools.sync.services.TypeService;
 import com.commercetools.sync.services.UnresolvedReferencesService;
@@ -45,6 +46,7 @@ import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.models.SphereException;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -202,6 +204,45 @@ class CategorySyncTest {
     assertThat(syncStatistics).hasValues(1, 1, 0, 0);
     assertThat(errorCallBackMessages).hasSize(0);
     assertThat(errorCallBackExceptions).hasSize(0);
+  }
+
+  @Test
+  void sync_WithErrorOnFetchingUnresolvableCateggory_ShouldNotCreateCategory() {
+    final Category mockRootCategory = getMockCategory(UUID.randomUUID().toString(), "root");
+    final Category mockParentCategory = getMockCategory(UUID.randomUUID().toString(), "parentKey");
+    final CategoryService mockCategoryService =
+        mockCategoryService(Collections.singleton(mockRootCategory), mockParentCategory);
+
+    when(mockCategoryService.fetchCachedCategoryId(Mockito.eq("root")))
+        .thenReturn(completedFuture(Optional.of("rootID")));
+    final CompletableFuture<Set<WaitingToBeResolvedCategories>> futureThrowingSphereException =
+        new CompletableFuture<>();
+    futureThrowingSphereException.completeExceptionally(new SphereException("CTP error on fetch"));
+    when(mockUnresolvedReferencesService.fetch(any(), any(), any()))
+        .thenReturn(futureThrowingSphereException);
+    final CategorySync mockCategorySync =
+        new CategorySync(
+            categorySyncOptions,
+            getMockTypeService(),
+            mockCategoryService,
+            mockUnresolvedReferencesService);
+    final List<CategoryDraft> categoryDrafts = new ArrayList<>();
+    categoryDrafts.add(
+        getMockCategoryDraft(
+            Locale.ENGLISH, "name", "child", "parentKey", "customTypeId", new HashMap<>()));
+    categoryDrafts.add(
+        getMockCategoryDraft(
+            Locale.ENGLISH, "name", "parentKey", "root", "customTypeId", new HashMap<>()));
+
+    final CategorySyncStatistics syncStatistics =
+        mockCategorySync.sync(categoryDrafts).toCompletableFuture().join();
+
+    assertThat(syncStatistics).hasValues(2, 1, 0, 1);
+    assertThat(errorCallBackMessages).hasSize(1);
+    assertThat(errorCallBackExceptions).hasSize(1);
+    assertThat(errorCallBackMessages.get(0))
+        .isEqualTo(
+            "Failed to fetch CategoryDraft waiting to be resolved with parent keys: '[child]'.");
   }
 
   @Test

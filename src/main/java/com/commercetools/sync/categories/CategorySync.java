@@ -10,6 +10,7 @@ import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceIm
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.concurrent.CompletableFuture.allOf;
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.stream.Collectors.toSet;
 
 import com.commercetools.sync.categories.helpers.CategoryBatchValidator;
@@ -31,6 +32,7 @@ import io.sphere.sdk.categories.CategoryDraftBuilder;
 import io.sphere.sdk.client.ConcurrentModificationException;
 import io.sphere.sdk.commands.UpdateAction;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -158,7 +160,7 @@ public class CategorySync
       @Nonnull final List<CategoryDraft> categoryDrafts) {
     final List<List<CategoryDraft>> batches =
         batchElements(categoryDrafts, syncOptions.getBatchSize());
-    return syncBatches(batches, CompletableFuture.completedFuture(statistics));
+    return syncBatches(batches, completedFuture(statistics));
   }
 
   /**
@@ -195,7 +197,7 @@ public class CategorySync
     final Set<CategoryDraft> validDrafts = result.getLeft();
     if (validDrafts.isEmpty()) {
       statistics.incrementProcessed(categoryDrafts.size());
-      return CompletableFuture.completedFuture(statistics);
+      return completedFuture(statistics);
     }
 
     return referenceResolver
@@ -208,7 +210,7 @@ public class CategorySync
                 handleError(
                     new SyncException("Failed to build a cache of keys to ids.", cachingException),
                     validDrafts.size());
-                return CompletableFuture.completedFuture(null);
+                return completedFuture(null);
               }
 
               final Map<String, String> categoryKeyToIdCache = cachingResponse.getKey();
@@ -267,7 +269,7 @@ public class CategorySync
                         "Failed to fetch existing categories with keys: '%s'.",
                         categoryKeysToFetch);
                 handleError(new SyncException(errorMessage, exception), categoryKeysToFetch.size());
-                return CompletableFuture.completedFuture(null);
+                return completedFuture(null);
               }
 
               return processFetchedCategoriesAndUpdate(keyToIdCache, fetchedCategories);
@@ -382,7 +384,7 @@ public class CategorySync
     return syncOptions
         .applyBeforeCreateCallback(categoryDraft)
         .map(categoryService::createCategory)
-        .orElse(CompletableFuture.completedFuture(Optional.empty()));
+        .orElse(completedFuture(Optional.empty()));
   }
 
   /**
@@ -454,22 +456,24 @@ public class CategorySync
   private void processCreatedCategories(
       @Nonnull final Set<Category> createdCategories,
       @Nonnull final Map<String, String> keyToIdCache) {
+    if (!createdCategories.isEmpty()) {
+      final Set<String> resolvedParentKeys =
+          createdCategories.stream().map(c -> c.getKey()).collect(toSet());
 
-    final Set<String> resolvedParentKeys =
-        createdCategories.stream().map(c -> c.getKey()).collect(toSet());
-    fetchResolvableCategories(resolvedParentKeys)
-        .thenAccept(
-            readyToSync -> {
-              if (!readyToSync.isEmpty()) {
-                // process ready drafts
-                ImmutablePair<Set<CategoryDraft>, Set<CategoryDraft>> preparedDraft =
-                    prepareDraftsForProcessing(readyToSync, keyToIdCache);
-                createAndUpdate(preparedDraft, keyToIdCache).toCompletableFuture().join();
-                removeFromWaiting(readyToSync);
-              }
-            })
-        .toCompletableFuture()
-        .join();
+      fetchResolvableCategories(resolvedParentKeys)
+          .thenAccept(
+              readyToSync -> {
+                if (!readyToSync.isEmpty()) {
+                  // process ready drafts
+                  ImmutablePair<Set<CategoryDraft>, Set<CategoryDraft>> preparedDraft =
+                      prepareDraftsForProcessing(readyToSync, keyToIdCache);
+                  createAndUpdate(preparedDraft, keyToIdCache).toCompletableFuture().join();
+                  removeFromWaiting(readyToSync);
+                }
+              })
+          .toCompletableFuture()
+          .join();
+    }
   }
 
   @Nonnull
@@ -482,6 +486,9 @@ public class CategorySync
             .filter(Objects::nonNull)
             .flatMap(Set::stream)
             .collect(toSet());
+    if (resolvableCategoryKeys.isEmpty()) {
+      return completedFuture(Collections.emptyList());
+    }
     return unresolvedReferencesService
         .fetch(
             resolvableCategoryKeys,
@@ -496,12 +503,12 @@ public class CategorySync
                     format(
                         FAILED_TO_FETCH_WAITING_DRAFTS,
                         String.join(",", resolvableCategoryKeys.toString()));
-                handleError(errorMessage, new SyncException(errorMessage, fetchException));
+                syncOptions.applyErrorCallback(
+                    new SyncException(errorMessage, fetchException), null, null, null);
                 return readyToSync;
               }
               // Each waitingdraft have only one parents, so we can sync the waitingdraft right
-              // away, because only
-              // waitingdraft with resolved categories was fetched
+              // away, because only waitingdraft with resolved categories was fetched
               final Set<? extends WaitingToBeResolvedCategories> waitingDrafts =
                   fetchResponse.getKey();
               waitingDrafts.forEach(
@@ -687,7 +694,7 @@ public class CategorySync
       return updateCategory(oldCategory, newCategory, beforeUpdateCallBackApplied);
     }
 
-    return CompletableFuture.completedFuture(null);
+    return completedFuture(null);
   }
 
   /**
@@ -731,7 +738,7 @@ public class CategorySync
                             updateActions);
                         processedCategoryKeys.add(categoryKey);
                       }
-                      return CompletableFuture.completedFuture(null);
+                      return completedFuture(null);
                     });
               } else {
                 if (!processedCategoryKeys.contains(categoryKey)) {
@@ -741,7 +748,7 @@ public class CategorySync
                 if (categoryKeysWithResolvedParents.contains(categoryKey)) {
                   statistics.removeChildCategoryKeyFromMissingParentsMap(categoryKey);
                 }
-                return CompletableFuture.completedFuture(null);
+                return completedFuture(null);
               }
             });
   }
@@ -766,7 +773,7 @@ public class CategorySync
                         "Failed to fetch from CTP while "
                             + "retrying after concurrency modification.");
                 handleError(errorMessage, exception, oldCategory, newCategory, null);
-                return CompletableFuture.completedFuture(null);
+                return completedFuture(null);
               }
 
               return fetchedCategoryOptional
@@ -780,7 +787,7 @@ public class CategorySync
                                 "Not found when attempting to fetch while retrying "
                                     + "after concurrency modification.");
                         handleError(errorMessage, null, oldCategory, newCategory, null);
-                        return CompletableFuture.completedFuture(null);
+                        return completedFuture(null);
                       });
             });
   }
