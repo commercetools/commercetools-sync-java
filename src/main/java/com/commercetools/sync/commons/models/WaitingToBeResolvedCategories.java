@@ -6,15 +6,15 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 
 public final class WaitingToBeResolvedCategories extends WaitingToBeResolved<CategoryDraft> {
-  private CategoryDraft waitingDraft;
-  private Set<String> missingReferencedKeys;
+  private CategoryDraft categoryDraft;
+  private Set<String> MissingReferencedCategoriesKeys;
 
-  public Set<String> getMissingReferencedKeys() {
-    return missingReferencedKeys;
+  public Set<String> getMissingReferencedCategoriesKeys() {
+    return MissingReferencedCategoriesKeys;
   }
 
-  public void setMissingReferencedKeys(Set<String> missingReferencedKeys) {
-    this.missingReferencedKeys = missingReferencedKeys;
+  public void setMissingReferencedCategoriesKeys(Set<String> missingReferencedCategoriesKeys) {
+    this.MissingReferencedCategoriesKeys = missingReferencedCategoriesKeys;
   }
 
   // Needed for the 'com.fasterxml.jackson' deserialization, for example, when fetching
@@ -22,22 +22,23 @@ public final class WaitingToBeResolvedCategories extends WaitingToBeResolved<Cat
   public WaitingToBeResolvedCategories() {}
 
   public WaitingToBeResolvedCategories(
-      @Nonnull final CategoryDraft draft, @Nonnull final Set<String> missingReferencedKeys) {
-    this.waitingDraft = draft;
-    this.setMissingReferencedKeys(missingReferencedKeys);
+      @Nonnull final CategoryDraft draft,
+      @Nonnull final Set<String> missingReferencedCategoriesKeys) {
+    this.categoryDraft = draft;
+    this.setMissingReferencedCategoriesKeys(missingReferencedCategoriesKeys);
   }
 
-  public void setWaitingDraft(@Nonnull final CategoryDraft draft) {
-    waitingDraft = draft;
+  public void setCategoryDraft(@Nonnull final CategoryDraft draft) {
+    categoryDraft = draft;
   }
 
-  public CategoryDraft getWaitingDraft() {
-    return waitingDraft;
+  public CategoryDraft getCategoryDraft() {
+    return categoryDraft;
   }
 
   @Override
   public String getKey() {
-    return getWaitingDraft().getKey();
+    return getCategoryDraft().getKey();
   }
 
   @Override
@@ -49,12 +50,12 @@ public final class WaitingToBeResolvedCategories extends WaitingToBeResolved<Cat
       return false;
     }
     final WaitingToBeResolvedCategories that = (WaitingToBeResolvedCategories) other;
-    return Objects.equals(getWaitingDraft().getKey(), that.getWaitingDraft().getKey())
-        && getMissingReferencedKeys().equals(that.getMissingReferencedKeys());
+    return Objects.equals(getCategoryDraft().getKey(), that.getCategoryDraft().getKey())
+        && getMissingReferencedCategoriesKeys().equals(that.getMissingReferencedCategoriesKeys());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(getWaitingDraft().getKey(), getMissingReferencedKeys());
+    return Objects.hash(getCategoryDraft().getKey(), getMissingReferencedCategoriesKeys());
   }
 }

@@ -508,7 +508,7 @@ public class CategorySync
                   fetchResponse.getKey();
               waitingDrafts.forEach(
                   draft -> {
-                    final CategoryDraft categoryDraft = (CategoryDraft) draft.getWaitingDraft();
+                    final CategoryDraft categoryDraft = (CategoryDraft) draft.getCategoryDraft();
                     readyToSync.add(categoryDraft);
                   });
               return readyToSync;
