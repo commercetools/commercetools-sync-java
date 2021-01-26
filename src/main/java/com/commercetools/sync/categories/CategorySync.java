@@ -73,15 +73,11 @@ public class CategorySync
       ConcurrentHashMap.newKeySet();
 
   /**
-   * The following set ({@code categoryKeysWithResolvedParents}) and map ({@code
-   * categoryDraftsToUpdate}) are thread-safe because they are accessed/modified in a concurrent
-   * context, specifically when updating products in parallel in {@link
-   * #updateCategoriesInParallel(Map)}. They have a local scope within every batch execution, which
-   * means that they are re-initialized on every {@link #processBatch(List)} call.
+   * The following map ({@code categoryDraftsToUpdate}) are thread-safe because they are
+   * accessed/modified in a concurrent context, specifically when updating products in parallel in
+   * {@link #updateCategoriesInParallel(Map)}. They have a local scope within every batch execution,
+   * which means that they are re-initialized on every {@link #processBatch(List)} call.
    */
-  private ConcurrentHashMap.KeySetView<String, Boolean> categoryKeysWithResolvedParents =
-      ConcurrentHashMap.newKeySet();
-
   private ConcurrentHashMap<CategoryDraft, Category> categoryDraftsToUpdate =
       new ConcurrentHashMap<>();
 
@@ -188,7 +184,6 @@ public class CategorySync
   protected CompletionStage<CategorySyncStatistics> processBatch(
       @Nonnull final List<CategoryDraft> categoryDrafts) {
 
-    categoryKeysWithResolvedParents = ConcurrentHashMap.newKeySet();
     categoryDraftsToUpdate = new ConcurrentHashMap<>();
     final int numberOfNewDraftsToProcess = getNumberOfDraftsToProcess(categoryDrafts);
     final ImmutablePair<Set<CategoryDraft>, CategoryBatchValidator.ReferencedKeys> result =
@@ -584,16 +579,7 @@ public class CategorySync
                         return CategoryDraftBuilder.of(categoryDraft);
                       })
                   .orElseGet(() -> CategoryDraftBuilder.of(fetchedCategory));
-          if (categoryKeysWithResolvedParents.contains(fetchedCategoryKey)) {
-            statistics
-                .getMissingParentKey(fetchedCategoryKey)
-                .ifPresent(
-                    missingParentKey -> {
-                      final String parentId = keyToIdCache.get(missingParentKey);
-                      categoryDraftBuilder.parent(
-                          Category.referenceOfId(parentId).toResourceIdentifier());
-                    });
-          }
+
           categoryDraftsToUpdate.put(categoryDraftBuilder.build(), fetchedCategory);
         });
   }
@@ -744,9 +730,6 @@ public class CategorySync
                 if (!processedCategoryKeys.contains(categoryKey)) {
                   statistics.incrementUpdated();
                   processedCategoryKeys.add(categoryKey);
-                }
-                if (categoryKeysWithResolvedParents.contains(categoryKey)) {
-                  statistics.removeChildCategoryKeyFromMissingParentsMap(categoryKey);
                 }
                 return completedFuture(null);
               }
