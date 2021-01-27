@@ -81,10 +81,6 @@ public abstract class BaseSyncStatistics {
     created.incrementAndGet();
   }
 
-  /** decrements the total number of resources that failed to sync. */
-  public void decrementFailed() {
-    failed.decrementAndGet();
-  }
   /**
    * Increments the total number of resources that were created by the supplied times.
    *

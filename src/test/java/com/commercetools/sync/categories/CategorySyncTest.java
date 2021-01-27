@@ -207,7 +207,7 @@ class CategorySyncTest {
   }
 
   @Test
-  void sync_WithErrorOnFetchingUnresolvableCateggory_ShouldNotCreateCategory() {
+  void sync_WithErrorOnFetchingUnresolvableCategory_ShouldNotCreateCategory() {
     final Category mockRootCategory = getMockCategory(UUID.randomUUID().toString(), "root");
     final Category mockParentCategory = getMockCategory(UUID.randomUUID().toString(), "parentKey");
     final CategoryService mockCategoryService =
