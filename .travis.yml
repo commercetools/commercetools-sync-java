@@ -10,13 +10,6 @@ addons:
 before_install:
   - sudo pip3 install -U pip
 install: true # skips travis' default installation step which executes gradle assemble.
-jobs:
-  include:
-    - stage: benchmark
-      if: tag IS present
-      script: ./gradlew clean setLibraryVersion benchmark benchmarkCommit
-      after_success:
-      - ./travis-publish.sh || travis_terminate 1
 # The before_cache and the cache steps cache the gradle installation on travis.
 before_cache:
 - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock

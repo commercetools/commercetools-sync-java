@@ -1,0 +1,38 @@
+name: DEPLOY
+
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - '*'
+
+jobs:
+  benchmark_tests:
+    name: benchmark tests
+    runs-on: ubuntu-latest
+    env:
+      CI_BUILD_DIR: ${{ secrets.CI_BUILD_DIR }}
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+      - name: benchmark test
+        run:  ./gradlew clean setLibraryVersion benchmark benchmarkCommit
+
+jobs:
+  deployment:
+    name: deployment
+    needs: benchmark_tests
+    if: ${{ success() }}
+    runs-on: ubuntu-latest
+    env:
+      BINTRAY_USER: commercetools
+      BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+      - name: Fetch release tag
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: publish documentation
+        run: ./gradlew --info -Dbuild.version="$RELEASE_VERSION" mkdocsPublish
+      - name: publish to bintray
+        run: ./gradlew --info -Dbuild.version="$RELEASE_VERSION" bintrayUpload
