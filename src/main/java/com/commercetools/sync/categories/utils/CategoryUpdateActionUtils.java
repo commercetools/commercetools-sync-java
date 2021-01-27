@@ -33,7 +33,7 @@ public final class CategoryUpdateActionUtils {
   private static final String CATEGORY_CHANGE_PARENT_EMPTY_PARENT =
       "Cannot unset 'parent' field of category with id '%s'.";
   private static final String CATEGORY_CHANGE_ORDER_HINT_EMPTY_ORDERHINT =
-      "Cannot unset 'orderHint' field of " + "category with id '%s'.";
+      "Cannot unset 'orderHint' field of category with id '%s'.";
 
   /**
    * Compares the {@link LocalizedString} names of a {@link Category} and a {@link CategoryDraft}
