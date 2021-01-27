@@ -26,6 +26,14 @@
 
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
+### 3.2.0 - ???
+[Commits](https://github.com/commercetools/commercetools-sync-java/compare/3.1.0...3.2.0) |
+[Javadoc](https://commercetools.github.io/commercetools-sync-java/v/3.2.0/) | 
+[Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/3.2.0)
+
+- 🎉 **New Features** (1)
+    - Now the categories, which have an unresolvable parent category, are persisted in custom objects, 
+      so they can be resolved in different executions / instances of the category sync.
 
 ### 3.1.0 - Jan 13, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/3.0.2...3.1.0) |
