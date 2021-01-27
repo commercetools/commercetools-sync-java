@@ -463,7 +463,10 @@ public class CategorySync
                   ImmutablePair<Set<CategoryDraft>, Set<CategoryDraft>> preparedDraft =
                       prepareDraftsForProcessing(readyToSync, keyToIdCache);
                   createAndUpdate(preparedDraft, keyToIdCache).toCompletableFuture().join();
-                  removeFromWaiting(readyToSync);
+                  removeFromWaiting(
+                      readyToSync.stream()
+                          .filter(c -> keyToIdCache.containsKey(c.getKey()))
+                          .collect(Collectors.toList()));
                 }
               })
           .toCompletableFuture()
