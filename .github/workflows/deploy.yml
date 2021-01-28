@@ -14,7 +14,17 @@ jobs:
       - name: Git Checkout
         uses: actions/checkout@v2
       - name: benchmark test
+        if: success()
         run:  ./gradlew clean setLibraryVersion benchmark benchmarkCommit
+        env:
+          SOURCE_PROJECT_KEY: java-sync-source
+          SOURCE_CLIENT_ID: ${{ secrets.SOURCE_CLIENT_ID }}
+          SOURCE_CLIENT_SECRET: ${{ secrets.SOURCE_CLIENT_SECRET }}
+          TARGET_PROJECT_KEY: java-sync-target
+          TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID }}
+          TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET }}
+          CI_BUILD_DIR: '/commercetools/commercetools-sync-java'
+          GRGIT_USER: ${{ secrets.GRGIT_USER }}
 
 jobs:
   deployment:
@@ -28,11 +38,12 @@ jobs:
     steps:
       - name: Git Checkout
         uses: actions/checkout@v2
-      - name: Fetch release tag
-        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: Set output
+        id: vars
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/
       - name: status
-        run: echo Build is tagged. Uploading artifact $RELEASE_VERSION to Bintray.
-      - name: publish documentation
-        run: ./gradlew --info -Dbuild.version="$RELEASE_VERSION" mkdocsPublish
-      - name: publish to bintray
-        run: ./gradlew --info -Dbuild.version="$RELEASE_VERSION" bintrayUpload
+        run: echo Build is tagged. Uploading artifact ${{ steps.vars.outputs.tag }} to Bintray.
+      - name: Publish GitHub Pages
+        run: ./gradlew --info -Dbuild.version="${{ steps.vars.outputs.tag }}" mkdocsPublish
+      - name: Upload Artifacts to Bintray
+        run: ./gradlew --info -Dbuild.version="${{ steps.vars.outputs.tag }}" bintrayUpload
