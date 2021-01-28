@@ -15,10 +15,7 @@ jobs:
     - stage: benchmark
       if: tag IS present
       script: ./gradlew clean setLibraryVersion benchmark benchmarkCommit
-    - stage: full build
-      script: ./gradlew clean dependencyUpdates setLibraryVersion build
       after_success:
-      - bash <(curl -s https://codecov.io/bash)
       - ./travis-publish.sh || travis_terminate 1
 # The before_cache and the cache steps cache the gradle installation on travis.
 before_cache:
