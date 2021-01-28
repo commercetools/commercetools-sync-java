@@ -1,6 +1,9 @@
 name: DEPLOY
 
-on: [push]
+on:
+  push:
+    tags: # Trigger for any tagged commit.
+      - '*'
 
 jobs:
   benchmark_tests:
