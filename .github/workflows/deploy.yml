@@ -1,8 +1,6 @@
 name: DEPLOY
 
-on:
-  release:
-    types: [published]
+on: [push]
 
 jobs:
   benchmark_tests:
