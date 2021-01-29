@@ -20,9 +20,9 @@ jobs:
     steps:
       - name: Git Checkout
         uses: actions/checkout@v2
-      - name: benchmark test
-        if: success()
-        run: ./gradlew clean setLibraryVersion benchmark #benchmarkCommit
+     #- name: benchmark test
+      #  if: success()
+       # run: ./gradlew clean setLibraryVersion benchmark #benchmarkCommit
 
   deployment:
     name: deployment
