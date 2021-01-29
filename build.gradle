@@ -6,14 +6,14 @@ plugins {
     id "com.github.ben-manes.versions" version '0.36.0'
     id 'ru.vyarus.mkdocs' version '2.0.1'
     id "com.github.spotbugs" version "4.6.0"
-    id 'com.diffplug.spotless' version '5.8.2'
+    id 'com.diffplug.spotless' version '5.9.0'
 }
 
 ext{
     commercetoolsJvmSdkVersion = '1.56.0'
-    mockitoJunitJupiterVersion = '3.7.0'
+    mockitoJunitJupiterVersion = '3.7.7'
     jupiterApiVersion = '5.7.0'
-    assertjVersion = '3.18.1'
+    assertjVersion = '3.19.0'
     pmdVersion = '6.14.0'
     jacocoVersion = '0.8.4'
     caffeineVersion = '2.8.5'
