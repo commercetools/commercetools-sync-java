@@ -17,6 +17,7 @@ jobs:
       TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET }}
       CI_BUILD_DIR: '/home/runner/work/commercetools-sync-java/commercetools-sync-java/'
       GRGIT_USER: ${{ secrets.GRGIT_USER }}
+      GItHUB_ACTION_TAG: Github action
     steps:
       - name: Git Checkout
         uses: actions/checkout@v2

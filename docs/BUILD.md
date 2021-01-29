@@ -39,7 +39,8 @@ For example, define the link to the release notes pointing to a released version
 
 > Additionally define important changes, breaking changes or important new features into the description.
 
-After the release build status is **success** follow the next steps below. Check [here](https://travis-ci.org/commercetools/commercetools-sync-java) for Travis build status.
+After the release build status is **success** follow the next steps below. Check [here](https://github.com/commercetools/commercetools-sync-java/actions?query=workflow%3ADEPLOY)
+ for github action build status.
 
 ## Step 2: Publish
 

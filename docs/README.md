@@ -1,6 +1,6 @@
 ![commercetools-java-sync-logos 002](https://user-images.githubusercontent.com/9512131/31182587-90d47f0a-a924-11e7-9716-66e6bec7f79b.png)
 # commercetools sync
-[![Build Status](https://travis-ci.org/commercetools/commercetools-sync-java.svg?branch=master)](https://travis-ci.org/commercetools/commercetools-sync-java)
+[![CI](https://github.com/commercetools/commercetools-sync-java/workflows/CI/badge.svg)](https://github.com/commercetools/commercetools-sync-java/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/commercetools/commercetools-sync-java/branch/master/graph/badge.svg)](https://codecov.io/gh/commercetools/commercetools-sync-java)
 [![Benchmarks 3.1.0](https://img.shields.io/badge/Benchmarks-3.1.0-orange.svg)](https://commercetools.github.io/commercetools-sync-java/benchmarks/)
 [![Download from JCenter](https://img.shields.io/badge/Bintray_JCenter-3.1.0-green.svg) ](https://bintray.com/commercetools/maven/commercetools-sync-java/_latestVersion)
