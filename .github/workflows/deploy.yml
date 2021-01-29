@@ -1,8 +1,8 @@
 name: DEPLOY
 
-on: [push]
-  #release:
-   # types: [published]
+on:
+  release:
+    types: [published]
 
 jobs:
   benchmark_tests:
@@ -40,10 +40,10 @@ jobs:
         run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
       - name: status
         run: echo Build is tagged. Uploading artifact ${{ steps.vars.outputs.tag }} to Bintray.
-      # - name: Publish GitHub Pages
-      #   run: ./gradlew --info -Dbuild.version="${{ steps.vars.outputs.tag }}" mkdocsPublish
-     # - name: Upload Artifacts to Bintray
-     #   run: ./gradlew --info -Dbuild.version="${{ steps.vars.outputs.tag }}" bintrayUpload
+      - name: Publish GitHub Pages
+        run: ./gradlew --info -Dbuild.version="${{ steps.vars.outputs.tag }}" mkdocsPublish
+      - name: Upload Artifacts to Bintray
+        run: ./gradlew --info -Dbuild.version="${{ steps.vars.outputs.tag }}" bintrayUpload
       - name: Slack notification
         if: success() # only when previous step succeeds
         env:
