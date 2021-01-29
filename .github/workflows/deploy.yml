@@ -8,14 +8,12 @@ jobs:
   benchmark_tests:
     name: benchmark tests
     runs-on: ubuntu-latest
-    env:
-      CI_BUILD_DIR: ${{ secrets.CI_BUILD_DIR }}
     steps:
       - name: Git Checkout
         uses: actions/checkout@v2
       - name: benchmark test
         if: success()
-        run:  ./gradlew clean setLibraryVersion benchmark #benchmarkCommit
+        run: ./gradlew clean setLibraryVersion benchmark #benchmarkCommit
         env:
           SOURCE_PROJECT_KEY: java-sync-source
           SOURCE_CLIENT_ID: ${{ secrets.SOURCE_CLIENT_ID }}
