@@ -52,4 +52,4 @@ jobs:
           SLACK_CHANNEL: java-sync
         uses: Ilshidur/action-slack@master
         with:
-          args: 'Version: ${{ steps.vars.outputs.tag }} of the library is released :tada: :tada:'
+          args: 'Version: ${{ steps.vars.outputs.tag }} of the library is released to bintray'
