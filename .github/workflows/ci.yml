@@ -17,15 +17,15 @@ jobs:
         run: ./gradlew pmdBenchmark pmdIntegrationTest pmdMain pmdTest
       - name: Spotbugs
         run: ./gradlew spotbugsBenchmark spotbugsIntegrationTest spotbugsMain spotbugsTest
-       - name: Slack notification
-         if: success() # only when previous step succeeds
-         env:
-           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-           SLACK_USERNAME: Github Release Action.
-           SLACK_CHANNEL: java-sync
-         uses: Ilshidur/action-slack@master
-         with:
-           args: 'The code checks was sucessful'
+      - name: Slack notification
+        if: success() # only when previous step succeeds
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_USERNAME: Github Release Action.
+          SLACK_CHANNEL: java-sync
+        uses: Ilshidur/action-slack@master
+        with:
+          args: 'The code checks was sucessful'
 
   unit_tests:
     name: Unit Tests
