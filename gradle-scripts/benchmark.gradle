@@ -16,7 +16,7 @@ configurations {
 
 task benchmark(type: Test) {
     doFirst{
-        println '############### test'
+        println 'download path'
         println System.getProperty("user.dir")
         grgit.clone(dir: 'tmp_git_dir/', uri: scmProjectUrl, checkout: true, refToCheckout: 'gh-pages')
     }

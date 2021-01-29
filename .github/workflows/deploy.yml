@@ -15,7 +15,7 @@ jobs:
       TARGET_PROJECT_KEY: java-sync-target
       TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID }}
       TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET }}
-      CI_BUILD_DIR: '/commercetools/commercetools-sync-java'
+      CI_BUILD_DIR: '/home/runner/work/commercetools-sync-java/commercetools-sync-java/'
       GRGIT_USER: ${{ secrets.GRGIT_USER }}
     steps:
       - name: Git Checkout
