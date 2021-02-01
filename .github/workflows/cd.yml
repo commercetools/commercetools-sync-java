@@ -68,4 +68,5 @@ jobs:
           SLACK_CHANNEL: java-sync
         uses: Ilshidur/action-slack@master
         with:
-          args: 'Version: <a href="https://github.com/commercetools/commercetools-sync-java/releases/tag/${{ steps.vars.outputs.tag }}">${{ steps.vars.outputs.tag }}</a> of the library is released to bintray'
+          args: 'Version: <https://github.com/commercetools/commercetools-sync-java/releases/tag/${{ steps.vars
+          .outputs.tag }}|${{ steps.vars.outputs.tag }}> of the library is released to bintray'
