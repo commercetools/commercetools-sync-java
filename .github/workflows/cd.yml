@@ -60,5 +60,10 @@ jobs:
           SLACK_CHANNEL: java-sync
         uses: Ilshidur/action-slack@master
         with:
-          args: 'Version: <https://github.com/commercetools/commercetools-sync-java/releases/tag/${{ steps.vars
-          .outputs.tag }}|${{ steps.vars.outputs.tag }}> of the library is released to bintray'
+          args: 'Version: <https://github.com/commercetools/commercetools-sync-java/releases/tag/${{ steps.vars.outputs.tag }}|${{ steps.vars.outputs.tag }}> of the library is published to <https://bintray.com/commercetools/maven/commercetools-sync-java|bintray repository>, check <https://github.com/commercetools/commercetools-sync-java/blob/master/docs/BUILD.md#step-2-publish|here> for the next steps.'
+
+
+
+
+
+          '
