@@ -31,7 +31,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: benchmark test
         if: success()
-        run: ./gradlew clean setLibraryVersion benchmark #benchmarkCommit
+        run: ./gradlew clean setLibraryVersion benchmark benchmarkCommit
 
   deployment:
     name: deployment
