@@ -37,7 +37,6 @@ jobs:
         with:
           same-branch-only: false
         env:
-          GItHUB_ACTION_TAG: Github action
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/setup-java@v1
         with:

@@ -27,7 +27,6 @@ jobs:
         with:
           same-branch-only: false
         env:
-          GItHUB_ACTION_TAG: Github action
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: benchmark test
         if: success()
@@ -44,13 +43,6 @@ jobs:
     steps:
       - name: Git Checkout
         uses: actions/checkout@v2
-      - name: serializing workflow runs
-        uses: softprops/turnstyle@v1
-        with:
-          same-branch-only: false
-        env:
-          GItHUB_ACTION_TAG: Github action
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Set output
         id: vars
         run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
