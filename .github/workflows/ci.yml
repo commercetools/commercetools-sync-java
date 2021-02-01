@@ -34,6 +34,8 @@ jobs:
       - uses: actions/checkout@v2
       - name: serializing workflow runs
         uses: softprops/turnstyle@v1
+        with:
+          same-branch-only: false
         env:
           GItHUB_ACTION_TAG: Github action
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
