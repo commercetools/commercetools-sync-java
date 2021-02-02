@@ -1,5 +1,5 @@
 task setLibraryVersion {
-    description 'If the env var "GItHUB_ACTION_TAG" is set, injects the value in the ' +
+    description 'If the env var "GITHUB_TAG" is set, injects the value in the ' +
             'src/main/java/com/commercetools/sync/commons/utils/SyncSolutionInfo.java. Otherwise, if the env var is not ' +
             'set it sets the version to the value "dev-version". Note: Should only be executed before compilation in ' +
             'the CI tool (e.g. github action.)'
@@ -8,7 +8,7 @@ task setLibraryVersion {
         def versionFileContents = new File(versionFile).text
         def versionPlaceholder = '#{LIB_VERSION}'
         def libVersion = 'dev-version'
-        def tagName = System.getenv('GItHUB_ACTION_TAG')
+        def tagName = System.getenv('GITHUB_TAG')
 
         if (!versionFileContents.contains(versionPlaceholder)) {
             throw new InvalidUserCodeException("$versionFile does not contain the placeholder: $versionPlaceholder. " +

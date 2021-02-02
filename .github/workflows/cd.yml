@@ -18,7 +18,6 @@ jobs:
       TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET }}
       CI_BUILD_DIR: '/home/runner/work/commercetools-sync-java/commercetools-sync-java/'
       GRGIT_USER: ${{ secrets.GRGIT_USER }}
-      GItHUB_ACTION_TAG: Github action
     steps:
       - name: Git Checkout
         uses: actions/checkout@v2
@@ -28,9 +27,14 @@ jobs:
           same-branch-only: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Fetch Library version
+        id: vars
+        run: echo ::set-output name=libVersion::${GITHUB_REF#refs/*/}
       - name: benchmark test
         if: success()
         run: ./gradlew clean setLibraryVersion benchmark benchmarkCommit
+        env:
+          GITHUB_TAG: ${{ steps.vars.outputs.libVersion }}
 
   deployment:
     name: deployment
