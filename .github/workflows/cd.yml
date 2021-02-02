@@ -45,6 +45,7 @@ jobs:
     env:
       BINTRAY_USER: commercetools
       BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+      GRGIT_USER: ${{ secrets.GRGIT_USER }}
     steps:
       - name: Git Checkout
         uses: actions/checkout@v2
