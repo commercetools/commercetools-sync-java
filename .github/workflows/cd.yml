@@ -18,6 +18,7 @@ jobs:
       TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET }}
       CI_BUILD_DIR: '/home/runner/work/commercetools-sync-java/commercetools-sync-java/'
       GRGIT_USER: ${{ secrets.GRGIT_USER }}
+      GITHUB_ACTION_COMMIT: $GITHUB_SHA
     steps:
       - name: Git Checkout
         uses: actions/checkout@v2
@@ -34,8 +35,7 @@ jobs:
         if: ${{ success() }}
         run: ./gradlew clean setLibraryVersion benchmark benchmarkCommit
         env:
-          GITHUB_ACTION_COMMIT: ${{ steps.vars.outputs.libVersion }}
-          GITHUB_TAG: $GITHUB_SHA
+          GITHUB_TAG: ${{ steps.vars.outputs.libVersion }}
 
   deployment:
     name: deployment
