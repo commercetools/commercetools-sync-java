@@ -31,7 +31,7 @@ jobs:
         id: vars
         run: echo ::set-output name=libVersion::${GITHUB_REF#refs/*/}
       - name: benchmark test
-        if: success()
+        if: ${{ success() }}
         run: ./gradlew clean setLibraryVersion benchmark benchmarkCommit
         env:
           GITHUB_ACTION_COMMIT: ${{ steps.vars.outputs.libVersion }}
