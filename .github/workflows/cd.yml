@@ -34,7 +34,8 @@ jobs:
         if: success()
         run: ./gradlew clean setLibraryVersion benchmark benchmarkCommit
         env:
-          GITHUB_TAG: ${{ steps.vars.outputs.libVersion }}
+          GITHUB_ACTION_COMMIT: ${{ steps.vars.outputs.libVersion }}
+          GITHUB_TAG: $GITHUB_SHA
 
   deployment:
     name: deployment
