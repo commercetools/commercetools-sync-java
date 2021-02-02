@@ -509,11 +509,10 @@ public class CategorySync
               }
               // Each waitingdraft have only one parents, so we can sync the waitingdraft right
               // away, because only waitingdraft with resolved categories was fetched
-              final Set<? extends WaitingToBeResolvedCategories> waitingDrafts =
-                  fetchResponse.getKey();
+              final Set<WaitingToBeResolvedCategories> waitingDrafts = fetchResponse.getKey();
               waitingDrafts.forEach(
                   draft -> {
-                    final CategoryDraft categoryDraft = (CategoryDraft) draft.getCategoryDraft();
+                    final CategoryDraft categoryDraft = draft.getCategoryDraft();
                     readyToSync.add(categoryDraft);
                   });
               return readyToSync;

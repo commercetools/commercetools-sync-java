@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 
-public final class WaitingToBeResolvedTransitions {
+public final class WaitingToBeResolvedTransitions implements WaitingToBeResolved {
   private StateDraft stateDraft;
   private Set<String> missingTransitionStateKeys;
 
@@ -29,6 +29,11 @@ public final class WaitingToBeResolvedTransitions {
   @Nonnull
   public StateDraft getStateDraft() {
     return stateDraft;
+  }
+
+  @Override
+  public String getKey() {
+    return getStateDraft().getKey();
   }
 
   @Nonnull

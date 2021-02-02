@@ -106,22 +106,6 @@ public final class CustomObjectITUtils {
                     .join());
   }
 
-  public static void deleteWaitingToBeResolvedTransitionsCustomObjects(
-      @Nonnull final SphereClient ctpClient, @Nonnull final String customObjectKey) {
-
-    final CustomObjectQuery<WaitingToBeResolvedTransitions> customObjectQuery =
-        CustomObjectQuery.of(WaitingToBeResolvedTransitions.class).byContainer(customObjectKey);
-
-    ctpClient
-        .execute(customObjectQuery)
-        .thenApply(PagedQueryResult::getResults)
-        .thenCompose(
-            customObjects ->
-                deleteWaitingToBeResolvedTransitionsCustomObjects(ctpClient, customObjects))
-        .toCompletableFuture()
-        .join();
-  }
-
   @Nonnull
   private static CompletableFuture<Void> deleteWaitingToBeResolvedTransitionsCustomObjects(
       @Nonnull final SphereClient ctpClient,

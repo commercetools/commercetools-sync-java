@@ -6,7 +6,6 @@ import static java.lang.String.format;
 import com.commercetools.sync.commons.models.FetchCustomObjectsGraphQlRequest;
 import com.commercetools.sync.commons.models.ResourceKeyId;
 import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
-import com.commercetools.sync.services.impl.UnresolvedTransitionsServiceImpl;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.sphere.sdk.client.NotFoundException;
 import io.sphere.sdk.client.SphereClient;
@@ -143,7 +142,7 @@ public class CleanupUnresolvedReferenceCustomObjects {
   private CompletableFuture<Void> cleanupUnresolvedStateReferences(
       final int deleteDaysAfterLastModification) {
     return cleanup(
-        UnresolvedTransitionsServiceImpl.CUSTOM_OBJECT_CONTAINER_KEY,
+        UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_TRANSITION_CONTAINER_KEY,
         deleteDaysAfterLastModification);
   }
 

@@ -20,9 +20,7 @@ public interface UnresolvedReferencesService<T extends WaitingToBeResolved> {
    */
   @Nonnull
   CompletionStage<Set<T>> fetch(
-      @Nonnull final Set<String> keys,
-      @Nonnull final String containerKey,
-      @Nonnull Class<? extends WaitingToBeResolved> clazz);
+      @Nonnull final Set<String> keys, @Nonnull final String containerKey, @Nonnull Class<T> clazz);
 
   /**
    * Persists a draft that is not ready to be resolved yet.
@@ -35,7 +33,7 @@ public interface UnresolvedReferencesService<T extends WaitingToBeResolved> {
    */
   @Nonnull
   CompletionStage<Optional<T>> save(
-      @Nonnull final T draft, @Nonnull final String containerKey, @Nonnull final Class clazz);
+      @Nonnull final T draft, @Nonnull final String containerKey, @Nonnull final Class<T> clazz);
 
   /**
    * Given a draft key, this methods deletes the matching draft from persistence.

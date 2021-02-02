@@ -62,7 +62,7 @@ class UnresolvedReferencesServiceImplIT {
                     warningCallBackMessages.add(syncException.getMessage()))
             .build();
 
-    unresolvedReferencesService = new UnresolvedReferencesServiceImpl(productSyncOptions);
+    unresolvedReferencesService = new UnresolvedReferencesServiceImpl<>(productSyncOptions);
   }
 
   @Test

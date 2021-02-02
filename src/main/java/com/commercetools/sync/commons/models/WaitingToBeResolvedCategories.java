@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 
-public final class WaitingToBeResolvedCategories extends WaitingToBeResolved<CategoryDraft> {
+public final class WaitingToBeResolvedCategories implements WaitingToBeResolved {
   private CategoryDraft categoryDraft;
   private Set<String> MissingReferencedCategoriesKeys;
 

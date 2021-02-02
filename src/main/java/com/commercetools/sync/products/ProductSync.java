@@ -103,7 +103,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         new TaxCategoryServiceImpl(
             TaxCategorySyncOptionsBuilder.of(productSyncOptions.getCtpClient()).build()),
         new StateServiceImpl(StateSyncOptionsBuilder.of(productSyncOptions.getCtpClient()).build()),
-        new UnresolvedReferencesServiceImpl(productSyncOptions),
+        new UnresolvedReferencesServiceImpl<>(productSyncOptions),
         new CustomObjectServiceImpl(
             CustomObjectSyncOptionsBuilder.of(productSyncOptions.getCtpClient()).build()));
   }
@@ -118,7 +118,9 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
       @Nonnull final CustomerGroupService customerGroupService,
       @Nonnull final TaxCategoryService taxCategoryService,
       @Nonnull final StateService stateService,
-      @Nonnull final UnresolvedReferencesService unresolvedReferencesService,
+      @Nonnull
+          final UnresolvedReferencesService<WaitingToBeResolvedProducts>
+              unresolvedReferencesService,
       @Nonnull final CustomObjectService customObjectService) {
     super(new ProductSyncStatistics(), productSyncOptions);
     this.productService = productService;
@@ -321,7 +323,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                     missingReferencedProductKeys.removeAll(readyToResolve);
 
                     if (missingReferencedProductKeys.isEmpty()) {
-                      readyToSync.add((ProductDraft) waitingDraft.getProductDraft());
+                      readyToSync.add(waitingDraft.getProductDraft());
                     } else {
                       waitingDraftsToBeUpdated.add(waitingDraft);
                     }
