@@ -108,6 +108,7 @@ public class CleanupUnresolvedReferenceCustomObjects {
 
     return CompletableFuture.allOf(
             cleanupUnresolvedProductReferences(deleteDaysAfterLastModification),
+            cleanupUnresolvedParentCategoryReferences(deleteDaysAfterLastModification),
             cleanupUnresolvedStateReferences(deleteDaysAfterLastModification))
         .thenApply(ignoredResult -> statistics);
   }
@@ -128,7 +129,14 @@ public class CleanupUnresolvedReferenceCustomObjects {
   private CompletableFuture<Void> cleanupUnresolvedProductReferences(
       final int deleteDaysAfterLastModification) {
     return cleanup(
-        UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_CONTAINER_KEY,
+        UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+        deleteDaysAfterLastModification);
+  }
+
+  private CompletableFuture<Void> cleanupUnresolvedParentCategoryReferences(
+      final int deleteDaysAfterLastModification) {
+    return cleanup(
+        UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY,
         deleteDaysAfterLastModification);
   }
 

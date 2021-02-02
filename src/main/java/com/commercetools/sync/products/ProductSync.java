@@ -3,6 +3,7 @@ package com.commercetools.sync.products;
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.products.utils.ProductSyncUtils.buildActions;
 import static com.commercetools.sync.products.utils.ProductUpdateActionUtils.getAllVariants;
+import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.allOf;
@@ -12,7 +13,7 @@ import static java.util.stream.Collectors.toMap;
 import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.commons.exceptions.SyncException;
-import com.commercetools.sync.commons.models.WaitingToBeResolved;
+import com.commercetools.sync.commons.models.WaitingToBeResolvedProducts;
 import com.commercetools.sync.customobjects.CustomObjectSyncOptionsBuilder;
 import com.commercetools.sync.products.helpers.ProductBatchValidator;
 import com.commercetools.sync.products.helpers.ProductReferenceResolver;
@@ -74,7 +75,8 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
   private final ProductService productService;
   private final ProductTypeService productTypeService;
   private final ProductReferenceResolver productReferenceResolver;
-  private final UnresolvedReferencesService unresolvedReferencesService;
+  private final UnresolvedReferencesService<WaitingToBeResolvedProducts>
+      unresolvedReferencesService;
   private final ProductBatchValidator batchValidator;
 
   private ConcurrentHashMap.KeySetView<String, Boolean> readyToResolve;
@@ -260,14 +262,16 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
         .collect(Collectors.toSet());
   }
 
-  private CompletionStage<Optional<WaitingToBeResolved>> keepTrackOfMissingReferences(
+  private CompletionStage<Optional<WaitingToBeResolvedProducts>> keepTrackOfMissingReferences(
       @Nonnull final ProductDraft newProduct,
       @Nonnull final Set<String> missingReferencedProductKeys) {
 
     missingReferencedProductKeys.forEach(
         missingParentKey -> statistics.addMissingDependency(missingParentKey, newProduct.getKey()));
     return unresolvedReferencesService.save(
-        new WaitingToBeResolved(newProduct, missingReferencedProductKeys));
+        new WaitingToBeResolvedProducts(newProduct, missingReferencedProductKeys),
+        CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+        WaitingToBeResolvedProducts.class);
   }
 
   @Nonnull
@@ -289,14 +293,17 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     }
 
     final Set<ProductDraft> readyToSync = new HashSet<>();
-    final Set<WaitingToBeResolved> waitingDraftsToBeUpdated = new HashSet<>();
+    final Set<WaitingToBeResolvedProducts> waitingDraftsToBeUpdated = new HashSet<>();
 
     return unresolvedReferencesService
-        .fetch(referencingDraftKeys)
+        .fetch(
+            referencingDraftKeys,
+            CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+            WaitingToBeResolvedProducts.class)
         .handle(ImmutablePair::new)
         .thenCompose(
             fetchResponse -> {
-              final Set<WaitingToBeResolved> waitingDrafts = fetchResponse.getKey();
+              final Set<WaitingToBeResolvedProducts> waitingDrafts = fetchResponse.getKey();
               final Throwable fetchException = fetchResponse.getValue();
 
               if (fetchException != null) {
@@ -314,7 +321,7 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
                     missingReferencedProductKeys.removeAll(readyToResolve);
 
                     if (missingReferencedProductKeys.isEmpty()) {
-                      readyToSync.add(waitingDraft.getProductDraft());
+                      readyToSync.add((ProductDraft) waitingDraft.getProductDraft());
                     } else {
                       waitingDraftsToBeUpdated.add(waitingDraft);
                     }
@@ -328,11 +335,16 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
 
   @Nonnull
   private CompletableFuture<Void> updateWaitingDrafts(
-      @Nonnull final Set<WaitingToBeResolved> waitingDraftsToBeUpdated) {
+      @Nonnull final Set<WaitingToBeResolvedProducts> waitingDraftsToBeUpdated) {
 
     return allOf(
         waitingDraftsToBeUpdated.stream()
-            .map(unresolvedReferencesService::save)
+            .map(
+                draft ->
+                    unresolvedReferencesService.save(
+                        draft,
+                        CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                        WaitingToBeResolvedProducts.class))
             .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
   }
@@ -342,7 +354,12 @@ public class ProductSync extends BaseSync<ProductDraft, ProductSyncStatistics, P
     return allOf(
         drafts.stream()
             .map(ProductDraft::getKey)
-            .map(unresolvedReferencesService::delete)
+            .map(
+                key ->
+                    unresolvedReferencesService.delete(
+                        key,
+                        CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                        WaitingToBeResolvedProducts.class))
             .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
   }

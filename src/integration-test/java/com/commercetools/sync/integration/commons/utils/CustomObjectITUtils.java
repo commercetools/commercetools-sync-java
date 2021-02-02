@@ -18,9 +18,6 @@ import javax.annotation.Nonnull;
 
 public final class CustomObjectITUtils {
 
-  private static final String PRODUCT_CUSTOM_OBJECT_CONTAINER_KEY =
-      "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
-
   /**
    * Deletes customObjects from CTP project which have key/container used in integration test,
    * represented by provided {@code ctpClient}.
@@ -89,34 +86,24 @@ public final class CustomObjectITUtils {
    *
    * @param ctpClient the client to delete the custom objects from.
    */
-  public static void deleteWaitingToBeResolvedCustomObjects(@Nonnull final SphereClient ctpClient) {
+  public static void deleteWaitingToBeResolvedCustomObjects(
+      @Nonnull final SphereClient ctpClient,
+      @Nonnull final String container,
+      @Nonnull final Class clazz) {
 
     final CustomObjectQuery<WaitingToBeResolved> customObjectQuery =
-        CustomObjectQuery.of(WaitingToBeResolved.class)
-            .byContainer(PRODUCT_CUSTOM_OBJECT_CONTAINER_KEY);
+        CustomObjectQuery.of(clazz).byContainer(container);
 
-    ctpClient
-        .execute(customObjectQuery)
-        .thenApply(PagedQueryResult::getResults)
-        .thenCompose(
-            customObjects -> deleteWaitingToBeResolvedCustomObjects(ctpClient, customObjects))
-        .toCompletableFuture()
-        .join();
-  }
-
-  @Nonnull
-  private static CompletableFuture<Void> deleteWaitingToBeResolvedCustomObjects(
-      @Nonnull final SphereClient ctpClient,
-      @Nonnull final List<CustomObject<WaitingToBeResolved>> customObjects) {
-
-    return CompletableFuture.allOf(
-        customObjects.stream()
-            .map(
-                customObject ->
-                    ctpClient.execute(
-                        CustomObjectDeleteCommand.of(customObject, WaitingToBeResolved.class)))
-            .map(CompletionStage::toCompletableFuture)
-            .toArray(CompletableFuture[]::new));
+    PagedQueryResult<CustomObject<WaitingToBeResolved>> result =
+        ctpClient.execute(customObjectQuery).toCompletableFuture().join();
+    result
+        .getResults()
+        .forEach(
+            customObject ->
+                ctpClient
+                    .execute(CustomObjectDeleteCommand.of(customObject, clazz))
+                    .toCompletableFuture()
+                    .join());
   }
 
   public static void deleteWaitingToBeResolvedTransitionsCustomObjects(

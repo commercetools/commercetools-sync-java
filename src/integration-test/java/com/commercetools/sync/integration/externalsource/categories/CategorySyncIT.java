@@ -828,7 +828,7 @@ class CategorySyncIT {
     final CategorySyncStatistics syncStatistics =
         categorySync.sync(categoryDrafts).toCompletableFuture().join();
 
-    assertThat(syncStatistics).hasValues(2, 2, 0, 0);
+    assertThat(syncStatistics).hasValues(2, 1, 0, 0, 1);
 
     final Map<String, Set<String>> categoryKeysWithMissingParents =
         syncStatistics.getCategoryKeysWithMissingParents();
