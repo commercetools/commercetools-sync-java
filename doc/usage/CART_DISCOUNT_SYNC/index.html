@@ -925,7 +925,6 @@
 It also provides utilities for generating update actions based on the comparison of a <a href="https://docs.commercetools.com/http-api-projects-cartDiscounts#cartdiscount">CartDiscount</a> 
 against a <a href="https://docs.commercetools.com/http-api-projects-cartDiscounts#cartdiscountdraft">CartDiscountDraft</a>.</p>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
-
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 <ul>
@@ -964,7 +963,6 @@ If you have custom requirements for the sphere client creation, have a look into
 
 <span class="kd">final</span> <span class="n">SphereClient</span> <span class="n">sphereClient</span> <span class="o">=</span> <span class="n">ClientConfigurationUtils</span><span class="p">.</span><span class="na">createClient</span><span class="p">(</span><span class="n">clientConfig</span><span class="p">);</span>
 </code></pre></div>
-
 <h4 id="required-fields">Required Fields<a class="headerlink" href="#required-fields" title="Permanent link">&para;</a></h4>
 <p>The following fields are <strong>required</strong> to be set in, otherwise, they won't be matched by sync:</p>
 <table>
@@ -1024,7 +1022,6 @@ method that maps from a <code>CartDiscount</code> to <code>CartDiscountDraft</co
 <span class="c1">// Mapping from CartDiscount to CartDiscountDraft with considering reference resolution.</span>
 <span class="kd">final</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">CartDiscountDraft</span><span class="o">&gt;</span> <span class="n">cartDiscountDrafts</span> <span class="o">=</span> <span class="n">CartDiscountReferenceResolutionUtils</span><span class="p">.</span><span class="na">mapToCartDiscountDrafts</span><span class="p">(</span><span class="n">cartDiscounts</span><span class="p">);</span>
 </code></pre></div>
-
 <h5 id="syncing-from-an-external-resource">Syncing from an external resource<a class="headerlink" href="#syncing-from-an-external-resource" title="Permanent link">&para;</a></h5>
 <ul>
 <li>When syncing from an external resource, <code>ResourceIdentifier</code>s with their <code>key</code>s have to be supplied as following example:</li>
@@ -1040,13 +1037,11 @@ method that maps from a <code>CartDiscount</code> to <code>CartDiscountDraft</co
     <span class="p">.</span><span class="na">custom</span><span class="p">(</span><span class="n">CustomFieldsDraft</span><span class="p">.</span><span class="na">ofTypeKeyAndJson</span><span class="p">(</span><span class="s">&quot;type-key&quot;</span><span class="p">,</span> <span class="n">emptyMap</span><span class="p">()))</span> <span class="c1">// note that custom type provided with key </span>
     <span class="p">.</span><span class="na">build</span><span class="p">();</span> 
 </code></pre></div>
-
 <h4 id="syncoptions">SyncOptions<a class="headerlink" href="#syncoptions" title="Permanent link">&para;</a></h4>
 <p>After the <code>sphereClient</code> is set up, a <code>CartDiscountSyncOptions</code> should be built as follows:</p>
 <div class="codehilite"><pre><span></span><code><span class="c1">// instantiating a CartDiscountSyncOptions</span>
 <span class="kd">final</span> <span class="n">CartDiscountSyncOptions</span> <span class="n">cartDiscountSyncOptions</span> <span class="o">=</span> <span class="n">CartDiscountSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
-
 <p><code>SyncOptions</code> is an object which provides a place for users to add certain configurations to customize the sync process.
 Available configurations:</p>
 <h5 id="errorcallback">errorCallback<a class="headerlink" href="#errorcallback" title="Permanent link">&para;</a></h5>
@@ -1065,7 +1060,6 @@ following context about the error-event:</p>
          <span class="p">.</span><span class="na">errorCallback</span><span class="p">((</span><span class="n">syncException</span><span class="p">,</span> <span class="n">draft</span><span class="p">,</span> <span class="n">cartDiscount</span><span class="p">,</span> <span class="n">updateActions</span><span class="p">)</span> <span class="o">-&gt;</span> 
             <span class="n">logger</span><span class="p">.</span><span class="na">error</span><span class="p">(</span><span class="k">new</span> <span class="n">SyncException</span><span class="p">(</span><span class="s">&quot;My customized message&quot;</span><span class="p">),</span> <span class="n">syncException</span><span class="p">)).</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
-
 <h5 id="warningcallback">warningCallback<a class="headerlink" href="#warningcallback" title="Permanent link">&para;</a></h5>
 <p>A callback is called whenever a warning event occurs during the sync process. Each resource executes its own 
 warning-callback. When the sync process of a particular resource runs successfully, it is not triggered. It contains the 
@@ -1081,7 +1075,6 @@ following context about the warning message:</p>
          <span class="p">.</span><span class="na">warningCallback</span><span class="p">((</span><span class="n">syncException</span><span class="p">,</span> <span class="n">draft</span><span class="p">,</span> <span class="n">cartDiscount</span><span class="p">,</span> <span class="n">updateActions</span><span class="p">)</span> <span class="o">-&gt;</span> 
             <span class="n">logger</span><span class="p">.</span><span class="na">warn</span><span class="p">(</span><span class="k">new</span> <span class="n">SyncException</span><span class="p">(</span><span class="s">&quot;My customized message&quot;</span><span class="p">),</span> <span class="n">syncException</span><span class="p">)).</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
-
 <h5 id="beforeupdatecallback">beforeUpdateCallback<a class="headerlink" href="#beforeupdatecallback" title="Permanent link">&para;</a></h5>
 <p>During the sync process, if a target cart discount and a cart discount draft are matched, this callback can be used to 
 intercept the <strong><em>update</em></strong> request just before it is sent to the commercetools platform. This allows the user to modify 
@@ -1101,7 +1094,6 @@ update actions array with custom actions or discard unwanted actions. The callba
 <span class="kd">final</span> <span class="n">CartDiscountSyncOptions</span> <span class="n">cartDiscountSyncOptions</span> <span class="o">=</span> 
         <span class="n">CartDiscountSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">beforeUpdateCallback</span><span class="p">(</span><span class="n">beforeUpdateCartDiscountCallback</span><span class="p">).</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
-
 <h5 id="beforecreatecallback">beforeCreateCallback<a class="headerlink" href="#beforecreatecallback" title="Permanent link">&para;</a></h5>
 <p>During the sync process, if a cart discount draft should be created, this callback can be used to intercept the <strong><em>create</em></strong> request just before it is sent to the commercetools platform.  It contains the following information : </p>
 <ul>
@@ -1114,7 +1106,6 @@ as cart discounts are obtained from the target project on the commercetools plat
 <div class="codehilite"><pre><span></span><code><span class="kd">final</span> <span class="n">CartDiscountSyncOptions</span> <span class="n">cartDiscountSyncOptions</span> <span class="o">=</span> 
          <span class="n">CartDiscountSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">batchSize</span><span class="p">(</span><span class="mi">30</span><span class="p">).</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
-
 <h5 id="cachesize">cacheSize<a class="headerlink" href="#cachesize" title="Permanent link">&para;</a></h5>
 <p>In the service classes of the commercetools-sync-java library, we have implemented an in-memory <a href="https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)">LRU cache</a> to store a map used for the reference resolution of the library.
 The cache reduces the reference resolution based calls to the commercetools API as the required fields of a resource will be fetched only one time. These cached fields then might be used by another resource referencing the already resolved resource instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
@@ -1139,7 +1130,6 @@ human-readable format.</p>
 <span class="n">stats</span><span class="p">.</span><span class="na">getReportMessage</span><span class="p">();</span>
 <span class="cm">/*&quot;Summary: 100 cart discounts were processed in total (11 created, 87 updated, 2 failed to sync).&quot;*/</span>
 </code></pre></div>
-
 <p><strong>Note</strong> The statistics object contains the processing time of the last batch only. This is due to two reasons:</p>
 <ol>
 <li>The sync processing time should not take into account the time between supplying batches to the sync.</li>

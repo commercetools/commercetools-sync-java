@@ -857,7 +857,6 @@
 It also provides utilities for generating update actions based on the comparison of a <a href="https://docs.commercetools.com/http-api-projects-taxCategories#taxcategory">TaxCategory</a> 
 against a <a href="https://docs.commercetools.com/http-api-projects-taxCategories#taxcategorydraft">TaxCategoryDraft</a>.</p>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
-
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 <ul>
@@ -892,7 +891,6 @@ If you have custom requirements for the sphere client creation, have a look into
 
 <span class="kd">final</span> <span class="n">SphereClient</span> <span class="n">sphereClient</span> <span class="o">=</span> <span class="n">ClientConfigurationUtils</span><span class="p">.</span><span class="na">createClient</span><span class="p">(</span><span class="n">clientConfig</span><span class="p">);</span>
 </code></pre></div>
-
 <h4 id="required-fields">Required Fields<a class="headerlink" href="#required-fields" title="Permanent link">&para;</a></h4>
 <p>The following fields are <strong>required</strong> to be set in, otherwise, they won't be matched by sync:</p>
 <table>
@@ -934,7 +932,6 @@ following context about the error-event:</p>
          <span class="p">.</span><span class="na">errorCallback</span><span class="p">((</span><span class="n">syncException</span><span class="p">,</span> <span class="n">draft</span><span class="p">,</span> <span class="n">taxCategory</span><span class="p">,</span> <span class="n">updateActions</span><span class="p">)</span> <span class="o">-&gt;</span> 
             <span class="n">logger</span><span class="p">.</span><span class="na">error</span><span class="p">(</span><span class="k">new</span> <span class="n">SyncException</span><span class="p">(</span><span class="s">&quot;My customized message&quot;</span><span class="p">),</span> <span class="n">syncException</span><span class="p">)).</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
-
 <h5 id="warningcallback">warningCallback<a class="headerlink" href="#warningcallback" title="Permanent link">&para;</a></h5>
 <p>A callback is called whenever a warning event occurs during the sync process. Each resource executes its own 
 warning-callback. When the sync process of a particular resource runs successfully, it is not triggered. It contains the 
@@ -950,7 +947,6 @@ following context about the warning message:</p>
          <span class="p">.</span><span class="na">warningCallback</span><span class="p">((</span><span class="n">syncException</span><span class="p">,</span> <span class="n">draft</span><span class="p">,</span> <span class="n">taxCategory</span><span class="p">,</span> <span class="n">updateActions</span><span class="p">)</span> <span class="o">-&gt;</span> 
             <span class="n">logger</span><span class="p">.</span><span class="na">warn</span><span class="p">(</span><span class="k">new</span> <span class="n">SyncException</span><span class="p">(</span><span class="s">&quot;My customized message&quot;</span><span class="p">),</span> <span class="n">syncException</span><span class="p">)).</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
-
 <h5 id="beforeupdatecallback">beforeUpdateCallback<a class="headerlink" href="#beforeupdatecallback" title="Permanent link">&para;</a></h5>
 <p>During the sync process, if a target tax category and a tax category draft are matched, this callback can be used to 
 intercept the <strong><em>update</em></strong> request just before it is sent to the commercetools platform. This allows the user to modify 
@@ -970,7 +966,6 @@ update actions array with custom actions or discard unwanted actions. The callba
 <span class="kd">final</span> <span class="n">TaxCategorySyncOptions</span> <span class="n">taxCategorySyncOptions</span> <span class="o">=</span> 
         <span class="n">TaxCategorySyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">beforeUpdateCallback</span><span class="p">(</span><span class="n">beforeUpdateTaxCategoryCallback</span><span class="p">).</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
-
 <h5 id="beforecreatecallback">beforeCreateCallback<a class="headerlink" href="#beforecreatecallback" title="Permanent link">&para;</a></h5>
 <p>During the sync process, if a tax category draft should be created, this callback can be used to intercept the <strong><em>create</em></strong> request just before it is sent to the commercetools platform.  It contains the following information : </p>
 <ul>
@@ -983,7 +978,6 @@ as tax categories are obtained from the target project on the commercetools plat
 <div class="codehilite"><pre><span></span><code><span class="kd">final</span> <span class="n">TaxCategorySyncOptions</span> <span class="n">taxCategorySyncOptions</span> <span class="o">=</span> 
          <span class="n">TaxCategorySyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">batchSize</span><span class="p">(</span><span class="mi">30</span><span class="p">).</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
-
 <h5 id="cachesize">cacheSize<a class="headerlink" href="#cachesize" title="Permanent link">&para;</a></h5>
 <p>In the service classes of the commercetools-sync-java library, we have implemented an in-memory <a href="https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)">LRU cache</a> to store a map used for the reference resolution of the library.
 The cache reduces the reference resolution based calls to the commercetools API as the required fields of a resource will be fetched only one time. These cached fields then might be used by another resource referencing the already resolved resource instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
@@ -992,7 +986,6 @@ which will improve the overall performance of the sync and commercetools API.</p
 <div class="codehilite"><pre><span></span><code><span class="kd">final</span> <span class="n">TaxCategorySyncOptions</span> <span class="n">taxCategorySyncOptions</span> <span class="o">=</span> 
          <span class="n">TaxCategorySyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">cacheSize</span><span class="p">(</span><span class="mi">5000</span><span class="p">).</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
-
 <h3 id="running-the-sync">Running the sync<a class="headerlink" href="#running-the-sync" title="Permanent link">&para;</a></h3>
 <p>After all the aforementioned points in the previous section have been fulfilled, to run the sync:
 <div class="codehilite"><pre><span></span><code><span class="c1">// instantiating a TaxCategorySync</span>
@@ -1009,7 +1002,6 @@ human-readable format.</p>
 <span class="n">stats</span><span class="p">.</span><span class="na">getReportMessage</span><span class="p">();</span>
 <span class="cm">/*&quot;Summary: 2000 tax categories were processed in total (1000 created, 995 updated, 5 failed to sync).&quot;*/</span>
 </code></pre></div>
-
 <p><strong>Note</strong> The statistics object contains the processing time of the last batch only. This is due to two reasons:</p>
 <ol>
 <li>The sync processing time should not take into account the time between supplying batches to the sync.</li>

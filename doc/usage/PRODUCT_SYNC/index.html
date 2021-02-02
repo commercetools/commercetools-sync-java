@@ -967,7 +967,6 @@
 It also provides utilities for generating update actions based on the comparison of a <a href="https://docs.commercetools.com/http-api-projects-products.html#product">Product</a> 
 against a <a href="https://docs.commercetools.com/http-api-projects-products.html#productdraft">ProductDraft</a>.</p>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
-
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 <ul>
@@ -1009,7 +1008,6 @@ If you have custom requirements for the sphere client creation, have a look into
 
 <span class="kd">final</span> <span class="n">SphereClient</span> <span class="n">sphereClient</span> <span class="o">=</span> <span class="n">ClientConfigurationUtils</span><span class="p">.</span><span class="na">createClient</span><span class="p">(</span><span class="n">clientConfig</span><span class="p">);</span>
 </code></pre></div>
-
 <h4 id="required-fields">Required Fields<a class="headerlink" href="#required-fields" title="Permanent link">&para;</a></h4>
 <p>The following fields are <strong>required</strong> to be set in, otherwise, they won't be matched by sync:</p>
 <table>
@@ -1107,7 +1105,6 @@ the method that maps from a <code>Product</code> to <code>ProductDraft</code> in
 <span class="c1">// Mapping from Product to ProductDraft with considering reference resolution.</span>
 <span class="kd">final</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">ProductDraft</span><span class="o">&gt;</span> <span class="n">productDrafts</span> <span class="o">=</span> <span class="n">ProductReferenceResolutionUtils</span><span class="p">.</span><span class="na">mapToProductDrafts</span><span class="p">(</span><span class="n">products</span><span class="p">);</span>
 </code></pre></div>
-
 <h5 id="syncing-from-an-external-resource">Syncing from an external resource<a class="headerlink" href="#syncing-from-an-external-resource" title="Permanent link">&para;</a></h5>
 <ul>
 <li>When syncing from an external resource, <code>ResourceIdentifier</code>s with their <code>key</code>s have to be supplied as following example:</li>
@@ -1122,7 +1119,6 @@ the method that maps from a <code>Product</code> to <code>ProductDraft</code> in
         <span class="p">.</span><span class="na">state</span><span class="p">(</span><span class="n">ResourceIdentifier</span><span class="p">.</span><span class="na">ofKey</span><span class="p">(</span><span class="s">&quot;tax-category-key&quot;</span><span class="p">))</span>
         <span class="p">.</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
-
 <ul>
 <li>Some references in the product like <code>customerGroup</code> of a price and variant attributes with type <code>ReferenceType</code> do not support the <code>ResourceIdentifier</code> yet, 
 for those references you have to provide the <code>key</code> value on the <code>id</code> field of the reference. This means that calling <code>getId()</code> on the reference should return its <code>key</code>. </li>
@@ -1134,14 +1130,12 @@ for those references you have to provide the <code>key</code> value on the <code
     <span class="p">.</span><span class="na">custom</span><span class="p">(</span><span class="n">CustomFieldsDraft</span><span class="p">.</span><span class="na">ofTypeKeyAndJson</span><span class="p">(</span><span class="s">&quot;type-key&quot;</span><span class="p">,</span> <span class="n">emptyMap</span><span class="p">()))</span>
     <span class="p">.</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
-
 <div class="codehilite"><pre><span></span><code><span class="kd">final</span> <span class="n">ObjectNode</span> <span class="n">productReference</span> <span class="o">=</span> <span class="n">JsonNodeFactory</span><span class="p">.</span><span class="na">instance</span><span class="p">.</span><span class="na">objectNode</span><span class="p">();</span>
 <span class="n">productReference</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="s">&quot;typeId&quot;</span><span class="p">,</span> <span class="n">Product</span><span class="p">.</span><span class="na">referenceTypeId</span><span class="p">());</span>
 <span class="n">productReference</span><span class="p">.</span><span class="na">put</span><span class="p">(</span><span class="s">&quot;id&quot;</span><span class="p">,</span> <span class="s">&quot;product-key&quot;</span><span class="p">);</span> <span class="c1">// note that reference key provided in the id field </span>
 
 <span class="kd">final</span> <span class="n">AttributeDraft</span> <span class="n">productAttributeDraft</span> <span class="o">=</span> <span class="n">AttributeDraft</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">&quot;productAttrName&quot;</span><span class="p">,</span> <span class="n">productReference</span><span class="p">);</span>
 </code></pre></div>
-
 <ul>
 <li>For resolving <code>key-value-document</code> (custom object) references on attributes of type <code>Reference</code>, <code>Set</code> of <code>Reference</code>, <code>NestedType</code> or <code>Set</code> of <code>NestedType</code>, The <code>id</code> field of the reference in the attribute draft should be defined in the correct format. 
 The correct format must have a vertical bar <code>|</code> character between the values of the container and key.
@@ -1154,13 +1148,11 @@ also, the key and container value should match the pattern <code>[-_~.a-zA-Z0-9]
 
 <span class="kd">final</span> <span class="n">AttributeDraft</span> <span class="n">customObjectAttributeDraft</span> <span class="o">=</span> <span class="n">AttributeDraft</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">&quot;customObjectAttrName&quot;</span><span class="p">,</span> <span class="n">productReference</span><span class="p">);</span>
 </code></pre></div>
-
 <h4 id="syncoptions">SyncOptions<a class="headerlink" href="#syncoptions" title="Permanent link">&para;</a></h4>
 <p>After the <code>sphereClient</code> is set up, a <code>ProductSyncOptions</code> should be built as follows: </p>
 <div class="codehilite"><pre><span></span><code><span class="c1">// instantiating a ProductSyncOptions</span>
 <span class="kd">final</span> <span class="n">ProductSyncOptions</span> <span class="n">productSyncOptions</span> <span class="o">=</span> <span class="n">ProductSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
-
 <p><code>SyncOptions</code> is an object which provides a place for users to add certain configurations to customize the sync process.
 Available configurations:</p>
 <h5 id="errorcallback">errorCallback<a class="headerlink" href="#errorcallback" title="Permanent link">&para;</a></h5>
@@ -1179,7 +1171,6 @@ following context about the error-event:</p>
          <span class="p">.</span><span class="na">errorCallback</span><span class="p">((</span><span class="n">syncException</span><span class="p">,</span> <span class="n">draft</span><span class="p">,</span> <span class="n">product</span><span class="p">,</span> <span class="n">updateActions</span><span class="p">)</span> <span class="o">-&gt;</span> 
             <span class="n">logger</span><span class="p">.</span><span class="na">error</span><span class="p">(</span><span class="k">new</span> <span class="n">SyncException</span><span class="p">(</span><span class="s">&quot;My customized message&quot;</span><span class="p">),</span> <span class="n">syncException</span><span class="p">)).</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
-
 <h5 id="warningcallback">warningCallback<a class="headerlink" href="#warningcallback" title="Permanent link">&para;</a></h5>
 <p>A callback is called whenever a warning event occurs during the sync process. Each resource executes its own 
 warning-callback. When the sync process of a particular resource runs successfully, it is not triggered. It contains the 
@@ -1195,7 +1186,6 @@ following context about the warning message:</p>
          <span class="p">.</span><span class="na">warningCallback</span><span class="p">((</span><span class="n">syncException</span><span class="p">,</span> <span class="n">draft</span><span class="p">,</span> <span class="n">product</span><span class="p">,</span> <span class="n">updateActions</span><span class="p">)</span> <span class="o">-&gt;</span> 
             <span class="n">logger</span><span class="p">.</span><span class="na">warn</span><span class="p">(</span><span class="k">new</span> <span class="n">SyncException</span><span class="p">(</span><span class="s">&quot;My customized message&quot;</span><span class="p">),</span> <span class="n">syncException</span><span class="p">)).</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
-
 <h5 id="beforeupdatecallback">beforeUpdateCallback<a class="headerlink" href="#beforeupdatecallback" title="Permanent link">&para;</a></h5>
 <p>During the sync process, if a target product and a product draft are matched, this callback can be used to intercept 
 the <strong><em>update</em></strong> request just before it is sent to the commercetools platform. This allows the user to modify the update 
@@ -1214,7 +1204,6 @@ actions array with custom actions or discard unwanted actions. The callback prov
 <span class="kd">final</span> <span class="n">ProductSyncOptions</span> <span class="n">productSyncOptions</span> <span class="o">=</span> 
         <span class="n">ProductSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">beforeUpdateCallback</span><span class="p">(</span><span class="n">beforeUpdateProductCallback</span><span class="p">).</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
-
 <h5 id="beforecreatecallback">beforeCreateCallback<a class="headerlink" href="#beforecreatecallback" title="Permanent link">&para;</a></h5>
 <p>During the sync process, if a product draft should be created, this callback can be used to intercept the <strong><em>create</em></strong> request just before it is sent to the commercetools platform.  It contains the following information : </p>
 <ul>
@@ -1234,14 +1223,12 @@ actions array with custom actions or discard unwanted actions. The callback prov
 <span class="kd">final</span> <span class="n">ProductSyncOptions</span> <span class="n">productSyncOptions</span> <span class="o">=</span> 
          <span class="n">ProductSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">beforeCreateCallback</span><span class="p">(</span><span class="n">beforeCreateProductCallback</span><span class="p">).</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
-
 <h5 id="batchsize">batchSize<a class="headerlink" href="#batchsize" title="Permanent link">&para;</a></h5>
 <p>A number that could be used to set the batch size with which products are fetched and processed,
 as products are obtained from the target project on commercetools platform in batches for better performance. The algorithm accumulates up to <code>batchSize</code> resources from the input list, then fetches the corresponding products from the target project on the commecetools platform in a single request. Playing with this option can slightly improve or reduce processing speed. If it is not set, the default batch size is 30 for product sync.</p>
 <div class="codehilite"><pre><span></span><code><span class="kd">final</span> <span class="n">ProductSyncOptions</span> <span class="n">productSyncOptions</span> <span class="o">=</span> 
          <span class="n">ProductSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">batchSize</span><span class="p">(</span><span class="mi">50</span><span class="p">).</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
-
 <h5 id="cachesize">cacheSize<a class="headerlink" href="#cachesize" title="Permanent link">&para;</a></h5>
 <p>In the service classes of the commercetools-sync-java library, we have implemented an in-memory <a href="https://en.wikipedia.org/wiki/Cache_replacement_policies#Least_recently_used_(LRU)">LRU cache</a> to store a map used for the reference resolution of the library.
 The cache reduces the reference resolution based calls to the commercetools API as the required fields of a resource will be fetched only one time. These cached fields then might be used by another resource referencing the already resolved resource instead of fetching from commercetools API. It turns out, having the in-memory LRU cache will improve the overall performance of the sync library and commercetools API.
@@ -1250,7 +1237,6 @@ which will improve the overall performance of the sync and commercetools API.</p
 <div class="codehilite"><pre><span></span><code><span class="kd">final</span> <span class="n">ProductSyncOptions</span> <span class="n">productSyncOptions</span> <span class="o">=</span>
     <span class="n">ProductSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">cacheSize</span><span class="p">(</span><span class="mi">5000</span><span class="p">).</span><span class="na">build</span><span class="p">();</span> 
 </code></pre></div>
-
 <h5 id="syncfilter">syncFilter<a class="headerlink" href="#syncfilter" title="Permanent link">&para;</a></h5>
 <p>It represents either a blacklist or a whitelist for filtering certain update action groups. </p>
 <ul>
@@ -1259,14 +1245,12 @@ which will improve the overall performance of the sync and commercetools API.</p
   in products except for prices.</p>
 <div class="codehilite"><pre><span></span><code><span class="kd">final</span> <span class="n">ProductSyncOptions</span> <span class="n">syncOptions</span> <span class="o">=</span> <span class="n">syncOptionsBuilder</span><span class="p">.</span><span class="na">syncFilter</span><span class="p">(</span><span class="n">ofBlackList</span><span class="p">(</span><span class="n">ActionGroup</span><span class="p">.</span><span class="na">PRICES</span><span class="p">)).</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
-
 </li>
 <li>
 <p><strong>Whitelisting</strong> an update action group means that the groups in this whitelist will be the <em>only</em> group synced in products. One use case could be to whitelist prices when syncing products. In other words, syncing prices only in 
   products and nothing else.</p>
 <div class="codehilite"><pre><span></span><code><span class="kd">final</span> <span class="n">ProductSyncOptions</span> <span class="n">syncOptions</span> <span class="o">=</span> <span class="n">syncOptionsBuilder</span><span class="p">.</span><span class="na">syncFilter</span><span class="p">(</span><span class="n">ofWhiteList</span><span class="p">(</span><span class="n">ActionGroup</span><span class="p">.</span><span class="na">PRICES</span><span class="p">)).</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
-
 </li>
 <li>
 <p>The list of action groups allowed to be blacklisted or whitelisted on products can be found <a href="https://github.com/commercetools/commercetools-sync-java/tree/master/src/main/java/com/commercetools/sync/products/ActionGroup.java">here</a>. </p>
@@ -1282,7 +1266,6 @@ If it fails to create the price channel, the product won't sync and <code>errorC
 <div class="codehilite"><pre><span></span><code><span class="kd">final</span> <span class="n">ProductSyncOptions</span> <span class="n">productSyncOptions</span> <span class="o">=</span> 
          <span class="n">ProductSyncOptionsBuilder</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">).</span><span class="na">ensureChannels</span><span class="p">(</span><span class="kc">true</span><span class="p">).</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
-
 <h3 id="running-the-sync">Running the sync<a class="headerlink" href="#running-the-sync" title="Permanent link">&para;</a></h3>
 <p>After all the aforementioned points in the previous section have been fulfilled, to run the sync:
 <div class="codehilite"><pre><span></span><code><span class="c1">// instantiating a product sync</span>
@@ -1367,7 +1350,6 @@ It being persisted as <code>CustomObject</code> means that the referenced produc
   <span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div>
-
 <p>As soon, as the referenced productDrafts are supplied to the sync, the draft will be created/updated and the 
 <code>CustomObject</code> will be removed from the target project.</p>
 <p>Keeping the old custom objects around forever can negatively influence the performance of your project and the time it takes to restore it from a backup.  Deleting unused data ensures the best performance for your project. Please have a look into the <a href="../CLEANUP_GUIDE/">Cleanup guide</a> to cleanup old unresolved custom objects.</p>

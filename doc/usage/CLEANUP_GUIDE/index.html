@@ -577,7 +577,6 @@ Additionally, an error callback could be configured to consume the error, that i
                    <span class="p">.</span><span class="na">cleanup</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
                    <span class="p">.</span><span class="na">join</span><span class="p">();</span>
 </code></pre></div>
-
 <p>The result of the previous code snippet is a <code>Statistics</code> object that contains all the statistics of the cleanup process. That includes a report message, the total number of deleted and failed custom objects.</p>
 <div class="codehilite"><pre><span></span><code><span class="n">statistics</span><span class="p">.</span><span class="na">getReportMessage</span><span class="p">();</span>  <span class="c1">// Summary: 100 custom objects were deleted in total (1 failed to delete).</span>
 <span class="n">statistics</span><span class="p">.</span><span class="na">getTotalDeleted</span><span class="p">();</span> <span class="c1">// Returns 100</span>

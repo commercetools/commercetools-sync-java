@@ -746,9 +746,10 @@
                 
                 <h1 id="contributing-to-commercetools-sync-java">Contributing to commercetools-sync-java<a class="headerlink" href="#contributing-to-commercetools-sync-java" title="Permanent link">&para;</a></h1>
 <p>These are the contribution guidelines for the commercetools-sync-java.</p>
-<p>Thanks for taking the time to contribute :+1::tada: All contributions are welcome! 
+<p>Thanks for taking the time to contribute :+1::tada: All contributions are welcome! </p>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE --></p>
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 <ul>
 <li><a href="#contribution-process-for-all-committers">Contribution process for all committers</a></li>
 <li><a href="#typos">Typos</a></li>
@@ -799,33 +800,24 @@
 <h5 id="run-unit-tests">Run unit tests<a class="headerlink" href="#run-unit-tests" title="Permanent link">&para;</a></h5>
 <div class="codehilite"><pre><span></span><code>./gradlew <span class="nb">test</span>
 </code></pre></div>
-
 <h5 id="package-jars">Package JARs<a class="headerlink" href="#package-jars" title="Permanent link">&para;</a></h5>
 <div class="codehilite"><pre><span></span><code>./gradlew clean jar
 </code></pre></div>
-
 <h5 id="package-jars-and-run-tests">Package JARs and run tests<a class="headerlink" href="#package-jars-and-run-tests" title="Permanent link">&para;</a></h5>
 <div class="codehilite"><pre><span></span><code>./gradlew clean check
 </code></pre></div>
-
 <h5 id="full-build-with-tests-but-without-install-to-maven-local-repo-recommended">Full build with tests, but without install to maven local repo (Recommended)<a class="headerlink" href="#full-build-with-tests-but-without-install-to-maven-local-repo-recommended" title="Permanent link">&para;</a></h5>
 <div class="codehilite"><pre><span></span><code>./gradlew clean build
 </code></pre></div>
-
 <h5 id="install-to-local-maven-repo">Install to local maven repo<a class="headerlink" href="#install-to-local-maven-repo" title="Permanent link">&para;</a></h5>
 <div class="codehilite"><pre><span></span><code>./gradlew clean install
 </code></pre></div>
-
 <h5 id="publish-javadoc">Publish JavaDoc<a class="headerlink" href="#publish-javadoc" title="Permanent link">&para;</a></h5>
 <div class="codehilite"><pre><span></span><code>./gradlew clean javadoc gitPublishPush -Dbuild.version<span class="o">={</span>version<span class="o">}</span>
 </code></pre></div>
-
-<p><strong>Note</strong>: in current <a href="/.travis.yml">Travis build</a> workflow the command looks different: <code>clean</code> and <code>javadoc</code> 
-are omitted because <code>javadoc</code> is previously created in <code>build</code> task, we just should not clean it now.</p>
 <h5 id="build-and-publish-to-bintray">Build and publish to Bintray<a class="headerlink" href="#build-and-publish-to-bintray" title="Permanent link">&para;</a></h5>
 <div class="codehilite"><pre><span></span><code>./gradlew clean build bintrayUpload -Dbuild.version<span class="o">={</span>version<span class="o">}</span> 
 </code></pre></div>
-
 <p>For more detailed information on the build and the release process, see <a href="../BUILD/">Build and Release</a> documentation.</p>
 <h3 id="integration-tests">Integration Tests<a class="headerlink" href="#integration-tests" title="Permanent link">&para;</a></h3>
 <ol>
@@ -858,7 +850,6 @@ For details, please refer to the following link:
 <span class="na">target.clientId</span><span class="o">=</span><span class="s">eeeeeee</span>
 <span class="na">target.clientSecret</span><span class="o">=</span><span class="s">fff</span>
 </code></pre></div>
-
 <p>Use <a href="/src/integration-test/resources/it.properties.skeleton"><code>it.properties.skeleton</code></a> 
   as a template to setup the credentials.</p>
 <p><strong>Note</strong>: the <code>it.properties</code> file must be ignored by VCS. </p>
@@ -892,11 +883,9 @@ When enabled, it will replace the normal <code>Reformat Code</code> action, whic
 <h5 id="run-spotless-style-check">Run Spotless Style Check<a class="headerlink" href="#run-spotless-style-check" title="Permanent link">&para;</a></h5>
 <div class="codehilite"><pre><span></span><code>./gradlew spotlessCheck
 </code></pre></div>
-
 <h5 id="fix-spotless-style-violations">Fix Spotless style violations<a class="headerlink" href="#fix-spotless-style-violations" title="Permanent link">&para;</a></h5>
 <div class="codehilite"><pre><span></span><code>./gradlew spotlessApply
 </code></pre></div>
-
 <h3 id="ignoring-mass-reformatting-commits-with-git-blame">Ignoring mass reformatting commits with git blame<a class="headerlink" href="#ignoring-mass-reformatting-commits-with-git-blame" title="Permanent link">&para;</a></h3>
 <p>To exclude the formatting commits git blame supports writing the commit hashes into a file and then referencing the file with <code>--ignore-revs-file</code>.                   <br />
 To be able to archive that <code>git blame ./file.java --ignore-revs-file .git-blame-ignore-revs</code> command to ignore this revision to find a better git history.      </p>

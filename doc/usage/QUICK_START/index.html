@@ -678,7 +678,6 @@
                 
                 <h1 id="quick-start">⚡ Quick Start<a class="headerlink" href="#quick-start" title="Permanent link">&para;</a></h1>
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
-
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 <ul>
@@ -738,7 +737,6 @@
                                    <span class="n">logger</span><span class="p">.</span><span class="na">warn</span><span class="p">(</span><span class="n">exception</span><span class="p">.</span><span class="na">getMessage</span><span class="p">(),</span> <span class="n">exception</span><span class="p">))</span>
                                 <span class="p">.</span><span class="na">build</span><span class="p">();</span>
 </code></pre></div>
-
 <h3 id="3-start-syncing">3. Start Syncing<a class="headerlink" href="#3-start-syncing" title="Permanent link">&para;</a></h3>
 <div class="codehilite"><pre><span></span><code><span class="c1">// Transform your product feed batch into a list of ProductDrafts using your preferred way.</span>
 <span class="kd">final</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">ProductDraft</span><span class="o">&gt;</span> <span class="n">productDraftsBatch</span> <span class="o">=</span> <span class="p">...</span>
@@ -748,7 +746,6 @@
 <span class="c1">// execute the sync on your list of products</span>
 <span class="kd">final</span> <span class="n">CompletionStage</span><span class="o">&lt;</span><span class="n">ProductSyncStatistics</span><span class="o">&gt;</span> <span class="n">syncStatisticsStage</span> <span class="o">=</span> <span class="n">productSync</span><span class="p">.</span><span class="na">sync</span><span class="p">(</span><span class="n">productDraftsBatch</span><span class="p">);</span>
 </code></pre></div>
-
 <h3 id="4-and-youre-done">4. And you're done ✨<a class="headerlink" href="#4-and-youre-done" title="Permanent link">&para;</a></h3>
 <div class="codehilite"><pre><span></span><code><span class="kd">final</span> <span class="n">ProductSyncStatistics</span> <span class="n">stats</span> <span class="o">=</span> <span class="n">syncStatisticsStage</span><span class="p">.</span><span class="na">toCompletebleFuture</span><span class="p">()</span>
                                                        <span class="p">.</span><span class="na">join</span><span class="p">();</span>
@@ -756,7 +753,6 @@
 <span class="cm">/*&quot;Summary: 2000 product(s) were processed in total (1000 created, 995 updated, 5 failed to sync and 0 </span>
 <span class="cm">product(s) with missing reference(s)).&quot;*/</span>
 </code></pre></div>
-
 <h4 id="more-details">More Details<a class="headerlink" href="#more-details" title="Permanent link">&para;</a></h4>
 <p><em><a href="../PRODUCT_SYNC/">Product Sync</a>, <a href="../PRODUCT_TYPE_SYNC/">ProductType Sync</a>, 
 <a href="../CATEGORY_SYNC/">Category Sync</a>, <a href="../INVENTORY_SYNC/">Inventory Sync</a>, 
