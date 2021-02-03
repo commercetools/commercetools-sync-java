@@ -1,0 +1,46 @@
+name: CI
+
+on: [push]
+
+jobs:
+  checks:
+    name: Code Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+      - name: Generate Dependency Updates Report
+        run: ./gradlew clean dependencyUpdates
+      - name: Code formatting
+        run: ./gradlew spotlessCheck
+      - name: PMD
+        run: ./gradlew pmdBenchmark pmdIntegrationTest pmdMain pmdTest
+      - name: Spotbugs
+        run: ./gradlew spotbugsBenchmark spotbugsIntegrationTest spotbugsMain spotbugsTest
+
+  tests:
+    name: Tests
+    needs: checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: serializing workflow runs
+        uses: softprops/turnstyle@v1
+        with:
+          same-branch-only: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Build with Gradle
+        run: ./gradlew clean setLibraryVersion test integrationTest jacocoTestCoverageVerification jacocoTestReport
+        env:
+          SOURCE_PROJECT_KEY: java-sync-source
+          SOURCE_CLIENT_ID:  ${{ secrets.SOURCE_CLIENT_ID }}
+          SOURCE_CLIENT_SECRET:  ${{ secrets.SOURCE_CLIENT_SECRET }}
+          TARGET_PROJECT_KEY: java-sync-target
+          TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID }}
+          TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET }}
+      - name: Codecov
+        uses: codecov/codecov-action@v1

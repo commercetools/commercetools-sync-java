@@ -1,0 +1,69 @@
+name: CD
+
+on:
+  push:
+    tags:
+      - '*.*.*'
+
+jobs:
+  benchmark_tests:
+    name: benchmark tests
+    runs-on: ubuntu-latest
+    env:
+      SOURCE_PROJECT_KEY: java-sync-source
+      SOURCE_CLIENT_ID: ${{ secrets.SOURCE_CLIENT_ID }}
+      SOURCE_CLIENT_SECRET: ${{ secrets.SOURCE_CLIENT_SECRET }}
+      TARGET_PROJECT_KEY: java-sync-target
+      TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID }}
+      TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET }}
+      CI_BUILD_DIR: '/home/runner/work/commercetools-sync-java/commercetools-sync-java/'
+      GRGIT_USER: ${{ secrets.GRGIT_USER }}
+      GITHUB_ACTION_COMMIT: ${{github.sha}}
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+      - name: serializing workflow runs
+        uses: softprops/turnstyle@v1
+        with:
+          same-branch-only: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Fetch Library version
+        id: vars
+        run: echo ::set-output name=libVersion::${GITHUB_REF#refs/*/}
+      - name: benchmark test
+        if: ${{ success() }}
+        run: ./gradlew clean setLibraryVersion benchmark benchmarkCommit
+        env:
+          GITHUB_TAG: ${{ steps.vars.outputs.libVersion }}
+
+  deployment:
+    name: deployment
+    needs: benchmark_tests
+    runs-on: ubuntu-latest
+    env:
+      BINTRAY_USER: commercetools
+      BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+      GRGIT_USER: ${{ secrets.GRGIT_USER }}
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+      - name: Set output
+        id: vars
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
+      - name: status
+        run: echo Build is tagged. Uploading artifact ${{ steps.vars.outputs.tag }} to Bintray.
+      - name: Publish GitHub Pages
+        run: ./gradlew --info -Dbuild.version="${{ steps.vars.outputs.tag }}" mkdocsPublish
+      - name: Upload Artifacts to Bintray
+        if: success() # only when previous step succeeds
+        run: ./gradlew --info  -Dbuild.version="${{ steps.vars.outputs.tag }}" bintrayUpload
+      - name: Slack notification
+        if: success() # only when previous step succeeds
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_USERNAME: Github Release Action.
+          SLACK_CHANNEL: java-sync
+        uses: Ilshidur/action-slack@master
+        with:
+          args: 'Version: <https://github.com/commercetools/commercetools-sync-java/releases/tag/${{ steps.vars.outputs.tag }}|${{ steps.vars.outputs.tag }}> of the library is published to <https://bintray.com/commercetools/maven/commercetools-sync-java|bintray repository>, check <https://github.com/commercetools/commercetools-sync-java/blob/master/docs/BUILD.md#step-2-publish|here> for the next steps.'

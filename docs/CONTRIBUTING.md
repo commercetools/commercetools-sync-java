@@ -77,9 +77,6 @@ If you have push access to the repository you can fix them directly otherwise ju
 ./gradlew clean javadoc gitPublishPush -Dbuild.version={version}
 ````
 
-**Note**: in current [Travis build](/.travis.yml) workflow the command looks different: `clean` and `javadoc` 
-are omitted because `javadoc` is previously created in `build` task, we just should not clean it now.
-
 ##### Build and publish to Bintray
 ````bash
 ./gradlew clean build bintrayUpload -Dbuild.version={version} 
