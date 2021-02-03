@@ -10,12 +10,12 @@ jobs:
     name: benchmark tests
     runs-on: ubuntu-latest
     env:
-      SOURCE_PROJECT_KEY: java-sync-source
-      SOURCE_CLIENT_ID: ${{ secrets.SOURCE_CLIENT_ID }}
-      SOURCE_CLIENT_SECRET: ${{ secrets.SOURCE_CLIENT_SECRET }}
-      TARGET_PROJECT_KEY: java-sync-target
-      TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID }}
-      TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET }}
+      SOURCE_PROJECT_KEY: java-sync-target-dev2
+      SOURCE_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID_2 }}
+      SOURCE_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET_2 }}
+      TARGET_PROJECT_KEY: java-sync-target-dev2
+      TARGET_CLIENT_ID: ${{ secrets.TARGET_CLIENT_ID_2 }}
+      TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET_2 }}
       CI_BUILD_DIR: '/home/runner/work/commercetools-sync-java/commercetools-sync-java/'
       GRGIT_USER: ${{ secrets.GRGIT_USER }}
       GITHUB_ACTION_COMMIT: ${{github.sha}}
