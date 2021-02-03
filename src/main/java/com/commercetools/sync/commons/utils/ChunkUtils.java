@@ -2,13 +2,17 @@ package com.commercetools.sync.commons.utils;
 
 import static com.commercetools.sync.commons.utils.CompletableFutureUtils.collectionOfFuturesToFutureOfCollection;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 
+import com.commercetools.sync.commons.models.GraphQlBaseResource;
+import com.commercetools.sync.commons.models.GraphQlBaseResult;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereRequest;
 import io.sphere.sdk.queries.PagedQueryResult;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -42,7 +46,7 @@ public class ChunkUtils {
    *
    * @param pagedQueryResults query responses which contains a subset of the matching values.
    * @param <T> the type of the underlying model.
-   * @return a list of lists where each list represents a chunk of elements with type {@link T}.
+   * @return a list of {@link T}
    */
   public static <T> List<T> flattenPagedQueryResults(
       @Nonnull final List<PagedQueryResult<T>> pagedQueryResults) {
@@ -51,6 +55,22 @@ public class ChunkUtils {
         .map(PagedQueryResult::getResults)
         .flatMap(Collection::stream)
         .collect(toList());
+  }
+
+  /**
+   * Flat map the list of lists of {@link GraphQlBaseResult} to the set of {@link T}.
+   *
+   * @param graphQlBaseResults query responses which contains a subset of the matching values.
+   * @param <T> the type of the underlying model.
+   * @return a set of {@link T}
+   */
+  public static <T extends GraphQlBaseResult<U>, U extends GraphQlBaseResource>
+      Set<U> flattenGraphQLBaseResults(@Nonnull final List<T> graphQlBaseResults) {
+
+    return graphQlBaseResults.stream()
+        .map(GraphQlBaseResult::getResults)
+        .flatMap(Collection::stream)
+        .collect(toSet());
   }
 
   /**

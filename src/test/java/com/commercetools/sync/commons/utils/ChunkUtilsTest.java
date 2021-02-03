@@ -2,6 +2,7 @@ package com.commercetools.sync.commons.utils;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -9,17 +10,18 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.commercetools.sync.commons.models.FetchCustomObjectsGraphQlRequest;
+import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
+import com.commercetools.sync.commons.models.GraphQlQueryResources;
 import com.commercetools.sync.commons.models.ResourceKeyId;
 import com.commercetools.sync.commons.models.ResourceKeyIdGraphQlResult;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.queries.CategoryQueryBuilder;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.queries.PagedQueryResult;
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.Test;
 
@@ -97,17 +99,18 @@ class ChunkUtilsTest {
                 Arrays.asList(
                     new ResourceKeyId("coKey1", "coId1"), new ResourceKeyId("coKey2", "coId2"))));
 
-    when(client.execute(any(FetchCustomObjectsGraphQlRequest.class)))
+    when(client.execute(any(ResourceKeyIdGraphQlRequest.class)))
         .thenReturn(CompletableFuture.completedFuture(resourceKeyIdGraphQlResult));
 
-    final Instant lastModifiedAt = Instant.parse("2021-01-07T00:00:00Z");
-    final FetchCustomObjectsGraphQlRequest request =
-        new FetchCustomObjectsGraphQlRequest("container", lastModifiedAt);
+    final ResourceKeyIdGraphQlRequest request =
+        new ResourceKeyIdGraphQlRequest(singleton("key-1"), GraphQlQueryResources.CATEGORIES);
 
     final List<ResourceKeyIdGraphQlResult> results =
         ChunkUtils.executeChunks(client, asList(request, request, request)).join();
 
     assertThat(results).hasSize(3);
-    assertThat(results).flatExtracting(ResourceKeyIdGraphQlResult::getResults).hasSize(6);
+
+    final Set<ResourceKeyId> resourceKeyIds = ChunkUtils.flattenGraphQLBaseResults(results);
+    assertThat(resourceKeyIds).hasSize(2);
   }
 }
