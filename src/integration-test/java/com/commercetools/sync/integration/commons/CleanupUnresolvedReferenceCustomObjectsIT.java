@@ -1,27 +1,24 @@
 package com.commercetools.sync.integration.commons;
 
 import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.deleteWaitingToBeResolvedCustomObjects;
-import static com.commercetools.sync.integration.commons.utils.CustomObjectITUtils.deleteWaitingToBeResolvedTransitionsCustomObjects;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ProductSyncMockUtils.CATEGORY_KEY_1_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_KEY_1_RESOURCE_PATH;
 import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY;
 import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY;
-import static com.commercetools.sync.services.impl.UnresolvedTransitionsServiceImpl.CUSTOM_OBJECT_CONTAINER_KEY;
+import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_TRANSITION_CONTAINER_KEY;
 import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
 import static java.lang.String.format;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.commercetools.sync.categories.CategorySyncOptionsBuilder;
 import com.commercetools.sync.commons.CleanupUnresolvedReferenceCustomObjects;
-import com.commercetools.sync.commons.models.WaitingToBeResolved;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedCategories;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedProducts;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedTransitions;
 import com.commercetools.sync.products.ProductSyncOptionsBuilder;
 import com.commercetools.sync.services.UnresolvedReferencesService;
-import com.commercetools.sync.services.UnresolvedTransitionsService;
 import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
-import com.commercetools.sync.services.impl.UnresolvedTransitionsServiceImpl;
 import com.commercetools.sync.states.StateSyncOptionsBuilder;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
@@ -43,23 +40,32 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class CleanupUnresolvedReferenceCustomObjectsIT {
-  private UnresolvedTransitionsService unresolvedTransitionsService;
-  private UnresolvedReferencesService unresolvedReferencesService;
+  private UnresolvedReferencesService<WaitingToBeResolvedProducts>
+      unresolvedReferencesServiceForProducts;
+  private UnresolvedReferencesService<WaitingToBeResolvedCategories>
+      unresolvedReferencesServiceForCategories;
+  private UnresolvedReferencesService<WaitingToBeResolvedTransitions>
+      unresolvedReferencesServiceForTransitions;
 
   @BeforeEach
   void setupTest() {
-    deleteWaitingToBeResolvedTransitionsCustomObjects(
-        CTP_TARGET_CLIENT, CUSTOM_OBJECT_CONTAINER_KEY);
+    deleteWaitingToBeResolvedCustomObjects(
+        CTP_TARGET_CLIENT,
+        CUSTOM_OBJECT_TRANSITION_CONTAINER_KEY,
+        WaitingToBeResolvedProducts.class);
     deleteWaitingToBeResolvedCustomObjects(
         CTP_TARGET_CLIENT, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingToBeResolvedProducts.class);
     deleteWaitingToBeResolvedCustomObjects(
         CTP_TARGET_CLIENT, CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY, WaitingToBeResolvedProducts.class);
-    unresolvedReferencesService =
-        new UnresolvedReferencesServiceImpl(
+    unresolvedReferencesServiceForProducts =
+        new UnresolvedReferencesServiceImpl<>(
             ProductSyncOptionsBuilder.of(CTP_TARGET_CLIENT).build());
-
-    unresolvedTransitionsService =
-        new UnresolvedTransitionsServiceImpl(StateSyncOptionsBuilder.of(CTP_TARGET_CLIENT).build());
+    unresolvedReferencesServiceForCategories =
+        new UnresolvedReferencesServiceImpl<>(
+            CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT).build());
+    unresolvedReferencesServiceForTransitions =
+        new UnresolvedReferencesServiceImpl<>(
+            StateSyncOptionsBuilder.of(CTP_TARGET_CLIENT).build());
   }
 
   @Test
@@ -86,8 +92,8 @@ class CleanupUnresolvedReferenceCustomObjectsIT {
     final Set<Reference<State>> sampleTransitions =
         new HashSet<>(Arrays.asList(State.referenceOfId("id1"), State.referenceOfId("id2")));
 
-    final List<WaitingToBeResolved> productUnresolvedReferences = new ArrayList<>();
-    final List<WaitingToBeResolved> categoryUnresolvedReferences = new ArrayList<>();
+    final List<WaitingToBeResolvedProducts> productUnresolvedReferences = new ArrayList<>();
+    final List<WaitingToBeResolvedCategories> categoryUnresolvedReferences = new ArrayList<>();
     final List<WaitingToBeResolvedTransitions> transitionUnresolvedReferences = new ArrayList<>();
 
     for (int i = 1; i <= 5; i++) {
@@ -112,7 +118,7 @@ class CleanupUnresolvedReferenceCustomObjectsIT {
                 productUnresolvedReferences.stream()
                     .map(
                         draft ->
-                            unresolvedReferencesService.save(
+                            unresolvedReferencesServiceForProducts.save(
                                 draft,
                                 CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
                                 WaitingToBeResolvedProducts.class))
@@ -122,15 +128,20 @@ class CleanupUnresolvedReferenceCustomObjectsIT {
                 categoryUnresolvedReferences.stream()
                     .map(
                         draft ->
-                            unresolvedReferencesService.save(
+                            unresolvedReferencesServiceForCategories.save(
                                 draft,
-                                CUSTOM_OBJECT_CONTAINER_KEY,
+                                CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY,
                                 WaitingToBeResolvedCategories.class))
                     .map(CompletionStage::toCompletableFuture)
                     .toArray(CompletableFuture[]::new)),
             CompletableFuture.allOf(
                 transitionUnresolvedReferences.stream()
-                    .map(unresolvedTransitionsService::save)
+                    .map(
+                        draft ->
+                            unresolvedReferencesServiceForTransitions.save(
+                                draft,
+                                CUSTOM_OBJECT_TRANSITION_CONTAINER_KEY,
+                                WaitingToBeResolvedTransitions.class))
                     .map(CompletionStage::toCompletableFuture)
                     .toArray(CompletableFuture[]::new)))
         .join();

@@ -2,20 +2,21 @@ package com.commercetools.sync.services.impl;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.codec.digest.DigestUtils.sha1Hex;
 
 import com.commercetools.sync.commons.BaseSyncOptions;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
+import com.commercetools.sync.commons.utils.ChunkUtils;
 import com.commercetools.sync.services.UnresolvedReferencesService;
 import io.sphere.sdk.customobjects.CustomObject;
 import io.sphere.sdk.customobjects.CustomObjectDraft;
 import io.sphere.sdk.customobjects.commands.CustomObjectDeleteCommand;
 import io.sphere.sdk.customobjects.commands.CustomObjectUpsertCommand;
 import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
-import io.sphere.sdk.queries.QueryExecutionUtils;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -38,6 +39,8 @@ public class UnresolvedReferencesServiceImpl<T extends WaitingToBeResolved>
       "commercetools-sync-java.UnresolvedReferencesService.productDrafts";
   public static final String CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY =
       "commercetools-sync-java.UnresolvedReferencesService.categoryDrafts";
+  public static final String CUSTOM_OBJECT_TRANSITION_CONTAINER_KEY =
+      "commercetools-sync-java.UnresolvedTransitionsService.stateDrafts";
 
   public UnresolvedReferencesServiceImpl(@Nonnull final BaseSyncOptions baseSyncOptions) {
     this.syncOptions = baseSyncOptions;
@@ -53,30 +56,41 @@ public class UnresolvedReferencesServiceImpl<T extends WaitingToBeResolved>
   public CompletionStage<Set<T>> fetch(
       @Nonnull final Set<String> keys,
       @Nonnull final String containerKey,
-      @Nonnull final Class<? extends WaitingToBeResolved> clazz) {
+      @Nonnull final Class<T> clazz) {
 
     if (keys.isEmpty()) {
       return CompletableFuture.completedFuture(Collections.emptySet());
     }
 
-    Set<String> hashedKeys = keys.stream().map(this::hash).collect(Collectors.toSet());
+    /*
+     * A key is a 41 characters long hashed string. (i.e: c25a67e262265fbc36edb33ed0375263586be278) We
+     * chunk them in 250 keys we will have around a query around 11.000 characters. Above this size it
+     * could return - Error 413 (Request Entity Too Large)
+     */
+    final int CHUNK_SIZE = 250;
+    final Set<String> hashedKeys = keys.stream().map(this::hash).collect(Collectors.toSet());
+    final List<List<String>> chunkedKeys = ChunkUtils.chunk(hashedKeys, CHUNK_SIZE);
 
-    final CustomObjectQuery<? extends WaitingToBeResolved> customObjectQuery =
-        CustomObjectQuery.of(clazz)
-            .byContainer(containerKey)
-            .plusPredicates(p -> p.key().isIn(hashedKeys));
+    final List<CustomObjectQuery<T>> chunkedRequests =
+        chunkedKeys.stream()
+            .map(
+                _keys ->
+                    CustomObjectQuery.of(clazz)
+                        .byContainer(containerKey)
+                        .plusPredicates(p -> p.key().isIn(_keys)))
+            .collect(toList());
 
-    return QueryExecutionUtils.queryAll(syncOptions.getCtpClient(), customObjectQuery)
+    return ChunkUtils.executeChunks(syncOptions.getCtpClient(), chunkedRequests)
+        .thenApply(ChunkUtils::flattenPagedQueryResults)
         .thenApply(
-            customObjects -> customObjects.stream().map(CustomObject::getValue).collect(toList()))
-        .thenApply(l -> new HashSet(l));
+            customObjects -> customObjects.stream().map(CustomObject::getValue).collect(toSet()));
   }
 
   @Nonnull
   @Override
   public CompletionStage<Optional<T>> save(
-      @Nonnull final T draft, @Nonnull final String containerKey, @Nonnull final Class clazz) {
-    final CustomObjectDraft<WaitingToBeResolved> customObjectDraft =
+      @Nonnull final T draft, @Nonnull final String containerKey, @Nonnull final Class<T> clazz) {
+    final CustomObjectDraft<T> customObjectDraft =
         CustomObjectDraft.ofUnversionedUpsert(containerKey, hash(draft.getKey()), draft, clazz);
 
     return syncOptions
@@ -109,7 +123,7 @@ public class UnresolvedReferencesServiceImpl<T extends WaitingToBeResolved>
         .handle(
             (resource, exception) -> {
               if (exception == null) {
-                return Optional.of((T) resource.getValue());
+                return Optional.of(resource.getValue());
               } else {
                 syncOptions.applyErrorCallback(
                     new SyncException(format(DELETE_FAILED, hash(key), key), exception));

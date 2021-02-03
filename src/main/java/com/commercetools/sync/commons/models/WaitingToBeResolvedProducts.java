@@ -5,7 +5,7 @@ import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 
-public final class WaitingToBeResolvedProducts extends WaitingToBeResolved<ProductDraft> {
+public final class WaitingToBeResolvedProducts implements WaitingToBeResolved {
   private ProductDraft productDraft;
   private Set<String> missingReferencedProductKeys;
 

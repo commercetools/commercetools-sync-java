@@ -1,6 +1,7 @@
 package com.commercetools.sync.states;
 
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
+import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_TRANSITION_CONTAINER_KEY;
 import static com.commercetools.sync.states.utils.StateSyncUtils.buildActions;
 import static java.lang.String.format;
 import static java.util.Optional.ofNullable;
@@ -13,9 +14,9 @@ import com.commercetools.sync.commons.BaseSync;
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedTransitions;
 import com.commercetools.sync.services.StateService;
-import com.commercetools.sync.services.UnresolvedTransitionsService;
+import com.commercetools.sync.services.UnresolvedReferencesService;
 import com.commercetools.sync.services.impl.StateServiceImpl;
-import com.commercetools.sync.services.impl.UnresolvedTransitionsServiceImpl;
+import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
 import com.commercetools.sync.states.helpers.StateBatchValidator;
 import com.commercetools.sync.states.helpers.StateReferenceResolver;
 import com.commercetools.sync.states.helpers.StateSyncStatistics;
@@ -52,7 +53,8 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
 
   private final StateService stateService;
   private final StateReferenceResolver stateReferenceResolver;
-  private final UnresolvedTransitionsService unresolvedTransitionsService;
+  private final UnresolvedReferencesService<WaitingToBeResolvedTransitions>
+      unresolvedReferencesService;
   private final StateBatchValidator batchValidator;
 
   private ConcurrentHashMap.KeySetView<String, Boolean> readyToResolve;
@@ -79,7 +81,7 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
     super(new StateSyncStatistics(), stateSyncOptions);
     this.stateService = stateService;
     this.stateReferenceResolver = new StateReferenceResolver(getSyncOptions(), stateService);
-    this.unresolvedTransitionsService = new UnresolvedTransitionsServiceImpl(getSyncOptions());
+    this.unresolvedReferencesService = new UnresolvedReferencesServiceImpl<>(getSyncOptions());
     this.batchValidator = new StateBatchValidator(getSyncOptions(), getStatistics());
   }
 
@@ -239,8 +241,10 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
     missingTransitionParentStateKeys.forEach(
         missingParentKey -> statistics.addMissingDependency(missingParentKey, newState.getKey()));
 
-    return unresolvedTransitionsService.save(
-        new WaitingToBeResolvedTransitions(newState, missingTransitionParentStateKeys));
+    return unresolvedReferencesService.save(
+        new WaitingToBeResolvedTransitions(newState, missingTransitionParentStateKeys),
+        CUSTOM_OBJECT_TRANSITION_CONTAINER_KEY,
+        WaitingToBeResolvedTransitions.class);
   }
 
   @Nonnull
@@ -431,8 +435,11 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
     final Set<StateDraft> readyToSync = new HashSet<>();
     final Set<WaitingToBeResolvedTransitions> waitingDraftsToBeUpdated = new HashSet<>();
 
-    return unresolvedTransitionsService
-        .fetch(referencingDraftKeys)
+    return unresolvedReferencesService
+        .fetch(
+            referencingDraftKeys,
+            CUSTOM_OBJECT_TRANSITION_CONTAINER_KEY,
+            WaitingToBeResolvedTransitions.class)
         .handle(ImmutablePair::new)
         .thenCompose(
             fetchResponse -> {
@@ -476,7 +483,12 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
 
     return allOf(
         waitingDraftsToBeUpdated.stream()
-            .map(unresolvedTransitionsService::save)
+            .map(
+                draft ->
+                    unresolvedReferencesService.save(
+                        draft,
+                        CUSTOM_OBJECT_TRANSITION_CONTAINER_KEY,
+                        WaitingToBeResolvedTransitions.class))
             .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
   }
@@ -486,7 +498,12 @@ public class StateSync extends BaseSync<StateDraft, StateSyncStatistics, StateSy
     return allOf(
         drafts.stream()
             .map(StateDraft::getKey)
-            .map(unresolvedTransitionsService::delete)
+            .map(
+                key ->
+                    unresolvedReferencesService.delete(
+                        key,
+                        CUSTOM_OBJECT_TRANSITION_CONTAINER_KEY,
+                        WaitingToBeResolvedTransitions.class))
             .map(CompletionStage::toCompletableFuture)
             .toArray(CompletableFuture[]::new));
   }
