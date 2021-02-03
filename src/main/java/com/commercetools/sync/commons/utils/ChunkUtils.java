@@ -55,7 +55,7 @@ public class ChunkUtils {
 
   /**
    * Given a collection of items and a {@code chunkSize}, this method chunks the elements into
-   * chunks with the {@code chunkSize} represented by a a {@link List} of elements.
+   * chunks with the {@code chunkSize} represented by a {@link List} of elements.
    *
    * @param elements the list of elements
    * @param chunkSize the size of each chunk.
