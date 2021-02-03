@@ -37,29 +37,6 @@ var productSyncCreatesUpdates = {
     data: []
 }
 
-// red
-var categorySyncCreatesOnly = {
-    label: 'Category Sync (creates only)',
-    backgroundColor: color(window.chartColors.red).alpha(0.2).rgbString(),
-    borderColor: color(window.chartColors.red).alpha(0.2).rgbString(),
-    borderWidth: 1,
-    data: []
-}
-var categorySyncUpdatesOnly = {
-    label: 'Category Sync (updates only)',
-    backgroundColor: color(window.chartColors.red).alpha(0.4).rgbString(),
-    borderColor: color(window.chartColors.red).alpha(0.4).rgbString(),
-    borderWidth: 1,
-    data: []
-}
-var categorySyncCreatesUpdates = {
-    label: 'Category Sync (creates and updates)',
-    backgroundColor: color(window.chartColors.red).alpha(0.6).rgbString(),
-    borderColor: color(window.chartColors.red).alpha(0.6).rgbString(),
-    borderWidth: 1,
-    data: []
-}
-
 // blue
 var inventorySyncCreatesOnly = {
     label: 'Inventory Sync (creates only)',
@@ -67,20 +44,6 @@ var inventorySyncCreatesOnly = {
     borderColor: color(window.chartColors.blue).alpha(0.2).rgbString(),
     borderWidth: 1,
     data: []
-}
-var inventorySyncUpdatesOnly = {
-    label: 'Inventory Sync (updates only)',
-    backgroundColor: color(window.chartColors.blue).alpha(0.4).rgbString(),
-    borderColor: color(window.chartColors.blue).alpha(0.4).rgbString(),
-    borderWidth: 1,
-    data: []
-}
-var inventorySyncCreatesUpdates = {
-    label: 'Inventory Sync (creates and updates)',
-    backgroundColor: color(window.chartColors.blue).alpha(0.6).rgbString(),
-    borderColor: color(window.chartColors.blue).alpha(0.6).rgbString(),
-    borderWidth: 1,
-    data: [],
 }
 
 // skyBlue
@@ -162,13 +125,7 @@ var barChartData = {
         productSyncUpdatesOnly,
         productSyncCreatesUpdates,
 
-        categorySyncCreatesOnly,
-        categorySyncUpdatesOnly,
-        categorySyncCreatesUpdates,
-
         inventorySyncCreatesOnly,
-        inventorySyncUpdatesOnly,
-        inventorySyncCreatesUpdates,
 
         productTypeSyncCreatesOnly,
         productTypeSyncUpdatesOnly,
@@ -225,7 +182,7 @@ window.onload = function () {
 
 
 
-    $.getJSON("https://commercetools.github.io/commercetools-sync-java/benchmarks/benchmarks.json", addData);
+    $.getJSON("./benchmarks.json", addData);
 
     function addData(data) {
         $.each(data, function (key, val) {
@@ -235,13 +192,7 @@ window.onload = function () {
             productSyncUpdatesOnly.data.push(val.productSync.updatesOnly.executionTime / 1000)
             productSyncCreatesUpdates.data.push(val.productSync.mix.executionTime / 1000)
 
-            categorySyncCreatesOnly.data.push(val.categorySync.createsOnly.executionTime / 1000)
-            categorySyncUpdatesOnly.data.push(val.categorySync.updatesOnly.executionTime / 1000)
-            categorySyncCreatesUpdates.data.push(val.categorySync.mix.executionTime / 1000)
-
             inventorySyncCreatesOnly.data.push(val.inventorySync.createsOnly.executionTime / 1000)
-            inventorySyncUpdatesOnly.data.push(val.inventorySync.updatesOnly.executionTime / 1000)
-            inventorySyncCreatesUpdates.data.push(val.inventorySync.mix.executionTime / 1000)
 
             productTypeSyncCreatesOnly.data.push(val.productTypeSync.createsOnly.executionTime / 1000)
             productTypeSyncUpdatesOnly.data.push(val.productTypeSync.updatesOnly.executionTime / 1000)
