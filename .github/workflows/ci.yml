@@ -19,7 +19,8 @@ jobs:
         run: ./gradlew spotbugsBenchmark spotbugsIntegrationTest spotbugsMain spotbugsTest
 
   tests:
-    name:  Unit Tests and integration Tests
+    name: Tests
+    needs: checks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
