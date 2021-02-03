@@ -33,7 +33,7 @@ jobs:
         with:
           java-version: 1.8
       - name: Build with Gradle
-        run: ./gradlew clean setLibraryVersion test integrationTest  jacocoTestCoverageVerification jacocoTestReport
+        run: ./gradlew clean setLibraryVersion test integrationTest jacocoTestCoverageVerification jacocoTestReport
         env:
           SOURCE_PROJECT_KEY: java-sync-source
           SOURCE_CLIENT_ID:  ${{ secrets.SOURCE_CLIENT_ID }}
