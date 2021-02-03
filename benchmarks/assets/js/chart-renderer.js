@@ -182,7 +182,7 @@ window.onload = function () {
 
 
 
-    $.getJSON("./benchmarks.json", addData);
+    $.getJSON("https://commercetools.github.io/commercetools-sync-java/benchmarks/benchmarks.json", addData);
 
     function addData(data) {
         $.each(data, function (key, val) {
