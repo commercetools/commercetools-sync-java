@@ -374,6 +374,13 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#persistence-of-category-drafts-with-irresolvable-parent" class="md-nav__link">
+    Persistence of category Drafts with irresolvable parent
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#syncing-from-a-commercetools-project" class="md-nav__link">
     Syncing from a commercetools project
   </a>
@@ -664,7 +671,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/3.1.0/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/3.2.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -775,6 +782,13 @@
   
     <nav class="md-nav">
       <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#persistence-of-category-drafts-with-irresolvable-parent" class="md-nav__link">
+    Persistence of category Drafts with irresolvable parent
+  </a>
+  
+</li>
         
           <li class="md-nav__item">
   <a href="#syncing-from-a-commercetools-project" class="md-nav__link">
@@ -933,6 +947,7 @@ against a <a href="https://docs.commercetools.com/http-api-projects-categories.h
 <li><a href="#sphereclient">SphereClient</a></li>
 <li><a href="#required-fields">Required Fields</a></li>
 <li><a href="#reference-resolution">Reference Resolution</a></li>
+<li><a href="#persistence-of-category-drafts-with-irresolvable-parent">Persistence of category Drafts with irresolvable parent</a></li>
 <li><a href="#syncing-from-a-commercetools-project">Syncing from a commercetools project</a></li>
 <li><a href="#syncing-from-an-external-resource">Syncing from an external resource</a></li>
 <li><a href="#syncoptions">SyncOptions</a></li>
@@ -957,7 +972,7 @@ against a <a href="https://docs.commercetools.com/http-api-projects-categories.h
 <h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
 <h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
 <h4 id="sphereclient">SphereClient<a class="headerlink" href="#sphereclient" title="Permanent link">&para;</a></h4>
-<p>Use the <a href="https://github.com/commercetools/commercetools-sync-java/blob/3.1.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45">ClientConfigurationUtils</a> which apply the best practices for <code>SphereClient</code> creation.
+<p>Use the <a href="https://github.com/commercetools/commercetools-sync-java/blob/3.2.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45">ClientConfigurationUtils</a> which apply the best practices for <code>SphereClient</code> creation.
 If you have custom requirements for the sphere client creation, have a look into the <a href="../IMPORTANT_USAGE_TIPS/">Important Usage Tips</a>.</p>
 <div class="codehilite"><pre><span></span><code><span class="kd">final</span> <span class="n">SphereClientConfig</span> <span class="n">clientConfig</span> <span class="o">=</span> <span class="n">SphereClientConfig</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="s">&quot;project-key&quot;</span><span class="p">,</span> <span class="s">&quot;client-id&quot;</span><span class="p">,</span> <span class="s">&quot;client-secret&quot;</span><span class="p">);</span>
 
@@ -1010,8 +1025,66 @@ Therefore, in order to resolve the actual ids of those references in sync proces
 <blockquote>
 <p>Note that a reference without the key field will be considered as existing resource on the target commercetools project and the library will issue an update/create an API request without reference resolution.</p>
 </blockquote>
+<h5 id="persistence-of-category-drafts-with-irresolvable-parent">Persistence of category Drafts with irresolvable parent<a class="headerlink" href="#persistence-of-category-drafts-with-irresolvable-parent" title="Permanent link">&para;</a></h5>
+<p>A categorydraft X could have a parent Category Y. But It could be that the parent Category Y is not supplied before X, 
+which means the sync could fail to create/updating X. It could also be that Y is not supplied at all in this batch but at a later batch.</p>
+<p>The library keeps track of such "referencing" category Drafts like X and persists them in storage 
+(<strong>Commercetools platform <code>customObjects</code> in the target project</strong> , in this case) 
+to keep them and create/update them accordingly whenever the referenced drafts exist in the target project.</p>
+<p>The <code>customObject</code> will have a <code>container:</code> <strong><code>"commercetools-sync-java.UnresolvedReferencesService.categoryDrafts"</code></strong>
+and a <code>key</code> representing the key of the  category Drafts that is waiting to be created/updated.</p>
+<p>Here is an example of a <code>CustomObject</code> in the target project that represents a category Draft with the key <code>categoryKey1</code>.<br />
+Being persisted as <code>CustomObject</code> means that the referenced parent Category with the key <code>nonExistingParent</code> does not exist yet.</p>
+<p><div class="codehilite"><pre><span></span><code><span class="p">{</span>
+      <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;81dcb42f-1959-4412-a4bb-8ad420d0d11f&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;version&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+      <span class="nt">&quot;createdAt&quot;</span><span class="p">:</span> <span class="s2">&quot;2021-01-13T12:19:45.937Z&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;lastModifiedAt&quot;</span><span class="p">:</span> <span class="s2">&quot;2021-01-13T12:19:45.937Z&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;lastModifiedBy&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;clientId&quot;</span><span class="p">:</span> <span class="s2">&quot;7OSAGVPscneW_KS4nqskFkrd&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;isPlatformClient&quot;</span><span class="p">:</span> <span class="kc">false</span>
+      <span class="p">},</span>
+      <span class="nt">&quot;createdBy&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;clientId&quot;</span><span class="p">:</span> <span class="s2">&quot;7OSAGVPscneW_KS4nqskFkrd&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;isPlatformClient&quot;</span><span class="p">:</span> <span class="kc">false</span>
+      <span class="p">},</span>
+      <span class="nt">&quot;container&quot;</span><span class="p">:</span> <span class="s2">&quot;commercetools-sync-java.UnresolvedReferencesService.categoryDrafts&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;8732a63fa8ca457e86f4075340d65154e7e2476a&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;value&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;missingReferencedKeys&quot;</span><span class="p">:</span> <span class="p">[</span>
+          <span class="s2">&quot;nonExistingParent&quot;</span>
+        <span class="p">],</span>
+        <span class="nt">&quot;waitingDraft&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;custom&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="nt">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;oldCategoryCustomTypeKey&quot;</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;fields&quot;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="nt">&quot;backgroundColor&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;de&quot;</span><span class="p">:</span> <span class="s2">&quot;rot&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;en&quot;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span>
+              <span class="p">},</span>
+              <span class="nt">&quot;invisibleInShop&quot;</span><span class="p">:</span> <span class="kc">false</span>
+            <span class="p">}</span>
+          <span class="p">},</span>
+          <span class="nt">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;categoryKey1&quot;</span><span class="p">,</span>
+          <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;en&quot;</span><span class="p">:</span> <span class="s2">&quot;furniture&quot;</span>
+          <span class="p">},</span>
+          <span class="nt">&quot;parent&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;key&quot;</span><span class="p">:</span> <span class="s2">&quot;nonExistingParent&quot;</span>
+          <span class="p">},</span>
+          <span class="nt">&quot;slug&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;en&quot;</span><span class="p">:</span> <span class="s2">&quot;new-furniture1&quot;</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+</code></pre></div>
+As soon, as the referenced parent Category draft is supplied to the sync, the draft will be created/updated and the 
+<code>CustomObject</code> will be removed from the target project.</p>
 <h5 id="syncing-from-a-commercetools-project">Syncing from a commercetools project<a class="headerlink" href="#syncing-from-a-commercetools-project" title="Permanent link">&para;</a></h5>
-<p>When syncing from a source commercetools project, you can use <a href="https://commercetools.github.io/commercetools-sync-java/v/3.1.0/com/commercetools/sync/categories/utils/CategoryReferenceResolutionUtils.html#mapToCategoryDrafts-java.util.List-"><code>mapToCategoryDrafts</code></a>
+<p>When syncing from a source commercetools project, you can use <a href="https://commercetools.github.io/commercetools-sync-java/v/3.2.0/com/commercetools/sync/categories/utils/CategoryReferenceResolutionUtils.html#mapToCategoryDrafts-java.util.List-"><code>mapToCategoryDrafts</code></a>
 method that maps from a <code>Category</code> to <code>CategoryDraft</code> in order to make them ready for reference resolution by the sync, for example: </p>
 <div class="codehilite"><pre><span></span><code><span class="c1">// Build a CategoryQuery for fetching categories from a source CTP project with all the needed references expanded for the sync</span>
 <span class="kd">final</span> <span class="n">CategoryQuery</span> <span class="n">categoryQueryWithReferenceExpanded</span> <span class="o">=</span> <span class="n">CategoryReferenceResolutionUtils</span><span class="p">.</span><span class="na">buildCategoryQuery</span><span class="p">();</span>

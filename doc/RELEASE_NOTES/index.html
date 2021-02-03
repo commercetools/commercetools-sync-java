@@ -468,7 +468,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/3.1.0/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/3.2.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -505,6 +505,13 @@
   
     <label class="md-nav__title" for="__toc">Table of contents</label>
     <ul class="md-nav__list" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#320-feb-3-2021" class="md-nav__link">
+    3.2.0 - Feb 3, 2021
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#310-jan-13-2021" class="md-nav__link">
@@ -874,6 +881,13 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#320-feb-3-2021" class="md-nav__link">
+    3.2.0 - Feb 3, 2021
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#310-jan-13-2021" class="md-nav__link">
     3.1.0 - Jan 13, 2021
   </a>
@@ -1219,7 +1233,37 @@
 
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
-
+<h3 id="320-feb-3-2021">3.2.0 - Feb 3, 2021<a class="headerlink" href="#320-feb-3-2021" title="Permanent link">&para;</a></h3>
+<p><a href="https://github.com/commercetools/commercetools-sync-java/compare/3.1.0...3.2.0">Commits</a> |
+<a href="https://commercetools.github.io/commercetools-sync-java/v/3.2.0/">Javadoc</a> | 
+<a href="https://bintray.com/commercetools/maven/commercetools-sync-java/3.2.0">Jar</a></p>
+<ul>
+<li>
+<p>🎉 <strong>New Features</strong> (1)</p>
+<ul>
+<li>Now the categories, which have an unresolvable parent category, are persisted in custom objects, 
+  so they can be resolved in different executions / instances of the category sync. <a href="https://github.com/commercetools/commercetools-sync-java/pull/658">#658</a> </li>
+</ul>
+</li>
+<li>
+<p>🐞 <strong>Bug Fixes</strong> (1)</p>
+<ul>
+<li>To avoid <code>Error 413 (Request Entity Too Large)</code> issues, a fix added to unresolved reference custom object fetching. <a href="https://github.com/commercetools/commercetools-sync-java/issues/666">#666</a></li>
+</ul>
+</li>
+<li>
+<p>🛠️ <strong>Dependency Updates</strong> (1)</p>
+<ul>
+<li><code>commercetools-jvm-sdk</code> <code>1.56.0</code> -&gt; <a href="http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_57_0"><code>1.57.0</code></a></li>
+</ul>
+</li>
+<li>
+<p>✨ <strong>Build Tools</strong> (1)</p>
+<ul>
+<li>Migrate to github actions from travis-ci <a href="https://github.com/commercetools/commercetools-sync-java/pull/664">#664</a>  </li>
+</ul>
+</li>
+</ul>
 <h3 id="310-jan-13-2021">3.1.0 - Jan 13, 2021<a class="headerlink" href="#310-jan-13-2021" title="Permanent link">&para;</a></h3>
 <p><a href="https://github.com/commercetools/commercetools-sync-java/compare/3.0.2...3.1.0">Commits</a> |
 <a href="https://commercetools.github.io/commercetools-sync-java/v/3.1.0/">Javadoc</a> | 

@@ -481,7 +481,7 @@
 
 
   <li class="md-nav__item">
-    <a href="https://commercetools.github.io/commercetools-sync-java/v/3.1.0/" title="Javadoc" class="md-nav__link">
+    <a href="https://commercetools.github.io/commercetools-sync-java/v/3.2.0/" title="Javadoc" class="md-nav__link">
       Javadoc
     </a>
   </li>
@@ -566,10 +566,14 @@
                 
                 
                 <h1 id="cleanup-of-old-unresolved-reference-custom-objects">Cleanup of old unresolved reference custom objects<a class="headerlink" href="#cleanup-of-old-unresolved-reference-custom-objects" title="Permanent link">&para;</a></h1>
-<p>For some references such as state transitions and attribute references with product references, the library keeps tracks of unresolved drafts and persists them in a commercetools custom object and create/update them accordingly whenever the referenced drafts exist in the target project.</p>
-<p>It also means that created data might be never resolved, in this case keeping the old custom objects around forever can negatively influence the performance of your project and the time it takes to restore it from a backup.  So deleting unused data ensures the best performance for your project. </p>
+<p>For some references such as state transitions,product references and category references, the library keeps tracks
+of unresolved drafts and persists them in commercetools custom objects and create/update them accordingly whenever
+the referenced drafts exist in the target project.</p>
+<p>It also means that created data might be never resolved. In this case keeping the old custom objects around forever
+ can negatively influence the performance of your project and the time it takes to restore it from a backup.  So deleting unused data ensures the best performance for your project. </p>
 <p>For the cleanup, commercetools-sync-java library exposes a ready to use method so that all custom objects created by the library can be cleaned up on demand.  </p>
-<p>The cleanup can be defined with the parameter <code>deleteDaysAfterLastModification</code> (in days) object creation. For example, if you configure the <code>deleteDaysAfterLastModification</code> parameter to 30 days, cleanup method will delete the custom objects which haven't been modified in the last 30 days.
+<p>The cleanup can be defined with the parameter <code>deleteDaysAfterLastModification</code> (in days) of object creation. For
+ example, if you configure the <code>deleteDaysAfterLastModification</code> parameter to 30 days, cleanup method will delete the custom objects which haven't been modified in the last 30 days.
 Additionally, an error callback could be configured to consume the error, that is called <code>errorCallback</code> whenever an error event occurs during the sync process.</p>
 <div class="codehilite"><pre><span></span><code><span class="kd">final</span> <span class="n">CleanupUnresolvedReferenceCustomObjects</span><span class="p">.</span><span class="na">Statistics</span> <span class="n">statistics</span> <span class="o">=</span>
             <span class="n">CleanupUnresolvedReferenceCustomObjects</span><span class="p">.</span><span class="na">of</span><span class="p">(</span><span class="n">sphereClient</span><span class="p">)</span>
