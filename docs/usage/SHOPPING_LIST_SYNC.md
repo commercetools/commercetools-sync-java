@@ -37,7 +37,7 @@ against a [ShoppingListDraft](https://docs.commercetools.com/api/projects/shoppi
 ### Prerequisites
 #### SphereClient
 
-Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/3.1.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
+Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/3.2.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 ````java
@@ -73,7 +73,7 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`mapToShoppingListDraft`](https://commercetools.github.io/commercetools-sync-java/v/3.1.0/com/commercetools/sync/shoppinglists/utils/ShoppingListReferenceResolutionUtils.html#mapToShoppingListDrafts-java.util.List-)
+When syncing from a source commercetools project, you can use [`mapToShoppingListDraft`](https://commercetools.github.io/commercetools-sync-java/v/3.2.0/com/commercetools/sync/shoppinglists/utils/ShoppingListReferenceResolutionUtils.html#mapToShoppingListDrafts-java.util.List-)
 the method that maps from a `ShoppingList` to `ShoppingListDraft` to make them ready for reference resolution by the shopping list sync, for example: 
 
 ````java

@@ -26,15 +26,24 @@
 
 7. Add Migration guide section which specifies explicitly if there are breaking changes and how to tackle them.
 -->
-### 3.2.0 - ???
+### 3.2.0 - Feb 3, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/3.1.0...3.2.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/3.2.0/) | 
 [Jar](https://bintray.com/commercetools/maven/commercetools-sync-java/3.2.0)
 
 - 🎉 **New Features** (1)
     - Now the categories, which have an unresolvable parent category, are persisted in custom objects, 
-      so they can be resolved in different executions / instances of the category sync.
+      so they can be resolved in different executions / instances of the category sync. [#658](https://github.com/commercetools/commercetools-sync-java/pull/658) 
+  
+- 🐞 **Bug Fixes** (1)
+    - To avoid `Error 413 (Request Entity Too Large)` issues, a fix added to unresolved reference custom object fetching. [#666](https://github.com/commercetools/commercetools-sync-java/issues/666)
+    
+- 🛠️ **Dependency Updates** (1)
+    - `commercetools-jvm-sdk` `1.56.0` -> [`1.57.0`](http://commercetools.github.io/commercetools-jvm-sdk/apidocs/io/sphere/sdk/meta/ReleaseNotes.html#v1_57_0)
 
+- ✨ **Build Tools** (1)
+    - Migrate to github actions from travis-ci [#664](https://github.com/commercetools/commercetools-sync-java/pull/664)  
+    
 ### 3.1.0 - Jan 13, 2021
 [Commits](https://github.com/commercetools/commercetools-sync-java/compare/3.0.2...3.1.0) |
 [Javadoc](https://commercetools.github.io/commercetools-sync-java/v/3.1.0/) | 

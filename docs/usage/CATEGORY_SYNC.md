@@ -36,7 +36,7 @@ against a [CategoryDraft](https://docs.commercetools.com/http-api-projects-categ
 
 #### SphereClient
 
-Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/3.1.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
+Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/3.2.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 ````java
@@ -135,7 +135,7 @@ As soon, as the referenced parent Category draft is supplied to the sync, the dr
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`mapToCategoryDrafts`](https://commercetools.github.io/commercetools-sync-java/v/3.1.0/com/commercetools/sync/categories/utils/CategoryReferenceResolutionUtils.html#mapToCategoryDrafts-java.util.List-)
+When syncing from a source commercetools project, you can use [`mapToCategoryDrafts`](https://commercetools.github.io/commercetools-sync-java/v/3.2.0/com/commercetools/sync/categories/utils/CategoryReferenceResolutionUtils.html#mapToCategoryDrafts-java.util.List-)
 method that maps from a `Category` to `CategoryDraft` in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
