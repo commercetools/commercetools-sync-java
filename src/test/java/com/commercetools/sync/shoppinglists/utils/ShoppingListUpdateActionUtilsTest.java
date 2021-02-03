@@ -229,7 +229,7 @@ class ShoppingListUpdateActionUtilsTest {
     assertThat(setCustomerUpdateAction).isNotEmpty();
     assertThat(setCustomerUpdateAction).containsInstanceOf(SetCustomer.class);
     assertThat(((SetCustomer) setCustomerUpdateAction.get()).getCustomer())
-        .isEqualTo(Reference.of(Customer.referenceTypeId(), newCustomerId));
+        .isEqualTo(ResourceIdentifier.ofId(newCustomerId));
   }
 
   @Test

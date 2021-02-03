@@ -4,12 +4,7 @@ import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.b
 import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.buildUpdateActionForReferences;
 
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.Referenceable;
-import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.models.ResourceImpl;
 import io.sphere.sdk.shoppinglists.ShoppingList;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.commands.updateactions.ChangeName;
@@ -20,7 +15,6 @@ import io.sphere.sdk.shoppinglists.commands.updateactions.SetDescription;
 import io.sphere.sdk.shoppinglists.commands.updateactions.SetSlug;
 import java.util.Optional;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public final class ShoppingListUpdateActionUtils {
 
@@ -112,26 +106,7 @@ public final class ShoppingListUpdateActionUtils {
     return buildUpdateActionForReferences(
         oldShoppingList.getCustomer(),
         newShoppingList.getCustomer(),
-        () -> SetCustomer.of(mapResourceIdentifierToReferenceable(newShoppingList.getCustomer())));
-  }
-
-  @Nullable
-  private static Referenceable<Customer> mapResourceIdentifierToReferenceable(
-      @Nullable final ResourceIdentifier<Customer> resourceIdentifier) {
-
-    if (resourceIdentifier == null) {
-      return null; // unset
-    }
-
-    // TODO (JVM-SDK), see: SUPPORT-10261 SetCustomerGroup could be created with a
-    // ResourceIdentifier
-    // https://github.com/commercetools/commercetools-jvm-sdk/issues/2072
-    return new ResourceImpl<Customer>(null, null, null, null) {
-      @Override
-      public Reference<Customer> toReference() {
-        return Reference.of(Customer.referenceTypeId(), resourceIdentifier.getId());
-      }
-    };
+        () -> SetCustomer.of(newShoppingList.getCustomer()));
   }
 
   /**

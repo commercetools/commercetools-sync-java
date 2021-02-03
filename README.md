@@ -68,7 +68,7 @@ commercetools sync is a Java library that imports commercetools platform data in
  
  - Make sure you have `JDK 8` installed.
  - [commercetools-jvm-sdk](https://github.com/commercetools/commercetools-jvm-sdk) as a dependency in your JVM-based 
-  application. (Make sure to use a version `>= 1.56.0`).
+  application. (Make sure to use a version `>= 1.57.0`).
  - a target commercetools project for syncing your source data to.
 
 

@@ -400,7 +400,7 @@ public class CustomerUpdateActionUtilsTest {
     assertThat(result).isPresent();
     assertThat(result).containsInstanceOf(SetCustomerGroup.class);
     assertThat(((SetCustomerGroup) result.get()).getCustomerGroup())
-        .isEqualTo(Reference.of(CustomerGroup.referenceTypeId(), resolvedCustomerGroupId));
+        .isEqualTo(ResourceIdentifier.ofId(resolvedCustomerGroupId));
   }
 
   @Test
@@ -417,7 +417,7 @@ public class CustomerUpdateActionUtilsTest {
     assertThat(result).isPresent();
     assertThat(result).containsInstanceOf(SetCustomerGroup.class);
     assertThat(((SetCustomerGroup) result.get()).getCustomerGroup())
-        .isEqualTo(Reference.of(CustomerGroup.referenceTypeId(), newCustomerGroupId));
+        .isEqualTo(ResourceIdentifier.ofId(newCustomerGroupId));
   }
 
   @Test
