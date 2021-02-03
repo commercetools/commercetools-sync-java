@@ -6,9 +6,9 @@ import static java.util.stream.Collectors.toList;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereRequest;
 import io.sphere.sdk.queries.PagedQueryResult;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -66,12 +66,9 @@ public class ChunkUtils {
       @Nonnull final Collection<T> elements, final int chunkSize) {
     final AtomicInteger index = new AtomicInteger(0);
 
-    return elements.stream()
-        .collect(Collectors.groupingBy(x -> index.getAndIncrement() / chunkSize))
-        .entrySet()
-        .stream()
-        .sorted(Map.Entry.comparingByKey())
-        .map(Map.Entry::getValue)
-        .collect(Collectors.toList());
+    return new ArrayList<>(
+        elements.stream()
+            .collect(Collectors.groupingBy(x -> index.getAndIncrement() / chunkSize))
+            .values());
   }
 }
