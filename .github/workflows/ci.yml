@@ -18,17 +18,8 @@ jobs:
       - name: Spotbugs
         run: ./gradlew spotbugsBenchmark spotbugsIntegrationTest spotbugsMain spotbugsTest
 
-  unit_tests:
-    name: Unit Tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Git Checkout
-        uses: actions/checkout@v2
-      - name: Unit Tests
-        run: ./gradlew test
-
-  integration_tests:
-    name: Integration Tests
+  tests:
+    name:  Unit Tests and integration Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -42,7 +33,7 @@ jobs:
         with:
           java-version: 1.8
       - name: Build with Gradle
-        run: ./gradlew clean setLibraryVersion integrationTest jacocoTestCoverageVerification jacocoTestReport
+        run: ./gradlew clean setLibraryVersion test integrationTest  jacocoTestCoverageVerification jacocoTestReport
         env:
           SOURCE_PROJECT_KEY: java-sync-source
           SOURCE_CLIENT_ID:  ${{ secrets.SOURCE_CLIENT_ID }}
