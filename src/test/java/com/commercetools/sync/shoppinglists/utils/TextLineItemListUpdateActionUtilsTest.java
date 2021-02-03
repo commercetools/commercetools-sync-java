@@ -24,9 +24,8 @@ import com.commercetools.sync.shoppinglists.helpers.TextLineItemReferenceResolve
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.shoppinglists.ShoppingList;
 import io.sphere.sdk.shoppinglists.ShoppingListDraft;
 import io.sphere.sdk.shoppinglists.ShoppingListDraftBuilder;
@@ -433,7 +432,7 @@ class TextLineItemListUpdateActionUtilsTest {
             ChangeName.of(LocalizedString.ofEnglish("newName")),
             SetDescription.of(LocalizedString.ofEnglish("newDescription")),
             SetAnonymousId.of("newAnonymousId"),
-            SetCustomer.of(Reference.of(Customer.referenceTypeId(), "customer_id_2")),
+            SetCustomer.of(ResourceIdentifier.ofId("customer_id_2")),
             SetDeleteDaysAfterLastModification.of(45),
             SetCustomField.ofJson("textField", JsonNodeFactory.instance.textNode("newTextValue")),
             ChangeTextLineItemName.of(

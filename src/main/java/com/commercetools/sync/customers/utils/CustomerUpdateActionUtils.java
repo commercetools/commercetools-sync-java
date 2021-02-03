@@ -43,10 +43,7 @@ import io.sphere.sdk.customers.commands.updateactions.SetTitle;
 import io.sphere.sdk.customers.commands.updateactions.SetVatId;
 import io.sphere.sdk.models.Address;
 import io.sphere.sdk.models.KeyReference;
-import io.sphere.sdk.models.Reference;
-import io.sphere.sdk.models.Referenceable;
 import io.sphere.sdk.models.ResourceIdentifier;
-import io.sphere.sdk.models.ResourceImpl;
 import io.sphere.sdk.stores.Store;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -347,28 +344,7 @@ public final class CustomerUpdateActionUtils {
     return buildUpdateActionForReferences(
         oldCustomer.getCustomerGroup(),
         newCustomer.getCustomerGroup(),
-        () ->
-            SetCustomerGroup.of(
-                mapResourceIdentifierToReferenceable(newCustomer.getCustomerGroup())));
-  }
-
-  @Nullable
-  private static Referenceable<CustomerGroup> mapResourceIdentifierToReferenceable(
-      @Nullable final ResourceIdentifier<CustomerGroup> resourceIdentifier) {
-
-    if (resourceIdentifier == null) {
-      return null; // unset
-    }
-
-    // TODO (JVM-SDK), see: SUPPORT-10261 SetCustomerGroup could be created with a
-    // ResourceIdentifier
-    // https://github.com/commercetools/commercetools-jvm-sdk/issues/2072
-    return new ResourceImpl<CustomerGroup>(null, null, null, null) {
-      @Override
-      public Reference<CustomerGroup> toReference() {
-        return Reference.of(CustomerGroup.referenceTypeId(), resourceIdentifier.getId());
-      }
-    };
+        () -> SetCustomerGroup.of(newCustomer.getCustomerGroup()));
   }
 
   /**

@@ -6,6 +6,7 @@ import static com.commercetools.sync.integration.commons.utils.SphereClientUtils
 import static com.commercetools.sync.integration.commons.utils.StateITUtils.deleteStates;
 import static com.commercetools.sync.integration.commons.utils.StateITUtils.deleteStatesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.StateITUtils.getStateByKey;
+import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_TRANSITION_CONTAINER_KEY;
 import static com.commercetools.sync.states.utils.StateReferenceResolutionUtils.mapToStateDrafts;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
@@ -23,8 +24,9 @@ import static org.mockito.Mockito.when;
 
 import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedTransitions;
+import com.commercetools.sync.services.UnresolvedReferencesService;
 import com.commercetools.sync.services.impl.StateServiceImpl;
-import com.commercetools.sync.services.impl.UnresolvedTransitionsServiceImpl;
+import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
 import com.commercetools.sync.states.StateSync;
 import com.commercetools.sync.states.StateSyncOptions;
 import com.commercetools.sync.states.StateSyncOptionsBuilder;
@@ -554,13 +556,19 @@ class StateSyncIT {
         stateSync.sync(stateDrafts).toCompletableFuture().join();
 
     assertThat(stateSyncStatistics).hasValues(1, 0, 0, 0, 1);
-    UnresolvedTransitionsServiceImpl unresolvedTransitionsService =
-        new UnresolvedTransitionsServiceImpl(stateSyncOptions);
+
+    final UnresolvedReferencesService<WaitingToBeResolvedTransitions> unresolvedTransitionsService =
+        new UnresolvedReferencesServiceImpl<>(stateSyncOptions);
+
     Set<WaitingToBeResolvedTransitions> result =
         unresolvedTransitionsService
-            .fetch(new HashSet<>(asList(keyA)))
+            .fetch(
+                Collections.singleton(keyA),
+                CUSTOM_OBJECT_TRANSITION_CONTAINER_KEY,
+                WaitingToBeResolvedTransitions.class)
             .toCompletableFuture()
             .join();
+
     Assertions.assertThat(result.size()).isEqualTo(1);
     WaitingToBeResolvedTransitions waitingToBeResolvedTransitions = result.iterator().next();
     Assertions.assertThat(
@@ -597,13 +605,18 @@ class StateSyncIT {
         .isEqualTo(
             "Summary: 3 state(s) were processed in total "
                 + "(3 created, 0 updated, 0 failed to sync and 0 state(s) with missing transition(s)).");
-    UnresolvedTransitionsServiceImpl unresolvedTransitionsService =
-        new UnresolvedTransitionsServiceImpl(stateSyncOptions);
+    final UnresolvedReferencesService<WaitingToBeResolvedTransitions> unresolvedTransitionsService =
+        new UnresolvedReferencesServiceImpl<>(stateSyncOptions);
+
     Set<WaitingToBeResolvedTransitions> result =
         unresolvedTransitionsService
-            .fetch(new HashSet<>(asList(keyA)))
+            .fetch(
+                Collections.singleton(keyA),
+                CUSTOM_OBJECT_TRANSITION_CONTAINER_KEY,
+                WaitingToBeResolvedTransitions.class)
             .toCompletableFuture()
             .join();
+
     Assertions.assertThat(result.size()).isEqualTo(0);
   }
 

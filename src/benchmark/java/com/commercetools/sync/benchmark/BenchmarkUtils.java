@@ -24,7 +24,7 @@ final class BenchmarkUtils {
   private static final Charset UTF8_CHARSET = StandardCharsets.UTF_8;
   private static final String EXECUTION_TIME = "executionTime";
   private static final String BRANCH_NAME =
-      ofNullable(System.getenv("TRAVIS_COMMIT"))
+      ofNullable(System.getenv("GITHUB_ACTION_COMMIT"))
           .map(commitMessage -> commitMessage.substring(0, 7)) // Use smaller commit sha
           .orElse("dev-local");
 

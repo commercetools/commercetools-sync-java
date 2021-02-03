@@ -10,10 +10,12 @@ import static com.commercetools.sync.integration.commons.utils.ITUtils.queryAndC
 import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtils.deleteProductTypes;
 import static com.commercetools.sync.integration.commons.utils.StateITUtils.deleteStates;
 import static com.commercetools.sync.integration.commons.utils.TaxCategoryITUtils.deleteTaxCategories;
+import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY;
 import static java.util.Collections.singletonList;
 import static java.util.Optional.ofNullable;
 import static java.util.stream.Collectors.toList;
 
+import com.commercetools.sync.commons.models.WaitingToBeResolvedProducts;
 import io.sphere.sdk.channels.Channel;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.client.SphereRequest;
@@ -56,7 +58,8 @@ public final class ProductITUtils {
     deleteStates(ctpClient);
     deleteTaxCategories(ctpClient);
     deleteCustomerGroups(ctpClient);
-    deleteWaitingToBeResolvedCustomObjects(ctpClient);
+    deleteWaitingToBeResolvedCustomObjects(
+        ctpClient, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingToBeResolvedProducts.class);
   }
 
   /**

@@ -10,6 +10,7 @@ import static com.commercetools.sync.integration.commons.utils.ProductTypeITUtil
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_TARGET_CLIENT;
 import static com.commercetools.sync.products.ProductSyncMockUtils.PRODUCT_TYPE_RESOURCE_PATH;
 import static com.commercetools.sync.products.ProductSyncMockUtils.createReferenceObject;
+import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static io.sphere.sdk.models.LocalizedString.ofEnglish;
 import static io.sphere.sdk.utils.SphereInternalUtils.asSet;
@@ -24,6 +25,7 @@ import static org.mockito.Mockito.when;
 
 import com.commercetools.sync.commons.exceptions.SyncException;
 import com.commercetools.sync.commons.models.WaitingToBeResolved;
+import com.commercetools.sync.commons.models.WaitingToBeResolvedProducts;
 import com.commercetools.sync.commons.utils.TriConsumer;
 import com.commercetools.sync.products.ProductSync;
 import com.commercetools.sync.products.ProductSyncOptions;
@@ -83,7 +85,8 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
   void setupTest() {
     clearSyncTestCollections();
     deleteAllProducts(CTP_TARGET_CLIENT);
-    deleteWaitingToBeResolvedCustomObjects(CTP_TARGET_CLIENT);
+    deleteWaitingToBeResolvedCustomObjects(
+        CTP_TARGET_CLIENT, CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY, WaitingToBeResolvedProducts.class);
     syncOptions = buildSyncOptions();
 
     final ProductDraft productDraft =
@@ -857,19 +860,22 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
     assertThat(warningCallBackMessages).isEmpty();
     assertThat(actions).isEmpty();
 
-    final UnresolvedReferencesService unresolvedReferencesService =
+    final UnresolvedReferencesService<WaitingToBeResolvedProducts> unresolvedReferencesService =
         new UnresolvedReferencesServiceImpl(syncOptions);
 
-    final Set<WaitingToBeResolved> waitingDrafts =
+    final Set<WaitingToBeResolvedProducts> waitingDrafts =
         unresolvedReferencesService
-            .fetch(asSet(childDraft1.getKey(), childDraft2.getKey()))
+            .fetch(
+                asSet(childDraft1.getKey(), childDraft2.getKey()),
+                CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                WaitingToBeResolvedProducts.class)
             .toCompletableFuture()
             .join();
 
     assertThat(waitingDrafts)
         .containsExactlyInAnyOrder(
-            new WaitingToBeResolved(childDraft1, singleton(parentProductKey)),
-            new WaitingToBeResolved(childDraft2, singleton(parentProductKey)));
+            new WaitingToBeResolvedProducts(childDraft1, singleton(parentProductKey)),
+            new WaitingToBeResolvedProducts(childDraft2, singleton(parentProductKey)));
   }
 
   @SuppressWarnings("unchecked")
@@ -943,13 +949,19 @@ class ProductSyncWithReferencedProductsInAnyOrderIT {
     assertThat(warningCallBackMessages).isEmpty();
     assertThat(actions).isEmpty();
 
-    final UnresolvedReferencesService unresolvedReferencesService =
+    final UnresolvedReferencesService<WaitingToBeResolvedProducts> unresolvedReferencesService =
         new UnresolvedReferencesServiceImpl(syncOptions);
 
-    final Set<WaitingToBeResolved> waitingDrafts =
-        unresolvedReferencesService.fetch(asSet(childDraft1.getKey())).toCompletableFuture().join();
+    final Set<WaitingToBeResolvedProducts> waitingDrafts =
+        unresolvedReferencesService
+            .fetch(
+                asSet(childDraft1.getKey()),
+                CUSTOM_OBJECT_PRODUCT_CONTAINER_KEY,
+                WaitingToBeResolvedProducts.class)
+            .toCompletableFuture()
+            .join();
 
     assertThat(waitingDrafts)
-        .containsExactly(new WaitingToBeResolved(childDraft1, singleton(parentProductKey)));
+        .containsExactly(new WaitingToBeResolvedProducts(childDraft1, singleton(parentProductKey)));
   }
 }

@@ -23,9 +23,8 @@ import com.commercetools.sync.shoppinglists.helpers.LineItemReferenceResolver;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import io.sphere.sdk.client.SphereClient;
 import io.sphere.sdk.commands.UpdateAction;
-import io.sphere.sdk.customers.Customer;
 import io.sphere.sdk.models.LocalizedString;
-import io.sphere.sdk.models.Reference;
+import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.ProductVariant;
 import io.sphere.sdk.shoppinglists.LineItem;
 import io.sphere.sdk.shoppinglists.LineItemDraft;
@@ -615,7 +614,7 @@ class LineItemListUpdateActionUtilsTest {
             ChangeName.of(LocalizedString.ofEnglish("newName")),
             SetDescription.of(LocalizedString.ofEnglish("newDescription")),
             SetAnonymousId.of("newAnonymousId"),
-            SetCustomer.of(Reference.of(Customer.referenceTypeId(), "customer_id_2")),
+            SetCustomer.of(ResourceIdentifier.ofId("customer_id_2")),
             SetDeleteDaysAfterLastModification.of(45),
             SetCustomField.ofJson("textField", JsonNodeFactory.instance.textNode("newTextValue")),
             ChangeLineItemQuantity.of("line_item_id_1", 2L),
