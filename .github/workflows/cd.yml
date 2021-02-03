@@ -18,7 +18,7 @@ jobs:
       TARGET_CLIENT_SECRET: ${{ secrets.TARGET_CLIENT_SECRET }}
       CI_BUILD_DIR: '/home/runner/work/commercetools-sync-java/commercetools-sync-java/'
       GRGIT_USER: ${{ secrets.GRGIT_USER }}
-      GITHUB_ACTION_COMMIT: $GITHUB_SHA
+      GITHUB_ACTION_COMMIT: ${{github.sha}}
     steps:
       - name: Git Checkout
         uses: actions/checkout@v2
@@ -57,7 +57,7 @@ jobs:
       - name: Publish GitHub Pages
         run: ./gradlew --info -Dbuild.version="${{ steps.vars.outputs.tag }}" mkdocsPublish
       - name: Upload Artifacts to Bintray
-        run: ./gradlew --info -Dbuild.version="${{ steps.vars.outputs.tag }}" bintrayUpload
+        run: ./gradlew --info  -Dbuild.version="${{ steps.vars.outputs.tag }}" bintrayUpload
       - name: Slack notification
         if: success() # only when previous step succeeds
         env:
