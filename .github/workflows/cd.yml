@@ -40,7 +40,6 @@ jobs:
   deployment:
     name: deployment
     needs: benchmark_tests
-    if: ${{ success() }}
     runs-on: ubuntu-latest
     env:
       BINTRAY_USER: commercetools
