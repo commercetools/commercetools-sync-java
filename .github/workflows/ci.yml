@@ -38,7 +38,7 @@ jobs:
           same-branch-only: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_ACTION_COMMIT: ${{ GITHUB_SHA }}
+          GITHUB_ACTION_COMMIT: ${GITHUB_SHA}
       - uses: actions/setup-java@v1
         with:
           java-version: 1.8
