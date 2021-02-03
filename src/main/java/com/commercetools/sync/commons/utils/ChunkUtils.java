@@ -58,11 +58,12 @@ public class ChunkUtils {
   }
 
   /**
-   * Flat map the list of lists of {@link GraphQlBaseResult} to the set of {@link T}.
+   * Flat map the list of lists of {@link GraphQlBaseResult} to the set of {@link U}.
    *
    * @param graphQlBaseResults query responses which contains a subset of the matching values.
-   * @param <T> the type of the underlying model.
-   * @return a set of {@link T}
+   * @param <U> the type of the resource model.
+   * @param <T> the type of the generic result type.
+   * @return a set of {@link U}
    */
   public static <T extends GraphQlBaseResult<U>, U extends GraphQlBaseResource>
       Set<U> flattenGraphQLBaseResults(@Nonnull final List<T> graphQlBaseResults) {
