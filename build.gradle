@@ -1,5 +1,4 @@
 plugins {
-    id 'com.jfrog.bintray' version '1.8.5'
     id 'org.ajoberstar.git-publish' version '3.0.0'
     id 'com.adarshr.test-logger' version '2.1.1'
     id 'org.ajoberstar.grgit' version '4.1.0'
@@ -33,7 +32,6 @@ apply from: "$rootDir/gradle-scripts/pmd.gradle"
 apply from: "$rootDir/gradle-scripts/jacoco.gradle"
 apply from: "$rootDir/gradle-scripts/spotbugs.gradle"
 apply from: "$rootDir/gradle-scripts/maven-publish.gradle"
-apply from: "$rootDir/gradle-scripts/bintray-publish.gradle"
 apply from: "$rootDir/gradle-scripts/oss-publish.gradle"
 apply from: "$rootDir/gradle-scripts/javadocs-publish.gradle"
 apply from: "$rootDir/gradle-scripts/set-library-version.gradle"

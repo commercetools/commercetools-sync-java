@@ -13,7 +13,7 @@
 
 # Release workflow
 
-The main goal of the build process is to publish the artifacts to public repositories [JCenter](https://bintray.com/commercetools/maven/commercetools-sync-java) and [Maven Central](https://mvnrepository.com/artifact/com.commercetools/commercetools-sync-java).
+The main goal of the build process is to publish the artifacts to public repository [Maven Central](https://mvnrepository.com/artifact/com.commercetools/commercetools-sync-java).
      
 ## Step 1: Release
 
