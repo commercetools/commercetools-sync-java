@@ -45,6 +45,6 @@ After the release build status is **success** ensure that the new version is pub
 
 ### Checklist 
 
-- [Publish](#step-2-publish) and [Sync](#step-3-sync) completed without an issue.
-- The new version is available in the bintray: [https://dl.bintray.com/commercetools/maven/com/commercetools/commercetools-sync-java/](https://dl.bintray.com/commercetools/maven/com/commercetools/commercetools-sync-java/)
+- [Publish] completed without an issue.
+- The new version is available in the maven: [https://repo1.maven.org/maven2/com/commercetools/commercetools-sync-java/](https://repo1.maven.org/maven2/com/commercetools/commercetools-sync-java/)
 - The new version is available in the maven: [https://repo1.maven.org/maven2/com/commercetools/commercetools-sync-java/](https://repo1.maven.org/maven2/com/commercetools/commercetools-sync-java/)
