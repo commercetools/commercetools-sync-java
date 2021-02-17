@@ -543,22 +543,15 @@
     <ul class="md-nav__list" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#step-1-release" class="md-nav__link">
-    Step 1: Release
+  <a href="#step-1-pull-request" class="md-nav__link">
+    Step 1: Pull request
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#step-2-publish" class="md-nav__link">
-    Step 2: Publish
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#step-3-sync" class="md-nav__link">
-    Step 3: Sync
+  <a href="#step-2-release-library-in-github" class="md-nav__link">
+    Step 2: Release library in Github
   </a>
   
 </li>
@@ -607,9 +600,8 @@
 <p><strong>Table of Contents</strong> </p>
 <ul>
 <li><a href="#release-workflow">Release workflow</a></li>
-<li><a href="#step-1-release">Step 1: Release</a></li>
-<li><a href="#step-2-publish">Step 2: Publish</a></li>
-<li><a href="#step-3-sync">Step 3: Sync</a></li>
+<li><a href="#step-1-pull-request">Step 1: Pull request</a></li>
+<li><a href="#step-2-release-library-in-github">Step 2: Release library in Github</a></li>
 <li><a href="#final-step">Final Step</a><ul>
 <li><a href="#checklist">Checklist</a></li>
 </ul>
@@ -619,7 +611,7 @@
 
 <h1 id="release-workflow">Release workflow<a class="headerlink" href="#release-workflow" title="Permanent link">&para;</a></h1>
 <p>The main goal of the build process is to publish the artifacts to public repository <a href="https://mvnrepository.com/artifact/com.commercetools/commercetools-sync-java">Maven Central</a>.</p>
-<h2 id="step-1-release">Step 1: Release<a class="headerlink" href="#step-1-release" title="Permanent link">&para;</a></h2>
+<h2 id="step-1-pull-request">Step 1: Pull request<a class="headerlink" href="#step-1-pull-request" title="Permanent link">&para;</a></h2>
 <p>Create a new PR for the new release: 
 - Increment the release version to the new library version, please follow the <a href="https://semver.org/">semantic versioning</a> for finding the new version.
 - Make sure all the dependencies are up-to-date everywhere in the documentation files and the project files where needed.
@@ -627,6 +619,7 @@
 - Ask for review for this PR and then "squash and merge" to master.</p>
 <p>For example PR, see: <a href="https://github.com/commercetools/commercetools-sync-java/pull/412">https://github.com/commercetools/commercetools-sync-java/pull/412</a></p>
 <hr />
+<h2 id="step-2-release-library-in-github">Step 2: Release library in Github<a class="headerlink" href="#step-2-release-library-in-github" title="Permanent link">&para;</a></h2>
 <p>To release the library, you need to <a href="https://github.com/commercetools/commercetools-sync-java/releases/new">"create a new release"</a> with Github, 
 describe the new release as below and publish it. </p>
 <p>For example, define the link to the release notes pointing to a released version:
@@ -637,27 +630,12 @@ describe the new release as below and publish it. </p>
 <blockquote>
 <p>Additionally define important changes, breaking changes or important new features into the description.</p>
 </blockquote>
-<p>After the release build status is <strong>success</strong> follow the next steps below. Check <a href="https://github.com/commercetools/commercetools-sync-java/actions?query=workflow%3ADEPLOY">here</a>
- for github action build status.</p>
-<h2 id="step-2-publish">Step 2: Publish<a class="headerlink" href="#step-2-publish" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Go to <a href="https://bintray.com/commercetools/maven/commercetools-sync-java">https://bintray.com/commercetools/maven/commercetools-sync-java</a></li>
-<li>Click the <em>Publish</em> button as shown below:</li>
-</ul>
-<p><img width="600" alt="Screenshot-1" src="https://user-images.githubusercontent.com/3469524/86367568-671ad600-bc7c-11ea-84e9-786f9f850d96.png"></p>
-<h2 id="step-3-sync">Step 3: Sync<a class="headerlink" href="#step-3-sync" title="Permanent link">&para;</a></h2>
-<ul>
-<li>Click to the Maven Central tab.</li>
-<li>Enter the commercetools Sonatype Maven Central API Key and password (into User token key and User token password fields)</li>
-<li>Click the <em>Sync</em> button and check the <code>Sync Status</code>. </li>
-</ul>
-<p><img width="600" alt="Screenshot-2" src="https://user-images.githubusercontent.com/3469524/86331559-906e3e80-bc49-11ea-9390-e813bc12c163.png"></p>
+<p>The creation of a github release triggers a <a href="https://github.com/commercetools/commercetools-sync-java/actions?query=workflow%3ACD">github action</a>, which will deploy the library to <a href="https://mvnrepository.com/artifact/com.commercetools/commercetools-sync-java">Maven Central</a>.</p>
 <h2 id="final-step">Final Step<a class="headerlink" href="#final-step" title="Permanent link">&para;</a></h2>
-<p>Ensure the new version is publicly available at <a href="https://bintray.com/commercetools/maven/commercetools-sync-java">JCenter</a> and <a href="https://mvnrepository.com/artifact/com.commercetools/commercetools-sync-java">Maven Central</a>. </p>
+<p>After the release build status is <strong>success</strong> ensure that the new version is publicly available at <a href="https://mvnrepository.com/artifact/com.commercetools/commercetools-sync-java">Maven Central</a>. </p>
 <h3 id="checklist">Checklist<a class="headerlink" href="#checklist" title="Permanent link">&para;</a></h3>
 <ul>
-<li><a href="#step-2-publish">Publish</a> and <a href="#step-3-sync">Sync</a> completed without an issue.</li>
-<li>The new version is available in the bintray: <a href="https://dl.bintray.com/commercetools/maven/com/commercetools/commercetools-sync-java/">https://dl.bintray.com/commercetools/maven/com/commercetools/commercetools-sync-java/</a></li>
+<li>[Publish] completed without an issue.</li>
 <li>The new version is available in the maven: <a href="https://repo1.maven.org/maven2/com/commercetools/commercetools-sync-java/">https://repo1.maven.org/maven2/com/commercetools/commercetools-sync-java/</a></li>
 </ul>
                 
