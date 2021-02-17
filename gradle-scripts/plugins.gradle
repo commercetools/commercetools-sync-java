@@ -8,7 +8,6 @@ apply plugin: 'jacoco'
  *
  * The 'java-library' plugin is an important plugin needed to avoid "all dependencies are runtime scope".
  * See:
- * https://github.com/bintray/gradle-bintray-plugin#maven-publications and
  * https://github.com/gradle/gradle/issues/1118
  *
  * */
