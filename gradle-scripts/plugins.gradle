@@ -2,14 +2,5 @@ apply plugin: 'java'
 apply plugin: 'maven'
 apply plugin: 'pmd'
 apply plugin: 'jacoco'
-
-/**
- * Plugins needed for publishing the library to Maven Central.
- *
- * The 'java-library' plugin is an important plugin needed to avoid "all dependencies are runtime scope".
- * See:
- * https://github.com/gradle/gradle/issues/1118
- *
- * */
 apply plugin: 'maven-publish'
 apply plugin: 'java-library'
