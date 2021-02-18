@@ -239,13 +239,13 @@ public final class PriceReferenceResolver
         customerGroupKey = getKeyFromResourceIdentifier(customerGroupResourceIdentifier);
       } catch (ReferenceResolutionException referenceResolutionException) {
         return exceptionallyCompletedFuture(
-                new ReferenceResolutionException(
-                        format(
-                                FAILED_TO_RESOLVE_REFERENCE,
-                                CustomerGroup.referenceTypeId(),
-                                draftBuilder.getCountry(),
-                                draftBuilder.getValue(),
-                                referenceResolutionException.getMessage())));
+            new ReferenceResolutionException(
+                format(
+                    FAILED_TO_RESOLVE_REFERENCE,
+                    CustomerGroup.referenceTypeId(),
+                    draftBuilder.getCountry(),
+                    draftBuilder.getValue(),
+                    referenceResolutionException.getMessage())));
       }
       return fetchAndResolveCustomerGroupReference(draftBuilder, customerGroupKey);
     }
