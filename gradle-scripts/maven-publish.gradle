@@ -24,8 +24,8 @@ def pomConfig = {
 }
 
 signing {
-    def signingKey = findProperty("PGP_KEY")
-    def signingPassword = findProperty("PGP_PASSWORD")
+    def signingKey = System.getenv("PGP_KEY")
+    def signingPassword = System.getenv("PGP_PASSWORD")
     useInMemoryPgpKeys(signingKey, signingPassword)
     sign configurations.archives
 }
