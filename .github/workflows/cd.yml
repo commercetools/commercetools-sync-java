@@ -63,6 +63,8 @@ jobs:
           GITHUB_TAG: ${{ steps.vars.outputs.tag }}
           MAVEN_USERNAME: ${{ secrets.MAVEN_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.MAVEN_PASSWORD }}
+          PGP_KEY: ${{ secrets.PGP_KEY }}
+          PGP_PASSWORD: ${{ secrets.PGP_PASSWORD }}
       - name: Slack notification
         if: success() # only when previous step succeeds
         env:

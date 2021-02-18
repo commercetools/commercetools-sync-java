@@ -1,5 +1,6 @@
 // maven-specific publishing settings
 def pomConfig = {
+    resolveStrategy = Closure.DELEGATE_FIRST
     licenses {
         license {
             name "The Apache Software License, Version 2.0"
@@ -21,6 +22,14 @@ def pomConfig = {
         }
     }
 }
+
+signing {
+    def signingKey = findProperty("PGP_KEY")
+    def signingPassword = findProperty("PGP_PASSWORD")
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign configurations.archives
+}
+
 publishing {
     publications {
         Production(MavenPublication) {
@@ -38,8 +47,31 @@ publishing {
                 root.appendNode('url', scmHttpsUrl)
                 root.children().last() + pomConfig
             }
+            // create the sign pom artifact
+            pom.withXml {
+                def pomFile = file("${project.buildDir}/generated-pom.xml")
+                writeTo(pomFile)
+                def pomAscFile = signing.sign(pomFile).signatureFiles[0]
+                artifact(pomAscFile) {
+                    classifier = null
+                    extension = 'pom.asc'
+                }
+            }
+            // create the signed artifacts
+            project.tasks.signArchives.signatureFiles.each {
+                artifact(it) {
+                    def matcher = it.file =~ /-(sources|javadoc)\.jar\.asc$/
+                    if (matcher.find()) {
+                        classifier = matcher.group(1)
+                    } else {
+                        classifier = null
+                    }
+                    extension = 'jar.asc'
+                }
+            }
+            }
         }
-    }
+
     repositories {
         maven {
             name = "OSSRH"
@@ -53,3 +85,16 @@ publishing {
         }
     }
 }
+
+model {
+    tasks.generatePomFileForMavenJavaPublication {
+        destination = file("$buildDir/generated-pom.xml")
+    }
+    tasks.publishMavenJavaPublicationToMavenLocal {
+        dependsOn project.tasks.signArchives
+    }
+    tasks.publishMavenJavaPublicationToMavenRepository {
+        dependsOn project.tasks.signArchives
+    }
+}
+
