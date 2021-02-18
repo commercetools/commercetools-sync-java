@@ -74,5 +74,4 @@ jobs:
         uses: Ilshidur/action-slack@master
         with:
           args: 'Version: <https://github.com/commercetools/commercetools-sync-java/releases/tag/${{ steps.vars
-          .outputs.tag }}|${{ steps.vars.outputs.tag }}> of the library is published to <https://repo1.maven.org/maven2/com/commercetools/commercetools-sync-java/|Maven Central>, check <https://github
-          .com/commercetools/commercetools-sync-java/blob/master/docs/BUILD.md#step-2-publish|here> for the next steps.'
+          .outputs.tag }}|${{ steps.vars.outputs.tag }}> of the library is published to the  <https://oss.sonatype.org/|nexus repository manager>, check <https://github.com/commercetools/commercetools-sync-java/blob/master/docs/BUILD.md#step-3-publish-to-maven-central|here> for the next steps.'
