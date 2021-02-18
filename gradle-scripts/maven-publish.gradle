@@ -46,12 +46,10 @@ publishing {
                 root.appendNode('name', project.name)
                 root.appendNode('url', scmHttpsUrl)
                 root.children().last() + pomConfig
-            }
             // create the sign pom artifact
-            pom.withXml {
                 def pomFile = file("${project.buildDir}/generated-pom.xml")
                 writeTo(pomFile)
-                def pomAscFile = signing.sign(pomFile).signatureFiles[0]
+                def pomAscFile = signing.sign(pomFile)
                 artifact(pomAscFile) {
                     classifier = null
                     extension = 'pom.asc'
