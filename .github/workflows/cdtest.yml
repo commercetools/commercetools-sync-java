@@ -6,7 +6,6 @@ jobs:
 
   deployment:
     name: deployment
-    needs: benchmark_tests
     runs-on: ubuntu-latest
     env:
       GRGIT_USER: ${{ secrets.GRGIT_USER }}
