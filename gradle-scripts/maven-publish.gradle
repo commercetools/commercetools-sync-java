@@ -1,24 +1,15 @@
 group = rootProject.group
 version = rootProject.version
 
-java {
-    withJavadocJar()
-    withSourcesJar()
-}
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
             artifactId = project.name
             from components.java
-            versionMapping {
-                usage('java-api') {
-                    fromResolutionOf('runtimeClasspath')
-                }
-                usage('java-runtime') {
-                    fromResolutionResult()
-                }
-            }
+            artifact sourcesJar
+            artifact javadocJar
+
             pom {
                 name = project.name
                 description = project.description
