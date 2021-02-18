@@ -216,17 +216,17 @@ public final class PriceReferenceResolver
   }
 
   /**
-   * Given a {@link PriceDraftBuilder} this method attempts to resolve the customer group reference
+   * Given a {@link PriceDraftBuilder} this method attempts to resolve the customer group resource identifier
    * to return a {@link CompletionStage} which contains the same instance of draft builder with the
-   * resolved customer group reference.
+   * resolved customer group resource identifier.
    *
-   * <p>Note: The key of the customer group reference taken from the value of the id field of the
-   * reference.
+   * <p>Note: The key of the customer group reference taken from the value of the key field of the
+   * resource identifier.
    *
    * @param draftBuilder the priceDraftBuilder to resolve its customer group reference.
    * @return a {@link CompletionStage} that contains as a result a new price draft builder instance
-   *     with resolved customer group reference or no customer group reference if the customer group
-   *     doesn't exist or in case an error occurs during reference resolution a {@link
+   *     with resolved customer group resource identifier or no customer group resource identifier if
+   *     the customer group doesn't exist or in case an error occurs during reference resolution a {@link
    *     ReferenceResolutionException}.
    */
   @Nonnull

@@ -70,7 +70,7 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 | `taxCategory` | ResourceIdentifier to a TaxCategory | 
 | `state` | ResourceIdentifier for a State | Optional |
 | `variants.prices.channel` | ResourceIdentifier to a Channel | 
-| `variants.prices.customerGroup` | Reference to a CustomerGroup | 
+| `variants.prices.customerGroup` | ResourceIdentifier to a CustomerGroup | 
 | `variants.prices.custom.type` | ResourceIdentifier to a Type | 
 | `variants.assets.custom.type` | ResourceIdentifier to a Type | 
 | `variants.attributes` * | Only the attributes with type [ReferenceType](https://docs.commercetools.com/api/projects/productTypes#referencetype), [SetType](https://docs.commercetools.com/api/projects/productTypes#settype) with `elementType` as [ReferenceType](https://docs.commercetools.com/api/projects/productTypes#referencetype) and [NestedType](https://docs.commercetools.com/api/projects/productTypes#nestedtype) requires `key` on the `id` field of the `ReferenceType`. | 
@@ -117,17 +117,8 @@ final ProductDraft productDraft =
         .build();
 ````
 
--  Some references in the product like `customerGroup` of a price and variant attributes with type `ReferenceType` do not support the `ResourceIdentifier` yet, 
+-  Some references in the product like variant attributes with type `ReferenceType` do not support the `ResourceIdentifier` yet, 
 for those references you have to provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the reference should return its `key`. 
-
-````java
-final PriceDraft priceDraft = PriceDraftBuilder
-    .of(MoneyImpl.of("20", "EUR"))
-    .channel(ResourceIdentifier.ofKey("channel-key"))
-    .customerGroup(CustomerGroup.referenceOfId("customer-group-key")) // note that customer group key provided in the id field 
-    .custom(CustomFieldsDraft.ofTypeKeyAndJson("type-key", emptyMap()))
-    .build();
-````
 
 ````java
 final ObjectNode productReference = JsonNodeFactory.instance.objectNode();
