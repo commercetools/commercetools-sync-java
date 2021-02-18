@@ -232,22 +232,21 @@ public final class PriceReferenceResolver
   @Nonnull
   CompletionStage<PriceDraftBuilder> resolveCustomerGroupReference(
       @Nonnull final PriceDraftBuilder draftBuilder) {
-    final Reference<CustomerGroup> customerGroupReference = draftBuilder.getCustomerGroup();
-    if (customerGroupReference != null) {
-      String customerGroupKey;
+    final ResourceIdentifier<CustomerGroup> customerGroupResourceIdentifier = draftBuilder.getCustomerGroup();
+    if (customerGroupResourceIdentifier != null && customerGroupResourceIdentifier.getId() == null) {
+      String customerGroupKey = "";
       try {
-        customerGroupKey = getIdFromReference(customerGroupReference);
+        customerGroupKey = getKeyFromResourceIdentifier(customerGroupResourceIdentifier);
       } catch (ReferenceResolutionException referenceResolutionException) {
         return exceptionallyCompletedFuture(
-            new ReferenceResolutionException(
-                format(
-                    FAILED_TO_RESOLVE_REFERENCE,
-                    CustomerGroup.referenceTypeId(),
-                    draftBuilder.getCountry(),
-                    draftBuilder.getValue(),
-                    referenceResolutionException.getMessage())));
+                new ReferenceResolutionException(
+                        format(
+                                FAILED_TO_RESOLVE_REFERENCE,
+                                CustomerGroup.referenceTypeId(),
+                                draftBuilder.getCountry(),
+                                draftBuilder.getValue(),
+                                referenceResolutionException.getMessage())));
       }
-
       return fetchAndResolveCustomerGroupReference(draftBuilder, customerGroupKey);
     }
     return completedFuture(draftBuilder);
@@ -266,7 +265,7 @@ public final class PriceReferenceResolver
                         resolvedCustomerGroupId ->
                             completedFuture(
                                 draftBuilder.customerGroup(
-                                    CustomerGroup.referenceOfId(resolvedCustomerGroupId))))
+                                    CustomerGroup.referenceOfId(resolvedCustomerGroupId).toResourceIdentifier())))
                     .orElseGet(
                         () -> {
                           final String errorMessage =
