@@ -1,74 +1,51 @@
-// maven-specific publishing settings
-def pomConfig = {
-    resolveStrategy = Closure.DELEGATE_FIRST
-    licenses {
-        license {
-            name "The Apache Software License, Version 2.0"
-            url "http://www.apache.org/licenses/LICENSE-2.0.txt"
-            distribution "repo"
-        }
-    }
-    scm {
-        connection "scm:git:$scmHttpsUrl"
-        developerConnection "scm:git:$scmSshUrl"
-        url "$scmProjectUrl"
-    }
-    developers {
-        developer {
-            id 'commercetools'
-            name 'commercetools Professional Services'
-            url 'https://github.com/commercetools'
-            email 'ps-dev@commercetools.com'
-        }
-    }
-}
+group = rootProject.group
+version = rootProject.version
 
-signing {
-    def signingKey = System.getenv("PGP_KEY")
-    def signingPassword = System.getenv("PGP_PASSWORD")
-    useInMemoryPgpKeys(signingKey, signingPassword)
-    sign configurations.archives
+java {
+    withJavadocJar()
+    withSourcesJar()
 }
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
+            artifactId = project.name
             from components.java
-            artifact sourcesJar
-            artifact javadocJar
-            groupId rootProject.group
-            artifactId project.name
-            version rootProject.version
-
-            pom.withXml {
-                def root = asNode()
-                root.appendNode('description', project.description)
-                root.appendNode('name', project.name)
-                root.appendNode('url', scmHttpsUrl)
-                root.children().last() + pomConfig
-            // create the sign pom artifact
-                def pomFile = file("${project.buildDir}/generated-pom.xml")
-                writeTo(pomFile)
-                def pomAscFile = signing.sign(pomFile)
-                artifact(pomAscFile) {
-                    classifier = null
-                    extension = 'pom.asc'
+            versionMapping {
+                usage('java-api') {
+                    fromResolutionOf('runtimeClasspath')
+                }
+                usage('java-runtime') {
+                    fromResolutionResult()
                 }
             }
-            // create the signed artifacts
-            project.tasks.signArchives.signatureFiles.each {
-                artifact(it) {
-                    def matcher = it.file =~ /-(sources|javadoc)\.jar\.asc$/
-                    if (matcher.find()) {
-                        classifier = matcher.group(1)
-                    } else {
-                        classifier = null
+            pom {
+                name = project.name
+                description = project.description
+                url = scmHttpsUrl
+                licenses {
+                    license {
+                        name "The Apache Software License, Version 2.0"
+                        url "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                        distribution "repo"
                     }
-                    extension = 'jar.asc'
                 }
-            }
+                developers {
+                    developer {
+                        id 'commercetools'
+                        name 'commercetools Professional Services'
+                        url 'https://github.com/commercetools'
+                        email 'ps-dev@commercetools.com'
+                    }
+                }
+                scm {
+                    connection "scm:git:$scmHttpsUrl"
+                    developerConnection "scm:git:$scmSshUrl"
+                    url "$scmProjectUrl"
+                }
             }
         }
+    }
     repositories {
         maven {
             name = "maven"
@@ -83,15 +60,16 @@ publishing {
     }
 }
 
-model {
-    tasks.generatePomFileForMavenJavaPublication {
-        destination = file("$buildDir/generated-pom.xml")
-    }
-    tasks.publishMavenJavaPublicationToMavenLocal {
-        dependsOn project.tasks.signArchives
-    }
-    tasks.publishMavenJavaPublicationToMavenRepository {
-        dependsOn project.tasks.signArchives
-    }
+signing {
+    def signingKey = System.getenv("PGP_KEY")
+    def signingPassword = System.getenv("PGP_PASSWORD")
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign publishing.publications.mavenJava
 }
 
+
+javadoc {
+    if(JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
+}
