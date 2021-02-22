@@ -37,7 +37,8 @@ public final class ShoppingListReferenceResolutionUtils {
    * the mapping from {@link ShoppingList} to {@link ShoppingListDraft} with considering reference
    * resolution.
    *
-   * <table summary="Mapping of Reference fields for the reference resolution">
+   * <table>
+   *   <caption>Mapping of Reference fields for the reference resolution</caption>
    *   <thead>
    *     <tr>
    *       <th>Reference field</th>
@@ -92,7 +93,8 @@ public final class ShoppingListReferenceResolutionUtils {
    * Returns a @link ShoppingListDraft} consisting of the result of applying the mapping from {@link
    * ShoppingList} to {@link ShoppingListDraft} with considering reference resolution.
    *
-   * <table summary="Mapping of Reference fields for the reference resolution">
+   * <table>
+   *   <caption>Mapping of Reference fields for the reference resolution</caption>
    *   <thead>
    *     <tr>
    *       <th>Reference field</th>
