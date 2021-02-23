@@ -6,8 +6,6 @@ import static io.sphere.sdk.models.ResourceIdentifier.ofKey;
 import static io.sphere.sdk.utils.CompletableFutureUtils.listOfFuturesToFutureOfList;
 import static java.lang.String.format;
 
-import com.commercetools.sync.categories.CategorySync;
-import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
 import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
@@ -34,7 +32,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
@@ -269,33 +266,6 @@ public final class CategoryITUtils {
     final List<Reference<Category>> categoryAncestors = category.getAncestors();
     return categoryAncestors.stream()
         .anyMatch(ancestor -> keysOfDeletedAncestors.contains(ancestor.getObj().getKey()));
-  }
-
-  /**
-   * Given a list of {@link CategoryDraft} batches represented by a {@link List}&lt;{@link
-   * List}&lt;{@link CategoryDraft}&gt;&gt; and an instance of {@link CategorySync}, this method
-   * recursively calls sync by the instance of {@link CategorySync} on each batch, then removes it,
-   * until there are no more batches, in other words, all batches have been synced.
-   *
-   * @param categorySync the categorySync instance to sync with each batch of {@link CategoryDraft}
-   * @param batches the batches of {@link CategoryDraft} to sync.
-   * @param result in the first call of this recursive method, this result is normally a completed
-   *     future, it used from within the method to recursively sync each batch once the previous
-   *     batch has finished syncing.
-   * @return an instance of {@link CompletionStage} which contains as a result an instance of {@link
-   *     CategorySyncStatistics} representing the {@code statistics} of the sync process executed on
-   *     the given list of batches.
-   */
-  public static CompletionStage<CategorySyncStatistics> syncBatches(
-      @Nonnull final CategorySync categorySync,
-      @Nonnull final List<List<CategoryDraft>> batches,
-      @Nonnull final CompletionStage<CategorySyncStatistics> result) {
-    if (batches.isEmpty()) {
-      return result;
-    }
-    final List<CategoryDraft> firstBatch = batches.remove(0);
-    return syncBatches(
-        categorySync, batches, result.thenCompose(subResult -> categorySync.sync(firstBatch)));
   }
 
   /**
