@@ -502,13 +502,17 @@ class ProductSyncWithPricesIT {
         getPriceDraftWithKeys(BigDecimal.valueOf(333), USD, DE, "cust1", null, null, null, null);
 
     final PriceDraft price1WithCustomerGroupReferenceWithCust1Id =
-            PriceDraftBuilder
-              .of(getPriceDraft(BigDecimal.valueOf(222), EUR, DE, cust1.getId(), null, null, null, null))
-              .customerGroup(cust1).build();
+        PriceDraftBuilder.of(
+                getPriceDraft(
+                    BigDecimal.valueOf(222), EUR, DE, cust1.getId(), null, null, null, null))
+            .customerGroup(cust1)
+            .build();
     final PriceDraft price2WithCustomerGroupReferenceWithCust1Id =
-            PriceDraftBuilder
-              .of(getPriceDraft(BigDecimal.valueOf(333), USD, DE, cust1.getId(), null, null, null, null))
-              .customerGroup(cust1).build();
+        PriceDraftBuilder.of(
+                getPriceDraft(
+                    BigDecimal.valueOf(333), USD, DE, cust1.getId(), null, null, null, null))
+            .customerGroup(cust1)
+            .build();
 
     final List<PriceDraft> newPrices =
         asList(
@@ -556,8 +560,10 @@ class ProductSyncWithPricesIT {
         .filteredOn(action -> action instanceof AddPrice)
         .hasSize(2)
         .containsExactlyInAnyOrder(
-            AddPrice.ofVariantId(masterVariantId, price1WithCustomerGroupReferenceWithCust1Id, true),
-            AddPrice.ofVariantId(masterVariantId, price2WithCustomerGroupReferenceWithCust1Id, true));
+            AddPrice.ofVariantId(
+                masterVariantId, price1WithCustomerGroupReferenceWithCust1Id, true),
+            AddPrice.ofVariantId(
+                masterVariantId, price2WithCustomerGroupReferenceWithCust1Id, true));
 
     final ProductProjection productProjection =
         CTP_TARGET_CLIENT

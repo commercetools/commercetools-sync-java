@@ -169,7 +169,8 @@ public final class PriceDraftFixtures {
       getPriceDraft(BigDecimal.valueOf(666), USD, US, "cust2", byMonth(1), byMonth(2), null, null);
 
   public static final PriceDraft DRAFT_US_666_USD_CUST2_01_02_KEY =
-          getPriceDraftWithKeys(BigDecimal.valueOf(666), USD, US, "cust2", byMonth(1), byMonth(2), null, null);
+      getPriceDraftWithKeys(
+          BigDecimal.valueOf(666), USD, US, "cust2", byMonth(1), byMonth(2), null, null);
 
   public static final PriceDraft DRAFT_FR_888_EUR_01_03 =
       getPriceDraft(BigDecimal.valueOf(888), EUR, FR, null, byMonth(1), byMonth(3), null, null);
@@ -296,7 +297,8 @@ public final class PriceDraftFixtures {
       @Nullable final CustomFieldsDraft customFieldsDraft) {
     return PriceDraftBuilder.of(Price.of(value, currencyUnits))
         .country(countryCode)
-        .customerGroup(ofNullable(customerGroupId).map(ResourceIdentifier::<CustomerGroup>ofId).orElse(null))
+        .customerGroup(
+            ofNullable(customerGroupId).map(ResourceIdentifier::<CustomerGroup>ofId).orElse(null))
         .validFrom(validFrom)
         .validUntil(validUntil)
         .channel(ofNullable(channelId).map(ResourceIdentifier::<Channel>ofId).orElse(null))
@@ -316,7 +318,8 @@ public final class PriceDraftFixtures {
       @Nullable final CustomFieldsDraft customFieldsDraft) {
     return PriceDraftBuilder.of(Price.of(value, currencyUnits))
         .country(countryCode)
-        .customerGroup(ofNullable(customerGroupKey).map(ResourceIdentifier::<CustomerGroup>ofKey).orElse(null))
+        .customerGroup(
+            ofNullable(customerGroupKey).map(ResourceIdentifier::<CustomerGroup>ofKey).orElse(null))
         .validFrom(validFrom)
         .validUntil(validUntil)
         .channel(ofNullable(channelKey).map(ResourceIdentifier::<Channel>ofKey).orElse(null))

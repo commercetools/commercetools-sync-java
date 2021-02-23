@@ -51,7 +51,8 @@ class PriceCustomerGroupReferenceResolverTest {
 
   @Test
   void resolveCustomerGroupReference_WithKeys_ShouldResolveReference() {
-    final ResourceIdentifier<CustomerGroup> customerGroupResourceIdentifier = ResourceIdentifier.ofKey("anyKey");
+    final ResourceIdentifier<CustomerGroup> customerGroupResourceIdentifier =
+        ResourceIdentifier.ofKey("anyKey");
     final PriceDraftBuilder priceBuilder =
         PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .customerGroup(customerGroupResourceIdentifier);
@@ -76,7 +77,7 @@ class PriceCustomerGroupReferenceResolverTest {
   @Test
   void resolveCustomerGroupReference_WithNonExistentCustomerGroup_ShouldNotResolveReference() {
     final ResourceIdentifier<CustomerGroup> customerGroupResourceIdentifier =
-            ResourceIdentifier.ofKey("nonExistentKey");
+        ResourceIdentifier.ofKey("nonExistentKey");
     final PriceDraftBuilder priceBuilder =
         PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .customerGroup(customerGroupResourceIdentifier);
@@ -100,7 +101,7 @@ class PriceCustomerGroupReferenceResolverTest {
   void
       resolveCustomerGroupReference_WithNullKeyOnCustomerGroupResourceIdentifier_ShouldNotResolveReference() {
     final ResourceIdentifier<CustomerGroup> customerGroupResourceIdentifier =
-            ResourceIdentifier.ofKey(null);
+        ResourceIdentifier.ofKey(null);
 
     final PriceDraftBuilder priceBuilder =
         PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
@@ -114,13 +115,16 @@ class PriceCustomerGroupReferenceResolverTest {
             format(
                 "Failed to resolve 'customer-group' reference on PriceDraft with country:'%s' and"
                     + " value: '%s'. Reason: %s",
-                priceBuilder.getCountry(), priceBuilder.getValue(), BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+                priceBuilder.getCountry(),
+                priceBuilder.getValue(),
+                BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
   }
 
   @Test
   void
       resolveCustomerGroupReference_WithEmptyKeyOnCustomerGroupResourceIdentifier_ShouldNotResolveReference() {
-    final ResourceIdentifier<CustomerGroup> customerGroupResourceIdentifier = ResourceIdentifier.ofKey("");
+    final ResourceIdentifier<CustomerGroup> customerGroupResourceIdentifier =
+        ResourceIdentifier.ofKey("");
     final PriceDraftBuilder priceBuilder =
         PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .customerGroup(customerGroupResourceIdentifier);
@@ -133,13 +137,15 @@ class PriceCustomerGroupReferenceResolverTest {
             format(
                 "Failed to resolve 'customer-group' reference on PriceDraft with country:'%s' and"
                     + " value: '%s'. Reason: %s",
-                priceBuilder.getCountry(), priceBuilder.getValue(), BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
+                priceBuilder.getCountry(),
+                priceBuilder.getValue(),
+                BLANK_KEY_VALUE_ON_RESOURCE_IDENTIFIER));
   }
 
   @Test
   void resolveCustomerGroupReference_WithExceptionOnFetch_ShouldNotResolveReference() {
     final ResourceIdentifier<CustomerGroup> customerGroupResourceIdentifier =
-            ResourceIdentifier.ofKey("CustomerGroupKey");
+        ResourceIdentifier.ofKey("CustomerGroupKey");
     final PriceDraftBuilder priceBuilder =
         PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .customerGroup(customerGroupResourceIdentifier);

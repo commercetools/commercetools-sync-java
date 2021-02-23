@@ -417,7 +417,7 @@ class ProductBatchValidatorTest {
 
     final PriceDraft priceDraftWithNullCustomerGroup =
         PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
-            .customerGroup((ResourceIdentifier<CustomerGroup>)null)
+            .customerGroup((ResourceIdentifier<CustomerGroup>) null)
             .build();
 
     final ProductVariantDraft validVariantDraft =
