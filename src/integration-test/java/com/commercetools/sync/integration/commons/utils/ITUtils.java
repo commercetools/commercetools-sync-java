@@ -248,7 +248,6 @@ public final class ITUtils {
       @Nonnull final QueryDsl<T, C> query,
       @Nonnull final Function<T, CompletionStage<S>> resourceToStageMapper) {
 
-    // TODO: GITHUB ISSUE #248
     final Consumer<List<T>> pageConsumer =
         pageElements ->
             CompletableFuture.allOf(
@@ -404,8 +403,6 @@ public final class ITUtils {
    * Asserts that a list of {@link Asset} and a list of {@link AssetDraft} have the same ordering of
    * assets (assets are matched by key). It asserts that the matching assets have the same name,
    * description, custom fields, tags, and asset sources.
-   *
-   * <p>TODO: This should be refactored into Asset asserts helpers. GITHUB ISSUE#261
    *
    * @param assets the list of assets to compare to the list of asset drafts.
    * @param assetDrafts the list of asset drafts to compare to the list of assets.

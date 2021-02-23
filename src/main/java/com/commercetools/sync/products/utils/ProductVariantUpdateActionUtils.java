@@ -182,7 +182,6 @@ public final class ProductVariantUpdateActionUtils {
     // Unfortunately, currently there is no easy solution to sync 2 ordered lists
     // having only AddExternalImage/RemoveImage/MoveImageToPosition actions.
     // This solution should be re-optimized in the next releases to avoid O(N^2) for large lists.
-    // TODO: GITHUB ISSUE#133
 
     if (!Objects.equals(oldProductVariantImages, newProductVariantImages)) {
       final List<Image> updatedOldImages = new ArrayList<>(oldProductVariantImages);
@@ -221,7 +220,7 @@ public final class ProductVariantUpdateActionUtils {
    *
    * <p><b>Note</b>: the solution is still not optimized and may contain {@link MoveImageToPosition}
    * actions for items which are already on desired positions (after previous moves in the
-   * sequence). This will be re-optimized in the next releases. TODO: GITHUB ISSUE#133
+   * sequence). This will be re-optimized in the next releases.
    *
    * @param variantId the variantId for the {@link MoveImageToPosition} update actions.
    * @param oldImages the old list of images.

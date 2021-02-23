@@ -124,7 +124,7 @@ public class CategorySyncStatistics extends BaseSyncStatistics {
    * <p>NOTE: When all the children keys of a missing parent are removed, the value of the map entry
    * will be an empty list. i.e. the entry itself will not be removed. However, this could be
    * investigated whether removing the entry at all when the list is empty will affect the
-   * algorithm. TODO: RELATED BUT NOT SAME AS GITHUB ISSUE#77
+   * algorithm.
    *
    * @param childCategoryKey the child category key to remove from {@code
    *     categoryKeysWithMissingParents}

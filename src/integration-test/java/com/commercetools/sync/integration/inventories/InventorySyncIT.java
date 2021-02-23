@@ -492,15 +492,7 @@ class InventorySyncIT {
     CompletableFuture.allOf(firstResult, secondResult, thirdResult).join();
 
     // Ensure instance's statistics.
-    assertThat(inventorySync.getStatistics()).isNotNull();
-
-    // TODO check distinct results when ISSUE #23 is resolved
-    // TODO uncomment assertions below when ISSUE #23 is resolved (otherwise they may fail)
-
-    // assertThat(inventorySync.getStatistics().getProcessed()).isEqualTo(60);
-    // assertThat(inventorySync.getStatistics().getCreated()).isEqualTo(60);
-    // assertThat(inventorySync.getStatistics().getUpdated()).isEqualTo(0);
-    // assertThat(inventorySync.getStatistics().getFailed()).isEqualTo(0);
+    assertThat(inventorySync.getStatistics()).hasValues(60, 60, 0, 0);
   }
 
   private void assertValues(
