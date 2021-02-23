@@ -8,6 +8,7 @@ import static java.lang.String.format;
 
 import com.commercetools.sync.categories.CategorySync;
 import com.commercetools.sync.categories.helpers.CategorySyncStatistics;
+import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import io.sphere.sdk.categories.Category;
 import io.sphere.sdk.categories.CategoryDraft;
 import io.sphere.sdk.categories.CategoryDraftBuilder;
@@ -20,7 +21,6 @@ import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.models.ResourceIdentifier;
 import io.sphere.sdk.products.CategoryOrderHints;
-import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.types.CustomFieldsDraft;
 import io.sphere.sdk.types.ResourceTypeIdsSetBuilder;
 import io.sphere.sdk.types.Type;
@@ -35,6 +35,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -234,8 +235,13 @@ public final class CategoryITUtils {
   public static void deleteAllCategories(@Nonnull final SphereClient ctpClient) {
     final Set<String> keys = new HashSet<>();
     final List<Category> categories =
-        QueryExecutionUtils.queryAll(
-                ctpClient, CategoryQuery.of().withExpansionPaths(CategoryExpansionModel::ancestors))
+        CtpQueryUtils.queryAll(
+                ctpClient,
+                CategoryQuery.of().withExpansionPaths(CategoryExpansionModel::ancestors),
+                Function.identity())
+            .thenApply(
+                fetchedCategories ->
+                    fetchedCategories.stream().flatMap(List::stream).collect(Collectors.toList()))
             .thenApply(CategoryITUtils::sortCategoriesByLeastAncestors)
             .toCompletableFuture()
             .join();
