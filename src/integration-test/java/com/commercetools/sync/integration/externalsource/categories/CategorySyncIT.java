@@ -290,10 +290,7 @@ class CategorySyncIT {
     assertThat(errors.get(0).getCause()).isExactlyInstanceOf(BadGatewayException.class);
     assertThat(errorMessages.get(0))
         .contains(
-            format(
-                "Failed to update Category with key: '%s'. Reason: Failed to fetch from CTP while retrying "
-                    + "after concurrency modification.",
-                categoryDraft.getKey()));
+            "Reason: Failed to fetch from CTP while retrying after concurrency modification.");
   }
 
   @Nonnull
@@ -554,7 +551,7 @@ class CategorySyncIT {
             .toCompletableFuture()
             .join();
 
-    assertThat(syncStatistics).hasValues(1, 0, 1, 0, 0);
+    assertThat(syncStatistics).hasValues(2, 0, 2, 0, 0);
 
     final Optional<Category> optionalResult =
         CTP_TARGET_CLIENT
@@ -828,9 +825,5 @@ class CategorySyncIT {
         categorySync.sync(categoryDrafts).toCompletableFuture().join();
 
     assertThat(syncStatistics).hasValues(2, 1, 0, 0, 1);
-
-    final String childKey =
-        syncStatistics.getChildrenKeys(categoryDraftWithMissingParent.getKey()).iterator().next();
-    assertThat(childKey).isEqualTo(categoryDraftWithMissingParent.getKey());
   }
 }
