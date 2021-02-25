@@ -45,7 +45,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nonnull;
 import org.junit.jupiter.api.AfterAll;
@@ -830,15 +829,8 @@ class CategorySyncIT {
 
     assertThat(syncStatistics).hasValues(2, 1, 0, 0, 1);
 
-    final Map<String, Set<String>> categoryKeysWithMissingParents =
-        syncStatistics.getCategoryKeysWithMissingParents();
-    assertThat(categoryKeysWithMissingParents).hasSize(1);
-
-    final Set<String> missingParentsChildren =
-        categoryKeysWithMissingParents.get(nonExistingParentKey);
-    assertThat(missingParentsChildren).hasSize(1);
-
-    final String childKey = missingParentsChildren.iterator().next();
+    final String childKey =
+        syncStatistics.getChildrenKeys(categoryDraftWithMissingParent.getKey()).iterator().next();
     assertThat(childKey).isEqualTo(categoryDraftWithMissingParent.getKey());
   }
 }
