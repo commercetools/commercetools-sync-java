@@ -5,7 +5,6 @@ import static com.commercetools.sync.commons.utils.CommonTypeUpdateActionUtils.a
 import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl.CUSTOM_OBJECT_CATEGORY_CONTAINER_KEY;
 import static java.lang.String.format;
-import static java.util.Optional.ofNullable;
 import static java.util.concurrent.CompletableFuture.allOf;
 import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.function.Function.identity;
@@ -248,9 +247,11 @@ public class CategorySync
             resolvedDraft -> {
               final Category oldCategory = oldCategoryMap.get(newCategory.getKey());
 
-              return ofNullable(oldCategory)
-                  .map(category -> fetchAndUpdate(category, resolvedDraft))
-                  .orElseGet(() -> applyCallbackAndCreate(resolvedDraft));
+              if (oldCategory != null) {
+                return fetchAndUpdate(oldCategory, resolvedDraft);
+              } else {
+                return applyCallbackAndCreate(resolvedDraft);
+              }
             })
         .exceptionally(
             completionException -> {
@@ -464,7 +465,7 @@ public class CategorySync
   }
 
   /**
-   * Given a {@link Map} of categoryDrafts to Categories that require syncing, this method updares
+   * Given a {@link Map} of categoryDrafts to Categories that require syncing, this method updates
    * only categories which need a {@link
    * io.sphere.sdk.categories.commands.updateactions.ChangeParent} update action, and in turn
    * performs the sync on them in a sequential/blocking fashion as advised by the CTP documentation:
