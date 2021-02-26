@@ -3,7 +3,6 @@ package com.commercetools.sync.integration.ctpprojectsource.categories;
 import static com.commercetools.sync.categories.utils.CategoryReferenceResolutionUtils.buildCategoryQuery;
 import static com.commercetools.sync.categories.utils.CategoryReferenceResolutionUtils.mapToCategoryDrafts;
 import static com.commercetools.sync.commons.asserts.statistics.AssertionsForStatistics.assertThat;
-import static com.commercetools.sync.commons.utils.SyncUtils.batchElements;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.OLD_CATEGORY_CUSTOM_TYPE_KEY;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategories;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.createCategoriesCustomType;
@@ -12,7 +11,6 @@ import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.d
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDrafts;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCategoryDraftsWithPrefix;
 import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.getCustomFieldsDraft;
-import static com.commercetools.sync.integration.commons.utils.CategoryITUtils.syncBatches;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.createCustomFieldsJsonMap;
 import static com.commercetools.sync.integration.commons.utils.ITUtils.deleteTypesFromTargetAndSource;
 import static com.commercetools.sync.integration.commons.utils.SphereClientUtils.CTP_SOURCE_CLIENT;
@@ -79,19 +77,21 @@ class CategorySyncIT {
     callBackErrorResponses = new ArrayList<>();
     callBackExceptions = new ArrayList<>();
     callBackWarningResponses = new ArrayList<>();
+    categorySync = new CategorySync(buildCategorySyncOptions(50));
+  }
 
-    final CategorySyncOptions categorySyncOptions =
-        CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
-            .errorCallback(
-                (exception, oldResource, newResource, updateActions) -> {
-                  callBackErrorResponses.add(exception.getMessage());
-                  callBackExceptions.add(exception.getCause());
-                })
-            .warningCallback(
-                (exception, oldResource, newResource) ->
-                    callBackWarningResponses.add(exception.getMessage()))
-            .build();
-    categorySync = new CategorySync(categorySyncOptions);
+  private CategorySyncOptions buildCategorySyncOptions(final int batchSize) {
+    return CategorySyncOptionsBuilder.of(CTP_TARGET_CLIENT)
+        .batchSize(batchSize)
+        .errorCallback(
+            (exception, oldResource, newResource, updateActions) -> {
+              callBackErrorResponses.add(exception.getMessage());
+              callBackExceptions.add(exception.getCause());
+            })
+        .warningCallback(
+            (exception, oldResource, newResource) ->
+                callBackWarningResponses.add(exception.getMessage()))
+        .build();
   }
 
   /** Cleans up the target and source test data that were built in this test class. */
@@ -167,13 +167,9 @@ class CategorySyncIT {
     // Make sure there is no hierarchical order
     Collections.shuffle(categoryDrafts);
 
-    // Simulate batches of categories where not all parent references are supplied at once.
-    final List<List<CategoryDraft>> batches = batchElements(categoryDrafts, 13);
-
+    CategorySync categorySyncWith13BatchSize = new CategorySync(buildCategorySyncOptions(13));
     final CategorySyncStatistics syncStatistics =
-        syncBatches(categorySync, batches, CompletableFuture.completedFuture(null))
-            .toCompletableFuture()
-            .join();
+        categorySyncWith13BatchSize.sync(categoryDrafts).toCompletableFuture().join();
 
     assertThat(syncStatistics).hasValues(130, 130, 0, 0, 0);
     assertThat(callBackErrorResponses).isEmpty();
@@ -221,12 +217,9 @@ class CategorySyncIT {
     final List<CategoryDraft> categoryDrafts = mapToCategoryDrafts(categories);
     Collections.shuffle(categoryDrafts);
 
-    final List<List<CategoryDraft>> batches = batchElements(categoryDrafts, 13);
-
+    CategorySync categorySyncWith13BatcheSize = new CategorySync(buildCategorySyncOptions(13));
     final CategorySyncStatistics syncStatistics =
-        syncBatches(categorySync, batches, CompletableFuture.completedFuture(null))
-            .toCompletableFuture()
-            .join();
+        categorySyncWith13BatcheSize.sync(categoryDrafts).toCompletableFuture().join();
 
     assertThat(syncStatistics).hasValues(130, 0, 120, 0, 0);
     assertThat(callBackErrorResponses).isEmpty();
@@ -262,12 +255,9 @@ class CategorySyncIT {
     final List<CategoryDraft> categoryDrafts = mapToCategoryDrafts(categories);
     Collections.shuffle(categoryDrafts);
 
-    final List<List<CategoryDraft>> batches = batchElements(categoryDrafts, 1);
-
+    CategorySync categorySyncWith1BatchSize = new CategorySync(buildCategorySyncOptions(1));
     final CategorySyncStatistics syncStatistics =
-        syncBatches(categorySync, batches, CompletableFuture.completedFuture(null))
-            .toCompletableFuture()
-            .join();
+        categorySyncWith1BatchSize.sync(categoryDrafts).toCompletableFuture().join();
 
     assertThat(syncStatistics).hasValues(3, 0, 1, 0, 0);
     assertThat(callBackErrorResponses).isEmpty();
@@ -351,12 +341,9 @@ class CategorySyncIT {
     // To simulate the new parent coming in a later draft
     Collections.reverse(categoryDrafts);
 
-    final List<List<CategoryDraft>> batches = batchElements(categoryDrafts, 1);
-
+    CategorySync categorySyncWith1BatchSize = new CategorySync(buildCategorySyncOptions(13));
     final CategorySyncStatistics syncStatistics =
-        syncBatches(categorySync, batches, CompletableFuture.completedFuture(null))
-            .toCompletableFuture()
-            .join();
+        categorySyncWith1BatchSize.sync(categoryDrafts).toCompletableFuture().join();
 
     assertThat(syncStatistics).hasValues(2, 1, 1, 0, 0);
     assertThat(callBackErrorResponses).isEmpty();

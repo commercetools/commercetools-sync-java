@@ -401,23 +401,23 @@ class ProductBatchValidatorTest {
     final PriceDraft priceDraft =
         PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
             .custom(CustomFieldsDraft.ofTypeKeyAndJson("customTypeKey", new HashMap<>()))
-            .customerGroup(CustomerGroup.referenceOfId("customerGroupKey"))
+            .customerGroup(ResourceIdentifier.ofKey("customerGroupKey"))
             .channel(ResourceIdentifier.ofKey("channelKey"))
             .build();
 
     final PriceDraft priceDraftWithBlankCustomerGroup =
         PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
-            .customerGroup(CustomerGroup.referenceOfId(" "))
+            .customerGroup(ResourceIdentifier.ofKey(" "))
             .build();
 
     final PriceDraft priceDraftWithNullCustomerGroupId =
         PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
-            .customerGroup(CustomerGroup.referenceOfId(null))
+            .customerGroup(ResourceIdentifier.ofKey(null))
             .build();
 
     final PriceDraft priceDraftWithNullCustomerGroup =
         PriceDraftBuilder.of(MoneyImpl.of(BigDecimal.TEN, DefaultCurrencyUnits.EUR))
-            .customerGroup(null)
+            .customerGroup((ResourceIdentifier<CustomerGroup>) null)
             .build();
 
     final ProductVariantDraft validVariantDraft =

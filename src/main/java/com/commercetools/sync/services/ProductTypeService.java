@@ -49,12 +49,12 @@ public interface ProductTypeService {
   CompletionStage<Optional<String>> fetchCachedProductTypeId(@Nonnull String key);
 
   /**
-   * TODO FIX JAVADOC AND TEST METHOD Given a {@code productType}, this method first checks if a
-   * cached map of ProductType ids -&gt; map of {@link AttributeMetaData} is not empty. If not, it
-   * returns a completed future that contains an optional that contains what this productType id
-   * maps to in the cache. If the cache is empty, the method populates the cache with the mapping of
-   * all ProductType ids to maps of each product type's attributes' {@link AttributeMetaData} in the
-   * CTP project, by querying the CTP project for all ProductTypes.
+   * Given a {@code productType}, this method first checks if a cached map of ProductType ids -&gt;
+   * map of {@link AttributeMetaData} is not empty. If not, it returns a completed future that
+   * contains an optional that contains what this productType id maps to in the cache. If the cache
+   * is empty, the method populates the cache with the mapping of all ProductType ids to maps of
+   * each product type's attributes' {@link AttributeMetaData} in the CTP project, by querying the
+   * CTP project for all ProductTypes.
    *
    * <p>After that, the method returns a {@link CompletionStage}&lt;{@link Optional}&lt;{@link
    * String}&gt;&gt; in which the result of it's completion could contain an {@link Optional} with a

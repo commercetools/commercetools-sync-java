@@ -22,8 +22,10 @@ import static com.commercetools.sync.products.utils.productvariantupdateactionut
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.DRAFT_DE_111_EUR_03_04;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.DRAFT_DE_111_USD;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.DRAFT_DE_222_EUR_CUST1;
+import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.DRAFT_DE_222_EUR_CUST1_KEY;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.DRAFT_DE_22_USD;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.DRAFT_DE_333_USD_CUST1;
+import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.DRAFT_DE_333_USD_CUST1_KEY;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.DRAFT_FR_777_EUR_01_04;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.DRAFT_FR_888_EUR_01_03;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.DRAFT_FR_999_EUR_03_06;
@@ -38,10 +40,11 @@ import static com.commercetools.sync.products.utils.productvariantupdateactionut
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.DRAFT_UK_999_GBP;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.DRAFT_US_111_USD;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.DRAFT_US_666_USD_CUST2_01_02;
+import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.DRAFT_US_666_USD_CUST2_01_02_KEY;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.byMonth;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.createCustomFieldsJsonMap;
 import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.getPriceDraft;
-import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.getPriceDraftWithChannelKey;
+import static com.commercetools.sync.products.utils.productvariantupdateactionutils.prices.PriceDraftFixtures.getPriceDraftWithKeys;
 import static com.commercetools.tests.utils.CompletionStageUtil.executeBlocking;
 import static com.neovisionaries.i18n.CountryCode.DE;
 import static io.sphere.sdk.models.DefaultCurrencyUnits.EUR;
@@ -494,14 +497,22 @@ class ProductSyncWithPricesIT {
         asList(DRAFT_DE_111_EUR, DRAFT_UK_111_GBP, DRAFT_DE_111_EUR_03_04, DRAFT_DE_111_EUR_01_02);
 
     final PriceDraft price1WithCustomerGroupWithKey =
-        getPriceDraft(BigDecimal.valueOf(222), EUR, DE, "cust1", null, null, null, null);
+        getPriceDraftWithKeys(BigDecimal.valueOf(222), EUR, DE, "cust1", null, null, null, null);
     final PriceDraft price2WithCustomerGroupWithKey =
-        getPriceDraft(BigDecimal.valueOf(333), USD, DE, "cust1", null, null, null, null);
+        getPriceDraftWithKeys(BigDecimal.valueOf(333), USD, DE, "cust1", null, null, null, null);
 
-    final PriceDraft price1WithCustomerGroupWithId =
-        getPriceDraft(BigDecimal.valueOf(222), EUR, DE, cust1.getId(), null, null, null, null);
-    final PriceDraft price2WithCustomerGroupWithId =
-        getPriceDraft(BigDecimal.valueOf(333), USD, DE, cust1.getId(), null, null, null, null);
+    final PriceDraft price1WithCustomerGroupReferenceWithCust1Id =
+        PriceDraftBuilder.of(
+                getPriceDraft(
+                    BigDecimal.valueOf(222), EUR, DE, cust1.getId(), null, null, null, null))
+            .customerGroup(cust1)
+            .build();
+    final PriceDraft price2WithCustomerGroupReferenceWithCust1Id =
+        PriceDraftBuilder.of(
+                getPriceDraft(
+                    BigDecimal.valueOf(333), USD, DE, cust1.getId(), null, null, null, null))
+            .customerGroup(cust1)
+            .build();
 
     final List<PriceDraft> newPrices =
         asList(
@@ -549,8 +560,10 @@ class ProductSyncWithPricesIT {
         .filteredOn(action -> action instanceof AddPrice)
         .hasSize(2)
         .containsExactlyInAnyOrder(
-            AddPrice.ofVariantId(masterVariantId, price1WithCustomerGroupWithId, true),
-            AddPrice.ofVariantId(masterVariantId, price2WithCustomerGroupWithId, true));
+            AddPrice.ofVariantId(
+                masterVariantId, price1WithCustomerGroupReferenceWithCust1Id, true),
+            AddPrice.ofVariantId(
+                masterVariantId, price2WithCustomerGroupReferenceWithCust1Id, true));
 
     final ProductProjection productProjection =
         CTP_TARGET_CLIENT
@@ -566,8 +579,8 @@ class ProductSyncWithPricesIT {
         asList(
             DRAFT_DE_111_EUR,
             DRAFT_UK_111_GBP,
-            price1WithCustomerGroupWithId,
-            price2WithCustomerGroupWithId);
+            price1WithCustomerGroupReferenceWithCust1Id,
+            price2WithCustomerGroupReferenceWithCust1Id);
     assertPricesAreEqual(productProjection.getMasterVariant().getPrices(), newPricesWithIds);
   }
 
@@ -727,7 +740,7 @@ class ProductSyncWithPricesIT {
     final CustomFieldsDraft customType1WithEmptySet =
         CustomFieldsDraft.ofTypeKeyAndJson(customType1.getKey(), newCustomFieldsJsonMap);
     final PriceDraft withChannel1CustomType1WithNullSet =
-        getPriceDraftWithChannelKey(
+        getPriceDraftWithKeys(
             BigDecimal.valueOf(100),
             EUR,
             DE,
@@ -820,7 +833,7 @@ class ProductSyncWithPricesIT {
     final CustomFieldsDraft customType1WithEmptySet =
         CustomFieldsDraft.ofTypeKeyAndJson(customType1.getKey(), newCustomFieldsJsonMap);
     final PriceDraft withChannel1CustomType1WithNullSet =
-        getPriceDraftWithChannelKey(
+        getPriceDraftWithKeys(
             BigDecimal.valueOf(100),
             EUR,
             DE,
@@ -916,7 +929,7 @@ class ProductSyncWithPricesIT {
     final CustomFieldsDraft customType1WithEmptySet =
         CustomFieldsDraft.ofTypeKeyAndJson(customType1.getKey(), newCustomFieldsJsonMap);
     final PriceDraft withChannel1CustomType1WithNullSet =
-        getPriceDraftWithChannelKey(
+        getPriceDraftWithKeys(
             BigDecimal.valueOf(100),
             EUR,
             DE,
@@ -1001,7 +1014,7 @@ class ProductSyncWithPricesIT {
     final CustomFieldsDraft customType1WithEmptySet =
         CustomFieldsDraft.ofTypeKeyAndJson(customType1.getKey(), new HashMap<>());
     final PriceDraft withChannel1CustomType1WithNullSet =
-        getPriceDraftWithChannelKey(
+        getPriceDraftWithKeys(
             BigDecimal.valueOf(100),
             EUR,
             DE,
@@ -1079,7 +1092,7 @@ class ProductSyncWithPricesIT {
             "customType1",
             createCustomFieldsJsonMap(LOCALISED_STRING_CUSTOM_FIELD_NAME, lTextWithEnDe));
     final PriceDraft withChannel1CustomType1WithEnDeOfKey =
-        getPriceDraftWithChannelKey(
+        getPriceDraftWithKeys(
             BigDecimal.valueOf(100),
             EUR,
             DE,
@@ -1089,7 +1102,7 @@ class ProductSyncWithPricesIT {
             "channel1",
             customType1WithEnDeOfKey);
     final PriceDraft withChannel2CustomType1WithEnDeOfKey =
-        getPriceDraftWithChannelKey(
+        getPriceDraftWithKeys(
             BigDecimal.valueOf(100),
             EUR,
             DE,
@@ -1102,16 +1115,16 @@ class ProductSyncWithPricesIT {
     final List<PriceDraft> newPrices =
         asList(
             DRAFT_DE_111_EUR,
-            DRAFT_DE_222_EUR_CUST1,
+            DRAFT_DE_222_EUR_CUST1_KEY,
             DRAFT_DE_111_EUR_01_02,
             DRAFT_DE_111_EUR_03_04,
             withChannel1CustomType1WithEnDeOfKey,
             withChannel2CustomType1WithEnDeOfKey,
-            DRAFT_DE_333_USD_CUST1,
+            DRAFT_DE_333_USD_CUST1_KEY,
             DRAFT_DE_22_USD,
             DRAFT_UK_111_GBP_01_02,
             DRAFT_UK_999_GBP,
-            DRAFT_US_666_USD_CUST2_01_02,
+            DRAFT_US_666_USD_CUST2_01_02_KEY,
             DRAFT_FR_888_EUR_01_03,
             DRAFT_FR_999_EUR_03_06,
             DRAFT_NE_777_EUR_01_04,
@@ -1217,8 +1230,6 @@ class ProductSyncWithPricesIT {
    * Asserts that a list of {@link Asset} and a list of {@link AssetDraft} have the same ordering of
    * prices (prices are matched by key). It asserts that the matching assets have the same name,
    * description, custom fields, tags, and asset sources.
-   *
-   * <p>TODO: This should be refactored into Asset asserts helpers. GITHUB ISSUE#261
    *
    * @param prices the list of prices to compare to the list of price drafts.
    * @param priceDrafts the list of price drafts to compare to the list of prices.

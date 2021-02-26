@@ -24,6 +24,7 @@ import static org.mockito.Mockito.when;
 
 import com.commercetools.sync.commons.helpers.ResourceKeyIdGraphQlRequest;
 import com.commercetools.sync.commons.models.WaitingToBeResolvedTransitions;
+import com.commercetools.sync.commons.utils.CtpQueryUtils;
 import com.commercetools.sync.services.UnresolvedReferencesService;
 import com.commercetools.sync.services.impl.StateServiceImpl;
 import com.commercetools.sync.services.impl.UnresolvedReferencesServiceImpl;
@@ -40,7 +41,6 @@ import io.sphere.sdk.customobjects.queries.CustomObjectQuery;
 import io.sphere.sdk.models.LocalizedString;
 import io.sphere.sdk.models.Reference;
 import io.sphere.sdk.queries.PagedQueryResult;
-import io.sphere.sdk.queries.QueryExecutionUtils;
 import io.sphere.sdk.states.State;
 import io.sphere.sdk.states.StateDraft;
 import io.sphere.sdk.states.StateDraftBuilder;
@@ -59,6 +59,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
@@ -176,8 +177,13 @@ class StateSyncIT {
         stateSync.sync(singletonList(stateDraft)).toCompletableFuture().join();
 
     assertThat(stateSyncStatistics).hasValues(1, 0, 1, 0, 0);
-    QueryExecutionUtils.queryAll(
-            CTP_TARGET_CLIENT, StateQueryBuilder.of().plusPredicates(q -> q.key().is(keyA)).build())
+    CtpQueryUtils.queryAll(
+            CTP_TARGET_CLIENT,
+            StateQueryBuilder.of().plusPredicates(q -> q.key().is(keyA)).build(),
+            Function.identity())
+        .thenApply(
+            fetchedCategories ->
+                fetchedCategories.stream().flatMap(List::stream).collect(Collectors.toList()))
         .thenAccept(
             resultStates -> {
               Assertions.assertThat(resultStates.size()).isEqualTo(1);
@@ -205,8 +211,13 @@ class StateSyncIT {
         stateSync.sync(singletonList(stateDraft)).toCompletableFuture().join();
 
     assertThat(stateSyncStatistics).hasValues(1, 0, 1, 0, 0);
-    QueryExecutionUtils.queryAll(
-            CTP_TARGET_CLIENT, StateQueryBuilder.of().plusPredicates(q -> q.key().is(keyA)).build())
+    CtpQueryUtils.queryAll(
+            CTP_TARGET_CLIENT,
+            StateQueryBuilder.of().plusPredicates(q -> q.key().is(keyA)).build(),
+            Function.identity())
+        .thenApply(
+            fetchedCategories ->
+                fetchedCategories.stream().flatMap(List::stream).collect(Collectors.toList()))
         .thenAccept(
             resultStates -> {
               Assertions.assertThat(resultStates.size()).isEqualTo(1);
@@ -236,8 +247,13 @@ class StateSyncIT {
         stateSync.sync(singletonList(stateDraft)).toCompletableFuture().join();
 
     assertThat(stateSyncStatistics).hasValues(1, 0, 1, 0, 0);
-    QueryExecutionUtils.queryAll(
-            CTP_TARGET_CLIENT, StateQueryBuilder.of().plusPredicates(q -> q.key().is(keyA)).build())
+    CtpQueryUtils.queryAll(
+            CTP_TARGET_CLIENT,
+            StateQueryBuilder.of().plusPredicates(q -> q.key().is(keyA)).build(),
+            Function.identity())
+        .thenApply(
+            fetchedCategories ->
+                fetchedCategories.stream().flatMap(List::stream).collect(Collectors.toList()))
         .thenAccept(
             resultStates -> {
               Assertions.assertThat(resultStates.size()).isEqualTo(1);
@@ -722,8 +738,13 @@ class StateSyncIT {
 
     assertThat(stateSyncStatistics).hasValues(3, 0, 1, 0, 0);
 
-    QueryExecutionUtils.queryAll(
-            CTP_TARGET_CLIENT, StateQueryBuilder.of().plusPredicates(q -> q.key().is(keyA)).build())
+    CtpQueryUtils.queryAll(
+            CTP_TARGET_CLIENT,
+            StateQueryBuilder.of().plusPredicates(q -> q.key().is(keyA)).build(),
+            Function.identity())
+        .thenApply(
+            fetchedCategories ->
+                fetchedCategories.stream().flatMap(List::stream).collect(Collectors.toList()))
         .thenAccept(
             resultStates -> {
               Assertions.assertThat(resultStates.size()).isEqualTo(1);
@@ -802,8 +823,13 @@ class StateSyncIT {
 
     assertThat(stateSyncStatistics).hasValues(3, 0, 1, 0, 0);
 
-    QueryExecutionUtils.queryAll(
-            CTP_TARGET_CLIENT, StateQueryBuilder.of().plusPredicates(q -> q.key().is(keyA)).build())
+    CtpQueryUtils.queryAll(
+            CTP_TARGET_CLIENT,
+            StateQueryBuilder.of().plusPredicates(q -> q.key().is(keyA)).build(),
+            Function.identity())
+        .thenApply(
+            fetchedCategories ->
+                fetchedCategories.stream().flatMap(List::stream).collect(Collectors.toList()))
         .thenAccept(
             resultStates -> {
               Assertions.assertThat(resultStates.size()).isEqualTo(1);
@@ -843,8 +869,13 @@ class StateSyncIT {
 
     assertThat(stateSyncStatistics).hasValues(3, 0, 1, 0, 0);
 
-    QueryExecutionUtils.queryAll(
-            CTP_TARGET_CLIENT, StateQueryBuilder.of().plusPredicates(q -> q.key().is(keyA)).build())
+    CtpQueryUtils.queryAll(
+            CTP_TARGET_CLIENT,
+            StateQueryBuilder.of().plusPredicates(q -> q.key().is(keyA)).build(),
+            Function.identity())
+        .thenApply(
+            fetchedCategories ->
+                fetchedCategories.stream().flatMap(List::stream).collect(Collectors.toList()))
         .thenAccept(
             resultStates -> {
               Assertions.assertThat(resultStates.size()).isEqualTo(1);

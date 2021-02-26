@@ -170,7 +170,7 @@ public class ProductBatchValidator
         .filter(Objects::nonNull)
         .forEach(
             priceDraft -> {
-              collectReferencedKeyFromReference(
+              collectReferencedKeyFromResourceIdentifier(
                   priceDraft.getCustomerGroup(), referencedKeys.customerGroupKeys::add);
               collectReferencedKeyFromResourceIdentifier(
                   priceDraft.getChannel(), referencedKeys.channelKeys::add);

@@ -134,8 +134,14 @@ public final class PriceDraftFixtures {
   public static final PriceDraft DRAFT_DE_222_EUR_CUST1 =
       getPriceDraft(BigDecimal.valueOf(222), EUR, DE, "cust1", null, null, null, null);
 
+  public static final PriceDraft DRAFT_DE_222_EUR_CUST1_KEY =
+      getPriceDraftWithKeys(BigDecimal.valueOf(222), EUR, DE, "cust1", null, null, null, null);
+
   public static final PriceDraft DRAFT_DE_333_USD_CUST1 =
       getPriceDraft(BigDecimal.valueOf(333), USD, DE, "cust1", null, null, null, null);
+
+  public static final PriceDraft DRAFT_DE_333_USD_CUST1_KEY =
+      getPriceDraftWithKeys(BigDecimal.valueOf(333), USD, DE, "cust1", null, null, null, null);
 
   public static final PriceDraft DRAFT_UK_111_GBP_01_02 =
       getPriceDraft(BigDecimal.valueOf(111), GBP, UK, null, byMonth(1), byMonth(2), null, null);
@@ -161,6 +167,10 @@ public final class PriceDraftFixtures {
 
   public static final PriceDraft DRAFT_US_666_USD_CUST2_01_02 =
       getPriceDraft(BigDecimal.valueOf(666), USD, US, "cust2", byMonth(1), byMonth(2), null, null);
+
+  public static final PriceDraft DRAFT_US_666_USD_CUST2_01_02_KEY =
+      getPriceDraftWithKeys(
+          BigDecimal.valueOf(666), USD, US, "cust2", byMonth(1), byMonth(2), null, null);
 
   public static final PriceDraft DRAFT_FR_888_EUR_01_03 =
       getPriceDraft(BigDecimal.valueOf(888), EUR, FR, null, byMonth(1), byMonth(3), null, null);
@@ -287,7 +297,8 @@ public final class PriceDraftFixtures {
       @Nullable final CustomFieldsDraft customFieldsDraft) {
     return PriceDraftBuilder.of(Price.of(value, currencyUnits))
         .country(countryCode)
-        .customerGroup(ofNullable(customerGroupId).map(CustomerGroup::referenceOfId).orElse(null))
+        .customerGroup(
+            ofNullable(customerGroupId).map(ResourceIdentifier::<CustomerGroup>ofId).orElse(null))
         .validFrom(validFrom)
         .validUntil(validUntil)
         .channel(ofNullable(channelId).map(ResourceIdentifier::<Channel>ofId).orElse(null))
@@ -296,18 +307,19 @@ public final class PriceDraftFixtures {
   }
 
   @Nonnull
-  public static PriceDraft getPriceDraftWithChannelKey(
+  public static PriceDraft getPriceDraftWithKeys(
       @Nonnull final BigDecimal value,
       @Nonnull final CurrencyUnit currencyUnits,
       @Nullable final CountryCode countryCode,
-      @Nullable final String customerGroupId,
+      @Nullable final String customerGroupKey,
       @Nullable final ZonedDateTime validFrom,
       @Nullable final ZonedDateTime validUntil,
       @Nullable final String channelKey,
       @Nullable final CustomFieldsDraft customFieldsDraft) {
     return PriceDraftBuilder.of(Price.of(value, currencyUnits))
         .country(countryCode)
-        .customerGroup(ofNullable(customerGroupId).map(CustomerGroup::referenceOfId).orElse(null))
+        .customerGroup(
+            ofNullable(customerGroupKey).map(ResourceIdentifier::<CustomerGroup>ofKey).orElse(null))
         .validFrom(validFrom)
         .validUntil(validUntil)
         .channel(ofNullable(channelKey).map(ResourceIdentifier::<Channel>ofKey).orElse(null))

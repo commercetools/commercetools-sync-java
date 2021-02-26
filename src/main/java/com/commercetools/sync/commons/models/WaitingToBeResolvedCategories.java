@@ -7,14 +7,14 @@ import javax.annotation.Nonnull;
 
 public final class WaitingToBeResolvedCategories implements WaitingToBeResolved {
   private CategoryDraft categoryDraft;
-  private Set<String> MissingReferencedCategoriesKeys;
+  private Set<String> missingReferencedCategoriesKeys;
 
   public Set<String> getMissingReferencedCategoriesKeys() {
-    return MissingReferencedCategoriesKeys;
+    return missingReferencedCategoriesKeys;
   }
 
   public void setMissingReferencedCategoriesKeys(Set<String> missingReferencedCategoriesKeys) {
-    this.MissingReferencedCategoriesKeys = missingReferencedCategoriesKeys;
+    this.missingReferencedCategoriesKeys = missingReferencedCategoriesKeys;
   }
 
   // Needed for the 'com.fasterxml.jackson' deserialization, for example, when fetching

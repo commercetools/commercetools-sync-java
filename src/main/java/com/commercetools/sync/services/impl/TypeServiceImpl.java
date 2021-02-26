@@ -21,7 +21,6 @@ import java.util.concurrent.CompletionStage;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-/** Implementation of TypeService interface. TODO: USE graphQL to get only keys. GITHUB ISSUE#84 */
 public final class TypeServiceImpl
     extends BaseServiceWithKey<
         TypeDraft, Type, BaseSyncOptions, TypeQuery, TypeQueryModel, TypeExpansionModel<Type>>

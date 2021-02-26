@@ -39,7 +39,7 @@ against a [ProductDraft](https://docs.commercetools.com/http-api-projects-produc
 
 #### SphereClient
 
-Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/3.2.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
+Use the [ClientConfigurationUtils](https://github.com/commercetools/commercetools-sync-java/blob/4.0.0/src/main/java/com/commercetools/sync/commons/utils/ClientConfigurationUtils.java#L45) which apply the best practices for `SphereClient` creation.
 If you have custom requirements for the sphere client creation, have a look into the [Important Usage Tips](IMPORTANT_USAGE_TIPS.md).
 
 ````java
@@ -70,7 +70,7 @@ Therefore, in order to resolve the actual ids of those references in the sync pr
 | `taxCategory` | ResourceIdentifier to a TaxCategory | 
 | `state` | ResourceIdentifier for a State | Optional |
 | `variants.prices.channel` | ResourceIdentifier to a Channel | 
-| `variants.prices.customerGroup` | Reference to a CustomerGroup | 
+| `variants.prices.customerGroup` | ResourceIdentifier to a CustomerGroup | 
 | `variants.prices.custom.type` | ResourceIdentifier to a Type | 
 | `variants.assets.custom.type` | ResourceIdentifier to a Type | 
 | `variants.attributes` * | Only the attributes with type [ReferenceType](https://docs.commercetools.com/api/projects/productTypes#referencetype), [SetType](https://docs.commercetools.com/api/projects/productTypes#settype) with `elementType` as [ReferenceType](https://docs.commercetools.com/api/projects/productTypes#referencetype) and [NestedType](https://docs.commercetools.com/api/projects/productTypes#nestedtype) requires `key` on the `id` field of the `ReferenceType`. | 
@@ -80,7 +80,7 @@ resource on the target commercetools project and the library will issue an updat
 
 ##### Syncing from a commercetools project
 
-When syncing from a source commercetools project, you can use [`mapToProductDrafts`](https://commercetools.github.io/commercetools-sync-java/v/3.2.0/com/commercetools/sync/products/utils/ProductReferenceResolutionUtils.html#mapToProductDrafts-java.util.List-)
+When syncing from a source commercetools project, you can use [`mapToProductDrafts`](https://commercetools.github.io/commercetools-sync-java/v/4.0.0/com/commercetools/sync/products/utils/ProductReferenceResolutionUtils.html#mapToProductDrafts-java.util.List-)
 the method that maps from a `Product` to `ProductDraft` in order to make them ready for reference resolution by the sync, for example: 
 
 ````java
@@ -116,18 +116,18 @@ final ProductDraft productDraft =
         .state(ResourceIdentifier.ofKey("tax-category-key"))
         .build();
 ````
-
--  Some references in the product like `customerGroup` of a price and variant attributes with type `ReferenceType` do not support the `ResourceIdentifier` yet, 
-for those references you have to provide the `key` value on the `id` field of the reference. This means that calling `getId()` on the reference should return its `key`. 
-
-````java
-final PriceDraft priceDraft = PriceDraftBuilder
-    .of(MoneyImpl.of("20", "EUR"))
+ 
+ ````java
+ final PriceDraft priceDraft = PriceDraftBuilder
+    of(MoneyImpl.of("20", "EUR"))
     .channel(ResourceIdentifier.ofKey("channel-key"))
-    .customerGroup(CustomerGroup.referenceOfId("customer-group-key")) // note that customer group key provided in the id field 
+    .customerGroup(ResourceIdentifier.ofKey("customer-group-key"))
     .custom(CustomFieldsDraft.ofTypeKeyAndJson("type-key", emptyMap()))
     .build();
 ````
+
+-  The product variant attributes with a type `ReferenceType` do not support the `ResourceIdentifier` yet, for those 
+references you have to provide the `key`  value on the `id` field of the reference. This means that calling `getId()` on the reference should return its `key`.
 
 ````java
 final ObjectNode productReference = JsonNodeFactory.instance.objectNode();
